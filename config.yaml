@@ -1,4 +1,41 @@
+#colls_loader_cls: !!python/name:loader.AccountUserLoader
+proxyhostport: &proxyhostport localhost:9001
 
-colls_loader_cls: !!python/name:loader.AccountUserLoader
+collections:
+    '([\w]+)/([\w][-\w]+)':
+        index_paths: indexes/index.cdxj
+
+        server_cls: !!python/name:loader.DynCDXServer
+
+        filters: ['users/{0}/collections/{1}']
+
+        wb_handler_class: !!python/name:loader.DynWBHandler
+
+    '([\w]+)/([\w][-\w]+)/record':
+        index_paths: $liveweb
+
+        filters: ['users/{0}/collections/{1}']
+
+        wb_handler_class: !!python/name:loader.DynRecord
+
+        proxyhostport: *proxyhostport
+
+        cookie_scope: root
+        rewrite_opts:
+            rewrite_base: true
+            rewrite_rel_canon: false
+
+    live:
+        index_paths: $liveweb
+        cookie_scope: root
+        rewrite_opts:
+            rewrite_base: true
+            rewrite_rel_canon: false
+
+route_class: !!python/name:loader.DynamicRoute
+
+archive_paths: ./
 
 framed_replay: inverse
+
+enable_auto_colls: true

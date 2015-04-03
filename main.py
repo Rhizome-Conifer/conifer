@@ -3,11 +3,12 @@ from bottle import redirect, run, HTTPError, HTTPResponse
 from bottle import install
 from bottle_utils.flash import message_plugin
 
-import loader
+import functools
 from redis import StrictRedis
 
 from pywb.webapp.pywb_init import create_wb_router
 from pywb.utils.loaders import load_yaml_config
+from pywb.webapp.views import J2TemplateView
 
 from auth import UserCollsManager, init_cork
 
@@ -26,10 +27,30 @@ application, cork = init_cork(application, redis_obj)
 
 manager = UserCollsManager(cork, redis_obj)
 
+jinja_env = J2TemplateView.init_shared_env()
+
+def jinja2_view(template_name):
+    def decorator(view_func):
+        @functools.wraps(view_func)
+        def wrapper(*args, **kwargs):
+            response = view_func(*args, **kwargs)
+
+            if isinstance(response, dict):
+                template = jinja_env.get_or_select_template(template_name)
+                return template.render(**response)
+            else:
+                return response
+
+        return wrapper
+
+    return decorator
+
+
 
 def init_pywb(configfile='config.yaml'):
     config = load_yaml_config(configfile)
     return create_wb_router(config)
+    #return create_wb_router(config)
 
 pywb_router = init_pywb()
 
@@ -38,7 +59,7 @@ def call_pywb(env):
     resp = pywb_router(env)
 
     if not resp:
-        return None
+        raise HTTPError(status=404)
 
     resp = HTTPResponse(body=resp.body,
                         status=resp.status_headers.statusline,
@@ -63,7 +84,7 @@ def index():
 # Login/Logout
 # ============================================================================
 @route('/login')
-@jinja2_view('login.html', template_lookup=['templates'])
+@jinja2_view('templates/login.html')
 def login():
     return {}
 
@@ -83,9 +104,9 @@ def logout():
 # ============================================================================
 @route('/:user/')
 @route('/:user')
-@jinja2_view('user.html', template_lookup=['templates'])
+@jinja2_view('templates/user.html')
 def user_page(user):
-    if not manager.exists(user):
+    if not manager.user_exists(user):
         raise HTTPError(status=404, body='No such archive: ' + user)
 
     return {'user': user,
@@ -97,7 +118,7 @@ def user_page(user):
 # Create Coll
 # ============================================================================
 @route('/:user/_create')
-@jinja2_view('create.html', template_lookup=['templates'])
+@jinja2_view('templates/create.html')
 def create_coll_static(user):
     cork.require(username=user, fail_redirect='/login')
     return {'user': user,
@@ -108,36 +129,39 @@ def create_coll_static(user):
 def create_coll(user):
     cork.require(username=user, fail_redirect='/login')
     coll_name = post_get('collection')
+    access = post_get('public')
 
-    success, msg = manager.add_collection(user, coll_name)
+    success, msg = manager.add_collection(user, coll_name, access)
     response.flash(msg)
-    if success:
-        global pywb_router
-        pywb_router = init_pywb()
-        redirect('/' + user)
-    else:
-        redirect('/' + user + '/_create')
+
+    #if success:
+    #    global pywb_router
+    #    pywb_router = init_pywb()
+    #    redirect('/' + user)
+    #else:
+    #    redirect('/' + user + '/_create')
 
 
 # pywb Replay / Record
 # ============================================================================
+@route(['/static/<:re:.*>'])
+def static():
+    return call_pywb(request.environ)
+
+
 @route(['/:user/:coll/record/<:re:.*>'])
 def record(user, coll, *args, **kwargs):
     cork.require(username=user, fail_redirect='/login')
-    resp = call_pywb(request.environ)
-    if not resp:
+    return call_pywb(request.environ)
+
+
+@route(['/:user/:coll/<:re:.*>'])
+def replay(user, coll):
+    if not manager.can_user_read(user, coll):
         raise HTTPError(status=404)
 
-    return resp
-
-@route(['/static/', '/:user/:coll/<:re:.*>'])
-def main(*args, **kwargs):
-    resp = call_pywb(request.environ)
-    if not resp:
-        raise HTTPError(status=404)
-
-    return resp
-
+    jinja_env.globals['user'] = user
+    return call_pywb(request.environ)
 
 
 if __name__ == "__main__":

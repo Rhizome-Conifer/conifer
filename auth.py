@@ -58,7 +58,7 @@ class UserCollsManager(object):
         except AAAException:
             return False
 
-    def exists(self, user):
+    def user_exists(self, user):
         return self.cork.user(user) is not None
 
     def is_user(self, user):
@@ -85,7 +85,7 @@ class UserCollsManager(object):
 
         return colls
 
-    def add_collection(self, user, coll):
+    def add_collection(self, user, coll, access):
         if not self.can_user_create_coll(user, coll):
             return False, 'Not allowed to create new collection'
 
@@ -109,15 +109,36 @@ class UserCollsManager(object):
             print(e)
             return False, 'Error creating collection.. Try Again'
 
+        # Add to user
         self.redis.sadd('u:' + user, 'c:' + coll)
+
+        # Add to collection
+        if access:
+            access = 'public'
+        else:
+            access = 'private'
+
+        self.redis.hset('c:' + user + ':' + coll, 'access', access)
+
         return True, 'Collection: ' + coll + ' created!'
 
     def can_user_read(self, user, coll):
-        if self.is_user(user) or self._is_admin():
-            return True
+        if not self.user_exists(user):
+            return False
 
-        #TODO check coll permissions
-        return False
+        access = self.redis.hget('c:' + user + ':' + coll, 'access')
+        if access is None:
+            return False
+
+        if access != 'public':
+            if not self.is_user(user):
+                return False
+
+        if not os.path.isdir(os.path.join('users', user,
+                                          'collections', coll)):
+            return False
+
+        return True
 
     def can_user_record(self, user, coll):
         if self.is_user(user):
