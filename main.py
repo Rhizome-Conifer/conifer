@@ -1,4 +1,8 @@
-import bottle
+from bottle import route, request, response, post, jinja2_view, default_app
+from bottle import redirect, run, HTTPError, HTTPResponse
+from bottle import install
+from bottle_utils.flash import message_plugin
+
 import loader
 from redis import StrictRedis
 
@@ -12,7 +16,9 @@ logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
                     level=logging.DEBUG)
 logging.debug('')
 
-application = bottle.default_app()
+install(message_plugin)
+
+application = default_app()
 
 redis_obj = StrictRedis()
 
@@ -23,8 +29,7 @@ manager = UserCollsManager(cork, redis_obj)
 
 def init_pywb(configfile='config.yaml'):
     config = load_yaml_config(configfile)
-    pywb_router = create_wb_router(config)
-    return pywb_router
+    return create_wb_router(config)
 
 pywb_router = init_pywb()
 
@@ -35,16 +40,16 @@ def call_pywb(env):
     if not resp:
         return None
 
-    resp = bottle.HTTPResponse(body=resp.body,
-                               status=resp.status_headers.statusline,
-                               headers=resp.status_headers.headers)
+    resp = HTTPResponse(body=resp.body,
+                        status=resp.status_headers.statusline,
+                        headers=resp.status_headers.headers)
     return resp
 
 def post_get(name, default=''):
-    return bottle.request.POST.get(name, default).strip()
+    return request.POST.get(name, default).strip()
 
 
-@bottle.route("/")
+@route("/")
 def index():
     if cork.user_is_anonymous:
         user = 'not_logged_in'
@@ -57,75 +62,83 @@ def index():
 
 # Login/Logout
 # ============================================================================
-@bottle.route('/login')
-@bottle.jinja2_view('login.html', template_lookup=['templates'])
+@route('/login')
+@jinja2_view('login.html', template_lookup=['templates'])
 def login():
     return {}
 
-@bottle.post('/login')
+@post('/login')
 def login_post():
     """Authenticate users"""
     username = post_get('username')
     password = post_get('password')
     cork.login(username, password, success_redirect='/', fail_redirect='/login')
 
-@bottle.route('/logout')
+@route('/logout')
 def logout():
     cork.logout(success_redirect='/')
 
 
 # User Page
 # ============================================================================
-@bottle.route('/:user/')
-@bottle.route('/:user')
-@bottle.jinja2_view('user.html', template_lookup=['templates'])
+@route('/:user/')
+@route('/:user')
+@jinja2_view('user.html', template_lookup=['templates'])
 def user_page(user):
     if not manager.exists(user):
-        raise bottle.HTTPError(status=404, body='No such archive: ' + user)
+        raise HTTPError(status=404, body='No such archive: ' + user)
 
     return {'user': user,
             'colls': manager.list_colls(user),
-            'is_owner': manager.is_user(user)
+            'is_owner': manager.is_user(user),
+            'message': request.message,
            }
 
 # Create Coll
 # ============================================================================
-@bottle.route('/:user/_create')
-@bottle.jinja2_view('create.html', template_lookup=['templates'])
+@route('/:user/_create')
+@jinja2_view('create.html', template_lookup=['templates'])
 def create_coll_static(user):
     cork.require(username=user, fail_redirect='/login')
-    return {'user': user}
+    return {'user': user,
+            'message': request.message}
 
 
-@bottle.post('/:user/_create')
+@post('/:user/_create')
 def create_coll(user):
     cork.require(username=user, fail_redirect='/login')
     coll_name = post_get('collection')
 
-    res = manager.add_collection(user, coll_name)
-    bottle.redirect('/' + user)
+    success, msg = manager.add_collection(user, coll_name)
+    response.flash(msg)
+    if success:
+        global pywb_router
+        pywb_router = init_pywb()
+        redirect('/' + user)
+    else:
+        redirect('/' + user + '/_create')
 
 
 # pywb Replay / Record
 # ============================================================================
-@bottle.route(['/:user/:coll/record/<:re:.*>'])
+@route(['/:user/:coll/record/<:re:.*>'])
 def record(user, coll, *args, **kwargs):
     cork.require(username=user, fail_redirect='/login')
-    resp = call_pywb(bottle.request.environ)
+    resp = call_pywb(request.environ)
     if not resp:
-        raise bottle.HTTPError(status=404)
+        raise HTTPError(status=404)
 
     return resp
 
-@bottle.route(['/static/', '/:user/:coll/<:re:.*>'])
+@route(['/static/', '/:user/:coll/<:re:.*>'])
 def main(*args, **kwargs):
-    resp = call_pywb(bottle.request.environ)
+    resp = call_pywb(request.environ)
     if not resp:
-        raise bottle.HTTPError(status=404)
+        raise HTTPError(status=404)
 
     return resp
 
 
 
 if __name__ == "__main__":
-    bottle.run(app=application)
+    run(app=application)

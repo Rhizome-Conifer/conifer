@@ -7,6 +7,7 @@ import json
 import os
 
 from pywb.manager.manager import CollectionsManager
+from loader import switch_dir
 
 
 def init_cork(app, redis):
@@ -23,19 +24,6 @@ def init_cork(app, redis):
 
     app = SessionMiddleware(app, session_opts)
     return app, cork
-
-
-class switch_dir(object):
-    def __init__(self, newdir):
-        self.origcwd = os.getcwd()
-        self.newdir = newdir
-
-    def __enter__(self):
-        os.chdir(self.newdir)
-        return self
-
-    def __exit__(self, *args):
-        os.chdir(self.origcwd)
 
 
 class RedisBackend(JsonBackend):
@@ -99,15 +87,30 @@ class UserCollsManager(object):
 
     def add_collection(self, user, coll):
         if not self.can_user_create_coll(user, coll):
-            return 'unauth'
+            return False, 'Not allowed to create new collection'
 
         path = os.path.join('users', user)
-        with switch_dir(path) as _:
-            wb_manager = CollectionsManager(coll, must_exist=False)
-            wb_manager.add_collection()
+
+        try:
+            with switch_dir(path) as _:
+                wb_manager = CollectionsManager(coll, must_exist=False)
+                wb_manager.add_collection()
+        except ValueError as e:
+            return False, str(e)
+
+        except OSError as e:
+            if e.errno == 17:
+                msg = 'Collection ' + coll + ' already exists!'
+            else:
+                msg = str(e)
+            return False, msg
+
+        except Exception as e:
+            print(e)
+            return False, 'Error creating collection.. Try Again'
 
         self.redis.sadd('u:' + user, 'c:' + coll)
-        return True
+        return True, 'Collection: ' + coll + ' created!'
 
     def can_user_read(self, user, coll):
         if self.is_user(user) or self._is_admin():
