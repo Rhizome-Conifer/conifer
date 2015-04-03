@@ -1,0 +1,14 @@
+<h1>{{user}} Archive</h1>
+
+{% if is_owner %}
+<a href="/{{user}}/_create">Create New Collection</a>
+{% endif %}
+
+<p>
+Available Collections:
+
+
+{% for coll in colls %}
+<li><a href="/{{user}}/{{coll}}/">{{coll}}</a></li>
+{% endfor %}
+</p>
