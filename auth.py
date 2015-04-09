@@ -15,11 +15,12 @@ def init_cork(app, redis):
 
     session_opts = {
         'session.cookie_expires': True,
-        'session.encrypt_key': 'TFSDFMWPEFJPSDF<MBSFBSDB',
+        'session.encrypt_key': 'TFSDFMWPEFJPSDSDFSDFENWO',
         'session.httponly': True,
         'session.timeout': 3600 * 24,  # 1 day
         'session.type': 'cookie',
         'session.validate_key': True,
+        'session.cookie_path': '/',
     }
 
     app = SessionMiddleware(app, session_opts)
@@ -174,4 +175,4 @@ class InitCork(Cork):
         cork.create_user('guest', 'reader', 'test', 'ilya@ilya', 'ilya')
 
 if __name__ == "__main__":
-    InitCork.init_backend(RedisBackend(StrictRedis()))
+    InitCork.init_backend(RedisBackend(StrictRedis.from_url('redis://127.0.0.1:6379/2')))

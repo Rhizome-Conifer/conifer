@@ -1,20 +1,12 @@
 #colls_loader_cls: !!python/name:loader.AccountUserLoader
-proxyhostport: &proxyhostport localhost:9001
+_proxy_path: &proxyhostport localhost:9002
+
+verify_ssl: false
 
 collections:
-    '([\w]+)/([\w][-\w]+)':
-        index_paths: indexes/index.cdxj
-
-        server_cls: !!python/name:loader.DynCDXServer
-
-        filters: ['users/{0}/collections/{1}']
-
-        wb_handler_class: !!python/name:loader.DynWBHandler
-
-    '([\w]+)/([\w][-\w]+)/record':
+    #'^([\w]+)/([\w][-\w]+)/record':
+    record:
         index_paths: $liveweb
-
-        filters: ['users/{0}/collections/{1}']
 
         wb_handler_class: !!python/name:loader.DynRecord
 
@@ -25,17 +17,21 @@ collections:
             rewrite_base: true
             rewrite_rel_canon: false
 
-    live:
-        index_paths: $liveweb
-        cookie_scope: root
-        rewrite_opts:
-            rewrite_base: true
-            rewrite_rel_canon: false
+    #'^([\w]+)/([\w][-\w]+)(?!/record)':
+    '':
+        #index_paths: indexes/index.cdxj
+        index_paths: 'redis://127.0.0.1:6379/1'
+        server_cls: !!python/name:loader.DynCDXServer
+
+        wb_handler_class: !!python/name:loader.DynWBHandler
+
+        enable_cdx_api: true
 
 route_class: !!python/name:loader.DynamicRoute
 
 archive_paths: ./
 
+#framed_replay: false
 framed_replay: inverse
 
-enable_auto_colls: true
+#enable_auto_colls: true
