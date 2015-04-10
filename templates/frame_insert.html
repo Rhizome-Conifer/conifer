@@ -1,0 +1,61 @@
+{% extends "base_bootstrap.html" %}
+{% block head %}
+<style>
+    html, body
+    {
+        height: 100%;
+        margin: 0px;
+        padding: 0px;
+        border: 0px;
+        overflow: hidden;
+    }
+    .wb_iframe_div
+    {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        padding: 0px 0px 0px 0px;
+        border: none;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .wb_iframe
+    {
+        width: 100%;
+        height: 100%;
+        padding: 0px 0px 0px 0px;
+        overflow: scroll;
+    }
+
+    .navbar {
+        margin-bottom: 10px;
+        -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+        -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+    }
+
+</style>
+<script>
+    wbinfo = {}
+    wbinfo.prefix = "{{ wbrequest.wb_prefix }}";
+    wbinfo.capture_url = "{{ url }}";
+    wbinfo.timestamp = "{{ wbrequest.wb_url.timestamp }}";
+    wbinfo.is_frame = true;
+    wbinfo.frame_mod = "{{ wbrequest.options.frame_mod }}";
+    wbinfo.replay_mod = "{{ wbrequest.options.replay_mod }}";
+</script>
+
+<script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wb.js'> </script>
+
+<script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wb_frame.js'> </script>
+{% endblock %}
+
+{% block body %}
+{% include 'navbar.html' %}
+<div class="wb_iframe_div">
+    <iframe src="{{ wbrequest.wb_prefix + embed_url }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"/>
+</div>
+{% endblock %}

@@ -1,13 +1,17 @@
-from pywb.webapp.pywb_init import DirectoryCollsLoader
 from pywb.cdx.cdxsource import CDXFile, RedisCDXSource
 from pywb.cdx.cdxserver import CDXServer
+
 from pywb.framework.archivalrouter import Route
+
+from pywb.webapp.pywb_init import DirectoryCollsLoader
 from pywb.webapp.handlers import WBHandler
 from pywb.webapp.live_rewrite_handler import RewriteHandler, LiveResourceException
+from pywb.webapp.views import J2TemplateView
 
 from pywb.framework.wbrequestresponse import WbResponse
 from pywb.utils.wbexception import NotFoundException
 
+import functools
 import os
 import re
 import json
@@ -28,51 +32,31 @@ class switch_dir(object):
 
 
 #=================================================================
+jinja_env = J2TemplateView.init_shared_env()
+
+def jinja2_view(template_name):
+    def decorator(view_func):
+        @functools.wraps(view_func)
+        def wrapper(*args, **kwargs):
+            response = view_func(*args, **kwargs)
+
+            if isinstance(response, dict):
+                template = jinja_env.get_or_select_template(template_name)
+                return template.render(**response)
+            else:
+                return response
+
+        return wrapper
+
+    return decorator
+
+
+#=================================================================
 class DynamicRoute(Route):
     def apply_filters(self, wbrequest, matcher):
         wbrequest.custom_params['output_dir'] = wbrequest.env['w_output_dir']
         wbrequest.custom_params['sesh_id'] = wbrequest.env['w_sesh_id']
         wbrequest.coll = wbrequest.env['w_sesh_id']
-
-
-#=================================================================
-class DynamicRoute2(Route):
-    def _custom_init(self, config):
-        self.manager = config['user_manager']
-        self.filters = config.get('filters', [])
-
-    def apply_filters(self, wbrequest, matcher):
-        groups = matcher.groups()
-        if len(groups) > 0:
-            result = self.filters[0].format(*groups)
-            wbrequest.custom_params['output_dir'] = result
-
-    def _is_handling(self, request_uri):
-        matcher, coll = super(DynamicRoute, self).is_handling(request_uri)
-        if not matcher:
-            return None, None
-
-        groups = matcher.groups()
-        if len(groups) < 2:
-            return matcher, coll
-
-        user = groups[0]
-        coll = groups[1]
-
-        if user in ('live', 'static'):
-            return None, None
-
-        return matcher, coll
-
-        if len(groups) == 3 and group[2] == 'record':
-            if self.manager.can_user_record(user, coll):
-                raise NotFoundException('Collection Not Record Available')
-
-        else:
-            if self.manager.can_user_read(user, coll):
-                raise NotFoundException('Collection Not Available')
-
-        return matcher, coll
 
 
 #=================================================================
@@ -162,15 +146,18 @@ class DynRecord(RewriteHandler):
         super(DynRecord, self).__init__(config)
         cookie_name = 'beaker.session.id'
         self.strip_cookie_re = re.compile(cookie_name + '=[^ ]+([ ]|$)')
+        self.record_path = config.get('record_dir', './')
 
     def _live_request_headers(self, wbrequest):
-        path = wbrequest.custom_params['output_dir']
-        path = os.path.join(path, 'archive')
+        path = wbrequest.custom_params.get('output_dir')
+        if not path:
+            path = self.record_path
 
-        sesh_id = wbrequest.custom_params['sesh_id']
+        sesh_id = wbrequest.custom_params.get('sesh_id', wbrequest.coll)
 
         target = dict(output_dir=path,
                       sesh_id=sesh_id)
+
         req_headers = {'x-warcprox-meta': json.dumps(target)}
 
         cookie = wbrequest.env.get('HTTP_COOKIE')
@@ -194,6 +181,30 @@ class DynRecord(RewriteHandler):
         status_headers.headers.append(('Cache-Control', 'no-cache'))
 
         return WbResponse(status_headers, gen)
+
+
+#=================================================================
+class RecordDirLoader(DirectoryCollsLoader):
+    def __call__(self):
+        colls = super(RecordDirLoader, self).__call__()
+        new_colls = {}
+
+        for n, v in colls.iteritems():
+            new_colls[n] = v
+            v['index_paths'] = self.config['index_paths'] + '/cdxj:' + n
+            record_path = '({0})-record'.format(n)
+            new_colls[record_path] = self.add_live_web_coll(v['archive_paths'])
+            print(v)
+
+        return new_colls
+
+    def add_live_web_coll(self, path):
+        live = {'index_paths': '$liveweb',
+                'cookie_scope': 'default',
+                'coll_group': 1,
+                'wb_handler_class': DynRecord,
+                'record_dir': path}
+        return live
 
 
 #=================================================================
@@ -222,6 +233,6 @@ class AccountUserLoader(object):
 
     def add_live_web_coll(self):
         live = {'index_paths': '$liveweb',
-                'cookie_scope': 'default'}
+                'cookie_scope': 'de}ault'}
 
         return live

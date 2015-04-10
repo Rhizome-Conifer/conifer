@@ -10,9 +10,9 @@ from redis import StrictRedis
 
 from pywb.webapp.pywb_init import create_wb_router
 from pywb.utils.loaders import load_yaml_config
-from pywb.webapp.views import J2TemplateView
 
 from auth import UserCollsManager, init_cork
+from loader import jinja2_view
 
 import logging
 logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
@@ -30,26 +30,6 @@ application, cork = init_cork(application, redis_obj)
 #application = WSGIApp(pywb_router, application)
 
 manager = UserCollsManager(cork, redis_obj)
-
-jinja_env = J2TemplateView.init_shared_env()
-
-def jinja2_view(template_name):
-    def decorator(view_func):
-        @functools.wraps(view_func)
-        def wrapper(*args, **kwargs):
-            response = view_func(*args, **kwargs)
-
-            if isinstance(response, dict):
-                template = jinja_env.get_or_select_template(template_name)
-                return template.render(**response)
-            else:
-                return response
-
-        return wrapper
-
-    return decorator
-
-
 
 def init_pywb(configfile='config.yaml'):
     config = load_yaml_config(configfile)
@@ -99,6 +79,7 @@ def login_post():
     username = post_get('username')
     password = post_get('password')
     cork.login(username, password, success_redirect='/', fail_redirect='/login')
+
 
 @route('/logout')
 def logout():

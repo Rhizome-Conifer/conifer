@@ -1,0 +1,26 @@
+<nav class="navbar navbar-default navbar-static-top">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">WARCs For All!</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+      </ul>
+      {% if user %}
+      <p class="navbar-text navbar-right">(<a href="/_logout" class="navbar-link">Logout</a>)</p>
+      <p class="navbar-text navbar-right"><b style="font-size: 20px">{{ user }}</b></p>
+      {% else %}
+      <p class="navbar-text navbar-right"><a href="/_login" class="btn btn-default navbar-link">Login</a></p>
+      {% endif %}
+   </div>
+  </div>
+</nav>
+  
+
+

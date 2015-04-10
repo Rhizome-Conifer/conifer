@@ -1,19 +1,72 @@
-<h2>{{ wbrequest.user_metadata.title if wbrequest.user_metadata.title else wbrequest.coll }} Search Page</h2>
+{% extends "main_bootstrap.html" %}
+{% block content %}
 
-<div>
-<table style="text-align: left">
-{% for key, val in wbrequest.user_metadata.iteritems() %}
-<tr><th>{{ key }}:</th><td>{{ val }}</td>
-{% endfor %}
-</table>
+<div class="page-header">
+    <h1>{{ wbrequest.user_metadata.title | default(wbrequest.coll) }}&nbsp;<small>/{{ wbrequest.coll }}</small></h1>
 </div>
 
-Upload? {{ user }}
+<script>
 
-<p>
-Search this collection by url:
-<form onsubmit="url = document.getElementById('search').value; if (url != '') { document.location.href = '{{ wbrequest.wb_prefix }}' + '*/' + url; } return false;">
-<input id="search" name="search" placeholder="Enter url to search"/>
-<button type="submit">Search</button>
-</form>
-</p>
+    function goto_record()
+    {
+        var prefix = "/{{ wbrequest.coll }}-record/";
+        var url = $("#record_url").val();
+        if (url != '') {
+            document.location.href = prefix + url;
+        }
+        return false;
+    }
+
+    function goto_replay()
+    {
+        var prefix = "/{{ wbrequest.coll }}/";
+        var url = $("#replay_url").val();
+        if (url != '') {
+            document.location.href = prefix + url;
+        }
+        return false;
+    }
+</script>
+
+{% if role == 'archivist' or role == 'admin' %}
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 style="display: inline" class="panel-title">Record Page</h3>
+        <p style="display: inline; margin-left: 20px; font-style: italic">The url will be loaded and added to the archive.</p>
+    </div>
+    <div class="panel-body">
+        <form id="dorecord" onsubmit="return goto_record()">
+            <div class="input-group">
+                <input id="record_url" type="text" placeholder="ex: http://example.com" class="input-large form-control">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="submit">
+                        <span class="glyphicon glyphicon-facetime-video"></span> <span>Record</span>
+                    </button>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 style="display: inline" class="panel-title">Search Page</h3>
+        <p style="display: inline; margin-left: 20px; font-style: italic">Search for any url in the archived collection and play it back.</p>
+    </div>
+    <div class="panel-body">
+        <form id="dosearch" onsubmit="return goto_replay()">
+            <div class="input-group">
+                <input id="replay_url" type="text" placeholder="ex: http://example.com" class="input-large form-control">
+                <span class="input-group-btn">
+                    <button class="btn btn-success" type="submit">
+                        <span class="glyphicon glyphicon-play"></span> <span>Search</span>
+                    </button>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

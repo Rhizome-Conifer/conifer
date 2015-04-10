@@ -1,22 +1,27 @@
-<!DOCTYPE html>
-<html>
-<body>
-<h2>warcsforall</h2>
+{% extends "main_bootstrap.html" %}
 
-This archive contains the following collections:
+{% block content %}
+{% if message and message != '' %}
+<div class="alert alert-info alert-dismissable" role="alert">
+    {{ message }}
+</div>
+{% endif %}
 
-<ul>
-{% for route in routes %}
-  {{ route.handler }}
-  {% if route | is_wb_handler %}
-    <li>
-    <a href="{{ '/' + route.path }}">{{ '/' + route.path }}</a>
-    {% if route.user_metadata.title is defined %}
-    ({{ route.user_metadata.title }})
+<div class="jumbotron">
+    <h2>{{ metadata.org }} Archive</h2>
+    <p>Available Collections:</p>
+    <ul class="list-group text-center">
+        {% for route in routes %}
+        {% if route | is_wb_handler %}
+        <li class="list-group-item" style="font-size: 20px">
+            <a href="{{ '/' + route.path }}">{{ route.user_metadata.title | default(route.path) }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    {% if role == 'admin' %}
+    <p><a class="btn btn-primary btn-sm" href="/_create" role="button">Create new Collection</a></p>
     {% endif %}
-    </li>
-  {% endif %}
-{% endfor %}
-</ul>
-</body>
-</html>
+</div>
+
+{% endblock %}

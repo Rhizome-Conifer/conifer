@@ -1,6 +1,32 @@
-Login
-<form method="post" action="/login">
-User: <input type="input" name="username"/>
-Password: <input type="password" name="password"/>
-<input type="submit" value="Login"/>
-</form>
+{% extends "main_bootstrap.html" %}
+
+{% block content %}
+<div class="row">
+    {% if message and message != '' %}
+    <div class="alert alert-danger alert-dismissable" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+
+    <div class="col-sm-6 col-md-4 col-md-offset-4">
+        <form style="max-width: 260px" method="post">
+            {% if user %}
+            <h4>Already logged in as <b>{{ user }}</b></h4>
+            <h4>Do you want to <a href="/logout">logout</a>?</h4>
+            {% else %}
+            <h4>Please log-in to continue:</h4>
+            <label for="inputEmail" class="sr-only">Username</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
+            <label for="inputPassword" class="sr-only">Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" value="remember-me"> (Remember Login)
+                </label>
+            </div>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}
