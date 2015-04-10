@@ -23,6 +23,7 @@ from pywb.warc.cdxindexer import iter_file_or_dir
 from auth import init_cork
 
 from loader import jinja_env, jinja2_view
+import json
 
 import os
 
@@ -205,6 +206,38 @@ def listwarcs(coll):
         warcs.append(filename)
 
     return {'warcs': warcs}
+
+# Pages
+# ============================================================================
+@post(['/_addpage'])
+def add_page():
+    cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+    url = post_get('url')
+    coll = post_get('coll')
+    title = post_get('title')
+
+    data = {'url': url}
+    if title:
+        data['title'] = title
+
+    data = json.dumps(data)
+
+    redis_obj.hincrby('pages:' + coll, data, 1)
+    return {}
+
+@route('/_listpages')
+def list_pages():
+    cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+    coll = request.query['coll']
+    res = redis_obj.hgetall('pages:' + coll)
+    pagelist = []
+    for n, v in res.iteritems():
+        entry = json.loads(n)
+        entry['count'] = v
+        pagelist.append(entry)
+
+    return {"pages": pagelist}
+
 
 # pywb Replay / Record
 # ============================================================================
