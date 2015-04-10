@@ -45,6 +45,7 @@
     wbinfo.capture_url = "{{ url }}";
     wbinfo.timestamp = "{{ wbrequest.wb_url.timestamp }}";
     wbinfo.is_frame = true;
+    wbinfo.is_recording = {{ 'true' if is_recording else 'false' }};
     wbinfo.frame_mod = "{{ wbrequest.options.frame_mod }}";
     wbinfo.replay_mod = "{{ wbrequest.options.replay_mod }}";
 </script>

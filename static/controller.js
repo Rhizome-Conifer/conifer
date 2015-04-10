@@ -1,17 +1,20 @@
+var _orig_set_state = window.set_state;
 
-$(function() {
-    $("#wb_iframe").load(function(event) {
-        if (!curr_state || !curr_state.url) {
-            return;
-        }
-        
-        var data = {};
-        data.coll = wbinfo.coll;
-        data.url = curr_state.url;
+set_state = function(state) {
+    _orig_set_state(state);
+
+    if (!wbinfo.is_recording || !curr_state || !curr_state.url) {
+        return;
+    }
+
+    var data = {};
+    data.url = curr_state.url;
+    data.ts = curr_state.timestamp;
+
+    if (window.frames[0].document.title) {
         data.title = window.frames[0].document.title;
-        
-        $.post("/_addpage", data, function() {
-            console.log("added page");
-        });
+    }
+
+    $.post("/_addpage?coll=" + wbinfo.coll, data, function() {
     });
-});
+};

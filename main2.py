@@ -212,31 +212,27 @@ def listwarcs(coll):
 @post(['/_addpage'])
 def add_page():
     cork.require(role='archivist', fail_redirect=LOGIN_PATH)
-    url = post_get('url')
-    coll = post_get('coll')
-    title = post_get('title')
+    coll = request.query['coll']
 
-    data = {'url': url}
-    if title:
-        data['title'] = title
+    data = {}
+
+    for item in request.forms:
+        data[item] = request.forms.get(item)
 
     data = json.dumps(data)
+    print(data)
 
-    redis_obj.hincrby('pages:' + coll, data, 1)
+    redis_obj.sadd('pages:' + coll, data)
     return {}
 
 @route('/_listpages')
 def list_pages():
     cork.require(role='archivist', fail_redirect=LOGIN_PATH)
     coll = request.query['coll']
-    res = redis_obj.hgetall('pages:' + coll)
-    pagelist = []
-    for n, v in res.iteritems():
-        entry = json.loads(n)
-        entry['count'] = v
-        pagelist.append(entry)
 
-    return {"pages": pagelist}
+    pagelist = redis_obj.smembers('pages:' + coll)
+    pagelist = map(json.loads, pagelist)
+    return {"data": pagelist}
 
 
 # pywb Replay / Record
@@ -267,6 +263,8 @@ def coll_pages(coll):
 @adduser
 def record(coll, *args, **kwargs):
     cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+    request.environ['w_temp_params']['is_recording'] = True
+    print(request.environ['PATH_INFO'])
     return call_pywb(request.environ)
 
 

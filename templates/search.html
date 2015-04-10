@@ -1,12 +1,72 @@
 {% extends "main_bootstrap.html" %}
-{% block content %}
 
-<div class="page-header">
-    <h1>{{ wbrequest.user_metadata.title | default(wbrequest.coll) }}&nbsp;<small>/{{ wbrequest.coll }}</small></h1>
-</div>
+{% block head %}
+
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/1.10.6/integration/bootstrap/3/dataTables.bootstrap.css"/>
+
+<script type="text/javascript" language="javascript" src="//cdn.datatables.net/1.10.6/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="//cdn.datatables.net/plug-ins/1.10.6/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+
+<style>
+table.dataTable td, table.dataTable th {
+    font-size: 18px;
+    font-weight: bold;
+}
+</style>
 
 <script>
+    
+    function ts_to_date(ts)
+    {
+        if (ts.length < 14) {
+            return ts;
+        }
 
+        var datestr = (ts.substring(0, 4) + "-" + 
+                       ts.substring(4, 6) + "-" +
+                       ts.substring(6, 8) + "T" +
+                       ts.substring(8, 10) + ":" +
+                       ts.substring(10, 12) + ":" +
+                       ts.substring(12, 14) + "-00:00");
+
+        return new Date(datestr).toLocaleString();
+    }
+    
+    $(document).ready(function() {
+        var prefix = "/{{ wbrequest.coll }}/";
+        
+        var render_title = function (data, type, full, meta) {
+            var url = prefix + full['ts'] + "/" + full['url'];
+
+            if (meta.col == 0) {
+                var title = data;
+                if (!title) {
+                    title = full['url'];
+                }
+            } else if (meta.col == 1) {
+                var title = ts_to_date(data);
+            } else {
+                title = data;
+            }
+
+            return '<a href="' + url + '">' + title + '</a>';
+        }
+        
+        $("#pageTable").dataTable( {
+            "ajaxSource": "/_listpages?coll={{ wbrequest.coll }}",
+            "columns": [
+                { "data": "title" },
+                { "data": "ts" },
+            ],
+            "columnDefs": [ {
+                "targets": [0, 1],
+                "render": render_title,
+            }],
+        });
+    } );
+</script>
+
+<script>
     function goto_record()
     {
         var prefix = "/{{ wbrequest.coll }}-record/";
@@ -27,6 +87,33 @@
         return false;
     }
 </script>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-header">
+    <h1>{{ wbrequest.user_metadata.title | default(wbrequest.coll) }}&nbsp;<small>/{{ wbrequest.coll }}</small></h1>
+</div>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 style="display: inline" class="panel-title">Archived Pages</h3>
+        <p style="display: inline; margin-left: 20px; font-style: italic">A list of pages recorded in this archive.</p>
+    </div>
+    <div class="panel-body">
+        <table id="pageTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Time Recorded</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
 
 {% if role == 'archivist' or role == 'admin' %}
 <div class="panel panel-default">
