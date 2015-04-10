@@ -82,7 +82,7 @@ def adduser(func):
             user = cork.current_user.username
             role = cork.current_user.role
 
-        request.environ['w_temp_params'] = {'user': user,
+        request.environ['pywb.template_params'] = {'user': user,
                                             'role': role,
                                             'message': request.message}
 
@@ -245,7 +245,7 @@ def record(coll, *args, **kwargs):
     request.environ['w_output_dir'] = './collections/{0}/archive'.format(coll)
     request.environ['w_sesh_id'] = coll
 
-    request.environ['w_temp_params']['is_recording'] = True
+    request.environ['pywb.template_params']['is_recording'] = True
     return call_pywb(request.environ)
 
 
