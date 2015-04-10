@@ -54,9 +54,11 @@ def jinja2_view(template_name):
 #=================================================================
 class DynamicRoute(Route):
     def apply_filters(self, wbrequest, matcher):
-        wbrequest.custom_params['output_dir'] = wbrequest.env['w_output_dir']
-        wbrequest.custom_params['sesh_id'] = wbrequest.env['w_sesh_id']
-        wbrequest.coll = wbrequest.env['w_sesh_id']
+        wbrequest.custom_params['output_dir'] = wbrequest.env.get('w_output_dir', '')
+
+        sesh_id = wbrequest.env.get('w_sesh_id', '')
+        wbrequest.custom_params['sesh_id'] = sesh_id
+        wbrequest.coll = sesh_id
 
 
 #=================================================================
@@ -117,7 +119,7 @@ class DynWBHandler(WBHandler):
 
     def handle_replay(self, wbrequest, cdx_lines):
         path = wbrequest.custom_params['output_dir']
-        path = os.path.join(path, 'archive')
+        #path = os.path.join(path, 'archive')
 
         cdx_callback = self.index_reader.cdx_load_callback(wbrequest)
 

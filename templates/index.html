@@ -11,12 +11,10 @@
     <h2>{{ metadata.org }} Archive</h2>
     <p>Available Collections:</p>
     <ul class="list-group text-center">
-        {% for route in routes %}
-        {% if route | is_wb_handler %}
+        {% for name, value in colls | dictsort %}
         <li class="list-group-item" style="font-size: 20px">
-            <a href="{{ '/' + route.path }}">{{ route.user_metadata.title | default(route.path) }}</a>
+            <a href="{{ '/' + name }}">{{ value.title | default(name) }}</a>
         </li>
-        {% endif %}
         {% endfor %}
     </ul>
     {% if role == 'admin' %}

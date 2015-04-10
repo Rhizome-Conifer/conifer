@@ -3,8 +3,10 @@ _proxy_path: &proxyhostport localhost:9002
 
 verify_ssl: false
 
+#enable_auto_colls: false
+collections_root: _na_
+
 collections:
-    #'^([\w]+)/([\w][-\w]+)/record':
     record:
         index_paths: $liveweb
 
@@ -17,7 +19,6 @@ collections:
             rewrite_base: true
             rewrite_rel_canon: false
 
-    #'^([\w]+)/([\w][-\w]+)(?!/record)':
     '':
         #index_paths: indexes/index.cdxj
         index_paths: 'redis://127.0.0.1:6379/1'
@@ -31,7 +32,8 @@ route_class: !!python/name:loader.DynamicRoute
 
 archive_paths: ./
 
-#framed_replay: false
-framed_replay: inverse
+metadata:
+    org: National Football Museum Web Archive
+    product: NFM Web Archive
 
-#enable_auto_colls: true
+framed_replay: inverse

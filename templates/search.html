@@ -69,7 +69,7 @@ table.dataTable td, table.dataTable th {
 <script>
     function goto_record()
     {
-        var prefix = "/{{ wbrequest.coll }}-record/";
+        var prefix = "/{{ wbrequest.coll }}/record/";
         var url = $("#record_url").val();
         if (url != '') {
             document.location.href = prefix + url;
