@@ -112,6 +112,7 @@ def err_handle(out):
 
 bottle_app.default_error_handler = err_handle
 
+
 # ============================================================================
 LOGIN_PATH = '/_login'
 LOGOUT_PATH = '/_logout'
@@ -222,7 +223,7 @@ def list_pages():
     return {"data": pagelist}
 
 
-# pywb Replay / Record
+# pywb static and home
 # ============================================================================
 @route(['/static/<:re:.*>'])
 def static():
@@ -236,21 +237,14 @@ def home_pages():
     return {'colls': manager.list_collections()}
 
 
-#@route(['/:coll', '/:coll/'])
-#@jinja2_view('search.html')
-@adduser
-def search_pages(*arg, **kwargs):
-    request.path_shift(1)
-    return call_pywb(request.environ)
-    #return {}
-
-
+# pywb Replay / Record
+# ============================================================================
 @route(['/:coll/record', '/:coll/record/'])
 def record_redir(coll):
     redirect('/' + coll)
 
 
-@route(['/:coll/record/<:re:.*>'])
+@route(['/:coll/record/<:re:.*>'], method='ANY')
 @adduser
 def record(coll, *args, **kwargs):
     if not manager.can_record_coll(coll):
@@ -264,7 +258,7 @@ def record(coll, *args, **kwargs):
     return call_pywb(request.environ)
 
 
-@route(['/:coll', '/:coll/<:re:.*>'])
+@route(['/:coll', '/:coll/<:re:.*>'], method='ANY')
 @adduser
 def replay(coll):
     if not manager.can_read_coll(coll):
@@ -277,7 +271,7 @@ def replay(coll):
     return call_pywb(request.environ)
 
 
-@route(['/<:re:.*>'])
+@route(['/<:re:.*>'], method='ANY')
 @adduser
 def fallthrough():
     return call_pywb(request.environ)

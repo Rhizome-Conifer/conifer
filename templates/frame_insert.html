@@ -58,12 +58,14 @@
 
 <script src='/static/__shared/controller.js'> </script>
 
+<script src='/static/__shared/automate.js'> </script>
+
 {% endblock %}
 
 {% block body %}
 {% include 'navbar.html' %}
 <div class="wb_iframe_div">
-    <iframe id="wb_iframe" src="{{ wbrequest.wb_prefix + embed_url }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"/>
+    <iframe id="iframe" src="{{ wbrequest.wb_prefix + embed_url }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"/>
 </div>
 
 {% endblock %}

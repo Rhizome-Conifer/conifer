@@ -36,7 +36,12 @@ table.dataTable td, table.dataTable th {
         var prefix = "/{{ wbrequest.coll }}/";
         
         var render_title = function (data, type, full, meta) {
-            var url = prefix + full['ts'] + "/" + full['url'];
+            
+            var url = prefix;
+            if (full['ts']) {
+                url += full['ts'] + "/";
+            }
+            url += full['url'];
 
             if (meta.col == 0) {
                 var title = data;
