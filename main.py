@@ -15,6 +15,7 @@ from redis import StrictRedis
 from pywb.webapp.pywb_init import create_wb_router
 from pywb.utils.loaders import load_yaml_config
 from pywb.webapp.views import J2TemplateView
+from pywb.utils.wbexception import WbException
 
 from auth import init_cork, CollsManager
 
@@ -34,9 +35,11 @@ application = default_app()
 
 redis_obj = StrictRedis.from_url('redis://127.0.0.1:6379/2')
 
+bottle_app = application
 application, cork = init_cork(application, redis_obj)
 
 manager = CollsManager(cork, redis_obj)
+
 
 def init_pywb(configfile='config.yaml'):
     config = load_yaml_config(configfile)
@@ -54,7 +57,11 @@ def get_redir_back(skip, default='/'):
 
 
 def call_pywb(env):
-    resp = pywb_router(env)
+    try:
+        resp = pywb_router(env)
+    except WbException as wbe:
+        status = int(wbe.status().split(' ', 1)[0])
+        raise HTTPError(status=status, body=str(wbe))
 
     if not resp:
         raise HTTPError(status=404, body='No Response Found')
@@ -98,6 +105,14 @@ def adduser(func):
 
 
 # ============================================================================
+@jinja2_view('error.html')
+@adduser
+def err_handle(out):
+    return {'err': out}
+
+bottle_app.default_error_handler = err_handle
+
+# ============================================================================
 LOGIN_PATH = '/_login'
 LOGOUT_PATH = '/_logout'
 CREATE_PATH = '/_create'
@@ -129,7 +144,8 @@ def login_post():
 
 @route(LOGOUT_PATH)
 def logout():
-    redir_to = get_redir_back(LOGOUT_PATH, '/')
+    #redir_to = get_redir_back(LOGOUT_PATH, '/')
+    redir_to = '/'
     cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
 
@@ -190,7 +206,6 @@ def add_page():
         data[item] = request.forms.get(item)
 
     data = json.dumps(data)
-    print(data)
 
     redis_obj.sadd('pages:' + coll, data)
     return {}

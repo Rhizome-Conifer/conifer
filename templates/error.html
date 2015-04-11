@@ -1,0 +1,25 @@
+{% extends "main_bootstrap.html" %}
+
+{% block head %}
+<script>
+
+    $(function() {
+        if (window.top != window) {
+            $("nav").hide();
+        }
+    });
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="alert alert-danger alert-dismissable text-center" role="alert">
+        {% if err.status_code == 404 %}
+        No such page or content is not accessible.
+        {% else %}
+        Error: {{ err.body }}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

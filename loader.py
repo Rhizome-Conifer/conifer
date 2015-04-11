@@ -178,7 +178,8 @@ class DynRecord(RewriteHandler):
     def _make_response(self, wbrequest, status_headers, gen, is_rewritten):
         if (status_headers.get_statuscode() == '500' and
             status_headers.get_header('X-Archive-Orig-x-warcprox-error') == '500'):
-            raise LiveResourceException(err, url=wbrequest.wb_url.url)
+            msg = 'This url could not be recorded: '
+            raise LiveResourceException(msg, url=wbrequest.wb_url.url)
 
         status_headers.headers.append(('Cache-Control', 'no-cache'))
 

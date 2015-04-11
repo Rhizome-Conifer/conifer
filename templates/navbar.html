@@ -7,10 +7,19 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">{{ metadata.product | default('webrecorder.io')}}</a>
+      <a class="navbar-brand" href="/">{{ metadata.product | default('webrecorder.io')}}</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
+          {% if wbrequest and wbrequest.coll %}
+          <li class="coll-nav {{ 'active' if not url else '' }}"><a href="/{{ wbrequest.coll }}" title="Return to {{wbrequest.coll}} Collection">{{ wbrequest.coll }}</a></li>
+          {% endif %}
+          
+          {% if url and is_recording %}
+          <p class="status-badge navbar-text label label-primary">Recording</p>
+          {% elif url %}
+          <p class="status-badge navbar-text label label-success">Playback</p>
+          {% endif %}
       </ul>
       {% if user %}
       <p class="navbar-text navbar-right">(<a href="/_logout" class="navbar-link">Logout</a>)</p>
