@@ -67,6 +67,7 @@ def call_pywb(coll=None, state=None, shift=1):
         request.environ['w_output_dir'] = './collections/{0}/archive'.format(coll)
         request.environ['w_sesh_id'] = coll
         request.environ['pywb.template_params']['state'] = state
+        request.environ['pywb.template_params']['coll'] = coll
 
     try:
         resp = pywb_router(request.environ)
@@ -108,9 +109,11 @@ def adduser(func):
                 sesh['message'] = ''
                 sesh.save()
 
-        request.environ['pywb.template_params'] = {'user': user,
-                                            'role': role,
-                                            'message': message}
+        params = {'user': user,
+                  'role': role,
+                  'message': message}
+
+        request.environ['pywb.template_params'] = params
 
         res = func(*args, **kwargs)
         if isinstance(res, dict):
@@ -274,7 +277,7 @@ def home_pages():
 @adduser
 def banner():
     return {'coll': request.query.get('coll'),
-            'banner': request.query.get('state')}
+            'state': request.query.get('state')}
 
 # ============================================================================
 # Collection View
@@ -317,9 +320,8 @@ def replay(coll):
 
 @route(['/:coll/cdx'])
 def cdx_dir(coll):
-    request.path_shift(1)
-    request.environ['w_output_dir'] = './collections/{0}/archive'.format(coll)
-    request.environ['w_sesh_id'] = coll
+    if not manager.can_read_coll(coll):
+        raise HTTPError(status=404, body='No Such Collection')
 
     return call_pywb(coll, 'cdx')
 
