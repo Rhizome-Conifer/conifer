@@ -1,5 +1,6 @@
 #colls_loader_cls: !!python/name:loader.AccountUserLoader
 _proxy_path: &proxyhostport localhost:9002
+redis_url: &redis_url redis://127.0.0.1:6379/1
 
 verify_ssl: false
 
@@ -21,12 +22,12 @@ collections:
 
     '':
         #index_paths: indexes/index.cdxj
-        index_paths: 'redis://127.0.0.1:6379/1'
+        index_paths: *redis_url
         server_cls: !!python/name:loader.DynCDXServer
 
         wb_handler_class: !!python/name:loader.DynWBHandler
 
-        enable_cdx_api: true
+        enable_cdx_api: 'cdx'
 
 route_class: !!python/name:loader.DynamicRoute
 
@@ -36,4 +37,6 @@ metadata:
     org: National Football Museum Web Archive
     product: NFM Web Archive
 
-framed_replay: inverse
+#framed_replay: inverse
+framed_replay: false
+#urlrewriter_class: !!python/name:loader.DynUrlRewriter

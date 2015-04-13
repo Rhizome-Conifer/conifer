@@ -1,8 +1,7 @@
 from bottle import route, request, response, post, default_app
 from bottle import redirect, run, HTTPError, HTTPResponse
-from bottle import install
+from bottle import hook
 
-from bottle_utils.flash import message_plugin
 from cork import Cork, AAAException
 
 from Cookie import SimpleCookie
@@ -29,11 +28,11 @@ logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
                     level=logging.DEBUG)
 logging.debug('')
 
-install(message_plugin)
+#install(message_plugin)
 
 application = default_app()
 
-redis_obj = StrictRedis.from_url('redis://127.0.0.1:6379/2')
+redis_obj = StrictRedis.from_url('redis://127.0.0.1:6379/1')
 
 bottle_app = application
 application, cork = init_cork(application, redis_obj)
@@ -44,10 +43,15 @@ manager = CollsManager(cork, redis_obj)
 def init_pywb(configfile='config.yaml'):
     config = load_yaml_config(configfile)
     jinja_env.globals['metadata'] = config.get('metadata', {})
-    return create_wb_router(config)
+    pywb_router = create_wb_router(config)
+    return pywb_router
+
 
 pywb_router = init_pywb()
 
+#@hook('after_request')
+#def enable_cors():
+#    response.headers['Access-Control-Allow-Origin'] = '*'
 
 def get_redir_back(skip, default='/'):
     redir_to = request.headers.get('Referer', default)
@@ -56,9 +60,16 @@ def get_redir_back(skip, default='/'):
     return redir_to
 
 
-def call_pywb(env):
+def call_pywb(coll=None, state=None, shift=1):
+
+    if coll:
+        request.path_shift(shift)
+        request.environ['w_output_dir'] = './collections/{0}/archive'.format(coll)
+        request.environ['w_sesh_id'] = coll
+        request.environ['pywb.template_params']['state'] = state
+
     try:
-        resp = pywb_router(env)
+        resp = pywb_router(request.environ)
     except WbException as wbe:
         status = int(wbe.status().split(' ', 1)[0])
         raise HTTPError(status=status, body=str(wbe))
@@ -70,11 +81,6 @@ def call_pywb(env):
                         status=resp.status_headers.statusline,
                         headers=resp.status_headers.headers)
 
-    # copy flash cookie
-    if response._cookies:
-        resp._cookies = SimpleCookie()
-        resp._cookies.load(response._cookies.output(header=''))
-
     return resp
 
 def post_get(name, default=''):
@@ -82,26 +88,48 @@ def post_get(name, default=''):
 
 def adduser(func):
     def func_wrapper(*args, **kwargs):
-        if cork.user_is_anonymous:
-            user = None
-            role = None
-        else:
-            user = cork.current_user.username
-            role = cork.current_user.role
+        sesh = request.environ.get('beaker.session')
+        user = None
+        role = None
+
+        try:
+            if not cork.user_is_anonymous:
+                user = cork.current_user.username
+                role = cork.current_user.role
+        except Exception as e:
+            print('SESH INVALID')
+            if sesh:
+                sesh.invalidate()
+
+        message = ''
+        if sesh:
+            message = sesh.get('message', '')
+            if message:
+                sesh['message'] = ''
+                sesh.save()
 
         request.environ['pywb.template_params'] = {'user': user,
                                             'role': role,
-                                            'message': request.message}
+                                            'message': message}
 
         res = func(*args, **kwargs)
         if isinstance(res, dict):
             res['user'] = user
             res['role'] = role
-            res['message'] = request.message
+            res['message'] = message
 
         return res
 
     return func_wrapper
+
+
+def flash_message(msg):
+    sesh = request.environ.get('beaker.session')
+    if sesh:
+        sesh['message'] = msg
+        sesh.save()
+    else:
+        print('No Message')
 
 
 # ============================================================================
@@ -136,8 +164,13 @@ def login_post():
 
     if cork.login(username, password):
         redir_to = get_redir_back(LOGIN_PATH, '/')
+        #sesh = request.environ.get('beaker.session')
+        #header = request.headers.get('Host')
+        #if header:
+            #header = header.split(':')[0]
+            #sesh.domain = '.' + header
     else:
-        response.flash('Invalid Login. Please Try Again')
+        flash_message('Invalid Login. Please Try Again')
         redir_to = LOGIN_PATH
 
     redirect(redir_to)
@@ -160,7 +193,7 @@ def create_coll_static():
         cork.require(role='admin')
     except AAAException:
         msg = "Sorry, You don't have enough permission to create a new collection"
-        response.flash(msg)
+        flash_message(msg)
         redirect('/')
 
     return {}
@@ -174,7 +207,7 @@ def create_coll():
     access = post_get('public', 'private')
 
     success, msg = manager.add_collection(coll_name, title, access)
-    response.flash(msg)
+    flash_message(msg)
 
     if success:
         #pywb_router = init_pywb()
@@ -206,11 +239,8 @@ def add_page():
     for item in request.forms:
         data[item] = request.forms.get(item)
 
-    data = json.dumps(data)
-
-    redis_obj.sadd('pages:' + coll, data)
+    manager.add_page(coll, data)
     return {}
-
 
 @route('/_listpages')
 def list_pages():
@@ -227,7 +257,7 @@ def list_pages():
 # ============================================================================
 @route(['/static/<:re:.*>'])
 def static():
-    return call_pywb(request.environ)
+    return call_pywb()
 
 
 @route(['/', '/index.html'])
@@ -237,44 +267,66 @@ def home_pages():
     return {'colls': manager.list_collections()}
 
 
-# pywb Replay / Record
 # ============================================================================
+# Banner
+@route('/banner')
+@jinja2_view('banner_page.html')
+@adduser
+def banner():
+    return {'coll': request.query.get('coll'),
+            'banner': request.query.get('state')}
+
+# ============================================================================
+# Collection View
 @route(['/:coll/record', '/:coll/record/'])
 def record_redir(coll):
     redirect('/' + coll)
 
 
+@route(['/:coll', '/:coll/'])
+@jinja2_view('search.html')
+@adduser
+def coll_page(coll):
+    coll_obj = manager.collections[coll]
+    if not manager.can_read_coll(coll_obj):
+        raise HTTPError(status=404, body='No Such Collection')
+
+    return {'coll': coll,
+            'title': coll_obj.get('title')}
+
+
+# pywb Replay / Record
+# ============================================================================
 @route(['/:coll/record/<:re:.*>'], method='ANY')
 @adduser
 def record(coll, *args, **kwargs):
     if not manager.can_record_coll(coll):
         raise HTTPError(status=404, body='No Such Collection')
 
-    request.path_shift(1)
-    request.environ['w_output_dir'] = './collections/{0}/archive'.format(coll)
-    request.environ['w_sesh_id'] = coll
-
-    request.environ['pywb.template_params']['is_recording'] = True
-    return call_pywb(request.environ)
+    return call_pywb(coll, 'rec')
 
 
-@route(['/:coll', '/:coll/<:re:.*>'], method='ANY')
+@route(['/:coll/<:re:.*>'], method='ANY')
 @adduser
 def replay(coll):
     if not manager.can_read_coll(coll):
         raise HTTPError(status=404, body='No Such Collection')
 
+    return call_pywb(coll, 'play')
+
+
+@route(['/:coll/cdx'])
+def cdx_dir(coll):
     request.path_shift(1)
     request.environ['w_output_dir'] = './collections/{0}/archive'.format(coll)
     request.environ['w_sesh_id'] = coll
 
-    return call_pywb(request.environ)
-
+    return call_pywb(coll, 'cdx')
 
 @route(['/<:re:.*>'], method='ANY')
 @adduser
 def fallthrough():
-    return call_pywb(request.environ)
+    return call_pywb()
 
 
 # ============================================================================

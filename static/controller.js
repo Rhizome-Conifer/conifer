@@ -9,12 +9,12 @@ set_state = function(state) {
 
     var data = {};
     data.url = curr_state.url;
-    data.ts = curr_state.timestamp;
 
-    if (window.frames[0].document.title) {
-        data.title = window.frames[0].document.title;
+    if (window.top.document.title) {
+        data.title = window.top.document.title;
     }
 
     $.post("/_addpage?coll=" + wbinfo.coll, data, function() {
     });
 };
+

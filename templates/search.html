@@ -33,7 +33,7 @@ table.dataTable td, table.dataTable th {
     }
     
     $(document).ready(function() {
-        var prefix = "/{{ wbrequest.coll }}/";
+        var prefix = "/{{ coll }}/";
         
         var render_title = function (data, type, full, meta) {
             
@@ -58,7 +58,7 @@ table.dataTable td, table.dataTable th {
         }
         
         $("#pageTable").dataTable( {
-            "ajaxSource": "/_listpages?coll={{ wbrequest.coll }}",
+            "ajaxSource": "/_listpages?coll={{ coll }}",
             "columns": [
                 { "data": "title" },
                 { "data": "ts" },
@@ -74,7 +74,7 @@ table.dataTable td, table.dataTable th {
 <script>
     function goto_record()
     {
-        var prefix = "/{{ wbrequest.coll }}/record/";
+        var prefix = "/{{ coll }}/record/";
         var url = $("#record_url").val();
         if (url != '') {
             document.location.href = prefix + url;
@@ -84,7 +84,7 @@ table.dataTable td, table.dataTable th {
 
     function goto_replay()
     {
-        var prefix = "/{{ wbrequest.coll }}/";
+        var prefix = "/{{ coll }}/";
         var url = $("#replay_url").val();
         if (url != '') {
             document.location.href = prefix + url;
@@ -96,29 +96,9 @@ table.dataTable td, table.dataTable th {
 
 
 {% block content %}
-
 <div class="page-header">
-    <h1>{{ wbrequest.user_metadata.title | default(wbrequest.coll) }}&nbsp;<small>/{{ wbrequest.coll }}</small></h1>
+    <h1>{{ title | default(coll) }}&nbsp;<small>/{{ coll }}</small></h1>
 </div>
-
-
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3 style="display: inline" class="panel-title">Archived Pages</h3>
-        <p style="display: inline; margin-left: 20px; font-style: italic">A list of pages recorded in this archive.</p>
-    </div>
-    <div class="panel-body">
-        <table id="pageTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Time Recorded</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
-
 
 {% if role == 'archivist' or role == 'admin' %}
 <div class="panel panel-default">
@@ -140,6 +120,24 @@ table.dataTable td, table.dataTable th {
     </div>
 </div>
 {% endif %}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 style="display: inline" class="panel-title">Archived Pages</h3>
+        <p style="display: inline; margin-left: 20px; font-style: italic">A list of pages recorded in this archive.</p>
+    </div>
+    <div class="panel-body">
+        <table id="pageTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Time Recorded</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
 
 <div class="panel panel-default">
     <div class="panel-heading">

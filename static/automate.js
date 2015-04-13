@@ -33,18 +33,18 @@ function get_behavior(host)
     return "default.js";
 }
 
-var listener_added = false;
+//var listener_added = false;
 var reload_time = 0;
 var auto_is_loading = false;
 
 function start_umbra()
 {
-    var frame = document.getElementById("iframe");
+    //var frame = document.getElementById("iframe");
 
-    if (!listener_added) {
-        frame.addEventListener("load", auto_start_umbra);
-        listener_added = true;
-    }
+    //if (!listener_added) {
+    //    frame.addEventListener("load", auto_start_umbra);
+    //    listener_added = true;
+    //}
 
     auto_start_umbra();
 }
@@ -53,8 +53,9 @@ function auto_start_umbra()
 {
     reload_time = Date.now();
 
-    var frame = document.getElementById("iframe");
-    var win = frame.contentWindow;
+    //var frame = document.getElementById("iframe");
+    //var win = frame.contentWindow;
+    var win = window.top;
     var doc = win.document;
 
     if (!win.umbra_loaded) {
@@ -104,13 +105,14 @@ function auto_start_umbra()
 
 function stop_umbra()
 {
-    var frame = document.getElementById("iframe");
-    var win = frame.contentWindow;
+    //var frame = document.getElementById("iframe");
+    //var win = frame.contentWindow;
+    var win = window.top;
 
-    if (listener_added) {
-        frame.removeEventListener("load", auto_start_umbra);
-        listener_added = false;
-    }
+    //if (listener_added) {
+    //    frame.removeEventListener("load", auto_start_umbra);
+    //    listener_added = false;
+    //}
 
     window.automation_wait = null;
 

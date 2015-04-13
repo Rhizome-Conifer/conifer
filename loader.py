@@ -10,11 +10,13 @@ from pywb.webapp.views import J2TemplateView
 
 from pywb.framework.wbrequestresponse import WbResponse
 from pywb.utils.wbexception import NotFoundException
+from pywb.rewrite.url_rewriter import UrlRewriter
 
 import functools
 import os
 import re
 import json
+import base64
 
 
 #=================================================================
@@ -184,6 +186,27 @@ class DynRecord(RewriteHandler):
         status_headers.headers.append(('Cache-Control', 'no-cache'))
 
         return WbResponse(status_headers, gen)
+
+
+#=================================================================
+class DynUrlRewriter(UrlRewriter):
+    def rewrite(self, url, mod=None):
+        new_url = super(DynUrlRewriter, self).rewrite(url, mod)
+        if new_url == url:
+            return new_url
+
+        parts = new_url.split('://', 1)
+        if len(parts) < 2:
+            return new_url
+
+        rand = base64.b32encode(os.urandom(5))
+        parts[1] = rand + '.' + parts[1]
+
+        #print('DYN RW 2')
+        #host = parts[2].split('.')[0]
+        #parts[1] = host + '.' + parts[1]
+        new_url = '://'.join(parts)
+        return new_url
 
 
 #=================================================================

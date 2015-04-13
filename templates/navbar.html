@@ -7,31 +7,32 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">{{ metadata.product | default('webrecorder.io')}}</a>
+            <a target="_parent" class="navbar-brand" href="/">{{ metadata.product | default('webrecorder.io')}}</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                {% if wbrequest and wbrequest.coll %}
-                <li class="coll-nav {{ 'active' if not url else '' }}">
-                    <a href="/{{ wbrequest.coll }}" title="Return to {{wbrequest.coll}} Collection">{{ wbrequest.coll }}</a>
+                {% if coll %}
+                <li style="margin-top: 12px; margin-right: 8px; font-size: 20px; font-weight: bold">/</li>
+                <li class="coll-nav {{ 'active' if not banner else '' }}">
+                    <a target="_parent" href="/{{ coll }}" title="Return to {{coll}} Collection">{{ coll }}</a>
                 </li>
                 {% endif %}
 
-                {% if url and is_recording %}
+                {% if banner == 'rec' %}
                 <p class="status-badge navbar-text label label-primary">Recording</p>
                 <p class="navbar-text">
-                    <a href="/{{ wbrequest.coll }}/{{ url }}" class="replay-page btn btn-xs btn-success navbar-link">
+                    <a target="_parent" id="replay_link" href="#" class="replay-page btn btn-xs btn-success navbar-link">
                         <span class="glyphicon glyphicon-play"></span>Replay Page
                     </a>
                 </p>
-                {% elif url %}
+                {% elif banner == 'play' %}
                 <p class="status-badge navbar-text label label-success">Playback</p>
                 {% endif %}
 
-                {% if url %}
+                {% if banner %}
                 <li style="margin-left: 40px" class="navbar-btn">
                     <span class="btn-group navbar-btn" data-toggle="buttons">
-                        <label class="btn btn-default"><span id="automate-l" >Autoscroll</span>
+                        <label class="btn btn-xs btn-default"><span id="automate-l" >Autoscroll</span>
                             <input id="automate" type="checkbox" autocomplete="off"/>
                         </label>
                     </span>
@@ -39,14 +40,13 @@
                 {% endif %}
             </ul>
         {% if user %}
-        <p class="navbar-text navbar-right">(<a href="/_logout" class="navbar-link">Logout</a>)</p>
+        <p class="navbar-text navbar-right">(<a target="_parent" href="/_logout" class="navbar-link">Logout</a>)</p>
         <p class="navbar-text navbar-right"><b style="font-size: 20px">{{ user }}</b></p>
         {% else %}
-        <p class="navbar-text navbar-right"><a href="/_login" class="btn btn-default navbar-link">Login</a></p>
+        <p class="navbar-text navbar-right"><a target="_parent" href="/_login" class="btn btn-default navbar-link">Login</a></p>
         {% endif %}
     </div>
     </div>
 </nav>
-
 
 

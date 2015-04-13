@@ -7,10 +7,12 @@ import json
 import os
 
 from pywb.manager.manager import CollectionsManager, main as manager_main
+from pywb.utils.canonicalize import calc_search_range
+
 from loader import switch_dir
 
 from pywb.warc.cdxindexer import iter_file_or_dir
-
+from pywb.cdx.cdxobject import CDXObject
 
 
 def init_cork(app, redis):
@@ -52,20 +54,20 @@ class RedisBackend(JsonBackend):
 
 
 class RedisTable(object):
-    def __init__(self, redis_obj, key):
-        self.redis_obj = redis_obj
+    def __init__(self, redis, key):
+        self.redis = redis
         self.key = key
 
     def __contains__(self, name):
-        value = self.redis_obj.hget(self.key, name)
+        value = self.redis.hget(self.key, name)
         return value is not None
 
     def __setitem__(self, name, values):
         string = json.dumps(values)
-        return self.redis_obj.hset(self.key, name, string)
+        return self.redis.hset(self.key, name, string)
 
     def __getitem__(self, name):
-        string = self.redis_obj.hget(self.key, name)
+        string = self.redis.hget(self.key, name)
         try:
             return json.loads(string)
         except:
@@ -73,7 +75,7 @@ class RedisTable(object):
             return {}
 
     def get_all(self):
-        coll_list = self.redis_obj.hgetall(self.key)
+        coll_list = self.redis.hgetall(self.key)
         colls = {}
         for n, v in coll_list.iteritems():
             colls[n] = json.loads(v)
@@ -118,7 +120,10 @@ class CollsManager(object):
 
         return success, msg
 
-    def _can_read_coll_obj(self, coll):
+    def can_read_coll(self, coll):
+        if isinstance(coll, basestring):
+            coll = self.collections[coll]
+
         if not coll:
             return False
 
@@ -135,17 +140,13 @@ class CollsManager(object):
         all_colls = self.collections.get_all()
         colls = {}
         for n, v in all_colls.iteritems():
-            if self._can_read_coll_obj(v):
+            if self.can_read_coll(v):
                 colls[n] = v
 
         return colls
 
     def has_collection(self, coll_name):
         return coll_name in self.collections
-
-    def can_read_coll(self, coll_name):
-        coll = self.collections[coll_name]
-        return self._can_read_coll_obj(coll)
 
     def can_record_coll(self, coll_name):
         coll = self.collections[coll_name]
@@ -168,10 +169,25 @@ class CollsManager(object):
 
         return warcs
 
+    def add_page(self, coll, pagedata):
+        url = pagedata['url']
 
+        try:
+            key, end_key = calc_search_range(url, 'exact')
+        except:
+            return False
 
+        result = self.redis.zrangebylex('cdxj:' + coll,
+                                        '[' + key,
+                                        '(' + end_key)
+        if not result:
+            return False
 
+        last_cdx = CDXObject(result[-1])
 
+        pagedata['ts'] = last_cdx['timestamp']
+
+        self.redis.sadd('pages:' + coll, json.dumps(pagedata))
 
 
 class UserCollsManager(object):
@@ -300,6 +316,7 @@ class InitCork(Cork):
         cork.create_user('admin', 'admin', 'admin', 'admin@test', 'The Admin')
         cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
         cork.create_user('guest', 'reader', 'test', 'ilya@ilya', 'ilya')
+        cork.create_user('ben', 'admin', 'ben', 'ilya@ilya', 'ilya')
 
 if __name__ == "__main__":
-    InitCork.init_backend(RedisBackend(StrictRedis.from_url('redis://127.0.0.1:6379/2')))
+    InitCork.init_backend(RedisBackend(StrictRedis.from_url('redis://127.0.0.1:6379/1')))

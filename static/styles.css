@@ -10,3 +10,12 @@ p.status-badge {
 .replay-page {
     color: white !important;
 }
+
+.navbar {
+    margin-bottom: 10px;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+}
+
+

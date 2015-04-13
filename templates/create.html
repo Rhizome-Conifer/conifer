@@ -10,11 +10,19 @@
 
     <div class="col-sm-6 col-md-4 col-md-offset-4">
         <form style="max-width: 260px" method="post">
-            <h4>Create a new collection</h4>
+            <h4>Create a new collection:</h4>
+            
+            <div class="input-group">
+                <span class="input-group-addon" id="addon1">/</span>
+                <label for="collection" class="sr-only">Collection Id</label>
+                <input type="text" id="collection" name="collection" class="form-control" placeholder="collection-path" aria-describedby="addon1" required autofocus>
+            </div>
+                
+            <div class="input-group">
+                <span class="input-group-addon" id="addon2">Title</span>
             <label for="collection" class="sr-only">Collection Name</label>
-            <input type="text" id="collection" name="collection" class="form-control" placeholder="Name" required autofocus>
-            <label for="collection" class="sr-only">Collection Name</label>
-            <input type="text" id="title" name="title" class="form-control" placeholder="Title">
+                <input type="text" id="title" name="title" class="form-control" placeholder="My Collection" aria-describedby="addon2">
+            </div>
             <div class="checkbox">
                 <label>
                     <input type="checkbox" name="public" value="public"> Public
