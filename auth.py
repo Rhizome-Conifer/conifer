@@ -94,9 +94,10 @@ class CollsManager(object):
     COLL_KEY = ':colls'
     PAGE_KEY = 'p:'
 
-    def __init__(self, cork, redis):
+    def __init__(self, cork, redis, root_dir='./'):
         self.cork = cork
         self.redis = redis
+        self.root_dir = root_dir
 
     def curr_user_role(self):
         try:
@@ -168,9 +169,9 @@ class CollsManager(object):
             return success, msg
 
         if user == '@def':
-            dir_ = './'
+            dir_ = self.root_dir
         else:
-            dir_ = './accounts/{0}'.format(user)
+            dir_ = os.path.join(self.root_dir, 'accounts', user)
             if not os.path.isdir(dir_):
                 os.makedirs(dir_)
 
