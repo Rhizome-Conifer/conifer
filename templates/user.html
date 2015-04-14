@@ -1,17 +1,25 @@
-<h1>{{user}} Archive</h1>
+{% extends "main_bootstrap.html" %}
 
-
-<h3>{{ message }}</h3>
-
-{% if is_owner %}
-<a href="/{{user}}/_create">Create New Collection</a>
+{% block content %}
+{% if message and message != '' %}
+<div class="alert alert-info alert-dismissable" role="alert">
+    {{ message }}
+</div>
 {% endif %}
 
-<p>
-Available Collections:
+<div class="jumbotron">
+    <h2>{{ metadata.org }} Archive</h2>
+    <p>Available Collections:</p>
+    <ul class="list-group text-center">
+        {% for name, value in colls | dictsort %}
+        <li class="list-group-item" style="font-size: 20px">
+            <a href="/{{ value.path }}">{{ value.title | default(name) }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% if owner %}
+    <p><a class="btn btn-primary btn-sm" href="/_create" role="button">Create new Collection</a></p>
+    {% endif %}
+</div>
 
-
-{% for coll in colls %}
-<li><a href="/{{user}}/{{coll}}/">{{coll}}</a></li>
-{% endfor %}
-</p>
+{% endblock %}

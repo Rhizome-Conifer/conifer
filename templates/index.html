@@ -1,25 +1,5 @@
 {% extends "main_bootstrap.html" %}
 
 {% block content %}
-{% if message and message != '' %}
-<div class="alert alert-info alert-dismissable" role="alert">
-    {{ message }}
-</div>
-{% endif %}
-
-<div class="jumbotron">
-    <h2>{{ metadata.org }} Archive</h2>
-    <p>Available Collections:</p>
-    <ul class="list-group text-center">
-        {% for name, value in colls | dictsort %}
-        <li class="list-group-item" style="font-size: 20px">
-            <a href="{{ '/' + name }}">{{ value.title | default(name) }}</a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% if role == 'admin' %}
-    <p><a class="btn btn-primary btn-sm" href="/_create" role="button">Create new Collection</a></p>
-    {% endif %}
-</div>
-
+<h1>Welcome to webrecorder.io!</h1>
 {% endblock %}

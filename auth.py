@@ -33,23 +33,16 @@ def init_cork(app, redis):
 
 
 
-class RedisBackend(JsonBackend):
+class RedisBackend(object):
     def __init__(self, redis):
         self.redis = redis
-        super(RedisBackend, self).__init__('conf')
+        self.users = RedisTable(self.redis, 'h:users')
+        self.roles = RedisTable(self.redis, 'h:roles')
+        self.pending_registrations = RedisTable(self.redis, 'h:register')
 
-    def _loadjson(self, fname, dest):
-        json_data = self.redis.get('t:' + fname)
-        if not json_data:
-            json_obj = {}
-        else:
-            json_obj = json.loads(json_data)
-        dest.clear()
-        dest.update(json_obj)
-
-    def _savejson(self, fname, obj):
-        json_data = json.dumps(obj)
-        self.redis.set('t:' + fname, json_data)
+    def save_users(self): pass
+    def save_roles(self): pass
+    def save_pending_registrations(self): pass
 
 
 
@@ -74,91 +67,190 @@ class RedisTable(object):
             print(string)
             return {}
 
-    def get_all(self):
+    def __iter__(self):
+        keys = self.redis.hkeys(self.key)
+        return iter(keys)
+
+    def iteritems(self):
         coll_list = self.redis.hgetall(self.key)
         colls = {}
         for n, v in coll_list.iteritems():
             colls[n] = json.loads(v)
 
-        return colls
+        return colls.iteritems()
+
+    def pop(self, name):
+        result = self.__getitem__(self, name)
+        if result:
+            self.redis.hdel(self.key, name)
+        return result
+
 
 class CollsManager(object):
+    WRITE_KEY = ':w'
+    READ_KEY = ':r'
+    PUBLIC = '@public'
+    GROUP = 'g:'
+    COLL_KEY = ':colls'
+    PAGE_KEY = 'p:'
+
     def __init__(self, cork, redis):
         self.cork = cork
         self.redis = redis
 
-        self.collections = RedisTable(redis, 'colls')
+    def curr_user_role(self):
+        try:
+            if self.cork.user_is_anonymous:
+                return '', ''
 
-    def add_collection(self, coll_name, title, access):
+            cu = self.cork.current_user
+            return cu.username, cu.role
+        except:
+            return '', ''
+
+    def _check_access(self, user, coll, type_):
+        curr_user, curr_role = self.curr_user_role()
+
+        # current user always has access
+        if user == curr_user:
+            return self.has_collection(user, coll)
+
+        print(user)
+        print(coll)
+        print(type_)
+        key = user + ':' + coll + type_
+
+        if not curr_user:
+            res = self.redis.hmget(key, self.PUBLIC)
+        else:
+            res = self.redis.hmget(key, self.PUBLIC, curr_user,
+                                   self.GROUP + curr_role)
+
+        return any(res)
+
+    def _add_access(self, user, coll, type_, to_user):
+        self.redis.hset(user + ':' + coll + type_, to_user, 1)
+
+    def can_read_coll(self, user, coll):
+        return self._check_access(user, coll, self.READ_KEY)
+
+    def can_write_coll(self, user, coll):
+        return self._check_access(user, coll, self.WRITE_KEY)
+
+    def can_admin_coll(self, user, coll):
+        curr_user, curr_role = self.curr_user_role()
+        return (user and user == curr_user)
+
+    def has_user(self, user):
+        return self.cork.user(user) is not None
+
+    def has_collection(self, user, coll):
+        res = self.redis.hget(user + self.COLL_KEY, coll)
+        return res is not None
+
+    def get_metadata(self, user, coll, name):
+        res = self.redis.hget(user + self.COLL_KEY, coll)
+        if not res:
+            return None
+        res = json.loads(res)
+        return res.get(name, '')
+
+    def add_collection(self, user, coll, title, access):
         success = False
+        curr_user, curr_role = self.curr_user_role()
 
-        if self.has_collection(coll_name):
-            msg = 'Collection ' + coll_name + ' already exists!'
+        if curr_user != user:
+            msg = 'Only ' + user + ' can create this collection!'
             return success, msg
 
-        self.collections[coll_name] = {'title': title,
-                                       'access': access}
-        try:
-            manager_main(['init', coll_name])
+        if self.has_collection(user, coll):
+            msg = 'Collection ' + coll + ' already exists!'
+            return success, msg
 
-            title = 'title={0}'.format(title)
-            access = 'access={0}'.format(access)
-            manager_main(['metadata', coll_name, '--set', title, access])
-            msg = 'Created Collection ' + coll_name
+        if user == '@def':
+            dir_ = './'
+        else:
+            dir_ = './accounts/{0}'.format(user)
+            if not os.path.isdir(dir_):
+                os.makedirs(dir_)
+
+        try:
+            set_title = 'title={0}'.format(title)
+            set_access = 'access={0}'.format(access)
+
+            with switch_dir(dir_):
+                manager_main(['init', coll])
+                manager_main(['metadata', coll, '--set', set_title, set_access])
+
+            msg = 'Created Collection ' + coll
             success = True
         except ValueError as e:
             msg = str(e)
 
         except OSError as e:
             if e.errno == 17:
-                msg = 'Collection ' + coll_name + ' already exists!'
+                msg = 'Collection ' + coll + ' already exists!'
             else:
                 msg = str(e)
 
         except Exception as e:
+            print(e)
             msg = 'Error creating collection.. Try Again'
+
+
+        coll_data = {'title': title}
+        self.redis.hset(user + self.COLL_KEY, coll, json.dumps(coll_data))
+
+        if access == 'public':
+            self._add_access(user, coll, self.READ_KEY, self.PUBLIC)
 
         return success, msg
 
-    def can_read_coll(self, coll):
-        if isinstance(coll, basestring):
-            coll = self.collections[coll]
-
-        if not coll:
-            return False
-
-        if coll['access'] == 'public':
-            return True
-
-        try:
-            self.cork.require(role='reader')
-            return True
-        except AAAException:
-            return False
-
-    def list_collections(self):
-        all_colls = self.collections.get_all()
+    def list_collections(self, user):
+        table = RedisTable(self.redis, user + self.COLL_KEY)
         colls = {}
-        for n, v in all_colls.iteritems():
-            if self.can_read_coll(v):
+        for n, v in table.iteritems():
+            if self.can_read_coll(user, n):
                 colls[n] = v
+                v['path'] = user + '/' + n
 
         return colls
 
-    def has_collection(self, coll_name):
-        return coll_name in self.collections
-
-    def can_record_coll(self, coll_name):
-        coll = self.collections[coll_name]
-        if not coll:
+    def add_page(self, user, coll, pagedata):
+        if not self.can_write_coll(user, coll):
+            print('Cannot Write')
             return False
+
+        url = pagedata['url']
 
         try:
-            self.cork.require(role='archivist')
-            return True
-        except AAAException:
+            key, end_key = calc_search_range(url, 'exact')
+        except:
+            print('Cannot Cannon')
             return False
 
+        result = self.redis.zrangebylex('cdxj:' + user + ':' + coll,
+                                        '[' + key,
+                                        '(' + end_key)
+        if not result:
+            print('NO CDX')
+            return False
+
+        last_cdx = CDXObject(result[-1])
+
+        pagedata['ts'] = last_cdx['timestamp']
+
+        self.redis.sadd(self.PAGE_KEY + user + ':' + coll, json.dumps(pagedata))
+
+    def list_pages(self, user, coll):
+        if not self.can_read_coll(user, coll):
+            return []
+
+        pagelist = self.redis.smembers(self.PAGE_KEY + user + ':' + coll)
+        pagelist = map(json.loads, pagelist)
+        return pagelist
+
+    # TODO:
     def list_warcs(self, coll):
         archive_dir = os.path.join('collections', coll, 'archive')
 
@@ -168,133 +260,6 @@ class CollsManager(object):
             warcs.append(filename)
 
         return warcs
-
-    def add_page(self, coll, pagedata):
-        url = pagedata['url']
-
-        try:
-            key, end_key = calc_search_range(url, 'exact')
-        except:
-            return False
-
-        result = self.redis.zrangebylex('cdxj:' + coll,
-                                        '[' + key,
-                                        '(' + end_key)
-        if not result:
-            return False
-
-        last_cdx = CDXObject(result[-1])
-
-        pagedata['ts'] = last_cdx['timestamp']
-
-        self.redis.sadd('pages:' + coll, json.dumps(pagedata))
-
-
-class UserCollsManager(object):
-    def __init__(self, cork, redis):
-        self.cork = cork
-        self.redis = redis
-
-    def _is_admin(self):
-        try:
-            self.cork.require(role='admin')
-            return True
-        except AAAException:
-            return False
-
-    def user_exists(self, user):
-        return self.cork.user(user) is not None
-
-    def is_user(self, user):
-        try:
-            self.cork.require(username=user)
-            return True
-        except AAAException:
-            return False
-
-    def list_colls(self, user):
-        colls = []
-        userinfo = self.redis.smembers('u:' + user)
-
-        if not userinfo:
-            return colls
-
-        for v in userinfo:
-            if not v.startswith('c:'):
-                continue
-
-            coll = v[2:]
-            if self.can_user_read(user, coll):
-                colls.append(coll)
-
-        return colls
-
-    def add_collection(self, user, coll, access):
-        if not self.can_user_create_coll(user, coll):
-            return False, 'Not allowed to create new collection'
-
-        path = os.path.join('users', user)
-
-        try:
-            with switch_dir(path) as _:
-                wb_manager = CollectionsManager(coll, must_exist=False)
-                wb_manager.add_collection()
-        except ValueError as e:
-            return False, str(e)
-
-        except OSError as e:
-            if e.errno == 17:
-                msg = 'Collection ' + coll + ' already exists!'
-            else:
-                msg = str(e)
-            return False, msg
-
-        except Exception as e:
-            print(e)
-            return False, 'Error creating collection.. Try Again'
-
-        # Add to user
-        self.redis.sadd('u:' + user, 'c:' + coll)
-
-        # Add to collection
-        if access:
-            access = 'public'
-        else:
-            access = 'private'
-
-        self.redis.hset('c:' + user + ':' + coll, 'access', access)
-
-        return True, 'Collection: ' + coll + ' created!'
-
-    def can_user_read(self, user, coll):
-        if not self.user_exists(user):
-            return False
-
-        access = self.redis.hget('c:' + user + ':' + coll, 'access')
-        if access is None:
-            return False
-
-        if access != 'public':
-            if not self.is_user(user):
-                return False
-
-        if not os.path.isdir(os.path.join('users', user,
-                                          'collections', coll)):
-            return False
-
-        return True
-
-    def can_user_record(self, user, coll):
-        if self.is_user(user):
-            return True
-
-        return False
-
-    def can_user_create_coll(self, user, coll):
-        if self.is_user(user) or self._is_admin():
-            return True
-
-        return False
 
 
 class InitCork(Cork):
@@ -309,14 +274,18 @@ class InitCork(Cork):
     @staticmethod
     def init_backend(backend):
         cork = InitCork(backend=backend)
-        cork.create_role('admin', 100)
         cork.create_role('archivist', 50)
-        cork.create_role('reader', 20)
-
-        cork.create_user('admin', 'admin', 'admin', 'admin@test', 'The Admin')
         cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
-        cork.create_user('guest', 'reader', 'test', 'ilya@ilya', 'ilya')
-        cork.create_user('ben', 'admin', 'ben', 'ilya@ilya', 'ilya')
+        cork.create_user('other', 'archivist', 'test', 'ilya@ilya', 'ilya')
+        cork.create_user('another', 'archivist', 'test', 'ilya@ilya', 'ilya')
+
+        #cork.create_role('admin', 100)
+        #cork.create_role('reader', 20)
+
+        #cork.create_user('admin', 'admin', 'admin', 'admin@test', 'The Admin')
+        #cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
+        #cork.create_user('guest', 'reader', 'test', 'ilya@ilya', 'ilya')
+        #cork.create_user('ben', 'admin', 'ben', 'ilya@ilya', 'ilya')
 
 if __name__ == "__main__":
     InitCork.init_backend(RedisBackend(StrictRedis.from_url('redis://127.0.0.1:6379/1')))

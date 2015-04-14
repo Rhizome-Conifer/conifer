@@ -4,6 +4,8 @@ redis_url: &redis_url redis://127.0.0.1:6379/1
 
 verify_ssl: false
 
+multiuser: true
+
 #enable_auto_colls: false
 collections_root: _na_
 
@@ -34,8 +36,10 @@ route_class: !!python/name:loader.DynamicRoute
 archive_paths: ./
 
 metadata:
-    org: National Football Museum Web Archive
-    product: NFM Web Archive
+    org: webrecorder.io
+    product: webrecorder.io
+#    org: National Football Museum Web Archive
+#    product: NFM Web Archive
 
 #framed_replay: inverse
 framed_replay: false

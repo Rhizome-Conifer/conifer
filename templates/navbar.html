@@ -11,10 +11,17 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
+                {% if user %}
+                <li style="margin-top: 12px; margin-right: 8px; font-size: 20px; font-weight: bold">/</li>
+                <li class="coll-nav {{ 'active' if not state and not coll else '' }}">
+                    <a target="_parent" href="/{{ user }}" title="Return to {{user}} Archive">{{ user }}</a>
+                </li>
+                {% endif %}                
+
                 {% if coll %}
                 <li style="margin-top: 12px; margin-right: 8px; font-size: 20px; font-weight: bold">/</li>
                 <li class="coll-nav {{ 'active' if not state else '' }}">
-                    <a target="_parent" href="/{{ coll }}" title="Return to {{coll}} Collection">{{ coll }}</a>
+                    <a target="_parent" href="/{{ path }}" title="Return to {{coll}} Collection">{{ coll }}</a>
                 </li>
                 {% endif %}
 
@@ -39,9 +46,9 @@
                 </li>
                 {% endif %}
             </ul>
-        {% if user %}
+        {% if curr_user %}
         <p class="navbar-text navbar-right">(<a target="_parent" href="/_logout" class="navbar-link">Logout</a>)</p>
-        <p class="navbar-text navbar-right"><b style="font-size: 20px">{{ user }}</b></p>
+        <p class="navbar-text navbar-right"><a target="_parent" href="/{{ curr_user }}"><b style="font-size: 20px">{{ curr_user }}</b></a></p>
         {% else %}
         <p class="navbar-text navbar-right"><a target="_parent" href="/_login" class="btn btn-default navbar-link">Login</a></p>
         {% endif %}

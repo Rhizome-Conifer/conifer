@@ -83,7 +83,7 @@ class DynCDXRedis(RedisCDXSource):
             return iter([])
 
         sesh_id = query.params['sesh_id']
-        cdx_key = 'cdxj:' + sesh_id
+        cdx_key = 'cdxj:' + sesh_id.replace('/', ':')
 
         return self.load_sorted_range(query, cdx_key)
 
@@ -158,6 +158,7 @@ class DynRecord(RewriteHandler):
             path = self.record_path
 
         sesh_id = wbrequest.custom_params.get('sesh_id', wbrequest.coll)
+        sesh_id = sesh_id.replace('/', ':')
 
         target = dict(output_dir=path,
                       sesh_id=sesh_id)
