@@ -41,6 +41,6 @@ metadata:
 #    org: National Football Museum Web Archive
 #    product: NFM Web Archive
 
-#framed_replay: inverse
-framed_replay: false
+framed_replay: inverse
+#framed_replay: false
 #urlrewriter_class: !!python/name:loader.DynUrlRewriter

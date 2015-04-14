@@ -182,13 +182,13 @@ class addcred(object):
     def __call__(self, func):
         def func_wrapper(*args, **kwargs):
             sesh = request.environ.get('beaker.session')
-            user = None
-            role = None
+            curr_user = None
+            curr_role = None
 
             try:
                 if not cork.user_is_anonymous:
-                    user = cork.current_user.username
-                    role = cork.current_user.role
+                    curr_user = cork.current_user.username
+                    curr_role = cork.current_user.role
             except Exception as e:
                 print(e)
                 print('SESH INVALID')
@@ -202,8 +202,8 @@ class addcred(object):
                     sesh['message'] = ''
                     sesh.save()
 
-            params = {'curr_user': user,
-                      'curr_role': role,
+            params = {'curr_user': curr_user,
+                      'curr_role': curr_role,
                       'message': message}
 
             request.environ['pywb.template_params'] = params
@@ -214,8 +214,8 @@ class addcred(object):
                 res = func(*args, **kwargs)
 
             if isinstance(res, dict):
-                res['curr_user'] = user
-                res['curr_role'] = role
+                res['curr_user'] = curr_user
+                res['curr_role'] = curr_role
                 res['message'] = message
 
             return res

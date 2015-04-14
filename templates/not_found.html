@@ -6,7 +6,7 @@
         <h2>Url Not Found in this Collection</h2>
         <p>The url <b>{{ url }}</b> could not be found in this collection.</p>
 
-        {% if role == 'archivist' or role == 'admin' %}
+        {% if curr_user == user %}
         <p>Would you like to <a href="/{{wbrequest.coll}}/record/mp_/{{url}}">record it now?</a></p>
         {% endif %}
     </div>
