@@ -55,6 +55,7 @@ class TestWebRecorder:
 
     def test_user(self):
         resp = self.testapp.get('/userfoo')
+        assert 'userfoo Archive' in resp.body
         assert 'Create new Collection' not in resp.body
 
     def test_login(self):
@@ -80,7 +81,6 @@ class TestWebRecorder:
         resp = self.testapp.get('/userfoo')
         assert 'Test Collection' not in resp.body
         assert 'Create new Collection' in resp.body
-
 
     def test_li_create(self):
         resp = self.testapp.get('/_create')

@@ -17,4 +17,3 @@ set_state = function(state) {
     $.post("/_addpage?coll=" + wbinfo.coll, data, function() {
     });
 };
-

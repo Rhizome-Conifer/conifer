@@ -1,17 +1,6 @@
 {% extends "main_bootstrap.html" %}
 {% block head %}
-<script src='/static/__shared/automate.js'> </script>
-<script>
-$(function() {
-    var replay_url;
-    if (window.parent.wbinfo && window.parent.wbinfo.replay_url) {
-        replay_url = window.parent.wbinfo.replay_url;
-    }
-    if (!replay_url) {
-        replay_url = window.parent.location.href.replace("/record/", "/");
-    }
-    $("#replay_link").attr("href", replay_url);
-});
-</script>
+{{ super() }}
+    <script src='/static/__shared/automate.js'> </script>
 {% endblock %}
 

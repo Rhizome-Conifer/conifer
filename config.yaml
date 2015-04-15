@@ -17,7 +17,7 @@ collections:
 
         proxyhostport: *proxyhostport
 
-        cookie_scope: root
+        cookie_scope: default
         rewrite_opts:
             rewrite_base: true
             rewrite_rel_canon: false
@@ -28,6 +28,8 @@ collections:
         server_cls: !!python/name:loader.DynCDXServer
 
         wb_handler_class: !!python/name:loader.DynWBHandler
+
+        cookie_scope: removeall
 
         enable_cdx_api: 'cdx'
 
@@ -41,6 +43,6 @@ metadata:
 #    org: National Football Museum Web Archive
 #    product: NFM Web Archive
 
-framed_replay: inverse
-#framed_replay: false
+#framed_replay: inverse
+framed_replay: false
 #urlrewriter_class: !!python/name:loader.DynUrlRewriter

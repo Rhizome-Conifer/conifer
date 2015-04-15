@@ -8,15 +8,17 @@ var __wfa_banner_init = function(banner_id)
 .__wb_banner {\
     position: fixed !important;\
     width: 100% !important;\
-    height: 72px !important;\
+    height: 62px !important;\
     top: 0px !important;\
     left: 0px !important;\
     z-index: 2147483643 !important;\
 }\
 \
 html {\
-    margin-top: 72px !important;\
+    margin-top: 62px !important;\
 }";
+    
+    
     var banner = document.createElement("iframe");
     banner.setAttribute("id", banner_id);
     banner.setAttribute("seamless", "seamless");

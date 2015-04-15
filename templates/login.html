@@ -9,10 +9,10 @@
     {% endif %}
 
     <div class="col-sm-6 col-md-4 col-md-offset-4">
-        <form style="max-width: 260px" method="post">
-            {% if user %}
-            <h4>Already logged in as <b>{{ user }}</b></h4>
-            <h4>Do you want to <a href="/logout">logout</a>?</h4>
+        <form style="max-width: 260px;" method="post">
+            {% if curr_user %}
+            <h4 style="font-weight: normal">Already logged in as <b>{{ curr_user }}</b></h4>
+            <h4 style="font-weight: normal">Do you want to <a href="/_logout">logout</a>?</h4>
             {% else %}
             <h4>Please log-in to continue:</h4>
             <label for="inputEmail" class="sr-only">Username</label>
