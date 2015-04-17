@@ -26,13 +26,6 @@
                 {% if state == 'rec' %}
                 <p class="status-badge navbar-text label label-primary">Recording</p>
                 
-                {# remove replay btn
-                <p class="navbar-text">
-                    <a target="_parent" id="replay_link" href="#" class="replay-page btn btn-xs btn-success navbar-link">
-                        <span class="glyphicon glyphicon-play"></span>Replay Page
-                    </a>
-                </p>
-                #}
                 {% elif state == 'play' %}
                 <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
                 {% endif %}
@@ -50,11 +43,13 @@
             {% if curr_user %}
             <p class="navbar-text navbar-right">(<a target="_parent" href="/_logout" class="navbar-link">Logout</a>)</p>
             <p class="navbar-text navbar-right userinfo">
-                <a target="_parent" href="/{{ curr_user }}"><b>{{ curr_user }}</b></a>
                 <a target="_parent" href="/{{ curr_user }}"><span class="glyphicon glyphicon-user"></span></a>
+                <a target="_parent" href="/{{ curr_user }}"><b>{{ curr_user }}</b></a>
             </p>
             {% else %}
-            <p class="navbar-text navbar-right"><a target="_parent" href="/_login" class="btn btn-default navbar-link">Login</a></p>
+            <p class="navbar-text navbar-right">
+                <a id="login" target="_parent" href="/_login" class="btn btn-default btn-sm navbar-link">Login</a>
+            </p>
             {% endif %}
             
             {% if coll %}
@@ -64,11 +59,13 @@
                     <input id="theurl" type="text" placeholder="Enter url here to record or play back" class="input-small form-control">
                     
                     <span class="input-group-btn">
-                        <button class="btn btn-success btn-xs" id="play" data-path-prefix="/{{path}}/" type="submit">
-                            <span class="glyphicon glyphicon-play"></span><span></span>
-                        </button>
+                        {% if can_write() %}
                         <button class="btn btn-primary btn-xs" id="rec" data-path-prefix="/{{path}}/record/" type="submit">
                             <span class="glyphicon glyphicon-dot"></span><span></span>
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-success btn-xs" id="play" data-path-prefix="/{{path}}/" type="submit">
+                            <span class="glyphicon glyphicon-play"></span><span></span>
                         </button>
                     </span>
                 </div>

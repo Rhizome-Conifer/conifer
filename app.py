@@ -16,13 +16,14 @@ from pywb.utils.wbexception import WbException
 
 from auth import init_cork, CollsManager
 
-from loader import jinja_env, jinja2_view
+from loader import jinja_env, jinja2_view, DynRedisResolver
+from jinja2 import contextfunction
+
 import json
 
 import os
 
 import logging
-
 
 
 # ============================================================================
@@ -42,6 +43,14 @@ RouteInfo = namedtuple('RouteInfo', 'path, user, coll, shift, store_path')
 class MultiUserRouter(object):
     COLL = '/:user/:coll'
     USER = '/:user'
+
+    @staticmethod
+    def get_user_account_root(user):
+        return os.path.join(root_dir, 'accounts', user)
+
+    @staticmethod
+    def get_archive_dir(user, coll):
+        return os.path.join(root_dir, 'accounts', user, 'collections', coll, 'archive')
 
     @staticmethod
     def user_home(user):
@@ -95,6 +104,11 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
                         level=logging.DEBUG)
     logging.debug('')
 
+    # set boto log to error
+    boto_log = logging.getLogger('boto')
+    if boto_log:
+        boto_log.setLevel(logging.ERROR)
+
     bottle_app = default_app()
 
     config = load_yaml_config(configfile)
@@ -120,9 +134,34 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     application, cork = init_cork(bottle_app, redis_obj)
 
     global manager
-    manager = CollsManager(cork, redis_obj, store_root)
+    manager = CollsManager(cork, redis_obj, router)
 
     jinja_env.globals['metadata'] = config.get('metadata', {})
+
+
+    @contextfunction
+    def can_admin(context):
+        return manager.can_admin_coll(context['user'], context['coll'])
+
+    @contextfunction
+    def is_owner(context):
+        return manager.is_owner(context['user'])
+
+    @contextfunction
+    def can_write(context):
+        return manager.can_write_coll(context['user'], context['coll'])
+
+    @contextfunction
+    def can_read(context):
+        return manager.can_read_coll(context['user'], context['coll'])
+
+    jinja_env.globals['can_admin'] = can_admin
+    jinja_env.globals['can_write'] = can_write
+    jinja_env.globals['can_read'] = can_read
+    jinja_env.globals['is_owner'] = is_owner
+
+
+    config['redis_warc_resolver'] = DynRedisResolver(redis_obj)
 
     global pywb_router
     pywb_router = create_wb_router(config)
@@ -312,15 +351,12 @@ def create_coll_routes(r):
 
     # WARC Files
     # ============================================================================
-    #@route(COLL + '/_files')
-    #@jinja2_view('listwarcs.html')
-    #@addcred(usershift=True)
-    #def listwarcs(coll):
-    #    cork.require(role='admin', fail_redirect=LOGIN_PATH)
-
-    #    warcs = manager.list_warcs(coll)
-
-    #    return {'warcs': warcs}
+    @route('/_files')
+    def listwarcs():
+        user = request.query.get('user', '')
+        coll = request.query.get('coll', '')
+        warcs = manager.list_warcs(user, coll)
+        return {'warcs': warcs}
 
 
     # ============================================================================
@@ -361,18 +397,14 @@ def create_coll_routes(r):
             if not manager.has_user(user):
                 raise HTTPError(status=404, body='No Such Archive')
 
-            curr_user, _ = manager.curr_user_role()
-            owner = (user == curr_user)
             path = user
         else:
             user = 'default'
-            owner = True
             path = '/'
 
         return {'path': path,
                 'user': user,
-                'colls': manager.list_collections(user),
-                'owner': owner}
+                'colls': manager.list_collections(user)}
 
 
     # ============================================================================
@@ -388,8 +420,8 @@ def create_coll_routes(r):
                 'coll': info.coll,
                 'path': info.path,
 
-                'owner': manager.can_admin_coll(info.user, info.coll),
-                'write': manager.can_write_coll(info.user, info.coll),
+                'is_public': manager.is_public(info.user, info.coll),
+
                 'title': manager.get_metadata(info.user, info.coll, 'title')
                }
 
@@ -408,7 +440,6 @@ def create_coll_routes(r):
         data = {}
         for item in request.forms:
             data[item] = request.forms.get(item)
-
 
         manager.add_page(user, coll, data)
         return {}

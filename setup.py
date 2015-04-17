@@ -38,7 +38,7 @@ setup(
     url='https://beta.webrecorder.io',
     author='Ilya Kreymer',
     author_email='ikreymer@gmail.com',
-    description='Webrecorder Archiving Platform'
+    description='Webrecorder Archiving Platform',
     long_description=long_description,
     packages=find_packages(),
     zip_safe=True,

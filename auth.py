@@ -14,7 +14,6 @@ from loader import switch_dir
 from pywb.warc.cdxindexer import iter_file_or_dir
 from pywb.cdx.cdxobject import CDXObject
 
-
 def init_cork(app, redis):
     cork = Cork(backend=RedisBackend(redis))
 
@@ -94,10 +93,10 @@ class CollsManager(object):
     COLL_KEY = ':colls'
     PAGE_KEY = 'p:'
 
-    def __init__(self, cork, redis, root_dir='./'):
+    def __init__(self, cork, redis, path_router):
         self.cork = cork
         self.redis = redis
-        self.root_dir = root_dir
+        self.path_router = path_router
 
     def curr_user_role(self):
         try:
@@ -112,13 +111,10 @@ class CollsManager(object):
     def _check_access(self, user, coll, type_):
         curr_user, curr_role = self.curr_user_role()
 
-        # current user always has access
+        # current user always has access, if collection exists
         if user == curr_user:
             return self.has_collection(user, coll)
 
-        print(user)
-        print(coll)
-        print(type_)
         key = user + ':' + coll + type_
 
         if not curr_user:
@@ -132,13 +128,23 @@ class CollsManager(object):
     def _add_access(self, user, coll, type_, to_user):
         self.redis.hset(user + ':' + coll + type_, to_user, 1)
 
+    def is_public(self, user, coll):
+        key = user + ':' + coll + self.READ_KEY
+        res = self.redis.hget(key, self.PUBLIC)
+        return res == '1'
+
     def can_read_coll(self, user, coll):
         return self._check_access(user, coll, self.READ_KEY)
 
     def can_write_coll(self, user, coll):
         return self._check_access(user, coll, self.WRITE_KEY)
 
+    # for now, equivalent to is_owner(), but a different
+    # permission, and may change
     def can_admin_coll(self, user, coll):
+        return self.is_owner(user)
+
+    def is_owner(self, user):
         curr_user, curr_role = self.curr_user_role()
         return (user and user == curr_user)
 
@@ -168,12 +174,9 @@ class CollsManager(object):
             msg = 'Collection ' + coll + ' already exists!'
             return success, msg
 
-        if user == '@def':
-            dir_ = self.root_dir
-        else:
-            dir_ = os.path.join(self.root_dir, 'accounts', user)
-            if not os.path.isdir(dir_):
-                os.makedirs(dir_)
+        dir_ = self.path_router.get_user_account_root(user)
+        if not os.path.isdir(dir_):
+            os.makedirs(dir_)
 
         try:
             set_title = 'title={0}'.format(title)
@@ -251,14 +254,20 @@ class CollsManager(object):
         pagelist = map(json.loads, pagelist)
         return pagelist
 
-    # TODO:
-    def list_warcs(self, coll):
-        archive_dir = os.path.join('collections', coll, 'archive')
+    def list_warcs(self, user, coll):
+        if not self.can_admin_coll(user, coll):
+            return []
+
+        archive_dir = self.path_router.get_archive_dir(user, coll)
 
         warcs = []
 
         for fullpath, filename in iter_file_or_dir([archive_dir]):
-            warcs.append(filename)
+            stats = os.stat(fullpath)
+            res = {'size': stats.st_size,
+                   'mtime': stats.st_mtime,
+                   'name': filename}
+            warcs.append(res)
 
         return warcs
 

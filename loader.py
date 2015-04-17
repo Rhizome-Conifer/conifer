@@ -115,9 +115,42 @@ class DynCDXFile(CDXFile):
 
 
 #=================================================================
+class DynRedisResolver(object):
+    def __init__(self, redis, key_prefix='w:'):
+        self.redis = redis
+        self.key_prefix = key_prefix
+
+    def __call__(self, filename):
+        sesh_id, warc_key = self._split_sesh_warc(filename)
+        redis_val = self.redis.hget(sesh_id, warc_key)
+        print(sesh_id)
+        print(warc_key)
+
+        return [redis_val] if redis_val else []
+
+    def add_filename(self, filename, remote_url):
+        sesh_id, warc_key = self._split_sesh_warc(filename)
+        redis_val = self.redis.hset(sesh_id, warc_key, remote_url)
+
+    def _split_sesh_warc(self, filename):
+        #TODO: pass sesh_id here...
+        parts = filename.rsplit('/')
+        return 'warcs:' + parts[-5] + ':' + parts[-3], parts[-1]
+
+    def __repr__(self):
+        return "DynRedisResolver('{0}')".format(self.redis)
+
+
+#=================================================================
 class DynWBHandler(WBHandler):
-    #def _init_replay_view(self, config):
-    #    return super(DynWBHandler, self)._init_replay_view(config)
+    def _init_replay_view(self, config):
+        replay = super(DynWBHandler, self)._init_replay_view(config)
+
+        redis_warc_resolver = config.get('redis_warc_resolver')
+        if redis_warc_resolver:
+            replay.content_loader.path_resolvers.append(redis_warc_resolver)
+
+        return replay
 
     def handle_replay(self, wbrequest, cdx_lines):
         path = wbrequest.custom_params['output_dir']

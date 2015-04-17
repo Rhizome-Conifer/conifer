@@ -17,7 +17,7 @@
         </li>
         {% endfor %}
     </ul>
-    {% if owner %}
+    {% if is_owner() %}
     <p><a class="btn btn-primary btn-sm" href="/_create" role="button">Create new Collection</a></p>
     {% endif %}
 </div>
