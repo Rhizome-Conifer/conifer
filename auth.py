@@ -216,7 +216,7 @@ class CollsManager(object):
         for n, v in table.iteritems():
             if self.can_read_coll(user, n):
                 colls[n] = v
-                v['path'] = user + '/' + n
+                v['path'] = self.path_router.get_coll_path(user, n)
 
         return colls
 

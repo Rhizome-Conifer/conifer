@@ -68,10 +68,12 @@
     }
 
     var pagesTable = undefined;
+    var warcsTable = undefined;
 
     $(function() {
         $('a[data-toggle="tab"][href="#pages"]').on('show.bs.tab', show_pages);
-
+        $('a[data-toggle="tab"][href="#files"]').on('show.bs.tab', show_warcs);
+        
         // Tab Nav
         $('#thetab a').click(function (e) {
             e.preventDefault();
@@ -90,14 +92,13 @@
 
     function show_pages() {
         if (pagesTable) {
-            pagesTable.ajax.reload( null, false );
+            //pagesTable.ajax.reload( null, false );
             return;
         }
 
         var prefix = "/{{ path }}/";
 
         var render_title = function (data, type, full, meta) {
-
             var url = prefix;
             if (full['ts']) {
                 url += full['ts'] + "/";
@@ -133,6 +134,26 @@
 
         // Select
         $("#pageTable_length select").selectBoxIt({native: true});
+    }
+    
+    function show_warcs() {
+        if (warcsTable) {
+            return;
+        }
+        
+        warcsTable = $("#warcsTable").DataTable( {
+            "ajaxSource": "/_files?user={{ user }}&coll={{ coll }}",
+            "order": [[ 1, "desc" ]],
+            "columns": [
+                { "data": "name" },
+                { "data": "mtime" },
+                { "data": "size" },
+            ],
+            //"columnDefs": [ {
+            //    "targets": [0, 1],
+            //    "render": render_title,
+            //}],
+        });
     }
 </script>
 {% endblock %}
@@ -197,7 +218,17 @@
             </table>
         </div>
         <div role="tabpanel" class="tab-pane" id="search">Search</div>
-        <div role="tabpanel" class="tab-pane" id="files">Files</div>
+        <div role="tabpanel" class="tab-pane" id="files">
+            <table id="warcsTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Modified</th>
+                        <th>Size</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
         <div role="tabpanel" class="tab-pane" id="files">Storage</div>
     </div>
 </div>

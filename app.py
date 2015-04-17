@@ -19,9 +19,8 @@ from auth import init_cork, CollsManager
 from loader import jinja_env, jinja2_view, DynRedisResolver
 from jinja2 import contextfunction
 
-import json
+from router import SingleUserRouter, MultiUserRouter
 
-import os
 
 import logging
 
@@ -33,70 +32,6 @@ cork = None
 manager = None
 redis_obj = None
 pywb_router = None
-
-root_dir = './'
-
-from collections import namedtuple
-
-RouteInfo = namedtuple('RouteInfo', 'path, user, coll, shift, store_path')
-
-class MultiUserRouter(object):
-    COLL = '/:user/:coll'
-    USER = '/:user'
-
-    @staticmethod
-    def get_user_account_root(user):
-        return os.path.join(root_dir, 'accounts', user)
-
-    @staticmethod
-    def get_archive_dir(user, coll):
-        return os.path.join(root_dir, 'accounts', user, 'collections', coll, 'archive')
-
-    @staticmethod
-    def user_home(user):
-        return '/' + user
-
-    @staticmethod
-    def get_user_coll(collpath):
-        user, coll = collpath.split('/', 1)
-        return user, coll
-
-    @staticmethod
-    def get_state(kwargs):
-        user = kwargs.get('user', '')
-        coll = kwargs.get('coll', '')
-
-        info = RouteInfo(user + '/' + coll,
-                         user,
-                         coll,
-                         2, root_dir + 'accounts/{0}/collections/{1}/archive'.format(user, coll))
-
-        return info
-
-
-class SingleUserRouter(object):
-    COLL = '/:coll'
-    USER = '/'
-
-    @staticmethod
-    def user_home(user):
-        return '/'
-
-    @staticmethod
-    def get_user_coll(collpath):
-        return 'default', collpath
-
-    @staticmethod
-    def get_state(kwargs):
-        coll = kwargs.get('coll', '')
-
-        info = RouteInfo(coll,
-                        'default',
-                         coll,
-                         1, root_dir + 'collections/{0}/archive'.format(coll))
-
-        return info
-
 
 
 def init(configfile='config.yaml', store_root='./', redis_url=None):
@@ -113,15 +48,14 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
 
     config = load_yaml_config(configfile)
 
-    global root_dir
-    root_dir = store_root
-
     global multiuser
     multiuser = config.get('multiuser', False)
+
+    global router
     if multiuser:
-        router = MultiUserRouter()
+        router = MultiUserRouter(store_root)
     else:
-        router = SingleUserRouter()
+        router = SingleUserRouter(store_root)
 
     global redis_obj
     if not redis_url:
@@ -200,8 +134,8 @@ def flash_message(msg):
 
 def call_pywb(info=None, state=None):
     if info:
-        request.path_shift(info.shift)
-        request.environ['w_output_dir'] = info.store_path
+        request.path_shift(router.get_path_shift())
+        request.environ['w_output_dir'] = router.get_archive_dir(info.user, info.coll)
         request.environ['w_sesh_id'] = info.path
         request.environ['pywb.template_params']['state'] = state
         request.environ['pywb.template_params']['coll'] = info.path
@@ -356,7 +290,7 @@ def create_coll_routes(r):
         user = request.query.get('user', '')
         coll = request.query.get('coll', '')
         warcs = manager.list_warcs(user, coll)
-        return {'warcs': warcs}
+        return {'data': warcs}
 
 
     # ============================================================================
