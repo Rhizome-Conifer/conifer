@@ -64,4 +64,8 @@ p.status-badge {
     line-height: 0.3em;
 }
 
+#login {
+    display: inline;
+}
+
 
