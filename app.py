@@ -14,7 +14,7 @@ from pywb.utils.loaders import load_yaml_config
 from pywb.webapp.views import J2TemplateView
 from pywb.utils.wbexception import WbException
 
-from auth import init_cork, CollsManager
+from auth import init_cork, CollsManager, ValidationException
 
 from loader import jinja_env, jinja2_view, DynRedisResolver
 from jinja2 import contextfunction
@@ -123,10 +123,11 @@ def post_get(name, default=''):
     return request.POST.get(name, default).strip()
 
 
-def flash_message(msg):
+def flash_message(msg, msg_type='danger'):
+    print(msg_type, msg)
     sesh = request.environ.get('beaker.session')
     if sesh:
-        sesh['message'] = msg
+        sesh['message'] = msg_type + ':' + msg
         sesh.save()
     else:
         print('No Message')
@@ -177,15 +178,21 @@ class addcred(object):
                     sesh.invalidate()
 
             message = ''
+            msg_type = ''
             if sesh:
                 message = sesh.get('message', '')
                 if message:
                     sesh['message'] = ''
                     sesh.save()
 
+                if ':' in message:
+                    msg_type, message = message.split(':', 1)
+                    print('MSG_TYPE', msg_type)
+
             params = {'curr_user': curr_user,
                       'curr_role': curr_role,
-                      'message': message}
+                      'message': message,
+                      'msg_type': msg_type}
 
             request.environ['pywb.template_params'] = params
 
@@ -198,6 +205,7 @@ class addcred(object):
                 res['curr_user'] = curr_user
                 res['curr_role'] = curr_role
                 res['message'] = message
+                res['msg_type'] = msg_type
 
             return res
 
@@ -208,6 +216,15 @@ class addcred(object):
 LOGIN_PATH = '/_login'
 LOGOUT_PATH = '/_logout'
 CREATE_PATH = '/_create'
+
+REGISTER_PATH = '/_register'
+VAL_REG_PATH = '/_valreg/:reg'
+
+FORGOT_PATH = '/_forgot'
+
+RESET_POST = '/_resetpassword'
+RESET_PATH = '/_resetpassword/:resetcode'
+RESET_PATH_FILL = '/_resetpassword/{0}?username={1}'
 
 
 # ============================================================================
@@ -248,6 +265,165 @@ def create_coll_routes(r):
         #redir_to = get_redir_back(LOGOUT_PATH, '/')
         redir_to = '/'
         cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
+
+
+    # Register/Confirm
+    # ============================================================================
+    @route(REGISTER_PATH)
+    @jinja2_view('register.html')
+    @addcred()
+    def register():
+        return {}
+
+
+    @jinja2_view('emailconfirm.html')
+    def email_template(*args, **kwargs):
+        print(args)
+        kwargs['hostname'] = args[0]
+        print(kwargs)
+        return kwargs
+
+    #import bottle
+    #bottle.template = email_template
+
+    @post(REGISTER_PATH)
+    def register_post():
+        email = post_get('email')
+        username = post_get('username')
+        password = post_get('password')
+        confirm_password = post_get('confirmpassword')
+
+        redir_to = REGISTER_PATH
+
+        try:
+            manager.validate_user(username, email)
+            manager.validate_password(password, confirm_password)
+
+            #TODO: set default host?
+            host = 'http://' + request.headers.get('Host', 'localhost')
+
+            cork.register(username, password, email, role='archivist',
+                          subject='webrecorder.io Account Creation',
+                          email_template='templates/emailconfirm.html')
+
+            msg = ('A confirmation e-mail has been sent to {0}'.format(email) +
+                   'Please check your e-mail to complete the registration')
+
+            redir_to = '/'
+
+        except ValidationException as ve:
+            msg = str(ve)
+
+        except Exception as ex:
+            print(ex)
+            msg = 'Registration failed. Please try again'
+
+        flash_message(msg)
+        redirect(redir_to)
+
+
+    # Validate Registration
+    @route(VAL_REG_PATH)
+    def val_reg(reg):
+        try:
+            user = request.query['user']
+            #reg = request.query['reg']
+
+            cork.validate_registration(reg)
+
+            flash_message('<b>{0}</b>, welcome to your new archive page! '.format(user) +
+                          'Please login to create a new collection and begin archiving.')
+
+        except Exception as e:
+            print(e)
+            flash_message('Sorry, this is not a valid registration code. Please try again')
+
+        redirect('/' + user)
+
+
+    # Forgot Password
+    # ============================================================================
+    @route(FORGOT_PATH)
+    @jinja2_view('forgot.html')
+    @addcred()
+    def forgot():
+        return {}
+
+
+    @post(FORGOT_PATH)
+    def forgot_submit():
+        email = post_get('email')
+        username = post_get('username')
+        if not email:
+            email = None
+        if not username:
+            username = None
+
+        try:
+            cork.send_password_reset_email(username=username,
+                                      email_addr=email,
+                                      subject='webrecorder.io password reset confirmation',
+                                      email_template='templates/emailreset.html')
+
+            flash_message('A password reset e-mail has been sent to your e-mail!',
+                          'success')
+
+            redir_to = '/'
+        except Exception as e:
+            flash_message(str(e))
+            redir_to = FORGOT_PATH
+
+        redirect(redir_to)
+
+
+    # Reset Password
+    # ============================================================================
+    @route(RESET_PATH)
+    @jinja2_view('reset.html')
+    @addcred()
+    def resetpass(resetcode):
+        try:
+            username = request.query['username']
+            result = {'username': username,
+                      'resetcode': resetcode}
+
+        except Exception as e:
+            print(e)
+            flash_message('Invalid password reset attempt. Please try again')
+            redirect(FORGOT_PATH)
+
+        print(result)
+        return result
+
+
+    @post(RESET_POST)
+    def do_reset():
+        username = post_get('username')
+        resetcode = post_get('resetcode')
+        password = post_get('password')
+        confirm_password = post_get('confirmpassword')
+
+        try:
+            manager.validate_password(password, confirm_password)
+
+            print(password, resetcode)
+            cork.reset_password(resetcode, password)
+
+            flash_message('Your password has been successfully reset! Please login with your new password',
+                          'success')
+
+            redir_to = LOGIN_PATH
+
+        except ValidationException as ve:
+            flash_message(str(ve))
+            redir_to = RESET_PATH_FILL.format(resetcode, username)
+
+        except Exception as e:
+            raise
+            flash_message('Invalid password reset attempt. Please try again')
+            redir_to = FORGOT_PATH
+
+        redirect(redir_to)
 
 
     # Create Coll

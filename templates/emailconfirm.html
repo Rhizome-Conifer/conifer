@@ -1,0 +1,18 @@
+<p>Hello {{username}}</p>
+
+<p>You are receiving this email because you registered for an account at <b>webrecorder.io</b>
+on {{creation_date}}</p>
+
+<p>Since your username is <b>{{username}}</b>, your collections will be located at
+<a href="https://webrecorder.io/{{username}}"><b>/{{username}}</a> once you complete this registration.</p>
+
+<p>To complete this registration, please click:</p>
+<p><b><a href="{{ hostname }}/_valreg/{{registration_code}}?user={{username}}">Confirm</a></b></p>
+
+<p>If the above link is not working, point your browser to the following url: {{ hostname }}/_valreg/{{registration_code}}?user={{username}}
+</p>
+
+<p>Happy Recording!</p>
+
+<h4>--webrecorder.io project</h4>
+

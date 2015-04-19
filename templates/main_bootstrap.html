@@ -2,12 +2,21 @@
 
 {% block head %}
 <script src="/static/__shared/nav.js"></script>
+<script src="/static/__shared/external/validator.js"></script>
 {% endblock %}
 
 {% block body %}
 {% include 'navbar.html' %}
 
 <div class="container">
+{% block message %}
+{% if message and message != '' %}
+<div class="alert alert-{{ msg_type | default('danger') }} alert-dismissable" role="alert">
+    {{ message }}
+</div>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 {% endblock %}
 </div>

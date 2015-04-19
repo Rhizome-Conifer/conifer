@@ -1,4 +1,6 @@
 from app import init
+from bottle import run
+
 
 # ============================================================================
 application = init()

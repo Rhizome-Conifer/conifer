@@ -5,6 +5,7 @@ from redis import StrictRedis
 
 import json
 import os
+import re
 
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
@@ -15,7 +16,9 @@ from pywb.warc.cdxindexer import iter_file_or_dir
 from pywb.cdx.cdxobject import CDXObject
 
 def init_cork(app, redis):
-    cork = Cork(backend=RedisBackend(redis))
+    cork = Cork(backend=RedisBackend(redis),
+                email_sender=redacted,
+                smtp_url=redacted)
 
     session_opts = {
         'session.cookie_expires': True,
@@ -31,6 +34,9 @@ def init_cork(app, redis):
     return app, cork
 
 
+class ValidationException(Exception):
+    pass
+
 
 class RedisBackend(object):
     def __init__(self, redis):
@@ -43,6 +49,24 @@ class RedisBackend(object):
     def save_roles(self): pass
     def save_pending_registrations(self): pass
 
+
+
+
+class RedisHashTable(object):
+    def __init__(self, redistable, key, thedict):
+        self.redistable = redistable
+        self.key = key
+        self.thedict = thedict
+
+    def __getitem__(self, name):
+        return self.thedict[name]
+
+    def __setitem__(self, name, value):
+        self.thedict[name] = value
+        self.redistable[self.key] = self.thedict
+
+    def get(self, name, default_val):
+        return self.thedict.get(name, default_val)
 
 
 class RedisTable(object):
@@ -61,7 +85,7 @@ class RedisTable(object):
     def __getitem__(self, name):
         string = self.redis.hget(self.key, name)
         try:
-            return json.loads(string)
+            return RedisHashTable(self, name, json.loads(string))
         except:
             print(string)
             return {}
@@ -79,7 +103,7 @@ class RedisTable(object):
         return colls.iteritems()
 
     def pop(self, name):
-        result = self.__getitem__(self, name)
+        result = self[name]
         if result:
             self.redis.hdel(self.key, name)
         return result
@@ -92,6 +116,10 @@ class CollsManager(object):
     GROUP = 'g:'
     COLL_KEY = ':colls'
     PAGE_KEY = 'p:'
+
+    USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,15}$')
+    RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'guest']
+    PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
     def __init__(self, cork, redis, path_router):
         self.cork = cork
@@ -154,6 +182,29 @@ class CollsManager(object):
     def has_collection(self, user, coll):
         res = self.redis.hget(user + self.COLL_KEY, coll)
         return res is not None
+
+    def validate_user(self, user, email):
+        if self.has_user(user):
+            msg = 'User {0} already exists! Please choose a different username'
+            msg = msg.format(user)
+            raise ValidationException(msg)
+
+        if not self.USER_RX.match(user) or user in self.RESTRICTED_NAMES:
+            msg = 'The name {0} is not a valid username. Please choose a different username'
+            msg = msg.format(user)
+            raise ValidationException(msg)
+
+        #TODO: check email?
+        return True
+
+    def validate_password(self, password, confirm):
+        if password != confirm:
+            raise ValidationException('Passwords do not match!')
+
+        if not self.PASS_RX.match(password):
+            raise ValidationException('Please choose a different password')
+
+        return True
 
     def get_metadata(self, user, coll, name):
         res = self.redis.hget(user + self.COLL_KEY, coll)
