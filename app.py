@@ -120,8 +120,10 @@ def get_redir_back(skip, default='/'):
 
 
 def post_get(name, default=''):
-    return request.POST.get(name, default).strip()
-
+    res = request.POST.get(name, default).strip()
+    if not res:
+        res = default
+    return res
 
 def flash_message(msg, msg_type='danger'):
     print(msg_type, msg)
@@ -187,7 +189,6 @@ class addcred(object):
 
                 if ':' in message:
                     msg_type, message = message.split(':', 1)
-                    print('MSG_TYPE', msg_type)
 
             params = {'curr_user': curr_user,
                       'curr_role': curr_role,
@@ -303,22 +304,21 @@ def create_coll_routes(r):
             host = 'http://' + request.headers.get('Host', 'localhost')
 
             cork.register(username, password, email, role='archivist',
+                          max_level=50,
                           subject='webrecorder.io Account Creation',
                           email_template='templates/emailconfirm.html')
 
-            msg = ('A confirmation e-mail has been sent to {0}'.format(email) +
-                   'Please check your e-mail to complete the registration')
+            flash_message('A confirmation e-mail has been sent to <b>{0}</b>. \
+Please check your e-mail to complete the registration!'.format(username), 'success')
 
             redir_to = '/'
 
         except ValidationException as ve:
-            msg = str(ve)
+            flash_message(str(ve))
 
         except Exception as ex:
-            print(ex)
-            msg = 'Registration failed. Please try again'
+            flash_message('Registration failed: ' + str(ex))
 
-        flash_message(msg)
         redirect(redir_to)
 
 
@@ -326,19 +326,26 @@ def create_coll_routes(r):
     @route(VAL_REG_PATH)
     def val_reg(reg):
         try:
-            user = request.query['user']
+            username = request.query['username']
             #reg = request.query['reg']
 
             cork.validate_registration(reg)
 
-            flash_message('<b>{0}</b>, welcome to your new archive page! '.format(user) +
-                          'Please login to create a new collection and begin archiving.')
+            flash_message('<b>{0}</b>, welcome to your new archive home page! \
+Please <b>login</b> to create a new collection. Happy Archiving!'.format(username), 'success')
+            redir_to = '/' + username
+
+        except AAAException:
+            flash_message('The user <b>{0}</b> is already registered. \
+If this is you, please login or click forgot password, \
+or register a new account.'.format(username))
+            redir_to = LOGIN_PATH
 
         except Exception as e:
-            print(e)
-            flash_message('Sorry, this is not a valid registration code. Please try again')
+            flash_message('Sorry, this is not a valid registration code. Please try again.')
+            redir_to = REGISTER_PATH
 
-        redirect('/' + user)
+        redirect(redir_to)
 
 
     # Forgot Password
@@ -392,7 +399,6 @@ def create_coll_routes(r):
             flash_message('Invalid password reset attempt. Please try again')
             redirect(FORGOT_PATH)
 
-        print(result)
         return result
 
 
@@ -406,11 +412,10 @@ def create_coll_routes(r):
         try:
             manager.validate_password(password, confirm_password)
 
-            print(password, resetcode)
             cork.reset_password(resetcode, password)
 
-            flash_message('Your password has been successfully reset! Please login with your new password',
-                          'success')
+            flash_message('Your password has been successfully reset! \
+You can now <b>login</b> with your new password!', 'success')
 
             redir_to = LOGIN_PATH
 
@@ -419,7 +424,6 @@ def create_coll_routes(r):
             redir_to = RESET_PATH_FILL.format(resetcode, username)
 
         except Exception as e:
-            raise
             flash_message('Invalid password reset attempt. Please try again')
             redir_to = FORGOT_PATH
 
@@ -445,19 +449,22 @@ def create_coll_routes(r):
     @post(CREATE_PATH)
     def create_coll():
         cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+
         coll_name = post_get('collection')
         title = post_get('title', coll_name)
         access = post_get('public', 'private')
 
         user, role = manager.curr_user_role()
 
-        success, msg = manager.add_collection(user, coll_name, title, access)
-        flash_message(msg)
+        try:
+            manager.add_collection(user, coll_name, title, access)
+            flash_message('Create new collection {0}!'.format(coll_name), 'success')
+            redir_to = r.get_coll_path(user, coll_name)
+        except ValidationException as ve:
+            flash_message(str(ve))
+            redir_to = CREATE_PATH
 
-        if success:
-            redirect(r.user_home(manager.curr_user_role()[0]))
-        else:
-            redirect(CREATE_PATH)
+        redirect(redir_to)
 
     # WARC Files
     # ============================================================================

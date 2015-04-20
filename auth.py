@@ -50,25 +50,6 @@ class RedisBackend(object):
     def save_pending_registrations(self): pass
 
 
-
-
-class RedisHashTable(object):
-    def __init__(self, redistable, key, thedict):
-        self.redistable = redistable
-        self.key = key
-        self.thedict = thedict
-
-    def __getitem__(self, name):
-        return self.thedict[name]
-
-    def __setitem__(self, name, value):
-        self.thedict[name] = value
-        self.redistable[self.key] = self.thedict
-
-    def get(self, name, default_val):
-        return self.thedict.get(name, default_val)
-
-
 class RedisTable(object):
     def __init__(self, redis, key):
         self.redis = redis
@@ -84,11 +65,11 @@ class RedisTable(object):
 
     def __getitem__(self, name):
         string = self.redis.hget(self.key, name)
-        try:
-            return RedisHashTable(self, name, json.loads(string))
-        except:
-            print(string)
-            return {}
+        result = json.loads(string)
+        if isinstance(result, dict):
+            return RedisHashTable(self, name, result)
+        else:
+            return result
 
     def __iter__(self):
         keys = self.redis.hkeys(self.key)
@@ -109,16 +90,36 @@ class RedisTable(object):
         return result
 
 
+class RedisHashTable(object):
+    def __init__(self, redistable, key, thedict):
+        self.redistable = redistable
+        self.key = key
+        self.thedict = thedict
+
+    def __getitem__(self, name):
+        return self.thedict[name]
+
+    def __setitem__(self, name, value):
+        self.thedict[name] = value
+        self.redistable[self.key] = self.thedict
+
+    def get(self, name, default_val):
+        return self.thedict.get(name, default_val)
+
+    def __nonzero__(self):
+        return bool(self.thedict)
+
+
 class CollsManager(object):
     WRITE_KEY = ':w'
     READ_KEY = ':r'
     PUBLIC = '@public'
     GROUP = 'g:'
-    COLL_KEY = ':colls'
+    COLL_KEY = ':<colls>'
     PAGE_KEY = 'p:'
 
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,15}$')
-    RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'guest']
+    RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'guest', 'settings', 'profile']
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
     def __init__(self, cork, redis, path_router):
@@ -179,9 +180,11 @@ class CollsManager(object):
     def has_user(self, user):
         return self.cork.user(user) is not None
 
+    def _get_user_colls(self, user):
+        return RedisTable(self.redis, 'h:' + user + self.COLL_KEY)
+
     def has_collection(self, user, coll):
-        res = self.redis.hget(user + self.COLL_KEY, coll)
-        return res is not None
+        return coll in self._get_user_colls(user)
 
     def validate_user(self, user, email):
         if self.has_user(user):
@@ -207,23 +210,23 @@ class CollsManager(object):
         return True
 
     def get_metadata(self, user, coll, name):
-        res = self.redis.hget(user + self.COLL_KEY, coll)
-        if not res:
+        table = self._get_user_colls(user)[coll]
+        if not table:
+            print('NO TABLE?')
             return None
-        res = json.loads(res)
-        return res.get(name, '')
+        return table.get(name, '')
 
     def add_collection(self, user, coll, title, access):
-        success = False
         curr_user, curr_role = self.curr_user_role()
 
+        if not self.USER_RX.match(coll):
+            raise ValidationException('Invalid Collection Name')
+
         if curr_user != user:
-            msg = 'Only ' + user + ' can create this collection!'
-            return success, msg
+            raise ValidationException('Only {0} can create this collection!'.format(curr_user))
 
         if self.has_collection(user, coll):
-            msg = 'Collection ' + coll + ' already exists!'
-            return success, msg
+            raise ValidationException('Collection {0} already exists!'.format(coll))
 
         dir_ = self.path_router.get_user_account_root(user)
         if not os.path.isdir(dir_):
@@ -237,34 +240,33 @@ class CollsManager(object):
                 manager_main(['init', coll])
                 manager_main(['metadata', coll, '--set', set_title, set_access])
 
-            msg = 'Created Collection ' + coll
-            success = True
         except ValueError as e:
-            msg = str(e)
+            raise ValidationException(str(e))
 
         except OSError as e:
             if e.errno == 17:
                 msg = 'Collection ' + coll + ' already exists!'
             else:
                 msg = str(e)
+            raise ValidationException(msg)
 
         except Exception as e:
-            print(e)
             msg = 'Error creating collection.. Try Again'
+            raise ValidationException(msg)
 
 
         coll_data = {'title': title}
-        self.redis.hset(user + self.COLL_KEY, coll, json.dumps(coll_data))
+
+        #self.redis.hset('h:' + user + self.COLL_KEY, coll, json.dumps(coll_data))
+        self._get_user_colls(user)[coll] = coll_data
 
         if access == 'public':
             self._add_access(user, coll, self.READ_KEY, self.PUBLIC)
 
-        return success, msg
-
     def list_collections(self, user):
-        table = RedisTable(self.redis, user + self.COLL_KEY)
+        colls_table = self._get_user_colls(user)
         colls = {}
-        for n, v in table.iteritems():
+        for n, v in colls_table.iteritems():
             if self.can_read_coll(user, n):
                 colls[n] = v
                 v['path'] = self.path_router.get_coll_path(user, n)
@@ -336,9 +338,9 @@ class InitCork(Cork):
     def init_backend(backend):
         cork = InitCork(backend=backend)
         cork.create_role('archivist', 50)
-        cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
-        cork.create_user('other', 'archivist', 'test', 'ilya@ilya', 'ilya')
-        cork.create_user('another', 'archivist', 'test', 'ilya@ilya', 'ilya')
+        #cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
+        #cork.create_user('other', 'archivist', 'test', 'ilya@ilya', 'ilya')
+        #cork.create_user('another', 'archivist', 'test', 'ilya@ilya', 'ilya')
 
         #cork.create_role('admin', 100)
         #cork.create_role('reader', 20)

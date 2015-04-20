@@ -23,6 +23,9 @@
         font-size: 18px;
         font-weight: bold;
     }
+    .dataTables_empty {
+        text-align: center;
+    }
     .wr-table {
         display: table;
         float: none;
@@ -130,6 +133,9 @@
                 "targets": [0, 1],
                 "render": render_title,
             }],
+            "language": {
+                "emptyTable": "No pages have been recorded in this collection yet"
+            }
         });
 
         // Select
