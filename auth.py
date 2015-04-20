@@ -16,7 +16,10 @@ from pywb.warc.cdxindexer import iter_file_or_dir
 from pywb.cdx.cdxobject import CDXObject
 
 def init_cork(app, redis):
-    cork = Cork(backend=RedisBackend(redis),
+    backend=RedisBackend(redis)
+    init_cork_backend(backend)
+
+    cork = Cork(backend=backend,
                 email_sender=redacted,
                 smtp_url=redacted)
 
@@ -325,30 +328,33 @@ class CollsManager(object):
         return warcs
 
 
-class InitCork(Cork):
-    @property
-    def current_user(self):
-        class MockUser(object):
-            @property
-            def level(self):
-                return 100
-        return MockUser()
+def init_cork_backend(backend):
+    class InitCork(Cork):
+        @property
+        def current_user(self):
+            class MockUser(object):
+                @property
+                def level(self):
+                    return 100
+            return MockUser()
 
-    @staticmethod
-    def init_backend(backend):
+    try:
         cork = InitCork(backend=backend)
         cork.create_role('archivist', 50)
-        #cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
-        #cork.create_user('other', 'archivist', 'test', 'ilya@ilya', 'ilya')
-        #cork.create_user('another', 'archivist', 'test', 'ilya@ilya', 'ilya')
+    except:
+        pass
 
-        #cork.create_role('admin', 100)
-        #cork.create_role('reader', 20)
+    #cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
+    #cork.create_user('other', 'archivist', 'test', 'ilya@ilya', 'ilya')
+    #cork.create_user('another', 'archivist', 'test', 'ilya@ilya', 'ilya')
 
-        #cork.create_user('admin', 'admin', 'admin', 'admin@test', 'The Admin')
-        #cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
-        #cork.create_user('guest', 'reader', 'test', 'ilya@ilya', 'ilya')
-        #cork.create_user('ben', 'admin', 'ben', 'ilya@ilya', 'ilya')
+    #cork.create_role('admin', 100)
+    #cork.create_role('reader', 20)
+
+    #cork.create_user('admin', 'admin', 'admin', 'admin@test', 'The Admin')
+    #cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
+    #cork.create_user('guest', 'reader', 'test', 'ilya@ilya', 'ilya')
+    #cork.create_user('ben', 'admin', 'ben', 'ilya@ilya', 'ilya')
 
 if __name__ == "__main__":
-    InitCork.init_backend(RedisBackend(StrictRedis.from_url('redis://127.0.0.1:6379/1')))
+    init_cork_backend(RedisBackend(StrictRedis.from_url('redis://127.0.0.1:6379/1')))

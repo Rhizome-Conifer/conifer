@@ -6,13 +6,24 @@ import shutil
 import tempfile
 
 from app import init
-from auth import InitCork, RedisBackend
+from auth import Cork, RedisBackend
 from redis import StrictRedis
 
 REDIS_URL = 'redis://127.0.0.1:6379/11'
 
 jar = None
 root_dir = None
+
+
+class InitCork(Cork):
+    @property
+    def current_user(self):
+        class MockUser(object):
+            @property
+            def level(self):
+                return 100
+        return MockUser()
+
 
 def setup_module():
     global root_dir
@@ -92,11 +103,11 @@ class TestWebRecorder:
 
         resp = form.submit()
         assert resp.status_int == 302
-        assert resp.headers['Location'] == 'http://localhost:80/userfoo'
+        assert resp.headers['Location'] == 'http://localhost:80/userfoo/test-abc'
 
     def test_li_user_with_coll(self):
-        resp = self.testapp.get('/userfoo')
-        assert 'Created Collection test-abc' in resp.body
+        resp = self.testapp.get('/userfoo/test-abc')
+        assert 'Created collection <b>test-abc</b>' in resp.body
         assert '/test-abc' in resp.body
         assert 'Test Collection' in resp.body
 

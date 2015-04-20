@@ -458,7 +458,7 @@ You can now <b>login</b> with your new password!', 'success')
 
         try:
             manager.add_collection(user, coll_name, title, access)
-            flash_message('Create new collection {0}!'.format(coll_name), 'success')
+            flash_message('Created collection <b>{0}</b>!'.format(coll_name), 'success')
             redir_to = r.get_coll_path(user, coll_name)
         except ValidationException as ve:
             flash_message(str(ve))
