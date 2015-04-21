@@ -15,7 +15,7 @@ from loader import switch_dir
 from pywb.warc.cdxindexer import iter_file_or_dir
 from pywb.cdx.cdxobject import CDXObject
 
-def init_cork(app, redis):
+def init_cork(app, redis, config):
     backend=RedisBackend(redis)
     init_cork_backend(backend)
 
@@ -23,14 +23,18 @@ def init_cork(app, redis):
                 email_sender=redacted,
                 smtp_url=redacted)
 
+    encrypt_key = 'FQbitfnuOZbB2gPvb4G4h5UfOssLU49jI6Kg'
+
     session_opts = {
         'session.cookie_expires': True,
-        'session.encrypt_key': 'TFSDFMWPEFJPSDSDFSDFENWO',
+        'session.encrypt_key': encrypt_key,
         'session.httponly': True,
         'session.timeout': 3600 * 24,  # 1 day
         'session.type': 'cookie',
         'session.validate_key': True,
         'session.cookie_path': '/',
+        'session.secure': False,
+        'session.key': config['cookie_name'],
     }
 
     app = SessionMiddleware(app, session_opts)
@@ -126,11 +130,13 @@ class CollsManager(object):
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,15}$')
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'guest', 'settings', 'profile']
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
+    WARC_RX = re.compile(r'^[\w.-]+$')
 
-    def __init__(self, cork, redis, path_router):
+    def __init__(self, cork, redis, path_router, remotemanager):
         self.cork = cork
         self.redis = redis
         self.path_router = path_router
+        self.remotemanager = remotemanager
 
     def curr_user_role(self):
         try:
@@ -318,23 +324,48 @@ class CollsManager(object):
 
         archive_dir = self.path_router.get_archive_dir(user, coll)
 
-        warcs = []
+        warcs = {}
 
         for fullpath, filename in iter_file_or_dir([archive_dir]):
             stats = os.stat(fullpath)
             res = {'size': stats.st_size,
                    'mtime': stats.st_mtime,
                    'name': filename}
-            warcs.append(res)
+            warcs[filename] = res
 
         donewarcs = self.redis.smembers(self.DONE_WARC + user + ':' + coll)
         for stats in donewarcs:
-            print(stats)
             res = json.loads(stats)
-            warcs.append(res)
+            filename = res['name']
+            warcs[filename] = res
 
-        return warcs
+        return warcs.values()
 
+    def download_warc(self, user, coll, name):
+        if not self.can_admin_coll(user, coll):
+            return None
+
+        if not self.WARC_RX.match(name):
+            return None
+
+        warc_path = self.redis.hget('warc:' + user + ':' + coll, name)
+        if not warc_path:
+            return None
+
+        if not warc_path.startswith('s3://'):
+            archive_dir = self.path_router.get_archive_dir(user, coll)
+            full_path = os.path.join(archive_dir, name)
+            if os.path.isfile(full_path):
+                length = os.stat(full_path).st_size
+                print('Local File')
+                stream = open(full_path, 'r')
+                return length, stream
+            else:
+                return None
+
+        print('Remote File')
+        result = self.remotemanager.download_stream(warc_path)
+        return result
 
 def init_cork_backend(backend):
     class InitCork(Cork):

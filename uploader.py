@@ -8,32 +8,39 @@ from pywb.utils.loaders import BlockLoader
 
 
 ## ============================================================================
-class S3Uploader(object):
-    def __init__(self, root_dir, s3_url, redis, warc_iter):
-        self.root_dir = root_dir
+class S3Manager(object):
+    def __init__(self, s3_url):
         self.s3_url = s3_url
-        self.redis = redis
-        self.warc_iter = warc_iter
 
         parts = urlsplit(s3_url)
         self.bucket_name = parts.netloc
         self.prefix = parts.path
 
         self.conn = boto.connect_s3()
-        self.blockloader = BlockLoader()
-        self.blockloader.s3conn = self.conn
-
         self.bucket = self.conn.get_bucket(parts.netloc)
 
-    def do_upload(self, local, s3_path, s3_url):
-        with open(local, 'r') as fh:
-            try:
-                fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except Exception as e:
-                print(e)
-                print('Skipping {0}, not yet done'.format(local))
-                return False
+    def download_stream(self, s3_url):
+        parts = urlsplit(s3_url)
 
+        # only accept paths to current bucket
+        if parts.netloc != self.bucket_name:
+            print('Invalid Bucket')
+            return None
+
+        key = self.bucket.get_key(parts.path)
+        size = key.size
+
+        key.open_read()
+        return size, key
+
+    def get_remote_url(self, rel_path):
+        s3_url = 's3://' + self.bucket_name + self.prefix + rel_path
+        return s3_url
+
+    def upload_file(self, local, rel_path):
+        s3_path = self.prefix + rel_path
+        s3_url = self.get_remote_url(rel_path)
+        with open(local, 'r') as fh:
             try:
                 new_key = self.bucket.new_key(s3_path)
                 print('Uploading {0} -> {1}'.format(local, s3_url))
@@ -45,57 +52,67 @@ class S3Uploader(object):
 
         return True
 
-    def is_s3_avail(self, s3_url):
-        parts = urlsplit(s3_url)
-        # some other bucket
-        if parts.netloc != self.bucket_name:
-            return False
-
-        key = self.bucket.get_key(parts.path)
+    def is_avail(self, rel_path):
+        s3_path = self.prefix + rel_path
+        key = self.bucket.get_key(s3_path)
         return key is not None
 
 
-    def is_s3_avail_range(self, s3_url):
-        try:
-            stream = self.blockloader.load_s3(s3_url, 10, 20)
-            buff = stream.read(50)
-            if len(buff) == 20:
-                return True
-        except Exception as e:
-            print(e)
+## ============================================================================
+class Uploader(object):
+    def __init__(self, root_dir, remotemanager, redis, warc_iter):
+        self.root_dir = root_dir
+        self.remotemanager = remotemanager
+        self.redis = redis
+        self.warc_iter = warc_iter
 
-        return False
+    def is_locked(self, local):
+        with open(local, 'r') as fh:
+            try:
+                fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                return False
+            except Exception as e:
+                print(e)
+                print('Skipping {0}, not yet done'.format(local))
+                return True
 
     def __call__(self, signum=None):
         print('Checking for new warcs...')
-        for key, warc, full_path, rel_path in self.warc_iter(self.root_dir):
-            s3_path = self.prefix + rel_path
-            s3_url = 's3://' + self.bucket_name + s3_path
+        for key, warc, local_full_path, rel_path in self.warc_iter(self.root_dir):
             key = 'warc:' + key
 
-            # already uploaded on last past, verify that its accessible
-            # and if so, delete original
-            if self.redis.hget(key, warc) == s3_url:
-                if self.is_s3_avail(s3_url):
-                    print('S3 Verified, Deleting: {0}'.format(full_path))
-                    os.remove(full_path)
-                else:
-                    print('Not yet available: {0}'.format(full_path))
+            if self.is_locked(local_full_path):
                 continue
 
-            if not self.do_upload(full_path, s3_path, s3_url):
-                continue
+            if not self.redis.get('au:' + key + warc):
+                if not self.remotemanager.upload_file(local_full_path, rel_path):
+                    continue
 
-            # update path index to point to s3!
-            self.redis.hset(key, warc, s3_url)
+                self.redis.setex('au:' + key + warc, 60, 1)
 
-            # store last modified time and size
-            stats = os.stat(full_path)
-            res = {'size': stats.st_size,
-                   'mtime': stats.st_mtime,
-                   'name': warc}
+            # already uploaded, verify that its accessible
+            # if so, finalize and delete original
+            if self.remotemanager.is_avail(rel_path):
+                remote_url = self.remotemanager.get_remote_url(rel_path)
+                self.finished_upload(key, warc, local_full_path, remote_url)
+            else:
+                print('Not yet available: {0}'.format(local_full_path))
 
-            self.redis.sadd('done:' + key, json.dumps(res))
+    def finished_upload(self, key, warc, local_full_path, remote_url):
+        # store last modified time and size
+        stats = os.stat(local_full_path)
+        res = {'size': stats.st_size,
+               'mtime': stats.st_mtime,
+               'name': warc}
+
+        self.redis.sadd('done:' + key, json.dumps(res))
+
+        # update path index to point to remote url!
+        self.redis.hset(key, warc, remote_url)
+
+        print('S3 Verified, Deleting: {0}'.format(local_full_path))
+        os.remove(local_full_path)
+
 
 def iter_all_accounts(root_dir):
     users_dir = os.path.join(root_dir, 'accounts')
@@ -107,9 +124,9 @@ def iter_all_accounts(root_dir):
             archive_dir = os.path.join(colls_dir, coll, 'archive')
             for warc in os.listdir(archive_dir):
                 key = user + ':' + coll
-                full_path = os.path.join(archive_dir, warc)
-                rel_path = os.path.relpath(full_path, root_dir)
-                yield key, warc, full_path, rel_path
+                local_full_path = os.path.join(archive_dir, warc)
+                rel_path = os.path.relpath(local_full_path, root_dir)
+                yield key, warc, local_full_path, rel_path
 
 
 def main():

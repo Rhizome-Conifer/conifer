@@ -181,7 +181,7 @@ class DynWBHandler(WBHandler):
 class DynRecord(RewriteHandler):
     def __init__(self, config):
         super(DynRecord, self).__init__(config)
-        cookie_name = 'beaker.session.id'
+        cookie_name = config.get('cookie_name', 'beaker.session.id')
         self.strip_cookie_re = re.compile(cookie_name + '=[^ ]+([ ]|$)')
         self.record_path = config.get('record_dir', './')
 
@@ -199,17 +199,18 @@ class DynRecord(RewriteHandler):
         req_headers = {'x-warcprox-meta': json.dumps(target)}
 
         cookie = wbrequest.env.get('HTTP_COOKIE')
-        if False and cookie:
+        if cookie:
             cookie = self._cleanse_cookie(cookie)
             if cookie == '':
                 del wbrequest.env['HTTP_COOKIE']
             else:
+                print(' ********* COOKIE: ' + cookie)
                 wbrequest.env['HTTP_COOKIE'] = cookie
 
         return req_headers
 
     def _cleanse_cookie(self, cookie_str):
-        return self.strip_cookie_re.sub('', cookie_str, 1).strip()
+        return self.strip_cookie_re.sub('', cookie_str).strip()
 
     def _make_response(self, wbrequest, status_headers, gen, is_rewritten):
         if (status_headers.get_statuscode() == '500' and

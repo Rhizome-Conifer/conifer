@@ -4,6 +4,8 @@ redis_url: &redis_url redis://127.0.0.1:6379/1
 
 s3_target: s3://redacted
 
+cookie_name: '__wr_sesh'
+
 verify_ssl: false
 
 multiuser: true

@@ -20,7 +20,7 @@ from loader import jinja_env, jinja2_view, DynRedisResolver
 from jinja2 import contextfunction
 
 from router import SingleUserRouter, MultiUserRouter
-from uploader import S3Uploader, iter_all_accounts
+from uploader import S3Manager, Uploader, iter_all_accounts
 
 import logging
 
@@ -65,10 +65,13 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
 
     global application
     global cork
-    application, cork = init_cork(bottle_app, redis_obj)
+    application, cork = init_cork(bottle_app, redis_obj, config)
+
+    # for now, just s3
+    s3_manager = S3Manager(config['s3_target'])
 
     global manager
-    manager = CollsManager(cork, redis_obj, router)
+    manager = CollsManager(cork, redis_obj, router, s3_manager)
 
     jinja_env.globals['metadata'] = config.get('metadata', {})
 
@@ -107,11 +110,10 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     bottle_app.default_error_handler = err_handle
     create_coll_routes(router)
 
-
-    uploader = S3Uploader(store_root,
-                          config['s3_target'],
-                          redis_obj,
-                          iter_all_accounts)
+    uploader = Uploader(store_root,
+                        s3_manager,
+                        redis_obj,
+                        iter_all_accounts)
 
     start_uwsgi_timer(30, "mule", uploader)
 
@@ -217,7 +219,7 @@ class addcred(object):
             request.environ['pywb.template_params'] = params
 
             if self.router:
-                res = func(self.router.get_state(kwargs))
+                res = func(self.router.get_state(kwargs), *args)
             else:
                 res = func(*args, **kwargs)
 
@@ -484,16 +486,6 @@ You can now <b>login</b> with your new password!', 'success')
 
         redirect(redir_to)
 
-    # WARC Files
-    # ============================================================================
-    @route('/_files')
-    def listwarcs():
-        user = request.query.get('user', '')
-        coll = request.query.get('coll', '')
-        warcs = manager.list_warcs(user, coll)
-        return {'data': warcs}
-
-
     # ============================================================================
     # Banner
     @route('/banner')
@@ -585,6 +577,38 @@ You can now <b>login</b> with your new password!', 'success')
         pagelist = manager.list_pages(user, coll)
 
         return {"data": pagelist}
+
+
+    # WARC Files -- List
+    # ============================================================================
+    @route('/_files')
+    def list_warcs():
+        user = request.query.get('user', '')
+        coll = request.query.get('coll', '')
+        warcs = manager.list_warcs(user, coll)
+        return {'data': warcs}
+
+
+    # WARC Files -- Download
+    # ============================================================================
+    @route(['/:user/:coll/warcs/:warc'])
+    @addcred()
+    def download_warcs(user, coll, warc):
+        print('WARC: ' + warc)
+        res = manager.download_warc(user, coll, warc)
+        if not res:
+            raise HTTPError(status=404, body='No Such WARC')
+
+        length, body = res
+        response.headers['Content-Type'] = 'text/plain'
+        response.headers['Content-Disposition'] = 'attachment; filename=' + warc
+        response.headers['Content-Length'] = length
+        response.body = body
+        return response
+
+        #resp = HTTPResponse(body=body,
+        #                    status=resp.status_headers.statusline,
+        #                    headers=resp.status_headers.headers)
 
 
     # pywb Replay / Record

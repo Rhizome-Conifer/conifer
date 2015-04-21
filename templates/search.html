@@ -101,7 +101,7 @@
 
         var prefix = "/{{ path }}/";
 
-        var render_title = function (data, type, full, meta) {
+        var render_pages = function (data, type, full, meta) {
             var url = prefix;
             if (full['ts']) {
                 url += full['ts'] + "/";
@@ -131,7 +131,7 @@
             ],
             "columnDefs": [ {
                 "targets": [0, 1],
-                "render": render_title,
+                "render": render_pages,
             }],
             "language": {
                 "emptyTable": "No pages have been recorded in this collection yet"
@@ -147,6 +147,16 @@
             return;
         }
         
+        var prefix = "/{{ path }}/";
+        
+        var render_warcs = function (data, type, full, meta) {
+            var url = prefix;
+            
+            url += "warcs/" + data;
+            
+            return '<a href="' + url + '">' + data + '</a>';
+        }
+        
         warcsTable = $("#warcsTable").DataTable( {
             "ajaxSource": "/_files?user={{ user }}&coll={{ coll }}",
             "order": [[ 1, "desc" ]],
@@ -155,10 +165,10 @@
                 { "data": "mtime" },
                 { "data": "size" },
             ],
-            //"columnDefs": [ {
-            //    "targets": [0, 1],
-            //    "render": render_title,
-            //}],
+            "columnDefs": [ {
+                "targets": [0],
+                "render": render_warcs,
+            }],
         });
     }
 </script>
