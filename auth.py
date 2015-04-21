@@ -121,6 +121,8 @@ class CollsManager(object):
     COLL_KEY = ':<colls>'
     PAGE_KEY = 'p:'
 
+    DONE_WARC = 'done:warc:'
+
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,15}$')
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'guest', 'settings', 'profile']
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
@@ -323,6 +325,12 @@ class CollsManager(object):
             res = {'size': stats.st_size,
                    'mtime': stats.st_mtime,
                    'name': filename}
+            warcs.append(res)
+
+        donewarcs = self.redis.smembers(self.DONE_WARC + user + ':' + coll)
+        for stats in donewarcs:
+            print(stats)
+            res = json.loads(stats)
             warcs.append(res)
 
         return warcs

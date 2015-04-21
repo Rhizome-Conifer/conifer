@@ -4,6 +4,13 @@
 
 <div class="jumbotron">
     <h2>{{ user }} Archive</h2>
+    {% if is_owner() %}
+    <p>Welcome to your archive!</p>
+    {% endif %}
+
+    {% if not colls and not is_owner() %}
+    <p>This archive does not yet have any publicly available collections.</p>
+    {% elif colls %}
     <p>Available Collections:</p>
     <ul class="list-group text-center">
         {% for name, value in colls | dictsort %}
@@ -12,6 +19,7 @@
         </li>
         {% endfor %}
     </ul>
+    {% endif %}
     {% if is_owner() %}
     <p><a class="btn btn-primary btn-sm" href="/_create" role="button">Create new Collection</a></p>
     {% endif %}

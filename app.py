@@ -20,7 +20,7 @@ from loader import jinja_env, jinja2_view, DynRedisResolver
 from jinja2 import contextfunction
 
 from router import SingleUserRouter, MultiUserRouter
-
+from uploader import S3Uploader, iter_all_accounts
 
 import logging
 
@@ -72,7 +72,6 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
 
     jinja_env.globals['metadata'] = config.get('metadata', {})
 
-
     @contextfunction
     def can_admin(context):
         return manager.can_admin_coll(context['user'], context['coll'])
@@ -107,10 +106,30 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
 
     bottle_app.default_error_handler = err_handle
     create_coll_routes(router)
+
+
+    uploader = S3Uploader(store_root,
+                          config['s3_target'],
+                          redis_obj,
+                          iter_all_accounts)
+
+    start_uwsgi_timer(30, "mule", uploader)
+
     return application
 
 
-# ============================================================================
+# =============================================================================
+def start_uwsgi_timer(freq, type_, callable_):
+    import uwsgi
+    uwsgi.register_signal(66, type_, callable_)
+    uwsgi.add_timer(66, freq)
+
+def raise_uwsgi_signal():
+    import uwsgi
+    uwsgi.signal(66)
+
+
+## ============================================================================
 # Utilities
 def get_redir_back(skip, default='/'):
     redir_to = request.headers.get('Referer', default)
@@ -306,7 +325,8 @@ def create_coll_routes(r):
             cork.register(username, password, email, role='archivist',
                           max_level=50,
                           subject='webrecorder.io Account Creation',
-                          email_template='templates/emailconfirm.html')
+                          email_template='templates/emailconfirm.html',
+                          host=host)
 
             flash_message('A confirmation e-mail has been sent to <b>{0}</b>. \
 Please check your e-mail to complete the registration!'.format(username), 'success')
@@ -359,18 +379,16 @@ or register a new account.'.format(username))
 
     @post(FORGOT_PATH)
     def forgot_submit():
-        email = post_get('email')
-        username = post_get('username')
-        if not email:
-            email = None
-        if not username:
-            username = None
+        email = post_get('email', None)
+        username = post_get('username', None)
+        host = 'http://' + request.headers.get('Host', 'localhost')
 
         try:
             cork.send_password_reset_email(username=username,
                                       email_addr=email,
                                       subject='webrecorder.io password reset confirmation',
-                                      email_template='templates/emailreset.html')
+                                      email_template='templates/emailreset.html',
+                                      host=host)
 
             flash_message('A password reset e-mail has been sent to your e-mail!',
                           'success')
