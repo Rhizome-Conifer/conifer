@@ -5,6 +5,8 @@ set_state = function(state) {
 
     if (doc_window.wbinfo.state == "rec") {
         add_page(state.url);
+    } else if (doc_window.wbinfo.state == "play") {
+        update_page(state.timestamp);
     }
     
     if (curr_state.url) {

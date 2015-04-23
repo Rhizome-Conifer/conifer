@@ -24,16 +24,24 @@
                 {% endif %}
 
                 {% if state == 'rec' %}
-                <p class="status-badge navbar-text label label-primary"><span class="pulse glyphicon glyphicon-dot-sm" style="margin-right: 4px"></span>Recording</p>
+                <p class="status-badge navbar-text label label-primary">
+                    <span class="pulse glyphicon glyphicon-dot-sm" style="margin-right: 4px"></span>
+                    Recording
+                </p>
+                
+                <p class="navbar-text">
+                    <span id="curr_size_info" class="badge" style="margin-right: 4px"></span>
+                </p>
                 
                 <p class="navbar-text">
                     <a id="finish" target="_parent" href="/{{path}}" class="btn btn-default btn-xs">
-                        <span class="glyphicon glyphicon-stop" style="margin-right: 4px"></span>Done Recording</a>
+                        <span class="glyphicon glyphicon-tasks" style="margin-right: 4px"></span>Browse Recorded</a>
                 </p>
 
                 {% elif state == 'play' %}
                 <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
                 {% endif %}
+                
 
                 {# remove for now
                 <li style="margin-left: 40px" class="navbar-btn">
@@ -62,7 +70,7 @@
 
         </div>
         {% if state %}
-        <form class="navbar-left" style="width: 100%; margin-bottom: 10px" onsubmit="return false">
+        <form class="navbar-left" style="width: 100%; margin-bottom: 10px; margin-top: -10px" onsubmit="return false">
             <div class="input-group input-group-sm">
 
                 <input id="theurl" type="text" placeholder="Enter url here to record or play back" class="input-small form-control"/>

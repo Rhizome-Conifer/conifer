@@ -177,19 +177,41 @@
 
             return '<a href="' + url + '">' + data + '</a>';
         }
+        
+        var render_size = function (data, type, full, meta) {
+            if (type === "sort") {
+                return data;
+            }
+            return format_bytes(data);
+        }
+        
+        var render_time = function (data, type, full, meta) {
+            if (type === "sort") {
+                return data;
+            }
+            
+            return new Date(data * 1000).toLocaleString();
+        }
 
         warcsTable = $("#warcsTable").DataTable( {
             "ajaxSource": "/_files?user={{ user }}&coll={{ coll }}",
             "order": [[ 1, "desc" ]],
             "columns": [
                 { "data": "name" },
-                { "data": "mtime" },
-                { "data": "size" },
+                { "data": "mtime", type: "num" },
+                { "data": "size", type: "num"},
             ],
             "columnDefs": [ {
                 "targets": [0],
                 "render": render_warcs,
-            }],
+            }, {
+                "targets": [2],
+                "render": render_size,
+            }, {
+                "targets": [1],
+                "render": render_time,
+            }
+            ],
         });
     }
 </script>
@@ -283,7 +305,7 @@
                 <thead>
                     <tr>
                         <th>Filename</th>
-                        <th>Modified</th>
+                        <th>Last Modified</th>
                         <th>Size</th>
                     </tr>
                 </thead>

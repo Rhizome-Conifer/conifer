@@ -299,6 +299,19 @@ class CollsManager(object):
 
         return colls
 
+    def get_info(self, user, coll):
+        if not self.can_read_coll(user, coll):
+            return {}
+
+        key = user + ':' + coll
+        res = self.redis.hmget(key, ['total_len', 'warc_len', 'num_urls'])
+        #num_pages = self.redis.scard(self.PAGE_KEY + key)
+        return {'total_size': res[0],
+                'curr_size': res[1],
+                'num_urls': res[2]
+               }
+                #'pages': num_pages}
+
     def add_page(self, user, coll, pagedata):
         if not self.can_write_coll(user, coll):
             print('Cannot Write')
@@ -343,8 +356,8 @@ class CollsManager(object):
 
         for fullpath, filename in iter_file_or_dir([archive_dir]):
             stats = os.stat(fullpath)
-            res = {'size': stats.st_size,
-                   'mtime': stats.st_mtime,
+            res = {'size': long(stats.st_size),
+                   'mtime': long(stats.st_mtime),
                    'name': filename}
             warcs[filename] = res
 

@@ -10,6 +10,11 @@ $(function() {
     $(".url-rec-play").click(function() {
         var prefix = $(this).attr("data-path-prefix");
         var url = $("#theurl").val();
+        
+        if (doc_window != window.top) {
+            prefix += "mp_/";
+        }
+        
         if (url != '') {
             doc_window.location.href = prefix + url;
         }
@@ -20,17 +25,26 @@ $(function() {
         return;
     }
     
-    if (doc_window.wbinfo.timestamp &&
-        doc_window.wbinfo.state == 'play') {
-        
-        $("#status-text").text("Playback from " + ts_to_date(doc_window.wbinfo.timestamp));
+    if (doc_window.wbinfo.timestamp) {
+        update_page(doc_window.wbinfo.timestamp);
     }
     
     if (doc_window.wbinfo.url) {
         $("#theurl").attr("value", doc_window.wbinfo.url);
         $("#theurl").attr("title", doc_window.wbinfo.url);
     }
+    
+    if (doc_window.wbinfo.info) {
+        set_info(doc_window.wbinfo.info);
+    }
 });
+
+function update_page(timestamp)
+{
+    if (doc_window.wbinfo.state == "play") {
+        $("#status-text").text("Playback from " + ts_to_date(timestamp));
+    }
+}
 
 function ts_to_date(ts)
 {
@@ -78,4 +92,38 @@ function add_page(capture_url)
     //http.setRequestHeader("Content-length", params.length);
     //http.setRequestHeader("Connection", "close");
     http.send(params);
+    
+    update_info();
+}
+
+function update_info()
+{
+    $.ajax("/_info?coll=" + doc_window.wbinfo.coll, {
+        success: function(data) {
+            set_info(data);
+        }
+    });
+}
+
+function set_info(data)
+{
+    if (!data.curr_size || !data.total_size) {
+        return;
+    }
+
+    var curr_size = format_bytes(data.curr_size);
+    var info = "Recently Recorded: " + curr_size + ", Total Collection: " + format_bytes(data.total_size);
+
+    $("#curr_size_info").text(curr_size);
+    $("#curr_size_info").attr("title", info);
+}
+
+//From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
+function format_bytes(bytes) {
+    if (!isFinite(bytes) || (bytes < 1)) {
+        return "0 bytes";
+    }
+    var s = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    var e = Math.floor(Math.log(bytes) / Math.log(1000));
+    return (bytes / Math.pow(1000, e)).toFixed(2) + " " + s[e];
 }

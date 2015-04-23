@@ -160,6 +160,8 @@ def call_pywb(info=None, state=None):
         request.path_shift(router.get_path_shift())
         request.environ['w_output_dir'] = router.get_archive_dir(info.user, info.coll)
         request.environ['w_sesh_id'] = info.path
+        request.environ['w_manager'] = manager
+
         params = request.environ['pywb.template_params']
         params['state'] = state
         params['path'] = info.path
@@ -589,6 +591,15 @@ You can now <b>login</b> with your new password!', 'success')
         pagelist = manager.list_pages(user, coll)
 
         return {"data": pagelist}
+
+
+    # Info
+    # ============================================================================
+    @route('/_info')
+    def info():
+        user, coll = r.get_user_coll(request.query['coll'])
+        info = manager.get_info(user, coll)
+        return info
 
 
     # WARC Files -- List

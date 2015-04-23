@@ -3,12 +3,15 @@ li.coll-nav {
 }
 
 .navbar-brand {
-    padding-right: 8px;
+    padding-right: 4px;
+    padding-top: 8px;
 }
 
 li.coll-nav a {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-bottom: 8px;
+    padding-top: 8px;
 }
 
 li.coll-nav.active2 a {
@@ -16,12 +19,16 @@ li.coll-nav.active2 a {
 }
 
 li.coll-nav a:before {
-    margin-top: 12px;
-    margin-right: 16px;
+    margin-top: 4px;
+    margin-right: 8px;
     font-size: 18px;
     color: #ccc;
     font-weight: bold;
     content: "/"
+}
+
+.navbar-text {
+    margin: 8px 8px 4px 8px;
 }
 
 p.status-badge {
@@ -41,8 +48,8 @@ p.status-badge {
 }
 
 .navbar .userinfo {
-    font-size: 20px;
-    margin-top: 9px;
+    font-size: 16px;
+    margin-top: 6px;
     margin-bottom: 0px;
     color: black;
 }

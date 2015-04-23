@@ -185,6 +185,20 @@ class DynRecord(RewriteHandler):
         self.strip_cookie_re = re.compile(cookie_name + '=[^ ]+([ ]|$)')
         self.record_path = config.get('record_dir', './')
 
+
+    def get_top_frame_params(self, wbrequest, mod):
+        params = (super(DynRecord, self).
+                  get_top_frame_params(wbrequest, mod))
+
+        manager = wbrequest.env.get('w_manager')
+
+        if manager:
+            user, coll = wbrequest.coll.split('/', 1)
+            info = manager.get_info(user, coll)
+            params['info'] = json.dumps(info)
+
+        return params
+
     def _live_request_headers(self, wbrequest):
         path = wbrequest.custom_params.get('output_dir')
         if not path:
