@@ -198,19 +198,11 @@ class DynRecord(RewriteHandler):
 
         req_headers = {'x-warcprox-meta': json.dumps(target)}
 
-        cookie = wbrequest.env.get('HTTP_COOKIE')
-        if cookie:
-            cookie = self._cleanse_cookie(cookie)
-            if cookie == '':
-                del wbrequest.env['HTTP_COOKIE']
-            else:
-                print(' ********* COOKIE: ' + cookie)
-                wbrequest.env['HTTP_COOKIE'] = cookie
+        # reset HTTP_COOKIE to guarded request_cookie for LiveRewriter
+        if 'webrec.request_cookie' in wbrequest.env:
+            wbrequest.env['HTTP_COOKIE'] = wbrequest.env['webrec.request_cookie']
 
         return req_headers
-
-    def _cleanse_cookie(self, cookie_str):
-        return self.strip_cookie_re.sub('', cookie_str).strip()
 
     def _make_response(self, wbrequest, status_headers, gen, is_rewritten):
         if (status_headers.get_statuscode() == '500' and
