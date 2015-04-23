@@ -64,6 +64,12 @@ p.status-badge {
     line-height: 0.3em;
 }
 
+.glyphicon.glyphicon-dot-sm:before {
+    content: "\25cf";
+    font-size: 1.5em;
+    line-height: 0.3em;
+}
+
 .glyphicon.glyphicon-dot-lg:before {
     content: "\25cf";
     font-size: 2em;
@@ -80,4 +86,21 @@ p.status-badge {
     color: white;
 }
 
+.pulse {
+    animation-name: pulse;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    -webkit-animation-name: pulse;
+    -webkit-animation-duration: 3s;
+    -webkit-animation-iteration-count: infinite;
+}
 
+@-webkit-keyframes pulse {
+    0%, 100% {opacity: 1}
+    50% {opacity: 0}
+}
+
+@keyframes pulse {
+    0%, 100% {opacity: 1}
+    50% {opacity: 0}
+}

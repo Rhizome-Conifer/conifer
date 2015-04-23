@@ -48,19 +48,30 @@ function ts_to_date(ts)
     return new Date(datestr).toLocaleString();
 }
 
-function add_page()
+function add_page(capture_url)
 {
+    if (window == window.top && window.frames.length) {
+        doc_window = document.getElementById("replay_iframe").contentWindow;
+    } else {
+        doc_window = window.top;
+    }
+    
     var http = new XMLHttpRequest();
     http._no_rewrite = true;
-    var url = "/_addpage?coll=" + doc_window.wbinfo.coll;
+    
+    var post_url = "/_addpage?coll=" + doc_window.wbinfo.coll;
 
-    var params = "url=" + doc_window.wbinfo.url;
+    if (!capture_url) {
+        capture_url = doc_window.wbinfo.url;
+    }
+    
+    var params = "url=" + capture_url;
 
     if (doc_window.document.title) {
         params += "&title=" + doc_window.document.title;
     }
 
-    http.open("POST", url, false);
+    http.open("POST", post_url);
 
     //Send the proper header information along with the request
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");

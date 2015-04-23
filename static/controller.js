@@ -3,8 +3,8 @@ var _orig_set_state = window.set_state;
 set_state = function(state) {
     _orig_set_state(state);
 
-    if (wbinfo.state == "rec") {
-        add_page();
+    if (doc_window.wbinfo.state == "rec") {
+        add_page(state.url);
     }
     
     if (curr_state.url) {
