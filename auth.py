@@ -12,6 +12,8 @@ from pywb.utils.canonicalize import calc_search_range
 
 from loader import switch_dir
 
+from cookieguard import CookieGuard
+
 from pywb.warc.cdxindexer import iter_file_or_dir
 from pywb.cdx.cdxobject import CDXObject
 
@@ -37,6 +39,7 @@ def init_cork(app, redis, config):
         'session.key': config['cookie_name'],
     }
 
+    app = CookieGuard(app, config['cookie_name'])
     app = SessionMiddleware(app, session_opts)
     return app, cork
 
@@ -172,6 +175,18 @@ class CollsManager(object):
         key = user + ':' + coll + self.READ_KEY
         res = self.redis.hget(key, self.PUBLIC)
         return res == '1'
+
+    def set_public(self, user, coll, public):
+        if not self.can_admin_coll(user, coll):
+            return False
+
+        key = user + ':' + coll + self.READ_KEY
+        if public:
+            self.redis.hset(key, self.PUBLIC, 1)
+        else:
+            self.redis.hdel(key, self.PUBLIC)
+
+        return True
 
     def can_read_coll(self, user, coll):
         return self._check_access(user, coll, self.READ_KEY)

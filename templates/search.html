@@ -18,6 +18,9 @@
 <script src="/static/__shared/external/jquery.selectBoxIt.min.js"></script>
 <link rel="stylesheet" href="/static/__shared/external/jquery.selectBoxIt.css"/>
 
+<link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
+<script src="/static/__shared/external/bootstrap-switch.js"></script>
+
 <style>
     table.dataTable td, table.dataTable th {
         font-size: 18px;
@@ -93,6 +96,22 @@
         }
 
         $('#thetab a[href=' + start_tab +']').tab('show');
+        
+        {% if can_admin() %}
+        // Public/Private
+        $("#is_public").bootstrapSwitch();
+         
+        $("#is_public").on('switchChange.bootstrapSwitch', function(event, state) {
+            $.ajax("/_setaccess?coll={{ path }}&public=" + state, {
+                success: function() {},
+                error: function() {
+                    //$("#is_public").prop("checked", !state);
+                    $("#is_public").bootstrapSwitch("toggleState", true)
+                    console.log("err");
+                }
+            });
+        });
+        {% endif %}
     });
 
     function show_pages() {
@@ -183,11 +202,12 @@
         <h1 style="display: inline">{{ title | default(coll) }}&nbsp;<small>/{{ coll }}</small>
         </h1>
         <span style="font-size: 14px" class="pull-right">
-            <div style="margin: 15px 15px; display: inline-block">
-                {% if is_public %}
-                <span class="glyphicon glyphicon-globe"></span>Public
+            <div style="margin: 18px 20px; display: inline-block">
+                <span class="glyphicon glyphicon-globe" style="margin-right: 4px"></span><span style="margin-right: 4px">Public?</span> 
+                {% if can_admin() %}
+                <input type="checkbox" id="is_public" {{ 'checked' if is_public else '' }} data-on-color="success" data-inverse="true" data-size="mini" data-on-text="YES" data-off-text="NO">
                 {% else %}
-                <span class="glyphicon glyphicon-lock"></span>Private
+                <b>{{ 'YES' if is_public else 'NO' }}</b>
                 {% endif %}
             </div>
         </span>

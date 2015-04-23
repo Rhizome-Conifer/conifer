@@ -147,7 +147,6 @@ def post_get(name, default=''):
     return res
 
 def flash_message(msg, msg_type='danger'):
-    print(msg_type, msg)
     sesh = request.environ.get('beaker.session')
     if sesh:
         sesh['message'] = msg_type + ':' + msg
@@ -274,22 +273,18 @@ def create_coll_routes(r):
 
         if cork.login(username, password):
             redir_to = get_redir_back(LOGIN_PATH, r.user_home(username))
-            #sesh = request.environ.get('beaker.session')
-            #header = request.headers.get('Host')
-            #if header:
-                #header = header.split(':')[0]
-                #sesh.domain = '.' + header
         else:
             flash_message('Invalid Login. Please Try Again')
             redir_to = LOGIN_PATH
 
+        request.environ['webrec.delete_all_cookies'] = True
         redirect(redir_to)
-
 
     @route(LOGOUT_PATH)
     def logout():
         #redir_to = get_redir_back(LOGOUT_PATH, '/')
         redir_to = '/'
+        request.environ['webrec.delete_all_cookies'] = True
         cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
 
@@ -560,6 +555,19 @@ You can now <b>login</b> with your new password!', 'success')
     @addcred(router=r)
     def record_redir(info):
         redirect('/' + info.path)
+
+
+    # Toggle Public
+    # ============================================================================
+    @route(['/_setaccess'])
+    def setaccess():
+        user, coll = r.get_user_coll(request.query['coll'])
+        public = request.query['public'] == 'true'
+        if manager.set_public(user, coll, public):
+            return {}
+        else:
+            raise HTTPError(status=403, body='No permission to change')
+
 
     # Pages
     # ============================================================================
