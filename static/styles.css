@@ -64,6 +64,13 @@ p.status-badge {
     line-height: 0.3em;
 }
 
+.glyphicon.glyphicon-dot-lg:before {
+    content: "\25cf";
+    font-size: 2em;
+    vertical-align: sub;
+    line-height: 0.1em;
+}
+
 #login {
     display: inline;
 }

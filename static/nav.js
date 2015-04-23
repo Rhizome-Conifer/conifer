@@ -1,11 +1,13 @@
+var doc_window;
+
 if (window == window.top && window.frames.length) {
-    doc_window = window.frames[0];
+    doc_window = document.getElementById("replay_iframe").contentWindow;
 } else {
     doc_window = window.top;
 }
 
 $(function() {
-    $(".nav-search button").click(function() {
+    $(".url-rec-play").click(function() {
         var prefix = $(this).attr("data-path-prefix");
         var url = $("#theurl").val();
         if (url != '') {
@@ -44,4 +46,25 @@ function ts_to_date(ts)
                    ts.substring(12, 14) + "-00:00");
 
     return new Date(datestr).toLocaleString();
+}
+
+function add_page()
+{
+    var http = new XMLHttpRequest();
+    http._no_rewrite = true;
+    var url = "/_addpage?coll=" + doc_window.wbinfo.coll;
+
+    var params = "url=" + doc_window.wbinfo.url;
+
+    if (doc_window.document.title) {
+        params += "&title=" + doc_window.document.title;
+    }
+
+    http.open("POST", url, false);
+
+    //Send the proper header information along with the request
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    //http.setRequestHeader("Content-length", params.length);
+    //http.setRequestHeader("Connection", "close");
+    http.send(params);
 }

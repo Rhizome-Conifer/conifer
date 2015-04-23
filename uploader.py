@@ -119,9 +119,15 @@ def iter_all_accounts(root_dir):
     if not os.path.isdir(users_dir):
         return
     for user in os.listdir(users_dir):
+        if user.startswith('.'):
+            continue
         colls_dir = os.path.join(users_dir, user, 'collections')
+        if not os.path.isdir(colls_dir):
+            continue
         for coll in os.listdir(colls_dir):
             archive_dir = os.path.join(colls_dir, coll, 'archive')
+            if not os.path.isdir(archive_dir):
+                continue
             for warc in os.listdir(archive_dir):
                 key = user + ':' + coll
                 local_full_path = os.path.join(archive_dir, warc)

@@ -34,12 +34,12 @@
     wbinfo = {}
     wbinfo.prefix = "{{ wbrequest.wb_prefix }}";
     wbinfo.coll = "{{ wbrequest.coll }}";
-    wbinfo.capture_url = "{{ url }}";
+    wbinfo.url = "{{ url }}";
     wbinfo.timestamp = "{{ wbrequest.wb_url.timestamp }}";
     wbinfo.is_frame = true;
-    wbinfo.is_recording = {{ 'true' if is_recording else 'false' }};
     wbinfo.frame_mod = "{{ wbrequest.options.frame_mod }}";
     wbinfo.replay_mod = "{{ wbrequest.options.replay_mod }}";
+    wbinfo.state = "{{ state }}";
 </script>
 
 
@@ -50,6 +50,8 @@
 
 <script src='/static/__shared/controller.js'> </script>
 
+<script src="/static/__shared/nav.js"></script>
+
 <script src='/static/__shared/automate.js'> </script>
 
 {% endblock %}
@@ -57,7 +59,7 @@
 {% block body %}
 {% include 'navbar.html' %}
 <div class="wb_iframe_div">
-    <iframe id="iframe" src="{{ wbrequest.wb_prefix + embed_url }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"/>
+    <iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"/>
 </div>
 
 {% endblock %}

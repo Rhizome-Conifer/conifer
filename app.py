@@ -161,8 +161,11 @@ def call_pywb(info=None, state=None):
         request.path_shift(router.get_path_shift())
         request.environ['w_output_dir'] = router.get_archive_dir(info.user, info.coll)
         request.environ['w_sesh_id'] = info.path
-        request.environ['pywb.template_params']['state'] = state
-        request.environ['pywb.template_params']['coll'] = info.path
+        params = request.environ['pywb.template_params']
+        params['state'] = state
+        params['path'] = info.path
+        params['user'] = info.user
+        params['coll'] = info.coll
 
     try:
         resp = pywb_router(request.environ)
@@ -198,7 +201,8 @@ class addcred(object):
                 print(e)
                 print('SESH INVALID')
                 if sesh:
-                    sesh.invalidate()
+                    sesh.delete()
+                    #sesh.invalidate()
 
             message = ''
             msg_type = ''

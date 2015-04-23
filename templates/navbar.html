@@ -26,6 +26,11 @@
                 {% if state == 'rec' %}
                 <p class="status-badge navbar-text label label-primary">Recording</p>
                 
+                <p class="navbar-text">
+                    <a id="finish" target="_parent" href="/{{path}}" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-stop" style="margin-right: 4px"></span>Done Recording</a>
+                </p>
+
                 {% elif state == 'play' %}
                 <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
                 {% endif %}
@@ -54,27 +59,40 @@
                 <a id="login" target="_parent" href="/_login" class="btn btn-default btn-sm navbar-link">Login</a>
             </p>
             {% endif %}
-            
-            {% if coll %}
-            <form class="navbar-right nav-search" onsubmit="return false">
-                <div class="input-group input-group-sm">
-                    
-                    <input id="theurl" type="text" placeholder="Enter url here to record or play back" class="input-small form-control">
-                    
-                    <span class="input-group-btn">
-                        {% if can_write() %}
-                        <button class="btn btn-primary btn-xs" id="rec" data-path-prefix="/{{path}}/record/" type="submit">
-                            <span class="glyphicon glyphicon-dot"></span><span></span>
-                        </button>
-                        {% endif %}
-                        <button class="btn btn-success btn-xs" id="play" data-path-prefix="/{{path}}/" type="submit">
-                            <span class="glyphicon glyphicon-play"></span><span></span>
-                        </button>
-                    </span>
-                </div>
-            </form>
-            {% endif %}
+
         </div>
+        {% if state %}
+        <form class="navbar-left" style="width: 100%; margin-bottom: 10px" onsubmit="return false">
+            <div class="input-group input-group-sm">
+
+                <input id="theurl" type="text" placeholder="Enter url here to record or play back" class="input-small form-control"/>
+
+                <div class="input-group-btn">
+                    {% if state == 'rec' %}
+                    <button class="btn btn-primary btn-xs url-rec-play" id="rec" data-path-prefix="/{{path}}/record/" type="submit">
+                        <span class="glyphicon glyphicon-dot"></span><span></span>
+                    </button>
+                    {% else %}
+                    <button class="btn btn-success btn-xs url-rec-play" id="play" data-path-prefix="/{{path}}/" type="submit">
+                        <span class="glyphicon glyphicon-play"></span><span></span>
+                    </button>
+                    {% endif %}
+                    <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <span class="glyphicon glyphicon-wrench"></span><span>Tools</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                    </ul>
+
+                </div>
+            </div>
+        </form>
+        {% endif %}
     </div>
 </nav>
 
