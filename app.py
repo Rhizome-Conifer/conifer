@@ -256,13 +256,17 @@ RESET_PATH_FILL = '/_resetpassword/{0}?username={1}'
 
 DEFAULT_DESC = """
 
-## {0} Collection Home Page
+## About {0}
 
 This is a *new* collection.
 
 It doesn't yet have a description, but it may be added soon.
 
-Click on the [Records](#records) tab to browse through any recorded content.
+Click on the **Records** tab to browse through any recorded content.
+
+(If you are the owner, you can click the *Edit* button top right to to edit this description)
+
+Happy Recording!
 
 """
 
@@ -562,6 +566,7 @@ You can now <b>login</b> with your new password!', 'success')
             title = coll
 
         desc = manager.get_metadata(info.user, info.coll, 'desc')
+        print(desc)
         if not desc:
             desc = DEFAULT_DESC.format(title)
 

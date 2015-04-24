@@ -33,12 +33,12 @@
                     <span id="curr_size_info" class="badge" style="margin-right: 4px"></span>
                 </p>
 
-                {#
+                
                 <p class="navbar-text">
-                    <a id="finish" target="_parent" href="/{{path}}" class="btn btn-default btn-xs">
-                        <span class="glyphicon glyphicon-tasks" style="margin-right: 4px"></span>Browse Recorded</a>
+                    <a id="finish" target="_parent" href="/{{path}}#records" title="Browse All Records" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-tasks" style="margin-right: 4px"></span>Browse All</a>
                 </p>
-                #}
+                
                 
                 {% elif state == 'play' %}
                 <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
@@ -47,7 +47,7 @@
 
                 {% if state %}
                 <li style="margin-left: 4px" class="navbar-btn">
-                    <button id="links-btn" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#links-modal">
+                    <button id="links-btn" class="btn btn-xs btn-default" data-toggle="modal" data-target="#links-modal">
                         <span class="glyphicon glyphicon-list"></span> <span>Links...</span>
                     </button>
                 </li>
