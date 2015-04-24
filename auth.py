@@ -312,6 +312,33 @@ class CollsManager(object):
                }
                 #'pages': num_pages}
 
+    def add_to_queue(self, user, coll, data):
+        if not self.can_write_coll(user, coll):
+            return {}
+
+        key = user + ':' + coll + ':q'
+        urls = data.get('urls')
+        if not urls or not isinstance(urls, list):
+            return {}
+
+        llen = self.redis.rpush(key, *urls)
+
+        return {'num_added': len(urls),
+                'q_len': llen}
+
+    def get_from_queue(self, user, coll):
+        if not self.can_write_coll(user, coll):
+            return {}
+
+        key = user + ':' + coll + ':q'
+        url = self.redis.lpop(key)
+        llen = self.redis.llen(key)
+        if not url:
+            return {}
+
+        return {'url': url,
+                'q_len': llen}
+
     def add_page(self, user, coll, pagedata):
         if not self.can_write_coll(user, coll):
             print('Cannot Write')

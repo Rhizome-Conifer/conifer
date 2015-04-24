@@ -70,6 +70,10 @@ function add_page(capture_url)
         doc_window = window.top;
     }
     
+    if (!doc_window.wbinfo) {
+        return;
+    }
+    
     var http = new XMLHttpRequest();
     http._no_rewrite = true;
     

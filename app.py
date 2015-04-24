@@ -602,6 +602,20 @@ You can now <b>login</b> with your new password!', 'success')
         return info
 
 
+    # Queue
+    # ============================================================================
+    @route('/_queue/:user/:coll')
+    def get_queue(user, coll):
+        return manager.get_from_queue(user, coll)
+
+
+    @post('/_queue/:user/:coll')
+    def rec_queue(user, coll):
+        data = request.json
+        res = manager.add_to_queue(user, coll, data)
+        return res
+
+
     # WARC Files -- List
     # ============================================================================
     @route('/_files')

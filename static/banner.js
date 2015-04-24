@@ -41,7 +41,7 @@ html {\
     document.body.insertBefore(banner, document.body.firstChild);
     
     if (wbinfo.state == "rec") {
-        add_page();
+        //add_page();
 
         wbinfo.replay_url = window.location.protocol + "//" + window.location.host + "/" + wbinfo.coll + "/";
         if (wbinfo.timestamp) {

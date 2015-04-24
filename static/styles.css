@@ -111,3 +111,25 @@ p.status-badge {
     0%, 100% {opacity: 1}
     50% {opacity: 0}
 }
+
+#links-modal input[type=checkbox] {
+    margin-right: 4px;
+}
+
+#links-selected-list {
+    overflow-y: scroll; 
+    max-height: 400px; 
+    height: 100%
+}
+
+#links-toggle-all {
+    margin-left: 16px;
+}
+
+.btn:focus {
+    outline: none !important;
+}
+
+.btn .focus {
+    outline: none !important;
+}

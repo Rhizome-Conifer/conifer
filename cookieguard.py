@@ -43,7 +43,7 @@ class CookieGuard(object):
             return
 
         sesh_cookie = self.extract_cookie(cookie, self.sesh_key)
-        if not cookie:
+        if not sesh_cookie:
             return
 
         cookie = cookie.replace(sesh_cookie, '')

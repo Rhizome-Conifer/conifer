@@ -28,30 +28,41 @@
                     <span class="pulse glyphicon glyphicon-dot-sm" style="margin-right: 4px"></span>
                     Recording
                 </p>
-                
+
                 <p class="navbar-text">
                     <span id="curr_size_info" class="badge" style="margin-right: 4px"></span>
                 </p>
-                
+
+                {#
                 <p class="navbar-text">
                     <a id="finish" target="_parent" href="/{{path}}" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-tasks" style="margin-right: 4px"></span>Browse Recorded</a>
                 </p>
-
+                #}
+                
                 {% elif state == 'play' %}
                 <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
                 {% endif %}
-                
 
-                {# remove for now
-                <li style="margin-left: 40px" class="navbar-btn">
-                    <span class="btn-group navbar-btn" data-toggle="buttons">
-                        <label class="btn btn-xs btn-default"><span id="automate-l" >Autoscroll</span>
+
+                {% if state %}
+                <li style="margin-left: 4px" class="navbar-btn">
+                    <button id="links-btn" class="btn btn-xs btn-primary" data-toggle="modal" data-target="#links-modal">
+                        <span class="glyphicon glyphicon-list"></span> <span>Links...</span>
+                    </button>
+                </li>
+
+                <li style="margin-left: 4px" class="navbar-btn">
+                    <div style="display: inline" class="btn-group navbar-btn" data-toggle="buttons">
+                        <label class="btn btn-xs btn-default"><span id="automate-l" >Automate</span>
                             <input id="automate" type="checkbox" autocomplete="off"/>
                         </label>
-                    </span>
+                    </div>
                 </li>
-                #}                
+
+                <p class="navbar-text" id="auto-info"></p>
+                {% endif %}
+
             </ul>
             {% if curr_user %}
             <p class="navbar-text navbar-right">(<a target="_parent" href="/_logout" class="navbar-link">Logout</a>)</p>

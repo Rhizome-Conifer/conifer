@@ -1,0 +1,47 @@
+<!-- Links -->
+<div class="modal fade" id="links-modal" tabindex="-1" role="dialog" aria-labelledby="links-list-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4>Link Selector</h4>
+                <div class="input-group input-group-sm">
+                    <div class="input-group-btn">                      
+                        <button id="links-grab" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            <span>Query</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="links-query-opts" class="dropdown-menu" role="menu">
+                            <li><a href="#" data-query="a[href]">All</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#" data-query="a.twitter-timeline-link..data-expanded-url">Twitter Embeds</a></li>
+                        </ul>
+                    </div>
+
+                    <input id="links-query" type="text" value="a[href]" class="input-small form-control"/>
+
+                    <div class="input-group-btn"> 
+                        <button id="links-search" class="btn btn-default">
+                            <span class="glyphicon glyphicon-search"></span>Find Links
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <h5 id="links-count" class="pull-right"></h5>
+                <h5>
+                    <input id="links-toggle-all" type="checkbox"/>Select All/None
+                </h5>
+                <ul id="links-selected-list" class="list-group">
+                    <p class="text-center">No links found yet. Click <b>Find</b> above to search for links.</p>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button id="links-add-q" type="button" class="btn btn-primary">Record Selected</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>   
