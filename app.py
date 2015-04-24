@@ -254,6 +254,19 @@ RESET_PATH = '/_resetpassword/:resetcode'
 RESET_PATH_FILL = '/_resetpassword/{0}?username={1}'
 
 
+DEFAULT_DESC = """
+
+## {0} Collection Home Page
+
+This is a *new* collection.
+
+It doesn't yet have a description, but it may be added soon.
+
+Click on the [Records](#records) tab to browse through any recorded content.
+
+"""
+
+
 # ============================================================================
 def create_coll_routes(r):
 
@@ -544,13 +557,23 @@ You can now <b>login</b> with your new password!', 'success')
         if not manager.can_read_coll(info.user, info.coll):
             raise HTTPError(status=404, body='No Such Collection')
 
+        title = manager.get_metadata(info.user, info.coll, 'title')
+        if not title:
+            title = coll
+
+        desc = manager.get_metadata(info.user, info.coll, 'desc')
+        if not desc:
+            desc = DEFAULT_DESC.format(title)
+
+        is_public = manager.is_public(info.user, info.coll)
+
         return {'user': info.user,
                 'coll': info.coll,
                 'path': info.path,
 
-                'is_public': manager.is_public(info.user, info.coll),
-
-                'title': manager.get_metadata(info.user, info.coll, 'title')
+                'is_public': is_public,
+                'title': title,
+                'desc': desc
                }
 
     @route([r.COLL + '/record', r.COLL + '/record/'])
@@ -591,6 +614,16 @@ You can now <b>login</b> with your new password!', 'success')
         pagelist = manager.list_pages(user, coll)
 
         return {"data": pagelist}
+
+
+    # User Desc
+    # ============================================================================
+    @post('/_desc/:user/:coll')
+    def set_desc(user, coll):
+        if manager.set_metadata(user, coll, 'desc', request.body.read()):
+            return {}
+        else:
+            raise HTTPError(status=404, body='Not found')
 
 
     # Info

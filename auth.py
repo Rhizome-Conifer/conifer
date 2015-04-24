@@ -235,12 +235,20 @@ class CollsManager(object):
 
         return True
 
-    def get_metadata(self, user, coll, name):
+    def get_metadata(self, user, coll, name, def_val=''):
         table = self._get_user_colls(user)[coll]
         if not table:
             print('NO TABLE?')
             return None
-        return table.get(name, '')
+        return table.get(name, def_val)
+
+    def set_metadata(self, user, coll, name, value):
+        if not self.can_write_coll(user, coll):
+            return False
+
+        table = self._get_user_colls(user)[coll]
+        table[name] = value
+        return True
 
     def add_collection(self, user, coll, title, access):
         curr_user, curr_role = self.curr_user_role()

@@ -21,6 +21,11 @@
 <link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
 <script src="/static/__shared/external/bootstrap-switch.js"></script>
 
+<link href="/static/__shared/external/bootstrap-markdown.min.css" rel="stylesheet">
+<script src="/static/__shared/external/marked.min.js"></script>
+<script src="/static/__shared/external/bootstrap-markdown.js"></script>
+
+
 <style>
     table.dataTable td, table.dataTable th {
         font-size: 18px;
@@ -89,7 +94,7 @@
             }
         });
 
-        var start_tab = "#records";
+        var start_tab = "#home";
 
         if (window.location.hash.match('#')) {
             start_tab = window.location.hash;
@@ -111,6 +116,63 @@
                 }
             });
         });
+         
+         
+         $("#home-view").html(marked($("#home-markdown").html()));
+         
+         $("#home-edit").click(function() {
+             
+             if ($(".md-editor").length) {
+                 console.log("already set");
+                 return;
+             }
+             
+             $("#home-view").html($("#home-markdown").html());
+             
+             function closeEditor()
+             {
+                 $(".md-editor").remove();
+
+                 $("#home-edit").removeClass("active");
+
+                 $("#home").append($('<div>').attr("id", "home-view").
+                                   append(marked($("#home-markdown").html())));
+                 
+             };
+             
+             $("#home-view").markdown({ 
+                 savable: true,
+                 height: "400",
+                 //hideable: true,
+                 resize: "both",
+                 onSave: function (e) {                     
+                     var content = e.getContent();
+                     
+                     $.ajax({
+                         type: "POST",
+                         url: "/_desc/{{ path }}",
+                         data: content,
+                         success: function() {
+                             $("#home-markdown").html(content);
+                             closeEditor();
+                         },
+                         error: function() {
+                             console.log("err");
+                         },
+                         dataType: 'text',
+                     });
+                 },
+                 
+                 footer: function(e) {
+                     return "<button id='home-edit-cancel' class='btn btn-default'>Cancel</button>";
+                 }
+             });
+             
+             $("#home-edit-cancel").click(function() {
+                 closeEditor();
+             });
+         });
+         
         {% endif %}
     });
 
@@ -256,7 +318,12 @@
         <!-- Nav tabs -->
         <ul id="thetab" class="nav nav-tabs" role="tablist">
             <li role="presentation">
-                <a href="#records" aria-controls="pages" role="tab" data-toggle="tab">
+                <a href="#home" aria-controls="home" role="tab" data-toggle="tab">
+                    <span class="glyphicon glyphicon-home"></span>Home
+                </a>
+            </li>
+            <li role="presentation">
+                <a href="#records" aria-controls="records" role="tab" data-toggle="tab">
                     <span class="glyphicon glyphicon-file"></span>Records
                 </a>
             </li>
@@ -289,6 +356,13 @@
 <div role="tabpanel" style="margin-top: 20px">
     <!-- Tab panes -->
     <div class="tab-content">
+        <div role="tabpanel" class="tab-pane" id="home">
+            <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">Edit</button>
+            
+            <div id="home-markdown" style="display: none">{{desc}}</div>
+            <div id="home-view">
+            </div>
+        </div>
         <div role="tabpanel" class="tab-pane" id="records">
             <table id="pageTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
                 <thead>
