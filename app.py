@@ -256,15 +256,11 @@ RESET_PATH_FILL = '/_resetpassword/{0}?username={1}'
 
 DEFAULT_DESC = """
 
-## About {0}
+#### About {0}
 
-This is a *new* collection.
-
-It doesn't yet have a description, but it may be added soon.
+*This collection doesn't yet have a description*
 
 Click on the **Records** tab to browse through any recorded content.
-
-(If you are the owner, you can click the *Edit* button top right to to edit this description)
 
 Happy Recording!
 
