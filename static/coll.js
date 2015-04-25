@@ -159,6 +159,7 @@ function show_pages() {
             { "data": "title" },
             { "data": "ts" },
         ],
+        "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
         "columnDefs": [ {
             "targets": [0, 1],
             "render": render_pages,
@@ -210,6 +211,7 @@ function show_warcs() {
             { "data": "mtime", type: "num" },
             { "data": "size", type: "num"},
         ],
+        "lengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
         "columnDefs": [ {
             "targets": [0],
             "render": render_warcs,

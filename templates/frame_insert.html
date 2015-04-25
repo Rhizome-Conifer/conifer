@@ -62,7 +62,7 @@
 {% block body %}
 {% include 'navbar.html' %}
 <div class="wb_iframe_div">
-    <iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
+    <iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
 </div>
 
 {% include 'links.html' %}

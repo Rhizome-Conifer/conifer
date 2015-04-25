@@ -22,6 +22,9 @@ set_state = function(state) {
 
 // Links
 
+var dupeHash = {};
+
+
 $(function() {
     
     $("#links-search").click(function() {
@@ -37,11 +40,10 @@ $(function() {
         
         var doc = $("#replay_iframe").contents()[0];
         
-        console.log(query);
-        
         var extract_orig = $("#replay_iframe")[0].contentWindow._wb_wombat.extract_orig;
         
         var results = $(query, doc);
+        
         $("#links-count").text(results.length + " Link(s)");
         
         results.each(function(i, elem) {
@@ -57,11 +59,19 @@ $(function() {
             
             url = extract_orig(url);
             
+            if (dupeHash[url]) {
+                return;
+            }
+            
+            dupeHash[url] = true;
+            
             $("#links-selected-list").
                 append($("<li>").addClass("list-group-item").
                   append($("<input>").attr("type", "checkbox")).
                     append($("<span>").append(url)));
         });
+        
+        $("#links-selected-list input[type=checkbox]").prop("checked", true);
     });
     
     $("#links-query-opts a").click(function(event) {
@@ -86,11 +96,13 @@ $(function() {
             url: '/_queue/' + doc_window.wbinfo.coll,
             data: JSON.stringify(data),
             success: function(data) { 
-                console.log(data.num_added);
+                $("#links-status").text(data.num_added + " Queued for Recording!");
             },
             contentType: "application/json",
             dataType: 'json'
         });
+        
+        window.open("/" + doc_window.wbinfo.coll + "/record/", "_blank");
     });
     
     // The queue automation
@@ -104,6 +116,11 @@ $(function() {
             $("#automate-l").text("Start Automated Recording");
         }
     });
+    
+    if (wbinfo.state == "rec" && !wbinfo.url) {
+        console.log("automate");
+        $("#automate").click();
+    }
 });
 
 
@@ -114,8 +131,8 @@ function auto_on_load()
 {
     is_loading = true;
 
-    //start_umbra();
-    auto_loop_id = setTimeout(auto_load_next_url, 10); 
+    start_umbra();
+    //auto_loop_id = setTimeout(auto_load_next_url, 10); 
 }
 
 function start_loop_q()
@@ -131,12 +148,18 @@ function stop_loop_q()
 
 function auto_load_next_url()
 {
-    $.getJSON("/_queue/" + doc_window.wbinfo.coll, function(data) {
+    var wbinfo = doc_window.wbinfo || window.wbinfo;
+    
+    if (!wbinfo) {
+        console.warn("No Collection!");
+    }
+    
+    $.getJSON("/_queue/" + wbinfo.coll, function(data) {
         if (!data) {
             return;
         }
         
-        if (data.q_len) {
+        if (data.q_len != undefined) {
             $("#auto-info").text(data.q_len + " urls left!");
         }
         
@@ -146,8 +169,84 @@ function auto_load_next_url()
         
         is_loading = true;
         console.log("Loading: " + data.url);
-        doc_window.location.href = "/" + doc_window.wbinfo.coll + "/record/mp_/" + data.url;
+        doc_window.location.href = "/" + wbinfo.coll + "/record/mp_/" + data.url;
     });
+}
+
+function get_behavior(host)
+{
+    //    var behavior_mapping = [
+    //        [/(?:.*\.)?facebook.com$/, "facebook.js"],
+    //        [/(?:.*\.)?flickr.com$/, "flickr.js"],
+    //        [/(?:.*\.)?instagram.com$/, "instagram.js"],
+    //        [/(?:.*\.)?vimeo.com$/, "vimeo.js"],
+    //        [/.*/, "default.js"],
+    //    ];
+    //    
+    //    for (var i = 0; i < behavior_mapping.length; i++) {
+    //        var rule = behavior_mapping[i];
+    //        if (host.match(rule[0])) {
+    //            return rule[1];
+    //        }
+    //    }
+    //    
+    //    return undefined;
+
+    return "default.js";
+}
+
+var umbra_count;
+
+function start_umbra()
+{
+    if (!doc_window || !doc_window.WB_wombat_location || !doc_window.WB_wombat_location.host) {
+        return;
+    }
+    
+    var file = get_behavior(doc_window.WB_wombat_location.host);
+
+    if (!file) {
+        return;
+    }
+
+    var script_name = "/static/__shared/behaviors/" + file;
+
+    var doc = doc_window.document;
+    
+    var elem = doc.createElement("script");
+    elem.src = script_name;
+    elem._no_rewrite = true;
+    doc.body.appendChild(elem);
+    
+    umbra_count = 0;
+    
+    auto_loop_id = setTimeout(check_umbra, 2000); 
+}
+
+function check_umbra()
+{
+    function wait_for_umbra() {
+        if (!doc_window.umbraBehaviorFinished) {
+            return false;
+        }
+        
+        if (doc_window.umbraBehaviorFinished()) {
+            return false;
+        }
+        
+        if (umbra_count >= 5) {
+            return false;
+        }
+        
+        umbra_count++;
+        return true;
+    }
+    
+    if (wait_for_umbra()) {
+        auto_loop_id = setTimeout(check_umbra, 2000);
+    } else {
+        auto_load_next_url();
+    }
 }
 
 

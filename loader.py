@@ -216,6 +216,11 @@ class DynRecord(RewriteHandler):
         if 'webrec.request_cookie' in wbrequest.env:
             wbrequest.env['HTTP_COOKIE'] = wbrequest.env['webrec.request_cookie']
 
+        try:
+            del wbrequest.env['HTTP_X_PUSH_STATE_REQUEST']
+        except:
+            pass
+
         return req_headers
 
     def _make_response(self, wbrequest, status_headers, gen, is_rewritten):
