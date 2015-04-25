@@ -9,14 +9,15 @@ class CookieGuard(object):
         self.split_cookie(environ)
 
         def guard_start_response(status, headers, exc_info=None):
-            if environ.get('webrec.delete_all_cookies'):
-                self.delete_all_cookies(environ, headers)
+            res = environ.get('webrec.delete_all_cookies')
+            if res:
+                self.delete_all_cookies(environ, headers, res)
 
             return start_response(status, headers, exc_info)
 
         return self.app(environ, guard_start_response)
 
-    def delete_all_cookies(self, environ, headers):
+    def delete_all_cookies(self, environ, headers, type_):
         cookie_header = environ.get('webrec.request_cookie')
         if not cookie_header:
             cookie_header = environ.get('HTTP_COOKIE')
@@ -29,7 +30,7 @@ class CookieGuard(object):
 
         for cook in all_cooks:
             cook = cook.split('=')[0]
-            if cook == self.sesh_key:
+            if type_ != 'all' and cook == self.sesh_key:
                 continue
 
             buff = '{0}=deleted; Expires={1}; Path=/'.format(cook, expires)

@@ -296,14 +296,14 @@ def create_coll_routes(r):
             flash_message('Invalid Login. Please Try Again')
             redir_to = LOGIN_PATH
 
-        request.environ['webrec.delete_all_cookies'] = True
+        request.environ['webrec.delete_all_cookies'] = 'non_sesh'
         redirect(redir_to)
 
     @route(LOGOUT_PATH)
     def logout():
         #redir_to = get_redir_back(LOGOUT_PATH, '/')
         redir_to = '/'
-        request.environ['webrec.delete_all_cookies'] = True
+        request.environ['webrec.delete_all_cookies'] = 'all'
         cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
 
@@ -558,6 +558,7 @@ You can now <b>login</b> with your new password!', 'success')
     @jinja2_view('search.html')
     @addcred(router=r)
     def coll_page(info):
+        print('COLL PAGE')
         if not manager.can_read_coll(info.user, info.coll):
             raise HTTPError(status=404, body='No Such Collection')
 
@@ -581,7 +582,7 @@ You can now <b>login</b> with your new password!', 'success')
                 'desc': desc
                }
 
-    @route([r.COLL + '/record', r.COLL + '/record/'])
+    #@route([r.COLL + '/record', r.COLL + '/record/'])
     @addcred(router=r)
     def record_redir(info):
         redirect('/' + info.path)
@@ -688,7 +689,7 @@ You can now <b>login</b> with your new password!', 'success')
 
     # pywb Replay / Record
     # ============================================================================
-    @route([r.COLL + '/record/<:re:.*>'], method='ANY')
+    @route([r.COLL + '/record/<:re:.*>', r.COLL + '/record/', r.COLL + '/record'], method='ANY')
     @addcred(router=r)
     def record(info):
         if not manager.can_write_coll(info.user, info.coll):

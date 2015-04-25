@@ -26,6 +26,8 @@ collections:
             rewrite_base: true
             rewrite_rel_canon: false
 
+        search_html: frame_insert.html
+
     '':
         #index_paths: indexes/index.cdxj
         index_paths: *redis_url
