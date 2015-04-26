@@ -17,8 +17,11 @@ class MultiUserRouter(BaseRouter):
     def get_user_account_root(self, user):
         return os.path.join(self.root_dir, 'accounts', user)
 
+    def get_coll_root(self, user, coll):
+        return os.path.join(self.root_dir, 'accounts', user, 'collections', coll)
+
     def get_archive_dir(self, user, coll):
-        return os.path.join(self.root_dir, 'accounts', user, 'collections', coll, 'archive')
+        return os.path.join(self.get_coll_root(user, coll), 'archive')
 
     def user_home(self, user):
         return '/' + user

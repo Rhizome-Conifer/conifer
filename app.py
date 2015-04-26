@@ -1,4 +1,4 @@
-from bottle import route, request, response, post, default_app
+from bottle import route, request, response, post, delete, default_app
 from bottle import redirect, run, HTTPError, HTTPResponse
 from bottle import hook
 
@@ -515,6 +515,20 @@ You can now <b>login</b> with your new password!', 'success')
         redirect(redir_to)
 
     # ============================================================================
+    # Delete Collection
+    @post('/_delete')
+    def delete_coll():
+        path = request.query.get('coll', '')
+        user, coll = r.get_user_coll(path)
+        if manager.delete_collection(user, coll):
+            flash_message('Collection {0} has been deleted!'.format(coll), 'success')
+            redirect('/' + user)
+        else:
+            flash_message('There was an error deleting {0}'.format(coll))
+            redirect('/' + user + '/' + coll + '#settings')
+
+
+    # ============================================================================
     # Banner
     @route('/banner')
     @jinja2_view('banner_page.html')
@@ -568,7 +582,6 @@ You can now <b>login</b> with your new password!', 'success')
     @jinja2_view('search.html')
     @addcred(router=r)
     def coll_page(info):
-        print('COLL PAGE')
         if not manager.can_read_coll(info.user, info.coll):
             raise HTTPError(status=404, body='No Such Collection')
 
@@ -577,7 +590,6 @@ You can now <b>login</b> with your new password!', 'success')
             title = coll
 
         desc = manager.get_metadata(info.user, info.coll, 'desc')
-        print(desc)
         if not desc:
             desc = DEFAULT_DESC.format(title)
 
@@ -680,7 +692,6 @@ You can now <b>login</b> with your new password!', 'success')
     @route(['/:user/:coll/warcs/:warc'])
     @addcred()
     def download_warcs(user, coll, warc):
-        print('WARC: ' + warc)
         res = manager.download_warc(user, coll, warc)
         if not res:
             raise HTTPError(status=404, body='No Such WARC')

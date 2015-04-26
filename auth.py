@@ -7,6 +7,7 @@ import json
 import os
 import re
 import base64
+import shutil
 
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
@@ -94,6 +95,9 @@ class RedisTable(object):
         string = json.dumps(values)
         return self.redis.hset(self.key, name, string)
 
+    def __delitem__(self, name):
+        return self.redis.hdel(self.key, name)
+
     def __getitem__(self, name):
         string = self.redis.hget(self.key, name)
         result = json.loads(string)
@@ -134,22 +138,34 @@ class RedisHashTable(object):
         self.thedict[name] = value
         self.redistable[self.key] = self.thedict
 
+    def __delitem__(self, entry):
+        del self.thedict[name]
+        self.redistable[self.key] = self.thedict
+
     def get(self, name, default_val=''):
         return self.thedict.get(name, default_val)
 
     def __nonzero__(self):
         return bool(self.thedict)
 
-
 class CollsManager(object):
-    WRITE_KEY = ':w'
-    READ_KEY = ':r'
+    COLL_KEY = ':<colls>'
+
     PUBLIC = '@public'
     GROUP = 'g:'
-    COLL_KEY = ':<colls>'
-    PAGE_KEY = 'p:'
 
-    DONE_WARC = 'done:warc:'
+    WRITE_KEY = ':w'
+    READ_KEY = ':r'
+    PAGE_KEY = ':p'
+    Q_KEY = ':q'
+
+    DEDUP_KEY = ':d'
+    CDX_KEY = ':cdxj'
+    WARC_KEY = ':warc'
+    DONE_WARC_KEY = ':warc:done'
+
+    ALL_KEYS = [WRITE_KEY, READ_KEY, PAGE_KEY, Q_KEY,
+                DEDUP_KEY, CDX_KEY, WARC_KEY, DONE_WARC_KEY]
 
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,15}$')
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'guest', 'settings', 'profile']
@@ -161,6 +177,9 @@ class CollsManager(object):
         self.redis = redis
         self.path_router = path_router
         self.remotemanager = remotemanager
+
+    def make_key(self, user, coll, type_=''):
+        return user + ':' + coll + type_
 
     def curr_user_role(self):
         try:
@@ -179,7 +198,7 @@ class CollsManager(object):
         if user == curr_user:
             return self.has_collection(user, coll)
 
-        key = user + ':' + coll + type_
+        key = self.make_key(user, coll, type_)
 
         if not curr_user:
             res = self.redis.hmget(key, self.PUBLIC)
@@ -190,10 +209,10 @@ class CollsManager(object):
         return any(res)
 
     def _add_access(self, user, coll, type_, to_user):
-        self.redis.hset(user + ':' + coll + type_, to_user, 1)
+        self.redis.hset(self.make_key(user, coll, type_), to_user, 1)
 
     def is_public(self, user, coll):
-        key = user + ':' + coll + self.READ_KEY
+        key = self.make_key(user, coll, self.READ_KEY)
         res = self.redis.hget(key, self.PUBLIC)
         return res == '1'
 
@@ -201,7 +220,7 @@ class CollsManager(object):
         if not self.can_admin_coll(user, coll):
             return False
 
-        key = user + ':' + coll + self.READ_KEY
+        key = self.make_key(user, coll, self.READ_KEY)
         if public:
             self.redis.hset(key, self.PUBLIC, 1)
         else:
@@ -379,11 +398,43 @@ class CollsManager(object):
 
         return colls
 
+    def delete_collection(self, user, coll):
+        if not self.can_admin_coll(user, coll):
+            return False
+
+        base_key = self.make_key(user, coll)
+        keys = map(lambda x: base_key + x, self.ALL_KEYS)
+        #key_q = '*' + user + ':' + coll + '*'
+        #keys = self.redis.keys(key_q)
+
+        # delete all coll keys
+        if keys:
+            self.redis.delete(*keys)
+
+        # delete local coll
+        coll_dir = self.path_router.get_coll_root(user, coll)
+
+        # remove dir (TODO: warcprox notify?)
+        if os.path.isdir(coll_dir):
+            shutil.rmtree(coll_dir)
+
+
+        rel_dir = os.path.relpath(coll_dir, self.path_router.root_dir) + '/'
+
+        # delete from s3
+        self.remotemanager.delete_coll(rel_dir)
+
+
+        # delete collection entry
+        del self._get_user_colls(user)[coll]
+
+        return True
+
     def get_info(self, user, coll):
         if not self.can_read_coll(user, coll):
             return {}
 
-        key = user + ':' + coll
+        key = self.make_key(user, coll, self.DEDUP_KEY)
         res = self.redis.hmget(key, ['total_len', 'warc_len', 'num_urls'])
         #num_pages = self.redis.scard(self.PAGE_KEY + key)
         return {'total_size': res[0],
@@ -396,7 +447,7 @@ class CollsManager(object):
         if not self.can_write_coll(user, coll):
             return {}
 
-        key = user + ':' + coll + ':q'
+        key = self.make_key(user, coll, self.Q_KEY)
         urls = data.get('urls')
         if not urls or not isinstance(urls, list):
             return {}
@@ -410,7 +461,7 @@ class CollsManager(object):
         if not self.can_write_coll(user, coll):
             return {}
 
-        key = user + ':' + coll + ':q'
+        key = self.make_key(user, coll, self.Q_KEY)
         url = self.redis.lpop(key)
         llen = self.redis.llen(key)
         if not url:
@@ -429,10 +480,12 @@ class CollsManager(object):
         try:
             key, end_key = calc_search_range(url, 'exact')
         except:
-            print('Cannot Cannon')
+            print('Cannot Canon')
             return False
 
-        result = self.redis.zrangebylex('cdxj:' + user + ':' + coll,
+        cdx_key = self.make_key(user, coll, self.CDX_KEY)
+        print(cdx_key, key)
+        result = self.redis.zrangebylex(cdx_key,
                                         '[' + key,
                                         '(' + end_key)
         if not result:
@@ -443,13 +496,13 @@ class CollsManager(object):
 
         pagedata['ts'] = last_cdx['timestamp']
 
-        self.redis.sadd(self.PAGE_KEY + user + ':' + coll, json.dumps(pagedata))
+        self.redis.sadd(self.make_key(user, coll, self.PAGE_KEY), json.dumps(pagedata))
 
     def list_pages(self, user, coll):
         if not self.can_read_coll(user, coll):
             return []
 
-        pagelist = self.redis.smembers(self.PAGE_KEY + user + ':' + coll)
+        pagelist = self.redis.smembers(self.make_key(user, coll, self.PAGE_KEY))
         pagelist = map(json.loads, pagelist)
         return pagelist
 
@@ -468,7 +521,7 @@ class CollsManager(object):
                    'name': filename}
             warcs[filename] = res
 
-        donewarcs = self.redis.smembers(self.DONE_WARC + user + ':' + coll)
+        donewarcs = self.redis.smembers(self.make_key(user, coll, self.DONE_WARC_KEY))
         for stats in donewarcs:
             res = json.loads(stats)
             filename = res['name']
@@ -483,7 +536,7 @@ class CollsManager(object):
         if not self.WARC_RX.match(name):
             return None
 
-        warc_path = self.redis.hget('warc:' + user + ':' + coll, name)
+        warc_path = self.redis.hget(self.make_key(user, coll, self.WARC_KEY), name)
         if not warc_path:
             return None
 

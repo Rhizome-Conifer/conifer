@@ -14,7 +14,7 @@ class S3Manager(object):
 
         parts = urlsplit(s3_url)
         self.bucket_name = parts.netloc
-        self.prefix = parts.path
+        self.prefix = parts.path.lstrip('/')
 
         self.conn = None
         self.bucket = None
@@ -24,6 +24,16 @@ class S3Manager(object):
             self.conn = boto.connect_s3()
             self.bucket = self.conn.get_bucket(self.bucket_name)
         return self.bucket
+
+    def delete_coll(self, rel_path):
+        s3_path = self.prefix + rel_path
+        bucket = self._get_bucket()
+        delete_list = []
+        for key in bucket.list(prefix=s3_path):
+            delete_list.append(key)
+            print('Deleting ' + key.name)
+
+        bucket.delete_keys(delete_list)
 
     def download_stream(self, s3_url):
         parts = urlsplit(s3_url)
@@ -85,16 +95,17 @@ class Uploader(object):
     def __call__(self, signum=None):
         print('Checking for new warcs...')
         for key, warc, local_full_path, rel_path in self.warc_iter(self.root_dir):
-            key = 'warc:' + key
+            key = key + ':warc'
+            warc_already_uploaded_key = key + ':au:' + warc
 
             if self.is_locked(local_full_path):
                 continue
 
-            if not self.redis.get('au:' + key + warc):
+            if not self.redis.get(warc_already_uploaded_key):
                 if not self.remotemanager.upload_file(local_full_path, rel_path):
                     continue
 
-                self.redis.setex('au:' + key + warc, 60, 1)
+                self.redis.setex(warc_already_uploaded_key, 60, 1)
 
             # already uploaded, verify that its accessible
             # if so, finalize and delete original
@@ -111,7 +122,7 @@ class Uploader(object):
                'mtime': stats.st_mtime,
                'name': warc}
 
-        self.redis.sadd('done:' + key, json.dumps(res))
+        self.redis.sadd(key + ':done', json.dumps(res))
 
         # update path index to point to remote url!
         self.redis.hset(key, warc, remote_url)

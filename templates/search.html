@@ -43,11 +43,11 @@
 </style>
 
 <script>
-var coll_path = "{{ path }}";
-var user = "{{ user }}";
-var coll = "{{ coll }}";
-var can_admin = {{ 'true' if can_admin() else 'false' }}
-var can_write = {{ 'true' if can_write() else 'false' }}
+    var coll_path = "{{ path }}";
+    var user = "{{ user }}";
+    var coll = "{{ coll }}";
+    var can_admin = {{ 'true' if can_admin() else 'false' }}
+    var can_write = {{ 'true' if can_write() else 'false' }}
 </script>
 
 <script src="/static/__shared/coll.js"></script>
@@ -57,16 +57,11 @@ var can_write = {{ 'true' if can_write() else 'false' }}
 {% block content %}
 <div class="row">
     <div class="page-header" style="margin-top: 10px">
-        <h1 style="display: inline">{{ title | default(coll) }}&nbsp;<small>/{{ coll }}</small>
+        <h1 style="display: inline">{{ title }}&nbsp;<small>/{{ coll }}</small>
         </h1>
         <span style="font-size: 14px" class="pull-right">
             <div style="margin: 18px 20px; display: inline-block">
-                <span class="glyphicon glyphicon-globe" style="margin-right: 4px"></span><span style="margin-right: 4px">Public?</span> 
-                {% if can_admin() %}
-                <input type="checkbox" id="is_public" {{ 'checked' if is_public else '' }} data-on-color="success" data-inverse="true" data-size="mini" data-on-text="YES" data-off-text="NO">
-                {% else %}
-                <b>{{ 'YES' if is_public else 'NO' }}</b>
-                {% endif %}
+                {% include 'frag_accessswitch.html' %}
             </div>
         </span>
     </div>
@@ -114,13 +109,11 @@ var can_write = {{ 'true' if can_write() else 'false' }}
                     <span class="glyphicon glyphicon-hdd"></span>Storage
                 </a>
             </li>
-            {#
             <li role="presentation">
                 <a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">
                     <span class="glyphicon glyphicon-cog"></span>Settings
                 </a>
             </li>
-            #}
             {% endif %}
         </ul>
     </div>
@@ -160,7 +153,46 @@ var can_write = {{ 'true' if can_write() else 'false' }}
                 </thead>
             </table>
         </div>
-        <div role="tabpanel" class="tab-pane" id="files">Storage</div>
+        <div role="tabpanel" class="tab-pane" id="settings">
+            <div class="row col-md-6">
+                <label for="set-coll-name">Collection Title:</label>
+                <input type="text" id="set-coll-name" value="{{title}}" placeholder="Enter a title for this collection" class="pull-left form-control"/>
+            </div>
+            <div class="clearfix"></div>
+            <div class="row col-md-6" style="margin-top: 50px">
+                {% include 'frag_accessswitch.html' %}
+            </div>
+
+            <div class="clearfix" style="margin-bottom: 300px"></div>
+            <div class="row col-md-6">
+                <div class="alert alert-danger">
+                    <b>Permenantely delete this collection?</b>
+                    <p>This action can not be undone!</p>
+                    <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete Collection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirm-delete-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Confirm Delete Collection?
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the collection <b>{{title}}</b> (/{{coll}})?
+                If you continue, all archived data will be permanently deleted.
+                Be sure to download the WARC files if you would like to keep them.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form style="display: inline" method="post" action="/_delete?coll={{path}}">
+                    <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 

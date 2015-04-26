@@ -51,18 +51,30 @@ $(function() {
     if (can_admin) {
         // Public/Private
 
-        $("#is_public").bootstrapSwitch();
+        $(".ispublic").bootstrapSwitch();
 
-        $("#is_public").on('switchChange.bootstrapSwitch', function(event, state) {
+        $(".ispublic").on('switchChange.bootstrapSwitch', function(event, state) {
             $.ajax("/_setaccess?coll=" + coll_path + "&public=" + state, {
-                success: function() {},
+                success: function() {
+                    $(".ispublic").bootstrapSwitch("state", state, true);
+                },
                 error: function() {
                     //$("#is_public").prop("checked", !state);
-                    $("#is_public").bootstrapSwitch("toggleState", true)
+                    $(".ispublic").bootstrapSwitch("toggleState", true)
                     console.log("err");
                 }
             });
         });
+        
+//        $("#confirm-delete").click(function() {
+//            $.ajax("/_delete?coll=" + coll_path, {
+//                type: "DELETE",
+//
+//                success: function() {
+//                    window.location.href = "/";
+//                },
+//            });
+//        });
     }
 
     if (can_write) {

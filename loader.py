@@ -83,7 +83,7 @@ class DynCDXRedis(RedisCDXSource):
             return iter([])
 
         sesh_id = query.params['sesh_id']
-        cdx_key = 'cdxj:' + sesh_id.replace('/', ':')
+        cdx_key = sesh_id.replace('/', ':') + ':cdxj'
 
         return self.load_sorted_range(query, cdx_key)
 
