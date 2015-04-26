@@ -6,6 +6,7 @@ from redis import StrictRedis
 import json
 import os
 import re
+import base64
 
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
@@ -16,14 +17,33 @@ from cookieguard import CookieGuard
 
 from pywb.warc.cdxindexer import iter_file_or_dir
 from pywb.cdx.cdxobject import CDXObject
+from pywb.utils.loaders import load_yaml_config
 
-def init_cork(app, redis, config):
+
+def create_cork(redis):
     backend=RedisBackend(redis)
     init_cork_backend(backend)
 
     cork = Cork(backend=backend,
                 email_sender=redacted,
                 smtp_url=redacted)
+    return cork
+
+def init_manager_for_invite(configfile='config.yaml'):
+    config = load_yaml_config(configfile)
+
+    redis_url = config['redis_url']
+
+    redis_obj = StrictRedis.from_url(redis_url)
+
+    cork = create_cork(redis_obj)
+
+    manager = CollsManager(cork, redis_obj, None, None)
+    return manager
+
+
+def init_cork(app, redis, config):
+    cork = create_cork(redis)
 
     encrypt_key = 'FQbitfnuOZbB2gPvb4G4h5UfOssLU49jI6Kg'
 
@@ -41,6 +61,7 @@ def init_cork(app, redis, config):
 
     app = CookieGuard(app, config['cookie_name'])
     app = SessionMiddleware(app, session_opts)
+
     return app, cork
 
 
@@ -113,7 +134,7 @@ class RedisHashTable(object):
         self.thedict[name] = value
         self.redistable[self.key] = self.thedict
 
-    def get(self, name, default_val):
+    def get(self, name, default_val=''):
         return self.thedict.get(name, default_val)
 
     def __nonzero__(self):
@@ -235,6 +256,57 @@ class CollsManager(object):
 
         return True
 
+    def is_valid_invite(self, invitekey):
+        try:
+            if not invitekey:
+                return False
+
+            key = base64.b64decode(invitekey)
+            key.split(':', 1)
+            email, hash_ = key.split(':', 1)
+
+            table = RedisTable(self.redis, 'h:invites')
+            entry = table[email]
+
+            if entry and entry.get('hash_') == hash_:
+                return email
+        except Exception as e:
+            print(e)
+            pass
+
+        msg = 'Sorry, that is not a valid invite code. Please try again or request another invite'
+        raise ValidationException(msg)
+
+    def save_invite(self, email, name):
+        if not email or not name:
+            return False
+
+        table = RedisTable(self.redis, 'h:invites')
+        table[email] = {'name': name, 'email': email}
+        return True
+
+    def send_invite(self, email, email_template, host):
+        table = RedisTable(self.redis, 'h:invites')
+        entry = table[email]
+        if not entry:
+            return False
+
+        hash_ = base64.b64encode(os.urandom(21))
+        entry['hash_'] = hash_
+
+        invitekey = base64.b64encode(email + ':' + hash_)
+        import bottle
+
+        email_text = bottle.template(
+            email_template,
+            host=host,
+            email_addr=email,
+            name=entry.get('name', email),
+            invite=invitekey,
+        )
+        self.cork.mailer.send_email(email, 'You are invited to join webrecorder.io!', email_text)
+        return True
+
     def get_metadata(self, user, coll, name, def_val=''):
         table = self._get_user_colls(user)[coll]
         if not table:
@@ -342,7 +414,7 @@ class CollsManager(object):
         url = self.redis.lpop(key)
         llen = self.redis.llen(key)
         if not url:
-            return {}
+            return {'q_len': 0}
 
         return {'url': url,
                 'q_len': llen}

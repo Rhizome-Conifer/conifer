@@ -109,10 +109,11 @@ $(function() {
     
     $("#automate").change(function() {
         if ($("#automate").prop("checked")) {
-            start_loop_q();
+            start_umbra();
             $("#automate-l").text("Automated Recording. Click to stop.");
         } else {
             stop_loop_q();
+            stop_umbra();
             $("#automate-l").text("Start Automated Recording");
         }
     });
@@ -129,7 +130,7 @@ var auto_loop_id = undefined;
 
 function auto_on_load()
 {
-    is_loading = true;
+    is_loading = false;
 
     start_umbra();
     //auto_loop_id = setTimeout(auto_load_next_url, 10); 
@@ -144,6 +145,7 @@ function start_loop_q()
 function stop_loop_q()
 {
     clearTimeout(auto_loop_id);
+    $("#auto-info").text("");
 }
 
 function auto_load_next_url()
@@ -246,6 +248,17 @@ function check_umbra()
         auto_loop_id = setTimeout(check_umbra, 2000);
     } else {
         auto_load_next_url();
+    }
+}
+
+function stop_umbra()
+{
+    if (doc_window.umbraIntervalId) {
+        doc_window.clearInterval(doc_window.umbraIntervalId);
+    } else if (doc_window.umbraInstagramBehavior && doc_window.umbraInstagramBehavior.intervalId) {
+        doc_window.clearInterval(doc_window.umbraInstagramBehavior.intervalId);
+    } else {
+        console.log("no umbra to stop");
     }
 }
 

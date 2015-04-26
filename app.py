@@ -246,6 +246,7 @@ CREATE_PATH = '/_create'
 
 REGISTER_PATH = '/_register'
 VAL_REG_PATH = '/_valreg/:reg'
+INVITE_PATH = '/_invite'
 
 FORGOT_PATH = '/_forgot'
 
@@ -303,24 +304,32 @@ def create_coll_routes(r):
         cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
 
-    # Register/Confirm
+    # Register/Invite/Confirm
     # ============================================================================
     @route(REGISTER_PATH)
     @jinja2_view('register.html')
     @addcred()
     def register():
-        return {}
+        invitecode = request.query.get('invite', '')
+        email = None
+        try:
+            email = manager.is_valid_invite(invitecode)
+        except ValidationException as ve:
+            flash_message(str(ve))
 
+        return { 'email': email,
+                 'invite': invitecode}
 
-    @jinja2_view('emailconfirm.html')
-    def email_template(*args, **kwargs):
-        print(args)
-        kwargs['hostname'] = args[0]
-        print(kwargs)
-        return kwargs
-
-    #import bottle
-    #bottle.template = email_template
+    @post(INVITE_PATH)
+    def invite_post():
+        email = post_get('email', '')
+        name = post_get('name', '')
+        if manager.save_invite(email, name):
+            flash_message('Thank you for your interest! We will send you an invite to try webrecorder.io soon!', 'success')
+            redirect('/')
+        else:
+            flash_message('Oops, something went wrong, please try again')
+            redirect(REGISTER_PATH)
 
     @post(REGISTER_PATH)
     def register_post():
@@ -328,10 +337,15 @@ def create_coll_routes(r):
         username = post_get('username')
         password = post_get('password')
         confirm_password = post_get('confirmpassword')
+        invitecode = post_get('invite')
 
         redir_to = REGISTER_PATH
 
         try:
+            val_email = manager.is_valid_invite(invitecode)
+            if val_email != email:
+                raise ValidationException('Sorry, this invite can only be used with email: {0}'.format(val_email))
+
             manager.validate_user(username, email)
             manager.validate_password(password, confirm_password)
 
