@@ -135,7 +135,8 @@ class DynRedisResolver(object):
     def _split_sesh_warc(self, filename):
         #TODO: pass sesh_id here...
         parts = filename.rsplit('/')
-        return 'warc:' + parts[-5] + ':' + parts[-3], parts[-1]
+        #return 'warc:' + parts[-5] + ':' + parts[-3], parts[-1]
+        return parts[-5] + ':' + parts[-3] + ':warc', parts[-1]
 
     def __repr__(self):
         return "DynRedisResolver('{0}')".format(self.redis)
