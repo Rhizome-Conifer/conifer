@@ -247,7 +247,7 @@ class CollsManager(object):
         return self.cork.user(user) is not None
 
     def _get_user_colls(self, user):
-        return RedisTable(self.redis, 'h:' + user + self.COLL_KEY)
+        return RedisTable(self.redis, 'u:' + user + self.COLL_KEY)
 
     def has_collection(self, user, coll):
         return coll in self._get_user_colls(user)

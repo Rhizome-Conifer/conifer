@@ -109,7 +109,9 @@ $(function() {
     
     $("#automate").change(function() {
         if ($("#automate").prop("checked")) {
-            start_umbra();
+            if (!start_umbra()) {
+                start_loop_q();
+            }
             $("#automate-l").text("Automated Recording. Click to stop.");
         } else {
             stop_loop_q();
@@ -202,13 +204,13 @@ var umbra_count;
 function start_umbra()
 {
     if (!doc_window || !doc_window.WB_wombat_location || !doc_window.WB_wombat_location.host) {
-        return;
+        return false;
     }
     
     var file = get_behavior(doc_window.WB_wombat_location.host);
 
     if (!file) {
-        return;
+        return false;
     }
 
     var script_name = "/static/__shared/behaviors/" + file;
@@ -222,7 +224,8 @@ function start_umbra()
     
     umbra_count = 0;
     
-    auto_loop_id = setTimeout(check_umbra, 2000); 
+    auto_loop_id = setTimeout(check_umbra, 2000);
+    return true;
 }
 
 function check_umbra()
