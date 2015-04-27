@@ -211,7 +211,7 @@ class DynRecord(RewriteHandler):
         target = dict(output_dir=path,
                       sesh_id=sesh_id)
 
-        req_headers = {'x-warcprox-meta': json.dumps(target)}
+        req_headers = {'warcprox-meta': json.dumps(target)}
 
         # reset HTTP_COOKIE to guarded request_cookie for LiveRewriter
         if 'webrec.request_cookie' in wbrequest.env:
