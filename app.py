@@ -593,6 +593,7 @@ You can now <b>login</b> with your new password!', 'success')
         if not desc:
             desc = DEFAULT_DESC.format(title)
 
+        collinfo = manager.get_info(info.user, info.coll)
         is_public = manager.is_public(info.user, info.coll)
 
         return {'user': info.user,
@@ -601,7 +602,9 @@ You can now <b>login</b> with your new password!', 'success')
 
                 'is_public': is_public,
                 'title': title,
-                'desc': desc
+                'desc': desc,
+
+                'coll_size': collinfo.get('total_size')
                }
 
     #@route([r.COLL + '/record', r.COLL + '/record/'])

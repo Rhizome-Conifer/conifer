@@ -131,6 +131,10 @@ $(function() {
                 closeEditor();
             });
         });
+        
+        if (coll_size) {
+            $("#total-size").text(format_bytes(coll_size));
+        }
     }
 
 });

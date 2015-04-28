@@ -44,6 +44,7 @@
 
 <script>
     var coll_path = "{{ path }}";
+    var coll_size = {{ coll_size | default('undefined') }};
     var user = "{{ user }}";
     var coll = "{{ coll }}";
     var can_admin = {{ 'true' if can_admin() else 'false' }}
@@ -115,6 +116,8 @@
                 </a>
             </li>
             {% endif %}
+            <p class="pull-right">Total Size: <b id="total-size"></b>
+            </p>
         </ul>
     </div>
 </div>
