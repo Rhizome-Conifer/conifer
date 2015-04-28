@@ -127,8 +127,10 @@ $(function() {
     
     // Hypothesis
     $("#annotate").click(function() {
-        if (!doc_window) {
-            return;
+        if (window == window.top && window.frames.length) {
+            doc_window = document.getElementById("replay_iframe").contentWindow;
+        } else {
+            doc_window = window.top;
         }
         var embed_script = doc_window.document.createElement("script");
         embed_script.src = "https://hypothes.is/embed.js";
