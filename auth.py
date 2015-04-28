@@ -296,12 +296,12 @@ class CollsManager(object):
         msg = 'Sorry, that is not a valid invite code. Please try again or request another invite'
         raise ValidationException(msg)
 
-    def save_invite(self, email, name):
+    def save_invite(self, email, name, desc=''):
         if not email or not name:
             return False
 
         table = RedisTable(self.redis, 'h:invites')
-        table[email] = {'name': name, 'email': email}
+        table[email] = {'name': name, 'email': email, 'desc': desc}
         return True
 
     def send_invite(self, email, email_template, host):

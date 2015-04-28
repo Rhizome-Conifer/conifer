@@ -124,6 +124,19 @@ $(function() {
         console.log("automate");
         $("#automate").click();
     }
+    
+    // Hypothesis
+    $("#annotate").click(function() {
+        if (!doc_window) {
+            return;
+        }
+        var embed_script = doc_window.document.createElement("script");
+        embed_script.src = "https://hypothes.is/embed.js";
+        doc_window.document.head.appendChild(embed_script);
+        doc_window.hypothesisConfig = function() {
+            return {showHighlights: true};
+        }
+    });
 });
 
 

@@ -324,7 +324,8 @@ def create_coll_routes(r):
     def invite_post():
         email = post_get('email', '')
         name = post_get('name', '')
-        if manager.save_invite(email, name):
+        desc = post_get('desc', '')
+        if manager.save_invite(email, name, desc):
             flash_message('Thank you for your interest! We will send you an invite to try webrecorder.io soon!', 'success')
             redirect('/')
         else:

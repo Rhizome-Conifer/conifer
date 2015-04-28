@@ -25,6 +25,10 @@ collections:
         rewrite_opts:
             rewrite_base: true
             rewrite_rel_canon: false
+            client:
+                no_rewrite_prefixes:
+                    - 'https://hypothes.is/'
+
 
         search_html: frame_insert.html
 
@@ -36,6 +40,11 @@ collections:
         wb_handler_class: !!python/name:loader.DynWBHandler
 
         cookie_scope: removeall
+        rewrite_opts:
+            client:
+                no_rewrite_prefixes:
+                    - 'https://hypothes.is/'
+
 
         enable_cdx_api: 'cdx'
 
@@ -44,8 +53,8 @@ route_class: !!python/name:loader.DynamicRoute
 archive_paths: ./
 
 metadata:
-    org: webrecorder.io
-    product: webrecorder.io
+    org: beta.webrecorder.io
+    product: beta.webrecorder.io
 #    org: National Football Museum Web Archive
 #    product: NFM Web Archive
 

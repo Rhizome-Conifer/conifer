@@ -4,11 +4,12 @@
 <div class="row">
     {% if not email or not invite %}
     <div class="col-sm-8 col-md-6 col-md-offset-2">
-        <h2>Webrecorder.io Request Invite</h2>
+        <h2>Webrecorder.io Invite Request</h2>
 
-        <h4>At this time, webrecorder.io beta is available on a limited basis.</h4>
-        <h4>To request an invite, please fill out the form below. You'll receive an invitation
-            code allowing you to register as soon as we can are ready!</h4>
+        <h4>For now, the webrecorder.io beta is available on a limited basis.</h4>
+        <h4>To request an invite, please fill out the form below.</h4>
+        <h4>You'll receive an invitation
+            code allowing you to register as soon as we are ready!</h4>
     </div>
     <div class="col-sm-6 col-md-4 col-md-offset-2">
         <form id="invite" action="/_invite" method="post" role="form" data-toggle="validator" data-delay="1000">
@@ -20,6 +21,11 @@
             <div class="form-group">
                 <label for="email" class="sr-only">Email</label>
                 <input type="email" id="email" name="email" class="form-control" placeholder="address@host" required="true">
+                <div class="help-block with-errors"></div>
+            </div>
+            <div class="form-group">
+                <label for="desc" class="sr-only">Other Comments:</label>
+                <textarea type="text" id="desc" name="desc" class="form-control" maxlength="100" placeholder="Field of interest / other comments (optional)"></textarea>
                 <div class="help-block with-errors"></div>
             </div>
             <button class="btn btn-lg btn-primary btn-block" type="submit">Request Invite</button>

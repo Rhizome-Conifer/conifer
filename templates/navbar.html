@@ -46,7 +46,7 @@
 
 
                 {% if state %}
-                <li style="margin-left: 4px" class="navbar-btn">
+                <li style="margin-left: 40px" class="navbar-btn">
                     <button id="links-btn" class="btn btn-xs btn-default" data-toggle="modal" data-target="#links-modal">
                         <span class="glyphicon glyphicon-list"></span> <span>Links...</span>
                     </button>
@@ -58,6 +58,12 @@
                             <input id="automate" type="checkbox" autocomplete="off"/>
                         </label>
                     </div>
+                </li>
+                
+                <li style="margin-left: 4px" class="navbar-btn">
+                    <button id="annotate" class="btn btn-xs btn-default">
+                        <span>Annotate</span>
+                    </button>
                 </li>
 
                 <p class="navbar-text" id="auto-info"></p>
@@ -96,6 +102,7 @@
                         <span class="glyphicon glyphicon-play"></span><span></span>
                     </button>
                     {% endif %}
+                    {#
                     <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                         <span class="glyphicon glyphicon-wrench"></span><span>Tools</span>
                         <span class="caret"></span>
@@ -107,6 +114,7 @@
                         <li class="divider"></li>
                         <li><a href="#">Separated link</a></li>
                     </ul>
+                    #}
 
                 </div>
             </div>

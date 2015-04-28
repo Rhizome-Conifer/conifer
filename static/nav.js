@@ -116,9 +116,11 @@ function set_info(data)
     }
 
     var curr_size = format_bytes(data.curr_size);
-    var info = "Recently Recorded: " + curr_size + ", Total Collection: " + format_bytes(data.total_size);
+    var total_size = format_bytes(data.total_size);
+    
+    var info = "Total Collection: " + total_size + ", Recently Recorded: " + curr_size;
 
-    $("#curr_size_info").text(curr_size);
+    $("#curr_size_info").text(total_size);
     $("#curr_size_info").attr("title", info);
 }
 
