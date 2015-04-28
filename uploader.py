@@ -50,7 +50,7 @@ class S3Manager(object):
         return size, key
 
     def get_remote_url(self, rel_path):
-        s3_url = 's3://' + self.bucket_name + self.prefix + rel_path
+        s3_url = 's3://' + self.bucket_name + '/' + self.prefix + rel_path
         return s3_url
 
     def upload_file(self, local, rel_path):
