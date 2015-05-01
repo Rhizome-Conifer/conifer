@@ -1,7 +1,7 @@
 from cork import Cork, AAAException
 from beaker.middleware import SessionMiddleware
 from cork.json_backend import JsonBackend
-from redis import StrictRedis
+from redis import StrictRedis, utils
 
 import json
 import os
@@ -114,6 +114,9 @@ class RedisTable(object):
         coll_list = self.redis.hgetall(self.key)
         colls = {}
         for n, v in coll_list.iteritems():
+            if n == 'total_len':
+                continue
+
             colls[n] = json.loads(v)
 
         return colls.iteritems()
@@ -246,8 +249,11 @@ class CollsManager(object):
     def has_user(self, user):
         return self.cork.user(user) is not None
 
+    def _user_key(self, user):
+        return 'u:' + user
+
     def _get_user_colls(self, user):
-        return RedisTable(self.redis, 'u:' + user + self.COLL_KEY)
+        return RedisTable(self.redis, self._user_key(user) + self.COLL_KEY)
 
     def has_collection(self, user, coll):
         return coll in self._get_user_colls(user)
@@ -353,32 +359,11 @@ class CollsManager(object):
         if self.has_collection(user, coll):
             raise ValidationException('Collection {0} already exists!'.format(coll))
 
-        dir_ = self.path_router.get_user_account_root(user)
-        if not os.path.isdir(dir_):
-            os.makedirs(dir_)
+        dir_ = self.path_router.get_archive_dir(user, coll)
+        if os.path.isdir(dir_):
+            raise ValidationException('Collection {0} already exists!'.format(coll))
 
-        try:
-            set_title = 'title={0}'.format(title)
-            set_access = 'access={0}'.format(access)
-
-            with switch_dir(dir_):
-                manager_main(['init', coll])
-                manager_main(['metadata', coll, '--set', set_title, set_access])
-
-        except ValueError as e:
-            raise ValidationException(str(e))
-
-        except OSError as e:
-            if e.errno == 17:
-                msg = 'Collection ' + coll + ' already exists!'
-            else:
-                msg = str(e)
-            raise ValidationException(msg)
-
-        except Exception as e:
-            msg = 'Error creating collection.. Try Again'
-            raise ValidationException(msg)
-
+        os.makedirs(dir_)
 
         coll_data = {'title': title}
 
@@ -407,17 +392,29 @@ class CollsManager(object):
         #key_q = '*' + user + ':' + coll + '*'
         #keys = self.redis.keys(key_q)
 
-        # delete all coll keys
-        if keys:
-            self.redis.delete(*keys)
+        coll_len = self.redis.hget(base_key + self.DEDUP_KEY, 'total_len')
+        user_key = self._user_key(user)
+        user_len = self.redis.hget(user_key, 'total_len')
 
-        # delete local coll
+        with utils.pipeline(self.redis) as pi:
+            if coll_len:
+                pi.hset(user_key, 'total_len', int(user_len) - int(coll_len))
+
+            # delete all coll keys
+            if keys:
+                pi.delete(*keys)
+
+            # send delete msg
+            pi.publish('delete_coll', self.path_router.get_archive_dir(user, coll))
+
+        # coll directory
         coll_dir = self.path_router.get_coll_root(user, coll)
 
-        # remove dir (TODO: warcprox notify?)
-        if os.path.isdir(coll_dir):
-            shutil.rmtree(coll_dir)
+        #archive_dir = self.path_router.get_archive_dir(user, coll)
 
+        # remove dir (TODO: warcprox notify?)
+        #if os.path.isdir(coll_dir):
+        #    shutil.rmtree(coll_dir)
 
         rel_dir = os.path.relpath(coll_dir, self.path_router.root_dir) + '/'
 
@@ -435,11 +432,10 @@ class CollsManager(object):
             return {}
 
         key = self.make_key(user, coll, self.DEDUP_KEY)
-        res = self.redis.hmget(key, ['total_len', 'warc_len', 'num_urls'])
+        res = self.redis.hmget(key, ['total_len', 'num_urls'])
         #num_pages = self.redis.scard(self.PAGE_KEY + key)
         return {'total_size': res[0],
-                'curr_size': res[1],
-                'num_urls': res[2]
+                'num_urls': res[1]
                }
                 #'pages': num_pages}
 

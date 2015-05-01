@@ -60,6 +60,7 @@ class DynamicRoute(Route):
 
         sesh_id = wbrequest.env.get('w_sesh_id', '')
         wbrequest.custom_params['sesh_id'] = sesh_id
+        wbrequest.custom_params['user_id'] = wbrequest.env.get('w_user_id', '')
         wbrequest.coll = sesh_id
 
 
@@ -207,9 +208,12 @@ class DynRecord(RewriteHandler):
 
         sesh_id = wbrequest.custom_params.get('sesh_id', wbrequest.coll)
         sesh_id = sesh_id.replace('/', ':')
+        user_id = wbrequest.custom_params.get('user_id')
+
 
         target = dict(output_dir=path,
-                      sesh_id=sesh_id)
+                      sesh_id=sesh_id,
+                      user_id=user_id)
 
         req_headers = {'warcprox-meta': json.dumps(target)}
 

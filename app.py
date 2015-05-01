@@ -161,6 +161,7 @@ def call_pywb(info=None, state=None):
         request.environ['w_output_dir'] = router.get_archive_dir(info.user, info.coll)
         request.environ['w_sesh_id'] = info.path
         request.environ['w_manager'] = manager
+        request.environ['w_user_id'] = 'u:' + info.user
 
         params = request.environ['pywb.template_params']
         params['state'] = state
