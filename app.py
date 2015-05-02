@@ -135,6 +135,7 @@ def raise_uwsgi_signal():
 # Utilities
 def get_redir_back(skip, default='/'):
     redir_to = request.headers.get('Referer', default)
+    print('REF: ' + redir_to)
     if redir_to.endswith(skip):
         redir_to = default
     return redir_to
@@ -527,7 +528,7 @@ You can now <b>login</b> with your new password!', 'success')
 
     # ============================================================================
     # Delete Collection
-    @post('/_delete')
+    @post('/_delete_coll')
     def delete_coll():
         path = request.query.get('coll', '')
         user, coll = r.get_user_coll(path)
@@ -537,6 +538,22 @@ You can now <b>login</b> with your new password!', 'success')
         else:
             flash_message('There was an error deleting {0}'.format(coll))
             redirect('/' + user + '/' + coll + '#settings')
+
+
+    # ============================================================================
+    # Delete User
+    @post('/_delete_account')
+    def delete_account():
+        user = request.query.get('user', '')
+        if manager.delete_user(user):
+            flash_message('The user {0} has been permanently deleted!'.format(user), 'success')
+
+            redir_to = '/'
+            request.environ['webrec.delete_all_cookies'] = 'all'
+            cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
+        else:
+            flash_message('There was an error deleting {0}'.format(coll))
+            redirect('/' + user)
 
 
     # ============================================================================

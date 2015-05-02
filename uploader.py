@@ -25,7 +25,7 @@ class S3Manager(object):
             self.bucket = self.conn.get_bucket(self.bucket_name)
         return self.bucket
 
-    def delete_coll(self, rel_path):
+    def delete_dir(self, rel_path):
         s3_path = self.prefix + rel_path
         bucket = self._get_bucket()
         delete_list = []

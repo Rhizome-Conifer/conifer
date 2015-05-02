@@ -352,6 +352,9 @@ class CollsManager(object):
         return self.redis.hget(user_key, field)
 
     def set_user_metadata(self, user, field, value):
+        if not self.is_owner(user):
+            return False
+
         user_key = self._user_key(user)
         self.redis.hset(user_key, field, value)
         return True
@@ -419,22 +422,41 @@ class CollsManager(object):
 
         # coll directory
         coll_dir = self.path_router.get_coll_root(user, coll)
-
-        #archive_dir = self.path_router.get_archive_dir(user, coll)
-
-        # remove dir (TODO: warcprox notify?)
-        #if os.path.isdir(coll_dir):
-        #    shutil.rmtree(coll_dir)
-
         rel_dir = os.path.relpath(coll_dir, self.path_router.root_dir) + '/'
 
         # delete from s3
-        self.remotemanager.delete_coll(rel_dir)
-
+        self.remotemanager.delete_dir(rel_dir)
 
         # delete collection entry
         del self._get_user_colls(user)[coll]
 
+        return True
+
+    def delete_user(self, user):
+        if not self.is_owner(user):
+            return False
+
+        colls_table = self._get_user_colls(user)
+        for coll in colls_table:
+            self.delete_collection(user, coll)
+
+        # coll directory
+        user_dir = self.path_router.get_user_account_root(user)
+        rel_dir = os.path.relpath(user_dir, self.path_router.root_dir) + '/'
+
+        # delete from s3
+        self.remotemanager.delete_dir(rel_dir)
+
+        user_key = self._user_key(user)
+
+        with utils.pipeline(self.redis) as pi:
+            pi.delete(user_key)
+            pi.delete(user_key + self.COLL_KEY)
+
+            pi.publish('delete_user', user_dir)
+
+        # delete from cork!
+        self.cork.user(user).delete()
         return True
 
     def get_info(self, user, coll):
