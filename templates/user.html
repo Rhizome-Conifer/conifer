@@ -1,28 +1,64 @@
 {% extends "main_bootstrap.html" %}
 
+{% block head %}
+
+{{ super() }}
+
+<link href="/static/__shared/external/bootstrap-markdown.min.css" rel="stylesheet">
+<script src="/static/__shared/external/marked.min.js"></script>
+<script src="/static/__shared/external/bootstrap-markdown.js"></script>
+
+<script src="/static/__shared/editor.js"></script>
+
+{% endblock %}
+
 {% block content %}
 
 <div class="jumbotron">
-    <h2>{{ user }} Archive</h2>
     {% if is_owner() %}
-    <p>Welcome to your archive!</p>
+    <button id="home-edit" class="btn btn-success btn-sm pull-right" data-toggle="button" aria-pressed="false">Edit</button>
     {% endif %}
 
-    {% if not colls and not is_owner() %}
-    <p>This archive does not yet have any publicly available collections.</p>
-    {% elif colls %}
-    <p>Available Collections:</p>
+    <div id="about">
+        <div id="home-markdown" style="display: none">{{desc}}</div>
+        <div id="home-view" ></div>
+    </div>
+
     <ul class="list-group text-center">
         {% for name, value in colls | dictsort %}
-        <li class="list-group-item" style="font-size: 20px">
-            <a href="/{{ value.path }}">{{ value.title | default(name) }}</a>
+        <li class="list-group-item">
+            <a href="/{{ value.path }}" style="font-size: 20px">{{ value.title | default(name) }}</a>
+            <p class="colls-size pull-right" data-size="{{ value.size }}" style="font-size: 14px"></p>
         </li>
         {% endfor %}
+        {% if is_owner() %}
+        <p style="font-size: 14px; padding: 4px 17px 0px 0px;" data-size="{{ total_size }}" class="colls-size pull-right"></p>
+        {% endif %}
     </ul>
+    {% if not colls %}
+    <p class="text-center" style="font-style: italic">
+        {% if is_owner() %}
+        No Collections
+        {% else %}
+        No Available Collections
+        {% endif %}
+    </p>
     {% endif %}
+
     {% if is_owner() %}
-    <p><a class="btn btn-primary btn-sm" href="/_create" role="button">Create new Collection</a></p>
+    <p><a class="btn btn-primary btn-sm" href="/_create" role="button">
+        <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>Create new Collection</a></p>
     {% endif %}
 </div>
+
+<script>
+    $(function() {
+        $(".colls-size").each(function(i, elem) {
+            $(elem).text(format_bytes($(elem).attr("data-size")));
+        });
+    });
+
+    init_markdown_editor("{{user}}");
+</script>
 
 {% endblock %}

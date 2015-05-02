@@ -347,6 +347,15 @@ class CollsManager(object):
         table[name] = value
         return True
 
+    def get_user_metadata(self, user, field):
+        user_key = self._user_key(user)
+        return self.redis.hget(user_key, field)
+
+    def set_user_metadata(self, user, field, value):
+        user_key = self._user_key(user)
+        self.redis.hset(user_key, field, value)
+        return True
+
     def add_collection(self, user, coll, title, access):
         curr_user, curr_role = self.curr_user_role()
 
@@ -380,6 +389,7 @@ class CollsManager(object):
             if self.can_read_coll(user, n):
                 colls[n] = v
                 v['path'] = self.path_router.get_coll_path(user, n)
+                v['size'] = self.get_info(user, n).get('total_size')
 
         return colls
 

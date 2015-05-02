@@ -21,8 +21,6 @@ var DEFAULT_TAB = "#about";
 
 $(function() {
     
-    $("#home-view").html(marked($("#home-markdown").html()));
-    
     $('a[href="#records"]').on('show.bs.tab', show_pages);
     $('a[href="#files"]').on('show.bs.tab', show_warcs);
 
@@ -78,59 +76,7 @@ $(function() {
     }
 
     if (can_write) {
-
-        $("#home-edit").click(function() {
-
-            if ($(".md-editor").length) {
-                console.log("already set");
-                return;
-            }
-
-            function closeEditor()
-            {
-                $(".md-editor").remove();
-
-                $("#home-edit").removeClass("active");
-
-                $("#about").append($('<div>').attr("id", "home-view").
-                                  append(marked($("#home-markdown").html())));
-
-            };
-            
-            $("#home-view").html($("#home-markdown").html());
-
-            $("#home-view").markdown({ 
-                savable: true,
-                height: "400",
-                //hideable: true,
-                resize: "both",
-                onSave: function (e) {                     
-                    var content = e.getContent();
-
-                    $.ajax({
-                        type: "POST",
-                        url: "/_desc/" + coll_path,
-                        data: content,
-                        success: function() {
-                            $("#home-markdown").html(content);
-                            closeEditor();
-                        },
-                        error: function() {
-                            console.log("err");
-                        },
-                        dataType: 'text',
-                    });
-                },
-
-                footer: function(e) {
-                    return "<button id='home-edit-cancel' class='btn btn-default'>Cancel</button>";
-                }
-            });
-
-            $("#home-edit-cancel").click(function() {
-                closeEditor();
-            });
-        });
+        init_markdown_editor(coll_path);
         
         if (coll_size) {
             $("#total-size").text(format_bytes(coll_size));

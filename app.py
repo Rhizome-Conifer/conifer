@@ -268,6 +268,12 @@ Happy Recording!
 
 """
 
+DEFAULT_USER_DESC = """
+## {0} archive
+
+Available Collections:
+"""
+
 
 # ============================================================================
 def create_coll_routes(r):
@@ -290,6 +296,9 @@ def create_coll_routes(r):
 
         if cork.login(username, password):
             redir_to = get_redir_back(LOGIN_PATH, r.user_home(username))
+            #host = request.headers.get('Host', 'localhost')
+            #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
+            #request.environ['beaker.session'].path = '/'
         else:
             flash_message('Invalid Login. Please Try Again')
             redir_to = LOGIN_PATH
@@ -569,13 +578,23 @@ You can now <b>login</b> with your new password!', 'success')
                 raise HTTPError(status=404, body='No Such Archive')
 
             path = user
+            desc = manager.get_user_metadata(user, 'desc')
+            total_size = manager.get_user_metadata(user, 'total_len')
         else:
             user = 'default'
             path = '/'
+            desc = None
+            total_size = 0
+
+        if not desc:
+            desc = DEFAULT_USER_DESC.format(user)
 
         return {'path': path,
                 'user': user,
-                'colls': manager.list_collections(user)}
+                'colls': manager.list_collections(user),
+                'desc': desc,
+                'total_size': total_size,
+               }
 
 
     # ============================================================================
@@ -650,6 +669,16 @@ You can now <b>login</b> with your new password!', 'success')
 
 
     # User Desc
+    # ============================================================================
+    @post('/_desc/:user')
+    def set_desc(user):
+        if manager.set_user_metadata(user, 'desc', request.body.read()):
+            return {}
+        else:
+            raise HTTPError(status=404, body='Not found')
+
+
+    # Coll Desc
     # ============================================================================
     @post('/_desc/:user/:coll')
     def set_desc(user, coll):
