@@ -5,10 +5,17 @@
     <div class="col-sm-6 col-md-4 col-md-offset-4">
         <form style="max-width: 260px;" method="post">
             <h3>Password Recovery</h3>
-            <h4 style="font-weight: normal">Please enter at least on of your e-mail address and/or username to request a password reset.</h4>
-            <label for="username" class="sr-only">Username</label>
-            <input type="text" id="username" name="username" class="form-control" placeholder="Username" autofocus>
-            <input type="text" id="email" name="email" class="form-control" placeholder="Email" autofocus>
+            <h4 style="font-weight: normal">Please enter either your e-mail address and/or username to request a password reset.</h4>
+            <div class="form-group">
+                <label for="username" class="sr-only">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username" autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="sr-only">Email</label>
+                <input type="text" id="email" name="email" class="form-control" placeholder="Email" autofocus>
+            </div>
+
             <button class="btn btn-lg btn-primary btn-block" type="submit">Send Reset Email</button>
         </form>
     </div>

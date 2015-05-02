@@ -27,7 +27,7 @@ function init_markdown_editor(update_path) {
 
         $("#home-view").markdown({ 
             savable: true,
-            height: "400",
+            height: "300",
             //hideable: true,
             resize: "both",
             onSave: function (e) {                     

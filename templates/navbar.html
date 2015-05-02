@@ -33,24 +33,26 @@
                     <span id="curr_size_info" class="badge" style="margin-right: 4px"></span>
                 </p>
 
-                
+
                 <p class="navbar-text">
                     <a id="finish" target="_parent" href="/{{path}}#records" title="Browse All Records" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-tasks" style="margin-right: 4px"></span>Browse All</a>
                 </p>
-                
-                
+
+
                 {% elif state == 'play' %}
                 <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
                 {% endif %}
 
 
                 {% if state %}
+                {#
                 <li style="margin-left: 40px" class="navbar-btn">
                     <button id="links-btn" class="btn btn-xs btn-default" data-toggle="modal" data-target="#links-modal">
                         <span class="glyphicon glyphicon-list"></span> <span>Links...</span>
                     </button>
                 </li>
+                #}
 
                 <li style="margin-left: 4px" class="navbar-btn">
                     <div style="display: inline" class="btn-group navbar-btn" data-toggle="buttons">
@@ -58,15 +60,28 @@
                             <input id="automate" type="checkbox" autocomplete="off"/>
                         </label>
                     </div>
+                    <p class="navbar-text" id="auto-info"></p>
                 </li>
-                
+
+                {#
                 <li style="margin-left: 4px" class="navbar-btn">
                     <button id="annotate" class="btn btn-xs btn-default">
                         <span>Annotate</span>
                     </button>
                 </li>
+                #}
 
-                <p class="navbar-text" id="auto-info"></p>
+                <li class="btn-group btn-group-xs navbar-btn">          
+                    <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <span class="glyphicon glyphicon-wrench"></span><span>Tools</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li><a id="links-btn" href="#" data-toggle="modal" data-target="#links-modal">Links...</a></li>
+                        <li><a id="annotate" href="#">Annotate</a></li>
+                    </ul>
+                </li>
+
                 {% endif %}
 
             </ul>
@@ -86,38 +101,9 @@
             {% endif %}
 
         </div>
-        {% if state %}
-        <form class="navbar-left" style="width: 100%; margin-bottom: 10px; margin-top: -10px" onsubmit="return false">
-            <div class="input-group input-group-sm">
-
-                <input id="theurl" type="text" placeholder="Enter url here to record or play back" class="input-small form-control"/>
-
-                <div class="input-group-btn">
-                    {% if state == 'rec' %}
-                    <button class="btn btn-primary btn-xs url-rec-play" id="rec" data-path-prefix="/{{path}}/record/" type="submit">
-                        <span class="glyphicon glyphicon-dot"></span><span></span>
-                    </button>
-                    {% else %}
-                    <button class="btn btn-success btn-xs url-rec-play" id="play" data-path-prefix="/{{path}}/" type="submit">
-                        <span class="glyphicon glyphicon-play"></span><span></span>
-                    </button>
-                    {% endif %}
-                    {#
-                    <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                        <span class="glyphicon glyphicon-wrench"></span><span>Tools</span>
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                    </ul>
-                    #}
-
-                </div>
-            </div>
+        {% if state %} 
+        <form class="navbar-left nav-url-form form-inline" data-path-prefix="/{{path + '/record' if state == 'rec' else path}}/"> 
+            <input id="theurl" type="text" style="width: 100%" placeholder="Enter url here to record or play back" class="input-small input-sm form-control"/>
         </form>
         {% endif %}
     </div>

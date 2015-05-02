@@ -19,7 +19,6 @@
         box-sizing: border-box;
         -moz-box-sizing: border-box;
         -webkit-box-sizing: border-box;
-        overflow: hidden;
     }
 
     .wb_iframe
@@ -28,6 +27,12 @@
         height: 100%;
         padding: 0px 0px 0px 0px;
         overflow: scroll;
+        margin-top: 82px;
+        padding-bottom: 82px;
+    }
+    .navbar {
+        position: fixed;
+        width: 100%;
     }
 </style>
 <script>
@@ -61,9 +66,8 @@
 
 {% block body %}
 {% include 'navbar.html' %}
-<div class="wb_iframe_div">
-    <iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
-</div>
+
+<iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe wb_iframe_div"></iframe>
 
 {% include 'links.html' %}
 {% endblock %}

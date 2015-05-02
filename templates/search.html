@@ -71,11 +71,11 @@
 {% if can_write() %}
 <div class="row" style="margin-bottom: 20px">
     <div class="col-md-offset-2 col-md-8">
-        <form id="dorecord" onsubmit="return false">
+        <form id="dorecord" class="nav-url-form" data-path-prefix="/{{path}}/record/">
             <div class="input-group">
                 <input id="theurl" name="theurl" type="text" placeholder="Enter a url to record here" class="input-large form-control">
                 <span class="input-group-btn">
-                    <button class="btn btn-primary url-rec-play" type="submit" data-path-prefix="/{{path}}/record/">
+                    <button class="btn btn-primary url-rec-play" type="submit">
                         <span class="glyphicon glyphicon-dot-lg"></span> <span>Record</span>
                     </button>
                 </span>
@@ -170,7 +170,7 @@
             <div class="clearfix" style="margin-bottom: 150px"></div>
             <div class="row col-md-6">
                 <div class="alert alert-danger">
-                    <b>Permenantely delete this collection?</b>
+                    <b>Permanantely delete this collection?</b>
                     <p>This action can not be undone!</p>
                     <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete Collection</button>
                 </div>
@@ -192,7 +192,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <form style="display: inline" method="post" action="/_delete?coll={{path}}">
+                <form style="display: inline" method="post" action="/_delete_coll?coll={{path}}">
                     <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
                 </form>
             </div>

@@ -3,15 +3,22 @@ li.coll-nav {
 }
 
 .navbar-brand {
-    padding-right: 4px;
-    padding-top: 9px;
+ /*   padding: 9px 4px 10px 0px;*/
+    padding: 8px 4px 8px 4px;
+    height: 40px;
+}
+
+.navbar {
+    min-height: 40px;
+}
+
+.nav-url-form {
+    width: 100%; 
+    margin: -1px 0px 8px -9px;
 }
 
 li.coll-nav a {
-    padding-left: 4px;
-    padding-right: 4px;
-    padding-bottom: 8px;
-    padding-top: 8px;
+    padding: 8px 4px 8px 4px;
 }
 
 li.coll-nav.active2 a {
