@@ -374,6 +374,7 @@ def create_coll_routes(r):
 Please check your e-mail to complete the registration!'.format(username), 'success')
 
             redir_to = '/'
+            manager.delete_invite(email)
 
         except ValidationException as ve:
             flash_message(str(ve))

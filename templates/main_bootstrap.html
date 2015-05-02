@@ -3,10 +3,13 @@
 {% block head %}
 <script src="/static/__shared/nav.js"></script>
 <script src="/static/__shared/external/validator.js"></script>
+<link rel="stylesheet" href="/static/__shared/footer.css"/>
 {% endblock %}
 
 {% block body %}
+<header>
 {% include 'navbar.html' %}
+</header>
 
 <div class="container">
 {% block message %}
@@ -23,5 +26,12 @@
 {% block content %}
 {% endblock %}
 </div>
+
+<footer class="footer">
+    <div class="container">
+        <div class="text-center"><a href="mailto:support@webrecorder.io">Contact Us</a> for Questions / Comments / Bug Reports<br/>
+            Thank you for trying the new webrecorder.io beta!</div>
+    </div>
+</footer>
 
 {% endblock %}
