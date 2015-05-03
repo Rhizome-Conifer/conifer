@@ -117,7 +117,7 @@ function update_info()
 
 function set_info(data)
 {
-    if (!data.curr_size && !data.total_size) {
+    if (!data.user_total_size && !data.total_size) {
         return;
     }
     
@@ -127,7 +127,7 @@ function set_info(data)
     
     var info = "Collection: " + total_size + ", All Collections: " + user_total_size;
     
-    var total_int = parseInt(data.total_size);
+    var total_int = parseInt(data.user_total_size);
     var max_int = parseInt(data.user_max_size);
     
     var msg = "Recording";
