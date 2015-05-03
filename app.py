@@ -1,4 +1,4 @@
-from bottle import route, request, response, post, delete, default_app
+from bottle import route, request, response, post, default_app
 from bottle import redirect, run, HTTPError, HTTPResponse
 from bottle import hook
 
@@ -357,7 +357,14 @@ def create_coll_routes(r):
             val_email = manager.is_valid_invite(invitecode)
             if val_email != email:
                 raise ValidationException('Sorry, this invite can only be used with email: {0}'.format(val_email))
+        except ValidationException as ve:
+            flash_message(str(ve))
+            redirect(redir_to)
+            return
 
+        redir_to += '?invite=' + invitecode
+
+        try:
             manager.validate_user(username, email)
             manager.validate_password(password, confirm_password)
 
@@ -392,7 +399,7 @@ Please check your e-mail to complete the registration!'.format(username), 'succe
             username = request.query['username']
             #reg = request.query['reg']
 
-            cork.validate_registration(reg)
+            manager.init_user(username, reg)
 
             flash_message('<b>{0}</b>, welcome to your new archive home page! \
 Please <b>login</b> to create a new collection. Happy Archiving!'.format(username), 'success')
@@ -405,6 +412,7 @@ or register a new account.'.format(username))
             redir_to = LOGIN_PATH
 
         except Exception as e:
+            raise
             flash_message('Sorry, this is not a valid registration code. Please try again.')
             redir_to = REGISTER_PATH
 
@@ -503,6 +511,13 @@ You can now <b>login</b> with your new password!', 'success')
             msg = "You must login to create a new collection"
             flash_message(msg)
             redirect('/')
+
+        try:
+            manager.has_more_colls()
+        except ValidationException as ve:
+            flash_message(str(ve))
+            user = cork.current_user.username
+            redirect('/' + user)
 
         return {}
 
@@ -767,6 +782,9 @@ You can now <b>login</b> with your new password!', 'success')
     def record(info):
         if not manager.can_write_coll(info.user, info.coll):
             raise HTTPError(status=404, body='No Such Collection')
+
+        if not manager.has_space(info.user):
+            request.environ['webrec.no_space'] = True
 
         return call_pywb(info, 'rec')
 

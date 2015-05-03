@@ -21,27 +21,31 @@ $(function() {
         doc_window = window.top;
     }
     
-    if (!doc_window.wbinfo) {
+    if (!window.wbinfo) {
         return;
     }
     
-    if (doc_window.wbinfo.timestamp) {
-        update_page(doc_window.wbinfo.timestamp);
+    if (window.wbinfo.timestamp) {
+        update_page(window.wbinfo.timestamp);
     }
     
-    if (doc_window.wbinfo.url) {
-        $("#theurl").attr("value", doc_window.wbinfo.url);
-        $("#theurl").attr("title", doc_window.wbinfo.url);
+    if (window.wbinfo.url) {
+        $("#theurl").attr("value", window.wbinfo.url);
+        $("#theurl").attr("title", window.wbinfo.url);
     }
     
-    if (doc_window.wbinfo.info) {
-        set_info(doc_window.wbinfo.info);
+    if (window.wbinfo.info) {
+        set_info(window.wbinfo.info);
+    }
+    
+    if (window.wbinfo.state == "rec") {
+        setInterval(update_info, 10000);
     }
 });
 
 function update_page(timestamp)
 {
-    if (doc_window.wbinfo.state == "play") {
+    if (wbinfo && wbinfo.state == "play") {
         $("#status-text").text("Playback from " + ts_to_date(timestamp));
     }
 }
@@ -96,12 +100,14 @@ function add_page(capture_url)
     //http.setRequestHeader("Content-length", params.length);
     //http.setRequestHeader("Connection", "close");
     http.send(params);
-    
-    update_info();
 }
 
 function update_info()
 {
+    if (!doc_window || !doc_window.wbinfo) {
+        return;
+    }
+    
     $.ajax("/_info?coll=" + doc_window.wbinfo.coll, {
         success: function(data) {
             set_info(data);
@@ -111,17 +117,37 @@ function update_info()
 
 function set_info(data)
 {
-    if (!data.curr_size || !data.total_size) {
+    if (!data.curr_size && !data.total_size) {
         return;
     }
-
-    var curr_size = format_bytes(data.curr_size);
-    var total_size = format_bytes(data.total_size);
     
-    var info = "Total Collection: " + total_size + ", Recently Recorded: " + curr_size;
+    var total_size = format_bytes(data.total_size);
 
-    $("#curr_size_info").text(total_size);
-    $("#curr_size_info").attr("title", info);
+    var user_total_size = format_bytes(data.user_total_size);
+    
+    var info = "Collection: " + total_size + ", All Collections: " + user_total_size;
+    
+    var total_int = parseInt(data.total_size);
+    var max_int = parseInt(data.user_max_size);
+    
+    var msg = "Recording";
+    
+    if (total_int >= max_int) {
+        msg = "Not Recording -- Size Limit Reached";
+        $("#status-text").parent().removeClass("label-primary label-warning").addClass("label-danger");
+        $(".pulse").hide();
+    } else if (total_int >= max_int * 0.95) {
+        msg = "Recording -- Close to Size Limit";
+        $("#status-text").parent().removeClass("label-primary label-danger").addClass("label-warning");
+    } else {
+        msg = "Recording";
+        $("#status-text").parent().removeClass("label-danger label-warning").addClass("label-primary");
+    }
+
+    $("#status-text").html(msg + "&nbsp;(" + total_size + ")");
+    $("#status-text").attr("title", info);
+    //$("#curr_size_info").text(coll_size);
+    //$("#curr_size_info").attr("title", info);
 }
 
 //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values

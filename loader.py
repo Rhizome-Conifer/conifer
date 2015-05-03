@@ -20,20 +20,6 @@ import base64
 
 
 #=================================================================
-class switch_dir(object):
-    def __init__(self, newdir):
-        self.origcwd = os.getcwd()
-        self.newdir = newdir
-
-    def __enter__(self):
-        os.chdir(self.newdir)
-        return self
-
-    def __exit__(self, *args):
-        os.chdir(self.origcwd)
-
-
-#=================================================================
 jinja_env = J2TemplateView.init_shared_env()
 
 def jinja2_view(template_name):
@@ -184,9 +170,7 @@ class DynRecord(RewriteHandler):
     def __init__(self, config):
         super(DynRecord, self).__init__(config)
         cookie_name = config.get('cookie_name', 'beaker.session.id')
-        self.strip_cookie_re = re.compile(cookie_name + '=[^ ]+([ ]|$)')
         self.record_path = config.get('record_dir', './')
-
 
     def get_top_frame_params(self, wbrequest, mod):
         params = (super(DynRecord, self).
@@ -201,21 +185,26 @@ class DynRecord(RewriteHandler):
 
         return params
 
+    def _ignore_proxies(self, wbrequest):
+        return wbrequest.env.get('webrec.no_space', False)
+
     def _live_request_headers(self, wbrequest):
         path = wbrequest.custom_params.get('output_dir')
         if not path:
             path = self.record_path
 
-        sesh_id = wbrequest.custom_params.get('sesh_id', wbrequest.coll)
-        sesh_id = sesh_id.replace('/', ':')
-        user_id = wbrequest.custom_params.get('user_id')
+        if not self._ignore_proxies(wbrequest):
+            sesh_id = wbrequest.custom_params.get('sesh_id', wbrequest.coll)
+            sesh_id = sesh_id.replace('/', ':')
+            user_id = wbrequest.custom_params.get('user_id')
 
+            target = dict(output_dir=path,
+                          sesh_id=sesh_id,
+                          user_id=user_id)
 
-        target = dict(output_dir=path,
-                      sesh_id=sesh_id,
-                      user_id=user_id)
-
-        req_headers = {'warcprox-meta': json.dumps(target)}
+            req_headers = {'warcprox-meta': json.dumps(target)}
+        else:
+            req_headers = {}
 
         # reset HTTP_COOKIE to guarded request_cookie for LiveRewriter
         if 'webrec.request_cookie' in wbrequest.env:
@@ -258,58 +247,3 @@ class DynUrlRewriter(UrlRewriter):
         #parts[1] = host + '.' + parts[1]
         new_url = '://'.join(parts)
         return new_url
-
-
-#=================================================================
-class RecordDirLoader(DirectoryCollsLoader):
-    def __call__(self):
-        colls = super(RecordDirLoader, self).__call__()
-        new_colls = {}
-
-        for n, v in colls.iteritems():
-            new_colls[n] = v
-            v['index_paths'] = self.config['index_paths'] + '/cdxj:' + n
-            record_path = '({0})-record'.format(n)
-            new_colls[record_path] = self.add_live_web_coll(v['archive_paths'])
-            print(v)
-
-        return new_colls
-
-    def add_live_web_coll(self, path):
-        live = {'index_paths': '$liveweb',
-                'cookie_scope': 'default',
-                'coll_group': 1,
-                'wb_handler_class': DynRecord,
-                'record_dir': path}
-        return live
-
-
-#=================================================================
-class AccountUserLoader(object):
-    def __init__(self, config, static_routes):
-        self.config = config
-        self.static_routes = static_routes
-        self.colls = {}
-
-    def __call__(self):
-        for usr in os.listdir('users'):
-            full = os.path.join('users', usr)
-            with switch_dir(full):
-                r = DirectoryCollsLoader(self.config, self.static_routes)
-                r = r()
-
-                colls = {}
-                for n, v in r.iteritems():
-                    name = usr + '/' + n
-                    colls[name + '/record'] = self.add_live_web_coll()
-                    colls[name] = v
-
-                self.colls.update(colls)
-
-        return self.colls
-
-    def add_live_web_coll(self):
-        live = {'index_paths': '$liveweb',
-                'cookie_scope': 'de}ault'}
-
-        return live

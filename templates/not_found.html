@@ -1,6 +1,18 @@
-{% extends "base_bootstrap.html" %}
+{% extends "main_bootstrap.html" %}
 
-{% block body %}
+{% block head %}
+{{ super() }}
+<script>
+
+    $(function() {
+        if (window.top != window) {
+            $("nav").hide();
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
 <div class="container">
     <div class="row">
         <h2>Url Not Found in this Collection</h2>

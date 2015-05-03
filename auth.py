@@ -12,8 +12,6 @@ import shutil
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
 
-from loader import switch_dir
-
 from cookieguard import CookieGuard
 
 from pywb.warc.cdxindexer import iter_file_or_dir
@@ -252,6 +250,42 @@ class CollsManager(object):
     def _user_key(self, user):
         return 'u:' + user
 
+    def init_user(self, user, reg):
+        self.cork.validate_registration(reg)
+
+        all_users = RedisTable(self.redis, 'h:users')
+        usertable = all_users[user]
+
+        max_len, max_coll = self.redis.hmget('h:defaults', ['max_len', 'max_coll'])
+
+        usertable['max_len'] = max_len
+        usertable['max_coll'] = max_coll
+
+        key = self._user_key(user)
+        self.redis.hset(key, 'max_len', max_len)
+        self.redis.hset(key, 'max_coll', max_coll)
+
+    def has_space(self, user):
+        sizes = self.redis.hmget(self._user_key(user), 'total_len', 'max_len')
+        curr = sizes[0] or 0
+        total = sizes[1] or 500000000
+
+        return long(curr) <= long(total)
+
+    def has_more_colls(self):
+        user, _ = self.curr_user_role()
+        key = self._user_key(user)
+        max_coll = self.redis.hget(key, 'max_coll')
+        if not max_coll:
+            max_coll = 10
+        num_coll = self.redis.hlen(key + self.COLL_KEY)
+        if int(num_coll) < int(max_coll):
+            return True
+        else:
+            msg = 'You have reached the <b>{0}</b> collection limit.'.format(max_coll)
+            msg += ' Check your account settings for upgrade options.'
+            raise ValidationException(msg)
+
     def _get_user_colls(self, user):
         return RedisTable(self.redis, self._user_key(user) + self.COLL_KEY)
 
@@ -469,9 +503,14 @@ class CollsManager(object):
 
         key = self.make_key(user, coll, self.DEDUP_KEY)
         res = self.redis.hmget(key, ['total_len', 'num_urls'])
-        #num_pages = self.redis.scard(self.PAGE_KEY + key)
+
+        user_key = self._user_key(user)
+        user_res = self.redis.hmget(user_key, ['total_len', 'max_len'])
+
         return {'total_size': res[0],
-                'num_urls': res[1]
+                'num_urls': res[1],
+                'user_total_size': user_res[0],
+                'user_max_size': user_res[1]
                }
                 #'pages': num_pages}
 
