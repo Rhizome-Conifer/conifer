@@ -159,3 +159,18 @@ function format_bytes(bytes) {
     var e = Math.floor(Math.log(bytes) / Math.log(1000));
     return (bytes / Math.pow(1000, e)).toFixed(2) + " " + s[e];
 }
+
+$(function() {
+    $("#report-form").submit(function(e) {
+        var params = $("#report-form").serialize();
+        
+        params += "&" + $.param({coll: wbinfo.coll,
+                                 state: wbinfo.state,
+                                 url: doc_window.location.href});
+        
+        $.post("/_reportissues", params, function() {
+            $("#report-modal").modal('hide');
+        });
+        e.preventDefault();
+    });
+});

@@ -105,6 +105,7 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     @jinja2_view('error.html')
     @addcred()
     def err_handle(out):
+        response.status = 404
         return {'err': out}
 
     bottle_app.default_error_handler = err_handle
@@ -771,6 +772,19 @@ You can now <b>login</b> with your new password!', 'success')
         user, coll = r.get_user_coll(request.query['coll'])
         info = manager.get_info(user, coll)
         return info
+
+
+    # Report Issues
+    # ============================================================================
+    @post('/_reportissues')
+    def report_issues():
+        #try:
+        #    cork.require(role='archivist')
+        #except AAAException:
+        #    raise HTTPError(status=404, body='Requires Login')
+        useragent = request.headers.get('User-Agent')
+        manager.report_issues(request.POST, useragent)
+        return {}
 
 
     # Queue

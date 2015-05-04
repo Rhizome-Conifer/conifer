@@ -1,0 +1,44 @@
+<!-- Report -->
+<div class="modal fade" id="report-modal" tabindex="-1" role="dialog" aria-labelledby="report-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4>Page Doesn't Look Right? Let Us Know!</h4>
+                <p>Help us make webrecorder even better. Please indicate anything that is wrong on this page with the options below.
+                You may include any additional information as well to help us solve the problem</p>
+            </div>
+            <form method="post" action="/_reportissues" id="report-form">
+                <div class="modal-body">
+                    <div>
+                        <input type="checkbox" name="loading" value="true"/>&nbsp;Page Not Loading
+                    </div>
+                    <div>
+                        <input type="checkbox" name="missing" value="true"/>&nbsp;Missing Content (Images, Video)
+                    </div>
+                    <div>
+                        <input type="checkbox" name="leak" value="true"/>&nbsp;Live Web Leak -- Content Not Rewritten
+                    </div>
+                    <div>
+                        <input type="checkbox" name="video" value="true"/>&nbsp;Video/Audio not Playing
+                    </div>
+                    <div>
+                        <input type="checkbox" name="frames" value="true"/>&nbsp;Frame Issues
+                    </div>
+                    <div>
+                        <input type="checkbox" name="scrolling" value="true"/>&nbsp;Scrolling Issues
+                    </div>
+                    <div>
+                        <label for="other" class="sr-only">Additional Info:</label>
+                        <textarea name="desc" placeholder="Additional Info (optional)" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <p class="pull-left">Thank you for testing webrecorder.io beta!</p>
+                    <button id="report-submit" type="submit" class="btn btn-primary">Report Issues</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>   

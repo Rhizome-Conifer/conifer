@@ -8,6 +8,7 @@ import os
 import re
 import base64
 import shutil
+import datetime
 
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
@@ -590,7 +591,6 @@ class CollsManager(object):
             return False
 
         cdx_key = self.make_key(user, coll, self.CDX_KEY)
-        print(cdx_key, key)
         result = self.redis.zrangebylex(cdx_key,
                                         '[' + key,
                                         '(' + end_key)
@@ -669,6 +669,18 @@ class CollsManager(object):
         self.validate_password(password, confirm)
 
         self.cork.update_password(user, password)
+
+    def report_issues(self, issues, ua=''):
+        issues_dict = {}
+        for key in issues.iterkeys():
+            issues_dict[key] = issues[key]
+
+        issues_dict['user'], _ = self.curr_user_role()
+        issues_dict['time'] = str(datetime.datetime.utcnow())
+        issues_dict['ua'] = ua
+        report = json.dumps(issues_dict)
+
+        self.redis.rpush('h:reports', report)
 
 
 def init_cork_backend(backend):

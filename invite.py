@@ -5,7 +5,7 @@ def main():
     m = init_manager_for_invite()
     res = m.send_invite(sys.argv[1],
                         email_template='templates/emailinvite.html',
-                        host='http://localhost:8088')
+                        host='http://beta.webrecorder.io')
     if res:
         print('Success')
     else:
