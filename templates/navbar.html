@@ -82,11 +82,21 @@
                     </ul>
                 </li>
 
+
+                <li style="margin-left: 16px" class="navbar-btn">
+                    <button id="annotate" class="btn btn-xs btn-warning">
+                        <span>Doesn't look right?</span>
+                    </button>
+                </li>
+
                 {% endif %}
 
             </ul>
             {% if curr_user %}
             <p class="navbar-text navbar-right">(<a target="_parent" href="/_logout" class="navbar-link">Logout</a>)</p>
+            <p class="navbar-text navbar-right userset">
+                <a href="/{{ curr_user }}/_settings"><span class="glyphicon glyphicon-cog"></span></a>
+            </p>
             <p class="navbar-text navbar-right userinfo">
                 <a target="_parent" href="/{{ curr_user }}"><span class="glyphicon glyphicon-user"></span></a>
                 <a target="_parent" href="/{{ curr_user }}"><b>{{ curr_user }}</b></a>

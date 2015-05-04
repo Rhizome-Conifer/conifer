@@ -1,0 +1,127 @@
+{% extends "main_bootstrap.html" %}
+
+{% block content %}
+<style>
+    .warn-limit {
+        color: #d44950;
+    }
+</style>
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h2 class="panel-title">Usage for <b>{{user}}</b></h2>
+        </div>
+        <div class="panel-body">
+            <div class="row col-md-9">
+                <table class="table">
+                    <tr>
+                        <th>Size</th>
+                        <td><b id="total-size" data-size="{{ user_total_size }}"></b> of <b id="max-size" data-size="{{ user_max_size }}"></b> used</td>
+                        <td class="warn-limit" id="limit-size"></td>
+                    </tr>
+                    <tr >
+                        <th>Collections</th>
+                        <td><b id="num-coll" data-count="{{ num_coll }}">{{ num_coll }}</b> of <b id="max-coll" data-count="{{ max_coll }}">{{ max_coll }}</b> created</td>
+                        <td class="warn-limit" id="limit-coll"></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="clearfix"></div>
+            <div class="row col-md-9">
+                <p><a class="btn btn-primary btn-sm disabled" href="/_create" role="button">
+                    <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>Upgrade</a>
+                    Upgrade Options Coming Soon! Please <a href="mailto:support@webrecorder.io">contact us</a> if you have specific requests / suggestions.
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title" style="display: inline">Change Password</h3><p style="display: inline; margin-left: 10px; font-style: italic">Enter your current password, and your new password below.</p>
+        </div>
+        <div class="panel-body">
+            <div class="row col-md-3">
+                <form id="changepassword" action="/_updatepassword" method="post" role="form" data-toggle="validator" data-delay="1000">
+                    <div class="form-group">
+                        <label for="curr_password" class="sr-only">Current Password</label>
+                        <input type="password" id="curr_password" name="curr_password" class="form-control input-sm" value="" placeholder="Current Password" required="true">
+                        <div class="help-block with-errors"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="sr-only">New Password</label>
+                        <input type="password" id="password" data-minlength="8" name="password" class="form-control input-sm" placeholder="New Password" required="true"
+                               pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols">
+                        <div class="help-block with-errors"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="sr-only">Confirm Password</label>
+                        <input type="password" id="confirmpassword" data-minlength="8" data-match="#password" name="confirmpassword" class="form-control input-sm" 
+                               placeholder="Confirm New Password" required="true" pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols" data-match-error="Password confirmation does not match">
+                        <div class="help-block with-errors"></div>
+                    </div>
+
+                    <button class="btn btn-primary btn-sm" type="submit">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-danger">
+        <div class="panel-heading">
+            <h3 class="panel-title">Delete Account</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row col-md-6">
+                <div>
+                    <b>Permanently delete this account and all archived data for this user</b>
+                    <p>This action can not be undone!</p>
+                    <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirm-delete-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Confirm Delete Account?
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the <b>{{user}}</b> account?
+                If you continue, all archived data in all collections will be permanently deleted.
+                You will need to re-register to use the service again.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form style="display: inline" method="post" action="/_delete_account?user={{user}}">
+                    <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $("[data-size]").each(function(i, elem) {
+            $(elem).text(format_bytes($(elem).attr("data-size")));
+        });
+
+        if (parseInt($("#total-size").attr("data-size")) >= parseInt($("#max-size").attr("data-size"))) {
+            $("#limit-size").text("Size limit reached");
+            $("#total-size").addClass("warn-limit");
+        }
+
+        if (parseInt($("#num-coll").attr("data-count")) >= parseInt($("#max-coll").attr("data-count"))) {
+            $("#limit-coll").text("Max Collections Reached, No Additional Collections can be created");
+            $("#num-coll").addClass("warn-limit");
+        }
+    });
+</script>
+{% endblock %}

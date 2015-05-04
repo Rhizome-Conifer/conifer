@@ -19,11 +19,32 @@ from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.loaders import load_yaml_config
 
 
+
+
+class CustomCork(Cork):
+    def verify_password(self, username, password):
+        salted_hash = self._store.users[username]['hash']
+        if hasattr(salted_hash, 'encode'):
+            salted_hash = salted_hash.encode('ascii')
+        authenticated = self._verify_password(
+            username,
+            password,
+            salted_hash,
+        )
+        return authenticated
+
+    def update_password(self, username, password):
+        user = self.user(username)
+        if user is None:
+            raise AAAException("Nonexistent user.")
+        user.update(pwd=password)
+
+
 def create_cork(redis):
     backend=RedisBackend(redis)
     init_cork_backend(backend)
 
-    cork = Cork(backend=backend,
+    cork = CustomCork(backend=backend,
                 email_sender=redacted,
                 smtp_url=redacted)
     return cork
@@ -497,6 +518,20 @@ class CollsManager(object):
         self.cork.user(user).delete()
         return True
 
+    def get_user_info(self, user):
+        if not self.is_owner(user):
+            return {}
+
+        user_key = self._user_key(user)
+        user_res = self.redis.hmget(user_key, ['total_len', 'max_len', 'max_coll'])
+        num_coll = self.redis.hlen(user_key + self.COLL_KEY)
+
+        return {'user_total_size': user_res[0],
+                'user_max_size': user_res[1],
+                'max_coll': user_res[2],
+                'num_coll': num_coll,
+               }
+
     def get_info(self, user, coll):
         if not self.can_read_coll(user, coll):
             return {}
@@ -625,6 +660,16 @@ class CollsManager(object):
         print('Remote File')
         result = self.remotemanager.download_stream(warc_path)
         return result
+
+    def update_password(self, curr_password, password, confirm):
+        user, _ = self.curr_user_role()
+        if not self.cork.verify_password(user, curr_password):
+            raise ValidationException('Incorrect Current Password')
+
+        self.validate_password(password, confirm)
+
+        self.cork.update_password(user, password)
+
 
 def init_cork_backend(backend):
     class InitCork(Cork):

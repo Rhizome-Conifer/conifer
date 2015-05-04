@@ -48,43 +48,12 @@
     {% endif %}
 
     {% if is_owner() %}
+    <p class="pull-right"><a class="btn btn-sm btn-default" href="/{{user}}/_settings" role="button">
+        <span class="glyphicon glyphicon-cog" style="margin-right: 4px"></span>Account Settings</a></p>
     <p><a class="btn btn-primary btn-sm" href="/_create" role="button">
         <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>Create new Collection</a></p>
     {% endif %}
 </div>
-
-
-{% if is_owner() %}
-<div class="row col-md-6">
-    <div class="alert alert-danger">
-        <b>Permanently delete this account?</b>
-        <p>This action can not be undone!</p>
-        <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete Account</button>
-    </div>
-</div>
-
-<div class="modal fade" id="confirm-delete-modal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                Confirm Delete Account?
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete the <b>{{user}}</b> account?
-                If you continue, all archived data in all collections will be permanently deleted.
-                You will need to re-register to use the service again.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <form style="display: inline" method="post" action="/_delete_account?user={{user}}">
-                    <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 
 <script>
     $(function() {

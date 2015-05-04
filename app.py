@@ -256,6 +256,8 @@ RESET_POST = '/_resetpassword'
 RESET_PATH = '/_resetpassword/:resetcode'
 RESET_PATH_FILL = '/_resetpassword/{0}?username={1}'
 
+UPDATE_PASS_PATH = '/_updatepassword'
+SETTINGS = '/_settings'
 
 DEFAULT_DESC = """
 
@@ -499,6 +501,25 @@ You can now <b>login</b> with your new password!', 'success')
         redirect(redir_to)
 
 
+    # Update Password
+    @post(UPDATE_PASS_PATH)
+    def update_password():
+        cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+
+        curr_password = post_get('curr_password')
+        password = post_get('password')
+        confirm_password = post_get('confirmpassword')
+
+        try:
+            manager.update_password(curr_password, password, confirm_password)
+            flash_message('Password Updated', 'success')
+        except ValidationException as ve:
+            flash_message(str(ve))
+
+        user, _ = manager.curr_user_role()
+        redirect('/' + user + SETTINGS)
+
+
     # Create Coll
     # ============================================================================
     @route(CREATE_PATH)
@@ -546,6 +567,8 @@ You can now <b>login</b> with your new password!', 'success')
     # Delete Collection
     @post('/_delete_coll')
     def delete_coll():
+        cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+
         path = request.query.get('coll', '')
         user, coll = r.get_user_coll(path)
         if manager.delete_collection(user, coll):
@@ -560,6 +583,8 @@ You can now <b>login</b> with your new password!', 'success')
     # Delete User
     @post('/_delete_account')
     def delete_account():
+        cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+
         user = request.query.get('user', '')
         if manager.delete_user(user):
             flash_message('The user {0} has been permanently deleted!'.format(user), 'success')
@@ -594,6 +619,7 @@ You can now <b>login</b> with your new password!', 'success')
 
 
     # Shared Home Page
+    # ============================================================================
     if multiuser:
         @route(['/', '/index.html'])
         @jinja2_view('index.html')
@@ -602,6 +628,7 @@ You can now <b>login</b> with your new password!', 'success')
             return {}
 
     # User Page
+    # ============================================================================
     @route([r.USER, r.USER + '/', r.USER + '/index.html'])
     @jinja2_view('user.html')
     @addcred()
@@ -628,6 +655,22 @@ You can now <b>login</b> with your new password!', 'success')
                 'desc': desc,
                 'total_size': total_size,
                }
+
+
+    # User Settings
+    # ============================================================================
+    @route([r.USER + SETTINGS])
+    @jinja2_view('account.html')
+    @addcred()
+    def settings(user):
+        info = manager.get_user_info(user)
+        if not info:
+            raise HTTPError(status=404, body='No Such Collection')
+
+        info['user'] = user
+        info['coll'] = 'Account Settings'
+        info['path'] = user + SETTINGS
+        return info
 
 
     # ============================================================================

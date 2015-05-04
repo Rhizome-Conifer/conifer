@@ -65,6 +65,10 @@ p.status-badge {
     color: black;
 }
 
+.navbar .userset a {
+    color: black;
+}
+
 .navbar .nav-search {
     margin-top: 12px;
     width: 100%;
