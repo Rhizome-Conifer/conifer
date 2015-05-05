@@ -59,7 +59,7 @@ def init_manager_for_invite(configfile='config.yaml'):
 
     cork = create_cork(redis_obj)
 
-    manager = CollsManager(cork, redis_obj, None, None)
+    manager = CollsManager(cork, redis_obj, None, None, None)
     return manager
 
 
@@ -195,11 +195,12 @@ class CollsManager(object):
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
     WARC_RX = re.compile(r'^[\w.-]+$')
 
-    def __init__(self, cork, redis, path_router, remotemanager):
+    def __init__(self, cork, redis, path_router, remotemanager, signer):
         self.cork = cork
         self.redis = redis
         self.path_router = path_router
         self.remotemanager = remotemanager
+        self.signer = signer
 
     def make_key(self, user, coll, type_=''):
         return user + ':' + coll + type_
@@ -650,8 +651,9 @@ class CollsManager(object):
             archive_dir = self.path_router.get_archive_dir(user, coll)
             full_path = os.path.join(archive_dir, name)
             if os.path.isfile(full_path):
+                if self.signer and not self.signer.verify(full_path):
+                    self.signer.sign(full_path)
                 length = os.stat(full_path).st_size
-                print('Local File')
                 stream = open(full_path, 'r')
                 return length, stream
             else:

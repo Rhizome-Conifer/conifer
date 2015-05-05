@@ -22,6 +22,8 @@ from jinja2 import contextfunction
 from router import SingleUserRouter, MultiUserRouter
 from uploader import S3Manager, Uploader, iter_all_accounts
 
+from warcsigner.warcsigner import RSASigner
+
 import logging
 
 
@@ -70,8 +72,11 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     # for now, just s3
     s3_manager = S3Manager(config['s3_target'])
 
+    signer = RSASigner(private_key_file=config['warcsign_private_key'],
+                       public_key_file=config['warcsign_public_key'])
+
     global manager
-    manager = CollsManager(cork, redis_obj, router, s3_manager)
+    manager = CollsManager(cork, redis_obj, router, s3_manager, signer)
 
     jinja_env.globals['metadata'] = config.get('metadata', {})
 
@@ -113,6 +118,7 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
 
     uploader = Uploader(store_root,
                         s3_manager,
+                        signer,
                         redis_obj,
                         iter_all_accounts)
 

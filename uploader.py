@@ -56,6 +56,7 @@ class S3Manager(object):
     def upload_file(self, local, rel_path):
         s3_path = self.prefix + rel_path
         s3_url = self.get_remote_url(rel_path)
+
         with open(local, 'r') as fh:
             try:
                 new_key = self._get_bucket().new_key(s3_path)
@@ -76,9 +77,10 @@ class S3Manager(object):
 
 ## ============================================================================
 class Uploader(object):
-    def __init__(self, root_dir, remotemanager, redis, warc_iter):
+    def __init__(self, root_dir, remotemanager, signer, redis, warc_iter):
         self.root_dir = root_dir
         self.remotemanager = remotemanager
+        self.signer = signer
         self.redis = redis
         self.warc_iter = warc_iter
 
@@ -102,6 +104,10 @@ class Uploader(object):
                 continue
 
             if not self.redis.get(warc_already_uploaded_key):
+                # Sign before uploading
+                if self.signer and not self.signer.verify(local_full_path):
+                    self.signer.sign(local_full_path)
+
                 if not self.remotemanager.upload_file(local_full_path, rel_path):
                     continue
 
