@@ -173,4 +173,25 @@ $(function() {
         });
         e.preventDefault();
     });
+    
+    
+    $("#snapshot").click(function() {
+        var params = $.param({coll: wbinfo.coll,
+                              url: curr_state.url});
+        
+        var content = doc_window.document.documentElement.outerHTML;
+        
+        $.ajax({
+            type: "POST",
+            url: "/_snapshot?" + params,
+            data: content,
+            success: function() {
+                console.log("Saved");
+            },
+            error: function() {
+                console.log("err");
+            },
+            dataType: 'html',
+        });
+    });
 });

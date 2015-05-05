@@ -24,7 +24,11 @@ from uploader import S3Manager, Uploader, iter_all_accounts
 
 from warcsigner.warcsigner import RSASigner
 
+from rewriter import HTMLDomUnRewriter
+
 import logging
+import requests
+import json
 
 
 # ============================================================================
@@ -34,6 +38,7 @@ cork = None
 manager = None
 redis_obj = None
 pywb_router = None
+warcprox_proxies = None
 
 
 def init(configfile='config.yaml', store_root='./', redis_url=None):
@@ -74,6 +79,10 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
 
     signer = RSASigner(private_key_file=config['warcsign_private_key'],
                        public_key_file=config['warcsign_public_key'])
+
+    global warcprox_proxies
+    warcprox_proxies = {'http': config['proxy_path'],
+                        'https': config['proxy_path']}
 
     global manager
     manager = CollsManager(cork, redis_obj, router, s3_manager, signer)
@@ -771,6 +780,46 @@ You can now <b>login</b> with your new password!', 'success')
             raise HTTPError(status=404, body='Not found')
 
 
+    # Snapshot
+    # ============================================================================
+    #@post('/_snapshot')
+    def snapshot():
+        path = request.query.get('coll', '')
+        user, coll = r.get_user_coll(path)
+        url = request.query.get('url', '')
+        if not url or not manager.can_write_coll(user, coll):
+            raise HTTPError(status=404, body='No Such Page')
+
+        html_text = request.body.read()
+        host = 'http://' + request.headers.get('Host', 'localhost')
+
+        orig_html = HTMLDomUnRewriter.unrewrite_html(host, html_text)
+
+        target = dict(output_dir=router.get_archive_dir(user, coll),
+                      sesh_id=path.replace('/', ':'),
+                      user_id=user)
+
+        if url.startswith('https://'):
+            url = url.replace('https:', 'http:')
+        print(url)
+
+        req_headers = {'warcprox-meta': json.dumps(target),
+                       'content-type': 'text/html'}
+
+        try:
+            resp = requests.request(method='PUTRES',
+                                    url=url,
+                                    data=orig_html,
+                                    headers=req_headers,
+                                    proxies=warcprox_proxies,
+                                    verify=False)
+        except:
+            return {'status': 'err'}
+
+
+        return {'status': resp.status_code}
+
+
     # Info
     # ============================================================================
     @route('/_info')
@@ -836,6 +885,7 @@ You can now <b>login</b> with your new password!', 'success')
         #resp = HTTPResponse(body=body,
         #                    status=resp.status_headers.statusline,
         #                    headers=resp.status_headers.headers)
+
 
 
     # pywb Replay / Record

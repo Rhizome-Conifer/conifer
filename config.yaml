@@ -1,5 +1,5 @@
 #colls_loader_cls: !!python/name:loader.AccountUserLoader
-_proxy_path: &proxyhostport localhost:9002
+proxy_path: &proxyhostport localhost:9002
 redis_url: &redis_url redis://127.0.0.1:6379/1
 
 s3_target: s3://redacted
