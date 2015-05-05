@@ -454,6 +454,7 @@ class CollsManager(object):
                 colls[n] = v
                 v['path'] = self.path_router.get_coll_path(user, n)
                 v['size'] = self.get_info(user, n).get('total_size')
+                v['public'] = self.is_public(user, n)
 
         return colls
 

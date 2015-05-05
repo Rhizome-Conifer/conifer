@@ -28,19 +28,19 @@
         {% for name, value in colls | dictsort %}
         <li class="list-group-item">
             <a href="/{{ value.path }}" style="font-size: 20px">{{ value.title | default(name) }}</a>
+            {% if value.public %}
+            <span class="pull-right glyphicon glyphicon-globe" title="Public Collection -- Visible to Everyone" style="font-size: 14px; margin-top: 5px; margin-left: 12px;"></span>
+            {% else %}
+            <span class="pull-right" style="font-size: 14px; margin-top: 5px; margin-left: 26px;"></span>
+            {% endif %}
             <p class="colls-size pull-right" data-size="{{ value.size }}" style="font-size: 14px; margin-top: 4px"></p>
         </li>
         {% endfor %}
-        {#
-        {% if is_owner() %}
-        <p style="font-size: 14px; padding: 4px 17px 0px 0px;" data-size="{{ total_size }}" class="colls-size pull-right"></p>
-        {% endif %}
-        #}
     </ul>
     {% if not colls %}
     <p class="text-center" style="font-style: italic">
         {% if is_owner() %}
-        No Collections
+        No Collections (Yet)
         {% else %}
         No Available Collections
         {% endif %}
