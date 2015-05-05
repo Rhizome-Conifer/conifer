@@ -7,6 +7,9 @@ var __wfa_banner_init = function(banner_id)
     var style = "\
 .__wb_banner {\
     position: fixed !important;\
+    margin: 0px !important;\
+    padding: 0px !important;\
+    border: 0px !important;\
     width: 100% !important;\
     height: 100px !important;\
     top: 0px !important;\

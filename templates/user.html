@@ -28,7 +28,7 @@
         {% for name, value in colls | dictsort %}
         <li class="list-group-item">
             <a href="/{{ value.path }}" style="font-size: 20px">{{ value.title | default(name) }}</a>
-            <p class="colls-size pull-right" data-size="{{ value.size }}" style="font-size: 14px"></p>
+            <p class="colls-size pull-right" data-size="{{ value.size }}" style="font-size: 14px; margin-top: 4px"></p>
         </li>
         {% endfor %}
         {#

@@ -7,7 +7,14 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a target="_parent" class="navbar-brand" href="/">{{ metadata.product | default('webrecorder.io')}}</a>
+            <a target="_parent" class="navbar-brand" title="Return to {{ metadata.product | default('webrecorder.io')}}" href="/">
+                {% if user %}
+                <span class="glyphicon glyphicon-home">
+                {% else %}
+                {{ metadata.product | default('webrecorder.io')}}
+                {% endif %}
+                </span></a>
+            <!--<a target="_parent" class="navbar-brand" href="/"><img style="width: 32px; height: 32px" src="/static/__shared/logo.png"/></a>-->
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
@@ -93,9 +100,11 @@
 
             </ul>
             {% if curr_user %}
-            <p class="navbar-text navbar-right">(<a target="_parent" href="/_logout" class="navbar-link">Logout</a>)</p>
             <p class="navbar-text navbar-right userset">
-                <a href="/{{ curr_user }}/_settings"><span class="glyphicon glyphicon-cog"></span></a>
+                <a target="_parent" title="Logout" href="/_logout" class="navbar-link">
+                <span class="glyphicon glyphicon-log-out" title="Logout"></span></a></p>
+            <p class="navbar-text navbar-right userset">
+                <a href="/{{ curr_user }}/_settings"><span title="Settings" class="glyphicon glyphicon-cog"></span></a>
             </p>
             <p class="navbar-text navbar-right userinfo">
                 <a target="_parent" href="/{{ curr_user }}"><span class="glyphicon glyphicon-user"></span></a>

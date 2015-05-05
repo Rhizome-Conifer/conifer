@@ -10,6 +10,9 @@ verify_ssl: false
 
 multiuser: true
 
+warcsign_private_key: /var/wr/wr.pem
+warcsign_public_key: /var/wr/wr_pub.pem
+
 #enable_auto_colls: false
 collections_root: _na_
 

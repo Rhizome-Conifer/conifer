@@ -17,9 +17,6 @@
                         <input type="checkbox" name="missing" value="true"/>&nbsp;Missing Content (Images, Video)
                     </div>
                     <div>
-                        <input type="checkbox" name="leak" value="true"/>&nbsp;Live Web Leak -- Content Not Rewritten
-                    </div>
-                    <div>
                         <input type="checkbox" name="video" value="true"/>&nbsp;Video/Audio not Playing
                     </div>
                     <div>
@@ -29,14 +26,19 @@
                         <input type="checkbox" name="scrolling" value="true"/>&nbsp;Scrolling Issues
                     </div>
                     <div>
+                        <input type="checkbox" name="leak" value="true"/>&nbsp;Some items not Archived, loading from live web
+                    </div>
+                    <div>
+                        <input type="checkbox" name="interface" value="true"/>&nbsp;WebRecorder interface issues
+                    </div>
+                    <div style="margin-top: 10px">
                         <label for="other" class="sr-only">Additional Info:</label>
                         <textarea name="desc" placeholder="Additional Info (optional)" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <p class="pull-left">Thank you for testing webrecorder.io beta!</p>
-                    <button id="report-submit" type="submit" class="btn btn-primary">Report Issues</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="report-submit" type="submit" class="btn btn-primary">Submit Report</button>
                 </div>
             </form>
         </div>

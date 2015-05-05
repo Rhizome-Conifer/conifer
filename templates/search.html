@@ -90,12 +90,12 @@
         <ul id="thetab" class="nav nav-tabs" role="tablist">
             <li role="presentation">
                 <a href="#about" aria-controls="about" role="tab" data-toggle="tab">
-                    <span class="glyphicon glyphicon-home"></span>About
+                    <span class="glyphicon glyphicon-list-alt"></span>About
                 </a>
             </li>
             <li role="presentation">
                 <a href="#records" aria-controls="records" role="tab" data-toggle="tab">
-                    <span class="glyphicon glyphicon-file"></span>Records
+                    <span class="glyphicon glyphicon-book"></span>Records
                 </a>
             </li>
             {#
@@ -116,7 +116,7 @@
                     <span class="glyphicon glyphicon-cog"></span>Settings
                 </a>
             </li>
-            <p class="pull-right">Total Size: <b id="total-size"></b>
+            <p class="pull-right" style="margin-right: 15px">Total Size: <b id="total-size"></b>
             {% endif %}
             </p>
         </ul>
@@ -129,7 +129,8 @@
     <div class="tab-content">
         <div role="tabpanel" class="tab-pane" id="about">
             {% if can_write() %}
-            <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">Edit</button>
+            <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">
+                Edit</button>
             {% endif %}
 
             <div id="home-markdown" style="display: none">{{desc}}</div>

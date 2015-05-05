@@ -1,8 +1,19 @@
 {% extends "main_bootstrap.html" %}
 
 {% block content %}
-<h1 class="text-center">Welcome to beta.webrecorder.io!</h1>
+<div class="jumbotron">
+    <p class="pull-right">Web Archives for All!</p>
+    <h3>Welcome to the webrecorder.io beta</h3>
+    {% if curr_user %}
+    <p>This space will soon have more exciting stuff.</p>
+    <p><a href="/{{curr_user}}">Return to your user page</a></p>
+    {% else %}
+    <p>A new beta version of webrecorder.io is in active development and will be available soon here!</p>
+    <p>For now, please <a href="/_register">request an invite</a> to try it out!</p>
+    {% endif %}
+</div>
+{% endblock %}
 
-<h3>A new beta version of webrecorder.io will be ready soon!</h3>
-<h3><a href="/_register">Request an invite</a> to try it out.</h3>
+{% block footer %}
+
 {% endblock %}

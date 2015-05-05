@@ -9,7 +9,7 @@
 <div class="row">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h2 class="panel-title">Usage for <b>{{user}}</b></h2>
+            <h2 class="panel-title">Usage for <b>{{curr_user}}</b></h2>
         </div>
         <div class="panel-body">
             <div class="row col-md-9">
@@ -93,13 +93,13 @@
                 Confirm Delete Account?
             </div>
             <div class="modal-body">
-                Are you sure you want to delete the <b>{{user}}</b> account?
-                If you continue, all archived data in all collections will be permanently deleted.
+                Are you sure you want to delete the <b>{{curr_user}}</b> account?
+                If you continue, <b>all archived data in all collections will be permanently deleted.</b>
                 You will need to re-register to use the service again.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <form style="display: inline" method="post" action="/_delete_account?user={{user}}">
+                <form style="display: inline" method="post" action="/_delete_account?user={{curr_user}}">
                     <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
                 </form>
             </div>
