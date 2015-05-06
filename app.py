@@ -360,7 +360,7 @@ def create_coll_routes(r):
         name = post_get('name', '')
         desc = post_get('desc', '')
         if manager.save_invite(email, name, desc):
-            flash_message('Thank you for your interest! We will send you an invite to try webrecorder.io soon!', 'success')
+            flash_message('Thank you for your interest! We will send you an invite to try beta.webrecorder.io soon!', 'success')
             redirect('/')
         else:
             flash_message('Oops, something went wrong, please try again')
@@ -425,7 +425,7 @@ Please check your e-mail to complete the registration!'.format(username), 'succe
             manager.init_user(username, reg)
 
             flash_message('<b>{0}</b>, welcome to your new archive home page! \
-Please <b>login</b> to create a new collection. Happy Archiving!'.format(username), 'success')
+Click the <b>Create New Collection</b> button to create your first collection. Happy Archiving!'.format(username), 'success')
             redir_to = '/' + username
 
         except AAAException:
@@ -435,7 +435,6 @@ or register a new account.'.format(username))
             redir_to = LOGIN_PATH
 
         except Exception as e:
-            raise
             flash_message('Sorry, this is not a valid registration code. Please try again.')
             redir_to = REGISTER_PATH
 

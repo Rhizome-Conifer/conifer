@@ -40,6 +40,11 @@ class CustomCork(Cork):
             raise AAAException("Nonexistent user.")
         user.update(pwd=password)
 
+    def do_login(self, username):
+        self._setup_cookie(username)
+        self._store.users[username]['last_login'] = str(datetime.datetime.utcnow())
+        self._store.save_users()
+
 
 def create_cork(redis):
     backend=RedisBackend(redis)
@@ -289,6 +294,8 @@ class CollsManager(object):
         key = self._user_key(user)
         self.redis.hset(key, 'max_len', max_len)
         self.redis.hset(key, 'max_coll', max_coll)
+
+        self.cork.do_login(user)
 
     def has_space(self, user):
         sizes = self.redis.hmget(self._user_key(user), 'total_len', 'max_len')

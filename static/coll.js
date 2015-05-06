@@ -78,7 +78,7 @@ $(function() {
     if (can_write) {
         init_markdown_editor(coll_path);
         
-        if (coll_size) {
+        if (coll_size != undefined) {
             $("#total-size").text(format_bytes(coll_size));
         }
     }

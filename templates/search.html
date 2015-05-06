@@ -44,11 +44,11 @@
 
 <script>
     var coll_path = "{{ path }}";
-    var coll_size = {{ coll_size | default('undefined') }};
+    var coll_size = {{ coll_size if coll_size else '0' }};
     var user = "{{ user }}";
     var coll = "{{ coll }}";
-    var can_admin = {{ 'true' if can_admin() else 'false' }}
-    var can_write = {{ 'true' if can_write() else 'false' }}
+    var can_admin = {{ 'true' if can_admin() else 'false' }};
+    var can_write = {{ 'true' if can_write() else 'false' }};
 </script>
 
 <script src="/static/__shared/editor.js"></script>
