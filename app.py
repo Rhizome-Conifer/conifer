@@ -13,6 +13,7 @@ from pywb.webapp.pywb_init import create_wb_router
 from pywb.utils.loaders import load_yaml_config
 from pywb.webapp.views import J2TemplateView
 from pywb.utils.wbexception import WbException
+from pywb.framework.wbrequestresponse import WbRequest
 
 from auth import init_cork, CollsManager, ValidationException
 
@@ -162,6 +163,10 @@ def post_get(name, default=''):
     if not res:
         res = default
     return res
+
+def get_host():
+    return WbRequest.make_host_prefix(request.environ)
+
 
 def flash_message(msg, msg_type='danger'):
     sesh = request.environ.get('beaker.session')
@@ -387,7 +392,7 @@ def create_coll_routes(r):
             manager.validate_password(password, confirm_password)
 
             #TODO: set default host?
-            host = 'http://' + request.headers.get('Host', 'localhost')
+            host = get_host()
 
             cork.register(username, password, email, role='archivist',
                           max_level=50,
@@ -450,7 +455,7 @@ or register a new account.'.format(username))
     def forgot_submit():
         email = post_get('email', None)
         username = post_get('username', None)
-        host = 'http://' + request.headers.get('Host', 'localhost')
+        host = get_host()
 
         try:
             cork.send_password_reset_email(username=username,
@@ -791,7 +796,7 @@ You can now <b>login</b> with your new password!', 'success')
             raise HTTPError(status=404, body='No Such Page')
 
         html_text = request.body.read()
-        host = 'http://' + request.headers.get('Host', 'localhost')
+        host = get_host()
 
         orig_html = HTMLDomUnRewriter.unrewrite_html(host, html_text)
 
