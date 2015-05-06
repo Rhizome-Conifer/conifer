@@ -110,13 +110,13 @@ $(function() {
     $("#automate").change(function() {
         if ($("#automate").prop("checked")) {
             if (!start_umbra()) {
-                start_loop_q();
+                //start_loop_q();
             }
-            $("#automate-l").text("Automated Recording. Click to stop.");
+            $("#automate-l").text("Automatic Scrolling. Click to stop.");
         } else {
-            stop_loop_q();
+            //stop_loop_q();
             stop_umbra();
-            $("#automate-l").text("Start Automated Recording");
+            $("#automate-l").text("Auto Scroll");
         }
     });
     
@@ -167,6 +167,8 @@ function stop_loop_q()
 
 function auto_load_next_url()
 {
+    //Disabled for now
+    return;
     var wbinfo = doc_window.wbinfo || window.wbinfo;
     
     if (!wbinfo) {
