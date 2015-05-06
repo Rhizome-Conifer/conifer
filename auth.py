@@ -120,6 +120,8 @@ class RedisTable(object):
 
     def __getitem__(self, name):
         string = self.redis.hget(self.key, name)
+        if not string:
+            return {}
         result = json.loads(string)
         if isinstance(result, dict):
             return RedisHashTable(self, name, result)
@@ -375,6 +377,7 @@ class CollsManager(object):
         table = RedisTable(self.redis, 'h:invites')
         entry = table[email]
         if not entry:
+            print('No Such Email In Invite List')
             return False
 
         hash_ = base64.b64encode(os.urandom(21))
@@ -622,12 +625,13 @@ class CollsManager(object):
 
         warcs = {}
 
-        for fullpath, filename in iter_file_or_dir([archive_dir]):
-            stats = os.stat(fullpath)
-            res = {'size': long(stats.st_size),
-                   'mtime': long(stats.st_mtime),
-                   'name': filename}
-            warcs[filename] = res
+	if os.path.isdir(archive_dir):
+            for fullpath, filename in iter_file_or_dir([archive_dir]):
+                stats = os.stat(fullpath)
+                res = {'size': long(stats.st_size),
+                       'mtime': long(stats.st_mtime),
+                       'name': filename}
+                warcs[filename] = res
 
         donewarcs = self.redis.smembers(self.make_key(user, coll, self.DONE_WARC_KEY))
         for stats in donewarcs:
