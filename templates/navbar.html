@@ -40,19 +40,17 @@
                     <span id="curr_size_info" class="badge" style="margin-right: 4px"></span>
                 </p>
 
-
-                <p class="navbar-text">
-                    <a id="finish" target="_parent" href="/{{path}}#records" title="Browse All Records" class="btn btn-default btn-xs">
-                        <span class="glyphicon glyphicon-tasks" style="margin-right: 4px"></span>Browse All</a>
-                </p>
-
-
                 {% elif state == 'play' %}
                 <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
                 {% endif %}
 
 
                 {% if state %}
+                <p class="navbar-text">
+                    <a id="finish" target="_parent" href="/{{path}}#records" title="Return to Archive" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-share-alt" style="margin-right: 4px"></span>Return to Collection</a>
+                </p>
+                
                 {#
                 <li style="margin-left: 40px" class="navbar-btn">
                     <button id="links-btn" class="btn btn-xs btn-default" data-toggle="modal" data-target="#links-modal">
@@ -78,11 +76,13 @@
                 </li>
                 #}
 
+                {#
                 <li style="margin-left: 4px" class="navbar-btn">
                     <button id="annotate" class="btn btn-xs btn-default">
                         <span>Annotate</span>
                     </button>
                 </li>
+                #}
 
                 {#
                 <li class="btn-group btn-group-xs navbar-btn">          

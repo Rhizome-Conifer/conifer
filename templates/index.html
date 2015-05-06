@@ -4,12 +4,14 @@
 <div class="jumbotron">
     <p class="pull-right">Web Archives for All!</p>
     <h3>Welcome to the webrecorder.io beta</h3>
+    {% if not message or message == '' %}
     {% if curr_user %}
-    <p>This space will soon have more exciting stuff.</p>
+    <p>Look for additional content in this space!</p>
     <p><a href="/{{curr_user}}">Return to your user page</a></p>
     {% else %}
     <p>A new beta version of webrecorder.io is in active development and will be available soon here!</p>
     <p>For now, please <a href="/_register">request an invite</a> to try it out!</p>
+    {% endif %}
     {% endif %}
 </div>
 {% endblock %}
