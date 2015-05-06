@@ -100,18 +100,27 @@ function add_page(capture_url)
     //http.setRequestHeader("Content-length", params.length);
     //http.setRequestHeader("Connection", "close");
     http.send(params);
+    
+    update_info();
 }
+
+// Prevent multiple calls
+var is_updating = false;
 
 function update_info()
 {
-    if (!doc_window || !doc_window.wbinfo) {
+    if (is_updating || !doc_window || !doc_window.wbinfo) {
         return;
     }
+    
+    is_updating = true;
     
     $.ajax("/_info?coll=" + doc_window.wbinfo.coll, {
         success: function(data) {
             set_info(data);
         }
+    }).done(function() {
+        is_updating = false;
     });
 }
 

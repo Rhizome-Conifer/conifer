@@ -394,6 +394,7 @@ class CollsManager(object):
             invite=invitekey,
         )
         self.cork.mailer.send_email(email, 'You are invited to join webrecorder.io!', email_text)
+        entry['sent'] = str(datetime.datetime.utcnow())
         return True
 
     def get_metadata(self, user, coll, name, def_val=''):
