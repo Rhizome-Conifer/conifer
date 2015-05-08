@@ -280,7 +280,7 @@ RESET_PATH_FILL = '/_resetpassword/{0}?username={1}'
 UPDATE_PASS_PATH = '/_updatepassword'
 SETTINGS = '/_settings'
 
-DEFAULT_DESC = """
+DEFAULT_DESC = u"""
 
 #### About {0}
 
@@ -292,7 +292,7 @@ Happy Recording!
 
 """
 
-DEFAULT_USER_DESC = """
+DEFAULT_USER_DESC = u"""
 ## {0} archive
 
 Available Collections:
@@ -704,7 +704,7 @@ You can now <b>login</b> with your new password!', 'success')
 
         title = manager.get_metadata(info.user, info.coll, 'title')
         if not title:
-            title = coll
+            title = info.coll
 
         desc = manager.get_metadata(info.user, info.coll, 'desc')
         if not desc:
@@ -779,6 +779,19 @@ You can now <b>login</b> with your new password!', 'success')
     @post('/_desc/:user/:coll')
     def set_desc(user, coll):
         if manager.set_metadata(user, coll, 'desc', request.body.read()):
+            return {}
+        else:
+            raise HTTPError(status=404, body='Not found')
+
+
+    # ============================================================================
+    # Set Title
+    @route('/_settitle')
+    def set_title():
+        path = request.query.get('coll', '')
+        user, coll = r.get_user_coll(path)
+        title = request.query.get('title', '')
+        if manager.set_metadata(user, coll, 'title', title):
             return {}
         else:
             raise HTTPError(status=404, body='Not found')
