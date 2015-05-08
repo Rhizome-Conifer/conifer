@@ -64,6 +64,26 @@ $(function() {
             });
         });
         
+        $("#update-title").click(function() {
+            var title = $("#new-title").val();
+            console.log(title);
+            var query = $.param({coll: coll_path, title: title})
+            console.log(query);
+            
+            $.ajax({
+                type: "GET",
+                url: "/_settitle?" + query,
+                success: function() {
+                    console.log("success");
+                    $("#coll-title").text(title);
+                },
+                error: function() {
+                    console.log("err");
+                },
+                dataType: 'text',
+            });
+        });
+        
 //        $("#confirm-delete").click(function() {
 //            $.ajax("/_delete?coll=" + coll_path, {
 //                type: "DELETE",

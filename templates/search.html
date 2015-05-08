@@ -59,7 +59,7 @@
 {% block content %}
 <div class="row">
     <div class="page-header" style="margin-top: 10px">
-        <h1 style="display: inline">{{ title }}&nbsp;<small>/{{ coll }}</small>
+        <h1 id="coll-title" style="display: inline">{{ title }}&nbsp;<small>/{{ coll }}</small>
         </h1>
         <span style="font-size: 14px" class="pull-right">
             <div style="margin: 18px 20px; display: inline-block">
@@ -163,8 +163,13 @@
         </div>
         <div role="tabpanel" class="tab-pane" id="settings">
             <div class="row col-md-6">
-                <label for="set-coll-name">Collection Title:</label>
-                <input type="text" id="set-coll-name" value="{{title}}" placeholder="Enter a title for this collection" class="pull-left form-control"/>
+                <label for="new_title" width=>Collection Title:</label>
+                <div class="input-group">
+                    <input type="text" id="new-title" value="{{title}}" placeholder="Enter a title for this collection" class="form-control"/>
+                    <span class="input-group-btn">
+                        <button id="update-title" class="btn btn-default" type="button">Update</button>
+                    </span>
+                </div>
             </div>
             <div class="clearfix"></div>
             <div class="row col-md-6" style="margin-top: 50px">
