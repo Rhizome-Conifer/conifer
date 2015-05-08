@@ -20,8 +20,6 @@ from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.loaders import load_yaml_config
 
 
-
-
 class CustomCork(Cork):
     def verify_password(self, username, password):
         salted_hash = self._store.users[username]['hash']
@@ -370,6 +368,11 @@ class CollsManager(object):
 
     def delete_invite(self, email):
         table = RedisTable(self.redis, 'h:invites')
+        try:
+            archive_invites = RedisTable(self.redis, 'h:arc_invites')
+            archive_invites[email] = table[email]
+        except:
+            pass
         del table[email]
 
     def save_invite(self, email, name, desc=''):
