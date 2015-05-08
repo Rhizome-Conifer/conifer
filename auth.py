@@ -115,6 +115,9 @@ class RedisTable(object):
         return value is not None
 
     def __setitem__(self, name, values):
+        if isinstance(values, RedisHashTable):
+            values = values.thedict
+
         string = json.dumps(values)
         return self.redis.hset(self.key, name, string)
 
