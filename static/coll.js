@@ -64,7 +64,7 @@ $(function() {
             });
         });
         
-        $("#update-title").click(function() {
+        $("#update-title-form").submit(function(e) {
             var title = $("#new-title").val();
             console.log(title);
             var query = $.param({coll: coll_path, title: title})
@@ -82,6 +82,7 @@ $(function() {
                 },
                 dataType: 'text',
             });
+            e.preventDefault();
         });
         
 //        $("#confirm-delete").click(function() {

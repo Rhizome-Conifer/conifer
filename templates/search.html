@@ -59,7 +59,7 @@
 {% block content %}
 <div class="row">
     <div class="page-header" style="margin-top: 10px">
-        <h1 id="coll-title" style="display: inline">{{ title }}&nbsp;<small>/{{ coll }}</small>
+        <h1 idtyle="display: inline"><span id="coll-title">{{ title }}</span>&nbsp;<small>/{{ coll }}</small>
         </h1>
         <span style="font-size: 14px" class="pull-right">
             <div style="margin: 18px 20px; display: inline-block">
@@ -117,7 +117,7 @@
                 </a>
             </li>
             <p class="pull-right" style="margin-right: 15px">Total Size: <b id="total-size"></b>
-            {% endif %}
+                {% endif %}
             </p>
         </ul>
     </div>
@@ -163,13 +163,16 @@
         </div>
         <div role="tabpanel" class="tab-pane" id="settings">
             <div class="row col-md-6">
-                <label for="new_title" width=>Collection Title:</label>
-                <div class="input-group">
-                    <input type="text" id="new-title" value="{{title}}" placeholder="Enter a title for this collection" class="form-control"/>
-                    <span class="input-group-btn">
-                        <button id="update-title" class="btn btn-default" type="button">Update</button>
-                    </span>
-                </div>
+                <form id="update-title-from">
+                    <label for="new_title" width=>Collection Title:</label>
+                    <div class="input-group">
+
+                        <input type="text" id="new-title" value="{{title}}" placeholder="Enter a title for this collection" class="form-control"/>
+                        <span class="input-group-btn">
+                            <button id="update-title" type="submit" class="btn btn-default" type="button">Update</button>
+                        </span>
+                    </div>
+                </form>
             </div>
             <div class="clearfix"></div>
             <div class="row col-md-6" style="margin-top: 50px">
