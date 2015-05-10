@@ -66,9 +66,11 @@ $(function() {
         
         $("#update-title-form").submit(function(e) {
             var title = $("#new-title").val();
-            console.log(title);
-            var query = $.param({coll: coll_path, title: title})
-            console.log(query);
+            var query = $.param({coll: coll_path, title: title});
+            
+            if (!title) {
+                return;
+            }
             
             $.ajax({
                 type: "GET",
