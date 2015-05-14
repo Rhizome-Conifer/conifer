@@ -8,7 +8,8 @@ import os
 import re
 import base64
 import shutil
-import datetime
+
+from datetime import datetime
 
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
@@ -40,8 +41,37 @@ class CustomCork(Cork):
 
     def do_login(self, username):
         self._setup_cookie(username)
-        self._store.users[username]['last_login'] = str(datetime.datetime.utcnow())
+        self._store.users[username]['last_login'] = str(datetime.utcnow())
         self._store.save_users()
+
+    def validate_registration(self, registration_code):
+        """Validate pending account registration, create a new account if
+        successful.
+        :param registration_code: registration code
+        :type registration_code: str.
+        """
+        try:
+            data = self._store.pending_registrations.pop(registration_code)
+        except KeyError:
+            raise AuthException("Invalid registration code.")
+
+        username = data['username']
+        if username in self._store.users:
+            raise AAAException("User is already existing.")
+
+        # the user data is moved from pending_registrations to _users
+        self._store.users[username] = {
+            'role': data['role'],
+            'hash': data['hash'],
+            'email_addr': data['email_addr'],
+            'desc': data['desc'],
+            'creation_date': data['creation_date'],
+            'last_login': str(datetime.utcnow())
+        }
+        self._store.save_users()
+        return username
+
+
 
 
 def create_cork(redis):
@@ -281,8 +311,8 @@ class CollsManager(object):
     def _user_key(self, user):
         return 'u:' + user
 
-    def init_user(self, user, reg):
-        self.cork.validate_registration(reg)
+    def init_user(self, reg):
+        user = self.cork.validate_registration(reg)
 
         all_users = RedisTable(self.redis, 'h:users')
         usertable = all_users[user]
@@ -297,6 +327,7 @@ class CollsManager(object):
         self.redis.hset(key, 'max_coll', max_coll)
 
         self.cork.do_login(user)
+        return user
 
     def has_space(self, user):
         sizes = self.redis.hmget(self._user_key(user), 'total_len', 'max_len')
@@ -407,7 +438,7 @@ class CollsManager(object):
             invite=invitekey,
         )
         self.cork.mailer.send_email(email, 'You are invited to join beta.webrecorder.io!', email_text)
-        entry['sent'] = str(datetime.datetime.utcnow())
+        entry['sent'] = str(datetime.utcnow())
         return True
 
     def get_metadata(self, user, coll, name, def_val=''):
@@ -697,7 +728,7 @@ class CollsManager(object):
             issues_dict[key] = issues[key]
 
         issues_dict['user'], _ = self.curr_user_role()
-        issues_dict['time'] = str(datetime.datetime.utcnow())
+        issues_dict['time'] = str(datetime.utcnow())
         issues_dict['ua'] = ua
         report = json.dumps(issues_dict)
 

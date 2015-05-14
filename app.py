@@ -419,10 +419,7 @@ Please check your e-mail to complete the registration!'.format(username), 'succe
     @route(VAL_REG_PATH)
     def val_reg(reg):
         try:
-            username = request.query['username']
-            #reg = request.query['reg']
-
-            manager.init_user(username, reg)
+            username = manager.init_user(reg)
 
             flash_message('<b>{0}</b>, welcome to your new archive home page! \
 Click the <b>Create New Collection</b> button to create your first collection. Happy Archiving!'.format(username), 'success')
