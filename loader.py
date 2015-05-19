@@ -140,6 +140,19 @@ class DynWBHandler(WBHandler):
 
         return replay
 
+    def get_top_frame_params(self, wbrequest, mod):
+        params = (super(DynWBHandler, self).
+                  get_top_frame_params(wbrequest, mod))
+
+        manager = wbrequest.env.get('w_manager')
+
+        if manager:
+            user, coll = wbrequest.coll.split('/', 1)
+            info = manager.get_info(user, coll)
+            params['info'] = json.dumps(info)
+
+        return params
+
     def handle_replay(self, wbrequest, cdx_lines):
         path = wbrequest.custom_params['output_dir']
         #path = os.path.join(path, 'archive')

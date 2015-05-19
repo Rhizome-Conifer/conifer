@@ -10,9 +10,9 @@
             <a target="_parent" class="navbar-brand" title="Return to {{ metadata.product | default('webrecorder.io')}}" href="/">
                 {% if user %}
                 <span class="glyphicon glyphicon-home">
-                {% else %}
-                {{ metadata.product | default('webrecorder.io')}}
-                {% endif %}
+                    {% else %}
+                    {{ metadata.product | default('webrecorder.io')}}
+                    {% endif %}
                 </span></a>
             <!--<a target="_parent" class="navbar-brand" href="/"><img style="width: 32px; height: 32px" src="/static/__shared/logo.png"/></a>-->
         </div>
@@ -29,20 +29,23 @@
                     <a target="_parent" href="/{{ path }}" title="Return to {{coll}} Collection">{{ coll }}</a>
                 </li>
                 {% endif %}
+                
+                <p class="navbar-text">
+                    <span class="glyphicon glyphicon-cd"></span>
+                    <span id="status-text" class="badge" style="margin-right: 4px"></span>
+                </p>
 
+                {#
                 {% if state == 'rec' %}
                 <p class="status-badge navbar-text label label-primary">
                     <span class="pulse glyphicon glyphicon-dot-sm" style="margin-right: 4px"></span>
                     <span id="status-text">Recording</span>
                 </p>
 
-                <p class="navbar-text">
-                    <span id="curr_size_info" class="badge" style="margin-right: 4px"></span>
-                </p>
-
                 {% elif state == 'play' %}
                 <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
                 {% endif %}
+                #}
 
 
                 {% if state %}
@@ -50,7 +53,7 @@
                     <a id="finish" target="_parent" href="/{{path}}#records" title="Return to Archive" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-share-alt" style="margin-right: 4px"></span>Return to Collection</a>
                 </p>
-                
+
                 {#
                 <li style="margin-left: 40px" class="navbar-btn">
                     <button id="links-btn" class="btn btn-xs btn-default" data-toggle="modal" data-target="#links-modal">
@@ -67,7 +70,7 @@
                     </div>
                     <p class="navbar-text" id="auto-info"></p>
                 </li>
-                
+
                 {#
                 <li style="margin-left: 4px" class="navbar-btn">
                     <button id="snapshot" class="btn btn-xs btn-default">
@@ -110,7 +113,7 @@
             {% if curr_user %}
             <p class="navbar-text navbar-right userset">
                 <a target="_parent" title="Logout" href="/_logout" class="navbar-link">
-                <span class="glyphicon glyphicon-log-out" title="Logout"></span></a></p>
+                    <span class="glyphicon glyphicon-log-out" title="Logout"></span></a></p>
             <p class="navbar-text navbar-right userset">
                 <a href="/{{ curr_user }}/_settings"><span title="Settings" class="glyphicon glyphicon-cog"></span></a>
             </p>
@@ -129,8 +132,20 @@
 
         </div>
         {% if state %} 
-        <form class="navbar-left nav-url-form form-inline" data-path-prefix="/{{path + '/record' if state == 'rec' else path}}/"> 
-            <input id="theurl" type="text" style="width: 100%" placeholder="Enter url here to record or play back" class="input-small input-sm form-control"/>
+        <form class="navbar-left nav-url-form " data-path-prefix="/{{path + '/' + state if state != 'replay' else path}}/"> 
+            <div class="input-group input-group-sm" style="width: 100%">
+                <div class="input-group-btn">
+                    <button id="curr-state" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge">Recording</span><span class="caret"></span></button>
+                    <ul class="state-drop dropdown-menu" role="menu">
+                        <li><a data-state="record" class="label text-left label-primary dropdown-badge" href="#">Recording New</a></li>
+                        <li><a data-state="patch" class="label label-info dropdown-badge" href="#">Patch Recording</a></li>
+                        <li><a data-state="live" class="label label-default dropdown-badge" href="#">Live</a></li>
+                        <li><a data-state="replay" class="label label-success dropdown-badge" href="#">Replay</a></li>
+                    </ul>
+                </div>
+                <input id="theurl" type="text" style="width: 100%" placeholder="Enter url here to record or play back" class="input-small input-sm form-control"/>
+                <span class="input-group-addon" id="capture-text"></span>
+            </div>
         </form>
         {% endif %}
     </div>

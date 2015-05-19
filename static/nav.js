@@ -25,6 +25,21 @@ $(function() {
         return;
     }
     
+    if (window.wbinfo.state) {
+        var cls = {"record": "btn-primary",
+                   "replay": "btn-success",
+                   "patch": "btn-info",
+                   "live": "btn-default"};
+        
+        var labels = {"record": "Recording New",
+                      "replay": "Replaying",
+                      "patch": "Patch Recording",
+                      "live": "Live Passthrough"};
+        
+        $("#curr-state").addClass(cls[window.wbinfo.state]);
+        $("#curr-state span.display-badge").text(labels[window.wbinfo.state]);
+    }
+    
     if (window.wbinfo.timestamp) {
         update_page(window.wbinfo.timestamp);
     }
@@ -38,16 +53,14 @@ $(function() {
         set_info(window.wbinfo.info);
     }
     
-    if (window.wbinfo.state == "rec") {
+    if (window.wbinfo.state == "record" || window.wbinfo.state == "patch") {
         setInterval(update_info, 10000);
     }
 });
 
 function update_page(timestamp)
 {
-    if (wbinfo && wbinfo.state == "play") {
-        $("#status-text").text("Playback from " + ts_to_date(timestamp));
-    }
+    $("#capture-text").text("from " + ts_to_date(timestamp));
 }
 
 function ts_to_date(ts)
@@ -139,21 +152,21 @@ function set_info(data)
     var total_int = parseInt(data.user_total_size);
     var max_int = parseInt(data.user_max_size);
     
-    var msg = "Recording";
+    var msg = "";
     
     if (total_int >= max_int) {
-        msg = "Not Recording -- Size Limit Reached";
-        $("#status-text").parent().removeClass("label-primary label-warning").addClass("label-danger");
+        msg = "&nbsp; Size Limit Reached -- Not Recording";
+        //$("#status-text").parent().removeClass("label-primary label-warning").addClass("label-danger");
         $(".pulse").hide();
     } else if (total_int >= max_int * 0.95) {
-        msg = "Recording -- Close to Size Limit";
-        $("#status-text").parent().removeClass("label-primary label-danger").addClass("label-warning");
+        msg = "&nbsp; Close to Size Limit";
+        //$("#status-text").parent().removeClass("label-primary label-danger").addClass("label-warning");
     } else {
-        msg = "Recording";
-        $("#status-text").parent().removeClass("label-danger label-warning").addClass("label-primary");
+        msg = "";
+        //$("#status-text").parent().removeClass("label-danger label-warning").addClass("label-primary");
     }
 
-    $("#status-text").html(msg + "&nbsp;(" + total_size + ")");
+    $("#status-text").html(total_size + msg);
     $("#status-text").attr("title", info);
     //$("#curr_size_info").text(coll_size);
     //$("#curr_size_info").attr("title", info);
@@ -216,5 +229,31 @@ $(function() {
             },
             dataType: 'html',
         });
+    });
+    
+    
+    $(".state-drop a").click(function(e) {
+        e.preventDefault();
+        
+        var new_state = $(e.target).attr("data-state");
+        if (new_state == window.wbinfo.state) {
+            return;
+        }
+        
+        var url = $("#theurl").val();
+        
+        if (!url) {
+            return;
+        }
+        
+        var prefix = "/" + window.wbinfo.coll;
+        
+        if (new_state == "replay") {
+            prefix += "/"
+        } else {
+            prefix += "/" + new_state + "/";
+        }
+        
+        window.location.href = prefix + url;
     });
 });

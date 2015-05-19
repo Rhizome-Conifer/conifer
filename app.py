@@ -902,9 +902,9 @@ You can now <b>login</b> with your new password!', 'success')
 
 
 
-    # pywb Replay / Record
+    # pywb Replay / Patch / Record
     # ============================================================================
-    @route([r.COLL + '/record/<:re:.*>', r.COLL + '/record/', r.COLL + '/record'], method='ANY')
+    @route([r.COLL + '/record/<:re:.*>'], method='ANY')
     @addcred(router=r)
     def record(info):
         if not manager.can_write_coll(info.user, info.coll):
@@ -913,8 +913,34 @@ You can now <b>login</b> with your new password!', 'success')
         if not manager.has_space(info.user):
             request.environ['webrec.no_space'] = True
 
-        return call_pywb(info, 'rec')
+        return call_pywb(info, 'record')
 
+    @route([r.COLL + '/patch/<:re:.*>'], method='ANY')
+    @addcred(router=r)
+    def patch(info):
+        if not manager.can_write_coll(info.user, info.coll):
+            raise HTTPError(status=404, body='No Such Collection')
+
+        if not manager.has_space(info.user):
+            request.environ['webrec.no_space'] = True
+
+        return call_pywb(info, 'patch')
+
+    @route([r.COLL + '/live/<:re:.*>'], method='ANY')
+    @addcred(router=r)
+    def replay(info):
+        if not manager.can_read_coll(info.user, info.coll):
+            raise HTTPError(status=404, body='No Such Collection')
+
+        return call_pywb(info, 'live')
+
+
+    @route([r.COLL + '/record/', r.COLL + '/record',
+            r.COLL + '/patch/', r.COLL + '/patch',
+            r.COLL + '/live/', r.COLL + '/live'])
+    @addcred(router=r)
+    def redir_sub(info):
+        redirect(info.coll)
 
     @route([r.COLL + '/<:re:.*>'], method='ANY')
     @addcred(router=r)
@@ -922,7 +948,7 @@ You can now <b>login</b> with your new password!', 'success')
         if not manager.can_read_coll(info.user, info.coll):
             raise HTTPError(status=404, body='No Such Collection')
 
-        return call_pywb(info, 'play')
+        return call_pywb(info, 'replay')
 
 
     @route([r.COLL + '/cdx'])
