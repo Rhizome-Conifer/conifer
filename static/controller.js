@@ -235,7 +235,7 @@ function start_umbra()
         return false;
     }
 
-    var script_name = "/static/__shared/behaviors/" + file;
+    var script_name = window.location.protocol + '//' + window.location.host + "/static/__shared/behaviors/" + file;
 
     var doc = doc_window.document;
     
