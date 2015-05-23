@@ -1,7 +1,47 @@
 {% extends "main_bootstrap.html" %}
 {% block head %}
 {{ super() }}
-    <script src='/static/__shared/automate.js'> </script>
+<script>
+    window.wbinfo = window.parent.wbinfo;
+    window._skip_wombat = true;
+
+    $(function() {
+        $(document.body).css("background-color", "transparent");
+        
+        var orig_height;
+        
+        function full_screen_banner() {
+            if (window.frameElement) {
+                $(window.frameElement).addClass("__wb_banner_expanded");
+            }
+
+            orig_height = $(document.body).css("height");
+
+            $(document.body).css("height", "100%");
+        }
+        
+        function restore_banner() {
+            if (window.frameElement) {
+                $(window.frameElement).removeClass("__wb_banner_expanded");
+            }
+
+            if (orig_height != undefined) {
+                $(document.body).css("height", orig_height);
+            }
+        };
+        
+        $(document).on('show.bs.dropdown', full_screen_banner);
+        $(document).on('hidden.bs.dropdown', restore_banner);
+        $(document).on('show.bs.modal', full_screen_banner);
+        $(document).on('hidden.bs.modal', restore_banner);
+        
+    });
+
+</script>
+{% endblock %}
+
+{% block content %}
+{% include 'reporterror.html' %}
 {% endblock %}
 
 {% block footer %}
