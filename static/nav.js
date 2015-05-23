@@ -31,17 +31,15 @@ $(function() {
                    "patch": "btn-info",
                    "live": "btn-default"};
         
-        var labels = {"record": "Recording New",
-                      "replay": "Replaying",
-                      "patch": "Patch Recording",
-                      "live": "Live Passthrough"};
-        
         $("#curr-state").addClass(cls[window.wbinfo.state]);
-        $("#curr-state span.display-badge").text(labels[window.wbinfo.state]);
+        
+        var label = $(".state-drop #" + window.wbinfo.state).text();
+        
+        $("#curr-state span.display-badge").text(label);
     }
     
     if (window.wbinfo.timestamp) {
-        update_page(window.wbinfo.timestamp);
+        update_page(window.wbinfo.timestamp, window.wbinfo.url);
     }
     
     if (window.wbinfo.url) {
@@ -56,11 +54,25 @@ $(function() {
     if (window.wbinfo.state == "record" || window.wbinfo.state == "patch") {
         setInterval(update_info, 10000);
     }
+    
+    if (window.wbinfo.state == "record") {
+        $("#status-rec").show();
+    }
 });
 
-function update_page(timestamp)
+function update_page(timestamp, the_url)
 {
-    $("#capture-text").text("from " + ts_to_date(timestamp));
+    if (window.wbinfo.state == "replay" || window.wbinfo.state == "patch") {
+        $("#capture-text").removeClass("hidden");
+        $("#capture-text").text("from " + ts_to_date(timestamp));
+    }
+    
+    var prefix = "/" + window.wbinfo.coll + "/";
+    
+    $(".state-drop #record").attr("href", prefix + "record/" + the_url);
+    $(".state-drop #replay").attr("href", prefix + timestamp + "/" + the_url);
+    $(".state-drop #patch").attr("href", prefix + "patch/" + timestamp + "/" + the_url);
+    $(".state-drop #live").attr("href", prefix + "live/" + the_url);
 }
 
 function ts_to_date(ts)
@@ -137,9 +149,12 @@ function update_info()
     });
 }
 
+var last_size = undefined;
+
 function set_info(data)
 {
     if (!data.user_total_size && !data.total_size) {
+        $("#status-rec").hide();
         return;
     }
     
@@ -168,8 +183,13 @@ function set_info(data)
 
     $("#status-text").html(total_size + msg);
     $("#status-text").attr("title", info);
-    //$("#curr_size_info").text(coll_size);
-    //$("#curr_size_info").attr("title", info);
+    
+    if (last_size != undefined && total_size > last_size) {
+        $("#status-rec").show();
+    } else {
+        $("#status-rec").hide();
+    }
+    last_size = total_size;
 }
 
 //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
@@ -232,28 +252,28 @@ $(function() {
     });
     
     
-    $(".state-drop a").click(function(e) {
-        e.preventDefault();
-        
-        var new_state = $(e.target).attr("data-state");
-        if (new_state == window.wbinfo.state) {
-            return;
-        }
-        
-        var url = $("#theurl").val();
-        
-        if (!url) {
-            return;
-        }
-        
-        var prefix = "/" + window.wbinfo.coll;
-        
-        if (new_state == "replay") {
-            prefix += "/"
-        } else {
-            prefix += "/" + new_state + "/";
-        }
-        
-        window.location.href = prefix + url;
-    });
+//    $(".state-drop a").click(function(e) {
+//        e.preventDefault();
+//        
+//        var new_state = $(e.target).attr("data-state");
+//        if (new_state == window.wbinfo.state) {
+//            return;
+//        }
+//        
+//        var url = $("#theurl").val();
+//        
+//        if (!url) {
+//            return;
+//        }
+//        
+//        var prefix = "/" + window.wbinfo.coll;
+//        
+//        if (new_state == "replay") {
+//            prefix += "/"
+//        } else {
+//            prefix += "/" + new_state + "/";
+//        }
+//        
+//        window.location.href = prefix + url;
+//    });
 });

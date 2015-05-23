@@ -10,7 +10,7 @@ set_state = function(state) {
     if (doc_window.wbinfo.state == "record") {
         add_page(state.url);
     }
-    update_page(state.timestamp);
+    update_page(state.timestamp, state.url);
     
     if (curr_state.url) {
         $("#theurl").attr("value", curr_state.url);

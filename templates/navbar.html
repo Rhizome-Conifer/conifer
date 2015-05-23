@@ -30,25 +30,13 @@
                 </li>
                 {% endif %}
                 
-                <p class="navbar-text">
-                    <span class="glyphicon glyphicon-cd"></span>
-                    <span id="status-text" class="badge" style="margin-right: 4px"></span>
-                </p>
-
-                {#
-                {% if state == 'rec' %}
-                <p class="status-badge navbar-text label label-primary">
-                    <span class="pulse glyphicon glyphicon-dot-sm" style="margin-right: 4px"></span>
-                    <span id="status-text">Recording</span>
-                </p>
-
-                {% elif state == 'play' %}
-                <p id="status-text" class="status-badge navbar-text label label-success">Playback</p>
-                {% endif %}
-                #}
-
 
                 {% if state %}
+                <p class="navbar-text">
+                    <span id="status-rec" class="glyphicon glyphicon-dot-sm pulse" style="display: none; color: red"></span>
+                    <span id="status-text" class="badge" style="margin-right: 4px"></span>
+                </p>
+                
                 <p class="navbar-text">
                     <a id="finish" target="_parent" href="/{{path}}#records" title="Return to Archive" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-share-alt" style="margin-right: 4px"></span>Return to Collection</a>
@@ -137,14 +125,16 @@
                 <div class="input-group-btn">
                     <button id="curr-state" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge">Recording</span><span class="caret"></span></button>
                     <ul class="state-drop dropdown-menu" role="menu">
-                        <li><a data-state="record" class="label text-left label-primary dropdown-badge" href="#">Recording New</a></li>
-                        <li><a data-state="patch" class="label label-info dropdown-badge" href="#">Patch Recording</a></li>
-                        <li><a data-state="live" class="label label-default dropdown-badge" href="#">Live</a></li>
-                        <li><a data-state="replay" class="label label-success dropdown-badge" href="#">Replay</a></li>
+                        {% if can_write() %}
+                        <li><a id="record" class="label text-left label-primary dropdown-badge" href="#">New Recording</a></li>
+                        <li><a id="patch" class="label label-info dropdown-badge" href="#">Patching</a></li>
+                        {% endif %}
+                        <li><a id="live" class="label label-default dropdown-badge" href="#">Live Site</a></li>
+                        <li><a id="replay" class="label label-success dropdown-badge" href="#">Replay</a></li>
                     </ul>
                 </div>
+                <span class="input-group-addon hidden" id="capture-text"></span>
                 <input id="theurl" type="text" style="width: 100%" placeholder="Enter url here to record or play back" class="input-small input-sm form-control"/>
-                <span class="input-group-addon" id="capture-text"></span>
             </div>
         </form>
         {% endif %}
