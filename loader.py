@@ -103,17 +103,25 @@ class DynCDXFile(CDXFile):
 
 #=================================================================
 class DynRedisResolver(object):
-    def __init__(self, redis, key_prefix='w:'):
+    def __init__(self, redis, s3_target=None, proxy_target=None, key_prefix='w:'):
         self.redis = redis
+        self.s3_target = s3_target
+        self.proxy_target = proxy_target
         self.key_prefix = key_prefix
 
     def __call__(self, filename):
         sesh_id, warc_key = self._split_sesh_warc(filename)
-        redis_val = self.redis.hget(sesh_id, warc_key)
-        print(sesh_id)
-        print(warc_key)
+        orig_path = self.redis.hget(sesh_id, warc_key)
 
-        return [redis_val] if redis_val else []
+        if not orig_path:
+            return []
+
+        # if proxy_path set, try proxy path first
+        if self.s3_target and self.proxy_target:
+            cached_path = orig_path.replace(self.s3_target, self.proxy_target)
+            return [cached_path, orig_path]
+        else:
+            return [orig_path]
 
     def add_filename(self, filename, remote_url):
         sesh_id, warc_key = self._split_sesh_warc(filename)

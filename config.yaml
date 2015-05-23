@@ -4,6 +4,7 @@ proxy_path: &proxyhostport localhost:9002
 redis_url: &redis_url redis://redacted
 
 s3_target: s3://redacted
+proxy_target: http://localhost:6009/wr-beta/
 
 cookie_name: '__wr_sesh'
 

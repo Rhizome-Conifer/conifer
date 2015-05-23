@@ -111,8 +111,9 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     jinja_env.globals['can_read'] = can_read
     jinja_env.globals['is_owner'] = is_owner
 
-
-    config['redis_warc_resolver'] = DynRedisResolver(redis_obj)
+    config['redis_warc_resolver'] = DynRedisResolver(redis_obj,
+                                                     s3_target=config['s3_target'],
+                                                     proxy_target=config['proxy_target'])
 
     global pywb_router
     pywb_router = create_wb_router(config)
