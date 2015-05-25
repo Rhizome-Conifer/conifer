@@ -796,7 +796,7 @@ You can now <b>login</b> with your new password!', 'success')
 
     # Snapshot
     # ============================================================================
-    #@post('/_snapshot')
+    @post('/_snapshot')
     def snapshot():
         path = request.query.get('coll', '')
         user, coll = r.get_user_coll(path)
@@ -805,17 +805,20 @@ You can now <b>login</b> with your new password!', 'success')
             raise HTTPError(status=404, body='No Such Page')
 
         html_text = request.body.read()
-        host = get_host()
 
-        orig_html = HTMLDomUnRewriter.unrewrite_html(host, html_text)
+        host = get_host()
+        prefix = request.query.get('prefix', get_host())
+
+        orig_html = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
 
         target = dict(output_dir=router.get_archive_dir(user, coll),
                       sesh_id=path.replace('/', ':'),
-                      user_id=user)
+                      user_id=user,
+                      json_metadata={'snapshot': 'html'},
+                      writer_type='-snapshot')
 
         if url.startswith('https://'):
             url = url.replace('https:', 'http:')
-        print(url)
 
         req_headers = {'warcprox-meta': json.dumps(target),
                        'content-type': 'text/html'}

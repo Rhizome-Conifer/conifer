@@ -32,9 +32,12 @@
                 
 
                 {% if state %}
-                <p class="navbar-text">
+                <p class="navbar-text">{#
                     <span id="status-rec" class="glyphicon glyphicon-dot-sm pulse" style="display: none; color: red"></span>
+                    #}
+                    {% if can_write() %}
                     <span id="status-text" class="badge" style="margin-right: 4px"></span>
+                    {% endif %}
                 </p>
                 
                 <p class="navbar-text">
@@ -59,13 +62,14 @@
                     <p class="navbar-text" id="auto-info"></p>
                 </li>
 
-                {#
+                
                 <li style="margin-left: 4px" class="navbar-btn">
-                    <button id="snapshot" class="btn btn-xs btn-default">
-                        <span>Snapshot</span>
+                    <button id="snapshot" class="btn btn-xs btn-default" style="display: none" title="Static Snapshot">
+                        <span class="glyphicon glyphicon-camera"></span>
                     </button>
+                    <span id="snapshot-label" style="display: none; font-size: 12px" class="label label-success">Snapshot</span>
                 </li>
-                #}
+                
 
                 {#
                 <li style="margin-left: 4px" class="navbar-btn">

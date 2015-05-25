@@ -44,6 +44,7 @@ setup(
     zip_safe=True,
     provides=[
         'wfa',
+    ],
     install_requires=[
         'bottle',
         'bottle-cork',

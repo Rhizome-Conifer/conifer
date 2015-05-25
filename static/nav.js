@@ -57,7 +57,7 @@ $(function() {
     
     if (window.wbinfo.state == "record") {
         $("#status-rec").show();
-    }
+    }   
 });
 
 function update_page(timestamp, the_url)
@@ -73,6 +73,23 @@ function update_page(timestamp, the_url)
     $(".state-drop #replay").attr("href", prefix + timestamp + "/" + the_url);
     $(".state-drop #patch").attr("href", prefix + "patch/" + timestamp + "/" + the_url);
     $(".state-drop #live").attr("href", prefix + "live/" + the_url);
+    
+
+    if (doc_window && doc_window.wbinfo) {
+        if (doc_window.wbinfo.metadata && doc_window.wbinfo.metadata["snapshot"] == "html") {
+            $("#snapshot-label").show();
+        } else {
+            $("#snapshot").show();
+        }
+    }
+    
+//    setTimeout(function() {
+//        $("#replay_iframe").css("display", "none");
+//    }, 5000);
+//    
+//    setTimeout(function() {
+//        $("#replay_iframe").css("display", "block");
+//    }, 5010);
 }
 
 function ts_to_date(ts)
@@ -230,25 +247,60 @@ $(function() {
         e.preventDefault();
     });
     
+    function apply_iframes(win, func) {
+        try {
+            func(win);
+        } catch (e) {
+            return;
+        }
+        
+        for (var i = 0; i < win.frames.length; i++) {
+            apply_iframes(win.frames[i], func);
+        }
+    }
+    
     
     $("#snapshot").click(function() {
-        var params = $.param({coll: wbinfo.coll,
-                              url: curr_state.url});
         
-        var content = doc_window.document.documentElement.outerHTML;
+        var wbinfo = window.wbinfo;
+        var curr_state = window.curr_state;
         
-        $.ajax({
-            type: "POST",
-            url: "/_snapshot?" + params,
-            data: content,
-            success: function() {
-                console.log("Saved");
-            },
-            error: function() {
-                console.log("err");
-            },
-            dataType: 'html',
-        });
+        function snapshot(win) {
+            
+            if (!win.WB_wombat_location && win.location.href != "about:blank") {
+                console.log("Skipping Snapshot for: " + win.location.href);
+                return;
+            }
+            
+            var url;
+            
+            if (win.location.href == "about:blank") {
+                url = "about:blank";
+            } else {
+                url = win.WB_wombat_location.href;
+            }
+            
+            var params = $.param({coll: wbinfo.coll,
+                                  url: url,
+                                  prefix: wbinfo.prefix});
+
+            var content = win.document.documentElement.outerHTML;
+
+            $.ajax({
+                type: "POST",
+                url: "/_snapshot?" + params,
+                data: content,
+                success: function() {
+                    console.log("Saved");
+                },
+                error: function() {
+                    console.log("err");
+                },
+                dataType: 'html',
+            });
+        }
+        
+        apply_iframes(doc_window, snapshot);
     });
     
     
