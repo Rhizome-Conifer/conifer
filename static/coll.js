@@ -105,6 +105,31 @@ $(function() {
             $("#total-size").text(format_bytes(coll_size));
         }
     }
+    
+    $(".state-drop a").click(function(e) {
+        var state = $(this).attr("id");
+        
+        var prefix = "/" + coll_path + "/";
+        if (state != "replay") {
+            prefix += state + "/";
+        }
+        
+        $(".nav-url-form").attr("data-path-prefix", prefix);
+
+        var cls = {"record": "btn-primary",
+                   "replay": "btn-success",
+                   "patch": "btn-info",
+                   "live": "btn-default"};
+
+        $("#curr-state").removeClass("btn-primary btn-success btn-info btn-default");
+        $("#curr-state").addClass(cls[state]);
+
+        var label = $(".state-drop #" + state).text();
+
+        $("#curr-state span.display-badge").text(label);
+        
+        e.preventDefault();
+    });
 
 });
 

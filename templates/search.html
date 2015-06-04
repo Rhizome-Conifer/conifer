@@ -68,22 +68,35 @@
         </span>
     </div>
 </div>
-{% if can_write() %}
+
 <div class="row" style="margin-bottom: 20px">
     <div class="col-md-offset-2 col-md-8">
-        <form id="dorecord" class="nav-url-form" data-path-prefix="/{{path}}/record/">
-            <div class="input-group">
-                <input id="theurl" name="theurl" type="text" placeholder="Enter a url to record here" class="input-large form-control">
+        
+        <form id="doaction" class="nav-url-form" data-path-prefix="/{{ path }}/record/"> 
+            <div class="input-group" style="width: 100%">
+                <div class="input-group-btn">
+                    <button id="curr-state" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge">Record New</span><span class="caret"></span></button>
+                    <ul class="state-drop dropdown-menu" role="menu">
+                        {% if can_write() %}
+                        <li><a id="record" class="label text-left label-primary dropdown-badge" href="#">New Recording</a></li>
+                        <li><a id="patch" class="label label-info dropdown-badge" href="#">Patching</a></li>
+                        {% endif %}
+                        <li><a id="live" class="label label-default dropdown-badge" href="#">Live Preview</a></li>
+                        <li><a id="replay" class="label label-success dropdown-badge" href="#">Replay</a></li>
+                    </ul>
+                </div>
+                <input id="theurl" type="text" style="width: 100%" placeholder="Enter a url here" class="form-control"/>
                 <span class="input-group-btn">
-                    <button class="btn btn-primary url-rec-play" type="submit">
-                        <span class="glyphicon glyphicon-dot-lg"></span> <span>Record</span>
+                    <button class="btn btn-default" type="submit">
+                        <span>Go!</span>
                     </button>
                 </span>
             </div>
         </form>
+        
     </div>
 </div>
-{% endif %}
+
 <div class="row">
     <div>
         <!-- Nav tabs -->
