@@ -23,7 +23,7 @@ collections:
 
         wb_handler_class: !!python/name:loader.DynRecord
 
-        cookie_scope: default
+        cookie_scope: root
         rewrite_opts:
             rewrite_base: true
             rewrite_rel_canon: false
@@ -37,7 +37,7 @@ collections:
 
         proxyhostport: *proxyhostport
 
-        cookie_scope: default
+        cookie_scope: root
         rewrite_opts:
             rewrite_base: true
             rewrite_rel_canon: false
@@ -50,7 +50,7 @@ collections:
 
         wb_handler_class: !!python/name:loader.DynWBHandler
 
-        cookie_scope: removeall
+        cookie_scope: root
 
         fallback: record
 
