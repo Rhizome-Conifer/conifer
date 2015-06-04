@@ -106,14 +106,12 @@ $(function() {
         }
     }
     
-    $(".state-drop a").click(function(e) {
-        var state = $(this).attr("id");
-        
+    function switch_state(state) {
         var prefix = "/" + coll_path + "/";
         if (state != "replay") {
             prefix += state + "/";
         }
-        
+
         $(".nav-url-form").attr("data-path-prefix", prefix);
 
         var cls = {"record": "btn-primary",
@@ -127,7 +125,16 @@ $(function() {
         var label = $(".state-drop #" + state).text();
 
         $("#curr-state span.display-badge").text(label);
-        
+    }
+    
+    if (can_write) {
+        switch_state("record");
+    } else {
+        switch_state("replay");
+    }
+    
+    $(".state-drop a").click(function(e) {
+        switch_state($(this).attr("id"));
         e.preventDefault();
     });
 

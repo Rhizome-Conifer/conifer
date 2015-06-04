@@ -62,14 +62,14 @@
                     <p class="navbar-text" id="auto-info"></p>
                 </li>
 
-                
+                {#
                 <li style="margin-left: 4px" class="navbar-btn">
                     <button id="snapshot" class="btn btn-xs btn-default" style="display: none" title="Static Snapshot">
                         <span class="glyphicon glyphicon-camera"></span>
                     </button>
                     <span id="snapshot-label" style="display: none; font-size: 12px" class="label label-success">Snapshot</span>
                 </li>
-                
+                #}
 
                 {#
                 <li style="margin-left: 4px" class="navbar-btn">
@@ -127,7 +127,7 @@
         <form class="navbar-left nav-url-form " data-path-prefix="/{{path + '/' + state if state != 'replay' else path}}/"> 
             <div class="input-group input-group-sm" style="width: 100%">
                 <div class="input-group-btn">
-                    <button id="curr-state" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge">Recording</span><span class="caret"></span></button>
+                    <button id="curr-state" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge"></span><span class="caret"></span></button>
                     <ul class="state-drop dropdown-menu" role="menu">
                         {% if can_write() %}
                         <li><a id="record" class="label text-left label-primary dropdown-badge" href="#">New Recording</a></li>

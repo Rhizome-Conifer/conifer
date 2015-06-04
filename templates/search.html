@@ -71,11 +71,10 @@
 
 <div class="row" style="margin-bottom: 20px">
     <div class="col-md-offset-2 col-md-8">
-        
-        <form id="doaction" class="nav-url-form" data-path-prefix="/{{ path }}/record/"> 
+        <form id="doaction" class="nav-url-form" data-path-prefix="/{{ path }}/"> 
             <div class="input-group" style="width: 100%">
                 <div class="input-group-btn">
-                    <button id="curr-state" type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge">Record New</span><span class="caret"></span></button>
+                    <button id="curr-state" type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge"></span><span class="caret"></span></button>
                     <ul class="state-drop dropdown-menu" role="menu">
                         {% if can_write() %}
                         <li><a id="record" class="label text-left label-primary dropdown-badge" href="#">New Recording</a></li>
@@ -93,7 +92,6 @@
                 </span>
             </div>
         </form>
-        
     </div>
 </div>
 
