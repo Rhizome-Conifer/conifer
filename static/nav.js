@@ -282,6 +282,7 @@ $(function() {
             
             var params = $.param({coll: wbinfo.coll,
                                   url: url,
+                                  title: win.document.title,
                                   prefix: wbinfo.prefix});
 
             var content = win.document.documentElement.outerHTML;

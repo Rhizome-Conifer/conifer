@@ -166,7 +166,15 @@ function show_pages() {
             title = data;
         }
 
-        return '<a href="' + url + '">' + title + '</a>';
+        var res =  '<a href="' + url + '">' + title + '</a>';
+        var tags = full["tags"];
+        var tagnames = {"snapshot": "Static Snapshot"}
+        if (tags) {
+            for (var i = 0; i < tags.length; i++) {
+                res += "&nbsp;<span class='badge'>" + tagnames[tags[i]] + "</span>";
+            }
+        }
+        return res;
     }
 
     pagesTable = $("#pageTable").DataTable( {
