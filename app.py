@@ -804,6 +804,7 @@ You can now <b>login</b> with your new password!', 'success')
         if not url or not manager.can_write_coll(user, coll):
             raise HTTPError(status=404, body='No Such Page')
 
+        title = request.query.get('title', '')
         html_text = request.body.read()
 
         host = get_host()
@@ -823,6 +824,8 @@ You can now <b>login</b> with your new password!', 'success')
         req_headers = {'warcprox-meta': json.dumps(target),
                        'content-type': 'text/html'}
 
+        pagedata = {'url': url, 'title': title, 'tags': ['snapshot']}
+
         try:
             resp = requests.request(method='PUTRES',
                                     url=url,
@@ -830,7 +833,10 @@ You can now <b>login</b> with your new password!', 'success')
                                     headers=req_headers,
                                     proxies=warcprox_proxies,
                                     verify=False)
+
+            manager.add_page(user, coll, pagedata)
         except:
+            raise
             return {'status': 'err'}
 
 
