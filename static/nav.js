@@ -267,18 +267,12 @@ $(function() {
         
         function snapshot(win) {
             
-            if (!win.WB_wombat_location && win.location.href != "about:blank") {
+            if (!win.WB_wombat_location || win.location.href == "about:blank") {
                 console.log("Skipping Snapshot for: " + win.location.href);
                 return;
             }
             
-            var url;
-            
-            if (win.location.href == "about:blank") {
-                url = "about:blank";
-            } else {
-                url = win.WB_wombat_location.href;
-            }
+            var url = win.WB_wombat_location.href;
             
             var params = $.param({coll: wbinfo.coll,
                                   url: url,
