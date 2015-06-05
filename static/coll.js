@@ -105,6 +105,38 @@ $(function() {
             $("#total-size").text(format_bytes(coll_size));
         }
     }
+    
+    function switch_state(state) {
+        var prefix = "/" + coll_path + "/";
+        if (state != "replay") {
+            prefix += state + "/";
+        }
+
+        $(".nav-url-form").attr("data-path-prefix", prefix);
+
+        var cls = {"record": "btn-primary",
+                   "replay": "btn-success",
+                   "patch": "btn-info",
+                   "live": "btn-default"};
+
+        $("#curr-state").removeClass("btn-primary btn-success btn-info btn-default");
+        $("#curr-state").addClass(cls[state]);
+
+        var label = $(".state-drop #" + state).text();
+
+        $("#curr-state span.display-badge").text(label);
+    }
+    
+    if (can_write) {
+        switch_state("record");
+    } else {
+        switch_state("replay");
+    }
+    
+    $(".state-drop a").click(function(e) {
+        switch_state($(this).attr("id"));
+        e.preventDefault();
+    });
 
 });
 
@@ -134,7 +166,18 @@ function show_pages() {
             title = data;
         }
 
-        return '<a href="' + url + '">' + title + '</a>';
+        var res =  '<a href="' + url + '">' + title + '</a>';
+        if (meta.col != 0) {
+            return res;
+        }
+        var tags = full["tags"];
+        var tagnames = {"snapshot": "Snapshot"}
+        if (tags) {
+            for (var i = 0; i < tags.length; i++) {
+                res += "&nbsp;<span class='label label-success'>" + tagnames[tags[i]] + "</span>";
+            }
+        }
+        return res;
     }
 
     pagesTable = $("#pageTable").DataTable( {

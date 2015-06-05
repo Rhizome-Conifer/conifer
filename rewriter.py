@@ -1,30 +1,37 @@
-from pywb.rewrite.html_rewriter import HTMLRewriter
-#from pywb.rewrite.url_rewriter import UrlRewriter
 import re
 import sys
+from pywb.rewrite.html_rewriter import HTMLRewriter
 
-WBURL_RX = re.compile('(.*/)([0-9]{1,14})(\w{2}_)?/(https?://.*)')
+
+# ============================================================================
+WBURL_MATCH = '(?:[0-9]{0,14}(?:\w+_)?)?/(.*)'
+
+HOST_WBURL_RX = r'(?<=["\'(=>\s])(?:https?\:)?//{0}[^\s\'"]+/((?:https?|//)[^\'"\s]+)(?=["\'\s])'
 
 
+# ============================================================================
 class UnRewriter(object):
     def __init__(self, prefix):
-        #super(UrlRewriter, self).__init__(*args, **kwargs)
         self.prefix = prefix
         self.rewrite_opts = {}
+
+        self.rx_extract = re.compile(re.escape(prefix) + WBURL_MATCH)
 
     def rewrite(self, url, mod=None):
         if not url.startswith(self.prefix):
             return url
 
-        m = WBURL_RX.match(url)
+        m = self.rx_extract.match(url)
         if m:
-            return m.group(4)
+            return m.group(1)
 
         return url
 
-    def _create_rebased_rewriter(self, new_wburl, prefix):
-        return UnRewriter(new_wburl, prefix)
+    def rebase_rewriter(self, new_url):
+        return self
 
+
+# ============================================================================
 class HTMLDomUnRewriter(HTMLRewriter):
     def _rewrite_script(self, script_content):
         return ''
@@ -72,7 +79,7 @@ class HTMLDomUnRewriter(HTMLRewriter):
         return html_text[:start] + html_text[end + len(end_marker):]
 
     @staticmethod
-    def unrewrite_html(prefix, html_text):
+    def unrewrite_html(host, prefix, html_text):
         unrewriter = UnRewriter(prefix)
         html_unrewriter = HTMLDomUnRewriter(unrewriter)
 
@@ -80,9 +87,17 @@ class HTMLDomUnRewriter(HTMLRewriter):
 
         buff = html_unrewriter.rewrite(html_text)
         buff += html_unrewriter.close()
-        return buff
+
+        host = host.split('//')[-1]
+
+        host_rx = HOST_WBURL_RX.format(re.escape(host))
+        host_rx = re.compile(host_rx)
+
+        new_buff = host_rx.sub(r'\1', buff)
+        return new_buff
 
 
+# ============================================================================
 def main():
     with open(sys.argv[1], 'r') as fh:
         full = fh.read()

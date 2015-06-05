@@ -43,6 +43,32 @@ p.status-badge {
     color: white !important;
 }
 
+ul.state-drop {
+    padding: 0px;
+    text-align: left;
+    /*margin-left: -20px;*/
+}
+
+.state-drop a {
+    text-align: left;
+    /*padding-left: 20px;*/
+}
+
+.display-badge {
+    font-weight: 700;
+    font-size: 14px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    vertical-align: text-bottom;
+    line-height: 1em;
+    margin-right: 4px;
+}
+
+a.dropdown-badge {
+    font-size: 14px;
+    color: white !important;
+    border-radius: 0px;
+}
+
 .replay-page {
     color: white !important;
 }
@@ -106,10 +132,10 @@ p.status-badge {
 
 .pulse {
     animation-name: pulse;
-    animation-duration: 3s;
+    animation-duration: 1s;
     animation-iteration-count: infinite;
     -webkit-animation-name: pulse;
-    -webkit-animation-duration: 3s;
+    -webkit-animation-duration: 1s;
     -webkit-animation-iteration-count: infinite;
 }
 

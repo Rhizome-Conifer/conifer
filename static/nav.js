@@ -25,8 +25,21 @@ $(function() {
         return;
     }
     
+    if (window.wbinfo.state) {
+        var cls = {"record": "btn-primary",
+                   "replay": "btn-success",
+                   "patch": "btn-info",
+                   "live": "btn-default"};
+        
+        $("#curr-state").addClass(cls[window.wbinfo.state]);
+        
+        var label = $(".state-drop #" + window.wbinfo.state).text();
+        
+        $("#curr-state span.display-badge").text(label);
+    }
+    
     if (window.wbinfo.timestamp) {
-        update_page(window.wbinfo.timestamp);
+        update_page(window.wbinfo.timestamp, window.wbinfo.url);
     }
     
     if (window.wbinfo.url) {
@@ -38,16 +51,45 @@ $(function() {
         set_info(window.wbinfo.info);
     }
     
-    if (window.wbinfo.state == "rec") {
+    if (window.wbinfo.state == "record" || window.wbinfo.state == "patch") {
         setInterval(update_info, 10000);
     }
+    
+    if (window.wbinfo.state == "record") {
+        $("#status-rec").show();
+    }   
 });
 
-function update_page(timestamp)
+function update_page(timestamp, the_url)
 {
-    if (wbinfo && wbinfo.state == "play") {
-        $("#status-text").text("Playback from " + ts_to_date(timestamp));
+    if (window.wbinfo.state == "replay" || window.wbinfo.state == "patch") {
+        $("#capture-text").removeClass("hidden");
+        $("#capture-text").text("from " + ts_to_date(timestamp));
     }
+    
+    var prefix = "/" + window.wbinfo.coll + "/";
+    
+    $(".state-drop #record").attr("href", prefix + "record/" + the_url);
+    $(".state-drop #replay").attr("href", prefix + timestamp + "/" + the_url);
+    $(".state-drop #patch").attr("href", prefix + "patch/" + timestamp + "/" + the_url);
+    $(".state-drop #live").attr("href", prefix + "live/" + the_url);
+    
+
+    if (doc_window && doc_window.wbinfo) {
+        if (doc_window.wbinfo.metadata && doc_window.wbinfo.metadata["snapshot"] == "html") {
+            $("#snapshot-label").show();
+        } else {
+            $("#snapshot").show();
+        }
+    }
+    
+//    setTimeout(function() {
+//        $("#replay_iframe").css("display", "none");
+//    }, 5000);
+//    
+//    setTimeout(function() {
+//        $("#replay_iframe").css("display", "block");
+//    }, 5010);
 }
 
 function ts_to_date(ts)
@@ -124,9 +166,12 @@ function update_info()
     });
 }
 
+var last_size = undefined;
+
 function set_info(data)
 {
     if (!data.user_total_size && !data.total_size) {
+        $("#status-rec").hide();
         return;
     }
     
@@ -139,24 +184,29 @@ function set_info(data)
     var total_int = parseInt(data.user_total_size);
     var max_int = parseInt(data.user_max_size);
     
-    var msg = "Recording";
+    var msg = "";
     
     if (total_int >= max_int) {
-        msg = "Not Recording -- Size Limit Reached";
-        $("#status-text").parent().removeClass("label-primary label-warning").addClass("label-danger");
+        msg = "&nbsp; Size Limit Reached -- Not Recording";
+        //$("#status-text").parent().removeClass("label-primary label-warning").addClass("label-danger");
         $(".pulse").hide();
     } else if (total_int >= max_int * 0.95) {
-        msg = "Recording -- Close to Size Limit";
-        $("#status-text").parent().removeClass("label-primary label-danger").addClass("label-warning");
+        msg = "&nbsp; Close to Size Limit";
+        //$("#status-text").parent().removeClass("label-primary label-danger").addClass("label-warning");
     } else {
-        msg = "Recording";
-        $("#status-text").parent().removeClass("label-danger label-warning").addClass("label-primary");
+        msg = "";
+        //$("#status-text").parent().removeClass("label-danger label-warning").addClass("label-primary");
     }
 
-    $("#status-text").html(msg + "&nbsp;(" + total_size + ")");
+    $("#status-text").html(total_size + msg);
     $("#status-text").attr("title", info);
-    //$("#curr_size_info").text(coll_size);
-    //$("#curr_size_info").attr("title", info);
+    
+    if (last_size != undefined && total_size > last_size) {
+        $("#status-rec").show();
+    } else {
+        $("#status-rec").hide();
+    }
+    last_size = total_size;
 }
 
 //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
@@ -197,24 +247,90 @@ $(function() {
         e.preventDefault();
     });
     
+    function apply_iframes(win, func) {
+        try {
+            func(win);
+        } catch (e) {
+            return;
+        }
+        
+        for (var i = 0; i < win.frames.length; i++) {
+            apply_iframes(win.frames[i], func);
+        }
+    }
+    
     
     $("#snapshot").click(function() {
-        var params = $.param({coll: wbinfo.coll,
-                              url: curr_state.url});
         
-        var content = doc_window.document.documentElement.outerHTML;
+        var wbinfo = window.wbinfo;
+        var curr_state = window.curr_state;
         
-        $.ajax({
-            type: "POST",
-            url: "/_snapshot?" + params,
-            data: content,
-            success: function() {
-                console.log("Saved");
-            },
-            error: function() {
-                console.log("err");
-            },
-            dataType: 'html',
-        });
+        function snapshot(win) {
+            
+            if (!win.WB_wombat_location && win.location.href != "about:blank") {
+                console.log("Skipping Snapshot for: " + win.location.href);
+                return;
+            }
+            
+            var url;
+            
+            if (win.location.href == "about:blank") {
+                url = "about:blank";
+            } else {
+                url = win.WB_wombat_location.href;
+            }
+            
+            var params = $.param({coll: wbinfo.coll,
+                                  url: url,
+                                  title: win.document.title,
+                                  addpage: doc_window == win,
+                                  prefix: wbinfo.prefix});
+
+            var content = win.document.documentElement.outerHTML;
+
+            $.ajax({
+                type: "POST",
+                url: "/_snapshot?" + params,
+                data: content,
+                success: function() {
+                    console.log("Saved");
+                    $("#snapshot").prop("disabled", false);
+                },
+                error: function() {
+                    console.log("err");
+                },
+                dataType: 'html',
+            });
+        }
+        
+        $("#snapshot").prop("disabled", true);
+        
+        apply_iframes(doc_window, snapshot);
     });
+    
+    
+//    $(".state-drop a").click(function(e) {
+//        e.preventDefault();
+//        
+//        var new_state = $(e.target).attr("data-state");
+//        if (new_state == window.wbinfo.state) {
+//            return;
+//        }
+//        
+//        var url = $("#theurl").val();
+//        
+//        if (!url) {
+//            return;
+//        }
+//        
+//        var prefix = "/" + window.wbinfo.coll;
+//        
+//        if (new_state == "replay") {
+//            prefix += "/"
+//        } else {
+//            prefix += "/" + new_state + "/";
+//        }
+//        
+//        window.location.href = prefix + url;
+//    });
 });

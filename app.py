@@ -14,6 +14,7 @@ from pywb.utils.loaders import load_yaml_config
 from pywb.webapp.views import J2TemplateView
 from pywb.utils.wbexception import WbException
 from pywb.framework.wbrequestresponse import WbRequest
+from pywb.utils.timeutils import datetime_to_timestamp
 
 from auth import init_cork, CollsManager, ValidationException
 
@@ -30,6 +31,7 @@ from rewriter import HTMLDomUnRewriter
 import logging
 import requests
 import json
+from datetime import datetime
 
 
 # ============================================================================
@@ -797,7 +799,7 @@ You can now <b>login</b> with your new password!', 'success')
 
     # Snapshot
     # ============================================================================
-    #@post('/_snapshot')
+    @post('/_snapshot')
     def snapshot():
         path = request.query.get('coll', '')
         user, coll = r.get_user_coll(path)
@@ -805,21 +807,35 @@ You can now <b>login</b> with your new password!', 'success')
         if not url or not manager.can_write_coll(user, coll):
             raise HTTPError(status=404, body='No Such Page')
 
-        html_text = request.body.read()
-        host = get_host()
+        title = request.query.get('title', '')
+        add_page = request.query.get('addpage', False)
 
-        orig_html = HTMLDomUnRewriter.unrewrite_html(host, html_text)
+        html_text = request.body.read()
+
+        host = get_host()
+        prefix = request.query.get('prefix', get_host())
+
+        orig_html = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
+
+        dt = datetime.utcnow()
 
         target = dict(output_dir=router.get_archive_dir(user, coll),
                       sesh_id=path.replace('/', ':'),
-                      user_id=user)
+                      user_id=user,
+                      json_metadata={'snapshot': 'html', 'timestamp': str(dt)},
+                      writer_type='-snapshot')
 
         if url.startswith('https://'):
             url = url.replace('https:', 'http:')
-        print(url)
 
         req_headers = {'warcprox-meta': json.dumps(target),
                        'content-type': 'text/html'}
+
+        pagedata = {'url': url,
+                    'title': title,
+                    'tags': ['snapshot'],
+                    'ts': datetime_to_timestamp(dt)
+                   }
 
         try:
             resp = requests.request(method='PUTRES',
@@ -828,6 +844,9 @@ You can now <b>login</b> with your new password!', 'success')
                                     headers=req_headers,
                                     proxies=warcprox_proxies,
                                     verify=False)
+
+            if add_page:
+                manager.add_page(user, coll, pagedata)
         except:
             return {'status': 'err'}
 
@@ -903,9 +922,9 @@ You can now <b>login</b> with your new password!', 'success')
 
 
 
-    # pywb Replay / Record
+    # pywb Replay / Patch / Record
     # ============================================================================
-    @route([r.COLL + '/record/<:re:.*>', r.COLL + '/record/', r.COLL + '/record'], method='ANY')
+    @route([r.COLL + '/record/<:re:.*>'], method='ANY')
     @addcred(router=r)
     def record(info):
         if not manager.can_write_coll(info.user, info.coll):
@@ -914,8 +933,34 @@ You can now <b>login</b> with your new password!', 'success')
         if not manager.has_space(info.user):
             request.environ['webrec.no_space'] = True
 
-        return call_pywb(info, 'rec')
+        return call_pywb(info, 'record')
 
+    @route([r.COLL + '/patch/<:re:.*>'], method='ANY')
+    @addcred(router=r)
+    def patch(info):
+        if not manager.can_write_coll(info.user, info.coll):
+            raise HTTPError(status=404, body='No Such Collection')
+
+        if not manager.has_space(info.user):
+            request.environ['webrec.no_space'] = True
+
+        return call_pywb(info, 'patch')
+
+    @route([r.COLL + '/live/<:re:.*>'], method='ANY')
+    @addcred(router=r)
+    def replay(info):
+        if not manager.can_read_coll(info.user, info.coll):
+            raise HTTPError(status=404, body='No Such Collection')
+
+        return call_pywb(info, 'live')
+
+
+    @route([r.COLL + '/record/', r.COLL + '/record',
+            r.COLL + '/patch/', r.COLL + '/patch',
+            r.COLL + '/live/', r.COLL + '/live'])
+    @addcred(router=r)
+    def redir_sub(info):
+        redirect(info.coll)
 
     @route([r.COLL + '/<:re:.*>'], method='ANY')
     @addcred(router=r)
@@ -923,7 +968,7 @@ You can now <b>login</b> with your new password!', 'success')
         if not manager.can_read_coll(info.user, info.coll):
             raise HTTPError(status=404, body='No Such Collection')
 
-        return call_pywb(info, 'play')
+        return call_pywb(info, 'replay')
 
 
     @route([r.COLL + '/cdx'])

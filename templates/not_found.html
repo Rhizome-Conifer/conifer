@@ -19,7 +19,7 @@
         <p>The url <b>{{ url }}</b> could not be found in this collection.</p>
 
         {% if curr_user == user %}
-        <p>Would you like to <a href="/{{wbrequest.coll}}/record/mp_/{{url}}">record it now?</a></p>
+        <p>Would you like to <a target="_parent" href="/{{wbrequest.coll}}/patch/{{url}}">patch record it now?</a></p>
         {% endif %}
     </div>
 </div>

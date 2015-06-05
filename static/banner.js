@@ -5,24 +5,28 @@ var __wfa_banner_init = function(banner_id)
     }
     
     var style = "\
+.__wb_banner_expanded {\
+    height: 100% !important;\
+}\
+\
 .__wb_banner {\
     position: fixed !important;\
     margin: 0px !important;\
     padding: 0px !important;\
     border: 0px !important;\
     width: 100% !important;\
-    height: 100px !important;\
+    height: 84px;\
     top: 0px !important;\
     left: 0px !important;\
     z-index: 2147483643 !important;\
 }\
 \
 html {\
-    margin-top: 100px !important;\
+    margin-top: 80px !important;\
 }";
     
     
-    var banner = document.createElement("iframe");
+    var banner = document.createElement("iframe", true);
     banner.setAttribute("id", banner_id);
     banner.setAttribute("seamless", "seamless");
     banner.setAttribute("frameborder", "0");
@@ -36,7 +40,8 @@ html {\
     banner.setAttribute("src", banner_url);
 
     // style
-    var style_elem = document.createElement("style");
+    var style_elem = document.createElement("style", true);
+    style_elem._no_rewrite = true;
     style_elem.innerHTML = style;
     
     // insert

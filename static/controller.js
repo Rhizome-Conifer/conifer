@@ -7,11 +7,10 @@ set_state = function(state) {
         return;
     }
 
-    if (doc_window.wbinfo.state == "rec") {
+    if (doc_window.wbinfo.state == "record") {
         add_page(state.url);
-    } else if (doc_window.wbinfo.state == "play") {
-        update_page(state.timestamp);
     }
+    update_page(state.timestamp, state.url);
     
     if (curr_state.url) {
         $("#theurl").attr("value", curr_state.url);
@@ -120,10 +119,10 @@ $(function() {
         }
     });
     
-    if (wbinfo.state == "rec" && !wbinfo.url) {
-        console.log("automate");
-        $("#automate").click();
-    }
+//    if (wbinfo.state == "record" && !wbinfo.url) {
+//        console.log("automate");
+//        $("#automate").click();
+//    }
     
     // Hypothesis
     $("#annotate").click(function() {
@@ -236,7 +235,7 @@ function start_umbra()
         return false;
     }
 
-    var script_name = "/static/__shared/behaviors/" + file;
+    var script_name = window.location.protocol + '//' + window.location.host + "/static/__shared/behaviors/" + file;
 
     var doc = doc_window.document;
     

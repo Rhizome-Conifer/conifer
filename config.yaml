@@ -19,24 +19,44 @@ warcsign_public_key: /var/wr/wr_pub.pem
 collections_root: _na_
 
 collections:
-    record:
+    'live':
+        index_paths: $liveweb
+
+        wb_handler_class: !!python/name:loader.DynRecord
+
+        cookie_scope: root
+        rewrite_opts:
+            rewrite_base: true
+            rewrite_rel_canon: false
+
+        search_html: frame_insert.html
+
+    'record':
         index_paths: $liveweb
 
         wb_handler_class: !!python/name:loader.DynRecord
 
         proxyhostport: *proxyhostport
 
-        cookie_scope: default
+        cookie_scope: root
         rewrite_opts:
             rewrite_base: true
             rewrite_rel_canon: false
-            client:
-                no_rewrite_prefixes:
-                    - 'https://hypothes.is/'
-
 
         search_html: frame_insert.html
 
+    'patch':
+        index_paths: *redis_url
+        server_cls: !!python/name:loader.DynCDXServer
+
+        wb_handler_class: !!python/name:loader.DynWBHandler
+
+        cookie_scope: root
+
+        fallback: record
+
+        search_html: frame_insert.html
+    
     '':
         #index_paths: indexes/index.cdxj
         index_paths: *redis_url
@@ -45,13 +65,9 @@ collections:
         wb_handler_class: !!python/name:loader.DynWBHandler
 
         cookie_scope: removeall
-        rewrite_opts:
-            client:
-                no_rewrite_prefixes:
-                    - 'https://hypothes.is/'
-
 
         enable_cdx_api: 'cdx'
+
 
 route_class: !!python/name:loader.DynamicRoute
 
