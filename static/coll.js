@@ -171,7 +171,7 @@ function show_pages() {
             return res;
         }
         var tags = full["tags"];
-        var tagnames = {"snapshot": "Snapshot"}
+        var tagnames = {"snapshot": "Static Snapshot"}
         if (tags) {
             for (var i = 0; i < tags.length; i++) {
                 res += "&nbsp;<span class='label label-success'>" + tagnames[tags[i]] + "</span>";
