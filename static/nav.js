@@ -294,6 +294,7 @@ $(function() {
                 data: content,
                 success: function() {
                     console.log("Saved");
+                    $("#snapshot").prop("disabled", false);
                 },
                 error: function() {
                     console.log("err");
@@ -301,6 +302,8 @@ $(function() {
                 dataType: 'html',
             });
         }
+        
+        $("#snapshot").prop("disabled", true);
         
         apply_iframes(doc_window, snapshot);
     });
