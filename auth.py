@@ -640,17 +640,18 @@ class CollsManager(object):
             print('Cannot Canon')
             return False
 
-        cdx_key = self.make_key(user, coll, self.CDX_KEY)
-        result = self.redis.zrangebylex(cdx_key,
-                                        '[' + key,
-                                        '(' + end_key)
-        if not result:
-            print('NO CDX')
-            return False
+        if 'ts' not in pagedata:
+            cdx_key = self.make_key(user, coll, self.CDX_KEY)
+            result = self.redis.zrangebylex(cdx_key,
+                                            '[' + key,
+                                            '(' + end_key)
+            if not result:
+                print('NO CDX')
+                return False
 
-        last_cdx = CDXObject(result[-1])
+            last_cdx = CDXObject(result[-1])
 
-        pagedata['ts'] = last_cdx['timestamp']
+            pagedata['ts'] = last_cdx['timestamp']
 
         self.redis.sadd(self.make_key(user, coll, self.PAGE_KEY), json.dumps(pagedata))
 

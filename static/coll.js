@@ -167,11 +167,14 @@ function show_pages() {
         }
 
         var res =  '<a href="' + url + '">' + title + '</a>';
+        if (meta.col != 0) {
+            return res;
+        }
         var tags = full["tags"];
-        var tagnames = {"snapshot": "Static Snapshot"}
+        var tagnames = {"snapshot": "Snapshot"}
         if (tags) {
             for (var i = 0; i < tags.length; i++) {
-                res += "&nbsp;<span class='badge'>" + tagnames[tags[i]] + "</span>";
+                res += "&nbsp;<span class='label label-success'>" + tagnames[tags[i]] + "</span>";
             }
         }
         return res;

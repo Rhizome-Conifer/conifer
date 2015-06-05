@@ -14,6 +14,7 @@ from pywb.utils.loaders import load_yaml_config
 from pywb.webapp.views import J2TemplateView
 from pywb.utils.wbexception import WbException
 from pywb.framework.wbrequestresponse import WbRequest
+from pywb.utils.timeutils import datetime_to_timestamp
 
 from auth import init_cork, CollsManager, ValidationException
 
@@ -30,6 +31,7 @@ from rewriter import HTMLDomUnRewriter
 import logging
 import requests
 import json
+from datetime import datetime
 
 
 # ============================================================================
@@ -814,10 +816,12 @@ You can now <b>login</b> with your new password!', 'success')
 
         orig_html = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
 
+        dt = datetime.utcnow()
+
         target = dict(output_dir=router.get_archive_dir(user, coll),
                       sesh_id=path.replace('/', ':'),
                       user_id=user,
-                      json_metadata={'snapshot': 'html'},
+                      json_metadata={'snapshot': 'html', 'timestamp': str(dt)},
                       writer_type='-snapshot')
 
         if url.startswith('https://'):
@@ -826,7 +830,11 @@ You can now <b>login</b> with your new password!', 'success')
         req_headers = {'warcprox-meta': json.dumps(target),
                        'content-type': 'text/html'}
 
-        pagedata = {'url': url, 'title': title, 'tags': ['snapshot']}
+        pagedata = {'url': url,
+                    'title': title,
+                    'tags': ['snapshot'],
+                    'ts': datetime_to_timestamp(dt)
+                   }
 
         try:
             resp = requests.request(method='PUTRES',
