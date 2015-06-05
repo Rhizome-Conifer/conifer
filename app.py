@@ -805,6 +805,8 @@ You can now <b>login</b> with your new password!', 'success')
             raise HTTPError(status=404, body='No Such Page')
 
         title = request.query.get('title', '')
+        add_page = request.query.get('addpage', False)
+
         html_text = request.body.read()
 
         host = get_host()
@@ -834,9 +836,9 @@ You can now <b>login</b> with your new password!', 'success')
                                     proxies=warcprox_proxies,
                                     verify=False)
 
-            manager.add_page(user, coll, pagedata)
+            if add_page:
+                manager.add_page(user, coll, pagedata)
         except:
-            raise
             return {'status': 'err'}
 
 

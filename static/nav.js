@@ -283,6 +283,7 @@ $(function() {
             var params = $.param({coll: wbinfo.coll,
                                   url: url,
                                   title: win.document.title,
+                                  addpage: doc_window == win,
                                   prefix: wbinfo.prefix});
 
             var content = win.document.documentElement.outerHTML;
