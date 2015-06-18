@@ -102,7 +102,7 @@
                 {% endif %}
 
             </ul>
-            {% if curr_user %}
+            {% if can_write() %}
             <p class="navbar-text navbar-right userset">
                 <a target="_parent" title="Logout" href="/_logout" class="navbar-link">
                     <span class="glyphicon glyphicon-log-out" title="Logout"></span></a></p>
