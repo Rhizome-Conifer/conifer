@@ -1,6 +1,6 @@
 from bottle import route, request, response, post, default_app
 from bottle import redirect, run, HTTPError, HTTPResponse
-from bottle import hook
+from bottle import hook, error
 
 from cork import Cork, AAAException
 
@@ -32,6 +32,7 @@ import logging
 import requests
 import json
 from datetime import datetime
+from urlparse import urljoin
 
 
 # ============================================================================
@@ -123,8 +124,14 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     @jinja2_view('error.html')
     @addcred()
     def err_handle(out):
-        response.status = 404
+        if out.status_code == 404:
+            if test_refer_redirect():
+                return
+        else:
+            response.status = 404
+
         return {'err': out}
+
 
     bottle_app.default_error_handler = err_handle
     create_coll_routes(router)
@@ -138,6 +145,38 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     start_uwsgi_timer(30, "mule", uploader)
 
     return application
+
+
+# =============================================================================
+def test_refer_redirect():
+    referer = request.headers.get('Referer')
+    if not referer:
+        return
+
+    host = request.headers.get('Host')
+    if host not in referer:
+        return
+
+    inx = referer[1:].find('http')
+    if not inx:
+        inx = referer[1:].find('///')
+        if inx > 0:
+            inx + 1
+
+    if inx < 0:
+        return
+
+    url = referer[inx + 1:]
+    host = referer[:inx + 1]
+
+    orig_url = request.urlparts.path
+    if request.urlparts.query:
+        orig_url += '?' + request.urlparts.query
+
+    full_url = host + urljoin(url, orig_url)
+    response.status = 302
+    response.set_header('Location', full_url)
+    return True
 
 
 # =============================================================================
