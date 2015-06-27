@@ -61,7 +61,6 @@ webrecorder:
 
   environment:
     - REDIS=redis://redis_1:6379/1 
-    - S3_ROOT=s3://target-bucket-path/
 
   #ports:
   #  - "8088:8088"

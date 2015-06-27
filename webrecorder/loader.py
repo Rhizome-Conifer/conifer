@@ -247,8 +247,6 @@ class DynRecord(RewriteHandler):
             msg = 'This url could not be recorded: '
             raise LiveResourceException(msg, url=wbrequest.wb_url.url)
 
-        status_headers.headers.append(('Cache-Control', 'no-cache'))
-
         return WbResponse(status_headers, gen)
 
 

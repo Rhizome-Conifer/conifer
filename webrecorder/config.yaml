@@ -28,6 +28,10 @@ email_smtp_url: $EMAIL_SMTP_URL
 #enable_auto_colls: false
 collections_root: _na_
 
+record_cache: &record_cache 10
+replay_cache: &replay_cache 30
+
+
 collections:
     'live':
         index_paths: $liveweb
@@ -38,6 +42,7 @@ collections:
         rewrite_opts:
             rewrite_base: true
             rewrite_rel_canon: false
+            http_cache: *record_cache
 
         search_html: frame_insert.html
 
@@ -52,6 +57,7 @@ collections:
         rewrite_opts:
             rewrite_base: true
             rewrite_rel_canon: false
+            http_cache: *record_cache
 
         search_html: frame_insert.html
 
@@ -67,6 +73,9 @@ collections:
 
         search_html: frame_insert.html
     
+        rewrite_opts: 
+            http_cache: *replay_cache
+
     '':
         #index_paths: indexes/index.cdxj
         index_paths: *redis_url
@@ -77,6 +86,10 @@ collections:
         cookie_scope: removeall
 
         enable_cdx_api: 'cdx'
+
+        rewrite_opts: 
+            http_cache: *replay_cache
+
 
 
 route_class: !!python/name:loader.DynamicRoute

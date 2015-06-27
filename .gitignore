@@ -44,3 +44,4 @@ nosetests.xml
 # webrecorder specific
 webrecorder/webrecorder.env
 webrecorder/keys/
+data/
