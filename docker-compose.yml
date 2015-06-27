@@ -1,0 +1,67 @@
+# Redis
+redis:
+  restart: always
+  image: redis:latest
+  ports:
+    - "6379:6379"
+  
+  volumes_from:
+    - warcs
+
+  command: redis-server --appendonly yes
+
+# Data Only Volume
+warcs:
+  #restart: always
+
+  image: python:2.7
+
+  command: python -i
+  
+  volumes:
+    - ./data:/data/
+
+# Warcprox
+warcprox:
+  restart: always
+  build: ./warcprox
+
+  command: ./run-rec.sh
+
+  volumes_from:
+    - warcs
+
+  links:
+    - redis
+
+  environment:
+    - REDIS=redis://redis_1:6379/1
+    - DATA=/data/
+
+  ports:
+    - "9002:9002"
+
+# Webrecorder
+webrecorder:
+  restart: always
+  build: ./webrecorder
+
+  command: uwsgi uwsgi.ini
+
+  volumes_from:
+    - warcs
+
+  links:
+    - redis
+    - warcprox
+
+
+  env_file:
+    - ./webrecorder/webrecorder.env
+
+  environment:
+    - REDIS=redis://redis_1:6379/1 
+    - S3_ROOT=s3://target-bucket-path/
+
+  ports:
+    - "8088:8088"

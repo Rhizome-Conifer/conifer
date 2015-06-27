@@ -1,10 +1,14 @@
 #colls_loader_cls: !!python/name:loader.AccountUserLoader
-proxy_path: &proxyhostport localhost:9002
+proxy_path: &proxyhostport warcprox_1:9002
 #redis_url: &redis_url redis://127.0.0.1:6379/1
-redis_url: &redis_url redis://redacted
+#redis_url: &redis_url redis://localhost:6379/1
+#proxy_path: &proxyhostport $WARCPROX
+redis_url: &redis_url $REDIS
 
-s3_target: s3://redacted
-proxy_target: http://localhost:6009/wr-beta/
+#s3_target: s3://target-bucket-path/
+s3_target: $S3_ROOT
+proxy_target: ''
+#http://localhost:6009/wr-beta/
 
 cookie_name: '__wr_sesh'
 
@@ -12,8 +16,14 @@ verify_ssl: false
 
 multiuser: true
 
-warcsign_private_key: /var/wr/wr.pem
-warcsign_public_key: /var/wr/wr_pub.pem
+#warcsign_private_key: /var/wr/wr.pem
+#warcsign_public_key: /var/wr/wr_pub.pem
+warcsign_private_key: /keys/wr.pem
+warcsign_public_key: /keys/wr_pub.pem
+
+email_sender: $EMAIL_SENDER
+email_smtp_url: $EMAIL_SMTP_URL
+
 
 #enable_auto_colls: false
 collections_root: _na_
@@ -71,14 +81,15 @@ collections:
 
 route_class: !!python/name:loader.DynamicRoute
 
-archive_paths: ./
+#archive_paths: ./
+archive_paths: /
+store_root: /data/
 
 metadata:
     org: beta.webrecorder.io
     product: beta.webrecorder.io
-#    org: National Football Museum Web Archive
-#    product: NFM Web Archive
 
 framed_replay: inverse
-#framed_replay: false
+redir_to_exact: false
+
 #urlrewriter_class: !!python/name:loader.DynUrlRewriter

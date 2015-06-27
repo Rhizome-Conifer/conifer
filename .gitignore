@@ -40,3 +40,7 @@ nosetests.xml
 .pydevproject
 
 .vagrant
+
+# webrecorder specific
+webrecorder/webrecorder.env
+webrecorder/keys/

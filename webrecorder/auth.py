@@ -74,30 +74,33 @@ class CustomCork(Cork):
 
 
 
-def create_cork(redis):
+def create_cork(redis, config):
     backend=RedisBackend(redis)
     init_cork_backend(backend)
 
+    email_sender = os.path.expandvars(config.get('email_sender', ''))
+    smtp_url = os.path.expandvars(config.get('email_smtp_url', ''))
+
     cork = CustomCork(backend=backend,
-                email_sender=redacted,
-                smtp_url=redacted)
+                email_sender=email_sender,
+                smtp_url=smtp_url)
     return cork
 
 def init_manager_for_invite(configfile='config.yaml'):
     config = load_yaml_config(configfile)
 
-    redis_url = config['redis_url']
+    redis_url = os.path.expandvars(config['redis_url'])
 
     redis_obj = StrictRedis.from_url(redis_url)
 
-    cork = create_cork(redis_obj)
+    cork = create_cork(redis_obj, config)
 
     manager = CollsManager(cork, redis_obj, None, None, None)
     return manager
 
 
 def init_cork(app, redis, config):
-    cork = create_cork(redis)
+    cork = create_cork(redis, config)
 
     encrypt_key = 'FQbitfnuOZbB2gPvb4G4h5UfOssLU49jI6Kg'
 
@@ -318,6 +321,11 @@ class CollsManager(object):
         usertable = all_users[user]
 
         max_len, max_coll = self.redis.hmget('h:defaults', ['max_len', 'max_coll'])
+        if not max_len:
+            max_len = 100000000
+
+        if not max_coll:
+            max_coll = 10
 
         usertable['max_len'] = max_len
         usertable['max_coll'] = max_coll

@@ -62,13 +62,14 @@
                     <p class="navbar-text" id="auto-info"></p>
                 </li>
 
-
+                {% if can_write() %}
                 <li style="margin-left: 4px" class="navbar-btn">
                     <button id="snapshot" class="btn btn-xs btn-default" style="display: none" title="Static Snapshot">
                         <span class="glyphicon glyphicon-camera"></span>
                     </button>
                     <span id="snapshot-label" style="display: none; font-size: 12px" title="Static Snapshot -- no dynamic content loaded" class="label label-success">Static Snapshot</span>
                 </li>
+                {% endif %}
                 
 
                 {#
@@ -102,7 +103,7 @@
                 {% endif %}
 
             </ul>
-            {% if can_write() %}
+            {% if curr_user %}
             <p class="navbar-text navbar-right userset">
                 <a target="_parent" title="Logout" href="/_logout" class="navbar-link">
                     <span class="glyphicon glyphicon-log-out" title="Logout"></span></a></p>

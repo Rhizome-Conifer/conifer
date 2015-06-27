@@ -17,6 +17,7 @@ import os
 import re
 import json
 import base64
+from os.path import expandvars
 
 
 #=================================================================
@@ -53,6 +54,7 @@ class DynamicRoute(Route):
 #=================================================================
 class DynCDXServer(CDXServer):
     def _create_cdx_sources(self, paths, config):
+        paths = expandvars(paths)
         if paths.startswith('redis://'):
             src = DynCDXRedis(paths)
         else:
@@ -180,6 +182,7 @@ class DynWBHandler(WBHandler):
     def _wrap_session_path(path, cdx_lines):
         for cdx in cdx_lines:
             cdx['filename'] = os.path.join(path, cdx['filename'])
+            print(cdx['filename'])
             if cdx.get('orig.filename', '-') != '-':
                 cdx['orig.filename'] = os.path.join(path,
                                                     cdx['orig.filename'])

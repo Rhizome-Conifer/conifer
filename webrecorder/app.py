@@ -33,6 +33,7 @@ import requests
 import json
 from datetime import datetime
 from urlparse import urljoin
+from os.path import expandvars
 
 
 # ============================================================================
@@ -62,6 +63,8 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     global multiuser
     multiuser = config.get('multiuser', False)
 
+    store_root = config.get('store_root', store_root)
+
     global router
     if multiuser:
         router = MultiUserRouter(store_root)
@@ -70,7 +73,7 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
 
     global redis_obj
     if not redis_url:
-        redis_url = config['redis_url']
+        redis_url = expandvars(config['redis_url'])
 
     redis_obj = StrictRedis.from_url(redis_url)
 
@@ -79,14 +82,15 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     application, cork = init_cork(bottle_app, redis_obj, config)
 
     # for now, just s3
-    s3_manager = S3Manager(config['s3_target'])
+    s3_manager = S3Manager(expandvars(config['s3_target']))
 
-    signer = RSASigner(private_key_file=config['warcsign_private_key'],
-                       public_key_file=config['warcsign_public_key'])
+    signer = RSASigner(private_key_file=expandvars(config['warcsign_private_key']),
+                       public_key_file=expandvars(config['warcsign_public_key']))
 
     global warcprox_proxies
-    warcprox_proxies = {'http': config['proxy_path'],
-                        'https': config['proxy_path']}
+    proxy_path = expandvars(config['proxy_path'])
+    warcprox_proxies = {'http': proxy_path,
+                        'https': proxy_path}
 
     global manager
     manager = CollsManager(cork, redis_obj, router, s3_manager, signer)
@@ -95,19 +99,19 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
 
     @contextfunction
     def can_admin(context):
-        return manager.can_admin_coll(context['user'], context['coll'])
+        return manager.can_admin_coll(context.get('user', ''), context.get('coll', ''))
 
     @contextfunction
     def is_owner(context):
-        return manager.is_owner(context['user'])
+        return manager.is_owner(context.get('user', ''))
 
     @contextfunction
     def can_write(context):
-        return manager.can_write_coll(context['user'], context['coll'])
+        return manager.can_write_coll(context.get('user', ''), context.get('coll', ''))
 
     @contextfunction
     def can_read(context):
-        return manager.can_read_coll(context['user'], context['coll'])
+        return manager.can_read_coll(context.get('user', ''), context.get('coll', ''))
 
     jinja_env.globals['can_admin'] = can_admin
     jinja_env.globals['can_write'] = can_write
@@ -194,7 +198,6 @@ def raise_uwsgi_signal():
 # Utilities
 def get_redir_back(skip, default='/'):
     redir_to = request.headers.get('Referer', default)
-    print('REF: ' + redir_to)
     if redir_to.endswith(skip):
         redir_to = default
     return redir_to
