@@ -10,7 +10,10 @@ RUN pip install -r requirements.txt
 
 ADD . /code/
 
-COPY ./static ./keys
 COPY ./templates ./templates
+COPY ./static ./static
 
-VOLUME /archives
+# Expose as VOLUMEs for nginx access
+VOLUME /usr/local/lib/python2.7/site-packages/pywb/static/ /code/static
+
+EXPOSE 8081

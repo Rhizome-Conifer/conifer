@@ -95,8 +95,7 @@ class Uploader(object):
                 return True
 
     def __call__(self, signum=None):
-        print('Checking for new warcs...')
-        print(self.root_dir)
+        print('Checking for new warcs in {0}'.format(self.root_dir))
         for key, warc, local_full_path, rel_path in self.warc_iter(self.root_dir):
             key = key + ':warc'
             warc_already_uploaded_key = key + ':au:' + warc

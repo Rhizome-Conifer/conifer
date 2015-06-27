@@ -8,7 +8,7 @@ redis:
   volumes_from:
     - warcs
 
-  command: redis-server --appendonly yes
+ # command: redis-server --appendonly yes
 
 # Data Only Volume
 warcs:
@@ -63,5 +63,19 @@ webrecorder:
     - REDIS=redis://redis_1:6379/1 
     - S3_ROOT=s3://target-bucket-path/
 
+  #ports:
+  #  - "8088:8088"
+
+nginx:
+  build: ./nginx
   ports:
-    - "8088:8088"
+    - "80:80"
+
+  volumes_from:
+    - warcs
+    - webrecorder
+
+  links:
+    - webrecorder
+
+
