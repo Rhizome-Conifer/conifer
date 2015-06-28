@@ -1,4 +1,5 @@
-pywb
+pywb>=0.10.1
+youtube_dl
 bottle
 uwsgi
 gevent

@@ -64,7 +64,7 @@ class S3Manager(object):
                 new_key.set_contents_from_file(fh, replace=True)
             except Exception as e:
                 print(e)
-                print('Failed to Upload to {0}'.format(s3_path))
+                print('Failed to Upload to {0}'.format(s3_url))
                 return False
 
         return True
