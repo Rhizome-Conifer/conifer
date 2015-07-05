@@ -7,6 +7,7 @@ from pywb.webapp.pywb_init import DirectoryCollsLoader
 from pywb.webapp.handlers import WBHandler
 from pywb.webapp.live_rewrite_handler import RewriteHandler, LiveResourceException
 from pywb.webapp.views import J2TemplateView
+from pywb.webapp.replay_views import CaptureException
 
 from pywb.framework.wbrequestresponse import WbResponse
 from pywb.utils.wbexception import NotFoundException
@@ -167,16 +168,25 @@ class DynWBHandler(WBHandler):
         path = wbrequest.custom_params['output_dir']
         #path = os.path.join(path, 'archive')
 
-        cdx_callback = self.index_reader.cdx_load_callback(wbrequest)
+        try:
+            cdx_callback = self.index_reader.cdx_load_callback(wbrequest)
 
-        def wrapped_cdx_callback(*args, **kwargs):
-            return self._wrap_session_path(path, cdx_callback(*args, **kwargs))
+            def wrapped_cdx_callback(*args, **kwargs):
+                return self._wrap_session_path(path, cdx_callback(*args, **kwargs))
 
-        wrapped_cdx_lines = self._wrap_session_path(path, cdx_lines)
+            wrapped_cdx_lines = self._wrap_session_path(path, cdx_lines)
 
-        return self.replay.render_content(wbrequest,
-                                          wrapped_cdx_lines,
-                                          wrapped_cdx_callback)
+            return self.replay.render_content(wbrequest,
+                                              wrapped_cdx_lines,
+                                              wrapped_cdx_callback)
+        except CaptureException:
+            if (self.fallback_handler and
+                not wbrequest.wb_url.is_query() and
+                not wbrequest.wb_url.is_identity):
+                return self.fallback_handler(wbrequest)
+            else:
+                raise
+
 
     @staticmethod
     def _wrap_session_path(path, cdx_lines):
