@@ -38,9 +38,7 @@ $(function() {
         $("#curr-state span.display-badge").text(label);
     }
     
-    if (window.wbinfo.timestamp) {
-        update_page(window.wbinfo.timestamp, window.wbinfo.url);
-    }
+    update_page(window.wbinfo.url, window.wbinfo.timestamp);
     
     if (window.wbinfo.url) {
         $("#theurl").attr("value", window.wbinfo.url);
@@ -60,18 +58,22 @@ $(function() {
     }   
 });
 
-function update_page(timestamp, the_url)
+function update_page(the_url, timestamp)
 {
-    if (window.wbinfo.state == "replay" || window.wbinfo.state == "patch") {
+    if (timestamp && (window.wbinfo.state == "replay" || window.wbinfo.state == "patch")) {
         $("#capture-text").removeClass("hidden");
         $("#capture-text").text("from " + ts_to_date(timestamp));
     }
     
     var prefix = "/" + window.wbinfo.coll + "/";
     
+    if (timestamp) {
+        timestamp += "/";
+    }
+    
     $(".state-drop #record").attr("href", prefix + "record/" + the_url);
-    $(".state-drop #replay").attr("href", prefix + timestamp + "/" + the_url);
-    $(".state-drop #patch").attr("href", prefix + "patch/" + timestamp + "/" + the_url);
+    $(".state-drop #replay").attr("href", prefix + timestamp + the_url);
+    $(".state-drop #patch").attr("href", prefix + "patch/" + timestamp + the_url);
     $(".state-drop #live").attr("href", prefix + "live/" + the_url);
     
 
