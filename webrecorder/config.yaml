@@ -30,7 +30,6 @@ collections_root: _na_
 
 record_cache: &record_cache 10
 replay_cache: &replay_cache 30
-html_decl: &html_decl '<!DOCTYPE html>'
 
 collections:
     'live':
@@ -43,7 +42,6 @@ collections:
             rewrite_base: true
             rewrite_rel_canon: false
             http_cache: *record_cache
-            force_html_decl: *html_decl
 
         search_html: frame_insert.html
 
@@ -59,7 +57,6 @@ collections:
             rewrite_base: true
             rewrite_rel_canon: false
             http_cache: *record_cache
-            force_html_decl: *html_decl
 
         search_html: frame_insert.html
 
@@ -77,7 +74,6 @@ collections:
     
         rewrite_opts: 
             http_cache: *replay_cache
-            force_html_decl: *html_decl
 
     '':
         #index_paths: indexes/index.cdxj
@@ -92,7 +88,6 @@ collections:
 
         rewrite_opts: 
             http_cache: *replay_cache
-            force_html_decl: *html_decl
 
 
 

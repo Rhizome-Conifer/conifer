@@ -7,7 +7,10 @@ from pywb.webapp.pywb_init import DirectoryCollsLoader
 from pywb.webapp.handlers import WBHandler
 from pywb.webapp.live_rewrite_handler import RewriteHandler, LiveResourceException
 from pywb.webapp.views import J2TemplateView
-from pywb.webapp.replay_views import CaptureException
+from pywb.webapp.replay_views import CaptureException, ReplayView
+
+from pywb.warc.recordloader import ArcWarcRecordLoader
+from pywb.warc.resolvingloader import ResolvingLoader
 
 from pywb.framework.wbrequestresponse import WbResponse
 from pywb.utils.wbexception import NotFoundException
@@ -141,15 +144,38 @@ class DynRedisResolver(object):
 
 
 #=================================================================
+# Fix for old snapshots that did not have a DOCTYPE html
+# if snapshot, ensure that DOCTYPE html is added
+class WebRecReplayView(ReplayView):
+    def replay_capture(self, wbrequest, cdx, cdx_loader, failed_files):
+        metadata = cdx.get('metadata')
+        if metadata and 'snapshot' in metadata:
+            decl = '<!DOCTYPE html>'
+        else:
+            decl = None
+
+        wbrequest.urlrewriter.rewrite_opts['force_html_decl'] = decl
+
+        return (super(WebRecReplayView, self).
+                replay_capture(wbrequest, cdx, cdx_loader, failed_files))
+
+
+#=================================================================
 class DynWBHandler(WBHandler):
     def _init_replay_view(self, config):
-        replay = super(DynWBHandler, self)._init_replay_view(config)
+        cookie_maker = config.get('cookie_maker')
+        record_loader = ArcWarcRecordLoader(cookie_maker=cookie_maker)
+
+        paths = config.get('archive_paths')
+
+        resolving_loader = ResolvingLoader(paths=paths,
+                                           record_loader=record_loader)
 
         redis_warc_resolver = config.get('redis_warc_resolver')
         if redis_warc_resolver:
-            replay.content_loader.path_resolvers.append(redis_warc_resolver)
+            resolving_loader.path_resolvers.append(redis_warc_resolver)
 
-        return replay
+        return WebRecReplayView(resolving_loader, config)
 
     def get_top_frame_params(self, wbrequest, mod):
         params = (super(DynWBHandler, self).
