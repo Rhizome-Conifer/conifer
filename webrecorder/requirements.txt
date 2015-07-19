@@ -1,4 +1,5 @@
-pywb>=0.10.1
+#pywb>=0.10.1
+-e git+https://github.com/ikreymer/pywb.git@develop#egg=pywb-0.10.3-dev
 youtube_dl
 bottle
 uwsgi

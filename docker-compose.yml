@@ -7,7 +7,7 @@ redis:
     - "6379:6379"
   
   volumes_from:
-    - warcs
+    - data
 
   env_file:
     - ./webrecorder/webrecorder.env
@@ -15,7 +15,7 @@ redis:
  # command: redis-server --appendonly yes
 
 # Data Only Volume
-warcs:
+data:
   #restart: always
 
   image: python:2.7
@@ -24,6 +24,7 @@ warcs:
   
   volumes:
     - ./data:/data/
+    - ./webrecorder/static:/code/static/
 
 # Warcprox
 warcprox:
@@ -33,7 +34,7 @@ warcprox:
   command: ./run-rec.sh
 
   volumes_from:
-    - warcs
+    - data
 
   links:
     - redis
@@ -59,7 +60,7 @@ webrecorder:
   command: uwsgi uwsgi.ini
 
   volumes_from:
-    - warcs
+    - data
 
   links:
     - redis
@@ -77,10 +78,8 @@ nginx:
     - "8089:80"
 
   volumes_from:
-    - warcs
-    - webrecorder
+    - data
 
   links:
     - webrecorder
-
 
