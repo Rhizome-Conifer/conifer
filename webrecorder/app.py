@@ -871,7 +871,9 @@ You can now <b>login</b> with your new password!', 'success')
             url = url.replace('https:', 'http:')
 
         req_headers = {'warcprox-meta': json.dumps(target),
-                       'content-type': 'text/html'}
+                       'content-type': 'text/html',
+                       'user-agent': request.headers.get('user-agent')
+                      }
 
         pagedata = {'url': url,
                     'title': title,

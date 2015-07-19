@@ -253,6 +253,7 @@ $(function() {
         try {
             func(win);
         } catch (e) {
+            console.warn(e);
             return;
         }
         
@@ -263,14 +264,15 @@ $(function() {
     
     
     $("#snapshot").click(function() {
+        var main_window = document.getElementById("replay_iframe").contentWindow;
         
         var wbinfo = window.wbinfo;
         var curr_state = window.curr_state;
         
         function snapshot(win) {
             
-            if (!win.WB_wombat_location || win.location.href == "about:blank") {
-                console.log("Skipping Snapshot for: " + win.location.href);
+            if (win.frameElement && !win.frameElement.getAttribute("src")) {
+                console.log("Skipping Snapshot for empty iframe: " + win.location.href);
                 return;
             }
             
@@ -279,10 +281,12 @@ $(function() {
             var params = $.param({coll: wbinfo.coll,
                                   url: url,
                                   title: win.document.title,
-                                  addpage: doc_window == win,
+                                  addpage: main_window == win,
                                   prefix: wbinfo.prefix});
 
-            var content = win.document.documentElement.outerHTML;
+            //var content = "<!DOCTYPE html>" + win.document.documentElement.outerHTML;
+            var s = new XMLSerializer();
+            var content = s.serializeToString(win.document);
 
             $.ajax({
                 type: "POST",
@@ -301,9 +305,8 @@ $(function() {
         
         $("#snapshot").prop("disabled", true);
         
-        apply_iframes(doc_window, snapshot);
+        apply_iframes(main_window, snapshot);
     });
-    
     
 //    $(".state-drop a").click(function(e) {
 //        e.preventDefault();
@@ -330,3 +333,4 @@ $(function() {
 //        window.location.href = prefix + url;
 //    });
 });
+

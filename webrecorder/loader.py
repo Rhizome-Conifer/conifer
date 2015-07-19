@@ -192,7 +192,6 @@ class DynWBHandler(WBHandler):
     def _wrap_session_path(path, cdx_lines):
         for cdx in cdx_lines:
             cdx['filename'] = os.path.join(path, cdx['filename'])
-            print(cdx['filename'])
             if cdx.get('orig.filename', '-') != '-':
                 cdx['orig.filename'] = os.path.join(path,
                                                     cdx['orig.filename'])
