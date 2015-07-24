@@ -102,7 +102,8 @@ def init_manager_for_invite(configfile='config.yaml'):
 def init_cork(app, redis, config):
     cork = create_cork(redis, config)
 
-    encrypt_key = 'FQbitfnuOZbB2gPvb4G4h5UfOssLU49jI6Kg'
+    encrypt_key = base64.b64encode(os.urandom(33))
+    validate_key = base64.b64encode(os.urandom(33))
 
     session_opts = {
         'session.cookie_expires': True,
@@ -110,7 +111,7 @@ def init_cork(app, redis, config):
         'session.httponly': True,
         'session.timeout': 3600 * 24,  # 1 day
         'session.type': 'cookie',
-        'session.validate_key': True,
+        'session.validate_key': validate_key,
         'session.cookie_path': '/',
         'session.secure': False,
         'session.key': config['cookie_name'],

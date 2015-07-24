@@ -263,12 +263,18 @@ class addcred(object):
             curr_role = None
 
             try:
-                if not cork.user_is_anonymous:
-                    curr_user = cork.current_user.username
-                    curr_role = cork.current_user.role
+                curr_user = sesh.get('username')
+                if curr_user:
+                    curr_role = cork.user(curr_user).role
+
+                #if not cork.user_is_anonymous:
+                #    curr_user = cork.current_user.username
+                #    curr_role = cork.current_user.role
             except Exception as e:
                 print(e)
                 print('SESH INVALID')
+                curr_user = None
+                curr_role = None
                 if sesh:
                     sesh.delete()
                     #sesh.invalidate()
@@ -992,7 +998,7 @@ You can now <b>login</b> with your new password!', 'success')
 
     @route([r.COLL + '/live/<:re:.*>'], method='ANY')
     @addcred(router=r)
-    def replay(info):
+    def live(info):
         if not manager.can_read_coll(info.user, info.coll):
             raise HTTPError(status=404, body='No Such Collection')
 
