@@ -10,7 +10,25 @@ s3_target: $S3_ROOT
 proxy_target: ''
 #http://localhost:6009/wr-beta/
 
-cookie_name: '__wr_sesh'
+
+session_opts:
+    session.secret: $SECRET_KEY
+    session.encrypt_key: $ENCRYPT_KEY
+    session.validate_key: $VALIDATE_KEY
+
+    session.auto: false
+    session.cookie_expires: true
+
+    session.httponly: true
+    session.cookie_path: '/'
+    
+    session.key: __wr_sesh
+    session.type: redis
+
+    session.url: *redis_url
+
+    session.expire: 1800
+ 
 
 verify_ssl: false
 
@@ -76,7 +94,6 @@ collections:
             http_cache: *replay_cache
 
     '':
-        #index_paths: indexes/index.cdxj
         index_paths: *redis_url
         server_cls: !!python/name:loader.DynCDXServer
 
@@ -89,6 +106,38 @@ collections:
         rewrite_opts: 
             http_cache: *replay_cache
 
+    'embed':
+        index_paths: *redis_url
+        server_cls: !!python/name:loader.DynCDXServer
+
+        wb_handler_class: !!python/name:loader.DynWBHandler
+
+        cookie_scope: removeall
+
+        enable_cdx_api: 'cdx'
+
+        rewrite_opts:
+            http_cache: *replay_cache
+
+        frame_insert_html: embed_frame.html
+        banner_html: embed_banner.html
+
+
+    'replay_nf':
+        index_paths: *redis_url
+        server_cls: !!python/name:loader.DynCDXServer
+
+        wb_handler_class: !!python/name:loader.DynWBHandler
+
+        cookie_scope: removeall
+
+        enable_cdx_api: 'cdx'
+
+        rewrite_opts: 
+            http_cache: *replay_cache
+
+        framed_replay: false
+        banner_html: nobanner.html
 
 
 route_class: !!python/name:loader.DynamicRoute

@@ -222,6 +222,22 @@ def flash_message(msg, msg_type='danger'):
         print('No Message')
 
 
+def pop_message(sesh):
+    msg_type = ''
+    if not sesh:
+        return '', msg_type
+
+    message = sesh.get('message', '')
+    if message:
+        sesh['message'] = ''
+        sesh.save()
+
+    if ':' in message:
+        msg_type, message = message.split(':', 1)
+
+    return message, msg_type
+
+
 def call_pywb(info=None, state=None):
     if info:
         request.path_shift(router.get_path_shift())
@@ -279,16 +295,7 @@ class addcred(object):
                     sesh.delete()
                     #sesh.invalidate()
 
-            message = ''
-            msg_type = ''
-            if sesh:
-                message = sesh.get('message', '')
-                if message:
-                    sesh['message'] = ''
-                    sesh.save()
-
-                if ':' in message:
-                    msg_type, message = message.split(':', 1)
+            message, msg_type = pop_message(sesh)
 
             params = {'curr_user': curr_user,
                       'curr_role': curr_role,

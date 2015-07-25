@@ -10,6 +10,7 @@ import base64
 import shutil
 
 from datetime import datetime
+from urlparse import urlsplit
 
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
@@ -71,7 +72,9 @@ class CustomCork(Cork):
         self._store.save_users()
         return username
 
-
+    def _save_session(self):
+        print('SAVING SESSION')
+        self._beaker_session.save()
 
 
 def create_cork(redis, config):
@@ -98,26 +101,32 @@ def init_manager_for_invite(configfile='config.yaml'):
     manager = CollsManager(cork, redis_obj, None, None, None)
     return manager
 
+def _get_crypt_key(key, config):
+    val = config.get(key)
+    if not val:
+        val = base64.b64encode(os.urandom(33))
+    return val
+
 
 def init_cork(app, redis, config):
     cork = create_cork(redis, config)
 
-    encrypt_key = base64.b64encode(os.urandom(33))
-    validate_key = base64.b64encode(os.urandom(33))
+    session_opts = config.get('session_opts')
 
-    session_opts = {
-        'session.cookie_expires': True,
-        'session.encrypt_key': encrypt_key,
-        'session.httponly': True,
-        'session.timeout': 3600 * 24,  # 1 day
-        'session.type': 'cookie',
-        'session.validate_key': validate_key,
-        'session.cookie_path': '/',
-        'session.secure': False,
-        'session.key': config['cookie_name'],
-    }
+    for n, v in session_opts.iteritems():
+        if isinstance(v, str):
+            session_opts[n] = os.path.expandvars(v)
 
-    app = CookieGuard(app, config['cookie_name'])
+    # url for redis
+    url = session_opts.get('session.url')
+    if url:
+        parts = urlsplit(url)
+        if parts.netloc:
+            session_opts['session.url'] = parts.netloc
+        #session_opts['session.db'] = 0
+
+    print(session_opts)
+    app = CookieGuard(app, session_opts['session.key'])
     app = SessionMiddleware(app, session_opts)
 
     return app, cork
