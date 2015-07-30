@@ -7,9 +7,10 @@ set_state = function(state) {
         return;
     }
 
-    if (doc_window.wbinfo.state == "record") {
+    if (doc_window.wbinfo.state == "record" || doc_window.wbinfo.state == "patch") {
         add_page(state.url);
     }
+    
     update_page(state.url, state.timestamp);
     
     if (curr_state.url) {

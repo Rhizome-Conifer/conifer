@@ -671,7 +671,11 @@ class CollsManager(object):
 
             pagedata['ts'] = last_cdx['timestamp']
 
-        self.redis.sadd(self.make_key(user, coll, self.PAGE_KEY), json.dumps(pagedata))
+        pagedata_json = json.dumps(pagedata)
+
+        key = self.make_key(user, coll, self.PAGE_KEY)
+
+        self.redis.sadd(key, pagedata_json)
 
     def list_pages(self, user, coll):
         if not self.can_read_coll(user, coll):
