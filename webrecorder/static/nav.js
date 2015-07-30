@@ -116,7 +116,7 @@ function add_page(capture_url)
         return;
     }
     
-    var params = {"url": url};
+    var params = {"url": capture_url};
     
     // Specify timestamp when patching
     if (doc_window.wbinfo.state == "patch") {
