@@ -116,8 +116,12 @@ function add_page(capture_url)
         return;
     }
     
-    var params = {"url": doc_window.wbinfo.url};
+    var params = {"url": url};
     
+    // Specify timestamp when patching
+    if (doc_window.wbinfo.state == "patch") {
+        params["ts"] = doc_window.wbinfo.timestamp;
+    }
     
     if (doc_window.document.title) {
         params["title"] = doc_window.document.title;
