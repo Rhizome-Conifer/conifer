@@ -1,0 +1,10 @@
+{#
+<script src="{{ wbrequest.host_prefix }}/static/__shared/banner.js"> </script>
+
+<script>
+wbinfo.state = "{{ state }}";
+wbinfo.metadata = {{ cdx.metadata | default('{}') }};
+</script>
+#}
+<!-- Set canonical url -->
+<link rel="canonical" href="{{ cdx.url }}"/>
