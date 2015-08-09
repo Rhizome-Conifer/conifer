@@ -118,6 +118,8 @@ collections:
 
         rewrite_opts:
             http_cache: *replay_cache
+            client:
+                embedded: true
 
         frame_insert_html: embed_frame.html
         banner_html: embed_banner.html

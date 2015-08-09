@@ -62,14 +62,12 @@
 
 <script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wb_frame.js'> </script>
 
-<script src='/static/__shared/embed_pm.js'> </script>
 </head>
 <body>
 
 {% include banner_html ignore missing %}
 
 <iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="no" class="wb_iframe"></iframe>
-<script>init_pm();</script>
 
 </body>
 </html>
