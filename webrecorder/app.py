@@ -137,8 +137,10 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
         return {'err': out}
 
 
+    invites_enabled = config.get('invites_enabled', True)
+
     bottle_app.default_error_handler = err_handle
-    create_coll_routes(router)
+    create_coll_routes(router, invites_enabled)
 
     uploader = Uploader(store_root,
                         s3_manager,
@@ -358,7 +360,7 @@ Available Collections:
 
 
 # ============================================================================
-def create_coll_routes(r):
+def create_coll_routes(r, invites_enabled):
 
 
     # Login/Logout
@@ -402,8 +404,13 @@ def create_coll_routes(r):
     @jinja2_view('register.html')
     @addcred()
     def register():
+        if not invites_enabled:
+            return {'email': '',
+                    'skip_invite': True}
+
         invitecode = request.query.get('invite', '')
-        email = None
+        email = ''
+
         try:
             email = manager.is_valid_invite(invitecode)
         except ValidationException as ve:
@@ -434,16 +441,18 @@ def create_coll_routes(r):
 
         redir_to = REGISTER_PATH
 
-        try:
-            val_email = manager.is_valid_invite(invitecode)
-            if val_email != email:
-                raise ValidationException('Sorry, this invite can only be used with email: {0}'.format(val_email))
-        except ValidationException as ve:
-            flash_message(str(ve))
-            redirect(redir_to)
-            return
+        if invites_enabled:
+            try:
+                val_email = manager.is_valid_invite(invitecode)
+                if val_email != email:
+                    raise ValidationException('Sorry, this invite can only be used with email: {0}'.format(val_email))
+            except ValidationException as ve:
+                flash_message(str(ve))
+                redirect(redir_to)
+                return
 
-        redir_to += '?invite=' + invitecode
+            redir_to += '?invite=' + invitecode
+
 
         try:
             manager.validate_user(username, email)
@@ -462,7 +471,8 @@ def create_coll_routes(r):
 Please check your e-mail to complete the registration!'.format(username), 'success')
 
             redir_to = '/'
-            manager.delete_invite(email)
+            if invites_enabled:
+                manager.delete_invite(email)
 
         except ValidationException as ve:
             flash_message(str(ve))

@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row">
-    {% if not email or not invite %}
+    {% if (not email or not invite) and not skip_invite %}
     <div class="col-sm-8 col-md-6 col-md-offset-2">
         <h2>Webrecorder.io Invite Request</h2>
 
