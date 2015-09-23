@@ -51,6 +51,11 @@ $(function() {
     
     if (window.wbinfo.state == "record" || window.wbinfo.state == "patch") {
         setInterval(update_info, 10000);
+
+        // Check as soon as frame is loaded
+        $("#replay_iframe").load(function() {
+             check_password_input();
+        });
     }
     
     if (window.wbinfo.state == "record") {
@@ -155,7 +160,31 @@ function update_info()
     }).done(function() {
         is_updating = false;
     });
+
+    check_password_input();
 }
+
+var pass_form_targets = {};
+
+function check_password_input() {
+    $("input[type=password]", $("#replay_iframe").contents()[0]).each(function(i, input) {
+        if (input && input.form && input.form.action) {
+            var form_action = extract_replay_url(input.form.action);
+            if (!form_action) {
+                form_action = input.form.action;
+            }
+            if (pass_form_targets[form_action]) {
+                return;
+            }
+
+            $.getJSON("/_skipreq?" + $.param({url: form_action}), function(data) {
+                pass_form_targets[form_action] = true;
+                //console.log("Skipping rec sensitive url: " + form_action);
+            });
+        }
+    });
+}
+
 
 var last_size = undefined;
 

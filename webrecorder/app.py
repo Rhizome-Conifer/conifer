@@ -16,7 +16,7 @@ from pywb.utils.wbexception import WbException
 from pywb.framework.wbrequestresponse import WbRequest
 from pywb.utils.timeutils import datetime_to_timestamp
 
-from auth import init_cork, CollsManager, ValidationException
+from manager import init_cork, CollsManager, ValidationException
 
 from loader import jinja_env, jinja2_view, DynRedisResolver
 from jinja2 import contextfunction
@@ -940,6 +940,20 @@ You can now <b>login</b> with your new password!', 'success')
         #    raise HTTPError(status=404, body='Requires Login')
         useragent = request.headers.get('User-Agent')
         manager.report_issues(request.POST, useragent)
+        return {}
+
+    # Skip POST request recording
+    # ============================================================================
+    @route('/_skipreq')
+    @addcred()
+    def skip_req():
+        url = request.query.get('url')
+        try:
+            curr_user = request.environ['pywb.template_params']['curr_user']
+        except:
+            curr_user = None
+
+        manager.skip_post_req(curr_user, url)
         return {}
 
 

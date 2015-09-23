@@ -6,7 +6,7 @@ import shutil
 import tempfile
 
 from app import init
-from auth import Cork, RedisBackend
+from manager import Cork, RedisCorkBackend
 from redis import StrictRedis
 
 REDIS_URL = 'redis://127.0.0.1:6379/11'
