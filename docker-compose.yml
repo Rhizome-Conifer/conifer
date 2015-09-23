@@ -16,7 +16,7 @@ redis:
 
 # Data Only Volume
 data:
-  #restart: always
+  restart: always
 
   image: python:2.7
 
@@ -61,6 +61,9 @@ webrecorder:
 
   volumes_from:
     - data
+
+  volumes:
+    - ./webrecorder:/webarchive/
 
   links:
     - redis

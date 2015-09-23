@@ -38,8 +38,8 @@ invites_enabled: true
 
 #warcsign_private_key: /var/wr/wr.pem
 #warcsign_public_key: /var/wr/wr_pub.pem
-warcsign_private_key: /keys/wr.pem
-warcsign_public_key: /keys/wr_pub.pem
+warcsign_private_key: ./keys/wr.pem
+warcsign_public_key: ./keys/wr_pub.pem
 
 email_sender: $EMAIL_SENDER
 email_smtp_url: $EMAIL_SMTP_URL
