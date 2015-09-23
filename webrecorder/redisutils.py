@@ -1,0 +1,93 @@
+import json
+
+
+# ============================================================================
+class RedisTable(object):
+    def __init__(self, redis, key):
+        self.redis = redis
+        self.key = key
+
+    def __contains__(self, name):
+        value = self.redis.hget(self.key, name)
+        return value is not None
+
+    def __setitem__(self, name, values):
+        if isinstance(values, RedisHashTable):
+            values = values.thedict
+
+        string = json.dumps(values)
+        return self.redis.hset(self.key, name, string)
+
+    def __delitem__(self, name):
+        return self.redis.hdel(self.key, name)
+
+    def __getitem__(self, name):
+        string = self.redis.hget(self.key, name)
+        if not string:
+            return {}
+        result = json.loads(string)
+        if isinstance(result, dict):
+            return RedisHashTable(self, name, result)
+        else:
+            return result
+
+    def __iter__(self):
+        keys = self.redis.hkeys(self.key)
+        return iter(keys)
+
+    def iteritems(self):
+        coll_list = self.redis.hgetall(self.key)
+        colls = {}
+        for n, v in coll_list.iteritems():
+            if n == 'total_len':
+                continue
+
+            colls[n] = json.loads(v)
+
+        return colls.iteritems()
+
+    def pop(self, name):
+        result = self[name]
+        if result:
+            self.redis.hdel(self.key, name)
+        return result
+
+
+# ============================================================================
+class RedisHashTable(object):
+    def __init__(self, redistable, key, thedict):
+        self.redistable = redistable
+        self.key = key
+        self.thedict = thedict
+
+    def __getitem__(self, name):
+        return self.thedict[name]
+
+    def __setitem__(self, name, value):
+        self.thedict[name] = value
+        self.redistable[self.key] = self.thedict
+
+    def __delitem__(self, entry):
+        del self.thedict[name]
+        self.redistable[self.key] = self.thedict
+
+    def get(self, name, default_val=''):
+        return self.thedict.get(name, default_val)
+
+    def __nonzero__(self):
+        return bool(self.thedict)
+
+
+# ============================================================================
+class RedisCorkBackend(object):
+    def __init__(self, redis):
+        self.redis = redis
+        self.users = RedisTable(self.redis, 'h:users')
+        self.roles = RedisTable(self.redis, 'h:roles')
+        self.pending_registrations = RedisTable(self.redis, 'h:register')
+
+    def save_users(self): pass
+    def save_roles(self): pass
+    def save_pending_registrations(self): pass
+
+

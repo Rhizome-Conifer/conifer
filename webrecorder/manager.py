@@ -21,7 +21,10 @@ from pywb.warc.cdxindexer import iter_file_or_dir
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.loaders import load_yaml_config
 
+from redisutils import RedisTable, RedisCorkBackend
 
+
+# ============================================================================
 class CustomCork(Cork):
     def verify_password(self, username, password):
         salted_hash = self._store.users[username]['hash']
@@ -78,7 +81,7 @@ class CustomCork(Cork):
 
 
 def create_cork(redis, config):
-    backend=RedisBackend(redis)
+    backend=RedisCorkBackend(redis)
     init_cork_backend(backend)
 
     email_sender = os.path.expandvars(config.get('email_sender', ''))
@@ -136,92 +139,7 @@ class ValidationException(Exception):
     pass
 
 
-class RedisBackend(object):
-    def __init__(self, redis):
-        self.redis = redis
-        self.users = RedisTable(self.redis, 'h:users')
-        self.roles = RedisTable(self.redis, 'h:roles')
-        self.pending_registrations = RedisTable(self.redis, 'h:register')
-
-    def save_users(self): pass
-    def save_roles(self): pass
-    def save_pending_registrations(self): pass
-
-
-class RedisTable(object):
-    def __init__(self, redis, key):
-        self.redis = redis
-        self.key = key
-
-    def __contains__(self, name):
-        value = self.redis.hget(self.key, name)
-        return value is not None
-
-    def __setitem__(self, name, values):
-        if isinstance(values, RedisHashTable):
-            values = values.thedict
-
-        string = json.dumps(values)
-        return self.redis.hset(self.key, name, string)
-
-    def __delitem__(self, name):
-        return self.redis.hdel(self.key, name)
-
-    def __getitem__(self, name):
-        string = self.redis.hget(self.key, name)
-        if not string:
-            return {}
-        result = json.loads(string)
-        if isinstance(result, dict):
-            return RedisHashTable(self, name, result)
-        else:
-            return result
-
-    def __iter__(self):
-        keys = self.redis.hkeys(self.key)
-        return iter(keys)
-
-    def iteritems(self):
-        coll_list = self.redis.hgetall(self.key)
-        colls = {}
-        for n, v in coll_list.iteritems():
-            if n == 'total_len':
-                continue
-
-            colls[n] = json.loads(v)
-
-        return colls.iteritems()
-
-    def pop(self, name):
-        result = self[name]
-        if result:
-            self.redis.hdel(self.key, name)
-        return result
-
-
-class RedisHashTable(object):
-    def __init__(self, redistable, key, thedict):
-        self.redistable = redistable
-        self.key = key
-        self.thedict = thedict
-
-    def __getitem__(self, name):
-        return self.thedict[name]
-
-    def __setitem__(self, name, value):
-        self.thedict[name] = value
-        self.redistable[self.key] = self.thedict
-
-    def __delitem__(self, entry):
-        del self.thedict[name]
-        self.redistable[self.key] = self.thedict
-
-    def get(self, name, default_val=''):
-        return self.thedict.get(name, default_val)
-
-    def __nonzero__(self):
-        return bool(self.thedict)
-
+# ============================================================================
 class CollsManager(object):
     COLL_KEY = ':<colls>'
 
@@ -234,6 +152,7 @@ class CollsManager(object):
     Q_KEY = ':q'
 
     DEDUP_KEY = ':d'
+    SKIP_REQ_KEY = ':x:'
     CDX_KEY = ':cdxj'
     WARC_KEY = ':warc'
     DONE_WARC_KEY = ':warc:done'
@@ -618,6 +537,10 @@ class CollsManager(object):
                }
                 #'pages': num_pages}
 
+    def skip_post_req(self, user, url):
+        key = self._user_key(user) + self.SKIP_REQ_KEY + url
+        self.redis.setex(key, 300, 1)
+
     def add_to_queue(self, user, coll, data):
         if not self.can_write_coll(user, coll):
             return {}
@@ -787,4 +710,4 @@ def init_cork_backend(backend):
     #cork.create_user('ben', 'admin', 'ben', 'ilya@ilya', 'ilya')
 
 if __name__ == "__main__":
-    init_cork_backend(RedisBackend(StrictRedis.from_url('redis://127.0.0.1:6379/1')))
+    init_cork_backend(RedisCorkBackend(StrictRedis.from_url('redis://127.0.0.1:6379/1')))
