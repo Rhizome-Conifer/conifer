@@ -1,8 +1,9 @@
 import os
+from bottle import request
 
-from collections import namedtuple
 
-RouteInfo = namedtuple('RouteInfo', 'path, user, coll')
+
+
 
 
 class BaseRouter(object):
@@ -11,8 +12,11 @@ class BaseRouter(object):
 
 
 class MultiUserRouter(BaseRouter):
-    COLL = '/:user/:coll'
-    USER = '/:user'
+    def get_user_path_template(self):
+        return '/<user>'
+
+    def get_coll_path_template(self):
+        return '/<user>/<coll>'
 
     def get_user_account_root(self, user):
         return os.path.join(self.root_dir, 'accounts', user)

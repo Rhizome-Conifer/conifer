@@ -1,10 +1,10 @@
-#pywb>=0.10.1
-#-e git+https://github.com/ikreymer/pywb.git@master#egg=pywb-0.10.7
-git+git://github.com/didip/beaker_extensions.git
+-e git+https://github.com/ikreymer/pywb.git@develop#egg=pywb-0.10.9
 youtube_dl
+git+git://github.com/didip/beaker_extensions.git
 bottle
 uwsgi
 gevent
+redis
 boto
 -e git+https://github.com/ikreymer/bottle-cork.git@template-args#egg=bottle-cork-0.11.1
 git+http://github.com/ikreymer/warcsigner.git@master#egg=warcsigner-0.2.0

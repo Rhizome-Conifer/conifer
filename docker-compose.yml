@@ -16,7 +16,7 @@ redis:
 
 # Data Only Volume
 data:
-  restart: always
+  #restart: always
 
   image: python:2.7
 

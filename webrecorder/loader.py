@@ -16,32 +16,11 @@ from pywb.framework.wbrequestresponse import WbResponse
 from pywb.utils.wbexception import NotFoundException
 from pywb.rewrite.url_rewriter import UrlRewriter
 
-import functools
 import os
 import re
 import json
 import base64
 from os.path import expandvars
-
-
-#=================================================================
-jinja_env = J2TemplateView.init_shared_env()
-
-def jinja2_view(template_name):
-    def decorator(view_func):
-        @functools.wraps(view_func)
-        def wrapper(*args, **kwargs):
-            response = view_func(*args, **kwargs)
-
-            if isinstance(response, dict):
-                template = jinja_env.get_or_select_template(template_name)
-                return template.render(**response)
-            else:
-                return response
-
-        return wrapper
-
-    return decorator
 
 
 #=================================================================

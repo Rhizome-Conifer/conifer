@@ -4,21 +4,16 @@ from bottle import hook, error
 
 from cork import Cork, AAAException
 
-from pywb.framework.wsgi_wrappers import WSGIApp
-from pywb.manager.manager import CollectionsManager
-
 from redis import StrictRedis
 
-from pywb.webapp.pywb_init import create_wb_router
 from pywb.utils.loaders import load_yaml_config
 from pywb.webapp.views import J2TemplateView
-from pywb.utils.wbexception import WbException
 from pywb.framework.wbrequestresponse import WbRequest
-from pywb.utils.timeutils import datetime_to_timestamp
 
 from manager import init_cork, CollsManager, ValidationException
+from pywb_dispatcher import PywbDispatcher
 
-from loader import jinja_env, jinja2_view, DynRedisResolver
+from loader import DynRedisResolver
 from jinja2 import contextfunction
 
 from router import SingleUserRouter, MultiUserRouter
@@ -26,27 +21,16 @@ from uploader import S3Manager, Uploader, iter_all_accounts
 
 from warcsigner.warcsigner import RSASigner
 
-from rewriter import HTMLDomUnRewriter
-
 import logging
-import requests
-import json
-from datetime import datetime
+import functools
+
 from urlparse import urljoin
 from os.path import expandvars
 
 
 # ============================================================================
 # App Init
-application = None
-cork = None
-manager = None
-redis_obj = None
-pywb_router = None
-warcprox_proxies = None
-
-
-def init(configfile='config.yaml', store_root='./', redis_url=None):
+def init(configfile='config.yaml', redis_url=None):
     logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
                         level=logging.DEBUG)
     logging.debug('')
@@ -56,133 +40,180 @@ def init(configfile='config.yaml', store_root='./', redis_url=None):
     if boto_log:
         boto_log.setLevel(logging.ERROR)
 
-    bottle_app = default_app()
-
     config = load_yaml_config(configfile)
 
-    global multiuser
-    multiuser = config.get('multiuser', False)
-
-    store_root = config.get('store_root', store_root)
-
-    global router
-    if multiuser:
-        router = MultiUserRouter(store_root)
-    else:
-        router = SingleUserRouter(store_root)
-
-    global redis_obj
     if not redis_url:
         redis_url = expandvars(config['redis_url'])
 
     redis_obj = StrictRedis.from_url(redis_url)
 
-    global application
-    global cork
-    application, cork = init_cork(bottle_app, redis_obj, config)
-
-    # for now, just s3
-    s3_manager = S3Manager(expandvars(config['s3_target']))
-
-    signer = RSASigner(private_key_file=expandvars(config['warcsign_private_key']),
-                       public_key_file=expandvars(config['warcsign_public_key']))
-
-    global warcprox_proxies
-    proxy_path = expandvars(config['proxy_path'])
-    warcprox_proxies = {'http': proxy_path,
-                        'https': proxy_path}
-
-    global manager
-    manager = CollsManager(cork, redis_obj, router, s3_manager, signer)
-
-    jinja_env.globals['metadata'] = config.get('metadata', {})
-
-    @contextfunction
-    def can_admin(context):
-        return manager.can_admin_coll(context.get('user', ''), context.get('coll', ''))
-
-    @contextfunction
-    def is_owner(context):
-        return manager.is_owner(context.get('user', ''))
-
-    @contextfunction
-    def can_write(context):
-        return manager.can_write_coll(context.get('user', ''), context.get('coll', ''))
-
-    @contextfunction
-    def can_read(context):
-        return manager.can_read_coll(context.get('user', ''), context.get('coll', ''))
-
-    jinja_env.globals['can_admin'] = can_admin
-    jinja_env.globals['can_write'] = can_write
-    jinja_env.globals['can_read'] = can_read
-    jinja_env.globals['is_owner'] = is_owner
-
     config['redis_warc_resolver'] = DynRedisResolver(redis_obj,
                                                      s3_target=config['s3_target'],
                                                      proxy_target=config['proxy_target'])
 
-    global pywb_router
-    pywb_router = create_wb_router(config)
 
-    @jinja2_view('error.html')
-    @addcred()
-    def err_handle(out):
-        if out.status_code == 404:
-            if test_refer_redirect():
-                return
-        else:
-            response.status = 404
+    bottle_app = default_app()
 
-        return {'err': out}
+    final_app, cork = init_cork(bottle_app, redis_obj, config)
 
+    webrec = WebRec(config, cork, redis_obj)
+    bottle_app.install(webrec)
 
-    invites_enabled = config.get('invites_enabled', True)
+    init_routes(webrec)
 
-    bottle_app.default_error_handler = err_handle
-    create_coll_routes(router, invites_enabled)
+    pywb_dispatch = PywbDispatcher(bottle_app)
 
-    uploader = Uploader(store_root,
-                        s3_manager,
-                        signer,
-                        redis_obj,
-                        iter_all_accounts)
-
-    start_uwsgi_timer(30, "mule", uploader)
-
-    return application
+    return final_app
 
 
 # =============================================================================
-def test_refer_redirect():
-    referer = request.headers.get('Referer')
-    if not referer:
-        return
+class WebRec(object):
+    name = 'webrecorder'
+    api = 2
 
-    host = request.headers.get('Host')
-    if host not in referer:
-        return
+    def __init__(self, config, cork, redis_obj):
+        store_root = config.get('store_root', './')
 
-    inx = referer[1:].find('http')
-    if not inx:
-        inx = referer[1:].find('///')
-        if inx > 0:
-            inx + 1
+        self.path_parser = MultiUserRouter(store_root)
+        self.cork = cork
+        self.config = config
 
-    if inx < 0:
-        return
+        # for now, just s3
+        s3_manager = S3Manager(expandvars(config['s3_target']))
 
-    url = referer[inx + 1:]
-    host = referer[:inx + 1]
+        signer = RSASigner(private_key_file=expandvars(config['warcsign_private_key']),
+                           public_key_file=expandvars(config['warcsign_public_key']))
 
-    orig_url = request.urlparts.path
-    if request.urlparts.query:
-        orig_url += '?' + request.urlparts.query
+        manager = CollsManager(cork, redis_obj, self.path_parser, s3_manager, signer)
+        self.manager = manager
 
-    full_url = host + urljoin(url, orig_url)
-    response.status = 302
-    response.set_header('Location', full_url)
-    return True
+        jinja_env.globals['metadata'] = config.get('metadata', {})
+
+        @contextfunction
+        def can_admin(context):
+            return manager.can_admin_coll(context.get('user', ''), context.get('coll', ''))
+
+        @contextfunction
+        def is_owner(context):
+            return manager.is_owner(context.get('user', ''))
+
+        @contextfunction
+        def can_write(context):
+            return manager.can_write_coll(context.get('user', ''), context.get('coll', ''))
+
+        @contextfunction
+        def can_read(context):
+            return manager.can_read_coll(context.get('user', ''), context.get('coll', ''))
+
+        jinja_env.globals['can_admin'] = can_admin
+        jinja_env.globals['can_write'] = can_write
+        jinja_env.globals['can_read'] = can_read
+        jinja_env.globals['is_owner'] = is_owner
+
+        @jinja2_view('error.html')
+        def err_handler(out):
+            if out.status_code == 404:
+                if self.check_refer_redirect():
+                    return
+            else:
+                response.status = 404
+
+            return {'err': out}
+
+
+        self.invites_enabled = config.get('invites_enabled', True)
+
+        self.err_handler = err_handler
+
+        self.uploader = Uploader(store_root,
+                                 s3_manager,
+                                 signer,
+                                 redis_obj,
+                                 iter_all_accounts)
+
+    def setup(self, app):
+        app.default_error_handler = self.err_handler
+
+        app.webrec = self
+
+        start_uwsgi_timer(30, "mule", self.uploader)
+
+    def check_refer_redirect(self):
+        referer = request.headers.get('Referer')
+        if not referer:
+            return
+
+        host = request.headers.get('Host')
+        if host not in referer:
+            return
+
+        inx = referer[1:].find('http')
+        if not inx:
+            inx = referer[1:].find('///')
+            if inx > 0:
+                inx + 1
+
+        if inx < 0:
+            return
+
+        url = referer[inx + 1:]
+        host = referer[:inx + 1]
+
+        orig_url = request.urlparts.path
+        if request.urlparts.query:
+            orig_url += '?' + request.urlparts.query
+
+        full_url = host + urljoin(url, orig_url)
+        response.status = 302
+        response.set_header('Location', full_url)
+        return True
+
+    def __call__(self, func):
+        #if request.method != 'GET':
+        #    return func
+
+        def func_wrapper(*args, **kwargs):
+            sesh = request.environ.get('beaker.session')
+            curr_user = None
+            curr_role = None
+
+            try:
+                curr_user = sesh.get('username')
+                if curr_user:
+                    curr_role = self.cork.user(curr_user).role
+
+                #if not cork.user_is_anonymous:
+                #    curr_user = cork.current_user.username
+                #    curr_role = cork.current_user.role
+            except Exception as e:
+                print(e)
+                print('SESH INVALID')
+                curr_user = None
+                curr_role = None
+                if sesh:
+                    sesh.delete()
+                    #sesh.invalidate()
+
+            message, msg_type = pop_message(sesh)
+
+            params = {'curr_user': curr_user,
+                      'curr_role': curr_role,
+                      'message': message,
+                      'msg_type': msg_type}
+
+            request.environ['pywb.template_params'] = params
+
+            res = func(*args, **kwargs)
+
+            if isinstance(res, dict):
+                res['curr_user'] = curr_user
+                res['curr_role'] = curr_role
+                res['message'] = message
+                res['msg_type'] = msg_type
+
+            return res
+
+        return func_wrapper
 
 
 # =============================================================================
@@ -194,6 +225,30 @@ def start_uwsgi_timer(freq, type_, callable_):
 def raise_uwsgi_signal():
     import uwsgi
     uwsgi.signal(66)
+
+
+#=================================================================
+jinja_env = J2TemplateView.init_shared_env()
+
+def jinja2_view(template_name):
+    def decorator(view_func):
+        @functools.wraps(view_func)
+        def wrapper(*args, **kwargs):
+            response = view_func(*args, **kwargs)
+
+            if isinstance(response, dict):
+                ctx_params = request.environ.get('pywb.template_params')
+                if ctx_params:
+                    response.update(ctx_params)
+
+                template = jinja_env.get_or_select_template(template_name)
+                return template.render(**response)
+            else:
+                return response
+
+        return wrapper
+
+    return decorator
 
 
 ## ============================================================================
@@ -240,88 +295,6 @@ def pop_message(sesh):
     return message, msg_type
 
 
-def call_pywb(info=None, state=None):
-    if info:
-        request.path_shift(router.get_path_shift())
-        request.environ['w_output_dir'] = router.get_archive_dir(info.user, info.coll)
-        request.environ['w_sesh_id'] = info.path
-        request.environ['w_manager'] = manager
-        request.environ['w_user_id'] = 'u:' + info.user
-
-        params = request.environ['pywb.template_params']
-        params['state'] = state
-        params['path'] = info.path
-        params['user'] = info.user
-        params['coll'] = info.coll
-
-    try:
-        resp = pywb_router(request.environ)
-    except WbException as wbe:
-        status = int(wbe.status().split(' ', 1)[0])
-        raise HTTPError(status=status, body=str(wbe))
-
-    if not resp:
-        raise HTTPError(status=404, body='No Response Found')
-
-    resp = HTTPResponse(body=resp.body,
-                        status=resp.status_headers.statusline,
-                        headers=resp.status_headers.headers)
-    return resp
-
-
-# ============================================================================
-class addcred(object):
-    def __init__(self, router=None):
-        self.router = router
-
-    def __call__(self, func):
-        def func_wrapper(*args, **kwargs):
-            sesh = request.environ.get('beaker.session')
-            curr_user = None
-            curr_role = None
-
-            try:
-                curr_user = sesh.get('username')
-                if curr_user:
-                    curr_role = cork.user(curr_user).role
-
-                #if not cork.user_is_anonymous:
-                #    curr_user = cork.current_user.username
-                #    curr_role = cork.current_user.role
-            except Exception as e:
-                print(e)
-                print('SESH INVALID')
-                curr_user = None
-                curr_role = None
-                if sesh:
-                    sesh.delete()
-                    #sesh.invalidate()
-
-            message, msg_type = pop_message(sesh)
-
-            params = {'curr_user': curr_user,
-                      'curr_role': curr_role,
-                      'message': message,
-                      'msg_type': msg_type}
-
-            request.environ['pywb.template_params'] = params
-
-            if self.router:
-                res = func(self.router.get_state(kwargs), *args)
-            else:
-                res = func(*args, **kwargs)
-
-            if isinstance(res, dict):
-                res['curr_user'] = curr_user
-                res['curr_role'] = curr_role
-                res['message'] = message
-                res['msg_type'] = msg_type
-
-            return res
-
-        return func_wrapper
-
-
 # ============================================================================
 LOGIN_PATH = '/_login'
 LOGOUT_PATH = '/_logout'
@@ -358,16 +331,20 @@ DEFAULT_USER_DESC = u"""
 Available Collections:
 """
 
+def init_routes(webrec):
+    invites_enabled = webrec.invites_enabled
 
-# ============================================================================
-def create_coll_routes(r, invites_enabled):
+    user_path = webrec.path_parser.get_user_path_template()
+    coll_path = webrec.path_parser.get_coll_path_template()
+
+    cork = webrec.cork
+    manager = webrec.manager
 
 
     # Login/Logout
     # ============================================================================
     @route(LOGIN_PATH)
     @jinja2_view('login.html')
-    @addcred()
     def login():
         return {}
 
@@ -379,7 +356,7 @@ def create_coll_routes(r, invites_enabled):
         password = post_get('password')
 
         if cork.login(username, password):
-            redir_to = get_redir_back(LOGIN_PATH, r.user_home(username))
+            redir_to = get_redir_back(LOGIN_PATH, webrec.path_parser.user_home(username))
             #host = request.headers.get('Host', 'localhost')
             #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
             #request.environ['beaker.session'].path = '/'
@@ -398,11 +375,11 @@ def create_coll_routes(r, invites_enabled):
         cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
 
+
     # Register/Invite/Confirm
     # ============================================================================
     @route(REGISTER_PATH)
     @jinja2_view('register.html')
-    @addcred()
     def register():
         if not invites_enabled:
             return {'email': '',
@@ -510,7 +487,6 @@ or register a new account.'.format(username))
     # ============================================================================
     @route(FORGOT_PATH)
     @jinja2_view('forgot.html')
-    @addcred()
     def forgot():
         return {}
 
@@ -543,7 +519,6 @@ or register a new account.'.format(username))
     # ============================================================================
     @route(RESET_PATH)
     @jinja2_view('reset.html')
-    @addcred()
     def resetpass(resetcode):
         try:
             username = request.query['username']
@@ -609,7 +584,6 @@ You can now <b>login</b> with your new password!', 'success')
     # ============================================================================
     @route(CREATE_PATH)
     @jinja2_view('create.html')
-    @addcred()
     def create_coll_static():
         try:
             cork.require(role='archivist')
@@ -641,7 +615,7 @@ You can now <b>login</b> with your new password!', 'success')
         try:
             manager.add_collection(user, coll_name, title, access)
             flash_message('Created collection <b>{0}</b>!'.format(coll_name), 'success')
-            redir_to = r.get_coll_path(user, coll_name)
+            redir_to = webrec.path_parser.get_coll_path(user, coll_name)
         except ValidationException as ve:
             flash_message(str(ve))
             redir_to = CREATE_PATH
@@ -655,7 +629,7 @@ You can now <b>login</b> with your new password!', 'success')
         cork.require(role='archivist', fail_redirect=LOGIN_PATH)
 
         path = request.query.get('coll', '')
-        user, coll = r.get_user_coll(path)
+        user, coll = webrec.path_parser.get_user_coll(path)
         if manager.delete_collection(user, coll):
             flash_message('Collection {0} has been deleted!'.format(coll), 'success')
             redirect('/' + user)
@@ -686,37 +660,26 @@ You can now <b>login</b> with your new password!', 'success')
     # Banner
     @route('/banner')
     @jinja2_view('banner_page.html')
-    @addcred()
     def banner():
         path = request.query.get('coll', '')
-        user, coll = r.get_user_coll(path)
+        user, coll = webrec.path_parser.get_user_coll(path)
         return {'user': user,
                 'coll': coll,
                 'path': path,
                 'state': request.query.get('state')}
 
 
-    # pywb static and home
-    # ============================================================================
-    @route(['/static/<:re:.*>'])
-    def static():
-        return call_pywb()
-
-
     # Shared Home Page
     # ============================================================================
-    if multiuser:
-        @route(['/', '/index.html'])
-        @jinja2_view('index.html')
-        @addcred()
-        def shared_home_page():
-            return {}
+    @route(['/', '/index.html'])
+    @jinja2_view('index.html')
+    def shared_home_page():
+        return {}
 
     # User Page
     # ============================================================================
-    @route([r.USER, r.USER + '/', r.USER + '/index.html'])
+    @route([user_path, user_path + '/', user_path + '/index.html'])
     @jinja2_view('user.html')
-    @addcred()
     def home_pages(user=None):
         if user:
             if not manager.has_user(user):
@@ -744,9 +707,8 @@ You can now <b>login</b> with your new password!', 'success')
 
     # User Settings
     # ============================================================================
-    @route([r.USER + SETTINGS])
+    @route([user_path + SETTINGS])
     @jinja2_view('account.html')
-    @addcred()
     def settings(user):
         info = manager.get_user_info(user)
         if not info:
@@ -760,27 +722,26 @@ You can now <b>login</b> with your new password!', 'success')
 
     # ============================================================================
     # Collection View
-    @route([r.COLL, r.COLL + '/'])
+    @route([coll_path, coll_path + '/'])
     @jinja2_view('search.html')
-    @addcred(router=r)
-    def coll_page(info):
-        if not manager.can_read_coll(info.user, info.coll):
+    def coll_page(user, coll):
+        if not manager.can_read_coll(user, coll):
             raise HTTPError(status=404, body='No Such Collection')
 
-        title = manager.get_metadata(info.user, info.coll, 'title')
+        title = manager.get_metadata(user, coll, 'title')
         if not title:
-            title = info.coll
+            title = coll
 
-        desc = manager.get_metadata(info.user, info.coll, 'desc')
+        desc = manager.get_metadata(user, coll, 'desc')
         if not desc:
             desc = DEFAULT_DESC.format(title)
 
-        collinfo = manager.get_info(info.user, info.coll)
-        is_public = manager.is_public(info.user, info.coll)
+        collinfo = manager.get_info(user, coll)
+        is_public = manager.is_public(user, coll)
 
-        return {'user': info.user,
-                'coll': info.coll,
-                'path': info.path,
+        return {'user': user,
+                'coll': coll,
+                'path': webrec.path_parser.get_coll_path(user, coll),
 
                 'is_public': is_public,
                 'title': title,
@@ -790,16 +751,15 @@ You can now <b>login</b> with your new password!', 'success')
                }
 
     #@route([r.COLL + '/record', r.COLL + '/record/'])
-    @addcred(router=r)
-    def record_redir(info):
-        redirect('/' + info.path)
+    #def record_redir(info):
+    #    redirect('/' + info.path)
 
 
     # Toggle Public
     # ============================================================================
     @route(['/_setaccess'])
     def setaccess():
-        user, coll = r.get_user_coll(request.query['coll'])
+        user, coll = webrec.path_parser.get_user_coll(request.query['coll'])
         public = request.query['public'] == 'true'
         if manager.set_public(user, coll, public):
             return {}
@@ -812,7 +772,7 @@ You can now <b>login</b> with your new password!', 'success')
     @post(['/_addpage'])
     def add_page():
         cork.require(role='archivist', fail_redirect=LOGIN_PATH)
-        user, coll = r.get_user_coll(request.query['coll'])
+        user, coll = webrec.path_parser.get_user_coll(request.query['coll'])
 
         data = {}
         for item in request.forms:
@@ -823,7 +783,7 @@ You can now <b>login</b> with your new password!', 'success')
 
     @route('/_listpages')
     def list_pages():
-        user, coll = r.get_user_coll(request.query['coll'])
+        user, coll = webrec.path_parser.get_user_coll(request.query['coll'])
         pagelist = manager.list_pages(user, coll)
 
         return {"data": pagelist}
@@ -854,78 +814,18 @@ You can now <b>login</b> with your new password!', 'success')
     @route('/_settitle')
     def set_title():
         path = request.query.get('coll', '')
-        user, coll = r.get_user_coll(path)
+        user, coll = webrec.path_parser.get_user_coll(path)
         title = request.query.get('title', '')
         if manager.set_metadata(user, coll, 'title', title):
             return {}
         else:
             raise HTTPError(status=404, body='Not found')
 
-
-    # Snapshot
-    # ============================================================================
-    @post('/_snapshot')
-    def snapshot():
-        path = request.query.get('coll', '')
-        user, coll = r.get_user_coll(path)
-        url = request.query.get('url', '')
-        if not url or not manager.can_write_coll(user, coll):
-            raise HTTPError(status=404, body='No Such Page')
-
-        title = request.query.get('title', '')
-        add_page = request.query.get('addpage', False)
-
-        html_text = request.body.read()
-
-        host = get_host()
-        prefix = request.query.get('prefix', get_host())
-
-        orig_html = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
-
-        dt = datetime.utcnow()
-
-        target = dict(output_dir=router.get_archive_dir(user, coll),
-                      sesh_id=path.replace('/', ':'),
-                      user_id=user,
-                      json_metadata={'snapshot': 'html', 'timestamp': str(dt)},
-                      writer_type='-snapshot')
-
-        if url.startswith('https://'):
-            url = url.replace('https:', 'http:')
-
-        req_headers = {'warcprox-meta': json.dumps(target),
-                       'content-type': 'text/html',
-                       'user-agent': request.headers.get('user-agent')
-                      }
-
-        pagedata = {'url': url,
-                    'title': title,
-                    'tags': ['snapshot'],
-                    'ts': datetime_to_timestamp(dt)
-                   }
-
-        try:
-            resp = requests.request(method='PUTRES',
-                                    url=url,
-                                    data=orig_html,
-                                    headers=req_headers,
-                                    proxies=warcprox_proxies,
-                                    verify=False)
-
-            if add_page:
-                manager.add_page(user, coll, pagedata)
-        except:
-            return {'status': 'err'}
-
-
-        return {'status': resp.status_code}
-
-
     # Info
     # ============================================================================
     @route('/_info')
     def info():
-        user, coll = r.get_user_coll(request.query['coll'])
+        user, coll = webrec.path_parser.get_user_coll(request.query['coll'])
         info = manager.get_info(user, coll)
         return info
 
@@ -945,7 +845,6 @@ You can now <b>login</b> with your new password!', 'success')
     # Skip POST request recording
     # ============================================================================
     @route('/_skipreq')
-    @addcred()
     def skip_req():
         url = request.query.get('url')
         try:
@@ -959,12 +858,12 @@ You can now <b>login</b> with your new password!', 'success')
 
     # Queue
     # ============================================================================
-    @route('/_queue/:user/:coll')
+    @route('/_queue/<user/<coll>')
     def get_queue(user, coll):
         return manager.get_from_queue(user, coll)
 
 
-    @post('/_queue/:user/:coll')
+    @post('/_queue/<user>/<coll>')
     def rec_queue(user, coll):
         data = request.json
         res = manager.add_to_queue(user, coll, data)
@@ -983,8 +882,7 @@ You can now <b>login</b> with your new password!', 'success')
 
     # WARC Files -- Download
     # ============================================================================
-    @route(['/:user/:coll/warcs/:warc'])
-    @addcred()
+    @route([coll_path + '/warcs/<warc>'])
     def download_warcs(user, coll, warc):
         res = manager.download_warc(user, coll, warc)
         if not res:
@@ -996,72 +894,3 @@ You can now <b>login</b> with your new password!', 'success')
         response.headers['Content-Length'] = length
         response.body = body
         return response
-
-        #resp = HTTPResponse(body=body,
-        #                    status=resp.status_headers.statusline,
-        #                    headers=resp.status_headers.headers)
-
-
-
-    # pywb Replay / Patch / Record
-    # ============================================================================
-    @route([r.COLL + '/record/<:re:.*>'], method='ANY')
-    @addcred(router=r)
-    def record(info):
-        if not manager.can_write_coll(info.user, info.coll):
-            raise HTTPError(status=404, body='No Such Collection')
-
-        if not manager.has_space(info.user):
-            request.environ['webrec.no_space'] = True
-
-        return call_pywb(info, 'record')
-
-    @route([r.COLL + '/patch/<:re:.*>'], method='ANY')
-    @addcred(router=r)
-    def patch(info):
-        if not manager.can_write_coll(info.user, info.coll):
-            raise HTTPError(status=404, body='No Such Collection')
-
-        if not manager.has_space(info.user):
-            request.environ['webrec.no_space'] = True
-
-        return call_pywb(info, 'patch')
-
-    @route([r.COLL + '/live/<:re:.*>'], method='ANY')
-    @addcred(router=r)
-    def live(info):
-        if not manager.can_read_coll(info.user, info.coll):
-            raise HTTPError(status=404, body='No Such Collection')
-
-        return call_pywb(info, 'live')
-
-
-    @route([r.COLL + '/record/', r.COLL + '/record',
-            r.COLL + '/patch/', r.COLL + '/patch',
-            r.COLL + '/live/', r.COLL + '/live'])
-    @addcred(router=r)
-    def redir_sub(info):
-        redirect(info.coll)
-
-    @route([r.COLL + '/<:re:.*>'], method='ANY')
-    @addcred(router=r)
-    def replay(info):
-        if not manager.can_read_coll(info.user, info.coll):
-            raise HTTPError(status=404, body='No Such Collection')
-
-        return call_pywb(info, 'replay')
-
-
-    @route([r.COLL + '/cdx'])
-    @addcred(router=r)
-    def cdx_dir(info):
-        if not manager.can_read_coll(info.user, info.coll):
-            raise HTTPError(status=404, body='No Such Collection')
-
-        return call_pywb(info, 'cdx')
-
-
-    @route(['/<:re:.*>'], method='ANY')
-    @addcred()
-    def fallthrough():
-        return call_pywb()
