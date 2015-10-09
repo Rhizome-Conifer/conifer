@@ -98,7 +98,7 @@ $(function() {
 //        });
     }
 
-    if (can_write && (coll_id != "@anon")) {
+    if (can_write) {
         init_markdown_editor(coll_id);
         
         if (coll_size != undefined) {

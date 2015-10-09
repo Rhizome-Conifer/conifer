@@ -17,7 +17,7 @@ from loader import DynRedisResolver
 from jinja2 import contextfunction
 
 from router import MultiUserRouter
-from uploader import S3Manager, Uploader, iter_all_accounts
+from uploader import S3Manager, Uploader, AnonChecker, iter_all_accounts
 
 from warcsigner.warcsigner import RSASigner
 from session import Session, flash_message
@@ -47,6 +47,9 @@ def init(configfile='config.yaml', redis_url=None):
         redis_url = expandvars(config['redis_url'])
 
     redis_obj = StrictRedis.from_url(redis_url)
+
+
+    print(config.get('session_opts').get('session.url'))
 
     config['redis_warc_resolver'] = DynRedisResolver(redis_obj,
                                                      s3_target=config['s3_target'],
@@ -139,12 +142,21 @@ class WebRec(object):
                                  redis_obj,
                                  iter_all_accounts)
 
+        self.anon_checker = AnonChecker(store_root,
+                                        manager,
+                                        config['session_opts'])
+
     def setup(self, app):
         app.default_error_handler = self.err_handler
 
         app.webrec = self
 
-        start_uwsgi_timer(30, "mule", self.uploader)
+        start_uwsgi_timer(30, "mule", self.run_timer)
+
+
+    def run_timer(self, signum=None):
+        self.anon_checker()
+        self.uploader()
 
     def check_refer_redirect(self):
         referer = request.headers.get('Referer')
@@ -273,12 +285,17 @@ Happy Recording!
 ANON_DESC = u"""
 This is an temporary anonymous collection created in Webrecorder.
 
-It is not publicly accessible and all the contents **will be deleted
-automatically**.
+*These recordings are accessible only to you and the contents will be deleted
+automatically in 30 min*.
 
-If you wish to keep this data, please other [Download the WARCs](#files).
+* To view recorded pages, visit [Records](#records)
 
-If you would like a permanent account, please [Register](/_register).
+* If you wish to keep this data, please other [Download the WARCs](#files).
+
+* If you would like a permanent account, please [Register](/_register).
+
+* To *immediately* delete any temporary recordings, visit [Settings](#settings)
+
 """
 
 ANON_TITLE = "Webrecorder Test Collection"

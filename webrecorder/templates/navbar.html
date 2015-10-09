@@ -19,8 +19,9 @@
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 {% if is_anon() %}
-                <li class="navbar-text">Anonymous Collection</li>
-
+                <li class="coll-nav">
+                    <a target="_parent" href="/replay#records">Anonymous Collection</a>
+                </li>
                 {% else %}
 
                 {% if user %}
@@ -46,8 +47,8 @@
                 </p>
                 
                 <p class="navbar-text">
-                    <a id="finish" target="_parent" href="/{{path}}#records" title="Return to Archive" class="btn btn-default btn-xs">
-                        <span class="glyphicon glyphicon-share-alt" style="margin-right: 4px"></span>Return to Collection</a>
+                    <a id="finish" target="_parent" href="/{{path}}#records" title="Browse Collection" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-share-alt" style="margin-right: 4px"></span>Browse Collection</a>
                 </p>
 
                 {#

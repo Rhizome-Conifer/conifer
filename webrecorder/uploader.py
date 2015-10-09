@@ -2,8 +2,12 @@ import boto
 import os
 import fcntl
 import json
+import session
 
+from redis import StrictRedis
 from urlparse import urlsplit
+from os.path import expandvars
+
 from pywb.utils.loaders import BlockLoader
 
 
@@ -137,6 +141,7 @@ class Uploader(object):
         os.remove(local_full_path)
 
 
+## ============================================================================
 def iter_all_accounts(root_dir):
     users_dir = os.path.join(root_dir, 'accounts')
     if not os.path.isdir(users_dir):
@@ -158,23 +163,38 @@ def iter_all_accounts(root_dir):
                 yield key, warc, local_full_path, rel_path
 
 
+## ============================================================================
 class AnonChecker(object):
-    def __init__(self, root_dir, manager, redis):
-        self.anon_dir = os.path.join(self.root_dir, 'anon')
+    def __init__(self, root_dir, manager, seshinfo):
+        self.anon_dir = os.path.join(root_dir, 'anon')
         self.manager = manager
-        self.redis = redis
+
+        url = seshinfo['session.url']
+        self.redis = StrictRedis.from_url('redis://' + url)
 
     def __call__(self):
         if not os.path.isdir(self.anon_dir):
             return
 
+
         for anon in os.listdir(self.anon_dir):
-            if user.startswith('.'):
-                return
+            if anon.startswith('.'):
+                continue
+
+            if self.redis.get('beaker:{0}:session'.format(anon)):
+                print('Skipping active anon ' + anon)
+                continue
+
+            print('Deleting ' + anon)
+            try:
+                user = session.make_anon_user(anon)
+                self.manager.delete_anon_user(user)
+            except Exception as e:
+                print(e)
 
 
+## ============================================================================
 def main():
-    from redis import StrictRedis
     redis = StrictRedis.from_url('redis://127.0.0.1:6379/1')
 
     uploader = S3Uploader('./', 's3://target-bucket-path/', redis, iter_all_accounts)

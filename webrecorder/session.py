@@ -46,7 +46,7 @@ class Session(object):
 
     @property
     def anon_user(self):
-        return '@anon-' + self.sesh.id
+        return make_anon_user(self.sesh.id)
 
     def flash_message(self, msg, msg_type='danger'):
         if self.sesh:
@@ -69,6 +69,10 @@ class Session(object):
             msg_type, message = message.split(':', 1)
 
         return message, msg_type
+
+
+def make_anon_user(id):
+    return '@anon-' + id
 
 
 def flash_message(*args, **kwargs):

@@ -25,6 +25,7 @@ session_opts:
     session.key: __wr_sesh
     session.type: redis
 
+    # for Redis session config
     session.url: *redis_url
 
     session.expire: 1800
