@@ -52,7 +52,7 @@ $(function() {
         $(".ispublic").bootstrapSwitch();
 
         $(".ispublic").on('switchChange.bootstrapSwitch', function(event, state) {
-            $.ajax("/_setaccess?coll=" + coll_path + "&public=" + state, {
+            $.ajax("/_setaccess?coll=" + coll_id + "&public=" + state, {
                 success: function() {
                     $(".ispublic").bootstrapSwitch("state", state, true);
                 },
@@ -66,7 +66,7 @@ $(function() {
         
         $("#update-title-form").submit(function(e) {
             var title = $("#new-title").val();
-            var query = $.param({coll: coll_path, title: title});
+            var query = $.param({coll: coll_id, title: title});
             
             if (!title) {
                 return;
@@ -88,7 +88,7 @@ $(function() {
         });
         
 //        $("#confirm-delete").click(function() {
-//            $.ajax("/_delete?coll=" + coll_path, {
+//            $.ajax("/_delete?coll=" + coll_id, {
 //                type: "DELETE",
 //
 //                success: function() {
@@ -98,8 +98,8 @@ $(function() {
 //        });
     }
 
-    if (can_write) {
-        init_markdown_editor(coll_path);
+    if (can_write && (coll_id != "@anon")) {
+        init_markdown_editor(coll_id);
         
         if (coll_size != undefined) {
             $("#total-size").text(format_bytes(coll_size));
@@ -181,7 +181,7 @@ function show_pages() {
     }
 
     pagesTable = $("#pageTable").DataTable( {
-        "ajaxSource": "/_listpages?coll=" + coll_path,
+        "ajaxSource": "/_listpages?coll=" + coll_id,
         "order": [[ 1, "desc" ]],
         "columns": [
             { "data": "title" },
@@ -209,11 +209,11 @@ function show_warcs() {
     var prefix = "/" + coll_path + "/";
 
     var render_warcs = function (data, type, full, meta) {
-        var url = prefix;
+        //var url = prefix;
+        //url += "_warcs/" + data;
+        var param = "coll=" + coll_id + "&warc=" + data;
 
-        url += "warcs/" + data;
-
-        return '<a href="' + url + '">' + data + '</a>';
+        return '<a href="/_dlwarc?' + param + '">' + data + '</a>';
     }
 
     var render_size = function (data, type, full, meta) {
@@ -232,7 +232,7 @@ function show_warcs() {
     }
 
     warcsTable = $("#warcsTable").DataTable( {
-        "ajaxSource": "/_files?user=" + user + "&coll=" + coll,
+        "ajaxSource": "/_files?coll=" + coll_id,
         "order": [[ 1, "desc" ]],
         "columns": [
             { "data": "name" },

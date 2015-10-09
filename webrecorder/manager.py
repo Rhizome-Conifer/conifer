@@ -1,3 +1,4 @@
+from bottle import template, request
 from cork import Cork, AAAException
 from beaker.middleware import SessionMiddleware
 from cork.json_backend import JsonBackend
@@ -76,7 +77,7 @@ class CustomCork(Cork):
         return username
 
     def _save_session(self):
-        print('SAVING SESSION')
+        self._beaker_session['anon'] = None
         self._beaker_session.save()
 
 
@@ -175,18 +176,42 @@ class CollsManager(object):
     def make_key(self, user, coll, type_=''):
         return user + ':' + coll + type_
 
-    def curr_user_role(self):
-        try:
-            if self.cork.user_is_anonymous:
-                return '', ''
+    #def curr_user_role(self):
+    #    try:
+    #        if self.cork.user_is_anonymous:
+    #            return '', ''
 
-            cu = self.cork.current_user
-            return cu.username, cu.role
-        except:
-            return '', ''
+    #        cu = self.cork.current_user
+    #        return cu.username, cu.role
+    #    except:
+    #        return '', ''
+
+    def get_curr_user(self):
+        sesh = request.environ.get('webrec.session')
+        if not sesh:
+            return ''
+
+        return sesh.curr_user
+
+    def get_anon_user(self):
+        sesh = request.environ.get('webrec.session')
+        if not sesh:
+            return ''
+
+        return sesh.anon_user
 
     def _check_access(self, user, coll, type_):
-        curr_user, curr_role = self.curr_user_role()
+        sesh = request.environ.get('webrec.session')
+        if not sesh:
+            curr_user = ''
+            curr_role = ''
+        else:
+            curr_user = sesh.curr_user
+            curr_role = sesh.curr_role
+
+        # anon access
+        if not curr_user and coll == '@anon':
+            return True
 
         # current user always has access, if collection exists
         if user == curr_user:
@@ -223,18 +248,33 @@ class CollsManager(object):
         return True
 
     def can_read_coll(self, user, coll):
+        if coll == '@anon':
+            return True
+
+        if user is None:
+            user = ''
+
         return self._check_access(user, coll, self.READ_KEY)
 
     def can_write_coll(self, user, coll):
+        if coll == '@anon':
+            return True
+
+        if user is None:
+            user = ''
+
         return self._check_access(user, coll, self.WRITE_KEY)
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
     def can_admin_coll(self, user, coll):
+        if coll == '@anon':
+            return True
+
         return self.is_owner(user)
 
     def is_owner(self, user):
-        curr_user, curr_role = self.curr_user_role()
+        curr_user = self.get_curr_user()
         return (user and user == curr_user)
 
     def has_user(self, user):
@@ -274,7 +314,7 @@ class CollsManager(object):
         return long(curr) <= long(total)
 
     def has_more_colls(self):
-        user, _ = self.curr_user_role()
+        user = self.get_curr_user()
         key = self._user_key(user)
         max_coll = self.redis.hget(key, 'max_coll')
         if not max_coll:
@@ -365,9 +405,8 @@ class CollsManager(object):
         entry['hash_'] = hash_
 
         invitekey = base64.b64encode(email + ':' + hash_)
-        import bottle
 
-        email_text = bottle.template(
+        email_text = template(
             email_template,
             host=host,
             email_addr=email,
@@ -406,7 +445,7 @@ class CollsManager(object):
         return True
 
     def add_collection(self, user, coll, title, access):
-        curr_user, curr_role = self.curr_user_role()
+        curr_user = self.get_curr_user()
 
         if not self.USER_RX.match(coll):
             raise ValidationException('Invalid Collection Name')
@@ -487,7 +526,7 @@ class CollsManager(object):
         for coll in colls_table:
             self.delete_collection(user, coll)
 
-        # coll directory
+        # user directory
         user_dir = self.path_router.get_user_account_root(user)
         rel_dir = os.path.relpath(user_dir, self.path_router.root_dir) + '/'
 
@@ -504,6 +543,20 @@ class CollsManager(object):
 
         # delete from cork!
         self.cork.user(user).delete()
+        return True
+
+    def delete_anon_user(self, user):
+        self.delete_collection(user, '@anon')
+
+        user_dir = self.path_router.get_user_account_root(user)
+        user_key = self._user_key(user)
+
+        with utils.pipeline(self.redis) as pi:
+            pi.delete(user_key)
+            pi.delete(user_key + self.COLL_KEY)
+
+            pi.publish('delete_user', user_dir)
+
         return True
 
     def get_user_info(self, user):
@@ -660,7 +713,7 @@ class CollsManager(object):
         return result
 
     def update_password(self, curr_password, password, confirm):
-        user, _ = self.curr_user_role()
+        user = self.get_curr_user()
         if not self.cork.verify_password(user, curr_password):
             raise ValidationException('Incorrect Current Password')
 
@@ -673,7 +726,7 @@ class CollsManager(object):
         for key in issues.iterkeys():
             issues_dict[key] = issues[key]
 
-        issues_dict['user'], _ = self.curr_user_role()
+        issues_dict['user'] = self.get_curr_user()
         issues_dict['time'] = str(datetime.utcnow())
         issues_dict['ua'] = ua
         report = json.dumps(issues_dict)

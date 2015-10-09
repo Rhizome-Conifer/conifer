@@ -69,15 +69,23 @@ function update_page(the_url, timestamp)
         $("#capture-text").removeClass("hidden");
         $("#capture-text").text("from " + ts_to_date(timestamp));
     }
-    
-    var prefix = "/" + window.wbinfo.coll + "/";
-    
+
+    var prefix = "/";
+    var replay_prefix = "";    
+
+    if (window.wbinfo.coll != "@anon") {
+        prefix += window.wbinfo.coll + "/";
+        replay_prefix = "";
+    } else {
+        replay_prefix = "replay/";
+    }
+
     if (timestamp) {
         timestamp += "/";
     }
     
     $(".state-drop #record").attr("href", prefix + "record/" + the_url);
-    $(".state-drop #replay").attr("href", prefix + timestamp + the_url);
+    $(".state-drop #replay").attr("href", prefix + replay_prefix + timestamp + the_url);
     $(".state-drop #patch").attr("href", prefix + "patch/" + timestamp + the_url);
     $(".state-drop #live").attr("href", prefix + "live/" + the_url);
     

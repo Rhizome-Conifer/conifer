@@ -27,11 +27,9 @@ from os.path import expandvars
 class DynamicRoute(Route):
     def apply_filters(self, wbrequest, matcher):
         wbrequest.custom_params['output_dir'] = wbrequest.env.get('w_output_dir', '')
-
-        sesh_id = wbrequest.env.get('w_sesh_id', '')
-        wbrequest.custom_params['sesh_id'] = sesh_id
+        wbrequest.custom_params['sesh_id'] = wbrequest.env.get('w_sesh_id', '')
         wbrequest.custom_params['user_id'] = wbrequest.env.get('w_user_id', '')
-        wbrequest.coll = sesh_id
+        wbrequest.coll = wbrequest.env.get('w_path', '')
 
 
 #=================================================================
@@ -163,7 +161,7 @@ class DynWBHandler(WBHandler):
         manager = wbrequest.env.get('w_manager')
 
         if manager:
-            user, coll = wbrequest.coll.split('/', 1)
+            user, coll = wbrequest.custom_params['sesh_id'].split('/', 1)
             info = manager.get_info(user, coll)
             params['info'] = json.dumps(info)
 
@@ -217,7 +215,7 @@ class DynRecord(RewriteHandler):
         manager = wbrequest.env.get('w_manager')
 
         if manager:
-            user, coll = wbrequest.coll.split('/', 1)
+            user, coll = wbrequest.custom_params['sesh_id'].split('/', 1)
             info = manager.get_info(user, coll)
             params['info'] = json.dumps(info)
 
@@ -232,14 +230,15 @@ class DynRecord(RewriteHandler):
             path = self.record_path
 
         if not self._ignore_proxies(wbrequest):
-            sesh_id = wbrequest.custom_params.get('sesh_id', wbrequest.coll)
+            sesh_id = wbrequest.custom_params['sesh_id']
             sesh_id = sesh_id.replace('/', ':')
-            user_id = wbrequest.custom_params.get('user_id')
+            user_id = wbrequest.custom_params['user_id']
 
             target = dict(output_dir=path,
                           sesh_id=sesh_id,
-                          user_id=user_id)
-
+                          user_id=user_id,
+                          name_prefix=wbrequest.env.get('w_nameprefix', ''))
+            print(target)
             req_headers = {'warcprox-meta': json.dumps(target)}
         else:
             req_headers = {}

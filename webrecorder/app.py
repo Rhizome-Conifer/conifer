@@ -16,10 +16,11 @@ from pywb_dispatcher import PywbDispatcher
 from loader import DynRedisResolver
 from jinja2 import contextfunction
 
-from router import SingleUserRouter, MultiUserRouter
+from router import MultiUserRouter
 from uploader import S3Manager, Uploader, iter_all_accounts
 
 from warcsigner.warcsigner import RSASigner
+from session import Session, flash_message
 
 import logging
 import functools
@@ -59,9 +60,10 @@ def init(configfile='config.yaml', redis_url=None):
     webrec = WebRec(config, cork, redis_obj)
     bottle_app.install(webrec)
 
-    init_routes(webrec)
-
     pywb_dispatch = PywbDispatcher(bottle_app)
+
+    init_routes(webrec)
+    pywb_dispatch.init_routes()
 
     return final_app
 
@@ -105,10 +107,15 @@ class WebRec(object):
         def can_read(context):
             return manager.can_read_coll(context.get('user', ''), context.get('coll', ''))
 
+        @contextfunction
+        def is_anon(context):
+            return context.get('coll') == '@anon'
+
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
         jinja_env.globals['is_owner'] = is_owner
+        jinja_env.globals['is_anon'] = is_anon
 
         @jinja2_view('error.html')
         def err_handler(out):
@@ -120,8 +127,9 @@ class WebRec(object):
 
             return {'err': out}
 
-
         self.invites_enabled = config.get('invites_enabled', True)
+
+        self.anon_duration = config.get('anon_duration', True)
 
         self.err_handler = err_handler
 
@@ -169,49 +177,9 @@ class WebRec(object):
         return True
 
     def __call__(self, func):
-        #if request.method != 'GET':
-        #    return func
-
         def func_wrapper(*args, **kwargs):
-            sesh = request.environ.get('beaker.session')
-            curr_user = None
-            curr_role = None
-
-            try:
-                curr_user = sesh.get('username')
-                if curr_user:
-                    curr_role = self.cork.user(curr_user).role
-
-                #if not cork.user_is_anonymous:
-                #    curr_user = cork.current_user.username
-                #    curr_role = cork.current_user.role
-            except Exception as e:
-                print(e)
-                print('SESH INVALID')
-                curr_user = None
-                curr_role = None
-                if sesh:
-                    sesh.delete()
-                    #sesh.invalidate()
-
-            message, msg_type = pop_message(sesh)
-
-            params = {'curr_user': curr_user,
-                      'curr_role': curr_role,
-                      'message': message,
-                      'msg_type': msg_type}
-
-            request.environ['pywb.template_params'] = params
-
-            res = func(*args, **kwargs)
-
-            if isinstance(res, dict):
-                res['curr_user'] = curr_user
-                res['curr_role'] = curr_role
-                res['message'] = message
-                res['msg_type'] = msg_type
-
-            return res
+            request.environ['webrec.session'] = Session(self.cork, self.anon_duration)
+            return func(*args, **kwargs)
 
         return func_wrapper
 
@@ -270,31 +238,6 @@ def get_host():
     return WbRequest.make_host_prefix(request.environ)
 
 
-def flash_message(msg, msg_type='danger'):
-    sesh = request.environ.get('beaker.session')
-    if sesh:
-        sesh['message'] = msg_type + ':' + msg
-        sesh.save()
-    else:
-        print('No Message')
-
-
-def pop_message(sesh):
-    msg_type = ''
-    if not sesh:
-        return '', msg_type
-
-    message = sesh.get('message', '')
-    if message:
-        sesh['message'] = ''
-        sesh.save()
-
-    if ':' in message:
-        msg_type, message = message.split(':', 1)
-
-    return message, msg_type
-
-
 # ============================================================================
 LOGIN_PATH = '/_login'
 LOGOUT_PATH = '/_logout'
@@ -313,6 +256,8 @@ RESET_PATH_FILL = '/_resetpassword/{0}?username={1}'
 UPDATE_PASS_PATH = '/_updatepassword'
 SETTINGS = '/_settings'
 
+
+# TODO: move these to external file for customization, localization, etc..
 DEFAULT_DESC = u"""
 
 #### About {0}
@@ -325,6 +270,20 @@ Happy Recording!
 
 """
 
+ANON_DESC = u"""
+This is an temporary anonymous collection created in Webrecorder.
+
+It is not publicly accessible and all the contents **will be deleted
+automatically**.
+
+If you wish to keep this data, please other [Download the WARCs](#files).
+
+If you would like a permanent account, please [Register](/_register).
+"""
+
+ANON_TITLE = "Webrecorder Test Collection"
+
+
 DEFAULT_USER_DESC = u"""
 ## {0} archive
 
@@ -333,9 +292,10 @@ Available Collections:
 
 def init_routes(webrec):
     invites_enabled = webrec.invites_enabled
+    path_parser = webrec.path_parser
 
-    user_path = webrec.path_parser.get_user_path_template()
-    coll_path = webrec.path_parser.get_coll_path_template()
+    user_path = path_parser.get_user_path_template()
+    coll_path = path_parser.get_coll_path_template()
 
     cork = webrec.cork
     manager = webrec.manager
@@ -356,7 +316,7 @@ def init_routes(webrec):
         password = post_get('password')
 
         if cork.login(username, password):
-            redir_to = get_redir_back(LOGIN_PATH, webrec.path_parser.user_home(username))
+            redir_to = get_redir_back(LOGIN_PATH, path_parser.user_home(username))
             #host = request.headers.get('Host', 'localhost')
             #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
             #request.environ['beaker.session'].path = '/'
@@ -576,8 +536,8 @@ You can now <b>login</b> with your new password!', 'success')
         except ValidationException as ve:
             flash_message(str(ve))
 
-        user, _ = manager.curr_user_role()
-        redirect('/' + user + SETTINGS)
+        user = manager.get_curr_user()
+        redirect(path_parser.user_home(user) + SETTINGS)
 
 
     # Create Coll
@@ -597,7 +557,7 @@ You can now <b>login</b> with your new password!', 'success')
         except ValidationException as ve:
             flash_message(str(ve))
             user = cork.current_user.username
-            redirect('/' + user)
+            redirect(path_parser.user_home(user))
 
         return {}
 
@@ -610,12 +570,12 @@ You can now <b>login</b> with your new password!', 'success')
         title = post_get('title', coll_name)
         access = post_get('public', 'private')
 
-        user, role = manager.curr_user_role()
+        user = manager.get_curr_user()
 
         try:
             manager.add_collection(user, coll_name, title, access)
             flash_message('Created collection <b>{0}</b>!'.format(coll_name), 'success')
-            redir_to = webrec.path_parser.get_coll_path(user, coll_name)
+            redir_to = path_parser.get_coll_path(user, coll_name)
         except ValidationException as ve:
             flash_message(str(ve))
             redir_to = CREATE_PATH
@@ -626,16 +586,28 @@ You can now <b>login</b> with your new password!', 'success')
     # Delete Collection
     @post('/_delete_coll')
     def delete_coll():
-        cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+        coll = request.query.get('coll', '')
+        if coll == '@anon':
+            user = manager.get_anon_user()
 
-        path = request.query.get('coll', '')
-        user, coll = webrec.path_parser.get_user_coll(path)
-        if manager.delete_collection(user, coll):
-            flash_message('Collection {0} has been deleted!'.format(coll), 'success')
-            redirect('/' + user)
+            if manager.delete_anon_user(user):
+                #request.environ['webrec.delete_all_cookies'] = 'all'
+                #flash_message('Anonymous collection has been deleted!', 'success')
+                redirect('/')
+            else:
+                flash_message('There was an error deleting this collection')
+                redirect('/replay#settings')
+
         else:
-            flash_message('There was an error deleting {0}'.format(coll))
-            redirect('/' + user + '/' + coll + '#settings')
+            cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+            user, coll = path_parser.get_user_coll(coll)
+
+            if manager.delete_collection(user, coll):
+                flash_message('Collection {0} has been deleted!'.format(coll), 'success')
+                redirect('/' + path_parser.user_home(user))
+            else:
+                flash_message('There was an error deleting {0}'.format(coll))
+                redirect('/' + path_parser.get_coll_path(user, coll) + '#settings')
 
 
     # ============================================================================
@@ -653,7 +625,7 @@ You can now <b>login</b> with your new password!', 'success')
             cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
         else:
             flash_message('There was an error deleting {0}'.format(coll))
-            redirect('/' + user)
+            redirect('/' + path_parser.get_user_home(user))
 
 
     # ============================================================================
@@ -662,7 +634,7 @@ You can now <b>login</b> with your new password!', 'success')
     @jinja2_view('banner_page.html')
     def banner():
         path = request.query.get('coll', '')
-        user, coll = webrec.path_parser.get_user_coll(path)
+        user, coll = path_parser.get_user_coll(path)
         return {'user': user,
                 'coll': coll,
                 'path': path,
@@ -719,7 +691,6 @@ You can now <b>login</b> with your new password!', 'success')
         info['path'] = user + SETTINGS
         return info
 
-
     # ============================================================================
     # Collection View
     @route([coll_path, coll_path + '/'])
@@ -738,10 +709,13 @@ You can now <b>login</b> with your new password!', 'success')
 
         collinfo = manager.get_info(user, coll)
         is_public = manager.is_public(user, coll)
+        path = path_parser.get_coll_path(user, coll)
 
         return {'user': user,
                 'coll': coll,
-                'path': webrec.path_parser.get_coll_path(user, coll),
+
+                'coll_id': path,
+                'path': path,
 
                 'is_public': is_public,
                 'title': title,
@@ -750,16 +724,38 @@ You can now <b>login</b> with your new password!', 'success')
                 'coll_size': collinfo.get('total_size')
                }
 
-    #@route([r.COLL + '/record', r.COLL + '/record/'])
-    #def record_redir(info):
-    #    redirect('/' + info.path)
+
+    @route(['/replay', '/replay/'])
+    @jinja2_view('search.html')
+    def anon_coll_page():
+        user = manager.get_curr_user()
+        # Anon coll page only available when not logged in
+        if user:
+            flash_message('Please select a collection to view', 'info')
+            redirect('/' + path_parser.get_user_home(user))
+
+        user = manager.get_anon_user()
+        collinfo = manager.get_info(user, '@anon')
+
+        return {'user': '',
+                'coll': '@anon',
+
+                'coll_id': '@anon',
+                'path': 'replay',
+
+                'is_public': False,
+                'title': ANON_TITLE,
+                'desc': ANON_DESC,
+
+                'coll_size': collinfo.get('total_size')
+               }
 
 
     # Toggle Public
     # ============================================================================
     @route(['/_setaccess'])
     def setaccess():
-        user, coll = webrec.path_parser.get_user_coll(request.query['coll'])
+        user, coll = path_parser.get_user_coll(request.query['coll'])
         public = request.query['public'] == 'true'
         if manager.set_public(user, coll, public):
             return {}
@@ -771,8 +767,12 @@ You can now <b>login</b> with your new password!', 'success')
     # ============================================================================
     @post(['/_addpage'])
     def add_page():
-        cork.require(role='archivist', fail_redirect=LOGIN_PATH)
-        user, coll = webrec.path_parser.get_user_coll(request.query['coll'])
+        coll = request.query.get('coll')
+        if coll.startswith('@anon'):
+            user = manager.get_anon_user()
+        else:
+            cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+            user, coll = path_parser.get_user_coll(request.query['coll'])
 
         data = {}
         for item in request.forms:
@@ -783,7 +783,11 @@ You can now <b>login</b> with your new password!', 'success')
 
     @route('/_listpages')
     def list_pages():
-        user, coll = webrec.path_parser.get_user_coll(request.query['coll'])
+        coll = request.query.get('coll')
+        if coll.startswith('@anon'):
+            user = manager.get_anon_user()
+        else:
+            user, coll = path_parser.get_user_coll(coll)
         pagelist = manager.list_pages(user, coll)
 
         return {"data": pagelist}
@@ -814,7 +818,7 @@ You can now <b>login</b> with your new password!', 'success')
     @route('/_settitle')
     def set_title():
         path = request.query.get('coll', '')
-        user, coll = webrec.path_parser.get_user_coll(path)
+        user, coll = path_parser.get_user_coll(path)
         title = request.query.get('title', '')
         if manager.set_metadata(user, coll, 'title', title):
             return {}
@@ -825,7 +829,11 @@ You can now <b>login</b> with your new password!', 'success')
     # ============================================================================
     @route('/_info')
     def info():
-        user, coll = webrec.path_parser.get_user_coll(request.query['coll'])
+        coll = request.query.get('coll')
+        if coll == '@anon':
+            user = manager.get_anon_user()
+        else:
+            user, coll = path_parser.get_user_coll(coll)
         info = manager.get_info(user, coll)
         return info
 
@@ -847,12 +855,11 @@ You can now <b>login</b> with your new password!', 'success')
     @route('/_skipreq')
     def skip_req():
         url = request.query.get('url')
-        try:
-            curr_user = request.environ['pywb.template_params']['curr_user']
-        except:
-            curr_user = None
+        user = manager.get_curr_user()
+        if not user:
+            user = manager.get_anon_user()
 
-        manager.skip_post_req(curr_user, url)
+        manager.skip_post_req(user, url)
         return {}
 
 
@@ -874,17 +881,30 @@ You can now <b>login</b> with your new password!', 'success')
     # ============================================================================
     @route('/_files')
     def list_warcs():
-        user = request.query.get('user', '')
-        coll = request.query.get('coll', '')
+        coll = request.query.get('coll')
+        if coll.startswith('@anon'):
+            user = manager.get_anon_user()
+        else:
+            user, coll = path_parser.get_user_coll(coll)
+
         warcs = manager.list_warcs(user, coll)
         return {'data': warcs}
 
 
     # WARC Files -- Download
     # ============================================================================
-    @route([coll_path + '/warcs/<warc>'])
-    def download_warcs(user, coll, warc):
+    @route('/_dlwarc')
+    def download_warcs():
+        coll = request.query.get('coll')
+        if coll.startswith('@anon'):
+            user = manager.get_anon_user()
+        else:
+            user, coll = path_parser.get_user_coll(coll)
+
+        warc = request.query['warc']
+
         res = manager.download_warc(user, coll, warc)
+
         if not res:
             raise HTTPError(status=404, body='No Such WARC')
 

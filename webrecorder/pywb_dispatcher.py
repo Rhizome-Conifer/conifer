@@ -1,4 +1,4 @@
-from bottle import redirect, request, HTTPError, HTTPResponse
+from bottle import redirect, request, HTTPError, HTTPResponse, route
 
 from os.path import expandvars
 from datetime import datetime
@@ -27,23 +27,58 @@ class PywbDispatcher(object):
         self.warcprox_proxies = {'http': proxy_path,
                                  'https': proxy_path}
 
-        self.init_routes()
+        self.init_early_routes()
 
+    def call_pywb(self, user=None, coll=None, state=None, anon=False):
+        if anon:
+            wrsesh = request.environ.get('webrec.session')
+            if wrsesh.curr_user:
+                wrsesh.flash_message('You are logged in. Please select a collection to record or browse', 'info')
+                redirect('/' + wrsesh.curr_user)
+                return
 
-    def call_pywb(self, user=None, coll=None, state=None):
-        if user and coll:
-            path = self.path_parser.get_coll_path(user, coll)
+            user = wrsesh.anon_user
+            coll = '@anon'
+            path = '@anon'
+            coll_path = 'replay'
+            curr_path = state
+            sesh_id = self.path_parser.get_coll_path(user, coll)
+
+            if state == 'record' or state == 'patch':
+                wrsesh.set_anon()
+            elif state == 'replay':
+                request.path_shift(1)
+
+        elif user and coll:
             request.path_shift(self.path_parser.get_path_shift())
-            request.environ['w_output_dir'] = self.path_parser.get_archive_dir(user, coll)
-            request.environ['w_sesh_id'] = path
+
+            sesh_id = self.path_parser.get_coll_path(user, coll)
+            path = sesh_id
+            curr_path = path
+            coll_path = path
+
+            if state != 'replay':
+                curr_path += '/' + state
+
+
+        if anon or (user and coll):
+            output_dir = self.path_parser.get_archive_dir(user, coll)
+            name_prefix = self.path_parser.get_name_prefix(user, coll)
+
+            request.environ['w_output_dir'] = output_dir
+            request.environ['w_sesh_id'] = sesh_id
+            request.environ['w_path'] = path
+            request.environ['w_nameprefix'] = name_prefix
             request.environ['w_manager'] = self.manager
             request.environ['w_user_id'] = 'u:' + user
 
             params = request.environ['pywb.template_params']
             params['state'] = state
-            params['path'] = path
             params['user'] = user
             params['coll'] = coll
+            params['path'] = coll_path
+            params['curr_path'] = curr_path
+
 
         try:
             resp = self.pywb(request.environ)
@@ -60,7 +95,18 @@ class PywbDispatcher(object):
         return resp
 
     def route(self, path, func, method='ANY'):
-        self.app.route(path, method=method, callback=func)
+        route(path, method=method, callback=func)
+
+
+    def init_early_routes(self):
+        # pywb static and home
+        self.route('/live/<path:path>', self.live_anon, ['GET', 'POST'])
+
+        self.route('/record/<path:path>', self.record_anon, ['GET', 'POST'])
+
+        self.route('/patch/<path:path>', self.patch_anon, ['GET', 'POST'])
+
+        self.route('/replay/<path:path>', self.replay_anon, ['GET', 'POST'])
 
     def init_routes(self):
         # pywb static and home
@@ -115,6 +161,17 @@ class PywbDispatcher(object):
 
         return self.call_pywb(user, coll, action)
 
+    def live_anon(self, path=None):
+        return self.call_pywb(None, None, 'live', anon=True)
+
+    def record_anon(self, path=None):
+        return self.call_pywb(None, None, 'record', anon=True)
+
+    def patch_anon(self, path=None):
+        return self.call_pywb(None, None, 'patch', anon=True)
+
+    def replay_anon(self, path=None):
+        return self.call_pywb(None, None, 'replay', anon=True)
 
     def cdx(self, user, coll):
         if not self.manager.can_read_coll(user, coll):
@@ -124,8 +181,12 @@ class PywbDispatcher(object):
 
 
     def snapshot(self):
-        path = request.query.get('coll', '')
-        user, coll = self.path_parser.get_user_coll(path)
+        coll = request.query.get('coll', '')
+        if coll == '@anon':
+            user = self.manager.get_anon_user()
+        else:
+            user, coll = self.path_parser.get_user_coll(coll)
+
         url = request.query.get('url', '')
         if not url or not self.manager.can_write_coll(user, coll):
             raise HTTPError(status=404, body='No Such Page')
@@ -144,9 +205,12 @@ class PywbDispatcher(object):
 
         dt = datetime.utcnow()
 
+        sesh_id = self.path_parser.get_coll_path(user, coll)
+
         target = dict(output_dir=self.path_parser.get_archive_dir(user, coll),
-                      sesh_id=path.replace('/', ':'),
+                      sesh_id=sesh_id.replace('/', ':'),
                       user_id=user,
+                      name_prefix=self.path_parser.get_name_prefix(user, coll),
                       json_metadata={'snapshot': 'html', 'timestamp': str(dt)},
                       writer_type='-snapshot')
 

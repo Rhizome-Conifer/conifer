@@ -1,6 +1,8 @@
 
 $(function() {
-    $("#home-view").html(marked($("#home-markdown").html()));
+    if ($("#home-view").length) {
+        $("#home-view").html(marked($("#home-markdown").html()));
+    }
 });
 
 function init_markdown_editor(update_path) {
@@ -22,6 +24,10 @@ function init_markdown_editor(update_path) {
                                append(marked($("#home-markdown").html())));
 
         };
+
+        if (!$("#home-view")) {
+            return;
+        }
 
         $("#home-view").html($("#home-markdown").html());
 

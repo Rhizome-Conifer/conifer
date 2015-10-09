@@ -1,6 +1,8 @@
+{% if not is_anon() %}
 <span class="glyphicon glyphicon-globe" style="margin-right: 4px"></span><span style="margin-right: 4px">Public?</span> 
 {% if can_admin() %}
 <input type="checkbox" class="ispublic" id="is_public" {{ 'checked' if is_public else '' }} data-on-color="success" data-inverse="true" data-size="mini" data-on-text="YES" data-off-text="NO">
 {% else %}
 <b>{{ 'YES' if is_public else 'NO' }}</b>
+{% endif %}
 {% endif %}

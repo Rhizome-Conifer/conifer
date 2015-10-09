@@ -17,7 +17,7 @@ session_opts:
     session.validate_key: $VALIDATE_KEY
 
     session.auto: false
-    session.cookie_expires: true
+    session.cookie_expires: True
 
     session.httponly: true
     session.cookie_path: '/'
@@ -28,13 +28,15 @@ session_opts:
     session.url: *redis_url
 
     session.expire: 1800
- 
+
+
+anon_duration: 1800
 
 verify_ssl: false
 
 multiuser: true
 
-invites_enabled: true
+invites_enabled: false
 
 #warcsign_private_key: /var/wr/wr.pem
 #warcsign_public_key: /var/wr/wr_pub.pem
@@ -151,8 +153,8 @@ archive_paths: /
 store_root: /data/
 
 metadata:
-    org: beta.webrecorder.io
-    product: beta.webrecorder.io
+    org: webrecorder.io
+    product: webrecorder.io
 
 framed_replay: inverse
 redir_to_exact: false

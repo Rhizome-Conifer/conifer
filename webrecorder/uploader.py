@@ -158,6 +158,21 @@ def iter_all_accounts(root_dir):
                 yield key, warc, local_full_path, rel_path
 
 
+class AnonChecker(object):
+    def __init__(self, root_dir, manager, redis):
+        self.anon_dir = os.path.join(self.root_dir, 'anon')
+        self.manager = manager
+        self.redis = redis
+
+    def __call__(self):
+        if not os.path.isdir(self.anon_dir):
+            return
+
+        for anon in os.listdir(self.anon_dir):
+            if user.startswith('.'):
+                return
+
+
 def main():
     from redis import StrictRedis
     redis = StrictRedis.from_url('redis://127.0.0.1:6379/1')

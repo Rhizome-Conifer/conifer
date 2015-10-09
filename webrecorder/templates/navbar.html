@@ -18,6 +18,11 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
+                {% if is_anon() %}
+                <li class="navbar-text">Anonymous Collection</li>
+
+                {% else %}
+
                 {% if user %}
                 <li class="coll-nav {{ 'active2' if not state and not coll else '' }}">
                     <a target="_parent" href="/{{ user }}" title="Return to {{user}} Archive">{{ user }}</a>
@@ -29,7 +34,7 @@
                     <a target="_parent" href="/{{ path }}" title="Return to {{coll}} Collection">{{ coll }}</a>
                 </li>
                 {% endif %}
-                
+                {% endif %}
 
                 {% if state %}
                 <p class="navbar-text">{#
@@ -125,7 +130,7 @@
 
         </div>
         {% if state %} 
-        <form class="navbar-left nav-url-form " data-path-prefix="/{{path + '/' + state if state != 'replay' else path}}/"> 
+        <form class="navbar-left nav-url-form " data-path-prefix="/{{ curr_path }}/"> 
             <div class="input-group input-group-sm" style="width: 100%">
                 <div class="input-group-btn">
                     <button id="curr-state" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge"></span><span class="caret"></span></button>
