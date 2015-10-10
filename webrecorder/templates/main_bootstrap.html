@@ -8,30 +8,39 @@
 
 {% block body %}
 <header>
-{% include 'navbar.html' %}
+    {% include 'navbar.html' %}
 </header>
 
 <div class="container">
-{% block message %}
-{% if message and message != '' %}
-<div class="alert alert-{{ msg_type | default('danger') }} alert-dismissable" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-    {{ message }}
-</div>
-{% endif %}
-{% endblock %}
+    {% block message %}
+    {% if message and message != '' %}
+    <div class="alert alert-{{ msg_type | default('danger') }} alert-dismissable" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endblock %}
 
-{% block content %}
-{% endblock %}
+    {% block content %}
+    {% endblock %}
 </div>
 
 {% block footer %}
 <footer class="footer">
     <div class="container">
-        <div class="text-center"><a href="mailto:support@webrecorder.io">Contact Us</a> for Questions / Comments / Bug Reports / Feature Requests<br/>
-            Thank you for trying the new <b>beta.webrecorder.io</b>!</div>
+        <div class="text-center"><a href="mailto:support@webrecorder.io">Contact Us</a> for any questions or feedback.<br/>
+            Webrecorder is a project of <a href="https://rhizome.org"><img src="/static/__shared/rhizome_logo_sm.jpg" style="vertical-align: bottom"></img></a><br/>
+            <form style="display: inline" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                Support Webrecorder
+                <input type="hidden" name="cmd" value="_s-xclick">
+                <input type="hidden" name="hosted_button_id" value="3K3VE3HG8KR44">
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="Donate"
+                       style="vertical-align:middle; width: 72px; height: 20px">
+                <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+            </form>
+        </div>
     </div>
 </footer>
 {% endblock %}
