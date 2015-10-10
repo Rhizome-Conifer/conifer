@@ -20,7 +20,13 @@
             <ul class="nav navbar-nav">
                 {% if is_anon() %}
                 <li class="coll-nav">
-                    <a target="_parent" href="/replay#records">Anonymous Collection</a>
+                    <a target="_parent" href="/replay#records">
+                    {% if state == 'live' %}
+                    Live Preview
+                    {% else %}
+                    Anonymous Collection
+                    {% endif %}
+                    </a>
                 </li>
                 {% else %}
 

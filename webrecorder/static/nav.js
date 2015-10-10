@@ -14,6 +14,17 @@ $(function() {
         }
         return false;
     });
+
+
+    $("#preview-toggle").change(function(){
+        if ($(this).is(":checked")) {
+            $("#rec-button").hide();
+            $("#preview-button").show();
+        } else {
+            $("#rec-button").show();
+            $("#preview-button").hide();
+        }
+    });
     
     if (window == window.top && window.frames.length) {
         doc_window = document.getElementById("replay_iframe").contentWindow;

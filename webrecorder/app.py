@@ -339,7 +339,7 @@ def init_routes(webrec):
         password = post_get('password')
 
         if cork.login(username, password):
-            redir_to = get_redir_back(LOGIN_PATH, path_parser.user_home(username))
+            redir_to = get_redir_back(LOGIN_PATH, path_parser.get_user_home(username))
             #host = request.headers.get('Host', 'localhost')
             #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
             #request.environ['beaker.session'].path = '/'
@@ -560,7 +560,7 @@ You can now <b>login</b> with your new password!', 'success')
             flash_message(str(ve))
 
         user = manager.get_curr_user()
-        redirect(path_parser.user_home(user) + SETTINGS)
+        redirect(path_parser.get_user_home(user) + SETTINGS)
 
 
     # Create Coll
@@ -580,7 +580,7 @@ You can now <b>login</b> with your new password!', 'success')
         except ValidationException as ve:
             flash_message(str(ve))
             user = cork.current_user.username
-            redirect(path_parser.user_home(user))
+            redirect(path_parser.get_user_home(user))
 
         return {}
 
@@ -627,7 +627,7 @@ You can now <b>login</b> with your new password!', 'success')
 
             if manager.delete_collection(user, coll):
                 flash_message('Collection {0} has been deleted!'.format(coll), 'success')
-                redirect('/' + path_parser.user_home(user))
+                redirect('/' + path_parser.get_user_home(user))
             else:
                 flash_message('There was an error deleting {0}'.format(coll))
                 redirect('/' + path_parser.get_coll_path(user, coll) + '#settings')
@@ -664,18 +664,19 @@ You can now <b>login</b> with your new password!', 'success')
                 'state': request.query.get('state')}
 
 
-    # Shared Home Page
+    # Home Page
     # ============================================================================
     @route(['/', '/index.html'])
     @jinja2_view('index.html')
-    def shared_home_page():
+    def home_page():
         return {}
+
 
     # User Page
     # ============================================================================
     @route([user_path, user_path + '/', user_path + '/index.html'])
     @jinja2_view('user.html')
-    def home_pages(user=None):
+    def user_page(user=None):
         if user:
             if not manager.has_user(user):
                 raise HTTPError(status=404, body='No Such Archive')

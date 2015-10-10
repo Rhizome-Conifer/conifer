@@ -42,7 +42,7 @@ class WebRecPathParser(object):
 
         return os.path.join(self.get_coll_root(user, coll), 'archive')
 
-    def user_home(self, user):
+    def get_user_home(self, user):
         return '/' + user
 
     def get_user_coll(self, collpath):

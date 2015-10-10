@@ -1,20 +1,30 @@
 {% extends "main_bootstrap.html" %}
 
 {% block content %}
-<div class="jumbotron">
-    <p class="pull-right">Web Archives for All!</p>
-    <h3>Welcome to the webrecorder.io beta</h3>
-    {% if not message or message == '' %}
-    {% if curr_user %}
-    <p>Look for additional content in this space!</p>
-    <p><a href="/{{curr_user}}">Return to your user page</a></p>
-    {% else %}
-    <p>A new beta version of webrecorder.io is in active development and will be available soon here!</p>
-    <p>Please <a href="/_register">request an invite</a> to try it out!</p>
-    <br/>
-    <p>You may also continue to use the <a href="https://webrecorder.io/">current version of webrecorder.io</a> for anonymous recording and replay</p>
-    {% endif %}
-    {% endif %}
+<div class="row col-md-10 col-md-offset-2">
+    <h1 style="line-height: 1.5em">Welcome to Webrecorder</h1>
+    <h4>An open-source Web archiving platform and service for all!</h4>
+    <h4>Create a high-fidelity web archive of any web content as you browse.</h4>
+</div>
+
+<div class="row" style="margin-bottom: 20px">
+    <div class="col-md-offset-2 col-md-8">
+        {% if curr_user %}
+        <div class="well">
+            <p>You are logged in as <b>{{ curr_user }}</b></p>
+            <p><a href="/{{curr_user}}">View Your Archive</a></p>
+        </div>
+        {% else %}
+        <h4 style="line-height: 2em">Try recording anonymously now or <a href="/register">register for an account</a></h4>
+        <div class="well">
+            {% include 'frag_recordbar.html' %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row col-md-10 col-md-offset-2">
+    <h4>Operated by Rhizome</h4>
 </div>
 {% endblock %}
 
