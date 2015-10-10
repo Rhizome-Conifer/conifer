@@ -129,7 +129,6 @@ def init_cork(app, redis, config):
             session_opts['session.url'] = parts.netloc
         #session_opts['session.db'] = 0
 
-    print(session_opts)
     app = CookieGuard(app, session_opts['session.key'])
     app = SessionMiddleware(app, session_opts)
 
@@ -166,11 +165,11 @@ class CollsManager(object):
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
     WARC_RX = re.compile(r'^[\w.-]+$')
 
-    def __init__(self, cork, redis, path_router, remotemanager, signer):
+    def __init__(self, cork, redis, path_router, storage_manager, signer):
         self.cork = cork
         self.redis = redis
         self.path_router = path_router
-        self.remotemanager = remotemanager
+        self.storage_manager = storage_manager
         self.signer = signer
 
     def make_key(self, user, coll, type_=''):
@@ -510,8 +509,8 @@ class CollsManager(object):
         coll_dir = self.path_router.get_coll_root(user, coll)
         rel_dir = os.path.relpath(coll_dir, self.path_router.root_dir) + '/'
 
-        # delete from s3
-        self.remotemanager.delete_dir(rel_dir)
+        # delete from remote storage
+        self.storage_manager.delete_dir(rel_dir)
 
         # delete collection entry
         del self._get_user_colls(user)[coll]
@@ -530,8 +529,8 @@ class CollsManager(object):
         user_dir = self.path_router.get_user_account_root(user)
         rel_dir = os.path.relpath(user_dir, self.path_router.root_dir) + '/'
 
-        # delete from s3
-        self.remotemanager.delete_dir(rel_dir)
+        # delete from remote storage
+        self.storage_manager.delete_dir(rel_dir)
 
         user_key = self._user_key(user)
 
@@ -696,7 +695,8 @@ class CollsManager(object):
         if not warc_path:
             return None
 
-        if not warc_path.startswith('s3://'):
+        # check if local path (TODO: better check?)
+        if warc_path.startswith(('/', 'file://')):
             archive_dir = self.path_router.get_archive_dir(user, coll)
             full_path = os.path.join(archive_dir, name)
             if os.path.isfile(full_path):
@@ -709,7 +709,7 @@ class CollsManager(object):
                 return None
 
         print('Remote File')
-        result = self.remotemanager.download_stream(warc_path)
+        result = self.storage_manager.download_stream(warc_path)
         return result
 
     def update_password(self, curr_password, password, confirm):

@@ -86,9 +86,9 @@ class DynCDXFile(CDXFile):
 
 #=================================================================
 class DynRedisResolver(object):
-    def __init__(self, redis, s3_target=None, proxy_target=None, key_prefix='w:'):
+    def __init__(self, redis, remote_target=None, proxy_target=None, key_prefix='w:'):
         self.redis = redis
-        self.s3_target = s3_target
+        self.remote_target = remote_target
         self.proxy_target = proxy_target
         self.key_prefix = key_prefix
 
@@ -100,8 +100,8 @@ class DynRedisResolver(object):
             return []
 
         # if proxy_path set, try proxy path first
-        if self.s3_target and self.proxy_target:
-            cached_path = orig_path.replace(self.s3_target, self.proxy_target)
+        if self.remote_target and self.proxy_target:
+            cached_path = orig_path.replace(self.remote_target, self.proxy_target)
             return [cached_path, orig_path]
         else:
             return [orig_path]
@@ -264,6 +264,7 @@ class DynRecord(RewriteHandler):
 
 
 #=================================================================
+# Not Used Currently
 class DynUrlRewriter(UrlRewriter):
     def rewrite(self, url, mod=None):
         new_url = super(DynUrlRewriter, self).rewrite(url, mod)

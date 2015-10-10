@@ -1,12 +1,20 @@
-#colls_loader_cls: !!python/name:loader.AccountUserLoader
+#colls_loader_cls: !!python/name:pywb_handlers.AccountUserLoader
 proxy_path: &proxyhostport warcprox_1:9002
 #redis_url: &redis_url redis://127.0.0.1:6379/1
 #redis_url: &redis_url redis://localhost:6379/1
 #proxy_path: &proxyhostport $WARCPROX
 redis_url: &redis_url $REDIS
 
-#s3_target: s3://target-bucket-path/
-s3_target: $S3_ROOT
+
+storage:
+    s3: !!python/name:storage.s3.S3Manager
+    local: !!python/name:storage.local.LocalStorageManager
+
+default_storage: s3
+storage_remote_root: $S3_ROOT
+
+
+remote_target: ''
 proxy_target: ''
 #http://localhost:6009/wr-beta/
 
@@ -58,7 +66,7 @@ collections:
     'live':
         index_paths: $liveweb
 
-        wb_handler_class: !!python/name:loader.DynRecord
+        wb_handler_class: !!python/name:pywb_handlers.DynRecord
 
         cookie_scope: root
         rewrite_opts:
@@ -71,7 +79,7 @@ collections:
     'record':
         index_paths: $liveweb
 
-        wb_handler_class: !!python/name:loader.DynRecord
+        wb_handler_class: !!python/name:pywb_handlers.DynRecord
 
         proxyhostport: *proxyhostport
 
@@ -85,9 +93,9 @@ collections:
 
     'patch':
         index_paths: *redis_url
-        server_cls: !!python/name:loader.DynCDXServer
+        server_cls: !!python/name:pywb_handlers.DynCDXServer
 
-        wb_handler_class: !!python/name:loader.DynWBHandler
+        wb_handler_class: !!python/name:pywb_handlers.DynWBHandler
 
         cookie_scope: root
 
@@ -100,9 +108,9 @@ collections:
 
     '':
         index_paths: *redis_url
-        server_cls: !!python/name:loader.DynCDXServer
+        server_cls: !!python/name:pywb_handlers.DynCDXServer
 
-        wb_handler_class: !!python/name:loader.DynWBHandler
+        wb_handler_class: !!python/name:pywb_handlers.DynWBHandler
 
         cookie_scope: removeall
 
@@ -113,9 +121,9 @@ collections:
 
     'embed':
         index_paths: *redis_url
-        server_cls: !!python/name:loader.DynCDXServer
+        server_cls: !!python/name:pywb_handlers.DynCDXServer
 
-        wb_handler_class: !!python/name:loader.DynWBHandler
+        wb_handler_class: !!python/name:pywb_handlers.DynWBHandler
 
         cookie_scope: removeall
 
@@ -132,9 +140,9 @@ collections:
 
     'replay_nf':
         index_paths: *redis_url
-        server_cls: !!python/name:loader.DynCDXServer
+        server_cls: !!python/name:pywb_handlers.DynCDXServer
 
-        wb_handler_class: !!python/name:loader.DynWBHandler
+        wb_handler_class: !!python/name:pywb_handlers.DynWBHandler
 
         cookie_scope: removeall
 
@@ -147,7 +155,7 @@ collections:
         banner_html: nobanner.html
 
 
-route_class: !!python/name:loader.DynamicRoute
+route_class: !!python/name:pywb_handlers.DynamicRoute
 
 #archive_paths: ./
 archive_paths: /
@@ -160,4 +168,4 @@ metadata:
 framed_replay: inverse
 redir_to_exact: false
 
-#urlrewriter_class: !!python/name:loader.DynUrlRewriter
+#urlrewriter_class: !!python/name:pywb_handlers.DynUrlRewriter

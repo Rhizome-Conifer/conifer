@@ -13,11 +13,11 @@ from pywb.framework.wbrequestresponse import WbRequest
 from manager import init_cork, CollsManager, ValidationException
 from pywb_dispatcher import PywbDispatcher
 
-from loader import DynRedisResolver
+from pywb_handlers import DynRedisResolver
 from jinja2 import contextfunction
 
-from router import MultiUserRouter
-from uploader import S3Manager, Uploader, AnonChecker, iter_all_accounts
+from pathparser import WebRecPathParser
+from uploader import Uploader, AnonChecker, iter_all_accounts
 
 from warcsigner.warcsigner import RSASigner
 from session import Session, flash_message
@@ -48,11 +48,8 @@ def init(configfile='config.yaml', redis_url=None):
 
     redis_obj = StrictRedis.from_url(redis_url)
 
-
-    print(config.get('session_opts').get('session.url'))
-
     config['redis_warc_resolver'] = DynRedisResolver(redis_obj,
-                                                     s3_target=config['s3_target'],
+                                                     remote_target=config['remote_target'],
                                                      proxy_target=config['proxy_target'])
 
 
@@ -79,17 +76,16 @@ class WebRec(object):
     def __init__(self, config, cork, redis_obj):
         store_root = config.get('store_root', './')
 
-        self.path_parser = MultiUserRouter(store_root)
+        self.path_parser = WebRecPathParser(store_root)
         self.cork = cork
         self.config = config
 
-        # for now, just s3
-        s3_manager = S3Manager(expandvars(config['s3_target']))
+        storage_manager = self._init_default_storage(config)
 
         signer = RSASigner(private_key_file=expandvars(config['warcsign_private_key']),
                            public_key_file=expandvars(config['warcsign_public_key']))
 
-        manager = CollsManager(cork, redis_obj, self.path_parser, s3_manager, signer)
+        manager = CollsManager(cork, redis_obj, self.path_parser, storage_manager, signer)
         self.manager = manager
 
         jinja_env.globals['metadata'] = config.get('metadata', {})
@@ -137,7 +133,7 @@ class WebRec(object):
         self.err_handler = err_handler
 
         self.uploader = Uploader(store_root,
-                                 s3_manager,
+                                 storage_manager,
                                  signer,
                                  redis_obj,
                                  iter_all_accounts)
@@ -145,6 +141,16 @@ class WebRec(object):
         self.anon_checker = AnonChecker(store_root,
                                         manager,
                                         config['session_opts'])
+
+    def _init_default_storage(self, config):
+        store_type = config.get('default_storage', 'local')
+
+        storage = config['storage']
+
+        store_class = storage.get(store_type)
+
+        return store_class(expandvars(config['storage_remote_root']))
+
 
     def setup(self, app):
         app.default_error_handler = self.err_handler

@@ -2,16 +2,18 @@ import os
 from bottle import request
 
 
+# ============================================================================
+class WebRecPathParser(object):
+    """ Defines various application paths and path templates
+    both for webapp paths and on disk directory structure
+    for logged-in and anonymous users
 
+    An alternative path parser can provide a different dir structure
+    """
 
-
-
-class BaseRouter(object):
-    def __init__(self, root_dir='./'):
+    def __init__(self, root_dir):
         self.root_dir = root_dir
 
-
-class MultiUserRouter(BaseRouter):
     def get_user_path_template(self):
         return '/<user>'
 
