@@ -20,10 +20,10 @@ $(function() {
         }
         
         if (url != '') {
-            //doc_window.location.href = prefix + url;
+            doc_window.location.href = prefix + url;
         }
         
-        console.log(prefix + url);
+        //console.log(prefix + url);
         
         return false;
     });
