@@ -705,7 +705,7 @@ class CollsManager(object):
             return None
 
         # check if local path (TODO: better check?)
-        if warc_path.startswith(('/', 'file://')):
+        if not warc_path.startswith(('s3://')):
             archive_dir = self.path_router.get_archive_dir(user, coll)
             full_path = os.path.join(archive_dir, name)
             if os.path.isfile(full_path):
