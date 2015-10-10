@@ -1,17 +1,30 @@
 var doc_window = undefined;
 
 $(function() {
+    
+    var act_state = "record";
+    
     $(".nav-url-form").submit(function() {
-        var prefix = $(this).attr("data-path-prefix");
+        var prefix = "";
+        
+        if (window.coll_id && window.coll_id != "@anon") {
+            prefix = "/" + coll_path;
+        }
+        
         var url = $("#theurl").val();
+        
+        prefix += "/" + act_state + "/";
         
         if (doc_window != window.top) {
             prefix += "mp_/";
         }
         
         if (url != '') {
-            doc_window.location.href = prefix + url;
+            //doc_window.location.href = prefix + url;
         }
+        
+        console.log(prefix + url);
+        
         return false;
     });
 
@@ -20,9 +33,11 @@ $(function() {
         if ($(this).is(":checked")) {
             $("#rec-button").hide();
             $("#preview-button").show();
+            act_state = "live";
         } else {
             $("#rec-button").show();
             $("#preview-button").hide();
+            act_state = "record";
         }
     });
     

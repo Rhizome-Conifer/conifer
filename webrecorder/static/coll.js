@@ -105,7 +105,7 @@ $(function() {
             $("#total-size").text(format_bytes(coll_size));
         }
     }
-    
+/*    
     function switch_state(state) {
         var prefix = "/" + coll_path + "/";
         if (state != "replay") {
@@ -137,6 +137,7 @@ $(function() {
         switch_state($(this).attr("id"));
         e.preventDefault();
     });
+    */
 
 });
 
