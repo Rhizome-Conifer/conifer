@@ -43,6 +43,11 @@ class Session(object):
             self.sesh.save()
             self.sesh._update_cookie_out()
 
+    def is_anon(self):
+        if self.curr_user:
+            return False
+
+        return self.sesh.get('anon') == True
 
     @property
     def anon_user(self):

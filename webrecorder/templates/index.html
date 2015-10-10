@@ -17,6 +17,13 @@
             <p><a href="/{{curr_user}}">View Your Archive</a></p>
         </div>
         {% else %}
+        
+        {% if anon_size and anon_pages %}
+        <div class="alert alert-info" role="alert">
+            Anonymously recorded <b>{{ anon_pages }}</b> page(s). <b><a href="/replay#records">Browse</a></b> or <b><a href="/replay#files">Download</a></b> or <b><a href="/replay#settings">Delete Now</a></b> (Will automatically expire in 30 minutes.)
+        </div>
+        {% endif %}
+        
         <h4 style="line-height: 2em">Try recording anonymously now or <a href="/register">register for an account</a></h4>
         <div class="well">
             {% include 'frag_recordbar.html' %}
@@ -27,7 +34,20 @@
 
 <div class="row">
     <div class="col-md-10 col-md-offset-2">
-    <h4>Operated by Rhizome</h4>
+        <h4>A project of <a href="https://rhizome.org"><img src="/static/__shared/rhizome_logo_sm.jpg" style="vertical-align: bottom"/></a></h4>
+    </div>
+</div>
+
+<div class="row" style="margin-top: 40px">
+    <div class="col-md-10 col-md-offset-2">
+        <form style="display: inline" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+            <input type="hidden" name="cmd" value="_s-xclick">
+            <input type="hidden" name="hosted_button_id" value="3K3VE3HG8KR44">
+            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="Donate"
+                   style="vertical-align:middle;">
+            <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+        </form>
+        to support Webrecorder and open-source web archiving tools!
     </div>
 </div>
 {% endblock %}

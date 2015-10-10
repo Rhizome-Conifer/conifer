@@ -197,6 +197,9 @@ class CollsManager(object):
         if not sesh:
             return ''
 
+        if not sesh.is_anon():
+            return ''
+
         return sesh.anon_user
 
     def _check_access(self, user, coll, type_):
@@ -659,6 +662,12 @@ class CollsManager(object):
         pagelist = self.redis.smembers(self.make_key(user, coll, self.PAGE_KEY))
         pagelist = map(json.loads, pagelist)
         return pagelist
+
+    def num_pages(self, user, coll):
+        if not self.can_read_coll(user, coll):
+            return -1
+
+        return self.redis.scard(self.make_key(user, coll, self.PAGE_KEY))
 
     def list_warcs(self, user, coll):
         if not self.can_admin_coll(user, coll):

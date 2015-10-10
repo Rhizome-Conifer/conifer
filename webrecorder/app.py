@@ -669,6 +669,18 @@ You can now <b>login</b> with your new password!', 'success')
     @route(['/', '/index.html'])
     @jinja2_view('index.html')
     def home_page():
+        try:
+            anon_user = manager.get_anon_user()
+            if anon_user:
+                info = manager.get_info(anon_user, '@anon')
+                num_pages = manager.num_pages(anon_user, '@anon')
+                return {'anon_pages': num_pages,
+                        'anon_size': info.get('total_size')}
+        except Exception as e:
+            print(e)
+            pass
+
+
         return {}
 
 
