@@ -2,7 +2,8 @@
     <div class="input-group" style="width: 100%">
         <input id="theurl" type="text" style="width: 100%" placeholder="Enter a url here" class="form-control"/>
         <span class="input-group-btn">
-            <button id="preview-button" class="btn btn-default" style="display: none" type="submit">
+            <button id="preview-button" class="btn btn-default" style="display: none; border-radius: 4px" type="submit">
+                <span class="glyphicon glyphicon-step-forward"></span>
                 <span>Preview</span>
             </button>
             <button id="rec-button" class="btn btn-primary" type="submit">
@@ -11,9 +12,9 @@
             </button>
         </span>
     </div>
-    <div class="checkbox">
+    <div class="checkbox pull-right" style="margin-top: 4px">
         <label>
-            <input id="preview-toggle" type="checkbox">Preview first before recording
+            <input id="preview-toggle" type="checkbox">Preview before recording
         </label>
     </div>
 </form>
