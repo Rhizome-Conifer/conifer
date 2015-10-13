@@ -38,13 +38,17 @@ class RedisTable(object):
     def iteritems(self):
         coll_list = self.redis.hgetall(self.key)
         colls = {}
-        for n, v in coll_list.iteritems():
-            if n == 'total_len':
-                continue
 
-            colls[n] = json.loads(v)
+        def _iteritems():
+            for n, v in coll_list.iteritems():
+                if n == 'total_len':
+                    continue
 
-        return colls.iteritems()
+                #colls[n] = json.loads(v)
+                yield n, json.loads(v)
+
+        return _iteritems()
+        #return colls.iteritems()
 
     def pop(self, name):
         result = self[name]

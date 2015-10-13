@@ -308,6 +308,15 @@ class CollsManager(object):
         self.cork.do_login(user)
         return user
 
+    def has_user_email(self, email):
+        #TODO: implement a email table, if needed?
+        all_users = RedisTable(self.redis, 'h:users')
+        for n, userdata in all_users.iteritems():
+            if userdata['email_addr'] == email:
+                return True
+
+        return False
+
     def has_space(self, user):
         sizes = self.redis.hmget(self._user_key(user), 'total_len', 'max_len')
         curr = sizes[0] or 0
@@ -337,16 +346,20 @@ class CollsManager(object):
 
     def validate_user(self, user, email):
         if self.has_user(user):
-            msg = 'User {0} already exists! Please choose a different username'
+            msg = 'User <b>{0}</b> already exists! Please choose a different username'
             msg = msg.format(user)
             raise ValidationException(msg)
 
         if not self.USER_RX.match(user) or user in self.RESTRICTED_NAMES:
-            msg = 'The name {0} is not a valid username. Please choose a different username'
+            msg = 'The name <b>{0}</b> is not a valid username. Please choose a different username'
             msg = msg.format(user)
             raise ValidationException(msg)
 
-        #TODO: check email?
+        if self.has_user_email(email):
+            msg = 'There is already an account for <b>{0}</b>. If you have trouble logging in, you may <a href="/_forgot"><b>reset the password</b></a>.'
+            msg = msg.format(email)
+            raise ValidationException(msg)
+
         return True
 
     def validate_password(self, password, confirm):
