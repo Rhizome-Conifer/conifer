@@ -3,8 +3,8 @@
 {% block content %}
 <div class="row">
     <div class="col-md-10 col-md-offset-2">
-        <h1 style="line-height: 1.5em; font-weight: bold">Welcome to Webrecorder</h1>
-        <h4>An open-source web archiving platform and service for all!</h4>
+        <h1 style="line-height: 1.5em; font-weight: bold">Welcome to Webrecorder Beta</h1>
+        <h4>A web archiving platform and service for all!</h4>
         <h4>Easily create high-fidelity, standards compliant archives of the web as you browse.</h4>
     </div>
 </div>
@@ -27,7 +27,14 @@
         <div class="well">
             {% include 'frag_recordbar.html' %}
         </div>
+
+        {% if invites_enabled %}
+        <h4>We are inviting users to build their own archives as we test this service.</h4>
+        <h4><a href="/_register">Request an invite to sign-up</a></h4>
+        {% else %}
         <h4>To keep your archive online, <a href="/_register">sign up</a> for an account.</h4>
+        {% endif %}
+
         {% endif %}
     </div>
 </div>

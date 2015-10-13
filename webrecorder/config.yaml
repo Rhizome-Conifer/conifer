@@ -45,7 +45,7 @@ verify_ssl: false
 
 multiuser: true
 
-invites_enabled: false
+invites_enabled: true
 
 #warcsign_private_key: /var/wr/wr.pem
 #warcsign_public_key: /var/wr/wr_pub.pem

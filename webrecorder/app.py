@@ -339,7 +339,7 @@ def init_routes(webrec):
         password = post_get('password')
 
         if cork.login(username, password):
-            redir_to = get_redir_back(LOGIN_PATH, path_parser.get_user_home(username))
+            redir_to = get_redir_back((LOGIN_PATH, '/'), path_parser.get_user_home(username))
             #host = request.headers.get('Host', 'localhost')
             #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
             #request.environ['beaker.session'].path = '/'
@@ -669,19 +669,21 @@ You can now <b>login</b> with your new password!', 'success')
     @route(['/', '/index.html'])
     @jinja2_view('index.html')
     def home_page():
+        resp = {}
+
+        resp['invites_enabled'] = invites_enabled
+
         try:
             anon_user = manager.get_anon_user()
             if anon_user:
                 info = manager.get_info(anon_user, '@anon')
                 num_pages = manager.num_pages(anon_user, '@anon')
-                return {'anon_pages': num_pages,
-                        'anon_size': info.get('total_size')}
+                resp['anon_pages'] = num_pages,
+                resp['anon_size'] = info.get('total_size')
         except Exception as e:
             print(e)
-            pass
 
-
-        return {}
+        return resp
 
 
     # User Page
