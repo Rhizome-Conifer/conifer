@@ -274,6 +274,10 @@ function format_bytes(bytes) {
 }
 
 $(function() {
+    $('#login-modal').on('shown.bs.modal', function() {
+        $('#username').focus();
+    });
+    
     $("#report-modal").on('show.bs.modal', function() {
         $("#report-form-submit").text("Send Report");
         $("#report-thanks").text("");

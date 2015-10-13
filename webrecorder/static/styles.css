@@ -127,7 +127,9 @@ a.dropdown-badge {
 
 #register {
     display: inline;
-    color: white;
+    /*color: white;*/
+    font-weight: bold;
+    font-size: 1.0em;
 }
 
 .pulse {

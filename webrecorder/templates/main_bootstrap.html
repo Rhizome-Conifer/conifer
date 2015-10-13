@@ -45,4 +45,8 @@
 </footer>
 {% endblock %}
 
+{% if not curr_user %}
+{% include 'frag_login.html' %}
+{% endif %}
+
 {% endblock %}
