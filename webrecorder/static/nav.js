@@ -363,30 +363,54 @@ $(function() {
         
         apply_iframes(main_window, snapshot);
     });
+
+    // Format Bytes
+    $(".formatbytes").each(function(i, elem) {
+        $(elem).text(format_bytes($(elem).text()));
+    });
+
+    // Session Expire
+    var end_time = undefined;
+    var expire = $("#expire");
+    if (expire.length) {
+        var time_left = parseInt(expire.text());
+
+        if (!time_left) {
+            return;
+        }
+
+        if (end_time == undefined) {
+            setInterval(update_countdown, 1000);
+        }
     
-//    $(".state-drop a").click(function(e) {
-//        e.preventDefault();
-//        
-//        var new_state = $(e.target).attr("data-state");
-//        if (new_state == window.wbinfo.state) {
-//            return;
-//        }
-//        
-//        var url = $("#theurl").val();
-//        
-//        if (!url) {
-//            return;
-//        }
-//        
-//        var prefix = "/" + window.wbinfo.coll;
-//        
-//        if (new_state == "replay") {
-//            prefix += "/"
-//        } else {
-//            prefix += "/" + new_state + "/";
-//        }
-//        
-//        window.location.href = prefix + url;
-//    });
+        end_time = Math.floor(new Date().getTime() / 1000 + time_left);
+    
+        update_countdown();
+    }
+
+    function update_countdown() {
+        if (!end_time) {
+            return;
+        }
+        var curr = Math.floor(new Date().getTime() / 1000);
+        var secdiff = end_time - curr;
+        
+        if (secdiff <= 0) {
+            window.location.href = "/_expire";
+            return;
+        }
+        
+        var min = Math.floor(secdiff / 60);
+        var sec = secdiff % 60;
+        if (sec <= 9) {
+            sec = "0" + sec;
+        }
+        if (min <= 9) {
+            min = "0" + min;
+        }
+
+        $("#expire").text(min + ":" + sec);       
+    }
+
 });
 

@@ -791,6 +791,14 @@ You can now <b>login</b> with your new password!', 'success')
                }
 
 
+    # Anon Expire
+    # ============================================================================
+    @route('/_expire')
+    def expire():
+        flash_message('Sorry, the anonymous collection has expired due to inactivity')
+        redirect('/')
+
+
     # Toggle Public
     # ============================================================================
     @route(['/_setaccess'])

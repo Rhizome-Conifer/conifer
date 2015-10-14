@@ -19,7 +19,8 @@
         
         {% if anon_size and anon_pages %}
         <div class="alert alert-info" role="alert">
-            Anonymously recorded <b>{{ anon_pages }}</b> page(s). <b><a href="/replay#records">Browse</a></b> or <b><a href="/replay#files">Download</a></b> or <b><a href="/replay#settings">Delete Now</a></b> (Will automatically expire in 30 minutes.)
+            Anonymously recorded <a href="/replay#files"><b class="formatbytes">{{ anon_size }}</b></a> in <a href="/replay#records"><b>{{ anon_pages }}</b></a> page(s).
+        <b style="margin-left: 10px"><a href="/replay#records">Browse</a></b>, <b><a href="/replay#files">Download</a></b>, <b><a href="/replay#settings">Delete</a></b><p class="pull-right">Expires in <b><span id="expire">{{ anon_ttl }}</b></p>
         </div>
         {% endif %}
         

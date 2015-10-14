@@ -31,7 +31,14 @@ class Session(object):
                   'message': message,
                   'msg_type': msg_type}
 
+        if self.curr_role == 'anon':
+            params['anon_ttl'] = self._anon_ttl()
+
         request.environ['pywb.template_params'] = params
+
+    def _anon_ttl(self):
+        key = self.sesh.namespace._format_key('session')
+        return self.sesh.namespace.db_conn.ttl(key)
 
     def set_anon(self):
         if not self.curr_user:
