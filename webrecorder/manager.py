@@ -129,6 +129,11 @@ def init_cork(app, redis, config):
             session_opts['session.url'] = parts.netloc
         #session_opts['session.db'] = 0
 
+    if not redis.exists('h:defaults'):
+        redis.hset('h:defaults', 'max_len', config['default_max_size'])
+        redis.hset('h:defaults', 'max_anon_len', config['default_max_anon_size'])
+        redis.hset('h:defaults', 'max_coll', config['default_max_coll'])
+
     app = CookieGuard(app, session_opts['session.key'])
     app = SessionMiddleware(app, session_opts)
 
@@ -277,6 +282,8 @@ class CollsManager(object):
 
     def is_owner(self, user):
         curr_user = self.get_curr_user()
+        if not curr_user:
+            curr_user = self.get_anon_user()
         return (user and user == curr_user)
 
     def has_user(self, user):
@@ -288,8 +295,8 @@ class CollsManager(object):
     def init_user(self, reg):
         user = self.cork.validate_registration(reg)
 
-        all_users = RedisTable(self.redis, 'h:users')
-        usertable = all_users[user]
+        #all_users = RedisTable(self.redis, 'h:users')
+        #usertable = all_users[user]
 
         max_len, max_coll = self.redis.hmget('h:defaults', ['max_len', 'max_coll'])
         if not max_len:
@@ -298,8 +305,8 @@ class CollsManager(object):
         if not max_coll:
             max_coll = 10
 
-        usertable['max_len'] = max_len
-        usertable['max_coll'] = max_coll
+        #usertable['max_len'] = max_len
+        #usertable['max_coll'] = max_coll
 
         key = self._user_key(user)
         self.redis.hset(key, 'max_len', max_len)
@@ -307,6 +314,15 @@ class CollsManager(object):
 
         self.cork.do_login(user)
         return user
+
+    def init_anon_user(self, user):
+        max_len = self.redis.hget('h:defaults', 'max_anon_len')
+        if not max_len:
+            max_len = 500000000
+
+        key = self._user_key(user)
+        self.redis.hset(key, 'max_len', max_len)
+        self.redis.hset(key, 'max_coll', 1)
 
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
@@ -319,6 +335,7 @@ class CollsManager(object):
 
     def has_space(self, user):
         sizes = self.redis.hmget(self._user_key(user), 'total_len', 'max_len')
+        print(sizes)
         curr = sizes[0] or 0
         total = sizes[1] or 500000000
 

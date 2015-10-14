@@ -676,10 +676,10 @@ You can now <b>login</b> with your new password!', 'success')
         try:
             anon_user = manager.get_anon_user()
             if anon_user:
-                info = manager.get_info(anon_user, '@anon')
+                info = manager.get_user_info(anon_user)
                 num_pages = manager.num_pages(anon_user, '@anon')
-                resp['anon_pages'] = num_pages,
-                resp['anon_size'] = info.get('total_size')
+                resp['anon_pages'] = num_pages
+                resp['anon_size'] = info.get('user_total_size')
         except Exception as e:
             print(e)
 
@@ -759,7 +759,8 @@ You can now <b>login</b> with your new password!', 'success')
                 'title': title,
                 'desc': desc,
 
-                'coll_size': collinfo.get('total_size')
+                'coll_size': collinfo.get('user_total_size'),
+                'max_size': collinfo.get('user_max_size')
                }
 
 
@@ -773,7 +774,7 @@ You can now <b>login</b> with your new password!', 'success')
             redirect('/' + path_parser.get_user_home(user))
 
         user = manager.get_anon_user()
-        collinfo = manager.get_info(user, '@anon')
+        collinfo = manager.get_user_info(user)
 
         return {'user': '',
                 'coll': '@anon',
@@ -785,7 +786,8 @@ You can now <b>login</b> with your new password!', 'success')
                 'title': ANON_TITLE,
                 'desc': ANON_DESC,
 
-                'coll_size': collinfo.get('total_size')
+                'coll_size': collinfo.get('user_total_size'),
+                'max_size': collinfo.get('user_max_size')
                }
 
 

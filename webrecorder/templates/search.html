@@ -46,6 +46,7 @@
     var coll_id = "{{ coll_id }}";
     var coll_path = "{{ path }}";
     var coll_size = {{ coll_size if coll_size else '0' }};
+    var max_size = {{ max_size if max_size else '0' }};
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
 </script>
@@ -111,7 +112,7 @@
                     <span class="glyphicon glyphicon-cog"></span>Settings
                 </a>
             </li>
-            <p class="pull-right" style="margin-right: 15px">Total Size: <b id="total-size"></b>
+            <p class="pull-right" style="margin-right: 15px">Space Used: <b id="total-size"></b>&nbsp;/&nbsp;<b id="max-size"></b>
                 {% endif %}
             </p>
         </ul>

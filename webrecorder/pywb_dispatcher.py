@@ -45,7 +45,12 @@ class PywbDispatcher(object):
             sesh_id = self.path_parser.get_coll_path(user, coll)
 
             if state == 'record' or state == 'patch':
-                wrsesh.set_anon()
+                if not wrsesh.is_anon():
+                    wrsesh.set_anon()
+                    self.manager.init_anon_user(user)
+                elif not self.manager.has_space(user):
+                    request.environ['webrec.no_space'] = True
+
             elif state == 'replay':
                 request.path_shift(1)
 
@@ -150,7 +155,7 @@ class PywbDispatcher(object):
             raise HTTPError(status=404, body='No Such Collection')
 
         if not self.manager.has_space(user):
-            self.app.request.environ['webrec.no_space'] = True
+            request.environ['webrec.no_space'] = True
 
         return self.call_pywb(user, coll, action)
 

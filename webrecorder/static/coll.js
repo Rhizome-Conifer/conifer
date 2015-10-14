@@ -104,6 +104,9 @@ $(function() {
         if (coll_size != undefined) {
             $("#total-size").text(format_bytes(coll_size));
         }
+        if (max_size != undefined) {
+            $("#max-size").text(format_bytes(max_size));
+        }
     }
 /*    
     function switch_state(state) {
