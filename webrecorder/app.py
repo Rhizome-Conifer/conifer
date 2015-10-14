@@ -759,7 +759,7 @@ You can now <b>login</b> with your new password!', 'success')
                 'title': title,
                 'desc': desc,
 
-                'coll_size': collinfo.get('user_total_size'),
+                'coll_size': collinfo.get('total_size'),
                 'max_size': collinfo.get('user_max_size')
                }
 
