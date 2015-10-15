@@ -51,7 +51,7 @@ registration to specifically invited users. The `https://webrecorder.io/` deploy
 
 To require invites, simply set `REQUIRE_INVITES=true`
 
-##3 Restarting Webrecorder
+### Updating Deployment
 
 When making changes to Webrecorder, running `docker-compose build; docker-compose up -d` will restart all of the containers.
 
