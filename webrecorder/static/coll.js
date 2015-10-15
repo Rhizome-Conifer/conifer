@@ -171,7 +171,7 @@ function show_pages() {
     }
 
     pagesTable = $("#pageTable").DataTable( {
-        "ajaxSource": "/_listpages?coll=" + coll_id,
+        "ajax": "/_listpages?coll=" + coll_id,
         "order": [[ 1, "desc" ]],
         "columns": [
             { "data": "title" },
@@ -221,8 +221,21 @@ function show_warcs() {
         return new Date(data * 1000).toLocaleString();
     }
 
+        
+    function warc_list_response(response) {
+        if (response.total_size) {
+            $("#total-warc-size").text(format_bytes(response.total_size));
+        } else {
+            $(".coll-download").hide();
+        }
+        return response.data;
+    }
+
     warcsTable = $("#warcsTable").DataTable( {
-        "ajaxSource": "/_files?coll=" + coll_id,
+        "ajax": {
+            "url": "/_files?coll=" + coll_id,
+            "dataSrc": warc_list_response,
+        },
         "order": [[ 1, "desc" ]],
         "columns": [
             { "data": "name" },
@@ -240,6 +253,6 @@ function show_warcs() {
             "targets": [1],
             "render": render_time,
         }
-                      ],
+        ],
     });
 }

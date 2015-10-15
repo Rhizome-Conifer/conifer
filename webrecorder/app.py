@@ -1,5 +1,6 @@
 from bottle import route, request, response, post, default_app
-from bottle import redirect, run, HTTPError, HTTPResponse
+from bottle import run, HTTPError, HTTPResponse
+from bottle import redirect as bottle_redirect
 from bottle import hook, error
 
 from cork import Cork, AAAException
@@ -9,6 +10,7 @@ from redis import StrictRedis
 from pywb.utils.loaders import load_yaml_config
 from pywb.webapp.views import J2TemplateView
 from pywb.framework.wbrequestresponse import WbRequest
+from pywb.utils.timeutils import timestamp_now
 
 from manager import init_cork, CollsManager, ValidationException
 from pywb_dispatcher import PywbDispatcher
@@ -82,8 +84,14 @@ class WebRec(object):
 
         storage_manager = self._init_default_storage(config)
 
-        signer = RSASigner(private_key_file=expandvars(config['warcsign_private_key']),
-                           public_key_file=expandvars(config['warcsign_public_key']))
+        try:
+            private_key_file = expandvars(config['warcsign_private_key'])
+            public_key_file = expandvars(config['warcsign_public_key'])
+            signer = RSASigner(private_key_file=private_key_file,
+                               public_key_file=public_key_file)
+        except Exception as e:
+            print('WARNING: Warc signing disabled: ' + str(e))
+            signer = None
 
         manager = CollsManager(cork, redis_obj, self.path_parser, storage_manager, signer)
         self.manager = manager
@@ -252,8 +260,17 @@ def post_get(name, default=''):
         res = default
     return res
 
+
 def get_host():
     return WbRequest.make_host_prefix(request.environ)
+
+
+def redirect(url):
+    if url.startswith('/'):
+        url = get_host() + url
+
+    print('REDIR -> ' + url)
+    return bottle_redirect(url)
 
 
 # ============================================================================
@@ -304,7 +321,7 @@ automatically in 30 min*.
 
 """
 
-ANON_TITLE = "Webrecorder Test Collection"
+ANON_TITLE = "Anonymous Collection"
 
 
 DEFAULT_USER_DESC = u"""
@@ -627,7 +644,7 @@ You can now <b>login</b> with your new password!', 'success')
 
             if manager.delete_collection(user, coll):
                 flash_message('Collection {0} has been deleted!'.format(coll), 'success')
-                redirect('/' + path_parser.get_user_home(user))
+                redirect(path_parser.get_user_home(user))
             else:
                 flash_message('There was an error deleting {0}'.format(coll))
                 redirect('/' + path_parser.get_coll_path(user, coll) + '#settings')
@@ -648,7 +665,7 @@ You can now <b>login</b> with your new password!', 'success')
             cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
         else:
             flash_message('There was an error deleting {0}'.format(coll))
-            redirect('/' + path_parser.get_user_home(user))
+            redirect(path_parser.get_user_home(user))
 
 
     # ============================================================================
@@ -935,8 +952,9 @@ You can now <b>login</b> with your new password!', 'success')
         else:
             user, coll = path_parser.get_user_coll(coll)
 
-        warcs = manager.list_warcs(user, coll)
-        return {'data': warcs}
+        total_size, warcs = manager.list_warcs(user, coll)
+        return {'data': warcs,
+                'total_size': total_size}
 
 
     # WARC Files -- Download
@@ -961,4 +979,27 @@ You can now <b>login</b> with your new password!', 'success')
         response.headers['Content-Disposition'] = 'attachment; filename=' + warc
         response.headers['Content-Length'] = length
         response.body = body
+        return response
+
+    @route('/_dlall')
+    def download_coll():
+        coll = request.query.get('coll')
+        ts = timestamp_now()
+        if coll.startswith('@anon'):
+            user = manager.get_anon_user()
+            filename = 'webarchive-all-{0}.warc.gz'.format(ts)
+        else:
+            user, coll = path_parser.get_user_coll(coll)
+            filename = '{0}-{1}-all.warc.gz'.format(user, coll, ts)
+
+        res = manager.download_all(user, coll)
+
+        if not res:
+            raise HTTPError(status=404, body='No Download Data Available')
+
+        length, func = res
+        response.headers['Content-Type'] = 'text/plain'
+        response.headers['Content-Disposition'] = 'attachment; filename=' + filename
+        response.headers['Content-Length'] = length
+        response.body = func()
         return response

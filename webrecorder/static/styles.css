@@ -172,3 +172,13 @@ a.dropdown-badge {
 .btn .focus {
     outline: none !important;
 }
+
+.coll-download {
+    padding: 10px 15px;
+    margin: 15px 0px 15px 0px;
+    font-size: larger;
+    font-weight: bold;
+    border: 1px solid;
+    text-align: center;
+    border-radius: 4px;
+}

@@ -335,7 +335,6 @@ class CollsManager(object):
 
     def has_space(self, user):
         sizes = self.redis.hmget(self._user_key(user), 'total_len', 'max_len')
-        print(sizes)
         curr = sizes[0] or 0
         total = sizes[1] or 500000000
 
@@ -706,14 +705,17 @@ class CollsManager(object):
         archive_dir = self.path_router.get_archive_dir(user, coll)
 
         warcs = {}
+        total_size = 0
 
 	if os.path.isdir(archive_dir):
             for fullpath, filename in iter_file_or_dir([archive_dir]):
                 stats = os.stat(fullpath)
-                res = {'size': long(stats.st_size),
+                size = long(stats.st_size)
+                res = {'size': size,
                        'mtime': long(stats.st_mtime),
                        'name': filename}
                 warcs[filename] = res
+                total_size += size
 
         donewarcs = self.redis.smembers(self.make_key(user, coll, self.DONE_WARC_KEY))
         for stats in donewarcs:
@@ -721,7 +723,9 @@ class CollsManager(object):
             filename = res['name']
             warcs[filename] = res
 
-        return warcs.values()
+            total_size += long(res['size'])
+
+        return total_size, warcs.values()
 
     def download_warc(self, user, coll, name):
         if not self.can_admin_coll(user, coll):
@@ -747,9 +751,26 @@ class CollsManager(object):
             else:
                 return None
 
-        print('Remote File')
         result = self.storage_manager.download_stream(warc_path)
         return result
+
+
+    def download_all(self, user, coll):
+        total_size, all_warcs = self.list_warcs(user, coll)
+
+        def readall():
+            for warc in all_warcs:
+                length, stream = self.download_warc(user, coll, warc['name'])
+                buff = ''
+                while True:
+                    buff = stream.read(65535)
+                    if not buff:
+                        break
+
+                    yield buff
+
+        return total_size, readall
+
 
     def update_password(self, curr_password, password, confirm):
         user = self.get_curr_user()
