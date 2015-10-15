@@ -55,8 +55,8 @@ mailserver:
    image: catatnight/postfix
 
    environment:
-    - "maildomain=mail.webrecorder.dev"
-    - "smtp_user=webrec.archive"
+    - "maildomain=mail.webrecorder.io"
+    - "smtp_user=webrec:archive"
 
 
 # Webrecorder

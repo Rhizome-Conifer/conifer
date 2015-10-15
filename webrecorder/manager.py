@@ -129,10 +129,13 @@ def init_cork(app, redis, config):
             session_opts['session.url'] = parts.netloc
         #session_opts['session.db'] = 0
 
-    if not redis.exists('h:defaults'):
-        redis.hset('h:defaults', 'max_len', config['default_max_size'])
-        redis.hset('h:defaults', 'max_anon_len', config['default_max_anon_size'])
-        redis.hset('h:defaults', 'max_coll', config['default_max_coll'])
+    try:
+        if not redis.exists('h:defaults'):
+            redis.hset('h:defaults', 'max_len', config['default_max_size'])
+            redis.hset('h:defaults', 'max_anon_len', config['default_max_anon_size'])
+            redis.hset('h:defaults', 'max_coll', config['default_max_coll'])
+    except Exception as e:
+        print('WARNING: Unable to init defaults: ' + str(e))
 
     app = CookieGuard(app, session_opts['session.key'])
     app = SessionMiddleware(app, session_opts)

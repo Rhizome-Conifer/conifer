@@ -134,7 +134,8 @@ class WebRec(object):
 
             return {'err': out}
 
-        self.invites_enabled = expandvars(config.get('invites_enabled', True))
+        invites = expandvars(config.get('invites_enabled', 'true')).lower()
+        self.invites_enabled = invites in ('true', '1', 'yes')
 
         self.anon_duration = config.get('anon_duration', True)
 
