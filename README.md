@@ -18,11 +18,13 @@ Webrecorder can be run using Docker and Docker Compose. See [Docker Installation
 
 1). `git clone https://github.com/webrecorder/webrecorder`
 
-2).  `cd webrecorder; bash init-default.sh`. This is a convenience script that copies [webrecorder/webrecorder_sample.env](webrecorder/webrecorder_sample.env) -> `webrecorder/webrecorder.env` and creates keys for session encryption.
+2).  `cd webrecorder; bash init-default.sh`.
 
 3). `docker-compose build`
 
 4). `docker-compose up -d`
+
+(The `init-default.sh` is a convenience script that copies [webrecorder/webrecorder_sample.env](webrecorder/webrecorder_sample.env) -> `webrecorder/webrecorder.env` and creates keys for session encryption.)
 
 Point your browser to port `http://<DOCKER HOST>:8089/` to view the Webrecorder.
 
