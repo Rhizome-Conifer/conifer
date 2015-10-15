@@ -51,7 +51,7 @@ verify_ssl: false
 
 multiuser: true
 
-invites_enabled: true
+invites_enabled: $REQUIRE_INVITES
 
 #warcsign_private_key: /var/wr/wr.pem
 #warcsign_public_key: /var/wr/wr_pub.pem

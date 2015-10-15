@@ -49,7 +49,14 @@ warcprox:
     - ./webrecorder/webrecorder.env
 
 
+# Postfix (if sending mail locally)
+mailserver:
+   restart: always
+   image: catatnight/postfix
 
+   environment:
+    - "maildomain=mail.webrecorder.dev"
+    - "smtp_user=webrec.archive"
 
 
 # Webrecorder
@@ -68,6 +75,7 @@ webrecorder:
   links:
     - redis
     - warcprox
+    - mailserver
 
   env_file:
     - ./webrecorder/webrecorder.env

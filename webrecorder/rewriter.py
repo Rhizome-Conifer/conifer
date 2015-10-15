@@ -102,7 +102,7 @@ def main():
     with open(sys.argv[1], 'r') as fh:
         full = fh.read()
         prefix = 'http://localhost:8088/'
-        #prefix = 'http://beta.webrecorder.io/'
+        #prefix = 'http://webrecorder.io/'
         res = HTMLDomUnRewriter.unrewrite_html(prefix, full)
         print(res)
 

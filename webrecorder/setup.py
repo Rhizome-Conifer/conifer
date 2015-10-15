@@ -35,9 +35,9 @@ class PyTest(TestCommand):
 setup(
     name='webrecorder',
     version=__version__,
-    url='https://beta.webrecorder.io',
+    url='https://webrecorder.io',
     author='Ilya Kreymer',
-    author_email='ikreymer@gmail.com',
+    author_email='support@webrecorder.io',
     description='Webrecorder Archiving Platform',
     long_description=long_description,
     packages=find_packages(),

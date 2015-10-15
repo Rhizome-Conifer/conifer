@@ -134,7 +134,7 @@ class WebRec(object):
 
             return {'err': out}
 
-        self.invites_enabled = config.get('invites_enabled', True)
+        self.invites_enabled = expandvars(config.get('invites_enabled', True))
 
         self.anon_duration = config.get('anon_duration', True)
 
@@ -401,7 +401,7 @@ def init_routes(webrec):
         name = post_get('name', '')
         desc = post_get('desc', '')
         if manager.save_invite(email, name, desc):
-            flash_message('Thank you for your interest! We will send you an invite to try beta.webrecorder.io soon!', 'success')
+            flash_message('Thank you for your interest! We will send you an invite to try webrecorder.io soon!', 'success')
             redirect('/')
         else:
             flash_message('Oops, something went wrong, please try again')

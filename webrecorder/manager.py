@@ -444,7 +444,7 @@ class CollsManager(object):
             name=entry.get('name', email),
             invite=invitekey,
         )
-        self.cork.mailer.send_email(email, 'You are invited to join beta.webrecorder.io!', email_text)
+        self.cork.mailer.send_email(email, 'You are invited to join webrecorder.io beta!', email_text)
         entry['sent'] = str(datetime.utcnow())
         return True
 

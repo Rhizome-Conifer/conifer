@@ -1,6 +1,7 @@
+#!/usr/bin/env python
 
 from argparse import ArgumentParser
-from auth import init_manager_for_invite, RedisTable
+from manager import init_manager_for_invite, RedisTable
 import sys
 import time
 import json
@@ -34,7 +35,7 @@ def list_not_invited(m):
 def do_invite(m, email, email_template='templates/emailinvite.html'):
     res = m.send_invite(email,
                         email_template=email_template,
-                        host='https://beta.webrecorder.io')
+                        host='https://webrecorder.io')
     if res:
         print('Success')
     else:

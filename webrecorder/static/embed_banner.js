@@ -56,7 +56,7 @@ _wb_js.create_banner_element = function(banner_id)
         text += 'From collection <b>"' + wbinfo.coll + '"</b>&nbsp;<a href="//select.' + select_url + '">All Collections</a>';
     }
 
-    text += "<div class='wr'>Archived with <a target='_blank' href='https://beta.webrecorder.io/'>WebRecorder Beta</a></div>";
+    text += "<div class='wr'>Archived with <a target='_blank' href='https://webrecorder.io/'>Webrecorder</a></div>";
     banner.innerHTML = text;
     document.body.insertBefore(banner, document.body.firstChild);
 }
