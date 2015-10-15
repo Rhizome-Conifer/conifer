@@ -151,7 +151,7 @@ class WebRec(object):
                                         config['session_opts'])
 
     def _init_default_storage(self, config):
-        store_type = config.get('default_storage', 'local')
+        store_type = expandvars(config.get('default_storage', 'local'))
 
         storage = config['storage']
 
@@ -269,7 +269,6 @@ def redirect(url):
     if url.startswith('/'):
         url = get_host() + url
 
-    print('REDIR -> ' + url)
     return bottle_redirect(url)
 
 
@@ -631,7 +630,7 @@ You can now <b>login</b> with your new password!', 'success')
             user = manager.get_anon_user()
 
             if manager.delete_anon_user(user):
-                #request.environ['webrec.delete_all_cookies'] = 'all'
+                request.environ['webrec.delete_all_cookies'] = 'all'
                 #flash_message('Anonymous collection has been deleted!', 'success')
                 redirect('/')
             else:

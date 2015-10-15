@@ -810,17 +810,6 @@ def init_cork_backend(backend):
     except:
         pass
 
-    #cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
-    #cork.create_user('other', 'archivist', 'test', 'ilya@ilya', 'ilya')
-    #cork.create_user('another', 'archivist', 'test', 'ilya@ilya', 'ilya')
-
-    #cork.create_role('admin', 100)
-    #cork.create_role('reader', 20)
-
-    #cork.create_user('admin', 'admin', 'admin', 'admin@test', 'The Admin')
-    #cork.create_user('ilya', 'archivist', 'test', 'ilya@ilya', 'ilya')
-    #cork.create_user('guest', 'reader', 'test', 'ilya@ilya', 'ilya')
-    #cork.create_user('ben', 'admin', 'ben', 'ilya@ilya', 'ilya')
 
 if __name__ == "__main__":
     init_cork_backend(RedisCorkBackend(StrictRedis.from_url('redis://127.0.0.1:6379/1')))

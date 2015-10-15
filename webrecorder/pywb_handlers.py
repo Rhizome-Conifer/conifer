@@ -238,7 +238,6 @@ class DynRecord(RewriteHandler):
                           sesh_id=sesh_id,
                           user_id=user_id,
                           name_prefix=wbrequest.env.get('w_nameprefix', ''))
-            print(target)
             req_headers = {'warcprox-meta': json.dumps(target)}
         else:
             req_headers = {}
