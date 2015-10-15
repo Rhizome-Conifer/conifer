@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser
-from manager import init_manager_for_invite, RedisTable
+from manager import init_manager_for_invite
+from redisutils import RedisTable
+
 import sys
 import time
 import json
