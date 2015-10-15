@@ -65,7 +65,7 @@ Webrecorder is built using a variety of open-source tools and uses [pywb](https:
 
 ### Contact
 
-For any questions/concerns regarding Webrecorder or https://webrecorder.io/ you can open an issue or contat us at support@webrecorder.io
+For any questions/concerns regarding Webrecorder or https://webrecorder.io/ - feel free to open an [issues](https://github.com/webrecorder/webrecorder/issues) or contact us at support@webrecorder.io
 
 
 ### License
