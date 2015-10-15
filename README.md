@@ -5,6 +5,8 @@ This is the official repository of the Webrecorder web archiving platform: https
 Webrecorder provides an integrated platform for creating high-fidelity web archives while browsing, sharing, 
 and disseminating archived content.
 
+Users may try the service anonymously or login and create a permanent online archive.
+
 Webrecorder will support multiple backends and will integrate with existing preservation systems.
 
 For now, Webrecorder is still in a beta prototype stage, and this deployment is recommended for advanced users only.
@@ -32,6 +34,8 @@ Point your browser to port `http://<DOCKER HOST>:8089/` to view the Webrecorder.
 
 Webrecorder is fully configured from `webrecorder/config.yaml`, which includes full settings for the application.
 
+Archived data (WARCs) are stored locally under the `./data/` directory, and all metadata and user info is stored in a persistent Redis instance.
+
 Useful environment and deployment settings are loaded from `webrecorder/webrecorder.env` and can be overriden per-deployment.
 
 Following are a few of these settings:
@@ -41,6 +45,9 @@ Following are a few of these settings:
 The `DEFAULT_STORAGE` option in `webrecorder.env` configures storage options. Default is just the local file system.
 
 Currently, `s3` is also supported. To use s3, set `DEFAULT_STORAGE=s3` and fill in the additional auth settings in `webrecorder.env`
+
+With default local storage, archived data is kept in the `./data/accounts` directory only.
+
 
 #### Mail
 
