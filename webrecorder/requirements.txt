@@ -1,4 +1,4 @@
--e git+https://github.com/ikreymer/pywb.git@master#egg=pywb-0.10.9.1
+-e git+https://github.com/ikreymer/pywb.git@develop#egg=pywb-0.10.10
 youtube_dl
 git+git://github.com/didip/beaker_extensions.git
 bottle

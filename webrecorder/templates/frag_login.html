@@ -5,6 +5,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                {% if anon_ttl %}
+                <div style="margin: 15px" class="alert alert-warning"><i>Note: any anonymous recordings will no longer be available once you log in.</i></div>
+                {% endif %}
                 <h4>Webrecorder Login<h4>
             </div>
             <div class="row" style="margin: 20px 40px 20px 40px">
