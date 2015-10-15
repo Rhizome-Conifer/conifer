@@ -72,7 +72,15 @@ Webrecorder is built using a variety of open-source tools and uses [pywb](https:
 
 ### Contact
 
-For any questions/concerns regarding Webrecorder or https://webrecorder.io/ - feel free to open an [issues](https://github.com/webrecorder/webrecorder/issues) or contact us at support@webrecorder.io
+Webrecorder is a project of [Rhizome](https://rhizome.org), created by [Ilya Kreymer](https://github.com/ikreymer)
+
+For any questions/concerns regarding the project or https://webrecorder.io/ you can:
+
+* Open [issues](https://github.com/webrecorder/webrecorder/issues) on GitHub
+
+* Tweet to us at https://twitter.com/webrecorder_io
+
+* Contact us at support@webrecorder.io
 
 
 ### License
