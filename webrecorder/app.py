@@ -812,8 +812,16 @@ You can now <b>login</b> with your new password!', 'success')
     # ============================================================================
     @route('/_expire')
     def expire():
-        flash_message('Sorry, the anonymous collection has expired due to inactivity')
-        redirect('/')
+        user = manager.get_curr_user()
+
+        # if actually logged in (in a different tab), just redirect home
+        if user:
+            flash_message('Anonymous collection expired, browse your existing collections', 'info')
+            redirect(path_parser.get_user_home(user))
+
+        else:
+            flash_message('Sorry, the anonymous collection has expired due to inactivity')
+            redirect('/')
 
 
     # Toggle Public

@@ -5,15 +5,19 @@ $(function() {
     var act_state = "record";
     
     $(".nav-url-form").submit(function() {
-        var prefix = "";
-        
-        if (window.coll_id && window.coll_id != "@anon") {
-            prefix = "/" + coll_path;
+        var prefix = $(this).attr("data-path-prefix");
+
+        if (!prefix) {
+            prefix = "";
+
+            if (window.coll_id && window.coll_id != "@anon") {
+                prefix = "/" + coll_path;
+            }
+
+            prefix += "/" + act_state + "/";
         }
-        
+
         var url = $("#theurl").val();
-        
-        prefix += "/" + act_state + "/";
         
         if (doc_window != window.top) {
             prefix += "mp_/";
