@@ -10,6 +10,10 @@ ADD requirements.txt /code/
 
 RUN pip install -r requirements.txt
 
+ENV PYWB_VERSION -e git+https://github.com/ikreymer/pywb.git@develop#egg=pywb-0.10.10
+
+RUN pip install $PYWB_VERSION
+
 #WORKDIR /webarchive
 
 COPY . /code/
