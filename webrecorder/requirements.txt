@@ -5,4 +5,5 @@ uwsgi
 gevent
 boto
 -e git+https://github.com/ikreymer/bottle-cork.git@template-args#egg=bottle-cork-0.11.1
-git+http://github.com/ikreymer/warcsigner.git@master#egg=warcsigner-0.2.0
+#git+http://github.com/ikreymer/warcsigner.git@master#egg=warcsigner-0.2.0
+warcsigner==0.3.1
