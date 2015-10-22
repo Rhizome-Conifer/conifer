@@ -761,14 +761,14 @@ class CollsManager(object):
     def download_all(self, user, coll):
         total_size, all_warcs = self.list_warcs(user, coll)
         if self.signer:
-            sig_size, _ = self.signer.get_rsa_header()
+            sig_size, _ = self.signer.get_rsa_metadata()
             total_size -= sig_size * len(all_warcs)
 
         def readall():
             for warc in all_warcs:
                 length, stream = self.download_warc(user, coll, warc['name'])
                 if self.signer:
-                    stream = self.signer.get_unsigned_stream(stream)
+                    stream = self.signer.get_unsigned_stream(stream, length)
 
                 buff = ''
                 while True:
