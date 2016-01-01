@@ -70,9 +70,6 @@ webrecorder:
   volumes_from:
     - data
 
-  volumes:
-    - ./webrecorder:/webarchive/
-
   links:
     - redis
     - warcprox
