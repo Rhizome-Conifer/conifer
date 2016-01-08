@@ -38,9 +38,18 @@ li.coll-nav a:before {
     margin: 8px 8px 4px 8px;
 }
 
+#curr-state {
+    font-weight: 700;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
 p.status-badge {
     font-size: 14px;
     color: white !important;
+}
+
+.change-state-container {
+    padding-left: 20px;
 }
 
 ul.state-drop {
@@ -55,22 +64,29 @@ ul.state-drop {
 }
 
 .display-badge {
-    font-weight: 700;
-    font-size: 14px;
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-    vertical-align: text-bottom;
-    line-height: 1em;
-    margin-right: 4px;
-}
 
-a.dropdown-badge {
-    font-size: 14px;
-    color: white !important;
-    border-radius: 0px;
 }
 
 .replay-page {
     color: white !important;
+}
+
+#change-state,
+#change-state:hover,
+#go-to-state {
+    border-radius: 0;
+}
+
+#go-to-state {
+    margin-left: 5px;
+}
+
+#go-to-state a {
+    color: #fff;
+}
+
+#go-to-state:disabled a {
+    color: #337ab7;
 }
 
 .navbar {

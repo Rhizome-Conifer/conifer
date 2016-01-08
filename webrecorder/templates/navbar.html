@@ -34,7 +34,7 @@
                 <li class="coll-nav {{ 'active2' if not state and not coll else '' }}">
                     <a target="_parent" href="/{{ user }}" title="Return to {{user}} Archive">{{ user }}</a>
                 </li>
-                {% endif %}                
+                {% endif %}
 
                 {% if coll %}
                 <li class="coll-nav {{ 'active2' if not state else '' }}">
@@ -51,7 +51,7 @@
                     <a href="/{{path}}#files"><span id="status-text" class="badge" style="margin-right: 4px"></span></a>
                     {% endif %}
                 </p>
-                
+
                 <p class="navbar-text">
                     <a id="finish" target="_parent" href="/{{path}}#records" title="Browse Collection" class="btn btn-default btn-xs">
                         <span class="glyphicon glyphicon-share-alt" style="margin-right: 4px"></span>Browse Collection</a>
@@ -82,7 +82,7 @@
                     <span id="snapshot-label" style="display: none; font-size: 12px" title="Static Snapshot -- no dynamic content loaded" class="label label-success">Static Snapshot</span>
                 </li>
                 {% endif %}
-                
+
 
                 {#
                 <li style="margin-left: 4px" class="navbar-btn">
@@ -93,7 +93,7 @@
                 #}
 
                 {#
-                <li class="btn-group btn-group-xs navbar-btn">          
+                <li class="btn-group btn-group-xs navbar-btn">
                     <button class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                         <span class="glyphicon glyphicon-wrench"></span><span>Tools</span>
                         <span class="caret"></span>
@@ -139,22 +139,37 @@
             {% endif %}
 
         </div>
-        {% if state %} 
-        <form class="navbar-left nav-url-form " data-path-prefix="/{{ curr_path }}/"> 
+        {% if state %}
+        <form class="navbar-left nav-url-form " data-path-prefix="/{{ curr_path }}/">
             <div class="input-group input-group-sm" style="width: 100%">
-                <div class="input-group-btn">
-                    <button id="curr-state" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><span class="display-badge"></span><span class="caret"></span></button>
+                <span class="input-group-addon hidden" id="capture-text"></span>
+                <span class="input-group-addon" id="curr-state"></span>
+                <input id="theurl" type="text" style="width: 100%" placeholder="Enter url here to record or play back" class="input-small input-sm form-control"/>
+                <div class="input-group-btn change-state-container">
+                    <button id="change-state" type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                        <span class="display-badge">Action</span>
+                        <span class="caret"></span>
+                    </button>
                     <ul class="state-drop dropdown-menu" role="menu">
                         {% if can_write() %}
-                        <li><a id="record" class="label text-left label-primary dropdown-badge" href="#">Record</a></li>
-                        <li><a id="patch" class="label label-info dropdown-badge" href="#">Record Missing</a></li>
-                        <li><a id="live" class="label label-default dropdown-badge" href="#">Preview</a></li>
+                        <li id="record">
+                            <a href="#">Record</a>
+                        </li>
+                        <li id="patch">
+                            <a href="#">Record Missing</a>
+                        </li>
+                        <li role="separator" class="divider"></li>
+                        <li id="live" href="#">
+                            <a href="#">Preview</a>
+                        </li>
+                        <li role="separator" class="divider"></li>
                         {% endif %}
-                        <li><a id="replay" class="label label-success dropdown-badge" href="#">Replay</a></li>
+                        <li id="replay">
+                            <a href="#">Replay</a>
+                        </li>
                     </ul>
+                    <button id="go-to-state" class="btn btn-sm btn-primary" disabled><a href="#">Go!</a></button>
                 </div>
-                <span class="input-group-addon hidden" id="capture-text"></span>
-                <input id="theurl" type="text" style="width: 100%" placeholder="Enter url here to record or play back" class="input-small input-sm form-control"/>
             </div>
         </form>
         {% endif %}
