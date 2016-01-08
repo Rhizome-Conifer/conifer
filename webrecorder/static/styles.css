@@ -79,14 +79,23 @@ ul.state-drop {
 
 #go-to-state {
     margin-left: 5px;
+    padding: 0;
 }
 
 #go-to-state a {
     color: #fff;
+    display: block;
+    height: 100%;
+    width: 100%;
+    padding: 5px 10px;
 }
 
 #go-to-state:disabled a {
     color: #337ab7;
+}
+
+#go-to-state a:hover {
+    text-decoration: none;
 }
 
 .navbar {
