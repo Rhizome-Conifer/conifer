@@ -760,6 +760,10 @@ class CollsManager(object):
 
     def download_all(self, user, coll):
         total_size, all_warcs = self.list_warcs(user, coll)
+
+        # TODO: XX this is broken -- need to verify that the WARC has actually been signed
+        # before removing the last record! Otherwise, just truncating WARC
+        # Disabling signing for now -- Need to figure out webrecorder#27 anyway
         if self.signer:
             sig_size, _ = self.signer.get_rsa_metadata()
             total_size -= sig_size * len(all_warcs)
