@@ -763,16 +763,16 @@ class CollsManager(object):
 
         # TODO: XX this is broken -- need to verify that the WARC has actually been signed
         # before removing the last record! Otherwise, just truncating WARC
-        # Disabling signing for now -- Need to figure out webrecorder#27 anyway
-        if self.signer:
-            sig_size, _ = self.signer.get_rsa_metadata()
-            total_size -= sig_size * len(all_warcs)
+        #if self.signer:
+        #    sig_size, _ = self.signer.get_rsa_metadata()
+        #    total_size -= sig_size * len(all_warcs)
+        # For now, will have the wrong sig for all-collection WARC until webrecorder#27 is implemented
 
         def readall():
             for warc in all_warcs:
                 length, stream = self.download_warc(user, coll, warc['name'])
-                if self.signer:
-                    stream = self.signer.get_unsigned_stream(stream, length)
+                #if self.signer:
+                #    stream = self.signer.get_unsigned_stream(stream, length)
 
                 buff = ''
                 while True:
