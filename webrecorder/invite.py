@@ -14,6 +14,7 @@ def main():
     parser.add_argument('-i', '--invite')
     parser.add_argument('-l', '--list', action='store_true')
     parser.add_argument('-b', '--backlog')
+    parser.add_argument('-a', '--invite-all', action='store_true', default=False)
 
     r = parser.parse_args()
 
@@ -22,16 +23,18 @@ def main():
     if r.backlog:
         do_invite_backlog(m, r.backlog)
     if r.list:
-        list_not_invited(m)
+        list_not_invited(m, r.invite_all)
     elif r.invite:
         do_invite(m, r.invite)
 
 
-def list_not_invited(m):
+def list_not_invited(m, invite=False):
     invites = RedisTable(m.redis, 'h:invites')
-    for n, v in invites.iteritems():
+    for email, v in invites.iteritems():
         if 'sent' not in v:
-            print n + ': ' + v.get('name', '') + ' -- ' + v.get('desc', '')
+            print(email + ': ' + v.get('name', '') + ' -- ' + v.get('desc', ''))
+            if invite:
+                do_invite(m, email)
 
 
 def do_invite(m, email, email_template='templates/emailinvite.html'):
