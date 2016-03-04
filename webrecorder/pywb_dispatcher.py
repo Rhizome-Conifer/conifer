@@ -31,7 +31,7 @@ class PywbDispatcher(object):
 
     def call_pywb(self, user=None, coll=None, state=None, anon=False):
         if anon:
-            wrsesh = request.environ.get('webrec.session')
+            wrsesh = request.environ['webrec.session']
             if state != 'live' and wrsesh.curr_user:
                 wrsesh.flash_message('You are logged in. Please select a collection to record or browse', 'info')
                 redirect('/' + wrsesh.curr_user)
@@ -45,10 +45,8 @@ class PywbDispatcher(object):
             sesh_id = self.path_parser.get_coll_path(user, coll)
 
             if state == 'record' or state == 'patch':
-                if not wrsesh.is_anon():
-                    wrsesh.set_anon()
-                    self.manager.init_anon_user(user)
-                elif not self.manager.has_space(user):
+                user = self.manager.get_anon_user()
+                if not self.manager.has_space(user):
                     request.environ['webrec.no_space'] = True
 
             elif state == 'replay':

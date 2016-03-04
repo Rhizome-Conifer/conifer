@@ -32,9 +32,9 @@ def list_not_invited(m, invite=False):
     invites = RedisTable(m.redis, 'h:invites')
     for email, v in invites.iteritems():
         if 'sent' not in v:
-            print(email + ': ' + v.get('name', '') + ' -- ' + v.get('desc', ''))
             if invite:
                 do_invite(m, email)
+            print((email + ': ' + v.get('name', '') + ' -- ' + v.get('desc', '')).encode('utf-8'))
 
 
 def do_invite(m, email, email_template='templates/emailinvite.html'):

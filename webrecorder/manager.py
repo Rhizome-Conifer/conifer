@@ -168,7 +168,7 @@ class CollsManager(object):
     ALL_KEYS = [WRITE_KEY, READ_KEY, PAGE_KEY, Q_KEY,
                 DEDUP_KEY, CDX_KEY, WARC_KEY, DONE_WARC_KEY]
 
-    USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,15}$')
+    USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,30}$')
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'guest', 'settings', 'profile']
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
     WARC_RX = re.compile(r'^[\w.-]+$')
@@ -194,30 +194,21 @@ class CollsManager(object):
     #        return '', ''
 
     def get_curr_user(self):
-        sesh = request.environ.get('webrec.session')
-        if not sesh:
-            return ''
-
+        sesh = request.environ['webrec.session']
         return sesh.curr_user
 
     def get_anon_user(self):
-        sesh = request.environ.get('webrec.session')
-        if not sesh:
-            return ''
-
+        sesh = request.environ['webrec.session']
         if not sesh.is_anon():
-            return ''
+            sesh.set_anon()
+            self._init_anon_user(sesh.anon_user)
 
         return sesh.anon_user
 
     def _check_access(self, user, coll, type_):
-        sesh = request.environ.get('webrec.session')
-        if not sesh:
-            curr_user = ''
-            curr_role = ''
-        else:
-            curr_user = sesh.curr_user
-            curr_role = sesh.curr_role
+        sesh = request.environ['webrec.session']
+        curr_user = sesh.curr_user
+        curr_role = sesh.curr_role
 
         # anon access
         if not curr_user and coll == '@anon':
@@ -318,7 +309,7 @@ class CollsManager(object):
         self.cork.do_login(user)
         return user
 
-    def init_anon_user(self, user):
+    def _init_anon_user(self, user):
         max_len = self.redis.hget('h:defaults', 'max_anon_len')
         if not max_len:
             max_len = 500000000
