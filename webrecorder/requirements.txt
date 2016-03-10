@@ -1,4 +1,5 @@
 youtube_dl
+beaker
 git+git://github.com/didip/beaker_extensions.git
 bottle
 uwsgi
