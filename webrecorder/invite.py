@@ -7,6 +7,7 @@ from redisutils import RedisTable
 import sys
 import time
 import json
+from six import iteritems
 
 
 def main():
@@ -30,11 +31,11 @@ def main():
 
 def list_not_invited(m, invite=False):
     invites = RedisTable(m.redis, 'h:invites')
-    for email, v in invites.iteritems():
+    for email, v in iteritems(invites):
         if 'sent' not in v:
             if invite:
                 do_invite(m, email)
-            print((email + ': ' + v.get('name', '') + ' -- ' + v.get('desc', '')).encode('utf-8'))
+            print((email + ': ' + v.get('name', '') + ' -- ' + v.get('desc', '')))
 
 
 def do_invite(m, email, email_template='templates/emailinvite.html'):
@@ -63,7 +64,7 @@ def do_invite_backlog(m, filename):
                 continue
 
             skip = False
-            for n, v in users.iteritems():
+            for n, v in iteritems(users):
                 if v['email_addr'] == email:
                     skip = True
                     print('Already User: ' + email)

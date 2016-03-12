@@ -25,7 +25,7 @@ class RedisTable(object):
         string = self.redis.hget(self.key, name)
         if not string:
             return {}
-        result = json.loads(string)
+        result = json.loads(string.decode('utf-8'))
         if isinstance(result, dict):
             return RedisHashTable(self, name, result)
         else:
@@ -33,14 +33,16 @@ class RedisTable(object):
 
     def __iter__(self):
         keys = self.redis.hkeys(self.key)
-        return iter(keys)
+        return (key.decode('utf-8') for key in keys)
 
-    def iteritems(self):
+    def items(self):
         coll_list = self.redis.hgetall(self.key)
         colls = {}
 
         def _iteritems():
-            for n, v in coll_list.iteritems():
+            for n, v in coll_list.items():
+                n = n.decode('utf-8')
+                v = v.decode('utf-8')
                 if n == 'total_len':
                     continue
 

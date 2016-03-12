@@ -1,9 +1,11 @@
 youtube_dl
+beaker
 git+git://github.com/didip/beaker_extensions.git
 bottle
 uwsgi
 gevent
 boto
--e git+https://github.com/ikreymer/bottle-cork.git@template-args#egg=bottle-cork-0.11.1
-#git+http://github.com/ikreymer/warcsigner.git@master#egg=warcsigner-0.2.0
-warcsigner==0.3.1
+bottle-cork==0.12.0
+#-e git+https://github.com/ikreymer/bottle-cork.git@template-args#egg=bottle-cork-0.11.1
+git+http://github.com/ikreymer/warcsigner.git@py3#egg=warcsigner-0.4.0
+#warcsigner==0.3.1

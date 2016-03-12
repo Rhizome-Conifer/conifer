@@ -11,7 +11,7 @@ import base64
 import shutil
 
 from datetime import datetime
-from urlparse import urlsplit
+from six.moves.urllib.parse import urlsplit
 
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
@@ -108,7 +108,7 @@ def init_manager_for_invite(configfile='config.yaml'):
 def _get_crypt_key(key, config):
     val = config.get(key)
     if not val:
-        val = base64.b64encode(os.urandom(33))
+        val = base64.b64encode(os.urandom(33)).decode('utf-8')
     return val
 
 
@@ -117,7 +117,7 @@ def init_cork(app, redis, config):
 
     session_opts = config.get('session_opts')
 
-    for n, v in session_opts.iteritems():
+    for n, v in session_opts.items():
         if isinstance(v, str):
             session_opts[n] = os.path.expandvars(v)
 
@@ -234,7 +234,7 @@ class CollsManager(object):
     def is_public(self, user, coll):
         key = self.make_key(user, coll, self.READ_KEY)
         res = self.redis.hget(key, self.PUBLIC)
-        return res == '1'
+        return res == b'1'
 
     def set_public(self, user, coll, public):
         if not self.can_admin_coll(user, coll):
@@ -321,7 +321,7 @@ class CollsManager(object):
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
         all_users = RedisTable(self.redis, 'h:users')
-        for n, userdata in all_users.iteritems():
+        for n, userdata in all_users.items():
             if userdata['email_addr'] == email:
                 return True
 
@@ -332,7 +332,7 @@ class CollsManager(object):
         curr = sizes[0] or 0
         total = sizes[1] or 500000000
 
-        return long(curr) <= long(total)
+        return int(curr) <= int(total)
 
     def has_more_colls(self):
         user = self.get_curr_user()
@@ -386,7 +386,7 @@ class CollsManager(object):
             if not invitekey:
                 return False
 
-            key = base64.b64decode(invitekey)
+            key = base64.b64decode(invitekey.encode('utf-8'))
             key.split(':', 1)
             email, hash_ = key.split(':', 1)
 
@@ -426,10 +426,11 @@ class CollsManager(object):
             print('No Such Email In Invite List')
             return False
 
-        hash_ = base64.b64encode(os.urandom(21))
+        hash_ = base64.b64encode(os.urandom(21)).decode('utf-8')
         entry['hash_'] = hash_
 
-        invitekey = base64.b64encode(email + ':' + hash_)
+        full_hash = email + ':' + hash_
+        invitekey = base64.b64encode(full_hash.encode('utf-8')).decode('utf-8')
 
         email_text = template(
             email_template,
@@ -459,7 +460,10 @@ class CollsManager(object):
 
     def get_user_metadata(self, user, field):
         user_key = self._user_key(user)
-        return self.redis.hget(user_key, field)
+        val = self.redis.hget(user_key, field)
+        if val:
+            val = val.decode('utf-8')
+        return val
 
     def set_user_metadata(self, user, field, value):
         if not self.is_owner(user):
@@ -498,7 +502,7 @@ class CollsManager(object):
     def list_collections(self, user):
         colls_table = self._get_user_colls(user)
         colls = {}
-        for n, v in colls_table.iteritems():
+        for n, v in colls_table.items():
             if self.can_read_coll(user, n):
                 colls[n] = v
                 v['path'] = self.path_router.get_coll_path(user, n)
@@ -512,7 +516,7 @@ class CollsManager(object):
             return False
 
         base_key = self.make_key(user, coll)
-        keys = map(lambda x: base_key + x, self.ALL_KEYS)
+        keys = list(map(lambda x: base_key + x, self.ALL_KEYS))
         #key_q = '*' + user + ':' + coll + '*'
         #keys = self.redis.keys(key_q)
 
@@ -592,6 +596,8 @@ class CollsManager(object):
         user_res = self.redis.hmget(user_key, ['total_len', 'max_len', 'max_coll'])
         num_coll = self.redis.hlen(user_key + self.COLL_KEY)
 
+        user_res = [x.decode('latin-1') if x else None for x in user_res]
+
         return {'user_total_size': user_res[0],
                 'user_max_size': user_res[1],
                 'max_coll': user_res[2],
@@ -607,6 +613,9 @@ class CollsManager(object):
 
         user_key = self._user_key(user)
         user_res = self.redis.hmget(user_key, ['total_len', 'max_len'])
+
+        res = [x.decode('latin-1') if x else None for x in res]
+        user_res = [x.decode('latin-1') if x else None for x in user_res]
 
         return {'total_size': res[0],
                 'num_urls': res[1],
@@ -683,7 +692,7 @@ class CollsManager(object):
             return []
 
         pagelist = self.redis.smembers(self.make_key(user, coll, self.PAGE_KEY))
-        pagelist = map(json.loads, pagelist)
+        pagelist = [json.loads(x.decode('latin-1')) for x in pagelist]
         return pagelist
 
     def num_pages(self, user, coll):
@@ -701,25 +710,25 @@ class CollsManager(object):
         warcs = {}
         total_size = 0
 
-	if os.path.isdir(archive_dir):
+        if os.path.isdir(archive_dir):
             for fullpath, filename in iter_file_or_dir([archive_dir]):
                 stats = os.stat(fullpath)
-                size = long(stats.st_size)
+                size = int(stats.st_size)
                 res = {'size': size,
-                       'mtime': long(stats.st_mtime),
+                       'mtime': int(stats.st_mtime),
                        'name': filename}
                 warcs[filename] = res
                 total_size += size
 
         donewarcs = self.redis.smembers(self.make_key(user, coll, self.DONE_WARC_KEY))
         for stats in donewarcs:
-            res = json.loads(stats)
+            res = json.loads(stats.decode('latin-1'))
             filename = res['name']
             warcs[filename] = res
 
-            total_size += long(res['size'])
+            total_size += int(res['size'])
 
-        return total_size, warcs.values()
+        return total_size, list(warcs.values())
 
     def download_warc(self, user, coll, name):
         if not self.can_admin_coll(user, coll):
@@ -732,6 +741,8 @@ class CollsManager(object):
         if not warc_path:
             return None
 
+        warc_path = warc_path.decode('latin-1')
+
         # check if local path (TODO: better check?)
         if not warc_path.startswith(('s3://')):
             archive_dir = self.path_router.get_archive_dir(user, coll)
@@ -740,7 +751,7 @@ class CollsManager(object):
                 if self.signer and not self.signer.verify(full_path):
                     self.signer.sign(full_path)
                 length = os.stat(full_path).st_size
-                stream = open(full_path, 'r')
+                stream = open(full_path, 'rb')
                 return length, stream
             else:
                 return None
@@ -765,7 +776,7 @@ class CollsManager(object):
                 #if self.signer:
                 #    stream = self.signer.get_unsigned_stream(stream, length)
 
-                buff = ''
+                buff = b''
                 while True:
                     buff = stream.read(65535)
                     if not buff:

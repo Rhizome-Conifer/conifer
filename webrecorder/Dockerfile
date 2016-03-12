@@ -1,5 +1,5 @@
 #Dockerfile for webrecorder
-FROM python:2.7.11
+FROM python:latest
 #FROM ikreymer/pywb:dev
 
 #COPY ./keys /keys
@@ -10,7 +10,7 @@ ADD requirements.txt /code/
 
 RUN pip install -r requirements.txt
 
-ENV PYWB_VERSION -e git+https://github.com/ikreymer/pywb.git@master#egg=pywb-0.11.1
+ENV PYWB_VERSION -e git+https://github.com/ikreymer/pywb.git@py3#egg=pywb-1.0
 
 RUN pip install $PYWB_VERSION
 

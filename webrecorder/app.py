@@ -22,12 +22,14 @@ from pathparser import WebRecPathParser
 from uploader import Uploader, AnonChecker, iter_all_accounts
 
 from warcsigner.warcsigner import RSASigner
+#RSASigner = None
+
 from session import Session, flash_message
 
 import logging
 import functools
 
-from urlparse import urljoin
+from six.moves.urllib.parse import urljoin
 from os.path import expandvars
 
 
@@ -870,7 +872,8 @@ You can now <b>login</b> with your new password!', 'success')
     # ============================================================================
     @post('/_desc/:user')
     def set_desc(user):
-        if manager.set_user_metadata(user, 'desc', request.body.read()):
+        desc_text = request.body.read().decode('utf-8')
+        if manager.set_user_metadata(user, 'desc', desc_text):
             return {}
         else:
             raise HTTPError(status=404, body='Not found')
@@ -880,7 +883,8 @@ You can now <b>login</b> with your new password!', 'success')
     # ============================================================================
     @post('/_desc/:user/:coll')
     def set_desc(user, coll):
-        if manager.set_metadata(user, coll, 'desc', request.body.read()):
+        desc_text = request.body.read().decode('utf-8')
+        if manager.set_metadata(user, coll, 'desc', desc_text):
             return {}
         else:
             raise HTTPError(status=404, body='Not found')
@@ -961,8 +965,9 @@ You can now <b>login</b> with your new password!', 'success')
             user, coll = path_parser.get_user_coll(coll)
 
         total_size, warcs = manager.list_warcs(user, coll)
-        return {'data': warcs,
+        res =  {'data': warcs,
                 'total_size': total_size}
+        return res
 
 
     # WARC Files -- Download

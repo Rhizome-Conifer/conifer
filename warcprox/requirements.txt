@@ -1,5 +1,6 @@
 redis
 hiredis
--e git+https://github.com/ikreymer/warcprox.git@with-redis#egg=warcprox-1.4
-pywb
+-e git+https://github.com/ikreymer/warcprox.git@redisdedup-py3#egg=warcprox-1.4
+#-e git+https://github.com/ikreymer/pywb.git@py3#egg=pywb-1.0b
+#pywb
 

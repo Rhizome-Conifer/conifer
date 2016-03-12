@@ -11,6 +11,7 @@ from pywb.webapp.replay_views import CaptureException, ReplayView
 
 from pywb.warc.recordloader import ArcWarcRecordLoader
 from pywb.warc.resolvingloader import ResolvingLoader
+from pywb.warc.pathresolvers import PathResolverMapper
 
 from pywb.framework.wbrequestresponse import WbResponse
 from pywb.utils.wbexception import NotFoundException
@@ -49,11 +50,12 @@ class DynCDXRedis(RedisCDXSource):
     def load_cdx(self, query):
         path = query.params['output_dir']
         if not path:
-            print 'No Path'
+            print('No Path')
             return iter([])
 
         sesh_id = query.params['sesh_id']
         cdx_key = sesh_id.replace('/', ':') + ':cdxj'
+        cdx_key = cdx_key.encode('utf-8')
 
         return self.load_sorted_range(query, cdx_key)
 
@@ -71,7 +73,7 @@ class DynCDXFile(CDXFile):
         path = query.params['output_dir']
 
         if not path:
-            print 'No Path'
+            print('No Path')
             return iter([])
 
         filename = os.path.join(self.root_path,
@@ -145,7 +147,7 @@ class DynWBHandler(WBHandler):
 
         paths = config.get('archive_paths')
 
-        resolving_loader = ResolvingLoader(paths=paths,
+        resolving_loader = ResolvingLoader(PathResolverMapper()(paths),
                                            record_loader=record_loader)
 
         redis_warc_resolver = config.get('redis_warc_resolver')

@@ -17,7 +17,7 @@ class LocalStorageManager(BaseStorageManager):
 
     def download_stream(self, remote_url):
         length = os.stat(full_path).st_size
-        stream = open(full_path, 'r')
+        stream = open(full_path, 'rb')
         return length, stream
 
     def get_remote_url(self, rel_path):

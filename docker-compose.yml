@@ -18,7 +18,7 @@ redis:
 data:
   #restart: always
 
-  image: python:2.7
+  image: python:3.5
 
   command: python -i
   

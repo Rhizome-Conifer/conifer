@@ -1,5 +1,5 @@
 import boto
-from urlparse import urlsplit
+from six.moves.urllib.parse import urlsplit
 
 from storage import BaseStorageManager
 
@@ -54,7 +54,7 @@ class S3Manager(BaseStorageManager):
         s3_path = self.prefix + rel_path
         s3_url = self.get_remote_url(rel_path)
 
-        with open(local, 'r') as fh:
+        with open(local, 'rb') as fh:
             try:
                 new_key = self._get_bucket().new_key(s3_path)
                 print('Uploading {0} -> {1}'.format(local, s3_url))
