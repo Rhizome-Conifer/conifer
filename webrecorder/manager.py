@@ -485,11 +485,15 @@ class CollsManager(object):
         if self.has_collection(user, coll):
             raise ValidationException('Collection {0} already exists!'.format(coll))
 
+        # ok for dir to already exist!
         dir_ = self.path_router.get_archive_dir(user, coll)
-        if os.path.isdir(dir_):
-            raise ValidationException('Collection {0} already exists!'.format(coll))
+        #if os.path.isdir(dir_):
+        #    raise ValidationException('Collection {0} already exists!'.format(coll))
 
-        os.makedirs(dir_)
+        try:
+            os.makedirs(dir_)
+        except OSError:
+            pass
 
         coll_data = {'title': title}
 

@@ -104,7 +104,6 @@ class AnonChecker(object):
         if not os.path.isdir(self.anon_dir):
             return
 
-
         for anon in os.listdir(self.anon_dir):
             if anon.startswith('.'):
                 continue
