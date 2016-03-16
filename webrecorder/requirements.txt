@@ -5,6 +5,7 @@ bottle
 uwsgi
 gevent
 boto
+requests>=2.9.1
 bottle-cork==0.12.0
 #-e git+https://github.com/ikreymer/bottle-cork.git@template-args#egg=bottle-cork-0.11.1
 git+http://github.com/ikreymer/warcsigner.git@py3#egg=warcsigner-0.4.0
