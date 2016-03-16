@@ -134,6 +134,9 @@ class WebRec(object):
             else:
                 response.status = 404
 
+            print(out)
+            import traceback
+            traceback.print_exc()
             return {'err': out}
 
         invites = expandvars(config.get('invites_enabled', 'true')).lower()
