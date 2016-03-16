@@ -47,7 +47,7 @@ class CookieGuard(object):
         if not sesh_cookie:
             return
 
-        cookie = cookie.replace(sesh_cookie, '')
+        cookie = cookie.replace(sesh_cookie, '').strip('; ')
         environ['webrec.request_cookie'] = cookie
         environ['HTTP_COOKIE'] = sesh_cookie
 
