@@ -94,12 +94,18 @@ class DynRedisResolver(object):
         self.proxy_target = proxy_target
         self.key_prefix = key_prefix
 
-    def __call__(self, filename):
+    def __call__(self, filename, cdx):
         sesh_id, warc_key = self._split_sesh_warc(filename)
+
+        warc_key = warc_key.encode('utf-8')
+        sesh_id = sesh_id.encode('utf-8')
+
         orig_path = self.redis.hget(sesh_id, warc_key)
 
         if not orig_path:
             return []
+
+        orig_path = orig_path.decode('utf-8')
 
         # if proxy_path set, try proxy path first
         if self.remote_target and self.proxy_target:
@@ -110,6 +116,11 @@ class DynRedisResolver(object):
 
     def add_filename(self, filename, remote_url):
         sesh_id, warc_key = self._split_sesh_warc(filename)
+
+        warc_key = warc_key.encode('utf-8')
+        sesh_id = sesh_id.encode('utf-8')
+        remote_url = remote_url.encode('utf-8')
+
         redis_val = self.redis.hset(sesh_id, warc_key, remote_url)
 
     def _split_sesh_warc(self, filename):
