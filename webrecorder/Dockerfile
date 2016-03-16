@@ -1,5 +1,5 @@
 #Dockerfile for webrecorder
-FROM python:latest
+FROM python:3.5
 #FROM ikreymer/pywb:dev
 
 #COPY ./keys /keys

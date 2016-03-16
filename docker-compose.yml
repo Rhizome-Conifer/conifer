@@ -25,6 +25,7 @@ data:
   volumes:
     - ./data:/data/
     - ./webrecorder/static:/code/static/
+    - ./webrecorder/templates:/code/templates/
     - ./data/nginxcache:/nginxcache
 
 # Warcprox
