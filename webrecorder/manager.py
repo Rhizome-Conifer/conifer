@@ -386,7 +386,7 @@ class CollsManager(object):
             if not invitekey:
                 return False
 
-            key = base64.b64decode(invitekey.encode('utf-8'))
+            key = base64.b64decode(invitekey.encode('utf-8')).decode('utf-8')
             key.split(':', 1)
             email, hash_ = key.split(':', 1)
 
@@ -396,7 +396,8 @@ class CollsManager(object):
             if entry and entry.get('hash_') == hash_:
                 return email
         except Exception as e:
-            print(e)
+            import traceback
+            traceback.print_exc()
             pass
 
         msg = 'Sorry, that is not a valid invite code. Please try again or request another invite'
