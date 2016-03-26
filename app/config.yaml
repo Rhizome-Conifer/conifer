@@ -1,0 +1,25 @@
+
+collections:
+    live:
+        upstream_url: 'http://webagg:8080/live/resource/postreq?url={url}&closest={closest}'
+
+    '(?P<user>\w+)/(?P<coll>\w+)/[$](?P<rec>\w+)/record':
+        upstream_url: 'http://recorder:8010/record/live/resource/postreq?url={url}&closest={closest}&param.recorder.user={user}&param.recorder.coll={coll}&param.recorder.rec={rec}'
+
+    '(?P<user>\w+)/(?P<coll>\w+)/(?P<rec>\w+)':
+        upstream_url: 'http://webagg:8080/replay/resource/postreq?url={url}&closest={closest}&param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}'
+
+    '(?P<user>\w+)/(?P<coll>\w+)/[*]':
+        upstream_url: 'http://webagg:8080/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}'
+
+
+framed_replay: inverse
+
+index_paths: $liveweb
+
+wb_handler_class: !!python/name:urlrewrite.platformhandler.PlatformHandler
+
+route_class: !!python/name:urlrewrite.platformhandler.PlatformRoute
+
+
+

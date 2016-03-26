@@ -1,95 +1,57 @@
-# Redis
-redis:
-  restart: always
-  #image: redis:latest
-  build: ./redis
-  ports:
-    - "6379:6379"
-  
-  volumes_from:
-    - data
+version: '2'
 
-  env_file:
-    - ./webrecorder/webrecorder.env
+services:
+    app:
+        build: ./app
 
- # command: redis-server --appendonly yes
+        links:
+            - webagg
+            - recorder
 
-# Data Only Volume
-data:
-  #restart: always
+        ports:
+            - 8080:8080
 
-  image: python:3.5
+        volumes:
+            - ./app/:/app/
 
-  command: python -i
-  
-  volumes:
-    - ./data:/data/
-    - ./webrecorder/static:/code/static/
-    - ./webrecorder/templates:/code/templates/
-    - ./data/nginxcache:/nginxcache
+    recorder:
+        build: ./recorder
+        environment:
+            - UPSREAM_HOST=http://webagg:8080
+            - RECORD_ROOT=/data/
+            - REDIS_BASE_URL=redis://redis:6379/1/
 
-# Warcprox
-warcprox:
-  restart: always
-  build: ./warcprox
+        links:
+            - webagg
+            - redis
 
-  command: ./run-rec.sh
-
-  volumes_from:
-    - data
-
-  links:
-    - redis
-
-  environment:
-    - DATA=/data/
-
-  ports:
-    - "9002:9002"
-
-  env_file:
-    - ./webrecorder/webrecorder.env
+        volumes_from:
+            - data
 
 
-# Postfix (if sending mail locally)
-mailserver:
-   restart: always
-   image: catatnight/postfix
+    webagg:
+        build: ./webagg
+        environment:
+            - REDIS_BASE_URL=redis://redis:6379/1/
 
-   environment:
-    - "maildomain=mail.webrecorder.io"
-    - "smtp_user=webrec:archive"
+        links:
+            - redis
+
+        volumes_from:
+            - data
 
 
-# Webrecorder
-webrecorder:
-  restart: always
-  build: ./webrecorder
+    redis:
+        image: redis:2.8.21
 
-  command: uwsgi uwsgi.ini
 
-  volumes_from:
-    - data
+    # Data Only Volume
+    data:
+      image: python:3.5
 
-  links:
-    - redis
-    - warcprox
-    - mailserver
+      command: python -i
+      
+      volumes:
+        - ./warcdata:/data
 
-  env_file:
-    - ./webrecorder/webrecorder.env
-
-  #ports:
-  #  - "8088:8088"
-
-nginx:
-  build: ./nginx
-  ports:
-    - "8089:80"
-
-  volumes_from:
-    - data
-
-  links:
-    - webrecorder
 
