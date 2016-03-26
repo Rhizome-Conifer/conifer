@@ -42,6 +42,6 @@ nosetests.xml
 .vagrant
 
 # webrecorder specific
-webrecorder/webrecorder.env
+webrecorder/webrecorder.env*
 webrecorder/keys/
 data/
