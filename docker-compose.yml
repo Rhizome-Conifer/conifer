@@ -3,6 +3,9 @@ version: '2'
 services:
     app:
         build: ./app
+        environment:
+            - RECORD_HOST=http://recorder:8010
+            - REPLAY_HOST=http://webagg:8080
 
         links:
             - webagg
@@ -13,6 +16,20 @@ services:
 
         volumes:
             - ./app/:/app/
+
+    nginx:
+        build: ./nginx
+        ports:
+            - "8089:80"
+
+        #volumes:
+        #    - ./app/:/app/
+
+        volumes_from:
+            - app
+
+        links:
+            - app
 
     recorder:
         build: ./recorder

@@ -1,5 +1,7 @@
 FROM webrecore
 
+VOLUME /data
+
 WORKDIR /rec/
 ADD . /rec/
 
