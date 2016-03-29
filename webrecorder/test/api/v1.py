@@ -15,7 +15,22 @@ def recordings_index():
 							{"id": "du-temps-perdu", "title": "du temps perdu",
 							"created_at": "2016010203000000", "updated_at": "2016010203000000",
 							"size": 1000000}]}
-# @post('/api/v1/recordings')
+
+# POST /recordings
+@post('/api/v1/recordings')
+def create_recording():
+	title = request.forms.get('title')
+	id = id_from_title(title)
+
+	if is_valid(id):
+		return {"status": "success",
+			    "recording": {"id": id, "title": title, "created_at": "2016010203000000",
+						      "modified_at": "2016010203000000", "size": 0}}
+	else:
+		return  {"status": "AlreadyExists",
+				 "recording": {"id": id, "title": title,
+				 "created_at": "2016010203000000", "updated_at": "2016010203000000", "size": 100000}}
+
 # @get('/api/v1/recordings/<id>')
 # @delete('/api/v1/recordings/<id>')
 # @get('/api/v1/recordings/<id>/download')
@@ -28,5 +43,16 @@ def recordings_index():
 # @get('/api/v1/collections/<id>')
 # @delete('/api/v1/collections/<id>')
 # @get('/api/v1/collections/<id>/download')
+
+# Utilities
+def is_valid(id):
+	if randint(0,1) == 0:
+		return True
+	else:
+		return False
+
+def id_from_title(title):
+	p = re.compile('[\s]')
+	return p.sub('-', title)
 
 run(host='localhost', port=8080, debug=True)
