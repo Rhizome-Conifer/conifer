@@ -31,7 +31,16 @@ def create_recording():
 				 "recording": {"id": id, "title": title,
 				 "created_at": "2016010203000000", "updated_at": "2016010203000000", "size": 100000}}
 
-# @get('/api/v1/recordings/<id>')
+# GET /recordings/<id>
+@get('/api/v1/recordings/<id>')
+def get_recording(id):
+	user = request.query.user
+	collection = request.query.collection
+
+	title = title_from_id(id)
+	return {"id": id, "title": title, "created_at": "2016010203000000", "updated_at": "2016010203000000", "size": 87000}
+
+
 # @delete('/api/v1/recordings/<id>')
 # @get('/api/v1/recordings/<id>/download')
 
@@ -54,5 +63,9 @@ def is_valid(id):
 def id_from_title(title):
 	p = re.compile('[\s]')
 	return p.sub('-', title)
+
+def title_from_id(id):
+	p = re.compile('[-]')
+	return p.sub(' ', id)
 
 run(host='localhost', port=8080, debug=True)
