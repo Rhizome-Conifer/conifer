@@ -46,7 +46,12 @@ def get_recording(id):
 # @delete('/api/v1/recordings/<id>')
 # @get('/api/v1/recordings/<id>/download')
 
-# @get('/api/v1/recordings/<id>/pages')
+# GET /api/v1/recordings/<id>/pages
+@get('/api/v1/recordings/<id>/pages')
+def get_pages(id):
+	return {"pages": [{"url": "http://twitter.com/proustfan36", "title": "Twitter - proustfan36", "timestamp": "2013140000000000"},
+					  {"url": "http://societyofmadelineeaters.com", "title": "The Society of Madeline Eaters", "timestamp": "2016010203000000"}] }
+
 # @post('/api/v1/recordings/<id>/pages')
 
 # @get('/api/v1/collections')
