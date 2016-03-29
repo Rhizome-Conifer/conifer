@@ -1,13 +1,20 @@
 from bottle import get, post, request, run
 
-# Get list of recordings
+from random import randint
+import re
+
+# GET /recordings
 @get('/api/v1/recordings')
 def recordings_index():
 	user = request.query.user
 	collection = request.query.collection
 
-	return {"hello": "world"}
-
+	return { "recordings": [{"id": "a-la-recherche", "title": "À la recherche",
+							"created_at": "2016010203000000", "updated_at": "2016010203000000",
+							"size": 1000000},
+							{"id": "du-temps-perdu", "title": "du temps perdu",
+							"created_at": "2016010203000000", "updated_at": "2016010203000000",
+							"size": 1000000}]}
 # @post('/api/v1/recordings')
 # @get('/api/v1/recordings/<id>')
 # @delete('/api/v1/recordings/<id>')
