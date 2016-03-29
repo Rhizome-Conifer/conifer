@@ -1,4 +1,4 @@
-from bottle import get, post, request, run
+from bottle import get, post, request, response, run
 
 from random import randint
 import re
@@ -23,10 +23,12 @@ def create_recording():
 	id = id_from_title(title)
 
 	if is_valid(id):
+		response.status = 200
 		return {"status": "success",
 			    "recording": {"id": id, "title": title, "created_at": "2016010203000000",
 						      "modified_at": "2016010203000000", "size": 0}}
 	else:
+		response.status = 400
 		return  {"status": "AlreadyExists",
 				 "recording": {"id": id, "title": title,
 				 "created_at": "2016010203000000", "updated_at": "2016010203000000", "size": 100000}}
