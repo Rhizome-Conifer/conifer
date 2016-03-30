@@ -1,14 +1,13 @@
 from bottle import route, request, response, post, default_app
 from bottle import run, HTTPError, HTTPResponse
 from bottle import redirect as bottle_redirect
-from bottle import hook, error
+from bottle import error, Bottle
 
 from cork import Cork, AAAException
 
 from redis import StrictRedis
 
 from pywb.utils.loaders import load_yaml_config
-from pywb.webapp.views import J2TemplateView
 from pywb.framework.wbrequestresponse import WbRequest
 from pywb.utils.timeutils import timestamp_now
 
@@ -31,6 +30,8 @@ import functools
 
 from six.moves.urllib.parse import urljoin
 from os.path import expandvars
+
+from webrecapp import WebRecApp
 
 
 # ============================================================================
@@ -57,27 +58,44 @@ def init(configfile='config.yaml', redis_url=None):
                                                      proxy_target=config['proxy_target'])
 
 
-    bottle_app = default_app()
+    bottle_app = Bottle()
 
     final_app, cork = init_cork(bottle_app, redis_obj, config)
 
-    webrec = WebRec(config, cork, redis_obj)
-    bottle_app.install(webrec)
+    content_app = WebRecApp(bottle_app)
 
-    pywb_dispatch = PywbDispatcher(bottle_app)
+    global jinja_env
+    jinja_env = content_app.jenv.jinja_env
+
+    webrec = WebRecUserManager(bottle_app, config, cork, redis_obj, jinja_env)
+
+    bottle_app.install(AddSession(cork, config))
 
     init_routes(webrec)
-    pywb_dispatch.init_routes()
+
+    #pywb_dispatch = PywbDispatcher(bottle_app)
+    #pywb_dispatch.init_routes()
 
     return final_app
 
 
 # =============================================================================
-class WebRec(object):
-    name = 'webrecorder'
-    api = 2
+class AddSession(object):
+    def __init__(self, cork, config):
+        self.cork = cork
+        self.anon_duration = config.get('anon_duration', True)
 
-    def __init__(self, config, cork, redis_obj):
+    def __call__(self, func):
+        def func_wrapper(*args, **kwargs):
+            request.environ['webrec.session'] = Session(self.cork, self.anon_duration)
+            return func(*args, **kwargs)
+
+        return func_wrapper
+
+
+# =============================================================================
+class WebRecUserManager(object):
+    def __init__(self, app, config, cork, redis_obj, jinja_env):
         store_root = config.get('store_root', './')
 
         self.path_parser = WebRecPathParser(store_root)
@@ -134,7 +152,6 @@ class WebRec(object):
             else:
                 response.status = 404
 
-            print(out)
             import traceback
             traceback.print_exc()
             return {'err': out}
@@ -156,6 +173,12 @@ class WebRec(object):
                                         manager,
                                         config['session_opts'])
 
+        app.default_error_handler = self.err_handler
+
+        app.webrec = self
+
+        start_uwsgi_timer(30, "mule", self.run_timer)
+
     def _init_default_storage(self, config):
         store_type = expandvars(config.get('default_storage', 'local'))
 
@@ -164,15 +187,6 @@ class WebRec(object):
         store_class = storage.get(store_type)
 
         return store_class(expandvars(config['storage_remote_root']))
-
-
-    def setup(self, app):
-        app.default_error_handler = self.err_handler
-
-        app.webrec = self
-
-        start_uwsgi_timer(30, "mule", self.run_timer)
-
 
     def run_timer(self, signum=None):
         self.anon_checker()
@@ -208,13 +222,6 @@ class WebRec(object):
         response.set_header('Location', full_url)
         return True
 
-    def __call__(self, func):
-        def func_wrapper(*args, **kwargs):
-            request.environ['webrec.session'] = Session(self.cork, self.anon_duration)
-            return func(*args, **kwargs)
-
-        return func_wrapper
-
 
 # =============================================================================
 def start_uwsgi_timer(freq, type_, callable_):
@@ -228,7 +235,7 @@ def raise_uwsgi_signal():
 
 
 #=================================================================
-jinja_env = J2TemplateView.init_shared_env()
+#jinja_env = J2TemplateView.init_shared_env()
 
 def jinja2_view(template_name):
     def decorator(view_func):

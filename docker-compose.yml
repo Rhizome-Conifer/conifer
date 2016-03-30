@@ -2,10 +2,13 @@ version: '2'
 
 services:
     app:
-        build: ./app
+        build: ./webrecorder
         environment:
             - RECORD_HOST=http://recorder:8010
             - REPLAY_HOST=http://webagg:8080
+
+        env_file:
+            - ./webrecorder/webrecorder.env
 
         links:
             - webagg
@@ -15,7 +18,7 @@ services:
             - 8080:8080
 
         volumes:
-            - ./app/:/app/
+            - ./webrecorder/:/code/
 
     nginx:
         build: ./nginx
@@ -60,6 +63,16 @@ services:
 
     redis:
         image: redis:2.8.21
+
+
+    # Postfix (if sending mail locally)
+    mailserver:
+        restart: always
+        image: catatnight/postfix
+
+        environment:
+            - "maildomain=mail.webrecorder.io"
+            - "smtp_user=webrec:archive"
 
 
     # Data Only Volume

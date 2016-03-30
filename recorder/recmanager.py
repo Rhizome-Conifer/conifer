@@ -18,11 +18,12 @@ class WebRecManager(object):
     def __init__(self, config=None):
         config = config or {}
         self.upstream_url = os.environ.get('UPSREAM_HOST', 'http://localhost:8080')
+
         self.record_root_dir = os.environ.get('RECORD_ROOT', './data/')
+        self.warc_path_templ = self.record_root_dir + config.get('file_path_templ', '{user}/{coll}/{rec}/')
 
         self.cdxj_key_templ = config.get('cdxj_key_templ', '{user}:{coll}:{rec}:cdxj')
 
-        self.warc_path_templ = self.record_root_dir + config.get('file_path_templ', '{user}/{coll}/{rec}/')
         self.warc_rec_prefix = 'rec-{rec}-'
         self.warc_name_templ = 'rec-{rec}-{timestamp}-{hostname}.warc.gz'
         self.warc_key_templ = config.get('warc_key_templ', '{user}:{coll}:warc')
@@ -36,8 +37,7 @@ class WebRecManager(object):
         self.app.mount('/record', self.recorder)
 
 
-    def create_recorder(self, config=None):
-        #redis_host = os.environ.get('REDIS_HOST', 'redis://localhost/1')
+    def create_recorder(self):
         redis_base = os.environ.get('REDIS_BASE_URL', 'redis://localhost/1/')
 
         cdxj_key_url = redis_base + self.cdxj_key_templ
