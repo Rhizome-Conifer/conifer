@@ -6,9 +6,11 @@ from bottle import Bottle, request, redirect
 
 from urlrewrite.rewriterapp import RewriterApp
 
+from webrecorder.basecontroller import BaseController
+
 
 # ============================================================================
-class RewriteController(RewriterApp):
+class ContentController(BaseController, RewriterApp):
     DEF_REC_NAME = 'my-recording'
 
     PATHS = {'live': '{replay_host}/live/resource/postreq?url={url}&closest={closest}',
@@ -19,18 +21,12 @@ class RewriteController(RewriterApp):
 
     WB_URL_RX = re.compile('((\d*)([a-z]+_)?/)?(https?:)?//.*')
 
-    def __init__(self, app=None, jinja_env=None):
-        super(RewriteController, self).__init__(framed_replay=True,
-                                        jinja_env=jinja_env)
-
-        if not app:
-            app = Bottle()
-        self.app = app
-
+    def __init__(self, app, jinja_env, manager, config):
         self.record_host = os.environ.get('RECORD_HOST', 'http://localhost:8010')
         self.replay_host = os.environ.get('REPLAY_HOST', 'http://localhost:8080')
 
-        self.init_routes()
+        BaseController.__init__(self, app, jinja_env, manager, config)
+        RewriterApp.__init__(self, framed_replay=True, jinja_env=jinja_env)
 
     def init_routes(self):
         # REDIRECTS

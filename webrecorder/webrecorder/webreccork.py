@@ -104,3 +104,8 @@ class RedisCorkBackend(object):
     def save_pending_registrations(self): pass
 
 
+# ============================================================================
+class ValidationException(Exception):
+    pass
+
+

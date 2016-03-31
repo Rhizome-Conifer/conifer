@@ -1,12 +1,14 @@
-from bottle import request, HTTPError
+from bottle import request, HTTPError, redirect as bottle_redirect
 from functools import wraps
+
 
 # ============================================================================
 class BaseController(object):
-    def __init__(self, app, jinja_env, manager):
+    def __init__(self, app, jinja_env, manager, config):
         self.app = app
         self.jinja_env = jinja_env
         self.manager = manager
+        self.config = config
 
         self.init_routes()
 
@@ -40,6 +42,33 @@ class BaseController(object):
     def get_session(self):
         return request.environ['webrec.session']
 
+    def flash_message(self, *args, **kwargs):
+        return self.get_session().flash_message(*args, **kwargs)
+
+    def get_user_home(self, user):
+        return '/' + user
+
+    def get_redir_back(skip, default='/'):
+        redir_to = request.headers.get('Referer', default)
+        if redir_to.endswith(skip):
+            redir_to = default
+        return redir_to
+
+    def post_get(self, name, default=''):
+        res = request.POST.get(name, default).strip()
+        if not res:
+            res = default
+        return res
+
+    def get_host(self):
+        return request.urlparts.scheme + '://' + request.urlparts.netloc
+
+    def redirect(self, url):
+        if url.startswith('/'):
+            url = self.get_host() + url
+
+        return bottle_redirect(url)
+
     def jinja2_view(self, template_name):
         def decorator(view_func):
             @wraps(view_func)
@@ -47,9 +76,9 @@ class BaseController(object):
                 resp = view_func(*args, **kwargs)
 
                 if isinstance(resp, dict):
-                    #ctx_params = request.environ.get('pywb.template_params')
-                    #if ctx_params:
-                    #    response.update(ctx_params)
+                    ctx_params = request.environ.get('webrec.template_params')
+                    if ctx_params:
+                        resp.update(ctx_params)
 
                     template = self.jinja_env.jinja_env.get_or_select_template(template_name)
                     return template.render(**resp)

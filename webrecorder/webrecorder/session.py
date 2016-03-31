@@ -35,7 +35,7 @@ class Session(object):
         if self.curr_role == 'anon':
             params['anon_ttl'] = self._anon_ttl()
 
-        request.environ['pywb.template_params'] = params
+        request.environ['webrec.template_params'] = params
 
     def _anon_ttl(self):
         key = self.sesh.namespace._format_key('session')
@@ -88,5 +88,4 @@ def make_anon_user(id):
     return 'anon/' + id
 
 
-def flash_message(*args, **kwargs):
-    return request['webrec.session'].flash_message(*args, **kwargs)
+

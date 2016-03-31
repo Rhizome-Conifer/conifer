@@ -16,15 +16,16 @@ from pywb.utils.loaders import load_yaml_config
 
 from six.moves.urllib.parse import urlsplit, urljoin
 
-from webrecorder.rewritecontroller import RewriteController
+from webrecorder.contentcontroller import ContentController
 from webrecorder.recscontroller import RecsController
+from webrecorder.logincontroller import LoginController
 
 from webrecorder.webreccork import WebRecCork
 
 from webrecorder.cookieguard import CookieGuard
 
 from webrecorder.redisman import RedisDataManager
-from webrecorder.session import Session, flash_message
+from webrecorder.session import Session
 
 from webrecorder.basecontroller import BaseController
 
@@ -53,11 +54,12 @@ class AppController(BaseController):
         manager = RedisDataManager(self.redis, self.cork, config)
 
         # Init Jinja
-        self.jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'})
+        jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'})
 
         # Init Core app controllers
-        rewrite_controller = RewriteController(bottle_app, self.jinja_env)
-        recs_controller = RecsController(bottle_app, self.jinja_env, manager)
+        rewrite_controller = ContentController(bottle_app, jinja_env, manager, config)
+        recs_controller = RecsController(bottle_app, jinja_env, manager, config)
+        login_controller = LoginController(bottle_app, jinja_env, manager, config=config)
 
         bottle_app.install(AddSession(self.cork, config))
 
@@ -73,13 +75,15 @@ class AppController(BaseController):
         final_app = bottle_app
         final_app = CookieGuard(final_app, session_opts['session.key'])
         final_app = SessionMiddleware(final_app, session_opts)
-        self.app = final_app
 
-        self.init_jinja_env(config)
-        self.init_routes()
+        #invites = expandvars(config.get('invites_enabled', 'true')).lower()
+        #self.invites_enabled = invites in ('true', '1', 'yes')
 
-    def init_jinja_env(self, config):
-        jinja_env = self.jinja_env.jinja_env
+        self.init_jinja_env(config, jinja_env.jinja_env)
+
+        super(AppController, self).__init__(final_app, jinja_env, manager, config)
+
+    def init_jinja_env(self, config, jinja_env):
         jinja_env.globals['metadata'] = config.get('metadata', {})
 
         @contextfunction
