@@ -1,5 +1,3 @@
-from gevent import monkey; monkey.patch_all()
-
 import os
 import re
 from six.moves.urllib.parse import quote
@@ -10,8 +8,8 @@ from urlrewrite.rewriterapp import RewriterApp
 
 
 # ============================================================================
-class WebRecApp(RewriterApp):
-    DEF_REC_NAME = 'my_recording'
+class RewriteController(RewriterApp):
+    DEF_REC_NAME = 'my-recording'
 
     PATHS = {'live': '{replay_host}/live/resource/postreq?url={url}&closest={closest}',
              'record': '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.recorder.user={user}&param.recorder.coll={coll}&param.recorder.rec={rec}',
@@ -21,8 +19,9 @@ class WebRecApp(RewriterApp):
 
     WB_URL_RX = re.compile('((\d*)([a-z]+_)?/)?(https?:)?//.*')
 
-    def __init__(self, app=None):
-        super(WebRecApp, self).__init__(True)
+    def __init__(self, app=None, jinja_env=None):
+        super(RewriteController, self).__init__(framed_replay=True,
+                                        jinja_env=jinja_env)
 
         if not app:
             app = Bottle()
@@ -50,7 +49,7 @@ class WebRecApp(RewriterApp):
         @self.app.route('/live/<wb_url:path>')
         def live(wb_url):
             request.path_shift(1)
-
+            print('LIVE')
             return self.render_anon_content(wb_url, rec='', type='live')
 
         # ANON ROUTES
@@ -83,7 +82,7 @@ class WebRecApp(RewriterApp):
             return self.render_anon_content(wb_url, rec=rec_name, type=type_)
 
         # ERRORS
-        @self.app.error(404)
+        #@self.app.error(404)
         def not_found(error):
             if isinstance(error.exception, dict):
                 msg = 'The url <b>{url}</b> was not found in the archive'
@@ -130,10 +129,3 @@ class WebRecApp(RewriterApp):
         type = kwargs['type']
         if type in ('live', 'record'):
             cdx['is_live'] = 'true'
-
-
-# ============================================================================
-if __name__ == "__main__":
-    application = WebRecApp().app
-
-

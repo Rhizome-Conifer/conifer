@@ -1,0 +1,41 @@
+redis_url: &redis_url redis://localhost:6379/2
+
+session_opts:
+    session.secret: 'secret'
+    session.encrypt_key: 'encrypt'
+    session.validate_key: 'validate'
+
+    session.auto: false
+    session.cookie_expires: True
+
+    session.httponly: true
+    session.cookie_path: '/'
+    
+    session.key: __test_sesh
+    session.type: redis
+
+    session.url: *redis_url
+
+    session.expire: 1800
+
+
+anon_duration: 1800
+
+default_max_size: 100000000
+default_max_anon_size: 500000000
+default_max_coll: 10
+
+
+verify_ssl: false
+
+multiuser: true
+
+invites_enabled: true
+
+warcsign_private_key: /tmp/keys/wr.pem
+warcsign_public_key: /tmp/keys/wr_pub.pem
+
+email_sender: test@localhost
+email_smtp_url: smtp://webrectest@mail.localhost:test@localhost:25
+
+

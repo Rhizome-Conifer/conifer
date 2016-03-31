@@ -1,7 +1,4 @@
 from bottle import template, request
-from cork import Cork, AAAException
-from beaker.middleware import SessionMiddleware
-from cork.json_backend import JsonBackend
 from redis import StrictRedis, utils
 
 import json
@@ -16,82 +13,13 @@ from six.moves.urllib.parse import urlsplit
 from pywb.manager.manager import CollectionsManager, main as manager_main
 from pywb.utils.canonicalize import calc_search_range
 
-from cookieguard import CookieGuard
 
 from pywb.warc.cdxindexer import iter_file_or_dir
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.loaders import load_yaml_config
 
-from redisutils import RedisTable, RedisCorkBackend
+from redisutils import RedisTable
 
-
-# ============================================================================
-class CustomCork(Cork):
-    def verify_password(self, username, password):
-        salted_hash = self._store.users[username]['hash']
-        if hasattr(salted_hash, 'encode'):
-            salted_hash = salted_hash.encode('ascii')
-        authenticated = self._verify_password(
-            username,
-            password,
-            salted_hash,
-        )
-        return authenticated
-
-    def update_password(self, username, password):
-        user = self.user(username)
-        if user is None:
-            raise AAAException("Nonexistent user.")
-        user.update(pwd=password)
-
-    def do_login(self, username):
-        self._setup_cookie(username)
-        self._store.users[username]['last_login'] = str(datetime.utcnow())
-        self._store.save_users()
-
-    def validate_registration(self, registration_code):
-        """Validate pending account registration, create a new account if
-        successful.
-        :param registration_code: registration code
-        :type registration_code: str.
-        """
-        try:
-            data = self._store.pending_registrations.pop(registration_code)
-        except KeyError:
-            raise AuthException("Invalid registration code.")
-
-        username = data['username']
-        if username in self._store.users:
-            raise AAAException("User is already existing.")
-
-        # the user data is moved from pending_registrations to _users
-        self._store.users[username] = {
-            'role': data['role'],
-            'hash': data['hash'],
-            'email_addr': data['email_addr'],
-            'desc': data['desc'],
-            'creation_date': data['creation_date'],
-            'last_login': str(datetime.utcnow())
-        }
-        self._store.save_users()
-        return username
-
-    def _save_session(self):
-        self._beaker_session['anon'] = None
-        self._beaker_session.save()
-
-
-def create_cork(redis, config):
-    backend=RedisCorkBackend(redis)
-    init_cork_backend(backend)
-
-    email_sender = os.path.expandvars(config.get('email_sender', ''))
-    smtp_url = os.path.expandvars(config.get('email_smtp_url', ''))
-
-    cork = CustomCork(backend=backend,
-                email_sender=email_sender,
-                smtp_url=smtp_url)
-    return cork
 
 def init_manager_for_invite(configfile='config.yaml'):
     config = load_yaml_config(configfile)
@@ -110,37 +38,6 @@ def _get_crypt_key(key, config):
     if not val:
         val = base64.b64encode(os.urandom(33)).decode('utf-8')
     return val
-
-
-def init_cork(app, redis, config):
-    cork = create_cork(redis, config)
-
-    session_opts = config.get('session_opts')
-
-    for n, v in session_opts.items():
-        if isinstance(v, str):
-            session_opts[n] = os.path.expandvars(v)
-
-    # url for redis
-    url = session_opts.get('session.url')
-    if url:
-        parts = urlsplit(url)
-        if parts.netloc:
-            session_opts['session.url'] = parts.netloc
-        #session_opts['session.db'] = 0
-
-    try:
-        if not redis.exists('h:defaults'):
-            redis.hset('h:defaults', 'max_len', config['default_max_size'])
-            redis.hset('h:defaults', 'max_anon_len', config['default_max_anon_size'])
-            redis.hset('h:defaults', 'max_coll', config['default_max_coll'])
-    except Exception as e:
-        print('WARNING: Unable to init defaults: ' + str(e))
-
-    app = CookieGuard(app, session_opts['session.key'])
-    app = SessionMiddleware(app, session_opts)
-
-    return app, cork
 
 
 class ValidationException(Exception):
@@ -811,23 +708,6 @@ class CollsManager(object):
         report = json.dumps(issues_dict)
 
         self.redis.rpush('h:reports', report)
-
-
-def init_cork_backend(backend):
-    class InitCork(Cork):
-        @property
-        def current_user(self):
-            class MockUser(object):
-                @property
-                def level(self):
-                    return 100
-            return MockUser()
-
-    try:
-        cork = InitCork(backend=backend)
-        cork.create_role('archivist', 50)
-    except:
-        pass
 
 
 if __name__ == "__main__":

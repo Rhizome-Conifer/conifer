@@ -6,6 +6,8 @@ from recorder.redisindexer import WritableRedisIndexer
 from recorder.warcwriter import MultiFileWARCWriter
 from recorder.filters import SkipDupePolicy
 
+from redis import StrictRedis
+
 from webagg.utils import ParamFormatter
 
 from bottle import Bottle, request
@@ -24,11 +26,16 @@ class WebRecManager(object):
 
         self.cdxj_key_templ = config.get('cdxj_key_templ', '{user}:{coll}:{rec}:cdxj')
 
+        self.info_key_templ = config.get('info_key_templ', '{user}:{coll}:{rec}:info')
+
         self.warc_rec_prefix = 'rec-{rec}-'
         self.warc_name_templ = 'rec-{rec}-{timestamp}-{hostname}.warc.gz'
         self.warc_key_templ = config.get('warc_key_templ', '{user}:{coll}:warc')
 
         self.name = 'recorder'
+
+        self.redis_base_url = os.environ.get('REDIS_BASE_URL', 'redis://localhost/1')
+        self.redis = StrictRedis.from_url(self.redis_base_url)
 
         self.app = Bottle()
         self.recorder = self.create_recorder()
@@ -38,15 +45,13 @@ class WebRecManager(object):
 
 
     def create_recorder(self):
-        redis_base = os.environ.get('REDIS_BASE_URL', 'redis://localhost/1/')
-
-        cdxj_key_url = redis_base + self.cdxj_key_templ
-
-        self.dedup_index = WritableRedisIndexer(cdxj_key_url,
+        self.dedup_index = WritableRedisIndexer(None,
                 file_key_template=self.warc_key_templ,
                 rel_path_template=self.warc_path_templ,
                 name=self.name,
-                dupe_policy=SkipDupePolicy())
+                dupe_policy=SkipDupePolicy(),
+                redis=self.redis,
+                cdx_key_template=self.cdxj_key_templ)
 
         recorder_app = RecorderApp(self.upstream_url,
                          MultiFileWARCWriter(dir_template=self.warc_path_templ,
@@ -55,6 +60,9 @@ class WebRecManager(object):
                            accept_colls='live')
 
         return recorder_app
+
+    def create_recording(self):
+        pass
 
     def delete_recording(self):
         params = request.query

@@ -1,5 +1,7 @@
 from time import strftime, gmtime
 
+
+# ============================================================================
 class CookieGuard(object):
     def __init__(self, app, sesh_key):
         self.app = app

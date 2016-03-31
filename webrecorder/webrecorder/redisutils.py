@@ -84,16 +84,3 @@ class RedisHashTable(object):
         return bool(self.thedict)
 
 
-# ============================================================================
-class RedisCorkBackend(object):
-    def __init__(self, redis):
-        self.redis = redis
-        self.users = RedisTable(self.redis, 'h:users')
-        self.roles = RedisTable(self.redis, 'h:roles')
-        self.pending_registrations = RedisTable(self.redis, 'h:register')
-
-    def save_users(self): pass
-    def save_roles(self): pass
-    def save_pending_registrations(self): pass
-
-

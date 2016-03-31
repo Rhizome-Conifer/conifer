@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import glob
 
-from wfa import __version__
+from webrecorder import __version__
 
 
 # Fix for TypeError: 'NoneType' object is not callable" error
@@ -16,21 +16,24 @@ except ImportError:
     pass
 
 
-long_description = open('README.rst').read()
+#long_description = open('README.rst').read()
+long_description = ''
 
 
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_suite = True
+        # should work with setuptools <18, 18 18.5
+        self.test_suite = ' '
 
     def run_tests(self):
         import pytest
         import sys
         import os
-        cmdline = ' --cov wfa'
+        cmdline = ' --cov-config .coveragerc --cov ./webrecorder/ -vv ./test/'
         errcode = pytest.main(cmdline)
         sys.exit(errcode)
+
 
 setup(
     name='webrecorder',
@@ -43,14 +46,14 @@ setup(
     packages=find_packages(),
     zip_safe=True,
     provides=[
-        'wfa',
+        'webrecorder',
     ],
     install_requires=[
-        'bottle',
-        'bottle-cork',
-        'pywb'
-        'hiredis',
-        'uwsgi',
+        #'bottle',
+        #'bottle-cork',
+        #'pywb',
+        #'hiredis',
+        #'uwsgi',
        ],
     tests_require=[
         'pytest',

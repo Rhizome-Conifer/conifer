@@ -2,6 +2,7 @@ from bottle import request
 from datetime import timedelta
 
 
+# ============================================================================
 class Session(object):
     def __init__(self, cork, anon_duration):
         self.anon_duration = anon_duration
@@ -84,7 +85,7 @@ class Session(object):
 
 
 def make_anon_user(id):
-    return '@anon-' + id
+    return 'anon/' + id
 
 
 def flash_message(*args, **kwargs):
