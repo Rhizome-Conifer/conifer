@@ -97,7 +97,34 @@ def get_pages(id):
         response.status = 404
         return {"error_message" : "Recording not found"}
 
-# @post('/api/v1/recordings/<id>/pages')
+# POST /api/v1/recordings/<id>/pages'
+@post('/api/v1/recordings/<id>/pages')
+def post_pages(id):
+    if not valid_user(request.query.u):
+        response.status = 404
+        return {"error_message": "Username not found"}
+
+    if not valid_collection(request.query.c):
+        response.status = 404
+        return {"error_message": "Collection not found"}
+
+    if get_recording_by_id(id):
+        url = request.forms.get('url')
+        page = get_page_by_rec_id_and_url(id, url)
+
+        if page:
+            response.status = 200
+            return {"status" : "success", "message": "Adding to existing page"}
+        else:
+            PAGES[id].append({"url": url, "title": "", "timestamp": int(round(time.time() * 1000))})
+            return {"status" : "success" }
+        page = PAGES[id]
+        response.status = 200
+    else:
+        response.status = 404
+        return {"error_message" : "Recording not found"}
+
+
 # @get('/api/v1/collections')
 # @post('/api/v1/collections')
 # @get('/api/v1/collections/<id>')
@@ -125,5 +152,11 @@ def get_recording_by_id(id):
         return None
     else:
         return list(filter((lambda rec: id == rec['id']), COLLECTION['recordings']))[0]
+
+def get_page_by_url(id, url):
+    if len(list(filter((lambda page: url == page['url']), PAGES[id]))) == 0:
+        return None
+    else:
+        return list(filter((lambda page: url == page['url']), PAGES[id]))
 
 run(host='localhost', port=8080, debug=True)
