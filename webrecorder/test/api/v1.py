@@ -110,7 +110,7 @@ def post_pages(id):
 
     if get_recording_by_id(id):
         url = request.forms.get('url')
-        page = get_page_by_rec_id_and_url(id, url)
+        page = get_page_by_url(id, url)
 
         if page:
             response.status = 200
