@@ -1,4 +1,4 @@
-from bottle import get, post, request, response, run
+from bottle import Bottle, get, post, request, response, run
 
 from random import randint
 import re
@@ -18,8 +18,22 @@ PAGES = { "a-la-recherche": [{"url": "http://twitter.com/proustfan36", "title": 
                             {"url": "http://societyofmadelineeaters.com", "title": "The Society of Madeline Eaters", "timestamp": "2015020304000000"}],
           "du-temps-perdu": [{"url": "http://involuntarymemory.guru", "title": "Involuntary Memory", "timestamp": "2016050607000000"}] }
 
+
+# Bottle + CORS, CORStesy of https://gist.github.com/richard-flosi/3789163
+app = Bottle()
+
+@app.hook('after_request')
+def enable_cors():
+    """
+    You need to add some headers to each request.
+    Don't use the wildcard '*' for Access-Control-Allow-Origin in production.
+    """
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
 # GET /recordings
-@get('/api/v1/recordings')
+@app.get('/api/v1/recordings')
 def recordings_index():
     if not valid_user(request.query.u):
         response.status = 404
@@ -32,7 +46,7 @@ def recordings_index():
     return {"recordings" : COLLECTION['recordings']}
 
 # POST /recordings
-@post('/api/v1/recordings')
+@app.post('/api/v1/recordings')
 def create_recording():
     if not valid_user(request.query.u):
         response.status = 404
@@ -58,7 +72,7 @@ def create_recording():
                 "recording": get_recording_by_id(id)}
 
 # GET /recordings/<id>
-@get('/api/v1/recordings/<id>')
+@app.get('/api/v1/recordings/<id>')
 def get_recording(id):
     if not valid_user(request.query.u):
         response.status = 404
@@ -80,7 +94,7 @@ def get_recording(id):
 # @get('/api/v1/recordings/<id>/download')
 
 # GET /api/v1/recordings/<id>/pages
-@get('/api/v1/recordings/<id>/pages')
+@app.get('/api/v1/recordings/<id>/pages')
 def get_pages(id):
     if not valid_user(request.query.u):
         response.status = 404
@@ -98,7 +112,7 @@ def get_pages(id):
         return {"error_message" : "Recording not found"}
 
 # POST /api/v1/recordings/<id>/pages'
-@post('/api/v1/recordings/<id>/pages')
+@app.post('/api/v1/recordings/<id>/pages')
 def post_pages(id):
     if not valid_user(request.query.u):
         response.status = 404
@@ -159,4 +173,15 @@ def get_page_by_url(id, url):
     else:
         return list(filter((lambda page: url == page['url']), PAGES[id]))
 
-run(host='localhost', port=8080, debug=True)
+# run(host='localhost', port=8080, debug=True)
+
+# More from Bottle + CORS, CORStesy of https://gist.github.com/richard-flosi/3789163
+if __name__ == '__main__':
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("--host", dest="host", default="localhost",
+                      help="hostname or ip address", metavar="host")
+    parser.add_option("--port", dest="port", default=8080,
+                      help="port number", metavar="port")
+    (options, args) = parser.parse_args()
+    run(app, host=options.host, port=int(options.port))
