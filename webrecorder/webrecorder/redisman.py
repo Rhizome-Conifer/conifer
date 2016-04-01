@@ -166,6 +166,10 @@ class RecManager(object):
         result = self._format_rec_info(self.redis.hgetall(key))
         return result
 
+    def has_recording(self, user, coll, rec):
+        key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
+        return self.redis.exists(key)
+
     def create_recording(self, user, coll, rec, rec_title):
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
 

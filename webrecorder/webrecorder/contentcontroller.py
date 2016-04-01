@@ -2,15 +2,16 @@ import os
 import re
 from six.moves.urllib.parse import quote
 
-from bottle import Bottle, request, redirect
+from bottle import Bottle, request, redirect, HTTPError
 
 from urlrewrite.rewriterapp import RewriterApp
 
 from webrecorder.basecontroller import BaseController
+from webrecorder.recscontroller import RecsController
 
 
 # ============================================================================
-class ContentController(BaseController, RewriterApp):
+class ContentController(RecsController, RewriterApp):
     DEF_REC_NAME = 'my-recording'
 
     PATHS = {'live': '{replay_host}/live/resource/postreq?url={url}&closest={closest}',
@@ -32,28 +33,36 @@ class ContentController(BaseController, RewriterApp):
         # REDIRECTS
         @self.app.route(['/record/<wb_url:path>', '/anonymous/record/<wb_url:path>'])
         def redir_anon_rec(wb_url):
+            wb_url = self.add_query(wb_url)
             new_url = '/anonymous/{rec}/record/{url}'.format(rec=self.DEF_REC_NAME,
                                                              url=wb_url)
-            return self.redirect_with_query(new_url)
+            return redirect(new_url)
 
         @self.app.route(['/replay/<wb_url:path>'])
         def redir_anon_replay(wb_url):
+            wb_url = self.add_query(wb_url)
             new_url = '/anonymous/{url}'.format(url=wb_url)
-            return self.redirect_with_query(new_url)
+            return redirect(new_url)
 
         # LIVE DEBUG
         @self.app.route('/live/<wb_url:path>')
         def live(wb_url):
             request.path_shift(1)
-            print('LIVE')
-            return self.render_anon_content(wb_url, rec='', type='live')
+
+            wb_url = self.add_query(wb_url)
+
+            return self.render_content(wb_url, user='@anon',
+                                               coll='anonymous',
+                                               rec='',
+                                               type='live')
+
 
         # ANON ROUTES
         @self.app.route('/anonymous/<rec_name>/record/<wb_url:path>')
         def anon_record(rec_name, wb_url):
             request.path_shift(3)
 
-            return self.render_anon_content(wb_url, rec=rec_name, type='record')
+            return self.handle_anon_content(wb_url, rec=rec_name, type='record')
 
         @self.app.route('/anonymous/<wb_url:path>')
         def anon_replay(wb_url):
@@ -75,7 +84,7 @@ class ContentController(BaseController, RewriterApp):
                 request.path_shift(2)
                 type_ = 'replay'
 
-            return self.render_anon_content(wb_url, rec=rec_name, type=type_)
+            return self.handle_anon_content(wb_url, rec=rec_name, type=type_)
 
         # ERRORS
         #@self.app.error(404)
@@ -88,28 +97,41 @@ class ContentController(BaseController, RewriterApp):
 
             return msg
 
-    def redirect_with_query(self, url):
-        if request.query_string:
-            url += '?' + request.query_string
-
-        redirect(url)
-
-    def render_anon_content(self, wb_url, rec, type):
+    def handle_anon_content(self, wb_url, rec, type):
+        wb_url = self.add_query(wb_url)
         sesh = request.environ['webrec.session']
-
         user = sesh.anon_user.replace('@anon-', 'anon/')
         coll = 'anonymous'
 
-        if not sesh.is_anon():
-            sesh.set_anon()
+        if not self.manager.has_recording(user, coll, rec):
+            id = self.sanitize_title(rec)
 
-        if request.query_string:
-            wb_url += '?' + request.query_string
+            if type == 'record':
+                # TODO: add size check?
+                result = self.manager.create_recording(user, coll, id, rec)
+
+            if id != rec:
+                target = self.get_host() + request.script_name.replace(rec, id) + wb_url
+                print(target)
+                redirect(target)
+
+            if type != 'record':
+                raise HTTPError(404, 'No Such Recording')
+
+
+        if type == 'record' and not sesh.is_anon():
+            sesh.set_anon()
 
         return self.render_content(wb_url, user=user,
                                            coll=coll,
                                            rec=rec,
                                            type=type)
+
+    def add_query(self, url):
+        if request.query_string:
+            url += '?' + request.query_string
+
+        return url
 
     def get_upstream_url(self, url, closest, kwargs):
         type = kwargs['type']
