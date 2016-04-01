@@ -35,7 +35,7 @@ services:
             - app
 
     recorder:
-        build: ./recorder
+        build: ./rec
         environment:
             - UPSREAM_HOST=http://webagg:8080
             - RECORD_ROOT=/data/
@@ -44,6 +44,9 @@ services:
         links:
             - webagg
             - redis
+
+        volumes:
+            - ./rec/:/rec/
 
         volumes_from:
             - data
