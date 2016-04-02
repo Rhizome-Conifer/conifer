@@ -179,7 +179,7 @@ def get_page_by_url(id, url):
 if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser()
-    parser.add_option("--host", dest="host", default="localhost",
+    parser.add_option("--host", dest="host", default="0.0.0.0",
                       help="hostname or ip address", metavar="host")
     parser.add_option("--port", dest="port", default=8080,
                       help="port number", metavar="port")
