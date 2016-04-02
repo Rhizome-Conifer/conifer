@@ -5,8 +5,13 @@ import re
 import time
 
 # Li'l datastore
-USERNAME = "proust4eva"
-COLLECTION =  {"id": "proust-over-http", "title": "Proust over http",
+COLLECTIONS =  { "@anon" :
+                { "id": "anonymous", "title": "Anonymous",
+                "description": "This is a temporary anonymous collection", "size_remaining": 524288000,
+                "recordings": [] },
+
+                 "proust4eva":
+                {"id": "proust-over-http", "title": "Proust over http",
                 "description": "What would Proust post?", "size_remaining": 143211060,
                 "recordings": [{"id": "a-la-recherche", "title": "À la recherche",
                             "created_at": "2015010203000000", "updated_at": "2015010303000000",
@@ -14,6 +19,8 @@ COLLECTION =  {"id": "proust-over-http", "title": "Proust over http",
                             {"id": "du-temps-perdu", "title": "du temps perdu",
                             "created_at": "2016010203000000", "updated_at": "2016010303000000",
                             "size": 256788940}]}
+                }
+
 PAGES = { "a-la-recherche": [{"url": "http://twitter.com/proustfan36", "title": "Twitter - proustfan36", "timestamp": "2013140000000000"},
                             {"url": "http://societyofmadelineeaters.com", "title": "The Society of Madeline Eaters", "timestamp": "2015020304000000"}],
           "du-temps-perdu": [{"url": "http://involuntarymemory.guru", "title": "Involuntary Memory", "timestamp": "2016050607000000"}] }
@@ -35,15 +42,17 @@ def enable_cors():
 # GET /recordings
 @app.get('/api/v1/recordings')
 def recordings_index():
-    if not valid_user(request.query.u):
+    username = request.query.u
+
+    if not valid_user(username):
         response.status = 404
         return {"error_message": "Username not found"}
 
-    if not valid_collection(request.query.c):
+    if not valid_collection(username, request.query.c):
         response.status = 404
         return {"error_message": "Collection not found"}
 
-    return {"recordings" : COLLECTION['recordings']}
+    return {"recordings" : COLLECTIONS[username] }
 
 # POST /recordings
 @app.post('/api/v1/recordings')
@@ -52,24 +61,25 @@ def create_recording():
         response.status = 404
         return {"error_message": "Username not found"}
 
-    if not valid_collection(request.query.c):
+    if not valid_collection(request.query.u, request.query.c):
         response.status = 404
         return {"error_message": "Collection not found"}
 
     title = request.forms.get('title')
     id = id_from_title(title)
 
-    recording = get_recording_by_id(id)
+    recording = get_recording_by_user_and_id(request.query.u, id)
     if recording:
         response.status = 400
         return  {"status": "AlreadyExists",
                  "recording": recording}
     else:
-        COLLECTION['recordings'].append({"id": id, "title": title, "created_at": int(round(time.time() * 1000)),
-                              "modified_at": int(round(time.time() * 1000)), "size": 0})
+        COLLECTIONS[request.query.u]['recordings'].append(
+            {"id": id, "title": title, "created_at": int(round(time.time() * 1000)),
+             "modified_at": int(round(time.time() * 1000)), "size": 0})
         response.status = 200
         return {"status": "success",
-                "recording": get_recording_by_id(id)}
+                "recording": get_recording_by_user_and_id(request.query.u, id)}
 
 # GET /recordings/<id>
 @app.get('/api/v1/recordings/<id>')
@@ -82,7 +92,7 @@ def get_recording(id):
         response.status = 404
         return {"error_message": "Collection not found"}
 
-    recording = get_recording_by_id(id)
+    recording = get_recording_by_user_and_id(request.query.u, id)
     if recording:
         response.status = 200
         return recording
@@ -104,7 +114,7 @@ def get_pages(id):
         response.status = 404
         return {"error_message": "Collection not found"}
 
-    if get_recording_by_id(id):
+    if get_recording_by_user_and_id(request.query.u, id):
         response.status = 200
         return {"pages": PAGES[id]}
     else:
@@ -122,7 +132,7 @@ def post_pages(id):
         response.status = 404
         return {"error_message": "Collection not found"}
 
-    if get_recording_by_id(id):
+    if get_recording_by_user_and_id(request.query.u, id):
         url = request.forms.get('url')
         page = get_page_by_url(id, url)
 
@@ -147,10 +157,10 @@ def post_pages(id):
 
 # Validation
 def valid_user(username):
-    return username == USERNAME
+    return username in COLLECTIONS.keys()
 
-def valid_collection(collection):
-    return collection == COLLECTION['id']
+def valid_collection(username, collection):
+    return collection == COLLECTIONS[username]['id']
 
 # Utilities
 def id_from_title(title):
@@ -161,17 +171,20 @@ def title_from_id(id):
     p = re.compile('[-]')
     return p.sub(' ', id)
 
-def get_recording_by_id(id):
-    if len(list(filter((lambda rec: id == rec['id']), COLLECTION['recordings']))) == 0:
-        return None
-    else:
-        return list(filter((lambda rec: id == rec['id']), COLLECTION['recordings']))[0]
+def get_recordings_by_collection(username, collection):
+    return COLLECTIONS[username][collection]['recordings']
 
-def get_page_by_url(id, url):
-    if len(list(filter((lambda page: url == page['url']), PAGES[id]))) == 0:
+def get_recording_by_user_and_id(username, recording):
+    if len(list(filter((lambda rec: recording == rec['id']), COLLECTIONS[username]['recordings']))) == 0:
         return None
     else:
-        return list(filter((lambda page: url == page['url']), PAGES[id]))
+        return list(filter((lambda rec: recording == rec['id']), COLLECTIONS[username]['recordings']))[0]
+
+def get_page_by_url(recording, url):
+    if len(list(filter((lambda page: url == page['url']), PAGES[recording]))) == 0:
+        return None
+    else:
+        return list(filter((lambda page: url == page['url']), PAGES[recording]))
 
 # run(host='localhost', port=8080, debug=True)
 
