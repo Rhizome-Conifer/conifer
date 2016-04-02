@@ -62,8 +62,8 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
         keys = [k.decode('utf-8') for k in keys]
 
         assert set(keys) == set([
-            'USER:COLL:warc',
-            'USER:COLL:REC:cdxj',
+            'c:USER:COLL:warc',
+            'r:USER:COLL:REC:cdxj',
             'r:USER:COLL:REC:info',
             'c:USER:COLL',
             'u:USER'
@@ -87,9 +87,9 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
         keys = [k.decode('utf-8') for k in keys]
 
         assert set(keys) == set([
-            'USER:COLL:warc',
-            'USER:COLL:REC:cdxj',
-            'USER:COLL:REC2:cdxj',
+            'c:USER:COLL:warc',
+            'r:USER:COLL:REC:cdxj',
+            'r:USER:COLL:REC2:cdxj',
             'r:USER:COLL:REC:info',
             'r:USER:COLL:REC2:info',
             'c:USER:COLL',

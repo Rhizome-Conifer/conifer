@@ -38,8 +38,8 @@ services:
         build: ./rec
         environment:
             - UPSREAM_HOST=http://webagg:8080
-            - RECORD_ROOT=/data/
-            - REDIS_BASE_URL=redis://redis:6379/1/
+            - RECORD_ROOT=/data/warcs/
+            - REDIS_BASE_URL=redis://redis:6379/1
 
         links:
             - webagg
@@ -65,8 +65,16 @@ services:
 
 
     redis:
-        image: redis:2.8.21
+        build: ./redis
 
+        ports:
+            - "6379:6379"
+  
+        volumes_from:
+            - data
+
+        env_file:
+            - ./webrecorder/webrecorder.env
 
     # Postfix (if sending mail locally)
     mailserver:
@@ -85,6 +93,6 @@ services:
       command: python -i
       
       volumes:
-        - ./warcdata:/data
+        - ./data:/data
 
 

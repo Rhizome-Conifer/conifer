@@ -49,12 +49,14 @@ class ContentController(RecsController, RewriterApp):
         def live(wb_url):
             request.path_shift(1)
 
-            wb_url = self.add_query(wb_url)
+            return self.handle_anon_content(wb_url, rec='', type='live')
 
-            return self.render_content(wb_url, user='@anon',
-                                               coll='anonymous',
-                                               rec='',
-                                               type='live')
+            #wb_url = self.add_query(wb_url)
+
+            #return self.render_content(wb_url, user='@anon',
+            #                                   coll='anonymous',
+            #                                   rec='',
+            #                                   type='live')
 
 
         # ANON ROUTES
@@ -103,29 +105,31 @@ class ContentController(RecsController, RewriterApp):
         user = sesh.anon_user.replace('@anon-', 'anon/')
         coll = 'anonymous'
 
-        if not self.manager.has_recording(user, coll, rec):
-            id = self.sanitize_title(rec)
+        if type == 'record':
+            if not sesh.is_anon():
+                sesh.set_anon()
 
-            if type == 'record':
-                # TODO: add size check?
+            if not self.manager.has_recording(user, coll, rec):
                 result = self.manager.create_recording(user, coll, id, rec)
+                self.redir_sanitize_id(rec, wb_url)
 
-            if id != rec:
-                target = self.get_host() + request.script_name.replace(rec, id) + wb_url
-                print(target)
-                redirect(target)
-
-            if type != 'record':
+        elif type == 'replay':
+            if not self.manager.has_recording(user, coll, rec):
+                self.redir_sanitize_id(rec, wb_url)
                 raise HTTPError(404, 'No Such Recording')
-
-
-        if type == 'record' and not sesh.is_anon():
-            sesh.set_anon()
 
         return self.render_content(wb_url, user=user,
                                            coll=coll,
                                            rec=rec,
                                            type=type)
+
+    def redir_sanitize_id(self, title, wb_url):
+        id = self.sanitize_title(title)
+
+        if id != title:
+            target = self.get_host() + request.script_name.replace(title, id)
+            target += wb_url
+            redirect(target)
 
     def add_query(self, url):
         if request.query_string:

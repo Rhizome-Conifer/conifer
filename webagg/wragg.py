@@ -11,7 +11,6 @@ def make_webagg():
     app = ResAggApp()
 
     redis_base = os.environ.get('REDIS_BASE_URL', 'redis://localhost/1/')
-    print('REDIS: ' + redis_base)
 
     app.add_route('/live',
         DefaultResourceHandler(SimpleAggregator(
@@ -21,15 +20,15 @@ def make_webagg():
 
     app.add_route('/replay',
         DefaultResourceHandler(SimpleAggregator(
-                               {'replay': RedisIndexSource(redis_base + '{user}:{coll}:{rec}:cdxj')}),
-                                redis_base + '{user}:{coll}:warc'
+                               {'replay': RedisIndexSource(redis_base + 'r:{user}:{coll}:{rec}:cdxj')}),
+                                redis_base + 'c:{user}:{coll}:warc'
         )
     )
 
     app.add_route('/replay-coll',
         DefaultResourceHandler(SimpleAggregator(
-                               {'replay': RedisMultiKeyIndexSource(redis_base + '{user}:{coll}:*:cdxj')}),
-                                redis_base + '{user}:{coll}:warc'
+                               {'replay': RedisMultiKeyIndexSource(redis_base + 'r:{user}:{coll}:*:cdxj')}),
+                                redis_base + 'c:{user}:{coll}:warc'
         )
     )
 
