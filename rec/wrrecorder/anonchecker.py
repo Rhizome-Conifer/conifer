@@ -5,8 +5,8 @@ import json
 
 # ============================================================================
 class AnonChecker(object):
-    def __init__(self):
-        self.redis_base_url = os.environ.get('REDIS_BASE_URL', 'redis://localhost/1')
+    def __init__(self, config):
+        self.redis_base_url = os.environ['REDIS_BASE_URL']
 
         # beaker always uses db 0, so using db 0
         self.redis_base_url = self.redis_base_url.rsplit('/', 1)[0] + '/0'
@@ -14,7 +14,7 @@ class AnonChecker(object):
 
         self.redis = redis.StrictRedis.from_url(self.redis_base_url)
 
-        self.record_root_dir = os.environ.get('RECORD_ROOT', './data/')
+        self.record_root_dir = os.environ['RECORD_ROOT']
         self.anon_dir = os.path.join(self.record_root_dir, 'anon')
 
         print('Anon Checker Root: ' + self.anon_dir)
@@ -39,11 +39,5 @@ class AnonChecker(object):
                        'rec': '*'}
 
             self.redis.publish('delete', json.dumps(message))
-
-            #try:
-            #    user = session.make_anon_user(anon)
-            #    self.manager.delete_anon_user(user)
-            #except Exception as e:
-            #    print(e)
 
 

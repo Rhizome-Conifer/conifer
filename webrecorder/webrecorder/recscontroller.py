@@ -13,47 +13,47 @@ class RecsController(BaseController):
     def init_routes(self):
         @self.app.post('/api/v1/recordings')
         def create_recording():
-            user, coll = self.get_user_coll()
+            user, coll = self.get_user_coll(api=True)
 
             title = request.forms.get('title')
-            id = self.sanitize_title(title)
+            rec = self.sanitize_title(title)
 
-            recording = self.manager.get_recording(user, coll, id)
+            recording = self.manager.get_recording(user, coll, rec)
             if recording:
                 response.status = 400
                 return {'status': 'AlreadyExists',
-                        'id': id,
+                        'id': rec,
                         'title': title
                        }
 
-            recording = self.manager.create_recording(user, coll, id, title)
+            recording = self.manager.create_recording(user, coll, rec, title)
             return {'status': 'success', 'recording': recording}
 
         @self.app.get('/api/v1/recordings')
         def get_recordings():
-            user, coll = self.get_user_coll()
+            user, coll = self.get_user_coll(api=True)
 
             rec_list = self.manager.get_recordings(user, coll)
 
             return {'recordings': rec_list}
 
-        @self.app.get('/api/v1/recordings/<id>')
-        def get_recording(id):
-            user, coll = self.get_user_coll()
+        @self.app.get('/api/v1/recordings/<rec>')
+        def get_recording(rec):
+            user, coll = self.get_user_coll(api=True)
 
-            recording = self.manager.get_recording(user, coll, id)
+            recording = self.manager.get_recording(user, coll, rec)
 
             if not recording:
                 response.status = 404
-                return {'status': 'NotFound', 'id': id}
+                return {'status': 'NotFound', 'id': rec}
 
             return {'status': 'success', 'recording': recording}
 
     def sanitize_title(self, title):
-        id = title.lower()
-        id = id.replace(' ', '-')
-        id = self.ALPHA_NUM_RX.sub('', id)
-        if self.WB_URL_COLLIDE.match(id):
-            id += '_'
+        rec = title.lower()
+        rec = rec.replace(' ', '-')
+        rec = self.ALPHA_NUM_RX.sub('', rec)
+        if self.WB_URL_COLLIDE.match(rec):
+            rec += '_'
 
-        return id
+        return rec

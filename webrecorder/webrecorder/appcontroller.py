@@ -125,9 +125,9 @@ class AppController(BaseController):
             return resp
 
     def make_err_handler(self, default_err_handler):
-        #@jinja2_view('error.html')
-        #def error_view(out):
-        #    return {'err': out}
+        @self.jinja2_view('error.html')
+        def error_view(out):
+            return {'err': out}
 
         def json_error(body_dict):
             response.content_type = 'application/json'
@@ -139,15 +139,15 @@ class AppController(BaseController):
             if out.status_code == 404:
                 if self._check_refer_redirect():
                     return
-            #else:
-            #    response.status = 404
 
             traceback.print_exc()
 
-            if isinstance(out.exception, dict):
+            if (isinstance(out.exception, dict) and
+                hasattr(out, 'json_err')):
                 return json_error(out.exception)
             else:
-                return default_err_handler(out)
+                return error_view(out)
+                #return default_err_handler(out)
 
         return err_handler
 

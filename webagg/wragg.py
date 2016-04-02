@@ -6,11 +6,21 @@ from webagg.indexsource import LiveIndexSource, RedisIndexSource
 from webagg.aggregator import SimpleAggregator, RedisMultiKeyIndexSource
 
 import os
+from pywb.utils.loaders import load_yaml_config
 
+
+# ============================================================================
 def make_webagg():
+    config = load_yaml_config(os.environ.get('WR_CONFIG', './wr.yaml'))
+
     app = ResAggApp()
 
-    redis_base = os.environ.get('REDIS_BASE_URL', 'redis://localhost/1/')
+    redis_base = os.environ['REDIS_BASE_URL'] + '/'
+
+    cdxj_key_templ = config['cdxj_key_templ']
+    cdxj_coll_key_templ = config['cdxj_coll_key_templ']
+    warc_key_templ = config['warc_key_templ']
+
 
     app.add_route('/live',
         DefaultResourceHandler(SimpleAggregator(
@@ -20,15 +30,15 @@ def make_webagg():
 
     app.add_route('/replay',
         DefaultResourceHandler(SimpleAggregator(
-                               {'replay': RedisIndexSource(redis_base + 'r:{user}:{coll}:{rec}:cdxj')}),
-                                redis_base + 'c:{user}:{coll}:warc'
+                               {'replay': RedisIndexSource(redis_base + cdxj_key_templ)}),
+                                redis_base + warc_key_templ
         )
     )
 
     app.add_route('/replay-coll',
         DefaultResourceHandler(SimpleAggregator(
-                               {'replay': RedisMultiKeyIndexSource(redis_base + 'r:{user}:{coll}:*:cdxj')}),
-                                redis_base + 'c:{user}:{coll}:warc'
+                               {'replay': RedisMultiKeyIndexSource(redis_base + cdxj_coll_key_templ)}),
+                                redis_base + warc_key_templ
         )
     )
 

@@ -15,12 +15,13 @@ class BaseController(object):
     def init_routes(self):
         raise NotImplemented()
 
-    def get_user_coll(self):
+    def get_user_coll(self, api=False):
         user = request.query.get('user')
         coll = request.query.get('coll')
         if not user or not coll:
             self._raise_error(400, 'MissingUserColl',
-                              'User and Collection must be specified')
+                              'User and Collection must be specified',
+                              api=api)
 
         if user == '@anon':
             session = self.get_session()
@@ -31,13 +32,17 @@ class BaseController(object):
 
         # for now, while only anon implemented
         else:
-            self._raise_error(404, 'InvalidUserColl', 'No Such User or Collection')
+            self._raise_error(404, 'InvalidUserColl',
+                              'No Such User or Collection', api=api)
 
         return user, coll
 
-    def _raise_error(self, code, status_type, message):
+    def _raise_error(self, code, status_type, message, api=False):
         result = {'status': status_type, 'message': message}
-        raise HTTPError(code, message, exception=result)
+        err = HTTPError(code, message, exception=result)
+        if api:
+            err.json_err = True
+        raise err
 
     def get_session(self):
         return request.environ['webrec.session']

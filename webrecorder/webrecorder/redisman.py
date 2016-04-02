@@ -11,7 +11,7 @@ from cork import AAAException
 
 
 # ============================================================================
-class LoginManager(object):
+class LoginManagerMixin(object):
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,30}$')
 
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager',
@@ -20,6 +20,16 @@ class LoginManager(object):
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
     USER_KEY = 'u:{user}'
+
+    def __init__(self, config):
+        super(LoginManagerMixin, self).__init__(config)
+        try:
+            if not self.redis.exists('h:defaults'):
+                self.redis.hset('h:defaults', 'max_len', config['default_max_size'])
+                self.redis.hset('h:defaults', 'max_anon_len', config['default_max_anon_size'])
+                self.redis.hset('h:defaults', 'max_coll', config['default_max_coll'])
+        except Exception as e:
+            print('WARNING: Unable to init defaults: ' + str(e))
 
     def create_user(self, reg):
         try:
@@ -147,19 +157,12 @@ class LoginManager(object):
         entry['sent'] = str(datetime.utcnow())
         return True
 
-    def _set_init_defaults(self, config):
-        try:
-            if not self.redis.exists('h:defaults'):
-                self.redis.hset('h:defaults', 'max_len', config['default_max_size'])
-                self.redis.hset('h:defaults', 'max_anon_len', config['default_max_anon_size'])
-                self.redis.hset('h:defaults', 'max_coll', config['default_max_coll'])
-        except Exception as e:
-            print('WARNING: Unable to init defaults: ' + str(e))
-
 
 # ============================================================================
-class RecManager(object):
-    REC_INFO_KEY = 'r:{user}:{coll}:{rec}:info'
+class RecManagerMixin(object):
+    def __init__(self, config):
+        super(RecManagerMixin, self).__init__(config)
+        self.REC_INFO_KEY = 'r:{user}:{coll}:{rec}:info'
 
     def get_recording(self, user, coll, rec):
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
@@ -220,10 +223,15 @@ class RecManager(object):
 
 
 # ============================================================================
-class RedisDataManager(LoginManager, RecManager):
+class Base(object):
+    def __init__(self, config):
+        pass
+
+
+# ============================================================================
+class RedisDataManager(LoginManagerMixin, RecManagerMixin, Base):
     def __init__(self, redis, cork, config):
         self.redis = redis
         self.cork = cork
 
-        self._set_init_defaults(config)
-
+        super(RedisDataManager, self).__init__(config)

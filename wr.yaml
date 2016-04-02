@@ -1,0 +1,21 @@
+file_path_templ: '{user}/{coll}/{rec}/'
+
+cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj'
+cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj'
+
+r_info_key_templ: 'r:{user}:{coll}:{rec}:info'
+c_info_key_templ: 'c:{user}:{coll}'
+u_info_key_templ: 'u:{user}'
+
+warc_key_templ: 'c:{user}:{coll}:warc'
+
+warc_name_prefix: 'rec-{rec}-'
+warc_name_templ: 'rec-{rec}-{timestamp}-{hostname}.warc.gz'
+
+recorder_name: 'recorder'
+
+del_r_templ: 'r:{user}:{coll}:{rec}:*'
+del_c_templ: '*:{user}:{coll}*'
+del_u_templ: '*:{user}*'
+
+

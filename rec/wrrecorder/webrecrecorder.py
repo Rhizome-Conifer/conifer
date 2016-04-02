@@ -9,7 +9,7 @@ import time
 import json
 import glob
 
-from webagg.utils import ParamFormatter, res_template
+from webagg.utils import res_template
 
 from bottle import Bottle, request
 import os
@@ -22,37 +22,39 @@ import gevent
 # ============================================================================
 class WebRecRecorder(object):
     def __init__(self, config=None):
-        config = config or {}
-        self.upstream_url = os.environ.get('UPSREAM_HOST', 'http://localhost:8080')
+        self.upstream_url = os.environ['WEBAGG_HOST']
 
-        self.record_root_dir = os.environ.get('RECORD_ROOT', './data/warcs/')
+        self.record_root_dir = os.environ['RECORD_ROOT']
 
-        self.warc_path_templ = config.get('file_path_templ', '{user}/{coll}/{rec}/')
+        self.warc_path_templ = config['file_path_templ']
         self.warc_path_templ = self.record_root_dir + self.warc_path_templ
 
-        self.cdxj_key_templ = config.get('cdxj_key_templ', 'r:{user}:{coll}:{rec}:cdxj')
+        self.cdxj_key_templ = config['cdxj_key_templ']
 
-        self.rec_info_key_templ = config.get('r_info_key_templ', 'r:{user}:{coll}:{rec}:info')
-        self.coll_info_key_templ = config.get('c_info_key_templ', 'c:{user}:{coll}')
-        self.user_info_key_templ = config.get('u_info_key_templ', 'u:{user}')
+        self.rec_info_key_templ = config['r_info_key_templ']
+        self.coll_info_key_templ = config['c_info_key_templ']
+        self.user_info_key_templ = config['u_info_key_templ']
         self.size_keys = [self.rec_info_key_templ,
                           self.coll_info_key_templ,
                           self.user_info_key_templ]
 
-        self.warc_key_templ = config.get('warc_key_templ', 'c:{user}:{coll}:warc')
+        self.warc_key_templ = config['warc_key_templ']
 
-        self.warc_rec_prefix = 'rec-{rec}-'
-        self.warc_name_templ = 'rec-{rec}-{timestamp}-{hostname}.warc.gz'
+        self.warc_rec_prefix = config['warc_name_prefix']
+        self.warc_name_templ = config['warc_name_templ']
 
-        self.name = 'recorder'
+        self.name = config['recorder_name']
 
-        self.redis_base_url = os.environ.get('REDIS_BASE_URL', 'redis://localhost/1')
+        self.del_r_templ = config['del_r_templ']
+        self.del_c_templ = config['del_c_templ']
+        self.del_u_templ = config['del_u_templ']
+
+        self.redis_base_url = os.environ['REDIS_BASE_URL']
         self.redis = redis.StrictRedis.from_url(self.redis_base_url)
 
         self.app = Bottle()
         self.recorder = self.init_recorder()
 
-        self.app.route('/delete', callback=self.delete_recording)
         self.app.mount('/record', self.recorder)
 
         gevent.spawn(self.delete_listen_loop)
@@ -83,32 +85,6 @@ class WebRecRecorder(object):
 
         return recorder_app
 
-    def delete_recording(self):  #pragma: no cover
-        params = request.query
-        formatter = ParamFormatter(request.query, self.name)
-        params['_formatter'] = formatter
-
-        print(formatter.format(self.cdxj_key_templ))
-        print(formatter.format(self.warc_path_templ))
-        print(formatter.format(self.warc_key_templ))
-
-        self.recorder.writer.close_file(params)
-
-        self._delete_rec_warc_key(formatter, params)
-
-    def _delete_rec_warc_key(self, formatter, params):  #pragma: no cover
-        warc_key = formatter.format(self.warc_key_templ)
-        allwarcs = self.dedup_index.redis.hgetall(warc_key)
-
-        warc_rec_prefix = formatter.format(self.warc_rec_prefix)
-
-        for n, v in iteritems(allwarcs):
-            n = n.decode('utf-8')
-            if n.startswith(warc_rec_prefix):
-                print(n)
-            else:
-                print('SKIP ' + n)
-
     def delete_listen_loop(self):
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe(['delete'])
@@ -125,13 +101,19 @@ class WebRecRecorder(object):
 
     def handle_delete(self, data):
         data = json.loads(data)
-        self.delete_files(data)
 
-    def delete_files(self, data):
         user = data['user']
         coll = data['coll']
         rec = data['rec']
         type = data['type']
+
+        self.delete_files(type, user, coll, rec)
+        self.delete_redis_keys(type, user, coll, rec)
+
+    def delete_files(self, type, user, coll, rec):
+        if type not in (('user', 'coll', 'rec')):
+            print('Unknown delete type ' + str(type))
+            return
 
         glob_path = self.warc_path_templ.format(user=user, coll=coll, rec=rec)
 
@@ -154,7 +136,40 @@ class WebRecRecorder(object):
         except Exception as e:
             print(e)
 
+    def delete_redis_keys(self, type, user, coll, rec):
+        if type == 'rec':
+            del_templ = self.del_r_templ
+        elif type == 'coll':
+            del_templ = self.del_c_templ
+        elif type == 'user':
+            del_templ = self.del_u_templ
+        else:
+            print('Unknown delete type ' + str(type))
+            return
 
+        key_pattern = del_templ.format(user=user, coll=coll, rec=rec)
+        keys_to_del = list(self.redis.scan_iter(match=key_pattern))
+
+        with redis.utils.pipeline(self.redis) as pi:
+            for key in keys_to_del:
+                pi.delete(key)
+
+        if type == 'rec':
+            self._delete_rec_warc_key(self, user, coll, rec)
+
+    def _delete_rec_warc_key(self, user, coll, rec):  #pragma: no cover
+        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
+        allwarcs = self.redis.hgetall(warc_key)
+
+        warc_rec_prefix = self.warc_rec_prefix.format(user=user, coll=coll, rec=rec)
+
+        with redis.utils.pipeline(self.redis) as pi:
+            for n, v in iteritems(allwarcs):
+                n = n.decode('utf-8')
+                if n.startswith(warc_rec_prefix):
+                    pi.hdel(warc_key, n)
+                else:
+                    print('SKIP ' + n)
 
 
 # ============================================================================

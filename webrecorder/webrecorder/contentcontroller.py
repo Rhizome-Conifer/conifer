@@ -23,8 +23,8 @@ class ContentController(RecsController, RewriterApp):
     WB_URL_RX = re.compile('((\d*)([a-z]+_)?/)?(https?:)?//.*')
 
     def __init__(self, app, jinja_env, manager, config):
-        self.record_host = os.environ.get('RECORD_HOST', 'http://localhost:8010')
-        self.replay_host = os.environ.get('REPLAY_HOST', 'http://localhost:8080')
+        self.record_host = os.environ['RECORD_HOST']
+        self.replay_host = os.environ['WEBAGG_HOST']
 
         BaseController.__init__(self, app, jinja_env, manager, config)
         RewriterApp.__init__(self, framed_replay=True, jinja_env=jinja_env)
@@ -105,31 +105,30 @@ class ContentController(RecsController, RewriterApp):
         user = sesh.anon_user.replace('@anon-', 'anon/')
         coll = 'anonymous'
 
-        if type == 'record':
-            if not sesh.is_anon():
+        if type == 'record' or type == 'replay':
+            if type == 'record' and not sesh.is_anon():
                 sesh.set_anon()
 
             if not self.manager.has_recording(user, coll, rec):
-                result = self.manager.create_recording(user, coll, id, rec)
-                self.redir_sanitize_id(rec, wb_url)
+                title = rec
+                rec = self.sanitize_title(title)
 
-        elif type == 'replay':
-            if not self.manager.has_recording(user, coll, rec):
-                self.redir_sanitize_id(rec, wb_url)
-                raise HTTPError(404, 'No Such Recording')
+                if type == 'record':
+                    result = self.manager.create_recording(user, coll, rec, title)
+
+                if rec != title:
+                    target = self.get_host()
+                    target += request.script_name.replace(title, rec)
+                    target += wb_url
+                    redirect(target)
+
+                if type == 'replay':
+                    raise HTTPError(404, 'No Such Recording')
 
         return self.render_content(wb_url, user=user,
                                            coll=coll,
                                            rec=rec,
                                            type=type)
-
-    def redir_sanitize_id(self, title, wb_url):
-        id = self.sanitize_title(title)
-
-        if id != title:
-            target = self.get_host() + request.script_name.replace(title, id)
-            target += wb_url
-            redirect(target)
 
     def add_query(self, url):
         if request.query_string:

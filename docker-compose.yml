@@ -3,11 +3,8 @@ version: '2'
 services:
     app:
         build: ./webrecorder
-        environment:
-            - RECORD_HOST=http://recorder:8010
-            - REPLAY_HOST=http://webagg:8080
-
         env_file:
+            - ./wr.env
             - ./webrecorder/webrecorder.env
 
         links:
@@ -36,10 +33,8 @@ services:
 
     recorder:
         build: ./rec
-        environment:
-            - UPSREAM_HOST=http://webagg:8080
-            - RECORD_ROOT=/data/warcs/
-            - REDIS_BASE_URL=redis://redis:6379/1
+        env_file:
+            - ./wr.env
 
         links:
             - webagg
@@ -54,8 +49,8 @@ services:
 
     webagg:
         build: ./webagg
-        environment:
-            - REDIS_BASE_URL=redis://redis:6379/1/
+        env_file:
+            - ./wr.env
 
         links:
             - redis
@@ -94,5 +89,6 @@ services:
       
       volumes:
         - ./data:/data
+        - ./wr.yaml:/wr.yaml
 
 

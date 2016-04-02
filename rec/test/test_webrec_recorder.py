@@ -7,7 +7,8 @@ import webtest
 
 from six.moves.urllib.parse import quote, urlsplit
 
-from ..webrecrecorder import WebRecRecorder
+#from ..webrecrecorder import WebRecRecorder
+from wrrecorder import get_shared_config_root
 
 general_req_data = "\
 GET {path} HTTP/1.1\r\n\
@@ -15,6 +16,7 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0
 User-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36\r\n\
 Host: {host}\r\n\
 \r\n"
+
 
 
 # ============================================================================
@@ -29,12 +31,19 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
 
         cls.upstream_url = 'http://localhost:{0}'.format(cls.server.port)
 
-        os.environ['UPSREAM_HOST'] = cls.upstream_url
-        os.environ['RECORD_ROOT'] = cls.warcs_dir
         os.environ['REDIS_BASE_URL'] = 'redis://localhost/2'
 
-        cls.wr_rec = WebRecRecorder()
-        cls.testapp = webtest.TestApp(cls.wr_rec.app)
+        os.environ['WEBAGG_HOST'] = cls.upstream_url
+        os.environ['RECORD_ROOT'] = cls.warcs_dir
+
+        os.environ['WR_CONFIG'] = os.path.join(get_shared_config_root(), 'wr.yaml')
+
+        from wrrecorder.main import application, wr
+        cls.wr_rec = wr
+        #cls.wr_rec = WebRecRecorder()
+        #cls.testapp = webtest.TestApp(cls.wr_rec.app)
+
+        cls.testapp = webtest.TestApp(application)
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
 
     def _test_warc_write(self, url, user, coll, rec):

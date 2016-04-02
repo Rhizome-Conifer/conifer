@@ -1,6 +1,7 @@
 from webagg.test.testutils import FakeRedisTests, BaseTestClass
 import webtest
 import time
+import os
 
 from webrecorder.appcontroller import AppController
 from fakeredis import FakeStrictRedis
@@ -11,6 +12,12 @@ class TestWebRec(FakeRedisTests, BaseTestClass):
     def setup_class(cls):
         super(TestWebRec, cls).setup_class()
 
+        os.environ['REDIS_BASE_URL'] = 'redis://localhost/2'
+
+        os.environ['WEBAGG_HOST'] = 'http://localhost:8080'
+        os.environ['RECORD_HOST'] = 'http://localhost:8010'
+
+        #os.environ['WR_CONFIG'] = os.path.join(get_shared_config_root(), 'wr.yaml')
 
         cls.appcont = AppController(configfile='./test/test_config.yaml')
         cls.testapp = webtest.TestApp(cls.appcont.app)
