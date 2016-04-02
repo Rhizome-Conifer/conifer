@@ -66,7 +66,7 @@ webrecorder:
   restart: always
   build: ./webrecorder
 
-  command: uwsgi uwsgi.ini
+  command: ./run_with_test_api_server.sh # uwsgi uwsgi.ini
 
   volumes_from:
     - data
@@ -79,8 +79,8 @@ webrecorder:
   env_file:
     - ./webrecorder/webrecorder.env
 
-  #ports:
-  #  - "8088:8088"
+  ports:
+    - "8080:8080"
 
 nginx:
   build: ./nginx
