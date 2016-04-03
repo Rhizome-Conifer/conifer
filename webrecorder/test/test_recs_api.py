@@ -3,6 +3,7 @@ import os
 
 from .testutils import BaseWRTests
 
+
 # ============================================================================
 class TestWebRecRecAPI(BaseWRTests):
     def setup_class(cls):
@@ -62,6 +63,34 @@ class TestWebRecRecAPI(BaseWRTests):
         recs[1]['id'] == 'my-rec'
         recs[1]['title'] == 'My Rec'
 
+    def test_page_list_0(self):
+        res = self.testapp.get('/api/v1/recordings/my-rec/pages?user=@anon&coll=anonymous')
+
+        assert res.json == {'pages': []}
+
+    def test_page_add_1(self):
+        page = {'title': 'Example', 'url': 'http://example.com/', 'ts': '2016010203000000'}
+        res = self.testapp.post('/api/v1/recordings/my-rec/pages?user=@anon&coll=anonymous', params=page)
+
+        assert res.json == {}
+
+    def test_page_list_1(self):
+        res = self.testapp.get('/api/v1/recordings/my-rec/pages?user=@anon&coll=anonymous')
+
+        assert res.json == {'pages': [{'title': 'Example', 'url': 'http://example.com/', 'ts': '2016010203000000'}]}
+
+    def test_page_add_2(self):
+        page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'ts': '2015010203000000'}
+        res = self.testapp.post('/api/v1/recordings/my-rec/pages?user=@anon&coll=anonymous', params=page)
+
+        assert res.json == {}
+
+    def test_page_list_2(self):
+        res = self.testapp.get('/api/v1/recordings/my-rec/pages?user=@anon&coll=anonymous')
+        assert len(res.json['pages']) == 2
+        assert {'title': 'Example', 'url': 'http://example.com/', 'ts': '2016010203000000'} in res.json['pages']
+        assert {'title': 'Example', 'url': 'http://example.com/foo/bar', 'ts': '2015010203000000'} in res.json['pages']
+
     def test_collide_wb_url_format(self):
         res = self.testapp.post('/api/v1/recordings?user=@anon&coll=anonymous', params={'title': '2016'})
         assert res.json['recording']['id'] == '2016_'
@@ -78,6 +107,14 @@ class TestWebRecRecAPI(BaseWRTests):
         res = self.testapp.get('/api/v1/recordings/blah@$?user=@anon&coll=anonymous', status=404)
         assert res.json == {'error_message': 'Recording not found', 'id': 'blah@$'}
 
+    def test_error_no_such_rec_pages(self):
+        res = self.testapp.get('/api/v1/recordings/my-rec3/pages?user=@anon&coll=anonymous', status=404)
+        assert res.json == {'error_message': 'Recording not found', 'id': 'my-rec3'}
+
+        page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'ts': '2015010203000000'}
+        res = self.testapp.post('/api/v1/recordings/my-rec3/pages?user=@anon&coll=anonymous', params=page, status=404)
+        assert res.json == {'error_message': 'Recording not found', 'id': 'my-rec3'}
+
     def test_error_missing_user_coll(self):
         res = self.testapp.post('/api/v1/recordings', params={'title': 'Recording'}, status=400)
         assert res.json == {'error_message': "User and Collection must be specified"}
@@ -85,5 +122,4 @@ class TestWebRecRecAPI(BaseWRTests):
     def test_error_invalid_user_coll(self):
         res = self.testapp.post('/api/v1/recordings?user=user&coll=coll', params={'title': 'Recording'}, status=404)
         assert res.json == {"error_message": "No Such User or Collection"}
-
 

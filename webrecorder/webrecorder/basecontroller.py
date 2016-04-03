@@ -19,8 +19,7 @@ class BaseController(object):
         user = request.query.get('user')
         coll = request.query.get('coll')
         if not user or not coll:
-            self._raise_error(400, 'MissingUserColl',
-                              'User and Collection must be specified',
+            self._raise_error(400, 'User and Collection must be specified',
                               api=api)
 
         if user == '@anon':
@@ -32,13 +31,13 @@ class BaseController(object):
 
         # for now, while only anon implemented
         else:
-            self._raise_error(404, 'InvalidUserColl',
-                              'No Such User or Collection', api=api)
+            self._raise_error(404, 'No Such User or Collection', api=api)
 
         return user, coll
 
-    def _raise_error(self, code, status_type, message, api=False):
+    def _raise_error(self, code, message, api=False, **kwargs):
         result = {'error_message': message}
+        result.update(kwargs)
         err = HTTPError(code, message, exception=result)
         if api:
             err.json_err = True

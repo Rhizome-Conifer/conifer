@@ -52,11 +52,35 @@ class RecsController(BaseController):
         @self.app.delete('/api/v1/recordings/<rec>')
         def delete_recording(rec):
             user, coll = self.get_user_coll(api=True)
-            if not self.manager.delete_recording(user, coll, rec):
-                response.status = 404
-                return {'error_message': 'Recording not found', 'id': rec}
+            self._ensure_rec_exists(user, coll, rec)
 
+            self.manager.delete_recording(user, coll, rec)
             return {'deleted_id': rec}
+
+        @self.app.post('/api/v1/recordings/<rec>/pages')
+        def add_page(rec):
+            user, coll = self.get_user_coll(api=True)
+            self._ensure_rec_exists(user, coll, rec)
+
+            page_data = {}
+            for item in request.forms:
+                page_data[item] = request.forms.get(item)
+
+            self.manager.add_page(user, coll, rec, page_data)
+            return {}
+
+        @self.app.get('/api/v1/recordings/<rec>/pages')
+        def list_pages(rec):
+            user, coll = self.get_user_coll(api=True)
+            self._ensure_rec_exists(user, coll, rec)
+
+            pages = self.manager.list_pages(user, coll, rec)
+            return {'pages': pages}
+
+    def _ensure_rec_exists(self, user, coll, rec):
+        if not self.manager.has_recording(user, coll, rec):
+            self._raise_error(404, 'Recording not found', api=True,
+                              id=rec)
 
     def sanitize_title(self, title):
         rec = title.lower()

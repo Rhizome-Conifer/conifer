@@ -164,6 +164,7 @@ class RecManagerMixin(object):
     def __init__(self, config):
         super(RecManagerMixin, self).__init__(config)
         self.REC_INFO_KEY = 'r:{user}:{coll}:{rec}:info'
+        self.PAGE_KEY = 'r:{user}:{coll}:{rec}:page'
 
     def get_recording(self, user, coll, rec):
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
@@ -203,9 +204,6 @@ class RecManagerMixin(object):
         return all_recs
 
     def delete_recording(self, user, coll, rec):
-        if not self.has_recording(user, coll, rec):
-            return False
-
         message = {'type': 'rec',
                    'user': user,
                    'coll': coll,
@@ -213,6 +211,22 @@ class RecManagerMixin(object):
 
         res = self.redis.publish('delete', json.dumps(message))
         return (res > 0)
+
+    def add_page(self, user, coll, rec, pagedata):
+        key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
+
+        pagedata_json = json.dumps(pagedata).encode('utf-8')
+
+        self.redis.sadd(key, pagedata_json)
+
+    def list_pages(self, user, coll, rec):
+        key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
+
+        pagelist = self.redis.smembers(key)
+
+        pagelist = [json.loads(x.decode('utf-8')) for x in pagelist]
+
+        return pagelist
 
     def _format_rec_info(self, result):
         if not result:
