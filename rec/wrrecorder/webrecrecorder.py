@@ -150,14 +150,15 @@ class WebRecRecorder(object):
         key_pattern = del_templ.format(user=user, coll=coll, rec=rec)
         keys_to_del = list(self.redis.scan_iter(match=key_pattern))
 
+        if type == 'rec':
+            self._delete_rec_warc_key(user, coll, rec)
+            self._delete_decrease_size(user, coll, rec)
+
         with redis.utils.pipeline(self.redis) as pi:
             for key in keys_to_del:
                 pi.delete(key)
 
-        if type == 'rec':
-            self._delete_rec_warc_key(user, coll, rec)
-
-    def _delete_rec_warc_key(self, user, coll, rec):  #pragma: no cover
+    def _delete_rec_warc_key(self, user, coll, rec):
         warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
         allwarcs = self.redis.hgetall(warc_key)
 
@@ -168,8 +169,20 @@ class WebRecRecorder(object):
                 n = n.decode('utf-8')
                 if n.startswith(warc_rec_prefix):
                     pi.hdel(warc_key, n)
-                else:
-                    print('SKIP ' + n)
+
+    def _delete_decrease_size(self, user, coll, rec):
+        rec_info = self.rec_info_key_templ.format(user=user, coll=coll, rec=rec)
+        try:
+            length = int(self.redis.hget(rec_info, 'size'))
+        except:
+            print('Error decreasing size')
+            return
+
+        with redis.utils.pipeline(self.redis) as pi:
+            coll_key = self.coll_info_key_templ.format(user=user, coll=coll)
+            user_key = self.user_info_key_templ.format(user=user)
+            pi.hincrby(coll_key, 'size', -length)
+            pi.hincrby(user_key, 'size', -length)
 
 
 # ============================================================================

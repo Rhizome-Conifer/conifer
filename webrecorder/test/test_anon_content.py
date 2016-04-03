@@ -75,6 +75,18 @@ class TestAnonContent(BaseWRTests):
 
         assert set(exp_keys) == set(res_keys)
 
+    def _assert_size_all_eq(self, user, coll, rec):
+        r_info = 'r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec)
+        c_info = 'c:{user}:{coll}:info'.format(user=user, coll=coll)
+        u_info = 'u:{user}'.format(user=user)
+
+        size = self.redis.hget(r_info, 'size')
+        assert size is not None
+        assert size == self.redis.hget(c_info, 'size')
+        assert size == self.redis.hget(u_info, 'size')
+
+        assert self.redis.hget(r_info, 'updated_at') is not None
+
     def test_live(self):
         res = self.testapp.get('/live/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
@@ -111,16 +123,7 @@ class TestAnonContent(BaseWRTests):
 
         self._assert_rec_keys(user, 'anonymous', ['my-recording'])
 
-        r_info = 'r:{user}:{coll}:{rec}:info'.format(user=user, coll='anonymous', rec='my-recording')
-        c_info = 'c:{user}:{coll}:info'.format(user=user, coll='anonymous')
-        u_info = 'u:{user}'.format(user=user)
-
-        size = self.redis.hget(r_info, 'size')
-        assert size is not None
-        assert size == self.redis.hget(c_info, 'size')
-        assert size == self.redis.hget(u_info, 'size')
-
-        assert self.redis.hget(r_info, 'updated_at') is not None
+        self._assert_size_all_eq(user, 'anonymous', 'my-recording')
 
         warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='anonymous')
         assert self.redis.hlen(warc_key) == 1
@@ -164,6 +167,8 @@ class TestAnonContent(BaseWRTests):
 
         time.sleep(0.8)
 
+        self._assert_size_all_eq(user, 'anonymous', 'my-rec2')
+
         anon_dir = os.path.join(self.warcs_dir, user, 'anonymous')
         assert set(os.listdir(anon_dir)) == set(['my-rec2'])
 
@@ -171,6 +176,7 @@ class TestAnonContent(BaseWRTests):
         assert self.redis.hlen(warc_key) == 1
 
         self._assert_rec_keys(user, 'anonymous', ['my-rec2'])
+
 
     def test_anon_record_sanitize_redir(self):
         res = self.testapp.get('/anonymous/My%20Recording/http://httpbin.org/get?bood=far')
