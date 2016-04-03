@@ -20,6 +20,8 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
 
         os.environ['WR_CONFIG'] = os.path.join(cls.get_root_dir(), 'wr.yaml')
 
+        os.environ['REDIS_BASE_URL'] = 'redis://localhost:6379/2'
+
         cls.appcont = AppController(configfile=os.path.join(cls.get_curr_dir(), 'test_config.yaml'))
         cls.testapp = webtest.TestApp(cls.appcont.app)
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])

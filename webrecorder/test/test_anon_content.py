@@ -27,7 +27,6 @@ class TestAnonContent(BaseWRTests):
         agg_port = 30080
         rec_port = 30090
 
-        os.environ['REDIS_BASE_URL'] = 'redis://localhost:6379/2'
         os.environ['WEBAGG_HOST'] = 'http://localhost:{0}'.format(agg_port)
         os.environ['RECORD_HOST'] = 'http://localhost:{0}'.format(rec_port)
 
@@ -163,6 +162,8 @@ class TestAnonContent(BaseWRTests):
 
         res = self.testapp.delete('/api/v1/recordings/my-recording?user=@anon&coll=anonymous')
 
+        assert res.json == {'deleted_id': 'my-recording'}
+
         user = self.get_anon_user()
 
         time.sleep(0.8)
@@ -177,6 +178,9 @@ class TestAnonContent(BaseWRTests):
 
         self._assert_rec_keys(user, 'anonymous', ['my-rec2'])
 
+        res = self.testapp.delete('/api/v1/recordings/my-recording?user=@anon&coll=anonymous', status=404)
+
+        assert res.json == {'id': 'my-recording', 'error_message': 'Recording not found'}
 
     def test_anon_record_sanitize_redir(self):
         res = self.testapp.get('/anonymous/My%20Recording/http://httpbin.org/get?bood=far')

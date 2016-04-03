@@ -21,13 +21,13 @@ class RecsController(BaseController):
             recording = self.manager.get_recording(user, coll, rec)
             if recording:
                 response.status = 400
-                return {'status': 'AlreadyExists',
+                return {'error_message': 'Recording Already Exists',
                         'id': rec,
                         'title': title
                        }
 
             recording = self.manager.create_recording(user, coll, rec, title)
-            return {'status': 'success', 'recording': recording}
+            return {'recording': recording}
 
         @self.app.get('/api/v1/recordings')
         def get_recordings():
@@ -45,15 +45,18 @@ class RecsController(BaseController):
 
             if not recording:
                 response.status = 404
-                return {'status': 'NotFound', 'id': rec}
+                return {'error_message': 'Recording not found', 'id': rec}
 
-            return {'status': 'success', 'recording': recording}
+            return {'recording': recording}
 
         @self.app.delete('/api/v1/recordings/<rec>')
         def delete_recording(rec):
             user, coll = self.get_user_coll(api=True)
-            self.manager.delete_recording(user, coll, rec)
+            if not self.manager.delete_recording(user, coll, rec):
+                response.status = 404
+                return {'error_message': 'Recording not found', 'id': rec}
 
+            return {'deleted_id': rec}
 
     def sanitize_title(self, title):
         rec = title.lower()

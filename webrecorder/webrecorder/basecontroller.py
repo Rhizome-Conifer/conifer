@@ -38,7 +38,7 @@ class BaseController(object):
         return user, coll
 
     def _raise_error(self, code, status_type, message, api=False):
-        result = {'status': status_type, 'message': message}
+        result = {'error_message': message}
         err = HTTPError(code, message, exception=result)
         if api:
             err.json_err = True

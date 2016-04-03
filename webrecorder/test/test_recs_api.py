@@ -6,12 +6,8 @@ from .testutils import BaseWRTests
 # ============================================================================
 class TestWebRecRecAPI(BaseWRTests):
     def setup_class(cls):
-        os.environ['REDIS_BASE_URL'] = 'redis://localhost/2'
-
         os.environ['WEBAGG_HOST'] = 'http://localhost:8080'
         os.environ['RECORD_HOST'] = 'http://localhost:8010'
-
-        #os.environ['WR_CONFIG'] = os.path.join(get_shared_config_root(), 'wr.yaml')
 
         super(TestWebRecRecAPI, cls).setup_class()
 
@@ -34,7 +30,6 @@ class TestWebRecRecAPI(BaseWRTests):
     def test_get_anon_rec(self):
         res = self.testapp.get('/api/v1/recordings/my-rec?user=@anon&coll=anonymous')
 
-        assert res.json['status'] == 'success'
         assert res.json['recording']
         rec = res.json['recording']
 
@@ -77,18 +72,18 @@ class TestWebRecRecAPI(BaseWRTests):
 
     def test_error_already_exists(self):
         res = self.testapp.post('/api/v1/recordings?user=@anon&coll=anonymous', params={'title': '2 Another Recording'}, status=400)
-        assert res.json == {'status': 'AlreadyExists', 'id': '2-another-recording', 'title': '2 Another Recording'}
+        assert res.json == {'error_message': 'Recording Already Exists', 'id': '2-another-recording', 'title': '2 Another Recording'}
 
     def test_error_no_such_rec(self):
         res = self.testapp.get('/api/v1/recordings/blah@$?user=@anon&coll=anonymous', status=404)
-        assert res.json == {'status': 'NotFound', 'id': 'blah@$'}
+        assert res.json == {'error_message': 'Recording not found', 'id': 'blah@$'}
 
     def test_error_missing_user_coll(self):
         res = self.testapp.post('/api/v1/recordings', params={'title': 'Recording'}, status=400)
-        assert res.json == {"status": "MissingUserColl", "message": "User and Collection must be specified"}
+        assert res.json == {'error_message': "User and Collection must be specified"}
 
     def test_error_invalid_user_coll(self):
         res = self.testapp.post('/api/v1/recordings?user=user&coll=coll', params={'title': 'Recording'}, status=404)
-        assert res.json == {"status": "InvalidUserColl", "message": "No Such User or Collection"}
+        assert res.json == {"error_message": "No Such User or Collection"}
 
 
