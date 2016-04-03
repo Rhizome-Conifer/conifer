@@ -201,6 +201,18 @@ class RecManagerMixin(object):
         all_recs = [self._format_rec_info(x) for x in all_recs]
         return all_recs
 
+    def delete_recording(self, user, coll):
+        if not self.has_recording(user, coll, rec):
+            return False
+
+        message = {'type': 'rec',
+                   'user': user,
+                   'coll': coll,
+                   'rec': rec}
+
+        res = self.redis.publish('delete', json.dumps(message))
+        return (res > 0)
+
     def _format_rec_info(self, result):
         if not result:
             return {}

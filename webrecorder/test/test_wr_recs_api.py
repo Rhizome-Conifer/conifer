@@ -1,17 +1,11 @@
-from webagg.test.testutils import FakeRedisTests, BaseTestClass
-import webtest
 import time
 import os
 
-from webrecorder.appcontroller import AppController
-from fakeredis import FakeStrictRedis
-
+from .testutils import BaseWRTests
 
 # ============================================================================
-class TestWebRec(FakeRedisTests, BaseTestClass):
+class TestWebRecRecAPI(BaseWRTests):
     def setup_class(cls):
-        super(TestWebRec, cls).setup_class()
-
         os.environ['REDIS_BASE_URL'] = 'redis://localhost/2'
 
         os.environ['WEBAGG_HOST'] = 'http://localhost:8080'
@@ -19,8 +13,7 @@ class TestWebRec(FakeRedisTests, BaseTestClass):
 
         #os.environ['WR_CONFIG'] = os.path.join(get_shared_config_root(), 'wr.yaml')
 
-        cls.appcont = AppController(configfile='./test/test_config.yaml')
-        cls.testapp = webtest.TestApp(cls.appcont.app)
+        super(TestWebRecRecAPI, cls).setup_class()
 
     def get_anon_user(self):
         anon_user = 'anon/' + self.testapp.cookies['__test_sesh'][-32:]
@@ -40,9 +33,7 @@ class TestWebRec(FakeRedisTests, BaseTestClass):
 
         anon_user = self.get_anon_user()
 
-        f = FakeStrictRedis.from_url('redis://localhost/2')
-
-        assert f.exists('r:' + anon_user + ':anonymous:my-rec:info')
+        assert self.redis.exists('r:' + anon_user + ':anonymous:my-rec:info')
 
     def test_get_anon_rec(self):
         res = self.testapp.get('/api/v1/recordings/my-rec?user=@anon&coll=anonymous')
@@ -66,9 +57,7 @@ class TestWebRec(FakeRedisTests, BaseTestClass):
 
         anon_user = self.get_anon_user()
 
-        f = FakeStrictRedis.from_url('redis://localhost/2')
-
-        assert f.exists('r:' + anon_user + ':anonymous:2-another-recording:info')
+        assert self.redis.exists('r:' + anon_user + ':anonymous:2-another-recording:info')
 
     def test_list_all_recordings(self):
         res = self.testapp.get('/api/v1/recordings?user=@anon&coll=anonymous')

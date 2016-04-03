@@ -49,6 +49,12 @@ class RecsController(BaseController):
 
             return {'status': 'success', 'recording': recording}
 
+        @self.app.delete('/api/v1/recordings/<rec>')
+        def delete_recording(rec):
+            user, coll = self.get_user_coll(api=True)
+            self.manager.delete_recording(user, coll, rec)
+
+
     def sanitize_title(self, title):
         rec = title.lower()
         rec = rec.replace(' ', '-')

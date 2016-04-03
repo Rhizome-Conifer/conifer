@@ -87,7 +87,7 @@ class WebRecRecorder(object):
 
     def delete_listen_loop(self):
         self.pubsub = self.redis.pubsub()
-        self.pubsub.subscribe(['delete'])
+        self.pubsub.subscribe('delete')
 
         print('Waiting for delete messages')
 

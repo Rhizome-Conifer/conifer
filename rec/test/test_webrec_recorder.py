@@ -107,3 +107,4 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
 
         resp.charset = 'utf-8'
         assert '"boo": "far"' in resp.text
+
