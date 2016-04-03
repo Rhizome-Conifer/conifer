@@ -74,7 +74,7 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
             'c:USER:COLL:warc',
             'r:USER:COLL:REC:cdxj',
             'r:USER:COLL:REC:info',
-            'c:USER:COLL',
+            'c:USER:COLL:info',
             'u:USER'
         ])
 
@@ -83,7 +83,7 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
 
         size = self.redis.hget('r:USER:COLL:REC:info', 'size')
         assert size is not None
-        assert size == self.redis.hget('c:USER:COLL', 'size')
+        assert size == self.redis.hget('c:USER:COLL:info', 'size')
         assert size == self.redis.hget('u:USER', 'size')
 
         assert self.redis.hget('r:USER:COLL:REC:info', 'updated_at') is not None
@@ -101,7 +101,7 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
             'r:USER:COLL:REC2:cdxj',
             'r:USER:COLL:REC:info',
             'r:USER:COLL:REC2:info',
-            'c:USER:COLL',
+            'c:USER:COLL:info',
             'u:USER'
         ])
 

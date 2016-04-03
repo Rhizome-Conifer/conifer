@@ -74,9 +74,11 @@ class ContentController(RecsController, RewriterApp):
             if not self.WB_URL_RX.match(wb_url) and '/' in wb_url:
                 rec_name, wb_url = wb_url.split('/', 1)
 
-                if not wb_url:
-                    wb_url = rec_name
-                    rec_name = '*'
+                # todo: edge case: something like /anonymous/example.com/
+                # should check if 'example.com' is a recording, otherwise assume url?
+                #if not wb_url:
+                #    wb_url = rec_name
+                #    rec_name = '*'
 
             if rec_name == '*':
                 request.path_shift(1)
@@ -90,14 +92,14 @@ class ContentController(RecsController, RewriterApp):
 
         # ERRORS
         #@self.app.error(404)
-        def not_found(error):
-            if isinstance(error.exception, dict):
-                msg = 'The url <b>{url}</b> was not found in the archive'
-                msg = msg.format(url=error.exception['url'])
-            else:
-                msg = 'Url Not Found'
+        #def not_found(error):
+        #    if isinstance(error.exception, dict):
+        #        msg = 'The url <b>{url}</b> was not found in the archive'
+        #        msg = msg.format(url=error.exception['url'])
+        #    else:
+        #        msg = 'Url Not Found'
 
-            return msg
+        #   return msg
 
     def handle_anon_content(self, wb_url, rec, type):
         wb_url = self.add_query(wb_url)
@@ -114,7 +116,8 @@ class ContentController(RecsController, RewriterApp):
                 rec = self.sanitize_title(title)
 
                 if type == 'record':
-                    result = self.manager.create_recording(user, coll, rec, title)
+                    if rec == title or not self.manager.has_recording(user, coll, rec):
+                        result = self.manager.create_recording(user, coll, rec, title)
 
                 if rec != title:
                     target = self.get_host()

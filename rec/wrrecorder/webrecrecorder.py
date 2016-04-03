@@ -155,7 +155,7 @@ class WebRecRecorder(object):
                 pi.delete(key)
 
         if type == 'rec':
-            self._delete_rec_warc_key(self, user, coll, rec)
+            self._delete_rec_warc_key(user, coll, rec)
 
     def _delete_rec_warc_key(self, user, coll, rec):  #pragma: no cover
         warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)

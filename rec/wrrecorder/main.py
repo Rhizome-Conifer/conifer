@@ -24,10 +24,11 @@ import os
 wr = None
 
 # =============================================================================
-def anon_checker_loop(anon_checker):
+def anon_checker_loop(anon_checker, sleep_secs):
+    print('Running anon delete check every {0}'.format(sleep_secs))
     while True:
         anon_checker()
-        gevent.sleep(30)
+        gevent.sleep(sleep_secs)
 
 
 # =============================================================================
@@ -39,7 +40,9 @@ def init():
     global wr
     wr = WebRecRecorder(config)
 
-    gevent.spawn(anon_checker_loop, anon_checker)
+    sleep_secs = int(os.environ.get('ANON_SLEEP_CHECK', 30))
+
+    gevent.spawn(anon_checker_loop, anon_checker, sleep_secs)
 
     return wr.app
 

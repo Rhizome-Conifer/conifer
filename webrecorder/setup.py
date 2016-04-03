@@ -30,7 +30,7 @@ class PyTest(TestCommand):
         import pytest
         import sys
         import os
-        cmdline = ' --cov-config .coveragerc --cov ./webrecorder/ -vv ./test/'
+        cmdline = ' --cov-config .coveragerc --cov ./webrecorder/ ../rec/wrrecorder/ ../webagg/wrwebagg/ -vv ./test/'
         errcode = pytest.main(cmdline)
         sys.exit(errcode)
 

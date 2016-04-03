@@ -24,6 +24,10 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.testapp = webtest.TestApp(cls.appcont.app)
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
 
+    def get_anon_user(self):
+        anon_user = 'anon/' + self.testapp.cookies['__test_sesh'][-32:]
+        return anon_user
+
     @classmethod
     def get_root_dir(cls):
         return os.path.dirname(os.path.dirname(cls.get_curr_dir()))

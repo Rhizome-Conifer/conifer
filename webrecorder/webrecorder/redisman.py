@@ -2,6 +2,7 @@ import six
 import time
 import redis
 import re
+import json
 
 from bottle import template
 
@@ -201,7 +202,7 @@ class RecManagerMixin(object):
         all_recs = [self._format_rec_info(x) for x in all_recs]
         return all_recs
 
-    def delete_recording(self, user, coll):
+    def delete_recording(self, user, coll, rec):
         if not self.has_recording(user, coll, rec):
             return False
 
@@ -219,7 +220,6 @@ class RecManagerMixin(object):
 
         result = self._conv_dict(result)
         result = self._to_int(result, ['size', 'created_at', 'updated_at'])
-        #result['id'] = id
         return result
 
     def _to_int(self, result, ints):
@@ -231,7 +231,7 @@ class RecManagerMixin(object):
         if six.PY2 or not result:
             return result
 
-        return dict(((n.decode('utf-8'), v.decode('utf-8')) for n, v in result.items()))
+        return dict(((n.decode('utf-8'), v.decode('utf-8') if isinstance(v, bytes) else v) for n, v in result.items()))
 
 
 # ============================================================================

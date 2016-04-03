@@ -146,8 +146,8 @@ class AppController(BaseController):
                 hasattr(out, 'json_err')):
                 return json_error(out.exception)
             else:
-                return error_view(out)
-                #return default_err_handler(out)
+                #return error_view(out)
+                return default_err_handler(out)
 
         return err_handler
 

@@ -15,10 +15,6 @@ class TestWebRecRecAPI(BaseWRTests):
 
         super(TestWebRecRecAPI, cls).setup_class()
 
-    def get_anon_user(self):
-        anon_user = 'anon/' + self.testapp.cookies['__test_sesh'][-32:]
-        return anon_user
-
     def test_home_page(self):
         res = self.testapp.get('/')
         assert 'Webrecorder' in res
