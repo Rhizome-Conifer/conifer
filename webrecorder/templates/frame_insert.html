@@ -75,7 +75,7 @@
 {% endblock %}
 
 {% block body %}
-{% include 'navbar.html' %}
+{% include 'navigation.html' %}
 
 <iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
 
