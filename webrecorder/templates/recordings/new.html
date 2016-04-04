@@ -1,0 +1,24 @@
+<form action = "/recordings" method="post" class="navbar-left container-fluid form-horizontal col-xs-10 new-recording-form" role="">
+	<div class="form-group form-group-sm col-xs-12 new-recording-form-group">
+		<div class="title">
+			<label for="title" class="control-label col-xs-1">Recording:</label>
+			<div class="col-xs-5">
+				<input name="title" type="text" required value="My First Recording" class="form-control input-sm">
+			</div>
+		</div>
+		<div class="collection">
+			<label for="collection" class="control-label col-xs-1">Collection:</label>
+			<div class="col-xs-5">
+				<input name="collection" type="text" required value="anonymous" class="form-control input-sm" readonly>
+			</div>
+		</div>
+	</div>	
+	<div class="form-group form-group-sm col-xs-12 new-recording-form-group">
+		<div class="url col-xs-11">
+			<input name="url" type="url" required class="form-control input-sm" placeholder="Url to record" autofocus>
+		</div>
+		<div class="col-xs-1">
+			<button type="submit" class="pull-right btn btn-default">Record</button>
+		</div>
+	</div>
+</form>

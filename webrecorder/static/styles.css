@@ -12,9 +12,12 @@ li.coll-nav {
     min-height: 40px;
 }
 
-.nav-url-form {
-    width: 100%; 
-    margin: -1px 0px 8px -9px;
+.new-recording-form {
+    margin-top: 5px;
+}
+
+.new-recording-form-group {
+    margin-bottom: 5px;
 }
 
 li.coll-nav a {
