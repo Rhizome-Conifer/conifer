@@ -1,4 +1,3 @@
-import re
 from bottle import request, response, HTTPError
 
 from webrecorder.basecontroller import BaseController
@@ -6,10 +5,6 @@ from webrecorder.basecontroller import BaseController
 
 # ============================================================================
 class RecsController(BaseController):
-    ALPHA_NUM_RX = re.compile('[^\w-]')
-
-    WB_URL_COLLIDE = re.compile('^([\d]+([\w]{2}_)?|([\w]{2}_))$')
-
     def init_routes(self):
         @self.app.post('/api/v1/recordings')
         def create_recording():
@@ -82,11 +77,3 @@ class RecsController(BaseController):
             self._raise_error(404, 'Recording not found', api=True,
                               id=rec)
 
-    def sanitize_title(self, title):
-        rec = title.lower()
-        rec = rec.replace(' ', '-')
-        rec = self.ALPHA_NUM_RX.sub('', rec)
-        if self.WB_URL_COLLIDE.match(rec):
-            rec += '_'
-
-        return rec

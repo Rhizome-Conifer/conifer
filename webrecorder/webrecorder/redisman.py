@@ -245,7 +245,8 @@ class RecManagerMixin(object):
         if six.PY2 or not result:
             return result
 
-        return dict(((n.decode('utf-8'), v.decode('utf-8') if isinstance(v, bytes) else v) for n, v in result.items()))
+        return dict(((n.decode('utf-8'), v.decode('utf-8')
+                    if isinstance(v, bytes) else v) for n, v in result.items()))
 
 
 # ============================================================================

@@ -1,9 +1,14 @@
 from bottle import request, HTTPError, redirect as bottle_redirect
 from functools import wraps
+import re
 
 
 # ============================================================================
 class BaseController(object):
+    ALPHA_NUM_RX = re.compile('[^\w-]')
+
+    WB_URL_COLLIDE = re.compile('^([\d]+([\w]{2}_)?|([\w]{2}_))$')
+
     def __init__(self, app, jinja_env, manager, config):
         self.app = app
         self.jinja_env = jinja_env
@@ -92,5 +97,14 @@ class BaseController(object):
             return wrapper
 
         return decorator
+
+    def sanitize_title(self, title):
+        rec = title.lower()
+        rec = rec.replace(' ', '-')
+        rec = self.ALPHA_NUM_RX.sub('', rec)
+        if self.WB_URL_COLLIDE.match(rec):
+            rec += '_'
+
+        return rec
 
 

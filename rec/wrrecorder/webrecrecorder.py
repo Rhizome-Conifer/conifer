@@ -1,7 +1,7 @@
 from recorder.recorderapp import RecorderApp
 from recorder.redisindexer import WritableRedisIndexer
 
-from recorder.warcwriter import MultiFileWARCWriter
+from recorder.warcwriter import MultiFileWARCWriter, SimpleTempWARCWriter
 from recorder.filters import SkipDupePolicy
 
 import redis
@@ -9,9 +9,9 @@ import time
 import json
 import glob
 
-from webagg.utils import res_template
+from webagg.utils import res_template, ParamFormatter, StreamIter, chunk_encode_iter
 
-from bottle import Bottle, request
+from bottle import Bottle, request, debug, response
 import os
 import shutil
 from six import iteritems
@@ -31,12 +31,9 @@ class WebRecRecorder(object):
 
         self.cdxj_key_templ = config['cdxj_key_templ']
 
-        self.rec_info_key_templ = config['r_info_key_templ']
-        self.coll_info_key_templ = config['c_info_key_templ']
-        self.user_info_key_templ = config['u_info_key_templ']
-        self.size_keys = [self.rec_info_key_templ,
-                          self.coll_info_key_templ,
-                          self.user_info_key_templ]
+        self.rec_page_key_templ = config['r_page_key_templ']
+
+        self.info_keys = config['info_key_templ']
 
         self.warc_key_templ = config['warc_key_templ']
 
@@ -45,9 +42,7 @@ class WebRecRecorder(object):
 
         self.name = config['recorder_name']
 
-        self.del_r_templ = config['del_r_templ']
-        self.del_c_templ = config['del_c_templ']
-        self.del_u_templ = config['del_u_templ']
+        self.del_templ = config['del_templ']
 
         self.redis_base_url = os.environ['REDIS_BASE_URL']
         self.redis = redis.StrictRedis.from_url(self.redis_base_url)
@@ -56,6 +51,8 @@ class WebRecRecorder(object):
         self.recorder = self.init_recorder()
 
         self.app.mount('/record', self.recorder)
+        self.app.get('/download', callback=self.download)
+        debug(True)
 
         gevent.spawn(self.delete_listen_loop)
 
@@ -70,8 +67,8 @@ class WebRecRecorder(object):
 
                 dupe_policy=SkipDupePolicy(),
 
-                size_keys=self.size_keys,
-                rec_info_key_templ=self.rec_info_key_templ
+                size_keys=self.info_keys.values(),
+                rec_info_key_templ=self.info_keys['rec'],
         )
 
 
@@ -84,6 +81,66 @@ class WebRecRecorder(object):
                                    accept_colls='live')
 
         return recorder_app
+
+    def get_pagelist(self, user, coll, rec):
+        page_key_pattern = self.rec_page_key_templ.format(user=user, coll=coll, rec=rec)
+
+        pages = []
+        for page_key in self.redis.scan_iter(match=page_key_pattern):
+            pages.extend(self.redis.smembers(page_key))
+
+        return pages
+
+    def download(self):
+        user = request.query.get('user', '')
+        coll = request.query.get('coll', '*')
+        rec = request.query.get('rec', '*')
+        type = request.query.get('type')
+
+        filename = request.query.get('filename', 'rec.warc.gz')
+
+        #if not user:
+        #    response.status = 400
+        #    return {'error_message': 'No User Provided'}
+
+        templ = self.warc_path_templ + '*.warc.gz'
+        warcs = list(glob.glob(templ.format(user=user, coll=coll, rec=rec)))
+
+        metadata = {'pages': self.get_pagelist(user, coll, rec)}
+
+        # warcinfo Record
+        info = {'software': 'Webrecorder Platform v2.0',
+                'format': 'WARC File Format 1.0',
+                'json-metadata': metadata,
+               }
+
+        wi_writer = SimpleTempWARCWriter()
+        wi_writer.write_record(wi_writer.create_warcinfo_record(filename, **info))
+        warcinfo = wi_writer.get_buffer()
+
+        key_templ = self.info_keys.get(type, '')
+        key_pattern = key_templ.format(user=user, coll=coll, rec=rec)
+
+        length = len(warcinfo)
+        try:
+            length += int(self.redis.hget(key_pattern, 'size'))
+        except Exception as e:
+            print(e)
+
+        def read_all(warcinfo):
+            yield warcinfo
+
+            for warc in warcs:
+                with open(warc, 'rb') as fh:
+                    for chunk in StreamIter(fh):
+                        yield chunk
+
+        response.headers['Content-Type'] = 'application/octet-stream'
+        response.headers['Content-Length'] = int(length)
+        resp = read_all(warcinfo)
+        #response.headers['Transfer-Encoding'] = 'chunked'
+        #resp = chunk_encode_iter(resp)
+        return resp
 
     def delete_listen_loop(self):
         self.pubsub = self.redis.pubsub()
@@ -137,17 +194,12 @@ class WebRecRecorder(object):
             print(e)
 
     def delete_redis_keys(self, type, user, coll, rec):
-        if type == 'rec':
-            del_templ = self.del_r_templ
-        elif type == 'coll':
-            del_templ = self.del_c_templ
-        elif type == 'user':
-            del_templ = self.del_u_templ
-        else:
+        key_templ = self.del_templ.get(type)
+        if not key_templ:
             print('Unknown delete type ' + str(type))
             return
 
-        key_pattern = del_templ.format(user=user, coll=coll, rec=rec)
+        key_pattern = key_templ.format(user=user, coll=coll, rec=rec)
         keys_to_del = list(self.redis.scan_iter(match=key_pattern))
 
         if type == 'rec':
@@ -171,7 +223,7 @@ class WebRecRecorder(object):
                     pi.hdel(warc_key, n)
 
     def _delete_decrease_size(self, user, coll, rec):
-        rec_info = self.rec_info_key_templ.format(user=user, coll=coll, rec=rec)
+        rec_info = self.info_keys['rec'].format(user=user, coll=coll, rec=rec)
         try:
             length = int(self.redis.hget(rec_info, 'size'))
         except:
@@ -179,8 +231,8 @@ class WebRecRecorder(object):
             return
 
         with redis.utils.pipeline(self.redis) as pi:
-            coll_key = self.coll_info_key_templ.format(user=user, coll=coll)
-            user_key = self.user_info_key_templ.format(user=user)
+            coll_key = self.info_keys['coll'].format(user=user, coll=coll)
+            user_key = self.info_keys['user'].format(user=user)
             pi.hincrby(coll_key, 'size', -length)
             pi.hincrby(user_key, 'size', -length)
 

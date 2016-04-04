@@ -3,6 +3,12 @@ from gevent.monkey import patch_all; patch_all()
 import os
 import time
 
+from io import BytesIO
+
+from pywb.cdx.cdxobject import CDXObject
+from pywb.warc.cdxindexer import write_cdx_index
+from pywb.utils.bufferedreaders import ChunkedDataReader
+
 from gevent.wsgi import WSGIServer
 import gevent
 
@@ -86,6 +92,19 @@ class TestAnonContent(BaseWRTests):
 
         assert self.redis.hget(r_info, 'updated_at') is not None
 
+    def _get_dechunked(self, stream):
+        buff = ChunkedDataReader(BytesIO(stream))
+
+        warcin = BytesIO()
+        while True:
+            b = buff.read()
+            if not b:
+                break
+            warcin.write(b)
+
+        warcin.seek(0)
+        return warcin
+
     def test_live(self):
         res = self.testapp.get('/live/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
@@ -139,6 +158,17 @@ class TestAnonContent(BaseWRTests):
 
         assert '"food": "bar"' in res.text, res.text
 
+    def test_anon_record_sanitize_redir(self):
+        res = self.testapp.get('/anonymous/My%20Rec2/record/http://httpbin.org/get?bood=far')
+        res.charset = 'utf-8'
+
+        assert self.testapp.cookies['__test_sesh'] != ''
+        assert res.headers['Location'].endswith('/anonymous/my-rec2/record/http://httpbin.org/get?bood=far')
+
+        res = self.testapp.get('/api/v1/recordings/my-rec2?user=@anon&coll=anonymous')
+        assert res.json['recording']['id'] == 'my-rec2'
+        assert res.json['recording']['title'] == 'My Rec2'
+
     def test_anon_record_2(self):
         res = self.testapp.get('/anonymous/my-rec2/record/mp_/http://httpbin.org/get?bood=far')
         res.charset = 'utf-8'
@@ -156,6 +186,29 @@ class TestAnonContent(BaseWRTests):
 
         warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='anonymous')
         assert self.redis.hlen(warc_key) == 2
+
+    def test_anon_download_rec(self):
+        res = self.testapp.get('/api/v1/recordings/my-rec2/download?user=@anon&coll=anonymous')
+
+        assert res.headers['Content-Disposition'].startswith('attachment; filename=My%20Rec2')
+
+        warcin = self._get_dechunked(res.body)
+
+        cdxout = BytesIO()
+        write_cdx_index(cdxout, warcin, 'My-Rec2.warc.gz', include_all=True, cdxj=True)
+
+        print(cdxout.getvalue().decode('utf-8'))
+
+        cdx = [CDXObject(cdx) for cdx in cdxout.getvalue().rstrip().split(b'\n')]
+        assert len(cdx) == 2
+
+        # response
+        cdx[0]['url'] = 'http://httpbin.org/get?food=bar'
+        cdx[0]['mime'] = 'application/json'
+
+        # request
+        cdx[1]['url'] = 'http://httpbin.org/get?food=bar'
+        cdx[1]['mime'] = '-'
 
     def test_anon_delete_rec(self):
         time.sleep(0.1)
@@ -181,13 +234,6 @@ class TestAnonContent(BaseWRTests):
         res = self.testapp.delete('/api/v1/recordings/my-recording?user=@anon&coll=anonymous', status=404)
 
         assert res.json == {'id': 'my-recording', 'error_message': 'Recording not found'}
-
-    def test_anon_record_sanitize_redir(self):
-        res = self.testapp.get('/anonymous/My%20Recording/http://httpbin.org/get?bood=far')
-        res.charset = 'utf-8'
-
-        assert self.testapp.cookies['__test_sesh'] != ''
-        assert res.headers['Location'].endswith('/anonymous/my-recording/http://httpbin.org/get?bood=far')
 
     def test_error_anon_not_found_recording(self):
         res = self.testapp.get('/anonymous/my-rec/mp_/http://example.com/', status=404)

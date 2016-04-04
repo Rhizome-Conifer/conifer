@@ -1,23 +1,32 @@
 import os
 import re
+import requests
+
 from six.moves.urllib.parse import quote
 
-from bottle import Bottle, request, redirect, HTTPError
+from bottle import Bottle, request, redirect, HTTPError, response
+
+from pywb.utils.timeutils import timestamp_now
 
 from urlrewrite.rewriterapp import RewriterApp
 
 from webrecorder.basecontroller import BaseController
-from webrecorder.recscontroller import RecsController
+
+from webagg.utils import StreamIter
+from io import BytesIO
 
 
 # ============================================================================
-class ContentController(RecsController, RewriterApp):
+class ContentController(BaseController, RewriterApp):
     DEF_REC_NAME = 'my-recording'
 
     PATHS = {'live': '{replay_host}/live/resource/postreq?url={url}&closest={closest}',
              'record': '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.recorder.user={user}&param.recorder.coll={coll}&param.recorder.rec={rec}',
              'replay': '{replay_host}/replay/resource/postreq?url={url}&closest={closest}&param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}',
-             'replay-coll': '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}'
+             'replay-coll': '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}',
+
+             'download': '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}',
+             'download_filename': '{title}-{timestamp}.warc.gz'
             }
 
     WB_URL_RX = re.compile('((\d*)([a-z]+_)?/)?(https?:)?//.*')
@@ -31,42 +40,34 @@ class ContentController(RecsController, RewriterApp):
 
     def init_routes(self):
         # REDIRECTS
-        @self.app.route(['/record/<wb_url:path>', '/anonymous/record/<wb_url:path>'])
+        @self.app.route(['/record/<wb_url:path>', '/anonymous/record/<wb_url:path>'], method='ANY')
         def redir_anon_rec(wb_url):
             wb_url = self.add_query(wb_url)
             new_url = '/anonymous/{rec}/record/{url}'.format(rec=self.DEF_REC_NAME,
                                                              url=wb_url)
             return redirect(new_url)
 
-        @self.app.route(['/replay/<wb_url:path>'])
+        @self.app.route('/replay/<wb_url:path>', method='ANY')
         def redir_anon_replay(wb_url):
             wb_url = self.add_query(wb_url)
             new_url = '/anonymous/{url}'.format(url=wb_url)
             return redirect(new_url)
 
         # LIVE DEBUG
-        @self.app.route('/live/<wb_url:path>')
+        @self.app.route('/live/<wb_url:path>', method='ANY')
         def live(wb_url):
             request.path_shift(1)
 
             return self.handle_anon_content(wb_url, rec='', type='live')
 
-            #wb_url = self.add_query(wb_url)
-
-            #return self.render_content(wb_url, user='@anon',
-            #                                   coll='anonymous',
-            #                                   rec='',
-            #                                   type='live')
-
-
         # ANON ROUTES
-        @self.app.route('/anonymous/<rec_name>/record/<wb_url:path>')
+        @self.app.route('/anonymous/<rec_name>/record/<wb_url:path>', method='ANY')
         def anon_record(rec_name, wb_url):
             request.path_shift(3)
 
             return self.handle_anon_content(wb_url, rec=rec_name, type='record')
 
-        @self.app.route('/anonymous/<wb_url:path>')
+        @self.app.route('/anonymous/<wb_url:path>', method='ANY')
         def anon_replay(wb_url):
             rec_name = '*'
 
@@ -90,16 +91,50 @@ class ContentController(RecsController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec=rec_name, type=type_)
 
-        # ERRORS
-        #@self.app.error(404)
-        #def not_found(error):
-        #    if isinstance(error.exception, dict):
-        #        msg = 'The url <b>{url}</b> was not found in the archive'
-        #        msg = msg.format(url=error.exception['url'])
-        #    else:
-        #        msg = 'Url Not Found'
+        @self.app.get('/api/v1/recordings/<rec>/download')
+        def download(rec):
+            user, coll = self.get_user_coll(api=True)
 
-        #   return msg
+            recinfo = self.manager.get_recording(user, coll, rec)
+            if not recinfo:
+                self._raise_error(404, 'Recording not found',
+                                  id=rec)
+
+            now = timestamp_now()
+            title = recinfo.get('title', 'recording')
+            filename = self.PATHS['download_filename'].format(title=title,
+                                                              timestamp=now)
+
+            download_url = self.PATHS['download']
+            download_url = download_url.format(record_host=self.record_host,
+                                               user=user,
+                                               coll=coll,
+                                               rec=rec,
+                                               type='rec',
+                                               filename=filename)
+
+            res = requests.get(download_url, stream=True)
+
+            if res.status_code >= 400:
+                try:
+                    res.raw.close()
+                except:
+                    pass
+
+                self._raise_error(400, 'Unable to download WARC')
+
+            response.headers['Content-Type'] = 'application/octet-stream'
+            response.headers['Content-Disposition'] = 'attachment; filename=' + quote(filename)
+
+            length = res.headers.get('Content-Length')
+            if length:
+                response.headers['Content-Length'] = length
+
+            encoding = res.headers.get('Transfer-Encoding')
+            if encoding:
+                response.headers['Transfer-Encoding'] = encoding
+
+            return StreamIter(res.raw)
 
     def handle_anon_content(self, wb_url, rec, type):
         wb_url = self.add_query(wb_url)
