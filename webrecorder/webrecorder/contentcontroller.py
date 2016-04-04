@@ -92,7 +92,7 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_anon_content(wb_url, rec=rec_name, type=type_)
 
         @self.app.get('/api/v1/recordings/<rec>/download')
-        def download(rec):
+        def download_rec_warc(rec):
             user, coll = self.get_user_coll(api=True)
 
             recinfo = self.manager.get_recording(user, coll, rec)
@@ -100,41 +100,58 @@ class ContentController(BaseController, RewriterApp):
                 self._raise_error(404, 'Recording not found',
                                   id=rec)
 
-            now = timestamp_now()
-            title = recinfo.get('title', 'recording')
-            filename = self.PATHS['download_filename'].format(title=title,
-                                                              timestamp=now)
+            title = recinfo.get('title', rec)
+            return self.handle_download('rec', user, coll, rec, title)
 
-            download_url = self.PATHS['download']
-            download_url = download_url.format(record_host=self.record_host,
-                                               user=user,
-                                               coll=coll,
-                                               rec=rec,
-                                               type='rec',
-                                               filename=filename)
+        @self.app.get('/api/v1/collections/<coll>/download')
+        def download_coll_warc(coll):
+            user = self.get_user(api=True)
 
-            res = requests.get(download_url, stream=True)
+            collinfo = {}
+            #recinfo = self.manager.get_recording(user, coll, rec)
+            #if not recinfo:
+            #    self._raise_error(404, 'Recording not found',
+            #                      id=rec)
 
-            if res.status_code >= 400:
-                try:
-                    res.raw.close()
-                except:
-                    pass
+            title = collinfo.get('title', coll)
+            return self.handle_download('coll', user, coll, '*', title)
 
-                self._raise_error(400, 'Unable to download WARC')
+    def handle_download(self, type, user, coll, rec, title):
+        now = timestamp_now()
+        filename = self.PATHS['download_filename'].format(title=title,
+                                                          timestamp=now)
 
-            response.headers['Content-Type'] = 'application/octet-stream'
-            response.headers['Content-Disposition'] = 'attachment; filename=' + quote(filename)
+        download_url = self.PATHS['download']
+        download_url = download_url.format(record_host=self.record_host,
+                                           user=user,
+                                           coll=coll,
+                                           rec=rec,
+                                           type=type,
+                                           filename=filename)
 
-            length = res.headers.get('Content-Length')
-            if length:
-                response.headers['Content-Length'] = length
+        res = requests.get(download_url, stream=True)
 
-            encoding = res.headers.get('Transfer-Encoding')
-            if encoding:
-                response.headers['Transfer-Encoding'] = encoding
+        if res.status_code >= 400:  #pragma: no cover
+            try:
+                res.raw.close()
+            except:
+                pass
 
-            return StreamIter(res.raw)
+            self._raise_error(400, 'Unable to download WARC')
+
+        response.headers['Content-Type'] = 'application/octet-stream'
+        response.headers['Content-Disposition'] = 'attachment; filename=' + quote(filename)
+
+        length = res.headers.get('Content-Length')
+        if length:
+            response.headers['Content-Length'] = length
+
+        encoding = res.headers.get('Transfer-Encoding')
+        if encoding:
+            response.headers['Transfer-Encoding'] = encoding
+
+        return StreamIter(res.raw)
+
 
     def handle_anon_content(self, wb_url, rec, type):
         wb_url = self.add_query(wb_url)
@@ -149,6 +166,9 @@ class ContentController(BaseController, RewriterApp):
             if not self.manager.has_recording(user, coll, rec):
                 title = rec
                 rec = self.sanitize_title(title)
+
+                if not self.manager.has_collection(user, coll):
+                    self.manager.create_collection(user, coll)
 
                 if type == 'record':
                     if rec == title or not self.manager.has_recording(user, coll, rec):

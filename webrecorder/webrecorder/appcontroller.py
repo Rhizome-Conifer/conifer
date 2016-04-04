@@ -18,6 +18,7 @@ from six.moves.urllib.parse import urlsplit, urljoin
 
 from webrecorder.contentcontroller import ContentController
 from webrecorder.recscontroller import RecsController
+from webrecorder.collscontroller import CollsController
 from webrecorder.logincontroller import LoginController
 
 from webrecorder.webreccork import WebRecCork
@@ -59,6 +60,7 @@ class AppController(BaseController):
         # Init Core app controllers
         rewrite_controller = ContentController(bottle_app, jinja_env, manager, config)
         recs_controller = RecsController(bottle_app, jinja_env, manager, config)
+        colls_controller = CollsController(bottle_app, jinja_env, manager, config)
         login_controller = LoginController(bottle_app, jinja_env, manager, config=config)
 
         bottle_app.install(AddSession(self.cork, config))

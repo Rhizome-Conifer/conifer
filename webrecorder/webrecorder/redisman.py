@@ -16,7 +16,8 @@ class LoginManagerMixin(object):
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,30}$')
 
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager',
-                        'guest', 'settings', 'profile', 'api']
+                        'guest', 'settings', 'profile', 'api', 'anon',
+                        'register', 'join', 'coll']
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
@@ -165,10 +166,11 @@ class RecManagerMixin(object):
         super(RecManagerMixin, self).__init__(config)
         self.REC_INFO_KEY = 'r:{user}:{coll}:{rec}:info'
         self.PAGE_KEY = 'r:{user}:{coll}:{rec}:page'
+        self.rec_int_keys = ['size', 'created_at', 'updated_at']
 
     def get_recording(self, user, coll, rec):
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
-        result = self._format_rec_info(self.redis.hgetall(key))
+        result = self._format_info(self.redis.hgetall(key), self.rec_int_keys)
         return result
 
     def has_recording(self, user, coll, rec):
@@ -200,7 +202,7 @@ class RecManagerMixin(object):
 
             all_recs = pi.execute()
 
-        all_recs = [self._format_rec_info(x) for x in all_recs]
+        all_recs = [self._format_info(x, self.rec_int_keys) for x in all_recs]
         return all_recs
 
     def delete_recording(self, user, coll, rec):
@@ -228,12 +230,66 @@ class RecManagerMixin(object):
 
         return pagelist
 
-    def _format_rec_info(self, result):
+
+# ============================================================================
+class CollManagerMixin(object):
+    def __init__(self, config):
+        super(CollManagerMixin, self).__init__(config)
+        self.COLL_INFO_KEY = 'c:{user}:{coll}:info'
+        self.coll_int_keys = ['size', 'created_at']
+
+    def get_collection(self, user, coll):
+        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        result = self._format_info(self.redis.hgetall(key), self.coll_int_keys)
+        if result:
+            result['recordings'] = self.get_recordings(user, coll)
+        return result
+
+    def has_collection(self, user, coll):
+        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        return self.redis.exists(key)
+
+    def create_collection(self, user, coll, coll_title='', desc=''):
+        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        coll_title = coll_title or coll
+
+        now = int(time.time())
+
+        with redis.utils.pipeline(self.redis) as pi:
+            pi.hset(key, 'id', coll)
+            pi.hset(key, 'title', coll_title)
+            pi.hset(key, 'created_at', now)
+            pi.hset(key, 'size', '0')
+            pi.hset(key, 'desc', desc)
+
+        return self.get_collection(user, coll)
+
+    def get_collections(self, user):
+        key_pattern = self.COLL_INFO_KEY.format(user=user, coll='*')
+
+        keys = list(self.redis.scan_iter(match=key_pattern))
+
+        with redis.utils.pipeline(self.redis) as pi:
+            for key in keys:
+                pi.hgetall(key)
+
+            all_colls = pi.execute()
+
+        all_colls = [self._format_info(x, self.coll_int_keys) for x in all_colls]
+        return all_colls
+
+
+# ============================================================================
+class Base(object):
+    def __init__(self, config):
+        pass
+
+    def _format_info(self, result, int_keys):
         if not result:
             return {}
 
         result = self._conv_dict(result)
-        result = self._to_int(result, ['size', 'created_at', 'updated_at'])
+        result = self._to_int(result, int_keys)
         return result
 
     def _to_int(self, result, ints):
@@ -250,13 +306,7 @@ class RecManagerMixin(object):
 
 
 # ============================================================================
-class Base(object):
-    def __init__(self, config):
-        pass
-
-
-# ============================================================================
-class RedisDataManager(LoginManagerMixin, RecManagerMixin, Base):
+class RedisDataManager(LoginManagerMixin, RecManagerMixin, CollManagerMixin, Base):
     def __init__(self, redis, cork, config):
         self.redis = redis
         self.cork = cork

@@ -18,7 +18,7 @@ class RecsController(BaseController):
                 response.status = 400
                 return {'error_message': 'Recording Already Exists',
                         'id': rec,
-                        'title': title
+                        'title': recording.get('title', title)
                        }
 
             recording = self.manager.create_recording(user, coll, rec, title)

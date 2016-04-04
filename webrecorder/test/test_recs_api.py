@@ -101,7 +101,7 @@ class TestWebRecRecAPI(BaseWRTests):
 
     def test_error_already_exists(self):
         res = self.testapp.post('/api/v1/recordings?user=@anon&coll=anonymous', params={'title': '2 Another Recording'}, status=400)
-        assert res.json == {'error_message': 'Recording Already Exists', 'id': '2-another-recording', 'title': '2 Another Recording'}
+        assert res.json == {'error_message': 'Recording Already Exists', 'id': '2-another-recording', 'title': '2 Another! Recording!'}
 
     def test_error_no_such_rec(self):
         res = self.testapp.get('/api/v1/recordings/blah@$?user=@anon&coll=anonymous', status=404)
@@ -117,9 +117,9 @@ class TestWebRecRecAPI(BaseWRTests):
 
     def test_error_missing_user_coll(self):
         res = self.testapp.post('/api/v1/recordings', params={'title': 'Recording'}, status=400)
-        assert res.json == {'error_message': "User and Collection must be specified"}
+        assert res.json == {'error_message': "User must be specified"}
 
     def test_error_invalid_user_coll(self):
         res = self.testapp.post('/api/v1/recordings?user=user&coll=coll', params={'title': 'Recording'}, status=404)
-        assert res.json == {"error_message": "No Such User or Collection"}
+        assert res.json == {"error_message": "No such user"}
 

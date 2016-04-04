@@ -20,11 +20,10 @@ class BaseController(object):
     def init_routes(self):
         raise NotImplemented()
 
-    def get_user_coll(self, api=False):
+    def get_user(self, api=False):
         user = request.query.get('user')
-        coll = request.query.get('coll')
-        if not user or not coll:
-            self._raise_error(400, 'User and Collection must be specified',
+        if not user:
+            self._raise_error(400, 'User must be specified',
                               api=api)
 
         if user == '@anon':
@@ -32,11 +31,27 @@ class BaseController(object):
             if not session.is_anon():
                 session.set_anon()
             user = session.anon_user
+
+        # for now, while only anon implemented
+        else:
+            self._raise_error(404, 'No such user', api=api)
+
+        return user
+
+    def get_user_coll(self, api=False):
+        user = self.get_user(api=api)
+
+        coll = request.query.get('coll')
+        if not coll:
+            self._raise_error(400, 'Collection must be specified',
+                              api=api)
+
+        if request.query.get('user') == '@anon':
             coll = 'anonymous'
 
         # for now, while only anon implemented
         else:
-            self._raise_error(404, 'No Such User or Collection', api=api)
+            self._raise_error(404, 'No such collection', api=api)
 
         return user, coll
 

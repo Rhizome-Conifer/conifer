@@ -21,6 +21,7 @@ class TestAnonContent(BaseWRTests):
     REDIS_KEYS = [
         'r:{user}:{coll}:{rec}:cdxj',
         'r:{user}:{coll}:{rec}:info',
+        'r:{user}:{coll}:{rec}:page',
         'c:{user}:{coll}:warc',
         'c:{user}:{coll}:info',
         'u:{user}',
@@ -59,8 +60,7 @@ class TestAnonContent(BaseWRTests):
 
     @classmethod
     def make_gevent_server(cls, app, port=0):
-        server = WSGIServer(('', port), app)
-        #port = server.socket.getsockname()[1]
+        server = WSGIServer(('localhost', port), app)
 
         def run(server):
             print('starting server on ' + str(port))
@@ -137,6 +137,12 @@ class TestAnonContent(BaseWRTests):
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
+        # Add as page
+        page = {'title': 'Example', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
+        res = self.testapp.post('/api/v1/recordings/my-recording/pages?user=@anon&coll=anonymous', params=page)
+
+        assert res.json == {}
+
         user = self.get_anon_user()
 
         self._assert_rec_keys(user, 'anonymous', ['my-recording'])
@@ -177,6 +183,12 @@ class TestAnonContent(BaseWRTests):
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
+        # Add as page
+        page = {'title': 'Example', 'url': 'http://httpbin.org/get?bood=far', 'ts': '2016010203000000'}
+        res = self.testapp.post('/api/v1/recordings/my-rec2/pages?user=@anon&coll=anonymous', params=page)
+
+        assert res.json == {}
+
         user = self.get_anon_user()
 
         self._assert_rec_keys(user, 'anonymous', ['my-recording', 'my-rec2'])
@@ -190,14 +202,14 @@ class TestAnonContent(BaseWRTests):
     def test_anon_download_rec(self):
         res = self.testapp.get('/api/v1/recordings/my-rec2/download?user=@anon&coll=anonymous')
 
-        assert res.headers['Content-Disposition'].startswith('attachment; filename=My%20Rec2')
+        assert res.headers['Content-Disposition'].startswith('attachment; filename=My%20Rec2-')
 
         warcin = self._get_dechunked(res.body)
 
         cdxout = BytesIO()
         write_cdx_index(cdxout, warcin, 'My-Rec2.warc.gz', include_all=True, cdxj=True)
 
-        print(cdxout.getvalue().decode('utf-8'))
+        #print(cdxout.getvalue().decode('utf-8'))
 
         cdx = [CDXObject(cdx) for cdx in cdxout.getvalue().rstrip().split(b'\n')]
         assert len(cdx) == 2
@@ -210,8 +222,39 @@ class TestAnonContent(BaseWRTests):
         cdx[1]['url'] = 'http://httpbin.org/get?food=bar'
         cdx[1]['mime'] = '-'
 
+    def test_anon_download_coll(self):
+        res = self.testapp.get('/api/v1/collections/anonymous/download?user=@anon')
+
+        assert res.headers['Content-Disposition'].startswith('attachment; filename=anonymous-')
+
+        warcin = self._get_dechunked(res.body)
+
+        cdxout = BytesIO()
+        write_cdx_index(cdxout, warcin, 'anonymous.warc.gz', include_all=True, cdxj=True)
+
+        #print(cdxout.getvalue().decode('utf-8'))
+
+        cdx = [CDXObject(cdx) for cdx in cdxout.getvalue().rstrip().split(b'\n')]
+        assert len(cdx) == 4
+
+        # response
+        cdx[0]['url'] = 'http://httpbin.org/get?food=bar'
+        cdx[0]['mime'] = 'application/json'
+
+        # request
+        cdx[1]['url'] = 'http://httpbin.org/get?food=bar'
+        cdx[1]['mime'] = '-'
+
+        # response
+        cdx[2]['url'] = 'http://httpbin.org/get?bood=far'
+        cdx[2]['mime'] = 'application/json'
+
+        # request
+        cdx[3]['url'] = 'http://httpbin.org/get?bood=far'
+        cdx[3]['mime'] = '-'
+
     def test_anon_delete_rec(self):
-        time.sleep(0.1)
+        #time.sleep(0.1)
 
         res = self.testapp.delete('/api/v1/recordings/my-recording?user=@anon&coll=anonymous')
 
@@ -219,7 +262,7 @@ class TestAnonContent(BaseWRTests):
 
         user = self.get_anon_user()
 
-        time.sleep(0.8)
+        time.sleep(1.0)
 
         self._assert_size_all_eq(user, 'anonymous', 'my-rec2')
 
