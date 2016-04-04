@@ -1,4 +1,4 @@
-FROM webrecore
+FROM webrecorder/webrecore
 
 WORKDIR /agg/
 ADD . /agg/

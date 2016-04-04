@@ -58,6 +58,7 @@ services:
         volumes_from:
             - data
 
+
     redis:
         build: ./redis
 
@@ -78,6 +79,7 @@ services:
         environment:
             - "maildomain=mail.webrecorder.io"
             - "smtp_user=webrec:archive"
+
 
     # Data Only Volume
     data:
