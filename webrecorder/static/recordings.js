@@ -13,11 +13,18 @@ var Recordings = (function() {
 			data: { "title": attributes.title },
 		})
 		.done(function(data, textStatus, xhr) {
-			console.log('WE DID IT: ' + data);
+			// Redirect to recording URL
 		})
-		.fail(function(xhr, textStatus, errorThrown){
-			console.log('OH NOES ');
+		.fail(function(xhr, textStatus, errorThrown) {
+			if (xhr.responseJSON.status == "AlreadyExists") {
+				$('.title').addClass('has-error');
+				$("input[name='title']").data("aria-invalid", "true");
+				$("input[name='title']").parent().append("<span class='help-block'>There's already a recording with that title in this collection.  Please pick a new recording title.</span>");
+			} else {
+				// Some other error happened, handle it gracefully
+			}
 		});
+
 	}
 
     return {
@@ -27,11 +34,20 @@ var Recordings = (function() {
     }
 }());
 
+var clearNewRecordingErrors = function() {
+	$('.title').removeClass("has-error");
+	$('.collection').removeClass("has-error");
+	$('.url').removeClass("has-error");
+	$('input').removeData('aria-invalid');
+	$('span.help-block').remove();
+}
+
 $(function() {
 
 	// Create new recording form
 	$('header').on('submit', '.new-recording-form', function(event) {
 		event.preventDefault();
+		clearNewRecordingErrors();
 
 		var collection = $("input[name='collection']").val();
 		var title = $("input[name='title']").val();
@@ -41,7 +57,5 @@ $(function() {
 			{"collection": collection,
 			 "title": title, 
 			 "url": url});
-
-		// Redirect to recording URL
 	});
 });
