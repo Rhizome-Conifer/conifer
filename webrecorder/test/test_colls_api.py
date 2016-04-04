@@ -32,9 +32,11 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert rec['size'] == 0
         assert rec['id'] == 'anonymous'
         assert rec['title'] == 'Anonymous'
+        assert rec['download_url'] == 'http://localhost:80/anonymous/$download'
         #assert rec['created_at'] == rec['updated_at']
         assert rec['created_at'] <= int(time.time())
         assert rec['recordings'] == []
+
 
     def test_list_anon_collections(self):
         res = self.testapp.get('/api/v1/collections?user=@anon')
@@ -42,8 +44,9 @@ class TestWebRecCollsAPI(BaseWRTests):
         recs = res.json['collections']
         assert len(recs) == 1
 
-        recs[0]['id'] == 'anonymous'
-        recs[0]['title'] == 'Anonymous'
+        assert recs[0]['id'] == 'anonymous'
+        assert recs[0]['title'] == 'Anonymous'
+        assert recs[0]['download_url'] == 'http://localhost:80/anonymous/$download'
 
     def test_error_already_exists(self):
         res = self.testapp.post('/api/v1/collections?user=@anon', params={'title': 'anonymous'}, status=400)

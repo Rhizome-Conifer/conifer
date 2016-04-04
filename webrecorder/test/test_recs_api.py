@@ -37,6 +37,7 @@ class TestWebRecRecAPI(BaseWRTests):
         assert rec['size'] == 0
         assert rec['id'] == 'my-rec'
         assert rec['title'] == 'My Rec'
+        assert rec['download_url'] == 'http://localhost:80/anonymous/my-rec/$download'
         assert rec['created_at'] == rec['updated_at']
         assert rec['created_at'] <= int(time.time())
 
@@ -57,11 +58,13 @@ class TestWebRecRecAPI(BaseWRTests):
         recs = res.json['recordings']
         assert len(recs) == 2
 
-        recs[0]['id'] == 'another-recording'
-        recs[0]['title'] == '2 Another! Recording!'
+        assert recs[0]['id'] == '2-another-recording'
+        assert recs[0]['title'] == '2 Another! Recording!'
+        assert recs[0]['download_url'] == 'http://localhost:80/anonymous/2-another-recording/$download'
 
-        recs[1]['id'] == 'my-rec'
-        recs[1]['title'] == 'My Rec'
+        assert recs[1]['id'] == 'my-rec'
+        assert recs[1]['title'] == 'My Rec'
+        assert recs[1]['download_url'] == 'http://localhost:80/anonymous/my-rec/$download'
 
     def test_page_list_0(self):
         res = self.testapp.get('/api/v1/recordings/my-rec/pages?user=@anon&coll=anonymous')

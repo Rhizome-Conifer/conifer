@@ -5,6 +5,11 @@ from webrecorder.basecontroller import BaseController
 
 # ============================================================================
 class CollsController(BaseController):
+    def __init__(self, *args, **kwargs):
+        super(CollsController, self).__init__(*args, **kwargs)
+        self.DOWNLOAD_COLL_PATH = '{host}/{user}/{coll}/$download'
+        self.ANON_DOWNLOAD_COLL_PATH = '{host}/anonymous/$download'
+
     def init_routes(self):
         @self.app.post('/api/v1/collections')
         def create_collection():
@@ -22,7 +27,7 @@ class CollsController(BaseController):
                        }
 
             collection = self.manager.create_collection(user, coll, title)
-            return {'collection': collection}
+            return {'collection': self._add_download_path(collection, user)}
 
         @self.app.get('/api/v1/collections')
         def get_collections():
@@ -30,7 +35,7 @@ class CollsController(BaseController):
 
             coll_list = self.manager.get_collections(user)
 
-            return {'collections': coll_list}
+            return {'collections': [self._add_download_path(x, user) for x in coll_list]}
 
         @self.app.get('/api/v1/collections/<coll>')
         def get_collection(coll):
@@ -42,7 +47,7 @@ class CollsController(BaseController):
                 response.status = 404
                 return {'error_message': 'Collection not found', 'id': coll}
 
-            return {'collection': collection}
+            return {'collection': self._add_download_path(collection, user)}
 
         @self.app.delete('/api/v1/collections/<coll>')
         def delete_collection(coll):
@@ -51,6 +56,19 @@ class CollsController(BaseController):
 
             self.manager.delete_collection(user, coll)
             return {'deleted_id': coll}
+
+    def _add_download_path(self, coll_info, user):
+        if self.manager.is_anon(user):
+            path = self.ANON_DOWNLOAD_COLL_PATH
+        else:
+            path = self.DOWNLOAD_COLL_PATH
+
+        path = path.format(host=self.get_host(),
+                           user=user,
+                           coll=coll_info['id'])
+
+        coll_info['download_url'] = path
+        return coll_info
 
     def _ensure_coll_exists(self, user, coll):
         if not self.manager.has_collection(user):

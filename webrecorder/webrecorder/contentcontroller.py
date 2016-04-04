@@ -91,9 +91,10 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec=rec_name, type=type_)
 
-        @self.app.get('/api/v1/recordings/<rec>/download')
-        def download_rec_warc(rec):
-            user, coll = self.get_user_coll(api=True)
+        @self.app.get('/anonymous/<rec>/download')
+        def anon_download_rec_warc(rec):
+            user = self.get_anon_user()
+            coll = 'anonymous'
 
             recinfo = self.manager.get_recording(user, coll, rec)
             if not recinfo:
@@ -103,15 +104,16 @@ class ContentController(BaseController, RewriterApp):
             title = recinfo.get('title', rec)
             return self.handle_download('rec', user, coll, rec, title)
 
-        @self.app.get('/api/v1/collections/<coll>/download')
-        def download_coll_warc(coll):
-            user = self.get_user(api=True)
+        @self.app.get('/anonymous/download')
+        def anon_download_coll_warc():
+            user = self.get_anon_user()
+            coll = 'anonymous'
 
             collinfo = {}
-            #recinfo = self.manager.get_recording(user, coll, rec)
-            #if not recinfo:
-            #    self._raise_error(404, 'Recording not found',
-            #                      id=rec)
+            collinfo = self.manager.get_collection(user, coll)
+            if not collinfo:
+                self._raise_error(404, 'Collection not found',
+                                  id=coll)
 
             title = collinfo.get('title', coll)
             return self.handle_download('coll', user, coll, '*', title)
@@ -152,11 +154,15 @@ class ContentController(BaseController, RewriterApp):
 
         return StreamIter(res.raw)
 
+    def get_anon_user(self):
+        sesh = request.environ['webrec.session']
+        user = sesh.anon_user.replace('@anon-', 'anon/')
+        return user
 
     def handle_anon_content(self, wb_url, rec, type):
         wb_url = self.add_query(wb_url)
         sesh = request.environ['webrec.session']
-        user = sesh.anon_user.replace('@anon-', 'anon/')
+        user = self.get_anon_user()
         coll = 'anonymous'
 
         if type == 'record' or type == 'replay':

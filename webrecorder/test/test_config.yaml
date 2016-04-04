@@ -30,7 +30,7 @@ verify_ssl: false
 
 multiuser: true
 
-invites_enabled: 'false'
+invites_enabled: 'true'
 
 warcsign_private_key: /tmp/keys/wr.pem
 warcsign_public_key: /tmp/keys/wr_pub.pem

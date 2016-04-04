@@ -17,7 +17,7 @@ class LoginManagerMixin(object):
 
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager',
                         'guest', 'settings', 'profile', 'api', 'anon',
-                        'register', 'join', 'coll']
+                        'anonymous', 'register', 'join', 'coll']
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
@@ -60,6 +60,9 @@ class LoginManagerMixin(object):
 
     def has_user(self, user):
         return self.cork.user(user) is not None
+
+    def is_anon(self, user):
+        return user == '@anon' or user.startswith('anon/')
 
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?

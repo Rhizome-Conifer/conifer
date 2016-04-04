@@ -7,7 +7,6 @@ import webtest
 
 from six.moves.urllib.parse import quote, urlsplit
 
-#from ..webrecrecorder import WebRecRecorder
 from wrrecorder import get_shared_config_root
 
 general_req_data = "\

@@ -200,7 +200,7 @@ class TestAnonContent(BaseWRTests):
         assert self.redis.hlen(warc_key) == 2
 
     def test_anon_download_rec(self):
-        res = self.testapp.get('/api/v1/recordings/my-rec2/download?user=@anon&coll=anonymous')
+        res = self.testapp.get('/anonymous/my-rec2/download')
 
         assert res.headers['Content-Disposition'].startswith('attachment; filename=My%20Rec2-')
 
@@ -223,7 +223,7 @@ class TestAnonContent(BaseWRTests):
         cdx[1]['mime'] = '-'
 
     def test_anon_download_coll(self):
-        res = self.testapp.get('/api/v1/collections/anonymous/download?user=@anon')
+        res = self.testapp.get('/anonymous/download')
 
         assert res.headers['Content-Disposition'].startswith('attachment; filename=anonymous-')
 
