@@ -1,6 +1,7 @@
 import os
 import re
 import requests
+import json
 
 from six.moves.urllib.parse import quote
 
@@ -200,7 +201,20 @@ class ContentController(BaseController, RewriterApp):
 
         return url
 
-    def get_upstream_url(self, url, closest, kwargs):
+    def get_top_frame_params(self, wb_url, kwargs):
+        type = kwargs['type']
+        if type == 'live':
+            return
+
+        request.environ['webrec.template_params']['curr_mode'] = type
+        info = self.manager.get_content_inject_info(kwargs['user'],
+                                                    kwargs['coll'],
+                                                    kwargs['rec'])
+        info = json.dumps(info)
+        #request.environ['webrec.template_params']['info'] = info
+        return {'info': info}
+
+    def get_upstream_url(self, url, wb_url, closest, kwargs):
         type = kwargs['type']
         upstream_url = self.PATHS[type].format(url=quote(url),
                                                closest=closest,

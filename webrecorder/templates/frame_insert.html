@@ -54,7 +54,7 @@
     wbinfo.is_frame = true;
     wbinfo.frame_mod = "{{ wbrequest.options.frame_mod }}";
     wbinfo.replay_mod = "{{ wbrequest.options.replay_mod }}";
-    wbinfo.state = "{{ state }}";
+    wbinfo.state = "{{ curr_mode }}";
     wbinfo.info = {{ info | default('{}') }};
 </script>
 

@@ -64,6 +64,25 @@ class LoginManagerMixin(object):
     def is_anon(self, user):
         return user == '@anon' or user.startswith('anon/')
 
+    def get_size_remaining(self, user):
+        user_key = self.USER_KEY.format(user=user)
+        size, max_size = self.redis.hmget(user_key, ['size', 'max_len'])
+        try:
+            if not max_size:
+                max_size = 500000000
+
+            if not size:
+                size = 0
+
+            max_size = int(max_size)
+            size = int(size)
+            rem = max_size - size
+        except Exception as e:
+            print(e)
+            rem = 500000000
+
+        return rem
+
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
         all_users = RedisTable(self.redis, 'h:users')
@@ -286,6 +305,34 @@ class CollManagerMixin(object):
 class Base(object):
     def __init__(self, config):
         pass
+
+    def get_content_inject_info(self, user, coll, rec):
+        info = {}
+
+        coll_key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+
+        # recording
+        if rec != '*' and rec:
+            rec_key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
+            info['rec_title'], info['size'] = self.redis.hmget(rec_key, ['title', 'size'])
+            info['rec_title'] = info['rec_title'].decode('utf-8')
+            info['rec_id'] = rec
+        else:
+            info['size'] = self.redis.hget(coll_key, 'size')
+
+        # collection
+        info['coll_id'] = coll
+        info['coll_title'] = self.redis.hget(coll_key, 'title')
+        info['coll_title'] = info['coll_title'].decode('utf-8')
+
+        try:
+            info['size'] = int(info['size'])
+        except Exception as e:
+            print(e)
+            pass
+
+        info['size_remaining'] = self.get_size_remaining(user)
+        return info
 
     def _format_info(self, result, int_keys):
         if not result:
