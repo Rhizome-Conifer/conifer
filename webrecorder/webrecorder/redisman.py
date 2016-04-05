@@ -3,6 +3,10 @@ import time
 import redis
 import re
 import json
+import os
+import base64
+
+from datetime import datetime
 
 from bottle import template
 
@@ -26,10 +30,14 @@ class LoginManagerMixin(object):
     def __init__(self, config):
         super(LoginManagerMixin, self).__init__(config)
         try:
+            self.default_max_size = int(config['default_max_size'])
+            self.default_max_anon_size = int(config['default_max_anon_size'])
+            self.default_max_coll = int(config['default_max_coll'])
+
             if not self.redis.exists('h:defaults'):
-                self.redis.hset('h:defaults', 'max_len', config['default_max_size'])
-                self.redis.hset('h:defaults', 'max_anon_len', config['default_max_anon_size'])
-                self.redis.hset('h:defaults', 'max_coll', config['default_max_coll'])
+                self.redis.hset('h:defaults', 'max_size', self.default_max_size)
+                self.redis.hset('h:defaults', 'max_anon_size', self.default_max_anon_size)
+                self.redis.hset('h:defaults', 'max_coll', self.default_max_coll)
         except Exception as e:
             print('WARNING: Unable to init defaults: ' + str(e))
 
@@ -40,19 +48,20 @@ class LoginManagerMixin(object):
             raise ValidationException(a)
 
         key = self.USER_KEY.format(user=user)
+        now = int(time.time())
 
-        max_len, max_coll = self.redis.hmget('h:defaults', ['max_len', 'max_coll'])
-        if not max_len:
-            max_len = 100000000
+        max_size, max_coll = self.redis.hmget('h:defaults', ['max_size', 'max_coll'])
+        if not max_size:
+            max_size = self.default_max_size
 
         if not max_coll:
-            max_coll = 10
+            max_coll = self.default_max_coll
 
         with redis.utils.pipeline(self.redis) as pi:
-            pi.hset(key, 'max_len', max_len)
+            pi.hset(key, 'max_size', max_size)
             pi.hset(key, 'max_coll', max_coll)
             pi.hset(key, 'created_at', now)
-            pi.hset(key, 'total_len', '0')
+            pi.hsetnx(key, 'size', '0')
 
         self.cork.do_login(user)
         return user
@@ -66,20 +75,25 @@ class LoginManagerMixin(object):
 
     def get_size_remaining(self, user):
         user_key = self.USER_KEY.format(user=user)
-        size, max_size = self.redis.hmget(user_key, ['size', 'max_len'])
-        try:
-            if not max_size:
-                max_size = 500000000
 
+        if self.is_anon(user):
+            max_size = self.redis.hget('h:defaults', 'max_anon_size')
+            size = self.redis.hget(user_key, 'size')
+        else:
+            size, max_size = self.redis.hmget(user_key, ['size', 'max_size'])
+
+        try:
             if not size:
                 size = 0
+
+            if not max_size:
+                max_size = self.default_max_size
 
             max_size = int(max_size)
             size = int(size)
             rem = max_size - size
         except Exception as e:
             print(e)
-            rem = 500000000
 
         return rem
 
@@ -124,7 +138,7 @@ class LoginManagerMixin(object):
             if not invitekey:
                 return False
 
-            key = base64.b64decode(invitekey.encode('utf-8'))
+            key = base64.b64decode(invitekey.encode('utf-8')).decode('utf-8')
             key.split(':', 1)
             email, hash_ = key.split(':', 1)
 

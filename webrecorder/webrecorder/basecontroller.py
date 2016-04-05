@@ -72,7 +72,7 @@ class BaseController(object):
     def get_user_home(self, user):
         return '/' + user
 
-    def get_redir_back(skip, default='/'):
+    def get_redir_back(self, skip, default='/'):
         redir_to = request.headers.get('Referer', default)
         if redir_to.endswith(skip):
             redir_to = default

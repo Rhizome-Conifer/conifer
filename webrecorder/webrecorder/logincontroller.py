@@ -46,8 +46,8 @@ class LoginController(BaseController):
         @self.app.post(LOGIN_PATH)
         def login_post():
             """Authenticate users"""
-            username = post_get('username')
-            password = post_get('password')
+            username = self.post_get('username')
+            password = self.post_get('password')
 
             if self.manager.cork.login(username, password):
                 redir_to = self.get_redir_back((LOGIN_PATH, '/'), self.get_user_home(username))
