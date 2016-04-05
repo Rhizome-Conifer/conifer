@@ -22,7 +22,7 @@ $(function() {
 
 		var url = $("input[name='url']").val();
 
-		window.location.href = UrlUtilities.recordingInProgressUrl(
+		window.location.href = Routes.recordingInProgressUrl(
 			current_user, current_collection, wbinfo.info.rec_id, url);
 	});
 
@@ -30,16 +30,19 @@ $(function() {
 	$('header').on('submit', '.stop-recording', function(event) {
 		event.preventDefault();
 
-		window.location.href = UrlUtilities.collectionInfoUrl(current_user, current_collection);
+		window.location.href = Routes.collectionInfoUrl(current_user, current_collection);
 	});
+
+	// Start size widget
+	RecordingSizeWidget.start();
 });
 
 var Recordings = (function() {
 
 	var API_ENDPOINT = "/api/v1/recordings";
+	var query_string = "?user=" + current_user + "&coll=" + current_collection;
 
 	var create = function(attributes) {
-		var query_string = "?user=" + current_user + "&coll=" + current_collection;
 
 		$.ajax({
 			url: API_ENDPOINT + query_string,
@@ -47,7 +50,7 @@ var Recordings = (function() {
 			data: { "title": attributes.title },
 		})
 		.done(function(data, textStatus, xhr) {
-			window.location.href = UrlUtilities.recordingInProgressUrl(
+			window.location.href = Routes.recordingInProgressUrl(
 				current_user, current_collection, data.recording.id, attributes.url);
 		})
 		.fail(function(xhr, textStatus, errorThrown) {
@@ -55,13 +58,27 @@ var Recordings = (function() {
 		});
 	}
 
+	var get = function(recordingId, doneCallbackFunction, failCallbackFunction) {
+		$.ajax({
+			url: API_ENDPOINT + "/" + recordingId + query_string,
+			method: "GET",
+		})
+		.done(function(data, textStatus, xhr) {
+			doneCallbackFunction(data);
+		})
+		.fail(function(xhr, textStatus, errorThrown) {
+			failCallbackFunction();
+		});
+
+	}
+
     return {
     	create: create,
-		//update: update
+		get: get
     }
 }());
 
-var UrlUtilities = (function(){
+var Routes = (function(){
 	var recordingInProgressUrl = function(user, collection, recording, url) {
 		var host = window.location.protocol + "//" + window.location.host;
 
@@ -88,3 +105,35 @@ var UrlUtilities = (function(){
 	}
 }());
 
+var RecordingSizeWidget = (function() {
+	var start = function() {
+		var spaceUsed = format_bytes(wbinfo.info.size);
+
+		updateDom(spaceUsed);
+		setInterval(pollForSizeUpdate, 10000);
+	}
+
+	var pollForSizeUpdate = function() {
+		Recordings.get(wbinfo.info.rec_id, updateDomAfterPoll, hideCounterOnFail)
+	}
+
+	var updateDomAfterPoll = function(data) {
+		var spaceUsed = format_bytes(data.recording.size);
+
+		updateDom(spaceUsed);
+	}
+
+	var updateDom = function(spaceUsed) {
+		$('.size-counter .current-size').text(spaceUsed);
+		$('.size-counter').removeClass('hidden');
+	}
+
+	var hideCounterOnFail = function() {
+		$('.size-counter').addClass('hidden');
+	}
+
+	return {
+		start: start
+	}
+
+})();
