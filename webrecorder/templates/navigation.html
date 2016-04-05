@@ -1,9 +1,16 @@
-<div class="navbar navbar-default">
+<div class="navbar navbar-default navbar-fixed-top">
 	<div class="navbar-header col-xs-1">
-		<a target="_parent" class="navbar-brand" title="Return to {{ metadata.product | default('webrecorder.io')}}" href="/">
+		<a target="_parent" class="navbar-left" title="Return to {{ metadata.product | default('webrecorder.io')}}" href="/">
 			wr.io
 		</a>
 	</div>
-    {% include 'recordings/new.html' %}
-	{% include 'user_mgmt_links.html' %}
+
+	<div class="recorder navbar-left container-fluid col-xs-10">
+		{% include 'recordings/recorder.html' %}
+	</div>
+
+	<div class="navbar-header col-xs-1">
+		{% include 'user_mgmt_links.html' %}
+	</div>
+
 </div>

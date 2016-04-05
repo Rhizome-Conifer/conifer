@@ -1,4 +1,12 @@
-<form action = "/recordings" method="post" class="navbar-left container-fluid form-horizontal col-xs-10 new-recording-form" role="">
+<form action = "/recordings" method="post" class="form-horizontal new-recording-form" role="">
+	<div class="form-group form-group-sm col-xs-12 new-recording-form-group">
+		<div class="url col-xs-11">
+			<input name="url" type="url" required class="form-control input-sm" placeholder="Url to record" autofocus>
+		</div>
+		<div class="col-xs-1">
+			<button type="submit" class="pull-right btn btn-default">Record</button>
+		</div>
+	</div>
 	<div class="form-group form-group-sm col-xs-12 new-recording-form-group">
 		<div class="title">
 			<label for="title" class="control-label col-xs-1">Recording:</label>
@@ -13,12 +21,4 @@
 			</div>
 		</div>
 	</div>	
-	<div class="form-group form-group-sm col-xs-12 new-recording-form-group">
-		<div class="url col-xs-11">
-			<input name="url" type="url" required class="form-control input-sm" placeholder="Url to record" autofocus>
-		</div>
-		<div class="col-xs-1">
-			<button type="submit" class="pull-right btn btn-default">Record</button>
-		</div>
-	</div>
 </form>

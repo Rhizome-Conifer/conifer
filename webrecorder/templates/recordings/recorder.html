@@ -1,0 +1,5 @@
+{% if curr_mode == "record" %}
+	{% include 'in_progress.html' %}
+{% elif not curr_mode %}
+	{% include 'new.html' %}
+{% endif %}

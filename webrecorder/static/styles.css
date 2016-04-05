@@ -12,11 +12,13 @@ li.coll-nav {
     min-height: 40px;
 }
 
-.new-recording-form {
+.new-recording-form,
+.recording-in-progress-form {
     margin-top: 5px;
 }
 
-.new-recording-form-group {
+.new-recording-form-group,
+.recording-in-progress-form-group {
     margin-bottom: 5px;
 }
 

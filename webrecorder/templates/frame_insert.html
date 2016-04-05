@@ -68,6 +68,8 @@
 
 <script src="/static/__shared/nav.js"></script>
 
+<script src="/static/__shared/recordings.js"></script>
+
 <!-- 
 <script src='/static/__shared/automate.js'> </script>
 -->
@@ -75,7 +77,9 @@
 {% endblock %}
 
 {% block body %}
-{% include 'navigation.html' %}
+<header>
+    {% include 'navigation.html' %}
+</header>
 
 <iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
 
