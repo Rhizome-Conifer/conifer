@@ -208,7 +208,7 @@ class ContentController(BaseController, RewriterApp):
                                                     kwargs['coll'],
                                                     kwargs['rec'])
 
-        return {'info': json.dumps(info), 'curr_mode': type}
+        return {'info': info, 'curr_mode': type}
 
     def get_upstream_url(self, url, wb_url, closest, kwargs):
         type = kwargs['type']
