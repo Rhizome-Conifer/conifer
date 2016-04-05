@@ -342,7 +342,6 @@ class Base(object):
             info['size'] = self.redis.hget(coll_key, 'size')
 
         # collection
-        print(coll_key)
         info['coll_id'] = coll
         info['coll_title'] = self.redis.hget(coll_key, 'title')
         if info.get('coll_title'):

@@ -20,6 +20,7 @@ from webrecorder.contentcontroller import ContentController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
 from webrecorder.logincontroller import LoginController
+from webrecorder.infocontroller import InfoController
 
 from webrecorder.webreccork import WebRecCork
 
@@ -58,6 +59,7 @@ class AppController(BaseController):
         jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'})
 
         # Init Core app controllers
+        info_controller = InfoController(bottle_app, jinja_env, manager, config)
         rewrite_controller = ContentController(bottle_app, jinja_env, manager, config)
         recs_controller = RecsController(bottle_app, jinja_env, manager, config)
         colls_controller = CollsController(bottle_app, jinja_env, manager, config)
