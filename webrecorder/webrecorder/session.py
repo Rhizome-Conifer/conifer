@@ -30,7 +30,6 @@ class Session(object):
         params = {'curr_user': self.curr_user,
                   'curr_role': self.curr_role,
                   'message': message,
-                  'curr_mode': 'new',
                   'msg_type': msg_type}
 
         if self.curr_role == 'anon':

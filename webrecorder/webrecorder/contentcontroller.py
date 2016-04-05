@@ -174,9 +174,6 @@ class ContentController(BaseController, RewriterApp):
                 title = rec
                 rec = self.sanitize_title(title)
 
-                if not self.manager.has_collection(user, coll):
-                    self.manager.create_collection(user, coll)
-
                 if type == 'record':
                     if rec == title or not self.manager.has_recording(user, coll, rec):
                         result = self.manager.create_recording(user, coll, rec, title)
@@ -204,15 +201,14 @@ class ContentController(BaseController, RewriterApp):
     def get_top_frame_params(self, wb_url, kwargs):
         type = kwargs['type']
         if type == 'live':
-            return
+            return None
 
-        request.environ['webrec.template_params']['curr_mode'] = type
+        #request.environ['webrec.template_params']['curr_mode'] = type
         info = self.manager.get_content_inject_info(kwargs['user'],
                                                     kwargs['coll'],
                                                     kwargs['rec'])
-        info = json.dumps(info)
-        #request.environ['webrec.template_params']['info'] = info
-        return {'info': info}
+
+        return {'info': json.dumps(info), 'curr_mode': type}
 
     def get_upstream_url(self, url, wb_url, closest, kwargs):
         type = kwargs['type']

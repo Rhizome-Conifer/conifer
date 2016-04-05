@@ -188,16 +188,17 @@ class RecManagerMixin(object):
         super(RecManagerMixin, self).__init__(config)
         self.REC_INFO_KEY = 'r:{user}:{coll}:{rec}:info'
         self.PAGE_KEY = 'r:{user}:{coll}:{rec}:page'
-        self.rec_int_keys = ['size', 'created_at', 'updated_at']
+        self.INT_KEYS = ('size', 'created_at', 'updated_at')
 
     def get_recording(self, user, coll, rec):
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
-        result = self._format_info(self.redis.hgetall(key), self.rec_int_keys)
+        result = self._format_info(self.redis.hgetall(key))
         return result
 
     def has_recording(self, user, coll, rec):
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
-        return self.redis.exists(key)
+        #return self.redis.exists(key)
+        return self.redis.hget(key, 'id') != None
 
     def create_recording(self, user, coll, rec, rec_title):
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
@@ -209,7 +210,10 @@ class RecManagerMixin(object):
             pi.hset(key, 'title', rec_title)
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'updated_at', now)
-            pi.hset(key, 'size', '0')
+            pi.hsetnx(key, 'size', '0')
+
+        if not self.has_collection(user, coll):
+            self.create_collection(user, coll)
 
         return self.get_recording(user, coll, rec)
 
@@ -224,7 +228,7 @@ class RecManagerMixin(object):
 
             all_recs = pi.execute()
 
-        all_recs = [self._format_info(x, self.rec_int_keys) for x in all_recs]
+        all_recs = [self._format_info(x) for x in all_recs]
         return all_recs
 
     def delete_recording(self, user, coll, rec):
@@ -258,18 +262,18 @@ class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
         self.COLL_INFO_KEY = 'c:{user}:{coll}:info'
-        self.coll_int_keys = ['size', 'created_at']
 
     def get_collection(self, user, coll):
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
-        result = self._format_info(self.redis.hgetall(key), self.coll_int_keys)
+        result = self._format_info(self.redis.hgetall(key))
         if result:
             result['recordings'] = self.get_recordings(user, coll)
         return result
 
     def has_collection(self, user, coll):
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
-        return self.redis.exists(key)
+        #return self.redis.exists(key)
+        return self.redis.hget(key, 'id') != None
 
     def create_collection(self, user, coll, coll_title='', desc=''):
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
@@ -281,8 +285,8 @@ class CollManagerMixin(object):
             pi.hset(key, 'id', coll)
             pi.hset(key, 'title', coll_title)
             pi.hset(key, 'created_at', now)
-            pi.hset(key, 'size', '0')
             pi.hset(key, 'desc', desc)
+            pi.hsetnx(key, 'size', '0')
 
         return self.get_collection(user, coll)
 
@@ -297,7 +301,7 @@ class CollManagerMixin(object):
 
             all_colls = pi.execute()
 
-        all_colls = [self._format_info(x, self.coll_int_keys) for x in all_colls]
+        all_colls = [self._format_info(x) for x in all_colls]
         return all_colls
 
 
@@ -315,36 +319,43 @@ class Base(object):
         if rec != '*' and rec:
             rec_key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
             info['rec_title'], info['size'] = self.redis.hmget(rec_key, ['title', 'size'])
-            info['rec_title'] = info['rec_title'].decode('utf-8')
+            if info.get('rec_title'):
+                info['rec_title'] = info['rec_title'].decode('utf-8')
+            else:
+                info['rec_title'] = rec
             info['rec_id'] = rec
         else:
             info['size'] = self.redis.hget(coll_key, 'size')
 
         # collection
+        print(coll_key)
         info['coll_id'] = coll
         info['coll_title'] = self.redis.hget(coll_key, 'title')
-        info['coll_title'] = info['coll_title'].decode('utf-8')
+        if info.get('coll_title'):
+            info['coll_title'] = info['coll_title'].decode('utf-8')
+        else:
+            info['coll_title'] = coll
 
         try:
             info['size'] = int(info['size'])
         except Exception as e:
-            print(e)
-            pass
+            info['size'] = 0
 
         info['size_remaining'] = self.get_size_remaining(user)
         return info
 
-    def _format_info(self, result, int_keys):
+    def _format_info(self, result):
         if not result:
             return {}
 
         result = self._conv_dict(result)
-        result = self._to_int(result, int_keys)
+        result = self._to_int(result)
         return result
 
-    def _to_int(self, result, ints):
-        for x in ints:
-            result[x] = int(result[x])
+    def _to_int(self, result):
+        for x in self.INT_KEYS:
+            if x in result:
+                result[x] = int(result[x])
         return result
 
     def _conv_dict(self, result):

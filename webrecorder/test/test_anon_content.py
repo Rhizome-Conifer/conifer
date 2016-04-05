@@ -175,6 +175,16 @@ class TestAnonContent(BaseWRTests):
         assert res.json['recording']['id'] == 'my-rec2'
         assert res.json['recording']['title'] == 'My Rec2'
 
+    def test_anon_record_top_frame(self):
+        res = self.testapp.get('/anonymous/my-rec2/record/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"record"' in res.text
+        assert '"rec_id": "my-rec2"' in res.text
+        assert '"rec_title": "My Rec2"' in res.text
+        assert '"coll_id": "anonymous"' in res.text
+        assert '"coll_title": "anonymous"' in res.text
+
     def test_anon_record_2(self):
         res = self.testapp.get('/anonymous/my-rec2/record/mp_/http://httpbin.org/get?bood=far')
         res.charset = 'utf-8'
@@ -198,6 +208,26 @@ class TestAnonContent(BaseWRTests):
 
         warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='anonymous')
         assert self.redis.hlen(warc_key) == 2
+
+    def test_anon_replay_top_frame(self):
+        res = self.testapp.get('/anonymous/my-rec2/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"replay"' in res.text
+        assert '"rec_id": "my-rec2"' in res.text
+        assert '"rec_title": "My Rec2"' in res.text
+        assert '"coll_id": "anonymous"' in res.text
+        assert '"coll_title": "anonymous"' in res.text
+
+    def test_anon_replay_coll_top_frame(self):
+        res = self.testapp.get('/anonymous/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"replay-coll"' in res.text
+        assert '"rec_id"' not in res.text
+        assert '"rec_title"' not in res.text
+        assert '"coll_id": "anonymous"' in res.text
+        assert '"coll_title": "anonymous"' in res.text
 
     def test_anon_download_rec(self):
         res = self.testapp.get('/anonymous/my-rec2/download')

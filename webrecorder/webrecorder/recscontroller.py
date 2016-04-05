@@ -27,6 +27,7 @@ class RecsController(BaseController):
                        }
 
             recording = self.manager.create_recording(user, coll, rec, title)
+
             return {'recording': self._add_download_path(recording, user, coll)}
 
         @self.app.get('/api/v1/recordings')
