@@ -230,7 +230,7 @@ class TestAnonContent(BaseWRTests):
         assert '"coll_title": "anonymous"' in res.text
 
     def test_anon_download_rec(self):
-        res = self.testapp.get('/anonymous/my-rec2/download')
+        res = self.testapp.get('/anonymous/my-rec2/$download')
 
         assert res.headers['Content-Disposition'].startswith('attachment; filename=My%20Rec2-')
 
@@ -253,7 +253,7 @@ class TestAnonContent(BaseWRTests):
         cdx[1]['mime'] = '-'
 
     def test_anon_download_coll(self):
-        res = self.testapp.get('/anonymous/download')
+        res = self.testapp.get('/anonymous/$download')
 
         assert res.headers['Content-Disposition'].startswith('attachment; filename=anonymous-')
 

@@ -92,7 +92,7 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec=rec_name, type=type_)
 
-        @self.app.get('/anonymous/<rec>/download')
+        @self.app.get('/anonymous/<rec>/$download')
         def anon_download_rec_warc(rec):
             user = self.get_anon_user()
             coll = 'anonymous'
@@ -105,7 +105,7 @@ class ContentController(BaseController, RewriterApp):
             title = recinfo.get('title', rec)
             return self.handle_download('rec', user, coll, rec, title)
 
-        @self.app.get('/anonymous/download')
+        @self.app.get('/anonymous/$download')
         def anon_download_coll_warc():
             user = self.get_anon_user()
             coll = 'anonymous'

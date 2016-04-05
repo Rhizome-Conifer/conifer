@@ -17,7 +17,7 @@ class LoginManagerMixin(object):
 
     RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager',
                         'guest', 'settings', 'profile', 'api', 'anon',
-                        'anonymous', 'register', 'join', 'coll']
+                        'anonymous', 'register', 'join', 'download']
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
