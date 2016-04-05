@@ -107,10 +107,12 @@ var Routes = (function(){
 
 var RecordingSizeWidget = (function() {
 	var start = function() {
-		var spaceUsed = format_bytes(wbinfo.info.size);
+		if ($('.size-counter').length) {
+			var spaceUsed = format_bytes(wbinfo.info.size);
 
-		updateDom(spaceUsed);
-		setInterval(pollForSizeUpdate, 10000);
+			updateDom(spaceUsed);
+			setInterval(pollForSizeUpdate, 10000);
+		}
 	}
 
 	var pollForSizeUpdate = function() {
