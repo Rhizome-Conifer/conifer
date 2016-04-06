@@ -72,9 +72,25 @@ var Recordings = (function() {
 
 	}
 
+	var addPage = function(recordingId, attributes) {
+		$.ajax({
+			url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
+			method: "POST",
+			data: attributes
+		})
+		.done(function(data, textStatus, xhr){
+			// TODO: update url bar with new page
+		})
+		.fail(function(xhr, textStatus, errorThrown) {
+			// Fail gracefully when the page can't be updated
+		});
+
+	}
+
     return {
     	create: create,
-		get: get
+		get: get,
+		addPage: addPage
     }
 }());
 
@@ -139,3 +155,20 @@ var RecordingSizeWidget = (function() {
 	}
 
 })();
+
+var _orig_set_state = window.set_state;
+
+window.set_state = function(state) {
+    _orig_set_state(state);
+
+    if (wbinfo.state == "record") {
+		var recordingId = wbinfo.info.rec_id;
+		var attributes = {};
+
+		attributes.url = state.url;
+		attributes.timestamp = state.timestamp;
+		attributes.title = $('iframe').contents().find('title').text();
+
+		Recordings.addPage(recordingId, attributes);
+    }
+};
