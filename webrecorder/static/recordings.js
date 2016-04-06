@@ -2,7 +2,7 @@ var current_user = "@anon"
 var current_collection = "anonymous"
 
 $(function() {
-	// Create new recording form
+	// 'New recording': Record button
 	$('header').on('submit', '.new-recording-form', function(event) {
 		event.preventDefault();
 
@@ -16,21 +16,37 @@ $(function() {
 			 "url": url});
 	});
 
-	// Recording in progress form
+	// 'Recording in progress': Url bar 'Go' button / enter key
 	$('header').on('submit', '.recording-in-progress', function(event) {
 		event.preventDefault();
 
 		var url = $("input[name='url']").val();
 
-		window.location.href = Routes.recordingInProgressUrl(
-			current_user, current_collection, wbinfo.info.rec_id, url);
+		RouteTo.recordingInProgress(current_user, current_collection, wbinfo.info.rec_id, url);
 	});
 
-	// Stop recording form
+	// 'Recording in progress': Stop recording button
 	$('header').on('submit', '.stop-recording', function(event) {
 		event.preventDefault();
 
-		window.location.href = Routes.collectionInfoUrl(current_user, current_collection);
+		RouteTo.collectionInfo(current_user, current_collection);
+	});
+
+	// 'Browse recording': Url bar 'Go' button / enter key
+	$('header').on('submit', '.browse-recording', function(event) {
+		event.preventDefault();
+
+		var url = $("input[name='url']").val();
+
+		RouteTo.browseRecording(current_user, current_collection, wbinfo.info.rec_id, url);
+	});
+
+	$('header').on('submit', '.add-to-recording', function(event){
+		event.preventDefault();
+
+		var url = $("input[name='url']").val();
+
+		RouteTo.recordingInProgress(current_user, current_collection, wbinfo.info.rec_id, url);
 	});
 
 	// Start size widget
@@ -50,7 +66,7 @@ var Recordings = (function() {
 			data: { "title": attributes.title },
 		})
 		.done(function(data, textStatus, xhr) {
-			window.location.href = Routes.recordingInProgressUrl(
+			RouteTo.recordingInProgress(
 				current_user, current_collection, data.recording.id, attributes.url);
 		})
 		.fail(function(xhr, textStatus, errorThrown) {
@@ -94,30 +110,41 @@ var Recordings = (function() {
     }
 }());
 
-var Routes = (function(){
-	var recordingInProgressUrl = function(user, collection, recording, url) {
-		var host = window.location.protocol + "//" + window.location.host;
+var RouteTo = (function(){
+	var host = window.location.protocol + "//" + window.location.host;
 
+	var recordingInProgress = function(user, collection, recording, url) {
 		if (user == "@anon") {
-			return host + "/" + collection + "/" + recording + "/record/" + url;
+			routeTo(host + "/" + collection + "/" + recording + "/record/" + url);
 		} else {
-			return host + "/" + user + "/" + collection + "/" + recording + "/record/" + url;
+			routeTo(host + "/" + user + "/" + collection + "/" + recording + "/record/" + url);
 		}
 	}
 
-	var collectionInfoUrl = function(user, collection) {
-		var host = window.location.protocol + "//" + window.location.host;
-
+	var collectionInfo = function(user, collection) {
 		if (user == "@anon") {
-			return host + "/anonymous"
+			routeTo(host + "/anonymous");
 		} else {
-			return host + "/" + user + "/" + collection
+			routeTo(host + "/" + user + "/" + collection);
 		}
+	}
+
+	var browseRecording = function(user, collection, recording, url) {
+		if (user == "@anon") {
+			routeTo(host + "/" + collection + "/" + recording + "/" + url);
+		} else {
+			routeTo(host + "/" + user + "/collection" + "/" + recording + "/" + url);
+		}
+	}
+
+	var routeTo = function(url) {
+		window.location.href = url;
 	}
 
 	return {
-		recordingInProgressUrl: recordingInProgressUrl,
-		collectionInfoUrl: collectionInfoUrl
+		recordingInProgress: recordingInProgress,
+		collectionInfo: collectionInfo,
+		browseRecording: browseRecording
 	}
 }());
 
@@ -125,9 +152,11 @@ var RecordingSizeWidget = (function() {
 	var start = function() {
 		if ($('.size-counter').length) {
 			var spaceUsed = format_bytes(wbinfo.info.size);
-
 			updateDom(spaceUsed);
-			setInterval(pollForSizeUpdate, 10000);
+
+			if (wbinfo.state == "record") {
+				setInterval(pollForSizeUpdate, 10000);
+			}
 		}
 	}
 
@@ -170,5 +199,7 @@ window.set_state = function(state) {
 		attributes.title = $('iframe').contents().find('title').text();
 
 		Recordings.addPage(recordingId, attributes);
+    } else if (wbinfo.state == "replay") {
+		$("input[name='url']").val(state.url);
     }
 };
