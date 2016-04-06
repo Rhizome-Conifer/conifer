@@ -73,18 +73,18 @@ var Recordings = (function() {
 	}
 
 	var addPage = function(recordingId, attributes) {
+		var attributes = attributes;
 		$.ajax({
 			url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
 			method: "POST",
 			data: attributes
 		})
 		.done(function(data, textStatus, xhr){
-			// TODO: update url bar with new page
+			$("input[name='url']").val(attributes.url);
 		})
 		.fail(function(xhr, textStatus, errorThrown) {
 			// Fail gracefully when the page can't be updated
 		});
-
 	}
 
     return {
