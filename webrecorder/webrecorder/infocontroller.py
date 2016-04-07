@@ -17,12 +17,12 @@ class InfoController(BaseController):
 
             return self.get_info(user, 'anonymous', rec)
 
-        @self.app.get(['/<user>/<coll>', '/<user>/<coll>/'])
+        #@self.app.get(['/<user>/<coll>', '/<user>/<coll>/'])
         def coll_info(user, coll):
 
             return self.get_info(user, coll)
 
-        @self.app.get(['/<user>/<coll>/<rec>', '/<user>/<coll>/<rec>/'])
+        #@self.app.get(['/<user>/<coll>/<rec>', '/<user>/<coll>/<rec>/'])
         def rec_info(user, coll, rec):
 
             return self.get_info(user, coll, rec)
