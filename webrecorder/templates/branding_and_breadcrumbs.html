@@ -2,4 +2,27 @@
 	<a target="_parent" class="navbar-left" title="Return to {{ metadata.product | default('webrecorder.io')}}" href="/">
 		webrecorder.io
 	</a>
+	{% if curr_mode == "replay" %}
+		<div class="navbar-left">
+			<ol class="breadcrumbs">
+				{% if user %}
+					<li>
+						<a target="_parent" href="/{{ user }}" title="Return to {{user}} Archive">{{ user }}</a>
+					</li>
+				{% endif %}
+
+				{% if coll_id %}
+					<li>
+	                    <a target="_parent" href="/{{ user }}/{{ coll_id }}" title="Return to collection: {{coll_title}}">{{ coll_title }}</a>
+					</li>
+				{% endif %}
+
+				{% if rec_id %}
+					<li>
+	                    <a target="_parent" href="/{{ user }}/{{ coll_id }}/{{ rec_id }}" title="Return to recording: {{coll_title}}">{{ rec_title }}</a>
+					</li>
+				{% endif %}
+			</ol>
+		</div>
+	{% endif %}
 </nav>
