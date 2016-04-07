@@ -2,6 +2,11 @@ li.coll-nav {
     font-size: 18px;
 }
 
+.webrecorder-header {
+    background-color: #222;
+    margin-bottom: 5px;
+}
+
 .navbar-brand {
  /*   padding: 9px 4px 10px 0px;*/
     padding: 8px 4px 8px 4px;
@@ -12,14 +17,24 @@ li.coll-nav {
     min-height: 40px;
 }
 
-.new-recording-form,
-.recording-in-progress-form {
-    margin-top: 5px;
+.new-recording-form-group,
+.recording-in-progress-form-group,
+.browse-recording-form-group {
+    margin-bottom: 5px;
 }
 
-.new-recording-form-group,
-.recording-in-progress-form-group {
-    margin-bottom: 5px;
+.recording-actions {
+    padding-left: 0px;
+    margin-right: 0px;
+    padding-right: 2px;
+}
+
+.recording-actions .start-recording {
+    margin-top: 30px;
+}
+
+.doesnt-look-right {
+    font-size: 11px;
 }
 
 /*

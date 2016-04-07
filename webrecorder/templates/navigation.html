@@ -1,16 +1,14 @@
 <div class="navbar navbar-default navbar-fixed-top">
-	<div class="navbar-header col-xs-1">
-		<a target="_parent" class="navbar-left" title="Return to {{ metadata.product | default('webrecorder.io')}}" href="/">
-			wr.io
-		</a>
+	<div class="webrecorder-header navbar-header col-xs-12">
+		<div class="branding-and-breadcrumbs navbar-header">
+			{% include 'branding_and_breadcrumbs.html' %}
+		</div>
+
+		<div class="user-management-links navbar-header navbar-right col-xs-2">
+			{% include 'user_management_links.html' %}
+		</div>
 	</div>
 
-	<div class="recorder navbar-left container-fluid col-xs-10">
-		{% include 'recordings/recorder.html' %}
-	</div>
-
-	<div class="navbar-header col-xs-1">
-		{% include 'user_mgmt_links.html' %}
-	</div>
+	{% include 'recordings/recorder.html' %}
 
 </div>

@@ -3,7 +3,7 @@ var current_collection = "anonymous"
 
 $(function() {
 	// 'New recording': Record button
-	$('header').on('submit', '.new-recording-form', function(event) {
+	$('header').on('submit', '.start-recording', function(event) {
 		event.preventDefault();
 
 		var collection = $("input[name='collection']").val();
