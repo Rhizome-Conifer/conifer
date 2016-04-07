@@ -14,7 +14,7 @@ from pywb.utils.loaders import load_yaml_config
 def make_webagg():
     config = load_yaml_config(os.environ.get('WR_CONFIG', './wr.yaml'))
 
-    app = ResAggApp()
+    app = ResAggApp(debug=True)
 
     redis_base = os.environ['REDIS_BASE_URL'] + '/'
 
@@ -39,7 +39,8 @@ def make_webagg():
                     ), warc_url)
 
 
-    app.add_route('/live', HandlerSeq([replay_rec, live_rec]))
+    #app.add_route('/live', HandlerSeq([replay_rec, live_rec]))
+    app.add_route('/live', live_rec)
     app.add_route('/replay', replay_rec)
     app.add_route('/replay-coll', replay_coll)
 
