@@ -208,7 +208,15 @@ class ContentController(BaseController, RewriterApp):
                                                     kwargs['coll'],
                                                     kwargs['rec'])
 
-        return {'info': info, 'curr_mode': type}
+        username = kwargs['user']
+        if self.manager.is_anon(username):
+            username = 'anonymous'
+
+        return {'info': info, 'curr_mode': type,
+                'username': username,
+                'coll': kwargs['coll'],
+                'rec': kwargs['rec']
+               }
 
     def get_upstream_url(self, url, wb_url, closest, kwargs):
         type = kwargs['type']
