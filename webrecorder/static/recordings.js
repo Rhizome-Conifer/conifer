@@ -41,6 +41,7 @@ $(function() {
 		RouteTo.browseRecording(current_user, current_collection, wbinfo.info.rec_id, url);
 	});
 
+	// 'Browse recording': 'Add to recording' button
 	$('header').on('submit', '.add-to-recording', function(event){
 		event.preventDefault();
 
@@ -51,6 +52,8 @@ $(function() {
 
 	// Start size widget
 	RecordingSizeWidget.start();
+
+	PagesComboxBox.start();
 });
 
 var Recordings = (function() {
@@ -74,16 +77,16 @@ var Recordings = (function() {
 		});
 	}
 
-	var get = function(recordingId, doneCallbackFunction, failCallbackFunction) {
+	var get = function(recordingId, doneCallback, failCallback) {
 		$.ajax({
 			url: API_ENDPOINT + "/" + recordingId + query_string,
 			method: "GET",
 		})
 		.done(function(data, textStatus, xhr) {
-			doneCallbackFunction(data);
+			doneCallback(data);
 		})
 		.fail(function(xhr, textStatus, errorThrown) {
-			failCallbackFunction();
+			failCallback();
 		});
 
 	}
@@ -103,10 +106,24 @@ var Recordings = (function() {
 		});
 	}
 
+	var getPages = function(recordingId, doneCallback, failCallback) {
+		$.ajax({
+			url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
+			method: "GET",
+		})
+		.done(function(data, textStatus, xhr){
+			doneCallback(data);
+		})
+		.fail(function(xhr, textStatus, errorThrown) {
+			failCallback();
+		});
+	}
+
     return {
     	create: create,
 		get: get,
-		addPage: addPage
+		addPage: addPage,
+		getPages: getPages
     }
 }());
 
@@ -161,10 +178,10 @@ var RecordingSizeWidget = (function() {
 	}
 
 	var pollForSizeUpdate = function() {
-		Recordings.get(wbinfo.info.rec_id, updateDomAfterPoll, hideCounterOnFail)
+		Recordings.get(wbinfo.info.rec_id, updateSizeCounter, hideSizeCounter)
 	}
 
-	var updateDomAfterPoll = function(data) {
+	var updateSizeCounter = function(data) {
 		var spaceUsed = format_bytes(data.recording.size);
 
 		updateDom(spaceUsed);
@@ -175,7 +192,7 @@ var RecordingSizeWidget = (function() {
 		$('.size-counter').removeClass('hidden');
 	}
 
-	var hideCounterOnFail = function() {
+	var hideSizeCounter = function() {
 		$('.size-counter').addClass('hidden');
 	}
 
@@ -183,6 +200,52 @@ var RecordingSizeWidget = (function() {
 		start: start
 	}
 
+})();
+
+var PagesComboxBox = (function() {
+	var start = function() {
+		if ($(".browse-recording .url").length) {
+			Recordings.getPages(wbinfo.info.rec_id, initializeCombobox, dontInitializeCombobox);
+		}
+	}
+
+	var initializeCombobox = function(data) {
+		var pages = data.pages;
+
+		var pages = new Bloodhound({
+			datumTokenizer: function(pages) {
+				return Bloodhound.tokenizers.whitespace(pages.url);
+			},
+			queryTokenizer: Bloodhound.tokenizers.whitespace,
+			local: pages
+		});
+
+		$("input[name='url']").typeahead({
+			hint: "false",
+		},
+		{	name: 'pages',
+			source: pages,
+			limit: 1000000,
+			display: "url",
+			templates: {
+				suggestion: function(data) {
+				return "<div>" + data.url +
+				"<span class='suggestion-timestamp pull-right'>"
+				+ ts_to_date(data.timestamp) + "</span></div>";
+				}
+			}
+		});
+	}
+
+	var dontInitializeCombobox = function() {
+		// If we can't load this recording's pages,
+		// do nothing to leave this as a regular
+		// input field
+	}
+
+	return {
+		start: start
+	}
 })();
 
 var _orig_set_state = window.set_state;
