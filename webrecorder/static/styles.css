@@ -22,6 +22,70 @@ li.coll-nav {
     margin-bottom: 5px;
 }
 
+/*
+    https://github.com/twitter/typeahead.js/issues/378
+    https://gist.github.com/joelhaasnoot/c7f3358726c22d489566
+*/
+.twitter-typeahead {
+  width: 100%;
+  position: relative;
+}
+
+.twitter-typeahead .tt-input,
+.twitter-typeahead .tt-hint {
+    margin-bottom: 0;
+}
+.tt-hint {
+    display: block;
+    width: 100%;
+    height: 38px;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 1.428571429;
+    color: #999;
+    vertical-align: middle;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
+}
+.tt-menu {
+    min-width: 160px;
+    margin-top: 2px;
+    padding: 5px 0;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+    background-clip: padding-box;
+    width: 100%;
+}
+.tt-suggestion {
+    display: block;
+    padding: 3px 20px;
+}
+.tt-suggestion:hover,
+.tt-cursor {
+    color: #fff;
+    background-color: #428bca;
+}
+.tt-suggestion.hover a {
+    color: #fff;
+}
+.tt-suggestion p {
+    margin: 0;
+}
+
+/*
+    end https://github.com/twitter/typeahead.js/issues/378
+    https://gist.github.com/joelhaasnoot/c7f3358726c22d489566
+*/
+
 li.coll-nav a {
     padding: 8px 4px 8px 4px;
 }

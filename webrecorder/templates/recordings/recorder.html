@@ -1,5 +1,7 @@
 {% if curr_mode == "record" %}
 	{% include 'in_progress.html' %}
+{% elif curr_mode == "replay" %}
+	{% include 'browse.html' %}
 {% elif not curr_mode %}
 	{% include 'new.html' %}
 {% endif %}

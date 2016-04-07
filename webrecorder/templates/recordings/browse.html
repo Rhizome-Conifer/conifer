@@ -1,7 +1,7 @@
-<form action="/recordings/{{ info['rec_id']}}/pages" method="post" class="navbar-left container-fluid form-horizontal col-xs-12 recording-in-progress" role="">
+<form action="/recordings/{{ info['rec_id']}}/pages" method="post" class="navbar-left container-fluid form-horizontal col-xs-12 browse-recording" role="">
 	<div class="form-group form-group-sm col-xs-12 recorder-form-group">
 		<div class="url col-xs-11">
-			<input name="url" type="url" required value="{{ url }}" class="form-control input-sm" autofocus>
+			<input name="url" type="url" value="{{ info['url'] }}" required class="form-control input-sm" autofocus>
 		</div>
 		<div class="col-xs-1">
 			<button type="submit" class="pull-right btn btn-default">Go</button>
@@ -20,17 +20,21 @@
 				<input name="collection" type="text" value="{{ info['coll_title'] }}" required class="form-control input-sm" readonly>
 			</div>
 		</div>
-		<div class="size-counter col-xs-12 hidden">
-			<strong>size:</strong><span class="current-size"></span>
-		</div>
+		<div class="recording-metadata col-xs-12">
+			<div class="size-counter navbar-left">
+				<strong>size:</strong> <span class="current-size"></span>
+			</div>
+			<div class="recorded-by navbar-left">
+				<strong>recorded by:</strong> <span class="recorded-by">{{ username }}</span>
+			</div>
+		</div>	
 	</div>	
 </form>
 
 <div class="navbar-right">
-	<form class="stop-recording">
-		<button type="submit">Stop</button>
+	<form class="add-to-recording">
+		<button type="submit">Add to recording</button>
 	</form>
 
 	<a href="#" data-toggle="modal" data-target="#report-modal">Doesn't look right?</a>
 </div>
-
