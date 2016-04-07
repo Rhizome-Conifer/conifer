@@ -6,13 +6,13 @@ import traceback
 import redis
 
 from os.path import expandvars
+import os
+import yaml
 
 from beaker.middleware import SessionMiddleware
 
 from jinja2 import contextfunction
 from urlrewrite.templateview import JinjaEnv
-
-from pywb.utils.loaders import load_yaml_config
 
 from six.moves.urllib.parse import urlsplit, urljoin
 
@@ -21,6 +21,7 @@ from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
 from webrecorder.logincontroller import LoginController
 from webrecorder.infocontroller import InfoController
+from webrecorder.browsercontroller import BrowserController
 
 from webrecorder.webreccork import WebRecCork
 
@@ -41,29 +42,32 @@ class AppController(BaseController):
         self.bottle_app = bottle_app
 
         # Load config
-        config = load_yaml_config(configfile)
+        with open(configfile, 'rb') as fh:
+            config = yaml.load(fh)
 
         # Init Redis
         if not redis_url:
             redis_url = expandvars(config['redis_url'])
 
         self.redis = redis.StrictRedis.from_url(redis_url)
+        self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
 
         # Init Cork
         self.cork = WebRecCork.create_cork(self.redis, config)
 
         # Init Manager
-        manager = RedisDataManager(self.redis, self.cork, config)
+        manager = RedisDataManager(self.redis, self.cork, self.browser_redis, config)
 
         # Init Jinja
         jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'})
 
         # Init Core app controllers
-        info_controller = InfoController(bottle_app, jinja_env, manager, config)
         rewrite_controller = ContentController(bottle_app, jinja_env, manager, config)
         recs_controller = RecsController(bottle_app, jinja_env, manager, config)
         colls_controller = CollsController(bottle_app, jinja_env, manager, config)
         login_controller = LoginController(bottle_app, jinja_env, manager, config=config)
+        browser_controller = BrowserController(bottle_app, jinja_env, manager, config=config)
+        info_controller = InfoController(bottle_app, jinja_env, manager, config)
 
         bottle_app.install(AddSession(self.cork, config))
 

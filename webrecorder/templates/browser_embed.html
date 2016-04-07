@@ -1,0 +1,55 @@
+{% extends "base_bootstrap.html" %}
+{% block head %}
+
+{{ super() }}
+<script src="{{ static }}/novnc/util.js"></script>
+<script>
+    wbinfo = {}
+    wbinfo.url = "{{ url }}";
+    wbinfo.capture_url = wbinfo.url;
+    wbinfo.timestamp = "{{ ts }}";
+    wbinfo.state = "{{ curr_mode }}";
+    wbinfo.info = {{ info | default('{}') | tojson }};
+</script>
+<script>
+    window.STATIC_PREFIX = "{{ static }}";
+    var browser = "{{ browser }}";
+    var url = "{{ url }}";
+    var curr_ts = "{{ ts }}";
+    var upsid = "{{ upsid }}";
+</script>
+<script src="/static/__shared/browser_controller.js"></script>
+<style>
+.browser {
+    margin-top: 100px;
+    text-align: center;
+}
+
+#noVNC_canvas {
+    position: fixed;
+    margin-left: 20px;
+    left: 0px;
+}
+
+</style>
+{% endblock %}
+
+{% block body %}
+<header>
+    {% include 'navigation.html' %}
+</header>
+
+<div class="browser">
+    <div id="browserMsg" class="loading">Initializing Browser…</div>
+    <div id="noVNC_screen">
+        <canvas id="noVNC_canvas" style="display: none">
+            Canvas not supported.
+        </canvas>
+    </div>
+</div>
+{% if not curr_user %}
+{% include 'frag_login.html' %}
+{% endif %}
+
+{% endblock %}
+

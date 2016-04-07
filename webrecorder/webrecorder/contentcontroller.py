@@ -1,5 +1,6 @@
 import os
 import re
+import base64
 import requests
 import json
 
@@ -22,7 +23,7 @@ class ContentController(BaseController, RewriterApp):
     DEF_REC_NAME = 'my-recording'
 
     PATHS = {'live': '{replay_host}/live/resource/postreq?url={url}&closest={closest}',
-             'record': '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.recorder.user={user}&param.recorder.coll={coll}&param.recorder.rec={rec}',
+             'record': '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}',
              'replay': '{replay_host}/replay/resource/postreq?url={url}&closest={closest}&param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}',
              'replay-coll': '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}',
 
@@ -192,6 +193,7 @@ class ContentController(BaseController, RewriterApp):
                                            rec=rec,
                                            type=type)
 
+
     def add_query(self, url):
         if request.query_string:
             url += '?' + request.query_string
@@ -201,7 +203,7 @@ class ContentController(BaseController, RewriterApp):
     def get_top_frame_params(self, wb_url, kwargs):
         type = kwargs['type']
         if type == 'live':
-            return None
+            return {}
 
         #request.environ['webrec.template_params']['curr_mode'] = type
         info = self.manager.get_content_inject_info(kwargs['user'],
@@ -220,7 +222,10 @@ class ContentController(BaseController, RewriterApp):
 
     def get_upstream_url(self, url, wb_url, closest, kwargs):
         type = kwargs['type']
-        upstream_url = self.PATHS[type].format(url=quote(url),
+        if url != '{url}':
+            url = quote(url)
+
+        upstream_url = self.PATHS[type].format(url=url,
                                                closest=closest,
                                                record_host=self.record_host,
                                                replay_host=self.replay_host,
@@ -228,7 +233,41 @@ class ContentController(BaseController, RewriterApp):
 
         return upstream_url
 
-    def _add_custom_params(self, cdx, kwargs):
-        type = kwargs['type']
-        if type in ('live', 'record'):
+    def _add_custom_params(self, cdx, resp_headers, kwargs):
+        #type = kwargs['type']
+        #if type in ('live', 'record'):
+        #    cdx['is_live'] = 'true'
+
+        if resp_headers.get('Webagg-Source-Coll') == 'live':
             cdx['is_live'] = 'true'
+
+
+    def handle_custom_response(self, wb_url, full_prefix, host_prefix, kwargs):
+        @self.jinja2_view('browser_embed.html')
+        def browser_embed(browser):
+            upstream_url = self.get_upstream_url('{url}',
+                                                 wb_url,
+                                                 wb_url.timestamp, kwargs)
+
+            upsid = base64.b64encode(os.urandom(6))
+
+            # TODO: load settings
+            self.manager.browser_redis.setex(b'ups:' + upsid, 120, upstream_url)
+
+            data = {'browser': browser,
+                    'url': wb_url.url,
+                    'ts': wb_url.timestamp,
+                    'upsid': upsid.decode('utf-8'),
+                    'static': '/static/__bp',
+                   }
+
+            data.update(self.get_top_frame_params(wb_url, kwargs))
+            return data
+
+        if wb_url.mod == 'ch_':
+            return browser_embed('chrome')
+        elif wb_url.mod == 'ff_':
+            return browser_embed('firefox')
+
+        return RewriterApp.handle_custom_response(self, wb_url, full_prefix, host_prefix, kwargs)
+

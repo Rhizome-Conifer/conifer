@@ -381,8 +381,9 @@ class Base(object):
 
 # ============================================================================
 class RedisDataManager(LoginManagerMixin, RecManagerMixin, CollManagerMixin, Base):
-    def __init__(self, redis, cork, config):
+    def __init__(self, redis, cork, browser_redis, config):
         self.redis = redis
         self.cork = cork
+        self.browser_redis = browser_redis
 
         super(RedisDataManager, self).__init__(config)

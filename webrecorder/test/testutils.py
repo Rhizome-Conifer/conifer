@@ -22,12 +22,22 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
 
         os.environ['REDIS_BASE_URL'] = 'redis://localhost:6379/2'
 
+        cls.set_nx_env('REDIS_BROWSER_URL', 'redis://localhost:6379/0')
+        cls.set_nx_env('WEBAGG_HOST', 'http://localhost:8010')
+        cls.set_nx_env('RECORD_HOST', 'http://localhost:8080')
+
         cls.appcont = AppController(configfile=os.path.join(cls.get_curr_dir(), 'test_config.yaml'))
         cls.testapp = webtest.TestApp(cls.appcont.app)
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
 
-    def get_anon_user(self):
-        anon_user = 'anon/' + self.testapp.cookies['__test_sesh'][-32:]
+    @classmethod
+    def set_nx_env(self, name, value):
+        if os.environ.get(name) is None:
+            os.environ[name] = value
+
+    @classmethod
+    def get_anon_user(cls):
+        anon_user = 'anon/' + cls.testapp.cookies['__test_sesh'][-32:]
         return anon_user
 
     @classmethod

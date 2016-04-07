@@ -6,12 +6,6 @@ from .testutils import BaseWRTests
 
 # ============================================================================
 class TestWebRecRecAPI(BaseWRTests):
-    def setup_class(cls):
-        os.environ['WEBAGG_HOST'] = 'http://localhost:8080'
-        os.environ['RECORD_HOST'] = 'http://localhost:8010'
-
-        super(TestWebRecRecAPI, cls).setup_class()
-
     def test_home_page(self):
         res = self.testapp.get('/')
         assert 'Webrecorder' in res

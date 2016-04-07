@@ -7,7 +7,7 @@ services:
             - ./wr.env
             - ./webrecorder/webrecorder.env
 
-        links:
+        depends_on:
             - webagg
             - recorder
 
@@ -27,8 +27,9 @@ services:
 
         volumes_from:
             - app
+            - browsermanager
 
-        links:
+        depends_on:
             - app
 
     recorder:
@@ -36,7 +37,7 @@ services:
         env_file:
             - ./wr.env
 
-        links:
+        depends_on:
             - webagg
             - redis
 
@@ -52,12 +53,46 @@ services:
         env_file:
             - ./wr.env
 
-        links:
+        depends_on:
             - redis
 
         volumes_from:
             - data
 
+
+    browsermanager:
+        image: webrecorder/browsermanager
+
+        ports:
+            - 9020:9020
+
+        env_file:
+            - ./wr.env
+ 
+        environment:
+            - STATIC_PATH=/static/__bp
+            - SCREEN_WIDTH=1280
+            - SCREEN_HEIGHT=800
+
+        depends_on:
+            - redis
+
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./browser/browser_app.py:/app/browser_app.py
+            - ./browser/run_browser:/usr/bin/run_browser
+
+    proxy:
+        image: webrecorder/proxy
+
+        depends_on:
+            - redis
+
+        env_file:
+            - ./wr.env
+
+        command: mitmdump -p 8080 --client-certs /certs/ --no-http2 -s "/code/run.py --host http://webagg:8080/ --redis redis://redis:6379/0"
+ 
 
     redis:
         build: ./redis
@@ -90,5 +125,4 @@ services:
       volumes:
         - ./data:/data
         - ./wr.yaml:/wr.yaml
-
 
