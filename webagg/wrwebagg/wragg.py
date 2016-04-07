@@ -1,6 +1,6 @@
 from gevent.monkey import patch_all; patch_all()
 
-from webagg.handlers import DefaultResourceHandler
+from webagg.handlers import DefaultResourceHandler, HandlerSeq
 from webagg.app import ResAggApp
 from webagg.indexsource import LiveIndexSource, RedisIndexSource
 from webagg.aggregator import SimpleAggregator, RedisMultiKeyIndexSource
@@ -23,25 +23,25 @@ def make_webagg():
     warc_url = redis_base + config['warc_key_templ']
 
 
-    app.add_route('/live',
-        DefaultResourceHandler(SimpleAggregator(
-                               {'live': LiveIndexSource()})
-        )
-    )
+    live_rec  = DefaultResourceHandler(
+                    SimpleAggregator(
+                        {'live': LiveIndexSource()}
+                    ), warc_url)
 
-    app.add_route('/replay',
-        DefaultResourceHandler(SimpleAggregator(
-                               {'replay': RedisIndexSource(rec_url)}),
-                                warc_url
-        )
-    )
+    replay_rec  = DefaultResourceHandler(
+                    SimpleAggregator(
+                        {'replay': RedisIndexSource(rec_url)}
+                    ), warc_url)
 
-    app.add_route('/replay-coll',
-        DefaultResourceHandler(SimpleAggregator(
-                               {'replay': RedisMultiKeyIndexSource(coll_url)}),
-                                warc_url
-        )
-    )
+    replay_coll = DefaultResourceHandler(
+                    SimpleAggregator(
+                        {'replay': RedisMultiKeyIndexSource(coll_url)}
+                    ), warc_url)
+
+
+    app.add_route('/live', HandlerSeq([replay_rec, live_rec]))
+    app.add_route('/replay', replay_rec)
+    app.add_route('/replay-coll', replay_coll)
 
     return app.application
 
