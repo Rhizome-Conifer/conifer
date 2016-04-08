@@ -80,11 +80,15 @@
         </thead>
         <tbody>
             {% for rec in collection.recordings %}
+            {% set path = get_path(user, coll, rec.id) %}
                 <tr>
-                    <td>{{ rec.title }}</td>
+                    <td><a href="{{ path }}">{{ rec.title }}</a></td>
                     <td>{{ rec.updated_at }}</td>
                     <td>{{ rec.size }}</td>
-                    <td>TODO Action Buttons</td>
+                    <td>
+                        <a href="{{ path }}">Browse</a>
+                        <a href="{{ rec.download_url }}">Download</a>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>

@@ -114,11 +114,24 @@ class AppController(BaseController):
         def is_anon(context):
             return self.manager.is_anon(context.get('user'))
 
+        @contextfunction
+        def get_path(context, user, coll, rec):
+            if self.manager.is_anon(user):
+                base = '/anonymous'
+            else:
+                base = '/' + user + '/' + coll
+
+            if rec:
+                base += '/' + rec
+
+            return base
+
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
         jinja_env.globals['is_owner'] = is_owner
         jinja_env.globals['is_anon'] = is_anon
+        jinja_env.globals['get_path'] = get_path
 
     def init_routes(self):
         @self.bottle_app.route(['/', '/index.html'])
