@@ -269,7 +269,7 @@ class ContentController(BaseController, RewriterApp):
         username = kwargs['user']
 
         if self.manager.is_anon(username):
-            username = 'anonymous'
+            username = '@anon'
 
         return {'info': info,
                 'curr_mode': type,

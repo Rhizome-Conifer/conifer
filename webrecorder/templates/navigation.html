@@ -1,13 +1,17 @@
 <div class="navbar navbar-default navbar-static-top">
-	<div class="webrecorder-header navbar-header col-xs-12">
-		<div class="branding-and-breadcrumbs navbar-header">
-			{% include 'branding_and_breadcrumbs.html' %}
+	<nav class="webrecorder-header col-xs-12">
+		<div class="branding col-xs-1">
+			{% include 'branding.html' %}
 		</div>
 
-		<div class="user-management-links navbar-header navbar-right col-xs-3">
+		<div class="breadcrumbs col-xs-8">
+			{% include 'breadcrumbs.html' %}
+		</div>
+
+		<div class="user-management-links navbar-right col-xs-3">
 			{% include 'user_management_links.html' %}
 		</div>
-	</div>
+	</nav>
 
 	{% include 'recordings/recorder.html' %}
 

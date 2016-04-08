@@ -155,7 +155,7 @@ var RouteTo = (function(){
 		if (user == "@anon") {
 			routeTo(host + "/" + collection + "/" + recording + "/" + url);
 		} else {
-			routeTo(host + "/" + user + "/collection" + "/" + recording + "/" + url);
+			routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + url);
 		}
 	}
 

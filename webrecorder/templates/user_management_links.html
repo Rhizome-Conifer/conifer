@@ -1,28 +1,24 @@
-{% if curr_user %}
-    <nav>
-        <ul class="nav wr-user-links">
-            <li class="navbar-text navbar-right userset">
-                <a target="_parent" title="Logout" href="/_logout">
-                    <span class="glyphicon glyphicon-log-out" title="Logout"></span></a>
-            </li>
-            <li class="navbar-text navbar-right userset">
-                <a target="_parent" href="/{{ curr_user }}/_settings"><span title="Settings" class="glyphicon glyphicon-cog"></span></a>
-            </li>
-            <li class="navbar-text navbar-right userinfo">
-                <a target="_parent" href="/{{ curr_user }}"><span class="glyphicon glyphicon-user"></span></a>
-                <a target="_parent" href="/{{ curr_user }}"><b>{{ curr_user }}</b></a>
-            </li>
-        </ul>
-    </nav>    
+{% if user and user != "@anon" %}
+    <ul class="nav wr-user-links">
+        <li class="navbar-text navbar-right userset">
+            <a target="_parent" title="Logout" href="/_logout">
+                <span class="glyphicon glyphicon-log-out" title="Logout"></span></a>
+        </li>
+        <li class="navbar-text navbar-right userset">
+            <a target="_parent" href="/{{ user }}/_settings"><span title="Settings" class="glyphicon glyphicon-cog"></span></a>
+        </li>
+        <li class="navbar-text navbar-right userset">
+            <a target="_parent" href="/{{ user }}"><span class="glyphicon glyphicon-user"></span></a>
+            <a target="_parent" href="/{{ user }}">{{ user }}</a>
+        </li>
+    </ul>
 {% else %}
-    <nav>
-        <ul class="nav wr-user-links">
-            <li class="navbar-right">
-                <a href="#" data-toggle="modal" data-target="#login-modal">Login</a>
-            </li>
-            <li class="navbar-right">
-                <a href="/_register" target="_parent" ><strong>Sign Up</strong></a>
-            </li>
-        </ul>    
-    </nav>
+    <ul class="nav wr-user-links">
+        <li class="navbar-right">
+            <a href="#" data-toggle="modal" data-target="#login-modal">Login</a>
+        </li>
+        <li class="navbar-right">
+            <a href="/_register" target="_parent" ><strong>Sign Up</strong></a>
+        </li>
+    </ul>
 {% endif %}
