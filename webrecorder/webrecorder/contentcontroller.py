@@ -114,9 +114,7 @@ class ContentController(BaseController, RewriterApp):
             request.path_shift(2)
             return self.handle_anon_content(host, rec, type='replay')
 
-
-
-        # USER?COLL ROUTES
+        # USER/COLL ROUTES
         @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
         def usercoll_record(user, coll, rec, wb_url):
             request.path_shift(4)
@@ -156,7 +154,6 @@ class ContentController(BaseController, RewriterApp):
         @self.app.get('/<user>/<coll>/$download')
         def usercoll_download_coll_warc(user, coll):
             return self.handle_download('coll', user, coll, '*')
-
 
 
     def handle_download(self, type, user, coll, rec):
@@ -265,17 +262,18 @@ class ContentController(BaseController, RewriterApp):
         if type == 'live':
             return {}
 
-        #request.environ['webrec.template_params']['curr_mode'] = type
         info = self.manager.get_content_inject_info(kwargs['user'],
                                                     kwargs['coll'],
                                                     kwargs['rec'])
 
         username = kwargs['user']
+
         if self.manager.is_anon(username):
             username = 'anonymous'
 
-        return {'info': info, 'curr_mode': type,
-                'username': username,
+        return {'info': info,
+                'curr_mode': type,
+                'user': username,
                 'coll': kwargs['coll'],
                 'rec': kwargs['rec']
                }

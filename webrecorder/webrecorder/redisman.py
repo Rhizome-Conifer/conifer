@@ -449,6 +449,12 @@ class Base(object):
             info['size'] = 0
 
         info['size_remaining'] = self.get_size_remaining(user)
+
+        if self.is_anon(user):
+            info['user'] = '@anon'
+        else:
+            info['user'] = user
+
         return info
 
     def _format_info(self, result):

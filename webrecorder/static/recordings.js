@@ -1,5 +1,10 @@
-var current_user = "@anon"
-var current_collection = "anonymous"
+var user = "@anon"
+var coll = "anonymous"
+
+if (window.wbinfo) {
+    user = window.wbinfo.info.user;
+    coll = window.wbinfo.info.coll_id;
+}
 
 $(function() {
 	// 'New recording': Record button
@@ -22,14 +27,14 @@ $(function() {
 
 		var url = $("input[name='url']").val();
 
-		RouteTo.recordingInProgress(current_user, current_collection, wbinfo.info.rec_id, url);
+		RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
 	});
 
 	// 'Recording in progress': Stop recording button
 	$('header').on('submit', '.stop-recording', function(event) {
 		event.preventDefault();
 
-		RouteTo.collectionInfo(current_user, current_collection);
+		RouteTo.collectionInfo(user, coll);
 	});
 
 	// 'Browse recording': Url bar 'Go' button / enter key
@@ -38,7 +43,7 @@ $(function() {
 
 		var url = $("input[name='url']").val();
 
-		RouteTo.browseRecording(current_user, current_collection, wbinfo.info.rec_id, url);
+		RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
 	});
 
 	// 'Browse recording': 'Add to recording' button
@@ -47,7 +52,7 @@ $(function() {
 
 		var url = $("input[name='url']").val();
 
-		RouteTo.recordingInProgress(current_user, current_collection, wbinfo.info.rec_id, url);
+		RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
 	});
 
 	// Start size widget
@@ -59,7 +64,7 @@ $(function() {
 var Recordings = (function() {
 
 	var API_ENDPOINT = "/api/v1/recordings";
-	var query_string = "?user=" + current_user + "&coll=" + current_collection;
+	var query_string = "?user=" + user + "&coll=" + coll;
 
 	var create = function(attributes) {
 
@@ -70,7 +75,7 @@ var Recordings = (function() {
 		})
 		.done(function(data, textStatus, xhr) {
 			RouteTo.recordingInProgress(
-				current_user, current_collection, data.recording.id, attributes.url);
+				user, coll, data.recording.id, attributes.url);
 		})
 		.fail(function(xhr, textStatus, errorThrown) {
 			// Some error happened, handle it gracefully

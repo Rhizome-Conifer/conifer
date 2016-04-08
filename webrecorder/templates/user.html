@@ -26,6 +26,7 @@
 
     <ul class="list-group text-center">
         {% for coll in colls | sort(attribute='title') %}
+        {% if is_owner() or coll['r:@public'] %}
         <li class="list-group-item">
             <a href="/{{ user }}/{{ coll.id }}" style="font-size: 20px">{{ coll.title | default(coll.id) }}</a>
             {% if coll['r:@public'] %}
@@ -35,6 +36,7 @@
             {% endif %}
             <p class="colls-size pull-right" data-size="{{ coll.size }}" style="font-size: 14px; margin-top: 4px"></p>
         </li>
+        {% endif %}
         {% endfor %}
     </ul>
     {% if not colls %}
