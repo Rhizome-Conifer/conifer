@@ -20,20 +20,20 @@
     {% endif %}
 
     <div id="about">
-        <div id="home-markdown" style="display: none">{{desc}}</div>
+        <div id="home-markdown" style="display: none">{{ user_info.desc | default('User Info TODO') }}</div>
         <div id="home-view"></div>
     </div>
 
     <ul class="list-group text-center">
-        {% for name, value in colls | dictsort %}
+        {% for coll in colls | sort(attribute='title') %}
         <li class="list-group-item">
-            <a href="/{{ value.path }}" style="font-size: 20px">{{ value.title | default(name) }}</a>
-            {% if value.public %}
+            <a href="/{{ user }}/{{ coll.id }}" style="font-size: 20px">{{ coll.title | default(coll.id) }}</a>
+            {% if coll['r:@public'] %}
             <span class="pull-right glyphicon glyphicon-globe" title="Public Collection -- Visible to Everyone" style="font-size: 14px; margin-top: 5px; margin-left: 12px;"></span>
             {% else %}
             <span class="pull-right" style="font-size: 14px; margin-top: 5px; margin-left: 26px;"></span>
             {% endif %}
-            <p class="colls-size pull-right" data-size="{{ value.size }}" style="font-size: 14px; margin-top: 4px"></p>
+            <p class="colls-size pull-right" data-size="{{ coll.size }}" style="font-size: 14px; margin-top: 4px"></p>
         </li>
         {% endfor %}
     </ul>
@@ -48,7 +48,7 @@
     {% endif %}
 
     {% if is_owner() %}
-    <p class="pull-right"><a class="btn btn-sm btn-default" href="/{{user}}/_settings" role="button">
+    <p class="pull-right"><a class="btn btn-sm btn-default" href="/{{ user }}/_settings" role="button">
         <span class="glyphicon glyphicon-cog" style="margin-right: 4px"></span>Account Settings</a></p>
     <p><a class="btn btn-primary btn-sm" href="/_create" role="button">
         <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>Create New Collection</a></p>
@@ -62,7 +62,7 @@
         });
     });
 
-    init_markdown_editor("{{user}}");
+    init_markdown_editor("{{ user }}");
 </script>
 
 {% endblock %}

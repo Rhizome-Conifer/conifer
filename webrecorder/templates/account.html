@@ -9,19 +9,19 @@
 <div class="row">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h2 class="panel-title">Usage for <b>{{curr_user}}</b></h2>
+            <h2 class="panel-title">Usage for <b>{{ curr_user }}</b></h2>
         </div>
         <div class="panel-body">
             <div class="row col-md-9">
                 <table class="table">
                     <tr>
                         <th>Size</th>
-                        <td><b id="total-size" data-size="{{ user_total_size }}"></b> of <b id="max-size" data-size="{{ user_max_size }}"></b> used</td>
+                        <td><b id="total-size" data-size="{{ user_info.size }}"></b> of <b id="max-size" data-size="{{ user_info.max_size }}"></b> used</td>
                         <td class="warn-limit" id="limit-size"></td>
                     </tr>
                     <tr >
                         <th>Collections</th>
-                        <td><b id="num-coll" data-count="{{ num_coll }}">{{ num_coll }}</b> of <b id="max-coll" data-count="{{ max_coll }}">{{ max_coll }}</b> created</td>
+                        <td><b id="num-coll" data-count="{{ num_coll }}">{{ num_coll }}</b> of <b id="max-coll" data-count="{{ user_info.max_coll }}">{{ user_info.max_coll }}</b> created</td>
                         <td class="warn-limit" id="limit-coll"></td>
                     </tr>
                 </table>
@@ -93,13 +93,13 @@
                 Confirm Delete Account?
             </div>
             <div class="modal-body">
-                Are you sure you want to delete the <b>{{curr_user}}</b> account?
+                Are you sure you want to delete the <b>{{ curr_user }}</b> account?
                 If you continue, <b>all archived data in all collections will be permanently deleted.</b>
                 You will need to re-register to use the service again.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <form style="display: inline" method="post" action="/_delete_account?user={{curr_user}}">
+                <form style="display: inline" method="post" action="/_delete_account?user={{ curr_user }}">
                     <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
                 </form>
             </div>

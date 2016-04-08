@@ -168,15 +168,19 @@ a.dropdown-badge {
     font-size: 16px;
     margin-top: 6px;
     margin-bottom: 0px;
-    color: black;
+    color: white;
 }
 
 .navbar .userinfo a {
-    color: black;
+    color: white;
+    display: inline-block;
+    padding-left: 0px;
+    padding-right: 0px;
+
 }
 
 .navbar .userset a {
-    color: black;
+    color: white;
 }
 
 .navbar .nav-search {

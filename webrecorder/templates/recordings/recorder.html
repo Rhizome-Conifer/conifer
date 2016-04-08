@@ -2,6 +2,6 @@
 	{% include 'in_progress.html' %}
 {% elif curr_mode == "replay" %}
 	{% include 'browse.html' %}
-{% elif not curr_mode %}
+{% elif curr_mode == "new" %}
 	{% include 'new.html' %}
 {% endif %}
