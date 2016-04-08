@@ -4,7 +4,12 @@ li.coll-nav {
 
 .webrecorder-header {
     background-color: #222;
-    margin-bottom: 5px;
+}
+
+.new-recording,
+.browse-recording,
+.recording-in-progress {
+    margin-top: 5px;
 }
 
 .navbar-brand {
@@ -14,7 +19,7 @@ li.coll-nav {
 }
 
 .navbar {
-    min-height: 40px;
+    min-height: 20px;
 }
 
 .new-recording-form-group,
