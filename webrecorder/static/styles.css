@@ -22,6 +22,27 @@ li.coll-nav {
     min-height: 20px;
 }
 
+.wr-user-links>li>a,
+.wr-user-links>li>a:visited {
+    display: inline;
+    font-size: 1.0em;
+    background-color: #222;
+    padding: 0px;
+    padding-right: 15px
+}
+
+.wr-user-links>li>a:focus,
+.wr-user-links>li>a:hover {
+    color: #23527c;
+    text-decoration: underline;
+    background-color: #222;
+}
+
+.wr-user-links>li>a:active,
+.wr-user-links>li>a:hover {
+    outline: 0;
+}
+
 .new-recording-form-group,
 .recording-in-progress-form-group,
 .browse-recording-form-group {
@@ -212,17 +233,6 @@ a.dropdown-badge {
     font-size: 2em;
     vertical-align: sub;
     line-height: 0.1em;
-}
-
-#login {
-    display: inline;
-}
-
-#register {
-    display: inline;
-    /*color: white;*/
-    font-weight: bold;
-    font-size: 1.0em;
 }
 
 .pulse {
