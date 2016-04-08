@@ -32,8 +32,7 @@ class BaseController(object):
                 session.set_anon()
             user = session.anon_user
 
-        # for now, while only anon implemented
-        else:
+        elif not self.manager.has_user(user):
             self._raise_error(404, 'No such user', api=api)
 
         return user
