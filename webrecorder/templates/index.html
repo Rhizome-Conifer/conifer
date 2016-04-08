@@ -1,6 +1,7 @@
 {% extends "main_bootstrap.html" %}
 
 {% block head %}
+{{ super() }}
 <script>
     window.curr_user = "{{ curr_user if curr_user else '' }}";
 </script>
