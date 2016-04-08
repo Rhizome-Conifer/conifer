@@ -63,10 +63,10 @@ class AppController(BaseController):
 
         # Init Core app controllers
         rewrite_controller = ContentController(bottle_app, jinja_env, manager, config)
+        browser_controller = BrowserController(bottle_app, jinja_env, manager, config=config)
+        login_controller = LoginController(bottle_app, jinja_env, manager, config=config)
         recs_controller = RecsController(bottle_app, jinja_env, manager, config)
         colls_controller = CollsController(bottle_app, jinja_env, manager, config)
-        login_controller = LoginController(bottle_app, jinja_env, manager, config=config)
-        browser_controller = BrowserController(bottle_app, jinja_env, manager, config=config)
         info_controller = InfoController(bottle_app, jinja_env, manager, config)
 
         bottle_app.install(AddSession(self.cork, config))
@@ -104,7 +104,7 @@ class AppController(BaseController):
 
         @contextfunction
         def can_write(context):
-            return manager.can_write_coll(context.get('user', ''), context.get('coll', ''))
+            return self.manager.can_write_coll(context.get('user', ''), context.get('coll', ''))
 
         @contextfunction
         def can_read(context):

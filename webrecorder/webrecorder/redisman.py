@@ -214,7 +214,6 @@ class AccessManagerMixin(object):
         sesh = request.environ['webrec.session']
         if not sesh.is_anon():
             sesh.set_anon()
-            self._init_anon_user(sesh.anon_user)
 
         return sesh.anon_user
 
@@ -438,6 +437,7 @@ class Base(object):
         # collection
         info['coll_id'] = coll
         info['coll_title'] = self.redis.hget(coll_key, 'title')
+
         if info.get('coll_title'):
             info['coll_title'] = info['coll_title'].decode('utf-8')
         else:

@@ -41,13 +41,7 @@ class CollsController(BaseController):
         def get_collection(coll):
             user = self.get_user(api=True)
 
-            collection = self.manager.get_collection(user, coll)
-
-            if not collection:
-                response.status = 404
-                return {'error_message': 'Collection not found', 'id': coll}
-
-            return {'collection': self._add_download_path(collection, user)}
+            return self.get_collection_info(user, coll)
 
         @self.app.delete('/api/v1/collections/<coll>')
         def delete_collection(coll):
@@ -56,6 +50,64 @@ class CollsController(BaseController):
 
             self.manager.delete_collection(user, coll)
             return {'deleted_id': coll}
+
+        # Create Collection
+        @self.app.get('/_create')
+        @self.jinja2_view('create.html')
+        def create_coll_view():
+            return {}
+
+        @self.app.post('/_create')
+        def create_coll_post():
+            self.manager.cork.require(role='archivist', fail_redirect='/')
+
+            coll = self.post_get('collection')
+            title = self.post_get('title', coll)
+            is_public = self.post_get('public', 'private') == 'public'
+
+            user = self.manager.get_curr_user()
+
+            try:
+                #self.manager.add_collection(user, coll_name, title, access)
+                self.manager.create_collection(user, coll, title,
+                                               desc='', public=is_public)
+                self.flash_message('Created collection <b>{0}</b>!'.format(coll), 'success')
+                redir_to = '/{user}/{coll}'.format(user=user, coll=coll)
+            except ValidationException as ve:
+                self.flash_message(str(ve))
+                redir_to = '/_create'
+
+            self.redirect(redir_to)
+
+        # ANON COLLECTION
+        @self.app.get(['/anonymous', '/anonymous/'])
+        @self.jinja2_view('collection_info.html')
+        def anon_coll_info():
+            user = self.get_session().anon_user
+
+            return self.get_collection_info_for_view(user, 'anonymous')
+
+        # LOGGED-IN COLLECTION
+        @self.app.get(['/<user>/<coll>', '/<user>/<coll>/'])
+        @self.jinja2_view('collection_info.html')
+        def coll_info(user, coll):
+            return self.get_collection_info_for_view(user, coll)
+
+    def get_collection_info_for_view(self, user, coll):
+        result = self.get_collection_info(user, coll)
+        result['size_remaining'] = self.manager.get_size_remaining(user)
+        result['user'] = user
+        result['coll'] = coll
+        return result
+
+    def get_collection_info(self, user, coll):
+        collection = self.manager.get_collection(user, coll)
+
+        if not collection:
+            response.status = 404
+            return {'error_message': 'Collection not found', 'id': coll}
+
+        return {'collection': self._add_download_path(collection, user)}
 
     def _add_download_path(self, coll_info, user):
         if self.manager.is_anon(user):

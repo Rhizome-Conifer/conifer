@@ -1,0 +1,97 @@
+{% extends "main_bootstrap.html" %}
+{% block head %}
+
+{{ super() }}
+
+<script src="/static/__shared/external/jquery-ui.min.js"></script>
+
+<link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
+<script src="/static/__shared/external/bootstrap-switch.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
+
+<link href="/static/__shared/external/bootstrap-markdown.min.css" rel="stylesheet">
+<script src="/static/__shared/external/marked.min.js"></script>
+<script src="/static/__shared/external/bootstrap-markdown.js"></script>
+
+<script src="/static/__shared/collection_info.js"></script>
+
+<script>
+    var coll_id = "{{ coll_id }}";
+    var can_admin = {{ 'true' if can_admin() else 'false' }};
+    var can_write = {{ 'true' if can_write() else 'false' }};
+</script>
+
+
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="page-header" style="margin-top: 10px">
+        <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
+            {% if not is_anon() %}
+            <small>/{{ collection.id }}</small>
+            {% endif %}
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    {% if can_write() and not is_anon() %}
+    <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">
+        Edit</button>
+    {% endif %}
+
+    <div id="home-markdown" style="display: none">{{desc}}</div>
+    <div id="home-view"></div>
+</div>
+
+<div class="row">
+    <button id="add-recording" class="btn btn-primary btn-sm">New Recording</button>
+</div>
+<div class="row">
+    <a href="{{ collection.download_url }}" class="btn btn-success btn-sm">Download this Collection</a>
+</div>
+<div class="row">
+    <button id="delete-coll" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Collection</button>
+
+    <span style="font-size: 14px" class="pull-right">
+        <div style="margin: 18px 20px; display: inline-block">
+            {% set is_public = collection['r:@public'] %}
+            {% include 'frag_accessswitch.html' %}
+        </div>
+        <div style="margin-right: 20px; text-align: right">
+        Space Used: {{ collection.size }}
+        </div>
+    </span>
+</div>
+
+<div class="row">
+    <table id="rec_list" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Last Recorded</th>
+                <th>Size</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rec in collection.recordings %}
+                <tr>
+                    <td>{{ rec.title }}</td>
+                    <td>{{ rec.updated_at }}</td>
+                    <td>{{ rec.size }}</td>
+                    <td>TODO Action Buttons</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+{% endblock %}
+

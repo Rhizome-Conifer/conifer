@@ -26,10 +26,11 @@
 
     <ul class="list-group text-center">
         {% for coll in colls | sort(attribute='title') %}
-        {% if is_owner() or coll['r:@public'] %}
+        {% set is_public = coll['r:@public'] %} 
+        {% if is_owner() or is_public %}
         <li class="list-group-item">
             <a href="/{{ user }}/{{ coll.id }}" style="font-size: 20px">{{ coll.title | default(coll.id) }}</a>
-            {% if coll['r:@public'] %}
+            {% if is_public %}
             <span class="pull-right glyphicon glyphicon-globe" title="Public Collection -- Visible to Everyone" style="font-size: 14px; margin-top: 5px; margin-left: 12px;"></span>
             {% else %}
             <span class="pull-right" style="font-size: 14px; margin-top: 5px; margin-left: 26px;"></span>

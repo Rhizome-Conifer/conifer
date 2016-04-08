@@ -42,13 +42,7 @@ class RecsController(BaseController):
         def get_recording(rec):
             user, coll = self.get_user_coll(api=True)
 
-            recording = self.manager.get_recording(user, coll, rec)
-
-            if not recording:
-                response.status = 404
-                return {'error_message': 'Recording not found', 'id': rec}
-
-            return {'recording': self._add_download_path(recording, user, coll)}
+            return self.get_rec_info(user, coll, rec)
 
         @self.app.delete('/api/v1/recordings/<rec>')
         def delete_recording(rec):
@@ -77,6 +71,41 @@ class RecsController(BaseController):
 
             pages = self.manager.list_pages(user, coll, rec)
             return {'pages': pages}
+
+        # ANON REC VIEW
+        @self.app.get(['/anonymous/<rec>', '/anonymous/<rec>/'])
+        def anon_rec_info(rec):
+            user = self.get_session().anon_user
+
+            return self.get_rec_info_for_view(user, 'anonymous', rec)
+
+        # LOGGED-IN REC VIEW
+        @self.app.get(['/<user>/<coll>/<rec>', '/<user>/<coll>/<rec>/'])
+        def rec_info(user, coll, rec):
+
+            return self.get_rec_info_for_view(user, coll, rec)
+
+
+    def get_rec_info(self, user, coll, rec):
+        recording = self.manager.get_recording(user, coll, rec)
+
+        if not recording:
+            response.status = 404
+            return {'error_message': 'Recording not found', 'id': rec}
+
+        return {'recording': self._add_download_path(recording, user, coll)}
+
+    def get_rec_info_for_view(self, user, coll, rec):
+        result = self.get_rec_info()
+        result['size_remaining'] = self.manager.get_size_remaining(user)
+        result['collection'] = self.manager.get_collection(user, coll)
+        result['pages'] = self.manager.list_pages(user, coll, rec)
+
+        result['user'] = user
+        result['coll'] = coll
+        result['rec'] = rec
+
+        return result
 
     def _add_download_path(self, rec_info, user, coll):
         if self.manager.is_anon(user):
