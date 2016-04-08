@@ -63,11 +63,11 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_anon_content(wb_url, rec='', type='live')
 
         # ANON ROUTES
-        @self.app.route('/anonymous/<rec_name>/record/<wb_url:path>', method='ANY')
-        def anon_record(rec_name, wb_url):
+        @self.app.route('/anonymous/<rec>/record/<wb_url:path>', method='ANY')
+        def anon_record(rec, wb_url):
             request.path_shift(3)
 
-            return self.handle_anon_content(wb_url, rec=rec_name, type='record')
+            return self.handle_anon_content(wb_url, rec, type='record')
 
         @self.app.route('/anonymous/<wb_url:path>', method='ANY')
         def anon_replay(wb_url):
@@ -93,34 +93,91 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec=rec_name, type=type_)
 
+        # ANON DOWNLOAD
         @self.app.get('/anonymous/<rec>/$download')
         def anon_download_rec_warc(rec):
             user = self.get_anon_user()
             coll = 'anonymous'
 
-            recinfo = self.manager.get_recording(user, coll, rec)
-            if not recinfo:
-                self._raise_error(404, 'Recording not found',
-                                  id=rec)
-
-            title = recinfo.get('title', rec)
-            return self.handle_download('rec', user, coll, rec, title)
+            return self.handle_download('rec', user, coll, rec)
 
         @self.app.get('/anonymous/$download')
         def anon_download_coll_warc():
             user = self.get_anon_user()
             coll = 'anonymous'
 
-            collinfo = {}
-            collinfo = self.manager.get_collection(user, coll)
-            if not collinfo:
+            return self.handle_download('coll', user, coll, '*')
+
+        # special case match: /anonymous/rec/example.com -- don't treat as user/coll/rec
+        @self.app.route('/anonymous/<rec>/<host>')
+        def anon_replay_host_only(rec, host):
+            request.path_shift(2)
+            return self.handle_anon_content(host, rec, type='replay')
+
+
+
+        # USER?COLL ROUTES
+        @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
+        def usercoll_record(user, coll, rec, wb_url):
+            request.path_shift(4)
+
+            return self.handle_routing(wb_url, user, coll, rec, type='record')
+
+        @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
+        def usercoll_replay(user, coll, wb_url):
+            rec_name = '*'
+
+            # recording replay
+            if not self.WB_URL_RX.match(wb_url) and '/' in wb_url:
+                rec_name, wb_url = wb_url.split('/', 1)
+
+                # todo: edge case: something like /anonymous/example.com/
+                # should check if 'example.com' is a recording, otherwise assume url?
+                #if not wb_url:
+                #    wb_url = rec_name
+                #    rec_name = '*'
+
+            if rec_name == '*':
+                request.path_shift(2)
+                type_ = 'replay-coll'
+
+            else:
+                request.path_shift(3)
+                type_ = 'replay'
+
+            return self.handle_routing(wb_url, user, coll, rec=rec_name, type=type_)
+
+        # USERCOLL Download
+        @self.app.get('/<user>/<coll>/<rec>/$download')
+        def usercoll_download_rec_warc(rec):
+
+            return self.handle_download('rec', user, coll, rec)
+
+        @self.app.get('/<user>/<coll>/$download')
+        def usercoll_download_coll_warc(user, coll):
+            return self.handle_download('coll', user, coll, '*')
+
+
+
+    def handle_download(self, type, user, coll, rec):
+        info = {}
+
+        if rec == '*':
+            info = self.manager.get_collection(user, coll)
+            if not info:
                 self._raise_error(404, 'Collection not found',
                                   id=coll)
 
-            title = collinfo.get('title', coll)
-            return self.handle_download('coll', user, coll, '*', title)
+            title = info.get('title', coll)
 
-    def handle_download(self, type, user, coll, rec, title):
+        else:
+            info = self.manager.get_recording(user, coll, rec)
+            if not info:
+                self._raise_error(404, 'Collection not found',
+                                  id=coll)
+
+            title = info.get('title', rec)
+
         now = timestamp_now()
         filename = self.PATHS['download_filename'].format(title=title,
                                                           timestamp=now)
@@ -167,10 +224,13 @@ class ContentController(BaseController, RewriterApp):
         user = self.get_anon_user()
         coll = 'anonymous'
 
-        if type == 'record' or type == 'replay':
-            if type == 'record' and not sesh.is_anon():
-                sesh.set_anon()
+        if type == 'record' and not sesh.is_anon():
+            sesh.set_anon()
 
+        return self.handle_routing(wb_url, user, coll, rec, type)
+
+    def handle_routing(self, wb_url, user, coll, rec, type):
+        if type == 'record' or type == 'replay':
             if not self.manager.has_recording(user, coll, rec):
                 title = rec
                 rec = self.sanitize_title(title)

@@ -8,7 +8,7 @@ import base64
 
 from datetime import datetime
 
-from bottle import template
+from bottle import template, request
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.redisutils import RedisTable
@@ -65,13 +65,14 @@ class LoginManagerMixin(object):
 
         self.cork.do_login(user)
         return user
-        #return self.get_recording(user, coll, rec)
+
+    def get_user_info(self, user):
+        key = self.USER_KEY.format(user=user)
+        result = self._format_info(self.redis.hgetall(key))
+        return result
 
     def has_user(self, user):
         return self.cork.user(user) is not None
-
-    def is_anon(self, user):
-        return user == '@anon' or user.startswith('anon/')
 
     def get_size_remaining(self, user):
         user_key = self.USER_KEY.format(user=user)
@@ -197,6 +198,92 @@ class LoginManagerMixin(object):
 
 
 # ============================================================================
+class AccessManagerMixin(object):
+    READ_PREFIX = 'r:'
+    WRITE_PREFIX = 'w:'
+    PUBLIC = '@public'
+
+    def is_anon(self, user):
+        return user == '@anon' or user.startswith('anon/')
+
+    def get_curr_user(self):
+        sesh = request.environ['webrec.session']
+        return sesh.curr_user
+
+    def get_anon_user(self):
+        sesh = request.environ['webrec.session']
+        if not sesh.is_anon():
+            sesh.set_anon()
+            self._init_anon_user(sesh.anon_user)
+
+        return sesh.anon_user
+
+    def _check_access(self, user, coll, type_prefix):
+        # anon access
+        if self.is_anon(user):
+            return True
+
+        sesh = request.environ['webrec.session']
+        curr_user = sesh.curr_user
+        curr_role = sesh.curr_role
+
+        # current user always has access, if collection exists
+        if user == curr_user:
+            return self.has_collection(user, coll)
+
+        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+
+        #role_key = self.ROLE_KEY.format(role=curr_role)
+
+        if not curr_user:
+            res = self.redis.hmget(key, type_prefix + self.PUBLIC)
+        else:
+            res = self.redis.hmget(key, type_prefix + self.PUBLIC,
+                                        type_prefix + curr_user)
+
+        return any(res)
+
+    def is_public(self, user, coll):
+        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        res = self.redis.hget(key, self.PUBLIC)
+        return res == b'1'
+
+    def set_public(self, user, coll, is_public):
+        if not self.can_admin_coll(user, coll):
+            return False
+
+        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+
+        if is_public:
+            self.redis.hset(key, self.READ_PREFIX + self.PUBLIC, 1)
+        else:
+            self.redis.hdel(key, self.READ_PREFIX + self.PUBLIC)
+
+        return True
+
+    def can_read_coll(self, user, coll):
+        return self._check_access(user, coll, self.READ_PREFIX)
+
+    def can_write_coll(self, user, coll):
+        return self._check_access(user, coll, self.WRITE_PREFIX)
+
+    # for now, equivalent to is_owner(), but a different
+    # permission, and may change
+    def can_admin_coll(self, user, coll):
+        if self.is_anon(user):
+            return True
+
+        return self.is_owner(user)
+
+    def is_owner(self, user):
+        curr_user = self.get_curr_user()
+        if not curr_user:
+            curr_user = self.get_anon_user()
+
+        return (user and user == curr_user)
+
+
+# ============================================================================
 class RecManagerMixin(object):
     def __init__(self, config):
         super(RecManagerMixin, self).__init__(config)
@@ -289,7 +376,7 @@ class CollManagerMixin(object):
         #return self.redis.exists(key)
         return self.redis.hget(key, 'id') != None
 
-    def create_collection(self, user, coll, coll_title='', desc=''):
+    def create_collection(self, user, coll, coll_title='', desc='', public=False):
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
         coll_title = coll_title or coll
 
@@ -300,9 +387,16 @@ class CollManagerMixin(object):
             pi.hset(key, 'title', coll_title)
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'desc', desc)
+            if public:
+                pi.hset(key, self.READ_PREFIX + self.PUBLIC, 1)
             pi.hsetnx(key, 'size', '0')
 
         return self.get_collection(user, coll)
+
+    def num_collections(self, user):
+        key_pattern = self.COLL_INFO_KEY.format(user=user, coll='*')
+
+        return len(list(self.redis.scan_iter(match=key_pattern)))
 
     def get_collections(self, user):
         key_pattern = self.COLL_INFO_KEY.format(user=user, coll='*')
@@ -380,7 +474,7 @@ class Base(object):
 
 
 # ============================================================================
-class RedisDataManager(LoginManagerMixin, RecManagerMixin, CollManagerMixin, Base):
+class RedisDataManager(AccessManagerMixin, LoginManagerMixin, RecManagerMixin, CollManagerMixin, Base):
     def __init__(self, redis, cork, browser_redis, config):
         self.redis = redis
         self.cork = cork

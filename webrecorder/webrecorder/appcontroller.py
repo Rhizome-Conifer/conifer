@@ -96,28 +96,23 @@ class AppController(BaseController):
 
         @contextfunction
         def can_admin(context):
-            return False
-            #return manager.can_admin_coll(context.get('user', ''), context.get('coll', ''))
+            return self.manager.can_admin_coll(context.get('user', ''), context.get('coll', ''))
 
         @contextfunction
         def is_owner(context):
-            return False
-            #return manager.is_owner(context.get('user', ''))
+            return self.manager.is_owner(context.get('user', ''))
 
         @contextfunction
         def can_write(context):
-            return False
-            #return manager.can_write_coll(context.get('user', ''), context.get('coll', ''))
+            return manager.can_write_coll(context.get('user', ''), context.get('coll', ''))
 
         @contextfunction
         def can_read(context):
-            return False
-            #return manager.can_read_coll(context.get('user', ''), context.get('coll', ''))
+            return self.manager.can_read_coll(context.get('user', ''), context.get('coll', ''))
 
         @contextfunction
         def is_anon(context):
-            return False
-            #return context.get('coll') == '@anon'
+            return self.manager.is_anon(context.get('user'))
 
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
@@ -129,7 +124,7 @@ class AppController(BaseController):
         @self.bottle_app.route(['/', '/index.html'])
         @self.jinja2_view('index.html')
         def home_page():
-            resp = {}
+            resp = {'curr_mode': 'new'}
             return resp
 
     def make_err_handler(self, default_err_handler):
