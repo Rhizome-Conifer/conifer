@@ -77,7 +77,7 @@
             {% for page in pages %}
                 <tr>
                     <td><a href="{{ path + page.url }}">{{ page.title if page.title else page.url }}</a></td>
-                    <td>{{ page.timestamp }}</td>
+                    <td data-time-ts="{{ page.timestamp }}"></td>
                     <td><a href="{{ path + page.url }}">{{ page.url }}</a></td>
                     <td>
                         <a href="{{ path + '*/' + page.url }}">All Versions</a>

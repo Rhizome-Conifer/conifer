@@ -95,7 +95,8 @@
                 <th>Name</th>
                 <th>Last Recorded</th>
                 <th>Size</th>
-                <th>Actions</th>
+                <th>Browse</th>
+                <th>Download</th>
             </tr>
         </thead>
         <tbody>
@@ -103,12 +104,10 @@
             {% set path = get_path(user, coll, rec.id) %}
                 <tr>
                     <td><a href="{{ path }}">{{ rec.title }}</a></td>
-                    <td>{{ rec.updated_at }}</td>
+                    <td data-time-sec="{{ rec.updated_at }}"></td>
                     <td data-size="{{ rec.size }}"></td>
-                    <td>
-                        <a href="{{ path }}">Browse</a>
-                        <a href="{{ path }}/$download">Download</a>
-                    </td>
+                    <td><a href="{{ path }}">Browse</a></td>
+                    <td><a href="{{ path }}/$download">Download</a></td>
                 </tr>
             {% endfor %}
         </tbody>

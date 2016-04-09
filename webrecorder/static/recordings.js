@@ -409,9 +409,19 @@ var CountdownTimer = (function() {
 
 // Format size
 $(function() {
-    $("[data-size]").each(function(i, elem) {
-        $(elem).text(format_bytes($(elem).attr("data-size")));
-    });
+
+    function format_by_attr(attr_name, format_func) {
+        $("[" + attr_name + "]").each(function(i, elem) {
+            $(elem).text(format_func($(elem).attr(attr_name)));
+        });
+    }
+
+    format_by_attr("data-size", format_bytes);
+
+    format_by_attr("data-time-ts", ts_to_date);
+
+    format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
+
 });
 
 
