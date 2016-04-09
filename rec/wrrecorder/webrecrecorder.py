@@ -87,7 +87,7 @@ class WebRecRecorder(object):
 
         pages = []
         for page_key in self.redis.scan_iter(match=page_key_pattern):
-            pages.extend(self.redis.smembers(page_key))
+            pages.extend(self.redis.hvals(page_key))
 
         return pages
 
