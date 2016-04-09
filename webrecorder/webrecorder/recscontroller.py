@@ -74,6 +74,7 @@ class RecsController(BaseController):
 
         # ANON REC VIEW
         @self.app.get(['/anonymous/<rec>', '/anonymous/<rec>/'])
+        @self.jinja2_view('recording_info.html')
         def anon_rec_info(rec):
             user = self.get_session().anon_user
 
@@ -81,6 +82,7 @@ class RecsController(BaseController):
 
         # LOGGED-IN REC VIEW
         @self.app.get(['/<user>/<coll>/<rec>', '/<user>/<coll>/<rec>/'])
+        @self.jinja2_view('recording_info.html')
         def rec_info(user, coll, rec):
 
             return self.get_rec_info_for_view(user, coll, rec)
@@ -96,7 +98,7 @@ class RecsController(BaseController):
         return {'recording': self._add_download_path(recording, user, coll)}
 
     def get_rec_info_for_view(self, user, coll, rec):
-        result = self.get_rec_info()
+        result = self.get_rec_info(user, coll, rec)
         result['size_remaining'] = self.manager.get_size_remaining(user)
         result['collection'] = self.manager.get_collection(user, coll)
         result['pages'] = self.manager.list_pages(user, coll, rec)
