@@ -42,4 +42,9 @@ class InfoController(BaseController):
                 self.flash_message('There was an error deleting {0}'.format(coll))
                 self.redirect(self.get_path(user))
 
+        # Expiry Message
+        @self.app.route('/_expire')
+        def expire():
+            self.flash_message('Sorry, the anonymous collection has expired due to inactivity')
+            self.redirect('/')
 

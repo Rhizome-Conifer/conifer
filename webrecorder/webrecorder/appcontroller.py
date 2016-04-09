@@ -19,7 +19,7 @@ from webrecorder.contentcontroller import ContentController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
 from webrecorder.logincontroller import LoginController
-from webrecorder.infocontroller import InfoController
+from webrecorder.usercontroller import UserController
 from webrecorder.browsercontroller import BrowserController
 
 from webrecorder.webreccork import WebRecCork
@@ -64,7 +64,7 @@ class AppController(BaseController):
         rewrite_controller = ContentController(bottle_app, jinja_env, manager, config)
         browser_controller = BrowserController(bottle_app, jinja_env, manager, config=config)
         login_controller = LoginController(bottle_app, jinja_env, manager, config=config)
-        info_controller = InfoController(bottle_app, jinja_env, manager, config)
+        user_controller = UserController(bottle_app, jinja_env, manager, config)
         recs_controller = RecsController(bottle_app, jinja_env, manager, config)
         colls_controller = CollsController(bottle_app, jinja_env, manager, config)
 
