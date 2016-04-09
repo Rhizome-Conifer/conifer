@@ -99,7 +99,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <form style="display: inline" method="post" action="/_delete_account?user={{ curr_user }}">
+                <form class="delete-account-form" style="display: inline" method="post" action="/{{ curr_user }}/$delete">
                     <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
                 </form>
             </div>

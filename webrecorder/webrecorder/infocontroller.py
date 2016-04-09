@@ -29,3 +29,17 @@ class InfoController(BaseController):
                     'num_coll': self.manager.num_collections(user),
                    }
 
+        # Delete User Account
+        @self.app.post('/<user>/$delete')
+        def delete_user(user):
+            if self.manager.delete_user(user):
+                self.flash_message('The user {0} has been permanently deleted!'.format(user), 'success')
+
+                redir_to = '/'
+                request.environ['webrec.delete_all_cookies'] = 'all'
+                self.manager.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
+            else:
+                self.flash_message('There was an error deleting {0}'.format(coll))
+                self.redirect(self.get_path(user))
+
+

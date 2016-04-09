@@ -50,7 +50,7 @@ class LoginController(BaseController):
             password = self.post_get('password')
 
             if self.manager.cork.login(username, password):
-                redir_to = self.get_redir_back((LOGIN_PATH, '/'), self.get_user_home(username))
+                redir_to = self.get_redir_back((LOGIN_PATH, '/'), self.get_path(username))
                 #host = request.headers.get('Host', 'localhost')
                 #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
                 #request.environ['beaker.session'].path = '/'
@@ -271,6 +271,6 @@ class LoginController(BaseController):
                 self.flash_message(str(ve))
 
             user = self.manager.get_curr_user()
-            self.redirect(self.get_user_home(user) + SETTINGS)
+            self.redirect(self.get_path(user) + SETTINGS)
 
 

@@ -20,7 +20,10 @@
 -->
 
 <script>
-    var coll_id = "{{ coll_id }}";
+    var user = "{{ user }}";
+    var coll = "{{ coll }}";
+    var rec = "{{ recording.id }}";
+
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
 </script>
@@ -49,7 +52,7 @@
 {% endif %}
 <div class="row">
     {% if can_admin() %}
-    <button id="delete-rec" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Recording</button>
+    <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Recording</button>
     {% endif %}
 
     <span style="font-size: 14px" class="pull-right">
@@ -83,6 +86,28 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
+
+<!-- Confirm Delete -->
+<div class="modal fade" id="confirm-delete-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Confirm Delete Recording?
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the collection <b>{{ recording.title }}</b> {{ get_path(user, coll, rec) }}?</p>
+                <p>If you confirm, all archived data will be permanently deleted.</p>
+                <p>Be sure to download the recording first if you would like to keep any data.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form class="delete-rec-form" style="display: inline" method="post" action="/_delete_rec/{{ rec }}?user={{ user }}&coll={{ coll }}">
+                    <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 

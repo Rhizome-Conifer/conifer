@@ -47,9 +47,11 @@ class CollsController(BaseController):
         @self.app.delete('/api/v1/collections/<coll>')
         def delete_collection(coll):
             user = self.get_user(api=True)
+
             self._ensure_coll_exists(user, coll)
 
             self.manager.delete_collection(user, coll)
+
             return {'deleted_id': coll}
 
         @self.app.post('/api/v1/collections/<coll>/public')
@@ -82,12 +84,33 @@ class CollsController(BaseController):
                 self.manager.create_collection(user, coll, title,
                                                desc='', public=is_public)
                 self.flash_message('Created collection <b>{0}</b>!'.format(coll), 'success')
-                redir_to = '/{user}/{coll}'.format(user=user, coll=coll)
+                redir_to = self.get_path(user, coll)
             except ValidationException as ve:
                 self.flash_message(str(ve))
                 redir_to = '/_create'
 
             self.redirect(redir_to)
+
+        @self.app.post(['/_delete_coll'])
+        def delete_collection_post():
+            user, coll = self.get_user_coll(api=False)
+
+            success = False
+            try:
+                success = self.manager.delete_collection(user, coll)
+            except Exception as e:
+                print(e)
+
+            if success:
+                self.flash_message('Collection {0} has been deleted!'.format(coll), 'success')
+
+                if self.manager.is_anon(user):
+                    request.environ['webrec.delete_all_cookies'] = 'all'
+
+                self.redirect(self.get_path(user))
+            else:
+                self.flash_message('There was an error deleting {0}'.format(coll))
+                self.redirect(self.get_path(user, coll))
 
         # ANON COLLECTION
         @self.app.get(['/anonymous', '/anonymous/'])

@@ -87,6 +87,24 @@ class RecsController(BaseController):
 
             return self.get_rec_info_for_view(user, coll, rec)
 
+        @self.app.post('/_delete_rec/<rec>')
+        def delete_rec_post(rec):
+            user, coll = self.get_user_coll(api=False)
+
+            print(user, coll, rec)
+
+            success = False
+            try:
+                success = self.manager.delete_recording(user, coll, rec)
+            except Exception as e:
+                print(e)
+
+            if success:
+                self.flash_message('Recording {0} has been deleted!'.format(rec), 'success')
+                self.redirect(self.get_path(user, coll))
+            else:
+                self.flash_message('There was an error deleting {0}'.format(rec))
+                self.redirect(self.get_path(user, coll, rec))
 
     def get_rec_info(self, user, coll, rec):
         recording = self.manager.get_recording(user, coll, rec)

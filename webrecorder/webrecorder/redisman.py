@@ -74,6 +74,23 @@ class LoginManagerMixin(object):
     def has_user(self, user):
         return self.cork.user(user) is not None
 
+    def delete_user(self, user):
+        if not self.is_anon(user):
+            self.assert_user_is_owner(user)
+
+        res = self._send_delete('user', user)
+        return res
+
+    def _send_delete(self, type_, user, coll='*', rec='*'):
+        message = {'type': type_,
+                   'user': user,
+                   'coll': coll,
+                   'rec': rec}
+
+        res = self.redis.publish('delete', json.dumps(message))
+        print(message, res)
+        return (res > 0)
+
     def get_size_remaining(self, user):
         user_key = self.USER_KEY.format(user=user)
 
@@ -309,6 +326,9 @@ class AccessManagerMixin(object):
             #raise ValidationException('No Write Access')
 
     def assert_can_admin(self, user, coll):
+        if not self.is_anon(user):
+            self.assert_logged_in()
+
         if not self.can_admin_coll(user, coll):
             raise HTTPError(404, 'No Admin Access')
             #raise ValidationException('No Admin Access')
@@ -374,13 +394,7 @@ class RecManagerMixin(object):
     def delete_recording(self, user, coll, rec):
         self.assert_can_admin(user, coll)
 
-        message = {'type': 'rec',
-                   'user': user,
-                   'coll': coll,
-                   'rec': rec}
-
-        res = self.redis.publish('delete', json.dumps(message))
-        return (res > 0)
+        return self._send_delete('rec', user, coll, rec)
 
     def add_page(self, user, coll, rec, pagedata):
         self.assert_can_write(user, coll)
@@ -475,6 +489,14 @@ class CollManagerMixin(object):
                          if coll.get(self.READ_PREFIX + self.PUBLIC)]
 
         return all_colls
+
+    def delete_collection(self, user, coll):
+        if self.is_anon(user):
+            return self.delete_user(user)
+
+        self.assert_can_admin(user, coll)
+
+        return self._send_delete('coll', user, coll)
 
 
 # ============================================================================

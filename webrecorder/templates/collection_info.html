@@ -42,8 +42,9 @@
 {% else %}
 
 <div style="text-align: center; padding: 16px; font-size: 18px" class="col-xs-12">
-<span>This is a temporary, anonymous collection created in Webrecorder. These recordings are accessible only to you
-and will expire.</span>
+<span><p>This is a temporary, anonymous collection created in Webrecorder.</p>
+<p>These recordings are accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
+</span>
 
 {% if not curr_user %}
 <div>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
@@ -73,7 +74,7 @@ and will expire.</span>
 {% endif %}
 <div class="row">
     {% if can_admin() %}
-    <button id="delete-coll" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Collection</button>
+    <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Collection</button>
     {% endif %}
 
     <span style="font-size: 14px" class="pull-right">
@@ -113,6 +114,30 @@ and will expire.</span>
         </tbody>
     </table>
 </div>
+
+<!-- Confirm Delete -->
+<div class="modal fade" id="confirm-delete-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Confirm Delete Collection?
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the collection <b>{{ collection.title }}</b> {{ get_path(user, coll) }}?</p>
+                <p>If you confirm, all recordings will be permanently deleted.</p>
+                <p>Be sure to download the collection first if you would like to keep any data.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form class="delete-coll-form" style="display: inline" method="post" action="/_delete_coll?user={{ user }}&coll={{ coll }}">
+                    <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 
 
