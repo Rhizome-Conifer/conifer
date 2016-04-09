@@ -122,7 +122,7 @@ class TestAnonContent(BaseWRTests):
     def test_anon_record_redirect(self):
         res = self.testapp.get('/record/mp_/http://example.com/')
         assert res.status_code == 302
-        assert res.headers['Location'].endswith('/anonymous/my-recording/record/mp_/http://example.com/')
+        assert res.headers['Location'].endswith('/anonymous/My First Recording/record/mp_/http://example.com/')
 
     def test_anon_replay_redirect(self):
         res = self.testapp.get('/replay/mp_/http://example.com/')
