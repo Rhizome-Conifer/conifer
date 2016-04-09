@@ -48,8 +48,7 @@ class BaseController(object):
         if request.query.get('user') == '@anon':
             coll = 'anonymous'
 
-        # for now, while only anon implemented
-        else:
+        elif not self.manager.has_collection(user, coll):
             self._raise_error(404, 'No such collection', api=api)
 
         return user, coll
@@ -113,12 +112,18 @@ class BaseController(object):
         return decorator
 
     def sanitize_title(self, title):
-        rec = title.lower()
-        rec = rec.replace(' ', '-')
-        rec = self.ALPHA_NUM_RX.sub('', rec)
-        if self.WB_URL_COLLIDE.match(rec):
-            rec += '_'
+        id = title.lower()
+        id = id.replace(' ', '-')
+        id = self.ALPHA_NUM_RX.sub('', id)
+        if self.WB_URL_COLLIDE.match(id):
+            id += '_'
 
-        return rec
+        return id
+
+    def get_view_user(self, user):
+        if self.manager.is_anon(user):
+            return '@anon'
+        else:
+            return user
 
 

@@ -109,10 +109,6 @@
 
 <script>
     $(function() {
-        $("[data-size]").each(function(i, elem) {
-            $(elem).text(format_bytes($(elem).attr("data-size")));
-        });
-
         if (parseInt($("#total-size").attr("data-size")) >= parseInt($("#max-size").attr("data-size"))) {
             $("#limit-size").text("Size limit reached");
             $("#total-size").addClass("warn-limit");

@@ -65,9 +65,9 @@ class AppController(BaseController):
         rewrite_controller = ContentController(bottle_app, jinja_env, manager, config)
         browser_controller = BrowserController(bottle_app, jinja_env, manager, config=config)
         login_controller = LoginController(bottle_app, jinja_env, manager, config=config)
+        info_controller = InfoController(bottle_app, jinja_env, manager, config)
         recs_controller = RecsController(bottle_app, jinja_env, manager, config)
         colls_controller = CollsController(bottle_app, jinja_env, manager, config)
-        info_controller = InfoController(bottle_app, jinja_env, manager, config)
 
         bottle_app.install(AddSession(self.cork, config))
 
@@ -152,16 +152,16 @@ class AppController(BaseController):
             return res
 
         def err_handler(out):
-            if out.status_code == 404:
-                if self._check_refer_redirect():
-                    return
-
-            traceback.print_exc()
-
             if (isinstance(out.exception, dict) and
                 hasattr(out, 'json_err')):
                 return json_error(out.exception)
             else:
+                if out.status_code == 404:
+                    if self._check_refer_redirect():
+                        return
+
+                traceback.print_exc()
+
                 #return error_view(out)
                 return default_err_handler(out)
 

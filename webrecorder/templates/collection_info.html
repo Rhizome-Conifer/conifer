@@ -63,7 +63,7 @@
             {% include 'frag_accessswitch.html' %}
         </div>
         <div style="margin-right: 20px; text-align: right">
-        Space Used: {{ collection.size }}
+        Space Used: <b data-size="{{ collection.size }}"></b>
         </div>
     </span>
 </div>
@@ -84,10 +84,10 @@
                 <tr>
                     <td><a href="{{ path }}">{{ rec.title }}</a></td>
                     <td>{{ rec.updated_at }}</td>
-                    <td>{{ rec.size }}</td>
+                    <td data-size="{{ rec.size }}"></td>
                     <td>
                         <a href="{{ path }}">Browse</a>
-                        <a href="{{ rec.download_url }}">Download</a>
+                        <a href="{{ path }}/$download">Download</a>
                     </td>
                 </tr>
             {% endfor %}

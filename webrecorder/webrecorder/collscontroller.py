@@ -96,7 +96,7 @@ class CollsController(BaseController):
     def get_collection_info_for_view(self, user, coll):
         result = self.get_collection_info(user, coll)
         result['size_remaining'] = self.manager.get_size_remaining(user)
-        result['user'] = user
+        result['user'] = self.get_view_user(user)
         result['coll'] = coll
         return result
 

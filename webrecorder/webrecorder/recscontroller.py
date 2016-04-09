@@ -103,7 +103,7 @@ class RecsController(BaseController):
         result['collection'] = self.manager.get_collection(user, coll)
         result['pages'] = self.manager.list_pages(user, coll, rec)
 
-        result['user'] = user
+        result['user'] = self.get_view_user(user)
         result['coll'] = coll
         result['rec'] = rec
 
