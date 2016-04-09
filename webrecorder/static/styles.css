@@ -72,6 +72,14 @@ li.coll-nav {
     text-decoration: underline;
 }
 
+.wr-timer {
+    color: #ccc;
+    margin-left: 16px;
+    margin-top: 1px;
+    list-style: none;
+    font-style: italic;
+}
+
 .new-recording-form-group,
 .recording-in-progress-form-group,
 .browse-recording-form-group {

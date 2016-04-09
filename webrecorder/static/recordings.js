@@ -57,6 +57,7 @@ $(function() {
     CollectionsDropdown.start();
     RecordingSizeWidget.start();
     PagesComboxBox.start();
+    CountdownTimer.start();
 });
 
 var Collections = (function() {
@@ -339,6 +340,71 @@ var CollectionsDropdown = (function() {
         start: start
     }
 })();
+
+
+var CountdownTimer = (function() {
+    // Session Expire
+    var end_time = undefined;
+
+    function update_countdown() {
+        if (!end_time) {
+            return;
+        }
+        var curr = Math.floor(new Date().getTime() / 1000);
+        var secdiff = end_time - curr;
+        
+        if (secdiff <= 0) {
+            window.location.href = "/_expire";
+            return;
+        }
+
+        if (secdiff < 300) {
+            $("*[data-anon-timer]").parent().show();
+        }
+        
+        var min = Math.floor(secdiff / 60);
+        var sec = secdiff % 60;
+        if (sec <= 9) {
+            sec = "0" + sec;
+        }
+        if (min <= 9) {
+            min = "0" + min;
+        }
+
+        $("*[data-anon-timer]").text(min + ":" + sec);       
+    }
+
+    var start = function() {
+        // enable timer only if anon
+        if (user != "@anon") {
+            return;
+        }
+
+        var expire = $("*[data-anon-timer]").attr("data-anon-timer");
+
+        if (expire && expire.length) {
+            var time_left = parseInt(expire);
+
+            if (!time_left) {
+                return;
+            }
+
+            if (end_time == undefined) {
+                setInterval(update_countdown, 1000);
+            }
+        
+            end_time = Math.floor(new Date().getTime() / 1000 + time_left);
+        
+            update_countdown();
+        }
+    }
+
+    return {
+        start: start
+    }
+})();
+
+
 
 
 // Format size
