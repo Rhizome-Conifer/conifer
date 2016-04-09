@@ -4,6 +4,8 @@ var coll = "anonymous"
 if (window.wbinfo) {
     user = window.wbinfo.info.user;
     coll = window.wbinfo.info.coll_id;
+} else {
+	user = window.curr_user
 }
 
 $(function() {
@@ -15,10 +17,7 @@ $(function() {
 		var title = $("input[name='title']").val();
 		var url = $("input[name='url']").val();
 
-		Recordings.create(
-			{"collection": collection,
-			 "title": title,
-			 "url": url});
+		RouteTo.recordingInProgress(user, collection, title, url);
 	});
 
 	// 'Recording in progress': Url bar 'Go' button / enter key
@@ -55,32 +54,37 @@ $(function() {
 		RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
 	});
 
-	// Start size widget
+	CollectionsDropdown.start();
 	RecordingSizeWidget.start();
-
 	PagesComboxBox.start();
 });
 
-var Recordings = (function() {
+var Collections = (function() {
+	var API_ENDPOINT = "/api/v1/collections";
 
-	var API_ENDPOINT = "/api/v1/recordings";
-	var query_string = "?user=" + user + "&coll=" + coll;
-
-	var create = function(attributes) {
+	var get = function(doneCallback, failCallback) {
+		var query_string = "?user=" + user
 
 		$.ajax({
 			url: API_ENDPOINT + query_string,
-			method: "POST",
-			data: { "title": attributes.title },
+			method: "GET"
 		})
 		.done(function(data, textStatus, xhr) {
-			RouteTo.recordingInProgress(
-				user, coll, data.recording.id, attributes.url);
+			doneCallback(data);
 		})
 		.fail(function(xhr, textStatus, errorThrown) {
-			// Some error happened, handle it gracefully
+			failCallback();
 		});
 	}
+
+	return {
+		get: get
+	}
+})();
+
+var Recordings = (function() {
+	var API_ENDPOINT = "/api/v1/recordings";
+	var query_string = "?user=" + user + "&coll=" + coll;
 
 	var get = function(recordingId, doneCallback, failCallback) {
 		$.ajax({
@@ -125,7 +129,6 @@ var Recordings = (function() {
 	}
 
     return {
-    	create: create,
 		get: get,
 		addPage: addPage,
 		getPages: getPages
@@ -246,6 +249,32 @@ var PagesComboxBox = (function() {
 		// If we can't load this recording's pages,
 		// do nothing to leave this as a regular
 		// input field
+	}
+
+	return {
+		start: start
+	}
+})();
+
+var CollectionsDropdown = (function() {
+
+	var start = function() {
+		Collections.get(initializeDropdown, dontInitializeDropdown);
+	}
+
+	var initializeDropdown = function(data) {
+		console.log('got some collections woo!');
+		var collectionInputParentDiv = $("input[name='collection']").parent();
+		var collectionOptions = $.map(data.collections, function(collection) {
+			return $("<option value='" + collection.id + "'>" + collection.title + "</option>");
+		})
+		$(collectionInputParentDiv).html($("<select>").append(collectionOptions));
+	}
+
+	var dontInitializeDropdown = function() {
+		console.log("*SOB!*");
+		// If we can't load this user's collections, just
+		// leave this as an input field
 	}
 
 	return {
