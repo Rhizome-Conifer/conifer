@@ -65,6 +65,7 @@
             <tr>
                 <th>Title</th>
                 <th>Recorded On</th>
+                <th>Url</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -72,7 +73,7 @@
             {% set path = get_path(user, coll, rec) + '/' %}
             {% for page in pages %}
                 <tr>
-                    <td><a href="{{ path + page.url }}">{{ page.title }}</a></td>
+                    <td><a href="{{ path + page.url }}">{{ page.title if page.title else page.url }}</a></td>
                     <td>{{ page.timestamp }}</td>
                     <td><a href="{{ path + page.url }}">{{ page.url }}</a></td>
                     <td>

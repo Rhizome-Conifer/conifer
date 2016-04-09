@@ -29,7 +29,9 @@
 
 {% block content %}
 
+
 <div class="row">
+{% if user != '@anon' %}
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
             {% if not is_anon() %}
@@ -37,6 +39,18 @@
             {% endif %}
         </h1>
     </div>
+{% else %}
+
+<div style="text-align: center; padding: 16px; font-size: 18px" class="col-xs-12">
+<span>This is a temporary, anonymous collection created in Webrecorder. These recordings are accessible only to you
+and will expire.</span>
+
+{% if not curr_user %}
+<div>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
+{% endif %}
+</div>
+
+{% endif %}
 </div>
 
 {% if can_admin() %}

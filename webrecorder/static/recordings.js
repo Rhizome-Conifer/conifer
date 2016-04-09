@@ -13,7 +13,7 @@ $(function() {
     $('header').on('submit', '.start-recording', function(event) {
         event.preventDefault();
 
-        var collection = $("input[name='collection']").val();
+        var collection = $("*[name='collection']").val();
         var title = $("input[name='title']").val();
         var url = $("input[name='url']").val();
 
@@ -233,25 +233,53 @@ var PagesComboxBox = (function() {
         }
     }
 
+    // From typeahead examples
+    var substringMatcher = function(pages) {
+        return function findMatches(q, cb) {
+            var matches, substringRegex;
+
+            // an array that will be populated with substring matches
+            matches = [];
+
+            // regex used to determine if a string contains the substring `q`
+            substrRegex = new RegExp(q, 'i');
+
+            // iterate through the pool of strings and for any string that
+            // contains the substring `q`, add it to the `matches` array
+            $.each(pages, function(i, page) {
+                if (substrRegex.test(page.url)) {
+                    matches.push(page);
+                }
+            });
+
+            cb(matches);
+        };
+    };
+
     var initializeCombobox = function(data) {
         var pages = data.pages;
 
-        var pages = new Bloodhound({
-            datumTokenizer: function(pages) {
-                return Bloodhound.tokenizers.whitespace(pages.url);
-            },
-            queryTokenizer: Bloodhound.tokenizers.whitespace,
-            local: pages
-        });
+        //        var source = new Bloodhound({
+        //            datumTokenizer: function(pages) {
+        //                return Bloodhound.tokenizers.whitespace(pages.url);
+        //            },
+        //            queryTokenizer: Bloodhound.tokenizers.whitespace,
+        //            local: pages
+        //        });
+
+        var source = substringMatcher(pages);
 
         $("input[name='url']").typeahead(
             {
-                hint: "false",
+                highlight: true,
+                minLength: 0,
+                hint: true,
             },
             {
                 name: 'pages',
-                source: pages,
+                source: source,
                 limit: 1000000,
+
                 display: "url",
                 templates: {
                     suggestion: function(data) {
@@ -277,7 +305,8 @@ var PagesComboxBox = (function() {
 var CollectionsDropdown = (function() {
 
     var start = function() {
-        if (user == "@anon") {
+        // Only activate when logged in and not in record/browse mode
+        if (!window.curr_user || user == "@anon" || window.wbinfo) {
             return;
         }
 
@@ -288,16 +317,20 @@ var CollectionsDropdown = (function() {
         if (!data.collections || !data.collections.length) {
             return;
         }
-        console.log('got some collections woo!');
+        //console.log('got some collections woo!');
         var collectionInputParentDiv = $("input[name='collection']").parent();
         var collectionOptions = $.map(data.collections, function(collection) {
             return $("<option value='" + collection.id + "'>" + collection.title + "</option>");
         })
-        $(collectionInputParentDiv).html($("<select>").append(collectionOptions));
+
+        $(collectionInputParentDiv).html($("<select name='collection'>").append(collectionOptions));
+
+        $("select", collectionInputParentDiv).selectBoxIt({native: false});
+
     }
 
     var dontInitializeDropdown = function() {
-        console.log("*SOB!*");
+        //console.log("*SOB!*");
         // If we can't load this user's collections, just
         // leave this as an input field
     }
@@ -309,12 +342,51 @@ var CollectionsDropdown = (function() {
 
 
 // Format size
-
 $(function() {
     $("[data-size]").each(function(i, elem) {
         $(elem).text(format_bytes($(elem).attr("data-size")));
     });
 });
+
+
+// Utils
+//From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
+function format_bytes(bytes) {
+    if (!isFinite(bytes) || (bytes < 1)) {
+        return "0 bytes";
+    }
+    var s = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    var e = Math.floor(Math.log(bytes) / Math.log(1000));
+    return (bytes / Math.pow(1000, e)).toFixed(2) + " " + s[e];
+}
+
+
+function ts_to_date(ts, is_gmt)
+{
+    if (!ts) {
+        return "";
+    }
+
+    if (ts.length < 14) {
+        ts += "00000000000000".substr(ts.length);
+    }
+
+    var datestr = (ts.substring(0, 4) + "-" +
+                  ts.substring(4, 6) + "-" +
+                  ts.substring(6, 8) + "T" +
+                  ts.substring(8, 10) + ":" +
+                  ts.substring(10, 12) + ":" +
+                  ts.substring(12, 14) + "-00:00");
+
+    var date = new Date(datestr);
+    if (is_gmt) {
+        return date.toGMTString();
+    } else {
+        return date.toLocaleString();
+    }
+}
+
+
 
 
 
