@@ -8,7 +8,7 @@ import base64
 
 from datetime import datetime
 
-from bottle import template, request
+from bottle import template, request, HTTPError
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.redisutils import RedisTable
@@ -244,7 +244,7 @@ class AccessManagerMixin(object):
 
     def is_public(self, user, coll):
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
-        res = self.redis.hget(key, self.PUBLIC)
+        res = self.redis.hget(key, self.READ_PREFIX + self.PUBLIC)
         return res == b'1'
 
     def set_public(self, user, coll, is_public):
@@ -281,6 +281,38 @@ class AccessManagerMixin(object):
 
         return (user and user == curr_user)
 
+    def assert_user_exists(self, user):
+        if not self.has_user(user):
+            raise HTTPError(404, 'No Such User')
+
+    def assert_logged_in(self):
+        try:
+            self.cork.require(role='archivist')
+        except Exception:
+            raise HTTPError(404, 'Not Logged In')
+
+    def assert_user_is_owner(self, user):
+        self.assert_logged_in()
+        if self.is_owner(user):
+            return True
+
+        raise HTTPError(404, 'No Such User')
+
+    def assert_can_read(self, user, coll):
+        if not self.can_read_coll(user, coll):
+            raise HTTPError(404, 'No Read Access')
+            #raise ValidationException('No Read Access')
+
+    def assert_can_write(self, user, coll):
+        if not self.can_write_coll(user, coll):
+            raise HTTPError(404, 'No Write Access')
+            #raise ValidationException('No Write Access')
+
+    def assert_can_admin(self, user, coll):
+        if not self.can_admin_coll(user, coll):
+            raise HTTPError(404, 'No Admin Access')
+            #raise ValidationException('No Admin Access')
+
 
 # ============================================================================
 class RecManagerMixin(object):
@@ -291,16 +323,22 @@ class RecManagerMixin(object):
         self.INT_KEYS = ('size', 'created_at', 'updated_at')
 
     def get_recording(self, user, coll, rec):
+        self.assert_can_read(user, coll)
+
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
         result = self._format_info(self.redis.hgetall(key))
         return result
 
     def has_recording(self, user, coll, rec):
+        self.assert_can_read(user, coll)
+
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
         #return self.redis.exists(key)
         return self.redis.hget(key, 'id') != None
 
     def create_recording(self, user, coll, rec, rec_title):
+        self.assert_can_write(user, coll)
+
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
 
         now = int(time.time())
@@ -318,6 +356,8 @@ class RecManagerMixin(object):
         return self.get_recording(user, coll, rec)
 
     def get_recordings(self, user, coll):
+        self.assert_can_read(user, coll)
+
         key_pattern = self.REC_INFO_KEY.format(user=user, coll=coll, rec='*')
 
         keys = list(self.redis.scan_iter(match=key_pattern))
@@ -332,6 +372,8 @@ class RecManagerMixin(object):
         return all_recs
 
     def delete_recording(self, user, coll, rec):
+        self.assert_can_admin(user, coll)
+
         message = {'type': 'rec',
                    'user': user,
                    'coll': coll,
@@ -341,6 +383,8 @@ class RecManagerMixin(object):
         return (res > 0)
 
     def add_page(self, user, coll, rec, pagedata):
+        self.assert_can_write(user, coll)
+
         key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
 
         pagedata_json = json.dumps(pagedata).encode('utf-8')
@@ -348,6 +392,8 @@ class RecManagerMixin(object):
         self.redis.sadd(key, pagedata_json)
 
     def list_pages(self, user, coll, rec):
+        self.assert_can_read(user, coll)
+
         key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
 
         pagelist = self.redis.smembers(key)
@@ -364,6 +410,8 @@ class CollManagerMixin(object):
         self.COLL_INFO_KEY = 'c:{user}:{coll}:info'
 
     def get_collection(self, user, coll):
+        self.assert_can_read(user, coll)
+
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
         result = self._format_info(self.redis.hgetall(key))
         if result:
@@ -376,6 +424,8 @@ class CollManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def create_collection(self, user, coll, coll_title='', desc='', public=False):
+        self.assert_can_admin(user, coll)
+
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
         coll_title = coll_title or coll
 
@@ -395,7 +445,12 @@ class CollManagerMixin(object):
     def num_collections(self, user):
         key_pattern = self.COLL_INFO_KEY.format(user=user, coll='*')
 
-        return len(list(self.redis.scan_iter(match=key_pattern)))
+        keys = list(self.redis.scan_iter(match=key_pattern))
+
+        if not self.is_owner(user):
+            keys = [key for key in keys if self.is_public(user, key.decode('utf-8'))]
+
+        return len(keys)
 
     def get_collections(self, user):
         key_pattern = self.COLL_INFO_KEY.format(user=user, coll='*')
@@ -409,6 +464,11 @@ class CollManagerMixin(object):
             all_colls = pi.execute()
 
         all_colls = [self._format_info(x) for x in all_colls]
+
+        if not self.is_owner(user):
+            all_colls = [coll for coll in all_colls
+                         if coll.get(self.READ_PREFIX + self.PUBLIC)]
+
         return all_colls
 
 

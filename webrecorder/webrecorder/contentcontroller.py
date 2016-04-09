@@ -114,15 +114,15 @@ class ContentController(BaseController, RewriterApp):
             request.path_shift(2)
             return self.handle_anon_content(host, rec, type='replay')
 
-        # USER/COLL ROUTES
+        # LOGGED IN ROUTES
         @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
-        def usercoll_record(user, coll, rec, wb_url):
+        def logged_in_record(user, coll, rec, wb_url):
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='record')
 
         @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
-        def usercoll_replay(user, coll, wb_url):
+        def logged_in_replay(user, coll, wb_url):
             rec_name = '*'
 
             # recording replay
@@ -145,14 +145,14 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec=rec_name, type=type_)
 
-        # USERCOLL Download
+        # Logged-In Download
         @self.app.get('/<user>/<coll>/<rec>/$download')
-        def usercoll_download_rec_warc(rec):
+        def logged_in_download_rec_warc(user, coll, rec):
 
             return self.handle_download('rec', user, coll, rec)
 
         @self.app.get('/<user>/<coll>/$download')
-        def usercoll_download_coll_warc(user, coll):
+        def logged_in_download_coll_warc(user, coll):
             return self.handle_download('coll', user, coll, '*')
 
 
@@ -266,14 +266,9 @@ class ContentController(BaseController, RewriterApp):
                                                     kwargs['coll'],
                                                     kwargs['rec'])
 
-        username = kwargs['user']
-
-        if self.manager.is_anon(username):
-            username = '@anon'
-
         return {'info': info,
                 'curr_mode': type,
-                'user': username,
+                'user': self.get_view_user(kwargs['user']),
                 'coll': kwargs['coll'],
                 'rec': kwargs['rec']
                }

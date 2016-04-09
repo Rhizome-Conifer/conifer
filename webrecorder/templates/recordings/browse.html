@@ -11,7 +11,7 @@
 		<div class="title">
 			<label for="title" class="control-label col-xs-1">Recording:</label>
 			<div class="col-xs-5">
-				<input name="title" type="text" value="{{ info['rec_title'] }}" required class="form-control input-sm" readonly>
+				<input name="title" type="text" value="{{ info['rec_title'] if info.rec_title else 'All Recordings' }}" required class="form-control input-sm" readonly>
 			</div>
 		</div>
 		<div class="collection">

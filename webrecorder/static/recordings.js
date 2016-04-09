@@ -33,7 +33,7 @@ $(function() {
     $('header').on('submit', '.stop-recording', function(event) {
         event.preventDefault();
 
-        RouteTo.collectionInfo(user, coll);
+        RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
     });
 
     // 'Browse recording': Url bar 'Go' button / enter key
@@ -116,6 +116,13 @@ var Recordings = (function() {
     }
 
     var getPages = function(recordingId, doneCallback, failCallback) {
+        // no recordingId if in collection replay mode
+        // skipping for now, possible to get pages for all recordings
+        if (!recordingId) {
+            failCallback();
+            return;
+        }
+
         $.ajax({
             url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
             method: "GET",
@@ -154,6 +161,14 @@ var RouteTo = (function(){
         }
     }
 
+    var recordingInfo = function(user, collection, recording) {
+        if (user == "@anon") {
+            routeTo(host + "/" + collection + "/" + recording);
+        } else {
+            routeTo(host + "/" + user + "/" + collection + "/" + recording);
+        }
+    }
+
     var browseRecording = function(user, collection, recording, url) {
         if (user == "@anon") {
             routeTo(host + "/" + collection + "/" + recording + "/" + url);
@@ -169,6 +184,7 @@ var RouteTo = (function(){
     return {
         recordingInProgress: recordingInProgress,
         collectionInfo: collectionInfo,
+        recordingInfo: recordingInfo,
         browseRecording: browseRecording
     }
 }());
@@ -316,7 +332,7 @@ window.set_state = function(state) {
         attributes.title = $('iframe').contents().find('title').text();
 
         Recordings.addPage(recordingId, attributes);
-    } else if (wbinfo.state == "replay") {
+    } else if (wbinfo.state == "replay" || wbinfo.state == "replay-coll") {
         $("input[name='url']").val(state.url);
     }
 };

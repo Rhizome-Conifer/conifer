@@ -5,7 +5,10 @@ $(function() {
         $(".ispublic").bootstrapSwitch();
 
         $(".ispublic").on('switchChange.bootstrapSwitch', function(event, state) {
-            $.ajax("/_setaccess?coll=" + coll_id + "&public=" + state, {
+            $.ajax("/api/v1/collections/" + coll + "/public?user=" + user, {
+                method: "POST",
+                data: {"public": state},
+
                 success: function() {
                     $(".ispublic").bootstrapSwitch("state", state, true);
                 },
@@ -19,7 +22,7 @@ $(function() {
         
         $("#update-title-form").submit(function(e) {
             var title = $("#new-title").val();
-            var query = $.param({coll: coll_id, title: title});
+            var query = $.param({coll: coll, title: title});
             
             if (!title) {
                 return;

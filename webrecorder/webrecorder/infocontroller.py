@@ -11,6 +11,8 @@ class InfoController(BaseController):
         @self.app.get(['/<user>', '/<user>/'])
         @self.jinja2_view('user.html')
         def user_info(user):
+            self.manager.assert_user_exists(user)
+
             return {'user': user,
                     'user_info': self.manager.get_user_info(user),
                     'colls': self.manager.get_collections(user),
@@ -20,6 +22,8 @@ class InfoController(BaseController):
         @self.app.get('/<user>/_settings')
         @self.jinja2_view('account.html')
         def account_settings(user):
+            self.manager.assert_user_is_owner(user)
+
             return {'user': user,
                     'user_info': self.manager.get_user_info(user),
                     'num_coll': self.manager.num_collections(user),

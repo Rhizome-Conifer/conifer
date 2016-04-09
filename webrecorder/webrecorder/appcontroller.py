@@ -2,7 +2,6 @@ from bottle import Bottle, debug, request, response
 
 import logging
 import json
-import traceback
 import redis
 
 from os.path import expandvars
@@ -160,10 +159,11 @@ class AppController(BaseController):
                     if self._check_refer_redirect():
                         return
 
-                traceback.print_exc()
+                if out.status_code == 500:
+                    print(out.traceback)
 
-                #return error_view(out)
-                return default_err_handler(out)
+                return error_view(out)
+                #return default_err_handler(out)
 
         return err_handler
 
@@ -241,6 +241,5 @@ class AddSession(object):
             return func(*args, **kwargs)
 
         return func_wrapper
-
 
 

@@ -1,6 +1,7 @@
 from bottle import request, response, HTTPError
 
 from webrecorder.basecontroller import BaseController
+from webrecorder.webreccork import ValidationException
 
 
 # ============================================================================
@@ -51,15 +52,24 @@ class CollsController(BaseController):
             self.manager.delete_collection(user, coll)
             return {'deleted_id': coll}
 
+        @self.app.post('/api/v1/collections/<coll>/public')
+        def set_public(coll):
+            user = self.get_user(api=True)
+            self._ensure_coll_exists(user, coll)
+
+            public = self.post_get('public') == 'true'
+            self.manager.set_public(user, coll, public)
+
         # Create Collection
         @self.app.get('/_create')
         @self.jinja2_view('create.html')
         def create_coll_view():
+            self.manager.assert_logged_in()
             return {}
 
         @self.app.post('/_create')
         def create_coll_post():
-            self.manager.cork.require(role='archivist', fail_redirect='/')
+            #self.manager.cork.require(role='archivist', fail_redirect='/')
 
             coll = self.post_get('collection')
             title = self.post_get('title', coll)
@@ -123,6 +133,6 @@ class CollsController(BaseController):
         return coll_info
 
     def _ensure_coll_exists(self, user, coll):
-        if not self.manager.has_collection(user):
+        if not self.manager.has_collection(user, coll):
             self._raise_error(404, 'Collection not found', api=True, id=coll)
 

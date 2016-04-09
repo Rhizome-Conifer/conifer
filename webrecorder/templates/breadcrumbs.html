@@ -16,7 +16,7 @@
 			</li>
 		{% endif %}
 
-		{% if rec %}
+		{% if rec and rec != '*' %}
 			<li class="navbar-left">
 			    {% if user != "@anon" %}
 	                <a target="_parent" href="/{{ user }}/{{ coll }}/{{ rec }}" title="Return to recording: {{rec}}">{{ rec }}</a>

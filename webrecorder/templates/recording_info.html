@@ -25,7 +25,6 @@
     var can_write = {{ 'true' if can_write() else 'false' }};
 </script>
 
-
 {% endblock %}
 
 {% block content %}
@@ -40,14 +39,18 @@
     </div>
 </div>
 
+{% if can_admin() %}
 <div class="row">
     <button id="add-to-recording" class="btn btn-primary btn-sm">Add To Recording</button>
 </div>
 <div class="row">
     <a href="{{ recording.download_url }}" class="btn btn-success btn-sm">Download this Recording</a>
 </div>
+{% endif %}
 <div class="row">
+    {% if can_admin() %}
     <button id="delete-rec" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Recording</button>
+    {% endif %}
 
     <span style="font-size: 14px" class="pull-right">
         <div style="margin-right: 20px; text-align: right">

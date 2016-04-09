@@ -18,7 +18,8 @@
 <script src="/static/__shared/collection_info.js"></script>
 
 <script>
-    var coll_id = "{{ coll_id }}";
+    var user = "{{ user }}";
+    var coll = "{{ coll }}";
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
 </script>
@@ -38,6 +39,7 @@
     </div>
 </div>
 
+{% if can_admin() %}
 <div class="row">
     {% if can_write() and not is_anon() %}
     <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">
@@ -54,8 +56,11 @@
 <div class="row">
     <a href="{{ collection.download_url }}" class="btn btn-success btn-sm">Download this Collection</a>
 </div>
+{% endif %}
 <div class="row">
+    {% if can_admin() %}
     <button id="delete-coll" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Collection</button>
+    {% endif %}
 
     <span style="font-size: 14px" class="pull-right">
         <div style="margin: 18px 20px; display: inline-block">
