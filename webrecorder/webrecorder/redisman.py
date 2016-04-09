@@ -228,7 +228,7 @@ class AccessManagerMixin(object):
 
         # current user always has access, if collection exists
         if user == curr_user:
-            return self.has_collection(user, coll)
+            return self._has_collection_no_access_check(user, coll)
 
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
 
@@ -350,7 +350,7 @@ class RecManagerMixin(object):
             pi.hset(key, 'updated_at', now)
             pi.hsetnx(key, 'size', '0')
 
-        if not self.has_collection(user, coll):
+        if not self._has_collection_no_access_check(user, coll):
             self.create_collection(user, coll)
 
         return self.get_recording(user, coll, rec)
@@ -389,14 +389,16 @@ class RecManagerMixin(object):
 
         pagedata_json = json.dumps(pagedata).encode('utf-8')
 
-        self.redis.sadd(key, pagedata_json)
+        #self.redis.sadd(key, pagedata_json)
+        self.redis.hset(key, pagedata['url'], pagedata_json)
 
     def list_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
         key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
 
-        pagelist = self.redis.smembers(key)
+        #pagelist = self.redis.smembers(key)
+        pagelist = self.redis.hvals(key)
 
         pagelist = [json.loads(x.decode('utf-8')) for x in pagelist]
 
@@ -418,10 +420,13 @@ class CollManagerMixin(object):
             result['recordings'] = self.get_recordings(user, coll)
         return result
 
-    def has_collection(self, user, coll):
+    def _has_collection_no_access_check(self, user, coll):
         key = self.COLL_INFO_KEY.format(user=user, coll=coll)
-        #return self.redis.exists(key)
         return self.redis.hget(key, 'id') != None
+
+    def has_collection(self, user, coll):
+        self.assert_can_read(user, coll)
+        return self._has_collection_no_access_check(user, coll)
 
     def create_collection(self, user, coll, coll_title='', desc='', public=False):
         self.assert_can_admin(user, coll)

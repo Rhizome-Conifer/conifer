@@ -99,6 +99,9 @@ class RecsController(BaseController):
 
     def get_rec_info_for_view(self, user, coll, rec):
         result = self.get_rec_info(user, coll, rec)
+        if result.get('error_message'):
+            self._raise_error(404, 'Recording not found')
+
         result['size_remaining'] = self.manager.get_size_remaining(user)
         result['collection'] = self.manager.get_collection(user, coll)
         result['pages'] = self.manager.list_pages(user, coll, rec)

@@ -20,7 +20,7 @@ from io import BytesIO
 
 # ============================================================================
 class ContentController(BaseController, RewriterApp):
-    DEF_REC_NAME = 'my-recording'
+    DEF_REC_NAME = 'My First Recording'
 
     PATHS = {'live': '{replay_host}/live/resource/postreq?url={url}&closest={closest}',
              'record': '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}',
