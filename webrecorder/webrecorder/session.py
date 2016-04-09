@@ -41,15 +41,18 @@ class Session(object):
         key = self.sesh.namespace._format_key('session')
         return self.sesh.namespace.db_conn.ttl(key)
 
+    def update_expires(self):
+        # force expires to be updated
+        self.sesh.cookie_expires = timedelta(seconds=self.anon_duration)
+        self.sesh['_expires'] = self.sesh._set_cookie_expires(None)
+        self.sesh.save()
+        self.sesh._update_cookie_out()
+
     def set_anon(self):
         if not self.curr_user:
             self.sesh['anon'] = True
 
-            # force expires to be updated
-            self.sesh.cookie_expires = timedelta(seconds=self.anon_duration)
-            self.sesh['_expires'] = self.sesh._set_cookie_expires(None)
-            self.sesh.save()
-            self.sesh._update_cookie_out()
+            self.update_expires()
 
     def is_anon(self):
         if self.curr_user:

@@ -262,6 +262,9 @@ class ContentController(BaseController, RewriterApp):
         if type == 'live':
             return {}
 
+        # refresh cookie expiration
+        self.get_session().update_expires()
+
         info = self.manager.get_content_inject_info(kwargs['user'],
                                                     kwargs['coll'],
                                                     kwargs['rec'])

@@ -67,8 +67,21 @@ class BaseController(object):
     def flash_message(self, *args, **kwargs):
         return self.get_session().flash_message(*args, **kwargs)
 
-    def get_user_home(self, user):
-        return '/' + user
+    def get_path(self, user, coll=None, rec=None):
+        base = '/'
+        if not self.manager.is_anon(user):
+            base += user
+
+        if coll:
+            if not base.endswith('/'):
+                base += '/'
+
+            base += coll
+
+            if rec:
+                base += '/' + rec
+
+        return base
 
     def get_redir_back(self, skip, default='/'):
         redir_to = request.headers.get('Referer', default)
@@ -91,7 +104,7 @@ class BaseController(object):
 
         return bottle_redirect(url)
 
-    def jinja2_view(self, template_name):
+    def jinja2_view(self, template_name, refresh_cookie=True):
         def decorator(view_func):
             @wraps(view_func)
             def wrapper(*args, **kwargs):
@@ -101,6 +114,9 @@ class BaseController(object):
                     ctx_params = request.environ.get('webrec.template_params')
                     if ctx_params:
                         resp.update(ctx_params)
+
+                    if refresh_cookie:
+                        sesh = self.get_session().update_expires()
 
                     template = self.jinja_env.jinja_env.get_or_select_template(template_name)
                     return template.render(**resp)
