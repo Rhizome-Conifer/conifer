@@ -418,6 +418,11 @@ class RecManagerMixin(object):
 
         return pagelist
 
+    def num_pages(self, user, coll, rec):
+        self.assert_can_read(user, coll)
+        key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
+        return self.redis.hlen(key)
+
 
 # ============================================================================
 class CollManagerMixin(object):

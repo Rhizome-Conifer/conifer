@@ -29,14 +29,14 @@
     <div class="col-md-offset-2 col-md-8">
         {% if curr_user %}
         <div class="well">
-            <p class="text-center">You are logged in as <b>{{ curr_user }}</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/{{curr_user}}"><b>View Your Archive</b></a></p>
+            <p class="text-center">You are logged in as <b>{{ curr_user }}</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/{{ curr_user }}"><b>View Your Archive</b></a></p>
         </div>
         {% else %}
         
-        {% if anon_size and anon_pages %}
+        {% if anon_size and anon_recordings %}
         <div class="alert alert-info" role="alert">
-            Anonymously recorded <a href="/replay#files"><b class="formatbytes">{{ anon_size }}</b></a> in <a href="/replay#records"><b>{{ anon_pages }}</b></a> page(s).
-        <b style="margin-left: 10px"><a href="/replay#records">Browse</a></b>, <b><a href="/replay#files">Download</a></b>, <b><a href="/replay#settings">Delete</a></b><p class="pull-right">Expires in <b><span id="expire">{{ anon_ttl }}</b></p>
+            Anonymously recorded <a href="/anonymous"><b data-size="{{ anon_size }}"></b></a> in <a href="/anonymous"><b>{{ anon_recordings }}</b></a> recordings(s).
+        <b style="margin-left: 10px"><a href="/anonymous">Browse</a></b>, <b><a href="/anonymous/$download">Download</a></b>, <b><a href="/anonymous">Delete</a></b><p class="pull-right">Expires in <b data-anon-timer="{{ anon_ttl }}"></b></p>
         </div>
         {% endif %}
         
