@@ -5,7 +5,7 @@ from webrecorder.webreccork import ValidationException
 
 
 # ============================================================================
-class InfoController(BaseController):
+class UserController(BaseController):
     def init_routes(self):
         # User Info
         @self.app.get(['/<user>', '/<user>/'])
