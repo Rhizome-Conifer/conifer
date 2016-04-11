@@ -6,6 +6,12 @@ from webrecorder.webreccork import ValidationException
 
 # ============================================================================
 class UserController(BaseController):
+    DEFAULT_USER_DESC = u"""
+## {0} archive
+
+Available collections are listed below.
+"""
+
     def init_routes(self):
         # User Info
         @self.app.get(['/<user>', '/<user>/'])
@@ -13,10 +19,22 @@ class UserController(BaseController):
         def user_info(user):
             self.manager.assert_user_exists(user)
 
-            return {'user': user,
-                    'user_info': self.manager.get_user_info(user),
-                    'colls': self.manager.get_collections(user),
-                   }
+            result = {'user': user,
+                      'user_info': self.manager.get_user_info(user),
+                      'colls': self.manager.get_collections(user),
+                     }
+
+            if not result['user_info'].get('desc'):
+                result['user_info']['desc'] = self.DEFAULT_USER_DESC.format(user)
+
+            return result
+
+        @self.app.post('/api/v1/users/<user>/desc')
+        def update_desc(user):
+            desc = request.body.read().decode('utf-8')
+
+            self.manager.set_user_desc(user, desc)
+            return {}
 
         # User Account Settings
         @self.app.get('/<user>/_settings')

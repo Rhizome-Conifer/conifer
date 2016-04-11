@@ -6,6 +6,21 @@ from webrecorder.webreccork import ValidationException
 
 # ============================================================================
 class CollsController(BaseController):
+
+    # TODO: move these to external file for customization, localization, etc..
+    DEFAULT_DESC = u"""
+
+#### About {0}
+
+*This collection doesn't yet have a description.*
+
+Below is a list of recordings in this collection.
+
+Happy Recording!
+
+"""
+
+
     def __init__(self, *args, **kwargs):
         super(CollsController, self).__init__(*args, **kwargs)
         self.DOWNLOAD_COLL_PATH = '{host}/{user}/{coll}/$download'
@@ -62,6 +77,16 @@ class CollsController(BaseController):
             public = self.post_get('public') == 'true'
             self.manager.set_public(user, coll, public)
 
+        @self.app.post('/api/v1/collections/<coll>/desc')
+        def update_desc(coll):
+            user = self.get_user(api=True)
+            self._ensure_coll_exists(user, coll)
+
+            desc = request.body.read().decode('utf-8')
+
+            self.manager.set_coll_desc(user, coll, desc)
+            return {}
+
         # Create Collection
         @self.app.get('/_create')
         @self.jinja2_view('create.html')
@@ -73,7 +98,7 @@ class CollsController(BaseController):
         def create_coll_post():
             #self.manager.cork.require(role='archivist', fail_redirect='/')
 
-            coll = self.post_get('collection')
+            coll = self.post_get('collection-id')
             title = self.post_get('title', coll)
             is_public = self.post_get('public', 'private') == 'public'
 
@@ -134,6 +159,15 @@ class CollsController(BaseController):
         result['size_remaining'] = self.manager.get_size_remaining(user)
         result['user'] = self.get_view_user(user)
         result['coll'] = coll
+
+        result['curr_mode'] = 'new'
+        result['recorder_hidden'] = True
+        result['rec_title'] = ''
+        result['coll_title'] = result['collection']['title']
+
+        if not result['collection'].get('desc'):
+            result['collection']['desc'] = self.DEFAULT_DESC.format(result['coll_title'])
+
         return result
 
     def get_collection_info(self, user, coll):

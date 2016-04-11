@@ -21,6 +21,14 @@
         <!-- shared css -->
         <link rel="stylesheet" href="/static/__shared/styles.css"/>
 
+        <script>
+            window.curr_user = "{{ curr_user if curr_user else '@anon' }}";
+            window.curr_mode = "{{ curr_mode }}";
+            window.user = "{{ user }}";
+            window.coll = "{{ coll }}";
+            window.rec = "{{ rec }}";
+        </script>
+
         {% block head %}
         {% endblock %}
     </head>

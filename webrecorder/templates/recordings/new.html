@@ -2,29 +2,23 @@
 	<form class="form-horizontal start-recording">
 		<div class="form-group-sm new-recording-form-group col-xs-12">
 			<div class="url col-xs-12">
-				<input name="url" type="url" class="form-control input-sm" placeholder="Url to record" autofocus required>
+				<input name="url" type="text" class="form-control input-sm" placeholder="Url to record" autofocus required>
 			</div>
 		</div>
 		<div class="form-group-sm col-xs-12 new-recording-form-group">
 			<div class="title">
 				<label for="title" class="control-label col-xs-1">Recording:</label>
 				<div class="col-xs-5">
-					{% if curr_user and curr_user != "@anon" %}
-						<input name="title" type="text" class="form-control input-sm" required>
-					{% else %}
-						<input name="title" type="text" value="My First Recording" class="form-control input-sm" required>
-					{% endif %}
+				    <input name="title" type="text" class="form-control input-sm" placeholder="Enter recording name here" value="{{ rec_title | default('My First Recording')  }}" required>
 				</div>
 			</div>
 			<div class="collection">
 				<label for="collection" class="control-label col-xs-1">Collection:</label>
 				<div class="col-xs-5">
-					{% if curr_user and curr_user != "@anon" %}
-						<input name="collection" type="text" class="form-control input-sm" required>
-					{% else %}
-						<input name="collection" type="text" value="anonymous" class="form-control input-sm" readonly required>
-					{% endif %}
+				    <input name="collection" type="text" value="{{ coll_title | default('anonymous') }}" class="form-control input-sm" readonly required>
 				</div>
+                                {% if curr_user != '@anon' and is_owner() and not coll %}
+                                {% endif %}
 			</div>
 		</div>
 

@@ -41,7 +41,7 @@ function init_markdown_editor(update_path) {
 
                 $.ajax({
                     type: "POST",
-                    url: "/_desc/" + update_path,
+                    url: update_path,
                     data: content,
                     success: function() {
                         $("#home-markdown").html(content);

@@ -15,11 +15,11 @@
 <script src="/static/__shared/external/marked.min.js"></script>
 <script src="/static/__shared/external/bootstrap-markdown.js"></script>
 
+<script src="/static/__shared/editor.js"></script>
+
 <script src="/static/__shared/collection_info.js"></script>
 
 <script>
-    var user = "{{ user }}";
-    var coll = "{{ coll }}";
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
 </script>
@@ -31,7 +31,7 @@
 
 
 <div class="row">
-{% if user != '@anon' %}
+    {% if user != '@anon' %}
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
             {% if not is_anon() %}
@@ -39,56 +39,58 @@
             {% endif %}
         </h1>
     </div>
-{% else %}
+    {% else %}
 
-<div style="text-align: center; padding: 16px; font-size: 18px" class="col-xs-12">
-<span><p>This is a temporary, anonymous collection created in Webrecorder.</p>
-<p>These recordings are accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
-</span>
+    <div style="text-align: center; padding: 16px; font-size: 18px" class="col-xs-12">
+        <span><p>This is a temporary, anonymous collection created in Webrecorder.</p>
+            <p>These recordings are accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
+        </span>
 
-{% if not curr_user %}
-<div>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
-{% endif %}
+        {% if curr_user == '@anon' %}
+        <div>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
+        {% endif %}
+    </div>
+
+    {% endif %}
 </div>
 
-{% endif %}
-</div>
-
-{% if can_admin() %}
 <div class="row">
     {% if can_write() and not is_anon() %}
-    <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">
-        Edit</button>
+    <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">Edit</button>
     {% endif %}
 
-    <div id="home-markdown" style="display: none">{{ desc }}</div>
-    <div id="home-view"></div>
-</div>
+    <div id="about">
+        <div id="home-markdown" style="display: none">{{ collection.desc | default('Collection Desc TODO') }}</div>
+        <div id="home-view"></div>
+    </div>
 
-<div class="row">
-    <button id="add-recording" class="btn btn-primary btn-sm">New Recording</button>
-</div>
-<div class="row">
-    <a href="{{ collection.download_url }}" class="btn btn-success btn-sm">Download this Collection</a>
-</div>
-{% endif %}
-<div class="row">
-    {% if can_admin() %}
-    <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Collection</button>
+    {% if can_write() %}
+    <p>
+        <button id="add-recording" class="btn btn-primary btn-sm show-recorder">New Recording</button>
+    </p>
     {% endif %}
-
     <span style="font-size: 14px" class="pull-right">
         <div style="margin: 18px 20px; display: inline-block">
             {% set is_public = collection['r:@public'] %}
             {% include 'frag_accessswitch.html' %}
         </div>
         <div style="margin-right: 20px; text-align: right">
-        Space Used: <b data-size="{{ collection.size }}"></b>
+            Space Used: <b data-size="{{ collection.size }}"></b>
         </div>
     </span>
+
+
+    {% if can_admin() %}
+    <p>
+        <a href="{{ collection.download_url }}" class="btn btn-success btn-sm">Download this Collection</a>
+    </p>
+    <p>
+        <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Collection</button>
+    </p>
+    {% endif %}
 </div>
 
-<div class="row">
+<div class="row" style="margin-top: 20px">
     <table id="rec_list" class="table table-striped">
         <thead>
             <tr>
@@ -102,13 +104,13 @@
         <tbody>
             {% for rec in collection.recordings %}
             {% set path = get_path(user, coll, rec.id) %}
-                <tr>
-                    <td><a href="{{ path }}">{{ rec.title }}</a></td>
-                    <td data-time-sec="{{ rec.updated_at }}"></td>
-                    <td data-size="{{ rec.size }}"></td>
-                    <td><a href="{{ path }}">Browse</a></td>
-                    <td><a href="{{ path }}/$download">Download</a></td>
-                </tr>
+            <tr>
+                <td><a href="{{ path }}">{{ rec.title }}</a></td>
+                <td data-time-sec="{{ rec.updated_at }}"></td>
+                <td data-size="{{ rec.size }}"></td>
+                <td><a href="{{ path }}">Browse</a></td>
+                <td><a href="{{ path }}/$download">Download</a></td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
@@ -136,7 +138,9 @@
     </div>
 </div>
 
-
+<script>
+    init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
+</script>
 
 
 

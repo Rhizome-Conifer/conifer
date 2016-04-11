@@ -24,6 +24,13 @@
         <div id="home-view"></div>
     </div>
 
+    {% if is_owner() %}
+    <p><a class="btn btn-primary btn-sm" href="#" data-toggle="modal" data-target="#create-modal" role="button">
+        <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>Create New Collection</a></p>
+    <p><a class="btn btn-sm btn-default" href="/{{ user }}/_settings" role="button">
+        <span class="glyphicon glyphicon-cog" style="margin-right: 4px"></span>Account Settings</a></p>
+    {% endif %}
+
     <ul class="list-group text-center">
         {% for coll in colls | sort(attribute='title') %}
         {% set is_public = coll['r:@public'] %} 
@@ -47,17 +54,18 @@
         {% endif %}
     </p>
     {% endif %}
-
-    {% if is_owner() %}
-    <p class="pull-right"><a class="btn btn-sm btn-default" href="/{{ user }}/_settings" role="button">
-        <span class="glyphicon glyphicon-cog" style="margin-right: 4px"></span>Account Settings</a></p>
-    <p><a class="btn btn-primary btn-sm" href="/_create" role="button">
-        <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>Create New Collection</a></p>
-    {% endif %}
 </div>
 
 <script>
-    init_markdown_editor("{{ user }}");
+    init_markdown_editor("/api/v1/users/{{ user }}/desc");
 </script>
 
 {% endblock %}
+
+
+{% block body %}
+{{ super() }}
+{% include 'frag_create.html' %}
+{% endblock %}
+
+

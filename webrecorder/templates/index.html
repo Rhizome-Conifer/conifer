@@ -2,17 +2,7 @@
 
 {% block head %}
 
-<script>
-    window.curr_user = "{{ curr_user if curr_user else '' }}";
-</script>
-
 {{ super() }}
-
-<script src="/static/__shared/external/jquery-ui.min.js"></script>
-
-<script src="/static/__shared/external/jquery.selectBoxIt.min.js"></script>
-<link rel="stylesheet" href="/static/__shared/external/jquery.selectBoxIt.css"/>
-
 
 {% endblock %}
 

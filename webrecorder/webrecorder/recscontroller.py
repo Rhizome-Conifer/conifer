@@ -128,6 +128,11 @@ class RecsController(BaseController):
         result['coll'] = coll
         result['rec'] = rec
 
+        result['curr_mode'] = 'new'
+        result['recorder_hidden'] = True
+        result['rec_title'] = result['recording']['title']
+        result['coll_title'] = result['collection']['title']
+
         return result
 
     def _add_download_path(self, rec_info, user, coll):

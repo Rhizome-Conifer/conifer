@@ -229,6 +229,12 @@ class ContentController(BaseController, RewriterApp):
     def handle_routing(self, wb_url, user, coll, rec, type):
         if type == 'record' or type == 'replay':
             if not self.manager.has_recording(user, coll, rec):
+                if coll != 'anonymous' and not self.manager.has_collection(user, coll):
+                    self._redir_if_sanitized(self.sanitize_title(coll),
+                                             coll,
+                                             wb_url)
+                    raise HTTPError(404, 'No Such Collection')
+
                 title = rec
                 rec = self.sanitize_title(title)
 
@@ -236,11 +242,7 @@ class ContentController(BaseController, RewriterApp):
                     if rec == title or not self.manager.has_recording(user, coll, rec):
                         result = self.manager.create_recording(user, coll, rec, title)
 
-                if rec != title:
-                    target = self.get_host()
-                    target += request.script_name.replace(title, rec)
-                    target += wb_url
-                    redirect(target)
+                self._redir_if_sanitized(rec, title, wb_url)
 
                 if type == 'replay':
                     raise HTTPError(404, 'No Such Recording')
@@ -250,6 +252,12 @@ class ContentController(BaseController, RewriterApp):
                                            rec=rec,
                                            type=type)
 
+    def _redir_if_sanitized(self, id, title, wb_url):
+        if id != title:
+            target = self.get_host()
+            target += request.script_name.replace(title, id)
+            target += wb_url
+            redirect(target)
 
     def add_query(self, url):
         if request.query_string:

@@ -20,10 +20,6 @@
 -->
 
 <script>
-    var user = "{{ user }}";
-    var coll = "{{ coll }}";
-    var rec = "{{ recording.id }}";
-
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
 </script>
@@ -36,33 +32,35 @@
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="rec-title">{{ recording.title }}</span>&nbsp;
             {% if not is_anon() %}
-            <small>/{{ recording.id }}</small>
+            <small>/{{ collection.id }}/{{ recording.id }}</small>
             {% endif %}
         </h1>
+        <h4>Recording part of <a href="{{ get_path(user, coll) }}">{{ collection.id }}</a></h4>
     </div>
-</div>
 
-{% if can_admin() %}
-<div class="row">
-    <button id="add-to-recording" class="btn btn-primary btn-sm">Add To Recording</button>
-</div>
-<div class="row">
-    <a href="{{ recording.download_url }}" class="btn btn-success btn-sm">Download this Recording</a>
-</div>
-{% endif %}
-<div class="row">
+    {% if can_write() %}
+    <p>
+        <button id="add-to-recording" class="btn btn-primary btn-sm show-recorder">Add To Recording</button>
+    </p>
+    {% endif %}
+
     {% if can_admin() %}
-    <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Recording</button>
+    <p>
+        <a href="{{ recording.download_url }}" class="btn btn-success btn-sm">Download this Recording</a>
+    </p>
+    <p>
+        <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Recording</button>
+    </p>
     {% endif %}
 
     <span style="font-size: 14px" class="pull-right">
         <div style="margin-right: 20px; text-align: right">
-        Space Used: <b data-size="{{ recording.size }}"></b>
+            Space Used: <b data-size="{{ recording.size }}"></b>
         </div>
     </span>
 </div>
 
-<div class="row">
+<div class="row" style="margin-top: 20px">
     <table id="page_list" class="table table-striped">
         <thead>
             <tr>
@@ -75,14 +73,14 @@
         <tbody>
             {% set path = get_path(user, coll, rec) + '/' %}
             {% for page in pages %}
-                <tr>
-                    <td><a href="{{ path + page.url }}">{{ page.title if page.title else page.url }}</a></td>
-                    <td data-time-ts="{{ page.timestamp }}"></td>
-                    <td><a href="{{ path + page.url }}">{{ page.url }}</a></td>
-                    <td>
-                        <a href="{{ path + '*/' + page.url }}">All Versions</a>
-                    </td>
-                </tr>
+            <tr>
+                <td><a href="{{ path + page.url }}">{{ page.title if page.title else page.url }}</a></td>
+                <td data-time-ts="{{ page.timestamp }}"></td>
+                <td><a href="{{ path + page.url }}">{{ page.url }}</a></td>
+                <td>
+                    <a href="{{ path + '*/' + page.url }}">All Versions</a>
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
@@ -96,7 +94,7 @@
                 Confirm Delete Recording?
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete the collection <b>{{ recording.title }}</b> {{ get_path(user, coll, rec) }}?</p>
+                <p>Are you sure you want to delete the recording? <b>{{ recording.title }}</b> {{ get_path(user, coll, rec) }}?</p>
                 <p>If you confirm, all archived data will be permanently deleted.</p>
                 <p>Be sure to download the recording first if you would like to keep any data.</p>
             </div>
@@ -109,7 +107,6 @@
         </div>
     </div>
 </div>
-
 
 
 {% endblock %}

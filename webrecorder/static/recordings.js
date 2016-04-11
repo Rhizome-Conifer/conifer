@@ -1,11 +1,5 @@
-var user = "@anon"
-var coll = "anonymous"
-
-if (window.wbinfo) {
-    user = window.wbinfo.info.user;
-    coll = window.wbinfo.info.coll_id;
-} else if (window.curr_user) {
-    user = window.curr_user;
+if (!user) {
+    user = curr_user;
 }
 
 $(function() {
@@ -63,7 +57,7 @@ $(function() {
 var Collections = (function() {
     var API_ENDPOINT = "/api/v1/collections";
 
-    var get = function(doneCallback, failCallback) {
+    var get = function(user, doneCallback, failCallback) {
         var query_string = "?user=" + user
 
         $.ajax({
@@ -307,11 +301,11 @@ var CollectionsDropdown = (function() {
 
     var start = function() {
         // Only activate when logged in and not in record/browse mode
-        if (!window.curr_user || user == "@anon" || window.wbinfo) {
+        if (user == '@anon' || window.wbinfo || window.coll) {
             return;
         }
 
-        Collections.get(initializeDropdown, dontInitializeDropdown);
+        Collections.get(user, initializeDropdown, dontInitializeDropdown);
     }
 
     var initializeDropdown = function(data) {
@@ -324,7 +318,9 @@ var CollectionsDropdown = (function() {
             return $("<option value='" + collection.id + "'>" + collection.title + "</option>");
         })
 
-        $(collectionInputParentDiv).html($("<select name='collection'>").append(collectionOptions));
+        $(collectionInputParentDiv).html($("<select name='collection' required>").append(collectionOptions));
+
+        $("select", collectionInputParentDiv).prepend($("<option selected='' value=''>Pick a Collection</option>"));
 
         $("select", collectionInputParentDiv).selectBoxIt({native: false});
 
@@ -352,10 +348,14 @@ var CountdownTimer = (function() {
         }
         var curr = Math.floor(new Date().getTime() / 1000);
         var secdiff = end_time - curr;
-        
-        if (secdiff <= 0) {
-            window.location.href = "/_expire";
+
+        if (secdiff == 0) {
+            //window.location.href = "/_expire";
             return;
+        }
+
+        if (secdiff < 0) {
+            secdiff = 0;
         }
 
         if (secdiff < 300) {
@@ -409,7 +409,6 @@ var CountdownTimer = (function() {
 
 // Format size
 $(function() {
-
     function format_by_attr(attr_name, format_func) {
         $("[" + attr_name + "]").each(function(i, elem) {
             $(elem).text(format_func($(elem).attr(attr_name)));
@@ -422,6 +421,13 @@ $(function() {
 
     format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
 
+});
+
+
+$(function() {
+    $(".show-recorder").click(function(e) {
+        $("#recorder-bar").show();
+    });
 });
 
 

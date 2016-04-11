@@ -130,8 +130,14 @@ class AppController(BaseController):
         def home_page():
             resp = {'curr_mode': 'new'}
 
-            if not self.manager.get_curr_user():
-                anon_user = self.manager.get_anon_user()
+            sesh = self.get_session()
+
+            if self.manager.get_curr_user():
+                resp['coll_title'] = ''
+                resp['rec_title'] = ''
+
+            elif sesh.is_anon():
+                anon_user = sesh.anon_user
                 anon_coll = self.manager.get_collection(anon_user, 'anonymous')
                 if anon_coll:
                     resp['anon_size'] = anon_coll['size']
@@ -140,7 +146,7 @@ class AppController(BaseController):
             return resp
 
     def make_err_handler(self, default_err_handler):
-        @self.jinja2_view('error.html')
+        @self.jinja2_view('error.html', refresh_cookie=False)
         def error_view(out):
             return {'err': out}
 

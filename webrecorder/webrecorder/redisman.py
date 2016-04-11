@@ -74,11 +74,22 @@ class LoginManagerMixin(object):
     def has_user(self, user):
         return self.cork.user(user) is not None
 
+    def set_user_desc(self, user, desc):
+        self.assert_user_is_owner(user)
+
+        key = self.USER_KEY.format(user=user)
+
+        self.redis.hset(key, 'desc', desc)
+
     def delete_user(self, user):
         if not self.is_anon(user):
             self.assert_user_is_owner(user)
 
         res = self._send_delete('user', user)
+        if res and not self.is_anon(user):
+            # delete from cork!
+            self.cork.user(user).delete()
+
         return res
 
     def _send_delete(self, type_, user, coll='*', rec='*'):
@@ -88,7 +99,6 @@ class LoginManagerMixin(object):
                    'rec': rec}
 
         res = self.redis.publish('delete', json.dumps(message))
-        print(message, res)
         return (res > 0)
 
     def get_size_remaining(self, user):
@@ -227,13 +237,6 @@ class AccessManagerMixin(object):
         sesh = request.environ['webrec.session']
         return sesh.curr_user
 
-    def get_anon_user(self):
-        sesh = request.environ['webrec.session']
-        if not sesh.is_anon():
-            sesh.set_anon()
-
-        return sesh.anon_user
-
     def _check_access(self, user, coll, type_prefix):
         # anon access
         if self.is_anon(user):
@@ -294,7 +297,7 @@ class AccessManagerMixin(object):
     def is_owner(self, user):
         curr_user = self.get_curr_user()
         if not curr_user:
-            curr_user = self.get_anon_user()
+            return self.is_anon(user)
 
         return (user and user == curr_user)
 
@@ -350,7 +353,9 @@ class RecManagerMixin(object):
         return result
 
     def has_recording(self, user, coll, rec):
-        self.assert_can_read(user, coll)
+        #self.assert_can_read(user, coll)
+        if not self.can_read_coll(user, coll):
+            return False
 
         key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
         #return self.redis.exists(key)
@@ -444,7 +449,9 @@ class CollManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def has_collection(self, user, coll):
-        self.assert_can_read(user, coll)
+        if not self.can_read_coll(user, coll):
+            return False
+
         return self._has_collection_no_access_check(user, coll)
 
     def create_collection(self, user, coll, coll_title='', desc='', public=False):
@@ -502,6 +509,13 @@ class CollManagerMixin(object):
         self.assert_can_admin(user, coll)
 
         return self._send_delete('coll', user, coll)
+
+    def set_coll_desc(self, user, coll, desc):
+        self.assert_can_admin(user, coll)
+
+        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+
+        self.redis.hset(key, 'desc', desc)
 
 
 # ============================================================================
