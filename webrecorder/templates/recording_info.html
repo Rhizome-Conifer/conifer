@@ -30,12 +30,24 @@
 
 <div class="row">
     <div class="page-header" style="margin-top: 10px">
-        <h1 style="display: inline"><span id="rec-title">{{ recording.title }}</span>&nbsp;
-            {% if not is_anon() %}
-            <small>/{{ collection.id }}/{{ recording.id }}</small>
+        {% if is_anon() %}
+        <div style="text-align: center; padding: 16px; font-size: 18px" class="col-xs-12">
+            <span><p>This recording is part of a temporary, anonymous collection created in Webrecorder.</p>
+                <p>The pages below are available only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
+            </span>
+
+            {% if curr_user == '@anon' %}
+            <div>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
             {% endif %}
+        </div>
+        {% endif %}
+
+        <h1 style="display: inline"><span id="rec-title">{{ recording.title }}</span>&nbsp;
+            <small>/{{ collection.id }}/{{ recording.id }}</small>
         </h1>
-        <h4>Recording part of <a href="{{ get_path(user, coll) }}">{{ collection.id }}</a></h4>
+        {% if not is_anon() %}
+        <h4>Recording is part of <a href="{{ get_path(user, coll) }}">{{ collection.id }}</a></h4>
+        {% endif %}
     </div>
 
     {% if can_write() %}

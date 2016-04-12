@@ -31,7 +31,7 @@
 
 
 <div class="row">
-    {% if user != '@anon' %}
+    {% if not is_anon() %}
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
             {% if not is_anon() %}
@@ -57,12 +57,12 @@
 <div class="row">
     {% if can_write() and not is_anon() %}
     <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">Edit</button>
-    {% endif %}
 
     <div id="about">
-        <div id="home-markdown" style="display: none">{{ collection.desc | default('Collection Desc TODO') }}</div>
+        <div id="home-markdown" style="display: none">{{ collection.desc }}</div>
         <div id="home-view"></div>
     </div>
+    {% endif %}
 
     {% if can_write() %}
     <p>
