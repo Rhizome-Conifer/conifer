@@ -197,7 +197,7 @@ var RecordingSizeWidget = (function() {
     }
 
     var pollForSizeUpdate = function() {
-        Recordings.get(wbinfo.info.rec_id, updateSizeCounter, hideSizeCounter)
+        Recordings.get(wbinfo.info.rec_id, updateSizeCounter, dontUpdateSizeCounter)
     }
 
     var updateSizeCounter = function(data) {
@@ -211,8 +211,8 @@ var RecordingSizeWidget = (function() {
         $('.size-counter').removeClass('hidden');
     }
 
-    var hideSizeCounter = function() {
-        $('.size-counter').addClass('hidden');
+    var dontUpdateSizeCounter = function() {
+	// Do nothing to leave the last counter value on the page.
     }
 
     return {
