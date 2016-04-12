@@ -34,34 +34,34 @@
             {% if not is_anon() %}
             <small>/{{ collection.id }}/{{ recording.id }}</small>
             {% endif %}
+
+            <div class="pull-right">
+                {% if can_write() %}
+                <button id="add-to-recording" class="btn btn-primary btn-sm show-recorder">Add To Recording</button>
+                {% endif %}
+
+                {% if can_admin() %}
+                <a href="{{ recording.download_url }}" class="btn btn-primary btn-sm">Download</a>
+
+                <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete</button>
+                {% endif %}
+            </div>
         </h1>
-        <h4>Recording part of <a href="{{ get_path(user, coll) }}">{{ collection.id }}</a></h4>
+
+        <h4>
+        Recording part of <a href="{{ get_path(user, coll) }}">{{ collection.id }}</a>
+        <span style="font-size: 14px" class="pull-right">
+            <div style="margin-right: 20px; text-align: right">
+                Space Used: <b data-size="{{ recording.size }}"></b>
+            </div>
+        </span>
+        </h4>
     </div>
-
-    {% if can_write() %}
-    <p>
-        <button id="add-to-recording" class="btn btn-primary btn-sm show-recorder">Add To Recording</button>
-    </p>
-    {% endif %}
-
-    {% if can_admin() %}
-    <p>
-        <a href="{{ recording.download_url }}" class="btn btn-success btn-sm">Download this Recording</a>
-    </p>
-    <p>
-        <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Recording</button>
-    </p>
-    {% endif %}
-
-    <span style="font-size: 14px" class="pull-right">
-        <div style="margin-right: 20px; text-align: right">
-            Space Used: <b data-size="{{ recording.size }}"></b>
-        </div>
-    </span>
 </div>
 
-<div class="row" style="margin-top: 20px">
+<div class="row">
     <table id="page_list" class="table table-striped">
+        <caption><h4>Pages</h4></caption>
         <thead>
             <tr>
                 <th>Title</th>

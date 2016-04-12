@@ -14,10 +14,6 @@ class CollsController(BaseController):
 
 *This collection doesn't yet have a description.*
 
-Below is a list of recordings in this collection.
-
-Happy Recording!
-
 """
 
 

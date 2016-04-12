@@ -31,44 +31,25 @@
 
 
 <div class="row">
-    {% if user != '@anon' %}
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
-            {% if not is_anon() %}
             <small>/{{ collection.id }}</small>
-            {% endif %}
+
+            <div class="pull-right">
+                {% if can_write() %}
+                    <button id="add-recording" class="btn btn-primary btn-sm show-recorder">New Recording</button>
+                {% endif %}
+                {% if can_admin() %}
+                    <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm">Download</a>
+                    <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete</button>
+                {% endif %}
+            </div>
         </h1>
+
     </div>
-    {% else %}
-
-    <div style="text-align: center; padding: 16px; font-size: 18px" class="col-xs-12">
-        <span><p>This is a temporary, anonymous collection created in Webrecorder.</p>
-            <p>These recordings are accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
-        </span>
-
-        {% if curr_user == '@anon' %}
-        <div>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
-        {% endif %}
-    </div>
-
-    {% endif %}
 </div>
 
 <div class="row">
-    {% if can_write() and not is_anon() %}
-    <button id="home-edit" class="btn btn-default btn-sm pull-right" data-toggle="button" aria-pressed="false">Edit</button>
-    {% endif %}
-
-    <div id="about">
-        <div id="home-markdown" style="display: none">{{ collection.desc | default('Collection Desc TODO') }}</div>
-        <div id="home-view"></div>
-    </div>
-
-    {% if can_write() %}
-    <p>
-        <button id="add-recording" class="btn btn-primary btn-sm show-recorder">New Recording</button>
-    </p>
-    {% endif %}
     <span style="font-size: 14px" class="pull-right">
         <div style="margin: 18px 20px; display: inline-block">
             {% set is_public = collection['r:@public'] %}
@@ -79,19 +60,27 @@
         </div>
     </span>
 
+    {% if can_write() and not is_anon() %}
+        <div id="about">
+            <div id="home-markdown" style="display: none">{{ collection.desc | default('Collection Desc TODO') }}</div>
+            <div id="home-view"></div>
 
-    {% if can_admin() %}
-    <p>
-        <a href="{{ collection.download_url }}" class="btn btn-success btn-sm">Download this Collection</a>
-    </p>
-    <p>
-        <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete this Collection</button>
-    </p>
+        </div>
+        <button id="home-edit" class="btn btn-default btn-sm" data-toggle="button" aria-pressed="false">Edit</button>
     {% endif %}
+
+    {% if is_anon() %}
+        <p>This is a temporary, anonymous collection created in Webrecorder.</p>
+        <p>These recordings are accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
+
+        <div>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
+    {% endif %}
+
 </div>
 
 <div class="row" style="margin-top: 20px">
     <table id="rec_list" class="table table-striped">
+        <caption><h4>Recordings</h4></caption>
         <thead>
             <tr>
                 <th>Name</th>
