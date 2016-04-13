@@ -32,6 +32,8 @@ $(function() {
 
         params['width'] = $(window).width() - 40;
         params['height'] = $(window).height() - 120;
+        params['width'] = parseInt(params['width'] / 16) * 16;
+        params['height'] = parseInt(params['height'] / 16) * 16;
         params['upsid'] = upsid;
 
         function send_request() {
