@@ -313,9 +313,22 @@ a.dropdown-badge {
     border-radius: 6px;
 }
 
-.spinner {
-    background-image: url('spinner.gif');
-    width: 24px;
-    height: 24px;
-    margin-right: 10px;
+.recording-blinker {
+    display: inline-block;
+    background-color: #a94442;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    line-height: 1;
+    margin: 5px;
+}
+
+/* Blink animation courtesy of: http://jsfiddle.net/mdz87jy1/ */
+.Blink {
+    animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+}
+
+@keyframes blinker {
+    from { opacity: 1; }
+    to { opacity: 0; }
 }
