@@ -150,6 +150,7 @@ li.coll-nav {
 .tt-suggestion {
     display: block;
     padding: 3px 20px;
+    font-size: 12px;
 }
 .tt-suggestion:hover,
 .tt-cursor {

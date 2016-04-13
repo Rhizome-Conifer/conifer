@@ -278,7 +278,7 @@ var PagesComboxBox = (function() {
                 display: "url",
                 templates: {
                     suggestion: function(data) {
-                        return "<div>" + data.url +
+                        return "<div>" + formatSuggestionUrl(data.url) +
                             "<span class='suggestion-timestamp pull-right'>"
                         + ts_to_date(data.timestamp) + "</span></div>";
                     }
@@ -290,6 +290,21 @@ var PagesComboxBox = (function() {
         // If we can't load this recording's pages,
         // do nothing to leave this as a regular
         // input field
+    }
+
+    var formatSuggestionUrl = function(url) {
+        var MAX_LENGTH = 110;
+        var CHARS_BEFORE_ELLIPSES = 87
+        var CHARS_AFTER_ELLIPSES = 30
+
+        if (url.length > MAX_LENGTH) {
+            var last_char = url.length - 1;
+            return url.substring(0, CHARS_BEFORE_ELLIPSES)
+                    + "..." +
+                    url.substring(last_char - CHARS_AFTER_ELLIPSES, last_char);
+        } else {
+            return url;
+        }
     }
 
     return {
