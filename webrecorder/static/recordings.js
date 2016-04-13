@@ -477,6 +477,12 @@ var _orig_set_state = window.set_state;
 window.set_state = function(state) {
     _orig_set_state(state);
 
+    var replay_iframe = window.document.getElementById("replay_iframe");
+
+    if (!replay_iframe || !replay_iframe.contentWindow || !replay_iframe.contentWindow.wbinfo) {
+        return;
+    }
+
     if (wbinfo.state == "record") {
         var recordingId = wbinfo.info.rec_id;
         var attributes = {};
