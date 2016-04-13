@@ -81,6 +81,7 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
             - ./browser/browser_app.py:/app/browser_app.py
             - ./browser/run_browser:/usr/bin/run_browser
+            - /dev/shm:/dev/shm
 
     proxy:
         image: webrecorder/proxy

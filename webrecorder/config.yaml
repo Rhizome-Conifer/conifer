@@ -37,10 +37,10 @@ session_opts:
 
     session.url: *redis_url
 
-    session.expire: 1800
+    session.expire: 5400
 
 
-anon_duration: 1800
+anon_duration: 5400
 
 default_max_size: 100000000
 default_max_anon_size: 500000000

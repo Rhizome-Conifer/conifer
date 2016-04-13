@@ -6,6 +6,10 @@ li.coll-nav {
     background-color: #222;
 }
 
+.webrecorder-header a {
+    color: #429EEC;
+}
+
 .new-recording,
 .browse-recording,
 .recording-in-progress {

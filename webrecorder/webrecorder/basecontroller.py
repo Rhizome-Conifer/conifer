@@ -115,8 +115,8 @@ class BaseController(object):
                     if ctx_params:
                         resp.update(ctx_params)
 
-                    if refresh_cookie:
-                        sesh = self.get_session().update_expires()
+                    #if refresh_cookie:
+                    #    sesh = self.get_session().update_expires()
 
                     template = self.jinja_env.jinja_env.get_or_select_template(template_name)
                     return template.render(**resp)
