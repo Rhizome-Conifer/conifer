@@ -311,3 +311,10 @@ a.dropdown-badge {
     text-align: center;
     border-radius: 6px;
 }
+
+.spinner {
+    background-image: url('spinner.gif');
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
