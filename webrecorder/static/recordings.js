@@ -253,15 +253,6 @@ var PagesComboxBox = (function() {
 
     var initializeCombobox = function(data) {
         var pages = data.pages;
-
-        //        var source = new Bloodhound({
-        //            datumTokenizer: function(pages) {
-        //                return Bloodhound.tokenizers.whitespace(pages.url);
-        //            },
-        //            queryTokenizer: Bloodhound.tokenizers.whitespace,
-        //            local: pages
-        //        });
-
         var source = substringMatcher(pages);
 
         $("input[name='url']").typeahead(
@@ -327,7 +318,6 @@ var CollectionsDropdown = (function() {
         if (!data.collections || !data.collections.length) {
             return;
         }
-        //console.log('got some collections woo!');
         var collectionInputParentDiv = $("input[name='collection']").parent();
         var collectionOptions = $.map(data.collections, function(collection) {
             return $("<option value='" + collection.id + "'>" + collection.title + "</option>");
@@ -342,7 +332,6 @@ var CollectionsDropdown = (function() {
     }
 
     var dontInitializeDropdown = function() {
-        //console.log("*SOB!*");
         // If we can't load this user's collections, just
         // leave this as an input field
     }
