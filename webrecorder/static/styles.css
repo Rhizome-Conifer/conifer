@@ -88,16 +88,31 @@ li.coll-nav {
 .recording-in-progress-form-group,
 .browse-recording-form-group {
     margin-bottom: 5px;
+    height: 30px;
 }
 
-.recording-actions {
-    padding-left: 0px;
-    margin-right: 0px;
-    padding-right: 2px;
+.new-recording-form-group .url,
+.recording-in-progress-form-group .url,
+.browse-recording-form-group .url {
+    padding-right: 0px;
 }
 
-.recording-actions .start-recording {
-    margin-top: 30px;
+.recording-in-progress-form-group .title,
+.browse-recording-form-group .title,
+.recording-in-progress-form-group .collection,
+.browse-recording-form-group .collection {
+    margin-top: 3px;
+}
+
+.recording-info-value {
+    font-size: 12px;
+    line-height: 2;
+    padding-right: 20px;
+    padding-left: 5px;
+}
+
+.start-recording-spacer {
+    height: 20px;
 }
 
 .doesnt-look-right {

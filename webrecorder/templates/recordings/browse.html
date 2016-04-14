@@ -1,35 +1,32 @@
-<form class="browse-recording navbar-left container-fluid form-horizontal col-xs-10 col-xs-offset-1">
-	<div class="form-group-sm col-xs-12 browse-recording-form-group">
-		<div class="url col-xs-11">
-			<input name="url" type="url" value="{{ url }}" required class="form-control input-sm" autofocus>
+<form class="browse-recording navbar-left container-fluid form-horizontal col-xs-10">
+	<div class="form-group-sm browse-recording-form-group col-xs-12 ">
+		<label for="url" class="control-label col-xs-1">Url:</label>
+		<div class="url col-xs-10">
+			<input name="url" value="{{ url }}" required class="form-control input-sm" autofocus>
 		</div>
 		<div class="col-xs-1">
-			<button type="submit" class="pull-right btn btn-default">Go</button>
+			<button type="submit" class="btn btn-default btn-sm pull-left">Go</button>
 		</div>
 	</div>
-	<div class="form-group-sm col-xs-12 browse-recording-form-group container-fluid">
-		<div class="title">
-			<label for="title" class="control-label col-xs-1">Recording:</label>
-			<div class="col-xs-5">
-				<input name="title" type="text" value="{{ info['rec_title'] if info.rec_title else 'All Recordings' }}" required class="form-control input-sm" readonly>
-			</div>
+	<div class="form-group browse-recording-form-group recording-info container-fluid col-xs-12">
+		<div class="title pull-left">
+			<strong class="control-label">Recording Title:</strong>
+			<span class="recording-info-value">{{ info['rec_title'] }}</span>
 		</div>
-		<div class="collection">
-			<label for="collection" class="control-label col-xs-1">Collection:</label>
-			<div class="col-xs-5">
-				<input name="collection" type="text" value="{{ info['coll_title'] }}" required class="form-control input-sm" readonly>
-			</div>
+		<div class="collection pull-left">
+			<strong class="control-label">Collection:</strong>
+			<span class="recording-info-value">{{ info['coll_title'] }}</span>
 		</div>
 	</div>	
 </form>
 
-<div class="recording-actions navbar-right text-center col-xs-1">
+<div class="recording-actions text-center col-xs-2">
 	<div class="size-counter">
 		<span class="current-size"></span>
 	</div>
 
 	<form class="add-to-recording">
-		<button type="submit" class="btn btn-default btn-sm">Add to recording</button>
+		<button type="submit" class="btn btn-default">Add to recording</button>
 	</form>
 
 	<a href="#" data-toggle="modal" data-target="#report-modal" class="doesnt-look-right">Doesn't look right?</a>
