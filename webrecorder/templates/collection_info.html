@@ -33,8 +33,6 @@
 <div class="row">
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
-            <small>/{{ collection.id }}</small>
-
             <div class="pull-right">
                 {% if can_write() %}
                     <button id="add-recording" class="btn btn-primary btn-sm show-recorder">New Recording</button>
@@ -43,6 +41,10 @@
                     <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm">Download</a>
                     <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete</button>
                 {% endif %}
+            </div>
+
+            <div>
+                <small>/{{ collection.id }}</small>
             </div>
         </h1>
 

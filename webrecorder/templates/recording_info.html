@@ -30,17 +30,6 @@
 
 <div class="row">
     <div class="page-header" style="margin-top: 10px">
-        {% if is_anon() %}
-        <div class="text-center">
-            <p>This recording is part of a temporary, anonymous collection created in Webrecorder.</p>
-            
-            <p>The pages below are available only to you and will expire in <strong data-anon-timer="{{ anon_ttl }}"></strong>
-            </p>
-
-            <p>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></p>
-        </div>
-        {% endif %}
-
         <h1 style="display: inline"><span id="rec-title">{{ recording.title }}</span>&nbsp;
             <div class="pull-right">
                 {% if can_write() %}
@@ -57,7 +46,6 @@
             <div>
                 <small><a href="{{ get_path(user, coll) }}">/{{ collection.id }}</a>/{{ recording.id }}</small>
             </div>
-
         </h1>
     </div>
 </div>
@@ -68,6 +56,16 @@
     </div>
 </span>
 
+{% if is_anon() %}
+    <div class="row">
+        <p>This recording is part of a temporary, anonymous collection created in Webrecorder.</p>
+
+        <p>The pages below are available only to you and will expire in <strong data-anon-timer="{{ anon_ttl }}"></strong>
+        </p>
+
+        <p>To create permanent, shareable collections <a href="_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></p>
+    </div>
+{% endif %}
 
 <div class="row">
     <table id="page_list" class="table table-striped">
