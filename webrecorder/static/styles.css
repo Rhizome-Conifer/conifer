@@ -334,7 +334,8 @@ a.dropdown-badge {
 }
 
 .glyphicon-button {
-    margin-top: 2px;
+    top: 2px;
+    margin-right: 3px;
 }
 
 .collection-list {
