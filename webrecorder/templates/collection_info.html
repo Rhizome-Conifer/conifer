@@ -102,9 +102,11 @@
                     <a class="btn btn-default btn-xs" href="{{ path }}">
                         <span class="glyphicon glyphicon-globe glyphicon-button"></span>Browse
                     </a>
-                    <a class="btn btn-default btn-xs" href="{{ path }}/$download">
-                        <span class="glyphicon glyphicon-download glyphicon-button"></span>Download
-                    </a>
+                    {% if can_admin() %}
+                        <a class="btn btn-default btn-xs" href="{{ path }}/$download">
+                            <span class="glyphicon glyphicon-download glyphicon-button"></span>Download
+                        </a>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
