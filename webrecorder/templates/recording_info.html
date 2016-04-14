@@ -42,31 +42,32 @@
         {% endif %}
 
         <h1 style="display: inline"><span id="rec-title">{{ recording.title }}</span>&nbsp;
-            <small>/{{ collection.id }}/{{ recording.id }}</small>
-
             <div class="pull-right">
                 {% if can_write() %}
                 <button id="add-to-recording" class="btn btn-primary btn-sm show-recorder">Add To Recording</button>
                 {% endif %}
 
                 {% if can_admin() %}
-                <a href="{{ recording.download_url }}" class="btn btn-primary btn-sm">Download</a>
+                <a href="{{ recording.download_url }}" class="btn btn-primary btn-sm" role="button">Download</a>
 
                 <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete</button>
                 {% endif %}
             </div>
-        </h1>
 
-        <h4>
-        Recording part of <a href="{{ get_path(user, coll) }}">{{ collection.id }}</a>
-        <span style="font-size: 14px" class="pull-right">
             <div>
-                Space Used: <b data-size="{{ recording.size }}"></b>
+                <small><a href="{{ get_path(user, coll) }}">/{{ collection.id }}</a>/{{ recording.id }}</small>
             </div>
-        </span>
-        </h4>
+
+        </h1>
     </div>
 </div>
+
+<span style="font-size: 14px" class="pull-right">
+    <div>
+        Space Used: <b data-size="{{ recording.size }}"></b>
+    </div>
+</span>
+
 
 <div class="row">
     <table id="page_list" class="table table-striped">
