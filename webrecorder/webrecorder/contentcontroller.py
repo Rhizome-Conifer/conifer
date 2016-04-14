@@ -248,14 +248,7 @@ class ContentController(BaseController, RewriterApp):
                     raise HTTPError(404, 'No Such Recording')
 
 
-        # reset HTTP_COOKIE to guarded request_cookie for LiveRewriter
-        if 'webrec.request_cookie' in request.environ:
-            request.environ['HTTP_COOKIE'] = request.environ['webrec.request_cookie']
-
-        try:
-            del request.environ['HTTP_X_PUSH_STATE_REQUEST']
-        except:
-            pass
+        wb_url = self._context_massage(wb_url)
 
         return self.render_content(wb_url, user=user,
                                            coll=coll,
@@ -268,6 +261,22 @@ class ContentController(BaseController, RewriterApp):
             target += request.script_name.replace(title, id)
             target += wb_url
             redirect(target)
+
+    def _context_massage(self, wb_url):
+        # reset HTTP_COOKIE to guarded request_cookie for LiveRewriter
+        if 'webrec.request_cookie' in request.environ:
+            request.environ['HTTP_COOKIE'] = request.environ['webrec.request_cookie']
+
+        try:
+            del request.environ['HTTP_X_PUSH_STATE_REQUEST']
+        except:
+            pass
+
+        #TODO: generalize
+        if wb_url.endswith('&spf=navigate') and wb_url.startswith('https://www.youtube.com'):
+            wb_url = wb_url.replace('&spf=navigate', '')
+
+        return wb_url
 
     def add_query(self, url):
         if request.query_string:
