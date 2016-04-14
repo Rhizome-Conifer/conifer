@@ -66,3 +66,11 @@ Available collections are listed below.
             self.flash_message('Sorry, the anonymous collection has expired due to inactivity')
             self.redirect('/')
 
+        @self.app.post('/_reportissues')
+        def report_issues():
+            useragent = request.headers.get('User-Agent')
+            self.manager.report_issues(request.POST, useragent)
+            return {}
+
+
+

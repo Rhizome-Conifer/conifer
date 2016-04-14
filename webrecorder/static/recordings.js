@@ -435,6 +435,39 @@ $(function() {
 });
 
 
+$(function() {
+    $('#login-modal').on('shown.bs.modal', function() {
+        $('#username').focus();
+    });
+    
+    $("#report-modal").on('show.bs.modal', function() {
+        $("#report-form-submit").text("Send Report");
+        $("#report-thanks").text("");
+        $('#report-form-submit').prop('disabled', false);
+    });
+    
+    $("#report-form").submit(function(e) {
+        //$("#report-form-submit").text("Sending Report...");
+        
+        var params = $("#report-form").serialize();
+        
+        params += "&" + $.param({coll: wbinfo.coll,
+                                 state: wbinfo.state,
+                                 url: window.location.href});
+        
+        $.post("/_reportissues", params, function() {
+            $("#report-form-submit").text("Report Sent!");
+            $("#report-thanks").text("Thank you for testing webrecorder.io beta!");
+            $('#report-form-submit').prop('disabled', true);
+            
+            setTimeout(function() {
+                $("#report-modal").modal('hide');
+            }, 1000);
+        });
+        e.preventDefault();
+    });
+});
+
 // Utils
 //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
 function format_bytes(bytes) {
