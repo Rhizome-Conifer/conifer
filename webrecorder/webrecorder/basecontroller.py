@@ -26,11 +26,8 @@ class BaseController(object):
             self._raise_error(400, 'User must be specified',
                               api=api)
 
-        if user == '@anon':
-            session = self.get_session()
-            if not session.is_anon():
-                session.set_anon()
-            user = session.anon_user
+        if self.manager.is_anon(user):
+            user = self.manager.get_anon_user()
 
         elif not self.manager.has_user(user):
             self._raise_error(404, 'No such user', api=api)
