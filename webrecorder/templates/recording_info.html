@@ -76,7 +76,6 @@
                 <th>Title</th>
                 <th>Recorded On</th>
                 <th>Url</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -86,9 +85,6 @@
                 <td><a href="{{ path + page.url }}">{{ page.title if page.title else page.url }}</a></td>
                 <td data-time-ts="{{ page.timestamp }}"></td>
                 <td><a href="{{ path + page.url }}">{{ page.url }}</a></td>
-                <td>
-                    <a href="{{ path + '*/' + page.url }}">All Versions</a>
-                </td>
             </tr>
             {% endfor %}
         </tbody>
