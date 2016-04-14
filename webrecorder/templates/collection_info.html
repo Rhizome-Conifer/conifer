@@ -86,8 +86,7 @@
                 <th>Name</th>
                 <th>Last Recorded</th>
                 <th>Size</th>
-                <th>Browse</th>
-                <th>Download</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -97,8 +96,14 @@
                 <td><a href="{{ path }}">{{ rec.title }}</a></td>
                 <td data-time-sec="{{ rec.updated_at }}"></td>
                 <td data-size="{{ rec.size }}"></td>
-                <td><a href="{{ path }}">Browse</a></td>
-                <td><a href="{{ path }}/$download">Download</a></td>
+                <td>
+                    <a class="btn btn-default btn-xs" href="{{ path }}">
+                        <span class="glyphicon glyphicon-globe glyphicon-button"></span>Browse
+                    </a>
+                    <a class="btn btn-default btn-xs" href="{{ path }}/$download">
+                        <span class="glyphicon glyphicon-download glyphicon-button"></span>Download
+                    </a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

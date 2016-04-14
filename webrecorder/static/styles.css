@@ -332,3 +332,7 @@ a.dropdown-badge {
     from { opacity: 1; }
     to { opacity: 0; }
 }
+
+.glyphicon-button {
+    margin-top: 2px;
+}
