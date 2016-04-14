@@ -66,6 +66,20 @@ class LoginManagerMixin(object):
         self.cork.do_login(user)
         return user
 
+    def _create_anon_user(self, user):
+        max_size = self.redis.hget('h:defaults', 'max_anon_size')
+        if not max_size:
+            max_size = self.default_max_anon_size
+
+        key = self.USER_KEY.format(user=user)
+        now = int(time.time())
+
+        with redis.utils.pipeline(self.redis) as pi:
+            pi.hset(key, 'max_size', max_size)
+            pi.hset(key, 'max_coll', 1)
+            pi.hset(key, 'created_at', now)
+            pi.hsetnx(key, 'size', '0')
+
     def get_user_info(self, user):
         key = self.USER_KEY.format(user=user)
         result = self._format_info(self.redis.hgetall(key))
@@ -73,6 +87,14 @@ class LoginManagerMixin(object):
 
     def has_user(self, user):
         return self.cork.user(user) is not None
+
+    def get_anon_user(self, save_sesh=True):
+        sesh = request.environ['webrec.session']
+        if not sesh.is_anon() and save_sesh:
+            sesh.set_anon()
+            self._create_anon_user(sesh.anon_user)
+
+        return sesh.anon_user
 
     def set_user_desc(self, user, desc):
         self.assert_user_is_owner(user)

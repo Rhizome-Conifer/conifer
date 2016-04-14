@@ -145,6 +145,10 @@ class AppController(BaseController):
 
             return resp
 
+        @self.bottle_app.route('/<:re:.*>', method='ANY')
+        def fallthrough():
+            self._check_refer_redirect()
+
     def make_err_handler(self, default_err_handler):
         @self.jinja2_view('error.html', refresh_cookie=False)
         def error_view(out):
@@ -199,7 +203,7 @@ class AppController(BaseController):
             orig_url += '?' + request.urlparts.query
 
         full_url = host + urljoin(url, orig_url)
-        response.status = 302
+        response.status = 307
         response.set_header('Location', full_url)
         return True
 

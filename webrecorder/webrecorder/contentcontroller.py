@@ -210,18 +210,15 @@ class ContentController(BaseController, RewriterApp):
 
         return StreamIter(res.raw)
 
-    def get_anon_user(self):
-        sesh = request.environ['webrec.session']
-        user = sesh.anon_user.replace('@anon-', 'anon/')
+    def get_anon_user(self, save_sesh=True):
+        user = self.manager.get_anon_user(save_sesh)
+        user = user.replace('@anon-', 'anon/')
         return user
 
     def handle_anon_content(self, wb_url, rec, type):
-        sesh = request.environ['webrec.session']
-        user = self.get_anon_user()
+        save_sesh = (type == 'record')
+        user = self.get_anon_user(save_sesh)
         coll = 'anonymous'
-
-        if type == 'record' and not sesh.is_anon():
-            sesh.set_anon()
 
         return self.handle_routing(wb_url, user, coll, rec, type)
 
