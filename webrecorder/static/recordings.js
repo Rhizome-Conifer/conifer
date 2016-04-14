@@ -191,7 +191,7 @@ var RecordingSizeWidget = (function() {
             updateDom(spaceUsed);
 
             if (wbinfo.state == "record") {
-                setInterval(pollForSizeUpdate, 10000);
+                setInterval(pollForSizeUpdate, 5000);
             }
         }
     }
