@@ -47,13 +47,13 @@ class ContentController(BaseController, RewriterApp):
             wb_url = self.add_query(wb_url)
             new_url = '/anonymous/{rec}/record/{url}'.format(rec=self.DEF_REC_NAME,
                                                              url=wb_url)
-            return redirect(new_url)
+            return self.redirect(new_url)
 
         @self.app.route('/replay/<wb_url:path>', method='ANY')
         def redir_anon_replay(wb_url):
             wb_url = self.add_query(wb_url)
             new_url = '/anonymous/{url}'.format(url=wb_url)
-            return redirect(new_url)
+            return self.redirect(new_url)
 
         # LIVE DEBUG
         @self.app.route('/live/<wb_url:path>', method='ANY')
@@ -216,7 +216,6 @@ class ContentController(BaseController, RewriterApp):
         return user
 
     def handle_anon_content(self, wb_url, rec, type):
-        wb_url = self.add_query(wb_url)
         sesh = request.environ['webrec.session']
         user = self.get_anon_user()
         coll = 'anonymous'
@@ -227,6 +226,7 @@ class ContentController(BaseController, RewriterApp):
         return self.handle_routing(wb_url, user, coll, rec, type)
 
     def handle_routing(self, wb_url, user, coll, rec, type):
+        wb_url = self.add_query(wb_url)
         if type == 'record' or type == 'replay':
             if not self.manager.has_recording(user, coll, rec):
                 if coll != 'anonymous' and not self.manager.has_collection(user, coll):
@@ -246,6 +246,16 @@ class ContentController(BaseController, RewriterApp):
 
                 if type == 'replay':
                     raise HTTPError(404, 'No Such Recording')
+
+
+        # reset HTTP_COOKIE to guarded request_cookie for LiveRewriter
+        if 'webrec.request_cookie' in request.environ:
+            request.environ['HTTP_COOKIE'] = request.environ['webrec.request_cookie']
+
+        try:
+            del request.environ['HTTP_X_PUSH_STATE_REQUEST']
+        except:
+            pass
 
         return self.render_content(wb_url, user=user,
                                            coll=coll,

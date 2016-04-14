@@ -161,6 +161,15 @@ class LoginManagerMixin(object):
 
         return True
 
+    def update_password(self, curr_password, password, confirm):
+        user = self.get_curr_user()
+        if not self.cork.verify_password(user, curr_password):
+            raise ValidationException('Incorrect Current Password')
+
+        self.validate_password(password, confirm)
+
+        self.cork.update_password(user, password)
+
     def is_valid_invite(self, invitekey):
         try:
             if not invitekey:
@@ -222,6 +231,18 @@ class LoginManagerMixin(object):
         self.cork.mailer.send_email(email, 'You are invited to join webrecorder.io beta!', email_text)
         entry['sent'] = str(datetime.utcnow())
         return True
+
+    def report_issues(self, issues, ua=''):
+        issues_dict = {}
+        for key in issues.iterkeys():
+            issues_dict[key] = issues[key]
+
+        issues_dict['user'] = self.get_curr_user()
+        issues_dict['time'] = str(datetime.utcnow())
+        issues_dict['ua'] = ua
+        report = json.dumps(issues_dict)
+
+        self.redis.rpush('h:reports', report)
 
 
 # ============================================================================
