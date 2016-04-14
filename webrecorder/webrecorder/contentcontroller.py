@@ -247,10 +247,27 @@ class ContentController(BaseController, RewriterApp):
 
         wb_url = self._context_massage(wb_url)
 
-        return self.render_content(wb_url, user=user,
-                                           coll=coll,
-                                           rec=rec,
-                                           type=type)
+        try:
+            return self.render_content(wb_url, user=user,
+                                               coll=coll,
+                                               rec=rec,
+                                               type=type)
+        except HTTPError as e:
+            if not isinstance(e.exception, dict):
+                raise
+
+            @self.jinja2_view('content_error.html')
+            def handle_error(status_code, type, err_info):
+                return {'url': err_info.get('url'),
+                        'status': status_code,
+                        'error': err_info.get('error'),
+                        'user': user,
+                        'coll': coll,
+                        'rec': rec,
+                        'type': type
+                       }
+
+            return handle_error(e.status_code, type, e.exception)
 
     def _redir_if_sanitized(self, id, title, wb_url):
         if id != title:

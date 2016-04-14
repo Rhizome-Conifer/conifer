@@ -1,0 +1,38 @@
+{% extends "main_bootstrap.html" %}
+
+{% block head %}
+{{ super() }}
+<script>
+    $(function() {
+        if (window.top != window) {
+            $(".navbar").hide();
+
+            if (window.parent.set_state) {
+                window.parent.set_state({"is_error": true, "url": "{{ url }}"});
+            }
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+{% if status == 404 %}
+    <h1>Content Not Found</h1>
+
+    <p>The url <b>{{ url }}</b> was not found in the archive.</p>
+
+    {% if type == 'replay' and rec and can_admin() %}
+    <b><a target="_parent" href="{{ get_path(user, coll, rec) }}/record/{{ url }}">Record this page?</a></b>
+    {% endif %}
+{% else %}
+    <h2>This site could not be loaded</h2>
+
+    <p><b>{{ url }}</b></p>
+
+    <p>Please double check that this url is valid</p>
+
+    <p><b>Details:</b></p>
+    <p><code>{{ error }}</code></p>
+{% endif %}
+
+{% endblock %}

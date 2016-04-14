@@ -516,11 +516,13 @@ window.set_state = function(state) {
 
     var replay_iframe = window.document.getElementById("replay_iframe");
 
-    if (!replay_iframe || !replay_iframe.contentWindow || !replay_iframe.contentWindow.wbinfo) {
+    if (!replay_iframe || !replay_iframe.contentWindow) {
         return;
     }
 
-    if (wbinfo.state == "record") {
+    if (state.is_error) {
+        $("input[name='url']").val(state.url);
+    } else if (wbinfo.state == "record") {
         var recordingId = wbinfo.info.rec_id;
         var attributes = {};
 
