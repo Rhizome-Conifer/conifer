@@ -247,6 +247,16 @@ class ContentController(BaseController, RewriterApp):
                 if type == 'replay':
                     raise HTTPError(404, 'No Such Recording')
 
+
+        # reset HTTP_COOKIE to guarded request_cookie for LiveRewriter
+        if 'webrec.request_cookie' in request.environ:
+            request.environ['HTTP_COOKIE'] = request.environ['webrec.request_cookie']
+
+        try:
+            del request.environ['HTTP_X_PUSH_STATE_REQUEST']
+        except:
+            pass
+
         return self.render_content(wb_url, user=user,
                                            coll=coll,
                                            rec=rec,
