@@ -15,23 +15,24 @@
 {% block content %}
 
 <div class="jumbotron">
-    {% if is_owner() %}
-    <button id="home-edit" class="btn btn-success btn-sm pull-right" data-toggle="button" aria-pressed="false">Edit</button>
-    {% endif %}
-
     <div id="about">
+        {% if is_owner() %}
+            <div class="pull-right">
+                <a class="btn btn-primary btn-sm" href="#" data-toggle="modal" data-target="#create-modal" role="button">
+                    <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>New Collection
+                </a>
+            </div>
+        {% endif %}
+
         <div id="home-markdown" style="display: none">{{ user_info.desc | default('User Info TODO') }}</div>
         <div id="home-view"></div>
     </div>
 
     {% if is_owner() %}
-    <p><a class="btn btn-primary btn-sm" href="#" data-toggle="modal" data-target="#create-modal" role="button">
-        <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>Create New Collection</a></p>
-    <p><a class="btn btn-sm btn-default" href="/{{ user }}/_settings" role="button">
-        <span class="glyphicon glyphicon-cog" style="margin-right: 4px"></span>Account Settings</a></p>
+        <button id="home-edit" class="btn btn-default btn-sm" data-toggle="button" aria-pressed="false">Edit</button>
     {% endif %}
 
-    <ul class="list-group text-center">
+    <ul class="list-group text-center collection-list">
         {% for coll in colls | sort(attribute='title') %}
         {% set is_public = coll['r:@public'] %} 
         <li class="list-group-item">
