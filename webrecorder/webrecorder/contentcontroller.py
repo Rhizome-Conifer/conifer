@@ -236,6 +236,9 @@ class ContentController(BaseController, RewriterApp):
         result = []
 
         for cdx in cdx_lines.rstrip().split('\n'):
+            if not cdx:
+                continue
+
             cdx = json.loads(cdx)
             cdx['rec'] = cdx['source'].rsplit(':', 2)[1]
             result.append(cdx)

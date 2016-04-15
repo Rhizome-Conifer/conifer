@@ -3,6 +3,9 @@
 {% block content %}
 <div class="row">
     <h2>Url Search Results</h2>
+    {% if cdx_list|length == 0 %}
+    <p>No recorded versions of <b>{{ url }}</b> found.</p>
+    {% else %}
     <p>Showing recorded versions of <b>{{ url }}</b></p>
     <table id="page_list" class="table table-striped">
         <caption><h3>Url Results</h3></caption>
@@ -25,6 +28,7 @@
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 </div>
 
 {% endblock %}
