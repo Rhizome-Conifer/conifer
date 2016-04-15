@@ -190,14 +190,17 @@ var RecordingSizeWidget = (function() {
             var spaceUsed = format_bytes(wbinfo.info.size);
             updateDom(spaceUsed);
 
+            setTimeout(pollForSizeUpdate, 1000);
+
             if (wbinfo.state == "record") {
-                setInterval(pollForSizeUpdate, 5000);
+                setInterval(pollForSizeUpdate, 10000);
             }
         }
     }
 
     var pollForSizeUpdate = function() {
-        Recordings.get(wbinfo.info.rec_id, updateSizeCounter, dontUpdateSizeCounter)
+        Recordings.get(wbinfo.info.rec_id, updateSizeCounter, dontUpdateSizeCounter);
+        exclude_password_targets();
     }
 
     var updateSizeCounter = function(data) {
@@ -426,6 +429,39 @@ $(function() {
     format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
 
 });
+
+// Check as soon as frame is loaded
+$("#replay_iframe").load(function() {
+    exclude_password_targets();
+});
+
+var pass_form_targets = {};
+
+function exclude_password_targets() {
+    if (wbinfo.state != "record") {
+        return;
+    }
+
+    $("input[type=password]", $("#replay_iframe").contents()[0]).each(function(i, input) {
+        if (input && input.form && input.form.action) {
+            var form_action = extract_replay_url(input.form.action);
+            if (!form_action) {
+                form_action = input.form.action;
+            }
+            if (pass_form_targets[form_action]) {
+                return;
+            }
+
+            $.getJSON("/_skipreq?" + $.param({url: form_action}), function(data) {
+                pass_form_targets[form_action] = true;
+                //console.log("Skipping rec sensitive url: " + form_action);
+            });
+        }
+    });
+}
+
+
+
 
 
 $(function() {

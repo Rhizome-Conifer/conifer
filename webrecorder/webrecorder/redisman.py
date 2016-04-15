@@ -26,6 +26,7 @@ class LoginManagerMixin(object):
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
     USER_KEY = 'u:{user}'
+    USER_SKIP_KEY = 'u:{user}:skip:{url}'
 
     def __init__(self, config):
         super(LoginManagerMixin, self).__init__(config)
@@ -265,6 +266,10 @@ class LoginManagerMixin(object):
         report = json.dumps(issues_dict)
 
         self.redis.rpush('h:reports', report)
+
+    def skip_post_req(self, user, url):
+        key = self.USER_SKIP_KEY.format(user=user, url=url)
+        self.redis.setex(key, 300, 1)
 
 
 # ============================================================================

@@ -44,6 +44,8 @@ class WebRecRecorder(object):
 
         self.del_templ = config['del_templ']
 
+        self.skip_key_templ = config['skip_key_templ']
+
         self.redis_base_url = os.environ['REDIS_BASE_URL']
         self.redis = redis.StrictRedis.from_url(self.redis_base_url)
 
@@ -72,9 +74,11 @@ class WebRecRecorder(object):
         )
 
 
-        writer = MultiFileWARCWriter(dir_template=self.warc_path_templ,
+        writer = SkipCheckingMultiFileWARCWriter(dir_template=self.warc_path_templ,
                                      filename_template=self.warc_name_templ,
-                                     dedup_index=self.dedup_index)
+                                     dedup_index=self.dedup_index,
+                                     redis=self.redis,
+                                     skip_key_templ=self.skip_key_templ)
 
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
@@ -87,7 +91,8 @@ class WebRecRecorder(object):
 
         pages = []
         for page_key in self.redis.scan_iter(match=page_key_pattern):
-            pages.extend(self.redis.hvals(page_key))
+            for page in self.redis.hvals(page_key):
+                pages.append(json.loads(page.decode('utf-8')))
 
         return pages
 
@@ -111,7 +116,7 @@ class WebRecRecorder(object):
         # warcinfo Record
         info = {'software': 'Webrecorder Platform v2.0',
                 'format': 'WARC File Format 1.0',
-                'json-metadata': metadata,
+                'json-metadata': json.dumps(metadata),
                }
 
         wi_writer = SimpleTempWARCWriter()
@@ -259,4 +264,23 @@ class WebRecRedisIndexer(WritableRedisIndexer):
 
         return cdx_list
 
+
+# ============================================================================
+class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
+    def __init__(self, *args, **kwargs):
+        super(SkipCheckingMultiFileWARCWriter, self).__init__(*args, **kwargs)
+        self.redis = kwargs.get('redis')
+        self.skip_key_template = kwargs.get('skip_key_templ')
+
+    def _is_write_req(self, req, params):
+        if not req or not req.rec_headers or not self.skip_key_template:
+            return False
+
+        skip_key = res_template(self.skip_key_template, params)
+
+        if self.redis.get(skip_key) == b'1':
+            print('SKIPPING REQ', target_uri)
+            return False
+
+        return True
 

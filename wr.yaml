@@ -12,6 +12,8 @@ info_key_templ:
 
 warc_key_templ: 'c:{user}:{coll}:warc'
 
+skip_key_templ: 'u:{user}:skip:{url}'
+
 warc_name_prefix: 'rec-{rec}-'
 warc_name_templ: 'rec-{rec}-{timestamp}-{hostname}.warc.gz'
 

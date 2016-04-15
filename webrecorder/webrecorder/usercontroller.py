@@ -72,5 +72,18 @@ Available collections are listed below.
             self.manager.report_issues(request.POST, useragent)
             return {}
 
+        # Skip POST request recording
+        @self.app.get('/_skipreq')
+        def skip_req():
+            url = request.query.get('url')
+            user = self.manager.get_curr_user()
+            if not user:
+                user = self.manager.get_anon_user()
+
+            self.manager.skip_post_req(user, url)
+            return {}
+
+
+
 
 
