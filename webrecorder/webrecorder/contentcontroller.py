@@ -287,7 +287,7 @@ class ContentController(BaseController, RewriterApp):
             pass
 
         #TODO: generalize
-        if wb_url.endswith('&spf=navigate') and wb_url.startswith('https://www.youtube.com'):
+        if wb_url.endswith('&spf=navigate') and wb_url.startswith('mp_/https://www.youtube.com'):
             wb_url = wb_url.replace('&spf=navigate', '')
 
         return wb_url
