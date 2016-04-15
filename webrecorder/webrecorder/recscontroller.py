@@ -57,9 +57,9 @@ class RecsController(BaseController):
             user, coll = self.get_user_coll(api=True)
             self._ensure_rec_exists(user, coll, rec)
 
-            page_data = {}
-            for item in request.forms:
-                page_data[item] = request.forms.get(item)
+            page_data = dict(request.forms.decode())
+            #for item in request.forms:
+            #    page_data[item] = request.forms.get(item)
 
             self.manager.add_page(user, coll, rec, page_data)
             return {}
