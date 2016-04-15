@@ -274,7 +274,7 @@ class AccessManagerMixin(object):
     PUBLIC = '@public'
 
     def is_anon(self, user):
-        return user == '@anon' or user.startswith('anon/')
+        return not user or user == '@anon' or user.startswith('anon/')
 
     def get_curr_user(self):
         sesh = request.environ['webrec.session']
