@@ -1,0 +1,30 @@
+{% extends "main_bootstrap.html" %}
+
+{% block content %}
+<div class="row">
+    <h2>Url Search Results</h2>
+    <p>Showing recorded versions of <b>{{ url }}</b></p>
+    <table id="page_list" class="table table-striped">
+        <caption><h3>Url Results</h3></caption>
+        <thead>
+            <tr>
+                <th>Url</th>
+                <th>Recorded On</th>
+                <th>From Recording</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set path = get_path(user, coll) + '/' %}
+            {% for cdx in cdx_list %}
+            {% set linkurl = path + cdx.timestamp + '/' + cdx.url %}
+            <tr>
+                <td><a href="{{ linkurl }}">{{ cdx.url }}</a></td>
+                <td><a href="{{ linkurl }}" data-time-ts="{{ cdx.timestamp }}"></a></td>
+                <td><a href="{{ path + cdx.rec + '/' + cdx.url }}">{{ cdx.rec }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

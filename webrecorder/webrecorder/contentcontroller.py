@@ -69,6 +69,14 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec, type='record')
 
+        @self.app.route('/anonymous/*/<url:path>', method='GET')
+        @self.jinja2_view('time_info.html')
+        def anon_query(url):
+            request.path_shift(1)
+            user = self.get_anon_user(False)
+            coll = 'anonymous'
+            return self.handle_query(user, coll, url)
+
         @self.app.route('/anonymous/<wb_url:path>', method='ANY')
         def anon_replay(wb_url):
             rec_name = '*'
@@ -120,6 +128,12 @@ class ContentController(BaseController, RewriterApp):
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='record')
+
+        @self.app.route('/<user>/<coll>/*/<url:path>', method='GET')
+        @self.jinja2_view('time_info.html')
+        def logged_in_query(user, coll, url):
+            request.path_shift(2)
+            return self.handle_query(user, coll, url)
 
         @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
         def logged_in_replay(user, coll, wb_url):
@@ -214,6 +228,24 @@ class ContentController(BaseController, RewriterApp):
         user = self.manager.get_anon_user(save_sesh)
         user = user.replace('@anon-', 'anon/')
         return user
+
+    def handle_query(self, user, coll, url):
+        cdx_lines = self.handle_routing('*/' + url, user, coll,
+                                        rec='*', type='replay-coll')
+
+        result = []
+
+        for cdx in cdx_lines.rstrip().split('\n'):
+            cdx = json.loads(cdx)
+            cdx['rec'] = cdx['source'].rsplit(':', 2)[1]
+            result.append(cdx)
+
+        result = {'cdx_list': result}
+        result['coll'] = coll
+        result['user'] = self.get_view_user(user)
+        result['rec'] = '*'
+        result['url'] = url
+        return result
 
     def handle_anon_content(self, wb_url, rec, type):
         save_sesh = (type == 'record')
