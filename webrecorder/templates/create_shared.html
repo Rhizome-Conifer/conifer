@@ -5,7 +5,7 @@
         });
         $("#title").on('input', function() {
             var filtered = $(this).val();
-            filtered = filtered.replace(' ', '-').replace(/[^\w-]/g, '').toLowerCase().substring(0, 30);
+            filtered = filtered.replace(/\s/g, '-').replace(/[^\w-]/g, '').toLowerCase().substring(0, 30);
             $("#collection-id").val(filtered);
             $("#coll-id").text(filtered);
         });
