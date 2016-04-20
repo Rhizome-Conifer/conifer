@@ -169,8 +169,17 @@ class WebRecRecorder(object):
         rec = data['rec']
         type = data['type']
 
-        self.delete_files(type, user, coll, rec)
-        self.delete_redis_keys(type, user, coll, rec)
+        try:
+            self.delete_files(type, user, coll, rec)
+        except:
+            import traceback
+            traceback.print_exc()
+
+        try:
+            self.delete_redis_keys(type, user, coll, rec)
+        except:
+            import traceback
+            traceback.print_exc()
 
     def delete_files(self, type, user, coll, rec):
         if type not in (('user', 'coll', 'rec')):
