@@ -226,7 +226,6 @@ class ContentController(BaseController, RewriterApp):
 
     def get_anon_user(self, save_sesh=True):
         user = self.manager.get_anon_user(save_sesh)
-        user = user.replace('@anon-', 'anon/')
         return user
 
     def handle_query(self, user, coll, url):
@@ -293,10 +292,11 @@ class ContentController(BaseController, RewriterApp):
 
             @self.jinja2_view('content_error.html')
             def handle_error(status_code, type, err_info):
+                response.status = status_code
                 return {'url': err_info.get('url'),
                         'status': status_code,
                         'error': err_info.get('error'),
-                        'user': user,
+                        'user': self.get_view_user(user),
                         'coll': coll,
                         'rec': rec,
                         'type': type
