@@ -9,6 +9,7 @@ from pywb.webapp.views import J2TemplateView
 from pywb.utils.timeutils import datetime_to_timestamp
 from pywb.utils.wbexception import WbException
 from pywb.framework.wbrequestresponse import WbRequest
+from pywb.rewrite.wburl import WbUrl
 
 from rewriter import HTMLDomUnRewriter
 import json
@@ -29,6 +30,23 @@ class PywbDispatcher(object):
 
         self.init_early_routes()
 
+    def redir_no_cookie(self):
+        path = request.environ['PATH_INFO']
+        prefix, wb_url = path[1:].split('/', 1)
+        wb_url = WbUrl(wb_url)
+
+        print(repr(wb_url))
+
+        if wb_url.mod != '':
+            url = '/' + prefix + '/'
+            url += wb_url.to_str(mod='')
+
+            if request.environ.get('QUERY_STRING'):
+                url += '?' + request.environ['QUERY_STRING']
+
+            redirect(url)
+
+
     def call_pywb(self, user=None, coll=None, state=None, anon=False):
         if anon:
             wrsesh = request.environ['webrec.session']
@@ -45,7 +63,11 @@ class PywbDispatcher(object):
             sesh_id = self.path_parser.get_coll_path(user, coll)
 
             if state == 'record' or state == 'patch':
+                if not wrsesh.is_anon():
+                    self.redir_no_cookie()
+
                 user = self.manager.get_anon_user()
+
                 if not self.manager.has_space(user):
                     request.environ['webrec.no_space'] = True
 
