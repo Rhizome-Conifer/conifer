@@ -34,6 +34,13 @@ from webrecorder.basecontroller import BaseController
 
 # ============================================================================
 class AppController(BaseController):
+    ALL_CONTROLLERS = [ContentController,
+                       BrowserController,
+                       LoginController,
+                       UserController,
+                       RecsController,
+                       CollsController]
+
     def __init__(self, configfile='config.yaml', redis_url=None):
         self._init_logging()
 
@@ -61,12 +68,11 @@ class AppController(BaseController):
         jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'})
 
         # Init Core app controllers
-        rewrite_controller = ContentController(bottle_app, jinja_env, manager, config)
-        browser_controller = BrowserController(bottle_app, jinja_env, manager, config=config)
-        login_controller = LoginController(bottle_app, jinja_env, manager, config=config)
-        user_controller = UserController(bottle_app, jinja_env, manager, config)
-        recs_controller = RecsController(bottle_app, jinja_env, manager, config)
-        colls_controller = CollsController(bottle_app, jinja_env, manager, config)
+        for controller_type in self.ALL_CONTROLLERS:
+            x = controller_type(app=bottle_app,
+                                jinja_env=jinja_env,
+                                manager=manager,
+                                config=config)
 
         bottle_app.install(AddSession(self.cork, config))
 
