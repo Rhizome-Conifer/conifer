@@ -45,7 +45,7 @@ $(function() {
 
         var url = $("input[name='url']").val();
 
-        RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
+        RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url, "patch");
     });
 
     CollectionsDropdown.start();
@@ -140,11 +140,15 @@ var Recordings = (function() {
 var RouteTo = (function(){
     var host = window.location.protocol + "//" + window.location.host;
 
-    var recordingInProgress = function(user, collection, recording, url) {
+    var recordingInProgress = function(user, collection, recording, url, mode) {
+        if (!mode) {
+            mode = "record";
+        }
+
         if (user == "@anon") {
-            routeTo(host + "/" + collection + "/" + recording + "/record/" + url);
+            routeTo(host + "/" + collection + "/" + recording + "/" + mode + "/" + url);
         } else {
-            routeTo(host + "/" + user + "/" + collection + "/" + recording + "/record/" + url);
+            routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + url);
         }
     }
 
@@ -192,7 +196,7 @@ var RecordingSizeWidget = (function() {
 
             setTimeout(pollForSizeUpdate, 1000);
 
-            if (wbinfo.state == "record") {
+            if (wbinfo.state == "record" || wbinfo.state == "patch") {
                 setInterval(pollForSizeUpdate, 10000);
             }
         }
@@ -438,7 +442,7 @@ $("#replay_iframe").load(function() {
 var pass_form_targets = {};
 
 function exclude_password_targets() {
-    if (wbinfo.state != "record") {
+    if (wbinfo.state != "record" && wbinfo.state != "patch") {
         return;
     }
 
@@ -558,7 +562,7 @@ window.set_state = function(state) {
 
     if (state.is_error) {
         $("input[name='url']").val(state.url);
-    } else if (wbinfo.state == "record") {
+    } else if (wbinfo.state == "record" || wbinfo.state == "patch") {
         var recordingId = wbinfo.info.rec_id;
         var attributes = {};
 

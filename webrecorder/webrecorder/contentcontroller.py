@@ -6,11 +6,11 @@ import json
 
 from six.moves.urllib.parse import quote
 
-from bottle import Bottle, request, redirect, HTTPError, response
+from bottle import Bottle, request, redirect, HTTPError, response, HTTPResponse
 
 from pywb.utils.timeutils import timestamp_now
 
-from urlrewrite.rewriterapp import RewriterApp
+from urlrewrite.rewriterapp import RewriterApp, UpstreamException
 
 from webrecorder.basecontroller import BaseController
 
@@ -24,6 +24,7 @@ class ContentController(BaseController, RewriterApp):
 
     PATHS = {'live': '{replay_host}/live/resource/postreq?url={url}&closest={closest}',
              'record': '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}',
+             'patch': '{record_host}/record/patch/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}',
              'replay': '{replay_host}/replay/resource/postreq?url={url}&closest={closest}&param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}',
              'replay-coll': '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}',
 
@@ -31,14 +32,17 @@ class ContentController(BaseController, RewriterApp):
              'download_filename': '{title}-{timestamp}.warc.gz'
             }
 
-    WB_URL_RX = re.compile('((\d*)([a-z]+_)?/)?(https?:)?//.*')
+    WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?(https?:)?//.*')
 
     def __init__(self, app, jinja_env, manager, config):
         self.record_host = os.environ['RECORD_HOST']
         self.replay_host = os.environ['WEBAGG_HOST']
 
         BaseController.__init__(self, app, jinja_env, manager, config)
-        RewriterApp.__init__(self, framed_replay=True, jinja_env=jinja_env)
+        RewriterApp.__init__(self,
+                             framed_replay=True,
+                             jinja_env=jinja_env,
+                             config=config)
 
     def init_routes(self):
         # REDIRECTS
@@ -69,13 +73,11 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec, type='record')
 
-        @self.app.route('/anonymous/*/<url:path>', method='GET')
-        @self.jinja2_view('time_info.html')
-        def anon_query(url):
-            request.path_shift(1)
-            user = self.get_anon_user(False)
-            coll = 'anonymous'
-            return self.handle_query(user, coll, url)
+        @self.app.route('/anonymous/<rec>/patch/<wb_url:path>', method='ANY')
+        def anon_patch(rec, wb_url):
+            request.path_shift(3)
+
+            return self.handle_anon_content(wb_url, rec, type='patch')
 
         @self.app.route('/anonymous/<wb_url:path>', method='ANY')
         def anon_replay(wb_url):
@@ -129,12 +131,6 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec, type='record')
 
-        @self.app.route('/<user>/<coll>/*/<url:path>', method='GET')
-        @self.jinja2_view('time_info.html')
-        def logged_in_query(user, coll, url):
-            request.path_shift(2)
-            return self.handle_query(user, coll, url)
-
         @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
         def logged_in_replay(user, coll, wb_url):
             rec_name = '*'
@@ -168,7 +164,6 @@ class ContentController(BaseController, RewriterApp):
         @self.app.get('/<user>/<coll>/$download')
         def logged_in_download_coll_warc(user, coll):
             return self.handle_download('coll', user, coll, '*')
-
 
     def handle_download(self, type, user, coll, rec):
         info = {}
@@ -228,29 +223,8 @@ class ContentController(BaseController, RewriterApp):
         user = self.manager.get_anon_user(save_sesh)
         return user
 
-    def handle_query(self, user, coll, url):
-        cdx_lines = self.handle_routing('*/' + url, user, coll,
-                                        rec='*', type='replay-coll')
-
-        result = []
-
-        for cdx in cdx_lines.rstrip().split('\n'):
-            if not cdx:
-                continue
-
-            cdx = json.loads(cdx)
-            cdx['rec'] = cdx['source'].rsplit(':', 2)[1]
-            result.append(cdx)
-
-        result = {'cdx_list': result}
-        result['coll'] = coll
-        result['user'] = self.get_view_user(user)
-        result['rec'] = '*'
-        result['url'] = url
-        return result
-
     def handle_anon_content(self, wb_url, rec, type):
-        save_sesh = (type == 'record')
+        save_sesh = (type in ('record', 'patch'))
         user = self.get_anon_user(save_sesh)
         coll = 'anonymous'
 
@@ -258,7 +232,7 @@ class ContentController(BaseController, RewriterApp):
 
     def handle_routing(self, wb_url, user, coll, rec, type):
         wb_url = self.add_query(wb_url)
-        if type == 'record' or type == 'replay':
+        if type in ('record', 'patch', 'replay'):
             if not self.manager.has_recording(user, coll, rec):
                 if coll != 'anonymous' and not self.manager.has_collection(user, coll):
                     self._redir_if_sanitized(self.sanitize_title(coll),
@@ -269,7 +243,7 @@ class ContentController(BaseController, RewriterApp):
                 title = rec
                 rec = self.sanitize_title(title)
 
-                if type == 'record':
+                if type == 'record' or type == 'patch':
                     if rec == title or not self.manager.has_recording(user, coll, rec):
                         result = self.manager.create_recording(user, coll, rec, title)
 
@@ -278,22 +252,29 @@ class ContentController(BaseController, RewriterApp):
                 if type == 'replay':
                     raise HTTPError(404, 'No Such Recording')
 
+        return self.handle_load_content(wb_url, user, coll, rec, type)
 
+    def handle_load_content(self, wb_url, user, coll, rec, type):
         wb_url = self._context_massage(wb_url)
 
-        try:
-            return self.render_content(wb_url, user=user,
-                                               coll=coll,
-                                               rec=rec,
-                                               type=type)
-        except HTTPError as e:
-            if not isinstance(e.exception, dict):
-                raise
+        kwargs = dict(user=user,
+                      coll=coll,
+                      rec=rec,
+                      type=type)
 
+        try:
+            resp = self.render_content(wb_url, kwargs, request.environ)
+
+            resp = HTTPResponse(body=resp.body,
+                                status=resp.status_headers.statusline,
+                                headers=resp.status_headers.headers)
+            return resp
+
+        except UpstreamException as ue:
             @self.jinja2_view('content_error.html')
-            def handle_error(status_code, type, err_info):
+            def handle_error(status_code, type, url, err_info):
                 response.status = status_code
-                return {'url': err_info.get('url'),
+                return {'url': url,
                         'status': status_code,
                         'error': err_info.get('error'),
                         'user': self.get_view_user(user),
@@ -302,7 +283,7 @@ class ContentController(BaseController, RewriterApp):
                         'type': type
                        }
 
-            return handle_error(e.status_code, type, e.exception)
+            return handle_error(ue.status_code, type, ue.url, ue.msg)
 
     def _redir_if_sanitized(self, id, title, wb_url):
         if id != title:
@@ -333,6 +314,33 @@ class ContentController(BaseController, RewriterApp):
 
         return url
 
+
+    ## RewriterApp overrides
+    def get_upstream_url(self, url, wb_url, closest, kwargs):
+        type = kwargs['type']
+        if url != '{url}':
+            url = quote(url)
+
+        upstream_url = self.PATHS[type].format(url=url,
+                                               closest=closest,
+                                               record_host=self.record_host,
+                                               replay_host=self.replay_host,
+                                               **kwargs)
+
+        return upstream_url
+
+    def process_query_cdx(self, cdx, wb_url, kwargs):
+        rec = kwargs.get('rec')
+        print(rec, cdx['source'])
+        if not rec or rec == '*':
+            rec = cdx['source'].rsplit(':', 2)[-2]
+
+        cdx['rec'] = rec
+
+    def get_query_params(self, wb_url, kwargs):
+        kwargs['user'] = self.get_view_user(kwargs['user'])
+        return kwargs
+
     def get_top_frame_params(self, wb_url, kwargs):
         type = kwargs['type']
         if type == 'live':
@@ -353,19 +361,6 @@ class ContentController(BaseController, RewriterApp):
                 'rec': kwargs['rec']
                }
 
-    def get_upstream_url(self, url, wb_url, closest, kwargs):
-        type = kwargs['type']
-        if url != '{url}':
-            url = quote(url)
-
-        upstream_url = self.PATHS[type].format(url=url,
-                                               closest=closest,
-                                               record_host=self.record_host,
-                                               replay_host=self.replay_host,
-                                               **kwargs)
-
-        return upstream_url
-
     def _add_custom_params(self, cdx, resp_headers, kwargs):
         #type = kwargs['type']
         #if type in ('live', 'record'):
@@ -374,8 +369,7 @@ class ContentController(BaseController, RewriterApp):
         if resp_headers.get('Webagg-Source-Coll') == 'live':
             cdx['is_live'] = 'true'
 
-
-    def handle_custom_response(self, wb_url, full_prefix, host_prefix, kwargs):
+    def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         @self.jinja2_view('browser_embed.html')
         def browser_embed(browser):
             upstream_url = self.get_upstream_url('{url}',
@@ -402,5 +396,5 @@ class ContentController(BaseController, RewriterApp):
         elif wb_url.mod == 'ff_':
             return browser_embed('firefox')
 
-        return RewriterApp.handle_custom_response(self, wb_url, full_prefix, host_prefix, kwargs)
+        return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
 

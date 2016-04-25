@@ -39,10 +39,10 @@ def make_webagg():
                     ), warc_url)
 
 
-    #app.add_route('/live', HandlerSeq([replay_rec, live_rec]))
     app.add_route('/live', live_rec)
     app.add_route('/replay', replay_rec)
     app.add_route('/replay-coll', replay_coll)
+    app.add_route('/patch', HandlerSeq([replay_rec, live_rec]))
 
     return app.application
 

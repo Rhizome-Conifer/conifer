@@ -1,0 +1,175 @@
+#colls_loader_cls: !!python/name:pywb_handlers.AccountUserLoader
+proxy_path: &proxyhostport warcprox_1:9002
+#redis_url: &redis_url redis://127.0.0.1:6379/1
+#redis_url: &redis_url redis://localhost:6379/1
+#proxy_path: &proxyhostport $WARCPROX
+redis_url: &redis_url $REDIS
+
+
+#storage:
+#    s3: !!python/name:storage.s3.S3Manager
+#    local: !!python/name:storage.local.LocalStorageManager
+
+# from env file
+default_storage: $DEFAULT_STORAGE
+
+storage_remote_root: $S3_ROOT
+
+
+remote_target: ''
+proxy_target: ''
+#http://localhost:6009/wr-beta/
+
+
+session_opts:
+    session.secret: $SECRET_KEY
+    session.encrypt_key: $ENCRYPT_KEY
+    session.validate_key: $VALIDATE_KEY
+
+    session.auto: false
+    session.cookie_expires: True
+
+    session.httponly: true
+    session.cookie_path: '/'
+    
+    session.key: __wr_sesh
+    session.type: redis
+
+    session.url: *redis_url
+
+    session.expire: 5400
+
+
+anon_duration: 5400
+
+default_max_size: 100000000
+default_max_anon_size: 500000000
+default_max_coll: 10
+
+
+verify_ssl: false
+
+multiuser: true
+
+invites_enabled: $REQUIRE_INVITES
+
+warcsign_private_key: ./keys/wr.pem
+warcsign_public_key: ./keys/wr_pub.pem
+
+email_sender: $EMAIL_SENDER
+email_smtp_url: $EMAIL_SMTP_URL
+
+
+#enable_auto_colls: false
+collections_root: _na_
+
+record_cache: &record_cache 10
+replay_cache: &replay_cache 30
+
+collections:
+    'live':
+        index_paths: $liveweb
+
+#        wb_handler_class: !!python/name:pywb_handlers.DynRecord
+
+        cookie_scope: root
+        rewrite_opts:
+            rewrite_base: true
+            rewrite_rel_canon: false
+            http_cache: *record_cache
+
+        search_html: frame_insert.html
+
+    'record':
+        index_paths: $liveweb
+
+#        wb_handler_class: !!python/name:pywb_handlers.DynRecord
+
+        proxyhostport: *proxyhostport
+
+        cookie_scope: root
+        rewrite_opts:
+            rewrite_base: true
+            rewrite_rel_canon: false
+            http_cache: *record_cache
+
+        search_html: frame_insert.html
+
+    'patch':
+        index_paths: *redis_url
+#        server_cls: !!python/name:pywb_handlers.DynCDXServer
+
+#        wb_handler_class: !!python/name:pywb_handlers.DynWBHandler
+
+        cookie_scope: root
+
+        fallback: record
+
+        search_html: frame_insert.html
+    
+        rewrite_opts: 
+            http_cache: *replay_cache
+
+    '':
+        index_paths: *redis_url
+#        server_cls: !!python/name:pywb_handlers.DynCDXServer
+
+#        wb_handler_class: !!python/name:pywb_handlers.DynWBHandler
+
+        cookie_scope: removeall
+
+        enable_cdx_api: 'cdx'
+
+        rewrite_opts: 
+            http_cache: *replay_cache
+
+    'embed':
+        index_paths: *redis_url
+#        server_cls: !!python/name:pywb_handlers.DynCDXServer
+
+#        wb_handler_class: !!python/name:pywb_handlers.DynWBHandler
+
+        cookie_scope: removeall
+
+        enable_cdx_api: 'cdx'
+
+        rewrite_opts:
+            http_cache: *replay_cache
+            client:
+                embedded: true
+
+        frame_insert_html: embed_frame.html
+        banner_html: embed_banner.html
+
+
+    'replay_nf':
+        index_paths: *redis_url
+#        server_cls: !!python/name:pywb_handlers.DynCDXServer
+
+#        wb_handler_class: !!python/name:pywb_handlers.DynWBHandler
+
+        cookie_scope: removeall
+
+        enable_cdx_api: 'cdx'
+
+        rewrite_opts: 
+            http_cache: *replay_cache
+
+        framed_replay: false
+        banner_html: nobanner.html
+
+
+#route_class: !!python/name:pywb_handlers.DynamicRoute
+
+#archive_paths: ./
+archive_paths: /
+store_root: /data/
+
+metadata:
+    org: webrecorder.io
+    product: webrecorder.io
+
+framed_replay: inverse
+redir_to_exact: false
+
+#urlrewriter_class: !!python/name:pywb_handlers.DynUrlRewriter

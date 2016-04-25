@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row">
     <h2>Url Search Results</h2>
-    {% if cdx_list|length == 0 %}
+    {% if cdx_lines|length == 0 %}
     <p>No recorded versions of <b>{{ url }}</b> found.</p>
     {% else %}
     <p>Showing recorded versions of <b>{{ url }}</b></p>
@@ -18,7 +18,7 @@
         </thead>
         <tbody>
             {% set path = get_path(user, coll) + '/' %}
-            {% for cdx in cdx_list %}
+            {% for cdx in cdx_lines %}
             {% set linkurl = path + cdx.timestamp + '/' + cdx.url %}
             <tr>
                 <td><a href="{{ linkurl }}">{{ cdx.url }}</a></td>
