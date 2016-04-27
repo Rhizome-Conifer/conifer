@@ -3,6 +3,7 @@ from recorder.redisindexer import WritableRedisIndexer
 
 from recorder.warcwriter import MultiFileWARCWriter, SimpleTempWARCWriter
 from recorder.filters import SkipDupePolicy
+from recorder.filters import ExcludeSpecificHeaders
 
 import redis
 import time
@@ -60,25 +61,28 @@ class WebRecRecorder(object):
 
     def init_recorder(self):
         self.dedup_index = WebRecRedisIndexer(
-                name=self.name,
-                redis=self.redis,
+            name=self.name,
+            redis=self.redis,
 
-                cdx_key_template=self.cdxj_key_templ,
-                file_key_template=self.warc_key_templ,
-                rel_path_template=self.warc_path_templ,
+            cdx_key_template=self.cdxj_key_templ,
+            file_key_template=self.warc_key_templ,
+            rel_path_template=self.warc_path_templ,
 
-                dupe_policy=SkipDupePolicy(),
+            dupe_policy=SkipDupePolicy(),
 
-                size_keys=self.info_keys.values(),
-                rec_info_key_templ=self.info_keys['rec'],
+            size_keys=self.info_keys.values(),
+            rec_info_key_templ=self.info_keys['rec'],
         )
 
+
+        header_filter = ExcludeSpecificHeaders(['Set-Cookie', 'Cookie'])
 
         writer = SkipCheckingMultiFileWARCWriter(dir_template=self.warc_path_templ,
                                      filename_template=self.warc_name_templ,
                                      dedup_index=self.dedup_index,
                                      redis=self.redis,
-                                     skip_key_templ=self.skip_key_templ)
+                                     skip_key_templ=self.skip_key_templ,
+                                     header_filter=header_filter)
 
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
