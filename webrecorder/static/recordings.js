@@ -3,6 +3,18 @@ if (!user) {
 }
 
 $(function() {
+    // 'Homepage': Record button
+    $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
+        event.preventDefault();
+
+        var collection = "anonymous";
+        var title = "My First Recording";
+        var url = $(".wr-content input[name='url']").val();
+
+        RouteTo.recordingInProgress(user, collection, title, url);
+    });
+
+
     // 'New recording': Record button
     $('header').on('submit', '.start-recording', function(event) {
         event.preventDefault();

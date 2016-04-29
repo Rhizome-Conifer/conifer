@@ -135,6 +135,7 @@ class AppController(BaseController):
         @self.jinja2_view('index.html', refresh_cookie=False)
         def home_page():
             resp = {'curr_mode': 'new'}
+            resp['recorder_hidden'] = True
 
             sesh = self.get_session()
 
