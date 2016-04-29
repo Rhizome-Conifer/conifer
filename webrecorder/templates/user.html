@@ -32,7 +32,7 @@
         <button id="home-edit" class="btn btn-default btn-sm" data-toggle="button" aria-pressed="false">Edit</button>
     {% endif %}
 
-    <ul class="list-group text-center collection-list">
+    <ul class="list-group collection-list">
         {% for coll in colls | sort(attribute='title') %}
         {% set is_public = coll['r:@public'] %} 
         <li class="list-group-item">
