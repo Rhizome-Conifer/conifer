@@ -18,13 +18,10 @@
 				<div class="col-xs-5">
 				    <input name="collection" type="text" value="{{ coll_title | default('anonymous') }}" class="form-control input-sm" readonly required>
 				</div>
-                                {% if curr_user != '@anon' and is_owner() and not coll %}
-                                {% endif %}
 			</div>
 		</div>
 
 		<button type="submit" class="hidden"></button>
-
 	</form>
 </div>
 
