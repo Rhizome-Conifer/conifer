@@ -64,6 +64,7 @@ $(function() {
     RecordingSizeWidget.start();
     PagesComboxBox.start();
     CountdownTimer.start();
+    SizeProgressBar.start();
 });
 
 var Collections = (function() {
@@ -428,7 +429,29 @@ var CountdownTimer = (function() {
 })();
 
 
+var SizeProgressBar = (function() {
 
+    var start = function() {
+        var curr_size = $('.space-usage .progress-bar').attr('data-current-size');
+        var max_size = $('.space-usage .progress-bar').attr('data-max-size');
+        var percentage = Math.round($('.space-usage .progress-bar').attr('data-current-size') / $('.space-usage .progress-bar').attr('data-max-size') * 100);
+
+        $('.space-usage .progress-bar').attr('aria-valuenow', percentage);
+        $('.space-usage .progress-bar').attr('style', "width: " + percentage + "%");
+
+        if (percentage < 70) {
+            $('.space-usage .progress-bar').addClass('progress-bar-success');
+        } else if (percentage >= 70 && percentage < 90) {
+            $('.space-usage .progress-bar').addClass('progress-bar-warning');
+        } else {
+            $('.space-usage .progress-bar').addClass('progress-bar-danger');
+        }
+    }
+
+    return {
+        start: start
+    }
+})();
 
 // Format size
 $(function() {
