@@ -3,69 +3,78 @@ if (!user) {
 }
 
 $(function() {
-    // 'Homepage': Record button
-    $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
-        event.preventDefault();
-
-        var collection = "anonymous";
-        var title = "My First Recording";
-        var url = $(".wr-content input[name='url']").val();
-
-        RouteTo.recordingInProgress(user, collection, title, url);
-    });
-
-
-    // 'New recording': Record button
-    $('header').on('submit', '.start-recording', function(event) {
-        event.preventDefault();
-
-        var collection = $("*[name='collection']").val();
-        var title = $("input[name='title']").val();
-        var url = $("input[name='url']").val();
-
-        RouteTo.recordingInProgress(user, collection, title, url);
-    });
-
-    // 'Recording in progress': Url bar 'Go' button / enter key
-    $('header').on('submit', '.recording-in-progress', function(event) {
-        event.preventDefault();
-
-        var url = $("input[name='url']").val();
-
-        RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
-    });
-
-    // 'Recording in progress': Stop recording button
-    $('header').on('submit', '.stop-recording', function(event) {
-        event.preventDefault();
-
-        RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
-    });
-
-    // 'Browse recording': Url bar 'Go' button / enter key
-    $('header').on('submit', '.browse-recording', function(event) {
-        event.preventDefault();
-
-        var url = $("input[name='url']").val();
-
-        RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
-    });
-
-    // 'Browse recording': 'Add to recording' button
-    $('header').on('submit', '.add-to-recording', function(event){
-        event.preventDefault();
-
-        var url = $("input[name='url']").val();
-
-        RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url, "patch");
-    });
-
+    EventHandlers.bindAll();
     CollectionsDropdown.start();
     RecordingSizeWidget.start();
     PagesComboxBox.start();
     CountdownTimer.start();
     SizeProgressBar.start();
 });
+
+var EventHandlers = (function() {
+    var bindAll = function() {
+        // 'Homepage': Record button
+        $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
+            event.preventDefault();
+
+            var collection = "anonymous";
+            var title = "My First Recording";
+            var url = $(".wr-content input[name='url']").val();
+
+            RouteTo.recordingInProgress(user, collection, title, url);
+        });
+
+
+        // 'New recording': Record button
+        $('header').on('submit', '.start-recording', function(event) {
+            event.preventDefault();
+
+            var collection = $("*[name='collection']").val();
+            var title = $("input[name='title']").val();
+            var url = $("input[name='url']").val();
+
+            RouteTo.recordingInProgress(user, collection, title, url);
+        });
+
+        // 'Recording in progress': Url bar 'Go' button / enter key
+        $('header').on('submit', '.recording-in-progress', function(event) {
+            event.preventDefault();
+
+            var url = $("input[name='url']").val();
+
+            RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
+        });
+
+        // 'Recording in progress': Stop recording button
+        $('header').on('submit', '.stop-recording', function(event) {
+            event.preventDefault();
+
+            RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
+        });
+
+        // 'Browse recording': Url bar 'Go' button / enter key
+        $('header').on('submit', '.browse-recording', function(event) {
+            event.preventDefault();
+
+            var url = $("input[name='url']").val();
+
+            RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
+        });
+
+        // 'Browse recording': 'Add to recording' button
+        $('header').on('submit', '.add-to-recording', function(event){
+            event.preventDefault();
+
+            var url = $("input[name='url']").val();
+
+            RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url, "patch");
+        });  
+    }
+
+    return {
+        bindAll: bindAll
+    }
+})();
 
 var Collections = (function() {
     var API_ENDPOINT = "/api/v1/collections";
