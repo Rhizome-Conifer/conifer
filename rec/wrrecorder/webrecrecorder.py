@@ -117,11 +117,25 @@ class WebRecRecorder(object):
 
         metadata = {'pages': self.get_pagelist(user, coll, rec)}
 
+        part_of = coll
+        if rec != '*':
+            part_of += '/' + rec
+
         # warcinfo Record
         info = {'software': 'Webrecorder Platform v2.0',
                 'format': 'WARC File Format 1.0',
                 'json-metadata': json.dumps(metadata),
+                'isPartOf': part_of,
+                'creator': user,
                }
+
+        title = request.query.get('rec_title')
+        if title:
+            info['title'] = title
+
+        coll_title = request.query.get('coll_title')
+        if coll_title:
+            info['isPartOf'] = coll_title
 
         wi_writer = SimpleTempWARCWriter()
         wi_writer.write_record(wi_writer.create_warcinfo_record(filename, **info))

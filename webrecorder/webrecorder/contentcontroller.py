@@ -167,6 +167,8 @@ class ContentController(BaseController, RewriterApp):
 
     def handle_download(self, type, user, coll, rec):
         info = {}
+        rec_title = ''
+        coll_title = ''
 
         if rec == '*':
             info = self.manager.get_collection(user, coll)
@@ -174,7 +176,7 @@ class ContentController(BaseController, RewriterApp):
                 self._raise_error(404, 'Collection not found',
                                   id=coll)
 
-            title = info.get('title', coll)
+            title = coll_title = info.get('title', coll)
 
         else:
             info = self.manager.get_recording(user, coll, rec)
@@ -182,7 +184,7 @@ class ContentController(BaseController, RewriterApp):
                 self._raise_error(404, 'Collection not found',
                                   id=coll)
 
-            title = info.get('title', rec)
+            title = rec_title = info.get('title', rec)
 
         now = timestamp_now()
         filename = self.PATHS['download_filename'].format(title=title,
@@ -194,7 +196,9 @@ class ContentController(BaseController, RewriterApp):
                                            coll=coll,
                                            rec=rec,
                                            type=type,
-                                           filename=filename)
+                                           filename=filename,
+                                           rec_title=rec_title,
+                                           coll_title=coll_title)
 
         res = requests.get(download_url, stream=True)
 
