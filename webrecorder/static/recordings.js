@@ -4,11 +4,13 @@ if (!user) {
 
 $(function() {
     EventHandlers.bindAll();
+    TimesAndSizesFormatter.format();
     CollectionsDropdown.start();
     RecordingSizeWidget.start();
     PagesComboxBox.start();
     CountdownTimer.start();
     SizeProgressBar.start();
+    DataTables.start();
 });
 
 var EventHandlers = (function() {
@@ -462,21 +464,78 @@ var SizeProgressBar = (function() {
     }
 })();
 
-// Format size
-$(function() {
-    function format_by_attr(attr_name, format_func) {
+var DataTables = (function() {
+
+    var theTable;
+
+    var start = function() {
+        if ($(".table-recordings").length) {
+            theTable = $(".table-recordings").DataTable({
+                paging: false,
+                columns: [
+                    { orderable: false },
+                    { },
+                    { },
+                    { },
+                    { orderable: false }
+                ],
+                order: [[2, 'asc']]
+            });
+
+            // Add event listener for opening and closing details
+            $('.table-recordings tbody').on('click', 'td.details-control', toggleDetails);
+        }
+    }
+
+    var toggleDetails = function() {
+        var tr = $(this).closest('tr');
+        var row = theTable.row(tr);
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+            tr.find('.details-control .glyphicon').removeClass('glyphicon-chevron-down');
+            tr.find('.details-control .glyphicon').addClass('glyphicon-chevron-right');
+        }
+        else {
+            row.child(formatDetails(row.data())).show();
+            tr.addClass('shown');
+            tr.find('.details-control .glyphicon').removeClass('glyphicon-chevron-right');
+            tr.find('.details-control .glyphicon').addClass('glyphicon-chevron-down');
+        }
+    }
+
+    var formatDetails = function(data) {
+        var detailsTable = $(data[0])[2];
+        $(detailsTable).removeClass('hidden');
+        return detailsTable;
+    }
+
+    return {
+        start: start
+    }
+
+})();
+
+var TimesAndSizesFormatter = (function() {
+
+    var format_by_attr = function (attr_name, format_func) {
         $("[" + attr_name + "]").each(function(i, elem) {
             $(elem).text(format_func($(elem).attr(attr_name)));
         });
     }
 
-    format_by_attr("data-size", format_bytes);
+    var format = function() {
+        format_by_attr("data-size", format_bytes);
+        format_by_attr("data-time-ts", ts_to_date);
+        format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
+    }
 
-    format_by_attr("data-time-ts", ts_to_date);
+    return {
+        format: format
+    }
+})();
 
-    format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
-
-});
 
 // Check as soon as frame is loaded
 $("#replay_iframe").load(function() {

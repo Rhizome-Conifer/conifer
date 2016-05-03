@@ -29,7 +29,6 @@
 
 {% block content %}
 
-
 <div class="row">
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
@@ -80,11 +79,12 @@
 
 </div>
 
-<div class="row" style="margin-top: 20px">
-    <table id="rec_list" class="table table-striped">
+<div class="row top-buffer">
+    <table class="table table-striped table-recordings">
         <caption><h4>Recordings</h4></caption>
         <thead>
             <tr>
+                <th><!-- Details control --></th>
                 <th>Name</th>
                 <th>Last Recorded</th>
                 <th>Size</th>
@@ -95,9 +95,15 @@
             {% for rec in collection.recordings %}
             {% set path = get_path(user, coll, rec.id) %}
             <tr>
+                <td class="details-control" aria-role="button">
+                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true">
+                        <span class="sr-only">Details</span>
+                    </span>
+                    {% include 'recording_details.html' %}
+                </td>
                 <td><a href="{{ path }}">{{ rec.title }}</a></td>
-                <td data-time-sec="{{ rec.updated_at }}"></td>
-                <td data-size="{{ rec.size }}"></td>
+                <td data-time-sec="{{ rec.updated_at }}" data-order="{{ rec.updated_at }}"></td>
+                <td data-size="{{ rec.size }}" data-order="{{ rec.size }}"></td>
                 <td>
                     <a class="btn btn-default btn-xs" href="{{ path }}">
                         <span class="glyphicon glyphicon-globe glyphicon-button"></span>Browse

@@ -1,0 +1,17 @@
+<table class="table table-recording-details hidden">
+    <caption><h5>Pages</h5></caption>
+    <thead>
+        <tr>
+            <th>Url</th> 
+            <th>Last Recorded</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for page in rec.pages %}
+    <tr>
+        <td><a href="{{ path + '/' + page.url }}">{{ page.url }}</a></td>
+        <td data-time-ts="{{ page.timestamp }}"></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>

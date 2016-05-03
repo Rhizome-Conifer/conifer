@@ -161,6 +161,9 @@ class CollsController(BaseController):
         result['rec_title'] = ''
         result['coll_title'] = result['collection']['title']
 
+        for rec in result['collection']['recordings']:
+           rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
+
         if not result['collection'].get('desc'):
             result['collection']['desc'] = self.DEFAULT_DESC.format(result['coll_title'])
 
