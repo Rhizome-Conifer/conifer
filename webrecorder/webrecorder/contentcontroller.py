@@ -11,6 +11,7 @@ from bottle import Bottle, request, redirect, HTTPError, response, HTTPResponse
 from pywb.utils.timeutils import timestamp_now
 
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
+from urlrewrite.cookies import CookieTracker
 
 from webrecorder.basecontroller import BaseController
 
@@ -29,7 +30,9 @@ class ContentController(BaseController, RewriterApp):
              'replay-coll': '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}',
 
              'download': '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}',
-             'download_filename': '{title}-{timestamp}.warc.gz'
+             'download_filename': '{title}-{timestamp}.warc.gz',
+
+             'cookie_key_templ': 'r:{user}:{coll}:{rec}:cookie:'
             }
 
     WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?(https?:)?//.*')
@@ -43,6 +46,8 @@ class ContentController(BaseController, RewriterApp):
                              framed_replay=True,
                              jinja_env=jinja_env,
                              config=config)
+
+        self.cookie_tracker = CookieTracker(manager.redis)
 
     def init_routes(self):
         # REDIRECTS
@@ -332,6 +337,9 @@ class ContentController(BaseController, RewriterApp):
                                                **kwargs)
 
         return upstream_url
+
+    def get_cookie_key(self, kwargs):
+        return self.PATHS['cookie_key_templ'].format(**kwargs)
 
     def process_query_cdx(self, cdx, wb_url, kwargs):
         rec = kwargs.get('rec')
