@@ -10,7 +10,6 @@ $(function() {
     PagesComboxBox.start();
     CountdownTimer.start();
     SizeProgressBar.start();
-    DataTables.start();
 });
 
 var EventHandlers = (function() {

@@ -1,4 +1,6 @@
 $(function() {
+    DataTables.start();
+
     if (!can_admin) {
         // Public/Private
         return;
