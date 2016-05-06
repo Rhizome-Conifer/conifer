@@ -79,6 +79,8 @@ class RecsController(BaseController):
             result = {'curr_mode': "new"}
             result['coll_title'] = "anonymous"
 
+            result['action'] = "new_recording"
+
             return result
 
         # LOGGED-IN NEW REC
@@ -92,6 +94,8 @@ class RecsController(BaseController):
             result['curr_mode'] = "new"
             result['coll_title'] = result['collection']['title']
 
+            result['action'] = "new_recording"
+
             return result
 
         # ANON ADD TO REC
@@ -103,6 +107,8 @@ class RecsController(BaseController):
             result = {'curr_mode': "new"}
             result['coll_title'] = "anonymous"
             result['recording'] = self.get_rec_info(user, "anonymous", rec)
+
+            result['action'] = "add_to_recording"
 
             return result
 
@@ -118,6 +124,8 @@ class RecsController(BaseController):
             result['curr_mode'] = "new"
             result['coll_title'] = result['collection']['title']
             result['rec_title'] = result['recording']['title']
+
+            result['action'] = "add_to_recording"
 
             return result
 

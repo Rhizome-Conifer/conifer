@@ -139,6 +139,10 @@ class BaseController(object):
         else:
             return user
 
-
+    def get_body_class(self, action):
+        if action in ["add_to_recording", "new_recording"]:
+            return "interstitial-page"
+        else:
+            return ""
 
 

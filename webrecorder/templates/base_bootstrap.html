@@ -32,7 +32,7 @@
         {% block head %}
         {% endblock %}
     </head>
-    <body>
+    <body class="{{ get_body_class(action) }}">
         {% block body %}
         {% endblock %}
     </body>
