@@ -136,6 +136,12 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec, type='record')
 
+        @self.app.route('/<user>/<coll>/<rec>/patch/<wb_url:path>', method='ANY')
+        def logged_in_patch(user, coll, rec, wb_url):
+            request.path_shift(4)
+
+            return self.handle_routing(wb_url, user, coll, rec, type='patch')
+
         @self.app.route('/<user>/<coll>/<wb_url:re:[^$].*>', method='ANY')
         def logged_in_replay(user, coll, wb_url):
             rec_name = '*'

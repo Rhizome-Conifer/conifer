@@ -167,19 +167,24 @@ class RecsController(BaseController):
 
     def get_rec_info_for_new(self, user, coll, rec, action):
         result = {'curr_mode': 'new', 'action': action}
-
         result['user'] = self.get_view_user(user)
         result['coll'] = coll
         result['rec'] = rec
 
         if coll != 'anonymous':
             collection = self.manager.get_collection(user, coll)
+            if not collection:
+                self._raise_error(404, 'Collection not found')
+
             result['coll_title'] = collection['title']
         else:
             result['coll_title'] = 'anonymous'
 
         if rec:
             recording = self.manager.get_recording(user, coll, rec)
+            if not recording:
+                self._raise_error(404, 'Recording not found')
+
             result['rec_title'] = recording['title']
 
         return result
