@@ -94,6 +94,33 @@ class RecsController(BaseController):
 
             return result
 
+        # ANON ADD TO REC
+        @self.app.get(['/anonymous/<rec>/$add', '/anonymous/<rec>/$add/'])
+        @self.jinja2_view('add_to_recording.html')
+        def add_to_recording(rec):
+            user = self.get_session().anon_user
+
+            result = {'curr_mode': "new"}
+            result['coll_title'] = "anonymous"
+            result['recording'] = self.get_rec_info(user, "anonymous", rec)
+
+            return result
+
+        # LOGGED-IN ADD TO REC
+        @self.app.get(['/<user>/<coll>/<rec>/$add', '/<user>/<coll>/<rec>/$add/'])
+        @self.jinja2_view('add_to_recording.html')
+        def add_to_recording(user, coll, rec):
+            result = self.get_rec_info(user, coll, rec)
+            result['collection'] = self.manager.get_collection(user, coll)
+            result['user'] = self.get_view_user(user)
+            result['coll'] = coll
+
+            result['curr_mode'] = "new"
+            result['coll_title'] = result['collection']['title']
+            result['rec_title'] = result['recording']['title']
+
+            return result
+
         # ANON REC VIEW
         @self.app.get(['/anonymous/<rec>', '/anonymous/<rec>/'])
         @self.jinja2_view('recording_info.html')

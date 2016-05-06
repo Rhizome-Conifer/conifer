@@ -33,13 +33,13 @@
         <h1 style="display: inline"><span id="rec-title">{{ recording.title }}</span>&nbsp;
             <div class="pull-right">
                 {% if can_write() %}
-                <button id="add-to-recording" class="btn btn-primary btn-sm show-recorder">Add To Recording</button>
+                    <a href="{{ get_path(user, coll, recording.id) }}/$add" class="btn btn-primary btn-sm show-recorder">Add To Recording</a>
                 {% endif %}
 
                 {% if can_admin() %}
-                <a href="{{ recording.download_url }}" class="btn btn-primary btn-sm" role="button">Download</a>
+                    <a href="{{ recording.download_url }}" class="btn btn-primary btn-sm" role="button">Download</a>
 
-                <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete</button>
+                    <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete</button>
                 {% endif %}
             </div>
 
