@@ -7,58 +7,45 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-10 col-md-offset-2">
-        <h1 style="line-height: 1.5em; font-weight: bold">Welcome to Webrecorder Beta</h1>
-        <h4>An <a href="https://github.com/webrecorder/webrecorder">open source</a> web archiving platform and service for all!</h4>
-        <h4>Easily create high-fidelity, standards compliant archives of the web as you browse.</h4>
-    </div>
-</div>
 
-<div class="row" style="margin-bottom: 20px">
-    <div class="col-md-offset-2 col-md-8">
-        {% if curr_user %}
-        <div class="well">
-            <p class="text-center">You are logged in as <b>{{ curr_user }}</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/{{ curr_user }}"><b>View Your Archive</b></a></p>
-        </div>
-        {% else %}
-        
-        {% if anon_size and anon_recordings %}
+{% if curr_user %}
+    <div class="well">
+        <p class="text-center">You are logged in as <b>{{ curr_user }}</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/{{ curr_user }}"><b>View Your Archive</b></a></p>
+    </div>
+{% else %}
+    {% if anon_size and anon_recordings %}
         <div class="alert alert-info" role="alert">
             Anonymously recorded <a href="/anonymous"><b data-size="{{ anon_size }}"></b></a> in <a href="/anonymous"><b>{{ anon_recordings }}</b></a> recordings(s).
         <b style="margin-left: 10px"><a href="/anonymous">Browse</a></b>, <b><a href="/anonymous/$download">Download</a></b>, <b><a href="/anonymous">Delete</a></b><p class="pull-right">Expires in <b data-anon-timer="{{ anon_ttl }}"></b></p>
         </div>
-        {% endif %}
-        
-        {% if invites_enabled %}
-        <h4>We are inviting users to build their own archives as we test this service.</h4>
-        <h4><a href="/_register">Request an invite to sign-up</a></h4>
-        {% else %}
-        <h4>To keep your archive online, <a href="/_register">sign up</a> for an account.</h4>
-        {% endif %}
+    {% endif %}
+{% endif %}
 
-        {% endif %}
-    </div>
+<div class="row top-buffer">
+    <h1 class="text-center"><strong>Welcome to Webrecorder Beta</strong></h1>
 </div>
 
-<div class="row">
-    <div class="col-md-4 col-md-offset-2">
-        <h4>A project of <a href="https://rhizome.org" target="_blank"><img src="/static/__shared/rhizome_logo_sm.png" style="vertical-align: bottom"/></a></h4>
-    </div>
-{#
-    <div class="col-md-4 alert alert-warning alert-dismissable" role="alert">
-        Excited about web archiving and digital preservation?<br/> <a style="font-weight: bold" href="/static/__shared/jobs/developer.pdf">We're hiring a Webrecorder Developer</a>!
-    </div>
-#}
+<div class="row top-buffer">
+    <form class="form-inline start-recording-homepage col-md-10 col-md-offset-1">
+        <div class="form-group col-md-10">
+            <label for="url" class="control-label sr-only">Url</label>
+            <input name="url" type="text" class="form-control homepage-url-input" placeholder="Url to record" autofocus required>
+        </div>
+        <div class="form-group col-md-1">
+            <button type="submit" class="btn btn-default">Record</button>
+        </div>
+    </form>
 </div>
 
 
-<div class="row" style="margin-top: 40px">
-    <div class="col-md-10 col-md-offset-2"><a href="mailto:support@webrecorder.io">Contact Us</a> for any questions or feedback.</div>
-    <div class="col-md-10 col-md-offset-2"><a href="https://twitter.com/webrecorder_io">Follow us</a> on Twitter</div>
-</div>
-{% endblock %}
+{% if is_anon and invites_enabled %}
+    <div class="row top-buffer">
+        <div class="col-md-offset-1 col-md-10">
+            <h4>We are inviting users to build their own archives as we test this service.</h4>
+            <h4><a href="/_register">Request an invite to sign-up</a></h4>
+        </div>
+    </div>
+{% endif %}
 
-{% block footer %}
 
 {% endblock %}

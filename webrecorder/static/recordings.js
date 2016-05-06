@@ -3,56 +3,79 @@ if (!user) {
 }
 
 $(function() {
-    // 'New recording': Record button
-    $('header').on('submit', '.start-recording', function(event) {
-        event.preventDefault();
-
-        var collection = $("*[name='collection']").val();
-        var title = $("input[name='title']").val();
-        var url = $("input[name='url']").val();
-
-        RouteTo.recordingInProgress(user, collection, title, url);
-    });
-
-    // 'Recording in progress': Url bar 'Go' button / enter key
-    $('header').on('submit', '.recording-in-progress', function(event) {
-        event.preventDefault();
-
-        var url = $("input[name='url']").val();
-
-        RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
-    });
-
-    // 'Recording in progress': Stop recording button
-    $('header').on('submit', '.stop-recording', function(event) {
-        event.preventDefault();
-
-        RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
-    });
-
-    // 'Browse recording': Url bar 'Go' button / enter key
-    $('header').on('submit', '.browse-recording', function(event) {
-        event.preventDefault();
-
-        var url = $("input[name='url']").val();
-
-        RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
-    });
-
-    // 'Browse recording': 'Add to recording' button
-    $('header').on('submit', '.add-to-recording', function(event){
-        event.preventDefault();
-
-        var url = $("input[name='url']").val();
-
-        RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url, "patch");
-    });
-
+    EventHandlers.bindAll();
+    TimesAndSizesFormatter.format();
     CollectionsDropdown.start();
     RecordingSizeWidget.start();
     PagesComboxBox.start();
     CountdownTimer.start();
+    SizeProgressBar.start();
 });
+
+var EventHandlers = (function() {
+    var bindAll = function() {
+        // 'Homepage': Record button
+        $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
+            event.preventDefault();
+
+            var collection = "anonymous";
+            var title = "My First Recording";
+            var url = $(".wr-content input[name='url']").val();
+
+            RouteTo.recordingInProgress(user, collection, title, url);
+        });
+
+
+        // 'New recording': Record button
+        $('header').on('submit', '.start-recording', function(event) {
+            event.preventDefault();
+
+            var collection = $("*[name='collection']").val();
+            var title = $("input[name='title']").val();
+            var url = $("input[name='url']").val();
+
+            RouteTo.recordingInProgress(user, collection, title, url);
+        });
+
+        // 'Recording in progress': Url bar 'Go' button / enter key
+        $('header').on('submit', '.recording-in-progress', function(event) {
+            event.preventDefault();
+
+            var url = $("input[name='url']").val();
+
+            RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
+        });
+
+        // 'Recording in progress': Stop recording button
+        $('header').on('submit', '.stop-recording', function(event) {
+            event.preventDefault();
+
+            RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
+        });
+
+        // 'Browse recording': Url bar 'Go' button / enter key
+        $('header').on('submit', '.browse-recording', function(event) {
+            event.preventDefault();
+
+            var url = $("input[name='url']").val();
+
+            RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
+        });
+
+        // 'Browse recording': 'Add to recording' button
+        $('header').on('submit', '.add-to-recording', function(event){
+            event.preventDefault();
+
+            var url = $("input[name='url']").val();
+
+            RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url, "patch");
+        });  
+    }
+
+    return {
+        bindAll: bindAll
+    }
+})();
 
 var Collections = (function() {
     var API_ENDPOINT = "/api/v1/collections";
@@ -416,23 +439,102 @@ var CountdownTimer = (function() {
 })();
 
 
+var SizeProgressBar = (function() {
 
+    var start = function() {
+        var curr_size = $('.space-usage .progress-bar').attr('data-current-size');
+        var max_size = $('.space-usage .progress-bar').attr('data-max-size');
+        var percentage = Math.round($('.space-usage .progress-bar').attr('data-current-size') / $('.space-usage .progress-bar').attr('data-max-size') * 100);
 
-// Format size
-$(function() {
-    function format_by_attr(attr_name, format_func) {
+        $('.space-usage .progress-bar').attr('aria-valuenow', percentage);
+        $('.space-usage .progress-bar').attr('style', "width: " + percentage + "%");
+
+        if (percentage < 70) {
+            $('.space-usage .progress-bar').addClass('progress-bar-success');
+        } else if (percentage >= 70 && percentage < 90) {
+            $('.space-usage .progress-bar').addClass('progress-bar-warning');
+        } else {
+            $('.space-usage .progress-bar').addClass('progress-bar-danger');
+        }
+    }
+
+    return {
+        start: start
+    }
+})();
+
+var DataTables = (function() {
+
+    var theTable;
+
+    var start = function() {
+        if ($(".table-recordings").length) {
+            theTable = $(".table-recordings").DataTable({
+                paging: false,
+                columns: [
+                    { orderable: false },
+                    { },
+                    { },
+                    { },
+                    { orderable: false }
+                ],
+                order: [[2, 'asc']]
+            });
+
+            // Add event listener for opening and closing details
+            $('.table-recordings tbody').on('click', 'td.details-control', toggleDetails);
+        }
+    }
+
+    var toggleDetails = function() {
+        var tr = $(this).closest('tr');
+        var row = theTable.row(tr);
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+            tr.find('.details-control .glyphicon').removeClass('glyphicon-chevron-down');
+            tr.find('.details-control .glyphicon').addClass('glyphicon-chevron-right');
+        }
+        else {
+            row.child(formatDetails(row.data())).show();
+            tr.addClass('shown');
+            tr.find('.details-control .glyphicon').removeClass('glyphicon-chevron-right');
+            tr.find('.details-control .glyphicon').addClass('glyphicon-chevron-down');
+        }
+    }
+
+    var formatDetails = function(data) {
+        var detailsTable = $(data[0])[2];
+        $(detailsTable).removeClass('hidden');
+        return detailsTable;
+    }
+
+    return {
+        start: start
+    }
+
+})();
+
+var TimesAndSizesFormatter = (function() {
+
+    var format_by_attr = function (attr_name, format_func) {
         $("[" + attr_name + "]").each(function(i, elem) {
             $(elem).text(format_func($(elem).attr(attr_name)));
         });
     }
 
-    format_by_attr("data-size", format_bytes);
+    var format = function() {
+        format_by_attr("data-size", format_bytes);
+        format_by_attr("data-time-ts", ts_to_date);
+        format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
+    }
 
-    format_by_attr("data-time-ts", ts_to_date);
+    return {
+        format: format
+    }
+})();
 
-    format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
-
-});
 
 // Check as soon as frame is loaded
 $("#replay_iframe").load(function() {

@@ -1,10 +1,6 @@
 {% extends "base_bootstrap.html" %}
 
 {% block head %}
-<!--
-<script src="/static/__shared/nav.js"></script>
--->
-
 <script src="/static/__shared/external/jquery-ui.min.js"></script>
 
 <script src="/static/__shared/external/jquery.selectBoxIt.min.js"></script>
@@ -21,7 +17,7 @@
     {% include 'navigation.html' %}
 </header>
 
-<div class="container">
+<div class="container wr-content">
     {% block message %}
     {% if message and message != '' %}
     <div class="alert alert-{{ msg_type | default('danger') }} alert-dismissable" role="alert">
@@ -39,9 +35,15 @@
 
 {% block footer %}
 <footer class="footer">
-    <div class="container">
-        <div class="text-center"><a href="mailto:support@webrecorder.io">Contact Us</a> for any questions or feedback.<br/>
-            Webrecorder is a project of <a href="https://rhizome.org" target="_blank"><img src="/static/__shared/rhizome_logo_sm.png" style="vertical-align: bottom"></img></a><br/>
+    <div class="container top-buffer">
+        <div class="pull-left">
+            <a href="mailto:support@webrecorder.io">
+                <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
+                <span class="sr-only">Contact Us</span>
+            </a>
+        </div>
+        <div class="pull-right">
+            <a href="https://rhizome.org" target="_blank"><img src="/static/__shared/rhizome_logo_sm.png"></a>
         </div>
     </div>
 </footer>

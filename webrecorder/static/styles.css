@@ -115,6 +115,11 @@ li.coll-nav {
     height: 20px;
 }
 
+
+.form-inline .homepage-url-input {
+    width: 100%;
+}
+
 .doesnt-look-right {
     font-size: 11px;
 }
@@ -355,4 +360,13 @@ a.dropdown-badge {
 
 .collection-list {
     margin-top: 20px;
+}
+
+.top-buffer {
+    margin-top: 20px;
+}
+
+.space-usage {
+    width: 25%;
+    min-width: 150px;
 }
