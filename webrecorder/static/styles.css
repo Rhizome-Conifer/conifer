@@ -366,6 +366,14 @@ a.dropdown-badge {
     margin-top: 20px;
 }
 
+.top-buffer-lg {
+    margin-top: 40px;
+}
+
+.left-buffer {
+    margin-left: 20px;
+}
+
 .space-usage {
     width: 25%;
     min-width: 150px;

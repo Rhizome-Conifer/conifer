@@ -72,6 +72,28 @@ class RecsController(BaseController):
             pages = self.manager.list_pages(user, coll, rec)
             return {'pages': pages}
 
+        # ANON NEW REC
+        @self.app.get(['/anonymous/$new', '/anonymous/$new/'])
+        @self.jinja2_view('new_recording.html')
+        def new_recording():
+            result = {'curr_mode': "new"}
+            result['coll_title'] = "anonymous"
+
+            return result
+
+        # LOGGED-IN NEW REC
+        @self.app.get(['/<user>/<coll>/$new', '/<user>/<coll>/$new/'])
+        @self.jinja2_view('new_recording.html')
+        def new_recording(user, coll):
+            result = {'collection': self.manager.get_collection(user, coll)}
+            result['user'] = self.get_view_user(user)
+            result['coll'] = coll
+
+            result['curr_mode'] = "new"
+            result['coll_title'] = result['collection']['title']
+
+            return result
+
         # ANON REC VIEW
         @self.app.get(['/anonymous/<rec>', '/anonymous/<rec>/'])
         @self.jinja2_view('recording_info.html')
@@ -87,6 +109,7 @@ class RecsController(BaseController):
 
             return self.get_rec_info_for_view(user, coll, rec)
 
+        # DELETE REC
         @self.app.post('/_delete_rec/<rec>')
         def delete_rec_post(rec):
             user, coll = self.get_user_coll(api=False)
@@ -128,8 +151,6 @@ class RecsController(BaseController):
         result['coll'] = coll
         result['rec'] = rec
 
-        result['curr_mode'] = 'new'
-        result['recorder_hidden'] = True
         result['rec_title'] = result['recording']['title']
         result['coll_title'] = result['collection']['title']
 
