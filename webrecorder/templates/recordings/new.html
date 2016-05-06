@@ -10,13 +10,13 @@
 			<div class="title">
 				<label for="title" class="control-label col-xs-1">Title:</label>
 				<div class="col-xs-5">
-				    <input name="title" type="text" class="form-control input-sm" placeholder="Recording title" value="{{ rec_title | default('My First Recording')  }}" required>
+				    <input name="title" type="text" class="form-control input-sm" placeholder="Recording title" value="{{ rec_title }}" required>
 				</div>
 			</div>
 			<div class="collection">
 				<label for="collection" class="control-label col-xs-1">Collection:</label>
 				<div class="col-xs-5">
-				    <input name="collection" type="text" value="{{ coll_title | default('anonymous') }}" class="form-control input-sm" readonly required>
+				    <input name="collection" type="text" value="{{ coll_title }}" class="form-control input-sm" readonly required>
 				</div>
 			</div>
 		</div>

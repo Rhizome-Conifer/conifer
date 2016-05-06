@@ -84,7 +84,7 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec, type='patch')
 
-        @self.app.route('/anonymous/<wb_url:path>', method='ANY')
+        @self.app.route('/anonymous/<wb_url:re:[^$].*>', method='ANY')
         def anon_replay(wb_url):
             rec_name = '*'
 
@@ -124,7 +124,7 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_download('coll', user, coll, '*')
 
         # special case match: /anonymous/rec/example.com -- don't treat as user/coll/rec
-        @self.app.route('/anonymous/<rec>/<host>')
+        @self.app.route('/anonymous/<rec>/<host:re:[^$][^/]+>')
         def anon_replay_host_only(rec, host):
             request.path_shift(2)
             return self.handle_anon_content(host, rec, type='replay')
@@ -136,7 +136,7 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec, type='record')
 
-        @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<wb_url:re:[^$].*>', method='ANY')
         def logged_in_replay(user, coll, wb_url):
             rec_name = '*'
 

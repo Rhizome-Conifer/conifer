@@ -156,8 +156,6 @@ class CollsController(BaseController):
         result['user'] = self.get_view_user(user)
         result['coll'] = coll
 
-        result['curr_mode'] = 'new'
-        result['recorder_hidden'] = True
         result['rec_title'] = ''
         result['coll_title'] = result['collection']['title']
 

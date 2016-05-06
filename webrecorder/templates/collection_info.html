@@ -38,7 +38,7 @@
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
             <div class="pull-right">
                 {% if can_write() %}
-                    <button id="add-recording" class="btn btn-primary btn-sm show-recorder">New Recording</button>
+                    <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm">New Recording</a>
                 {% endif %}
                 {% if can_admin() %}
                     <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm">Download</a>

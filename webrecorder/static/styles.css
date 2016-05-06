@@ -1,3 +1,7 @@
+.interstitial-page {
+    background-color: #808080;
+}
+
 li.coll-nav {
     font-size: 18px;
 }
@@ -364,6 +368,14 @@ a.dropdown-badge {
 
 .top-buffer {
     margin-top: 20px;
+}
+
+.top-buffer-lg {
+    margin-top: 40px;
+}
+
+.left-buffer {
+    margin-left: 20px;
 }
 
 .space-usage {

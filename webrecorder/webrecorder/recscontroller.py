@@ -72,10 +72,43 @@ class RecsController(BaseController):
             pages = self.manager.list_pages(user, coll, rec)
             return {'pages': pages}
 
+        # ANON NEW REC
+        @self.app.get(['/anonymous/$new', '/anonymous/$new/'])
+        @self.jinja2_view('new_recording.html')
+        def anon_new_recording():
+
+            user = self.get_session().anon_user
+
+            return self.get_rec_info_for_new(user, 'anonymous', None, 'new_recording')
+
+        # LOGGED-IN NEW REC
+        @self.app.get(['/<user>/<coll>/$new', '/<user>/<coll>/$new/'])
+        @self.jinja2_view('new_recording.html')
+        def new_recording(user, coll):
+
+            return self.get_rec_info_for_new(user, coll, None, 'new_recording')
+
+        # ANON ADD TO REC
+        @self.app.get(['/anonymous/<rec>/$add', '/anonymous/<rec>/$add/'])
+        @self.jinja2_view('add_to_recording.html')
+        def anon_add_to_recording(rec):
+
+            user = self.get_session().anon_user
+
+            return self.get_rec_info_for_new(user, 'anonymous', rec, 'add_to_recording')
+
+        # LOGGED-IN ADD TO REC
+        @self.app.get(['/<user>/<coll>/<rec>/$add', '/<user>/<coll>/<rec>/$add/'])
+        @self.jinja2_view('add_to_recording.html')
+        def add_to_recording(user, coll, rec):
+
+            return self.get_rec_info_for_new(user, coll, rec, 'add_to_recording')
+
         # ANON REC VIEW
         @self.app.get(['/anonymous/<rec>', '/anonymous/<rec>/'])
         @self.jinja2_view('recording_info.html')
         def anon_rec_info(rec):
+
             user = self.get_session().anon_user
 
             return self.get_rec_info_for_view(user, 'anonymous', rec)
@@ -87,11 +120,10 @@ class RecsController(BaseController):
 
             return self.get_rec_info_for_view(user, coll, rec)
 
+        # DELETE REC
         @self.app.post('/_delete_rec/<rec>')
         def delete_rec_post(rec):
             user, coll = self.get_user_coll(api=False)
-
-            print(user, coll, rec)
 
             success = False
             try:
@@ -128,10 +160,27 @@ class RecsController(BaseController):
         result['coll'] = coll
         result['rec'] = rec
 
-        result['curr_mode'] = 'new'
-        result['recorder_hidden'] = True
         result['rec_title'] = result['recording']['title']
         result['coll_title'] = result['collection']['title']
+
+        return result
+
+    def get_rec_info_for_new(self, user, coll, rec, action):
+        result = {'curr_mode': 'new', 'action': action}
+
+        result['user'] = self.get_view_user(user)
+        result['coll'] = coll
+        result['rec'] = rec
+
+        if coll != 'anonymous':
+            collection = self.manager.get_collection(user, coll)
+            result['coll_title'] = collection['title']
+        else:
+            result['coll_title'] = 'anonymous'
+
+        if rec:
+            recording = self.manager.get_recording(user, coll, rec)
+            result['rec_title'] = recording['title']
 
         return result
 
