@@ -1,6 +1,7 @@
 from bottle import request, HTTPError, redirect as bottle_redirect
 from functools import wraps
 import re
+import os
 
 
 # ============================================================================
@@ -132,6 +133,14 @@ class BaseController(object):
             id += '_'
 
         return id
+
+    @property
+    def record_host(self):
+        return os.environ['RECORD_HOST']
+
+    @property
+    def replay_host(self):
+        return os.environ['WEBAGG_HOST']
 
     def get_view_user(self, user):
         if self.manager.is_anon(user):

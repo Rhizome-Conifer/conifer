@@ -8,15 +8,10 @@ from six.moves.urllib.parse import quote
 
 from bottle import Bottle, request, redirect, HTTPError, response, HTTPResponse
 
-from pywb.utils.timeutils import timestamp_now
-
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
 from urlrewrite.cookies import CookieTracker
 
 from webrecorder.basecontroller import BaseController
-
-from webagg.utils import StreamIter
-from io import BytesIO
 
 
 # ============================================================================
@@ -29,18 +24,12 @@ class ContentController(BaseController, RewriterApp):
              'replay': '{replay_host}/replay/resource/postreq?url={url}&closest={closest}&param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}',
              'replay-coll': '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}',
 
-             'download': '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}',
-             'download_filename': '{title}-{timestamp}.warc.gz',
-
              'cookie_key_templ': 'r:{user}:{coll}:{rec}:cookie:'
             }
 
     WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?(https?:)?//.*')
 
     def __init__(self, app, jinja_env, manager, config):
-        self.record_host = os.environ['RECORD_HOST']
-        self.replay_host = os.environ['WEBAGG_HOST']
-
         BaseController.__init__(self, app, jinja_env, manager, config)
         RewriterApp.__init__(self,
                              framed_replay=True,
@@ -84,7 +73,7 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec, type='patch')
 
-        @self.app.route('/anonymous/<wb_url:re:[^$].*>', method='ANY')
+        @self.app.route('/anonymous/<wb_url:path>', method='ANY')
         def anon_replay(wb_url):
             rec_name = '*'
 
@@ -108,23 +97,8 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_anon_content(wb_url, rec=rec_name, type=type_)
 
-        # ANON DOWNLOAD
-        @self.app.get('/anonymous/<rec>/$download')
-        def anon_download_rec_warc(rec):
-            user = self.get_anon_user()
-            coll = 'anonymous'
-
-            return self.handle_download('rec', user, coll, rec)
-
-        @self.app.get('/anonymous/$download')
-        def anon_download_coll_warc():
-            user = self.get_anon_user()
-            coll = 'anonymous'
-
-            return self.handle_download('coll', user, coll, '*')
-
         # special case match: /anonymous/rec/example.com -- don't treat as user/coll/rec
-        @self.app.route('/anonymous/<rec>/<host:re:[^$][^/]+>')
+        @self.app.route('/anonymous/<rec>/<host>')
         def anon_replay_host_only(rec, host):
             request.path_shift(2)
             return self.handle_anon_content(host, rec, type='replay')
@@ -142,7 +116,7 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec, type='patch')
 
-        @self.app.route('/<user>/<coll>/<wb_url:re:[^$].*>', method='ANY')
+        @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
         def logged_in_replay(user, coll, wb_url):
             rec_name = '*'
 
@@ -166,81 +140,9 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec=rec_name, type=type_)
 
-        # Logged-In Download
-        @self.app.get('/<user>/<coll>/<rec>/$download')
-        def logged_in_download_rec_warc(user, coll, rec):
-
-            return self.handle_download('rec', user, coll, rec)
-
-        @self.app.get('/<user>/<coll>/$download')
-        def logged_in_download_coll_warc(user, coll):
-            return self.handle_download('coll', user, coll, '*')
-
-    def handle_download(self, type, user, coll, rec):
-        info = {}
-        rec_title = ''
-        coll_title = ''
-
-        if rec == '*':
-            info = self.manager.get_collection(user, coll)
-            if not info:
-                self._raise_error(404, 'Collection not found',
-                                  id=coll)
-
-            title = coll_title = info.get('title', coll)
-
-        else:
-            info = self.manager.get_recording(user, coll, rec)
-            if not info:
-                self._raise_error(404, 'Collection not found',
-                                  id=coll)
-
-            title = rec_title = info.get('title', rec)
-
-        now = timestamp_now()
-        filename = self.PATHS['download_filename'].format(title=title,
-                                                          timestamp=now)
-
-        download_url = self.PATHS['download']
-        download_url = download_url.format(record_host=self.record_host,
-                                           user=user,
-                                           coll=coll,
-                                           rec=rec,
-                                           type=type,
-                                           filename=filename,
-                                           rec_title=rec_title,
-                                           coll_title=coll_title)
-
-        res = requests.get(download_url, stream=True)
-
-        if res.status_code >= 400:  #pragma: no cover
-            try:
-                res.raw.close()
-            except:
-                pass
-
-            self._raise_error(400, 'Unable to download WARC')
-
-        response.headers['Content-Type'] = 'application/octet-stream'
-        response.headers['Content-Disposition'] = 'attachment; filename=' + quote(filename)
-
-        length = res.headers.get('Content-Length')
-        if length:
-            response.headers['Content-Length'] = length
-
-        encoding = res.headers.get('Transfer-Encoding')
-        if encoding:
-            response.headers['Transfer-Encoding'] = encoding
-
-        return StreamIter(res.raw)
-
-    def get_anon_user(self, save_sesh=True):
-        user = self.manager.get_anon_user(save_sesh)
-        return user
-
     def handle_anon_content(self, wb_url, rec, type):
         save_sesh = (type in ('record', 'patch'))
-        user = self.get_anon_user(save_sesh)
+        user = self.manager.get_anon_user(save_sesh)
         coll = 'anonymous'
 
         return self.handle_routing(wb_url, user, coll, rec, type)

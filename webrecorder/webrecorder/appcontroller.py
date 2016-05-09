@@ -21,6 +21,7 @@ from webrecorder.collscontroller import CollsController
 from webrecorder.logincontroller import LoginController
 from webrecorder.usercontroller import UserController
 from webrecorder.browsercontroller import BrowserController
+from webrecorder.downloadcontroller import DownloadController
 
 from webrecorder.webreccork import WebRecCork
 
@@ -34,12 +35,15 @@ from webrecorder.basecontroller import BaseController
 
 # ============================================================================
 class AppController(BaseController):
-    ALL_CONTROLLERS = [ContentController,
+    ALL_CONTROLLERS = [DownloadController,
                        BrowserController,
                        LoginController,
                        UserController,
+                       ContentController,
                        RecsController,
-                       CollsController]
+                       CollsController
+                      ]
+
 
     def __init__(self, configfile='config.yaml', redis_url=None):
         self._init_logging()
