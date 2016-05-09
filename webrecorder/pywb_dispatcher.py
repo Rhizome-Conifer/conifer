@@ -256,14 +256,16 @@ class PywbDispatcher(object):
         try:
             resp = requests.request(method='PUTRES',
                                     url=url,
-                                    data=orig_html,
+                                    data=orig_html.encode('utf-8'),
                                     headers=req_headers,
                                     proxies=self.warcprox_proxies,
                                     verify=False)
 
             if add_page:
                 self.manager.add_page(user, coll, pagedata)
-        except:
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
             return {'status': 'err'}
 
 
