@@ -18,14 +18,13 @@
 
 <div class="container wr-content">
     {% block message %}
-    {% if message and message != '' %}
-    <div class="alert alert-{{ msg_type | default('danger') }} alert-dismissable" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-        {{ message }}
-    </div>
-    {% endif %}
+
+        {% include 'out_of_space_message.html' %}
+
+        {% if message and message != '' %}
+            {% include 'flash_message.html' %}
+        {% endif %}
+
     {% endblock %}
 
     {% block content %}

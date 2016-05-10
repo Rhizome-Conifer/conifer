@@ -6,11 +6,11 @@ li.coll-nav {
     font-size: 18px;
 }
 
-.webrecorder-header {
+.header-webrecorder {
     background-color: #222;
 }
 
-.webrecorder-header a {
+.header-webrecorder a {
     color: #429EEC;
 }
 
@@ -381,4 +381,13 @@ a.dropdown-badge {
 .space-usage {
     width: 25%;
     min-width: 150px;
+}
+
+.alert-during-recording {
+    position: fixed;
+    top: 20px;
+    z-index: 2;
+    height: 40px;
+    display: none;
+    padding: 10px;
 }

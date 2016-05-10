@@ -1,0 +1,20 @@
+{% if is_owner() and is_out_of_space() %}
+    
+    {% set message = "
+
+    <p><strong>Your account is out of space.</strong>  This means you can't record anything right now.</p>
+
+    <p>To be able to record again, you can:</p>
+
+    <ul>
+    	<li>Download some collections or recordings and then delete them to make space.</li>
+    	<li><a href='mailto:support@webrecorder.io'>Contact Us</a> to request more space.</li>
+    </ul>
+    
+    "%}
+    
+    {% set msg_type = "danger" %}
+
+    {% include 'flash_message.html' %}
+
+{% endif %}

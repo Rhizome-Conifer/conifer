@@ -131,6 +131,10 @@ class AppController(BaseController):
         def get_body_class(context, action):
             return self.get_body_class(action)
 
+        @contextfunction
+        def is_out_of_space(context):
+            return self.manager.is_out_of_space(context.get('user', ''))
+
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
@@ -138,6 +142,7 @@ class AppController(BaseController):
         jinja_env.globals['is_anon'] = is_anon
         jinja_env.globals['get_path'] = get_path
         jinja_env.globals['get_body_class'] = get_body_class
+        jinja_env.globals['is_out_of_space'] = is_out_of_space
 
     def init_routes(self):
         @self.bottle_app.route(['/', '/index.html'])
