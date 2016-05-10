@@ -37,9 +37,7 @@
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
             <div class="pull-right">
-                {% if can_write() %}
-                    <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm">New Recording</a>
-                {% endif %}
+                {% include 'new_recording_button.html' %}
                 {% if can_admin() %}
                     <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm">Download</a>
                     <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete</button>

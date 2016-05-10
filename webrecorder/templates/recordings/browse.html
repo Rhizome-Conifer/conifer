@@ -11,18 +11,18 @@
 	<div class="form-group browse-recording-form-group recording-info container-fluid col-xs-12">
 		<div class="title pull-left">
 			<strong class="control-label">Recording Title:</strong>
-			<span class="recording-info-value">{{ info['rec_title'] }}</span>
+			<span class="recording-info-value">{{ info.rec_title }}</span>
 		</div>
 		<div class="collection pull-left">
 			<strong class="control-label">Collection:</strong>
-			<span class="recording-info-value">{{ info['coll_title'] }}</span>
+			<span class="recording-info-value">{{ info.coll_title }}</span>
 		</div>
 	</div>	
 </form>
 
 <div class="recording-actions text-center col-xs-2">
 	<div class="size-counter">
-		<span class="current-size"></span>
+		<span class="current-size" data-size="{{ info.size }}"></span>
 	</div>
 
 	<form class="add-to-recording">

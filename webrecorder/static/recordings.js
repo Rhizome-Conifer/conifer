@@ -14,6 +14,13 @@ $(function() {
 
 var EventHandlers = (function() {
     var bindAll = function() {
+
+        // Prevent the use of any disabled elements
+        $('body').on('click', '.disabled', function(event){
+            event.prevenDefault();
+            return false;
+        });
+
         // 'Homepage': Record button
         $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
             event.preventDefault();
@@ -213,21 +220,25 @@ var RouteTo = (function(){
 
 var RecordingSizeWidget = (function() {
     var start = function() {
-        if ($('.size-counter').length) {
+        if ($('.size-counter-active').length) {
+            if (isOutOfSpace()) {
+                RouteTo.recordingInfo(user, wbinfo.info.coll_id, wbinfo.info.rec_id);
+            }
+
             var spaceUsed = format_bytes(wbinfo.info.size);
             updateDom(spaceUsed);
 
-            setTimeout(pollForSizeUpdate, 1000);
-
-            if (wbinfo.state == "record" || wbinfo.state == "patch") {
-                setInterval(pollForSizeUpdate, 10000);
-            }
+            setInterval(pollForSizeUpdate, 1000);
         }
     }
 
     var pollForSizeUpdate = function() {
         Recordings.get(wbinfo.info.rec_id, updateSizeCounter, dontUpdateSizeCounter);
         exclude_password_targets();
+        if (isAlmostOutOfSpace() && !warningPresent()) {
+            showWarningMessage();
+            disableUrlBar();
+        }
     }
 
     var updateSizeCounter = function(data) {
@@ -242,7 +253,30 @@ var RecordingSizeWidget = (function() {
     }
 
     var dontUpdateSizeCounter = function() {
-	// Do nothing to leave the last counter value on the page.
+        // Do nothing to leave the last counter value on the page.
+    }
+
+    var isOutOfSpace = function() {
+        return wbinfo.info.size_remaining <= 0;
+    }
+
+    var isAlmostOutOfSpace = function() {
+        return wbinfo.info.size_remaining <= 500000;  // 500KB
+    }
+
+    var showWarningMessage = function() {
+        var outOfSpaceWarningDOM = "<div class='alert alert-warning alert-during-recording alert-out-of-space col-md-10' role='alert'><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><span class='sr-only'>Alert:</span><span class='left-buffer'></span>Your account is about to run out of space.  Please wrap up your work and stop your current recording.</div>"
+        $('.header-webrecorder').after(outOfSpaceWarningDOM);
+        $('.alert-during-recording').slideDown();
+    }
+
+    var warningPresent = function() {
+        return $('.alert-out-of-space').length;
+    }
+
+    var disableUrlBar = function() {
+        $('.recording-in-progress').find("input[name='url']").prop('disabled', true);
+        $('.recording-in-progress').find('button').prop('disabled', true);
     }
 
     return {
@@ -478,7 +512,7 @@ var DataTables = (function() {
                     { },
                     { orderable: false }
                 ],
-                order: [[2, 'asc']]
+                order: [[2, 'desc']]
             });
 
             // Add event listener for opening and closing details
@@ -565,16 +599,6 @@ function exclude_password_targets() {
         }
     });
 }
-
-
-
-
-
-$(function() {
-    $(".show-recorder").click(function(e) {
-        $("#recorder-bar").show();
-    });
-});
 
 
 $(function() {

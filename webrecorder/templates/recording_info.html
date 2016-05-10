@@ -32,9 +32,7 @@
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="rec-title">{{ recording.title }}</span>&nbsp;
             <div class="pull-right">
-                {% if can_write() %}
-                    <a href="{{ get_path(user, coll, recording.id) }}/$add" class="btn btn-primary btn-sm show-recorder">Add To Recording</a>
-                {% endif %}
+                {% include 'add_to_recording_button.html' %}
 
                 {% if can_admin() %}
                     <a href="{{ recording.download_url }}" class="btn btn-primary btn-sm" role="button">Download</a>

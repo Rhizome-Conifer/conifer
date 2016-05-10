@@ -148,6 +148,9 @@ class LoginManagerMixin(object):
 
         return rem
 
+    def is_out_of_space(self, user):
+        return self.get_size_remaining(user) <= 0
+
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
         all_users = RedisTable(self.redis, 'h:users')
