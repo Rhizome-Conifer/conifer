@@ -127,11 +127,7 @@ class LoginManagerMixin(object):
     def get_size_remaining(self, user):
         user_key = self.USER_KEY.format(user=user)
 
-        if self.is_anon(user):
-            max_size = self.redis.hget('h:defaults', 'max_anon_size')
-            size = self.redis.hget(user_key, 'size')
-        else:
-            size, max_size = self.redis.hmget(user_key, ['size', 'max_size'])
+        size, max_size = self.redis.hmget(user_key, ['size', 'max_size'])
 
         try:
             if not size:
@@ -149,6 +145,11 @@ class LoginManagerMixin(object):
         return rem
 
     def is_out_of_space(self, user):
+        if not user:
+            user = self.get_anon_user(False)
+        elif not self.is_owner(user):
+            return False
+
         return self.get_size_remaining(user) <= 0
 
     def has_user_email(self, email):
