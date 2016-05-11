@@ -513,11 +513,16 @@ var DataTables = (function() {
             });
 
             // Add event listener for opening and closing details
-            $('.table-recordings tbody').on('click', 'td.details-control', toggleDetails);
+            $('.table-recordings tbody').on('click', 'tr', toggleDetails);
         }
     }
 
-    var toggleDetails = function() {
+    var toggleDetails = function(event) {
+        // Don't toggle details for link or button clicks when table row is clicked
+        if ($(event.target).is('a') || $(event.target).is('button')) {
+            return;
+        }
+
         var tr = $(this).closest('tr');
         var row = theTable.row(tr);
 
