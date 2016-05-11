@@ -36,13 +36,7 @@
 <div class="row">
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
-            <div class="pull-right">
-                {% include 'new_recording_button.html' %}
-                {% if can_admin() %}
-                    <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm">Download</a>
-                    <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-modal">Delete</button>
-                {% endif %}
-            </div>
+            {% include 'collection_info_buttons.html'%}
 
             <div>
                 <small>/{{ collection.id }}</small>
@@ -90,7 +84,9 @@
                 <th>Name</th>
                 <th>Last Recorded</th>
                 <th>Size</th>
-                <th>Actions</th>
+                {% if can_admin() %}
+                    <th>Actions</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -106,16 +102,9 @@
                 <td><a href="{{ path }}">{{ rec.title }}</a></td>
                 <td data-time-sec="{{ rec.updated_at }}" data-order="{{ rec.updated_at }}"></td>
                 <td data-size="{{ rec.size }}" data-order="{{ rec.size }}"></td>
-                <td>
-                    <a class="btn btn-default btn-xs" href="{{ path }}">
-                        <span class="glyphicon glyphicon-globe glyphicon-button"></span>Browse
-                    </a>
-                    {% if can_admin() %}
-                        <a class="btn btn-default btn-xs" href="{{ path }}/$download">
-                            <span class="glyphicon glyphicon-download glyphicon-button"></span>Download
-                        </a>
-                    {% endif %}
-                </td>
+
+                {% include 'recordings_table_actions.html' %}
+
             </tr>
             {% endfor %}
         </tbody>

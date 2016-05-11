@@ -505,12 +505,9 @@ var DataTables = (function() {
         if ($(".table-recordings").length) {
             theTable = $(".table-recordings").DataTable({
                 paging: false,
-                columns: [
-                    { orderable: false },
-                    { },
-                    { },
-                    { },
-                    { orderable: false }
+                columnDefs: [
+                    { targets: [1, 2, 3], orderable: true },
+                    { targets: '_all',    orderable: false}
                 ],
                 order: [[2, 'desc']]
             });

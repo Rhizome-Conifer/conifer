@@ -1,0 +1,18 @@
+{% if can_write() %}
+    <td>
+	    {% if is_out_of_space() %}
+    		{% set disabled_class = "disabled" %}
+    	{% endif %}
+        <a class="btn btn-default btn-xs {{disabled_class}}" href="{{ path }}/$add">
+            <span class="glyphicon glyphicon-plus-sign glyphicon-button"></span>
+            Add Pages
+        </a>
+        
+        {% if can_admin() %}
+            <a class="btn btn-default btn-xs" href="{{ path }}/$download">
+                <span class="glyphicon glyphicon-download glyphicon-button"></span>
+                Download
+            </a>
+        {% endif %}
+    </td>
+{% endif %}
