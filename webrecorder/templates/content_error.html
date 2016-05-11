@@ -24,6 +24,8 @@
     {% if type == 'replay' and rec and can_admin() %}
     <b><a target="_parent" href="{{ get_path(user, coll, rec) }}/record/{{ url }}">Record this page?</a></b>
     {% endif %}
+{% elif status == 402 %}
+    <p><a target="_parent" href="{{ get_path(user, coll, rec) }}">View Recording Info</a></p>
 {% else %}
     <h2>This site could not be loaded</h2>
 

@@ -235,6 +235,11 @@ class ContentController(BaseController, RewriterApp):
     ## RewriterApp overrides
     def get_upstream_url(self, url, wb_url, closest, kwargs):
         type = kwargs['type']
+
+        if type in ('record', 'patch') and self.manager.is_out_of_space(kwargs['user']):
+            details = {'error': 'Out of Space'}
+            raise UpstreamException(402, url=url, details=details)
+
         if url != '{url}':
             url = quote(url)
 
