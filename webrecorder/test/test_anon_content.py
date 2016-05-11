@@ -138,7 +138,7 @@ class TestAnonContent(BaseWRTests):
         assert self.testapp.cookies['__test_sesh'] != ''
 
         # Add as page
-        page = {'title': 'Example', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
+        page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
         res = self.testapp.post('/api/v1/recordings/my-recording/pages?user=@anon&coll=anonymous', params=page)
 
         assert res.json == {}
@@ -194,7 +194,7 @@ class TestAnonContent(BaseWRTests):
         assert self.testapp.cookies['__test_sesh'] != ''
 
         # Add as page
-        page = {'title': 'Example', 'url': 'http://httpbin.org/get?bood=far', 'ts': '2016010203000000'}
+        page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?bood=far', 'ts': '2016010203000000'}
         res = self.testapp.post('/api/v1/recordings/my-rec2/pages?user=@anon&coll=anonymous', params=page)
 
         assert res.json == {}
@@ -208,6 +208,39 @@ class TestAnonContent(BaseWRTests):
 
         warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='anonymous')
         assert self.redis.hlen(warc_key) == 2
+
+    def test_anon_new_add_to_recording(self):
+        res = self.testapp.get('/anonymous/my-rec2/$add')
+        res.charset = 'utf-8'
+
+        assert '"My Rec2"' in res.text
+
+    def test_anon_new_recording(self):
+        res = self.testapp.get('/anonymous/$new')
+        res.charset = 'utf-8'
+
+        assert '"anonymous"' in res.text
+
+    def test_anon_coll_info(self):
+        res = self.testapp.get('/anonymous')
+        res.charset = 'utf-8'
+
+        assert 'My Rec2' in res.text
+        assert 'my-recording' in res.text
+
+        assert '/anonymous/my-recording/http://httpbin.org/get?food=bar' in res.text
+        assert '/anonymous/my-rec2/http://httpbin.org/get?bood=far' in res.text
+
+
+    def test_anon_rec_info(self):
+        res = self.testapp.get('/anonymous/my-rec2')
+        res.charset = 'utf-8'
+
+        assert 'My Rec2' in res.text
+        assert 'Example Title' in res.text
+
+        assert '/anonymous/my-recording/http://httpbin.org/get?food=bar' not in res.text
+        assert '/anonymous/my-rec2/http://httpbin.org/get?bood=far' in res.text
 
     def test_anon_replay_top_frame(self):
         res = self.testapp.get('/anonymous/my-rec2/http://httpbin.org/get?food=bar')
@@ -316,7 +349,7 @@ class TestAnonContent(BaseWRTests):
         res = self.testapp.get('/anonymous/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
-    def test_edge_anon_invalid_rec_name_redir(self):
+    def test_error_anon_invalid_rec_name_redir(self):
         res = self.testapp.get('/anonymous/mp_/example.com', status=302)
         assert res.headers['Location'].endswith('/anonymous/mp__/example.com')
         assert res.status_code == 302
