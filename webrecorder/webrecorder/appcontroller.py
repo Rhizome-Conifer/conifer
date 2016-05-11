@@ -133,7 +133,7 @@ class AppController(BaseController):
 
         @contextfunction
         def is_out_of_space(context):
-            return self.manager.is_out_of_space(context.get('user', ''))
+            return self.manager.is_out_of_space(context.get('curr_user', ''))
 
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
