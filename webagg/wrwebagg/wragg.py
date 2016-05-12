@@ -44,7 +44,7 @@ def make_webagg():
     app.add_route('/replay-coll', replay_coll)
     app.add_route('/patch', HandlerSeq([replay_rec, live_rec]))
 
-    return app.application
+    return app
 
 
 application = make_webagg()

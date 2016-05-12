@@ -28,6 +28,7 @@ services:
         volumes_from:
             - app
             - browsermanager
+            - data
 
         depends_on:
             - app

@@ -41,6 +41,8 @@ class WebRecRecorder(object):
         self.warc_rec_prefix = config['warc_name_prefix']
         self.warc_name_templ = config['warc_name_templ']
 
+        self.full_warc_prefix = config['full_warc_prefix']
+
         self.name = config['recorder_name']
 
         self.del_templ = config['del_templ']
@@ -68,6 +70,8 @@ class WebRecRecorder(object):
             file_key_template=self.warc_key_templ,
             rel_path_template=self.warc_path_templ,
 
+            full_warc_prefix=self.full_warc_prefix,
+
             dupe_policy=SkipDupePolicy(),
 
             size_keys=self.info_keys.values(),
@@ -84,6 +88,7 @@ class WebRecRecorder(object):
                                      skip_key_templ=self.skip_key_templ,
                                      header_filter=header_filter)
 
+        self.writer = writer
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
                                    accept_colls='live')
@@ -207,10 +212,10 @@ class WebRecRecorder(object):
         glob_path = self.warc_path_templ.format(user=user, coll=coll, rec=rec)
 
         for dirname in glob.glob(glob_path):
-            self.recorder.writer.close_file(dirname)
+            self.recorder.writer.close_dir(dirname)
 
         if glob_path.endswith('/'):
-            glob_path =  os.path.dirname(glob_path)
+            glob_path = os.path.dirname(glob_path)
 
         if type == 'rec':
             dir_to_delete = glob_path

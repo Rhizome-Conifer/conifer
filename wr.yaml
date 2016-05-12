@@ -17,6 +17,8 @@ skip_key_templ: 'u:{user}:skip:{url}'
 warc_name_prefix: 'rec-{rec}-'
 warc_name_templ: 'rec-{rec}-{timestamp}-{hostname}.warc.gz'
 
+full_warc_prefix: 'http://nginx:6090'
+
 recorder_name: 'recorder'
 
 del_templ:
