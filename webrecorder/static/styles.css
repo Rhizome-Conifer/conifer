@@ -16,7 +16,8 @@ li.coll-nav {
 
 .new-recording,
 .browse-recording,
-.recording-in-progress {
+.recording-in-progress,
+.patch-recording {
     margin-top: 5px;
 }
 
@@ -90,21 +91,25 @@ li.coll-nav {
 
 .new-recording-form-group,
 .recording-in-progress-form-group,
-.browse-recording-form-group {
+.browse-recording-form-group,
+.patch-recording-form-group {
     margin-bottom: 5px;
     height: 30px;
 }
 
 .new-recording-form-group .url,
 .recording-in-progress-form-group .url,
-.browse-recording-form-group .url {
+.browse-recording-form-group .url,
+.patch-recording-form-group .url {
     padding-right: 0px;
 }
 
 .recording-in-progress-form-group .title,
 .browse-recording-form-group .title,
+.patch-recording-form-group .title,
 .recording-in-progress-form-group .collection,
-.browse-recording-form-group .collection {
+.browse-recording-form-group .collection,
+.patch-recording-form-group .collection {
     margin-top: 3px;
 }
 
@@ -378,6 +383,10 @@ a.dropdown-badge {
     margin-left: 20px;
 }
 
+.left-buffer-xs {
+    margin-left: 1px;
+}
+
 .space-usage {
     width: 25%;
     min-width: 150px;
@@ -390,4 +399,12 @@ a.dropdown-badge {
     height: 40px;
     display: none;
     padding: 10px;
+}
+
+.patch-url {
+    height: 30px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
 }

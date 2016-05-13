@@ -69,14 +69,32 @@ var EventHandlers = (function() {
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // 'Browse recording': 'Add to recording' button
+        // 'Browse recording': 'Add pages' button
         $('header').on('submit', '.add-to-recording', function(event){
             event.preventDefault();
 
             var url = $("input[name='url']").val();
 
-            RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url, "patch");
-        });  
+            RouteTo.addToRecording(user, coll, wbinfo.info.rec_id, url);
+        });
+
+        // 'Browse recording': 'Patch page' button
+        $('header').on('submit', '.patch-page', function(event){
+            event.preventDefault();
+
+            var url = $("input[name='url']").val();
+
+            RouteTo.patchPage(user, coll, wbinfo.info.rec_id, url);
+        });
+
+        // 'Patch page': 'Stop' button
+        $('header').on('submit', '.stop-patching', function(event) {
+            event.preventDefault();
+
+            var url = $('.patch-url').text();
+
+            RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
+        });
     }
 
     return {
@@ -206,6 +224,18 @@ var RouteTo = (function(){
         }
     }
 
+    var addToRecording = function(user, collection, recording) {
+        if (user == "@anon") {
+            routeTo(host + "/" + collection + "/" + recording + "/$add" );
+        } else {
+            routeTo(host + "/" + user + "/" + collection + "/" + recording + "/$add");
+        }
+    }
+
+    var patchPage = function(user, collection, recording, url) {
+        recordingInProgress(user, collection, recording, url, "patch");
+    }
+
     var routeTo = function(url) {
         window.location.href = url;
     }
@@ -214,7 +244,9 @@ var RouteTo = (function(){
         recordingInProgress: recordingInProgress,
         collectionInfo: collectionInfo,
         recordingInfo: recordingInfo,
-        browseRecording: browseRecording
+        browseRecording: browseRecording,
+        addToRecording: addToRecording,
+        patchPage: patchPage,
     }
 }());
 
@@ -505,24 +537,26 @@ var DataTables = (function() {
         if ($(".table-recordings").length) {
             theTable = $(".table-recordings").DataTable({
                 paging: false,
-                columns: [
-                    { orderable: false },
-                    { },
-                    { },
-                    { },
-                    { orderable: false }
+                columnDefs: [
+                    { targets: [1, 2, 3], orderable: true },
+                    { targets: '_all',    orderable: false}
                 ],
                 order: [[2, 'desc']]
             });
 
             // Add event listener for opening and closing details
-            $('.table-recordings tbody').on('click', 'td.details-control', toggleDetails);
+            $('.table-recordings tbody').on('click', 'tr', toggleDetails);
         }
     }
 
-    var toggleDetails = function() {
-        var tr = $(this).closest('tr');
-        var row = theTable.row(tr);
+    var toggleDetails = function(event) {
+        // Don't toggle details for link or button clicks when table row is clicked
+        if ($(event.target).is('a') || $(event.target).is('button')) {
+            return;
+        }
+
+        var tr = $(this);
+        var row = theTable.row(this);
 
         if (row.child.isShown()) {
             row.child.hide();
