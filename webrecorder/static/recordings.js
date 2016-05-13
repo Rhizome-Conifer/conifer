@@ -555,8 +555,8 @@ var DataTables = (function() {
             return;
         }
 
-        var tr = $(this).closest('tr');
-        var row = theTable.row(tr);
+        var tr = $(this);
+        var row = theTable.row(this);
 
         if (row.child.isShown()) {
             row.child.hide();
