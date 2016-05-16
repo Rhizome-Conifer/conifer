@@ -5,7 +5,7 @@ import glob
 
 
 # ============================================================================
-class AnonChecker(object):
+class TempChecker(object):
     TEMP_PREFIX = 'temp!'
 
     def __init__(self, config):

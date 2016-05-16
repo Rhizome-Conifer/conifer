@@ -29,9 +29,7 @@ class TestWebRecRecAPI(BaseWRTests):
 
         assert res.json['recording']['id'] == 'my-rec'
 
-        anon_user = self.get_anon_user()
-
-        assert self.redis.exists('r:' + anon_user + ':temp:my-rec:info')
+        assert self.redis.exists('r:' + self.anon_user + ':temp:my-rec:info')
 
     def test_anon_get_anon_rec(self):
         res = self._anon_get('/api/v1/recordings/my-rec?user={user}&coll=temp')
@@ -53,9 +51,7 @@ class TestWebRecRecAPI(BaseWRTests):
 
         assert res.json['recording']['id'] == '2-another-recording'
 
-        anon_user = self.get_anon_user()
-
-        assert self.redis.exists('r:' + anon_user + ':temp:2-another-recording:info')
+        assert self.redis.exists('r:' + self.anon_user + ':temp:2-another-recording:info')
 
     def test_list_all_recordings(self):
         res = self._anon_get('/api/v1/recordings?user={user}&coll=temp')

@@ -56,7 +56,7 @@ class Session(object):
 
     def set_anon(self):
         if not self.curr_user:
-            anon_user = make_anon_user()
+            anon_user = self.make_anon_user()
 
             self.sesh['anon'] = anon_user
 
@@ -79,9 +79,8 @@ class Session(object):
     def anon_user(self):
         anon = self.sesh.get('anon')
         if not anon:
-            anon = make_anon_user()
+            anon = self.make_anon_user()
         return anon
-        #return make_anon_user(self.sesh.id)
 
     def flash_message(self, msg, msg_type='danger'):
         if self.sesh:
@@ -105,10 +104,9 @@ class Session(object):
 
         return message, msg_type
 
-
-def make_anon_user():
-    return 'temp!' + base64.b32encode(os.urandom(5)).decode('utf-8')
-    #return 'anon/' + id
+    @staticmethod
+    def make_anon_user():
+        return 'temp!' + base64.b32encode(os.urandom(5)).decode('utf-8')
 
 
 

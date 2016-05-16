@@ -67,9 +67,7 @@ class BaseController(object):
         return self.get_session().flash_message(*args, **kwargs)
 
     def get_path(self, user, coll=None, rec=None):
-        base = '/'
-        #if not self.manager.is_anon(user):
-        base += user
+        base = '/' + user
 
         if coll:
             if not base.endswith('/'):
@@ -144,9 +142,6 @@ class BaseController(object):
         return os.environ['WEBAGG_HOST']
 
     def get_view_user(self, user):
-        #if self.manager.is_anon(user):
-        #    return '@anon'
-        #else:
         return user
 
     def get_body_class(self, action):
