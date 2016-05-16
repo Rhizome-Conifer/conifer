@@ -241,7 +241,9 @@ class WebRecRecorder(object):
 
         if type == 'rec':
             self._delete_rec_warc_key(user, coll, rec)
-            self._delete_decrease_size(user, coll, rec)
+            self._delete_decrease_size(user, coll, rec, type)
+        elif type == 'coll':
+            self._delete_decrease_size(user, coll, rec, type)
 
         with redis.utils.pipeline(self.redis) as pi:
             for key in keys_to_del:
@@ -259,19 +261,21 @@ class WebRecRecorder(object):
                 if n.startswith(warc_rec_prefix):
                     pi.hdel(warc_key, n)
 
-    def _delete_decrease_size(self, user, coll, rec):
-        rec_info = self.info_keys['rec'].format(user=user, coll=coll, rec=rec)
+    def _delete_decrease_size(self, user, coll, rec, type):
+        del_info = self.info_keys[type].format(user=user, coll=coll, rec=rec)
         try:
-            length = int(self.redis.hget(rec_info, 'size'))
+            length = int(self.redis.hget(del_info, 'size'))
         except:
             print('Error decreasing size')
             return
 
         with redis.utils.pipeline(self.redis) as pi:
-            coll_key = self.info_keys['coll'].format(user=user, coll=coll)
             user_key = self.info_keys['user'].format(user=user)
-            pi.hincrby(coll_key, 'size', -length)
             pi.hincrby(user_key, 'size', -length)
+
+            if type == 'rec':
+                coll_key = self.info_keys['coll'].format(user=user, coll=coll)
+                pi.hincrby(coll_key, 'size', -length)
 
 
 # ============================================================================
