@@ -28,9 +28,9 @@ class BaseController(object):
                               api=api)
 
         if self.manager.is_anon(user):
-            user = self.manager.get_anon_user()
+            return user
 
-        elif not self.manager.has_user(user):
+        if not self.manager.has_user(user):
             self._raise_error(404, 'No such user', api=api)
 
         return user
@@ -43,8 +43,9 @@ class BaseController(object):
             self._raise_error(400, 'Collection must be specified',
                               api=api)
 
-        if request.query.get('user') == '@anon':
-            coll = 'anonymous'
+        if self.manager.is_anon(user):
+            if coll != 'temp':
+                self._raise_error(404, 'No such collection', api=api)
 
         elif not self.manager.has_collection(user, coll):
             self._raise_error(404, 'No such collection', api=api)
@@ -67,8 +68,8 @@ class BaseController(object):
 
     def get_path(self, user, coll=None, rec=None):
         base = '/'
-        if not self.manager.is_anon(user):
-            base += user
+        #if not self.manager.is_anon(user):
+        base += user
 
         if coll:
             if not base.endswith('/'):
@@ -143,10 +144,10 @@ class BaseController(object):
         return os.environ['WEBAGG_HOST']
 
     def get_view_user(self, user):
-        if self.manager.is_anon(user):
-            return '@anon'
-        else:
-            return user
+        #if self.manager.is_anon(user):
+        #    return '@anon'
+        #else:
+        return user
 
     def get_body_class(self, action):
         if action in ["add_to_recording", "new_recording"]:

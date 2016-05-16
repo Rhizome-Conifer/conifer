@@ -1,5 +1,7 @@
 from bottle import request
 from datetime import timedelta
+import os
+import base64
 
 
 # ============================================================================
@@ -35,6 +37,10 @@ class Session(object):
         if self.curr_role == 'anon':
             params['anon_ttl'] = self._anon_ttl()
 
+            anon_user = self.sesh['anon']
+            self.sesh.namespace.db_conn.set('t:' + anon_user, self.sesh.id)
+
+
         request.environ['webrec.template_params'] = params
 
     def _anon_ttl(self):
@@ -50,19 +56,32 @@ class Session(object):
 
     def set_anon(self):
         if not self.curr_user:
-            self.sesh['anon'] = True
+            anon_user = make_anon_user()
+
+            self.sesh['anon'] = anon_user
 
             self.update_expires()
 
-    def is_anon(self):
+    def is_anon(self, user=None):
         if self.curr_user:
             return False
 
-        return self.sesh.get('anon') == True
+        anon = self.sesh.get('anon')
+        if not anon:
+            return False
+
+        if user:
+            return user == anon
+
+        return True
 
     @property
     def anon_user(self):
-        return make_anon_user(self.sesh.id)
+        anon = self.sesh.get('anon')
+        if not anon:
+            anon = make_anon_user()
+        return anon
+        #return make_anon_user(self.sesh.id)
 
     def flash_message(self, msg, msg_type='danger'):
         if self.sesh:
@@ -87,8 +106,9 @@ class Session(object):
         return message, msg_type
 
 
-def make_anon_user(id):
-    return 'anon/' + id
+def make_anon_user():
+    return 'temp!' + base64.b32encode(os.urandom(5)).decode('utf-8')
+    #return 'anon/' + id
 
 
 

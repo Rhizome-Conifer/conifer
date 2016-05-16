@@ -22,9 +22,9 @@
         <link rel="stylesheet" href="/static/__shared/styles.css"/>
 
         <script>
-            window.curr_user = "{{ curr_user if curr_user else '@anon' }}";
+            window.curr_user = "{{ curr_user if curr_user else '' }}";
             window.curr_mode = "{{ curr_mode }}";
-            window.user = "{{ user if not is_anon() else '@anon' }}";
+            window.user = "{{ user }}";
             window.coll = "{{ coll }}";
             window.rec = "{{ rec }}";
         </script>

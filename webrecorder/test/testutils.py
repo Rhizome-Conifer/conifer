@@ -30,6 +30,8 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.testapp = webtest.TestApp(cls.appcont.app)
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
 
+        cls.anon_user = None
+
     @classmethod
     def set_nx_env(self, name, value):
         if os.environ.get(name) is None:
@@ -37,8 +39,8 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
 
     @classmethod
     def get_anon_user(cls):
-        anon_user = 'anon/' + cls.testapp.cookies['__test_sesh'][-32:]
-        return anon_user
+        #anon_user = 'anon/' + cls.testapp.cookies['__test_sesh'][-32:]
+        return cls.anon_user
 
     @classmethod
     def get_root_dir(cls):

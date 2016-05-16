@@ -1,28 +1,20 @@
 {% if user %}
 	<ol class="navbar-left breadcrumb wr-breadcrumb">
-		{% if user and user != "@anon" %}
-			<li class="navbar-left">
-				<a target="_parent" href="/{{ user }}" title="Return to archive: {{user}}">{{ user }}</a>
-			</li>
-		{% endif %}
+                {% if not is_anon() %}
+                <li class="navbar-left">
+                        <a target="_parent" href="/{{ user }}" title="Return to archive: {{ user }}">{{ user if not is_anon() else 'Temp User' }}</a>
+                </li>
+                {% endif %}
 
 		{% if coll %}
-			<li class="navbar-left">
-			    {% if user != "@anon" %}
-	                <a target="_parent" href="/{{ user }}/{{ coll }}" title="Return to collection: {{coll}}">{{ coll }}</a>
-			    {% else %}
-	                <a target="_parent" href="/anonymous" title="Return to collection: {{coll}}">{{ coll }}</a>	
-	            {% endif %}
+                        <li class="navbar-left">
+	                <a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}">{{ coll_title }}</a>
 			</li>
 		{% endif %}
 
 		{% if rec and rec != '*' %}
 			<li class="navbar-left">
-			    {% if user != "@anon" %}
-	                <a target="_parent" href="/{{ user }}/{{ coll }}/{{ rec }}" title="Return to recording: {{rec}}">{{ rec }}</a>
-			    {% else %}
-	                <a target="_parent" href="/anonymous/{{ rec }}" title="Return to recording: {{rec}}">{{ rec }}</a>
-	           	{% endif %}
+	                <a target="_parent" href="{{ get_path(user, coll, rec) }}" title="Return to recording: {{ rec_title }}">{{ rec_title }}</a>
 			</li>
 		{% endif %}
 	</ol>

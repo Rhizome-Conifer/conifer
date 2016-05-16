@@ -1,8 +1,8 @@
-{% if curr_user and curr_user != "@anon" %}
+{% if curr_user %}
     <ul class="nav wr-user-links">
         <li class="navbar-text navbar-right userset">
             <a target="_parent" title="Logout" href="/_logout">
-                <span class="glyphicon glyphicon-log-out" title="Logout"></span></a>
+            <span class="glyphicon glyphicon-log-out" title="Logout"></span></a>
         </li>
         <li class="navbar-text navbar-right userset">
             <a target="_parent" href="/{{ curr_user }}/_settings"><span title="Settings" class="glyphicon glyphicon-cog"></span></a>

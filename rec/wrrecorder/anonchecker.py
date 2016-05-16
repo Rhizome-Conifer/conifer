@@ -1,10 +1,13 @@
 import redis
 import os
 import json
+import glob
 
 
 # ============================================================================
 class AnonChecker(object):
+    TEMP_PREFIX = 'temp!'
+
     def __init__(self, config):
         self.redis_base_url = os.environ['REDIS_BASE_URL']
 
@@ -15,38 +18,57 @@ class AnonChecker(object):
         self.sesh_redis = redis.StrictRedis.from_url(self.redis_base_url)
 
         self.record_root_dir = os.environ['RECORD_ROOT']
-        self.anon_dir = os.path.join(self.record_root_dir, 'anon')
+        self.glob_pattern = os.path.join(self.record_root_dir, self.TEMP_PREFIX + '*')
+        #self.temp_dir = os.path.join(self.record_root_dir, 'temp')
 
-        print('Anon Checker Root: ' + self.anon_dir)
+        print('Temp Checker Root: ' + self.glob_pattern)
 
-    def _delete_if_expired(self, anon):
-        if self.sesh_redis.get('beaker:{0}:session'.format(anon)):
-            print('Skipping active anon ' + anon)
-            return False
+    def _delete_if_expired(self, temp):
+        sesh = self.sesh_redis.get('t:' + temp)
+        if sesh:
+            sesh = sesh.decode('utf-8')
+            if self.sesh_redis.get('beaker:{0}:session'.format(sesh)):
+                print('Skipping active temp ' + temp)
+                return False
 
-        print('Deleting ' + anon)
+            self.sesh_redis.delete('t:' + temp)
+
+        print('Deleting ' + temp)
         message = {'type': 'user',
-                   'user': 'anon/' + anon,
-                   'coll': 'anonymous',
+                   'user': temp,
+                   'coll': 'temp',
                    'rec': '*'}
 
         self.sesh_redis.publish('delete', json.dumps(message))
         return True
 
     def __call__(self):
-        print('Anon Check')
-        if not os.path.isdir(self.anon_dir):
-            return
+        print('Temp Dir Check')
+
+        temps_removed = set()
 
         # check warc dirs
-        for anon in os.listdir(self.anon_dir):
-            if anon.startswith('.'):
+        for temp in glob.glob(self.glob_pattern):
+            if temp.startswith('.'):
                 continue
 
-            self._delete_if_expired(anon)
+            if not os.path.isdir(temp):
+                continue
 
-        for redis_key in self.data_redis.scan_iter(match='u:anon/*'):
+            temp = temp.rsplit('/', 1)[1]
+
+            self._delete_if_expired(temp)
+            temps_removed.add(temp)
+
+        temp_match = 'u:{0}*'.format(self.TEMP_PREFIX)
+
+        print('Temp Key Check')
+
+        for redis_key in self.data_redis.scan_iter(match=temp_match):
             redis_key = redis_key.decode('utf-8')
-            anon = redis_key[len('u:anon/'):]
+            temp = redis_key[len('u:'):]
 
-            self._delete_if_expired(anon)
+            if temp not in temps_removed:
+                self._delete_if_expired(temp)
+
+
