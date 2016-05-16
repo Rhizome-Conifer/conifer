@@ -20,7 +20,7 @@ from six.moves.urllib.parse import urlsplit
 
 
 # ============================================================================
-class TestAnonContent(BaseWRTests):
+class TestTempContent(BaseWRTests):
     REDIS_KEYS = [
         'r:{user}:{coll}:{rec}:cdxj',
         'r:{user}:{coll}:{rec}:info',
@@ -40,9 +40,9 @@ class TestAnonContent(BaseWRTests):
         os.environ['WEBAGG_HOST'] = 'http://localhost:{0}'.format(agg_port)
         os.environ['RECORD_HOST'] = 'http://localhost:{0}'.format(rec_port)
 
-        os.environ['ANON_SLEEP_CHECK'] = '5'
+        os.environ['TEMP_SLEEP_CHECK'] = '5'
 
-        super(TestAnonContent, cls).setup_class()
+        super(TestTempContent, cls).setup_class()
 
         cls.init_webagg(agg_port)
         cls.init_rec(agg_port, rec_port)
@@ -132,7 +132,7 @@ class TestAnonContent(BaseWRTests):
         parts = urlsplit(res.headers['Location'])
 
         path_parts = parts.path.split('/', 2)
-        TestAnonContent.anon_user = path_parts[1]
+        TestTempContent.anon_user = path_parts[1]
 
         assert self.anon_user.startswith('temp!')
         assert parts.path.endswith('/temp/My First Recording/record/mp_/http://example.com/')
@@ -156,7 +156,7 @@ class TestAnonContent(BaseWRTests):
 
         assert res.json == {}
 
-        user = self.get_anon_user()
+        user = self.anon_user
 
         self._assert_rec_keys(user, 'temp', ['my-recording'])
 
@@ -212,7 +212,7 @@ class TestAnonContent(BaseWRTests):
 
         assert res.json == {}
 
-        user = self.get_anon_user()
+        user = self.anon_user
 
         self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'])
 
@@ -347,7 +347,7 @@ class TestAnonContent(BaseWRTests):
 
         assert res.json == {'deleted_id': 'my-recording'}
 
-        user = self.get_anon_user()
+        user = self.anon_user
 
         time.sleep(1.0)
 

@@ -38,11 +38,6 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
             os.environ[name] = value
 
     @classmethod
-    def get_anon_user(cls):
-        #anon_user = 'anon/' + cls.testapp.cookies['__test_sesh'][-32:]
-        return cls.anon_user
-
-    @classmethod
     def get_root_dir(cls):
         return os.path.dirname(os.path.dirname(cls.get_curr_dir()))
 
