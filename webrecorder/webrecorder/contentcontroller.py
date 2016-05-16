@@ -40,17 +40,24 @@ class ContentController(BaseController, RewriterApp):
 
     def init_routes(self):
         # REDIRECTS
-        @self.app.route(['/record/<wb_url:path>', '/anonymous/record/<wb_url:path>'], method='ANY')
-        def redir_anon_rec(wb_url):
-            wb_url = self.add_query(wb_url)
-            new_url = '/anonymous/{rec}/record/{url}'.format(rec=self.DEF_REC_NAME,
-                                                             url=wb_url)
-            return self.redirect(new_url)
+        @self.app.route(['/record/<wb_url:path>',
+                         '/$temp/temp/record/<wb_url:path>',
+                         '/$temp/temp/<rec>/record/<wb_url:path>'], method='ANY')
+        def redir_anon_rec(rec='', wb_url=''):
+            if not rec:
+                rec = self.DEF_REC_NAME
 
-        @self.app.route('/replay/<wb_url:path>', method='ANY')
-        def redir_anon_replay(wb_url):
             wb_url = self.add_query(wb_url)
-            new_url = '/anonymous/{url}'.format(url=wb_url)
+
+            user = self.manager.get_anon_user(True)
+            coll = 'temp'
+
+            self.manager.create_collection(user, coll, 'Temporary Collection')
+
+            new_url = '/{user}/{coll}/{rec}/record/{url}'.format(user=user,
+                                                                 coll=coll,
+                                                                 rec=rec,
+                                                                 url=wb_url)
             return self.redirect(new_url)
 
         # LIVE DEBUG
@@ -58,50 +65,7 @@ class ContentController(BaseController, RewriterApp):
         def live(wb_url):
             request.path_shift(1)
 
-            return self.handle_anon_content(wb_url, rec='', type='live')
-
-        # ANON ROUTES
-        @self.app.route('/anonymous/<rec>/record/<wb_url:path>', method='ANY')
-        def anon_record(rec, wb_url):
-            request.path_shift(3)
-
-            return self.handle_anon_content(wb_url, rec, type='record')
-
-        @self.app.route('/anonymous/<rec>/patch/<wb_url:path>', method='ANY')
-        def anon_patch(rec, wb_url):
-            request.path_shift(3)
-
-            return self.handle_anon_content(wb_url, rec, type='patch')
-
-        @self.app.route('/anonymous/<wb_url:path>', method='ANY')
-        def anon_replay(wb_url):
-            rec_name = '*'
-
-            # recording replay
-            if not self.WB_URL_RX.match(wb_url) and '/' in wb_url:
-                rec_name, wb_url = wb_url.split('/', 1)
-
-                # todo: edge case: something like /anonymous/example.com/
-                # should check if 'example.com' is a recording, otherwise assume url?
-                #if not wb_url:
-                #    wb_url = rec_name
-                #    rec_name = '*'
-
-            if rec_name == '*':
-                request.path_shift(1)
-                type_ = 'replay-coll'
-
-            else:
-                request.path_shift(2)
-                type_ = 'replay'
-
-            return self.handle_anon_content(wb_url, rec=rec_name, type=type_)
-
-        # special case match: /anonymous/rec/example.com -- don't treat as user/coll/rec
-        @self.app.route('/anonymous/<rec>/<host>')
-        def anon_replay_host_only(rec, host):
-            request.path_shift(2)
-            return self.handle_anon_content(host, rec, type='replay')
+            return self.handle_routing(wb_url, user='$live', coll='temp', rec='', type='live')
 
         # LOGGED IN ROUTES
         @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
@@ -124,12 +88,6 @@ class ContentController(BaseController, RewriterApp):
             if not self.WB_URL_RX.match(wb_url) and '/' in wb_url:
                 rec_name, wb_url = wb_url.split('/', 1)
 
-                # todo: edge case: something like /anonymous/example.com/
-                # should check if 'example.com' is a recording, otherwise assume url?
-                #if not wb_url:
-                #    wb_url = rec_name
-                #    rec_name = '*'
-
             if rec_name == '*':
                 request.path_shift(2)
                 type_ = 'replay-coll'
@@ -140,34 +98,37 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec=rec_name, type=type_)
 
-    def handle_anon_content(self, wb_url, rec, type):
-        save_sesh = (type in ('record', 'patch'))
-        user = self.manager.get_anon_user(save_sesh)
-        coll = 'anonymous'
-
-        return self.handle_routing(wb_url, user, coll, rec, type)
-
     def handle_routing(self, wb_url, user, coll, rec, type):
         wb_url = self.add_query(wb_url)
+
+        not_found = False
+
         if type in ('record', 'patch', 'replay'):
             if not self.manager.has_recording(user, coll, rec):
-                if coll != 'anonymous' and not self.manager.has_collection(user, coll):
-                    self._redir_if_sanitized(self.sanitize_title(coll),
-                                             coll,
-                                             wb_url)
-                    raise HTTPError(404, 'No Such Collection')
+                not_found = True
 
-                title = rec
-                rec = self.sanitize_title(title)
+        if ((not_found or type == 'replay-coll') and
+            (not (self.manager.is_anon(user) and coll == 'temp')) and
+            (not self.manager.has_collection(user, coll))):
 
-                if type == 'record' or type == 'patch':
-                    if rec == title or not self.manager.has_recording(user, coll, rec):
-                        result = self.manager.create_recording(user, coll, rec, title)
+            self._redir_if_sanitized(self.sanitize_title(coll),
+                                     coll,
+                                     wb_url)
 
-                self._redir_if_sanitized(rec, title, wb_url)
+            raise HTTPError(404, 'No Such Collection')
 
-                if type == 'replay':
-                    raise HTTPError(404, 'No Such Recording')
+        if not_found:
+            title = rec
+            rec = self.sanitize_title(title)
+
+            if type == 'record' or type == 'patch':
+                if rec == title or not self.manager.has_recording(user, coll, rec):
+                    result = self.manager.create_recording(user, coll, rec, title)
+
+            self._redir_if_sanitized(rec, title, wb_url)
+
+            if type == 'replay':
+                raise HTTPError(404, 'No Such Recording')
 
         return self.handle_load_content(wb_url, user, coll, rec, type)
 
@@ -283,7 +244,9 @@ class ContentController(BaseController, RewriterApp):
                 'curr_mode': type,
                 'user': self.get_view_user(kwargs['user']),
                 'coll': kwargs['coll'],
-                'rec': kwargs['rec']
+                'rec': kwargs['rec'],
+                'coll_title': info.get('coll_title', ''),
+                'rec_title': info.get('rec_title', '')
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs):

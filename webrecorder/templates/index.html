@@ -4,6 +4,10 @@
 
 {{ super() }}
 
+<script>
+var anon_user = "{{ anon_user | default('') }}";
+</script>
+
 {% endblock %}
 
 {% block content %}
@@ -15,8 +19,9 @@
 {% else %}
     {% if anon_size and anon_recordings %}
         <div class="alert alert-info" role="alert">
-            Anonymously recorded <a href="/anonymous"><b data-size="{{ anon_size }}"></b></a> in <a href="/anonymous"><b>{{ anon_recordings }}</b></a> recordings(s).
-        <b style="margin-left: 10px"><a href="/anonymous">Browse</a></b>, <b><a href="/anonymous/$download">Download</a></b>, <b><a href="/anonymous">Delete</a></b><p class="pull-right">Expires in <b data-anon-timer="{{ anon_ttl }}"></b></p>
+            {% set path = get_path(anon_user, 'temp') %}
+            Anonymously recorded <a href="{{ path }}"><b data-size="{{ anon_size }}"></b></a> in <a href="{{ path }}"><b>{{ anon_recordings }}</b></a> recordings(s).
+        <b style="margin-left: 10px"><a href="{{ path }}">Browse</a></b> or <b><a href="{{ path }}/$download">Download</a></b><p class="pull-right">Expires in <b data-anon-timer="{{ anon_ttl }}"></b></p>
         </div>
     {% endif %}
 {% endif %}

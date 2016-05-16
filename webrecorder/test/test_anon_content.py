@@ -11,9 +11,12 @@ from pywb.utils.bufferedreaders import ChunkedDataReader
 
 from gevent.wsgi import WSGIServer
 import gevent
+import glob
 
 from .testutils import BaseWRTests
 from fakeredis import FakeStrictRedis
+
+from six.moves.urllib.parse import urlsplit
 
 
 # ============================================================================
@@ -105,6 +108,9 @@ class TestAnonContent(BaseWRTests):
         warcin.seek(0)
         return warcin
 
+    def _get_anon(self, url, status=None):
+        return self.testapp.get('/' + self.anon_user + url, status=status)
+
     def test_live(self):
         res = self.testapp.get('/live/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
@@ -122,15 +128,22 @@ class TestAnonContent(BaseWRTests):
     def test_anon_record_redirect(self):
         res = self.testapp.get('/record/mp_/http://example.com/')
         assert res.status_code == 302
-        assert res.headers['Location'].endswith('/anonymous/My First Recording/record/mp_/http://example.com/')
 
-    def test_anon_replay_redirect(self):
-        res = self.testapp.get('/replay/mp_/http://example.com/')
-        assert res.status_code == 302
-        assert res.headers['Location'].endswith('/anonymous/mp_/http://example.com/')
+        parts = urlsplit(res.headers['Location'])
+
+        path_parts = parts.path.split('/', 2)
+        TestAnonContent.anon_user = path_parts[1]
+
+        assert self.anon_user.startswith('temp!')
+        assert parts.path.endswith('/temp/My First Recording/record/mp_/http://example.com/')
+
+    #def test_anon_replay_redirect(self):
+    #    res = self.testapp.get('/replay/mp_/http://example.com/')
+    #    assert res.status_code == 302
+    #    assert res.headers['Location'].endswith('/anonymous/mp_/http://example.com/')
 
     def test_anon_record_1(self):
-        res = self.testapp.get('/anonymous/my-recording/record/mp_/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -139,54 +152,54 @@ class TestAnonContent(BaseWRTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
-        res = self.testapp.post('/api/v1/recordings/my-recording/pages?user=@anon&coll=anonymous', params=page)
+        res = self.testapp.post('/api/v1/recordings/my-recording/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
         assert res.json == {}
 
         user = self.get_anon_user()
 
-        self._assert_rec_keys(user, 'anonymous', ['my-recording'])
+        self._assert_rec_keys(user, 'temp', ['my-recording'])
 
-        self._assert_size_all_eq(user, 'anonymous', 'my-recording')
+        self._assert_size_all_eq(user, 'temp', 'my-recording')
 
-        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='anonymous')
+        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='temp')
         assert self.redis.hlen(warc_key) == 1
 
     def test_anon_replay_1(self):
-        res = self.testapp.get('/anonymous/my-recording/mp_/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_replay_coll_1(self):
-        res = self.testapp.get('/anonymous/mp_/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_record_sanitize_redir(self):
-        res = self.testapp.get('/anonymous/My%20Rec2/record/http://httpbin.org/get?bood=far')
+        res = self._get_anon('/temp/My%20Rec2/record/http://httpbin.org/get?bood=far')
         res.charset = 'utf-8'
 
         assert self.testapp.cookies['__test_sesh'] != ''
-        assert res.headers['Location'].endswith('/anonymous/my-rec2/record/http://httpbin.org/get?bood=far')
+        assert res.headers['Location'].endswith('/temp/my-rec2/record/http://httpbin.org/get?bood=far')
 
-        res = self.testapp.get('/api/v1/recordings/my-rec2?user=@anon&coll=anonymous')
+        res = self.testapp.get('/api/v1/recordings/my-rec2?user={user}&coll=temp'.format(user=self.anon_user))
         assert res.json['recording']['id'] == 'my-rec2'
         assert res.json['recording']['title'] == 'My Rec2'
 
     def test_anon_record_top_frame(self):
-        res = self.testapp.get('/anonymous/my-rec2/record/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/my-rec2/record/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"record"' in res.text
         assert '"rec_id": "my-rec2"' in res.text
         assert '"rec_title": "My Rec2"' in res.text
-        assert '"coll_id": "anonymous"' in res.text
-        assert '"coll_title": "anonymous"' in res.text
+        assert '"coll_id": "temp"' in res.text
+        assert '"coll_title": "Temporary Collection"' in res.text
 
     def test_anon_record_2(self):
-        res = self.testapp.get('/anonymous/my-rec2/record/mp_/http://httpbin.org/get?bood=far')
+        res = self._get_anon('/temp/my-rec2/record/mp_/http://httpbin.org/get?bood=far')
         res.charset = 'utf-8'
 
         assert '"bood": "far"' in res.text, res.text
@@ -195,75 +208,86 @@ class TestAnonContent(BaseWRTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?bood=far', 'ts': '2016010203000000'}
-        res = self.testapp.post('/api/v1/recordings/my-rec2/pages?user=@anon&coll=anonymous', params=page)
+        res = self.testapp.post('/api/v1/recordings/my-rec2/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
         assert res.json == {}
 
         user = self.get_anon_user()
 
-        self._assert_rec_keys(user, 'anonymous', ['my-recording', 'my-rec2'])
+        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'])
 
-        anon_dir = os.path.join(self.warcs_dir, user, 'anonymous')
+        anon_dir = os.path.join(self.warcs_dir, user, 'temp')
         assert set(os.listdir(anon_dir)) == set(['my-recording', 'my-rec2'])
 
-        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='anonymous')
+        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='temp')
         assert self.redis.hlen(warc_key) == 2
 
     def test_anon_new_add_to_recording(self):
-        res = self.testapp.get('/anonymous/my-rec2/$add')
+        res = self._get_anon('/temp/my-rec2/$add')
         res.charset = 'utf-8'
+
+        assert '<iframe' not in res.text
 
         assert '"My Rec2"' in res.text
 
     def test_anon_new_recording(self):
-        res = self.testapp.get('/anonymous/$new')
+        res = self._get_anon('/temp/$new')
         res.charset = 'utf-8'
 
-        assert '"anonymous"' in res.text
+        assert '<iframe' not in res.text
+
+        assert '"Temporary Collection"' in res.text
+
+    def test_anon_user_info_redirect(self):
+        res = self._get_anon('')
+        assert res.status_code == 302
+        assert res.headers['Location'].endswith('/' + self.anon_user + '/temp')
 
     def test_anon_coll_info(self):
-        res = self.testapp.get('/anonymous')
+        res = self._get_anon('/temp')
         res.charset = 'utf-8'
 
         assert 'My Rec2' in res.text
         assert 'my-recording' in res.text
+        assert 'Temporary Collection' in res.text
 
-        assert '/anonymous/my-recording/http://httpbin.org/get?food=bar' in res.text
-        assert '/anonymous/my-rec2/http://httpbin.org/get?bood=far' in res.text
+        assert '/temp/my-recording/http://httpbin.org/get?food=bar' in res.text
+        assert '/temp/my-rec2/http://httpbin.org/get?bood=far' in res.text
 
 
     def test_anon_rec_info(self):
-        res = self.testapp.get('/anonymous/my-rec2')
+        res = self._get_anon('/temp/my-rec2')
         res.charset = 'utf-8'
 
         assert 'My Rec2' in res.text
         assert 'Example Title' in res.text
+        assert 'Temporary Collection' in res.text
 
-        assert '/anonymous/my-recording/http://httpbin.org/get?food=bar' not in res.text
-        assert '/anonymous/my-rec2/http://httpbin.org/get?bood=far' in res.text
+        assert '/temp/my-recording/http://httpbin.org/get?food=bar' not in res.text
+        assert '/temp/my-rec2/http://httpbin.org/get?bood=far' in res.text
 
     def test_anon_replay_top_frame(self):
-        res = self.testapp.get('/anonymous/my-rec2/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/my-rec2/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"replay"' in res.text
         assert '"rec_id": "my-rec2"' in res.text
         assert '"rec_title": "My Rec2"' in res.text
-        assert '"coll_id": "anonymous"' in res.text
-        assert '"coll_title": "anonymous"' in res.text
+        assert '"coll_id": "temp"' in res.text
+        assert '"coll_title": "Temporary Collection"' in res.text
 
     def test_anon_replay_coll_top_frame(self):
-        res = self.testapp.get('/anonymous/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"replay-coll"' in res.text
         assert '"rec_id"' not in res.text
         assert '"rec_title"' not in res.text
-        assert '"coll_id": "anonymous"' in res.text
-        assert '"coll_title": "anonymous"' in res.text
+        assert '"coll_id": "temp"' in res.text
+        assert '"coll_title": "Temporary Collection"' in res.text
 
     def test_anon_download_rec(self):
-        res = self.testapp.get('/anonymous/my-rec2/$download')
+        res = self._get_anon('/temp/my-rec2/$download')
 
         assert res.headers['Content-Disposition'].startswith('attachment; filename=My%20Rec2-')
 
@@ -286,14 +310,14 @@ class TestAnonContent(BaseWRTests):
         cdx[1]['mime'] = '-'
 
     def test_anon_download_coll(self):
-        res = self.testapp.get('/anonymous/$download')
+        res = self._get_anon('/temp/$download')
 
-        assert res.headers['Content-Disposition'].startswith('attachment; filename=anonymous-')
+        assert res.headers['Content-Disposition'].startswith('attachment; filename=Temporary%20Collection-')
 
         warcin = self._get_dechunked(res.body)
 
         cdxout = BytesIO()
-        write_cdx_index(cdxout, warcin, 'anonymous.warc.gz', include_all=True, cdxj=True)
+        write_cdx_index(cdxout, warcin, 'temp.warc.gz', include_all=True, cdxj=True)
 
         #print(cdxout.getvalue().decode('utf-8'))
 
@@ -319,7 +343,7 @@ class TestAnonContent(BaseWRTests):
     def test_anon_delete_rec(self):
         #time.sleep(0.1)
 
-        res = self.testapp.delete('/api/v1/recordings/my-recording?user=@anon&coll=anonymous')
+        res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'my-recording'}
 
@@ -327,41 +351,45 @@ class TestAnonContent(BaseWRTests):
 
         time.sleep(1.0)
 
-        self._assert_size_all_eq(user, 'anonymous', 'my-rec2')
+        self._assert_size_all_eq(user, 'temp', 'my-rec2')
 
-        anon_dir = os.path.join(self.warcs_dir, user, 'anonymous')
+        anon_dir = os.path.join(self.warcs_dir, user, 'temp')
         assert set(os.listdir(anon_dir)) == set(['my-rec2'])
 
-        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='anonymous')
+        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='temp')
         assert self.redis.hlen(warc_key) == 1
 
-        self._assert_rec_keys(user, 'anonymous', ['my-rec2'])
+        self._assert_rec_keys(user, 'temp', ['my-rec2'])
 
-        res = self.testapp.delete('/api/v1/recordings/my-recording?user=@anon&coll=anonymous', status=404)
+        res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user), status=404)
 
         assert res.json == {'id': 'my-recording', 'error_message': 'Recording not found'}
 
     def test_error_anon_not_found_recording(self):
-        res = self.testapp.get('/anonymous/my-rec/mp_/http://example.com/', status=404)
+        res = self._get_anon('/temp/my-rec/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
     def test_error_anon_not_found_coll_url(self):
-        res = self.testapp.get('/anonymous/mp_/http://example.com/', status=404)
+        res = self._get_anon('/temp/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
     def test_error_anon_invalid_rec_name_redir(self):
-        res = self.testapp.get('/anonymous/mp_/example.com', status=302)
-        assert res.headers['Location'].endswith('/anonymous/mp__/example.com')
+        res = self._get_anon('/temp/mp_/example.com', status=302)
+        assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/mp__/example.com')
         assert res.status_code == 302
 
     #def test_edge_anon_not_rec_name(self):
-    #    res = self.testapp.get('/anonymous/example.com/')
+    #    res = self._get_anon('/temp/example.com/')
     #    res.charset = 'utf-8'
     #    assert '"http://example.com/"' in res.text
     #    assert '<iframe' in res.text
 
     def test_error_anon_not_found_recording_url(self):
-        res = self.testapp.get('/anonymous/my-recording/mp_/http://example.com/', status=404)
+        res = self._get_anon('/temp/my-recording/mp_/http://example.com/', status=404)
+        assert res.status_code == 404
+
+    def test_error_anon_invalid_coll(self):
+        res = self._get_anon('/temp2/my-recording/record/mp_/http://httpbin.org/get?food=bar', status=404)
         assert res.status_code == 404
 
     def test_anon_auto_delete(self):
@@ -372,5 +400,6 @@ class TestAnonContent(BaseWRTests):
 
         assert set(self.redis.keys()) == set([b'h:roles', b'h:defaults'])
 
-        assert os.listdir(os.path.join(self.warcs_dir, 'anon')) == []
+        assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
+        #assert os.listdir(os.path.join(self.warcs_dir, 'anon')) == []
 

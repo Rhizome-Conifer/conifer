@@ -17,6 +17,9 @@ Available collections are listed below.
         @self.app.get(['/<user>', '/<user>/'])
         @self.jinja2_view('user.html')
         def user_info(user):
+            if self.manager.is_anon(user):
+                self.redirect('/' + user + '/temp')
+
             self.manager.assert_user_exists(user)
 
             result = {'user': user,
@@ -28,6 +31,10 @@ Available collections are listed below.
                 result['user_info']['desc'] = self.DEFAULT_USER_DESC.format(user)
 
             return result
+
+        @self.app.get('/api/v1/anon_user')
+        def get_anon_user():
+            return {'anon_user': self.manager.get_anon_user(True)}
 
         @self.app.post('/api/v1/users/<user>/desc')
         def update_desc(user):

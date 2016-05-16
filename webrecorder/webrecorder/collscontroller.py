@@ -20,7 +20,6 @@ class CollsController(BaseController):
     def __init__(self, *args, **kwargs):
         super(CollsController, self).__init__(*args, **kwargs)
         self.DOWNLOAD_COLL_PATH = '{host}/{user}/{coll}/$download'
-        self.ANON_DOWNLOAD_COLL_PATH = '{host}/anonymous/$download'
 
     def init_routes(self):
         @self.app.post('/api/v1/collections')
@@ -134,12 +133,12 @@ class CollsController(BaseController):
                 self.redirect(self.get_path(user, coll))
 
         # ANON COLLECTION
-        @self.app.get(['/anonymous', '/anonymous/'])
-        @self.jinja2_view('collection_info.html')
-        def anon_coll_info():
-            user = self.get_session().anon_user
+        #@self.app.get(['/anonymous', '/anonymous/'])
+        #@self.jinja2_view('collection_info.html')
+        #def anon_coll_info():
+        #    user = self.get_session().anon_user
 
-            return self.get_collection_info_for_view(user, 'anonymous')
+        #    return self.get_collection_info_for_view(user, 'anonymous')
 
         # LOGGED-IN COLLECTION
         @self.app.get(['/<user>/<coll>', '/<user>/<coll>/'])
@@ -177,11 +176,7 @@ class CollsController(BaseController):
         return {'collection': self._add_download_path(collection, user)}
 
     def _add_download_path(self, coll_info, user):
-        if self.manager.is_anon(user):
-            path = self.ANON_DOWNLOAD_COLL_PATH
-        else:
-            path = self.DOWNLOAD_COLL_PATH
-
+        path = self.DOWNLOAD_COLL_PATH
         path = path.format(host=self.get_host(),
                            user=user,
                            coll=coll_info['id'])

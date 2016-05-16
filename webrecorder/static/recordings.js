@@ -25,7 +25,14 @@ var EventHandlers = (function() {
         $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
             event.preventDefault();
 
-            var collection = "anonymous";
+            if (!user) {
+                user = anon_user;
+            }
+            if (!user) {
+                user = "$temp";
+            }
+
+            var collection = "temp";
             var title = "My First Recording";
             var url = $(".wr-content input[name='url']").val();
 
@@ -193,43 +200,23 @@ var RouteTo = (function(){
             mode = "record";
         }
 
-        if (user == "@anon") {
-            routeTo(host + "/" + collection + "/" + recording + "/" + mode + "/" + url);
-        } else {
-            routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + url);
-        }
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + url);
     }
 
     var collectionInfo = function(user, collection) {
-        if (user == "@anon") {
-            routeTo(host + "/anonymous");
-        } else {
-            routeTo(host + "/" + user + "/" + collection);
-        }
+        routeTo(host + "/" + user + "/" + collection);
     }
 
     var recordingInfo = function(user, collection, recording) {
-        if (user == "@anon") {
-            routeTo(host + "/" + collection + "/" + recording);
-        } else {
-            routeTo(host + "/" + user + "/" + collection + "/" + recording);
-        }
+        routeTo(host + "/" + user + "/" + collection + "/" + recording);
     }
 
     var browseRecording = function(user, collection, recording, url) {
-        if (user == "@anon") {
-            routeTo(host + "/" + collection + "/" + recording + "/" + url);
-        } else {
-            routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + url);
-        }
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + url);
     }
 
     var addToRecording = function(user, collection, recording) {
-        if (user == "@anon") {
-            routeTo(host + "/" + collection + "/" + recording + "/$add" );
-        } else {
-            routeTo(host + "/" + user + "/" + collection + "/" + recording + "/$add");
-        }
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/$add");
     }
 
     var patchPage = function(user, collection, recording, url) {
@@ -476,9 +463,9 @@ var CountdownTimer = (function() {
 
     var start = function() {
         // enable timer only if anon
-        if (user != "@anon") {
-            return;
-        }
+        //if (curr_mode == "anon") {
+        //    return;
+        //}
 
         var expire = $("*[data-anon-timer]").attr("data-anon-timer");
 

@@ -283,7 +283,13 @@ class AccessManagerMixin(object):
     PUBLIC = '@public'
 
     def is_anon(self, user):
-        return not user or user == '@anon' or user.startswith('anon/')
+        #return not user or user == '@anon' or user.startswith('anon/')
+        if not user:
+            return False
+
+        sesh = request.environ['webrec.session']
+
+        return sesh.is_anon(user)
 
     def get_curr_user(self):
         sesh = request.environ['webrec.session']
@@ -608,10 +614,10 @@ class Base(object):
 
         info['size_remaining'] = self.get_size_remaining(user)
 
-        if self.is_anon(user):
-            info['user'] = '@anon'
-        else:
-            info['user'] = user
+        #if self.is_anon(user):
+        #    info['user'] = '@anon'
+        #else:
+        info['user'] = user
 
         return info
 
