@@ -5,7 +5,7 @@ if (!user) {
 $(function() {
     EventHandlers.bindAll();
     TimesAndSizesFormatter.format();
-    CollectionsDropdown.start();
+    //CollectionsDropdown.start();
     RecordingSizeWidget.start();
     PagesComboxBox.start();
     CountdownTimer.start();
@@ -25,9 +25,6 @@ var EventHandlers = (function() {
         $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
             event.preventDefault();
 
-            if (!user) {
-                user = anon_user;
-            }
             if (!user) {
                 user = "$temp";
             }
@@ -390,7 +387,7 @@ var CollectionsDropdown = (function() {
 
     var start = function() {
         // Only activate when logged in and not in record/browse mode
-        if (user == '@anon' || window.wbinfo || window.coll) {
+        if (!user || window.wbinfo || window.coll) {
             return;
         }
 
