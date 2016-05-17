@@ -367,6 +367,10 @@ a.dropdown-badge {
     margin-right: 3px;
 }
 
+.glyphicon-lg {
+    font-size: 1.5em;
+}
+
 .collection-list {
     margin-top: 20px;
 }
