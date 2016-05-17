@@ -1,5 +1,9 @@
+<a class="btn btn-default btn-xs" href="{{ path }}/{{ rec.pages[0].url }}">
+    <span class="glyphicon glyphicon-play-circle glyphicon-button"></span>
+    Replay
+</a>
+
 {% if can_write() %}
-    <td>
 	    {% if is_out_of_space() %}
     		{% set disabled_class = "disabled" %}
     	{% endif %}
@@ -14,5 +18,4 @@
                 Download
             </a>
         {% endif %}
-    </td>
 {% endif %}
