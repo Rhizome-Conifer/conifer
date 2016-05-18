@@ -14,13 +14,6 @@ li.coll-nav {
     color: #429EEC;
 }
 
-.new-recording,
-.browse-recording,
-.recording-in-progress,
-.patch-recording {
-    margin-top: 5px;
-}
-
 .navbar-brand {
  /*   padding: 9px 4px 10px 0px;*/
     padding: 8px 4px 8px 4px;
@@ -98,6 +91,10 @@ li.coll-nav {
 
 .start-recording-spacer {
     height: 20px;
+}
+
+.title-inline {
+    width: 300px;
 }
 
 .form-inline .homepage-url-input {

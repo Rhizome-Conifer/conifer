@@ -1,33 +1,40 @@
-<div class="new-recording container-fluid navbar-left col-xs-10">
-	<form class="form-horizontal start-recording">
-		<div class="form-group new-recording-form-group col-xs-12">
-			<label for="url" class="control-label col-xs-1">Url:</label>
-			<div class="col-xs-11">
-				<input name="url" type="text" class="form-control input-sm" placeholder="Url to record" autofocus required>
-			</div>
-		</div>
-		<div class="form-group col-xs-12 new-recording-form-group">
-			<div class="title">
-				<label for="title" class="control-label col-xs-1">Title:</label>
-				<div class="col-xs-5">
-				    <input name="title" type="text" class="form-control input-sm" placeholder="Recording title" value="{{ rec_title }}" required>
-				</div>
-			</div>
-			<div class="collection">
-				<label for="collection" class="control-label col-xs-1">Collection:</label>
-				<div class="col-xs-5">
-				    <input name="collection" type="text" value="{{ coll_title }}" class="form-control input-sm" readonly required>
-				</div>
-			</div>
+<div class="col-md-10">
+	<div class="row left-buffer">
+
+		<div class="pull-left">
+			<span class="glyphicon glyphicon-lg glyphicon-modal-window top-buffer-sm" aria-hidden="true"></span>
 		</div>
 
-		<button type="submit" class="hidden"></button>
+		<div class="pull-left left-buffer top-buffer-md">New recording: {{ user }} / {{ coll_title }} / </div>
+
+		<div class="pull-left top-buffer-sm left-buffer">
+			<label for="title" class="sr-only">Recording title:</label>
+		    <input name="title" type="text" class="form-control input-sm title-inline" placeholder="Recording title" value="{{ rec_title }}" required>
+		</div>
+	</div>
+
+	<form class="row left-buffer top-buffer-sm">
+		<div class="input-group">
+			<span class="input-group-addon">
+				1
+			</span>
+
+			<label for="url" class="sr-only">Url:</label>
+			<input name="url" type="text" class="form-control input-sm" placeholder="Url to record" autofocus required>
+
+		</div>
 	</form>
+
 </div>
 
-<div class="recording-actions text-center col-xs-2">
-	<div class="start-recording-spacer"></div>
-	<form class="start-recording">
-		<button type="submit" class="btn btn-default">Record</button>
-	</form>
+<div class="recording-actions text-center col-md-2">
+	<div class="row">
+		<form class="start-recording top-buffer">
+			<button type="submit" class="btn btn-default">
+				Start
+			</button>
+		</form>
+
+		<div class="start-recording-spacer"></div>
+	</div>
 </div>
