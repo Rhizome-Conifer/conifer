@@ -1,56 +1,55 @@
+<div class="col-md-10">
+	<div class="row left-buffer">
+		<div class="pull-left">
+			<span class="glyphicon glyphicon-lg glyphicon-play-circle top-buffer-sm" aria-hidden="true"></span>
+		</div>
 
-<div>
-	<div class="pull-left left-buffer">
-		<span class="glyphicon glyphicon-lg glyphicon-play-circle" aria-hidden="true"></span>
+		<div class="pull-left left-buffer top-buffer-md">Replaying: {{ user }} / {{ info.coll_title }} / {{ info.rec_title }}</div>
 
-		<span>Replaying recording: {{ info.coll_title }} / {{ info.rec_title }}</span>
+		<div class="pull-right top-buffer-md">
+			<span>5 pages</span>
 
-		<span class="current-size" data-size="{{ info.size }}"></span>
-	</div>
+			<span class="strong">/</strong>
 
-	<div class="pull-left left-buffer">
-
-		Viewing page 1 of 10.
-
-		<button type="submit" class="btn btn-default btn-sm">Add pages</button>
-
-	</div>
-
-</div>
-
-<form class="browse-recording navbar-left form-horizontal col-md-8">
-	<div class="url form-group-sm">
-		<!-- <label for="url" class="control-label col-md-1">Current Url:</label>-->
-		<div class="input-group-sm">
-
-			<span class="input-group-btn">
-				<button type="button" class="btn btn-default btn-sm" aria-label="Previous page">
-					<span class="glyphicon glyphicon-backward"></span>
-				</button>
-			</span>
-
-			<input type="text" class="form-control input-sm" name="url" value="{{ url }}" autofocus required>
-
-			<span class="input-group-btn">
-			    <button class="btn btn-default btn-sm" type="submit">
-					<span class="glyphicon glyphicon-triangle-bottom" aria-label="List pages"></span>
-			    </button>
-
-				<button type="submit" class="btn btn-default btn-sm">Patch</button>
-
-				<button type="submit" class="btn btn-default btn-sm">Autoscroll</button>
-
-				<button type="submit" class="btn btn-default btn-sm">Snapshot</button>
-
-				<button type="button" class="btn btn-default btn-sm" aria-label="Next page">
-					<span class="glyphicon glyphicon-forward"></span>
-				</button>
-			</span>
+			<span class="current-size" data-size="{{ info.size }}"></span>
 		</div>
 
 	</div>
-</form>
 
-<div class="recording-actions text-center col-md-4">
-	<a href="#" data-toggle="modal" data-target="#report-modal" class="doesnt-look-right">Doesn't look right?</a>
+	<form class="row left-buffer top-buffer-sm">
+		<div class="input-group">
+			<span class="input-group-addon">
+				1<span class="glyphicon glyphicon-triangle-bottom" aria-label="List pages"></span>
+			</span>
+
+			<input type="text" class="form-control" name="url" value="{{ url }}" autofocus required>
+
+			<span class="input-group-addon">
+				<button type="submit" class="">
+					Patch
+				</button>
+
+				<button type="submit" class="">
+					Autoscroll
+				</button>
+
+				<button type="submit" class="">
+					Snapshot
+				</button>
+			</span>
+		</div>
+	</form>
+</div>
+
+<div class="recording-actions text-center col-md-2">
+
+	<div class="row">
+		<form class="add-to-recording top-buffer">
+			<button type="submit" class="btn btn-default">
+				Add pages
+			</button>
+		</form>
+
+		<a href="#" data-toggle="modal" data-target="#report-modal" class="doesnt-look-right">Doesn't look right?</a>
+	</div>
 </div>
