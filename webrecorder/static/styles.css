@@ -89,30 +89,6 @@ li.coll-nav {
     font-style: italic;
 }
 
-.new-recording-form-group,
-.recording-in-progress-form-group,
-.browse-recording-form-group,
-.patch-recording-form-group {
-    margin-bottom: 5px;
-    height: 30px;
-}
-
-.new-recording-form-group .url,
-.recording-in-progress-form-group .url,
-.browse-recording-form-group .url,
-.patch-recording-form-group .url {
-    padding-right: 0px;
-}
-
-.recording-in-progress-form-group .title,
-.browse-recording-form-group .title,
-.patch-recording-form-group .title,
-.recording-in-progress-form-group .collection,
-.browse-recording-form-group .collection,
-.patch-recording-form-group .collection {
-    margin-top: 3px;
-}
-
 .recording-info-value {
     font-size: 12px;
     line-height: 2;
@@ -123,7 +99,6 @@ li.coll-nav {
 .start-recording-spacer {
     height: 20px;
 }
-
 
 .form-inline .homepage-url-input {
     width: 100%;
@@ -373,6 +348,10 @@ a.dropdown-badge {
 
 .collection-list {
     margin-top: 20px;
+}
+
+.top-buffer-sm {
+    margin-top: 5px;
 }
 
 .top-buffer {
