@@ -6,6 +6,11 @@ li.coll-nav {
     font-size: 18px;
 }
 
+.breadcrumb-webrecorder {
+    display: inline-block;
+    margin-bottom: 0px;
+}
+
 .header-webrecorder {
     background-color: #222;
 }
@@ -43,35 +48,6 @@ li.coll-nav {
 .wr-user-links>li>a:active,
 .wr-user-links>li>a:hover {
     outline: 0;
-}
-
-.breadcrumbs {
-    margin-left: 5px;
-    margin-top: -2px;
-}
-
-.wr-breadcrumb {
-    background-color: #222;
-    padding: 0px;
-    padding-left: 5px;
-    margin: 1px;
-    border: none;
-}
-
-.wr-breadcrumb>li>a,
-.wr-breadcrumb>li>a:visited {
-    color: #ccc;
-    text-decoration: underline;
-}
-
-.wr-breadcrumb>li>a:focus,
-.wr-breadcrumb>li>a:hover {
-    text-decoration: underline;
-}
-
-.wr-breadcrumb>li>a:active,
-.wr-breadcrumb>li>a:hover {
-    text-decoration: underline;
 }
 
 .wr-timer {

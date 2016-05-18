@@ -5,7 +5,11 @@
 			<span class="glyphicon glyphicon-lg glyphicon-modal-window top-buffer-sm" aria-hidden="true"></span>
 		</div>
 
-		<div class="pull-left left-buffer top-buffer-md">New recording: {{ user }} / {{ coll_title }} / </div>
+		<div class="pull-left left-buffer">
+			<span class="recorder-status strong">New recording</span>
+
+			{% include 'breadcrumbs.html' %}
+		</div>
 
 		<div class="pull-left top-buffer-sm left-buffer">
 			<label for="title" class="sr-only">Recording title:</label>

@@ -5,7 +5,11 @@
 			<span class="glyphicon glyphicon-lg glyphicon-record top-buffer-sm Blink" aria-hidden="true"></span>
 		</div>
 
-		<div class="pull-left left-buffer top-buffer-md">Recording: {{ user }} / {{ info.coll_title }} / {{ info.rec_title }}</div>
+		<div class="pull-left left-buffer">
+			<span class="recorder-status strong">Recording</span>
+
+			{% include 'breadcrumbs.html' %}
+		</div>
 
 		<div class="pull-right top-buffer-md">
 			<span>5 pages</span>
@@ -18,7 +22,7 @@
 		</div>
 	</div>
 
-	<form class="row left-buffer top-buffer-sm">
+	<form class="row left-buffer">
 		<div class="input-group">
 			<span class="input-group-addon">
 				1<span class="glyphicon glyphicon-triangle-bottom" aria-label="List pages"></span>

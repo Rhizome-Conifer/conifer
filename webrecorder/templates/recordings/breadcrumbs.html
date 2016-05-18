@@ -1,0 +1,21 @@
+{% if user %}
+	<ol class="breadcrumb breadcrumb-webrecorder">
+		{% if not is_anon() %}
+			<li>
+				<a target="_parent" href="/{{ user }}" title="Return to archive: {{ user }}">{{ user if not is_anon() else 'Temp User' }}</a>
+			</li>
+		{% endif %}
+
+		{% if coll %}
+            <li>
+				<a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}">{{ coll_title }}</a>
+			</li>
+		{% endif %}
+
+		{% if rec and rec != '*' %}
+			<li>
+                <a target="_parent" href="{{ get_path(user, coll, rec) }}" title="Return to recording: {{ rec_title }}">{{ rec_title }}</a>
+			</li>
+		{% endif %}
+	</ol>
+{% endif %}
