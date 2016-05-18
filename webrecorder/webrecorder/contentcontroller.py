@@ -107,6 +107,9 @@ class ContentController(BaseController, RewriterApp):
             if not self.manager.has_recording(user, coll, rec):
                 not_found = True
 
+            if type != 'replay':
+                self.manager.assert_can_write(user, coll)
+
         if ((not_found or type == 'replay-coll') and
             (not (self.manager.is_anon(user) and coll == 'temp')) and
             (not self.manager.has_collection(user, coll))):
