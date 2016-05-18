@@ -317,16 +317,6 @@ a.dropdown-badge {
     border-radius: 6px;
 }
 
-.recording-blinker {
-    display: inline-block;
-    background-color: #a94442;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    line-height: 1;
-    margin: 5px;
-}
-
 /* Blink animation courtesy of: http://jsfiddle.net/mdz87jy1/ */
 .Blink {
     animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
@@ -352,6 +342,10 @@ a.dropdown-badge {
 
 .top-buffer-sm {
     margin-top: 5px;
+}
+
+.top-buffer-md {
+    margin-top: 10px;
 }
 
 .top-buffer {
