@@ -303,7 +303,7 @@ var RecordingSizeWidget = (function() {
 
 var PagesComboxBox = (function() {
     var start = function() {
-        if ($(".browse-recording .url").length) {
+        if ($(".pages-combobox").length) {
             Recordings.getPages(wbinfo.info.rec_id, initializeCombobox, dontInitializeCombobox);
         }
     }
@@ -335,7 +335,7 @@ var PagesComboxBox = (function() {
         var pages = data.pages;
         var source = substringMatcher(pages);
 
-        $("input[name='url']").typeahead(
+        $(".pages-combobox").typeahead(
             {
                 highlight: true,
                 minLength: 0,

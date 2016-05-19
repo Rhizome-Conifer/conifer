@@ -21,12 +21,14 @@
 	</div>
 
 	<form class="row left-buffer">
-		<div class="input-group">
+		<div class="input-group has-feedback">
 			<span class="input-group-addon">
-				1<span class="glyphicon glyphicon-triangle-bottom" aria-label="List pages"></span>
+				1
 			</span>
 
-			<input type="text" class="form-control" name="url" value="{{ url }}" autofocus required>
+			<span class="glyphicon glyphicon-triangle-bottom form-control-feedback form-control-left-addon-feedback" aria-label="List pages"></span>
+
+			<input type="text" class="pages-combobox form-control form-control-left-addon-input" name="url" value="{{ url }}" autofocus required>
 
 			<span class="input-group-addon">
 				<button type="submit" class="">
