@@ -506,16 +506,14 @@ class CollManagerMixin(object):
         self.assert_can_read(user, coll)
 
         key = self.coll_info_key.format(user=user, coll=coll)
-        return self._fill_collection(user, self.redis.hgetall(key))
+        return self._fill_collection(user, self.redis.hgetall(key), True)
 
-    def _fill_collection(self, user, data):
+    def _fill_collection(self, user, data, include_recs=False):
         result = self._format_info(data)
         if not result:
             return result
 
         coll = result['id']
-
-        result['recordings'] = self.get_recordings(user, coll)
 
         path = self.download_paths['coll']
         path = path.format(host=self.get_host(),
@@ -523,6 +521,10 @@ class CollManagerMixin(object):
                            coll=coll)
 
         result['download_url'] = path
+
+        if include_recs:
+            result['recordings'] = self.get_recordings(user, coll)
+
         return result
 
     def _has_collection_no_access_check(self, user, coll):
