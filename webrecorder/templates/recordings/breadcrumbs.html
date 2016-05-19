@@ -8,13 +8,13 @@
 
 		{% if coll %}
             <li>
-				<a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}">{{ coll_title }}</a>
+				<a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}" data-collection-id="{{ coll }}">{{ coll_title }}</a>
 			</li>
 		{% endif %}
 
 		{% if rec and rec != '*' %}
 			<li>
-                <a target="_parent" href="{{ get_path(user, coll, rec) }}" title="Return to recording: {{ rec_title }}">{{ rec_title }}</a>
+                <a target="_parent" href="{{ get_path(user, coll, rec) }}" title="Return to recording: {{ rec_title }}" data-recording-id="{{ rec }}">{{ rec_title }}</a>
 			</li>
 		{% endif %}
 	</ol>

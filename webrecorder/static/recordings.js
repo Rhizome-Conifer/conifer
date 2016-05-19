@@ -36,12 +36,11 @@ var EventHandlers = (function() {
             RouteTo.recordingInProgress(user, collection, title, url);
         });
 
-
-        // 'New recording': Record button
+        // 'New recording': Start button
         $('header').on('submit', '.start-recording', function(event) {
             event.preventDefault();
 
-            var collection = $("*[name='collection']").val();
+            var collection = $('[data-collection-id]').attr('data-collection-id');
             var title = $("input[name='title']").val();
             var url = $("input[name='url']").val();
 
@@ -64,7 +63,7 @@ var EventHandlers = (function() {
             RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
         });
 
-        // 'Browse recording': Url bar 'Go' button / enter key
+        // 'Replay recording': Url bar 'Go' button / enter key
         $('header').on('submit', '.browse-recording', function(event) {
             event.preventDefault();
 
@@ -73,7 +72,7 @@ var EventHandlers = (function() {
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // 'Browse recording': 'Add pages' button
+        // 'Replay recording': 'Add pages' button
         $('header').on('submit', '.add-to-recording', function(event){
             event.preventDefault();
 
@@ -82,7 +81,7 @@ var EventHandlers = (function() {
             RouteTo.addToRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // 'Browse recording': 'Patch page' button
+        // 'Replay recording': 'Patch page' button
         $('header').on('submit', '.patch-page', function(event){
             event.preventDefault();
 
@@ -90,6 +89,11 @@ var EventHandlers = (function() {
 
             RouteTo.patchPage(user, coll, wbinfo.info.rec_id, url);
         });
+
+        // 'Replay'/'Recording in progress': 'List pages' toggle
+        $('.header').on('mouseenter', '.list-pages-toggle', function(event) {
+            $(this).css('cursor', 'pointer');
+        })
 
         // 'Patch page': 'Stop' button
         $('header').on('submit', '.stop-patching', function(event) {
