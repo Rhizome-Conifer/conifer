@@ -26,7 +26,11 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.set_nx_env('WEBAGG_HOST', 'http://localhost:8010')
         cls.set_nx_env('RECORD_HOST', 'http://localhost:8080')
 
-        cls.appcont = AppController(configfile=os.path.join(cls.get_curr_dir(), 'test_config.yaml'))
+        cls.set_nx_env('REQUIRE_INVITES', 'true')
+        cls.set_nx_env('EMAIL_SENDER', 'test@localhost')
+        cls.set_nx_env('EMAIL_SMTP_URL', 'smtp://webrectest@mail.localhost:test@localhost:25')
+
+        cls.appcont = AppController(overlay_config=os.path.join(cls.get_curr_dir(), 'test_config.yaml'))
         cls.testapp = webtest.TestApp(cls.appcont.app)
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
 

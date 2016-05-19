@@ -24,7 +24,7 @@ class TempChecker(object):
 
         self.record_host = os.environ['RECORD_HOST']
 
-        self.delete_url = config['url_templates']['delete_url']
+        self.delete_url = config['url_templates']['delete']
 
         print('Temp Checker Root: ' + self.glob_pattern)
 

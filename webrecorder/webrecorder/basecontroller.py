@@ -93,7 +93,7 @@ class BaseController(object):
         return res
 
     def get_host(self):
-        return request.urlparts.scheme + '://' + request.urlparts.netloc
+        return self.manager.get_host()
 
     def redirect(self, url):
         if url.startswith('/'):

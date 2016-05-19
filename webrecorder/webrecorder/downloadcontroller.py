@@ -9,10 +9,10 @@ from six.moves.urllib.parse import quote
 
 # ============================================================================
 class DownloadController(BaseController):
-    PATHS = {
-             'download': '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}',
-             'download_filename': '{title}-{timestamp}.warc.gz',
-            }
+    def __init__(self, app, jinja_env, manager, config):
+        super(DownloadController, self).__init__(app, jinja_env, manager, config)
+        self.paths = config['url_templates']
+        self.download_filename = config['download_paths']['filename']
 
     def init_routes(self):
         # ANON DOWNLOAD
@@ -62,10 +62,10 @@ class DownloadController(BaseController):
             title = rec_title = info.get('title', rec)
 
         now = timestamp_now()
-        filename = self.PATHS['download_filename'].format(title=title,
-                                                          timestamp=now)
+        filename = self.download_filename.format(title=title,
+                                                 timestamp=now)
 
-        download_url = self.PATHS['download']
+        download_url = self.paths['download']
         download_url = download_url.format(record_host=self.record_host,
                                            user=user,
                                            coll=coll,

@@ -16,6 +16,7 @@ services:
 
         volumes:
             - ./webrecorder/:/code/
+            - ./wr.yaml:/wr.yaml
 
     nginx:
         build: ./nginx

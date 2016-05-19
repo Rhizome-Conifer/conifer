@@ -18,15 +18,6 @@ from webrecorder.basecontroller import BaseController
 class ContentController(BaseController, RewriterApp):
     DEF_REC_NAME = 'My First Recording'
 
-    PATHS = {'live': '{replay_host}/live/resource/postreq?url={url}&closest={closest}',
-             'record': '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}',
-             'patch': '{record_host}/record/patch/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}',
-             'replay': '{replay_host}/replay/resource/postreq?url={url}&closest={closest}&param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}',
-             'replay-coll': '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}',
-
-             'cookie_key_templ': 'r:{user}:{coll}:{rec}:cookie:'
-            }
-
     WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?(https?:)?//.*')
 
     def __init__(self, app, jinja_env, manager, config):
@@ -35,6 +26,9 @@ class ContentController(BaseController, RewriterApp):
                              framed_replay=True,
                              jinja_env=jinja_env,
                              config=config)
+
+        self.paths = config['url_templates']
+        self.cookie_key_templ = config['cookie_key_templ']
 
         self.cookie_tracker = CookieTracker(manager.redis)
 
@@ -207,7 +201,7 @@ class ContentController(BaseController, RewriterApp):
         if url != '{url}':
             url = quote(url)
 
-        upstream_url = self.PATHS[type].format(url=url,
+        upstream_url = self.paths[type].format(url=url,
                                                closest=closest,
                                                record_host=self.record_host,
                                                replay_host=self.replay_host,
@@ -216,7 +210,7 @@ class ContentController(BaseController, RewriterApp):
         return upstream_url
 
     def get_cookie_key(self, kwargs):
-        return self.PATHS['cookie_key_templ'].format(**kwargs)
+        return self.cookie_key_templ.format(**kwargs)
 
     def process_query_cdx(self, cdx, wb_url, kwargs):
         rec = kwargs.get('rec')

@@ -5,10 +5,6 @@ from webrecorder.basecontroller import BaseController
 
 # ============================================================================
 class RecsController(BaseController):
-    def __init__(self, *args, **kwargs):
-        super(RecsController, self).__init__(*args, **kwargs)
-        self.DOWNLOAD_REC_PATH = '{host}/{user}/{coll}/{rec}/$download'
-
     def init_routes(self):
         @self.app.post('/api/v1/recordings')
         def create_recording():
@@ -27,7 +23,7 @@ class RecsController(BaseController):
 
             recording = self.manager.create_recording(user, coll, rec, title)
 
-            return {'recording': self._add_download_path(recording, user, coll)}
+            return {'recording': recording}
 
         @self.app.get('/api/v1/recordings')
         def get_recordings():
@@ -35,7 +31,7 @@ class RecsController(BaseController):
 
             rec_list = self.manager.get_recordings(user, coll)
 
-            return {'recordings': [self._add_download_path(x, user, coll) for x in rec_list]}
+            return {'recordings': rec_list}
 
         @self.app.get('/api/v1/recordings/<rec>')
         def get_recording(rec):
@@ -117,7 +113,7 @@ class RecsController(BaseController):
             response.status = 404
             return {'error_message': 'Recording not found', 'id': rec}
 
-        return {'recording': self._add_download_path(recording, user, coll)}
+        return {'recording': recording}
 
     def get_rec_info_for_view(self, user, coll, rec):
         result = self.get_rec_info(user, coll, rec)
@@ -157,16 +153,6 @@ class RecsController(BaseController):
             result['rec_title'] = recording['title']
 
         return result
-
-    def _add_download_path(self, rec_info, user, coll):
-        path = self.DOWNLOAD_REC_PATH
-        path = path.format(host=self.get_host(),
-                           user=user,
-                           coll=coll,
-                           rec=rec_info['id'])
-
-        rec_info['download_url'] = path
-        return rec_info
 
     def _ensure_rec_exists(self, user, coll, rec):
         if not self.manager.has_recording(user, coll, rec):

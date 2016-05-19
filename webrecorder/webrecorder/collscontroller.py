@@ -6,20 +6,9 @@ from webrecorder.webreccork import ValidationException
 
 # ============================================================================
 class CollsController(BaseController):
-
-    # TODO: move these to external file for customization, localization, etc..
-    DEFAULT_DESC = u"""
-
-#### About {0}
-
-*This collection doesn't yet have a description.*
-
-"""
-
-
-    def __init__(self, *args, **kwargs):
-        super(CollsController, self).__init__(*args, **kwargs)
-        self.DOWNLOAD_COLL_PATH = '{host}/{user}/{coll}/$download'
+    def __init__(self, app, jinja_env, manager, config):
+        super(CollsController, self).__init__(app, jinja_env, manager, config)
+        self.default_coll_desc = config['coll_desc']
 
     def init_routes(self):
         @self.app.post('/api/v1/collections')
@@ -38,7 +27,7 @@ class CollsController(BaseController):
                        }
 
             collection = self.manager.create_collection(user, coll, title)
-            return {'collection': self._add_download_path(collection, user)}
+            return {'collection': collection}
 
         @self.app.get('/api/v1/collections')
         def get_collections():
@@ -46,7 +35,7 @@ class CollsController(BaseController):
 
             coll_list = self.manager.get_collections(user)
 
-            return {'collections': [self._add_download_path(x, user) for x in coll_list]}
+            return {'collections': coll_list}
 
         @self.app.get('/api/v1/collections/<coll>')
         def get_collection(coll):
@@ -162,7 +151,7 @@ class CollsController(BaseController):
            rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
 
         if not result['collection'].get('desc'):
-            result['collection']['desc'] = self.DEFAULT_DESC.format(result['coll_title'])
+            result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])
 
         return result
 
@@ -173,16 +162,7 @@ class CollsController(BaseController):
             response.status = 404
             return {'error_message': 'Collection not found', 'id': coll}
 
-        return {'collection': self._add_download_path(collection, user)}
-
-    def _add_download_path(self, coll_info, user):
-        path = self.DOWNLOAD_COLL_PATH
-        path = path.format(host=self.get_host(),
-                           user=user,
-                           coll=coll_info['id'])
-
-        coll_info['download_url'] = path
-        return coll_info
+        return {'collection': collection}
 
     def _ensure_coll_exists(self, user, coll):
         if not self.manager.has_collection(user, coll):

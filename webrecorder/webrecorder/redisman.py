@@ -27,9 +27,6 @@ class LoginManagerMixin(object):
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
-    USER_KEY = 'u:{user}'
-    USER_SKIP_KEY = 'u:{user}:skip:{url}'
-
     def __init__(self, config):
         super(LoginManagerMixin, self).__init__(config)
         try:
@@ -44,13 +41,16 @@ class LoginManagerMixin(object):
         except Exception as e:
             print('WARNING: Unable to init defaults: ' + str(e))
 
+        self.user_key = config['info_key_templ']['user']
+        self.user_skip_key = config['user_skip_key']
+
     def create_user(self, reg):
         try:
             user = self.cork.validate_registration(reg)
         except AAAException as a:
             raise ValidationException(a)
 
-        key = self.USER_KEY.format(user=user)
+        key = self.user_key.format(user=user)
         now = int(time.time())
 
         max_size, max_coll = self.redis.hmget('h:defaults', ['max_size', 'max_coll'])
@@ -74,7 +74,7 @@ class LoginManagerMixin(object):
         if not max_size:
             max_size = self.default_max_anon_size
 
-        key = self.USER_KEY.format(user=user)
+        key = self.user_key.format(user=user)
         now = int(time.time())
 
         with redis.utils.pipeline(self.redis) as pi:
@@ -84,7 +84,7 @@ class LoginManagerMixin(object):
             pi.hsetnx(key, 'size', '0')
 
     def get_user_info(self, user):
-        key = self.USER_KEY.format(user=user)
+        key = self.user_key.format(user=user)
         result = self._format_info(self.redis.hgetall(key))
         return result
 
@@ -102,7 +102,7 @@ class LoginManagerMixin(object):
     def set_user_desc(self, user, desc):
         self.assert_user_is_owner(user)
 
-        key = self.USER_KEY.format(user=user)
+        key = self.user_key.format(user=user)
 
         self.redis.hset(key, 'desc', desc)
 
@@ -118,7 +118,7 @@ class LoginManagerMixin(object):
         return res
 
     def get_size_remaining(self, user):
-        user_key = self.USER_KEY.format(user=user)
+        user_key = self.user_key.format(user=user)
 
         size, max_size = self.redis.hmget(user_key, ['size', 'max_size'])
 
@@ -265,7 +265,7 @@ class LoginManagerMixin(object):
         self.redis.rpush('h:reports', report)
 
     def skip_post_req(self, user, url):
-        key = self.USER_SKIP_KEY.format(user=user, url=url)
+        key = self.user_skip_key.format(user=user, url=url)
         self.redis.setex(key, 300, 1)
 
 
@@ -301,7 +301,7 @@ class AccessManagerMixin(object):
         if user == curr_user:
             return self._has_collection_no_access_check(user, coll)
 
-        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        key = self.coll_info_key.format(user=user, coll=coll)
 
         #role_key = self.ROLE_KEY.format(role=curr_role)
 
@@ -314,7 +314,7 @@ class AccessManagerMixin(object):
         return any(res)
 
     def is_public(self, user, coll):
-        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        key = self.coll_info_key.format(user=user, coll=coll)
         res = self.redis.hget(key, self.READ_PREFIX + self.PUBLIC)
         return res == b'1'
 
@@ -322,7 +322,7 @@ class AccessManagerMixin(object):
         if not self.can_admin_coll(user, coll):
             return False
 
-        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        key = self.coll_info_key.format(user=user, coll=coll)
 
         if is_public:
             self.redis.hset(key, self.READ_PREFIX + self.PUBLIC, 1)
@@ -392,15 +392,31 @@ class AccessManagerMixin(object):
 class RecManagerMixin(object):
     def __init__(self, config):
         super(RecManagerMixin, self).__init__(config)
-        self.REC_INFO_KEY = 'r:{user}:{coll}:{rec}:info'
-        self.PAGE_KEY = 'r:{user}:{coll}:{rec}:page'
-        self.INT_KEYS = ('size', 'created_at', 'updated_at')
+        self.rec_info_key = config['info_key_templ']['rec']
+        self.page_key = config['page_key_templ']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
-        key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
-        result = self._format_info(self.redis.hgetall(key))
+        key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+
+        return self._fill_recording(user, coll, self.redis.hgetall(key))
+
+    def _fill_recording(self, user, coll, data):
+        result = self._format_info(data)
+
+        if not result:
+            return result
+
+        rec = result['id']
+
+        path = self.download_paths['rec']
+        path = path.format(host=self.get_host(),
+                           user=user,
+                           coll=coll,
+                           rec=rec)
+
+        result['download_url'] = path
         return result
 
     def has_recording(self, user, coll, rec):
@@ -408,14 +424,14 @@ class RecManagerMixin(object):
         if not self.can_read_coll(user, coll):
             return False
 
-        key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
+        key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
         #return self.redis.exists(key)
         return self.redis.hget(key, 'id') != None
 
     def create_recording(self, user, coll, rec, rec_title):
         self.assert_can_write(user, coll)
 
-        key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
+        key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
 
         now = int(time.time())
 
@@ -434,7 +450,7 @@ class RecManagerMixin(object):
     def get_recordings(self, user, coll):
         self.assert_can_read(user, coll)
 
-        key_pattern = self.REC_INFO_KEY.format(user=user, coll=coll, rec='*')
+        key_pattern = self.rec_info_key.format(user=user, coll=coll, rec='*')
 
         keys = list(self.redis.scan_iter(match=key_pattern))
 
@@ -444,7 +460,7 @@ class RecManagerMixin(object):
 
             all_recs = pi.execute()
 
-        all_recs = [self._format_info(x) for x in all_recs]
+        all_recs = [self._fill_recording(user, coll, x) for x in all_recs]
         return all_recs
 
     def delete_recording(self, user, coll, rec):
@@ -455,7 +471,7 @@ class RecManagerMixin(object):
     def add_page(self, user, coll, rec, pagedata):
         self.assert_can_write(user, coll)
 
-        key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
+        key = self.page_key.format(user=user, coll=coll, rec=rec)
 
         pagedata_json = json.dumps(pagedata).encode('utf-8')
 
@@ -465,7 +481,7 @@ class RecManagerMixin(object):
     def list_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
-        key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
+        key = self.page_key.format(user=user, coll=coll, rec=rec)
 
         #pagelist = self.redis.smembers(key)
         pagelist = self.redis.hvals(key)
@@ -476,7 +492,7 @@ class RecManagerMixin(object):
 
     def num_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
-        key = self.PAGE_KEY.format(user=user, coll=coll, rec=rec)
+        key = self.page_key.format(user=user, coll=coll, rec=rec)
         return self.redis.hlen(key)
 
 
@@ -484,19 +500,33 @@ class RecManagerMixin(object):
 class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
-        self.COLL_INFO_KEY = 'c:{user}:{coll}:info'
+        self.coll_info_key = config['info_key_templ']['coll']
 
     def get_collection(self, user, coll):
         self.assert_can_read(user, coll)
 
-        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
-        result = self._format_info(self.redis.hgetall(key))
-        if result:
-            result['recordings'] = self.get_recordings(user, coll)
+        key = self.coll_info_key.format(user=user, coll=coll)
+        return self._fill_collection(user, self.redis.hgetall(key))
+
+    def _fill_collection(self, user, data):
+        result = self._format_info(data)
+        if not result:
+            return result
+
+        coll = result['id']
+
+        result['recordings'] = self.get_recordings(user, coll)
+
+        path = self.download_paths['coll']
+        path = path.format(host=self.get_host(),
+                           user=user,
+                           coll=coll)
+
+        result['download_url'] = path
         return result
 
     def _has_collection_no_access_check(self, user, coll):
-        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        key = self.coll_info_key.format(user=user, coll=coll)
         return self.redis.hget(key, 'id') != None
 
     def has_collection(self, user, coll):
@@ -508,7 +538,7 @@ class CollManagerMixin(object):
     def create_collection(self, user, coll, coll_title='', desc='', public=False):
         self.assert_can_admin(user, coll)
 
-        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        key = self.coll_info_key.format(user=user, coll=coll)
         coll_title = coll_title or coll
 
         now = int(time.time())
@@ -525,7 +555,7 @@ class CollManagerMixin(object):
         return self.get_collection(user, coll)
 
     def num_collections(self, user):
-        key_pattern = self.COLL_INFO_KEY.format(user=user, coll='*')
+        key_pattern = self.coll_info_key.format(user=user, coll='*')
 
         keys = list(self.redis.scan_iter(match=key_pattern))
 
@@ -535,7 +565,7 @@ class CollManagerMixin(object):
         return len(keys)
 
     def get_collections(self, user):
-        key_pattern = self.COLL_INFO_KEY.format(user=user, coll='*')
+        key_pattern = self.coll_info_key.format(user=user, coll='*')
 
         keys = list(self.redis.scan_iter(match=key_pattern))
 
@@ -545,7 +575,7 @@ class CollManagerMixin(object):
 
             all_colls = pi.execute()
 
-        all_colls = [self._format_info(x) for x in all_colls]
+        all_colls = [self._fill_collection(user, x) for x in all_colls]
 
         if not self.is_owner(user):
             all_colls = [coll for coll in all_colls
@@ -564,21 +594,23 @@ class CollManagerMixin(object):
     def set_coll_desc(self, user, coll, desc):
         self.assert_can_admin(user, coll)
 
-        key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        key = self.coll_info_key.format(user=user, coll=coll)
 
         self.redis.hset(key, 'desc', desc)
 
 
 # ============================================================================
 class DeleteManagerMixin(object):
-    DELETE_URL = '{record_host}/delete?user={user}&coll={coll}&rec={rec}&type={type}'
+    def __init__(self, config):
+        super(DeleteManagerMixin, self).__init__(config)
+        self.delete_url_templ = config['url_templates']['delete']
 
     def _send_delete(self, type_, user, coll='*', rec='*'):
-        delete_url = self.DELETE_URL.format(record_host=os.environ['RECORD_HOST'],
-                                            user=user,
-                                            coll=coll,
-                                            rec=rec,
-                                            type=type_)
+        delete_url = self.delete_url_templ.format(record_host=os.environ['RECORD_HOST'],
+                                                  user=user,
+                                                  coll=coll,
+                                                  rec=rec,
+                                                  type=type_)
 
         res = requests.delete(delete_url)
 
@@ -588,16 +620,17 @@ class DeleteManagerMixin(object):
 # ============================================================================
 class Base(object):
     def __init__(self, config):
-        pass
+        self.download_paths = config['download_paths']
+        self.INT_KEYS = ('size', 'created_at', 'updated_at')
 
     def get_content_inject_info(self, user, coll, rec):
         info = {}
 
-        coll_key = self.COLL_INFO_KEY.format(user=user, coll=coll)
+        coll_key = self.coll_info_key.format(user=user, coll=coll)
 
         # recording
         if rec != '*' and rec:
-            rec_key = self.REC_INFO_KEY.format(user=user, coll=coll, rec=rec)
+            rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
             info['rec_title'], info['size'] = self.redis.hmget(rec_key, ['title', 'size'])
             if info.get('rec_title'):
                 info['rec_title'] = info['rec_title'].decode('utf-8')
@@ -650,6 +683,9 @@ class Base(object):
 
         return dict(((n.decode('utf-8'), v.decode('utf-8')
                     if isinstance(v, bytes) else v) for n, v in result.items()))
+
+    def get_host(self):
+        return request.urlparts.scheme + '://' + request.urlparts.netloc
 
 
 # ============================================================================

@@ -45,19 +45,26 @@ class AppController(BaseController):
                       ]
 
 
-    def __init__(self, configfile='config.yaml', redis_url=None):
+    def __init__(self, configfile=None, overlay_config=None, redis_url=None):
         self._init_logging()
 
         bottle_app = Bottle()
         self.bottle_app = bottle_app
 
+        if not configfile:
+            configfile = os.environ.get('WR_CONFIG', './wr.yaml')
+
         # Load config
         with open(configfile, 'rb') as fh:
             config = yaml.load(fh)
 
+        if overlay_config:
+            with open(overlay_config, 'rb') as fh:
+                config.update(yaml.load(fh))
+
         # Init Redis
         if not redis_url:
-            redis_url = expandvars(config['redis_url'])
+            redis_url = os.environ['REDIS_BASE_URL']
 
         self.redis = redis.StrictRedis.from_url(redis_url)
         self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])

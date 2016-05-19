@@ -36,7 +36,7 @@ class WebRecRecorder(object):
 
         self.cdxj_key_templ = config['cdxj_key_templ']
 
-        self.rec_page_key_templ = config['r_page_key_templ']
+        self.rec_page_key_templ = config['page_key_templ']
 
         self.info_keys = config['info_key_templ']
 
