@@ -25,7 +25,6 @@ default_max_size: 100000000
 default_max_anon_size: 500000000
 default_max_coll: 10
 
-
 verify_ssl: false
 
 multiuser: true

@@ -37,6 +37,7 @@ services:
         build: ./rec
         env_file:
             - ./wr.env
+            - ./webrecorder/webrecorder.env
 
         depends_on:
             - webagg
@@ -53,6 +54,7 @@ services:
         build: ./webagg
         env_file:
             - ./wr.env
+            - ./webrecorder/webrecorder.env
 
         depends_on:
             - redis

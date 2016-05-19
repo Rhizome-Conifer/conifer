@@ -9,6 +9,8 @@ from pywb.utils.loaders import load_yaml_config
 import gevent
 import os
 
+from wrrecorder.s3 import S3Storage
+
 
 # =============================================================================
 #def start_uwsgi_timer(freq, type_, callable_, signal=66):
@@ -42,7 +44,6 @@ def storage_commit_loop(storage_committer, writer, sleep_secs):
         gevent.sleep(sleep_secs)
 
 
-
 # =============================================================================
 def init():
     config = load_yaml_config(os.environ.get('WR_CONFIG', './wr.yaml'))
@@ -50,8 +51,10 @@ def init():
     temp_checker = TempChecker(config)
     storage_committer = StorageCommitter(config)
 
+    storage_committer.add_storage_class('s3', S3Storage)
+
     global wr
-    wr = WebRecRecorder(config)
+    wr = WebRecRecorder(config, storage_committer)
 
     sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
 

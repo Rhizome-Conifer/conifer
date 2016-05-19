@@ -14,6 +14,8 @@ from webrecorder.webreccork import ValidationException
 from webrecorder.redisutils import RedisTable
 from cork import AAAException
 
+import requests
+
 
 # ============================================================================
 class LoginManagerMixin(object):
@@ -114,15 +116,6 @@ class LoginManagerMixin(object):
             self.cork.user(user).delete()
 
         return res
-
-    def _send_delete(self, type_, user, coll='*', rec='*'):
-        message = {'type': type_,
-                   'user': user,
-                   'coll': coll,
-                   'rec': rec}
-
-        res = self.redis.publish('delete', json.dumps(message))
-        return (res > 0)
 
     def get_size_remaining(self, user):
         user_key = self.USER_KEY.format(user=user)
@@ -577,6 +570,22 @@ class CollManagerMixin(object):
 
 
 # ============================================================================
+class DeleteManagerMixin(object):
+    DELETE_URL = '{record_host}/delete?user={user}&coll={coll}&rec={rec}&type={type}'
+
+    def _send_delete(self, type_, user, coll='*', rec='*'):
+        delete_url = self.DELETE_URL.format(record_host=os.environ['RECORD_HOST'],
+                                            user=user,
+                                            coll=coll,
+                                            rec=rec,
+                                            type=type_)
+
+        res = requests.delete(delete_url)
+
+        return res.json() == {}
+
+
+# ============================================================================
 class Base(object):
     def __init__(self, config):
         pass
@@ -644,7 +653,7 @@ class Base(object):
 
 
 # ============================================================================
-class RedisDataManager(AccessManagerMixin, LoginManagerMixin, RecManagerMixin, CollManagerMixin, Base):
+class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin, RecManagerMixin, CollManagerMixin, Base):
     def __init__(self, redis, cork, browser_redis, config):
         self.redis = redis
         self.cork = cork

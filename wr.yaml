@@ -1,5 +1,7 @@
 file_path_templ: '{user}/{coll}/{rec}/'
 
+storage_path_templ: 'accounts/{user}/collections/{coll}/archive/{rec}/{filename}'
+
 cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj'
 cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj'
 
@@ -11,6 +13,7 @@ info_key_templ:
     user: 'u:{user}'
 
 warc_key_templ: 'c:{user}:{coll}:warc'
+warc_upload_wait_templ: 'w:{filename}'
 
 skip_key_templ: 'u:{user}:skip:{url}'
 
@@ -26,4 +29,15 @@ del_templ:
     coll: '*:{user}:{coll}*'
     user: '*:{user}*'
 
+url_templates:
+    delete_url: '{record_host}/delete?user={user}&coll={coll}&rec={rec}&type={type}'
+
+storage_key_templ: 'st:{name}'
+
+upload_wait_secs: 30
+
+default_storage_config:
+    type: s3
+    remote_url_templ: s3://warcwork/new-beta/accounts/{user}/collections/{coll}/archive/{rec}/{filename}
+    profle: ''
 

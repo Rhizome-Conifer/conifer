@@ -5,6 +5,8 @@ from recorder.warcwriter import MultiFileWARCWriter, SimpleTempWARCWriter
 from recorder.filters import SkipDupePolicy
 from recorder.filters import ExcludeSpecificHeaders
 
+from pywb.utils.loaders import BlockLoader
+
 import redis
 import time
 import json
@@ -22,7 +24,9 @@ import gevent
 
 # ============================================================================
 class WebRecRecorder(object):
-    def __init__(self, config=None):
+    def __init__(self, config=None, storage_committer=None):
+        self.storage_committer = storage_committer
+
         self.upstream_url = os.environ['WEBAGG_HOST']
 
         self.record_root_dir = os.environ['RECORD_ROOT']
@@ -57,6 +61,8 @@ class WebRecRecorder(object):
 
         self.app.mount('/record', self.recorder)
         self.app.get('/download', callback=self.download)
+        self.app.delete('/delete', callback=self.delete)
+
         debug(True)
 
         gevent.spawn(self.delete_listen_loop)
@@ -105,6 +111,13 @@ class WebRecRecorder(object):
 
         return pages
 
+    def get_profile(self, scheme, profile):
+        res = self.redis.hgetall('st:' + profile)
+        if not res:
+            return dict()
+
+        return dict((n.decode('utf-8'), v.decode('utf-8')) for n, v in res.items())
+
     def download(self):
         user = request.query.get('user', '')
         coll = request.query.get('coll', '*')
@@ -116,9 +129,6 @@ class WebRecRecorder(object):
         #if not user:
         #    response.status = 400
         #    return {'error_message': 'No User Provided'}
-
-        templ = self.warc_path_templ + '*.warc.gz'
-        warcs = list(glob.glob(templ.format(user=user, coll=coll, rec=rec)))
 
         metadata = {'pages': self.get_pagelist(user, coll, rec)}
 
@@ -155,20 +165,70 @@ class WebRecRecorder(object):
         except Exception as e:
             print(e)
 
-        def read_all(warcinfo):
+        #templ = self.warc_path_templ + '*.warc.gz'
+        #warcs = list(glob.glob(templ.format(user=user, coll=coll, rec=rec)))
+
+        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
+        allwarcs = self.redis.hgetall(warc_key)
+
+        if rec and rec != '*':
+            rec_prefix = self.warc_rec_prefix.format(user=user, coll=coll, rec=rec)
+        else:
+            rec_prefix = ''
+
+        loader = BlockLoader()
+
+        def read_all():
             yield warcinfo
 
-            for warc in warcs:
-                with open(warc, 'rb') as fh:
+            for n, v in iteritems(allwarcs):
+                n = n.decode('utf-8')
+                if not rec_prefix or n.startswith(rec_prefix):
+                    v = v.decode('utf-8')
+                    fh = loader.load(v)
+
                     for chunk in StreamIter(fh):
                         yield chunk
 
         response.headers['Content-Type'] = 'application/octet-stream'
         response.headers['Content-Length'] = int(length)
-        resp = read_all(warcinfo)
+        resp = read_all()
         #response.headers['Transfer-Encoding'] = 'chunked'
         #resp = chunk_encode_iter(resp)
         return resp
+
+    def delete(self):
+        user = request.query.get('user', '')
+        coll = request.query.get('coll', '*')
+        rec = request.query.get('rec', '*')
+        type = request.query.get('type')
+
+        if not self.send_delete_local(user, coll, rec, type):
+            return {'error_message': 'no local clients'}
+
+        try:
+            self.delete_redis_keys(type, user, coll, rec)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return {'error_message': str(e)}
+
+        if self.storage_committer:
+            storage = self.storage_committer.get_storage(user, coll, rec)
+            if storage and not storage.delete(user, coll, rec, type):
+                return {'error_message': 'remote delete failed'}
+
+        return {}
+
+    def send_delete_local(self, user, coll, rec, type):
+        # delete local
+        message = {'type': type,
+                   'user': user,
+                   'coll': coll,
+                   'rec': rec}
+
+        res = self.redis.publish('delete', json.dumps(message))
+        return (res > 0)
 
     def delete_listen_loop(self):
         self.pubsub = self.redis.pubsub()
@@ -179,12 +239,12 @@ class WebRecRecorder(object):
         for item in self.pubsub.listen():
             try:
                 if item['type'] == 'message' and item['channel'] == b'delete':
-                    self.handle_delete(item['data'].decode('utf-8'))
+                    self.handle_delete_local(item['data'].decode('utf-8'))
             except:
                 import traceback
                 traceback.print_exc()
 
-    def handle_delete(self, data):
+    def handle_delete_local(self, data):
         data = json.loads(data)
 
         user = data['user']
@@ -192,19 +252,6 @@ class WebRecRecorder(object):
         rec = data['rec']
         type = data['type']
 
-        try:
-            self.delete_files(type, user, coll, rec)
-        except:
-            import traceback
-            traceback.print_exc()
-
-        try:
-            self.delete_redis_keys(type, user, coll, rec)
-        except:
-            import traceback
-            traceback.print_exc()
-
-    def delete_files(self, type, user, coll, rec):
         if type not in (('user', 'coll', 'rec')):
             print('Unknown delete type ' + str(type))
             return
