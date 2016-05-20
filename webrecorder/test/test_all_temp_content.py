@@ -194,7 +194,7 @@ class TestTempContent(FullStackTests):
 
         assert '<iframe' not in res.text
 
-        assert '"My Rec2"' in res.text
+        assert 'My Rec2' in res.text
 
     def test_anon_new_recording(self):
         res = self._get_anon('/temp/$new')
@@ -202,7 +202,7 @@ class TestTempContent(FullStackTests):
 
         assert '<iframe' not in res.text
 
-        assert '"Temporary Collection"' in res.text
+        assert 'Temporary Collection' in res.text
 
     def test_anon_user_info_redirect(self):
         res = self._get_anon('')
