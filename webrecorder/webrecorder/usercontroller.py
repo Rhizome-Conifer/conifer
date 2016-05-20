@@ -6,11 +6,9 @@ from webrecorder.webreccork import ValidationException
 
 # ============================================================================
 class UserController(BaseController):
-    DEFAULT_USER_DESC = u"""
-## {0} archive
-
-Available collections are listed below.
-"""
+    def __init__(self, app, jinja_env, manager, config):
+        super(UserController, self).__init__(app, jinja_env, manager, config)
+        self.default_user_desc = config['user_desc']
 
     def init_routes(self):
         # User Info
@@ -28,7 +26,7 @@ Available collections are listed below.
                      }
 
             if not result['user_info'].get('desc'):
-                result['user_info']['desc'] = self.DEFAULT_USER_DESC.format(user)
+                result['user_info']['desc'] = self.default_user_desc.format(user)
 
             return result
 

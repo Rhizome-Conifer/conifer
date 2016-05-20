@@ -120,7 +120,7 @@ var Collections = (function() {
             doneCallback(data);
         })
         .fail(function(xhr, textStatus, errorThrown) {
-            failCallback();
+            failCallback(xhr);
         });
     }
 
@@ -235,6 +235,8 @@ var RouteTo = (function(){
 }());
 
 var RecordingSizeWidget = (function() {
+    var sizeUpdateId = undefined;
+
     var start = function() {
         if ($('.size-counter-active').length) {
             if (isOutOfSpace()) {
@@ -244,7 +246,7 @@ var RecordingSizeWidget = (function() {
             var spaceUsed = format_bytes(wbinfo.info.size);
             updateDom(spaceUsed);
 
-            setInterval(pollForSizeUpdate, 1000);
+            sizeUpdateId = setInterval(pollForSizeUpdate, 1000);
         }
     }
 
@@ -268,8 +270,13 @@ var RecordingSizeWidget = (function() {
         $('.size-counter').removeClass('hidden');
     }
 
-    var dontUpdateSizeCounter = function() {
-        // Do nothing to leave the last counter value on the page.
+    var dontUpdateSizeCounter = function(xhr) {
+        var data = xhr.responseJSON;
+
+        // Stop pinging if user invalid (eg. expired)
+        if (data.error_message == "No such user") {
+            clearInterval(sizeUpdateId);
+        }
     }
 
     var isOutOfSpace = function() {

@@ -1,0 +1,23 @@
+invites_enabled: 'false'
+
+full_warc_prefix: ''
+
+session_opts:
+    session.secret: 'secret'
+    session.encrypt_key: 'encrypt'
+    session.validate_key: 'validate'
+
+    session.auto: false
+    session.cookie_expires: True
+
+    session.httponly: true
+    session.cookie_path: '/'
+    
+    session.key: __test_sesh
+    session.type: redis
+
+    session.url: redis://localhost:6379/2
+
+    session.expire: 1800
+
+

@@ -171,7 +171,7 @@ class TestLogin(BaseWRTests):
         res = self.redis.hgetall('u:someuser')
         res = self.appcont.manager._format_info(res)
         assert res['size'] == 0
-        assert res['max_size'] == '100000000'
+        assert res['max_size'] == '1000000000'
         assert res['max_coll'] == '10'
         assert res['created_at'] != None
 

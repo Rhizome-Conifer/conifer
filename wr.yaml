@@ -1,29 +1,129 @@
+
+# Durations
+anon_duration: 1800
+
+default_max_size: 1000000000
+default_max_anon_size: 1000000000
+default_max_coll: 10
+
+upload_wait_secs: 30
+
+
+# Beaker Session
+session_opts:
+    session.secret: $SECRET_KEY
+    session.encrypt_key: $ENCRYPT_KEY
+    session.validate_key: $VALIDATE_KEY
+
+    session.auto: false
+    session.cookie_expires: True
+
+    session.httponly: true
+    session.cookie_path: '/'
+
+    session.key: __wr_sesh
+    session.type: redis
+
+    session.url: $REDIS_BASE_URL
+
+    session.expire: 1800
+
+
+# Upstream url templates
+url_templates:
+    delete: '{record_host}/delete?user={user}&coll={coll}&rec={rec}&type={type}'
+    rename: '{record_host}/rename?from_user={from_user}&from_coll={from_coll}&to_user={to_user}&to_coll={to_coll}&to_coll_title={to_coll_title}'
+
+    download: '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}'
+ 
+    live: '{replay_host}/live/resource/postreq?url={url}&closest={closest}'
+    
+    record: '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}'
+    patch: '{record_host}/record/patch/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}'
+
+    replay: '{replay_host}/replay/resource/postreq?url={url}&closest={closest}&param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}'
+    replay-coll: '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}'
+
+
+# Download paths
+download_paths:
+    filename: '{title}-{timestamp}.warc.gz'
+
+    rec: '{host}/{user}/{coll}/{rec}/$download'
+    coll: '{host}/{user}/{coll}/$download'
+
+
+# Misc Settings
+invites_enabled: $REQUIRE_INVITES
+
+warcsign_private_key: ./keys/wr.pem
+warcsign_public_key: ./keys/wr_pub.pem
+
+email_sender: $EMAIL_SENDER
+email_smtp_url: $EMAIL_SMTP_URL
+
+metadata:
+    org: webrecorder.io
+    product: webrecorder.io
+
+# Default Descriptions
+
+coll_desc: |
+    #### About {0}
+
+    *This collection doesn't yet have a description.*
+
+user_desc: |
+    ## {0} archive
+
+    Available collections are listed below.
+
+
+# WARC Paths and Names
 file_path_templ: '{user}/{coll}/{rec}/'
 
-cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj'
-cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj'
-
-r_page_key_templ: 'r:{user}:{coll}:{rec}:page'
-
-info_key_templ:
-    rec: 'r:{user}:{coll}:{rec}:info'
-    coll: 'c:{user}:{coll}:info'
-    user: 'u:{user}'
-
-warc_key_templ: 'c:{user}:{coll}:warc'
-
-skip_key_templ: 'u:{user}:skip:{url}'
+storage_path_templ: 'accounts/{user}/collections/{coll}/archive/{rec}/{filename}'
 
 warc_name_prefix: 'rec-{rec}-'
 warc_name_templ: 'rec-{rec}-{timestamp}-{hostname}.warc.gz'
 
 full_warc_prefix: 'http://nginx:6090'
 
-recorder_name: 'recorder'
+
+# Redis Keys
+cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj'
+cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj'
+
+page_key_templ: 'r:{user}:{coll}:{rec}:page'
+
+user_skip_key: 'u:{user}:skip:{url}'
+
+info_key_templ:
+    rec: 'r:{user}:{coll}:{rec}:info'
+    coll: 'c:{user}:{coll}:info'
+    user: 'u:{user}'
+
+cookie_key_templ: 'r:{user}:{coll}:{rec}:cookie:'
+
+warc_key_templ: 'c:{user}:{coll}:warc'
+warc_upload_wait_templ: 'w:{filename}'
+
+skip_key_templ: 'u:{user}:skip:{url}'
 
 del_templ:
     rec: 'r:{user}:{coll}:{rec}:*'
     coll: '*:{user}:{coll}*'
     user: '*:{user}*'
+
+storage_key_templ: 'st:{name}'
+
+
+# Recorder
+recorder_name: 'recorder'
+
+# Rewrite
+framed_replay: inverse
+
+query_html: time_info.html
 
 

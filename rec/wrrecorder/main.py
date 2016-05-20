@@ -4,10 +4,12 @@ from wrrecorder.webrecrecorder import WebRecRecorder
 from wrrecorder.tempchecker import TempChecker
 from wrrecorder.storagecommitter import StorageCommitter
 
-from pywb.utils.loaders import load_yaml_config
+from webagg.utils import load_config
 
 import gevent
 import os
+
+from wrrecorder.s3 import S3Storage
 
 
 # =============================================================================
@@ -42,16 +44,17 @@ def storage_commit_loop(storage_committer, writer, sleep_secs):
         gevent.sleep(sleep_secs)
 
 
-
 # =============================================================================
 def init():
-    config = load_yaml_config(os.environ.get('WR_CONFIG', './wr.yaml'))
+    config = load_config('WR_CONFIG', './wr.yaml', 'WR_USER_CONFIG', '')
 
     temp_checker = TempChecker(config)
     storage_committer = StorageCommitter(config)
 
+    storage_committer.add_storage_class('s3', S3Storage)
+
     global wr
-    wr = WebRecRecorder(config)
+    wr = WebRecRecorder(config, storage_committer)
 
     sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
 

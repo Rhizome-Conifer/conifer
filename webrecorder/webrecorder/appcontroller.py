@@ -6,7 +6,6 @@ import redis
 
 from os.path import expandvars
 import os
-import yaml
 
 from beaker.middleware import SessionMiddleware
 
@@ -14,6 +13,8 @@ from jinja2 import contextfunction
 from urlrewrite.templateview import JinjaEnv
 
 from six.moves.urllib.parse import urlsplit, urljoin
+
+from webagg.utils import load_config
 
 from webrecorder.contentcontroller import ContentController
 from webrecorder.recscontroller import RecsController
@@ -45,19 +46,17 @@ class AppController(BaseController):
                       ]
 
 
-    def __init__(self, configfile='config.yaml', redis_url=None):
+    def __init__(self, configfile=None, overlay_config=None, redis_url=None):
         self._init_logging()
 
         bottle_app = Bottle()
         self.bottle_app = bottle_app
 
-        # Load config
-        with open(configfile, 'rb') as fh:
-            config = yaml.load(fh)
+        config = load_config('WR_CONFIG', configfile, 'WR_USER_CONFIG', overlay_config)
 
         # Init Redis
         if not redis_url:
-            redis_url = expandvars(config['redis_url'])
+            redis_url = os.environ['REDIS_BASE_URL']
 
         self.redis = redis.StrictRedis.from_url(redis_url)
         self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
@@ -156,13 +155,8 @@ class AppController(BaseController):
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
 
-            elif sesh.is_anon():
-                anon_user = sesh.anon_user
-                anon_coll = self.manager.get_collection(anon_user, 'temp')
-                if anon_coll:
-                    resp['anon_user'] = anon_user
-                    resp['anon_size'] = anon_coll['size']
-                    resp['anon_recordings'] = len(anon_coll['recordings'])
+            else:
+                self.fill_anon_info(resp)
 
             return resp
 

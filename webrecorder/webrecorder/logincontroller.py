@@ -3,6 +3,7 @@ from os.path import expandvars
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.basecontroller import BaseController
+import json
 
 
 # ============================================================================
@@ -75,8 +76,12 @@ class LoginController(BaseController):
         @self.jinja2_view('register.html')
         def register():
             if not self.invites_enabled:
-                return {'email': '',
+                resp = {'email': '',
                         'skip_invite': True}
+
+                self.fill_anon_info(resp)
+
+                return resp
 
             invitecode = request.query.get('invite', '')
             email = ''
@@ -110,6 +115,14 @@ class LoginController(BaseController):
             confirm_password = self.post_get('confirmpassword')
             invitecode = self.post_get('invite')
 
+            move_temp = self.post_get('move-temp')
+
+            if move_temp == '1':
+                to_coll_title = self.post_get('to-coll')
+                to_coll = self.sanitize_title(to_coll_title)
+            else:
+                to_coll = None
+
             redir_to = REGISTER_PATH
 
             if self.invites_enabled:
@@ -131,10 +144,22 @@ class LoginController(BaseController):
                 #TODO: set default host?
                 host = self.get_host()
 
+                init_info = None
+
+                sesh = self.get_session()
+
+                if sesh.is_anon() and to_coll:
+                    init_info = {'from_user': sesh.anon_user,
+                                 'to_coll': to_coll,
+                                 'to_coll_title': to_coll_title,
+                                }
+                    init_info = json.dumps(init_info)
+
                 self.manager.cork.register(username, password, email, role='archivist',
                               max_level=50,
                               subject='webrecorder.io Account Creation',
                               email_template='templates/emailconfirm.html',
+                              description=init_info,
                               host=host)
 
                 self.flash_message('A confirmation e-mail has been sent to <b>{0}</b>. \

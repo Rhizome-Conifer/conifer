@@ -1,0 +1,13 @@
+[run]
+concurrency = gevent
+omit =
+    */test/*
+    */tests/*
+    *.html
+    *.js
+    *.css
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:

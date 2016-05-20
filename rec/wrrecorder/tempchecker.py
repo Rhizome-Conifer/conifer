@@ -2,6 +2,7 @@ import redis
 import os
 import json
 import glob
+import requests
 
 
 # ============================================================================
@@ -21,6 +22,10 @@ class TempChecker(object):
         self.glob_pattern = os.path.join(self.record_root_dir, self.TEMP_PREFIX + '*')
         #self.temp_dir = os.path.join(self.record_root_dir, 'temp')
 
+        self.record_host = os.environ['RECORD_HOST']
+
+        self.delete_url = config['url_templates']['delete']
+
         print('Temp Checker Root: ' + self.glob_pattern)
 
     def _delete_if_expired(self, temp):
@@ -34,12 +39,20 @@ class TempChecker(object):
             self.sesh_redis.delete('t:' + temp)
 
         print('Deleting ' + temp)
-        message = {'type': 'user',
-                   'user': temp,
-                   'coll': 'temp',
-                   'rec': '*'}
 
-        self.sesh_redis.publish('delete', json.dumps(message))
+        delete_url = self.delete_url.format(record_host=self.record_host,
+                                            user=temp,
+                                            coll='temp',
+                                            rec='*',
+                                            type='user')
+
+        #message = {'type': 'user',
+        #           'user': temp,
+        #           'coll': 'temp',
+        #           'rec': '*'}
+
+        #self.sesh_redis.publish('delete', json.dumps(message))
+        requests.delete(delete_url)
         return True
 
     def __call__(self):

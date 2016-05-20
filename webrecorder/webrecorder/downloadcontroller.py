@@ -9,28 +9,12 @@ from six.moves.urllib.parse import quote
 
 # ============================================================================
 class DownloadController(BaseController):
-    PATHS = {
-             'download': '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}',
-             'download_filename': '{title}-{timestamp}.warc.gz',
-            }
+    def __init__(self, app, jinja_env, manager, config):
+        super(DownloadController, self).__init__(app, jinja_env, manager, config)
+        self.paths = config['url_templates']
+        self.download_filename = config['download_paths']['filename']
 
     def init_routes(self):
-        # ANON DOWNLOAD
-        @self.app.get('/anonymous/<rec>/$download')
-        def anon_download_rec_warc(rec):
-            user = self.manager.get_anon_user()
-            coll = 'anonymous'
-
-            return self.handle_download('rec', user, coll, rec)
-
-        @self.app.get('/anonymous/$download')
-        def anon_download_coll_warc():
-            user = self.manager.get_anon_user()
-            coll = 'anonymous'
-
-            return self.handle_download('coll', user, coll, '*')
-
-        # Logged-In Download
         @self.app.get('/<user>/<coll>/<rec>/$download')
         def logged_in_download_rec_warc(user, coll, rec):
 
@@ -62,10 +46,10 @@ class DownloadController(BaseController):
             title = rec_title = info.get('title', rec)
 
         now = timestamp_now()
-        filename = self.PATHS['download_filename'].format(title=title,
-                                                          timestamp=now)
+        filename = self.download_filename.format(title=title,
+                                                 timestamp=now)
 
-        download_url = self.PATHS['download']
+        download_url = self.paths['download']
         download_url = download_url.format(record_host=self.record_host,
                                            user=user,
                                            coll=coll,
@@ -77,7 +61,7 @@ class DownloadController(BaseController):
 
         res = requests.get(download_url, stream=True)
 
-        if res.status_code >= 400:  #pragma: no cover
+        if res.status_code >= 400:
             try:
                 res.raw.close()
             except:

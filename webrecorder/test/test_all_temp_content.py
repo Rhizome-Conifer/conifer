@@ -1,4 +1,4 @@
-from gevent.monkey import patch_all; patch_all()
+from .testfullstack import FullStackTests
 
 import os
 import time
@@ -9,18 +9,15 @@ from pywb.cdx.cdxobject import CDXObject
 from pywb.warc.cdxindexer import write_cdx_index
 from pywb.utils.bufferedreaders import ChunkedDataReader
 
-from gevent.wsgi import WSGIServer
-import gevent
 import glob
 
-from .testutils import BaseWRTests
 from fakeredis import FakeStrictRedis
 
 from six.moves.urllib.parse import urlsplit
 
 
 # ============================================================================
-class TestTempContent(BaseWRTests):
+class TestTempContent(FullStackTests):
     REDIS_KEYS = [
         'r:{user}:{coll}:{rec}:cdxj',
         'r:{user}:{coll}:{rec}:info',
@@ -32,45 +29,9 @@ class TestTempContent(BaseWRTests):
         'h:defaults',
     ]
 
-    @classmethod
-    def setup_class(cls):
-        agg_port = 30080
-        rec_port = 30090
-
-        os.environ['WEBAGG_HOST'] = 'http://localhost:{0}'.format(agg_port)
-        os.environ['RECORD_HOST'] = 'http://localhost:{0}'.format(rec_port)
-
-        os.environ['TEMP_SLEEP_CHECK'] = '5'
-
-        super(TestTempContent, cls).setup_class()
-
-        cls.init_webagg(agg_port)
-        cls.init_rec(agg_port, rec_port)
-
     def _get_redis_keys(self, keylist, user, coll, rec):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]
         return keylist
-
-    @classmethod
-    def init_webagg(cls, port):
-        from wrwebagg.wragg import application as webaggapp
-        port = cls.make_gevent_server(webaggapp, port)
-
-    @classmethod
-    def init_rec(cls, agg_port, rec_port):
-        from wrrecorder.main import application as recapp
-        port = cls.make_gevent_server(recapp, rec_port)
-
-    @classmethod
-    def make_gevent_server(cls, app, port=0):
-        server = WSGIServer(('localhost', port), app)
-
-        def run(server):
-            print('starting server on ' + str(port))
-            server.serve_forever()
-
-        gevent.spawn(run, server)
-        return port
 
     def _assert_rec_keys(self, user, coll, rec_list):
         exp_keys = []
@@ -166,6 +127,9 @@ class TestTempContent(BaseWRTests):
         assert self.redis.hlen(warc_key) == 1
 
     def test_anon_replay_1(self):
+
+        print(self.redis.hgetall('c:' + self.anon_user + ':temp:warc'))
+
         res = self._get_anon('/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
@@ -215,6 +179,8 @@ class TestTempContent(BaseWRTests):
         user = self.anon_user
 
         self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'])
+
+        print(os.path.isdir(self.warcs_dir))
 
         anon_dir = os.path.join(self.warcs_dir, user, 'temp')
         assert set(os.listdir(anon_dir)) == set(['my-recording', 'my-rec2'])
