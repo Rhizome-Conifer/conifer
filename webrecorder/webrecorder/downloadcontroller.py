@@ -15,22 +15,6 @@ class DownloadController(BaseController):
         self.download_filename = config['download_paths']['filename']
 
     def init_routes(self):
-        # ANON DOWNLOAD
-        @self.app.get('/anonymous/<rec>/$download')
-        def anon_download_rec_warc(rec):
-            user = self.manager.get_anon_user()
-            coll = 'anonymous'
-
-            return self.handle_download('rec', user, coll, rec)
-
-        @self.app.get('/anonymous/$download')
-        def anon_download_coll_warc():
-            user = self.manager.get_anon_user()
-            coll = 'anonymous'
-
-            return self.handle_download('coll', user, coll, '*')
-
-        # Logged-In Download
         @self.app.get('/<user>/<coll>/<rec>/$download')
         def logged_in_download_rec_warc(user, coll, rec):
 
@@ -77,7 +61,7 @@ class DownloadController(BaseController):
 
         res = requests.get(download_url, stream=True)
 
-        if res.status_code >= 400:  #pragma: no cover
+        if res.status_code >= 400:
             try:
                 res.raw.close()
             except:

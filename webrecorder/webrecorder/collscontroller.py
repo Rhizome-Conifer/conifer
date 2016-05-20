@@ -121,14 +121,6 @@ class CollsController(BaseController):
                 self.flash_message('There was an error deleting {0}'.format(coll))
                 self.redirect(self.get_path(user, coll))
 
-        # ANON COLLECTION
-        #@self.app.get(['/anonymous', '/anonymous/'])
-        #@self.jinja2_view('collection_info.html')
-        #def anon_coll_info():
-        #    user = self.get_session().anon_user
-
-        #    return self.get_collection_info_for_view(user, 'anonymous')
-
         # LOGGED-IN COLLECTION
         @self.app.get(['/<user>/<coll>', '/<user>/<coll>/'])
         @self.jinja2_view('collection_info.html')

@@ -256,7 +256,7 @@ class ContentController(BaseController, RewriterApp):
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         @self.jinja2_view('browser_embed.html')
-        def browser_embed(browser):
+        def browser_embed(browser):  #pragma: no cover
             upstream_url = self.get_upstream_url('{url}',
                                                  wb_url,
                                                  wb_url.timestamp, kwargs)

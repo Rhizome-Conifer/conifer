@@ -131,6 +131,20 @@ class WebRecRecorder(object):
 
         return glob_path, count
 
+    def _iter_all_warcs(self, user, coll, rec=''):
+        warc_key = self.warc_key_templ.format(user=user, coll=coll)
+        allwarcs = self.redis.hgetall(warc_key)
+
+        if rec and rec != '*':
+            rec_prefix = self.warc_rec_prefix.format(user=user, coll=coll, rec=rec)
+        else:
+            rec_prefix = ''
+
+        for n, v in iteritems(allwarcs):
+            n = n.decode('utf-8')
+            if not rec_prefix or n.startswith(rec_prefix):
+                yield warc_key, n, v.decode('utf-8')
+
     def rename(self):
         from_user = request.query.get('from_user', '')
         from_coll = request.query.get('from_coll', '')
@@ -179,12 +193,22 @@ class WebRecRecorder(object):
         coll_info = self.info_keys['coll'].format(user=to_user, coll=to_coll)
         size = int(self.redis.hget(coll_info, 'size'))
 
+        # set replace paths
+        match_pattern = '/' + from_user + '/' + from_coll
+        replace_pattern = '/' + to_user + '/' + to_coll
+
         with redis.utils.pipeline(self.redis) as pi:
+            # increment size
             pi.hincrby(user_info, 'size', size)
 
             # Fix Id and Title
             pi.hset(coll_info, 'id', to_coll)
             pi.hset(coll_info, 'title', to_coll_title)
+
+            # fix paths
+            for key, n, v in self._iter_all_warcs(to_user, to_coll):
+                v = v.replace(match_pattern, replace_pattern)
+                pi.hset(key, n, v)
 
         return {'success': to_user + ':' + to_coll}
 
@@ -236,30 +260,16 @@ class WebRecRecorder(object):
         except Exception as e:
             print(e)
 
-        #templ = self.warc_path_templ + '*.warc.gz'
-        #warcs = list(glob.glob(templ.format(user=user, coll=coll, rec=rec)))
-
-        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
-        allwarcs = self.redis.hgetall(warc_key)
-
-        if rec and rec != '*':
-            rec_prefix = self.warc_rec_prefix.format(user=user, coll=coll, rec=rec)
-        else:
-            rec_prefix = ''
-
         loader = BlockLoader()
 
         def read_all():
             yield warcinfo
 
-            for n, v in iteritems(allwarcs):
-                n = n.decode('utf-8')
-                if not rec_prefix or n.startswith(rec_prefix):
-                    v = v.decode('utf-8')
-                    fh = loader.load(v)
+            for key, n, v in self._iter_all_warcs(user, coll, rec):
+                fh = loader.load(v)
 
-                    for chunk in StreamIter(fh):
-                        yield chunk
+                for chunk in StreamIter(fh):
+                    yield chunk
 
         response.headers['Content-Type'] = 'application/octet-stream'
         response.headers['Content-Length'] = int(length)
@@ -365,16 +375,9 @@ class WebRecRecorder(object):
                 pi.delete(key)
 
     def _delete_rec_warc_key(self, user, coll, rec):
-        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
-        allwarcs = self.redis.hgetall(warc_key)
-
-        warc_rec_prefix = self.warc_rec_prefix.format(user=user, coll=coll, rec=rec)
-
         with redis.utils.pipeline(self.redis) as pi:
-            for n, v in iteritems(allwarcs):
-                n = n.decode('utf-8')
-                if n.startswith(warc_rec_prefix):
-                    pi.hdel(warc_key, n)
+            for key, n, v in self._iter_all_warcs(user, coll, rec):
+                pi.hdel(key, n)
 
     def _delete_decrease_size(self, user, coll, rec, type):
         del_info = self.info_keys[type].format(user=user, coll=coll, rec=rec)

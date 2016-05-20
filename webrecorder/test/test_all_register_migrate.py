@@ -76,20 +76,133 @@ class TestRegisterMigrate(FullStackTests):
         coll_info = self.redis.hgetall('c:someuser:test-migrate:info')
         coll_info = self.appcont.manager._format_info(coll_info)
 
-        print(coll_info)
-
         assert coll_info['id'] == 'test-migrate'
         assert coll_info['title'] == 'Test Migrate'
         assert coll_info['created_at'] != None
 
         assert user_info['size'] == coll_info['size']
 
-    def test_coll_list(self):
+        allwarcs = self.redis.hgetall('c:someuser:test-migrate:warc')
+        for n, v in allwarcs.items():
+            assert v.decode('utf-8').endswith('/someuser/test-migrate/abc/' + n.decode('utf-8'))
+
+    def test_logged_in_user_info(self):
         res = self.testapp.get('/someuser')
         assert '"/someuser/test-migrate"' in res.text
         assert 'Test Migrate' in res.text
 
+    def test_logged_in_replay_1(self):
+        res = self.testapp.get('/someuser/test-migrate/abc/mp_/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
 
+        assert '"food": "bar"' in res.text, res.text
 
+    def test_logged_in_replay_coll_1(self):
+        res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"food": "bar"' in res.text, res.text
+
+    def test_logged_in_coll_info(self):
+        res = self.testapp.get('/someuser/test-migrate')
+        res.charset = 'utf-8'
+
+        assert 'Test Migrate' in res.text
+
+        assert '/someuser/test-migrate/abc/http://httpbin.org/get?food=bar' in res.text
+
+    def test_logged_in_rec_info(self):
+        res = self.testapp.get('/someuser/test-migrate/abc')
+        res.charset = 'utf-8'
+
+        assert 'Test Migrate' in res.text
+
+        assert '/someuser/test-migrate/abc/http://httpbin.org/get?food=bar' in res.text
+
+    def test_logged_in_create_coll_page(self):
+        res = self.testapp.get('/_create')
+        assert 'https://webrecorder.io/someuser/' in res.text
+
+    def test_logged_in_create_coll(self):
+        params = {'title': 'New Coll',
+                  'collection-id': 'new-coll',
+                  'public': 'public'
+                 }
+
+        res = self.testapp.post('/_create', params=params)
+
+        assert res.headers['Location'].endswith('/someuser/new-coll')
+
+        res = self.testapp.get('/someuser/new-coll')
+
+        assert 'Created collection' in res.text
+
+    def test_logged_in_user_info_2(self):
+        res = self.testapp.get('/someuser')
+        assert '"/someuser/test-migrate"' in res.text
+        assert 'Test Migrate' in res.text
+
+        assert '"/someuser/new-coll"' in res.text
+        assert 'New Coll' in res.text
+
+    def test_logged_in_patch(self):
+        res = self.testapp.get('/someuser/new-coll/foo/patch/mp_/http://example.com/')
+        res.charset = 'utf-8'
+        assert 'Example Domain' in res.text
+
+    def test_logged_in_replay_2(self):
+        res = self.testapp.get('/someuser/new-coll/foo/mp_/http://example.com/')
+        res.charset = 'utf-8'
+        assert 'Example Domain' in res.text
+
+    def test_logout_1(self):
+        res = self.testapp.get('/_logout')
+        assert res.headers['Location'] == 'http://localhost:80/'
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+    def test_logged_out_user_info(self):
+        res = self.testapp.get('/someuser')
+
+        assert '"/someuser/new-coll"' in res.text
+        assert 'New Coll' in res.text
+
+    def test_logged_out_coll(self):
+        res = self.testapp.get('/someuser/new-coll')
+        assert '/new-coll' in res.text, res.text
+
+    def test_logged_out_replay(self):
+        res = self.testapp.get('/someuser/new-coll/foo/mp_/http://example.com/')
+        res.charset = 'utf-8'
+        assert 'Example Domain' in res.text
+
+    def test_error_logged_out_no_coll(self):
+        res = self.testapp.get('/someuser/test-migrate', status=404)
+        assert 'No such page' in res.text
+
+    def test_error_logged_out_record(self):
+        res = self.testapp.get('/someuser/new-coll/foo/record/mp_/http://example.com/', status=404)
+        assert 'No such page' in res.text
+
+    def test_error_logged_out_patch(self):
+        res = self.testapp.get('/someuser/new-coll/foo/patch/mp_/http://example.com/', status=404)
+        assert 'No such page' in res.text
+
+    def test_error_logged_in_replay_coll_1(self):
+        res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
+        assert 'No such page' in res.text
+
+    def test_login_2(self):
+        params = {'username': 'someuser',
+                  'password': 'Password1'}
+
+        res = self.testapp.post('/_login', params=params)
+
+        assert res.headers['Location'] == 'http://localhost:80/someuser'
+        assert self.testapp.cookies.get('__test_sesh', '') != ''
+
+    def test_delete_coll(self):
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-migrate')
+
+        assert res.headers['Location'] == 'http://localhost:80/someuser'
 
 
