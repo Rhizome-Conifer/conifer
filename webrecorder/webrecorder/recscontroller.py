@@ -45,6 +45,7 @@ class RecsController(BaseController):
             self._ensure_rec_exists(user, coll, rec)
 
             self.manager.delete_recording(user, coll, rec)
+
             return {'deleted_id': rec}
 
         @self.app.post('/api/v1/recordings/<rec>/pages')

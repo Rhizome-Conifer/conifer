@@ -6,7 +6,6 @@ import redis
 
 from os.path import expandvars
 import os
-import yaml
 
 from beaker.middleware import SessionMiddleware
 
@@ -14,6 +13,8 @@ from jinja2 import contextfunction
 from urlrewrite.templateview import JinjaEnv
 
 from six.moves.urllib.parse import urlsplit, urljoin
+
+from webagg.utils import load_config
 
 from webrecorder.contentcontroller import ContentController
 from webrecorder.recscontroller import RecsController
@@ -51,16 +52,7 @@ class AppController(BaseController):
         bottle_app = Bottle()
         self.bottle_app = bottle_app
 
-        if not configfile:
-            configfile = os.environ.get('WR_CONFIG', './wr.yaml')
-
-        # Load config
-        with open(configfile, 'rb') as fh:
-            config = yaml.load(fh)
-
-        if overlay_config:
-            with open(overlay_config, 'rb') as fh:
-                config.update(yaml.load(fh))
+        config = load_config('WR_CONFIG', configfile, 'WR_USER_CONFIG', overlay_config)
 
         # Init Redis
         if not redis_url:

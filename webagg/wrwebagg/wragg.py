@@ -5,14 +5,13 @@ from webagg.app import ResAggApp
 from webagg.indexsource import LiveIndexSource, RedisIndexSource
 from webagg.aggregator import SimpleAggregator, RedisMultiKeyIndexSource
 
+from webagg.utils import load_config
+
 import os
-
-from pywb.utils.loaders import load_yaml_config
-
 
 # =============================================================================
 def make_webagg():
-    config = load_yaml_config(os.environ.get('WR_CONFIG', './wr.yaml'))
+    config = load_config('WR_CONFIG', './wr.yaml', 'WR_USER_CONFIG', '')
 
     app = ResAggApp(debug=True)
 

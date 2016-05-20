@@ -54,7 +54,7 @@ class WebRecCork(Cork):
             'last_login': str(datetime.utcnow())
         }
         self._store.save_users()
-        return username
+        return username, data['desc']
 
     def _save_session(self):
         self._beaker_session['anon'] = None

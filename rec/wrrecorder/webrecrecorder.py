@@ -62,6 +62,7 @@ class WebRecRecorder(object):
         self.app.mount('/record', self.recorder)
         self.app.get('/download', callback=self.download)
         self.app.delete('/delete', callback=self.delete)
+        self.app.get('/rename', callback=self.rename)
 
         debug(True)
 
@@ -117,6 +118,76 @@ class WebRecRecorder(object):
             return dict()
 
         return dict((n.decode('utf-8'), v.decode('utf-8')) for n, v in res.items())
+
+    def _close_active_writers(self, user, coll, rec):
+        # close active writers
+        glob_path = self.warc_path_templ.format(user=user, coll=coll, rec=rec)
+
+        count = 0
+
+        for dirname in glob.glob(glob_path):
+            self.recorder.writer.close_dir(dirname)
+            count += 1
+
+        return glob_path, count
+
+    def rename(self):
+        from_user = request.query.get('from_user', '')
+        from_coll = request.query.get('from_coll', '')
+        to_user = request.query.get('to_user', '')
+        to_coll = request.query.get('to_coll', '')
+        to_coll_title = request.query.get('to_coll_title', '')
+
+        if not from_user or not from_coll or not to_user or not to_coll:
+            return {'error_message': 'user or coll params missing'}
+
+        if not to_coll_title:
+            to_coll_title = to_coll
+
+        src_path, count = self._close_active_writers(from_user, from_coll, '*')
+
+        if not count:
+            return {'error_message': 'no local data found'}
+
+        # Move the actual data first
+        dest_path = self.warc_path_templ.format(user=to_user, coll=to_coll, rec='*')
+        dest_path = dest_path.rstrip('*/')
+
+        src_path = src_path.rstrip('*/')
+
+        try:
+            print(src_path + ' => ' + dest_path)
+            os.renames(src_path, dest_path)
+        except Exception as e:
+            return {'error_message': str(e)}
+
+        # Move the redis keys
+        match_pattern = ':' + from_user + ':' + from_coll + ':'
+        replace_pattern = ':' + to_user + ':' + to_coll + ':'
+        moves = {}
+
+        for key in self.redis.scan_iter(match='*' + match_pattern + '*'):
+            key = key.decode('utf-8')
+            moves[key] = key.replace(match_pattern, replace_pattern)
+
+        with redis.utils.pipeline(self.redis) as pi:
+            for from_key, to_key in iteritems(moves):
+                pi.renamenx(from_key, to_key)
+
+        # Increment new user size counter
+        user_info = self.info_keys['user'].format(user=to_user)
+        coll_info = self.info_keys['coll'].format(user=to_user, coll=to_coll)
+        size = int(self.redis.hget(coll_info, 'size'))
+
+        with redis.utils.pipeline(self.redis) as pi:
+            pi.hincrby(user_info, 'size', size)
+
+            # Fix Id and Title
+            pi.hset(coll_info, 'id', to_coll)
+            pi.hset(coll_info, 'title', to_coll_title)
+
+        return {'success': to_user + ':' + to_coll}
+
 
     def download(self):
         user = request.query.get('user', '')
@@ -256,10 +327,7 @@ class WebRecRecorder(object):
             print('Unknown delete type ' + str(type))
             return
 
-        glob_path = self.warc_path_templ.format(user=user, coll=coll, rec=rec)
-
-        for dirname in glob.glob(glob_path):
-            self.recorder.writer.close_dir(dirname)
+        glob_path, count = self._close_active_writers(user, coll, rec)
 
         if glob_path.endswith('/'):
             glob_path = os.path.dirname(glob_path)

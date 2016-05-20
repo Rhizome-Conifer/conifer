@@ -32,6 +32,7 @@ session_opts:
 # Upstream url templates
 url_templates:
     delete: '{record_host}/delete?user={user}&coll={coll}&rec={rec}&type={type}'
+    rename: '{record_host}/rename?from_user={from_user}&from_coll={from_coll}&to_user={to_user}&to_coll={to_coll}&to_coll_title={to_coll_title}'
 
     download: '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}'
  

@@ -14,6 +14,8 @@ from webrecorder.webreccork import ValidationException
 from webrecorder.redisutils import RedisTable
 from cork import AAAException
 
+from six.moves.urllib.parse import quote
+
 import requests
 
 
@@ -44,9 +46,11 @@ class LoginManagerMixin(object):
         self.user_key = config['info_key_templ']['user']
         self.user_skip_key = config['user_skip_key']
 
+        self.rename_url_templ = config['url_templates']['rename']
+
     def create_user(self, reg):
         try:
-            user = self.cork.validate_registration(reg)
+            user, init_info = self.cork.validate_registration(reg)
         except AAAException as a:
             raise ValidationException(a)
 
@@ -65,6 +69,10 @@ class LoginManagerMixin(object):
             pi.hset(key, 'max_coll', max_coll)
             pi.hset(key, 'created_at', now)
             pi.hsetnx(key, 'size', '0')
+
+        if init_info:
+            init_info = json.loads(init_info)
+            self._send_move_temp(user, init_info)
 
         self.cork.do_login(user)
         return user
@@ -267,6 +275,25 @@ class LoginManagerMixin(object):
     def skip_post_req(self, user, url):
         key = self.user_skip_key.format(user=user, url=url)
         self.redis.setex(key, 300, 1)
+
+    def _send_move_temp(self, username, init_info):
+        if not 'from_user' in init_info or not 'to_coll' in init_info:
+            return
+
+        rename_url = self.rename_url_templ.format(record_host=os.environ['RECORD_HOST'],
+                                                  from_user=init_info['from_user'],
+                                                  from_coll='temp',
+                                                  to_user=username,
+                                                  to_coll=init_info['to_coll'],
+                                                  to_coll_title=quote(init_info['to_coll_title']))
+
+        res = requests.get(rename_url)
+
+        msg = res.json()
+
+        print(msg)
+
+        return msg == {}
 
 
 # ============================================================================

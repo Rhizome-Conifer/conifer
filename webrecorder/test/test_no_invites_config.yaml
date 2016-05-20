@@ -1,3 +1,7 @@
+invites_enabled: 'false'
+
+full_warc_prefix: ''
+
 session_opts:
     session.secret: 'secret'
     session.encrypt_key: 'encrypt'
