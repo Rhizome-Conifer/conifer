@@ -659,7 +659,7 @@ $("#replay_iframe").load(function() {
 var pass_form_targets = {};
 
 function exclude_password_targets() {
-    if (typeof wbinfo !== "undefined" && wbinfo.state != "record" && wbinfo.state != "patch") {
+    if (typeof wbinfo === "undefined" || (wbinfo.state != "record" && wbinfo.state != "patch")) {
         return;
     }
 
