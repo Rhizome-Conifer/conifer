@@ -1,32 +1,49 @@
-<form class="patch-recording navbar-left container-fluid form-horizontal col-xs-10">
-	<div class="form-group-sm patch-recording-form-group col-xs-12 ">
-		<label for="url" class="control-label col-xs-1">Url:</label>
-		<div class="url col-xs-10">
-			<div class="patch-url">{{ url }}</div>
+<div class="col-md-10">
+	<div class="row left-buffer">
+		<div class="pull-left">
+			<span class="glyphicon glyphicon-lg glyphicon-import glyphicon-recoding-status top-buffer-sm" aria-hidden="true"></span>
 		</div>
-	</div>
-	<div class="form-group patch-recording-form-group recording-info container-fluid col-xs-12">
-		<div class="title pull-left">
-			<strong>Recording Title:</strong>
-			<span class="recording-info-value">{{ info.rec_title }}</span>
-		</div>
-		<div class="collection pull-left">
-			<strong>Collection:</strong>
-			<span class="recording-info-value">{{ info.coll_title }}</span>
-		</div>
-	</div>	
-</form>
 
-<div class="recording-actions text-center col-xs-2">
-	<div class="size-counter size-counter-active hidden">
-		<span class="current-size"></span>
+		<div class="pull-left left-buffer">
+			<span class="recorder-status strong">Patching page in</span>
+
+			{% include 'breadcrumbs.html' %}
+		</div>
+
+		<div class="pull-right top-buffer-md">
+			<span class="page-count"></span>
+
+			<span class="size-counter size-counter-active hidden">
+				<span class="current-size"></span>
+			</span>
+		</div>
+
 	</div>
 
-	<form class="stop-patching">
-		<button type="submit" class="btn btn-default">
-			<span class="recording-blinker pull-left Blink"></span>Stop
-		</button>
+	<form class="row left-buffer">
+		<div class="input-group">
+			<span class="input-group-addon page-index"></span>
+
+			<input type="text" class="form-control pages-combobox" name="url" value="{{ url }}" autofocus required disabled>
+
+			<span class="input-group-addon">
+				<button type="submit" class="">
+					Autoscroll
+				</button>
+			</span>
+		</div>
 	</form>
+</div>
 
-	<a href="#" data-toggle="modal" data-target="#report-modal" class="doesnt-look-right">Doesn't look right?</a>
+<div class="recording-actions text-center col-md-2">
+
+	<div class="row">
+		<form class="finish-patching top-buffer">
+			<button type="submit" class="btn btn-default">
+				Finish
+			</button>
+		</form>
+
+		<a href="#" data-toggle="modal" data-target="#report-modal" class="doesnt-look-right">Doesn't look right?</a>
+	</div>
 </div>

@@ -41,7 +41,7 @@
         </div>
     {% endif %}
 
-    <ul class="list-group collection-list">
+    <ul class="list-group top-buffer">
         {% for coll in colls | sort(attribute='title') %}
         {% set is_public = coll['r:@public'] %} 
         <li class="list-group-item">

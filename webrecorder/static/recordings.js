@@ -7,7 +7,7 @@ $(function() {
     TimesAndSizesFormatter.format();
     //CollectionsDropdown.start();
     RecordingSizeWidget.start();
-    PagesComboxBox.start();
+    PagesWidgets.start();
     CountdownTimer.start();
     SizeProgressBar.start();
 });
@@ -17,7 +17,7 @@ var EventHandlers = (function() {
 
         // Prevent the use of any disabled elements
         $('body').on('click', '.disabled', function(event){
-            event.prevenDefault();
+            event.preventDefault();
             return false;
         });
 
@@ -36,12 +36,11 @@ var EventHandlers = (function() {
             RouteTo.recordingInProgress(user, collection, title, url);
         });
 
-
-        // 'New recording': Record button
+        // 'New recording': Start button
         $('header').on('submit', '.start-recording', function(event) {
             event.preventDefault();
 
-            var collection = $("*[name='collection']").val();
+            var collection = $('[data-collection-id]').attr('data-collection-id');
             var title = $("input[name='title']").val();
             var url = $("input[name='url']").val();
 
@@ -53,8 +52,9 @@ var EventHandlers = (function() {
             event.preventDefault();
 
             var url = $("input[name='url']").val();
+            var recordingId = $('[data-recording-id]').attr('data-recording-id');
 
-            RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
+            RouteTo.recordingInProgress(user, coll, recordingId, url);
         });
 
         // 'Recording in progress': Stop recording button
@@ -64,8 +64,8 @@ var EventHandlers = (function() {
             RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
         });
 
-        // 'Browse recording': Url bar 'Go' button / enter key
-        $('header').on('submit', '.browse-recording', function(event) {
+        // 'Replay recording': Url bar 'Go' button / enter key
+        $('header').on('submit', '.replay-recording', function(event) {
             event.preventDefault();
 
             var url = $("input[name='url']").val();
@@ -73,7 +73,7 @@ var EventHandlers = (function() {
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // 'Browse recording': 'Add pages' button
+        // 'Replay recording': 'Add pages' button
         $('header').on('submit', '.add-to-recording', function(event){
             event.preventDefault();
 
@@ -82,8 +82,8 @@ var EventHandlers = (function() {
             RouteTo.addToRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // 'Browse recording': 'Patch page' button
-        $('header').on('submit', '.patch-page', function(event){
+        // 'Replay recording': 'Patch page' button
+        $('header').on('click', '.patch-page', function(event){
             event.preventDefault();
 
             var url = $("input[name='url']").val();
@@ -91,8 +91,13 @@ var EventHandlers = (function() {
             RouteTo.patchPage(user, coll, wbinfo.info.rec_id, url);
         });
 
+        // 'Replay'/'Recording in progress': 'List pages' toggle
+        $('.header').on('mouseenter', '.list-pages-toggle', function(event) {
+            $(this).css('cursor', 'pointer');
+        })
+
         // 'Patch page': 'Stop' button
-        $('header').on('submit', '.stop-patching', function(event) {
+        $('header').on('submit', '.finish-patching', function(event) {
             event.preventDefault();
 
             var url = $('.patch-url').text();
@@ -155,7 +160,7 @@ var Recordings = (function() {
             data: attributes
         })
         .done(function(data, textStatus, xhr){
-            $("input[name='url']").val(attributes.url);
+            PagesWidgets.update(attributes);
         })
         .fail(function(xhr, textStatus, errorThrown) {
             // Fail gracefully when the page can't be updated
@@ -236,11 +241,16 @@ var RouteTo = (function(){
 
 var RecordingSizeWidget = (function() {
     var sizeUpdateId = undefined;
+    var recordingId;
+    var collectionId;
 
     var start = function() {
         if ($('.size-counter-active').length) {
+            recordingId = $('[data-recording-id]').attr('data-recording-id');
+            collectionId = $('[data-collection-id]').attr('collection-id');
+
             if (isOutOfSpace()) {
-                RouteTo.recordingInfo(user, wbinfo.info.coll_id, wbinfo.info.rec_id);
+                RouteTo.recordingInfo(user, collectionId, recordingId);
             }
 
             var spaceUsed = format_bytes(wbinfo.info.size);
@@ -251,7 +261,7 @@ var RecordingSizeWidget = (function() {
     }
 
     var pollForSizeUpdate = function() {
-        Recordings.get(wbinfo.info.rec_id, updateSizeCounter, dontUpdateSizeCounter);
+        Recordings.get(recordingId, updateSizeCounter, dontUpdateSizeCounter);
         exclude_password_targets();
         if (isAlmostOutOfSpace() && !warningPresent()) {
             showWarningMessage();
@@ -280,10 +290,12 @@ var RecordingSizeWidget = (function() {
     }
 
     var isOutOfSpace = function() {
+        if (typeof wbinfo === "undefined") { return false; }
         return wbinfo.info.size_remaining <= 0;
     }
 
     var isAlmostOutOfSpace = function() {
+        if (typeof wbinfo === "undefined") { return false; }
         return wbinfo.info.size_remaining <= 500000;  // 500KB
     }
 
@@ -308,11 +320,86 @@ var RecordingSizeWidget = (function() {
 
 })();
 
-var PagesComboxBox = (function() {
+var PagesWidgets = (function() {
     var start = function() {
-        if ($(".browse-recording .url").length) {
-            Recordings.getPages(wbinfo.info.rec_id, initializeCombobox, dontInitializeCombobox);
+        if ($(".pages-combobox").length) {
+            var recordingId = $('[data-recording-id]').attr('data-recording-id');
+            Recordings.getPages(recordingId, startPagesWidgets, dontStartPagesWidgets);
         }
+    }
+
+    var update = function(attributes) {
+        $("input[name='url']").val(attributes.url);
+        $('.pages-combobox').typeahead('destroy');
+        PagesWidgets.start();
+    }
+
+    var startPagesWidgets = function(data) {
+        var sortedPages = data.pages.sort(function(p1, p2) {
+            return p1.timestamp - p2.timestamp;
+        });
+
+        setPageIndex(sortedPages);
+        setPageCount(sortedPages);
+        initializeTypeahead(sortedPages);
+    }
+
+    var dontStartPagesWidgets = function() {
+        // If we can't load this recording's pages,
+        // do nothing to leave url as a regular
+        // input field
+    }
+
+    var setPageCount = function(pages) {
+        $('.page-count').html(formatPageCount(pages));
+    }
+
+    var setPageIndex = function(pages) {
+        var currentUrl = $("input[name='url']").val();
+        var currentPageIndex = getPageIndexByUrl(currentUrl, pages); 
+        $('.page-index').text(currentPageIndex);
+    }
+
+    var getPageIndexByUrl = function(url, pages) {
+        var currentPageIndex = pages.length + 1;
+
+        $.each(pages, function(index) {
+            if (url === this.url) {
+                currentPageIndex = index + 1;
+            }
+        });
+        return currentPageIndex;
+    }
+
+    var initializeTypeahead = function(pages) {
+        var source = substringMatcher(pages);
+
+        $(".pages-combobox").typeahead(
+            {
+                highlight: true,
+                minLength: 0,
+                hint: true,
+            },
+            {
+                name: 'pages',
+                source: source,
+                limit: 1000000,
+
+                display: "url",
+                templates: {
+                    suggestion: function(data) {
+                        return "<div>" +
+                            "<span class='suggestion-index'>" +
+                                getPageIndexByUrl(data.url, pages) +
+                            ". </span>" +
+                            formatSuggestionUrl(data.url) +
+                            "<span class='suggestion-timestamp pull-right'>" +
+                                ts_to_date(data.timestamp) +
+                            "</span>" +
+                        "</div>";
+                    }
+                }
+            });
     }
 
     // From typeahead examples
@@ -338,38 +425,6 @@ var PagesComboxBox = (function() {
         };
     };
 
-    var initializeCombobox = function(data) {
-        var pages = data.pages;
-        var source = substringMatcher(pages);
-
-        $("input[name='url']").typeahead(
-            {
-                highlight: true,
-                minLength: 0,
-                hint: true,
-            },
-            {
-                name: 'pages',
-                source: source,
-                limit: 1000000,
-
-                display: "url",
-                templates: {
-                    suggestion: function(data) {
-                        return "<div>" + formatSuggestionUrl(data.url) +
-                            "<span class='suggestion-timestamp pull-right'>"
-                        + ts_to_date(data.timestamp) + "</span></div>";
-                    }
-                }
-            });
-    }
-
-    var dontInitializeCombobox = function() {
-        // If we can't load this recording's pages,
-        // do nothing to leave this as a regular
-        // input field
-    }
-
     var formatSuggestionUrl = function(url) {
         var MAX_LENGTH = 110;
         var CHARS_BEFORE_ELLIPSES = 87
@@ -385,8 +440,18 @@ var PagesComboxBox = (function() {
         }
     }
 
+    var formatPageCount = function(pages) {
+        var pageString = "pages";
+        if (pages.length === 1) {
+            pageString = "page";
+        }
+
+        return pages.length + " " + pageString + "<strong> / </strong>"
+    }
+
     return {
-        start: start
+        start: start,
+        update: update
     }
 })();
 
@@ -603,7 +668,7 @@ $("#replay_iframe").load(function() {
 var pass_form_targets = {};
 
 function exclude_password_targets() {
-    if (wbinfo.state != "record" && wbinfo.state != "patch") {
+    if (typeof wbinfo === "undefined" || (wbinfo.state != "record" && wbinfo.state != "patch")) {
         return;
     }
 

@@ -1,12 +1,11 @@
 <div class="col-md-10">
 	<div class="row left-buffer">
-
 		<div class="pull-left">
-			<span class="glyphicon glyphicon-lg glyphicon-record glyphicon-recoding-status top-buffer-sm Blink" aria-hidden="true"></span>
+			<span class="glyphicon glyphicon-lg glyphicon-play-circle glyphicon-recoding-status top-buffer-sm" aria-hidden="true"></span>
 		</div>
 
 		<div class="pull-left left-buffer">
-			<span class="recorder-status strong">Recording</span>
+			<span class="recorder-status strong">Replaying</span>
 
 			{% include 'breadcrumbs.html' %}
 		</div>
@@ -14,22 +13,25 @@
 		<div class="pull-right top-buffer-md">
 			<span class="page-count"></span>
 
-			<span class="size-counter size-counter-active hidden">
-				<span class="current-size"></span>
-			</span>
+			<span class="current-size" data-size="{{ info.size }}"></span>
 		</div>
+
 	</div>
 
-	<form class="recording-in-progress row left-buffer">
-		<div class="input-group has-feedback ">
-			<span class="page-index input-group-addon"></span>
+	<form class="replay-recording row left-buffer">
+		<div class="input-group has-feedback">
+			<span class="input-group-addon page-index"></span>
 
 			<span class="page-list-toggle glyphicon glyphicon-triangle-bottom form-control-feedback form-control-left-addon-feedback" aria-label="List pages"></span>
 
 			<input type="text" class="pages-combobox form-control form-control-left-addon-input" name="url" value="{{ url }}" autofocus required>
 
 			<span class="input-group-addon">
-				<button type="submit" class="">
+				<button class="patch-page">
+					Patch
+				</button>
+
+				<button class="autoscroll">
 					Autoscroll
 				</button>
 			</span>
@@ -40,9 +42,9 @@
 <div class="recording-actions text-center col-md-2">
 
 	<div class="row">
-		<form class="stop-recording top-buffer">
+		<form class="add-to-recording top-buffer">
 			<button type="submit" class="btn btn-default">
-				Finish
+				Add pages
 			</button>
 		</form>
 

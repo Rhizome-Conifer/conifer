@@ -1,84 +1,51 @@
-.interstitial-page {
-    background-color: #808080;
+/*
+ * Header top bar
+ *
+ */
+.navbar {
+    min-height: 20px;
+    margin-bottom: 10px;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
 }
 
-li.coll-nav {
-    font-size: 18px;
+.navbar-text {
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
 
 .header-webrecorder {
-    background-color: #222;
+    background-color: #373944;
 }
 
-.header-webrecorder a {
+.header-webrecorder a,
+.header-webrecorder a:visited,
+.wr-user-links>li>a,
+.we-user-links>li>a:visited {
     color: #429EEC;
 }
 
-.new-recording,
-.browse-recording,
-.recording-in-progress,
-.patch-recording {
-    margin-top: 5px;
-}
-
-.navbar-brand {
- /*   padding: 9px 4px 10px 0px;*/
-    padding: 8px 4px 8px 4px;
-    height: 40px;
-}
-
-.navbar {
-    min-height: 20px;
-}
-
-.wr-user-links>li>a,
-.wr-user-links>li>a:visited {
-    display: inline;
-    font-size: 1.0em;
-    background-color: #222;
-    padding: 0px;
-    padding-right: 15px
-}
-
+.header-webrecorder a:focus,
+.header-webrecorder a:hover,
 .wr-user-links>li>a:focus,
 .wr-user-links>li>a:hover {
-    color: #23527c;
     text-decoration: underline;
-    background-color: #222;
+    background-color: #373944;
+    color: #74B9F3;
 }
 
-.wr-user-links>li>a:active,
-.wr-user-links>li>a:hover {
+.header-webrecorder a:active,
+.wr-user-links>li>a:active {
     outline: 0;
+    color: #74B9F3;
 }
 
-.breadcrumbs {
-    margin-left: 5px;
-    margin-top: -2px;
-}
-
-.wr-breadcrumb {
-    background-color: #222;
+.wr-user-links>li>a {
+    display: inline;
+    font-size: 1.0em;
     padding: 0px;
-    padding-left: 5px;
-    margin: 1px;
-    border: none;
-}
-
-.wr-breadcrumb>li>a,
-.wr-breadcrumb>li>a:visited {
-    color: #ccc;
-    text-decoration: underline;
-}
-
-.wr-breadcrumb>li>a:focus,
-.wr-breadcrumb>li>a:hover {
-    text-decoration: underline;
-}
-
-.wr-breadcrumb>li>a:active,
-.wr-breadcrumb>li>a:hover {
-    text-decoration: underline;
+    padding-right: 15px
 }
 
 .wr-timer {
@@ -88,228 +55,82 @@ li.coll-nav {
     list-style: none;
     font-style: italic;
 }
+/* End header top bar */
 
-.new-recording-form-group,
-.recording-in-progress-form-group,
-.browse-recording-form-group,
-.patch-recording-form-group {
-    margin-bottom: 5px;
-    height: 30px;
+
+/*
+ * Recorder
+ *
+ */
+.breadcrumb-webrecorder {
+    display: inline-block;
+    margin-bottom: 0px;
 }
 
-.new-recording-form-group .url,
-.recording-in-progress-form-group .url,
-.browse-recording-form-group .url,
-.patch-recording-form-group .url {
-    padding-right: 0px;
+.Blink {
+    animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
 }
 
-.recording-in-progress-form-group .title,
-.browse-recording-form-group .title,
-.patch-recording-form-group .title,
-.recording-in-progress-form-group .collection,
-.browse-recording-form-group .collection,
-.patch-recording-form-group .collection {
-    margin-top: 3px;
-}
-
-.recording-info-value {
-    font-size: 12px;
-    line-height: 2;
-    padding-right: 20px;
-    padding-left: 5px;
+@keyframes blinker {
+    from { opacity: 1; }
+    to { opacity: 0; }
 }
 
 .start-recording-spacer {
     height: 20px;
 }
 
+.form-control-left-addon-feedback {
+    left: 33px;
+    z-index: 3;
+}
+
+.form-control-left-addon-input {
+    padding-left: 33px;
+}
 
 .form-inline .homepage-url-input {
     width: 100%;
 }
 
+.title-inline {
+    width: 300px;
+}
+
+.space-usage {
+    width: 25%;
+    min-width: 150px;
+}
+
+.alert-during-recording {
+    position: fixed;
+    top: 20px;
+    z-index: 2;
+    height: 40px;
+    display: none;
+    padding: 10px;
+}
+
 .doesnt-look-right {
     font-size: 11px;
 }
+/* End recorder */
+
 
 /*
-    https://github.com/twitter/typeahead.js/issues/378
-    https://gist.github.com/joelhaasnoot/c7f3358726c22d489566
-*/
-.twitter-typeahead {
-  width: 100%;
-  position: relative;
+ * Interstitial pages
+ * Pages w/recorder but no content
+ */
+.interstitial-page {
+    background-color: #808080;
 }
+/* End interstitial page */
 
-.twitter-typeahead .tt-input,
-.twitter-typeahead .tt-hint {
-    margin-bottom: 0;
-}
-.tt-hint {
-    display: block;
-    width: 100%;
-    height: 38px;
-    padding: 8px 12px;
-    font-size: 14px;
-    line-height: 1.428571429;
-    color: #999;
-    vertical-align: middle;
-    background-color: #ffffff;
-    border: 1px solid #cccccc;
-    border-radius: 4px;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    -webkit-transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
-}
-.tt-menu {
-    min-width: 160px;
-    margin-top: 2px;
-    padding: 5px 0;
-    background-color: #ffffff;
-    border: 1px solid #cccccc;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 4px;
-    -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
-    background-clip: padding-box;
-    width: 100%;
-}
-.tt-suggestion {
-    display: block;
-    padding: 3px 20px;
-    font-size: 12px;
-}
-.tt-suggestion:hover,
-.tt-cursor {
-    color: #fff;
-    background-color: #428bca;
-}
-.tt-suggestion.hover a {
-    color: #fff;
-}
-.tt-suggestion p {
-    margin: 0;
-}
 
 /*
-    end https://github.com/twitter/typeahead.js/issues/378
-    https://gist.github.com/joelhaasnoot/c7f3358726c22d489566
-*/
-
-li.coll-nav a {
-    padding: 8px 4px 8px 4px;
-}
-
-li.coll-nav.active2 a {
-    font-weight: bold;
-}
-
-li.coll-nav a:before {
-    margin-top: 4px;
-    margin-right: 8px;
-    font-size: 18px;
-    color: #ccc;
-    font-weight: bold;
-    content: "/"
-}
-
-.navbar-text {
-    margin: 0px;
-}
-
-p.status-badge {
-    font-size: 14px;
-    color: white !important;
-}
-
-ul.state-drop {
-    padding: 0px;
-    text-align: left;
-    /*margin-left: -20px;*/
-}
-
-.state-drop a {
-    text-align: left;
-    /*padding-left: 20px;*/
-}
-
-.display-badge {
-    font-weight: 700;
-    font-size: 14px;
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-    vertical-align: text-bottom;
-    line-height: 1em;
-    margin-right: 4px;
-}
-
-a.dropdown-badge {
-    font-size: 14px;
-    color: white !important;
-    border-radius: 0px;
-}
-
-.replay-page {
-    color: white !important;
-}
-
-.navbar {
-    margin-bottom: 10px;
-    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
-    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
-}
-
-.navbar .userset a {
-    color: white;
-}
-
-.navbar .nav-search {
-    margin-top: 12px;
-    width: 100%;
-    max-width: 30%;
-    margin-right: 12px;
-}
-
-.glyphicon.glyphicon-dot:before {
-    content: "\25cf";
-    font-size: 2em;
-    line-height: 0.3em;
-}
-
-.glyphicon.glyphicon-dot-sm:before {
-    content: "\25cf";
-    font-size: 1.5em;
-    line-height: 0.3em;
-}
-
-.glyphicon.glyphicon-dot-lg:before {
-    content: "\25cf";
-    font-size: 2em;
-    vertical-align: sub;
-    line-height: 0.1em;
-}
-
-.pulse {
-    animation-name: pulse;
-    animation-duration: 1s;
-    animation-iteration-count: infinite;
-    -webkit-animation-name: pulse;
-    -webkit-animation-duration: 1s;
-    -webkit-animation-iteration-count: infinite;
-}
-
-@-webkit-keyframes pulse {
-    0%, 100% {opacity: 1}
-    50% {opacity: 0}
-}
-
-@keyframes pulse {
-    0%, 100% {opacity: 1}
-    50% {opacity: 0}
-}
-
+ * Links selecter/finder
+ *
+ */
 #links-modal input[type=checkbox] {
     margin-right: 4px;
 }
@@ -323,52 +144,39 @@ a.dropdown-badge {
 #links-toggle-all {
     margin-left: 16px;
 }
+/* End links selector/finder */
 
-.btn:focus {
-    outline: none !important;
-}
 
-.btn .focus {
-    outline: none !important;
-}
-
-.coll-download {
-    padding: 10px 15px;
-    margin: 15px 0px 15px 0px;
-    font-size: larger;
-    font-weight: bold;
-    border: 1px solid;
-    text-align: center;
-    border-radius: 6px;
-}
-
-.recording-blinker {
-    display: inline-block;
-    background-color: #a94442;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    line-height: 1;
-    margin: 5px;
-}
-
-/* Blink animation courtesy of: http://jsfiddle.net/mdz87jy1/ */
-.Blink {
-    animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
-}
-
-@keyframes blinker {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
+/*
+ * Glyphicons
+ *
+ */
 .glyphicon-button {
     top: 2px;
     margin-right: 3px;
 }
 
-.collection-list {
-    margin-top: 20px;
+.glyphicon-lg {
+    font-size: 1.5em;
+}
+
+.glyphicon-recoding-status {
+    margin-left: 7px;
+    margin-left: 7px;
+}
+/* End glyphicons */
+
+
+/*
+ * Spacers and buffers
+ *
+ */
+.top-buffer-sm {
+    margin-top: 5px;
+}
+
+.top-buffer-md {
+    margin-top: 10px;
 }
 
 .top-buffer {
@@ -386,25 +194,209 @@ a.dropdown-badge {
 .left-buffer-xs {
     margin-left: 1px;
 }
+/* End spacers and buffers */
 
-.space-usage {
-    width: 25%;
-    min-width: 150px;
-}
 
-.alert-during-recording {
-    position: fixed;
-    top: 20px;
-    z-index: 2;
-    height: 40px;
-    display: none;
-    padding: 10px;
+/*
+ * typehead.js-bootstrap3.less
+ * @version 0.2.3
+ * https://github.com/hyspace/typeahead.js-bootstrap3.less
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+.has-warning .twitter-typeahead .tt-input,
+.has-warning .twitter-typeahead .tt-hint {
+  border-color: #8a6d3b;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
-
-.patch-url {
-    height: 30px;
-    padding: 8px 10px;
-    font-size: 12px;
-    line-height: 1.5;
-    border-radius: 3px;
+.has-warning .twitter-typeahead .tt-input:focus,
+.has-warning .twitter-typeahead .tt-hint:focus {
+  border-color: #66512c;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #c0a16b;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #c0a16b;
 }
+.has-error .twitter-typeahead .tt-input,
+.has-error .twitter-typeahead .tt-hint {
+  border-color: #a94442;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+.has-error .twitter-typeahead .tt-input:focus,
+.has-error .twitter-typeahead .tt-hint:focus {
+  border-color: #843534;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #ce8483;
+}
+.has-success .twitter-typeahead .tt-input,
+.has-success .twitter-typeahead .tt-hint {
+  border-color: #3c763d;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+.has-success .twitter-typeahead .tt-input:focus,
+.has-success .twitter-typeahead .tt-hint:focus {
+  border-color: #2b542c;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #67b168;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px #67b168;
+}
+.input-group .twitter-typeahead:first-child .tt-input,
+.input-group .twitter-typeahead:first-child .tt-hint {
+  border-bottom-left-radius: 4px;
+  border-top-left-radius: 4px;
+  width: 100%;
+}
+.input-group .twitter-typeahead:last-child .tt-input,
+.input-group .twitter-typeahead:last-child .tt-hint {
+  border-bottom-right-radius: 4px;
+  border-top-right-radius: 4px;
+  width: 100%;
+}
+.input-group.input-group-sm .twitter-typeahead .tt-input,
+.input-group.input-group-sm .twitter-typeahead .tt-hint {
+  height: 30px;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+select.input-group.input-group-sm .twitter-typeahead .tt-input,
+select.input-group.input-group-sm .twitter-typeahead .tt-hint {
+  height: 30px;
+  line-height: 30px;
+}
+textarea.input-group.input-group-sm .twitter-typeahead .tt-input,
+textarea.input-group.input-group-sm .twitter-typeahead .tt-hint,
+select[multiple].input-group.input-group-sm .twitter-typeahead .tt-input,
+select[multiple].input-group.input-group-sm .twitter-typeahead .tt-hint {
+  height: auto;
+}
+.input-group.input-group-sm .twitter-typeahead:not(:first-child):not(:last-child) .tt-input,
+.input-group.input-group-sm .twitter-typeahead:not(:first-child):not(:last-child) .tt-hint {
+  border-radius: 0;
+}
+.input-group.input-group-sm .twitter-typeahead:first-child .tt-input,
+.input-group.input-group-sm .twitter-typeahead:first-child .tt-hint {
+  border-bottom-left-radius: 3px;
+  border-top-left-radius: 3px;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+.input-group.input-group-sm .twitter-typeahead:last-child .tt-input,
+.input-group.input-group-sm .twitter-typeahead:last-child .tt-hint {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 3px;
+  border-top-right-radius: 3px;
+}
+.input-group.input-group-lg .twitter-typeahead .tt-input,
+.input-group.input-group-lg .twitter-typeahead .tt-hint {
+  height: 46px;
+  padding: 10px 16px;
+  font-size: 18px;
+  line-height: 1.33;
+  border-radius: 6px;
+}
+select.input-group.input-group-lg .twitter-typeahead .tt-input,
+select.input-group.input-group-lg .twitter-typeahead .tt-hint {
+  height: 46px;
+  line-height: 46px;
+}
+textarea.input-group.input-group-lg .twitter-typeahead .tt-input,
+textarea.input-group.input-group-lg .twitter-typeahead .tt-hint,
+select[multiple].input-group.input-group-lg .twitter-typeahead .tt-input,
+select[multiple].input-group.input-group-lg .twitter-typeahead .tt-hint {
+  height: auto;
+}
+.input-group.input-group-lg .twitter-typeahead:not(:first-child):not(:last-child) .tt-input,
+.input-group.input-group-lg .twitter-typeahead:not(:first-child):not(:last-child) .tt-hint {
+  border-radius: 0;
+}
+.input-group.input-group-lg .twitter-typeahead:first-child .tt-input,
+.input-group.input-group-lg .twitter-typeahead:first-child .tt-hint {
+  border-bottom-left-radius: 6px;
+  border-top-left-radius: 6px;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+.input-group.input-group-lg .twitter-typeahead:last-child .tt-input,
+.input-group.input-group-lg .twitter-typeahead:last-child .tt-hint {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 6px;
+  border-top-right-radius: 6px;
+}
+.twitter-typeahead {
+  width: 100%;
+  float: left;
+}
+.input-group .twitter-typeahead {
+  display: table-cell !important;
+}
+.twitter-typeahead .tt-hint {
+  color: #999999;
+}
+.twitter-typeahead .tt-input {
+  z-index: 2;
+}
+.twitter-typeahead .tt-input[disabled],
+.twitter-typeahead .tt-input[readonly],
+fieldset[disabled] .twitter-typeahead .tt-input {
+  cursor: not-allowed;
+  background-color: #eeeeee !important;
+}
+.tt-dropdown-menu,
+.tt-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 160px;
+  width: 100%;
+  padding: 5px 0;
+  margin: 2px 0 0;
+  list-style: none;
+  font-size: 14px;
+  background-color: #ffffff;
+  border: 1px solid #cccccc;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  background-clip: padding-box;
+  *border-right-width: 2px;
+  *border-bottom-width: 2px;
+}
+.tt-dropdown-menu .tt-suggestion,
+.tt-menu .tt-suggestion {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333333;
+}
+.tt-dropdown-menu .tt-suggestion.tt-cursor,
+.tt-menu .tt-suggestion.tt-cursor,
+.tt-dropdown-menu .tt-suggestion:hover,
+.tt-menu .tt-suggestion:hover {
+  cursor: pointer;
+  text-decoration: none;
+  outline: 0;
+  background-color: #f5f5f5;
+  color: #262626;
+}
+.tt-dropdown-menu .tt-suggestion.tt-cursor a,
+.tt-menu .tt-suggestion.tt-cursor a,
+.tt-dropdown-menu .tt-suggestion:hover a,
+.tt-menu .tt-suggestion:hover a {
+  color: #262626;
+}
+.tt-dropdown-menu .tt-suggestion p,
+.tt-menu .tt-suggestion p {
+  margin: 0;
+}
+/*
+    End typehead.js-bootstrap3.less
+*/

@@ -84,9 +84,7 @@
                 <th>Name</th>
                 <th>Last Recorded</th>
                 <th>Size</th>
-                {% if can_admin() %}
-                    <th>Actions</th>
-                {% endif %}
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -102,9 +100,9 @@
                 <td><a href="{{ path }}">{{ rec.title }}</a></td>
                 <td data-time-sec="{{ rec.updated_at }}" data-order="{{ rec.updated_at }}"></td>
                 <td data-size="{{ rec.size }}" data-order="{{ rec.size }}"></td>
-
-                {% include 'recordings_table_actions.html' %}
-
+                <td>
+                    {% include 'recordings_table_actions.html' %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

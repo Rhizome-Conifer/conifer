@@ -2,13 +2,16 @@
     <caption><h6>Pages</h6></caption>
     <thead>
         <tr>
+            <th><small>Order</small></th>
             <th><small>Url</small></th>
             <th><small>Last Recorded</small></th>
         </tr>
     </thead>
     <tbody>
-    {% for page in rec.pages %}
+    {% for page in rec.pages | sort(attribute='timestamp') %}
+
     <tr>
+        <td>{{ loop.index }}</td>
         <td><a href="{{ path + '/' + page.url }}">{{ page.url }}</a></td>
         <td data-time-ts="{{ page.timestamp }}"></td>
     </tr>
