@@ -52,8 +52,9 @@ var EventHandlers = (function() {
             event.preventDefault();
 
             var url = $("input[name='url']").val();
+            var recordingId = $('[data-recording-id]').attr('data-recording-id');
 
-            RouteTo.recordingInProgress(user, coll, wbinfo.info.rec_id, url);
+            RouteTo.recordingInProgress(user, coll, recordingId, url);
         });
 
         // 'Recording in progress': Stop recording button
@@ -239,21 +240,24 @@ var RouteTo = (function(){
 }());
 
 var RecordingSizeWidget = (function() {
+    var recordingId;
+    var collectionId;
+
     var start = function() {
         if ($('.size-counter-active').length) {
-            if (isOutOfSpace()) {
-                RouteTo.recordingInfo(user, wbinfo.info.coll_id, wbinfo.info.rec_id);
-            }
+            recordingId = $('[data-recording-id]').attr('data-recording-id');
+            collectionId = $('[data-collection-id]').attr('collection-id');
 
-            var spaceUsed = format_bytes(wbinfo.info.size);
-            updateDom(spaceUsed);
+            if (isOutOfSpace()) {
+                RouteTo.recordingInfo(user, collectionId, recordingId);
+            }
 
             setInterval(pollForSizeUpdate, 1000);
         }
     }
 
     var pollForSizeUpdate = function() {
-        Recordings.get(wbinfo.info.rec_id, updateSizeCounter, dontUpdateSizeCounter);
+        Recordings.get(recordingId, updateSizeCounter, dontUpdateSizeCounter);
         exclude_password_targets();
         if (isAlmostOutOfSpace() && !warningPresent()) {
             showWarningMessage();
@@ -277,10 +281,12 @@ var RecordingSizeWidget = (function() {
     }
 
     var isOutOfSpace = function() {
+        if (typeof wbinfo === "undefined") { return false; }
         return wbinfo.info.size_remaining <= 0;
     }
 
     var isAlmostOutOfSpace = function() {
+        if (typeof wbinfo === "undefined") { return false; }
         return wbinfo.info.size_remaining <= 500000;  // 500KB
     }
 
@@ -308,7 +314,8 @@ var RecordingSizeWidget = (function() {
 var PagesWidgets = (function() {
     var start = function() {
         if ($(".pages-combobox").length) {
-            Recordings.getPages(wbinfo.info.rec_id, startPagesWidgets, dontStartPagesWidgets);
+            var recordingId = $('[data-recording-id]').attr('data-recording-id');
+            Recordings.getPages(recordingId, startPagesWidgets, dontStartPagesWidgets);
         }
     }
 
@@ -345,7 +352,8 @@ var PagesWidgets = (function() {
     }
 
     var getPageIndexByUrl = function(url, pages) {
-        var currentPageIndex = $('.page-index');
+        var currentPageIndex = pages.length + 1;
+
         $.each(pages, function(index) {
             if (url === this.url) {
                 currentPageIndex = index + 1;
@@ -651,7 +659,7 @@ $("#replay_iframe").load(function() {
 var pass_form_targets = {};
 
 function exclude_password_targets() {
-    if (wbinfo.state != "record" && wbinfo.state != "patch") {
+    if (typeof wbinfo !== "undefined" && wbinfo.state != "record" && wbinfo.state != "patch") {
         return;
     }
 

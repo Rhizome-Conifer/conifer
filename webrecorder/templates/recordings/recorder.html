@@ -1,4 +1,4 @@
-{% if curr_mode == "record" %}
+{% if curr_mode == "record" or action == "add_to_recording" %}
 	{% include 'in_progress.html' %}
 {% elif curr_mode == "patch" %}
 	{% include 'patch.html' %}
