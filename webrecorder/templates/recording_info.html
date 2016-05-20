@@ -70,6 +70,7 @@
         <caption><h4>Pages</h4></caption>
         <thead>
             <tr>
+                <th>Order</th>
                 <th>Title</th>
                 <th>Recorded On</th>
                 <th>Url</th>
@@ -77,8 +78,9 @@
         </thead>
         <tbody>
             {% set path = get_path(user, coll, rec) + '/' %}
-            {% for page in pages | sort(reverse=True, attribute='timestamp') %}
+            {% for page in pages | sort(attribute='timestamp') %}
             <tr>
+                <td>{{ loop.index }}</td>
                 <td><a href="{{ path + page.url }}">{{ page.title if page.title else page.url }}</a></td>
                 <td data-time-ts="{{ page.timestamp }}"></td>
                 <td><a href="{{ path + page.url }}">{{ page.url }}</a></td>

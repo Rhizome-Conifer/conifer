@@ -11,22 +11,18 @@
 		</div>
 
 		<div class="pull-right top-buffer-md">
-			<span>5 pages</span>
-
-			<span class="strong">/</strong>
+			<span class="page-count"></span>
 
 			<span class="current-size" data-size="{{ info.size }}"></span>
 		</div>
 
 	</div>
 
-	<form class="row left-buffer">
+	<form class="replay-recording row left-buffer">
 		<div class="input-group has-feedback">
-			<span class="input-group-addon">
-				1
-			</span>
+			<span class="input-group-addon page-index"></span>
 
-			<span class="glyphicon glyphicon-triangle-bottom form-control-feedback form-control-left-addon-feedback" aria-label="List pages"></span>
+			<span class="page-list-toggle glyphicon glyphicon-triangle-bottom form-control-feedback form-control-left-addon-feedback" aria-label="List pages"></span>
 
 			<input type="text" class="pages-combobox form-control form-control-left-addon-input" name="url" value="{{ url }}" autofocus required>
 

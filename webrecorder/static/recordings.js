@@ -7,7 +7,7 @@ $(function() {
     TimesAndSizesFormatter.format();
     //CollectionsDropdown.start();
     RecordingSizeWidget.start();
-    PagesComboxBox.start();
+    PagesWidgets.start();
     CountdownTimer.start();
     SizeProgressBar.start();
 });
@@ -17,7 +17,7 @@ var EventHandlers = (function() {
 
         // Prevent the use of any disabled elements
         $('body').on('click', '.disabled', function(event){
-            event.prevenDefault();
+            event.preventDefault();
             return false;
         });
 
@@ -64,7 +64,7 @@ var EventHandlers = (function() {
         });
 
         // 'Replay recording': Url bar 'Go' button / enter key
-        $('header').on('submit', '.browse-recording', function(event) {
+        $('header').on('submit', '.replay-recording', function(event) {
             event.preventDefault();
 
             var url = $("input[name='url']").val();
@@ -159,7 +159,7 @@ var Recordings = (function() {
             data: attributes
         })
         .done(function(data, textStatus, xhr){
-            $("input[name='url']").val(attributes.url);
+            PagesWidgets.update(attributes);
         })
         .fail(function(xhr, textStatus, errorThrown) {
             // Fail gracefully when the page can't be updated
@@ -305,11 +305,84 @@ var RecordingSizeWidget = (function() {
 
 })();
 
-var PagesComboxBox = (function() {
+var PagesWidgets = (function() {
     var start = function() {
         if ($(".pages-combobox").length) {
-            Recordings.getPages(wbinfo.info.rec_id, initializeCombobox, dontInitializeCombobox);
+            Recordings.getPages(wbinfo.info.rec_id, startPagesWidgets, dontStartPagesWidgets);
         }
+    }
+
+    var update = function(attributes) {
+        $("input[name='url']").val(attributes.url);
+        $('.pages-combobox').typeahead('destroy');
+        PagesWidgets.start();
+    }
+
+    var startPagesWidgets = function(data) {
+        var sortedPages = data.pages.sort(function(p1, p2) {
+            return p1.timestamp - p2.timestamp;
+        });
+
+        setPageIndex(sortedPages);
+        setPageCount(sortedPages);
+        initializeTypeahead(sortedPages);
+    }
+
+    var dontStartPagesWidgets = function() {
+        // If we can't load this recording's pages,
+        // do nothing to leave url as a regular
+        // input field
+    }
+
+    var setPageCount = function(pages) {
+        $('.page-count').html(formatPageCount(pages));
+    }
+
+    var setPageIndex = function(pages) {
+        var currentUrl = $("input[name='url']").val();
+        var currentPageIndex = getPageIndexByUrl(currentUrl, pages); 
+        $('.page-index').text(currentPageIndex);
+    }
+
+    var getPageIndexByUrl = function(url, pages) {
+        var currentPageIndex = $('.page-index');
+        $.each(pages, function(index) {
+            if (url === this.url) {
+                currentPageIndex = index + 1;
+            }
+        });
+        return currentPageIndex;
+    }
+
+    var initializeTypeahead = function(pages) {
+        var source = substringMatcher(pages);
+
+        $(".pages-combobox").typeahead(
+            {
+                highlight: true,
+                minLength: 0,
+                hint: true,
+            },
+            {
+                name: 'pages',
+                source: source,
+                limit: 1000000,
+
+                display: "url",
+                templates: {
+                    suggestion: function(data) {
+                        return "<div>" +
+                            "<span class='suggestion-index'>" +
+                                getPageIndexByUrl(data.url, pages) +
+                            ". </span>" +
+                            formatSuggestionUrl(data.url) +
+                            "<span class='suggestion-timestamp pull-right'>" +
+                                ts_to_date(data.timestamp) +
+                            "</span>" +
+                        "</div>";
+                    }
+                }
+            });
     }
 
     // From typeahead examples
@@ -335,38 +408,6 @@ var PagesComboxBox = (function() {
         };
     };
 
-    var initializeCombobox = function(data) {
-        var pages = data.pages;
-        var source = substringMatcher(pages);
-
-        $(".pages-combobox").typeahead(
-            {
-                highlight: true,
-                minLength: 0,
-                hint: true,
-            },
-            {
-                name: 'pages',
-                source: source,
-                limit: 1000000,
-
-                display: "url",
-                templates: {
-                    suggestion: function(data) {
-                        return "<div>" + formatSuggestionUrl(data.url) +
-                            "<span class='suggestion-timestamp pull-right'>"
-                        + ts_to_date(data.timestamp) + "</span></div>";
-                    }
-                }
-            });
-    }
-
-    var dontInitializeCombobox = function() {
-        // If we can't load this recording's pages,
-        // do nothing to leave this as a regular
-        // input field
-    }
-
     var formatSuggestionUrl = function(url) {
         var MAX_LENGTH = 110;
         var CHARS_BEFORE_ELLIPSES = 87
@@ -382,8 +423,18 @@ var PagesComboxBox = (function() {
         }
     }
 
+    var formatPageCount = function(pages) {
+        var pageString = "pages";
+        if (pages.length === 1) {
+            pageString = "page";
+        }
+
+        return pages.length + " " + pageString + "<strong> / </strong>"
+    }
+
     return {
-        start: start
+        start: start,
+        update: update
     }
 })();
 
