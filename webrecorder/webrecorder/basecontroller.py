@@ -63,6 +63,20 @@ class BaseController(object):
     def get_session(self):
         return request.environ['webrec.session']
 
+    def fill_anon_info(self, resp):
+        sesh = self.get_session()
+
+        if sesh.is_anon():
+            anon_user = sesh.anon_user
+            anon_coll = self.manager.get_collection(anon_user, 'temp')
+            if anon_coll:
+                resp['anon_user'] = anon_user
+                resp['anon_size'] = anon_coll['size']
+                resp['anon_recordings'] = len(anon_coll['recordings'])
+                return True
+
+        return False
+
     def flash_message(self, *args, **kwargs):
         return self.get_session().flash_message(*args, **kwargs)
 

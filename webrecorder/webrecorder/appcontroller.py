@@ -155,13 +155,8 @@ class AppController(BaseController):
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
 
-            elif sesh.is_anon():
-                anon_user = sesh.anon_user
-                anon_coll = self.manager.get_collection(anon_user, 'temp')
-                if anon_coll:
-                    resp['anon_user'] = anon_user
-                    resp['anon_size'] = anon_coll['size']
-                    resp['anon_recordings'] = len(anon_coll['recordings'])
+            else:
+                self.fill_anon_info(resp)
 
             return resp
 

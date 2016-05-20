@@ -26,7 +26,7 @@ session_opts:
 
     session.url: $REDIS_BASE_URL
 
-    session.expire: 18000
+    session.expire: 1800
 
 
 # Upstream url templates
