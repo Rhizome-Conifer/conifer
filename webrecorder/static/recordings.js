@@ -82,7 +82,7 @@ var EventHandlers = (function() {
         });
 
         // 'Replay recording': 'Patch page' button
-        $('header').on('submit', '.patch-page', function(event){
+        $('header').on('click', '.patch-page', function(event){
             event.preventDefault();
 
             var url = $("input[name='url']").val();
@@ -96,7 +96,7 @@ var EventHandlers = (function() {
         })
 
         // 'Patch page': 'Stop' button
-        $('header').on('submit', '.stop-patching', function(event) {
+        $('header').on('submit', '.finish-patching', function(event) {
             event.preventDefault();
 
             var url = $('.patch-url').text();

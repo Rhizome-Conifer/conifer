@@ -11,28 +11,24 @@
 		</div>
 
 		<div class="pull-right top-buffer-md">
-			<div class="size-counter size-counter-active hidden">
+			<span class="page-count"></span>
+
+			<span class="size-counter size-counter-active hidden">
 				<span class="current-size"></span>
-			</div>
+			</span>
 		</div>
 
 	</div>
 
 	<form class="row left-buffer">
 		<div class="input-group">
-			<span class="input-group-addon">
-				7
-			</span>
+			<span class="input-group-addon page-index"></span>
 
-			<input type="text" class="form-control" name="url" value="{{ url }}" autofocus required disabled>
+			<input type="text" class="form-control pages-combobox" name="url" value="{{ url }}" autofocus required disabled>
 
 			<span class="input-group-addon">
 				<button type="submit" class="">
 					Autoscroll
-				</button>
-
-				<button type="submit" class="">
-					Snapshot
 				</button>
 			</span>
 		</div>
@@ -42,7 +38,7 @@
 <div class="recording-actions text-center col-md-2">
 
 	<div class="row">
-		<form class="add-to-recording top-buffer">
+		<form class="finish-patching top-buffer">
 			<button type="submit" class="btn btn-default">
 				Finish
 			</button>
