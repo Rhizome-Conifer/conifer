@@ -1,0 +1,21 @@
+<!-- Confirm Delete Collection -->
+<div class="modal fade" id="confirm-delete-collection-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Confirm Delete Collection?
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the collection <b>{{ collection.title }}</b> {{ get_path(user, coll) }}?</p>
+                <p>If you confirm, all recordings will be permanently deleted.</p>
+                <p>Be sure to download the collection first if you would like to keep any data.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form class="delete-coll-form" style="display: inline" method="post" action="/_delete_coll?user={{ user }}&coll={{ coll }}">
+                    <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

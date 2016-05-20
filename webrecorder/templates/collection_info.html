@@ -88,8 +88,8 @@
             </tr>
         </thead>
         <tbody>
-            {% for rec in collection.recordings %}
-            {% set path = get_path(user, coll, rec.id) %}
+            {% for recording in collection.recordings %}
+            {% set path = get_path(user, coll, recording.id) %}
             <tr>
                 <td class="details-control" aria-role="button">
                     <span class="glyphicon glyphicon-chevron-right" aria-hidden="true">
@@ -97,9 +97,9 @@
                     </span>
                     {% include 'recording_details.html' %}
                 </td>
-                <td><a href="{{ path }}">{{ rec.title }}</a></td>
-                <td data-time-sec="{{ rec.updated_at }}" data-order="{{ rec.updated_at }}"></td>
-                <td data-size="{{ rec.size }}" data-order="{{ rec.size }}"></td>
+                <td><a href="{{ path }}">{{ recording.title }}</a></td>
+                <td data-time-sec="{{ recording.updated_at }}" data-order="{{ recording.updated_at }}"></td>
+                <td data-size="{{ recording.size }}" data-order="{{ recording.size }}"></td>
                 <td>
                     {% include 'recordings_table_actions.html' %}
                 </td>
@@ -109,27 +109,7 @@
     </table>
 </div>
 
-<!-- Confirm Delete -->
-<div class="modal fade" id="confirm-delete-modal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                Confirm Delete Collection?
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the collection <b>{{ collection.title }}</b> {{ get_path(user, coll) }}?</p>
-                <p>If you confirm, all recordings will be permanently deleted.</p>
-                <p>Be sure to download the collection first if you would like to keep any data.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <form class="delete-coll-form" style="display: inline" method="post" action="/_delete_coll?user={{ user }}&coll={{ coll }}">
-                    <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'confirm_delete_collection_modal.html' %}
 
 <script>
     init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
