@@ -1,0 +1,22 @@
+<!-- Confirm Delete -->
+<div class="modal fade" id="confirm-delete-recording-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Confirm Delete Recording?
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this recording?</p>
+                <p>{{ get_path(user, coll, rec) }} <b>{{ recording.title }}</b></p>
+                <p>If you confirm, all archived data will be permanently deleted.</p>
+                <p>Be sure to download the recording first if you would like to keep any data.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <form class="delete-rec-form" style="display: inline" method="post" action="/_delete_rec/{{ recording.id }}?user={{ user }}&coll={{ coll }}">
+                    <button type="submit" class="btn btn-danger btn-ok" id="confirm-delete">Confirm Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
