@@ -61,7 +61,10 @@ var EventHandlers = (function() {
         $('header').on('submit', '.stop-recording', function(event) {
             event.preventDefault();
 
-            RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
+            var recordingId = $('[data-recording-id]').attr('data-recording-id');
+            var collectionId = $('[data-collection-id]').attr('data-collection-id');
+
+            RouteTo.recordingInfo(user, collectionId, recordingId);
         });
 
         // 'Replay recording': Url bar 'Go' button / enter key
