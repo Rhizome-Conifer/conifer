@@ -201,6 +201,10 @@
     margin-left: 20px;
 }
 
+.left-buffer-sm {
+  margin-left: 5px;
+}
+
 .left-buffer-xs {
     margin-left: 1px;
 }
