@@ -364,7 +364,7 @@ var PagesWidgets = (function() {
     }
 
     var getPageIndexByUrl = function(url, pages) {
-        var currentPageIndex = pages.length + 1;
+        var currentPageIndex = "-";
 
         $.each(pages, function(index) {
             if (url === this.url) {
