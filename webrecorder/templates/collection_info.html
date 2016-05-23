@@ -37,12 +37,11 @@
     <div class="page-header" style="margin-top: 10px">
         <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
             {% include 'collection_info_buttons.html'%}
-
-            <div>
-                <small>/{{ collection.id }}</small>
-            </div>
         </h1>
 
+        <div class="top-buffer-sm">
+            {% include 'recordings/breadcrumbs.html' %}
+        </div>
     </div>
 </div>
 

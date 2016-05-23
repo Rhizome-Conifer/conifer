@@ -40,11 +40,11 @@
                     <button id="delete-rec-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-recording-modal-{{ recording.id }}">Delete</button>
                 {% endif %}
             </div>
-
-            <div>
-                <small><a href="{{ get_path(user, coll) }}">/{{ collection.id }}</a>/{{ recording.id }}</small>
-            </div>
         </h1>
+
+        <div class="top-buffer-sm">
+            {% include 'recordings/breadcrumbs.html' %}
+        </div>
     </div>
 </div>
 
