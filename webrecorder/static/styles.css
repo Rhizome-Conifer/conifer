@@ -101,6 +101,12 @@
     width: 300px;
 }
 
+.suggestion-index {
+    width: 2em;
+    display: inline-block;
+    margin-right: 5px;
+}
+
 .space-usage {
     width: 25%;
     min-width: 150px;
@@ -375,7 +381,7 @@ fieldset[disabled] .twitter-typeahead .tt-input {
 .tt-dropdown-menu .tt-suggestion,
 .tt-menu .tt-suggestion {
   display: block;
-  padding: 3px 20px;
+  padding: 3px 10px;
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;

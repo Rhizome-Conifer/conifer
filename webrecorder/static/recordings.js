@@ -392,9 +392,9 @@ var PagesWidgets = (function() {
                 templates: {
                     suggestion: function(data) {
                         return "<div>" +
-                            "<span class='suggestion-index'>" +
+                            "<span class='suggestion-index text-right'>" +
                                 getPageIndexByUrl(data.url, pages) +
-                            ". </span>" +
+                            ".</span>" +
                             formatSuggestionUrl(data.url) +
                             "<span class='suggestion-timestamp pull-right'>" +
                                 ts_to_date(data.timestamp) +
