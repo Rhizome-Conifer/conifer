@@ -80,8 +80,12 @@
     height: 20px;
 }
 
+.page-index {
+    width: 3em;
+}
+
 .form-control-left-addon-feedback {
-    left: 33px;
+    left: 3em;
     z-index: 3;
 }
 
@@ -95,6 +99,12 @@
 
 .title-inline {
     width: 300px;
+}
+
+.suggestion-index {
+    width: 2em;
+    display: inline-block;
+    margin-right: 5px;
 }
 
 .space-usage {
@@ -189,6 +199,10 @@
 
 .left-buffer {
     margin-left: 20px;
+}
+
+.left-buffer-sm {
+  margin-left: 5px;
 }
 
 .left-buffer-xs {
@@ -371,7 +385,7 @@ fieldset[disabled] .twitter-typeahead .tt-input {
 .tt-dropdown-menu .tt-suggestion,
 .tt-menu .tt-suggestion {
   display: block;
-  padding: 3px 20px;
+  padding: 3px 10px;
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;

@@ -47,12 +47,14 @@ var EventHandlers = (function() {
             RouteTo.recordingInProgress(user, collection, title, url);
         });
 
-        // 'Recording in progress': Url bar 'Go' button / enter key
+        // 'Recording in progress': Url bar submit / enter key
         $('header').on('submit', '.recording-in-progress', function(event) {
             event.preventDefault();
 
             var url = $("input[name='url']").val();
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
+
+            if (ContentMessages.messageIfDuplicatePage(url)) { return; }
 
             RouteTo.recordingInProgress(user, coll, recordingId, url);
         });
@@ -61,7 +63,10 @@ var EventHandlers = (function() {
         $('header').on('submit', '.stop-recording', function(event) {
             event.preventDefault();
 
-            RouteTo.recordingInfo(user, coll, wbinfo.info.rec_id);
+            var recordingId = $('[data-recording-id]').attr('data-recording-id');
+            var collectionId = $('[data-collection-id]').attr('data-collection-id');
+
+            RouteTo.recordingInfo(user, collectionId, recordingId);
         });
 
         // 'Replay recording': Url bar 'Go' button / enter key
@@ -247,15 +252,13 @@ var RecordingSizeWidget = (function() {
     var start = function() {
         if ($('.size-counter-active').length) {
             recordingId = $('[data-recording-id]').attr('data-recording-id');
-            collectionId = $('[data-collection-id]').attr('collection-id');
+            collectionId = $('[data-collection-id]').attr('data-collection-id');
 
             if (isOutOfSpace()) {
                 RouteTo.recordingInfo(user, collectionId, recordingId);
             }
 
-            var spaceUsed = format_bytes(wbinfo.info.size);
-            updateDom(spaceUsed);
-
+            pollForSizeUpdate();
             sizeUpdateId = setInterval(pollForSizeUpdate, 1000);
         }
     }
@@ -321,6 +324,8 @@ var RecordingSizeWidget = (function() {
 })();
 
 var PagesWidgets = (function() {
+    var sortedPages;
+
     var start = function() {
         if ($(".pages-combobox").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
@@ -335,13 +340,13 @@ var PagesWidgets = (function() {
     }
 
     var startPagesWidgets = function(data) {
-        var sortedPages = data.pages.sort(function(p1, p2) {
+        sortedPages = data.pages.sort(function(p1, p2) {
             return p1.timestamp - p2.timestamp;
         });
 
-        setPageIndex(sortedPages);
-        setPageCount(sortedPages);
-        initializeTypeahead(sortedPages);
+        setPageIndex();
+        setPageCount();
+        initializeTypeahead();
     }
 
     var dontStartPagesWidgets = function() {
@@ -350,20 +355,20 @@ var PagesWidgets = (function() {
         // input field
     }
 
-    var setPageCount = function(pages) {
-        $('.page-count').html(formatPageCount(pages));
+    var setPageCount = function() {
+        $('.page-count').html(formatPageCount(sortedPages));
     }
 
-    var setPageIndex = function(pages) {
+    var setPageIndex = function() {
         var currentUrl = $("input[name='url']").val();
-        var currentPageIndex = getPageIndexByUrl(currentUrl, pages); 
+        var currentPageIndex = getPageIndexByUrl(currentUrl, sortedPages);
         $('.page-index').text(currentPageIndex);
     }
 
     var getPageIndexByUrl = function(url, pages) {
-        var currentPageIndex = pages.length + 1;
+        var currentPageIndex = "-";
 
-        $.each(pages, function(index) {
+        $.each(sortedPages, function(index) {
             if (url === this.url) {
                 currentPageIndex = index + 1;
             }
@@ -371,8 +376,8 @@ var PagesWidgets = (function() {
         return currentPageIndex;
     }
 
-    var initializeTypeahead = function(pages) {
-        var source = substringMatcher(pages);
+    var initializeTypeahead = function() {
+        var source = substringMatcher(sortedPages);
 
         $(".pages-combobox").typeahead(
             {
@@ -387,11 +392,12 @@ var PagesWidgets = (function() {
 
                 display: "url",
                 templates: {
+                    header: '<h5 class="left-buffer-sm">Recorded Pages</h5>',
                     suggestion: function(data) {
                         return "<div>" +
-                            "<span class='suggestion-index'>" +
-                                getPageIndexByUrl(data.url, pages) +
-                            ". </span>" +
+                            "<span class='suggestion-index text-right'>" +
+                                getPageIndexByUrl(data.url, sortedPages) +
+                            ".</span>" +
                             formatSuggestionUrl(data.url) +
                             "<span class='suggestion-timestamp pull-right'>" +
                                 ts_to_date(data.timestamp) +
@@ -449,9 +455,14 @@ var PagesWidgets = (function() {
         return pages.length + " " + pageString + "<strong> / </strong>"
     }
 
+    var isAlreadyRecorded = function(page) {
+        return getPageIndexByUrl(page) !== "-";
+    }
+
     return {
         start: start,
-        update: update
+        update: update,
+        isAlreadyRecorded: isAlreadyRecorded
     }
 })();
 
@@ -659,6 +670,68 @@ var TimesAndSizesFormatter = (function() {
     }
 })();
 
+
+var ContentMessages = (function() {
+
+    var messageIfDuplicatePage = function(page) {
+        if (PagesWidgets.isAlreadyRecorded(page)) {
+            showDuplicatePageMessage(page);
+            return true;
+        }
+        return false;
+    }
+
+    var showDuplicatePageMessage = function(page) {
+        $('body iframe').remove();
+        $('body .wr-content').remove();
+        $('body').addClass('interstitial-page');
+        $('body').append('<div class="container wr-content"></div>');
+
+        $('.wr-content').append(
+            getMessageDOM(
+                "<em>" + page + "</em> is already in this recording",
+                getDuplicatePageMessage(page)));
+    }
+
+    var getDuplicatePageMessage = function(page) {
+        // TODO: refactor the router to return urls or to do routing
+        var recordingId = $('[data-recording-id]').attr('data-recording-id');
+        var collectionId = $('[data-collection-id]').attr('data-collection-id');
+
+        var host = window.location.protocol + "//" + window.location.host;
+        var newRecordingUrl = host + "/" + user + "/" + collectionId + "/$new";
+        var overwriteUrl = host + "/" + user + "/" + collectionId + "/" + recordingId + "/record/" + page;
+        var replayUrl = host + "/" + user + "/" + collectionId + "/" + recordingId + "/" + page;
+
+        return  '<div>You can:</div>' +
+                '<ul>' +
+                    '<li class="top-buffer-md"><a href="' + overwriteUrl + '">Continue and overwrite</a> the existing version of this page</li>' +
+                    '<li class="top-buffer-md"><a href="' + replayUrl + '">Replay</a> the version of the page in this recording</li>' +
+                    '<li class="top-buffer-md"><a href="' + newRecordingUrl + '">Start a new recording</a> to record another copy of this page</li>' +
+                '</ul>';
+    }
+
+    var getMessageDOM = function(title, message) {
+        // TODO: Put this in a reusable, server-side template
+        return $('<div class="container col-md-6 col-md-offset-3 top-buffer-lg">' +
+                    '<div class="panel panel-default">' +
+                      '<div class="panel-heading">' +
+                        '<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>' +
+                        '<strong class="left-buffer">' + title + '</strong>' +
+                      '</div>' +
+
+                      '<div class="panel-body">' +
+                        message +
+                      '</div>' +
+                    '</div>' +
+                  '</div>'
+        );
+    }
+
+    return {
+        messageIfDuplicatePage: messageIfDuplicatePage
+    }
+})();
 
 // Check as soon as frame is loaded
 $("#replay_iframe").load(function() {
