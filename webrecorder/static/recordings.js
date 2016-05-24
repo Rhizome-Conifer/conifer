@@ -169,7 +169,7 @@ var Recordings = (function() {
             doneCallback(data);
         })
         .fail(function(xhr, textStatus, errorThrown) {
-            failCallback();
+            failCallback(xhr);
         });
 
     }
@@ -216,7 +216,7 @@ var Recordings = (function() {
             doneCallback(data);
         })
         .fail(function(xhr, textStatus, errorThrown) {
-            failCallback();
+            failCallback(xhr);
         });
     }
 
@@ -313,10 +313,14 @@ var RecordingSizeWidget = (function() {
     }
 
     var dontUpdateSizeCounter = function(xhr) {
-        var data = xhr.responseJSON;
+        var data = undefined;
+
+        if (xhr) {
+            data = xhr.responseJSON;
+        }
 
         // Stop pinging if user invalid (eg. expired)
-        if (data.error_message == "No such user") {
+        if (data && data.error_message == "No such user") {
             clearInterval(sizeUpdateId);
         }
     }
@@ -867,6 +871,8 @@ function ts_to_date(ts, is_gmt)
 
 
 $(function() {
+    var lastUrl = undefined;
+
     function urlChangeMessage(event) {
         var replay_iframe = window.document.getElementById("replay_iframe");
 
@@ -884,21 +890,28 @@ $(function() {
             return;
         }
 
-        handle_update(state);
+        addNewPage(state);
     }
 
-    function handle_update(state) {
+    function addNewPage(state) {
         if (state.is_error) {
             $("input[name='url']").val(state.url);
         } else if (wbinfo.state == "record" || wbinfo.state == "patch") {
+            if (lastUrl == state.url) {
+                return;
+            }
+
             var recordingId = wbinfo.info.rec_id;
             var attributes = {};
 
             attributes.url = state.url;
+
             attributes.timestamp = state.ts;
             attributes.title = $('iframe').contents().find('title').text();
-
+            
             Recordings.addPage(recordingId, attributes);
+            lastUrl = attributes.url;
+
         } else if (wbinfo.state == "replay" || wbinfo.state == "replay-coll") {
             $("input[name='url']").val(state.url);
         }
@@ -906,10 +919,21 @@ $(function() {
 
     window.addEventListener("message", urlChangeMessage);
 
+    // Only used for non-html pages
     $("#replay_iframe").load(function(e) {
-        var state = {"url": wbinfo.url, "ts": wbinfo.timestamp};
+        var replay_iframe = window.document.getElementById("replay_iframe");
 
-        handle_update(state);
+        // if WB_wombat_location present, then likely already received a message
+        if (replay_iframe.contentWindow && replay_iframe.contentWindow.wbinfo) {
+            return;
+        }
+
+        // extract actual url from replay url
+        // no access to timestamp, it will be computed from recording
+        var url = extract_replay_url(replay_iframe.contentWindow.location.href);
+        state = {"url": url }
+
+        addNewPage(state);
     });
 
 });

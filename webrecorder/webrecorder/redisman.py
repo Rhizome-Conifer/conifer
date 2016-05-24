@@ -18,6 +18,7 @@ from six.moves.urllib.parse import quote
 
 from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
+from pywb.utils.timeutils import timestamp_now
 
 import requests
 
@@ -510,7 +511,8 @@ class RecManagerMixin(object):
                                           pagedata.get('timestamp'))
 
         if not pagedata['timestamp']:
-            return {'error': 'url not found: ' + url}
+            pagedata['timestamp'] = timestamp_now()
+            #return {'error': 'url not found: ' + url}
 
         pagedata_json = json.dumps(pagedata).encode('utf-8')
 
