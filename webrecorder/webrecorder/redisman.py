@@ -16,6 +16,9 @@ from cork import AAAException
 
 from six.moves.urllib.parse import quote
 
+from pywb.utils.canonicalize import calc_search_range
+from pywb.cdx.cdxobject import CDXObject
+
 import requests
 
 
@@ -421,6 +424,7 @@ class RecManagerMixin(object):
         super(RecManagerMixin, self).__init__(config)
         self.rec_info_key = config['info_key_templ']['rec']
         self.page_key = config['page_key_templ']
+        self.cdx_key = config['cdxj_key_templ']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -500,27 +504,104 @@ class RecManagerMixin(object):
 
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
+        url = pagedata['url']
+
+        pagedata['timestamp'] = self._get_url_ts(user, coll, rec, url,
+                                          pagedata.get('timestamp'))
+
+        if not pagedata['timestamp']:
+            return {'error': 'url not found: ' + url}
+
         pagedata_json = json.dumps(pagedata).encode('utf-8')
 
-        #self.redis.sadd(key, pagedata_json)
-        self.redis.hset(key, pagedata['url'], pagedata_json)
+        self.redis.hset(key,
+                        pagedata['url'] + ' ' + pagedata['timestamp'],
+                        pagedata_json)
+
+        return {}
+
+    def delete_page(self, user, coll, rec, url, ts):
+        self.assert_can_write(user, coll)
+
+        key = self.page_key.format(user=user, coll=coll, rec=rec)
+
+        res = self.redis.hdel(key, url + ' ' + ts)
+        if res == 1:
+            return {}
+        else:
+            return {'error': 'not found'}
 
     def list_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
-        #pagelist = self.redis.smembers(key)
         pagelist = self.redis.hvals(key)
 
         pagelist = [json.loads(x.decode('utf-8')) for x in pagelist]
 
         return pagelist
 
+    def list_coll_pages(self, user, coll, rec):
+        self.assert_can_read(user, coll)
+
+        match_key = self.page_key.format(user=user, coll=coll, rec='*')
+
+        all_page_keys = list(self.redis.scan_iter(match_key))
+
+        pagelist = []
+
+        with redis.utils.pipeline(self.redis) as pi:
+            for key in all_page_keys:
+                pi.hvals(key)
+
+            all_pages = pi.execute()
+
+        for key, rec_pagelist in zip(all_page_keys, all_pages):
+            rec = key.rsplit(':', 2)[-2]
+            for page in rec_pagelist:
+                page = json.loads(page.decode('utf-8'))
+                page['recording'] = rec
+                pagelist.append(page)
+
+        return pagelist
+
     def num_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
         key = self.page_key.format(user=user, coll=coll, rec=rec)
+        #return self.redis.zcard(key)
         return self.redis.hlen(key)
+
+    def _get_url_ts(self, user, coll, rec, url, ts=None):
+        try:
+            key, end_key = calc_search_range(url, 'exact')
+        except:
+            return None
+
+        cdx_key = self.cdx_key.format(user=user, coll=coll, rec=rec)
+
+        if ts:
+            result = self.redis.zrangebylex(cdx_key,
+                                            '[' + key + ' ' + ts,
+                                            '(' + end_key)
+
+            if result:
+                return ts
+
+            ts = None
+
+        result = self.redis.zrangebylex(cdx_key,
+                                        '[' + key,
+                                        '(' + end_key)
+
+        if not result:
+            return None
+
+        last_cdx = CDXObject(result[-1])
+
+        ts = last_cdx['timestamp']
+
+        return ts
 
 
 # ============================================================================

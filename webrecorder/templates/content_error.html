@@ -7,9 +7,7 @@
         if (window.top != window) {
             $(".navbar").hide();
 
-            if (window.parent.set_state) {
-                window.parent.set_state({"is_error": true, "url": "{{ url }}"});
-            }
+            window.parent.postMessage({"is_error": true, "url": "{{ url }}"}, "*");
         }
     });
 </script>

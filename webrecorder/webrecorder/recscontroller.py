@@ -54,11 +54,9 @@ class RecsController(BaseController):
             self._ensure_rec_exists(user, coll, rec)
 
             page_data = dict(request.forms.decode())
-            #for item in request.forms:
-            #    page_data[item] = request.forms.get(item)
 
-            self.manager.add_page(user, coll, rec, page_data)
-            return {}
+            res = self.manager.add_page(user, coll, rec, page_data)
+            return res
 
         @self.app.get('/api/v1/recordings/<rec>/pages')
         def list_pages(rec):
@@ -67,6 +65,16 @@ class RecsController(BaseController):
 
             pages = self.manager.list_pages(user, coll, rec)
             return {'pages': pages}
+
+        @self.app.delete('/api/v1/recordings/<rec>/pages')
+        def delete_page(rec):
+            user, coll = self.get_user_coll(api=True)
+            self._ensure_rec_exists(user, coll, rec)
+
+            url = request.forms.get('url')
+            ts = request.forms.get('timestamp')
+
+            return self.manager.delete_page(user, coll, rec, url, ts)
 
         # LOGGED-IN NEW REC
         @self.app.get(['/<user>/<coll>/$new', '/<user>/<coll>/$new/'])

@@ -109,6 +109,23 @@ var EventHandlers = (function() {
 
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
+
+
+        // Hide Page
+        $(".hide-page").on('click', function(event) {
+            event.preventDefault();
+
+            var attributes = {}
+            attributes.url = $(this).attr("data-remove-url");
+            attributes.timestamp = $(this).attr("data-remove-ts");
+
+            var doReload = function() {
+                window.location.reload();
+            }
+
+            Recordings.removePage(window.rec, attributes, doReload);
+        });
+            
     }
 
     return {
@@ -172,6 +189,17 @@ var Recordings = (function() {
         });
     }
 
+    var removePage = function(recordingId, attributes, doneCallback) {
+        $.ajax({
+            url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
+            method: "DELETE",
+            data: attributes
+        })
+        .done(function(data, textStatus, xhr){
+            doneCallback(data);
+        });
+    }
+
     var getPages = function(recordingId, doneCallback, failCallback) {
         // no recordingId if in collection replay mode
         // skipping for now, possible to get pages for all recordings
@@ -195,6 +223,7 @@ var Recordings = (function() {
     return {
         get: get,
         addPage: addPage,
+        removePage: removePage,
         getPages: getPages
     }
 }());
@@ -837,30 +866,50 @@ function ts_to_date(ts, is_gmt)
 
 
 
+$(function() {
+    function urlChangeMessage(event) {
+        var replay_iframe = window.document.getElementById("replay_iframe");
 
-var _orig_set_state = window.set_state;
+        if (!replay_iframe || event.source != replay_iframe.contentWindow) {
+            return;
+        }
 
-window.set_state = function(state) {
-    _orig_set_state(state);
+        if (typeof(event.data) != "object") {
+            return;
+        }
 
-    var replay_iframe = window.document.getElementById("replay_iframe");
+        var state = event.data;
 
-    if (!replay_iframe || !replay_iframe.contentWindow) {
-        return;
+        if (!state.wb_type || state.wb_type != "load") {
+            return;
+        }
+
+        handle_update(state);
     }
 
-    if (state.is_error) {
-        $("input[name='url']").val(state.url);
-    } else if (wbinfo.state == "record" || wbinfo.state == "patch") {
-        var recordingId = wbinfo.info.rec_id;
-        var attributes = {};
+    function handle_update(state) {
+        if (state.is_error) {
+            $("input[name='url']").val(state.url);
+        } else if (wbinfo.state == "record" || wbinfo.state == "patch") {
+            var recordingId = wbinfo.info.rec_id;
+            var attributes = {};
 
-        attributes.url = state.url;
-        attributes.timestamp = state.timestamp;
-        attributes.title = $('iframe').contents().find('title').text();
+            attributes.url = state.url;
+            attributes.timestamp = state.ts;
+            attributes.title = $('iframe').contents().find('title').text();
 
-        Recordings.addPage(recordingId, attributes);
-    } else if (wbinfo.state == "replay" || wbinfo.state == "replay-coll") {
-        $("input[name='url']").val(state.url);
+            Recordings.addPage(recordingId, attributes);
+        } else if (wbinfo.state == "replay" || wbinfo.state == "replay-coll") {
+            $("input[name='url']").val(state.url);
+        }
     }
-};
+
+    window.addEventListener("message", urlChangeMessage);
+
+    $("#replay_iframe").load(function(e) {
+        var state = {"url": wbinfo.url, "ts": wbinfo.timestamp};
+
+        handle_update(state);
+    });
+
+});

@@ -14,6 +14,9 @@ class TestWebRecRecAPI(BaseWRTests):
     def _anon_post(self, url, *args, **kwargs):
         return self.testapp.post(url.format(user=self.anon_user), *args, **kwargs)
 
+    def _anon_delete(self, url, *args, **kwargs):
+        return self.testapp.delete(url.format(user=self.anon_user), *args, **kwargs)
+
     def _anon_get(self, url, *args, **kwargs):
         return self.testapp.get(url.format(user=self.anon_user), *args, **kwargs)
 
@@ -73,7 +76,10 @@ class TestWebRecRecAPI(BaseWRTests):
         assert res.json == {'pages': []}
 
     def test_page_add_1(self):
-        page = {'title': 'Example', 'url': 'http://example.com/', 'ts': '2016010203000000'}
+        cdx_key = 'r:{user}:temp:my-rec:cdxj'.format(user=self.anon_user)
+        self.redis.zadd(cdx_key, 0, 'com,example)/ 2016010203000000 {}')
+
+        page = {'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'}
         res = self._anon_post('/api/v1/recordings/my-rec/pages?user={user}&coll=temp', params=page)
 
         assert res.json == {}
@@ -81,10 +87,13 @@ class TestWebRecRecAPI(BaseWRTests):
     def test_page_list_1(self):
         res = self._anon_get('/api/v1/recordings/my-rec/pages?user={user}&coll=temp')
 
-        assert res.json == {'pages': [{'title': 'Example', 'url': 'http://example.com/', 'ts': '2016010203000000'}]}
+        assert res.json == {'pages': [{'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'}]}
 
     def test_page_add_2(self):
-        page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'ts': '2015010203000000'}
+        cdx_key = 'r:{user}:temp:my-rec:cdxj'.format(user=self.anon_user)
+        self.redis.zadd(cdx_key, 0, 'com,example)/foo/bar 2016010203000000 {}')
+
+        page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
         res = self._anon_post('/api/v1/recordings/my-rec/pages?user={user}&coll=temp', params=page)
 
         assert res.json == {}
@@ -92,8 +101,17 @@ class TestWebRecRecAPI(BaseWRTests):
     def test_page_list_2(self):
         res = self._anon_get('/api/v1/recordings/my-rec/pages?user={user}&coll=temp')
         assert len(res.json['pages']) == 2
-        assert {'title': 'Example', 'url': 'http://example.com/', 'ts': '2016010203000000'} in res.json['pages']
-        assert {'title': 'Example', 'url': 'http://example.com/foo/bar', 'ts': '2015010203000000'} in res.json['pages']
+        assert {'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
+        assert {'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
+
+    def test_page_delete(self):
+        params = {'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
+        res = self._anon_delete('/api/v1/recordings/my-rec/pages?user={user}&coll=temp', params=params)
+        assert res.json == {}
+
+        res = self._anon_get('/api/v1/recordings/my-rec/pages?user={user}&coll=temp')
+        assert len(res.json['pages']) == 1
+        assert {'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
 
     def test_collide_wb_url_format(self):
         res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': '2016'})
@@ -115,7 +133,7 @@ class TestWebRecRecAPI(BaseWRTests):
         res = self._anon_get('/api/v1/recordings/my-rec3/pages?user={user}&coll=temp', status=404)
         assert res.json == {'error_message': 'Recording not found', 'id': 'my-rec3'}
 
-        page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'ts': '2015010203000000'}
+        page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
         res = self._anon_post('/api/v1/recordings/my-rec3/pages?user={user}&coll=temp', params=page, status=404)
         assert res.json == {'error_message': 'Recording not found', 'id': 'my-rec3'}
 
