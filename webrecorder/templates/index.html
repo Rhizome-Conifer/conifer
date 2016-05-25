@@ -14,11 +14,7 @@
     </div>
 {% else %}
     {% if anon_size and anon_recordings %}
-        <div class="alert alert-info" role="alert">
-            {% set path = get_path(anon_user, 'temp') %}
-            Anonymously recorded <a href="{{ path }}"><b data-size="{{ anon_size }}"></b></a> in <a href="{{ path }}"><b>{{ anon_recordings }}</b></a> recordings(s).
-        <b style="margin-left: 10px"><a href="{{ path }}">Browse</a></b> or <b><a href="{{ path }}/$download">Download</a></b><p class="pull-right">Expires in <b data-anon-timer="{{ anon_ttl }}"></b></p>
-        </div>
+        {% include 'homepage_anon_recording_info.html' %}
     {% endif %}
 {% endif %}
 

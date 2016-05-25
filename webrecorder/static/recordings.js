@@ -538,7 +538,7 @@ var CountdownTimer = (function() {
             min = "0" + min;
         }
 
-        $("*[data-anon-timer]").text(min + ":" + sec);       
+        $("*[data-anon-timer]").text(min + " min, " + sec + " sec");
     }
 
     var start = function() {
