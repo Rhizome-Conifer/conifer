@@ -16,29 +16,25 @@
 
 {% block body %}
 
-{% include 'header.html' %}
+    {% include 'header.html' %}
 
-<div class="container wr-content">
-    {% block message %}
+    <div class="container wr-content">
+        {% block message %}
 
-        {% include 'out_of_space_message.html' %}
+            {% include 'out_of_space_message.html' %}
 
-        {% if message and message != '' %}
             {% include 'flash_message.html' %}
-        {% endif %}
 
+        {% endblock %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    {% block footer %}
+        {% include 'footer.html' %}
     {% endblock %}
 
-    {% block content %}
-    {% endblock %}
-</div>
-
-{% block footer %}
-    {% include 'footer.html' %}
-{% endblock %}
-
-{% if not curr_user %}
-{% include 'frag_login.html' %}
-{% endif %}
+    {% include 'login_modal.html' %}
 
 {% endblock %}

@@ -31,7 +31,7 @@ var EventHandlers = (function() {
 
             var collection = "temp";
             var title = "My First Recording";
-            var url = $(".wr-content input[name='url']").val();
+            var url = $(".start-recording-homepage input[name='url']").val();
 
             RouteTo.recordingInProgress(user, collection, title, url);
         });
@@ -108,6 +108,39 @@ var EventHandlers = (function() {
             var url = $('.patch-url').text();
 
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
+        });
+
+        // 'Header': 'Login' link to display modal
+        $('#login-modal').on('shown.bs.modal', function() {
+            $('#username').focus();
+        });
+
+        // 'Recorder': 'Doesn't look right' link to display modal
+        $("#report-modal").on('show.bs.modal', function() {
+            $("#report-form-submit").text("Send Report");
+            $("#report-thanks").text("");
+            $('#report-form-submit').prop('disabled', false);
+        });
+
+        // 'Recorder': 'Doesn't look right form submission
+        $("#report-form").submit(function(e) {
+            e.preventDefault();
+
+            var params = $("#report-form").serialize();
+
+            params += "&" + $.param({coll: wbinfo.coll,
+                                     state: wbinfo.state,
+                                     url: window.location.href});
+
+            $.post("/_reportissues", params, function() {
+                $("#report-form-submit").text("Report Sent!");
+                $("#report-thanks").text("Thank you for testing webrecorder.io beta!");
+                $('#report-form-submit').prop('disabled', true);
+
+                setTimeout(function() {
+                    $("#report-modal").modal('hide');
+                }, 1000);
+            });
         });
     }
 
@@ -762,40 +795,6 @@ function exclude_password_targets() {
         }
     });
 }
-
-
-$(function() {
-    $('#login-modal').on('shown.bs.modal', function() {
-        $('#username').focus();
-    });
-    
-    $("#report-modal").on('show.bs.modal', function() {
-        $("#report-form-submit").text("Send Report");
-        $("#report-thanks").text("");
-        $('#report-form-submit').prop('disabled', false);
-    });
-    
-    $("#report-form").submit(function(e) {
-        //$("#report-form-submit").text("Sending Report...");
-        
-        var params = $("#report-form").serialize();
-        
-        params += "&" + $.param({coll: wbinfo.coll,
-                                 state: wbinfo.state,
-                                 url: window.location.href});
-        
-        $.post("/_reportissues", params, function() {
-            $("#report-form-submit").text("Report Sent!");
-            $("#report-thanks").text("Thank you for testing webrecorder.io beta!");
-            $('#report-form-submit').prop('disabled', true);
-            
-            setTimeout(function() {
-                $("#report-modal").modal('hide');
-            }, 1000);
-        });
-        e.preventDefault();
-    });
-});
 
 // Utils
 //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
