@@ -34,19 +34,7 @@
 </div>
 
 {% block footer %}
-<footer class="footer">
-    <div class="container top-buffer">
-        <div class="pull-left">
-            <a href="mailto:support@webrecorder.io">
-                <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
-                <span class="sr-only">Contact Us</span>
-            </a>
-        </div>
-        <div class="pull-right">
-            <a href="https://rhizome.org" target="_blank"><img src="/static/__shared/rhizome_logo_sm.png"></a>
-        </div>
-    </div>
-</footer>
+    {% include 'footer.html' %}
 {% endblock %}
 
 {% if not curr_user %}
