@@ -27,15 +27,7 @@
             </div>
 
             <div class="row top-buffer-lg bottom-buffer-lg">
-                <form class="start-recording-homepage">
-                    <div class="input-group col-md-8 col-md-offset-2">
-                        <input name="url" type="text" class="form-control" placeholder="Url to record" required>
-                        <label for="url" class="control-label sr-only">Url</label>
-                        <span class="input-group-btn">
-                            <button type="submit" class="btn btn-default">Record</button>
-                        </span>
-                    </div>
-                </form>
+                {% include 'recordings/homepage_recorder.html' %}
             </div>
 
             {% if is_anon and invites_enabled %}

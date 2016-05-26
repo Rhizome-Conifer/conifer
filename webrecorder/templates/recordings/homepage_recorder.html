@@ -1,0 +1,13 @@
+{% if is_owner() and is_out_of_space() %}
+    {% set disabled_class = "disabled" %}
+{% endif %}
+
+<form class="start-recording-homepage">
+    <div class="input-group col-md-8 col-md-offset-2">
+        <input name="url" type="text" class="form-control {{ disabled_class }}" placeholder="Url to record" required>
+        <label for="url" class="control-label sr-only">Url</label>
+        <span class="input-group-btn {{ disabled_class }}">
+            <button type="submit" class="btn btn-default">Record</button>
+        </span>
+    </div>
+</form>
