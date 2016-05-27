@@ -26,14 +26,14 @@
 			</div>
 
 			<label for="title" class="sr-only">Recording title:</label>
-		    <input name="title" type="text" class="form-control {{ disabled_class }}" placeholder="Recording title" value="{{ rec_title }}" required>
+		    <input name="title" type="text" class="form-control" placeholder="Recording title" value="{{ rec_title }}" required {{ disabled_class }}>
 		</div>
 
 		<div class="input-group col-md-8 col-md-offset-2 top-buffer">
-		    <input name="url" type="text" class="form-control {{ disabled_class }}" placeholder="Url to record" required>
+		    <input name="url" type="text" class="form-control" placeholder="Url to record" required {{ disabled_class }}>
 		    <label for="url" class="control-label sr-only">Url</label>
-		    <span class="input-group-btn {{ disabled_class }}">
-		        <button type="submit" class="btn btn-default">Record</button>
+		    <span class="input-group-btn">
+		        <button type="submit" class="btn btn-default {{ disabled_class }}">Record</button>
 		    </span>
 		</div>
 	</form>
@@ -42,10 +42,10 @@
 {% else %}
 	<form class="start-recording-homepage">
 	    <div class="input-group col-md-8 col-md-offset-2">
-	        <input name="url" type="text" class="form-control {{ disabled_class }}" placeholder="Url to record" required>
+	        <input name="url" type="text" class="form-control" placeholder="Url to record" required {{ disabled_class }}>
 	        <label for="url" class="control-label sr-only">Url</label>
-	        <span class="input-group-btn {{ disabled_class }}">
-	            <button type="submit" class="btn btn-default">Record</button>
+	        <span class="input-group-btn">
+	            <button type="submit" class="btn btn-default {{ disabled_class }}">Record</button>
 	        </span>
 	    </div>
 	</form>

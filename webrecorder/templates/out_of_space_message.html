@@ -1,4 +1,4 @@
-{% if is_owner() and is_out_of_space() %}
+{% if (is_owner() or not user) and is_out_of_space() %}
 
     {% if is_anon() %}
         {% set message = "
@@ -29,7 +29,7 @@
     {% endif %}
 
     
-    {% set msg_type = "danger" %}
+    {% set msg_type = "warning" %}
 
     {% include 'flash_message.html' %}
 
