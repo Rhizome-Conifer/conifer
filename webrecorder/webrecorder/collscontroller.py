@@ -73,7 +73,7 @@ class CollsController(BaseController):
 
         # Create Collection
         @self.app.get('/_create')
-        @self.jinja2_view('create.html')
+        @self.jinja2_view('create_collection.html')
         def create_coll_view():
             self.manager.assert_logged_in()
             return {}
@@ -93,7 +93,7 @@ class CollsController(BaseController):
                 self.manager.create_collection(user, coll, title,
                                                desc='', public=is_public)
                 self.flash_message('Created collection <b>{0}</b>!'.format(coll), 'success')
-                redir_to = self.get_path(user, coll)
+                redir_to = self.get_redir_back('/_create')
             except ValidationException as ve:
                 self.flash_message(str(ve))
                 redir_to = '/_create'

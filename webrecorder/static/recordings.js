@@ -5,7 +5,6 @@ if (!user) {
 $(function() {
     EventHandlers.bindAll();
     TimesAndSizesFormatter.format();
-    //CollectionsDropdown.start();
     RecordingSizeWidget.start();
     PagesWidgets.start();
     CountdownTimer.start();
@@ -21,19 +20,37 @@ var EventHandlers = (function() {
             return false;
         });
 
-        // 'Homepage': Record button
+        // Enable autofocus on modals
+        $('body').on('shown.bs.modal', '.modal', function() {
+            $(this).find('[autofocus]').focus();
+        });
+
+        // 'Homepage': 'Record' button
         $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
             event.preventDefault();
 
             if (!user) {
                 user = "$temp";
+                var collection = "temp";
+                var title = "My First Recording";
+            } else {
+                var collection = $('[data-collection-id]').attr('data-collection-id');
+                var title = $("input[name='title']").val();
             }
-
-            var collection = "temp";
-            var title = "My First Recording";
             var url = $(".start-recording-homepage input[name='url']").val();
 
             RouteTo.recordingInProgress(user, collection, title, url);
+        });
+
+        // 'Homepage': Logged in collection dropdown select
+        $('.wr-content').on('click', '.collection-select', function(event){
+            event.preventDefault();
+
+            $('.dropdown-toggle-collection').html(
+                $('<span class="dropdown-toggle-label" data-collection-id="' +
+                    $(this).data('collection-id') + '">' +
+                        $(this).text() + " " +
+                    '<span class="caret"></span>'));
         });
 
         // 'New recording': Start button
@@ -498,45 +515,6 @@ var PagesWidgets = (function() {
         isAlreadyRecorded: isAlreadyRecorded
     }
 })();
-
-var CollectionsDropdown = (function() {
-
-    var start = function() {
-        // Only activate when logged in and not in record/browse mode
-        if (!user || window.wbinfo || window.coll) {
-            return;
-        }
-
-        Collections.get(user, initializeDropdown, dontInitializeDropdown);
-    }
-
-    var initializeDropdown = function(data) {
-        if (!data.collections || !data.collections.length) {
-            return;
-        }
-        var collectionInputParentDiv = $("input[name='collection']").parent();
-        var collectionOptions = $.map(data.collections, function(collection) {
-            return $("<option value='" + collection.id + "'>" + collection.title + "</option>");
-        })
-
-        $(collectionInputParentDiv).html($("<select name='collection' required>").append(collectionOptions));
-
-        $("select", collectionInputParentDiv).prepend($("<option selected='' value=''>Pick a Collection</option>"));
-
-        $("select", collectionInputParentDiv).selectBoxIt({native: false});
-
-    }
-
-    var dontInitializeDropdown = function() {
-        // If we can't load this user's collections, just
-        // leave this as an input field
-    }
-
-    return {
-        start: start
-    }
-})();
-
 
 var CountdownTimer = (function() {
     // Session Expire

@@ -152,6 +152,9 @@ class AppController(BaseController):
             sesh = self.get_session()
 
             if self.manager.get_curr_user():
+                coll_list = self.manager.get_collections(self.manager.get_curr_user())
+
+                resp['collections'] = coll_list
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
 
