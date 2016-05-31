@@ -16,41 +16,25 @@
 
 {% block body %}
 
-{% include 'header.html' %}
+    {% include 'header.html' %}
 
-<div class="container wr-content">
-    {% block message %}
+    <div class="container wr-content">
+        {% block message %}
 
-        {% include 'out_of_space_message.html' %}
+            {% include 'out_of_space_message.html' %}
 
-        {% if message and message != '' %}
             {% include 'flash_message.html' %}
-        {% endif %}
 
-    {% endblock %}
+        {% endblock %}
 
-    {% block content %}
-    {% endblock %}
-</div>
-
-{% block footer %}
-<footer class="footer">
-    <div class="container top-buffer">
-        <div class="pull-left">
-            <a href="mailto:support@webrecorder.io">
-                <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
-                <span class="sr-only">Contact Us</span>
-            </a>
-        </div>
-        <div class="pull-right">
-            <a href="https://rhizome.org" target="_blank"><img src="/static/__shared/rhizome_logo_sm.png"></a>
-        </div>
+        {% block content %}
+        {% endblock %}
     </div>
-</footer>
-{% endblock %}
 
-{% if not curr_user %}
-{% include 'frag_login.html' %}
-{% endif %}
+    {% block footer %}
+        {% include 'footer.html' %}
+    {% endblock %}
+
+    {% include 'login_modal.html' %}
 
 {% endblock %}

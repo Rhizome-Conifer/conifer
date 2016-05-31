@@ -131,7 +131,7 @@ class TestRegisterMigrate(FullStackTests):
 
         res = self.testapp.post('/_create', params=params)
 
-        assert res.headers['Location'].endswith('/someuser/new-coll')
+        res.headers['Location'] == 'http://localhost:80/'
 
         res = self.testapp.get('/someuser/new-coll')
 

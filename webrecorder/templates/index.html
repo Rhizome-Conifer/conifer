@@ -2,51 +2,48 @@
 
 {% block head %}
 
-{{ super() }}
+    {{ super() }}
 
 {% endblock %}
 
-{% block content %}
+{% block body %}
 
-{% if curr_user %}
-    <div class="well">
-        <p class="text-center">You are logged in as <b>{{ curr_user }}</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="/{{ curr_user }}"><b>View Your Archive</b></a></p>
+    <div class="homepage-user-links row right-padding top-buffer right-buffer left-buffer">
+        {% include 'user_management_links.html' %}
     </div>
-{% else %}
-    {% if anon_size and anon_recordings %}
-        <div class="alert alert-info" role="alert">
-            {% set path = get_path(anon_user, 'temp') %}
-            Anonymously recorded <a href="{{ path }}"><b data-size="{{ anon_size }}"></b></a> in <a href="{{ path }}"><b>{{ anon_recordings }}</b></a> recordings(s).
-        <b style="margin-left: 10px"><a href="{{ path }}">Browse</a></b> or <b><a href="{{ path }}/$download">Download</a></b><p class="pull-right">Expires in <b data-anon-timer="{{ anon_ttl }}"></b></p>
-        </div>
-    {% endif %}
-{% endif %}
 
-<div class="row top-buffer">
-    <h1 class="text-center"><strong>Welcome to Webrecorder Beta</strong></h1>
-</div>
+    <div class="container wr-content">
+        {% block message%}
 
-<div class="row top-buffer">
-    <form class="form-inline start-recording-homepage col-md-10 col-md-offset-1">
-        <div class="form-group col-md-10">
-            <label for="url" class="control-label sr-only">Url</label>
-            <input name="url" type="text" class="form-control homepage-url-input" placeholder="Url to record" autofocus required>
-        </div>
-        <div class="form-group col-md-1">
-            <button type="submit" class="btn btn-default">Record</button>
-        </div>
-    </form>
-</div>
+            {{ super() }}
 
+            {% include 'temporary_collection_info.html' %}
 
-{% if is_anon and invites_enabled %}
-    <div class="row top-buffer">
-        <div class="col-md-offset-1 col-md-10">
-            <h4>We are inviting users to build their own archives as we test this service.</h4>
-            <h4><a href="/_register">Request an invite to sign-up</a></h4>
-        </div>
+        {% endblock %}
+
+        {% block content %}
+            <div class="row top-buffer">
+                <h1 class="text-center"><strong>webrecorder.io</strong></h1>
+            </div>
+
+            <div class="row top-buffer-lg bottom-buffer-lg">
+                {% include 'recordings/homepage_recorder.html' %}
+            </div>
+
+            {% if is_anon and invites_enabled %}
+                <div class="row top-buffer">
+                    <div class="col-md-offset-1 col-md-10">
+                        <h4>We are inviting users to build their own archives as we test this service.</h4>
+                        <h4><a href="/_register">Request an invite to sign-up</a></h4>
+                    </div>
+                </div>
+            {% endif %}
+        {% endblock %}
     </div>
-{% endif %}
 
+    {% block footer %}
+        {% include 'footer.html' %}
+    {% endblock %}
 
+    {% include 'login_modal.html' %}
 {% endblock %}

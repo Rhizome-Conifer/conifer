@@ -8,6 +8,7 @@
     -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
     -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,0.3);
+    border: 0px;
 }
 
 .navbar-text {
@@ -21,27 +22,27 @@
 
 .header-webrecorder a,
 .header-webrecorder a:visited,
-.wr-user-links>li>a,
-.we-user-links>li>a:visited {
+.navbar-user-links>ul>li>a,
+.navbar-user-links>ul>li>a:visited {
     color: #429EEC;
 }
 
 .header-webrecorder a:focus,
 .header-webrecorder a:hover,
-.wr-user-links>li>a:focus,
-.wr-user-links>li>a:hover {
+.navbar-user-links>ul>li>a:focus,
+.navbar-user-links>ul>li>a:hover {
     text-decoration: underline;
     background-color: #373944;
     color: #74B9F3;
 }
 
 .header-webrecorder a:active,
-.wr-user-links>li>a:active {
+.navbar-user-links>ul>li>a:active {
     outline: 0;
     color: #74B9F3;
 }
 
-.wr-user-links>li>a {
+.navbar-user-links>ul>li>a {
     display: inline;
     font-size: 1.0em;
     padding: 0px;
@@ -57,6 +58,38 @@
 }
 /* End header top bar */
 
+
+/*
+ * Homepage
+ *
+ */
+.homepage-user-links>ul>li>a,
+.homepage-user-links>li>a:visited {
+    color: #429EEC;
+}
+
+.header-webrecorder a:focus,
+.header-webrecorder a:hover,
+.homepage-user-links>ul>li>a:focus,
+.homepage-user-links>ul>li>a:hover {
+    text-decoration: underline;
+    background-color: rgba(0, 0, 0, 0);
+    color: #095596;
+}
+
+.header-webrecorder a:active,
+.homepage-user-links>ul>li>a:active {
+    outline: 0;
+    color: #095596;
+}
+
+.homepage-user-links>ul>li>a {
+    display: inline;
+    font-size: 1.0em;
+    padding: 0px;
+    padding-right: 15px
+}
+/* End homepage */
 
 /*
  * Recorder
@@ -91,10 +124,6 @@
 
 .form-control-left-addon-input {
     padding-left: 33px;
-}
-
-.form-inline .homepage-url-input {
-    width: 100%;
 }
 
 .title-inline {
@@ -207,6 +236,22 @@
 
 .left-buffer-xs {
     margin-left: 1px;
+}
+
+.right-padding {
+  padding-right: 20px;
+}
+
+.right-buffer {
+  margin-right: 20px;
+}
+
+.right-buffer-sm {
+  margin-right: 5px;
+}
+
+.bottom-buffer-lg {
+  margin-bottom: 40px;
 }
 /* End spacers and buffers */
 

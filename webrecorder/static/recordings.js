@@ -5,7 +5,6 @@ if (!user) {
 $(function() {
     EventHandlers.bindAll();
     TimesAndSizesFormatter.format();
-    //CollectionsDropdown.start();
     RecordingSizeWidget.start();
     PagesWidgets.start();
     CountdownTimer.start();
@@ -21,19 +20,37 @@ var EventHandlers = (function() {
             return false;
         });
 
-        // 'Homepage': Record button
+        // Enable autofocus on modals
+        $('body').on('shown.bs.modal', '.modal', function() {
+            $(this).find('[autofocus]').focus();
+        });
+
+        // 'Homepage': 'Record' button
         $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
             event.preventDefault();
 
             if (!user) {
                 user = "$temp";
+                var collection = "temp";
+                var title = "My First Recording";
+            } else {
+                var collection = $('[data-collection-id]').attr('data-collection-id');
+                var title = $("input[name='title']").val();
             }
-
-            var collection = "temp";
-            var title = "My First Recording";
-            var url = $(".wr-content input[name='url']").val();
+            var url = $(".start-recording-homepage input[name='url']").val();
 
             RouteTo.recordingInProgress(user, collection, title, url);
+        });
+
+        // 'Homepage': Logged in collection dropdown select
+        $('.wr-content').on('click', '.collection-select', function(event){
+            event.preventDefault();
+
+            $('.dropdown-toggle-collection').html(
+                $('<span class="dropdown-toggle-label" data-collection-id="' +
+                    $(this).data('collection-id') + '">' +
+                        $(this).text() + " " +
+                    '<span class="caret"></span>'));
         });
 
         // 'New recording': Start button
@@ -110,7 +127,6 @@ var EventHandlers = (function() {
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-
         // Hide Page
         $(".hide-page").on('click', function(event) {
             event.preventDefault();
@@ -126,6 +142,38 @@ var EventHandlers = (function() {
             Recordings.removePage(window.rec, attributes, doReload);
         });
             
+        // 'Header': 'Login' link to display modal
+        $('#login-modal').on('shown.bs.modal', function() {
+            $('#username').focus();
+        });
+
+        // 'Recorder': 'Doesn't look right' link to display modal
+        $("#report-modal").on('show.bs.modal', function() {
+            $("#report-form-submit").text("Send Report");
+            $("#report-thanks").text("");
+            $('#report-form-submit').prop('disabled', false);
+        });
+
+        // 'Recorder': 'Doesn't look right form submission
+        $("#report-form").submit(function(e) {
+            e.preventDefault();
+
+            var params = $("#report-form").serialize();
+
+            params += "&" + $.param({coll: wbinfo.coll,
+                                     state: wbinfo.state,
+                                     url: window.location.href});
+
+            $.post("/_reportissues", params, function() {
+                $("#report-form-submit").text("Report Sent!");
+                $("#report-thanks").text("Thank you for testing webrecorder.io beta!");
+                $('#report-form-submit').prop('disabled', true);
+
+                setTimeout(function() {
+                    $("#report-modal").modal('hide');
+                }, 1000);
+            });
+        });
     }
 
     return {
@@ -499,45 +547,6 @@ var PagesWidgets = (function() {
     }
 })();
 
-var CollectionsDropdown = (function() {
-
-    var start = function() {
-        // Only activate when logged in and not in record/browse mode
-        if (!user || window.wbinfo || window.coll) {
-            return;
-        }
-
-        Collections.get(user, initializeDropdown, dontInitializeDropdown);
-    }
-
-    var initializeDropdown = function(data) {
-        if (!data.collections || !data.collections.length) {
-            return;
-        }
-        var collectionInputParentDiv = $("input[name='collection']").parent();
-        var collectionOptions = $.map(data.collections, function(collection) {
-            return $("<option value='" + collection.id + "'>" + collection.title + "</option>");
-        })
-
-        $(collectionInputParentDiv).html($("<select name='collection' required>").append(collectionOptions));
-
-        $("select", collectionInputParentDiv).prepend($("<option selected='' value=''>Pick a Collection</option>"));
-
-        $("select", collectionInputParentDiv).selectBoxIt({native: false});
-
-    }
-
-    var dontInitializeDropdown = function() {
-        // If we can't load this user's collections, just
-        // leave this as an input field
-    }
-
-    return {
-        start: start
-    }
-})();
-
-
 var CountdownTimer = (function() {
     // Session Expire
     var end_time = undefined;
@@ -571,7 +580,7 @@ var CountdownTimer = (function() {
             min = "0" + min;
         }
 
-        $("*[data-anon-timer]").text(min + ":" + sec);       
+        $("*[data-anon-timer]").text(min + " min, " + sec + " sec");
     }
 
     var start = function() {
@@ -795,40 +804,6 @@ function exclude_password_targets() {
         }
     });
 }
-
-
-$(function() {
-    $('#login-modal').on('shown.bs.modal', function() {
-        $('#username').focus();
-    });
-    
-    $("#report-modal").on('show.bs.modal', function() {
-        $("#report-form-submit").text("Send Report");
-        $("#report-thanks").text("");
-        $('#report-form-submit').prop('disabled', false);
-    });
-    
-    $("#report-form").submit(function(e) {
-        //$("#report-form-submit").text("Sending Report...");
-        
-        var params = $("#report-form").serialize();
-        
-        params += "&" + $.param({coll: wbinfo.coll,
-                                 state: wbinfo.state,
-                                 url: window.location.href});
-        
-        $.post("/_reportissues", params, function() {
-            $("#report-form-submit").text("Report Sent!");
-            $("#report-thanks").text("Thank you for testing webrecorder.io beta!");
-            $('#report-form-submit').prop('disabled', true);
-            
-            setTimeout(function() {
-                $("#report-modal").modal('hide');
-            }, 1000);
-        });
-        e.preventDefault();
-    });
-});
 
 // Utils
 //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values

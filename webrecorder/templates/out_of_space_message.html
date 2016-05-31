@@ -1,15 +1,15 @@
-{% if is_owner() and is_out_of_space() %}
+{% if (is_owner() or not user) and is_out_of_space() %}
 
     {% if is_anon() %}
         {% set message = "
 
-        <p><strong>Your are out of space in your temporary, anonymous collection.</strong>  This means you can't record anything right now.</p>
+        <p><strong>Your are out of space in your temporary collection.</strong>  This means you can't record anything right now.</p>
 
         <p>To be able to record again, you can:</p>
 
         <ul>
-            <li>Download some recordings and then delete them to make space.</li>
             <li><a href='/_register'>Sign up</a> for an account.</li>
+            <li>Download some recordings and then delete them to make space.</li>
         </ul>
 
         "%}
@@ -29,7 +29,7 @@
     {% endif %}
 
     
-    {% set msg_type = "danger" %}
+    {% set msg_type = "warning" %}
 
     {% include 'flash_message.html' %}
 

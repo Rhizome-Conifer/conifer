@@ -16,3 +16,15 @@ body {
     /* Set the fixed height of the footer here */
     height: 60px;
 }
+
+.github-mark:before {
+    content: url(/static/__shared/GitHubMark.png);
+}
+
+.twitter-mark {
+    top: 3px;
+}
+
+.twitter-mark:before {
+    content: url(/static/__shared/TwitterLogo.png);
+}
