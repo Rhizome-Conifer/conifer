@@ -36,13 +36,14 @@ url_templates:
 
     download: '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}'
  
-    live: '{replay_host}/live/resource/postreq?url={url}&closest={closest}'
-    
-    record: '{record_host}/record/live/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}'
-    patch: '{record_host}/record/patch/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}&param.rec={rec}'
+    # core replay funcs
+    live: '{replay_host}/live/resource/postreq?'
 
-    replay: '{replay_host}/replay/resource/postreq?url={url}&closest={closest}&param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}'
-    replay-coll: '{replay_host}/replay-coll/resource/postreq?url={url}&closest={closest}&param.user={user}&param.coll={coll}'
+    record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
+    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
+
+    replay: '{replay_host}/replay/resource/postreq?param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}'
+    replay-coll: '{replay_host}/replay-coll/resource/postreq?param.user={user}&param.coll={coll}'
 
 
 # Download paths

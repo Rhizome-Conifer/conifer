@@ -4,8 +4,6 @@ import base64
 import requests
 import json
 
-from six.moves.urllib.parse import quote
-
 from bottle import Bottle, request, redirect, HTTPError, response, HTTPResponse
 
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
@@ -191,23 +189,18 @@ class ContentController(BaseController, RewriterApp):
 
 
     ## RewriterApp overrides
-    def get_upstream_url(self, url, wb_url, closest, kwargs):
+    def get_base_url(self, wb_url, kwargs):
         type = kwargs['type']
 
         if type in ('record', 'patch') and self.manager.is_out_of_space(kwargs['user']):
             details = {'error': 'Out of Space'}
-            raise UpstreamException(402, url=url, details=details)
+            raise UpstreamException(402, url=wb_url.url, details=details)
 
-        if url != '{url}':
-            url = quote(url)
+        base_url = self.paths[type].format(record_host=self.record_host,
+                                           replay_host=self.replay_host,
+                                           **kwargs)
 
-        upstream_url = self.paths[type].format(url=url,
-                                               closest=closest,
-                                               record_host=self.record_host,
-                                               replay_host=self.replay_host,
-                                               **kwargs)
-
-        return upstream_url
+        return base_url
 
     def get_cookie_key(self, kwargs):
         return self.cookie_key_templ.format(**kwargs)
