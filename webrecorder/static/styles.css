@@ -113,12 +113,8 @@
     height: 20px;
 }
 
-.page-index {
-    width: 3em;
-}
-
 .form-control-left-addon-feedback {
-    left: 3em;
+    left: 0px;
     z-index: 3;
 }
 

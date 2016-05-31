@@ -445,7 +445,6 @@ var PagesWidgets = (function() {
             return p1.timestamp - p2.timestamp;
         });
 
-        setPageIndex();
         setPageCount();
         initializeTypeahead();
     }
@@ -458,23 +457,6 @@ var PagesWidgets = (function() {
 
     var setPageCount = function() {
         $('.page-count').html(formatPageCount(sortedPages));
-    }
-
-    var setPageIndex = function() {
-        var currentUrl = $("input[name='url']").val();
-        var currentPageIndex = getPageIndexByUrl(currentUrl, sortedPages);
-        $('.page-index').text(currentPageIndex);
-    }
-
-    var getPageIndexByUrl = function(url, pages) {
-        var currentPageIndex = "-";
-
-        $.each(sortedPages, function(index) {
-            if (url === this.url) {
-                currentPageIndex = index + 1;
-            }
-        });
-        return currentPageIndex;
     }
 
     var initializeTypeahead = function() {
@@ -496,9 +478,6 @@ var PagesWidgets = (function() {
                     header: '<h5 class="left-buffer-sm">Recorded Pages</h5>',
                     suggestion: function(data) {
                         return "<div>" +
-                            "<span class='suggestion-index text-right'>" +
-                                getPageIndexByUrl(data.url, sortedPages) +
-                            ".</span>" +
                             formatSuggestionUrl(data.url) +
                             "<span class='suggestion-timestamp pull-right'>" +
                                 ts_to_date(data.timestamp) +
@@ -556,14 +535,9 @@ var PagesWidgets = (function() {
         return pages.length + " " + pageString + "<strong> / </strong>"
     }
 
-    var isAlreadyRecorded = function(page) {
-        return getPageIndexByUrl(page) !== "-";
-    }
-
     return {
         start: start,
         update: update,
-        isAlreadyRecorded: isAlreadyRecorded
     }
 })();
 
@@ -735,42 +709,13 @@ var TimesAndSizesFormatter = (function() {
 
 var ContentMessages = (function() {
 
-    var messageIfDuplicatePage = function(page) {
-        if (PagesWidgets.isAlreadyRecorded(page)) {
-            showDuplicatePageMessage(page);
-            return true;
-        }
-        return false;
-    }
-
-    var showDuplicatePageMessage = function(page) {
+    var showContentMessage = function(title, message) {
         $('body iframe').remove();
         $('body .wr-content').remove();
         $('body').addClass('interstitial-page');
         $('body').append('<div class="container wr-content"></div>');
 
-        $('.wr-content').append(
-            getMessageDOM(
-                "<em>" + page + "</em> is already in this recording",
-                getDuplicatePageMessage(page)));
-    }
-
-    var getDuplicatePageMessage = function(page) {
-        // TODO: refactor the router to return urls or to do routing
-        var recordingId = $('[data-recording-id]').attr('data-recording-id');
-        var collectionId = $('[data-collection-id]').attr('data-collection-id');
-
-        var host = window.location.protocol + "//" + window.location.host;
-        var newRecordingUrl = host + "/" + user + "/" + collectionId + "/$new";
-        var overwriteUrl = host + "/" + user + "/" + collectionId + "/" + recordingId + "/record/" + page;
-        var replayUrl = host + "/" + user + "/" + collectionId + "/" + recordingId + "/" + page;
-
-        return  '<div>You can:</div>' +
-                '<ul>' +
-                    '<li class="top-buffer-md"><a href="' + overwriteUrl + '">Continue and overwrite</a> the existing version of this page</li>' +
-                    '<li class="top-buffer-md"><a href="' + replayUrl + '">Replay</a> the version of the page in this recording</li>' +
-                    '<li class="top-buffer-md"><a href="' + newRecordingUrl + '">Start a new recording</a> to record another copy of this page</li>' +
-                '</ul>';
+        $('.wr-content').append(getMessageDOM(title, message));
     }
 
     var getMessageDOM = function(title, message) {
@@ -791,7 +736,7 @@ var ContentMessages = (function() {
     }
 
     return {
-        messageIfDuplicatePage: messageIfDuplicatePage
+        showContentMessage: showContentMessage
     }
 })();
 
