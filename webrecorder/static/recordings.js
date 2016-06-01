@@ -132,14 +132,16 @@ var EventHandlers = (function() {
             event.preventDefault();
 
             var attributes = {}
-            attributes.url = $(this).attr("data-remove-url");
-            attributes.timestamp = $(this).attr("data-remove-ts");
+            attributes.url = $(this).attr("data-page-url");
+            attributes.timestamp = $(this).attr("data-page-ts");
+            attributes.hidden = $(this).attr("data-page-hidden") == "1" ? "0" : "1";
 
             var doReload = function() {
                 window.location.reload();
             }
 
-            Recordings.removePage(window.rec, attributes, doReload);
+            //Recordings.removePage(window.rec, attributes, doReload);
+            Recordings.modifyPage(window.rec, attributes, doReload);
         });
             
         // 'Header': 'Login' link to display modal
@@ -237,6 +239,23 @@ var Recordings = (function() {
         });
     }
 
+    var modifyPage = function(recordingId, attributes, doneCallback) {
+        var attributes = attributes;
+        $.ajax({
+            url: API_ENDPOINT + "/" + recordingId + "/page/" + attributes.url + query_string,
+            method: "POST",
+            data: attributes
+        })
+        .done(function(data, textStatus, xhr){
+            doneCallback(data);
+            //PagesWidgets.update(attributes);
+        })
+
+        .fail(function(xhr, textStatus, errorThrown) {
+            // Fail gracefully when the page can't be updated
+        });
+    }
+
     var removePage = function(recordingId, attributes, doneCallback) {
         $.ajax({
             url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
@@ -272,6 +291,7 @@ var Recordings = (function() {
         get: get,
         addPage: addPage,
         removePage: removePage,
+        modifyPage: modifyPage,
         getPages: getPages
     }
 }());

@@ -70,7 +70,6 @@
         <caption><h4>Pages</h4></caption>
         <thead>
             <tr>
-                <th>Order</th>
                 <th>Title</th>
                 <th>Recorded On</th>
                 <th>Url</th>
@@ -82,17 +81,26 @@
         <tbody>
             {% set path = get_path(user, coll, rec) + '/' %}
             {% for page in pages | sort(attribute='timestamp') %}
+            {% if page.hidden != '1' or can_write() %}
+            {% if page.hidden != '1' %}
             <tr>
-                <td>{{ loop.index }}</td>
+            {% else %}
+            <tr style="font-style: italic; background-color: lightgray">
+            {% endif %}
                 <td><a href="{{ path + page.url }}">{{ page.title if page.title else page.url }}</a></td>
                 <td data-time-ts="{{ page.timestamp }}"></td>
                 <td><a href="{{ path + page.url }}">{{ page.url }}</a></td>
                 {% if can_write() %}
-                <td><button class="btn btn-default btn-xs hide-page" data-remove-url="{{ page.url }}" data-remove-ts="{{ page.timestamp }}">
+                <td><button class="btn btn-default btn-xs hide-page" data-page-url="{{ page.url }}" data-page-ts="{{ page.timestamp }}" data-page-hidden="{{ page.hidden | default('0') }}">
+                    {% if page.hidden != '1' %}
                     <span class="glyphicon glyphicon-remove-circle glyphicon-button"></span>Hide Page</button>
+                    {% else %}
+                    <span class="glyphicon glyphicon-ok-circle glyphicon-button"></span>Show Page</button>
+                    {% endif %}
                 </td>
                 {% endif %}
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>

@@ -58,6 +58,17 @@ class RecsController(BaseController):
             res = self.manager.add_page(user, coll, rec, page_data)
             return res
 
+        @self.app.post('/api/v1/recordings/<rec>/page/<url:path>')
+        def modify_page(rec, url):
+            user, coll = self.get_user_coll(api=True)
+            self._ensure_rec_exists(user, coll, rec)
+
+            page_data = dict(request.forms.decode())
+            page_data['url'] = url
+
+            res = self.manager.modify_page(user, coll, rec, page_data)
+            return res
+
         @self.app.get('/api/v1/recordings/<rec>/pages')
         def list_pages(rec):
             user, coll = self.get_user_coll(api=True)

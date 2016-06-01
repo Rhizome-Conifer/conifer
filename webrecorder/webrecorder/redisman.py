@@ -522,6 +522,25 @@ class RecManagerMixin(object):
 
         return {}
 
+    def modify_page(self, user, coll, rec, new_pagedata):
+        self.assert_can_write(user, coll)
+
+        key = self.page_key.format(user=user, coll=coll, rec=rec)
+
+        page_key = new_pagedata['url'] + ' ' + new_pagedata['timestamp']
+
+        pagedata = self.redis.hget(key, page_key)
+        pagedata = json.loads(pagedata.decode('utf-8'))
+        pagedata.update(new_pagedata)
+
+        pagedata_json = json.dumps(pagedata).encode('utf-8')
+
+        self.redis.hset(key,
+                        pagedata['url'] + ' ' + pagedata['timestamp'],
+                        pagedata_json)
+
+        return {}
+
     def delete_page(self, user, coll, rec, url, ts):
         self.assert_can_write(user, coll)
 
