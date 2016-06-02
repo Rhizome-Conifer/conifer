@@ -2,5 +2,5 @@
     {% if is_out_of_space() %}
 		{% set disabled_class = "disabled" %}
     {% endif %}
-    <a href="{{ get_path(user, coll, recording.id) }}/$add" class="btn btn-primary btn-sm {{ disabled_class }}">Add Pages</a>
+    <a href="{{ get_path(user, coll, recording.id) }}/$add" class="btn btn-primary btn-sm {{ disabled_class }}">Record</a>
 {% endif %}

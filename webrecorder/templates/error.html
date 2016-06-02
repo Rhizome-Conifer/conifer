@@ -14,13 +14,19 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="alert alert-danger alert-dismissable text-center" role="alert">
+<div class="container col-md-4 col-md-offset-4 top-buffer-lg">
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+          <strong class="left-buffer">There's been an error</strong>
+      </div>
+      <div class="panel-body">
         {% if err.status_code == 404 %}
         No such page or content is not accessible.
         {% else %}
-        Error: {{ err.body }}
+        {{ err.body }}
         {% endif %}
+      </div>
     </div>
 </div>
 {% endblock %}

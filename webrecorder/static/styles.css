@@ -161,6 +161,14 @@
 }
 /* End interstitial page */
 
+/*
+ * Recording Info page
+ *
+ */
+.hidden-bookmark-row {
+    background-color: lightgray
+}
+/* End recording info page */
 
 /*
  * Links selecter/finder

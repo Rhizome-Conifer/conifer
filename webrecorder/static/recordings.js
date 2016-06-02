@@ -6,7 +6,7 @@ $(function() {
     EventHandlers.bindAll();
     TimesAndSizesFormatter.format();
     RecordingSizeWidget.start();
-    PagesWidgets.start();
+    BookmarksWidgets.start();
     CountdownTimer.start();
     SizeProgressBar.start();
 });
@@ -71,7 +71,7 @@ var EventHandlers = (function() {
             var url = $("input[name='url']").val();
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
 
-            if (ContentMessages.messageIfDuplicatePage(url)) { return; }
+            if (ContentMessages.messageIfDuplicateVisit(url)) { return; }
 
             RouteTo.recordingInProgress(user, coll, recordingId, url);
         });
@@ -95,7 +95,7 @@ var EventHandlers = (function() {
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // 'Replay recording': 'Add pages' button
+        // 'Replay recording': 'Add content' button
         $('header').on('submit', '.add-to-recording', function(event){
             event.preventDefault();
 
@@ -127,8 +127,8 @@ var EventHandlers = (function() {
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // Hide Page
-        $(".hide-page").on('click', function(event) {
+        // 'Recording info' page: 'Hide' button
+        $('table').on('click', '.hide-page', function(event) {
             event.preventDefault();
 
             var attributes = {}
@@ -136,12 +136,16 @@ var EventHandlers = (function() {
             attributes.timestamp = $(this).attr("data-page-ts");
             attributes.hidden = $(this).attr("data-page-hidden") == "1" ? "0" : "1";
 
-            var doReload = function() {
+            var recordingId = $('[data-recording-id]').attr('data-recording-id');
+
+            var toggleHiddenRow = function(data) {
+                // Returned data should have unique way to identify the row,
+                // so we can toggle the row state here.  Instead, reload
+                // whole page for now.
                 window.location.reload();
             }
 
-            //Recordings.removePage(window.rec, attributes, doReload);
-            Recordings.modifyPage(window.rec, attributes, doReload);
+            Recordings.modifyPage(recordingId, attributes, toggleHiddenRow);
         });
             
         // 'Header': 'Login' link to display modal
@@ -232,7 +236,7 @@ var Recordings = (function() {
             data: attributes
         })
         .done(function(data, textStatus, xhr){
-            PagesWidgets.update(attributes);
+            BookmarksWidgets.update(attributes);
         })
         .fail(function(xhr, textStatus, errorThrown) {
             // Fail gracefully when the page can't be updated
@@ -246,13 +250,14 @@ var Recordings = (function() {
             method: "POST",
             data: attributes
         })
-        .done(function(data, textStatus, xhr){
+        .done(function(data, textStatus, xhr) {
             doneCallback(data);
-            //PagesWidgets.update(attributes);
         })
 
         .fail(function(xhr, textStatus, errorThrown) {
-            // Fail gracefully when the page can't be updated
+            // If something went wrong with updating the page,
+            // just try reloading the page
+            window.location.reload();
         });
     }
 
@@ -424,23 +429,23 @@ var RecordingSizeWidget = (function() {
 
 })();
 
-var PagesWidgets = (function() {
+var BookmarksWidgets = (function() {
     var sortedPages;
 
     var start = function() {
         if ($(".pages-combobox").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
-            Recordings.getPages(recordingId, startPagesWidgets, dontStartPagesWidgets);
+            Recordings.getPages(recordingId, startBookmarksWidgets, dontStartBookmarksWidgets);
         }
     }
 
     var update = function(attributes) {
         $("input[name='url']").val(attributes.url);
         $('.pages-combobox').typeahead('destroy');
-        PagesWidgets.start();
+        BookmarksWidgets.start();
     }
 
-    var startPagesWidgets = function(data) {
+    var startBookmarksWidgets = function(data) {
         sortedPages = data.pages.sort(function(p1, p2) {
             return p1.timestamp - p2.timestamp;
         });
@@ -449,7 +454,7 @@ var PagesWidgets = (function() {
         initializeTypeahead();
     }
 
-    var dontStartPagesWidgets = function() {
+    var dontStartBookmarksWidgets = function() {
         // If we can't load this recording's pages,
         // do nothing to leave url as a regular
         // input field
