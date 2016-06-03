@@ -29,7 +29,7 @@
 {% block content %}
 
 <div class="row">
-    <div class="page-header" style="margin-top: 10px">
+    <div class="page-header top-buffer-md">
         <h1 style="display: inline"><span id="rec-title">{{ recording.title }}</span>&nbsp;
             <div class="pull-right">
                 {% include 'add_to_recording_button.html' %}
@@ -66,41 +66,33 @@
 {% endif %}
 
 <div class="row">
-    <table id="page_list" class="table table-striped">
-        <caption><h4>Pages</h4></caption>
+    <table class="table table-striped">
+        <caption><h4>Bookmarks</h4></caption>
         <thead>
             <tr>
                 <th>Title</th>
                 <th>Recorded On</th>
                 <th>Url</th>
-            {% if can_write() %}
                 <th>Actions</th>
-            {% endif %}
             </tr>
         </thead>
         <tbody>
-            {% set path = get_path(user, coll, rec) + '/' %}
-            {% for page in pages | sort(attribute='timestamp') %}
-            {% if page.hidden != '1' or can_write() %}
-            {% if page.hidden != '1' %}
-            <tr>
-            {% else %}
-            <tr style="font-style: italic; background-color: lightgray">
-            {% endif %}
-                <td><a href="{{ path + page.url }}">{{ page.title if page.title else page.url }}</a></td>
-                <td data-time-ts="{{ page.timestamp }}"></td>
-                <td><a href="{{ path + page.url }}">{{ page.url }}</a></td>
-                {% if can_write() %}
-                <td><button class="btn btn-default btn-xs hide-page" data-page-url="{{ page.url }}" data-page-ts="{{ page.timestamp }}" data-page-hidden="{{ page.hidden | default('0') }}">
-                    {% if page.hidden != '1' %}
-                    <span class="glyphicon glyphicon-remove-circle glyphicon-button"></span>Hide Page</button>
-                    {% else %}
-                    <span class="glyphicon glyphicon-ok-circle glyphicon-button"></span>Show Page</button>
-                    {% endif %}
-                </td>
-                {% endif %}
-            </tr>
-            {% endif %}
+            {% set recording_path = get_path(user, coll, rec) + '/' %}
+
+            {% for bookmark in pages | sort(attribute='timestamp') %}
+                {% set bookmark_title = bookmark.title if bookmark.title else bookmark.url %}
+                {% set bookmark_timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
+                {% set bookmark_path = recording_path + bookmark.url %}
+                {% set hidden_class = "hidden-bookmark-row" if bookmark.hidden == '1' else "" %}
+
+                <tr class="{{ hidden_class }}">
+                    <td>{{ bookmark_title }}</td>
+                    <td data-time-ts="{{ bookmark_timestamp }}"></td>
+                    <td><a href="{{ bookmark_path }}">{{ bookmark.url }}</a></td>
+                    <td>
+                        {% include 'bookmark_row_actions.html' %}
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

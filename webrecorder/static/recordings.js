@@ -6,7 +6,7 @@ $(function() {
     EventHandlers.bindAll();
     TimesAndSizesFormatter.format();
     RecordingSizeWidget.start();
-    PagesWidgets.start();
+    BookmarksWidgets.start();
     CountdownTimer.start();
     SizeProgressBar.start();
 });
@@ -71,7 +71,7 @@ var EventHandlers = (function() {
             var url = $("input[name='url']").val();
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
 
-            if (ContentMessages.messageIfDuplicatePage(url)) { return; }
+            if (ContentMessages.messageIfDuplicateVisit(url)) { return; }
 
             RouteTo.recordingInProgress(user, coll, recordingId, url);
         });
@@ -95,7 +95,7 @@ var EventHandlers = (function() {
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // 'Replay recording': 'Add pages' button
+        // 'Replay recording': 'Add content' button
         $('header').on('submit', '.add-to-recording', function(event){
             event.preventDefault();
 
@@ -127,8 +127,8 @@ var EventHandlers = (function() {
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // Hide Page
-        $(".hide-page").on('click', function(event) {
+        // 'Recording info' page: 'Hide' button
+        $('table').on('click', '.hide-page', function(event) {
             event.preventDefault();
 
             var attributes = {}
@@ -136,12 +136,16 @@ var EventHandlers = (function() {
             attributes.timestamp = $(this).attr("data-page-ts");
             attributes.hidden = $(this).attr("data-page-hidden") == "1" ? "0" : "1";
 
-            var doReload = function() {
+            var recordingId = $(this).attr('data-recording-id');
+
+            var toggleHiddenRow = function(data) {
+                // Returned data should have unique way to identify the row,
+                // so we can toggle the row state here.  Instead, reload
+                // whole page for now.
                 window.location.reload();
             }
 
-            //Recordings.removePage(window.rec, attributes, doReload);
-            Recordings.modifyPage(window.rec, attributes, doReload);
+            Recordings.modifyPage(recordingId, attributes, toggleHiddenRow);
         });
             
         // 'Header': 'Login' link to display modal
@@ -232,7 +236,7 @@ var Recordings = (function() {
             data: attributes
         })
         .done(function(data, textStatus, xhr){
-            PagesWidgets.update(attributes);
+            BookmarksWidgets.update(attributes);
         })
         .fail(function(xhr, textStatus, errorThrown) {
             // Fail gracefully when the page can't be updated
@@ -246,13 +250,14 @@ var Recordings = (function() {
             method: "POST",
             data: attributes
         })
-        .done(function(data, textStatus, xhr){
+        .done(function(data, textStatus, xhr) {
             doneCallback(data);
-            //PagesWidgets.update(attributes);
         })
 
         .fail(function(xhr, textStatus, errorThrown) {
-            // Fail gracefully when the page can't be updated
+            // If something went wrong with updating the page,
+            // just try reloading the page
+            window.location.reload();
         });
     }
 
@@ -424,33 +429,32 @@ var RecordingSizeWidget = (function() {
 
 })();
 
-var PagesWidgets = (function() {
+var BookmarksWidgets = (function() {
     var sortedPages;
 
     var start = function() {
         if ($(".pages-combobox").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
-            Recordings.getPages(recordingId, startPagesWidgets, dontStartPagesWidgets);
+            Recordings.getPages(recordingId, startBookmarksWidgets, dontStartBookmarksWidgets);
         }
     }
 
     var update = function(attributes) {
         $("input[name='url']").val(attributes.url);
         $('.pages-combobox').typeahead('destroy');
-        PagesWidgets.start();
+        BookmarksWidgets.start();
     }
 
-    var startPagesWidgets = function(data) {
+    var startBookmarksWidgets = function(data) {
         sortedPages = data.pages.sort(function(p1, p2) {
             return p1.timestamp - p2.timestamp;
         });
 
-        setPageIndex();
         setPageCount();
         initializeTypeahead();
     }
 
-    var dontStartPagesWidgets = function() {
+    var dontStartBookmarksWidgets = function() {
         // If we can't load this recording's pages,
         // do nothing to leave url as a regular
         // input field
@@ -458,23 +462,6 @@ var PagesWidgets = (function() {
 
     var setPageCount = function() {
         $('.page-count').html(formatPageCount(sortedPages));
-    }
-
-    var setPageIndex = function() {
-        var currentUrl = $("input[name='url']").val();
-        var currentPageIndex = getPageIndexByUrl(currentUrl, sortedPages);
-        $('.page-index').text(currentPageIndex);
-    }
-
-    var getPageIndexByUrl = function(url, pages) {
-        var currentPageIndex = "-";
-
-        $.each(sortedPages, function(index) {
-            if (url === this.url) {
-                currentPageIndex = index + 1;
-            }
-        });
-        return currentPageIndex;
     }
 
     var initializeTypeahead = function() {
@@ -496,9 +483,6 @@ var PagesWidgets = (function() {
                     header: '<h5 class="left-buffer-sm">Recorded Pages</h5>',
                     suggestion: function(data) {
                         return "<div>" +
-                            "<span class='suggestion-index text-right'>" +
-                                getPageIndexByUrl(data.url, sortedPages) +
-                            ".</span>" +
                             formatSuggestionUrl(data.url) +
                             "<span class='suggestion-timestamp pull-right'>" +
                                 ts_to_date(data.timestamp) +
@@ -556,14 +540,9 @@ var PagesWidgets = (function() {
         return pages.length + " " + pageString + "<strong> / </strong>"
     }
 
-    var isAlreadyRecorded = function(page) {
-        return getPageIndexByUrl(page) !== "-";
-    }
-
     return {
         start: start,
         update: update,
-        isAlreadyRecorded: isAlreadyRecorded
     }
 })();
 
@@ -658,61 +637,6 @@ var SizeProgressBar = (function() {
     }
 })();
 
-var DataTables = (function() {
-
-    var theTable;
-
-    var start = function() {
-        if ($(".table-recordings").length) {
-            theTable = $(".table-recordings").DataTable({
-                paging: false,
-                columnDefs: [
-                    { targets: [1, 2, 3], orderable: true },
-                    { targets: '_all',    orderable: false}
-                ],
-                order: [[2, 'desc']]
-            });
-
-            // Add event listener for opening and closing details
-            $('.table-recordings tbody').on('click', 'tr', toggleDetails);
-        }
-    }
-
-    var toggleDetails = function(event) {
-        // Don't toggle details for link or button clicks when table row is clicked
-        if ($(event.target).is('a') || $(event.target).is('button')) {
-            return;
-        }
-
-        var tr = $(this);
-        var row = theTable.row(this);
-
-        if (row.child.isShown()) {
-            row.child.hide();
-            tr.removeClass('shown');
-            tr.find('.details-control .glyphicon').removeClass('glyphicon-chevron-down');
-            tr.find('.details-control .glyphicon').addClass('glyphicon-chevron-right');
-        }
-        else {
-            row.child(formatDetails(row.data())).show();
-            tr.addClass('shown');
-            tr.find('.details-control .glyphicon').removeClass('glyphicon-chevron-right');
-            tr.find('.details-control .glyphicon').addClass('glyphicon-chevron-down');
-        }
-    }
-
-    var formatDetails = function(data) {
-        var detailsTable = $(data[0])[2];
-        $(detailsTable).removeClass('hidden');
-        return detailsTable;
-    }
-
-    return {
-        start: start
-    }
-
-})();
-
 var TimesAndSizesFormatter = (function() {
 
     var format_by_attr = function (attr_name, format_func) {
@@ -735,42 +659,13 @@ var TimesAndSizesFormatter = (function() {
 
 var ContentMessages = (function() {
 
-    var messageIfDuplicatePage = function(page) {
-        if (PagesWidgets.isAlreadyRecorded(page)) {
-            showDuplicatePageMessage(page);
-            return true;
-        }
-        return false;
-    }
-
-    var showDuplicatePageMessage = function(page) {
+    var showContentMessage = function(title, message) {
         $('body iframe').remove();
         $('body .wr-content').remove();
         $('body').addClass('interstitial-page');
         $('body').append('<div class="container wr-content"></div>');
 
-        $('.wr-content').append(
-            getMessageDOM(
-                "<em>" + page + "</em> is already in this recording",
-                getDuplicatePageMessage(page)));
-    }
-
-    var getDuplicatePageMessage = function(page) {
-        // TODO: refactor the router to return urls or to do routing
-        var recordingId = $('[data-recording-id]').attr('data-recording-id');
-        var collectionId = $('[data-collection-id]').attr('data-collection-id');
-
-        var host = window.location.protocol + "//" + window.location.host;
-        var newRecordingUrl = host + "/" + user + "/" + collectionId + "/$new";
-        var overwriteUrl = host + "/" + user + "/" + collectionId + "/" + recordingId + "/record/" + page;
-        var replayUrl = host + "/" + user + "/" + collectionId + "/" + recordingId + "/" + page;
-
-        return  '<div>You can:</div>' +
-                '<ul>' +
-                    '<li class="top-buffer-md"><a href="' + overwriteUrl + '">Continue and overwrite</a> the existing version of this page</li>' +
-                    '<li class="top-buffer-md"><a href="' + replayUrl + '">Replay</a> the version of the page in this recording</li>' +
-                    '<li class="top-buffer-md"><a href="' + newRecordingUrl + '">Start a new recording</a> to record another copy of this page</li>' +
-                '</ul>';
+        $('.wr-content').append(getMessageDOM(title, message));
     }
 
     var getMessageDOM = function(title, message) {
@@ -791,7 +686,7 @@ var ContentMessages = (function() {
     }
 
     return {
-        messageIfDuplicatePage: messageIfDuplicatePage
+        showContentMessage: showContentMessage
     }
 })();
 

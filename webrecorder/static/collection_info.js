@@ -49,3 +49,26 @@ $(function() {
     });
 });
  
+var DataTables = (function() {
+
+    var theTable;
+
+    var start = function() {
+        if ($(".table-recordings").length) {
+            theTable = $(".table-recordings").DataTable({
+                paging: true,
+                columnDefs: [
+                    { targets: [0, 1, 2, 3], orderable: true },
+                    { targets: '_all',    orderable: false }
+                ],
+                order: [[1, 'desc']],
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]]
+            });
+        }
+    }
+
+    return {
+        start: start
+    }
+
+})();

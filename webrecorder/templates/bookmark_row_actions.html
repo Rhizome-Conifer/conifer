@@ -1,0 +1,16 @@
+<a class="btn btn-default btn-xs" href="{{ bookmark_path }}">
+    <span class="glyphicon glyphicon-play-circle glyphicon-button"></span>
+    Replay
+</a>
+
+{% if can_write() %}
+		<button class="btn btn-default btn-xs hide-page" data-page-url="{{ bookmark.url }}" data-page-ts="{{ bookmark.timestamp }}" data-page-hidden="{{ bookmark.hidden | default('0') }}" data-recording-id="{{ recording.id }}" >
+        {% if bookmark.hidden != '1' %}
+        <span class="glyphicon glyphicon-remove-circle glyphicon-button"></span>
+        Hide
+        {% else %}
+        <span class="glyphicon glyphicon-ok-circle glyphicon-button"></span>
+        Show
+        {% endif %}
+        </button>
+{% endif %}

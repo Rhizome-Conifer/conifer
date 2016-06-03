@@ -1,5 +1,4 @@
 [run]
-concurrency = gevent
 omit =
     */test/*
     */tests/*
