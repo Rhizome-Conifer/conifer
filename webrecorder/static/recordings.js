@@ -637,61 +637,6 @@ var SizeProgressBar = (function() {
     }
 })();
 
-var DataTables = (function() {
-
-    var theTable;
-
-    var start = function() {
-        if ($(".table-recordings").length) {
-            theTable = $(".table-recordings").DataTable({
-                paging: false,
-                columnDefs: [
-                    { targets: [1, 2, 3], orderable: true },
-                    { targets: '_all',    orderable: false}
-                ],
-                order: [[2, 'desc']]
-            });
-
-            // Add event listener for opening and closing details
-            $('.table-recordings tbody').on('click', 'tr', toggleDetails);
-        }
-    }
-
-    var toggleDetails = function(event) {
-        // Don't toggle details for link or button clicks when table row is clicked
-        if ($(event.target).is('a') || $(event.target).is('button')) {
-            return;
-        }
-
-        var tr = $(this);
-        var row = theTable.row(this);
-
-        if (row.child.isShown()) {
-            row.child.hide();
-            tr.removeClass('shown');
-            tr.find('.details-control .glyphicon').removeClass('glyphicon-chevron-down');
-            tr.find('.details-control .glyphicon').addClass('glyphicon-chevron-right');
-        }
-        else {
-            row.child(formatDetails(row.data())).show();
-            tr.addClass('shown');
-            tr.find('.details-control .glyphicon').removeClass('glyphicon-chevron-right');
-            tr.find('.details-control .glyphicon').addClass('glyphicon-chevron-down');
-        }
-    }
-
-    var formatDetails = function(data) {
-        var detailsTable = $(data[0])[2];
-        $(detailsTable).removeClass('hidden');
-        return detailsTable;
-    }
-
-    return {
-        start: start
-    }
-
-})();
-
 var TimesAndSizesFormatter = (function() {
 
     var format_by_attr = function (attr_name, format_func) {

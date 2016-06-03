@@ -135,12 +135,14 @@ class CollsController(BaseController):
         result['size_remaining'] = self.manager.get_size_remaining(user)
         result['user'] = self.get_view_user(user)
         result['coll'] = coll
+        result['bookmarks'] = []
 
         result['rec_title'] = ''
         result['coll_title'] = result['collection']['title']
 
         for rec in result['collection']['recordings']:
            rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
+           result['bookmarks'].append(rec['pages'])
 
         if not result['collection'].get('desc'):
             result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])
