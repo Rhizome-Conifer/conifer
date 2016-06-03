@@ -136,7 +136,7 @@ var EventHandlers = (function() {
             attributes.timestamp = $(this).attr("data-page-ts");
             attributes.hidden = $(this).attr("data-page-hidden") == "1" ? "0" : "1";
 
-            var recordingId = $('[data-recording-id]').attr('data-recording-id');
+            var recordingId = $(this).attr('data-recording-id');
 
             var toggleHiddenRow = function(data) {
                 // Returned data should have unique way to identify the row,
