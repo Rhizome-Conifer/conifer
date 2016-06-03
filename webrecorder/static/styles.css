@@ -168,6 +168,24 @@
 .hidden-bookmark-row {
     background-color: lightgray
 }
+
+.table>caption+thead>tr:first-child>td,
+.table>caption+thead>tr:first-child>th,
+.table>colgroup+thead>tr:first-child>td,
+.table>colgroup+thead>tr:first-child>th,
+.table>thead:first-child>tr:first-child>td,
+.table>thead:first-child>tr:first-child>th {
+  border: 1px solid #ddd;
+}
+
+.table>tbody>tr {
+  border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+}
+
+tbody {
+  border-bottom: 1px solid #ddd;
+}
 /* End recording info page */
 
 /*
