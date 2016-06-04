@@ -134,6 +134,13 @@
 .doesnt-look-right {
     font-size: 11px;
 }
+
+.replay-recording .btn-xs,
+.recording-in-progress .btn-xs,
+.patch-recording .btn-xs
+ {
+  padding: 0px 5px;
+}
 /* End recorder */
 
 
