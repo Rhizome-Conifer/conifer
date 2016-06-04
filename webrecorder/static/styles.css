@@ -113,23 +113,8 @@
     height: 20px;
 }
 
-.form-control-left-addon-feedback {
-    left: 0px;
-    z-index: 3;
-}
-
-.form-control-left-addon-input {
-    padding-left: 33px;
-}
-
 .title-inline {
     width: 300px;
-}
-
-.suggestion-index {
-    width: 2em;
-    display: inline-block;
-    margin-right: 5px;
 }
 
 .space-usage {

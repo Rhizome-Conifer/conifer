@@ -433,7 +433,7 @@ var BookmarkCounter = (function() {
     var sortedBookmarks;
 
     var start = function() {
-        if ($(".pages-combobox").length) {
+        if ($(".url-input-recorder").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
             Recordings.getPages(recordingId, startBookmarkCounter, dontStartBookmarkCounter);
         }
