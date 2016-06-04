@@ -113,11 +113,6 @@ var EventHandlers = (function() {
             RouteTo.patchPage(user, coll, wbinfo.info.rec_id, url);
         });
 
-        // 'Replay'/'Recording in progress': 'List pages' toggle
-        $('.header').on('mouseenter', '.list-pages-toggle', function(event) {
-            $(this).css('cursor', 'pointer');
-        })
-
         // 'Patch page': 'Stop' button
         $('header').on('submit', '.finish-patching', function(event) {
             event.preventDefault();
