@@ -11,7 +11,7 @@
 		</div>
 
 		<div class="pull-right top-buffer-md">
-			<span class="page-count"></span>
+			<span class="bookmark-count"></span>
 
 			<span class="current-size" data-size="{{ info.size }}"></span>
 		</div>
@@ -19,20 +19,18 @@
 	</div>
 
 	<form class="replay-recording row left-buffer">
-		<div class="input-group has-feedback">
+		<div class="input-group">
 
-			<span class="page-list-toggle glyphicon glyphicon-triangle-bottom form-control-feedback form-control-left-addon-feedback" aria-label="List pages"></span>
-
-			<input type="text" class="pages-combobox form-control form-control-left-addon-input" name="url" value="{{ url }}" autofocus required>
+			<input type="text" class="url-input-recorder form-control" name="url" value="{{ url }}" autofocus required>
 
 			<input class="hidden" type="submit">
 
-			<div class="input-group-btn">
-				<button type="button" class="btn btn-default patch-page">
+			<div class="input-group-addon">
+				<button type="button" class="btn btn-xs patch-page">
 					Patch
 				</button>
 
-				<button type="button" class="btn btn-default autoscroll">
+				<button type="button" class="btn btn-xs autoscroll">
 					Autoscroll
 				</button>
 			</div>
@@ -45,7 +43,7 @@
 	<div class="row">
 			<form class="add-to-recording top-buffer">
 				<button type="submit" class="btn btn-default">
-					Record
+					Add to Recording
 				</button>
 			</form>
 

@@ -6,7 +6,7 @@ $(function() {
     EventHandlers.bindAll();
     TimesAndSizesFormatter.format();
     RecordingSizeWidget.start();
-    BookmarksWidgets.start();
+    BookmarkCounter.start();
     CountdownTimer.start();
     SizeProgressBar.start();
 });
@@ -112,11 +112,6 @@ var EventHandlers = (function() {
 
             RouteTo.patchPage(user, coll, wbinfo.info.rec_id, url);
         });
-
-        // 'Replay'/'Recording in progress': 'List pages' toggle
-        $('.header').on('mouseenter', '.list-pages-toggle', function(event) {
-            $(this).css('cursor', 'pointer');
-        })
 
         // 'Patch page': 'Stop' button
         $('header').on('submit', '.finish-patching', function(event) {
@@ -236,7 +231,7 @@ var Recordings = (function() {
             data: attributes
         })
         .done(function(data, textStatus, xhr){
-            BookmarksWidgets.update(attributes);
+            BookmarkCounter.update(attributes);
         })
         .fail(function(xhr, textStatus, errorThrown) {
             // Fail gracefully when the page can't be updated
@@ -429,120 +424,63 @@ var RecordingSizeWidget = (function() {
 
 })();
 
-var BookmarksWidgets = (function() {
-    var sortedPages;
+var BookmarkCounter = (function() {
+    var sortedBookmarks;
 
     var start = function() {
-        if ($(".pages-combobox").length) {
+        if ($(".url-input-recorder").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
-            Recordings.getPages(recordingId, startBookmarksWidgets, dontStartBookmarksWidgets);
+            Recordings.getPages(recordingId, startBookmarkCounter, dontStartBookmarkCounter);
         }
     }
 
     var update = function(attributes) {
         $("input[name='url']").val(attributes.url);
-        $('.pages-combobox').typeahead('destroy');
-        BookmarksWidgets.start();
+        BookmarkCounter.start();
     }
 
-    var startBookmarksWidgets = function(data) {
-        sortedPages = data.pages.sort(function(p1, p2) {
+    var startBookmarkCounter = function(data) {
+        sortedBookmarks = data.pages.sort(function(p1, p2) {
             return p1.timestamp - p2.timestamp;
         });
 
-        setPageCount();
-        initializeTypeahead();
+        setBookmarkCount();
     }
 
-    var dontStartBookmarksWidgets = function() {
+    var setBookmarkCount = function() {
+        $('.bookmark-count').html(formatBookmarkCount(sortedBookmarks));
+    }
+
+    var formatBookmarkCount = function(bookmarks) {
+        var bookmarkString = "bookmarks";
+        if (bookmarks.length === 1) {
+            bookmarkString = "bookmark";
+        }
+
+        return bookmarks.length + " " + bookmarkString + "<strong> / </strong>"
+    }
+
+    var dontStartBookmarkCounter = function() {
         // If we can't load this recording's pages,
-        // do nothing to leave url as a regular
-        // input field
+        // do nothing
     }
 
-    var setPageCount = function() {
-        $('.page-count').html(formatPageCount(sortedPages));
-    }
+    var hasBeenVisited = function(url) {
+        var visited = false;
 
-    var initializeTypeahead = function() {
-        var source = substringMatcher(sortedPages);
+        $.each(sortedBookmarks, function(index) {
+            if (url === this.url) {
+                visited = true;
+            }
+        });
 
-        $(".pages-combobox").typeahead(
-            {
-                highlight: true,
-                minLength: 0,
-                hint: true,
-            },
-            {
-                name: 'pages',
-                source: source,
-                limit: 1000000,
-
-                display: "url",
-                templates: {
-                    header: '<h5 class="left-buffer-sm">Recorded Pages</h5>',
-                    suggestion: function(data) {
-                        return "<div>" +
-                            formatSuggestionUrl(data.url) +
-                            "<span class='suggestion-timestamp pull-right'>" +
-                                ts_to_date(data.timestamp) +
-                            "</span>" +
-                        "</div>";
-                    }
-                }
-            });
-    }
-
-    // From typeahead examples
-    var substringMatcher = function(pages) {
-        return function findMatches(q, cb) {
-            var matches, substringRegex;
-
-            // an array that will be populated with substring matches
-            matches = [];
-
-            // regex used to determine if a string contains the substring `q`
-            substrRegex = new RegExp(q, 'i');
-
-            // iterate through the pool of strings and for any string that
-            // contains the substring `q`, add it to the `matches` array
-            $.each(pages, function(i, page) {
-                if (substrRegex.test(page.url)) {
-                    matches.push(page);
-                }
-            });
-
-            cb(matches);
-        };
-    };
-
-    var formatSuggestionUrl = function(url) {
-        var MAX_LENGTH = 110;
-        var CHARS_BEFORE_ELLIPSES = 87
-        var CHARS_AFTER_ELLIPSES = 30
-
-        if (url.length > MAX_LENGTH) {
-            var last_char = url.length - 1;
-            return url.substring(0, CHARS_BEFORE_ELLIPSES)
-                    + "..." +
-                    url.substring(last_char - CHARS_AFTER_ELLIPSES, last_char);
-        } else {
-            return url;
-        }
-    }
-
-    var formatPageCount = function(pages) {
-        var pageString = "pages";
-        if (pages.length === 1) {
-            pageString = "page";
-        }
-
-        return pages.length + " " + pageString + "<strong> / </strong>"
+        return visited;
     }
 
     return {
         start: start,
         update: update,
+        hasBeenVisited: hasBeenVisited
     }
 })();
 
@@ -659,6 +597,14 @@ var TimesAndSizesFormatter = (function() {
 
 var ContentMessages = (function() {
 
+    var messageIfDuplicateVisit = function(url) {
+        if (BookmarkCounter.hasBeenVisited(url)) {
+            showDuplicateVisitMessage(url);
+            return true;
+        }
+        return false;
+    }
+
     var showContentMessage = function(title, message) {
         $('body iframe').remove();
         $('body .wr-content').remove();
@@ -685,8 +631,30 @@ var ContentMessages = (function() {
         );
     }
 
+    var showDuplicateVisitMessage = function(bookmark) {
+        // TODO: refactor the router to return urls or to do routing
+        var recordingId = $('[data-recording-id]').attr('data-recording-id');
+        var collectionId = $('[data-collection-id]').attr('data-collection-id');
+
+        var host = window.location.protocol + "//" + window.location.host;
+        var newRecordingUrl = host + "/" + user + "/" + collectionId + "/$new";
+        var recordAnotherVersionOfUrl = host + "/" + user + "/" + collectionId + "/" + recordingId + "/record/" + bookmark;
+        var replayCollectionUrl = host + "/" + user + "/" + collectionId + "/" + bookmark;
+
+        var title = "<em>" + bookmark + "</em> is already in this recording"
+        var message = '<div>You can:</div>' +
+                '<ul>' +
+                    '<li class="top-buffer-md"><a href="' + recordAnotherVersionOfUrl + '">Continue and record an additional copy</a> of this resource in this recording session</li>' +
+                   '<li class="top-buffer-md"><a href="' + replayCollectionUrl + '">Replay</a> the most recent version of the resource in this recording session</li>' +
+                    '<li class="top-buffer-md"><a href="' + newRecordingUrl + '">Start a new recording session</a> to record for this resource</li>' +
+                '</ul>';
+
+        showContentMessage(title, message)
+    }
+
     return {
-        showContentMessage: showContentMessage
+        showContentMessage: showContentMessage,
+        messageIfDuplicateVisit: messageIfDuplicateVisit
     }
 })();
 
