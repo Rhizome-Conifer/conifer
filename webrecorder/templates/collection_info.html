@@ -34,8 +34,8 @@
 {% block content %}
 
 <div class="row">
-    <div class="page-header" style="margin-top: 10px">
-        <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
+    <div class="page-header top-buffer-md">
+        <h1><span id="coll-title">{{ collection.title }}</span>&nbsp;
             {% include 'collection_info_buttons.html'%}
         </h1>
 
@@ -71,15 +71,23 @@
 
         <div>To create permanent, shareable collections <a href="/_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
     {% endif %}
-
-</div>
-
-<div class="row">
-    <h2>All Bookmarks</h2>
 </div>
 
 <div class="row top-buffer">
-    <table class="table table-striped table-recordings" data-page-length="25">
+    <div class="col-md-2">
+        <div class="card card-selected">
+            <h4>All recordings</h4>
+        </div>
+        {% for recording in collection.recordings %}
+            <div class="card">
+                <h4>{{ recording.title }}</h4>
+                <h6><span class="data-time-ts">{{ recording.created_at }}</span> - <span class="data-time-ts">{{ recording.updated_at }}</span></h6>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="col-md-10">
+            <table class="table table-striped table-recordings" data-page-length="25">
         <thead>
             <tr>
                 <th>Title</th>
@@ -113,6 +121,7 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 </div>
 
 {% include 'confirm_delete_collection_modal.html' %}
