@@ -81,7 +81,11 @@
         {% for recording in collection.recordings %}
             <div class="card">
                 <h4>{{ recording.title }}</h4>
-                <h6><span class="data-time-ts">{{ recording.created_at }}</span> - <span class="data-time-ts">{{ recording.updated_at }}</span></h6>
+                <h6>
+                    <span data-time-sec="{{ recording.created_at }}"></span>
+                    -
+                    <span data-time-sec="{{ recording.updated_at }}"></span>
+                </h6>
             </div>
         {% endfor %}
     </div>
@@ -129,8 +133,6 @@
 <script>
     init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
 </script>
-
-
+<script src="/static/__shared/times_and_sizes_formatter.js"></script>
 
 {% endblock %}
-
