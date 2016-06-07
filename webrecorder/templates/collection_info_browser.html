@@ -6,8 +6,10 @@
         </div>
 
         {% for recording in collection.recordings %}
+            {% set recording_path = get_path(user, coll, recording.id) + '/' %}
+
             <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
-                <div class="recording-title top-buffer-sm"><strong>{{ recording.title }}</strong></div>
+                <div class="recording-title top-buffer-sm"><strong><a href="{{ recording.path }}">{{ recording.title }}</a></strong></div>
 
                 <div class="recording-info top-buffer-sm">
                     <span class="bookmark-count">{{ recording.pages | count }} bookmarks</span>
