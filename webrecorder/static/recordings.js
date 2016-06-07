@@ -669,6 +669,7 @@ function exclude_password_targets() {
 
 $(function() {
     var lastUrl = undefined;
+    var lastTs = undefined;
 
     function urlChangeMessage(event) {
         var replay_iframe = window.document.getElementById("replay_iframe");
@@ -694,7 +695,7 @@ $(function() {
         if (state.is_error) {
             $("input[name='url']").val(state.url);
         } else if (wbinfo.state == "record" || wbinfo.state == "patch") {
-            if (lastUrl == state.url) {
+            if (lastUrl == state.url && lastTs == state.ts) {
                 return;
             }
 
@@ -708,6 +709,7 @@ $(function() {
             
             Recordings.addPage(recordingId, attributes);
             lastUrl = attributes.url;
+            lastTs = attributes.timestamp;
 
         } else if (wbinfo.state == "replay" || wbinfo.state == "replay-coll") {
             $("input[name='url']").val(state.url);

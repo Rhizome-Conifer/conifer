@@ -525,12 +525,11 @@ class RecManagerMixin(object):
 
         url = pagedata['url']
 
-        pagedata['timestamp'] = self._get_url_ts(user, coll, rec, url,
-                                          pagedata.get('timestamp'))
+        if not pagedata.get('timestamp'):
+            pagedata['timestamp'] = self._get_url_ts(user, coll, rec, url)
 
-        if not pagedata['timestamp']:
-            pagedata['timestamp'] = timestamp_now()
-            #return {'error': 'url not found: ' + url}
+            if not pagedata['timestamp']:
+                pagedata['timestamp'] = timestamp_now()
 
         pagedata_json = json.dumps(pagedata).encode('utf-8')
 
@@ -611,7 +610,7 @@ class RecManagerMixin(object):
         #return self.redis.zcard(key)
         return self.redis.hlen(key)
 
-    def _get_url_ts(self, user, coll, rec, url, ts=None):
+    def _get_url_ts(self, user, coll, rec, url):
         try:
             key, end_key = calc_search_range(url, 'exact')
         except:
@@ -619,28 +618,15 @@ class RecManagerMixin(object):
 
         cdx_key = self.cdx_key.format(user=user, coll=coll, rec=rec)
 
-        if ts:
-            result = self.redis.zrangebylex(cdx_key,
-                                            '[' + key + ' ' + ts,
-                                            '(' + end_key)
-
-            if result:
-                return ts
-
-            ts = None
-
         result = self.redis.zrangebylex(cdx_key,
                                         '[' + key,
                                         '(' + end_key)
-
         if not result:
             return None
 
         last_cdx = CDXObject(result[-1])
 
-        ts = last_cdx['timestamp']
-
-        return ts
+        return last_cdx['timestamp']
 
 
 # ============================================================================
