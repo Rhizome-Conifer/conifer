@@ -79,7 +79,7 @@
         <tbody>
             {% set recording_path = get_path(user, coll, rec) + '/' %}
 
-            {% for bookmark in pages | sort(attribute='timestamp') %}
+            {% for bookmark in pages %}
                 {% set bookmark_title = bookmark.title if bookmark.title else bookmark.url %}
                 {% set bookmark_timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
                 {% set bookmark_path = recording_path + bookmark.url %}
@@ -99,6 +99,8 @@
 </div>
 
 {% include 'confirm_delete_recording_modal.html' %}
+
+<script src="/static/__shared/times_and_sizes_formatter.js"></script>
 
 {% endblock %}
 

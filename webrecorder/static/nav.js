@@ -267,16 +267,6 @@ function set_info(data)
     last_size = total_size;
 }
 
-//From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
-function format_bytes(bytes) {
-    if (!isFinite(bytes) || (bytes < 1)) {
-        return "0 bytes";
-    }
-    var s = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
-    var e = Math.floor(Math.log(bytes) / Math.log(1000));
-    return (bytes / Math.pow(1000, e)).toFixed(2) + " " + s[e];
-}
-
 $(function() {
     
     $("#report-modal").on('show.bs.modal', function() {

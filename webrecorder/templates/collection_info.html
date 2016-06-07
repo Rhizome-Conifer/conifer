@@ -34,8 +34,8 @@
 {% block content %}
 
 <div class="row">
-    <div class="page-header" style="margin-top: 10px">
-        <h1 style="display: inline"><span id="coll-title">{{ collection.title }}</span>&nbsp;
+    <div class="page-header top-buffer-md">
+        <h1><span id="coll-title">{{ collection.title }}</span>&nbsp;
             {% include 'collection_info_buttons.html'%}
         </h1>
 
@@ -71,57 +71,15 @@
 
         <div>To create permanent, shareable collections <a href="/_register">Sign Up</a> or <a href="#" data-toggle="modal" data-target="#login-modal">Log In</a></div>
     {% endif %}
-
 </div>
 
-<div class="row">
-    <h2>All Bookmarks</h2>
-</div>
-
-<div class="row top-buffer">
-    <table class="table table-striped table-recordings" data-page-length="25">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Last Recorded</th>
-                <th>Url</th>
-                <th>Recording</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for recording in collection.recordings %}
-                {% set collection_path = get_path(user, coll) + '/' %}
-                {% set recording_path = get_path(user, coll, recording.id) + '/' %}
-
-                {% for bookmark in recording.pages %}
-                    {% set bookmark_title = bookmark.title if bookmark.title else bookmark.url %}
-                    {% set bookmark_timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
-                    {% set bookmark_path = collection_path + bookmark_timestamp + '/' + bookmark.url %}
-                    {% set hidden_class = "hidden-bookmark-row" if bookmark.hidden == '1' else "" %}
-
-                    <tr class="{{ hidden_class }}">
-                        <td>{{ bookmark_title }}</td>
-                        <td data-time-ts="{{ bookmark_timestamp }}"></td>
-                        <td><a href="{{ bookmark_path }}">{{ bookmark.url }}</a></td>
-                        <td><a href="{{ recording_path }}">{{ recording.title }}</a></td>
-                        <td>
-                            {% include 'bookmark_row_actions.html' %}
-                        </td>
-                    </tr>
-                {% endfor %}
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+{% include 'collection_info_browser.html' %}
 
 {% include 'confirm_delete_collection_modal.html' %}
 
 <script>
     init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
 </script>
-
-
+<script src="/static/__shared/times_and_sizes_formatter.js"></script>
 
 {% endblock %}
-

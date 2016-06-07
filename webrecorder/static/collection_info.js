@@ -1,14 +1,72 @@
 $(function() {
-    DataTables.start();
+    PublicPrivateSwitch.start();
+    BookmarksTable.start();
+    RecordingSelector.start();
+})
 
-    if (!can_admin) {
-        // Public/Private
-        return;
+var RecordingSelector = (function() {
+
+    var toggleRecordingSelection = function(event) {
+        if (isAllRecordingsCard(this)) {
+            $('.card-selected').removeClass('card-selected');
+            $(this).addClass('card-selected');
+        } else {
+            $('.recording-selector-panel').find('[data-recording-id="$all"]').removeClass('card-selected');
+            $(this).toggleClass('card-selected');
+
+            if (isNothingSelected()) {
+                $('.recording-selector-panel').find('[data-recording-id="$all"]').addClass('card-selected');
+            }
+        }
+
+        BookmarksTable.filterByRecordings(getSelectedRecordingTitles());
+        updateRecordingFilterList(getSelectedRecordingIds());
     }
 
-    $(".ispublic").bootstrapSwitch();
+    var updateRecordingFilterList = function(recordingIds) {
+        var recordingList = "";
 
-    $(".ispublic").on('switchChange.bootstrapSwitch', function(event, state) {
+        if (recordingIds[0] === "$all") {
+            recordingList = "All recordings";
+        } else {
+            var recordingTitles = getSelectedRecordingTitles();
+            recordingList = recordingTitles.join(", ");
+        }
+
+        $('.recording-filter-list').text(recordingList);
+    }
+
+    var getSelectedRecordingTitles = function() {
+        var recordingIds = getSelectedRecordingIds();
+        return $.map(recordingIds, function(recordingId) {
+                return $('.recording-selector-panel').find('[data-recording-id="' + recordingId + '"]')
+                        .attr('data-recording-title') });
+    }
+
+    var getSelectedRecordingIds = function() {
+        return $('.card-selected').map( function(){ return $(this).attr('data-recording-id') }).get();
+    }
+
+    var isAllRecordingsCard = function(element) {
+        return $(element).attr('data-recording-id') === "$all";
+    }
+
+    var isNothingSelected = function() {
+        return $('.card-selected').length === 0;
+    }
+
+    var start = function() {
+        $('.recording-selector-panel').on('click', '.card', toggleRecordingSelection);
+    }
+
+    return {
+        start: start
+    }
+})();
+
+var PublicPrivateSwitch = (function() {
+
+    var updatePermission = function(event, state) {
         $.ajax({
             url: "/api/v1/collections/" + coll + "/public?user=" + user,
             method: "POST",
@@ -23,39 +81,28 @@ $(function() {
                 console.log("err");
             }
         });
-    });
-    
-    $("#update-title-form").submit(function(e) {
-        var title = $("#new-title").val();
-        var query = $.param({coll: coll, title: title});
-        
-        if (!title) {
-            return;
+    }
+
+    var start = function() {
+        if (can_admin) {
+            $(".ispublic").bootstrapSwitch();
+
+            $(".ispublic").on('switchChange.bootstrapSwitch', updatePermission);
         }
-        
-        $.ajax({
-            type: "GET",
-            url: "/_settitle?" + query,
-            success: function() {
-                console.log("success");
-                $("#coll-title").text(title);
-            },
-            error: function() {
-                console.log("err");
-            },
-            dataType: 'text',
-        });
-        e.preventDefault();
-    });
-});
- 
-var DataTables = (function() {
+    }
+
+    return {
+        start: start
+    }
+})();
+
+var BookmarksTable = (function() {
 
     var theTable;
 
     var start = function() {
-        if ($(".table-recordings").length) {
-            theTable = $(".table-recordings").DataTable({
+        if ($(".table-bookmarks").length) {
+            theTable = $(".table-bookmarks").DataTable({
                 paging: true,
                 columnDefs: [
                     { targets: [0, 1, 2, 3], orderable: true },
@@ -67,8 +114,14 @@ var DataTables = (function() {
         }
     }
 
+    var filterByRecordings = function(recordingTitles) {
+        var regex = recordingTitles.join("|");
+        theTable.column([3]).search(regex, true, false).draw();
+    }
+
     return {
-        start: start
+        start: start,
+        filterByRecordings: filterByRecordings
     }
 
 })();
