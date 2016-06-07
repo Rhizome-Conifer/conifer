@@ -157,7 +157,10 @@ var BookmarksTable = (function() {
                     { targets: '_all',    orderable: false }
                 ],
                 order: [[1, 'desc']],
-                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]]
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                language: {
+                    search: "Filter:"
+                }
             });
         }
     }
