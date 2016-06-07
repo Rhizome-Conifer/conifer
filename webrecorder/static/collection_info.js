@@ -13,12 +13,14 @@ var RecordingSelector = (function() {
         } else {
             $('.recording-selector-panel').find('[data-recording-id="$all"]').removeClass('card-selected');
             $(this).toggleClass('card-selected');
+
+            if (isNothingSelected()) {
+                $('.recording-selector-panel').find('[data-recording-id="$all"]').addClass('card-selected');
+            }
         }
 
-        var recordingIds = $('.card-selected').map( function(){ return $(this).attr('data-recording-id') });
-
-        BookmarksTable.filterByRecordings(recordingIds);
-        updateRecordingFilterList(recordingIds);
+        BookmarksTable.filterByRecordings(getSelectedRecordingTitles());
+        updateRecordingFilterList(getSelectedRecordingIds());
     }
 
     var updateRecordingFilterList = function(recordingIds) {
@@ -27,19 +29,30 @@ var RecordingSelector = (function() {
         if (recordingIds[0] === "$all") {
             recordingList = "All recordings";
         } else {
-            $.each(recordingIds, function() {
-                var title = $('.recording-selector-panel').find('[data-recording-id="' + this + '"]').attr('data-recording-title');
-                recordingList += title;
-                recordingList += ", ";
-            });
-            recordingList = recordingList.replace(/(,\s*$)/g, '');
+            var recordingTitles = getSelectedRecordingTitles();
+            recordingList = recordingTitles.join(", ");
         }
 
         $('.recording-filter-list').text(recordingList);
     }
 
+    var getSelectedRecordingTitles = function() {
+        var recordingIds = getSelectedRecordingIds();
+        return $.map(recordingIds, function(recordingId) {
+                return $('.recording-selector-panel').find('[data-recording-id="' + recordingId + '"]')
+                        .attr('data-recording-title') });
+    }
+
+    var getSelectedRecordingIds = function() {
+        return $('.card-selected').map( function(){ return $(this).attr('data-recording-id') }).get();
+    }
+
     var isAllRecordingsCard = function(element) {
         return $(element).attr('data-recording-id') === "$all";
+    }
+
+    var isNothingSelected = function() {
+        return $('.card-selected').length === 0;
     }
 
     var start = function() {
@@ -88,8 +101,8 @@ var BookmarksTable = (function() {
     var theTable;
 
     var start = function() {
-        if ($(".table-recordings").length) {
-            theTable = $(".table-recordings").DataTable({
+        if ($(".table-bookmarks").length) {
+            theTable = $(".table-bookmarks").DataTable({
                 paging: true,
                 columnDefs: [
                     { targets: [0, 1, 2, 3], orderable: true },
@@ -101,8 +114,9 @@ var BookmarksTable = (function() {
         }
     }
 
-    var filterByRecordings = function(recordingIds) {
-        console.log("filtering:" + recordingIds);
+    var filterByRecordings = function(recordingTitles) {
+        var regex = recordingTitles.join("|");
+        theTable.column([3]).search(regex, true, false).draw();
     }
 
     return {
