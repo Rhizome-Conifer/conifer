@@ -32,7 +32,7 @@ session_opts:
 # Upstream url templates
 url_templates:
     delete: '{record_host}/delete?user={user}&coll={coll}&rec={rec}&type={type}'
-    rename: '{record_host}/rename?from_user={from_user}&from_coll={from_coll}&to_user={to_user}&to_coll={to_coll}&to_coll_title={to_coll_title}'
+    rename: '{record_host}/rename?from_user={from_user}&from_coll={from_coll}&from_rec={from_rec}&to_user={to_user}&to_coll={to_coll}&to_title={to_title}&to_rec={to_rec}'
 
     download: '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}'
  
@@ -43,7 +43,7 @@ url_templates:
     patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
 
     replay: '{replay_host}/replay/resource/postreq?param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}'
-    replay-coll: '{replay_host}/replay-coll/resource/postreq?param.user={user}&param.coll={coll}'
+    replay-coll: '{replay_host}/replay-coll/resource/postreq?param.user={user}&param.coll={coll}&param.rec=*'
 
 
 # Download paths
@@ -81,14 +81,16 @@ user_desc: |
 
 
 # WARC Paths and Names
-file_path_templ: '{user}/{coll}/{rec}/'
+#warc_path_templ: '{user}/{coll}/{rec}/'
 
-storage_path_templ: 'accounts/{user}/collections/{coll}/archive/{rec}/{filename}'
+warc_path_templ: '{user}/'
 
-warc_name_prefix: 'rec-{rec}-'
-warc_name_templ: 'rec-{rec}-{timestamp}-{hostname}.warc.gz'
+#storage_path_templ: 'accounts/{user}/collections/{coll}/archive/{rec}/{filename}'
+storage_path_templ: 'accounts/{user}/warcs/{filename}'
 
-full_warc_prefix: 'http://nginx:6090'
+warc_name_templ: 'rec-{timestamp}-{hostname}-{random}.warc.gz'
+
+full_warc_prefix: 'local+http://nginx:6090'
 
 
 # Redis Keys
@@ -106,7 +108,7 @@ info_key_templ:
 
 cookie_key_templ: 'r:{user}:{coll}:{rec}:cookie:'
 
-warc_key_templ: 'c:{user}:{coll}:warc'
+warc_key_templ: 'r:{user}:{coll}:{rec}:warc'
 warc_upload_wait_templ: 'w:{filename}'
 
 skip_key_templ: 'u:{user}:skip:{url}'

@@ -100,19 +100,11 @@ class StorageCommitter(object):
                 print('Not yet available: {0}'.format(full_filename))
 
     def commit_uploaded(self, user, coll, rec, warcname, full_filename, remote_url):
-        # store last modified time and size
-        #stats = os.stat(full_filename)
-        #res = {'size': stats.st_size,
-        #       'mtime': stats.st_mtime,
-        #       'name': warc}
-
-        #self.redis.sadd(key + ':done', json.dumps(res))
-
         # update path index to point to remote url!
         key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
         self.redis.hset(key, warcname, remote_url)
 
-        print('S3 Verified, Deleting: {0}'.format(full_filename))
+        print('Commit Verified, Deleting: {0}'.format(full_filename))
         os.remove(full_filename)
 
     def get_storage(self, user, coll, rec):
@@ -125,12 +117,15 @@ class StorageCommitter(object):
 
         config = None
 
+        # attempt to find storage profile by name
         if storage_type:
             config = self.redis.hgetall(self.storage_key_templ.format(name=storage_type))
 
+        # default storage profile
         if not config:
             config = self.default_storage_profile
 
+        # storage profile class stored in profile 'type'
         storage_class = self.storage_class_map.get(config['type'])
 
         # keeping local storage only
@@ -141,3 +136,4 @@ class StorageCommitter(object):
 
     def add_storage_class(self, type_, cls):
         self.storage_class_map[type_] = cls
+

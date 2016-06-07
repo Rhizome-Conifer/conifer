@@ -280,17 +280,23 @@ class LoginManagerMixin(object):
         key = self.user_skip_key.format(user=user, url=url)
         self.redis.setex(key, 300, 1)
 
-    def _send_move_temp(self, username, init_info):
-        if not 'from_user' in init_info or not 'to_coll' in init_info:
-            return
+    def rename(self, user, coll, new_coll, rec='*', new_rec='*', new_user='', title=''):
+        self.assert_can_write(user, coll)
+
+        if not new_user:
+            new_user = user
+
+        if title:
+            title = quote(title)
 
         rename_url = self.rename_url_templ.format(record_host=os.environ['RECORD_HOST'],
-                                                  from_user=init_info['from_user'],
-                                                  from_coll='temp',
-                                                  to_user=username,
-                                                  to_coll=init_info['to_coll'],
-                                                  to_coll_title=quote(init_info['to_coll_title']))
-
+                                                  from_user=user,
+                                                  from_coll=coll,
+                                                  from_rec=rec,
+                                                  to_user=new_user,
+                                                  to_coll=new_coll,
+                                                  to_rec=new_rec,
+                                                  to_title=title)
         res = requests.get(rename_url)
 
         msg = res.json()
@@ -298,6 +304,18 @@ class LoginManagerMixin(object):
         print(msg)
 
         return msg == {}
+
+    def _send_move_temp(self, username, init_info):
+        if not 'from_user' in init_info or not 'to_coll' in init_info:
+            return
+
+        return self.rename(user=init_info['from_user'],
+                           coll='temp',
+                           rec='*',
+                           new_user=username,
+                           new_coll=init_info['to_coll'],
+                           new_rec='*',
+                           title=init_info['to_title'])
 
 
 # ============================================================================

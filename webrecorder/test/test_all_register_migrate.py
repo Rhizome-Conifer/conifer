@@ -3,6 +3,8 @@ from .testfullstack import FullStackTests
 from mock import patch
 
 import re
+import os
+import time
 
 
 # ============================================================================
@@ -10,11 +12,6 @@ class TestRegisterMigrate(FullStackTests):
     @classmethod
     def setup_class(cls):
         super(TestRegisterMigrate, cls).setup_class(extra_config_file='test_no_invites_config.yaml')
-
-    def test_get_anon_user(self):
-        res = self.testapp.get('/api/v1/anon_user')
-        TestRegisterMigrate.anon_user = res.json['anon_user']
-        assert self.anon_user != ''
 
     def test_anon_record_1(self):
         res = self.testapp.get('/' + self.anon_user + '/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
@@ -32,8 +29,11 @@ class TestRegisterMigrate(FullStackTests):
 
         user = self.anon_user
 
-        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='temp')
+        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='abc')
         assert self.redis.hlen(warc_key) == 1
+
+        anon_dir = os.path.join(self.warcs_dir, user)
+        assert len(os.listdir(anon_dir)) == 1
 
     def test_register(self):
         res = self.testapp.get('/_register')
@@ -86,6 +86,12 @@ class TestRegisterMigrate(FullStackTests):
         for n, v in allwarcs.items():
             assert v.decode('utf-8').endswith('/someuser/test-migrate/abc/' + n.decode('utf-8'))
 
+    def test_renamed(self):
+        time.sleep(2.0)
+
+        user_dir = os.path.join(self.warcs_dir, 'someuser')
+        assert len(os.listdir(user_dir)) == 1
+
     def test_logged_in_user_info(self):
         res = self.testapp.get('/someuser')
         assert '"/someuser/test-migrate"' in res.text
@@ -109,7 +115,8 @@ class TestRegisterMigrate(FullStackTests):
 
         assert 'Test Migrate' in res.text
 
-        assert '/someuser/test-migrate/abc/http://httpbin.org/get?food=bar' in res.text
+        assert '/someuser/test-migrate/' in res.text
+        assert '/http://httpbin.org/get?food=bar' in res.text
 
     def test_logged_in_rec_info(self):
         res = self.testapp.get('/someuser/test-migrate/abc')
@@ -200,8 +207,28 @@ class TestRegisterMigrate(FullStackTests):
         assert res.headers['Location'] == 'http://localhost:80/someuser'
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
+    def test_rename_rec(self):
+        res = self.testapp.post('/api/v1/recordings/abc/rename/boo?user=someuser&coll=test-migrate')
+
+        #time.sleep(2.0)
+
+        res = self.testapp.get('/someuser/test-migrate/boo/mp_/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"food": "bar"' in res.text, res.text
+
+    def test_rename_coll(self):
+        res = self.testapp.post('/api/v1/collections/test-migrate/rename/test?user=someuser')
+
+        #time.sleep(2.0)
+
+        res = self.testapp.get('/someuser/test/boo/mp_/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"food": "bar"' in res.text, res.text
+
     def test_delete_coll(self):
-        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-migrate')
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test')
 
         assert res.headers['Location'] == 'http://localhost:80/someuser'
 
