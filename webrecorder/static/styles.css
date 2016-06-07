@@ -160,10 +160,10 @@
 .recording-selector-panel {
     border: 1px solid #ccc;
     border-right: 0px;
+    border-bottom: 0px;
 
     border-radius: 4px;
     border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
 
     padding-right: 0px;
     padding-left: 0px;
@@ -177,6 +177,7 @@
 
 .card {
     border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
     padding-top: 10px;
     padding-bottom: 10px;
     padding-left: 5px;
