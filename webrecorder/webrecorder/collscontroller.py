@@ -53,6 +53,18 @@ class CollsController(BaseController):
 
             return {'deleted_id': coll}
 
+        @self.app.post('/api/v1/collections/<coll>/rename/<new_coll>')
+        def rename_collection(coll, new_coll):
+            user = self.get_user(api=True)
+
+            self._ensure_coll_exists(user, coll)
+
+            self.manager.rename(user=user,
+                                coll=coll,
+                                new_coll=new_coll)
+
+            return {'renamed': new_coll}
+
         @self.app.post('/api/v1/collections/<coll>/public')
         def set_public(coll):
             user = self.get_user(api=True)

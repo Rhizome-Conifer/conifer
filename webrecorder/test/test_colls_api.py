@@ -12,11 +12,6 @@ class TestWebRecCollsAPI(BaseWRTests):
 
         super(TestWebRecCollsAPI, cls).setup_class()
 
-    def test_get_anon_user(self):
-        res = self.testapp.get('/api/v1/anon_user')
-        TestWebRecCollsAPI.anon_user = res.json['anon_user']
-        assert self.anon_user != ''
-
     def test_create_anon_coll(self):
         res = self.testapp.post('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'Temp'})
 

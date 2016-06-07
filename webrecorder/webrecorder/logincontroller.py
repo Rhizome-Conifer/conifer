@@ -151,7 +151,7 @@ class LoginController(BaseController):
                 if sesh.is_anon() and to_coll:
                     init_info = {'from_user': sesh.anon_user,
                                  'to_coll': to_coll,
-                                 'to_coll_title': to_coll_title,
+                                 'to_title': to_coll_title,
                                 }
                     init_info = json.dumps(init_info)
 

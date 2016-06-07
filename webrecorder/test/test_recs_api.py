@@ -6,11 +6,6 @@ from .testutils import BaseWRTests
 
 # ============================================================================
 class TestWebRecRecAPI(BaseWRTests):
-    def test_home_page(self):
-        res = self._anon_get('/')
-        assert 'Webrecorder' in res
-        assert self.testapp.cookies == {}
-
     def _anon_post(self, url, *args, **kwargs):
         return self.testapp.post(url.format(user=self.anon_user), *args, **kwargs)
 
@@ -19,11 +14,6 @@ class TestWebRecRecAPI(BaseWRTests):
 
     def _anon_get(self, url, *args, **kwargs):
         return self.testapp.get(url.format(user=self.anon_user), *args, **kwargs)
-
-    def test_get_anon_user(self):
-        res = self.testapp.get('/api/v1/anon_user')
-        TestWebRecRecAPI.anon_user = res.json['anon_user']
-        assert self.anon_user != ''
 
     def test_create_anon_rec(self):
         res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': 'My Rec'})

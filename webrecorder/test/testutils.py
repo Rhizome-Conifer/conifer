@@ -11,7 +11,7 @@ from webrecorder.appcontroller import AppController
 # ============================================================================
 class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     @classmethod
-    def setup_class(cls, extra_config_file='test_invites_config.yaml'):
+    def setup_class(cls, extra_config_file='test_invites_config.yaml', init_anon=True):
         super(BaseWRTests, cls).setup_class()
 
         cls.warcs_dir = to_path(cls.root_dir + '/warcs/')
@@ -38,7 +38,11 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.appcont = AppController()
         cls.testapp = webtest.TestApp(cls.appcont.app)
 
-        cls.anon_user = None
+        if init_anon:
+            res = cls.testapp.get('/api/v1/anon_user')
+            cls.anon_user = res.json['anon_user']
+        else:
+            cls.anon_user = None
 
     @classmethod
     def set_nx_env(self, name, value):

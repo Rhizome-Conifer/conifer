@@ -22,7 +22,7 @@ class TestTempContent(FullStackTests):
         'r:{user}:{coll}:{rec}:cdxj',
         'r:{user}:{coll}:{rec}:info',
         'r:{user}:{coll}:{rec}:page',
-        'c:{user}:{coll}:warc',
+        'r:{user}:{coll}:{rec}:warc',
         'c:{user}:{coll}:info',
         'u:{user}',
         'h:roles',
@@ -72,14 +72,6 @@ class TestTempContent(FullStackTests):
     def _get_anon(self, url, status=None):
         return self.testapp.get('/' + self.anon_user + url, status=status)
 
-    def test_live(self):
-        res = self.testapp.get('/live/mp_/http://httpbin.org/get?food=bar')
-        res.charset = 'utf-8'
-
-        assert self.testapp.cookies.get('__test_sesh', '') == ''
-
-        assert '"food": "bar"' in res.text, res.text
-
     def test_live_top_frame(self):
         res = self.testapp.get('/live/http://example.com/')
         res.charset = 'utf-8'
@@ -93,7 +85,7 @@ class TestTempContent(FullStackTests):
         parts = urlsplit(res.headers['Location'])
 
         path_parts = parts.path.split('/', 2)
-        TestTempContent.anon_user = path_parts[1]
+        assert self.anon_user == path_parts[1]
 
         assert self.anon_user.startswith('temp!')
         assert parts.path.endswith('/temp/My First Recording/record/mp_/http://example.com/')
@@ -123,12 +115,11 @@ class TestTempContent(FullStackTests):
 
         self._assert_size_all_eq(user, 'temp', 'my-recording')
 
-        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='temp')
+        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-recording')
         assert self.redis.hlen(warc_key) == 1
 
     def test_anon_replay_1(self):
-
-        print(self.redis.hgetall('c:' + self.anon_user + ':temp:warc'))
+        #print(self.redis.hgetall('c:' + self.anon_user + ':temp:warc'))
 
         res = self._get_anon('/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
@@ -182,11 +173,12 @@ class TestTempContent(FullStackTests):
 
         print(os.path.isdir(self.warcs_dir))
 
-        anon_dir = os.path.join(self.warcs_dir, user, 'temp')
-        assert set(os.listdir(anon_dir)) == set(['my-recording', 'my-rec2'])
+        anon_dir = os.path.join(self.warcs_dir, user)
+        #assert set(os.listdir(anon_dir)) == set(['my-recording', 'my-rec2'])
+        assert len(os.listdir(anon_dir)) == 2
 
-        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='temp')
-        assert self.redis.hlen(warc_key) == 2
+        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
+        assert self.redis.hlen(warc_key) == 1
 
     def test_anon_new_add_to_recording(self):
         res = self._get_anon('/temp/my-rec2/$add')
@@ -217,8 +209,8 @@ class TestTempContent(FullStackTests):
         assert 'my-recording' in res.text
         assert 'Temporary Collection' in res.text
 
-        assert '/temp/my-recording/http://httpbin.org/get?food=bar' in res.text
-        assert '/temp/my-rec2/http://httpbin.org/get?bood=far' in res.text
+        assert 'http://httpbin.org/get?food=bar' in res.text
+        assert 'http://httpbin.org/get?bood=far' in res.text
 
 
     def test_anon_rec_info(self):
@@ -315,14 +307,15 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        time.sleep(1.0)
+        time.sleep(2.0)
 
         self._assert_size_all_eq(user, 'temp', 'my-rec2')
 
-        anon_dir = os.path.join(self.warcs_dir, user, 'temp')
-        assert set(os.listdir(anon_dir)) == set(['my-rec2'])
+        anon_dir = os.path.join(self.warcs_dir, user)
+        #assert set(os.listdir(anon_dir)) == set(['my-rec2'])
+        assert len(os.listdir(anon_dir)) == 1
 
-        warc_key = 'c:{user}:{coll}:warc'.format(user=user, coll='temp')
+        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
         assert self.redis.hlen(warc_key) == 1
 
         self._assert_rec_keys(user, 'temp', ['my-rec2'])
