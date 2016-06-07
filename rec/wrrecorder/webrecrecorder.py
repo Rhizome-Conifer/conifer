@@ -1,4 +1,5 @@
 from recorder.recorderapp import RecorderApp
+
 from recorder.redisindexer import WritableRedisIndexer
 
 from recorder.warcwriter import MultiFileWARCWriter, SimpleTempWARCWriter
@@ -31,7 +32,7 @@ class WebRecRecorder(object):
 
         self.record_root_dir = os.environ['RECORD_ROOT']
 
-        self.warc_path_templ = config['file_path_templ']
+        self.warc_path_templ = config['warc_path_templ']
         self.warc_path_templ = self.record_root_dir + self.warc_path_templ
 
         self.cdxj_key_templ = config['cdxj_key_templ']
@@ -42,7 +43,6 @@ class WebRecRecorder(object):
 
         self.warc_key_templ = config['warc_key_templ']
 
-        self.warc_rec_prefix = config['warc_name_prefix']
         self.warc_name_templ = config['warc_name_templ']
 
         self.full_warc_prefix = config['full_warc_prefix']
@@ -66,7 +66,7 @@ class WebRecRecorder(object):
 
         debug(True)
 
-        gevent.spawn(self.delete_listen_loop)
+        gevent.spawn(self.msg_listen_loop)
 
     def init_recorder(self):
         self.dedup_index = WebRecRedisIndexer(
@@ -93,6 +93,7 @@ class WebRecRecorder(object):
                                      dedup_index=self.dedup_index,
                                      redis=self.redis,
                                      skip_key_templ=self.skip_key_templ,
+                                     key_template=self.info_keys['rec'],
                                      header_filter=header_filter)
 
         self.writer = writer
@@ -119,99 +120,24 @@ class WebRecRecorder(object):
 
         return dict((n.decode('utf-8'), v.decode('utf-8')) for n, v in res.items())
 
-    def _close_active_writers(self, user, coll, rec):
-        # close active writers
-        glob_path = self.warc_path_templ.format(user=user, coll=coll, rec=rec)
+    def _iter_all_warcs(self, user, coll, rec):
+        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
 
-        count = 0
+        allwarcs = {}
 
-        for dirname in glob.glob(glob_path):
-            self.recorder.writer.close_dir(dirname)
-            count += 1
-
-        return glob_path, count
-
-    def _iter_all_warcs(self, user, coll, rec=''):
-        warc_key = self.warc_key_templ.format(user=user, coll=coll)
-        allwarcs = self.redis.hgetall(warc_key)
-
-        if rec and rec != '*':
-            rec_prefix = self.warc_rec_prefix.format(user=user, coll=coll, rec=rec)
+        if rec == '*':
+            for key in self.redis.scan_iter(warc_key):
+                key = key.decode('utf-8')
+                allwarcs[key] = self.redis.hgetall(key)
         else:
-            rec_prefix = ''
+            allwarcs[warc_key] = self.redis.hgetall(warc_key)
 
-        for n, v in iteritems(allwarcs):
-            n = n.decode('utf-8')
-            if not rec_prefix or n.startswith(rec_prefix):
-                yield warc_key, n, v.decode('utf-8')
+        for key, warc_map in iteritems(allwarcs):
+            for n, v in iteritems(warc_map):
+                n = n.decode('utf-8')
+                yield key, n, v.decode('utf-8')
 
-    def rename(self):
-        from_user = request.query.get('from_user', '')
-        from_coll = request.query.get('from_coll', '')
-        to_user = request.query.get('to_user', '')
-        to_coll = request.query.get('to_coll', '')
-        to_coll_title = request.query.get('to_coll_title', '')
-
-        if not from_user or not from_coll or not to_user or not to_coll:
-            return {'error_message': 'user or coll params missing'}
-
-        if not to_coll_title:
-            to_coll_title = to_coll
-
-        src_path, count = self._close_active_writers(from_user, from_coll, '*')
-
-        if not count:
-            return {'error_message': 'no local data found'}
-
-        # Move the actual data first
-        dest_path = self.warc_path_templ.format(user=to_user, coll=to_coll, rec='*')
-        dest_path = dest_path.rstrip('*/')
-
-        src_path = src_path.rstrip('*/')
-
-        try:
-            print(src_path + ' => ' + dest_path)
-            os.renames(src_path, dest_path)
-        except Exception as e:
-            return {'error_message': str(e)}
-
-        # Move the redis keys
-        match_pattern = ':' + from_user + ':' + from_coll + ':'
-        replace_pattern = ':' + to_user + ':' + to_coll + ':'
-        moves = {}
-
-        for key in self.redis.scan_iter(match='*' + match_pattern + '*'):
-            key = key.decode('utf-8')
-            moves[key] = key.replace(match_pattern, replace_pattern)
-
-        with redis.utils.pipeline(self.redis) as pi:
-            for from_key, to_key in iteritems(moves):
-                pi.renamenx(from_key, to_key)
-
-        # Increment new user size counter
-        user_info = self.info_keys['user'].format(user=to_user)
-        coll_info = self.info_keys['coll'].format(user=to_user, coll=to_coll)
-        size = int(self.redis.hget(coll_info, 'size'))
-
-        # set replace paths
-        match_pattern = '/' + from_user + '/' + from_coll
-        replace_pattern = '/' + to_user + '/' + to_coll
-
-        with redis.utils.pipeline(self.redis) as pi:
-            # increment size
-            pi.hincrby(user_info, 'size', size)
-
-            # Fix Id and Title
-            pi.hset(coll_info, 'id', to_coll)
-            pi.hset(coll_info, 'title', to_coll_title)
-
-            # fix paths
-            for key, n, v in self._iter_all_warcs(to_user, to_coll):
-                v = v.replace(match_pattern, replace_pattern)
-                pi.hset(key, n, v)
-
-        return {'success': to_user + ':' + to_coll}
-
+    # Download =======================
 
     def download(self):
         user = request.query.get('user', '')
@@ -278,17 +204,177 @@ class WebRecRecorder(object):
         #resp = chunk_encode_iter(resp)
         return resp
 
+    # Messaging ===============
+    def msg_listen_loop(self):
+        self.pubsub = self.redis.pubsub()
+
+        self.pubsub.subscribe('delete')
+        self.pubsub.subscribe('rename')
+
+        print('Waiting for messages')
+
+        for item in self.pubsub.listen():
+            try:
+                if item['type'] != 'message':
+                    continue
+
+                if item['channel'] == b'delete':
+                    self.handle_delete_local(item['data'].decode('utf-8'))
+
+                elif item['channel'] == b'rename':
+                    self.handle_rename_local(item['data'].decode('utf-8'))
+
+            except:
+                import traceback
+                traceback.print_exc()
+
+    def queue_message(self, channel, message):
+        res = self.redis.publish(channel, json.dumps(message))
+        return (res > 0)
+
+    # Rename Handling ===============
+
+    def rename(self):
+        from_user = request.query.get('from_user', '')
+        from_coll = request.query.get('from_coll', '')
+        from_rec = request.query.get('from_rec', '*')
+
+        to_user = request.query.get('to_user', '')
+        to_coll = request.query.get('to_coll', '')
+        to_rec = request.query.get('to_rec', '*')
+
+        to_title = request.query.get('to_title', '')
+
+        if not from_user or not from_coll or not to_user or not to_coll:
+            return {'error_message': 'user or coll params missing'}
+
+        if (from_rec == '*' or to_rec == '*') and (from_rec != to_rec):
+            return {'error_message': 'must specify rec name or "*" if moving entire coll'}
+
+        # Move the redis keys, this performs the move as far as user is concerned
+        match_pattern = ':' + from_user + ':' + from_coll + ':'
+        replace_pattern = ':' + to_user + ':' + to_coll + ':'
+
+        if to_rec != '*':
+            match_pattern += from_rec + ':'
+            replace_pattern += to_rec + ':'
+
+        moves = {}
+
+        for key in self.redis.scan_iter(match='*' + match_pattern + '*'):
+            key = key.decode('utf-8')
+            moves[key] = key.replace(match_pattern, replace_pattern)
+
+        # Get Info Keys
+        to_user_key = self.info_keys['user'].format(user=to_user)
+        from_user_key = self.info_keys['user'].format(user=from_user)
+
+        if to_rec != '*':
+            to_coll_key = self.info_keys['coll'].format(user=to_user, coll=to_coll)
+            from_coll_key = self.info_keys['coll'].format(user=from_user, coll=from_coll)
+
+            info_key = self.info_keys['rec'].format(user=from_user, coll=from_coll, rec=from_rec)
+
+            to_id = to_rec
+        else:
+            info_key = self.info_keys['coll'].format(user=from_user, coll=from_coll)
+
+            to_id = to_coll
+
+        the_size = int(self.redis.hget(info_key, 'size'))
+
+        with redis.utils.pipeline(self.redis) as pi:
+            # Fix Id
+            pi.hset(info_key, 'id', to_id)
+
+            # Change title, if provided
+            if to_title:
+                pi.hset(info_key, 'title', to_title)
+
+            # actual rename
+            for from_key, to_key in iteritems(moves):
+                pi.renamenx(from_key, to_key)
+
+        with redis.utils.pipeline(self.redis) as pi:
+            # change user size, if different users
+            if to_user_key != from_user_key:
+                pi.hincrby(from_user_key, 'size', -the_size)
+                pi.hincrby(to_user_key, 'size', the_size)
+
+            # change coll size if moving rec and different colls
+            if to_rec != '*' and to_coll_key != from_coll_key:
+                pi.hincrby(from_coll_key, 'size', -the_size)
+                pi.hincrby(to_coll_key, 'size', -the_size)
+
+        # rename WARCs (only if switching users)
+        replace_list = []
+
+        for key, name, url in self._iter_all_warcs(to_user, to_coll, to_rec):
+            if not url.startswith(self.full_warc_prefix):
+                continue
+
+            filename = url[len(self.full_warc_prefix):]
+
+            new_filename = filename.replace(from_user + '/', to_user + '/')
+
+            repl = dict(key=key,
+                        name=name,
+                        old_v=filename,
+                        new_v=new_filename)
+
+            replace_list.append(repl)
+
+        if replace_list:
+            if not self.queue_message('rename', {'replace_list': replace_list}):
+                return {'error_message': 'no local clients'}
+
+        #if self.storage_committer:
+        #    storage = self.storage_committer.get_storage(to_user, to_coll, to_rec)
+        #    if storage and not storage.rename(from_user, from_coll, from_rec,
+        #                                      to_user, to_coll, to_rec):
+        #        return {'error_message': 'remote rename failed'}
+
+        return {'success': to_user + ':' + to_coll + ':' + to_rec}
+
+    def handle_rename_local(self, data):
+        data = json.loads(data)
+
+        for repl in data['replace_list']:
+            if os.path.isfile(repl['old_v']):
+                try:
+                    self.recorder.writer.close_file(repl['old_v'])
+
+                    if repl['old_v'] != repl['new_v']:
+                        os.renames(repl['old_v'], repl['new_v'])
+                        self.redis.hset(repl['key'], repl['name'], repl['new_v'])
+                except Exception as e:
+                    print(e)
+
+    # Delete Handling ===========
+
     def delete(self):
         user = request.query.get('user', '')
         coll = request.query.get('coll', '*')
         rec = request.query.get('rec', '*')
         type = request.query.get('type')
 
-        if not self.send_delete_local(user, coll, rec, type):
-            return {'error_message': 'no local clients'}
+        delete_list = []
+
+        for key, n, url in self._iter_all_warcs(user, coll, rec):
+            if not url.startswith(self.full_warc_prefix):
+                continue
+
+            filename = url[len(self.full_warc_prefix):]
+            delete_list.append(filename)
+
+        if delete_list:
+            message = dict(delete_list=delete_list)
+
+            if not self.queue_message('delete', message):
+                return {'error_message': 'no local clients'}
 
         try:
-            self.delete_redis_keys(type, user, coll, rec)
+            self._delete_redis_keys(type, user, coll, rec)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -301,61 +387,7 @@ class WebRecRecorder(object):
 
         return {}
 
-    def send_delete_local(self, user, coll, rec, type):
-        # delete local
-        message = {'type': type,
-                   'user': user,
-                   'coll': coll,
-                   'rec': rec}
-
-        res = self.redis.publish('delete', json.dumps(message))
-        return (res > 0)
-
-    def delete_listen_loop(self):
-        self.pubsub = self.redis.pubsub()
-        self.pubsub.subscribe('delete')
-
-        print('Waiting for delete messages')
-
-        for item in self.pubsub.listen():
-            try:
-                if item['type'] == 'message' and item['channel'] == b'delete':
-                    self.handle_delete_local(item['data'].decode('utf-8'))
-            except:
-                import traceback
-                traceback.print_exc()
-
-    def handle_delete_local(self, data):
-        data = json.loads(data)
-
-        user = data['user']
-        coll = data['coll']
-        rec = data['rec']
-        type = data['type']
-
-        if type not in (('user', 'coll', 'rec')):
-            print('Unknown delete type ' + str(type))
-            return
-
-        glob_path, count = self._close_active_writers(user, coll, rec)
-
-        if glob_path.endswith('/'):
-            glob_path = os.path.dirname(glob_path)
-
-        if type == 'rec':
-            dir_to_delete = glob_path
-        elif type == 'coll':
-            dir_to_delete = os.path.dirname(glob_path)
-        elif type == 'user':
-            dir_to_delete = os.path.dirname(os.path.dirname(glob_path))
-
-        try:
-            print('Deleting Files in ' + dir_to_delete)
-            shutil.rmtree(dir_to_delete)
-        except Exception as e:
-            print(e)
-
-    def delete_redis_keys(self, type, user, coll, rec):
+    def _delete_redis_keys(self, type, user, coll, rec):
         key_templ = self.del_templ.get(type)
         if not key_templ:
             print('Unknown delete type ' + str(type))
@@ -364,36 +396,42 @@ class WebRecRecorder(object):
         key_pattern = key_templ.format(user=user, coll=coll, rec=rec)
         keys_to_del = list(self.redis.scan_iter(match=key_pattern))
 
-        if type == 'rec':
-            self._delete_rec_warc_key(user, coll, rec)
-            self._delete_decrease_size(user, coll, rec, type)
-        elif type == 'coll':
-            self._delete_decrease_size(user, coll, rec, type)
+        if type != 'user':
+            del_info = self.info_keys[type].format(user=user, coll=coll, rec=rec)
+
+            try:
+                length = int(self.redis.hget(del_info, 'size'))
+            except:
+                print('Error decreasing size')
+                return
+        else:
+            length = 0
 
         with redis.utils.pipeline(self.redis) as pi:
+            if length > 0:
+                user_key = self.info_keys['user'].format(user=user)
+                pi.hincrby(user_key, 'size', -length)
+
+                if type == 'rec':
+                    coll_key = self.info_keys['coll'].format(user=user, coll=coll)
+                    pi.hincrby(coll_key, 'size', -length)
+
             for key in keys_to_del:
                 pi.delete(key)
 
-    def _delete_rec_warc_key(self, user, coll, rec):
-        with redis.utils.pipeline(self.redis) as pi:
-            for key, n, v in self._iter_all_warcs(user, coll, rec):
-                pi.hdel(key, n)
+    def handle_delete_local(self, data):
+        data = json.loads(data)
 
-    def _delete_decrease_size(self, user, coll, rec, type):
-        del_info = self.info_keys[type].format(user=user, coll=coll, rec=rec)
-        try:
-            length = int(self.redis.hget(del_info, 'size'))
-        except:
-            print('Error decreasing size')
-            return
+        delete_list = data['delete_list']
 
-        with redis.utils.pipeline(self.redis) as pi:
-            user_key = self.info_keys['user'].format(user=user)
-            pi.hincrby(user_key, 'size', -length)
-
-            if type == 'rec':
-                coll_key = self.info_keys['coll'].format(user=user, coll=coll)
-                pi.hincrby(coll_key, 'size', -length)
+        for filename in delete_list:
+            if os.path.isfile(filename):
+                try:
+                    self.recorder.writer.close_file(filename)
+                    print('Deleting ' + filename)
+                    os.remove(filename)
+                except Exception as e:
+                    print(e)
 
 
 # ============================================================================
