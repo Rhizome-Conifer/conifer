@@ -42,10 +42,13 @@ class LoginController(BaseController):
         @self.app.get(LOGIN_PATH)
         @self.jinja2_view('login.html')
         def login():
+            self.redirect_home_if_logged_in()
             return {}
 
         @self.app.post(LOGIN_PATH)
         def login_post():
+            self.redirect_home_if_logged_in()
+
             """Authenticate users"""
             username = self.post_get('username')
             password = self.post_get('password')
@@ -75,6 +78,8 @@ class LoginController(BaseController):
         @self.app.get(REGISTER_PATH)
         @self.jinja2_view('register.html')
         def register():
+            self.redirect_home_if_logged_in()
+
             if not self.invites_enabled:
                 resp = {'email': '',
                         'skip_invite': True}
@@ -96,6 +101,8 @@ class LoginController(BaseController):
 
         @self.app.post(INVITE_PATH)
         def invite_post():
+            self.redirect_home_if_logged_in()
+
             email = self.post_get('email', '')
             name = self.post_get('name', '')
             desc = self.post_get('desc', '')
@@ -109,6 +116,8 @@ class LoginController(BaseController):
 
         @self.app.post(REGISTER_PATH)
         def register_post():
+            self.redirect_home_if_logged_in()
+
             email = self.post_get('email')
             username = self.post_get('username')
             password = self.post_get('password')
@@ -180,12 +189,24 @@ class LoginController(BaseController):
         # Validate Registration
         @self.app.get(VAL_REG_PATH)
         def val_reg(reg):
-            try:
-                username = self.manager.create_user(reg)
+            self.redirect_home_if_logged_in()
 
-                self.flash_message('<b>{0}</b>, welcome to your new archive home page! \
-    Click the <b>Create New Collection</b> button to create your first collection. Happy Archiving!'.format(username), 'success')
-                redir_to = '/' + username
+            try:
+                username, first_coll = self.manager.create_user(reg)
+
+                #self.flash_message('<b>{0}</b>, welcome to your new archive home page! \
+    #Click the <b>Create New Collection</b> button to create your first collection. Happy Archiving!'.format(username), 'success')
+                #redir_to = '/' + username
+
+                msg = '<b>{0}</b>, you are now logged in!'
+
+                if first_coll == 'Default Collection':
+                    msg += ' The <b>{1}</b> collection has been created for you, and you can begin recording by entering a url below!'
+                else:
+                    msg += ' The <b>{1}</b> collection has been permanently saved for you, and you can continue recording by entering a url below!'
+
+                self.flash_message(msg.format(username, first_coll), 'success')
+                redir_to = '/'
 
             except ValidationException:
                 self.flash_message('The user <b>{0}</b> is already registered. \
@@ -207,11 +228,14 @@ class LoginController(BaseController):
         @self.app.get(FORGOT_PATH)
         @self.jinja2_view('forgot.html')
         def forgot():
+            self.redirect_home_if_logged_in()
             return {}
 
 
         @self.app.post(FORGOT_PATH)
         def forgot_submit():
+            self.redirect_home_if_logged_in()
+
             email = self.post_get('email', None)
             username = self.post_get('username', None)
             host = self.get_host()
@@ -239,6 +263,8 @@ class LoginController(BaseController):
         @self.app.get(RESET_PATH)
         @self.jinja2_view('reset.html')
         def resetpass(resetcode):
+            self.redirect_home_if_logged_in()
+
             try:
                 username = request.query['username']
                 result = {'username': username,
@@ -254,6 +280,8 @@ class LoginController(BaseController):
 
         @self.app.post(RESET_POST)
         def do_reset():
+            self.redirect_home_if_logged_in()
+
             username = self.post_get('username')
             resetcode = self.post_get('resetcode')
             password = self.post_get('password')
@@ -283,6 +311,8 @@ class LoginController(BaseController):
         # Update Password
         @self.app.post(UPDATE_PASS_PATH)
         def update_password():
+            self.redirect_home_if_logged_in()
+
             self.manager.cork.require(role='archivist', fail_redirect=LOGIN_PATH)
 
             curr_password = self.post_get('curr_password')
@@ -298,4 +328,9 @@ class LoginController(BaseController):
             user = self.manager.get_curr_user()
             self.redirect(self.get_path(user) + SETTINGS)
 
+    def redirect_home_if_logged_in(self):
+        sesh = self.get_session()
 
+        if sesh.curr_user:
+            self.flash_message('You are already logged in as <b>{0}</b>'.format(sesh.curr_user))
+            self.redirect('/')

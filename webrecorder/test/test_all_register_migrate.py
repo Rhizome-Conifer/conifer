@@ -64,7 +64,7 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_val_user_reg(self):
         res = self.testapp.get(val_reg_url)
-        assert res.headers['Location'] == 'http://localhost:80/someuser'
+        assert res.headers['Location'] == 'http://localhost:80/'
 
         user_info = self.redis.hgetall('u:someuser')
         user_info = self.appcont.manager._format_info(user_info)
