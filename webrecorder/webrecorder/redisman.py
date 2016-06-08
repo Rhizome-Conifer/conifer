@@ -91,7 +91,7 @@ class LoginManagerMixin(object):
             self.create_collection(user,
                                    coll=self.default_coll['id'],
                                    coll_title=self.default_coll['title'],
-                                   desc=self.default_coll.get('desc'),
+                                   desc=self.default_coll['desc'].format(user),
                                    public=False)
 
             first_coll = self.default_coll['title']
