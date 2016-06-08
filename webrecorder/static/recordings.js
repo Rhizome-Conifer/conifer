@@ -171,8 +171,21 @@ var EventHandlers = (function() {
         });
             
         // 'Header': 'Login' link to display modal
-        $('#login-modal').on('shown.bs.modal', function() {
-            $('#username').focus();
+        $('#login-link').on('click', function(event) {
+            event.preventDefault();
+
+            var link = $(this).attr("href");
+
+            $.ajax({
+                url: link,
+                success: function (data) { 
+                    $('#login-modal-cont').html(data);
+                    TimesAndSizesFormatter.format();
+
+                    $("#login-modal").modal('show');
+                },
+                dataType: 'html'
+            });
         });
 
         // 'Recorder': 'Doesn't look right' link to display modal
@@ -201,6 +214,19 @@ var EventHandlers = (function() {
                     $("#report-modal").modal('hide');
                 }, 1000);
             });
+        });
+
+        // Move temp form: disable or enable migration collection
+        $(document).on("change", "input[name='move-temp']", function(event) {
+            event.preventDefault();
+
+            if ($(this).attr("value") == "1") {
+                $("#to-coll").parent().show();
+                $("#to-coll").attr("required", "true");
+            } else {
+                $("#to-coll").parent().hide();
+                $("#to-coll").removeAttr("required");
+            }
         });
     }
 

@@ -8,6 +8,7 @@ import json
 
 # ============================================================================
 LOGIN_PATH = '/_login'
+LOGIN_MODAL_PATH = '/_login_modal'
 
 LOGOUT_PATH = '/_logout'
 CREATE_PATH = '/_create'
@@ -45,6 +46,14 @@ class LoginController(BaseController):
             self.redirect_home_if_logged_in()
             return {}
 
+        @self.app.get(LOGIN_MODAL_PATH)
+        @self.jinja2_view('login_modal_ajax.html')
+        def login_modal():
+            self.redirect_home_if_logged_in()
+            resp = {}
+            self.fill_anon_info(resp)
+            return resp
+
         @self.app.post(LOGIN_PATH)
         def login_post():
             self.redirect_home_if_logged_in()
@@ -53,7 +62,13 @@ class LoginController(BaseController):
             username = self.post_get('username')
             password = self.post_get('password')
 
+            move_info = self.get_move_temp_info()
+
             if self.manager.cork.login(username, password):
+                if move_info:
+                    if self.manager.move_temp_coll(username, move_info):
+                        self.flash_message('Collection {0} created!'.format(init_into['to_coll'], 'success'))
+
                 redir_to = self.get_redir_back((LOGIN_PATH, '/'), self.get_path(username))
                 #host = request.headers.get('Host', 'localhost')
                 #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
@@ -124,13 +139,7 @@ class LoginController(BaseController):
             confirm_password = self.post_get('confirmpassword')
             invitecode = self.post_get('invite')
 
-            move_temp = self.post_get('move-temp')
-
-            if move_temp == '1':
-                to_coll_title = self.post_get('to-coll')
-                to_coll = self.sanitize_title(to_coll_title)
-            else:
-                to_coll = None
+            move_info = self.get_move_temp_info()
 
             redir_to = REGISTER_PATH
 
@@ -153,22 +162,14 @@ class LoginController(BaseController):
                 #TODO: set default host?
                 host = self.get_host()
 
-                init_info = None
-
-                sesh = self.get_session()
-
-                if sesh.is_anon() and to_coll:
-                    init_info = {'from_user': sesh.anon_user,
-                                 'to_coll': to_coll,
-                                 'to_title': to_coll_title,
-                                }
-                    init_info = json.dumps(init_info)
+                if move_info:
+                    move_info = json.dumps(move_info)
 
                 self.manager.cork.register(username, password, email, role='archivist',
                               max_level=50,
                               subject='webrecorder.io Account Creation',
                               email_template='templates/emailconfirm.html',
-                              description=init_info,
+                              description=move_info,
                               host=host)
 
                 self.flash_message('A confirmation e-mail has been sent to <b>{0}</b>. \
@@ -334,3 +335,23 @@ class LoginController(BaseController):
         if sesh.curr_user:
             self.flash_message('You are already logged in as <b>{0}</b>'.format(sesh.curr_user))
             self.redirect('/')
+
+    def get_move_temp_info(self):
+        move_info = None
+        move_temp = self.post_get('move-temp')
+
+        if move_temp == '1':
+            to_coll_title = self.post_get('to-coll')
+            to_coll = self.sanitize_title(to_coll_title)
+
+            sesh = self.get_session()
+
+            if sesh.is_anon() and to_coll:
+                move_info = {'from_user': sesh.anon_user,
+                             'to_coll': to_coll,
+                             'to_title': to_coll_title,
+                            }
+
+        return move_info
+
+
