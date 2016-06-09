@@ -31,11 +31,11 @@ var EventHandlers = (function() {
             if (!user) {
                 user = "$temp";
                 var collection = "temp";
-                var title = "My First Recording";
             } else {
                 var collection = $('[data-collection-id]').attr('data-collection-id');
-                var title = $("input[name='title']").val();
             }
+
+            var title = $("input[name='rec-title']").val();
             var url = $(".start-recording-homepage input[name='url']").val();
 
             RouteTo.recordingInProgress(user, collection, title, url);
@@ -52,12 +52,40 @@ var EventHandlers = (function() {
                     '<span class="caret"></span>'));
         });
 
+        function getNewRecTitle() {
+            return "Recording At " + new Date().toISOString().substring(0, 19).replace("T", " ");
+        }
+
+        $(".wr-gen-rec-name").on('click', function(event) {
+            event.preventDefault();
+
+            $("input[name='rec-title']").val(getNewRecTitle());
+        });
+
+        // Set default recording title if it is empty
+        var rec_title_input = $("input[name='rec-title']");
+
+        if (rec_title_input.length) {
+            if (!rec_title_input.val()) {
+                rec_title_input.val(getNewRecTitle());
+            }
+        }
+
+        // If logged-in user and has collection selector (homepage)
+        // select first collection
+        if (user) {
+            var collSelect = $(".collection-select");
+            if (collSelect.length > 0) {
+                collSelect[0].click();
+            }
+        }
+
         // 'New recording': Start button
         $('header').on('submit', '.start-recording', function(event) {
             event.preventDefault();
 
             var collection = $('[data-collection-id]').attr('data-collection-id');
-            var title = $("input[name='title']").val();
+            var title = $("input[name='rec-title']").val();
             var url = $("input[name='url']").val();
 
             RouteTo.recordingInProgress(user, collection, title, url);

@@ -79,6 +79,21 @@ user_desc: |
 
     Available collections are listed below.
 
+# Default Collection created with new user
+# if not migrating temp collection
+default_coll:
+    id: 'default-collection'
+    title: 'Default Collection'
+    desc: |
+        #### Default Collection
+
+        *This is your first collection created automatically*
+
+        You can rename, change this description and make this collection public.
+
+        You can also create additional collections via the **Create New Collection** option
+        and orgranize your recordings accordingly.
+
 
 # WARC Paths and Names
 #warc_path_templ: '{user}/{coll}/{rec}/'

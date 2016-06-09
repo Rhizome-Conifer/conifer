@@ -157,14 +157,11 @@ class TestLogin(BaseWRTests):
 
     def test_val_user_reg(self):
         res = self.testapp.get(self.val_reg_url)
-        assert res.headers['Location'] == 'http://localhost:80/someuser'
+        assert res.headers['Location'] == 'http://localhost:80/'
 
-        # already validated?
+        # already validated, logged in, so ignore
         res = self.testapp.get(self.val_reg_url)
-        assert res.headers['Location'] == 'http://localhost:80/_register'
-
-        res = self.testapp.get('/_valreg/blah')
-        assert res.headers['Location'] == 'http://localhost:80/_register'
+        assert res.headers['Location'] == 'http://localhost:80/'
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
@@ -179,6 +176,14 @@ class TestLogin(BaseWRTests):
         res = self.testapp.get('/_logout')
         assert res.headers['Location'] == 'http://localhost:80/'
         assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+    def test_invalid_val_reg(self):
+        # already validated, not logged in
+        res = self.testapp.get(self.val_reg_url)
+        assert res.headers['Location'] == 'http://localhost:80/_register'
+
+        res = self.testapp.get('/_valreg/blah')
+        assert res.headers['Location'] == 'http://localhost:80/_register'
 
     def test_login(self):
         res = self.testapp.get('/_login')

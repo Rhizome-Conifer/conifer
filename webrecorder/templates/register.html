@@ -8,11 +8,11 @@
 $(function() {
     $("input[name='move-temp']").on("change", function() {
         if ($(this).attr("value") == "1") {
-            $("#to_coll").parent().show();
-            $("#to_coll").attr("required", "true");
+            $("#to-coll").parent().show();
+            $("#to-coll").attr("required", "true");
         } else {
-            $("#to_coll").parent().hide();
-            $("#to_coll").attr("required", "false");
+            $("#to-coll").parent().hide();
+            $("#to-coll").attr("required", "false");
         }
     });
 });

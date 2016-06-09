@@ -52,6 +52,8 @@ class LoginManagerMixin(object):
 
         self.rename_url_templ = config['url_templates']['rename']
 
+        self.default_coll = config['default_coll']
+
     def create_user(self, reg):
         try:
             user, init_info = self.cork.validate_registration(reg)
@@ -74,12 +76,27 @@ class LoginManagerMixin(object):
             pi.hset(key, 'created_at', now)
             pi.hsetnx(key, 'size', '0')
 
+        self.cork.do_login(user)
+        sesh = request.environ['webrec.session']
+        if not sesh.curr_user:
+            sesh.curr_user = user
+
+        # Move Temp collection to be permanent
         if init_info:
             init_info = json.loads(init_info)
             self._send_move_temp(user, init_info)
+            first_coll = init_info.get('to_title')
 
-        self.cork.do_login(user)
-        return user
+        else:
+            self.create_collection(user,
+                                   coll=self.default_coll['id'],
+                                   coll_title=self.default_coll['title'],
+                                   desc=self.default_coll.get('desc'),
+                                   public=False)
+
+            first_coll = self.default_coll['title']
+
+        return user, first_coll
 
     def _create_anon_user(self, user):
         max_size = self.redis.hget('h:defaults', 'max_anon_size')
@@ -280,8 +297,11 @@ class LoginManagerMixin(object):
         key = self.user_skip_key.format(user=user, url=url)
         self.redis.setex(key, 300, 1)
 
-    def rename(self, user, coll, new_coll, rec='*', new_rec='*', new_user='', title=''):
-        self.assert_can_write(user, coll)
+    def rename(self, user, coll, new_coll, rec='*', new_rec='*',
+               new_user='', title='', access_check=True):
+
+        if access_check:
+            self.assert_can_write(user, coll)
 
         if not new_user:
             new_user = user
@@ -315,7 +335,8 @@ class LoginManagerMixin(object):
                            new_user=username,
                            new_coll=init_info['to_coll'],
                            new_rec='*',
-                           title=init_info['to_title'])
+                           title=init_info['to_title'],
+                           access_check=False)
 
 
 # ============================================================================

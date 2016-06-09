@@ -263,6 +263,26 @@ tbody {
     margin-left: 7px;
     margin-left: 7px;
 }
+
+.glyphicon.glyphicon-dot:before {
+    content: "\25cf";
+    font-size: 2em;
+    line-height: 0.3em;
+}
+
+.glyphicon.glyphicon-dot-sm:before {
+    content: "\25cf";
+    font-size: 1.5em;
+    line-height: 0.3em;
+}
+
+.glyphicon.glyphicon-dot-lg:before {
+    content: "\25cf";
+    font-size: 2em;
+    vertical-align: sub;
+    line-height: 0.1em;
+}
+
 /* End glyphicons */
 
 
