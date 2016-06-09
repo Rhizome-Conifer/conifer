@@ -11,16 +11,16 @@ var EditTitleInPlace = (function() {
 	}
 
 	var showEditForm = function() {
-		hideTitleAndButton();
+		hideTitleAndEditButton();
 		showForm();
 	}
 
-	var hideTitleAndButton = function() {
+	var hideTitleAndEditButton = function() {
 		$('.editable-title').hide();
 		$('.edit-title').hide();		
 	}
 
-	var showTitleAndButton = function() {
+	var showTitleAndEditButton = function() {
 		$('.editable-title').show();
 		$('.edit-title').show();				
 	}
@@ -31,6 +31,7 @@ var EditTitleInPlace = (function() {
 		$("[name='collection-title']").val(currentTitle);
 		$("[name='collection-title']").css('width', currentTitle.length + "em");
 
+		showFormButtons();
 		$('.editable-title').after($('.edit-title-form'));
 		$('.edit-title-form').removeClass('collapse');
 		$('.edit-title-form').find('[autofocus]').focus();
@@ -43,39 +44,40 @@ var EditTitleInPlace = (function() {
 	}
 
 	var saveEdit = function() {
-		// start spinner
 		event.preventDefault();
+
+		hideFormButtons();
+		showSpinner();
 
 		var collectionId = $('[data-collection-id]').attr('data-collection-id');
 		var newName = $("[name='collection-title']").val();
-		Collections.rename(collectionId, newName, updateView, showError);
+		Collections.rename(collectionId, newName, updateTitle, showError);
 	}
 
-	var updateView = function(data) {
-		// stop spinner
-		var newName = data.renamed;
+	var updateTitle = function(data) {
+		removeSpinner();
 
-		updateHeader(newName); // change 2nd param to new id
-		updateBreadcrumb(newName, newName); // change 2nd param to new id
-		updateUrl(newName);  // change param to new id
+		updateHeader(data);
+		updateBreadcrumb(data);
+		updateUrl(data);
 
 		hideForm();
-		showTitleAndButton();
+		showTitleAndEditButton();
 	}
 
-	var updateHeader = function(newName) {
-		$('.editable-title').text(newName);
+	var updateHeader = function(data) {
+		$('.editable-title').text(data.title);
 	}
 
-	var updateBreadcrumb = function(newName, newId) {
-		$('.collection-breadcrumb').attr('data-collection-id', newId);
-		$('.collection-breadcrumb').attr('title', "Return to collection: " + newName);
-		$('.collection-breadcrumb').attr('href', getNewUrl(newId));
-		$('.collection-breadcrumb').text(newName);
+	var updateBreadcrumb = function(data) {
+		$('.collection-breadcrumb').attr('data-collection-id', data.id);
+		$('.collection-breadcrumb').attr('title', "Return to collection: " + data.name);
+		$('.collection-breadcrumb').attr('href', getNewUrl(data.id));
+		$('.collection-breadcrumb').text(data.title);
 	}
 
-	var updateUrl = function(newId) {
-		history.pushState({"renamed collection": newId }, newId, getNewUrl(newId));
+	var updateUrl = function(data) {
+		history.pushState({"renamed collection to": data.id }, data.id, getNewUrl(data.id));
 	}
 
 	var getNewUrl = function(newId) {
@@ -85,17 +87,34 @@ var EditTitleInPlace = (function() {
 	}
 
 	var showError = function(xhr) {
-		// stop spinner
+		removeSpinner();
+		FlashMessage.show("danger", "Uh oh.  Something went wrong while renaming your collection.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>.");
+		hideForm();
+		showTitleAndEditButton();
 	}
 
 	var cancelEdit = function() {
-		event.preventDefault();
+		hideForm();
+		showTitleAndEditButton();
+	}
 
-		$('.edit-title-form').addClass('collapse');
-		$('.edit-title-form').removeClass('edit-title-form-visible');
+	var hideFormButtons = function() {
+		$('.submit-edit-title').hide();
+		$('.cancel-edit-title').hide();
+	}
 
-		$('.editable-title').show();
-		$('.edit-title').show();
+	var showFormButtons = function() {
+		$('.submit-edit-title').show();
+		$('.cancel-edit-title').show();
+	}
+
+	var showSpinner = function() {
+		var spinnerDOM = "<span class='btn btn-default btn-xs edit-title-loading-spinner' role='alertdialog' aria-busy='true' aria-live='assertive'></span>";
+		$('.edit-title-form').append(spinnerDOM);
+	}
+
+	var removeSpinner = function() {
+		$('.edit-title-loading-spinner').remove();
 	}
 
 	return {
