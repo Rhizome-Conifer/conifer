@@ -81,10 +81,13 @@
 
 {% include 'confirm_delete_collection_modal.html' %}
 
-<script>
-    init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
-</script>
-<script src="/static/__shared/times_and_sizes_formatter.js"></script>
-<script src="/static/__shared/edit_title_in_place.js"></script>
+{% endblock %}
 
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
+    </script>
+    <script src="/static/__shared/edit_title_in_place.js"></script>
 {% endblock %}
