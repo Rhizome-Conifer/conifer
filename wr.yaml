@@ -87,9 +87,11 @@ default_coll:
     desc: |
         #### Default Collection
 
-        *This is your first collection created automatically*
+        *Welcome to your first collection!*
 
-        You can rename, change this description and make this collection public.
+        You can rename it, change this description text, and make your collection public right here on this page.
+
+        You can also see all your collections and create new ones on the <a href="/{0}">user page</a>.
 
         You can also create additional collections via the **Create New Collection** option
         and orgranize your recordings accordingly.

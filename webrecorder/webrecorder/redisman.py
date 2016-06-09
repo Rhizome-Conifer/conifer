@@ -84,14 +84,14 @@ class LoginManagerMixin(object):
         # Move Temp collection to be permanent
         if init_info:
             init_info = json.loads(init_info)
-            self._send_move_temp(user, init_info)
+            self.move_temp_coll(user, init_info)
             first_coll = init_info.get('to_title')
 
         else:
             self.create_collection(user,
                                    coll=self.default_coll['id'],
                                    coll_title=self.default_coll['title'],
-                                   desc=self.default_coll.get('desc'),
+                                   desc=self.default_coll['desc'].format(user),
                                    public=False)
 
             first_coll = self.default_coll['title']
@@ -325,9 +325,12 @@ class LoginManagerMixin(object):
 
         return msg == {}
 
-    def _send_move_temp(self, username, init_info):
+    def move_temp_coll(self, username, init_info):
         if not 'from_user' in init_info or not 'to_coll' in init_info:
-            return
+            return False
+
+        if self._has_collection_no_access_check(username, init_info['to_coll']):
+            init_info['to_coll'] += '-new-' + base64.b32encode(os.urandom(2))[:4].decode('utf-8')
 
         return self.rename(user=init_info['from_user'],
                            coll='temp',
