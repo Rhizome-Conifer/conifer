@@ -63,6 +63,8 @@ var EditTitleInPlace = (function() {
 
 		hideForm();
 		showTitleAndEditButton();
+
+		FlashMessage.show("success", "Your collection has been successfully renamed.");
 	}
 
 	var updateHeader = function(data) {
