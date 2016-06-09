@@ -157,6 +157,10 @@
  * Collection Info page
  *
  */
+.edit-title-form-visible {
+    display: inline-block;
+}
+
 .recording-selector-panel {
     border: 1px solid #ccc;
     border-right: 0px;
