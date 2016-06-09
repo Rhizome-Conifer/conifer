@@ -48,18 +48,21 @@ class RecsController(BaseController):
 
             return {'deleted_id': rec}
 
-        @self.app.post('/api/v1/recordings/<rec>/rename/<new_rec>')
-        def rename_recording(rec, new_rec):
+        @self.app.post('/api/v1/recordings/<rec>/rename/<new_rec_title>')
+        def rename_recording(rec, new_rec_title):
             user, coll = self.get_user_coll(api=True)
             self._ensure_rec_exists(user, coll, rec)
+
+            new_rec = self.sanitize_title(new_rec_title)
 
             self.manager.rename(user=user,
                                 coll=coll,
                                 new_coll=coll,
                                 rec=rec,
-                                new_rec=new_rec)
+                                new_rec=new_rec,
+                                title=new_rec_title)
 
-            return {'renamed': new_rec}
+            return {'id': new_rec, 'title': new_rec_title}
 
         @self.app.post('/api/v1/recordings/<rec>/pages')
         def add_page(rec):

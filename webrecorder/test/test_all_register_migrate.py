@@ -86,7 +86,7 @@ class TestRegisterMigrate(FullStackTests):
         for n, v in allwarcs.items():
             assert v.decode('utf-8').endswith('/someuser/test-migrate/abc/' + n.decode('utf-8'))
 
-    def test_renamed(self):
+    def test_renamed_temp_to_perm(self):
         time.sleep(2.0)
 
         user_dir = os.path.join(self.warcs_dir, 'someuser')
@@ -208,27 +208,30 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_rename_rec(self):
-        res = self.testapp.post('/api/v1/recordings/abc/rename/boo?user=someuser&coll=test-migrate')
+        res = self.testapp.post('/api/v1/recordings/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
+
+        assert res.json == {'title': 'FOOD BAR', 'id': 'food-bar'}
 
         #time.sleep(2.0)
 
-        res = self.testapp.get('/someuser/test-migrate/boo/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/someuser/test-migrate/food-bar/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
 
     def test_rename_coll(self):
-        res = self.testapp.post('/api/v1/collections/test-migrate/rename/test?user=someuser')
+        res = self.testapp.post('/api/v1/collections/test-migrate/rename/Test Coll?user=someuser')
 
+        assert res.json == {'title': 'Test Coll', 'id': 'test-coll'}
         #time.sleep(2.0)
 
-        res = self.testapp.get('/someuser/test/boo/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/someuser/test-coll/food-bar/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
 
     def test_delete_coll(self):
-        res = self.testapp.post('/_delete_coll?user=someuser&coll=test')
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll')
 
         assert res.headers['Location'] == 'http://localhost:80/someuser'
 
