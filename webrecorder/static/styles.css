@@ -177,6 +177,10 @@ input.homepage-title {
     background-position-y: 3px;
 }
 
+.access-switch {
+    padding-top: 15px;
+}
+
 .recording-selector-panel {
     border: 1px solid #ccc;
     border-right: 0px;
@@ -310,6 +314,10 @@ tbody {
  * Spacers and buffers
  *
  */
+.top-buffer-none {
+    margin-top: 0px;
+}
+
 .top-buffer-sm {
     margin-top: 5px;
 }
