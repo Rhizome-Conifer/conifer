@@ -70,7 +70,8 @@ class WebRecCork(Cork):
 
         cork = WebRecCork(backend=backend,
                     email_sender=email_sender,
-                    smtp_url=smtp_url)
+                    smtp_url=smtp_url,
+                    session_key_name='webrec.session')
         return cork
 
     @staticmethod
