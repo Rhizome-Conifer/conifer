@@ -25,18 +25,20 @@ var RecordingSelector = (function() {
 
         updateRecordingFilterList(recordingIds);
 
+        // check if user-generated event (not from popState)
         if (event.originalEvent) {
             updateUrl(recordingIds, $(this).attr("data-recording-id"));
         }
     }
 
-    $(window).on('popstate', function(event) {
+    var selectPrevious = function(event) {
         if (!event.originalEvent.state) {
             return;
         }
 
         var ids = event.originalEvent.state.ids;
 
+        // First, clear selection on all cards
         $('.card').removeClass("card-selected");
 
         selectRecordings(ids);
@@ -94,6 +96,9 @@ var RecordingSelector = (function() {
 
     var start = function() {
         $('.recording-selector-panel').on('click', '.card', toggleRecordingSelection);
+
+        // selectPrev recordings on popstate
+        $(window).on('popstate', selectPrev);
 
         // Set current state to provided list of ids
         window.history.replaceState({"ids": init_selected_recs}, document.title, window.location.href);
