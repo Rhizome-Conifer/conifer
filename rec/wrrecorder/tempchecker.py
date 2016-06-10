@@ -70,6 +70,12 @@ class TempChecker(object):
             if not os.path.isdir(temp):
                 continue
 
+            try:
+                os.rmdir(temp)
+                print('Removed Dir ' + temp)
+            except Exception as e:
+                print(e)
+
             temp = temp.rsplit('/', 1)[1]
 
             self._delete_if_expired(temp)
