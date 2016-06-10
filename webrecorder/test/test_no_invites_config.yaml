@@ -20,4 +20,5 @@ session_opts:
 
     session.expire: 1800
 
+    key_template: sesh:{0}
 

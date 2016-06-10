@@ -1,6 +1,6 @@
 
 # Durations
-anon_duration: 1800
+#anon_duration: 1800
 
 default_max_size: 1000000000
 default_max_anon_size: 1000000000
@@ -16,7 +16,7 @@ session_opts:
     session.validate_key: $VALIDATE_KEY
 
     session.auto: false
-    session.cookie_expires: True
+    session.cookie_expires: 60
 
     session.httponly: true
     session.cookie_path: '/'
@@ -26,7 +26,9 @@ session_opts:
 
     session.url: $REDIS_BASE_URL
 
-    session.expire: 1800
+    session.expire: 5400
+
+    key_template: 'sesh:{0}'
 
 
 # Upstream url templates

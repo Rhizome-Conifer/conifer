@@ -7,7 +7,7 @@ import redis
 from os.path import expandvars
 import os
 
-from beaker.middleware import SessionMiddleware
+#from beaker.middleware import SessionMiddleware
 
 from jinja2 import contextfunction
 from urlrewrite.templateview import JinjaEnv
@@ -29,7 +29,7 @@ from webrecorder.webreccork import WebRecCork
 from webrecorder.cookieguard import CookieGuard
 
 from webrecorder.redisman import RedisDataManager
-from webrecorder.session import Session
+from webrecorder.session import Session, RedisSessionMiddleware
 
 from webrecorder.basecontroller import BaseController
 
@@ -60,6 +60,7 @@ class AppController(BaseController):
 
         self.redis = redis.StrictRedis.from_url(redis_url)
         self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
+        self.session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 
         # Init Cork
         self.cork = WebRecCork.create_cork(self.redis, config)
@@ -77,7 +78,7 @@ class AppController(BaseController):
                                 manager=manager,
                                 config=config)
 
-        bottle_app.install(AddSession(self.cork, config))
+        #bottle_app.install(AddSession(self.cork, config))
 
         # Set Error Handler
         bottle_app.default_error_handler = self.make_err_handler(
@@ -88,9 +89,14 @@ class AppController(BaseController):
 
         # Init Middleware apps
         session_opts = self._get_session_opts(config)
-        final_app = bottle_app
-        final_app = CookieGuard(final_app, session_opts['session.key'])
-        final_app = SessionMiddleware(final_app, session_opts)
+
+        final_app = RedisSessionMiddleware(bottle_app,
+                                           self.cork,
+                                           self.session_redis,
+                                           session_opts)
+        #final_app = bottle_app
+        #final_app = CookieGuard(final_app, session_opts['session.key'])
+        #final_app = SessionMiddleware(final_app, session_opts)
 
         #invites = expandvars(config.get('invites_enabled', 'true')).lower()
         #self.invites_enabled = invites in ('true', '1', 'yes')

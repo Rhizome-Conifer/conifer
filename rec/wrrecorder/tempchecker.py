@@ -15,8 +15,8 @@ class TempChecker(object):
         self.data_redis = redis.StrictRedis.from_url(self.redis_base_url)
 
         # beaker always uses db 0, so using db 0
-        self.redis_base_url = self.redis_base_url.rsplit('/', 1)[0] + '/0'
-        self.sesh_redis = redis.StrictRedis.from_url(self.redis_base_url)
+        #self.redis_base_url = self.redis_base_url.rsplit('/', 1)[0] + '/0'
+        self.sesh_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 
         self.record_root_dir = os.environ['RECORD_ROOT']
         self.glob_pattern = os.path.join(self.record_root_dir, self.TEMP_PREFIX + '*')
@@ -26,13 +26,15 @@ class TempChecker(object):
 
         self.delete_url = config['url_templates']['delete']
 
+        self.sesh_key_template = config['session_opts']['key_template']
+
         print('Temp Checker Root: ' + self.glob_pattern)
 
     def _delete_if_expired(self, temp):
         sesh = self.sesh_redis.get('t:' + temp)
         if sesh:
             sesh = sesh.decode('utf-8')
-            if self.sesh_redis.get('beaker:{0}:session'.format(sesh)):
+            if self.sesh_redis.get(self.sesh_key_template.format(sesh)):
                 print('Skipping active temp ' + temp)
                 return False
 

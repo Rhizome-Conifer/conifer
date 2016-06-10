@@ -24,6 +24,7 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
             os.environ['WR_USER_CONFIG'] = os.path.join(cls.get_curr_dir(), extra_config_file)
 
         os.environ['REDIS_BASE_URL'] = 'redis://localhost:6379/2'
+        cls.set_nx_env('REDIS_SESSION_URL', 'redis://localhost:6379/0')
 
         cls.set_nx_env('REDIS_BROWSER_URL', 'redis://localhost:6379/0')
         cls.set_nx_env('WEBAGG_HOST', 'http://localhost:8010')
