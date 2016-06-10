@@ -47,7 +47,7 @@ class LoginController(BaseController):
             return {}
 
         @self.app.get(LOGIN_MODAL_PATH)
-        @self.jinja2_view('login_modal_ajax.html')
+        @self.jinja2_view('login_modal.html')
         def login_modal():
             self.redirect_home_if_logged_in()
             resp = {}

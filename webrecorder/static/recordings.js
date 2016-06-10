@@ -52,7 +52,7 @@ var EventHandlers = (function() {
                     '<span class="caret"></span>'));
         });
 
-        function getNewRecTitle() {
+        var getNewRecTitle = function() {
             return "Recording At " + new Date().toISOString().substring(0, 19).replace("T", " ");
         }
 
@@ -217,7 +217,9 @@ var EventHandlers = (function() {
         });
 
         // Move temp form: disable or enable migration collection
-        $(document).on("change", "input[name='move-temp']", function(event) {
+        $("body").append("<div id='login-modal-cont' class='move-temp-cont'>");
+
+        $(".move-temp-cont").on("change", "input[name='move-temp']", function(event) {
             event.preventDefault();
 
             if ($(this).attr("value") == "1") {

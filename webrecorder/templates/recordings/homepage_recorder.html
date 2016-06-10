@@ -17,14 +17,14 @@
         <label for="recording">Recording Name:</label>
         
         <span class="input-group">
-            <input name="rec-title" type="text" class="form-control input-sm" style="width: 225px" placeholder="" value="{{ rec_title }}" required {{ disabled_class }}>
+            <input name="rec-title" type="text" class="form-control input-sm homepage-title" placeholder="" value="{{ rec_title }}" required {{ disabled_class }}>
             <span class="input-group-btn">
                 <button type="button" title="Generate Recording Session Name" class="wr-gen-rec-name btn btn-sm btn-default"><span class="glyphicon glyphicon-time"></span></button>
             </span>
         </span>
 
         {% if curr_user %}
-        <label style="margin-left: 20px" for="collection">Add to collection:</label>
+        <label class="left-buffer" for="collection">Add to collection:</label>
         
         <span class="dropdown">
             <button type="button" name="collection" class="btn btn-default dropdown-toggle dropdown-toggle-collection" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{ disabled_class }}>
