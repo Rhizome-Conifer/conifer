@@ -124,7 +124,8 @@ class TestRegisterMigrate(FullStackTests):
 
         assert 'Test Migrate' in res.text
 
-        assert '/someuser/test-migrate/abc/http://httpbin.org/get?food=bar' in res.text
+        assert '/someuser/test-migrate/' in res.text
+        assert '/http://httpbin.org/get?food=bar' in res.text
 
     def test_logged_in_create_coll_page(self):
         res = self.testapp.get('/_create')
