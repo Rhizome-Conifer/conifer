@@ -42,7 +42,7 @@ var RecordingSelector = (function() {
         $('.card').removeClass("card-selected");
 
         selectRecordings(ids);
-    });
+    };
 
     var selectRecordings = function(recordingIds) {
         $.map(recordingIds, function(recordingId) {
