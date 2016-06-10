@@ -163,6 +163,20 @@ input.homepage-title {
  * Collection Info page
  *
  */
+.edit-title-form-visible {
+    display: inline-block;
+}
+
+.edit-title-loading-spinner {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background-image: url(/static/__shared/edit_title_spinner.gif);
+    background-repeat: no-repeat;
+    background-position-x: 3px;
+    background-position-y: 3px;
+}
+
 .recording-selector-panel {
     border: 1px solid #ccc;
     border-right: 0px;

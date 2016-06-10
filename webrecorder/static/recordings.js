@@ -237,29 +237,6 @@ var EventHandlers = (function() {
     }
 })();
 
-var Collections = (function() {
-    var API_ENDPOINT = "/api/v1/collections";
-
-    var get = function(user, doneCallback, failCallback) {
-        var query_string = "?user=" + user
-
-        $.ajax({
-            url: API_ENDPOINT + query_string,
-            method: "GET"
-        })
-        .done(function(data, textStatus, xhr) {
-            doneCallback(data);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr);
-        });
-    }
-
-    return {
-        get: get
-    }
-})();
-
 var Recordings = (function() {
     var API_ENDPOINT = "/api/v1/recordings";
     var query_string = "?user=" + user + "&coll=" + coll;

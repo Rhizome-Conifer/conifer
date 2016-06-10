@@ -35,7 +35,11 @@
 
 <div class="row">
     <div class="page-header top-buffer-md">
-        <h1><span id="coll-title">{{ collection.title }}</span>&nbsp;
+        <h1>
+            <span class="editable-title">{{ collection.title }}</span>&nbsp;
+
+            {% include 'edit_title_in_place.html' %}
+
             {% include 'collection_info_buttons.html'%}
         </h1>
 
@@ -77,8 +81,12 @@
 
 {% include 'confirm_delete_collection_modal.html' %}
 
-<script>
-    init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
-</script>
+{% endblock %}
 
+{% block scripts %}
+    {{ super() }}
+    <script>
+        init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
+    </script>
+    <script src="/static/__shared/edit_title_in_place.js"></script>
 {% endblock %}
