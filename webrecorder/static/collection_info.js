@@ -160,7 +160,8 @@ var BookmarksTable = (function() {
                 lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
                 language: {
                     search: "Filter:"
-                }
+                },
+                dom: '<"table-bookmarks-top"f>tr<"table-bookmarks-bottom"ipl><"clear">'
             });
         }
     }
