@@ -5,9 +5,9 @@ $(function() {
 var EditTitleInPlace = (function() {
 
 	var start = function() {
-		$('.page-header').on('click', '.edit-title', showEditForm);
-		$('.page-header').on('click', '.cancel-edit-title', cancelEdit);
-		$('.page-header').on('submit', '.edit-title-form', saveEdit);
+		$('.wr-content').on('click', '.edit-title', showEditForm);
+		$('.wr-content').on('click', '.cancel-edit-title', cancelEdit);
+		$('.wr-content').on('submit', '.edit-title-form', saveEdit);
 	}
 
 	var showEditForm = function() {
