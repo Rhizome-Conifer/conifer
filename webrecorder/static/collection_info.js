@@ -20,7 +20,44 @@ var RecordingSelector = (function() {
         }
 
         BookmarksTable.filterByRecordings(getSelectedRecordingTitles());
-        updateRecordingFilterList(getSelectedRecordingIds());
+
+        var recordingIds = getSelectedRecordingIds();
+
+        updateRecordingFilterList(recordingIds);
+
+        if (event.originalEvent) {
+            updateUrl(recordingIds, $(this).attr("data-recording-id"));
+        }
+    }
+
+    $(window).on('popstate', function(event) {
+        if (!event.originalEvent.state) {
+            return;
+        }
+
+        var ids = event.originalEvent.state.ids;
+
+        $('.card').removeClass("card-selected");
+
+        selectRecordings(ids);
+    });
+
+    var selectRecordings = function(recordingIds) {
+        $.map(recordingIds, function(recordingId) {
+            $('.recording-selector-panel').find('[data-recording-id="' + recordingId + '"]').click();
+        });
+    }
+
+    var updateUrl = function(recordingIds, currId) {
+        var host = window.location.protocol + "//" + window.location.host;
+
+        var url = host + "/" + user + "/" + coll;
+
+        if (recordingIds.length > 0 && recordingIds[0] != "$all") {
+            url += "/" + recordingIds.join(",");
+        }
+
+        window.history.pushState({"ids": recordingIds}, document.title, url);
     }
 
     var updateRecordingFilterList = function(recordingIds) {
@@ -57,6 +94,12 @@ var RecordingSelector = (function() {
 
     var start = function() {
         $('.recording-selector-panel').on('click', '.card', toggleRecordingSelection);
+
+        // Set current state to provided list of ids
+        window.history.replaceState({"ids": init_selected_recs}, document.title, window.location.href);
+
+        // programmatically click initial set of ids
+        selectRecordings(init_selected_recs);
     }
 
     return {

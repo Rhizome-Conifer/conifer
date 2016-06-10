@@ -2,6 +2,7 @@ from bottle import request, response, HTTPError
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
+import json
 
 
 # ============================================================================
@@ -137,13 +138,19 @@ class CollsController(BaseController):
                 self.flash_message('There was an error deleting {0}'.format(coll))
                 self.redirect(self.get_path(user, coll))
 
-        # LOGGED-IN COLLECTION
+        # Collection view (all recordings)
         @self.app.get(['/<user>/<coll>', '/<user>/<coll>/'])
         @self.jinja2_view('collection_info.html')
         def coll_info(user, coll):
             return self.get_collection_info_for_view(user, coll)
 
-    def get_collection_info_for_view(self, user, coll):
+        @self.app.get(['/<user>/<coll>/<rec_list>', '/<user>/<coll>/<rec_list>/'])
+        @self.jinja2_view('collection_info.html')
+        def coll_info(user, coll, rec_list):
+            rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
+            return self.get_collection_info_for_view(user, coll, rec_list)
+
+    def get_collection_info_for_view(self, user, coll, rec_list=None):
         result = self.get_collection_info(user, coll)
         if result.get('error_message'):
             self._raise_error(404, 'Collection not found')
@@ -162,6 +169,9 @@ class CollsController(BaseController):
 
         if not result['collection'].get('desc'):
             result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])
+
+        rec_list = rec_list or []
+        result['rec_list'] = json.dumps(rec_list)
 
         return result
 

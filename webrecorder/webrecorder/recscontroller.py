@@ -55,6 +55,14 @@ class RecsController(BaseController):
 
             new_rec = self.sanitize_title(new_rec_title)
 
+            if not new_rec:
+                err_msg = 'invalid recording title ' + new_rec_title
+                return {'error_message': err_msg}
+
+            if self.manager.has_recording(user, coll, new_rec):
+                already_exists = 'rec "{0}" already exists'.format(new_rec)
+                return {'error_message': err_msg}
+
             self.manager.rename(user=user,
                                 coll=coll,
                                 new_coll=coll,
@@ -118,11 +126,11 @@ class RecsController(BaseController):
             return self.get_rec_info_for_new(user, coll, rec, 'add_to_recording')
 
         # LOGGED-IN REC VIEW
-        @self.app.get(['/<user>/<coll>/<rec>', '/<user>/<coll>/<rec>/'])
-        @self.jinja2_view('recording_info.html')
-        def rec_info(user, coll, rec):
+        #@self.app.get(['/<user>/<coll>/<rec>', '/<user>/<coll>/<rec>/'])
+        #@self.jinja2_view('recording_info.html')
+        #def rec_info(user, coll, rec):
 
-            return self.get_rec_info_for_view(user, coll, rec)
+        #    return self.get_rec_info_for_view(user, coll, rec)
 
         # DELETE REC
         @self.app.post('/_delete_rec/<rec>')
