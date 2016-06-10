@@ -6,9 +6,9 @@
 			</li>
 		{% endif %}
 
-		{% if collection %}
+		{% if coll %}
             <li>
-				<a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ collection.title }}" data-collection-id="{{ collection.id }}" class="collection-breadcrumb">{{ collection.title }}</a>
+				<a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}" data-collection-id="{{ coll }}" class="collection-breadcrumb">{{ coll }}</a>
 			</li>
 		{% endif %}
 
