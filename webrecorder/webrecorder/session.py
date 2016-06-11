@@ -157,6 +157,7 @@ class RedisSessionMiddleware(CookieGuard):
         sesh_cookie = self.split_cookie(environ)
 
         data = None
+        ttl = -2
 
         sesh_id = self.signed_cookie_to_id(sesh_cookie, self.durations['short']['total'])
 
@@ -173,8 +174,6 @@ class RedisSessionMiddleware(CookieGuard):
             sesh_id, redis_key = self.make_id()
 
             data = {'id': sesh_id}
-
-            ttl = -2
 
         session = Session(self.cork,
                           environ,
@@ -205,12 +204,11 @@ class RedisSessionMiddleware(CookieGuard):
                 sesh_id, session.key = self.make_id()
                 session.sesh['id'] = sesh_id
 
-            if session.should_save:
-                data = base64.b64encode(pickle.dumps(session.sesh))
-                self.redis.set(session.key, data)
+            set_cookie = self.should_set_cookie(session)
 
-            if self.should_set_cookie(session):
-                self.set_cookie_and_duration(session, headers)
+            if set_cookie or session.should_save:
+                with redis.utils.pipeline(self.redis) as pi:
+                    self._update_redis_and_cookie(pi, set_cookie, session, headers)
 
     def should_set_cookie(self, session):
         # new or expired session, set if saving session
@@ -231,15 +229,27 @@ class RedisSessionMiddleware(CookieGuard):
 
         return False
 
-    def set_cookie_and_duration(self, session, headers):
-        self.track_long_term(session)
-
+    def _update_redis_and_cookie(self, pi, set_cookie, session, headers):
         duration = self.durations[session.dura_type]['total']
+
+        if session.should_save:
+            data = base64.b64encode(pickle.dumps(session.sesh))
+
+            ttl = session.ttl
+            if ttl < 0:
+                ttl = duration
+
+            pi.setex(session.key, ttl, data)
+
+        if not set_cookie:
+            return
+
+        self.track_long_term(session)
 
         expires = datetime.utcnow() + timedelta(seconds=duration)
 
         # set redis duration
-        self.redis.expire(session.key, duration)
+        pi.expire(session.key, duration)
 
         # set cookie
         sesh_cookie = self.id_to_signed_cookie(session.sesh['id'])

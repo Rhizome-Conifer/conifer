@@ -44,7 +44,9 @@ class LoginController(BaseController):
         @self.jinja2_view('login.html')
         def login():
             self.redirect_home_if_logged_in()
-            return {}
+            resp = {}
+            self.fill_anon_info(resp)
+            return resp
 
         @self.app.get(LOGIN_MODAL_PATH)
         @self.jinja2_view('login_modal.html')
