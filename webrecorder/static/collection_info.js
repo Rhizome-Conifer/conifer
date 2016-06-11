@@ -97,8 +97,8 @@ var RecordingSelector = (function() {
     var start = function() {
         $('.recording-selector-panel').on('click', '.card', toggleRecordingSelection);
 
-        // selectPrev recordings on popstate
-        $(window).on('popstate', selectPrev);
+        // selectPrevious recordings on popstate
+        $(window).on('popstate', selectPrevious);
 
         // Set current state to provided list of ids
         window.history.replaceState({"ids": init_selected_recs}, document.title, window.location.href);
