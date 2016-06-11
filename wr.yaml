@@ -1,34 +1,26 @@
 
-# Durations
-#anon_duration: 1800
+# Sessions Durations (in seconds) -- total time and extend thresholds
+session.durations:
+    short:
+        total: 5400
+        extend: 120
+
+    long:
+        total: 15724800
+        extend: 604800
+
+
+# session settings
+session.secret: $SECRET_KEY
+session.key: __wr_sesh
+session.key_template: 'sesh:{0}'
+session.long_sessions_key: 'ls:{0}'
 
 default_max_size: 1000000000
 default_max_anon_size: 1000000000
 default_max_coll: 10
 
 upload_wait_secs: 30
-
-
-# Beaker Session
-session_opts:
-    session.secret: $SECRET_KEY
-    session.encrypt_key: $ENCRYPT_KEY
-    session.validate_key: $VALIDATE_KEY
-
-    session.auto: false
-    session.cookie_expires: 60
-
-    session.httponly: true
-    session.cookie_path: '/'
-
-    session.key: __wr_sesh
-    session.type: redis
-
-    session.url: $REDIS_BASE_URL
-
-    session.expire: 5400
-
-    key_template: 'sesh:{0}'
 
 
 # Upstream url templates
