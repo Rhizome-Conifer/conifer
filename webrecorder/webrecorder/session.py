@@ -252,8 +252,8 @@ class RedisSessionMiddleware(CookieGuard):
                              datetime_to_http_date(expires),
                              duration)
 
-        scheme = session.environ.get('HTTP_HOST') or session.environ.get('wsgi.url_scheme')
-        if scheme and scheme.startswith('https'):
+        scheme = session.environ.get('wsgi.url_scheme', '')
+        if scheme.lower() == 'https':
             value += '; Secure'
 
         headers.append(('Set-Cookie', value))
