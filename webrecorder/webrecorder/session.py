@@ -15,7 +15,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature
 class Session(object):
     def __init__(self, cork, environ, key, sesh, ttl):
         self.environ = environ
-        self.sesh = sesh
+        self._sesh = sesh
         self.key = key
 
         self.curr_user = None
@@ -33,11 +33,11 @@ class Session(object):
         self.ttl = ttl
 
         try:
-            self._anon = self.sesh.get('anon')
+            self._anon = self._sesh.get('anon')
             if self._anon:
                 self.curr_role = 'anon'
             else:
-                self.curr_user = self.sesh.get('username')
+                self.curr_user = self._sesh.get('username')
                 if self.curr_user:
                     self.curr_role = cork.user(self.curr_user).role
 
@@ -64,26 +64,24 @@ class Session(object):
         self.environ['webrec.delete_all_cookies'] = 'all'
 
     def __getitem__(self, name):
-        return self.sesh[name]
+        return self._sesh[name]
 
     def __setitem__(self, name, value):
-        self.sesh[name] = value
+        self._sesh[name] = value
+        self.should_save = True
 
     def get(self, name, value=None):
-        return self.sesh.get(name, value)
+        return self._sesh.get(name, value)
 
     def set_anon(self):
         if not self.curr_user:
-            self.sesh['anon'] = self.anon_user
-
-            #self.update_expires()
-            self.save()
+            self['anon'] = self.anon_user
 
     def is_anon(self, user=None):
         if self.curr_user:
             return False
 
-        anon = self.sesh.get('anon')
+        anon = self._sesh.get('anon')
         if not anon:
             return False
 
@@ -95,7 +93,7 @@ class Session(object):
     def logged_in(self, extend_long=False):
         if extend_long:
             self.dura_type = 'long'
-            self.sesh['is_long'] = True
+            self._sesh['is_long'] = True
 
         self.should_renew = True
         self.should_save = True
@@ -106,28 +104,23 @@ class Session(object):
         if self._anon:
             return self._anon
 
-        self._anon = self.sesh.get('anon')
+        self._anon = self._sesh.get('anon')
         if not self._anon:
             self._anon = self.make_anon_user()
 
         return self._anon
 
     def flash_message(self, msg, msg_type='danger'):
-        if self.sesh:
-            self.sesh['message'] = msg_type + ':' + msg
-            self.save()
-        else:
-            print('No Message')
+        self['message'] = msg_type + ':' + msg
 
     def pop_message(self):
         msg_type = ''
-        if not self.sesh:
+        if not self._sesh:
             return '', msg_type
 
-        message = self.sesh.get('message', '')
+        message = self.get('message', '')
         if message:
-            self.sesh['message'] = ''
-            self.save()
+            self['message'] = ''
 
         if ':' in message:
             msg_type, message = message.split(':', 1)
@@ -159,7 +152,7 @@ class RedisSessionMiddleware(CookieGuard):
         data = None
         ttl = -2
 
-        sesh_id = self.signed_cookie_to_id(sesh_cookie, self.durations['short']['total'])
+        sesh_id = self.signed_cookie_to_id(sesh_cookie)
 
         if sesh_id:
             redis_key = self.key_template.format(sesh_id)
@@ -184,7 +177,7 @@ class RedisSessionMiddleware(CookieGuard):
         if session.curr_role == 'anon':
             session.template_params['anon_ttl'] = ttl
 
-            anon_user = session.sesh['anon']
+            anon_user = session['anon']
             self.redis.set('t:' + anon_user, sesh_id)
 
         environ['webrec.template_params'] = session.template_params
@@ -202,7 +195,7 @@ class RedisSessionMiddleware(CookieGuard):
             if session.should_renew:
                 self.redis.delete(session.key)
                 sesh_id, session.key = self.make_id()
-                session.sesh['id'] = sesh_id
+                session['id'] = sesh_id
 
             set_cookie = self.should_set_cookie(session)
 
@@ -233,7 +226,7 @@ class RedisSessionMiddleware(CookieGuard):
         duration = self.durations[session.dura_type]['total']
 
         if session.should_save:
-            data = base64.b64encode(pickle.dumps(session.sesh))
+            data = base64.b64encode(pickle.dumps(session._sesh))
 
             ttl = session.ttl
             if ttl < 0:
@@ -252,7 +245,7 @@ class RedisSessionMiddleware(CookieGuard):
         pi.expire(session.key, duration)
 
         # set cookie
-        sesh_cookie = self.id_to_signed_cookie(session.sesh['id'])
+        sesh_cookie = self.id_to_signed_cookie(session['id'])
         value = '{0}={1}; Path=/; Expires={2}, max-age={3}'
         value = value.format(self.sesh_key,
                              sesh_cookie,
@@ -270,7 +263,7 @@ class RedisSessionMiddleware(CookieGuard):
         # ensure username is present if setting long term session!
         if not username:
             session.dura_type = 'short'
-            session.sesh['is_long'] = False
+            session['is_long'] = False
             return
 
         self.redis.lpush(self.long_sessions_key.format(username), session.key)
@@ -286,7 +279,7 @@ class RedisSessionMiddleware(CookieGuard):
 
             pi.delete(list_key)
 
-    def signed_cookie_to_id(self, sesh_cookie, max_age):
+    def signed_cookie_to_id(self, sesh_cookie):
         if not sesh_cookie:
             return None
 
@@ -299,7 +292,7 @@ class RedisSessionMiddleware(CookieGuard):
         serial = URLSafeTimedSerializer(self.secret_key)
 
         try:
-            return serial.loads(sesh_cookie, max_age=max_age + 60)
+            return serial.loads(sesh_cookie)
         except BadSignature as b:
             return None
 
