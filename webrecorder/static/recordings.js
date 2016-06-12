@@ -24,34 +24,6 @@ var EventHandlers = (function() {
             $(this).find('[autofocus]').focus();
         });
 
-        // 'Homepage': 'Record' button
-        $('.wr-content').on('submit', '.start-recording-homepage', function(event) {
-            event.preventDefault();
-
-            if (!user) {
-                user = "$temp";
-                var collection = "temp";
-            } else {
-                var collection = $('[data-collection-id]').attr('data-collection-id');
-            }
-
-            var title = $("input[name='rec-title']").val();
-            var url = $(".start-recording-homepage input[name='url']").val();
-
-            RouteTo.recordingInProgress(user, collection, title, url);
-        });
-
-        // 'Homepage': Logged in collection dropdown select
-        $('.wr-content').on('click', '.collection-select', function(event){
-            event.preventDefault();
-
-            $('.dropdown-toggle-collection').html(
-                $('<span class="dropdown-toggle-label" data-collection-id="' +
-                    $(this).data('collection-id') + '">' +
-                        $(this).text() + " " +
-                    '<span class="caret"></span>'));
-        });
-
         var getNewRecTitle = function() {
             return "Recording At " + new Date().toISOString().substring(0, 19).replace("T", " ");
         }
@@ -68,15 +40,6 @@ var EventHandlers = (function() {
         if (rec_title_input.length) {
             if (!rec_title_input.val()) {
                 rec_title_input.val(getNewRecTitle());
-            }
-        }
-
-        // If logged-in user and has collection selector (homepage)
-        // select first collection
-        if (user) {
-            var collSelect = $(".collection-select");
-            if (collSelect.length > 0) {
-                collSelect[0].click();
             }
         }
 
