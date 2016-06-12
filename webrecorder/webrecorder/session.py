@@ -246,11 +246,15 @@ class RedisSessionMiddleware(CookieGuard):
 
         # set cookie
         sesh_cookie = self.id_to_signed_cookie(session['id'])
-        value = '{0}={1}; Path=/; Expires={2}, max-age={3}'
+        value = '{0}={1}; Path=/; HttpOnly; Expires={2}, max-age={3}'
         value = value.format(self.sesh_key,
                              sesh_cookie,
                              datetime_to_http_date(expires),
                              duration)
+
+        scheme = session.environ.get('HTTP_HOST') or session.environ.get('wsgi.url_scheme')
+        if scheme and scheme.startswith('https'):
+            value += '; Secure'
 
         headers.append(('Set-Cookie', value))
 
