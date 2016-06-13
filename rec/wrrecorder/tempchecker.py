@@ -26,7 +26,7 @@ class TempChecker(object):
 
         self.delete_url = config['url_templates']['delete']
 
-        self.sesh_key_template = config['session_opts']['key_template']
+        self.sesh_key_template = config['session.key_template']
 
         print('Temp Checker Root: ' + self.glob_pattern)
 

@@ -4,7 +4,6 @@ import logging
 import json
 import redis
 
-from os.path import expandvars
 import os
 
 #from beaker.middleware import SessionMiddleware
@@ -78,28 +77,14 @@ class AppController(BaseController):
                                 manager=manager,
                                 config=config)
 
-        #bottle_app.install(AddSession(self.cork, config))
-
         # Set Error Handler
         bottle_app.default_error_handler = self.make_err_handler(
                                             bottle_app.default_error_handler)
 
-        #webrec = WebRecUserManager(bottle_app, config, cork, redis_obj, jinja_env)
-        #init_routes(webrec)
-
-        # Init Middleware apps
-        session_opts = self._get_session_opts(config)
-
         final_app = RedisSessionMiddleware(bottle_app,
                                            self.cork,
                                            self.session_redis,
-                                           session_opts)
-        #final_app = bottle_app
-        #final_app = CookieGuard(final_app, session_opts['session.key'])
-        #final_app = SessionMiddleware(final_app, session_opts)
-
-        #invites = expandvars(config.get('invites_enabled', 'true')).lower()
-        #self.invites_enabled = invites in ('true', '1', 'yes')
+                                           config)
 
         self.init_jinja_env(config, jinja_env.jinja_env)
 
@@ -244,36 +229,4 @@ class AppController(BaseController):
         boto_log = logging.getLogger('boto')
         if boto_log:
             boto_log.setLevel(logging.ERROR)
-
-    def _get_session_opts(self, config):
-        session_opts = config.get('session_opts')
-
-        for n, v in session_opts.items():
-            if isinstance(v, str):
-                session_opts[n] = expandvars(v)
-
-        # url for redis
-        url = session_opts.get('session.url')
-        if url:
-            parts = urlsplit(url)
-            if parts.netloc:
-                session_opts['session.url'] = parts.netloc
-            #session_opts['session.db'] = 0
-
-        return session_opts
-
-
-# =============================================================================
-class AddSession(object):
-    def __init__(self, cork, config):
-        self.cork = cork
-        self.anon_duration = config.get('anon_duration', True)
-
-    def __call__(self, func):
-        def func_wrapper(*args, **kwargs):
-            request.environ['webrec.session'] = Session(self.cork, self.anon_duration)
-            return func(*args, **kwargs)
-
-        return func_wrapper
-
 

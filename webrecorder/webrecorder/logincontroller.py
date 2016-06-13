@@ -44,7 +44,9 @@ class LoginController(BaseController):
         @self.jinja2_view('login.html')
         def login():
             self.redirect_home_if_logged_in()
-            return {}
+            resp = {}
+            self.fill_anon_info(resp)
+            return resp
 
         @self.app.get(LOGIN_MODAL_PATH)
         @self.jinja2_view('login_modal.html')
@@ -69,6 +71,11 @@ class LoginController(BaseController):
                     if self.manager.move_temp_coll(username, move_info):
                         self.flash_message('Collection {0} created!'.format(init_into['to_coll'], 'success'))
 
+
+                remember_me = (self.post_get('remember_me') == '1')
+                sesh = self.get_session()
+                sesh.logged_in(remember_me)
+
                 redir_to = self.get_redir_back((LOGIN_PATH, '/'), self.get_path(username))
                 #host = request.headers.get('Host', 'localhost')
                 #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
@@ -77,14 +84,12 @@ class LoginController(BaseController):
                 self.flash_message('Invalid Login. Please Try Again')
                 redir_to = LOGIN_PATH
 
-            request.environ['webrec.delete_all_cookies'] = 'non_sesh'
             self.redirect(redir_to)
 
         @self.app.get(LOGOUT_PATH)
         def logout():
             #redir_to = get_redir_back(LOGOUT_PATH, '/')
             redir_to = '/'
-            request.environ['webrec.delete_all_cookies'] = 'all'
             self.manager.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
 

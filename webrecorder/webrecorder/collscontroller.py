@@ -131,7 +131,7 @@ class CollsController(BaseController):
                 self.flash_message('Collection {0} has been deleted!'.format(coll), 'success')
 
                 if self.manager.is_anon(user):
-                    request.environ['webrec.delete_all_cookies'] = 'all'
+                    self.get_session().delete()
 
                 self.redirect(self.get_path(user))
             else:

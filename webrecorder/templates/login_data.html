@@ -1,0 +1,28 @@
+                <div class="row" style="margin: 20px 40px 20px 40px">
+                    <div class="col-md-12">
+                        <form id="loginform" action="/_login" method="post" data-toggle="validator" data-delay="3000">
+                            <div class="form-group">
+                                <label for="username" class="sr-only">Username</label>
+                                <input type="text" id="username" name="username" class="form-control" placeholder="username" required="true" 
+                                       pattern="[A-Za-z0-9][\w-]{2,15}" data-error="This is not a valid username. If you forgot your username, please use the 'Forgot password or username' link to reset it." autofocus="true">
+                                <div class="help-block with-errors"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputPassword" class="sr-only">Password</label>
+                                <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+                            </div>
+
+                            <div class="formgroup">
+                                <input type="checkbox" id="remember_me" name="remember_me" value="1">
+                                <label for="remember_me">Stay Logged-In</label>
+                            </div>
+
+                            {% include 'move_temp_form.html' %}
+
+                            <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+                        </form>
+                        <p style="margin-top: 20px"><a href="/_forgot" target="_top">Forgot password or username?</a></p>
+                    </div>
+                </div>
+

@@ -221,7 +221,7 @@ class TestTempContent(FullStackTests):
         assert 'Example Title' in res.text
         assert 'Temporary Collection' in res.text
 
-        assert '/http://httpbin.org/get?food=bar' not in res.text
+        assert '/http://httpbin.org/get?food=bar' in res.text
         assert '/http://httpbin.org/get?bood=far' in res.text
 
     def test_anon_replay_top_frame(self):
