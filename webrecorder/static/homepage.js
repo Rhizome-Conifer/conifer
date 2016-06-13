@@ -29,8 +29,6 @@ $(function() {
                 '<span class="caret"></span>'));
 
         window.sessionStorage.setItem("__wr_currColl", currColl);
-
-        window.history.replaceState({"currColl": currColl}, document.title, window.location.href);
     });
 
     if (!user) {
@@ -41,11 +39,7 @@ $(function() {
     // select first collection
     var currColl = undefined;
 
-    if (window.history.state) {
-        currColl = window.history.state['currColl'];
-    }
-
-    if (!currColl) {
+    if (window.sessionStorage) {
         currColl = window.sessionStorage.getItem("__wr_currColl");
     }
 
@@ -62,7 +56,6 @@ $(function() {
     $("#create-coll").on('submit', function(event) {
         var collection = $(this).find("#collection-id").val();
         window.sessionStorage.setItem("__wr_currColl", currColl);
-        window.history.replaceState({"currColl": collection}, document.title, window.location.href);
     });
 });
 
