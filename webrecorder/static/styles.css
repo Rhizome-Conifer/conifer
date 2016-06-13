@@ -192,9 +192,12 @@ input.homepage-title {
     margin-top: 11px;
 }
 
+.bookmarks-panel {
+    padding-right: 0px;
+}
+
 .card {
     border-bottom: 1px solid #ccc;
-    padding-top: 10px;
     padding-bottom: 10px;
     padding-left: 5px;
     cursor: pointer;
@@ -202,6 +205,12 @@ input.homepage-title {
 
 .recording-title {
     overflow-wrap: break-word;
+    font-size: 16px;
+}
+
+.recording-time-info {
+    font-size: 90%;
+    color: #777;
 }
 
 .card:hover {

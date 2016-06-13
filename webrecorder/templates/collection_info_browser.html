@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row top-buffer">
 
     <div class="col-md-2 recording-panel">
 
@@ -6,30 +6,18 @@
 
         <div class="recording-selector">
             <div class="card card-selected" data-recording-id="$all">
-                <span class="recording-title"><strong>All recordings</strong></span>
+                <span class="recording-title">All recordings</span>
             </div>
 
             {% for recording in collection.recordings %}
-                <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
-                    <div class="recording-title top-buffer-sm"><strong>{{ recording.title }}</strong></div>
+                {% set duration = recording.updated_at - recording.created_at %}
 
-                    <div class="recording-info top-buffer-sm">
-                        <span class="bookmark-count">{{ recording.pages | count }} bookmarks</span>
-                        <strong>/</strong>
-                        <span class="current-size" data-size="{{ recording.size }}"></span>
-                    </div>
-
-                    <div class="card-time-range top-buffer-sm">
-                        <span data-time-sec="{{ recording.created_at }}"></span>
-                        -
-                        <span data-time-sec="{{ recording.updated_at }}"></span>
-                    </div>
-                </div>
+                {% include 'recording_card.html' %}
             {% endfor %}
         </div>
     </div>
 
-    <div class="col-md-10 recording-info-content-panel">
+    <div class="col-md-10 bookmarks-panel">
         <h3 class="top-buffer-none pull-left">Bookmarks for <em><span class="recording-filter-list" data-recordings-in-content-panel="$all">All recordings</span></em></h3>
         <table class="table table-bordered table-hover table-bookmarks" data-page-length="25">
             <thead>

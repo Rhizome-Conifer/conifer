@@ -14,6 +14,7 @@ var TimesAndSizesFormatter = (function() {
         format_by_attr("data-size", format_bytes);
         format_by_attr("data-time-ts", ts_to_date);
         format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
+        format_by_attr("data-time-duration", millisecondsToStr);
     }
 
     //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
@@ -49,6 +50,40 @@ var TimesAndSizesFormatter = (function() {
         } else {
             return date.toLocaleString();
         }
+    }
+
+    // From http://stackoverflow.com/questions/8211744/convert-time-interval-given-in-seconds-into-more-human-readable-form/8212878#8212878
+    var millisecondsToStr = function millisecondsToStr (milliseconds) {
+        // TIP: to find current time in milliseconds, use:
+        // var  current_time_milliseconds = new Date().getTime();
+
+        function numberEnding (number) {
+            return (number > 1) ? 's' : '';
+        }
+
+        var temp = Math.floor(milliseconds / 1000);
+        var years = Math.floor(temp / 31536000);
+        if (years) {
+            return years + ' year' + numberEnding(years);
+        }
+        //TODO: Months! Maybe weeks?
+        var days = Math.floor((temp %= 31536000) / 86400);
+        if (days) {
+            return days + ' day' + numberEnding(days);
+        }
+        var hours = Math.floor((temp %= 86400) / 3600);
+        if (hours) {
+            return hours + ' hour' + numberEnding(hours);
+        }
+        var minutes = Math.floor((temp %= 3600) / 60);
+        if (minutes) {
+            return minutes + ' minute' + numberEnding(minutes);
+        }
+        var seconds = temp % 60;
+        if (seconds) {
+            return seconds + ' second' + numberEnding(seconds);
+        }
+        return 'less than a second'; //'just now' //or other string you like;
     }
 
     return {
