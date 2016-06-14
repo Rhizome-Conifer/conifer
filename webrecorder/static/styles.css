@@ -186,6 +186,10 @@ input.homepage-title {
     padding-left: 0px;
 }
 
+.recording-panel-top-spacer {
+    height: 30px;
+}
+
 .recording-selector {
     border: 1px solid #ccc;
     border-bottom: 0px;
