@@ -11,11 +11,11 @@ var RecordingSelector = (function() {
             $('.card-selected').removeClass('card-selected');
             $(this).addClass('card-selected');
         } else {
-            $('.recording-selector-panel').find('[data-recording-id="$all"]').removeClass('card-selected');
+            $('.recording-selector').find('[data-recording-id="$all"]').removeClass('card-selected');
             $(this).toggleClass('card-selected');
 
             if (isNothingSelected()) {
-                $('.recording-selector-panel').find('[data-recording-id="$all"]').addClass('card-selected');
+                $('.recording-selector').find('[data-recording-id="$all"]').addClass('card-selected');
             }
         }
 
@@ -46,7 +46,7 @@ var RecordingSelector = (function() {
 
     var selectRecordings = function(recordingIds) {
         $.map(recordingIds, function(recordingId) {
-            $('.recording-selector-panel').find('[data-recording-id="' + recordingId + '"]').click();
+            $('.recording-selector').find('[data-recording-id="' + recordingId + '"]').click();
         });
     }
 
@@ -78,7 +78,7 @@ var RecordingSelector = (function() {
     var getSelectedRecordingTitles = function() {
         var recordingIds = getSelectedRecordingIds();
         return $.map(recordingIds, function(recordingId) {
-                return $('.recording-selector-panel').find('[data-recording-id="' + recordingId + '"]')
+                return $('.recording-selector').find('[data-recording-id="' + recordingId + '"]')
                         .attr('data-recording-title') });
     }
 
@@ -95,7 +95,7 @@ var RecordingSelector = (function() {
     }
 
     var start = function() {
-        $('.recording-selector-panel').on('click', '.card', toggleRecordingSelection);
+        $('.recording-selector').on('click', '.card', toggleRecordingSelection);
 
         // selectPrevious recordings on popstate
         $(window).on('popstate', selectPrevious);
