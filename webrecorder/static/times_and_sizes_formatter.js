@@ -83,7 +83,7 @@ var TimesAndSizesFormatter = (function() {
         if (seconds) {
             return seconds + ' second' + numberEnding(seconds);
         }
-        return 'less than a second'; //'just now' //or other string you like;
+        return 'under a second'; //'just now' //or other string you like;
     }
 
     return {

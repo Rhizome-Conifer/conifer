@@ -192,8 +192,9 @@ input.homepage-title {
 
 .recording-selector {
     border: 1px solid #ccc;
-    border-bottom: 0px;
+    border-top: 0px;
     margin-top: 11px;
+    border-radius: 4px;
 }
 
 .bookmarks-panel {
@@ -201,20 +202,14 @@ input.homepage-title {
 }
 
 .card {
-    border-bottom: 1px solid #ccc;
+    border-top: 1px solid #ccc;
     padding-bottom: 10px;
     padding-left: 5px;
     cursor: pointer;
 }
 
-.recording-title {
-    overflow-wrap: break-word;
-    font-size: 16px;
-}
-
-.recording-time-info {
-    font-size: 90%;
-    color: #777;
+.card-top {
+    border-top: 0px;
 }
 
 .card:hover {
@@ -224,6 +219,24 @@ input.homepage-title {
 .card-selected,
 .card-selected:hover {
     background-color: #ddd;
+}
+
+.recording-title {
+    overflow-wrap: break-word;
+    font-size: 18px;
+    color: #1932bd;
+}
+
+.recording-time-info {
+    color: #777;
+}
+
+.recording-actions {
+    height: 22px;
+}
+
+.table-bookmarks {
+    border-radius: 4px;
 }
 
 .table-bookmarks>tbody>tr>td,

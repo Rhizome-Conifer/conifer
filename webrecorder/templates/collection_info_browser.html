@@ -5,13 +5,11 @@
         {% include 'new_recording_button.html' %}
 
         <div class="recording-selector">
-            <div class="card card-selected" data-recording-id="$all">
-                <span class="recording-title">All recordings</span>
+            <div class="card card-selected card-top" data-recording-id="$all">
+                <div class="recording-title"><em>All recordings</em></div>
             </div>
 
             {% for recording in collection.recordings %}
-                {% set duration = recording.updated_at - recording.created_at %}
-
                 {% include 'recording_card.html' %}
             {% endfor %}
         </div>
