@@ -237,6 +237,13 @@ input.homepage-title {
     line-height: 1.2;
 }
 
+
+.table-bookmarks.dataTable thead .sorting:after,
+.table-bookmarks.dataTable thead .sorting_asc:after,
+.table-bookmarks.dataTable thead .sorting_desc:after {
+    top: 2px;
+}
+
 .table-bookmarks-bottom div.dataTables_info {
     display: inline-block;
 }
