@@ -1,6 +1,5 @@
 {% if anon_size and anon_recordings %}
     <div class="alert alert-info" role="alert">
-
         <div class="form-group">
             {% set path = get_path(anon_user, 'temp') %}
             <h5>You have recorded <a href="{{ path }}"><b data-size="{{ anon_size }}"></b></a> in <a href="{{ path }}"><b>{{ anon_recordings }}</b></a> recording(s)</h5>
@@ -14,8 +13,7 @@
 
         <div class="form-group">
             <label for="collection_name" class="sr-only">Collection Name</label>
-            <input type="text" id="to-coll" name="to-coll" class="form-control" value="{{ email }}" placeholder="New Collection Name" required="true">
-
+            <input type="text" id="to-coll" name="to-coll" class="form-control" value="Imported: Temporary Collection" placeholder="New Collection Name" required="true">
             <div class="help-block with-errors"></div>
         </div>
     </div>

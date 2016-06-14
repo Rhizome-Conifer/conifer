@@ -11,17 +11,12 @@ class RecsController(BaseController):
             user, coll = self.get_user_coll(api=True)
 
             title = request.forms.get('title')
+
+            coll_title = request.forms.get('coll_title')
+
             rec = self.sanitize_title(title)
 
-            recording = self.manager.get_recording(user, coll, rec)
-            if recording:
-                response.status = 400
-                return {'error_message': 'Recording Already Exists',
-                        'id': rec,
-                        'title': recording.get('title', title)
-                       }
-
-            recording = self.manager.create_recording(user, coll, rec, title)
+            recording = self.manager.create_recording(user, coll, rec, title, coll_title)
 
             return {'recording': recording}
 

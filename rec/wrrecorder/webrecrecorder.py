@@ -293,7 +293,7 @@ class WebRecRecorder(object):
 
             # actual rename
             for from_key, to_key in iteritems(moves):
-                pi.renamenx(from_key, to_key)
+                pi.rename(from_key, to_key)
 
         with redis.utils.pipeline(self.redis) as pi:
             # change user size, if different users

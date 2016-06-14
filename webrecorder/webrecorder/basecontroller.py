@@ -27,6 +27,9 @@ class BaseController(object):
             self._raise_error(400, 'User must be specified',
                               api=api)
 
+        if user == '$temp':
+            return self.manager.get_anon_user(True)
+
         if self.manager.is_anon(user):
             return user
 

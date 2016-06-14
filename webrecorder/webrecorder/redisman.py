@@ -321,25 +321,27 @@ class LoginManagerMixin(object):
 
         msg = res.json()
 
-        print(msg)
-
-        return msg == {}
+        return 'success' in msg
 
     def move_temp_coll(self, username, init_info):
         if not 'from_user' in init_info or not 'to_coll' in init_info:
-            return False
+            return None
 
-        if self._has_collection_no_access_check(username, init_info['to_coll']):
-            init_info['to_coll'] += '-new-' + base64.b32encode(os.urandom(2))[:4].decode('utf-8')
+        new_coll = self.create_collection(username,
+                                          init_info['to_coll'],
+                                          init_info['to_title'])
 
-        return self.rename(user=init_info['from_user'],
-                           coll='temp',
-                           rec='*',
-                           new_user=username,
-                           new_coll=init_info['to_coll'],
-                           new_rec='*',
-                           title=init_info['to_title'],
-                           access_check=False)
+        result = self.rename(user=init_info['from_user'],
+                             coll='temp',
+                             rec='*',
+                             new_user=username,
+                             new_coll=new_coll['id'],
+                             new_rec='*',
+                             title=new_coll['title'],
+                             access_check=False)
+
+        if result:
+            return new_coll['title']
 
 
 # ============================================================================
@@ -502,22 +504,34 @@ class RecManagerMixin(object):
         #return self.redis.exists(key)
         return self.redis.hget(key, 'id') != None
 
-    def create_recording(self, user, coll, rec, rec_title):
+    def create_recording(self, user, coll, rec, rec_title, coll_title=''):
         self.assert_can_write(user, coll)
 
-        key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+        orig_rec = rec
+        orig_rec_title = rec_title
+        count = 1
+
+        while True:
+            key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+
+            if self.redis.hsetnx(key, 'id', rec) == 1:
+                break
+
+            count += 1
+            rec_title = orig_rec_title + ' ' + str(count)
+            rec = orig_rec + '-' + str(count)
 
         now = int(time.time())
 
         with redis.utils.pipeline(self.redis) as pi:
-            pi.hset(key, 'id', rec)
             pi.hset(key, 'title', rec_title)
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'updated_at', now)
             pi.hsetnx(key, 'size', '0')
 
         if not self._has_collection_no_access_check(user, coll):
-            self.create_collection(user, coll)
+            coll_title = coll_title or coll
+            self.create_collection(user, coll, coll_title)
 
         return self.get_recording(user, coll, rec)
 
@@ -675,8 +689,9 @@ class CollManagerMixin(object):
         super(CollManagerMixin, self).__init__(config)
         self.coll_info_key = config['info_key_templ']['coll']
 
-    def get_collection(self, user, coll):
-        self.assert_can_read(user, coll)
+    def get_collection(self, user, coll, access_check=True):
+        if access_check:
+            self.assert_can_read(user, coll)
 
         key = self.coll_info_key.format(user=user, coll=coll)
         return self._fill_collection(user, self.redis.hgetall(key), True)
@@ -710,16 +725,26 @@ class CollManagerMixin(object):
 
         return self._has_collection_no_access_check(user, coll)
 
-    def create_collection(self, user, coll, coll_title='', desc='', public=False):
+    def create_collection(self, user, coll, coll_title, desc='', public=False):
         self.assert_can_admin(user, coll)
 
-        key = self.coll_info_key.format(user=user, coll=coll)
-        coll_title = coll_title or coll
+        orig_coll = coll
+        orig_coll_title = coll_title
+        count = 1
+
+        while True:
+            key = self.coll_info_key.format(user=user, coll=coll)
+
+            if self.redis.hsetnx(key, 'id', coll) == 1:
+                break
+
+            count += 1
+            coll_title = orig_coll_title + ' ' + str(count)
+            coll = orig_coll + '-' + str(count)
 
         now = int(time.time())
 
         with redis.utils.pipeline(self.redis) as pi:
-            pi.hset(key, 'id', coll)
             pi.hset(key, 'title', coll_title)
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'desc', desc)

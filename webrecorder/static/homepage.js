@@ -13,7 +13,21 @@ $(function() {
         var title = $("input[name='rec-title']").val();
         var url = $(".start-recording-homepage input[name='url']").val();
 
-        RouteTo.recordingInProgress(user, collection, title, url);
+        var success = function(data) {
+            title = data.recording.title;
+            var id = data.recording.id;
+
+            RouteTo.recordingInProgress(user, collection, id, url);
+        };
+
+        var fail = function(data) {
+            //NOP
+        }
+
+        var attrs = {"title": title,
+                     "coll_title": "Temporary Collection"}
+
+        Recordings.create(user, collection, attrs, success, fail);
     });
 
     // 'Homepage': Logged in collection dropdown select

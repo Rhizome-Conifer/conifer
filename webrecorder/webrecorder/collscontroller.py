@@ -19,15 +19,8 @@ class CollsController(BaseController):
             title = request.forms.get('title')
             coll = self.sanitize_title(title)
 
-            collection = self.manager.get_collection(user, coll)
-            if collection:
-                response.status = 400
-                return {'error_message': 'Collection already exists',
-                        'id': coll,
-                        'title': collection.get('title', title)
-                       }
-
             collection = self.manager.create_collection(user, coll, title)
+
             return {'collection': collection}
 
         @self.app.get('/api/v1/collections')
@@ -103,11 +96,14 @@ class CollsController(BaseController):
 
         @self.app.post('/_create')
         def create_coll_post():
-            #self.manager.cork.require(role='archivist', fail_redirect='/')
+            title = self.post_get('title')
+            if not title:
+                self.flash_message('Title is required')
+                self.redirect('/_create')
 
-            coll = self.post_get('collection-id')
-            title = self.post_get('title', coll)
             is_public = self.post_get('public', 'private') == 'public'
+
+            coll = self.sanitize_title(title)
 
             user = self.manager.get_curr_user()
 

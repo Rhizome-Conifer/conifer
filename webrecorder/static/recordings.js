@@ -24,22 +24,14 @@ var EventHandlers = (function() {
             $(this).find('[autofocus]').focus();
         });
 
-        var getNewRecTitle = function() {
-            return "Recording At " + new Date().toISOString().substring(0, 19).replace("T", " ");
-        }
-
-        $(".wr-gen-rec-name").on('click', function(event) {
-            event.preventDefault();
-
-            $("input[name='rec-title']").val(getNewRecTitle());
-        });
-
         // Set default recording title if it is empty
         var rec_title_input = $("input[name='rec-title']");
 
+        var DEFAULT_RECORDING_SESSION_NAME = "Recording Session";
+
         if (rec_title_input.length) {
             if (!rec_title_input.val()) {
-                rec_title_input.val(getNewRecTitle());
+                rec_title_input.val(DEFAULT_RECORDING_SESSION_NAME);
             }
         }
 
@@ -228,6 +220,23 @@ var Recordings = (function() {
     var API_ENDPOINT = "/api/v1/recordings";
     var query_string = "?user=" + user + "&coll=" + coll;
 
+    var create = function(user, coll, attributes, doneCallback, failCallback) {
+        var create_q = "?user=" + user + "&coll=" + coll;
+
+        $.ajax({
+            url: API_ENDPOINT + create_q,
+            method: "POST",
+            data: attributes,
+        })
+        .done(function(data, textStatus, xhr) {
+            doneCallback(data);
+        })
+        .fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr);
+        });
+
+    }
+
     var get = function(recordingId, doneCallback, failCallback) {
         $.ajax({
             url: API_ENDPOINT + "/" + recordingId + query_string,
@@ -308,6 +317,7 @@ var Recordings = (function() {
 
     return {
         get: get,
+        create: create,
         addPage: addPage,
         removePage: removePage,
         modifyPage: modifyPage,

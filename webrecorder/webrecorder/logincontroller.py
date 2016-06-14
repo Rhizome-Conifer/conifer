@@ -51,7 +51,7 @@ class LoginController(BaseController):
         @self.app.get(LOGIN_MODAL_PATH)
         @self.jinja2_view('login_modal.html')
         def login_modal():
-            self.redirect_home_if_logged_in()
+            #self.redirect_home_if_logged_in()
             resp = {}
             self.fill_anon_info(resp)
             return resp
@@ -67,19 +67,23 @@ class LoginController(BaseController):
             move_info = self.get_move_temp_info()
 
             if self.manager.cork.login(username, password):
-                if move_info:
-                    if self.manager.move_temp_coll(username, move_info):
-                        self.flash_message('Collection {0} created!'.format(init_into['to_coll'], 'success'))
+                sesh = self.get_session()
+                sesh.curr_user = username
 
+                if move_info:
+                    try:
+                        new_title = self.manager.move_temp_coll(username, move_info)
+                        if new_title:
+                            self.flash_message('Collection <b>{0}</b> created!'.format(new_title), 'success')
+                    except:
+                        import traceback
+                        traceback.print_exc()
 
                 remember_me = (self.post_get('remember_me') == '1')
-                sesh = self.get_session()
                 sesh.logged_in(remember_me)
 
                 redir_to = self.get_redir_back((LOGIN_PATH, '/'), self.get_path(username))
-                #host = request.headers.get('Host', 'localhost')
-                #request.environ['beaker.session'].domain = '.' + host.split(':')[0]
-                #request.environ['beaker.session'].path = '/'
+
             else:
                 self.flash_message('Invalid Login. Please Try Again')
                 redir_to = LOGIN_PATH
