@@ -159,7 +159,14 @@ var BookmarksTable = (function() {
                 order: [[1, 'desc']],
                 lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
                 language: {
-                    search: "Filter:"
+                    search: "Filter:",
+                    emptyTable: "No bookmarks available in the table",
+                    info: "Showing _START_ to _END_ of _TOTAL_ bookmarks",
+                    infoEmpty: "Showing 0 to 0 of 0 bookmarks",
+                    infoFiltered: "(filtered from _MAX_ total bookmarks)",
+                    lengthMenu: "Show _MENU_ bookmarks",
+                    zeroRecords: "No matching bookmarks found"
+
                 },
                 dom: '<"table-bookmarks-top"f>tr<"table-bookmarks-bottom"ipl><"clear">'
             });
