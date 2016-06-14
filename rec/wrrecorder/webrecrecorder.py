@@ -3,7 +3,7 @@ from recorder.recorderapp import RecorderApp
 from recorder.redisindexer import WritableRedisIndexer
 
 from recorder.warcwriter import MultiFileWARCWriter, SimpleTempWARCWriter
-from recorder.filters import SkipDupePolicy
+from recorder.filters import WriteRevisitDupePolicy
 from recorder.filters import ExcludeSpecificHeaders
 
 from pywb.utils.loaders import BlockLoader
@@ -79,7 +79,7 @@ class WebRecRecorder(object):
 
             full_warc_prefix=self.full_warc_prefix,
 
-            dupe_policy=SkipDupePolicy(),
+            dupe_policy=WriteRevisitDupePolicy(),
 
             size_keys=self.info_keys.values(),
             rec_info_key_templ=self.info_keys['rec'],

@@ -200,6 +200,30 @@ var EventHandlers = (function() {
     }
 })();
 
+
+var Collections = (function() {
+    var API_ENDPOINT = "/api/v1/collections";
+    var query_string = "?user=" + user;
+
+    var getNumPages = function(doneCallback, failCallback) {
+        $.ajax({
+            url: API_ENDPOINT + "/" + coll + "/num_pages" + query_string,
+            method: "GET",
+        })
+        .done(function(data, textStatus, xhr){
+            doneCallback(data);
+        })
+        .fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr);
+        });
+    }
+
+    return {
+            getNumPages: getNumPages
+           };
+})();
+
+
 var Recordings = (function() {
     var API_ENDPOINT = "/api/v1/recordings";
     var query_string = "?user=" + user + "&coll=" + coll;
@@ -425,7 +449,8 @@ var BookmarkCounter = (function() {
     var start = function() {
         if ($(".url-input-recorder").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
-            Recordings.getPages(recordingId, startBookmarkCounter, dontStartBookmarkCounter);
+            //Recordings.getPages(recordingId, loadBookmarks, dontStartBookmarkCounter);
+            Collections.getNumPages(startBookmarkCounter, dontStartBookmarkCounter);
         }
     }
 
@@ -435,24 +460,29 @@ var BookmarkCounter = (function() {
     }
 
     var startBookmarkCounter = function(data) {
-        sortedBookmarks = data.pages.sort(function(p1, p2) {
-            return p1.timestamp - p2.timestamp;
-        });
+        //sortedBookmarks = data.pages.sort(function(p1, p2) {
+        //    return p1.timestamp - p2.timestamp;
+        //});
+        var count = data.count;
 
-        setBookmarkCount();
+        if (!count) {
+            count = 0;
+        }
+
+        setBookmarkCount(count);
     }
 
-    var setBookmarkCount = function() {
-        $('.bookmark-count').html(formatBookmarkCount(sortedBookmarks));
+    var setBookmarkCount = function(numBookmarks) {
+        $('.bookmark-count').html(formatBookmarkCount(numBookmarks));
     }
 
-    var formatBookmarkCount = function(bookmarks) {
+    var formatBookmarkCount = function(numBookmarks) {
         var bookmarkString = "bookmarks";
-        if (bookmarks.length === 1) {
+        if (numBookmarks === 1) {
             bookmarkString = "bookmark";
         }
 
-        return bookmarks.length + " " + bookmarkString + "<strong> / </strong>"
+        return numBookmarks + " " + bookmarkString + "<strong> / </strong>"
     }
 
     var dontStartBookmarkCounter = function() {
@@ -692,6 +722,12 @@ $(function() {
             $("input[name='url']").val(state.url);
         } else if (wbinfo.state == "record" || wbinfo.state == "patch") {
             if (lastUrl == state.url && lastTs == state.ts) {
+                return;
+            }
+
+            // if not is_live, then this page/bookmark is not a new recording
+            // but is an existing replay
+            if (wbinfo.state == "patch" && !state.is_live) {
                 return;
             }
 

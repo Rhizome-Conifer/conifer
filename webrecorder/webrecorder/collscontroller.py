@@ -88,6 +88,12 @@ class CollsController(BaseController):
             self.manager.set_coll_desc(user, coll, desc)
             return {}
 
+        @self.app.get('/api/v1/collections/<coll>/num_pages')
+        def get_num_pages(coll):
+            user = self.get_user(api=True)
+
+            return {'count': self.manager.count_pages(user, coll, rec='*') }
+
         # Create Collection
         @self.app.get('/_create')
         @self.jinja2_view('create_collection.html')

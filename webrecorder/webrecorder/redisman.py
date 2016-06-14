@@ -604,6 +604,22 @@ class RecManagerMixin(object):
 
         return pagelist
 
+    def count_pages(self, user, coll, rec):
+        self.assert_can_read(user, coll)
+
+        key = self.page_key.format(user=user, coll=coll, rec=rec)
+
+        if rec == '*':
+            count = 0
+
+            for pagekey in self.redis.scan_iter(key):
+                count += self.redis.hlen(pagekey)
+        else:
+            count = self.redis.hlen(key)
+
+        return count
+
+
     def list_coll_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
