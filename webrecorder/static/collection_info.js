@@ -7,6 +7,10 @@ $(function() {
 var RecordingSelector = (function() {
 
     var toggleRecordingSelection = function(event) {
+        if(isButtonEvent(event)) {
+            return;
+        }
+
         if (isAllRecordingsCard(this)) {
             $('.card-selected').removeClass('card-selected');
             $(this).addClass('card-selected');
@@ -92,6 +96,10 @@ var RecordingSelector = (function() {
 
     var isNothingSelected = function() {
         return $('.card-selected').length === 0;
+    }
+
+    var isButtonEvent = function(event) {
+        return $(event.target).hasClass('btn') || $(event.target).hasClass('glyphicon');
     }
 
     var start = function() {

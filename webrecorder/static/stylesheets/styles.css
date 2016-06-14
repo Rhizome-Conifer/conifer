@@ -211,20 +211,20 @@ input.homepage-title {
     border-top: 0px;
 }
 
-.card button {
+.card .recording-actions .btn {
     background-color: transparent;
 }
 
-.card-selected button {
+.card-selected .recording-actions .btn {
     border-color: #aaa;
 }
 
-.card:hover {
+.card:hover,
+.card-selected:hover {
     background-color: #eee;
 }
 
-.card-selected,
-.card-selected:hover {
+.card-selected {
     background-color: #ddd;
 }
 
