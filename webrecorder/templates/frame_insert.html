@@ -54,28 +54,15 @@
     wbinfo.info = {{ info | default('{}') | tojson }};
 </script>
 
-
-
 <script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wb.js'> </script>
-
 <script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wb_frame.js'> </script>
-
-<!--
-<script src="/static/__shared/nav.js"></script>
--->
-
-<script src="/static/__shared/external/typeahead.bundle.min.js"></script>
-
 <script src="/static/__shared/times_and_sizes_formatter.js"></script>
+<script src="/static/__shared/recording_model.js"></script>
 <script src="/static/__shared/recordings.js"></script>
 
 {% if curr_mode == "new" %}
 <script src="/static/__shared/newrecording.js"></script>
 {% endif %}
-
-<!-- 
-<script src='/static/__shared/automate.js'> </script>
--->
 
 {% endblock %}
 
