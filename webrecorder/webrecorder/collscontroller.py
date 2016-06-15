@@ -101,7 +101,7 @@ class CollsController(BaseController):
                 self.flash_message('Title is required')
                 self.redirect('/_create')
 
-            is_public = self.post_get('public', 'private') == 'public'
+            is_public = self.post_get('public') == 'on'
 
             coll = self.sanitize_title(title)
 
@@ -109,9 +109,9 @@ class CollsController(BaseController):
 
             try:
                 #self.manager.add_collection(user, coll_name, title, access)
-                self.manager.create_collection(user, coll, title,
-                                               desc='', public=is_public)
-                self.flash_message('Created collection <b>{0}</b>!'.format(coll), 'success')
+                collection = self.manager.create_collection(user, coll, title,
+                                                            desc='', public=is_public)
+                self.flash_message('Created collection <b>{0}</b>!'.format(collection['title']), 'success')
                 redir_to = self.get_redir_back('/_create')
             except ValidationException as ve:
                 self.flash_message(str(ve))

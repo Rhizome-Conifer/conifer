@@ -92,7 +92,16 @@ var EventHandlers = (function() {
 
             var url = $("input[name='url']").val();
 
-            RouteTo.patchPage(user, coll, wbinfo.info.rec_id, url);
+            var createPatch = function(data) {
+                RouteTo.patchPage(user, coll, data.recording.title, url);
+            };
+
+            var fail = function() {}
+
+            var attributes = {"title": "Patch"};
+
+            Recordings.create(user, coll, attributes, createPatch, fail);
+
         });
 
         // 'Patch page': 'Stop' button
@@ -221,10 +230,10 @@ var Recordings = (function() {
     var query_string = "?user=" + user + "&coll=" + coll;
 
     var create = function(user, coll, attributes, doneCallback, failCallback) {
-        var create_q = "?user=" + user + "&coll=" + coll;
+        var create_query = "?user=" + user + "&coll=" + coll;
 
         $.ajax({
-            url: API_ENDPOINT + create_q,
+            url: API_ENDPOINT + create_query,
             method: "POST",
             data: attributes,
         })

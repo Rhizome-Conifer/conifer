@@ -14,36 +14,36 @@
     </div>
 
     <div class="form-group col-md-10 col-md-offset-2 top-buffer">
-        <label for="recording">Recording Name:</label>
-        
+        <label for="recording">New Recording Name:</label>
+
         <span class="input-group">
             <input name="rec-title" type="text" class="form-control input-sm homepage-title" placeholder="" value="{{ rec_title }}" required {{ disabled_class }}>
         </span>
 
         {% if curr_user %}
         <label class="left-buffer" for="collection">Add to collection:</label>
-        
+
         <span class="dropdown">
             <button type="button" name="collection" class="btn btn-default dropdown-toggle dropdown-toggle-collection" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{ disabled_class }}>
                 <span class="dropdown-toggle-label">Collection </span><span class="caret"></span>
             </button>
 
             <ul class="dropdown-menu">
-                {% for collection in collections %}
-                <li>
-                    <a href="#" class="collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>
-                </li>
-                {% endfor %}
-                <li role="separator" class="divider"></li>
                 <li>
                     <a href="#" data-toggle="modal" data-target="#create-modal" role="button">
                         <span class="glyphicon glyphicon-plus right-buffer-sm"></span>New Collection
                     </a>
                 </li>
+                <li role="separator" class="divider"></li>
+                {% for collection in collections %}
+                <li>
+                    <a href="#" class="collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>
+                </li>
+                {% endfor %}
             </ul>
         </span>
         {% endif %}
-        
+
     </div>
 </form>
 

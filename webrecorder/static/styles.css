@@ -91,7 +91,7 @@
 }
 
 input.homepage-title {
-    min-width: 225px;
+    min-width: 160px !important;
 }
 
 
