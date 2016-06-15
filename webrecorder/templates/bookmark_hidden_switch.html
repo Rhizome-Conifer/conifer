@@ -1,0 +1,9 @@
+{% set hidden_glyph = "glyphicon-eye-closed" if bookmark.hidden == '1' else "glyphicon-eye-open" %}
+{% set hidden_label = "show" if bookmark.hidden == '1' else "hide" %}
+
+<button type="button" 
+    class="hidden-bookmark-toggle btn btn-default btn-xs" 
+    aria-label="Hide bookmark '{{ title }}'"
+    title="Hide bookmark '{{ title }}'">
+    <span class="glyphicon {{ hidden_glyph }}" aria-hidden="true"></span>
+</button>
