@@ -24,28 +24,6 @@ var EventHandlers = (function() {
             $(this).find('[autofocus]').focus();
         });
 
-        // Set default recording title if it is empty
-        var rec_title_input = $("input[name='rec-title']");
-
-        var DEFAULT_RECORDING_SESSION_NAME = "Recording Session";
-
-        if (rec_title_input.length) {
-            if (!rec_title_input.val()) {
-                rec_title_input.val(DEFAULT_RECORDING_SESSION_NAME);
-            }
-        }
-
-        // 'New recording': Start button
-        $('header').on('submit', '.start-recording', function(event) {
-            event.preventDefault();
-
-            var collection = $('[data-collection-id]').attr('data-collection-id');
-            var title = $("input[name='rec-title']").val();
-            var url = $("input[name='url']").val();
-
-            RouteTo.recordingInProgress(user, collection, title, url);
-        });
-
         // 'Recording in progress': Url bar submit / enter key
         $('header').on('submit', '.recording-in-progress', function(event) {
             event.preventDefault();

@@ -126,8 +126,8 @@ skip_key_templ: 'u:{user}:skip:{url}'
 
 del_templ:
     rec: 'r:{user}:{coll}:{rec}:*'
-    coll: '*:{user}:{coll}*'
-    user: '*:{user}*'
+    coll: '*:{user}:{coll}:*'
+    user: '*:{user}:*'
 
 storage_key_templ: 'st:{name}'
 
