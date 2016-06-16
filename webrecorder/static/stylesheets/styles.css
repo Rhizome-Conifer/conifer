@@ -262,6 +262,20 @@ input.homepage-title {
 
 .table-bookmarks {
     border-radius: 4px;
+    margin: 0 auto;
+    width: 100%;
+    clear: both;
+    border-collapse: collapse;
+    table-layout: fixed;
+    word-wrap:break-word;
+}
+
+.table-bookmarks>tbody>tr>td a {
+    word-wrap: break-word;
+}
+
+.table-bookmarks>tbody>tr>td.timestamp {
+    font-size: .8em;
 }
 
 .table-bookmarks>tbody>tr>td,

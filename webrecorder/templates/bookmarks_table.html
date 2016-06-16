@@ -32,7 +32,7 @@
                         data-bookmark-hidden="{{ hidden }}"
                         data-recording-id="{{ recording.id }}" >
 	                    <td><a href="{{ path }}">{{ title }}<a/></td>
-                        <td data-time-ts="{{ timestamp }}"></td>
+                        <td class="timestamp" data-time-ts="{{ timestamp }}"></td>
                         <td><a href="{{ path }}">{{ bookmark.url }}</a></td>
 
 	                    {% if is_owner() %}

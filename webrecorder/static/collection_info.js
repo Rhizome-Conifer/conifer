@@ -161,10 +161,7 @@ var BookmarksTable = (function() {
         if ($(".table-bookmarks").length) {
             theTable = $(".table-bookmarks").DataTable({
                 paging: true,
-                columnDefs: [
-                    { targets: [0, 1, 2, 3], orderable: true },
-                    { targets: '_all',    orderable: false }
-                ],
+                columnDefs: getColumnDefs(),
                 order: [[1, 'desc']],
                 lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
                 language: {
@@ -179,6 +176,27 @@ var BookmarksTable = (function() {
                 },
                 dom: '<"table-bookmarks-top"f>tr<"table-bookmarks-bottom"ipl><"clear">'
             });
+        }
+    }
+
+    var hasVisibilityColumn = function() {
+        return $('.table-bookmarks th').length === 5;
+    }
+
+    var getColumnDefs = function() {
+        if (hasVisibilityColumn()) {
+            return [
+                        { targets: [0, 1, 2, 3], orderable: true },
+                        { targets: '_all',    orderable: false },
+                        { targets: [0, 1, 4], width: "8em" },
+                        { targets: 3, width: "4em" }
+                    ]
+        } else {
+            return [
+                        { targets: [0, 1, 2, 3], orderable: true },
+                        { targets: '_all',    orderable: false },
+                        { targets: [0, 1, 3], width: "8em" }
+                    ]
         }
     }
 
