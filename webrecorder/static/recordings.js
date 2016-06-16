@@ -90,27 +90,6 @@ var EventHandlers = (function() {
 
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
-
-        // 'Recording info' page: 'Hide' button
-        $('table').on('click', '.hide-page', function(event) {
-            event.preventDefault();
-
-            var attributes = {}
-            attributes.url = $(this).attr("data-page-url");
-            attributes.timestamp = $(this).attr("data-page-ts");
-            attributes.hidden = $(this).attr("data-page-hidden") == "1" ? "0" : "1";
-
-            var recordingId = $(this).attr('data-recording-id');
-
-            var toggleHiddenRow = function(data) {
-                // Returned data should have unique way to identify the row,
-                // so we can toggle the row state here.  Instead, reload
-                // whole page for now.
-                window.location.reload();
-            }
-
-            Recordings.modifyPage(recordingId, attributes, toggleHiddenRow);
-        });
             
         // 'Header': 'Login' link to display modal
         $('#login-link').on('click', function(event) {
