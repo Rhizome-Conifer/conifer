@@ -158,28 +158,6 @@ var EventHandlers = (function() {
     }
 })();
 
-var Collections = (function() {
-    var API_ENDPOINT = "/api/v1/collections";
-    var query_string = "?user=" + user;
-
-    var getNumPages = function(doneCallback, failCallback) {
-        $.ajax({
-            url: API_ENDPOINT + "/" + coll + "/num_pages" + query_string,
-            method: "GET",
-        })
-        .done(function(data, textStatus, xhr){
-            doneCallback(data);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr);
-        });
-    }
-
-    return {
-            getNumPages: getNumPages
-           };
-})();
-
 var RouteTo = (function(){
     var host = window.location.protocol + "//" + window.location.host;
 
@@ -314,7 +292,6 @@ var BookmarkCounter = (function() {
     var start = function() {
         if ($(".url-input-recorder").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
-            //Recordings.getPages(recordingId, loadBookmarks, dontStartBookmarkCounter);
             Collections.getNumPages(startBookmarkCounter, dontStartBookmarkCounter);
         }
     }

@@ -2,6 +2,23 @@ var Recordings = (function() {
     var API_ENDPOINT = "/api/v1/recordings";
     var query_string = "?user=" + user + "&coll=" + coll;
 
+    var create = function(user, coll, attributes, doneCallback, failCallback) {
+        var create_query = "?user=" + user + "&coll=" + coll;
+
+        $.ajax({
+            url: API_ENDPOINT + create_query,
+            method: "POST",
+            data: attributes,
+        })
+        .done(function(data, textStatus, xhr) {
+            doneCallback(data);
+        })
+        .fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr);
+        });
+
+    }
+
     var get = function(recordingId, doneCallback, failCallback) {
         $.ajax({
             url: API_ENDPOINT + "/" + recordingId + query_string,
@@ -80,6 +97,7 @@ var Recordings = (function() {
 
     return {
         get: get,
+        create: create,
         addPage: addPage,
         removePage: removePage,
         modifyPage: modifyPage,
