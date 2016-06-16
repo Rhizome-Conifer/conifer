@@ -1,6 +1,8 @@
 <script>
     $(function() {
-        $("#collection").on('input', function() {
+        $(".ispublic").bootstrapSwitch();
+
+        /*        $("#collection").on('input', function() {
             $("#coll-id").text($(this).val());
         });
         $("#title").on('input', function() {
@@ -9,42 +11,23 @@
             $("#collection-id").val(filtered);
             $("#coll-id").text(filtered);
         });
+*/
     });
+
 </script>
 <div class="row top-buffer-md">
     <div class="col-md-10 col-md-offset-1">
-        <form method="post" id="create-coll" action="/_create" role="form" data-toggle="validator" data-delay="1000">
-            <!--<h4>Create a new collection:</h4>-->
-            
-            <div class="form-group">
-                <div class="input-group">
-                    <span class="input-group-addon" id="addon2">Title</span>
-                    <label for="collection" class="sr-only">Collection Name</label>
-                    <input type="text" id="title" name="title" class="form-control" placeholder="My Collection" aria-describedby="addon2"  autofocus>
-                </div>
-                <div class="help-block">Collection title.</div>
-            </div>
+        <form method="post" id="create-coll" action="/_create" class="form-horizontal">
+            <span class="form-group col-md-5">
+                <label for="collection">Collection Name:</label>
+                <input type="text" id="title" name="title" class="form-control" placeholder="" value="New Collection" aria-describedby="addon2" autofocus>
+            </span>
 
-            <div class="form-group">
-                <div class="input-group">
-                    <span class="input-group-addon" id="addon1">URL</span>
-                    <label for="collection-id" class="sr-only">Collection Url</label>
-                    <input type="text" id="collection-id" name="collection-id" class="form-control" placeholder="my-collection" aria-describedby="addon1"
-                           required="true" pattern="[A-Za-z0-9][\w-]{1,29}" max-length="30" data-error="Collection names must be 2-30 characters, and start with letter or digit and contain only letters, digit or -">
-                </div>
-                <b>https://webrecorder.io/{{ curr_user }}/<span id="coll-id">[my-collection]</span></b>
-                <div class="help-block">The permanant url to this collection.</div>
-                <div class="help-block with-errors"></div>
-            </div>
+            <span class="col-md-6 col-md-offset-1">
+                <label for="public"><span class="glyphicon glyphicon-globe" style="margin-right: 4px"></span>Make public (visible to all)?</label>
+                <input type="checkbox" class="ispublic" name="public" id="is_public" data-on-color="success" data-inverse="true"  data-on-text="YES" data-off-text="NO"/>
+            </span>
 
-            <div class="form-group">
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" name="public" value="public"> Public
-                </label>
-            </div>
-                <div class="help-block">A public collection will be visible to anyone.</div>
-            </div>
             <button class="btn btn-lg btn-primary btn-block" type="submit">Create</button>
         </form>
     </div>

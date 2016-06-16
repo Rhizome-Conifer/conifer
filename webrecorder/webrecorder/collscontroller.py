@@ -19,15 +19,8 @@ class CollsController(BaseController):
             title = request.forms.get('title')
             coll = self.sanitize_title(title)
 
-            collection = self.manager.get_collection(user, coll)
-            if collection:
-                response.status = 400
-                return {'error_message': 'Collection already exists',
-                        'id': coll,
-                        'title': collection.get('title', title)
-                       }
-
             collection = self.manager.create_collection(user, coll, title)
+
             return {'collection': collection}
 
         @self.app.get('/api/v1/collections')
@@ -88,6 +81,12 @@ class CollsController(BaseController):
             self.manager.set_coll_desc(user, coll, desc)
             return {}
 
+        @self.app.get('/api/v1/collections/<coll>/num_pages')
+        def get_num_pages(coll):
+            user = self.get_user(api=True)
+
+            return {'count': self.manager.count_pages(user, coll, rec='*') }
+
         # Create Collection
         @self.app.get('/_create')
         @self.jinja2_view('create_collection.html')
@@ -97,19 +96,22 @@ class CollsController(BaseController):
 
         @self.app.post('/_create')
         def create_coll_post():
-            #self.manager.cork.require(role='archivist', fail_redirect='/')
+            title = self.post_get('title')
+            if not title:
+                self.flash_message('Title is required')
+                self.redirect('/_create')
 
-            coll = self.post_get('collection-id')
-            title = self.post_get('title', coll)
-            is_public = self.post_get('public', 'private') == 'public'
+            is_public = self.post_get('public') == 'on'
+
+            coll = self.sanitize_title(title)
 
             user = self.manager.get_curr_user()
 
             try:
                 #self.manager.add_collection(user, coll_name, title, access)
-                self.manager.create_collection(user, coll, title,
-                                               desc='', public=is_public)
-                self.flash_message('Created collection <b>{0}</b>!'.format(coll), 'success')
+                collection = self.manager.create_collection(user, coll, title,
+                                                            desc='', public=is_public)
+                self.flash_message('Created collection <b>{0}</b>!'.format(collection['title']), 'success')
                 redir_to = self.get_redir_back('/_create')
             except ValidationException as ve:
                 self.flash_message(str(ve))

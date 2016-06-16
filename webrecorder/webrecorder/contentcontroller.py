@@ -244,6 +244,8 @@ class ContentController(BaseController, RewriterApp):
         #if type in ('live', 'record'):
         #    cdx['is_live'] = 'true'
 
+        print('SOURCE', resp_headers.get('Webagg-Source-Coll'))
+
         if resp_headers.get('Webagg-Source-Coll') == 'live':
             cdx['is_live'] = 'true'
 

@@ -24,36 +24,6 @@ var EventHandlers = (function() {
             $(this).find('[autofocus]').focus();
         });
 
-        var getNewRecTitle = function() {
-            return "Recording At " + new Date().toISOString().substring(0, 19).replace("T", " ");
-        }
-
-        $(".wr-gen-rec-name").on('click', function(event) {
-            event.preventDefault();
-
-            $("input[name='rec-title']").val(getNewRecTitle());
-        });
-
-        // Set default recording title if it is empty
-        var rec_title_input = $("input[name='rec-title']");
-
-        if (rec_title_input.length) {
-            if (!rec_title_input.val()) {
-                rec_title_input.val(getNewRecTitle());
-            }
-        }
-
-        // 'New recording': Start button
-        $('header').on('submit', '.start-recording', function(event) {
-            event.preventDefault();
-
-            var collection = $('[data-collection-id]').attr('data-collection-id');
-            var title = $("input[name='rec-title']").val();
-            var url = $("input[name='url']").val();
-
-            RouteTo.recordingInProgress(user, collection, title, url);
-        });
-
         // 'Recording in progress': Url bar submit / enter key
         $('header').on('submit', '.recording-in-progress', function(event) {
             event.preventDefault();
@@ -100,7 +70,16 @@ var EventHandlers = (function() {
 
             var url = $("input[name='url']").val();
 
-            RouteTo.patchPage(user, coll, wbinfo.info.rec_id, url);
+            var createPatch = function(data) {
+                RouteTo.patchPage(user, coll, data.recording.title, url);
+            };
+
+            var fail = function() {}
+
+            var attributes = {"title": "Patch"};
+
+            Recordings.create(user, coll, attributes, createPatch, fail);
+
         });
 
         // 'Patch page': 'Stop' button
@@ -200,9 +179,50 @@ var EventHandlers = (function() {
     }
 })();
 
+
+var Collections = (function() {
+    var API_ENDPOINT = "/api/v1/collections";
+    var query_string = "?user=" + user;
+
+    var getNumPages = function(doneCallback, failCallback) {
+        $.ajax({
+            url: API_ENDPOINT + "/" + coll + "/num_pages" + query_string,
+            method: "GET",
+        })
+        .done(function(data, textStatus, xhr){
+            doneCallback(data);
+        })
+        .fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr);
+        });
+    }
+
+    return {
+            getNumPages: getNumPages
+           };
+})();
+
+
 var Recordings = (function() {
     var API_ENDPOINT = "/api/v1/recordings";
     var query_string = "?user=" + user + "&coll=" + coll;
+
+    var create = function(user, coll, attributes, doneCallback, failCallback) {
+        var create_query = "?user=" + user + "&coll=" + coll;
+
+        $.ajax({
+            url: API_ENDPOINT + create_query,
+            method: "POST",
+            data: attributes,
+        })
+        .done(function(data, textStatus, xhr) {
+            doneCallback(data);
+        })
+        .fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr);
+        });
+
+    }
 
     var get = function(recordingId, doneCallback, failCallback) {
         $.ajax({
@@ -284,6 +304,7 @@ var Recordings = (function() {
 
     return {
         get: get,
+        create: create,
         addPage: addPage,
         removePage: removePage,
         modifyPage: modifyPage,
@@ -425,7 +446,8 @@ var BookmarkCounter = (function() {
     var start = function() {
         if ($(".url-input-recorder").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
-            Recordings.getPages(recordingId, startBookmarkCounter, dontStartBookmarkCounter);
+            //Recordings.getPages(recordingId, loadBookmarks, dontStartBookmarkCounter);
+            Collections.getNumPages(startBookmarkCounter, dontStartBookmarkCounter);
         }
     }
 
@@ -435,24 +457,29 @@ var BookmarkCounter = (function() {
     }
 
     var startBookmarkCounter = function(data) {
-        sortedBookmarks = data.pages.sort(function(p1, p2) {
-            return p1.timestamp - p2.timestamp;
-        });
+        //sortedBookmarks = data.pages.sort(function(p1, p2) {
+        //    return p1.timestamp - p2.timestamp;
+        //});
+        var count = data.count;
 
-        setBookmarkCount();
+        if (!count) {
+            count = 0;
+        }
+
+        setBookmarkCount(count);
     }
 
-    var setBookmarkCount = function() {
-        $('.bookmark-count').html(formatBookmarkCount(sortedBookmarks));
+    var setBookmarkCount = function(numBookmarks) {
+        $('.bookmark-count').html(formatBookmarkCount(numBookmarks));
     }
 
-    var formatBookmarkCount = function(bookmarks) {
+    var formatBookmarkCount = function(numBookmarks) {
         var bookmarkString = "bookmarks";
-        if (bookmarks.length === 1) {
+        if (numBookmarks === 1) {
             bookmarkString = "bookmark";
         }
 
-        return bookmarks.length + " " + bookmarkString + "<strong> / </strong>"
+        return numBookmarks + " " + bookmarkString + "<strong> / </strong>"
     }
 
     var dontStartBookmarkCounter = function() {
@@ -692,6 +719,12 @@ $(function() {
             $("input[name='url']").val(state.url);
         } else if (wbinfo.state == "record" || wbinfo.state == "patch") {
             if (lastUrl == state.url && lastTs == state.ts) {
+                return;
+            }
+
+            // if not is_live, then this page/bookmark is not a new recording
+            // but is an existing replay
+            if (wbinfo.state == "patch" && !state.is_live) {
                 return;
             }
 

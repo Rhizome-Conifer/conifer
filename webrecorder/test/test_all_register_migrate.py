@@ -129,12 +129,12 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_logged_in_create_coll_page(self):
         res = self.testapp.get('/_create')
-        assert 'https://webrecorder.io/someuser/' in res.text
+        #assert 'https://webrecorder.io/someuser/' in res.text
+        assert 'New Collection' in res.text
 
     def test_logged_in_create_coll(self):
         params = {'title': 'New Coll',
-                  'collection-id': 'new-coll',
-                  'public': 'public'
+                  'public': 'on'
                  }
 
         res = self.testapp.post('/_create', params=params)

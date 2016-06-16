@@ -34,7 +34,7 @@ url_templates:
     live: '{replay_host}/live/resource/postreq?'
 
     record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
-    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
+    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.replay.rec=*'
 
     replay: '{replay_host}/replay/resource/postreq?param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}'
     replay-coll: '{replay_host}/replay-coll/resource/postreq?param.user={user}&param.coll={coll}&param.rec=*'
@@ -126,8 +126,8 @@ skip_key_templ: 'u:{user}:skip:{url}'
 
 del_templ:
     rec: 'r:{user}:{coll}:{rec}:*'
-    coll: '*:{user}:{coll}*'
-    user: '*:{user}*'
+    coll: '*:{user}:{coll}:*'
+    user: '*:{user}:*'
 
 storage_key_templ: 'st:{name}'
 

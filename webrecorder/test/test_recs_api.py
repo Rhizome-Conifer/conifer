@@ -21,8 +21,21 @@ class TestWebRecRecAPI(BaseWRTests):
         assert self.testapp.cookies['__test_sesh'] != ''
 
         assert res.json['recording']['id'] == 'my-rec'
+        assert res.json['recording']['title'] == 'My Rec'
 
         assert self.redis.exists('r:' + self.anon_user + ':temp:my-rec:info')
+
+    def test_create_anon_rec_dup(self):
+        res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': 'My Rec'})
+
+        assert self.testapp.cookies['__test_sesh'] != ''
+
+        assert res.json['recording']['id'] == 'my-rec-2'
+        assert res.json['recording']['title'] == 'My Rec 2'
+
+        assert self.redis.exists('r:' + self.anon_user + ':temp:my-rec-2:info')
+
+
 
     def test_anon_get_anon_rec(self):
         res = self._anon_get('/api/v1/recordings/my-rec?user={user}&coll=temp')
@@ -50,7 +63,9 @@ class TestWebRecRecAPI(BaseWRTests):
         res = self._anon_get('/api/v1/recordings?user={user}&coll=temp')
 
         recs = res.json['recordings']
-        assert len(recs) == 2
+        assert len(recs) == 3
+
+        recs.sort(key=lambda x: x['id'])
 
         assert recs[0]['id'] == '2-another-recording'
         assert recs[0]['title'] == '2 Another! Recording!'
@@ -59,6 +74,10 @@ class TestWebRecRecAPI(BaseWRTests):
         assert recs[1]['id'] == 'my-rec'
         assert recs[1]['title'] == 'My Rec'
         assert recs[1]['download_url'] == 'http://localhost:80/{user}/temp/my-rec/$download'.format(user=self.anon_user)
+
+        assert recs[2]['id'] == 'my-rec-2'
+        assert recs[2]['title'] == 'My Rec 2'
+        assert recs[2]['download_url'] == 'http://localhost:80/{user}/temp/my-rec-2/$download'.format(user=self.anon_user)
 
     def test_page_list_0(self):
         res = self._anon_get('/api/v1/recordings/my-rec/pages?user={user}&coll=temp')
@@ -111,9 +130,9 @@ class TestWebRecRecAPI(BaseWRTests):
         res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': '2ab_'})
         assert res.json['recording']['id'] == '2ab__'
 
-    def test_error_already_exists(self):
-        res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': '2 Another Recording'}, status=400)
-        assert res.json == {'error_message': 'Recording Already Exists', 'id': '2-another-recording', 'title': '2 Another! Recording!'}
+    #def test_error_already_exists(self):
+    #    res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': '2 Another Recording'}, status=400)
+    #    assert res.json == {'error_message': 'Recording Already Exists', 'id': '2-another-recording', 'title': '2 Another! Recording!'}
 
     def test_error_no_such_rec(self):
         res = self._anon_get('/api/v1/recordings/blah@$?user={user}&coll=temp', status=404)
