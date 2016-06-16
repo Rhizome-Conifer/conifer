@@ -86,7 +86,7 @@ class RecsController(BaseController):
             page_data['url'] = url
 
             res = self.manager.modify_page(user, coll, rec, page_data)
-            return res
+            return {'page-data': page_data, 'recording-id': rec}
 
         @self.app.get('/api/v1/recordings/<rec>/pages')
         def list_pages(rec):
