@@ -147,6 +147,15 @@ input.homepage-title {
  {
   padding: 0px 5px;
 }
+
+.form-group-recorder-url {
+    margin-bottom: 4px;
+}
+
+.url-input-recorder {
+    width: 92%;
+    display: inline-block;
+}
 /* End recorder */
 
 
@@ -167,84 +176,139 @@ input.homepage-title {
     display: inline-block;
 }
 
+.hide-loading-spinner,
 .edit-title-loading-spinner {
     display: inline-block;
-    width: 22px;
-    height: 22px;
     background-image: url(/static/__shared/edit_title_spinner.gif);
     background-repeat: no-repeat;
     background-position-x: 3px;
     background-position-y: 3px;
 }
 
-.recording-selector-panel {
-    border: 1px solid #ccc;
-    border-right: 0px;
-    border-bottom: 0px;
+.edit-title-loading-spinner {
+    width: 22px;
+    height: 22px;
+}
 
-    border-radius: 4px;
-    border-top-right-radius: 0px;
+.hide-loading-spinner {
+    width: 14px;
+    height: 14px;
+}
 
+.access-switch {
+    padding-top: 15px;
+}
+
+.recording-panel {
     padding-right: 0px;
     padding-left: 0px;
 }
 
-.recording-info-content-panel {
+.recording-panel-top-spacer {
+    height: 30px;
+}
+
+.recording-selector {
     border: 1px solid #ccc;
+    margin-top: 11px;
     border-radius: 4px;
-    border-top-left-radius: 0px;
+}
+
+.bookmarks-panel {
+    padding-right: 0px;
 }
 
 .card {
-    border-bottom: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-    padding-top: 10px;
+    border-top: 1px solid #ccc;
     padding-bottom: 10px;
     padding-left: 5px;
     cursor: pointer;
 }
 
-.recording-title {
-    overflow-wrap: break-word;
+.card-top {
+    border-top: 0px;
 }
 
-.card:hover {
+.card .recording-actions .btn {
+    background-color: transparent;
+}
+
+.card-selected .recording-actions .btn {
+    border-color: #aaa;
+}
+
+.card:hover,
+.card-selected:hover {
     background-color: #eee;
 }
 
-.card-selected,
-.card-selected:hover {
+.card-selected {
     background-color: #ddd;
 }
+
+.recording-title {
+    overflow-wrap: break-word;
+    font-size: 18px;
+    color: #1932bd;
+}
+
+.recording-time-info {
+    color: #777;
+}
+
+.recording-actions {
+    height: 22px;
+}
+
+.table-bookmarks {
+    border-radius: 4px;
+    margin: 0 auto;
+    width: 100%;
+    clear: both;
+    border-collapse: collapse;
+    table-layout: fixed;
+    word-wrap:break-word;
+}
+
+.table-bookmarks>tbody>tr>td a {
+    word-wrap: break-word;
+}
+
+.table-bookmarks>tbody>tr>td.timestamp {
+    font-size: .8em;
+}
+
+.table-bookmarks>tbody>tr>td,
+.table-bookmarks>tbody>tr>th,
+.table-bookmarks>tfoot>tr>td,
+.table-bookmarks>tfoot>tr>th,
+.table-bookmarks>thead>tr>td,
+.table-bookmarks>thead>tr>th {
+    vertical-align: middle;
+    line-height: 1.2;
+}
+
+
+.table-bookmarks.dataTable thead .sorting:after,
+.table-bookmarks.dataTable thead .sorting_asc:after,
+.table-bookmarks.dataTable thead .sorting_desc:after {
+    top: 2px;
+}
+
+.table-bookmarks-bottom div.dataTables_info {
+    display: inline-block;
+}
+
+.table-bookmarks-bottom div.dataTables_length {
+    display: inline-block;
+    margin-left: 20px;
+}
+
+.table-bookmarks-bottom div.dataTables_paginate {
+    display: inline-block;
+    float: right;
+}
 /* End collection info page */
-
-
-/*
- * Recording Info page
- *
- */
-.hidden-bookmark-row {
-    background-color: lightgray
-}
-
-.table>caption+thead>tr:first-child>td,
-.table>caption+thead>tr:first-child>th,
-.table>colgroup+thead>tr:first-child>td,
-.table>colgroup+thead>tr:first-child>th,
-.table>thead:first-child>tr:first-child>td,
-.table>thead:first-child>tr:first-child>th {
-  border: 1px solid #ddd;
-}
-
-.table>tbody>tr {
-  border-right: 1px solid #ddd;
-  border-left: 1px solid #ddd;
-}
-
-tbody {
-  border-bottom: 1px solid #ddd;
-}
-/* End recording info page */
 
 /*
  * Links selecter/finder
@@ -310,6 +374,10 @@ tbody {
  * Spacers and buffers
  *
  */
+.top-buffer-none {
+    margin-top: 0px;
+}
+
 .top-buffer-sm {
     margin-top: 5px;
 }

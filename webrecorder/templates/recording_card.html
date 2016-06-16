@@ -1,0 +1,21 @@
+{% set duration = recording.updated_at - recording.created_at %}
+{% set bookmark_plural = "bookmark" if (recording.pages | count == 1) else "bookmarks" %}
+
+<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
+    <div class="recording-title">{{ recording.title }}</div>
+
+    <div class="recording-stats text-left top-buffer-md right-buffer-sm">
+        <span class="bookmark-count">{{ recording.pages | count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
+        <span class="current-size text-right" data-size="{{ recording.size }}"></span>
+    </div>
+
+    <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
+        <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
+    </div>
+
+    <div class="recording-time-info text-left right-buffer-sm">
+        <small><span data-time-duration="{{ duration }}"></span></small>
+    </div>
+
+    {% include 'recording_card_buttons.html' %}
+</div>

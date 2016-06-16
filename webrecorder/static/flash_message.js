@@ -3,6 +3,7 @@ var FlashMessage = (function() {
 
 	var show = function(type, text) {
 		$('.wr-content').prepend(getMessageDOM(type, text));
+		$('html, body').animate({ scrollTop: 0 }, 'fast');
 	}
 
 	var getMessageDOM = function(type, text) {

@@ -2,20 +2,25 @@ $(function() {
     PublicPrivateSwitch.start();
     BookmarksTable.start();
     RecordingSelector.start();
+    BookmarkHiddenSwitch.start();
 });
 
 var RecordingSelector = (function() {
 
     var toggleRecordingSelection = function(event) {
+        if(isButtonEvent(event)) {
+            return;
+        }
+
         if (isAllRecordingsCard(this)) {
             $('.card-selected').removeClass('card-selected');
             $(this).addClass('card-selected');
         } else {
-            $('.recording-selector-panel').find('[data-recording-id="$all"]').removeClass('card-selected');
+            $('.recording-selector').find('[data-recording-id="$all"]').removeClass('card-selected');
             $(this).toggleClass('card-selected');
 
             if (isNothingSelected()) {
-                $('.recording-selector-panel').find('[data-recording-id="$all"]').addClass('card-selected');
+                $('.recording-selector').find('[data-recording-id="$all"]').addClass('card-selected');
             }
         }
 
@@ -46,7 +51,7 @@ var RecordingSelector = (function() {
 
     var selectRecordings = function(recordingIds) {
         $.map(recordingIds, function(recordingId) {
-            $('.recording-selector-panel').find('[data-recording-id="' + recordingId + '"]').click();
+            $('.recording-selector').find('[data-recording-id="' + recordingId + '"]').click();
         });
     }
 
@@ -78,7 +83,7 @@ var RecordingSelector = (function() {
     var getSelectedRecordingTitles = function() {
         var recordingIds = getSelectedRecordingIds();
         return $.map(recordingIds, function(recordingId) {
-                return $('.recording-selector-panel').find('[data-recording-id="' + recordingId + '"]')
+                return $('.recording-selector').find('[data-recording-id="' + recordingId + '"]')
                         .attr('data-recording-title') });
     }
 
@@ -94,8 +99,12 @@ var RecordingSelector = (function() {
         return $('.card-selected').length === 0;
     }
 
+    var isButtonEvent = function(event) {
+        return $(event.target).hasClass('btn') || $(event.target).hasClass('glyphicon');
+    }
+
     var start = function() {
-        $('.recording-selector-panel').on('click', '.card', toggleRecordingSelection);
+        $('.recording-selector').on('click', '.card', toggleRecordingSelection);
 
         // selectPrevious recordings on popstate
         $(window).on('popstate', selectPrevious);
@@ -152,19 +161,54 @@ var BookmarksTable = (function() {
         if ($(".table-bookmarks").length) {
             theTable = $(".table-bookmarks").DataTable({
                 paging: true,
-                columnDefs: [
-                    { targets: [0, 1, 2, 3], orderable: true },
-                    { targets: '_all',    orderable: false }
-                ],
+                columnDefs: getColumnDefs(),
                 order: [[1, 'desc']],
-                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]]
+                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                language: {
+                    search: "Filter:",
+                    emptyTable: "No bookmarks available in the table",
+                    info: "Showing _START_ to _END_ of _TOTAL_ bookmarks",
+                    infoEmpty: "Showing 0 to 0 of 0 bookmarks",
+                    infoFiltered: "(filtered from _MAX_ total bookmarks)",
+                    lengthMenu: "Show _MENU_ bookmarks",
+                    zeroRecords: "No matching bookmarks found"
+
+                },
+                dom: '<"table-bookmarks-top"f>tr<"table-bookmarks-bottom"ipl><"clear">'
             });
         }
     }
 
+    var hasVisibilityColumn = function() {
+        return $('.table-bookmarks th').length === 5;
+    }
+
+    var getColumnDefs = function() {
+        if (hasVisibilityColumn()) {
+            return [
+                        { targets: [0, 1, 2, 3], orderable: true },
+                        { targets: '_all',    orderable: false },
+                        { targets: [0, 1, 4], width: "8em" },
+                        { targets: 3, width: "4em" }
+                    ]
+        } else {
+            return [
+                        { targets: [0, 1, 2, 3], orderable: true },
+                        { targets: '_all',    orderable: false },
+                        { targets: [0, 1, 3], width: "8em" }
+                    ]
+        }
+    }
+
     var filterByRecordings = function(recordingTitles) {
-        var regex = recordingTitles.join("|");
-        theTable.column([3]).search(regex, true, false).draw();
+        var recordingColumnIndex = $('[data-recording-column-index]').attr('data-recording-column-index');
+
+        if (recordingTitles.length) {
+            var regex = "^(" + recordingTitles.join("|") + ")$";
+            theTable.column([recordingColumnIndex]).search(regex, true, false).draw();
+        } else {
+            theTable.column([recordingColumnIndex]).search("").draw();
+        }
     }
 
     return {
@@ -174,38 +218,99 @@ var BookmarksTable = (function() {
 
 })();
 
-var Collections = (function() {
-    var API_ENDPOINT = "/api/v1/collections";
-    var query_string = "?user=" + user
+var BookmarkHiddenSwitch = (function() {
 
-    var get = function(user, doneCallback, failCallback) {
-        $.ajax({
-            url: API_ENDPOINT + query_string,
-            method: "GET"
-        })
-        .done(function(data, textStatus, xhr) {
-            doneCallback(data);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr);
-        });
+    var showNewHiddenState = function(response) {
+        var bookmarkInfo = getBookmarkInfoFromSuccessResponse(response);
+        var button = findButton(bookmarkInfo);
+
+        toggleBookmarkHiddenState(button, bookmarkInfo);
+        removeSpinner(button);
     }
 
-    var rename = function(collectionId, newName, doneCallback, failCallback) {
-        $.ajax({
-            url: API_ENDPOINT + "/" + collectionId + "/rename/" + newName + query_string,
-            method: "POST"
-        })
-        .done(function(data, textStatus, xhr) {
-            doneCallback(data);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr);
-        });
+    var showErrorMessage = function(xhr, textStatus, errorThrown, recordingId) {
+        var bookmarkInfo = getBookmarkInfoFromErrorResponse(xhr.responseText);
+        bookmarkInfo.recordingId = recordingId;
+        var button = findButton(bookmarkInfo);
+
+        removeSpinner(button);
+        FlashMessage.show("danger", "Uh oh.  Something went wrong while updating your bookmark.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>.");
+    }
+
+    var getBookmarkInfoFromErrorResponse = function(responseText) {
+        return JSON.parse(responseText).request_data;
+    }
+
+    var getBookmarkInfoFromSuccessResponse = function(response) {
+        var info = {};
+        info.recordingId = response['recording-id'];
+        info.timestamp = response['page-data']['timestamp'];
+        info.url = response['page-data']['url'];
+        info.hidden = response['page-data']['hidden'];
+        return info;
+    }
+
+    var toggleBookmarkHiddenState = function(button, bookmarkInfo) {
+        $(button).closest('[data-bookmark-hidden]').attr("data-bookmark-hidden", bookmarkInfo.hidden);
+
+        if (bookmarkInfo.hidden === "1") {
+            $(button).find('.glyphicon').removeClass('glyphicon-eye-open');
+            $(button).find('.glyphicon').addClass('glyphicon-eye-close');
+            $(button).find('.hidden-label').text('Show');
+        } else {
+            $(button).find('.glyphicon').removeClass('glyphicon-eye-close');
+            $(button).find('.glyphicon').addClass('glyphicon-eye-open');
+            $(button).find('.hidden-label').text('Hide');
+        }
+    }
+
+    var getNewHiddenValue = function(button) {
+        var currentHidden = $(button).closest('[data-bookmark-hidden]').attr("data-bookmark-hidden");
+        return currentHidden === "1" ? "0" : "1";
+    }
+
+    var getAttributesFromDOM = function(button) {
+        var attributes = {}
+        attributes.url = $(button).closest('[data-bookmark-url]').attr("data-bookmark-url");
+        attributes.timestamp = $(button).closest('[data-bookmark-timestamp]').attr("data-bookmark-timestamp");
+        attributes.hidden = getNewHiddenValue(button);
+        return attributes;
+    }
+
+    var toggleHideBookmark = function() {
+        var recordingId = $(this).closest('[data-recording-id]').attr('data-recording-id');
+        Recordings.modifyPage(recordingId, getAttributesFromDOM(this), showNewHiddenState, showErrorMessage);
+
+        showSpinner(this);
+    }
+
+    var showSpinner = function(button) {
+        var spinnerDOM = "<span class='hide-loading-spinner' role='alertdialog' aria-busy='true' aria-live='assertive'></span>";
+
+        $(button).addClass('disabled');
+        $(button).find('.glyphicon').hide();
+        $(button).prepend(spinnerDOM);
+    }
+
+    var removeSpinner = function(button) {
+        $(button).removeClass('disabled');
+        $(button).find('.hide-loading-spinner').remove();
+        $(button).find('.glyphicon').show();
+    }
+
+    var findButton = function(info) {
+        var row = $("tr[data-recording-id='" + info.recordingId + "']" +
+                "[data-bookmark-timestamp='" + info.timestamp + "']" +
+                "[data-bookmark-url='" + info.url + "']");
+        return $(row).find('.hidden-bookmark-toggle');
+    }
+
+    var start = function() {
+        $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
     }
 
     return {
-        get: get,
-        rename: rename
+        start: start
     }
+
 })();

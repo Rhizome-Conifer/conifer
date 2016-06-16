@@ -1,6 +1,4 @@
 <div class="pull-right">
-    {% include 'new_recording_button.html' %}
-
     {% if can_admin() %}
         <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm">Download</a>
         <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-collection-modal">Delete</button>

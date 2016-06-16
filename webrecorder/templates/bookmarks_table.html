@@ -1,0 +1,49 @@
+{% set recording_column_index = 4 if is_owner() else 3 %}
+
+<table class="table table-bordered table-hover table-bookmarks"
+       data-page-length="25"
+       data-recording-column-index="{{  recording_column_index }}">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Timestamp</th>
+            <th>Url</th>
+
+            {% if is_owner() %}
+	        	<th>Visibility</th>
+	        {% endif %}
+
+            <th>Recording</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recording in collection.recordings %}
+            {% set collection_path = get_path(user, coll) + '/' %}
+
+            {% for bookmark in recording.pages %}
+                {% set title = bookmark.title if bookmark.title else "No Title" %}
+                {% set timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
+                {% set path = collection_path + timestamp + '/' + bookmark.url %}
+                {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
+
+                {% if is_owner() or bookmark.hidden != '1' %}
+	                <tr data-bookmark-timestamp="{{ bookmark.timestamp }}"
+                        data-bookmark-url="{{ bookmark.url }}"
+                        data-bookmark-hidden="{{ hidden }}"
+                        data-recording-id="{{ recording.id }}" >
+	                    <td><a href="{{ path }}">{{ title }}<a/></td>
+                        <td class="timestamp" data-time-ts="{{ timestamp }}"></td>
+                        <td><a href="{{ path }}">{{ bookmark.url }}</a></td>
+
+	                    {% if is_owner() %}
+		                    <td class="text-center">
+		                    	{% include 'bookmark_hidden_switch.html' %}
+		                    </td>
+		                {% endif %}
+	                    <td>{{ recording.title }}</td>
+	                </tr>
+	            {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>

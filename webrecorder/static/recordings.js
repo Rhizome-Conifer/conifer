@@ -90,27 +90,6 @@ var EventHandlers = (function() {
 
             RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
         });
-
-        // 'Recording info' page: 'Hide' button
-        $('table').on('click', '.hide-page', function(event) {
-            event.preventDefault();
-
-            var attributes = {}
-            attributes.url = $(this).attr("data-page-url");
-            attributes.timestamp = $(this).attr("data-page-ts");
-            attributes.hidden = $(this).attr("data-page-hidden") == "1" ? "0" : "1";
-
-            var recordingId = $(this).attr('data-recording-id');
-
-            var toggleHiddenRow = function(data) {
-                // Returned data should have unique way to identify the row,
-                // so we can toggle the row state here.  Instead, reload
-                // whole page for now.
-                window.location.reload();
-            }
-
-            Recordings.modifyPage(recordingId, attributes, toggleHiddenRow);
-        });
             
         // 'Header': 'Login' link to display modal
         $('#login-link').on('click', function(event) {
@@ -178,139 +157,6 @@ var EventHandlers = (function() {
         bindAll: bindAll
     }
 })();
-
-
-var Collections = (function() {
-    var API_ENDPOINT = "/api/v1/collections";
-    var query_string = "?user=" + user;
-
-    var getNumPages = function(doneCallback, failCallback) {
-        $.ajax({
-            url: API_ENDPOINT + "/" + coll + "/num_pages" + query_string,
-            method: "GET",
-        })
-        .done(function(data, textStatus, xhr){
-            doneCallback(data);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr);
-        });
-    }
-
-    return {
-            getNumPages: getNumPages
-           };
-})();
-
-
-var Recordings = (function() {
-    var API_ENDPOINT = "/api/v1/recordings";
-    var query_string = "?user=" + user + "&coll=" + coll;
-
-    var create = function(user, coll, attributes, doneCallback, failCallback) {
-        var create_query = "?user=" + user + "&coll=" + coll;
-
-        $.ajax({
-            url: API_ENDPOINT + create_query,
-            method: "POST",
-            data: attributes,
-        })
-        .done(function(data, textStatus, xhr) {
-            doneCallback(data);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr);
-        });
-
-    }
-
-    var get = function(recordingId, doneCallback, failCallback) {
-        $.ajax({
-            url: API_ENDPOINT + "/" + recordingId + query_string,
-            method: "GET",
-        })
-        .done(function(data, textStatus, xhr) {
-            doneCallback(data);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr);
-        });
-
-    }
-
-    var addPage = function(recordingId, attributes) {
-        var attributes = attributes;
-        $.ajax({
-            url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
-            method: "POST",
-            data: attributes
-        })
-        .done(function(data, textStatus, xhr){
-            BookmarkCounter.update(attributes);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            // Fail gracefully when the page can't be updated
-        });
-    }
-
-    var modifyPage = function(recordingId, attributes, doneCallback) {
-        var attributes = attributes;
-        $.ajax({
-            url: API_ENDPOINT + "/" + recordingId + "/page/" + attributes.url + query_string,
-            method: "POST",
-            data: attributes
-        })
-        .done(function(data, textStatus, xhr) {
-            doneCallback(data);
-        })
-
-        .fail(function(xhr, textStatus, errorThrown) {
-            // If something went wrong with updating the page,
-            // just try reloading the page
-            window.location.reload();
-        });
-    }
-
-    var removePage = function(recordingId, attributes, doneCallback) {
-        $.ajax({
-            url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
-            method: "DELETE",
-            data: attributes
-        })
-        .done(function(data, textStatus, xhr){
-            doneCallback(data);
-        });
-    }
-
-    var getPages = function(recordingId, doneCallback, failCallback) {
-        // no recordingId if in collection replay mode
-        // skipping for now, possible to get pages for all recordings
-        if (!recordingId) {
-            failCallback();
-            return;
-        }
-
-        $.ajax({
-            url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
-            method: "GET",
-        })
-        .done(function(data, textStatus, xhr){
-            doneCallback(data);
-        })
-        .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr);
-        });
-    }
-
-    return {
-        get: get,
-        create: create,
-        addPage: addPage,
-        removePage: removePage,
-        modifyPage: modifyPage,
-        getPages: getPages
-    }
-}());
 
 var RouteTo = (function(){
     var host = window.location.protocol + "//" + window.location.host;
@@ -446,7 +292,6 @@ var BookmarkCounter = (function() {
     var start = function() {
         if ($(".url-input-recorder").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
-            //Recordings.getPages(recordingId, loadBookmarks, dontStartBookmarkCounter);
             Collections.getNumPages(startBookmarkCounter, dontStartBookmarkCounter);
         }
     }

@@ -23,11 +23,14 @@ function init_markdown_editor(update_path) {
             $("#about").append($('<div>').attr("id", "home-view").
                                append(marked($("#home-markdown").html())));
 
+            $('.edit-description').show();
         };
 
         if (!$("#home-view")) {
             return;
         }
+
+        $('.edit-description').hide();
 
         $("#home-view").html($("#home-markdown").html());
 

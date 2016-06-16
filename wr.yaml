@@ -64,8 +64,6 @@ metadata:
 # Default Descriptions
 
 coll_desc: |
-    #### About {0}
-
     *This collection doesn't yet have a description.*
 
 user_desc: |
