@@ -184,7 +184,7 @@ var BookmarksTable = (function() {
 
     var filterByRecordings = function(recordingTitles) {
         var regex = recordingTitles.join("|");
-        theTable.column([3]).search(regex, true, false).draw();
+        theTable.column([4]).search(regex, true, false).draw();
     }
 
     return {
