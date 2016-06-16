@@ -147,6 +147,15 @@ input.homepage-title {
  {
   padding: 0px 5px;
 }
+
+.form-group-recorder-url {
+    margin-bottom: 4px;
+}
+
+.url-input-recorder {
+    width: 92%;
+    display: inline-block;
+}
 /* End recorder */
 
 
