@@ -261,7 +261,6 @@ input.homepage-title {
 .table-bookmarks>tfoot>tr>th,
 .table-bookmarks>thead>tr>td,
 .table-bookmarks>thead>tr>th {
-    padding: 2px;
     vertical-align: middle;
     line-height: 1.2;
 }
