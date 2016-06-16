@@ -184,9 +184,13 @@ var BookmarksTable = (function() {
 
     var filterByRecordings = function(recordingTitles) {
         var recordingColumnIndex = $('[data-recording-column-index]').attr('data-recording-column-index');
-        var regex = "^(" + recordingTitles.join("|") + ")$";
 
-        theTable.column([recordingColumnIndex]).search(regex, true, false).draw();
+        if (recordingTitles.length) {
+            var regex = "^(" + recordingTitles.join("|") + ")$";
+            theTable.column([recordingColumnIndex]).search(regex, true, false).draw();
+        } else {
+            theTable.column([recordingColumnIndex]).search("").draw();
+        }
     }
 
     return {
