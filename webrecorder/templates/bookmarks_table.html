@@ -31,7 +31,7 @@
                         data-bookmark-url="{{ bookmark.url }}"
                         data-bookmark-hidden="{{ hidden }}"
                         data-recording-id="{{ recording.id }}" >
-	                    <td>{{ title }}</td>
+	                    <td><a href="{{ path }}">{{ title }}<a/></td>
                         <td data-time-ts="{{ timestamp }}"></td>
                         <td><a href="{{ path }}">{{ bookmark.url }}</a></td>
 
