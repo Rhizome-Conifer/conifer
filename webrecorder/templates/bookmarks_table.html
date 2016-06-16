@@ -1,4 +1,8 @@
-<table class="table table-bordered table-hover table-bookmarks" data-page-length="25">
+{% set recording_column_index = 4 if is_owner() else 3 %}
+
+<table class="table table-bordered table-hover table-bookmarks"
+       data-page-length="25"
+       data-recording-column-index="{{  recording_column_index }}">
     <thead>
         <tr>
             <th>Title</th>
