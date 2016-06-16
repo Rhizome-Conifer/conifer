@@ -167,14 +167,23 @@ input.homepage-title {
     display: inline-block;
 }
 
+.hide-loading-spinner,
 .edit-title-loading-spinner {
     display: inline-block;
-    width: 22px;
-    height: 22px;
     background-image: url(/static/__shared/edit_title_spinner.gif);
     background-repeat: no-repeat;
     background-position-x: 3px;
     background-position-y: 3px;
+}
+
+.edit-title-loading-spinner {
+    width: 22px;
+    height: 22px;
+}
+
+.hide-loading-spinner {
+    width: 14px;
+    height: 14px;
 }
 
 .access-switch {

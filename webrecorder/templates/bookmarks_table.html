@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th>Title</th>
-            <th>Recorded on</th>
+            <th>Timestamp</th>
             <th>Url</th>
 
             {% if is_owner() %}
@@ -17,23 +17,26 @@
             {% set collection_path = get_path(user, coll) + '/' %}
 
             {% for bookmark in recording.pages %}
-                {% set title = bookmark.title if bookmark.title else "<em>No Title</em>" %}
+                {% set title = bookmark.title if bookmark.title else "No Title" %}
                 {% set timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
                 {% set path = collection_path + timestamp + '/' + bookmark.url %}
+                {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
 
                 {% if is_owner() or bookmark.hidden != '1' %}
-	                <tr>
+	                <tr data-bookmark-timestamp="{{ bookmark.timestamp }}"
+                        data-bookmark-url="{{ bookmark.url }}"
+                        data-bookmark-hidden="{{ hidden }}"
+                        data-recording-id="{{ recording.id }}" >
 	                    <td>{{ title }}</td>
-	                    <td data-time-ts="{{ timestamp }}"></td>
-	                    <td><a href="{{ path }}">{{ bookmark.url }}</a></td>
+                        <td data-time-ts="{{ timestamp }}"></td>
+                        <td><a href="{{ path }}">{{ bookmark.url }}</a></td>
 
 	                    {% if is_owner() %}
-		                    <td data-sort="{{ bookmark.hidden }}" class="text-center">
+		                    <td class="text-center">
 		                    	{% include 'bookmark_hidden_switch.html' %}
 		                    </td>
 		                {% endif %}
-
-	                    <td>{{ recording.title }}</a></td>
+	                    <td>{{ recording.title }}</td>
 	                </tr>
 	            {% endif %}
             {% endfor %}

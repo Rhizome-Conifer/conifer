@@ -33,6 +33,7 @@ var Recordings = (function() {
 
     var modifyPage = function(recordingId, attributes, doneCallback, failCallback) {
         var attributes = attributes;
+        var recordingId = recordingId;
         $.ajax({
             url: API_ENDPOINT + "/" + recordingId + "/page/" + attributes.url + query_string,
             method: "POST",
@@ -41,9 +42,8 @@ var Recordings = (function() {
         .done(function(data, textStatus, xhr) {
             doneCallback(data);
         })
-
         .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr, textStatus, errorThrown);
+            failCallback(xhr, textStatus, errorThrown, recordingId);
         });
     }
 

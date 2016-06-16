@@ -2,6 +2,7 @@ $(function() {
     PublicPrivateSwitch.start();
     BookmarksTable.start();
     RecordingSelector.start();
+    BookmarkHiddenSwitch.start();
 });
 
 var RecordingSelector = (function() {
@@ -189,6 +190,103 @@ var BookmarksTable = (function() {
     return {
         start: start,
         filterByRecordings: filterByRecordings
+    }
+
+})();
+
+var BookmarkHiddenSwitch = (function() {
+
+    var showNewHiddenState = function(response) {
+        var bookmarkInfo = getBookmarkInfoFromSuccessResponse(response);
+        var button = findButton(bookmarkInfo);
+
+        toggleBookmarkHiddenState(button, bookmarkInfo);
+        removeSpinner(button);
+    }
+
+    var showErrorMessage = function(xhr, textStatus, errorThrown, recordingId) {
+        var bookmarkInfo = getBookmarkInfoFromErrorResponse(xhr.responseText);
+        bookmarkInfo.recordingId = recordingId;
+        var button = findButton(bookmarkInfo);
+
+        removeSpinner(button);
+        FlashMessage.show("danger", "Uh oh.  Something went wrong while updating your bookmark.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>.");
+    }
+
+    var getBookmarkInfoFromErrorResponse = function(responseText) {
+        return JSON.parse(responseText).request_data;
+    }
+
+    var getBookmarkInfoFromSuccessResponse = function(response) {
+        var info = {};
+        info.recordingId = response['recording-id'];
+        info.timestamp = response['page-data']['timestamp'];
+        info.url = response['page-data']['url'];
+        info.hidden = response['page-data']['hidden'];
+        return info;
+    }
+
+    var toggleBookmarkHiddenState = function(button, bookmarkInfo) {
+        $(button).closest('[data-bookmark-hidden]').attr("data-bookmark-hidden", bookmarkInfo.hidden);
+
+        if (bookmarkInfo.hidden === "1") {
+            $(button).find('.glyphicon').removeClass('glyphicon-eye-open');
+            $(button).find('.glyphicon').addClass('glyphicon-eye-close');
+            $(button).find('.hidden-label').text('Show');
+        } else {
+            $(button).find('.glyphicon').removeClass('glyphicon-eye-close');
+            $(button).find('.glyphicon').addClass('glyphicon-eye-open');
+            $(button).find('.hidden-label').text('Hide');
+        }
+    }
+
+    var getNewHiddenValue = function(button) {
+        var currentHidden = $(button).closest('[data-bookmark-hidden]').attr("data-bookmark-hidden");
+        return currentHidden === "1" ? "0" : "1";
+    }
+
+    var getAttributesFromDOM = function(button) {
+        var attributes = {}
+        attributes.url = $(button).closest('[data-bookmark-url]').attr("data-bookmark-url");
+        attributes.timestamp = $(button).closest('[data-bookmark-timestamp]').attr("data-bookmark-timestamp");
+        attributes.hidden = getNewHiddenValue(button);
+        return attributes;
+    }
+
+    var toggleHideBookmark = function() {
+        var recordingId = $(this).closest('[data-recording-id]').attr('data-recording-id');
+        Recordings.modifyPage(recordingId, getAttributesFromDOM(this), showNewHiddenState, showErrorMessage);
+
+        showSpinner(this);
+    }
+
+    var showSpinner = function(button) {
+        var spinnerDOM = "<span class='hide-loading-spinner' role='alertdialog' aria-busy='true' aria-live='assertive'></span>";
+
+        $(button).addClass('disabled');
+        $(button).find('.glyphicon').hide();
+        $(button).prepend(spinnerDOM);
+    }
+
+    var removeSpinner = function(button) {
+        $(button).removeClass('disabled');
+        $(button).find('.hide-loading-spinner').remove();
+        $(button).find('.glyphicon').show();
+    }
+
+    var findButton = function(info) {
+        var row = $("tr[data-recording-id='" + info.recordingId + "']" +
+                "[data-bookmark-timestamp='" + info.timestamp + "']" +
+                "[data-bookmark-url='" + info.url + "']");
+        return $(row).find('.hidden-bookmark-toggle');
+    }
+
+    var start = function() {
+        $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
+    }
+
+    return {
+        start: start
     }
 
 })();
