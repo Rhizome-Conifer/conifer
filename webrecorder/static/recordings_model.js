@@ -100,11 +100,23 @@ var Recordings = (function() {
             url: API_ENDPOINT + "/" + rec + "/num_pages" + query_string,
             method: "GET",
         })
-        .done(function(data, textStatus, xhr){
+        .done(function(data, textStatus, xhr) {
             doneCallback(data);
         })
         .fail(function(xhr, textStatus, errorThrown) {
             failCallback(xhr);
+        });
+    }
+
+    var rename = function(recordingId, newTitle, doneCallback, failCallback) {
+        var recordingId = recordingId;
+        $.ajax({
+            url: API_ENDPOINT + "/" + recordingId + "/rename/" + newTitle + query_string,
+            method: "POST"
+        }).done(function(data, textStatus, xhr) {
+            doneCallback(data, recordingId);
+        }).fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr, recordingId);
         });
     }
 
@@ -116,5 +128,6 @@ var Recordings = (function() {
         modifyPage: modifyPage,
         getPages: getPages,
         getNumPages: getNumPages,
+        rename: rename
     }
-}());
+})();

@@ -243,8 +243,9 @@ input.homepage-title {
 
 .card {
     border-top: 1px solid #ccc;
-    padding-bottom: 10px;
+    padding-top: 5px;
     padding-left: 5px;
+    padding-bottom: 10px;
     cursor: pointer;
 }
 
