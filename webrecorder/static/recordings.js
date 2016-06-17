@@ -287,7 +287,7 @@ var RecordingSizeWidget = (function() {
 })();
 
 var BookmarkCounter = (function() {
-    var sortedBookmarks;
+    var sortedBookmarks = [];
 
     var start = function() {
         if ($(".url-input-recorder").length) {
@@ -445,10 +445,12 @@ var SizeProgressBar = (function() {
 var ContentMessages = (function() {
 
     var messageIfDuplicateVisit = function(url) {
-        if (BookmarkCounter.hasBeenVisited(url)) {
+        // TODO: reconsider this
+        // To check dupe, should check against all urls in collection, not just bookmarks
+        /*if (BookmarkCounter.hasBeenVisited(url)) {
             showDuplicateVisitMessage(url);
             return true;
-        }
+        }*/
         return false;
     }
 
