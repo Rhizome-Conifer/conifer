@@ -95,12 +95,25 @@ var Recordings = (function() {
         });
     }
 
+    var rename = function(recordingId, newTitle, doneCallback, failCallback) {
+        var recordingId = recordingId;
+        $.ajax({
+            url: API_ENDPOINT + "/" + recordingId + "/rename/" + newTitle + query_string,
+            method: "POST"
+        }).done(function(data, textStatus, xhr) {
+            doneCallback(data, recordingId);
+        }).fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr, recordingId);
+        });
+    }
+
     return {
         get: get,
         create: create,
         addPage: addPage,
         removePage: removePage,
         modifyPage: modifyPage,
-        getPages: getPages
+        getPages: getPages,
+        rename: rename
     }
 }());

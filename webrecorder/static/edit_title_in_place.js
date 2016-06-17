@@ -33,7 +33,7 @@ var EditTitleInPlace = (function() {
 		var textInput = $(form).find('input');
 
 		$(textInput).val(currentTitle);
-		$(textInput).css('width', currentTitle.length + "em");
+		$(textInput).css('width', "70%");
 
 		showFormButtons(editingId);
 
@@ -84,8 +84,8 @@ var EditTitleInPlace = (function() {
 	}
 
 	var showFormButtons = function(editingId) {
-		$(".submit-edit-title[data-editing-id=" + editingId + "]").show();
-		$(".cancel-edit-title[data-editing-id=" + editingId + "]").show();
+		$('form[data-editing-id=' + editingId + ']').find('.submit-edit-title').show();
+		$('form[data-editing-id=' + editingId + ']').find('.cancel-edit-title').show();
 	}
 
 	var showSpinner = function(editingId) {
@@ -102,6 +102,11 @@ var EditTitleInPlace = (function() {
 			var collectionId = $('[data-collection-id]').attr('data-collection-id');
 			var newName = $("[name='" + editingId + "']").val();
 			Collections.rename(collectionId, newName, CollectionRename.done, CollectionRename.fail);
+		},
+		recording: function(editingId) {
+			var recordingId = $('.editable-title[data-editing-id=' + editingId + ']').closest('.card').attr('data-recording-id');
+			var newName = $("[name='" + editingId + "']").val();
+			Recordings.rename(recordingId, newName, RecordingRename.done, RecordingRename.fail);
 		}
 	}
 
@@ -112,6 +117,36 @@ var EditTitleInPlace = (function() {
 		fail: function(xhr, collectionId) {
 			var editingId = $(".editable-title[data-collection-id=" + collectionId + "]").attr('data-editing-id');
 			var message = "Uh oh.  Something went wrong with renaming this collection.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>."
+			showError(editingId, message);
+		}
+	}
+
+	var RecordingRename = {
+		done: function(data, oldRecordingId) {
+			var oldEditingId = "recording-title-" + oldRecordingId;
+			var newEditingId = "recording-title-" + data.id;
+
+			// Update data attributes
+			$("[data-recording-id='" + oldRecordingId + "']").attr('data-recording-id', data.id);
+			$("[data-editing-id='" + oldEditingId + "']").attr('data-editing-id', newEditingId);
+			$("input[name='" + oldEditingId + "']" ).attr('name', newEditingId);
+
+			// Update card title
+			$(".card[data-editing-id='" + newEditingId + "']").attr('data-recording-title', data.title);
+			$(".editable-title[data-editing-id='" + newEditingId + "']").text(data.title);
+
+			// Update recording column in bookmarks table
+			$("tr[data-recording-id='" + data.id + "']").find(".bookmark-recording-title").text(data.title);
+
+			// Update url
+
+			hideForm(newEditingId);
+			removeSpinner(newEditingId);
+			showTitleAndEditButton(newEditingId);
+		},
+		fail: function(xhr, recordingId) {
+			var editingId = $(".card[data-recording-id=" + recordingId + "]").find('.editable-title').attr('data-editing-id');
+			var message = "Uh oh.  Something went wrong with renaming this recording.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>."
 			showError(editingId, message);
 		}
 	}
