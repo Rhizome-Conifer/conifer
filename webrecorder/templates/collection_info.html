@@ -15,7 +15,6 @@
 <script src="/static/__shared/collections_model.js"></script>
 <script src="/static/__shared/collection_info.js"></script>
 
-
 <link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
 <link href="/static/__shared/external/bootstrap-markdown.min.css" rel="stylesheet">
@@ -25,10 +24,7 @@
 <script>
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
-
-    var init_selected_recs = {{ rec_list }};
 </script>
-
 
 {% endblock %}
 

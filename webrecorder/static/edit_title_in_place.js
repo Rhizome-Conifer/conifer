@@ -138,7 +138,7 @@ var EditTitleInPlace = (function() {
 			// Update recording column in bookmarks table
 			$("tr[data-recording-id='" + data.id + "']").find(".bookmark-recording-title").text(data.title);
 
-			// Update url
+			UrlManager.update(new Event("RenameRecording"), RecordingSelector.getSelectedIds());
 
 			hideForm(newEditingId);
 			removeSpinner(newEditingId);
