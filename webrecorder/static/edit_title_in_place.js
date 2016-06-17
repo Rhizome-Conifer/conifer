@@ -7,116 +7,113 @@ var EditTitleInPlace = (function() {
 	var start = function() {
 		$('.wr-content').on('click', '.edit-title', showEditForm);
 		$('.wr-content').on('click', '.cancel-edit-title', cancelEdit);
+		$('.wr-content').on('keyup', '.edit-title-form input', cancelEditOnEscapeButton);
 		$('.wr-content').on('submit', '.edit-title-form', saveEdit);
 	}
 
-	var showEditForm = function() {
-		hideTitleAndEditButton();
-		showForm();
+	var showEditForm = function(event) {
+		var editingId = $(this).attr('data-editing-id');
+		hideTitleAndEditButton(editingId);
+		showForm(editingId);
 	}
 
-	var hideTitleAndEditButton = function() {
-		$('.editable-title').hide();
-		$('.edit-title').hide();		
+	var hideTitleAndEditButton = function(editingId) {
+		$(".edit-title[data-editing-id=" + editingId + "]").hide();
+		$(".editable-title[data-editing-id=" + editingId + "]").hide();
 	}
 
-	var showTitleAndEditButton = function() {
-		$('.editable-title').show();
-		$('.edit-title').show();				
+	var showTitleAndEditButton = function(editingId) {
+		$(".editable-title[data-editing-id=" + editingId + "]").show();
+		$(".edit-title[data-editing-id=" + editingId + "]").show();
 	}
 
-	var showForm = function() {
-		var currentTitle = $('.editable-title').text();
+	var showForm = function(editingId) {
+		var currentTitle = $(".editable-title[data-editing-id=" + editingId + "]").text();
+		var form = $("form[data-editing-id=" + editingId + "]");
+		var textInput = $(form).find('input');
 
-		$("[name='collection-title']").val(currentTitle);
-		$("[name='collection-title']").css('width', currentTitle.length + "em");
+		$(textInput).val(currentTitle);
+		$(textInput).css('width', currentTitle.length + "em");
 
-		showFormButtons();
-		$('.editable-title').after($('.edit-title-form'));
-		$('.edit-title-form').removeClass('collapse');
-		$('.edit-title-form').find('[autofocus]').focus();
-		$('.edit-title-form').addClass('edit-title-form-visible');
+		showFormButtons(editingId);
+
+		$(".editable-title[data-editing-id=" + editingId + "]").after($(form));
+		$(form).removeClass('collapse');
+		$(form).find('[autofocus]').focus();
+		$(form).addClass('edit-title-form-visible');
 	}
 
-	var hideForm = function() {
-		$('.edit-title-form').removeClass('edit-title-form-visible');
-		$('.edit-title-form').addClass('collapse');		
+	var hideForm = function(editingId) {
+		$(".edit-title-form[data-editing-id=" + editingId + "]").removeClass('edit-title-form-visible');
+		$(".edit-title-form[data-editing-id=" + editingId + "]").addClass('collapse');
 	}
 
-	var saveEdit = function() {
+	var saveEdit = function(event) {
 		event.preventDefault();
 
-		hideFormButtons();
-		showSpinner();
+		var editingId = $(this).attr('data-editing-id');
+		hideFormButtons(editingId);
+		showSpinner(editingId);
 
-		var collectionId = $('[data-collection-id]').attr('data-collection-id');
-		var newName = $("[name='collection-title']").val();
-		Collections.rename(collectionId, newName, updateTitle, showError);
+		var functionName = $(this).attr('data-save-function');
+		RenameTitle[functionName](editingId);
 	}
 
-	var updateTitle = function(data) {
-		removeSpinner();
-
-		updateHeader(data);
-		updateBreadcrumb(data);
-		updateUrl(data);
-
-		hideForm();
-		showTitleAndEditButton();
-
-		FlashMessage.show("success", "Your collection has been successfully renamed.");
+	var showError = function(editingId, message) {
+		removeSpinner(editingId);
+		FlashMessage.show("danger", message);
+		hideForm(editingId);
+		showTitleAndEditButton(editingId);
 	}
 
-	var updateHeader = function(data) {
-		$('.editable-title').text(data.title);
-	}
-
-	var updateBreadcrumb = function(data) {
-		$('.collection-breadcrumb').attr('data-collection-id', data.id);
-		$('.collection-breadcrumb').attr('title', "Return to collection: " + data.name);
-		$('.collection-breadcrumb').attr('href', getNewUrl(data.id));
-		$('.collection-breadcrumb').text(data.title);
-	}
-
-	var updateUrl = function(data) {
-		history.pushState({"renamed collection to": data.id }, data.id, getNewUrl(data.id));
-	}
-
-	var getNewUrl = function(newId) {
-		var lastSlashIndex = window.location.href.lastIndexOf('/');
-		var basePath = window.location.href.substring(0, lastSlashIndex + 1);
-		return basePath + newId;
-	}
-
-	var showError = function(xhr) {
-		removeSpinner();
-		FlashMessage.show("danger", "Uh oh.  Something went wrong while renaming your collection.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>.");
-		hideForm();
-		showTitleAndEditButton();
+	var cancelEditOnEscapeButton = function(event) {
+		if (event.keyCode === 27) {
+			cancelEdit.apply(this);
+		}
 	}
 
 	var cancelEdit = function() {
-		hideForm();
-		showTitleAndEditButton();
+		var editingId = $(this).closest('form').attr('data-editing-id');
+		hideForm(editingId);
+		showTitleAndEditButton(editingId);
 	}
 
-	var hideFormButtons = function() {
-		$('.submit-edit-title').hide();
-		$('.cancel-edit-title').hide();
+	var hideFormButtons = function(editingId) {
+		$('form[data-editing-id=' + editingId + ']').find('.submit-edit-title').hide();
+		$('form[data-editing-id=' + editingId + ']').find('.cancel-edit-title').hide();
 	}
 
-	var showFormButtons = function() {
-		$('.submit-edit-title').show();
-		$('.cancel-edit-title').show();
+	var showFormButtons = function(editingId) {
+		$(".submit-edit-title[data-editing-id=" + editingId + "]").show();
+		$(".cancel-edit-title[data-editing-id=" + editingId + "]").show();
 	}
 
-	var showSpinner = function() {
-		var spinnerDOM = "<span class='btn btn-default btn-xs edit-title-loading-spinner' role='alertdialog' aria-busy='true' aria-live='assertive'></span>";
-		$('.edit-title-form').append(spinnerDOM);
+	var showSpinner = function(editingId) {
+		var spinnerDOM = "<span class='btn btn-default btn-xs edit-title-loading-spinner' data-editing-id='" + editingId + "' role='alertdialog' aria-busy='true' aria-live='assertive'></span>";
+		$(".edit-title-form[data-editing-id=" + editingId + "]").append(spinnerDOM);
 	}
 
-	var removeSpinner = function() {
-		$('.edit-title-loading-spinner').remove();
+	var removeSpinner = function(editingId) {
+		$(".edit-title-loading-spinner[data-editing-id=" + editingId + "]").remove();
+	}
+
+	var RenameTitle = {
+		collection : function(editingId) {
+			var collectionId = $('[data-collection-id]').attr('data-collection-id');
+			var newName = $("[name='" + editingId + "']").val();
+			Collections.rename(collectionId, newName, CollectionRename.done, CollectionRename.fail);
+		}
+	}
+
+	var CollectionRename = {
+		done: function(data) {
+			RouteTo.collectionInfo(user, data.id);
+		},
+		fail: function(xhr, collectionId) {
+			var editingId = $(".editable-title[data-collection-id=" + collectionId + "]").attr('data-editing-id');
+			var message = "Uh oh.  Something went wrong with renaming this collection.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>."
+			showError(editingId, message);
+		}
 	}
 
 	return {
