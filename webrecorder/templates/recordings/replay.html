@@ -19,21 +19,17 @@
 	</div>
 
 	<form class="replay-recording row left-buffer">
-		<div class="input-group">
-
-			<input type="text" class="url-input-recorder form-control" name="url" value="{{ url }}" autofocus required>
-
+		<div class="form-group-recorder-url">
+			<input type="text" class="url-input-replay form-control" name="url" value="{{ url }}" autofocus required>
 			<input class="hidden" type="submit">
 
-			<div class="input-group-addon">
-				<button type="button" class="btn btn-xs patch-page">
-					Patch
-				</button>
+			<button type="button" class="btn btn-default btn-xs">
+				Patch
+			</button>
 
-				<button type="button" class="btn btn-xs autoscroll">
-					Autoscroll
-				</button>
-			</div>
+			<button type="button" class="btn btn-default btn-xs">
+				Autoscroll
+			</button>
 		</div>
 	</form>
 </div>
