@@ -24,7 +24,7 @@ class TestTempContent(FullStackTests):
         'r:{user}:{coll}:{rec}:page',
         'r:{user}:{coll}:{rec}:warc',
         'c:{user}:{coll}:info',
-        'u:{user}',
+        'u:{user}:info',
         'h:roles',
         'h:defaults',
     ]
@@ -47,7 +47,7 @@ class TestTempContent(FullStackTests):
     def _assert_size_all_eq(self, user, coll, rec):
         r_info = 'r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec)
         c_info = 'c:{user}:{coll}:info'.format(user=user, coll=coll)
-        u_info = 'u:{user}'.format(user=user)
+        u_info = 'u:{user}:info'.format(user=user)
 
         size = self.redis.hget(r_info, 'size')
         assert size is not None

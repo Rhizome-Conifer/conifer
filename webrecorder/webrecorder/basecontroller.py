@@ -56,8 +56,12 @@ class BaseController(object):
         return user, coll
 
     def _raise_error(self, code, message, api=False, **kwargs):
-        result = {'error_message': message, 'request_data': dict(request.forms.decode()) }
+        result = {'error_message': message}
         result.update(kwargs)
+
+        if request.forms:
+            result['request_data'] = dict(request.forms.decode())
+
         err = HTTPError(code, message, exception=result)
         if api:
             err.json_err = True

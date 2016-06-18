@@ -165,7 +165,7 @@ class TestLogin(BaseWRTests):
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
-        res = self.redis.hgetall('u:someuser')
+        res = self.redis.hgetall('u:someuser:info')
         res = self.appcont.manager._format_info(res)
         assert res['size'] == 0
         assert res['max_size'] == '1000000000'

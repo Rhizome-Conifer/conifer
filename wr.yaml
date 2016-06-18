@@ -113,7 +113,7 @@ user_skip_key: 'u:{user}:skip:{url}'
 info_key_templ:
     rec: 'r:{user}:{coll}:{rec}:info'
     coll: 'c:{user}:{coll}:info'
-    user: 'u:{user}'
+    user: 'u:{user}:info'
 
 cookie_key_templ: 'r:{user}:{coll}:{rec}:cookie:'
 

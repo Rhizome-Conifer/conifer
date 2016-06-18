@@ -207,7 +207,6 @@ class ContentController(BaseController, RewriterApp):
 
     def process_query_cdx(self, cdx, wb_url, kwargs):
         rec = kwargs.get('rec')
-        print(rec, cdx['source'])
         if not rec or rec == '*':
             rec = cdx['source'].rsplit(':', 2)[-2]
 
@@ -243,8 +242,6 @@ class ContentController(BaseController, RewriterApp):
         #type = kwargs['type']
         #if type in ('live', 'record'):
         #    cdx['is_live'] = 'true'
-
-        print('SOURCE', resp_headers.get('Webagg-Source-Coll'))
 
         if resp_headers.get('Webagg-Source-Coll') == 'live':
             cdx['is_live'] = 'true'

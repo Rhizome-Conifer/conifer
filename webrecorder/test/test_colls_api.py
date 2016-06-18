@@ -73,14 +73,14 @@ class TestWebRecCollsAPI(BaseWRTests):
 
     def test_error_missing_user_coll(self):
         res = self.testapp.post('/api/v1/collections', params={'title': 'Recording'}, status=400)
-        assert res.json == {'error_message': "User must be specified"}
+        assert res.json == {'error_message': "User must be specified", 'request_data': {'title': 'Recording'}}
 
     def test_error_invalid_user_coll(self):
         res = self.testapp.post('/api/v1/collections?user=user', params={'title': 'Example'}, status=404)
-        assert res.json == {"error_message": "No such user"}
+        assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Example'}}
 
     def test_error_invalid_user_coll_2(self):
         res = self.testapp.post('/api/v1/collections?user=temp$123', params={'title': 'Example'}, status=404)
-        assert res.json == {"error_message": "No such user"}
+        assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Example'}}
 
 

@@ -82,7 +82,11 @@ class LoginController(BaseController):
                 remember_me = (self.post_get('remember_me') == '1')
                 sesh.logged_in(remember_me)
 
-                redir_to = self.get_redir_back((LOGIN_PATH, '/'), self.get_path(username))
+                redir_to = request.headers.get('Referer')
+                host = self.get_host()
+
+                if not redir_to or  redir_to.startswith((host + '/temp!', host + '/_')):
+                    redir_to = self.get_path(username)
 
             else:
                 self.flash_message('Invalid Login. Please Try Again')
@@ -92,7 +96,6 @@ class LoginController(BaseController):
 
         @self.app.get(LOGOUT_PATH)
         def logout():
-            #redir_to = get_redir_back(LOGOUT_PATH, '/')
             redir_to = '/'
             self.manager.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
@@ -257,9 +260,7 @@ class LoginController(BaseController):
                                           email_template='templates/emailreset.html',
                                           host=host)
 
-                self.flash_message('A password reset e-mail has been sent to your e-mail!',
-                              'success')
-
+                self.flash_message('A password reset e-mail has been sent to your e-mail!', 'success')
                 redir_to = '/'
             except Exception as e:
                 self.flash_message(str(e))
