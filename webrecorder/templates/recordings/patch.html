@@ -20,16 +20,19 @@
 
 	</div>
 
-	<form class="patch-recording row left-buffer">
+	<form class="patch-recording row left-buffer form-group-recorder-url">
 		<div class="input-group">
 
 			<input type="text" class="form-control url-input-recorder" name="url" value="{{ url }}" autofocus required disabled>
 
 			<div class="input-group-addon">
-				<button type="button" class="btn btn-xs">
-					Autoscroll
-				</button>
-			</div>
+                            <span data-toggle="buttons">
+                            <label class="btn btn-default btn-xs">
+                                <span id="automate-l">Autoscroll</span>
+                                <input id="automate" type="checkbox" autocomplete="off">
+                            </label>
+                            </span>
+                        </div>
 		</div>
 	</form>
 </div>
@@ -46,3 +49,4 @@
 		<a href="#" data-toggle="modal" data-target="#report-modal" class="doesnt-look-right">Doesn't look right?</a>
 	</div>
 </div>
+

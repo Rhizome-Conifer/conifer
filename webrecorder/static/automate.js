@@ -1,130 +1,75 @@
 $(function() {
     $("#automate").change(function() {
         if ($("#automate").prop("checked")) {
-            start_umbra();
-            $("#automate-l").text("Automatic Scrolling Mode. Click to stop.");
+            scrollStart();
+            //$("#automate-l").text("Autoscrolling...");
         } else {
-            stop_umbra();
-            $("#automate-l").text("Automate!");
+            scrollStop();
+            //$("#automate-l").text("Autoscroll");
         }
     });
+
+    function done() {
+
+    }
+
+    function loadScript(win, filename)
+    {
+        if (win.__auto_loaded && win.__auto_loaded[filename]) {
+            return false;
+        }
+
+        var script_name = window.location.protocol + '//' + window.location.host + "/static/__shared/" + filename;
+
+        var elem = win.document.createElement("script");
+        elem._no_rewrite = true;
+        elem.src = script_name;
+
+        if (!win.document || !win.document.body) {
+            console.log("not ready yet");
+        }
+
+        win.document.body.appendChild(elem);
+
+        if (!win.__auto_loaded) {
+            win.__auto_loaded = {}
+        }
+        win.__auto_loaded[filename] = true;
+
+        //setTimeout(function() {
+        //    win.Autoscroll.setDoneCallback(done);
+        //}, 400);
+
+        return true;
+    }
+
+
+    function scrollStart()
+    {
+        var replay_iframe = window.document.getElementById("replay_iframe");
+
+        if (!replay_iframe) {
+            return;
+        }
+
+        var win = replay_iframe.contentWindow;
+
+        loadScript(win, "autoscroll.js");
+    }
+
+    function scrollStop()
+    {
+        var replay_iframe = window.document.getElementById("replay_iframe");
+
+        if (!replay_iframe) {
+            return;
+        }
+
+        var win = replay_iframe.contentWindow;
+
+        if (win.Autoscroll) {
+            win.Autoscroll.stop();
+        }
+    }
 });
 
-
-function get_behavior(host)
-{
-    //    var behavior_mapping = [
-    //        [/(?:.*\.)?facebook.com$/, "facebook.js"],
-    //        [/(?:.*\.)?flickr.com$/, "flickr.js"],
-    //        [/(?:.*\.)?instagram.com$/, "instagram.js"],
-    //        [/(?:.*\.)?vimeo.com$/, "vimeo.js"],
-    //        [/.*/, "default.js"],
-    //    ];
-    //    
-    //    for (var i = 0; i < behavior_mapping.length; i++) {
-    //        var rule = behavior_mapping[i];
-    //        if (host.match(rule[0])) {
-    //            return rule[1];
-    //        }
-    //    }
-    //    
-    //    return undefined;
-
-    return "default.js";
-}
-
-//var listener_added = false;
-var reload_time = 0;
-var auto_is_loading = false;
-
-function start_umbra()
-{
-    //var frame = document.getElementById("iframe");
-
-    //if (!listener_added) {
-    //    frame.addEventListener("load", auto_start_umbra);
-    //    listener_added = true;
-    //}
-
-    auto_start_umbra();
-}
-
-function auto_start_umbra()
-{
-    reload_time = Date.now();
-
-    //var frame = document.getElementById("iframe");
-    //var win = frame.contentWindow;
-    var win = window.top;
-    var doc = win.document;
-
-    if (!win.umbra_loaded) {
-        if (!doc || !win.WB_wombat_location) {
-            console.log("no doc or no wombat");
-            auto_is_loading = false;
-            return;
-        }
-
-        var file = get_behavior(win.WB_wombat_location.host);
-        console.log("Matched: " + file);
-
-        if (!file) {
-            auto_is_loading = false;
-            return;
-        }
-
-        var script_name = "/static/__shared/behaviors/" + file;
-
-        var elem = doc.createElement("script");
-        elem.src = script_name;
-        elem._no_rewrite = true;
-        doc.body.appendChild(elem);
-        win.umbra_loaded = true;
-        //console.log("umbra started");
-    } else if (!win.umbraIntervalId) {
-        //console.log("umbra restarted");
-        win.umbraIntervalId = win.setInterval(win.umbraIntervalFunc, 100);
-    }
-    auto_is_loading = false;
-
-    window.automation_wait = function() {
-        if (auto_is_loading) {
-            return true;
-        }
-
-        if (!win.umbra_loaded || !win.umbraBehaviorFinished) {
-            if (((Date.now() - reload_time) / 1000) < 5) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return !win.umbraBehaviorFinished();
-    }
-}
-
-function stop_umbra()
-{
-    //var frame = document.getElementById("iframe");
-    //var win = frame.contentWindow;
-    var win = window.top;
-
-    //if (listener_added) {
-    //    frame.removeEventListener("load", auto_start_umbra);
-    //    listener_added = false;
-    //}
-
-    window.automation_wait = null;
-
-    if (!win) {
-        return "no iframe!";
-    }
-
-    if (win.umbraIntervalId) {
-        win.clearInterval(win.umbraIntervalId);
-    } else if (win.umbraInstagramBehavior && win.umbraInstagramBehavior.intervalId) {
-        win.clearInterval(win.umbraInstagramBehavior.intervalId);
-    } else {
-        console.log("no umbra to stop");
-    }
-}

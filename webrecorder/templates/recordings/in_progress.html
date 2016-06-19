@@ -20,14 +20,19 @@
 		</div>
 	</div>
 
-	<form class="recording-in-progress row left-buffer">
-		<div class="form-group-recorder-url">
+	<form class="recording-in-progress row left-buffer form-group-recorder-url">
+		<div class="input-group">
 			<input type="text" class="url-input-recorder form-control" name="url" value="{{ url }}" autofocus required>
 			<input class="hidden" type="submit">
 
-			<button type="button" class="btn btn-default btn-xs">
-				Autoscroll
-			</button>
+			<div class="input-group-addon">
+                            <span data-toggle="buttons">
+                            <label class="btn btn-default btn-xs">
+                                <span id="automate-l">Autoscroll</span>
+                                <input id="automate" type="checkbox" autocomplete="off">
+                            </label>
+                            </span>
+			</div>
 		</div>
 	</form>
 </div>
