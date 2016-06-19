@@ -132,10 +132,13 @@ class CollsController(BaseController):
             if success:
                 self.flash_message('Collection {0} has been deleted!'.format(coll), 'success')
 
+                # if anon user/temp collection, delete user and redirect to homepage
                 if self.manager.is_anon(user):
                     self.get_session().delete()
+                    self.redirect('/')
+                else:
+                    self.redirect(self.get_path(user))
 
-                self.redirect(self.get_path(user))
             else:
                 self.flash_message('There was an error deleting {0}'.format(coll))
                 self.redirect(self.get_path(user, coll))
