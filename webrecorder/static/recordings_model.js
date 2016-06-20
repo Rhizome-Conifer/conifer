@@ -95,12 +95,26 @@ var Recordings = (function() {
         });
     }
 
+    var getNumPages = function(doneCallback, failCallback) {
+        $.ajax({
+            url: API_ENDPOINT + "/" + rec + "/num_pages" + query_string,
+            method: "GET",
+        })
+        .done(function(data, textStatus, xhr){
+            doneCallback(data);
+        })
+        .fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr);
+        });
+    }
+
     return {
         get: get,
         create: create,
         addPage: addPage,
         removePage: removePage,
         modifyPage: modifyPage,
-        getPages: getPages
+        getPages: getPages,
+        getNumPages: getNumPages,
     }
 }());

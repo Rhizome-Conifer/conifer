@@ -96,6 +96,12 @@ class RecsController(BaseController):
             pages = self.manager.list_pages(user, coll, rec)
             return {'pages': pages}
 
+        @self.app.get('/api/v1/recordings/<rec>/num_pages')
+        def get_num_pages(rec):
+            user, coll = self.get_user_coll(api=True)
+
+            return {'count': self.manager.count_pages(user, coll, rec) }
+
         @self.app.delete('/api/v1/recordings/<rec>/pages')
         def delete_page(rec):
             user, coll = self.get_user_coll(api=True)

@@ -87,6 +87,7 @@ var TimesAndSizesFormatter = (function() {
     }
 
     return {
-        format: format
+        format: format,
+        ts_to_date: ts_to_date,
     }
 })();

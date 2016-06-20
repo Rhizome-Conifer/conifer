@@ -162,6 +162,17 @@ input.homepage-title {
     border: 0px;
 }
 
+.replay-date {
+    position: relative;
+    z-index: 10;
+    color: #ccc;
+    font-style: italic;
+    text-size: 10px;
+    margin-top: -26px;
+    margin-right: 16px;
+    float: right;
+}
+
 
 
 .url-input-recorder {

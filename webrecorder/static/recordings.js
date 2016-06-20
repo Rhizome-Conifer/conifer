@@ -43,7 +43,11 @@ var EventHandlers = (function() {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
             var collectionId = $('[data-collection-id]').attr('data-collection-id');
 
-            RouteTo.recordingInfo(user, collectionId, recordingId);
+            if (recordingId) {
+                RouteTo.recordingInfo(user, collectionId, recordingId);
+            } else {
+                RouteTo.collectionInfo(user, collectionId);
+            }
         });
 
         // 'Replay recording': Url bar 'Go' button / enter key
@@ -292,7 +296,12 @@ var BookmarkCounter = (function() {
     var start = function() {
         if ($(".url-input-recorder").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
-            Collections.getNumPages(startBookmarkCounter, dontStartBookmarkCounter);
+
+            if (recordingId) {
+                Recordings.getNumPages(startBookmarkCounter, dontStartBookmarkCounter);
+            } else {
+                Collections.getNumPages(startBookmarkCounter, dontStartBookmarkCounter);
+            }
         }
     }
 
@@ -562,6 +571,10 @@ $(function() {
     }
 
     function addNewPage(state) {
+        if (state && state.ts) {
+            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(state.ts));
+        }
+
         if (state.is_error) {
             $("input[name='url']").val(state.url);
         } else if (wbinfo.state == "record" || wbinfo.state == "patch") {
