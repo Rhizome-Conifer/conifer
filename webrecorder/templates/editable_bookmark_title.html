@@ -1,4 +1,4 @@
-{% if can_write() and not is_anon() %}
+{% if can_write() %}
 
 	{% set editing_id = "bookmark-" + recording.id + "-" + timestamp + "-" + bookmark.url %}
 	{% set title_label = "Bookmark Title" %}
