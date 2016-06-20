@@ -19,20 +19,6 @@ var EditTitleInPlace = (function() {
 	}
 
 	var hideTitleAndEditButton = function(editingId) {
-<<<<<<< HEAD
-		$(".edit-title[data-editing-id=" + editingId + "]").hide();
-		$(".editable-title[data-editing-id=" + editingId + "]").hide();
-	}
-
-	var showTitleAndEditButton = function(editingId) {
-		$(".editable-title[data-editing-id=" + editingId + "]").show();
-		$(".edit-title[data-editing-id=" + editingId + "]").show();
-	}
-
-	var showForm = function(editingId) {
-		var currentTitle = $(".editable-title[data-editing-id=" + editingId + "]").text();
-		var form = $("form[data-editing-id=" + editingId + "]");
-=======
 		$(".edit-title[data-editing-id='" + editingId + "']").hide();
 		$(".editable-title[data-editing-id='" + editingId + "']").hide();
 	}
@@ -45,74 +31,12 @@ var EditTitleInPlace = (function() {
 	var showForm = function(editingId) {
 		var currentTitle = $(".editable-title[data-editing-id='" + editingId + "']").text();
 		var form = $("form[data-editing-id='" + editingId + "']");
->>>>>>> febf05cd2a38cecf8ac1861d7e4f5f16fbd46ce6
 		var textInput = $(form).find('input');
 
 		$(textInput).val(currentTitle);
 		$(textInput).css('width', "70%");
 
 		showFormButtons(editingId);
-<<<<<<< HEAD
-
-		$(".editable-title[data-editing-id=" + editingId + "]").after($(form));
-		$(form).removeClass('collapse');
-		$(form).find('[autofocus]').focus();
-		$(form).addClass('edit-title-form-visible');
-	}
-
-	var hideForm = function(editingId) {
-		$(".edit-title-form[data-editing-id=" + editingId + "]").removeClass('edit-title-form-visible');
-		$(".edit-title-form[data-editing-id=" + editingId + "]").addClass('collapse');
-	}
-
-	var saveEdit = function(event) {
-		event.preventDefault();
-
-		var editingId = $(this).attr('data-editing-id');
-		hideFormButtons(editingId);
-		showSpinner(editingId);
-
-		var functionName = $(this).attr('data-save-function');
-		RenameTitle[functionName](editingId);
-	}
-
-	var showError = function(editingId, message) {
-		removeSpinner(editingId);
-		FlashMessage.show("danger", message);
-		hideForm(editingId);
-		showTitleAndEditButton(editingId);
-	}
-
-	var cancelEditOnEscapeButton = function(event) {
-		if (event.keyCode === 27) {
-			cancelEdit.apply(this);
-		}
-	}
-
-	var cancelEdit = function() {
-		var editingId = $(this).closest('form').attr('data-editing-id');
-		hideForm(editingId);
-		showTitleAndEditButton(editingId);
-	}
-
-	var hideFormButtons = function(editingId) {
-		$('form[data-editing-id=' + editingId + ']').find('.submit-edit-title').hide();
-		$('form[data-editing-id=' + editingId + ']').find('.cancel-edit-title').hide();
-	}
-
-	var showFormButtons = function(editingId) {
-		$('form[data-editing-id=' + editingId + ']').find('.submit-edit-title').show();
-		$('form[data-editing-id=' + editingId + ']').find('.cancel-edit-title').show();
-	}
-
-	var showSpinner = function(editingId) {
-		var spinnerDOM = "<span class='btn btn-default btn-xs edit-title-loading-spinner' data-editing-id='" + editingId + "' role='alertdialog' aria-busy='true' aria-live='assertive'></span>";
-		$(".edit-title-form[data-editing-id=" + editingId + "]").append(spinnerDOM);
-	}
-
-	var removeSpinner = function(editingId) {
-		$(".edit-title-loading-spinner[data-editing-id=" + editingId + "]").remove();
-=======
 
 		$(".editable-title[data-editing-id='" + editingId + "']").after($(form));
 		$(form).removeClass('collapse');
