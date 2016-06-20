@@ -105,7 +105,7 @@ var EditTitleInPlace = (function() {
 			Collections.rename(collectionId, newName, CollectionRename.done, CollectionRename.fail);
 		},
 		recording: function(editingId) {
-			var recordingId = $(".editable-title[data-editing-id='" + editingId + "']'").closest('.card').attr('data-recording-id');
+			var recordingId = $(".editable-title[data-editing-id='" + editingId + "']").closest('.card').attr('data-recording-id');
 			var newName = $("[name='" + editingId + "']").val();
 			Recordings.rename(recordingId, newName, RecordingRename.done, RecordingRename.fail);
 		},
