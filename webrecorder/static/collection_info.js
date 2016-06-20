@@ -3,12 +3,62 @@ $(function() {
     BookmarksTable.start();
     RecordingSelector.start();
     BookmarkHiddenSwitch.start();
+    UrlManager.start();
 });
+
+var UrlManager = (function() {
+
+    var update = function(event, recordingIds) {
+        if (event.originalEvent || event.type === "RenameRecording") {
+            updateUrl(recordingIds);
+        }
+    }
+
+    var updateUrl = function(recordingIds) {
+        var host = window.location.protocol + "//" + window.location.host;
+        var url = host + "/" + user + "/" + coll;
+
+        if (recordingIds.length > 0 && recordingIds[0] != "$all") {
+            url += "/" + recordingIds.join(",");
+        }
+
+        window.history.pushState({"ids": recordingIds}, document.title, url);
+    }
+
+    var start = function() {
+        $(window).on('popstate', selectPrevious);
+
+        var selectedIds = getRecordingIdsFromUrl();
+
+        window.history.replaceState({"ids": selectedIds}, document.title, window.location.href);
+        RecordingSelector.select(selectedIds);
+    }
+
+    var selectPrevious = function(event) {
+        if (!event.originalEvent.state) {
+            return;
+        }
+
+        var ids = event.originalEvent.state.ids;
+        $('.card').removeClass("card-selected");
+        RecordingSelector.select(ids);
+    };
+
+    var getRecordingIdsFromUrl = function() {
+        var url = document.location.href;
+        return url.substring(url.lastIndexOf('/') + 1).split(',');
+    }
+
+    return {
+        start: start,
+        update: update
+    }
+})();
 
 var RecordingSelector = (function() {
 
     var toggleRecordingSelection = function(event) {
-        if(isButtonEvent(event)) {
+        if(isNotSelectionEvent(event)) {
             return;
         }
 
@@ -30,41 +80,13 @@ var RecordingSelector = (function() {
 
         updateRecordingFilterList(recordingIds);
 
-        // check if user-generated event (not from popState)
-        if (event.originalEvent) {
-            updateUrl(recordingIds, $(this).attr("data-recording-id"));
-        }
+        UrlManager.update(event, recordingIds);
     }
-
-    var selectPrevious = function(event) {
-        if (!event.originalEvent.state) {
-            return;
-        }
-
-        var ids = event.originalEvent.state.ids;
-
-        // First, clear selection on all cards
-        $('.card').removeClass("card-selected");
-
-        selectRecordings(ids);
-    };
 
     var selectRecordings = function(recordingIds) {
         $.map(recordingIds, function(recordingId) {
             $('.recording-selector').find('[data-recording-id="' + recordingId + '"]').click();
         });
-    }
-
-    var updateUrl = function(recordingIds, currId) {
-        var host = window.location.protocol + "//" + window.location.host;
-
-        var url = host + "/" + user + "/" + coll;
-
-        if (recordingIds.length > 0 && recordingIds[0] != "$all") {
-            url += "/" + recordingIds.join(",");
-        }
-
-        window.history.pushState({"ids": recordingIds}, document.title, url);
     }
 
     var updateRecordingFilterList = function(recordingIds) {
@@ -99,25 +121,18 @@ var RecordingSelector = (function() {
         return $('.card-selected').length === 0;
     }
 
-    var isButtonEvent = function(event) {
-        return $(event.target).hasClass('btn') || $(event.target).hasClass('glyphicon');
+    var isNotSelectionEvent = function(event) {
+        return $(event.target).hasClass('btn') || $(event.target).hasClass('glyphicon') || $(event.target).is('input');
     }
 
     var start = function() {
         $('.recording-selector').on('click', '.card', toggleRecordingSelection);
-
-        // selectPrevious recordings on popstate
-        $(window).on('popstate', selectPrevious);
-
-        // Set current state to provided list of ids
-        window.history.replaceState({"ids": init_selected_recs}, document.title, window.location.href);
-
-        // programmatically click initial set of ids
-        selectRecordings(init_selected_recs);
     }
 
     return {
-        start: start
+        start: start,
+        select: selectRecordings,
+        getSelectedIds: getSelectedRecordingIds
     }
 })();
 
@@ -188,14 +203,16 @@ var BookmarksTable = (function() {
             return [
                         { targets: [0, 1, 2, 3], orderable: true },
                         { targets: '_all',    orderable: false },
-                        { targets: [0, 1, 4], width: "8em" },
+                        { targets: 0, width: "15em" },
+                        { targets: [1, 4], width: "8em" },
                         { targets: 3, width: "4em" }
                     ]
         } else {
             return [
-                        { targets: [0, 1, 2, 3], orderable: true },
+                        { targets: [1, 2, 3], orderable: true },
                         { targets: '_all',    orderable: false },
-                        { targets: [0, 1, 3], width: "8em" }
+                        { targets: 0, width: "15em" },
+                        { targets: [1, 3], width: "8em" }
                     ]
         }
     }
@@ -228,17 +245,13 @@ var BookmarkHiddenSwitch = (function() {
         removeSpinner(button);
     }
 
-    var showErrorMessage = function(xhr, textStatus, errorThrown, recordingId) {
-        var bookmarkInfo = getBookmarkInfoFromErrorResponse(xhr.responseText);
+    var showErrorMessage = function(xhr, textStatus, errorThrown, recordingId, attributes) {
+        var bookmarkInfo = attributes;
         bookmarkInfo.recordingId = recordingId;
         var button = findButton(bookmarkInfo);
 
         removeSpinner(button);
         FlashMessage.show("danger", "Uh oh.  Something went wrong while updating your bookmark.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>.");
-    }
-
-    var getBookmarkInfoFromErrorResponse = function(responseText) {
-        return JSON.parse(responseText).request_data;
     }
 
     var getBookmarkInfoFromSuccessResponse = function(response) {

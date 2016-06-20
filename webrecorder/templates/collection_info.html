@@ -12,9 +12,8 @@
 <script src="/static/__shared/external/dataTables.bootstrap.js"></script>
 
 <script src="/static/__shared/editor.js"></script>
-<script src="/static/__shared/collections_model.js"></script>
 <script src="/static/__shared/collection_info.js"></script>
-
+<script src="/static/__shared/edit_title_in_place.js"></script>
 
 <link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
@@ -25,10 +24,7 @@
 <script>
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
-
-    var init_selected_recs = {{ rec_list }};
 </script>
-
 
 {% endblock %}
 
@@ -42,12 +38,12 @@
 
 <div class="row top-buffer-sm">
     <h1 class="top-buffer-none pull-left">
-        {% include 'edit_title_in_place.html' %}
+        {% include 'editable_collection_title.html' %}
     </h1>
 
     <div class="pull-right access-switch">
         {% set is_public = collection['r:@public'] %}
-        {% include 'frag_accessswitch.html' %}
+        {% include 'public_private_switch.html' %}
     </div>
 </div>
 
@@ -80,12 +76,4 @@
 
 {% include 'confirm_delete_collection_modal.html' %}
 
-{% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script>
-        init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
-    </script>
-    <script src="/static/__shared/edit_title_in_place.js"></script>
 {% endblock %}

@@ -3,6 +3,8 @@ $(function() {
     if ($("#home-view").length) {
         $("#home-view").html(marked($("#home-markdown").html()));
     }
+
+    init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
 });
 
 function init_markdown_editor(update_path) {

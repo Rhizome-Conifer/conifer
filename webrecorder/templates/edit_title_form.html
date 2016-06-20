@@ -1,0 +1,14 @@
+<form class="edit-title-form form-inline collapse" 
+		data-editing-id="{{ editing_id }}"
+		data-save-function="{{ save_function }}">
+	<label for="title" class="sr-only">{{ title_label }}</label>
+	<input type="text" class="form-control" name="{{ editing_id }}" autofocus>
+
+	<button type="submit" class="submit-edit-title btn btn-primary btn-xs" aria-label="Save">
+	    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+	</button>
+
+	<button type="button" class="cancel-edit-title btn btn-default btn-xs" aria-label="Cancel">
+	    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+	</button>
+</form>

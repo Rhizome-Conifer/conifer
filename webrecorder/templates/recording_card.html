@@ -1,8 +1,9 @@
 {% set duration = recording.updated_at - recording.created_at %}
 {% set bookmark_plural = "bookmark" if (recording.pages | count == 1) else "bookmarks" %}
+{% set editing_id = "recording-title-" + recording.id %}
 
 <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
-    <div class="recording-title">{{ recording.title }}</div>
+    <div class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</div>
 
     <div class="recording-stats text-left top-buffer-md right-buffer-sm">
         <span class="bookmark-count">{{ recording.pages | count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
@@ -18,4 +19,5 @@
     </div>
 
     {% include 'recording_card_buttons.html' %}
+    {% include 'editable_recording_title.html' %}
 </div>

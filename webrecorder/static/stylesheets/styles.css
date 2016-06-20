@@ -179,6 +179,11 @@ input.homepage-title {
     width: 92%;
     display: inline-block;
 }
+
+.url-input-replay {
+    width: 88%;
+    display: inline-block;
+}
 /* End recorder */
 
 
@@ -204,8 +209,7 @@ input.homepage-title {
     display: inline-block;
     background-image: url(/static/__shared/edit_title_spinner.gif);
     background-repeat: no-repeat;
-    background-position-x: 3px;
-    background-position-y: 3px;
+    background-position-y: 1px;
 }
 
 .edit-title-loading-spinner {
@@ -243,8 +247,9 @@ input.homepage-title {
 
 .card {
     border-top: 1px solid #ccc;
-    padding-bottom: 10px;
+    padding-top: 5px;
     padding-left: 5px;
+    padding-bottom: 10px;
     cursor: pointer;
 }
 
