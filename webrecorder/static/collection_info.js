@@ -203,14 +203,16 @@ var BookmarksTable = (function() {
             return [
                         { targets: [0, 1, 2, 3], orderable: true },
                         { targets: '_all',    orderable: false },
-                        { targets: [0, 1, 4], width: "8em" },
+                        { targets: 0, width: "15em" },
+                        { targets: [1, 4], width: "8em" },
                         { targets: 3, width: "4em" }
                     ]
         } else {
             return [
-                        { targets: [0, 1, 2, 3], orderable: true },
+                        { targets: [1, 2, 3], orderable: true },
                         { targets: '_all',    orderable: false },
-                        { targets: [0, 1, 3], width: "8em" }
+                        { targets: 0, width: "15em" },
+                        { targets: [1, 3], width: "8em" }
                     ]
         }
     }
@@ -243,17 +245,13 @@ var BookmarkHiddenSwitch = (function() {
         removeSpinner(button);
     }
 
-    var showErrorMessage = function(xhr, textStatus, errorThrown, recordingId) {
-        var bookmarkInfo = getBookmarkInfoFromErrorResponse(xhr.responseText);
+    var showErrorMessage = function(xhr, textStatus, errorThrown, recordingId, attributes) {
+        var bookmarkInfo = attributes;
         bookmarkInfo.recordingId = recordingId;
         var button = findButton(bookmarkInfo);
 
         removeSpinner(button);
         FlashMessage.show("danger", "Uh oh.  Something went wrong while updating your bookmark.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>.");
-    }
-
-    var getBookmarkInfoFromErrorResponse = function(responseText) {
-        return JSON.parse(responseText).request_data;
     }
 
     var getBookmarkInfoFromSuccessResponse = function(response) {

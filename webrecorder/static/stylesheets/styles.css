@@ -186,8 +186,7 @@ input.homepage-title {
     display: inline-block;
     background-image: url(/static/__shared/edit_title_spinner.gif);
     background-repeat: no-repeat;
-    background-position-x: 3px;
-    background-position-y: 3px;
+    background-position-y: 1px;
 }
 
 .edit-title-loading-spinner {

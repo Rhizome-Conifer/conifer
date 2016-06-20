@@ -27,11 +27,11 @@
                 {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
 
                 {% if is_owner() or bookmark.hidden != '1' %}
-	                <tr data-bookmark-timestamp="{{ bookmark.timestamp }}"
+	                <tr data-bookmark-timestamp="{{ timestamp }}"
                         data-bookmark-url="{{ bookmark.url }}"
                         data-bookmark-hidden="{{ hidden }}"
                         data-recording-id="{{ recording.id }}" >
-	                    <td><a href="{{ path }}">{{ title }}<a/></td>
+	                    <td> {% include 'editable_bookmark_title.html' %}</td>
                         <td class="timestamp" data-time-ts="{{ timestamp }}"></td>
                         <td><a href="{{ path }}">{{ bookmark.url }}</a></td>
 
