@@ -60,7 +60,7 @@ var Recordings = (function() {
             doneCallback(data);
         })
         .fail(function(xhr, textStatus, errorThrown) {
-            failCallback(xhr, textStatus, errorThrown, recordingId);
+            failCallback(xhr, textStatus, errorThrown, recordingId, attributes);
         });
     }
 
