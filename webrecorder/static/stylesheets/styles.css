@@ -209,7 +209,8 @@ input.homepage-title {
     display: inline-block;
     background-image: url(/static/__shared/edit_title_spinner.gif);
     background-repeat: no-repeat;
-    background-position-y: 1px;
+    background-position-x: 3px;
+    background-position-y: 3px;
 }
 
 .edit-title-loading-spinner {
@@ -220,6 +221,8 @@ input.homepage-title {
 .hide-loading-spinner {
     width: 14px;
     height: 14px;
+    background-position-x: 0px;
+    background-position-y: 2px;
 }
 
 .access-switch {

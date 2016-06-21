@@ -4,10 +4,10 @@ $(function() {
         $("#home-view").html(marked($("#home-markdown").html()));
     }
 
-    init_markdown_editor("/api/v1/collections/{{ coll }}/desc?user={{ user }}");
+    init_markdown_editor();
 });
 
-function init_markdown_editor(update_path) {
+function init_markdown_editor() {
 
     $("#home-edit").click(function() {
 
@@ -44,9 +44,11 @@ function init_markdown_editor(update_path) {
             onSave: function (e) {                     
                 var content = e.getContent();
 
+                var collectionId = $('[data-collection-id]').attr("data-collection-id");
+
                 $.ajax({
                     type: "POST",
-                    url: update_path,
+                    url: "/api/v1/collections/" + collectionId + "/desc?user=" + user,
                     data: content,
                     success: function() {
                         $("#home-markdown").html(content);
