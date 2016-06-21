@@ -139,7 +139,7 @@ var RecordingSelector = (function() {
     }
 
     var isAllRecordingsCard = function(element) {
-        return $(element).attr('data-recording-id') === "$all";
+        return $(element).closest('.card').attr('data-recording-id') === "$all";
     }
 
     var isNothingSelected = function() {
