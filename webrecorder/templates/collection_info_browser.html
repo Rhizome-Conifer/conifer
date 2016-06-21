@@ -6,7 +6,12 @@
 
         <div class="recording-selector">
             <div class="card card-selected card-top" data-recording-id="$all">
-                <div class="recording-title">All recordings</div>
+                <div class="checkbox-column">
+                    <input type="checkbox" checked aria-label="Show all recordings in bookmarks table">
+                </div>
+                <div class="content-column">
+                    <div class="recording-title">All recordings</div>
+                </div>
             </div>
 
             {% for recording in collection.recordings %}

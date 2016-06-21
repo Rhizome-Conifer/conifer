@@ -34,7 +34,7 @@ var EditTitleInPlace = (function() {
 		var textInput = $(form).find('input');
 
 		$(textInput).val(currentTitle);
-		$(textInput).css('width', "70%");
+		$(textInput).css('width', "66%");
 
 		showFormButtons(editingId);
 
@@ -161,11 +161,14 @@ var EditTitleInPlace = (function() {
 			$("input[name='" + oldEditingId + "']" ).attr('name', newEditingId);
 
 			// Update card title
-			$(".card[data-editing-id='" + newEditingId + "']").attr('data-recording-title', data.title);
+			$(".card[data-recording-id='" + data.id + "']").attr('data-recording-title', data.title);
 			$(".editable-title[data-editing-id='" + newEditingId + "']").text(data.title);
 
 			// Update recording column in bookmarks table
 			$("tr[data-recording-id='" + data.id + "']").find(".bookmark-recording-title").text(data.title);
+
+			// Update checkbox aria label
+			$(".card[data-recording-id='" + data.id + "']").find("input[type='checkbox']").attr('aria-label', "Filter bookmarks table by recording: " + data.title);
 
 			UrlManager.update(new Event("RenameRecording"), RecordingSelector.getSelectedIds());
 

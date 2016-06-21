@@ -3,21 +3,28 @@
 {% set editing_id = "recording-title-" + recording.id %}
 
 <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
-    <div class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</div>
 
-    <div class="recording-stats text-left top-buffer-md right-buffer-sm">
-        <span class="bookmark-count">{{ recording.pages | count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
-        <span class="current-size text-right" data-size="{{ recording.size }}"></span>
+    <div class="checkbox-column">
+        <input type="checkbox" aria-label="Filter bookmarks table by recording: {{ recording.title }}">
     </div>
 
-    <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
-        <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
-    </div>
+    <div class="content-column">
+        <span class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</span>
 
-    <div class="recording-time-info text-left right-buffer-sm">
-        <small><span data-time-duration="{{ duration }}"></span></small>
-    </div>
+        <div class="recording-stats text-left top-buffer-md right-buffer-sm">
+            <span class="bookmark-count">{{ recording.pages | count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
+            <span class="current-size text-right" data-size="{{ recording.size }}"></span>
+        </div>
 
-    {% include 'recording_card_buttons.html' %}
-    {% include 'editable_recording_title.html' %}
+        <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
+            <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
+        </div>
+
+        <div class="recording-time-info text-left right-buffer-sm">
+            <small><span data-time-duration="{{ duration }}"></span></small>
+        </div>
+
+        {% include 'recording_card_buttons.html' %}
+        {% include 'editable_recording_title.html' %}
+    </div>
 </div>

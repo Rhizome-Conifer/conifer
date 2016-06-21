@@ -93,9 +93,8 @@
 input.homepage-title {
     min-width: 160px !important;
 }
-
-
 /* End homepage */
+
 
 /*
  * Recorder
@@ -157,11 +156,6 @@ input.homepage-title {
     border-bottom-right-radius: 4px;
 }
 
-.form-group-recorder-url .input-group-addon {
-    background-color: transparent;
-    border: 0px;
-}
-
 .replay-date {
     position: relative;
     z-index: 10;
@@ -172,8 +166,6 @@ input.homepage-title {
     margin-right: 16px;
     float: right;
 }
-
-
 
 .url-input-recorder {
     width: 92%;
@@ -195,6 +187,7 @@ input.homepage-title {
     background-color: #808080;
 }
 /* End interstitial page */
+
 
 /*
  * Collection Info page
@@ -254,6 +247,18 @@ input.homepage-title {
     padding-left: 5px;
     padding-bottom: 10px;
     cursor: pointer;
+}
+
+.checkbox-column {
+    display: inline-block;
+    width: 13px;
+    vertical-align: top;
+    margin-top: 2px;
+}
+
+.content-column {
+    display: inline-block;
+    width: 90%;
 }
 
 .card-top {
