@@ -58,43 +58,54 @@ var UrlManager = (function() {
 var RecordingSelector = (function() {
 
     var toggleRecordingSelection = function(event) {
-        if(isNotSelectionEvent(event)) {
-            return;
-        }
-
-        if (isAllRecordingsCard(this)) {
-            $('.card-selected').removeClass('card-selected');
-            $(this).addClass('card-selected');
-
-            $('input:checked').prop('checked', false);
-
-            $(this).find("input[type='checkbox']").prop('indeterminate', false);
-            $(this).find("input[type='checkbox']").prop('checked', true);
-        } else {
-            $('[data-recording-id="$all"]').removeClass('card-selected');
-            $(this).toggleClass('card-selected');
-
-            var newCheckboxValue = !$(this).find("input[type='checkbox']").prop('checked');
-            $(this).find("input[type='checkbox']").prop('checked', newCheckboxValue);
-
-            $('[data-recording-id="$all"]').find("input[type='checkbox']").prop('indeterminate', true);
-
-            if (isNothingSelected()) {
-                $('[data-recording-id="$all"]').addClass('card-selected');
-
-                $(this).find("input[type='checkbox']").prop('checked', false);
-
-                $('[data-recording-id="$all"]').find("input[type='checkbox']").prop('indeterminate', false);
+        if(isSelectionEvent(event)) {
+            if (isAllRecordingsCard(event.toElement)) {
+                setAllCardsSelected();
+            } else {
+                setSomeCardsSelected(event.toElement);
             }
+
+            BookmarksTable.filterByRecordings(getSelectedRecordingTitles());
+
+            var recordingIds = getSelectedRecordingIds();
+
+            updateRecordingFilterList(recordingIds);
+
+            UrlManager.update(event, recordingIds);
         }
+    }
 
-        BookmarksTable.filterByRecordings(getSelectedRecordingTitles());
+    var setAllCardsSelected = function() {
+        var allCard = $('[data-recording-id="$all"]');
 
-        var recordingIds = getSelectedRecordingIds();
+        $('.card-selected').removeClass('card-selected');
+        $('input:checked').prop('checked', false);
 
-        updateRecordingFilterList(recordingIds);
+        $(allCard).addClass('card-selected');
+        $(allCard).find("input[type='checkbox']").prop('indeterminate', false);
+        $(allCard).find("input[type='checkbox']").prop('checked', true);
+    }
 
-        UrlManager.update(event, recordingIds);
+    var setSomeCardsSelected = function(element) {
+        var card = element.closest('.card');
+
+        $('[data-recording-id="$all"]').removeClass('card-selected');
+        $('[data-recording-id="$all"]').find("input[type='checkbox']").prop('indeterminate', true);
+
+        $(card).toggleClass('card-selected');
+        $(card).find("input[type='checkbox']").prop('checked', getNewCheckboxValue(element));
+
+        if (isNothingSelected() || isEverythingSelected()) {
+            setAllCardsSelected();
+        }
+    }
+
+    var getNewCheckboxValue = function(element) {
+        if ($(element).is('input[type=checkbox]')) {
+            return $(element).prop('checked');
+        } else {
+            return !$(element).closest('.card').find("input[type='checkbox']").prop('checked');
+        }
     }
 
     var selectRecordings = function(recordingIds) {
@@ -128,19 +139,35 @@ var RecordingSelector = (function() {
     }
 
     var isAllRecordingsCard = function(element) {
-        return $(element).attr('data-recording-id') === "$all";
+        return $(element).closest('.card').attr('data-recording-id') === "$all";
     }
 
     var isNothingSelected = function() {
         return $('.card-selected').length === 0;
     }
 
-    var isNotSelectionEvent = function(event) {
-        return $(event.target).hasClass('btn') || $(event.target).hasClass('glyphicon') || $(event.target).is('input');
+    var isEverythingSelected = function() {
+        return ($('.card').length - 1) === $('.card-selected').length;
+    }
+
+    var hasOneRecording = function () {
+        return $('.card').length === 2;
+    }
+
+    var isSelectionEvent = function(event) {
+        return !($(event.target).hasClass('btn') ||
+            $(event.target).hasClass('glyphicon') ||
+            $(event.target).is('input[type=text]'));
     }
 
     var start = function() {
-        $('.recording-selector').on('click', '.card', toggleRecordingSelection);
+        if (hasOneRecording()) {
+            $('.card').addClass('card-selected');
+            $('.card input[type=checkbox]').prop('checked', true);
+            $('.card input[type=checkbox]').attr('disabled', true);
+        } else {
+            $('.recording-selector').on('click', '.card', toggleRecordingSelection);
+        }
     }
 
     return {
