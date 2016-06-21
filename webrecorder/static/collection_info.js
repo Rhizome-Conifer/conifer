@@ -59,10 +59,10 @@ var RecordingSelector = (function() {
 
     var toggleRecordingSelection = function(event) {
         if(isSelectionEvent(event)) {
-            if (isAllRecordingsCard(event.toElement)) {
+            if (isAllRecordingsCard(event.target)) {
                 setAllCardsSelected();
             } else {
-                setSomeCardsSelected(event.toElement);
+                setSomeCardsSelected(event.target);
             }
 
             BookmarksTable.filterByRecordings(getSelectedRecordingTitles());
@@ -87,7 +87,7 @@ var RecordingSelector = (function() {
     }
 
     var setSomeCardsSelected = function(element) {
-        var card = element.closest('.card');
+        var card = $(element).closest('.card');
 
         $('[data-recording-id="$all"]').removeClass('card-selected');
         $('[data-recording-id="$all"]').find("input[type='checkbox']").prop('indeterminate', true);
