@@ -150,6 +150,10 @@ var RecordingSelector = (function() {
         return ($('.card').length - 1) === $('.card-selected').length;
     }
 
+    var hasOneRecording = function () {
+        return $('.card').length === 2;
+    }
+
     var isSelectionEvent = function(event) {
         return !($(event.target).hasClass('btn') ||
             $(event.target).hasClass('glyphicon') ||
@@ -157,7 +161,13 @@ var RecordingSelector = (function() {
     }
 
     var start = function() {
-        $('.recording-selector').on('click', '.card', toggleRecordingSelection);
+        if (hasOneRecording()) {
+            $('.card').addClass('card-selected');
+            $('.card input[type=checkbox]').prop('checked', true);
+            $('.card input[type=checkbox]').attr('disabled', true);
+        } else {
+            $('.recording-selector').on('click', '.card', toggleRecordingSelection);
+        }
     }
 
     return {
