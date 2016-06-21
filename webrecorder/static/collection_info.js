@@ -104,7 +104,7 @@ var RecordingSelector = (function() {
         if ($(element).is('input[type=checkbox]')) {
             return $(element).prop('checked');
         } else {
-            return !$(element).find("input[type='checkbox']").prop('checked');
+            return !$(element).closest('.card').find("input[type='checkbox']").prop('checked');
         }
     }
 
