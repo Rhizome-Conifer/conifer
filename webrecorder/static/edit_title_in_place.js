@@ -123,8 +123,13 @@ var EditTitleInPlace = (function() {
 	}
 
 	var CollectionRename = {
-		done: function(data) {
-			RouteTo.collectionInfo(user, data.id);
+		done: function(data, collectionId) {
+                        if (data.coll_id) {
+			    RouteTo.collectionInfo(user, data.coll_id);
+                        } else {
+			    var editingId = $(".editable-title[data-collection-id='" + collectionId + "']").attr('data-editing-id');
+                            showError(editingId, data.error_message);
+                        }
 		},
 		fail: function(xhr, collectionId) {
 			var editingId = $(".editable-title[data-collection-id='" + collectionId + "']").attr('data-editing-id');
@@ -153,22 +158,28 @@ var EditTitleInPlace = (function() {
 	var RecordingRename = {
 		done: function(data, oldRecordingId) {
 			var oldEditingId = "recording-title-" + oldRecordingId;
-			var newEditingId = "recording-title-" + data.id;
+			var newEditingId = "recording-title-" + data.rec_id;
+
+                        if (!data.rec_id) {
+			    var editingId = $(".card[data-recording-id='" + oldRecordingId + "']").find('.editable-title').attr('data-editing-id');
+                            showError(editingId, data.error_message);
+                            return;
+                        }
 
 			// Update data attributes
-			$("[data-recording-id='" + oldRecordingId + "']").attr('data-recording-id', data.id);
+			$("[data-recording-id='" + oldRecordingId + "']").attr('data-recording-id', data.rec_id);
 			$("[data-editing-id='" + oldEditingId + "']").attr('data-editing-id', newEditingId);
 			$("input[name='" + oldEditingId + "']" ).attr('name', newEditingId);
 
 			// Update card title
-			$(".card[data-recording-id='" + data.id + "']").attr('data-recording-title', data.title);
+			$(".card[data-recording-id='" + data.rec_id + "']").attr('data-recording-title', data.title);
 			$(".editable-title[data-editing-id='" + newEditingId + "']").text(data.title);
 
 			// Update recording column in bookmarks table
-			$("tr[data-recording-id='" + data.id + "']").find(".bookmark-recording-title").text(data.title);
+			$("tr[data-recording-id='" + data.rec_id + "']").find(".bookmark-recording-title").text(data.title);
 
 			// Update checkbox aria label
-			$(".card[data-recording-id='" + data.id + "']").find("input[type='checkbox']").attr('aria-label', "Filter bookmarks table by recording: " + data.title);
+			$(".card[data-recording-id='" + data.rec_id + "']").find("input[type='checkbox']").attr('aria-label', "Filter bookmarks table by recording: " + data.title);
 
 			UrlManager.update(new Event("RenameRecording"), RecordingSelector.getSelectedIds());
 

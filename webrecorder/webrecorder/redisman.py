@@ -298,16 +298,25 @@ class LoginManagerMixin(object):
         self.redis.setex(key, 300, 1)
 
     def rename(self, user, coll, new_coll, rec='*', new_rec='*',
-               new_user='', title='', access_check=True):
-
-        if access_check:
-            self.assert_can_write(user, coll)
+               new_user='', title=''):
 
         if not new_user:
             new_user = user
 
+        if user != new_user or coll != new_coll:
+            new_coll_info = self.create_collection(new_user, new_coll, title)
+            title = new_coll_info['title']
+            new_coll = new_coll_info['id']
+
+        if rec != new_rec:
+            new_rec_info = self.create_recording(new_user, new_coll, new_rec, title)
+            title = new_rec_info['title']
+            new_rec = new_rec_info['id']
+
         if title:
-            title = quote(title)
+            to_title = quote(title)
+        else:
+            to_title = ''
 
         rename_url = self.rename_url_templ.format(record_host=os.environ['RECORD_HOST'],
                                                   from_user=user,
@@ -316,32 +325,34 @@ class LoginManagerMixin(object):
                                                   to_user=new_user,
                                                   to_coll=new_coll,
                                                   to_rec=new_rec,
-                                                  to_title=title)
+                                                  to_title=to_title)
         res = requests.get(rename_url)
 
         msg = res.json()
 
-        return 'success' in msg
+        if 'success' in msg:
+            return {'coll_id': new_coll,
+                    'rec_id': new_rec,
+                    'title': title
+                   }
+
+        else:
+            return {'error_message': msg}
 
     def move_temp_coll(self, username, init_info):
         if not 'from_user' in init_info or not 'to_coll' in init_info:
             return None
 
-        new_coll = self.create_collection(username,
-                                          init_info['to_coll'],
-                                          init_info['to_title'])
-
         result = self.rename(user=init_info['from_user'],
                              coll='temp',
                              rec='*',
                              new_user=username,
-                             new_coll=new_coll['id'],
+                             new_coll=init_info['to_coll'],
                              new_rec='*',
-                             title=new_coll['title'],
-                             access_check=False)
+                             title=init_info['to_title'])
 
         if result:
-            return new_coll['title']
+            return result['title']
 
 
 # ============================================================================

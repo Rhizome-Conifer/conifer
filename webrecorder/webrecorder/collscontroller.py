@@ -54,14 +54,21 @@ class CollsController(BaseController):
             self._ensure_coll_exists(user, coll)
 
             new_coll = self.sanitize_title(new_coll_title)
-            print(new_coll)
 
-            self.manager.rename(user=user,
-                                coll=coll,
-                                new_coll=new_coll,
-                                title=new_coll_title)
+            if coll == new_coll:
+                return {'rec_id': '*', 'coll_id': new_coll, 'title': new_coll_title}
 
-            return {'id': new_coll, 'title': new_coll_title}
+            #if self.manager.has_collection(user, new_coll):
+            #    err_msg = 'collection "{0}" already exists'.format(new_coll)
+            #    return {'error_message': err_msg}
+
+            res = self.manager.rename(user=user,
+                                      coll=coll,
+                                      new_coll=new_coll,
+                                      title=new_coll_title)
+
+            return res
+
 
         @self.app.post('/api/v1/collections/<coll>/public')
         def set_public(coll):

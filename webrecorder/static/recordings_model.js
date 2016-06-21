@@ -52,7 +52,7 @@ var Recordings = (function() {
         var attributes = attributes;
         var recordingId = recordingId;
         $.ajax({
-            url: API_ENDPOINT + "/" + recordingId + "/page/" + attributes.url + query_string,
+            url: API_ENDPOINT + "/" + recordingId + "/page" + query_string,
             method: "POST",
             data: attributes
         })
