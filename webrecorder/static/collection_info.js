@@ -65,12 +65,26 @@ var RecordingSelector = (function() {
         if (isAllRecordingsCard(this)) {
             $('.card-selected').removeClass('card-selected');
             $(this).addClass('card-selected');
+
+            $('input:checked').prop('checked', false);
+
+            $(this).find("input[type='checkbox']").prop('indeterminate', false);
+            $(this).find("input[type='checkbox']").prop('checked', true);
         } else {
-            $('.recording-selector').find('[data-recording-id="$all"]').removeClass('card-selected');
+            $('[data-recording-id="$all"]').removeClass('card-selected');
             $(this).toggleClass('card-selected');
 
+            var newCheckboxValue = !$(this).find("input[type='checkbox']").prop('checked');
+            $(this).find("input[type='checkbox']").prop('checked', newCheckboxValue);
+
+            $('[data-recording-id="$all"]').find("input[type='checkbox']").prop('indeterminate', true);
+
             if (isNothingSelected()) {
-                $('.recording-selector').find('[data-recording-id="$all"]').addClass('card-selected');
+                $('[data-recording-id="$all"]').addClass('card-selected');
+
+                $(this).find("input[type='checkbox']").prop('checked', false);
+
+                $('[data-recording-id="$all"]').find("input[type='checkbox']").prop('indeterminate', false);
             }
         }
 
