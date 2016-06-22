@@ -307,14 +307,24 @@ var BookmarkHiddenSwitch = (function() {
     var toggleBookmarkHiddenState = function(button, bookmarkInfo) {
         $(button).closest('[data-bookmark-hidden]').attr("data-bookmark-hidden", bookmarkInfo.hidden);
 
+        var showHidden = $("#show-hidden").is(':checked');
+
         if (bookmarkInfo.hidden === "1") {
             $(button).find('.glyphicon').removeClass('glyphicon-eye-open');
             $(button).find('.glyphicon').addClass('glyphicon-eye-close');
             $(button).find('.hidden-label').text('Show');
+            $(button).closest('tr').addClass("hidden-bookmark");
+            if (!showHidden) {
+                $(button).closest('tr').hide();
+            }
         } else {
             $(button).find('.glyphicon').removeClass('glyphicon-eye-close');
             $(button).find('.glyphicon').addClass('glyphicon-eye-open');
             $(button).find('.hidden-label').text('Hide');
+            $(button).closest('tr').removeClass("hidden-bookmark");
+            if (!showHidden) {
+                $(button).closest('tr').show();
+            }
         }
     }
 
@@ -359,8 +369,20 @@ var BookmarkHiddenSwitch = (function() {
         return $(row).find('.hidden-bookmark-toggle');
     }
 
+    var toggleShowHidden = function() {
+        if (this.checked) {
+            $("tr[data-bookmark-hidden='1']").show();
+        } else {
+            $("tr[data-bookmark-hidden='1']").hide();
+        }
+    }
+            
     var start = function() {
         $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
+
+        $("#show-hidden").on('change', toggleShowHidden);
+
+        $("tr[data-bookmark-hidden='1']").addClass("hidden-bookmark");
     }
 
     return {

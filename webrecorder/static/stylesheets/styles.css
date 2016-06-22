@@ -349,6 +349,17 @@ input.homepage-title {
     display: inline-block;
     float: right;
 }
+
+.hidden-bookmark {
+    font-style: italic;
+    color: lightgray;
+}
+
+.hidden-bookmark a {
+    font-style: italic;
+    color: lightgray;
+}
+
 /* End collection info page */
 
 /*
