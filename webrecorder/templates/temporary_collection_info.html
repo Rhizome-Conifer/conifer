@@ -36,4 +36,27 @@
             </div>
         </div>
     </div>
+{% elif curr_user %}
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    You are logged-in as <b><a href="/{{ curr_user }}">{{ curr_user }}</a></b>
+                </div>
+                <div class="panel-body">
+                    You can:
+                    <div class="top-buffer-md">
+                        <ul>
+                            <li>
+                                Browse your archive: There are <a href="/{{ curr_user }}"><b>{{ num_collections }} Collections</b></a> in your archive.
+                            </li>
+                            <li>
+                                Quick Record: Enter a url, choose a collection (or create a new one), then click <b>Record</b> to begin.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endif %}
