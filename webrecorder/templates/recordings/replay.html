@@ -25,9 +25,11 @@
                         <span id="replay-date" class="replay-date"></span>
 
 			<div class="input-group-addon">
+                        {% if can_write() %}
                             <button type="button" class="btn btn-default btn-xs patch-page">
                                     Patch
                             </button>
+                        {% endif %}
 
                             <span data-toggle="buttons">
                             <label class="btn btn-default btn-xs">
