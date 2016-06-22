@@ -360,6 +360,10 @@ input.homepage-title {
     color: lightgray;
 }
 
+.hidden-bookmark .glyphicon-pencil {
+    color: lightgray;
+}
+
 /* End collection info page */
 
 /*
