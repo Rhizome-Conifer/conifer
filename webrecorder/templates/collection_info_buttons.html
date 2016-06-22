@@ -1,6 +1,6 @@
 <div class="pull-right top-buffer-xs">
     {% if can_admin() %}
-        <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm">Download</a>
-        <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-collection-modal">Delete</button>
+        <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span>Download</a>
+        <button id="delete-coll-btn" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#confirm-delete-collection-modal"><span class="glyphicon glyphicon-trash glyphicon-button" aria-hidden="true"></span>Delete</button>
     {% endif %}
 </div>
