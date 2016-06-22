@@ -79,6 +79,23 @@ class TestTempContent(FullStackTests):
         assert '<iframe' in res.text
 
     def test_anon_record_redirect(self):
+        res = self.testapp.get('/$temp/temp/My Rec/record/mp_/http://example.com/')
+        assert res.status_code == 302
+
+        parts = urlsplit(res.headers['Location'])
+
+        path_parts = parts.path.split('/', 2)
+        assert self.anon_user == path_parts[1]
+
+        assert self.anon_user.startswith('temp!')
+        assert parts.path.endswith('/temp/My Rec/record/mp_/http://example.com/')
+
+        # test dupe
+        res = self.testapp.get('/$temp/temp/My Rec/record/mp_/http://example.com/')
+        assert res.status_code == 302
+
+
+    def test_anon_record_redirect_old(self):
         res = self.testapp.get('/record/mp_/http://example.com/')
         assert res.status_code == 302
 

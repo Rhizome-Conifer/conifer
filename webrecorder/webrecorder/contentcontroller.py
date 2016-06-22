@@ -44,7 +44,8 @@ class ContentController(BaseController, RewriterApp):
             user = self.manager.get_anon_user(True)
             coll = 'temp'
 
-            self.manager.create_collection(user, coll, 'Temporary Collection')
+            if not self.manager.has_collection(user, coll):
+                self.manager.create_collection(user, coll, 'Temporary Collection')
 
             new_url = '/{user}/{coll}/{rec}/record/{url}'.format(user=user,
                                                                  coll=coll,
