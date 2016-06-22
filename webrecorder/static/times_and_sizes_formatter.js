@@ -14,7 +14,7 @@ var TimesAndSizesFormatter = (function() {
         format_by_attr("data-size", format_bytes);
         format_by_attr("data-time-ts", ts_to_date);
         format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
-        format_by_attr("data-time-duration", millisecondsToStr);
+        format_by_attr("data-time-duration", secondsToStr);
     }
 
     //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values
@@ -53,7 +53,7 @@ var TimesAndSizesFormatter = (function() {
     }
 
     // From http://stackoverflow.com/questions/8211744/convert-time-interval-given-in-seconds-into-more-human-readable-form/8212878#8212878
-    var millisecondsToStr = function millisecondsToStr (milliseconds) {
+    var secondsToStr = function (secs) {
         // TIP: to find current time in milliseconds, use:
         // var  current_time_milliseconds = new Date().getTime();
 
@@ -61,7 +61,9 @@ var TimesAndSizesFormatter = (function() {
             return (number > 1) ? 's' : '';
         }
 
-        var temp = Math.floor(milliseconds / 1000);
+        //var temp = Math.floor(milliseconds / 1000);
+        var temp = secs;
+
         var years = Math.floor(temp / 31536000);
         if (years) {
             return years + ' year' + numberEnding(years);
