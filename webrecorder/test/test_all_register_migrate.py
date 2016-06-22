@@ -211,7 +211,7 @@ class TestRegisterMigrate(FullStackTests):
     def test_rename_rec(self):
         res = self.testapp.post('/api/v1/recordings/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
 
-        assert res.json == {'title': 'FOOD BAR', 'id': 'food-bar'}
+        assert res.json == {'title': 'FOOD BAR', 'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
 
         #time.sleep(2.0)
 
@@ -223,7 +223,7 @@ class TestRegisterMigrate(FullStackTests):
     def test_rename_coll(self):
         res = self.testapp.post('/api/v1/collections/test-migrate/rename/Test Coll?user=someuser')
 
-        assert res.json == {'title': 'Test Coll', 'id': 'test-coll'}
+        assert res.json == {'title': 'Test Coll', 'coll_id': 'test-coll', 'rec_id': '*'}
         #time.sleep(2.0)
 
         res = self.testapp.get('/someuser/test-coll/food-bar/mp_/http://httpbin.org/get?food=bar')

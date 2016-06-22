@@ -54,18 +54,40 @@ class RecsController(BaseController):
                 err_msg = 'invalid recording title ' + new_rec_title
                 return {'error_message': err_msg}
 
-            if self.manager.has_recording(user, coll, new_rec):
-                already_exists = 'rec "{0}" already exists'.format(new_rec)
+            if rec == new_rec:
+                return {'rec_id': rec, 'coll_id': coll, 'title': new_rec_title}
+
+            #if self.manager.has_recording(user, coll, new_rec):
+            #    err_msg = 'rec "{0}" already exists'.format(new_rec)
+            #    return {'error_message': err_msg}
+
+            res = self.manager.rename(user=user,
+                                      coll=coll,
+                                      new_coll=coll,
+                                      rec=rec,
+                                      new_rec=new_rec,
+                                      title=new_rec_title)
+
+            return res
+
+
+        @self.app.post('/api/v1/recordings/<rec>/move/<new_coll>')
+        def move_recording(rec, new_coll):
+            user, coll = self.get_user_coll(api=True)
+            self._ensure_rec_exists(user, coll, rec)
+
+            if not self.manager.has_collection(user, new_coll):
+                err_msg = 'collection "{0}" does not exist'.format(new_coll)
                 return {'error_message': err_msg}
 
-            self.manager.rename(user=user,
-                                coll=coll,
-                                new_coll=coll,
-                                rec=rec,
-                                new_rec=new_rec,
-                                title=new_rec_title)
+            res = self.manager.rename(user=user,
+                                      coll=coll,
+                                      new_coll=new_coll,
+                                      rec=rec,
+                                      new_rec=rec,
+                                      title=new_rec_title)
 
-            return {'id': new_rec, 'title': new_rec_title}
+            return res
 
         @self.app.post('/api/v1/recordings/<rec>/pages')
         def add_page(rec):
@@ -77,13 +99,12 @@ class RecsController(BaseController):
             res = self.manager.add_page(user, coll, rec, page_data)
             return res
 
-        @self.app.post('/api/v1/recordings/<rec>/page/<url:path>')
-        def modify_page(rec, url):
+        @self.app.post('/api/v1/recordings/<rec>/page')
+        def modify_page(rec):
             user, coll = self.get_user_coll(api=True)
             self._ensure_rec_exists(user, coll, rec)
 
             page_data = dict(request.forms.decode())
-            page_data['url'] = url
 
             res = self.manager.modify_page(user, coll, rec, page_data)
             return {'page-data': page_data, 'recording-id': rec}
