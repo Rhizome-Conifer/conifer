@@ -21,7 +21,15 @@
     </div>
 
     <div class="col-md-10 bookmarks-panel">
-        <h3 class="top-buffer-none pull-left">Bookmarks for <em><span class="recording-filter-list" data-recordings-in-content-panel="$all">All recordings</span></em></h3>
+        <div style="display: inline-block" class="pull-left">
+        <h3 class="top-buffer-none pull-left">Bookmarks for <em><span class="recording-filter-list" data-recordings-in-content-panel="$all">All recordings</span></em>
+        </h3>
+        {% if is_owner() %}
+        <h5>
+        <input type="checkbox" checked="checked" name="show-hidden" id="show-hidden" style="margin-left: 8px; margin-right: 8px"><label for="show-hidden">Include Hidden Bookmarks</label>
+        </h5>
+        {% endif %}
+        </div>
 
         {% include 'bookmarks_table.html' %}
     </div>
