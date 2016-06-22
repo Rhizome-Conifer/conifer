@@ -78,8 +78,8 @@ var RecordingSelector = (function() {
     var setAllCardsSelected = function() {
         var allCard = $('[data-recording-id="$all"]');
 
-        $('.card-selected').removeClass('card-selected');
-        $('input:checked').prop('checked', false);
+        //$('.card-selected').removeClass('card-selected');
+        //$('input:checked').prop('checked', false);
 
         $(allCard).addClass('card-selected');
         $(allCard).find("input[type='checkbox']").prop('indeterminate', false);
@@ -161,13 +161,14 @@ var RecordingSelector = (function() {
     }
 
     var start = function() {
-        if (hasOneRecording()) {
+        /*if (hasOneRecording()) {
             $('.card').addClass('card-selected');
             $('.card input[type=checkbox]').prop('checked', true);
             $('.card input[type=checkbox]').attr('disabled', true);
-        } else {
-            $('.recording-selector').on('click', '.card', toggleRecordingSelection);
-        }
+        }*/ 
+        //} else {
+        $('.recording-selector').on('click', '.card', toggleRecordingSelection);
+        //}
     }
 
     return {
