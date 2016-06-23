@@ -1,5 +1,9 @@
 # Webrecorder Project
 
+**Note: These instructions are for the master branch and have not yet been updated for the upcoming release. Webrecorder is undergoing some architectural changes and this will be reflected here soon.**
+
+*If you are interested in contributing to Webrecorder, or have any general questions, please contact us at support@webrecorder.io*
+
 This is the official repository of the Webrecorder web archiving platform: https://webrecorder.io/
 
 Webrecorder provides an integrated platform for creating high-fidelity web archives while browsing, sharing, 
