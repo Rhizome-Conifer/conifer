@@ -23,6 +23,10 @@
 <script src="/static/__shared/recordings_model.js"></script>
 <script src="/static/__shared/recordings.js"></script>
 <script src="/static/__shared/browser_controller.js"></script>
+
+<script src="/static/__shared/times_and_sizes_formatter.js"></script>
+
+
 <style>
 .browser {
     text-align: center;
@@ -42,7 +46,7 @@
 {% include 'header.html' %}
 
 <div class="browser">
-    <div id="browserMsg" class="loading">Initializing Browser…</div>
+    <div id="browserMsg" class="loading">Initializing Browser...</div>
     <div id="noVNC_screen">
         <canvas id="noVNC_canvas" style="display: none">
             Canvas not supported.

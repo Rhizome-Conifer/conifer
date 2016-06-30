@@ -122,7 +122,7 @@ $(function() {
     function establish_ping_sock()
     {
         try {
-            pingsock = new WebSocket("ws://" + cmd_host + "/pingsock");
+            pingsock = new WebSocket("wss://" + cmd_host + "/pingsock");
         } catch (e) {
             console.log(e);
         }
