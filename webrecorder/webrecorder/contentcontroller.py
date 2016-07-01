@@ -53,6 +53,27 @@ class ContentController(BaseController, RewriterApp):
                                                                  url=wb_url)
             return self.redirect(new_url)
 
+        # COOKIES
+        @self.app.route('/api/v1/cookies/add', method='POST')
+        def set_cookie():
+            user, coll = self.get_user_coll(api=True)
+            rec = request.query.get('rec')
+            if not self.manager.has_recording(user, coll, rec):
+                self._raise_error(404, 'Recording not found',
+                                  api=True, id=rec)
+
+            name = request.forms.get('name')
+            value = request.forms.get('value')
+            domain = request.forms.get('domain')
+
+            key = self.get_cookie_key(dict(user=user, coll=coll, rec=rec))
+
+            if not domain:
+                return {'error_message': 'no domain'}
+
+            self.cookie_tracker.add_cookie(key, domain, name, value)
+            return {'success': domain}
+
         # LIVE DEBUG
         @self.app.route('/live/<wb_url:path>', method='ANY')
         def live(wb_url):
@@ -90,6 +111,7 @@ class ContentController(BaseController, RewriterApp):
                 type_ = 'replay'
 
             return self.handle_routing(wb_url, user, coll, rec=rec_name, type=type_)
+
 
     def handle_routing(self, wb_url, user, coll, rec, type):
         wb_url = self.add_query(wb_url)

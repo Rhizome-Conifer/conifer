@@ -550,7 +550,7 @@ $(function() {
     var lastUrl = undefined;
     var lastTs = undefined;
 
-    function urlChangeMessage(event) {
+    function handleReplayEvent(event) {
         var replay_iframe = window.document.getElementById("replay_iframe");
 
         if (!replay_iframe || event.source != replay_iframe.contentWindow) {
@@ -563,11 +563,49 @@ $(function() {
 
         var state = event.data;
 
-        if (!state.wb_type || state.wb_type != "load") {
+        if (!state.wb_type) {
             return;
         }
 
-        addNewPage(state);
+        if (state.wb_type == "load") {
+            addNewPage(state);
+        }
+
+        if (state.wb_type == "cookie") {
+            setDomainCookie(state);
+        }
+    }
+
+    function setDomainCookie(state) {
+        var url = window.location.origin;
+
+        var cookie = state.cookie.split(";", 1)[0];
+        if (!cookie) {
+            return;
+        }
+        cookie = cookie.split("=", 2);
+
+        var query = {"user": user,
+                     "coll": coll,
+                     "rec": rec
+                    }
+
+        var cookie_data = {
+                      "name": cookie[0],
+                      "value": cookie[1],
+                      "domain": state.domain
+                        }
+
+        url += "/api/v1/cookies/add?" + $.param(query);
+
+        $.ajax({
+            url: url,
+            method: "POST",
+            data: cookie_data,
+        })
+        .fail(function(xhr, textStatus, errorThrown) {
+            console.log("Cookie Domain Update Failed");
+        });
     }
 
     function addNewPage(state) {
@@ -605,7 +643,7 @@ $(function() {
         }
     }
 
-    window.addEventListener("message", urlChangeMessage);
+    window.addEventListener("message", handleReplayEvent);
 
     // Only used for non-html pages
     $("#replay_iframe").load(function(e) {
