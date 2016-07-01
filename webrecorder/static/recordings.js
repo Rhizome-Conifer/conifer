@@ -585,18 +585,17 @@ $(function() {
         }
         cookie = cookie.split("=", 2);
 
-        var query = {"user": user,
-                     "coll": coll,
-                     "rec": rec
+        var cookie_data = 
+                    {
+                     "name": cookie[0],
+                     "value": cookie[1],
+                     "domain": state.domain
                     }
 
-        var cookie_data = {
-                      "name": cookie[0],
-                      "value": cookie[1],
-                      "domain": state.domain
-                        }
-
-        url += "/api/v1/cookies/add?" + $.param(query);
+        url += "/" + user + "/" + coll + "/$add_cookie";
+        if (rec && rec != "*") {
+            url += "?rec=" + rec;
+        }
 
         $.ajax({
             url: url,

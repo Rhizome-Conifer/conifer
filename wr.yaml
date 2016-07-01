@@ -115,7 +115,7 @@ info_key_templ:
     coll: 'c:{user}:{coll}:info'
     user: 'u:{user}:info'
 
-cookie_key_templ: 'r:{user}:{coll}:{rec}:cookie:'
+cookie_key_templ: 'r:{user}:{coll}:{rec}:{id}:cookie:'
 
 warc_key_templ: 'r:{user}:{coll}:{rec}:warc'
 warc_upload_wait_templ: 'w:{filename}'

@@ -56,6 +56,9 @@ class Session(object):
 
         self.template_params = params
 
+    def get_id(self):
+        return self._sesh['id']
+
     def save(self):
         self.should_save = True
 

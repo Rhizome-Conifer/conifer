@@ -54,19 +54,21 @@ class ContentController(BaseController, RewriterApp):
             return self.redirect(new_url)
 
         # COOKIES
-        @self.app.route('/api/v1/cookies/add', method='POST')
-        def set_cookie():
-            user, coll = self.get_user_coll(api=True)
-            rec = request.query.get('rec')
-            if not self.manager.has_recording(user, coll, rec):
-                self._raise_error(404, 'Recording not found',
-                                  api=True, id=rec)
+        @self.app.get(['/<user>/<coll>/$add_cookie'], method='POST')
+        def add_cookie(user, coll):
+            if not self.manager.has_collection(user, coll):
+                self._raise_error(404, 'Collection not found',
+                                  api=True, id=coll)
+
+            rec = request.query.get('rec', '<all>')
 
             name = request.forms.get('name')
             value = request.forms.get('value')
             domain = request.forms.get('domain')
 
-            key = self.get_cookie_key(dict(user=user, coll=coll, rec=rec))
+            key = self.get_cookie_key(dict(user=user,
+                                           coll=coll,
+                                           rec=rec))
 
             if not domain:
                 return {'error_message': 'no domain'}
@@ -226,6 +228,8 @@ class ContentController(BaseController, RewriterApp):
         return base_url
 
     def get_cookie_key(self, kwargs):
+        id = self.get_session().get_id()
+        kwargs['id'] = id
         return self.cookie_key_templ.format(**kwargs)
 
     def process_query_cdx(self, cdx, wb_url, kwargs):
