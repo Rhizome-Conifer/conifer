@@ -60,7 +60,7 @@ class ContentController(BaseController, RewriterApp):
                 self._raise_error(404, 'Collection not found',
                                   api=True, id=coll)
 
-            rec = request.query.get('rec', '<all>')
+            rec = request.query.get('rec', '*')
 
             name = request.forms.get('name')
             value = request.forms.get('value')
@@ -230,6 +230,9 @@ class ContentController(BaseController, RewriterApp):
     def get_cookie_key(self, kwargs):
         id = self.get_session().get_id()
         kwargs['id'] = id
+        if kwargs.get('rec') == '*':
+            kwargs['rec'] = '<all>'
+
         return self.cookie_key_templ.format(**kwargs)
 
     def process_query_cdx(self, cdx, wb_url, kwargs):

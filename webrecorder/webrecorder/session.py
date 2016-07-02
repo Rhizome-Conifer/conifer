@@ -56,7 +56,13 @@ class Session(object):
 
         self.template_params = params
 
+    def is_new(self):
+        return self.ttl == -2
+
     def get_id(self):
+        if self.is_new():
+            self.save()
+
         return self._sesh['id']
 
     def save(self):
