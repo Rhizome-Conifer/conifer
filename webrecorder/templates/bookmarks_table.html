@@ -1,49 +1,68 @@
-{% set recording_column_index = 4 if is_owner() else 3 %}
+{% set recording_column_index = 5 if is_owner() else 3 %}
 
-<table class="table table-bordered table-hover table-bookmarks"
+<table class="table table-noborder table-striped table-hover table-bookmarks"
        data-page-length="25"
        data-recording-column-index="{{  recording_column_index }}">
     <thead>
         <tr>
+            {% if can_write() %}
+            <th></th>
+            <th></th>
+            {% endif %}
             <th>Title</th>
             <th>Timestamp</th>
             <th>Url</th>
-
-            {% if is_owner() %}
-	        	<th>Visibility</th>
-	        {% endif %}
 
             <th>Recording</th>
         </tr>
     </thead>
     <tbody>
         {% for recording in collection.recordings %}
-            {% set collection_path = get_path(user, coll) + '/' %}
+        {% set collection_path = get_path(user, coll) + '/' %}
 
-            {% for bookmark in recording.pages %}
-                {% set title = bookmark.title if bookmark.title else "No Title" %}
-                {% set timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
-                {% set path = collection_path + timestamp + '/' + bookmark.url %}
-                {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
+        {% for bookmark in recording.pages %}
+        {% set title = bookmark.title if bookmark.title else "No Title" %}
+        {% set timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
+        {% set path = collection_path + timestamp + '/' + bookmark.url %}
+        {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
 
-                {% if is_owner() or bookmark.hidden != '1' %}
-	                <tr data-bookmark-timestamp="{{ timestamp }}"
-                        data-bookmark-url="{{ bookmark.url }}"
-                        data-bookmark-hidden="{{ hidden }}"
-                        data-recording-id="{{ recording.id }}" >
-	                    <td> {% include 'editable_bookmark_title.html' %}</td>
-                        <td class="timestamp" data-time-ts="{{ timestamp }}"></td>
-                        <td><a href="{{ path }}">{{ bookmark.url }}</a></td>
+        {% set editing_id = "bookmark-" + recording.id + "-" + timestamp + "-" + bookmark.url %}
+        {% set title_label = "Bookmark Title" %}
+        {% set save_function = "bookmark" %}
 
-	                    {% if is_owner() %}
-		                    <td class="text-center">
-		                    	{% include 'bookmark_hidden_switch.html' %}
-		                    </td>
-		                {% endif %}
-	                    <td class="bookmark-recording-title">{{ recording.title }}</td>
-	                </tr>
-	            {% endif %}
-            {% endfor %}
+        {% if is_owner() or bookmark.hidden != '1' %}
+        <tr data-bookmark-timestamp="{{ timestamp }}"
+            data-bookmark-url="{{ bookmark.url }}"
+            data-bookmark-hidden="{{ hidden }}"
+            data-recording-id="{{ recording.id }}" >
+            
+            {% if can_write() %}
+            <td> 
+                {% include 'bookmark_hidden_switch.html' %}
+            </td>
+
+            <td>
+                <button type="button" class="edit-title right-buffer-sm btn btn-default btn-xs icon-button"
+                        aria-label="Edit bookmark title"
+                        title="Edit bookmark title"
+                        data-editing-id="{{ editing_id }}">
+                    <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                </button>
+
+                {% include 'edit_title_form.html' %}
+
+            </td>
+            {% endif %}
+            
+            <td>
+                <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ path }}">{{ title }}</a></span>
+            </td>
+            <td class="timestamp" data-time-ts="{{ timestamp }}"></td>
+            <td><a href="{{ path }}">{{ bookmark.url }}</a></td>
+            <td class="bookmark-recording-title">{{ recording.title }}</td>
+        </tr>
+        {% endif %}
+        {% endfor %}
         {% endfor %}
     </tbody>
 </table>

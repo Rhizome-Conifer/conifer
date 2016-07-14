@@ -246,6 +246,21 @@ input.homepage-title {
     padding-right: 0px;
 }
 
+.icon-button {
+    -webkit-appearance: none;
+    outline: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    border: 0;
+    background: transparent;
+}
+
+.icon-button:focus {
+    outline: none;
+    background: transparent;
+
+}
+
 .card {
     border-top: 1px solid #ccc;
     padding-top: 5px;
@@ -301,6 +316,14 @@ input.homepage-title {
     height: 22px;
 }
 
+.table-noborder  {
+    border: 0px;
+}
+
+.table-noborder>tbody>tr, .table-noborder>tbody>tr>td {
+    border: 0px;
+}
+
 .table-bookmarks {
     border-radius: 4px;
     margin: 0 auto;
@@ -327,6 +350,14 @@ input.homepage-title {
 .table-bookmarks>thead>tr>th {
     vertical-align: middle;
     line-height: 1.2;
+}
+
+.table-bookmarks thead>tr>th {
+    padding-right: 0px !important;
+}
+
+.table-bookmarks thead>tr>th:first-child {
+    padding-right: 10px !important;
 }
 
 

@@ -217,9 +217,10 @@ var BookmarksTable = (function() {
     var start = function() {
         if ($(".table-bookmarks").length) {
             theTable = $(".table-bookmarks").DataTable({
-                paging: true,
+                paging: false,
                 columnDefs: getColumnDefs(),
-                order: [[1, 'desc']],
+                order: [[2, 'desc']],
+                //lengthMenu: [[-1], ["All"]],
                 lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
                 language: {
                     search: "Filter:",
@@ -237,23 +238,21 @@ var BookmarksTable = (function() {
     }
 
     var hasVisibilityColumn = function() {
-        return $('.table-bookmarks th').length === 5;
+        return $('.table-bookmarks th').length === 6;
     }
 
     var getColumnDefs = function() {
         if (hasVisibilityColumn()) {
             return [
-                        { targets: [0, 1, 2, 3], orderable: true },
-                        { targets: '_all',    orderable: false },
-                        { targets: 0, width: "15em" },
-                        { targets: [1, 4], width: "8em" },
-                        { targets: 3, width: "4em" }
+                        { targets: [2, 3, 4, 5], orderable: true },
+                        { targets: [0, 1], width: "10px", orderable: false},
+                        { targets: [2, 4], width: "15em" },
+                        { targets: [3, 5], width: "8em" }
                     ]
         } else {
             return [
-                        { targets: [1, 2, 3], orderable: true },
-                        { targets: '_all',    orderable: false },
-                        { targets: 0, width: "15em" },
+                        { targets: [0, 1, 2, 3], orderable: true },
+                        { targets: [0, 2], width: "15em" },
                         { targets: [1, 3], width: "8em" }
                     ]
         }
