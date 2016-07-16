@@ -1,21 +1,27 @@
-{% if user %}
-	<ol class="breadcrumb breadcrumb-webrecorder">
-		{% if not is_anon() %}
-			<li>
-				<a target="_parent" href="/{{ user }}" title="Return to archive: {{ user }}" class="archive-breadcrumb">{{ user if not is_anon() else 'Temp User' }}</a>
-			</li>
-		{% endif %}
 
-		{% if coll %}
-            <li>
-				<a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}" data-collection-id="{{ coll }}" class="collection-breadcrumb">{{ coll_title }}</a>
-			</li>
-		{% endif %}
+<ol class="breadcrumb navbar-left wr-breadcrumb">
+    <li>
+        <a target="_parent" class="branding" title="Return to {{ metadata.product | default('webrecorder.io')}}" href="/">
+            webrecorder.io
+        </a>
+    </li>
 
-		{% if rec and rec != '*' %}
-			<li>
-                <a target="_parent" href="{{ get_path(user, coll, rec) }}" title="Return to recording: {{ rec_title }}" data-recording-id="{{ rec }}" class="recording-breadcrumb">{{ rec_title }}</a>
-			</li>
-		{% endif %}
-	</ol>
-{% endif %}
+    {% if user and not is_anon() %}
+    <li>
+        <a target="_parent" href="/{{ user }}" title="Return to archive: {{ user }}" class="archive-breadcrumb">{{ user }}</a>
+    </li>
+    {% endif %}
+
+    {% if coll %}
+    <li>
+        <a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}" data-collection-id="{{ coll }}" class="collection-breadcrumb">{{ coll_title }}</a>
+    </li>
+    {% endif %}
+
+    {% if rec and rec != '*' %}
+    <li>
+        <a target="_parent" href="{{ get_path(user, coll, rec) }}" title="Return to recording: {{ rec_title }}" data-recording-id="{{ rec }}" class="recording-breadcrumb">{{ rec_title }}</a>
+    </li>
+    {% endif %}
+</ol>
+

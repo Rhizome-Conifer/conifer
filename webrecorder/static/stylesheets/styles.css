@@ -49,6 +49,36 @@
     padding-right: 15px
 }
 
+.wr-breadcrumb {
+    background-color: transparent;
+    padding: 0px !important;
+    padding-left: 5px;
+    margin: 1px;
+    border: none;
+}
+
+.wr-breadcrumb>li>a.branding {
+    text-decoration: none;
+}
+
+.wr-breadcrumb>li>a,
+.wr-breadcrumb>li>a:visited {
+
+}
+
+.wr-breadcrumb>li>a:focus,
+.wr-breadcrumb>li>a:hover {
+    text-decoration: underline;
+    color: #74B9F3;
+}
+
+.wr-breadcrumb>li>a:active,
+.wr-breadcrumb>li>a:hover {
+    text-decoration: underline;
+    color: #74B9F3;
+}
+
+
 .wr-timer {
     color: #ccc;
     margin-left: 16px;
@@ -244,6 +274,7 @@ input.homepage-title {
 
 .bookmarks-panel {
     padding-right: 0px;
+    padding-left: 40px;
 }
 
 .icon-button {

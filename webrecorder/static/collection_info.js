@@ -232,7 +232,7 @@ var BookmarksTable = (function() {
                     zeroRecords: "No matching bookmarks found"
 
                 },
-                dom: '<"table-bookmarks-top"f>tr<"table-bookmarks-bottom"ipl><"clear">'
+                dom: '<"table-bookmarks-top">tr<"table-bookmarks-bottom"pl><"clear">'
             });
         }
     }
