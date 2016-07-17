@@ -8,13 +8,12 @@
 <link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
 <script src="/static/__shared/external/bootstrap-switch.js"></script>
 
+{% include 'header.html' %}
+
+
 {% endblock %}
 
 {% block body %}
-
-<div class="homepage-user-links row right-padding top-buffer right-buffer left-buffer">
-    {% include 'user_management_links.html' %}
-</div>
 
 <div class="container wr-content">
     {% block message %}

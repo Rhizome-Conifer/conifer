@@ -221,7 +221,7 @@ var BookmarksTable = (function() {
                 columnDefs: getColumnDefs(),
                 order: [[2, 'desc']],
                 //lengthMenu: [[-1], ["All"]],
-                lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                //lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
                 language: {
                     search: "Filter:",
                     emptyTable: "No bookmarks available in the table",
@@ -245,15 +245,17 @@ var BookmarksTable = (function() {
         if (hasVisibilityColumn()) {
             return [
                         { targets: [2, 3, 4, 5], orderable: true },
-                        { targets: [0, 1], width: "10px", orderable: false},
+                        { targets: [0, 1], width: "12px", orderable: false},
                         { targets: [2, 4], width: "15em" },
-                        { targets: [3, 5], width: "8em" }
+                        { targets: [3], width: "7.5em" },
+                        { targets: [5], width: "5em" }
                     ]
         } else {
             return [
                         { targets: [0, 1, 2, 3], orderable: true },
                         { targets: [0, 2], width: "15em" },
-                        { targets: [1, 3], width: "8em" }
+                        { targets: [1], width: "7.5em" },
+                        { targets: [3], width: "5em" }
                     ]
         }
     }
