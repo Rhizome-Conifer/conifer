@@ -293,7 +293,8 @@ var BookmarksTable = (function() {
         if (hasVisibilityColumn()) {
             return [
                         { targets: [2, 3, 4, 5], orderable: true },
-                        { targets: [0, 1], width: "12px", orderable: false},
+                        { targets: [0], width: "32px", orderable: false},
+                        { targets: [1], width: "12px", orderable: false},
                         { targets: [2, 4], width: "15em" },
                         { targets: [3], width: "7.5em" },
                         { targets: [5], width: "5em" }
@@ -429,9 +430,15 @@ var BookmarkHiddenSwitch = (function() {
 
             
     var start = function() {
+        $("#show-hidden").bootstrapSwitch();
+
+        $('th.bookmark-hidden-switch>div.bootstrap-switch').attr('title', 'Show/Hide hidden bookmarks')
+
         $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
 
-        $("#show-hidden").on('change', toggleShowHidden);
+        $("#show-hidden")
+            .on('switchChange.bootstrapSwitch', toggleShowHidden)
+            .trigger('switchChange.bootstrapSwitch');
 
         $("tr[data-bookmark-hidden='1']").addClass("hidden-bookmark");
     }

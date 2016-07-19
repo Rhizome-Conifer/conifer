@@ -267,7 +267,7 @@ input.homepage-title {
 }
 
 .recording-selector {
-    margin-top: 11px;
+    margin-top: 8px;
 }
 
 .bookmarks-panel {
@@ -403,7 +403,7 @@ div.filter-label {
 }
 
 /* mirror pen glyph */
-button.edit-title {
+.table-bookmarks>tbody>tr>td>button.edit-title {
     transform: scale(-1, 1);
 }
 .table-bookmarks>thead>tr>th.bookmark-edit-title,
@@ -411,6 +411,27 @@ button.edit-title {
     padding-left: 0 !important;
     padding-right: 0 !important;
 }
+
+.table-bookmarks>thead>tr>th.bookmark-hidden-switch,
+.table-bookmarks>tbody>tr>td.bookmark-hidden-switch {
+    padding: 0px !important;
+    /*padding-right: 0px !important;*/
+
+    text-align: center;
+}
+    .table-bookmarks>thead>tr>th.bookmark-hidden-switch>.bootstrap-switch.bootstrap-switch-mini .bootstrap-switch-handle-on, 
+    .table-bookmarks>thead>tr>th.bookmark-hidden-switch>.bootstrap-switch.bootstrap-switch-mini .bootstrap-switch-handle-off, 
+    .table-bookmarks>thead>tr>th.bookmark-hidden-switch>.bootstrap-switch.bootstrap-switch-mini .bootstrap-switch-label {
+        font-family: 'Glyphicons Halflings';
+        padding: 1px 3px;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: 1.5;
+        color: #999;
+    }
+    .table-bookmarks>thead>tr>th.bookmark-hidden-switch>.bootstrap-switch.bootstrap-switch-mini .bootstrap-switch-handle-on {
+
+    }
 
 /* long URLs */
 .table-bookmarks>tbody>tr>td.bookmark-url {
@@ -451,11 +472,6 @@ button.edit-title {
 .table-bookmarks thead>tr>th {
     padding-right: 0px !important;
 }
-
-.table-bookmarks thead>tr>th:first-child {
-    padding-right: 10px !important;
-}
-
 
 .table-bookmarks.dataTable thead .sorting:after,
 .table-bookmarks.dataTable thead .sorting_asc:after,

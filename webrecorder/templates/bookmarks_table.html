@@ -1,12 +1,18 @@
 {% set recording_column_index = 5 if is_owner() else 3 %}
-
+{# 
+{% if is_owner() %}
+        <input type="checkbox" checked="checked" name="show-hidden" id="show-hidden" style="margin-left: 8px; margin-right: 8px"><label for="show-hidden">Include Hidden Bookmarks</label>
+{% endif %}
+ #}
 <table class="table table-noborder table-striped table-hover table-bookmarks"
        data-page-length="25"
        data-recording-column-index="{{  recording_column_index }}">
     <thead>
         <tr>
             {% if can_write() %}
-            <th class="bookmark-hidden-switch"></th>
+            <th class="bookmark-hidden-switch">
+                <input type="checkbox" class="left-buffer-sm" id="show-hidden" name="show-hidden" data-inverse="true" data-size="mini" data-on-text="&#xe105;" data-off-text="&#xe106;" data-on-color="default" data-handle-width="10">
+            </th>
             <th class="bookmark-edit-title"></th>
             {% endif %}
             <th class="bookmark-title"><span>Bookmarks</span></th>
