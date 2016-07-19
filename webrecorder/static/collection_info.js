@@ -144,6 +144,7 @@ var RecordingSelector = (function() {
             $('.recording-filter-list').closest("li").hide();
             $("#coll-breadcrumb-link").hide();
             $("#coll-breadcrumb-text").show();
+            $('#clear-all').addClass('disabled')
             
         } else {
             var recordingTitles = getSelectedRecordingTitles();
@@ -153,6 +154,8 @@ var RecordingSelector = (function() {
 
             $("#coll-breadcrumb-link").show();
             $("#coll-breadcrumb-text").hide();
+
+            $('#clear-all').removeClass('disabled')
         }
 
         if (urlUpdate) {
