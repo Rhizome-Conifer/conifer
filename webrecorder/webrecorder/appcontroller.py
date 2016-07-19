@@ -138,7 +138,7 @@ class AppController(BaseController):
         @self.bottle_app.route(['/', '/index.html'])
         @self.jinja2_view('index.html', refresh_cookie=False)
         def home_page():
-            resp = {}
+            resp = {'is_home': '1'}
 
             sesh = self.get_session()
 

@@ -1,18 +1,20 @@
 {% set duration = recording.updated_at - recording.created_at %}
-{% set bookmark_plural = "bookmark" if (recording.pages | count == 1) else "bookmarks" %}
+{% set bookmark_count = recording.pages | count %}
+{% set bookmark_plural = "bookmark" if bookmark_count == 1 else "bookmarks" %}
 {% set editing_id = "recording-title-" + recording.id %}
 
 <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
-
-    <div class="checkbox-column">
-        <input type="checkbox" aria-label="Filter bookmarks table by recording: {{ recording.title }}">
+    <div class="pull-right">
+        <div class="btn btn-default btn-xs filter-label">
+            <span class="glyphicon glyphicon-filter filter-label"></span>
+        </div>
     </div>
 
     <div class="content-column">
         <span class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</span>
 
         <div class="recording-stats text-left top-buffer-md right-buffer-sm">
-            <span class="bookmark-count">{{ recording.pages | count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
+            <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
             <span class="current-size text-right" data-size="{{ recording.size }}"></span>
         </div>
 
@@ -27,4 +29,5 @@
         {% include 'recording_card_buttons.html' %}
         {% include 'editable_recording_title.html' %}
     </div>
+
 </div>

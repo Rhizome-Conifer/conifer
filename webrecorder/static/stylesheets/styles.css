@@ -61,10 +61,10 @@
     text-decoration: none;
 }
 
-.wr-breadcrumb>li>a,
-.wr-breadcrumb>li>a:visited {
-
+.wr-breadcrumb>li>span {
+    color: #fff;
 }
+
 
 .wr-breadcrumb>li>a:focus,
 .wr-breadcrumb>li>a:hover {
@@ -292,24 +292,32 @@ input.homepage-title {
 
 }
 
+div.filter-label.active {
+    background-color: black;
+    color: white
+}
+
 .card {
     border-top: 1px solid #ccc;
     padding-top: 5px;
-    padding-left: 5px;
+    padding-left: 10px;
     padding-bottom: 10px;
     cursor: pointer;
 }
 
+#all-card {
+    padding: 5px 0px 10px 10px;
+}
+
 .checkbox-column {
     display: inline-block;
-    width: 13px;
+    width: 25px;
     vertical-align: top;
     margin-top: 2px;
 }
 
 .content-column {
-    display: inline-block;
-    width: 90%;
+    display: inline;
 }
 
 .card-top {
@@ -336,7 +344,8 @@ input.homepage-title {
 .recording-title {
     overflow-wrap: break-word;
     font-size: 18px;
-    color: #1932bd;
+    font-weight: bold;
+    /*color: #1932bd;*/
 }
 
 .recording-time-info {

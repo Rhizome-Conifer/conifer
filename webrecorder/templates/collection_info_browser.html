@@ -5,12 +5,17 @@
         {% include 'new_recording_button.html' %}
 
         <div class="recording-selector">
-            <div class="card card-selected card-top" data-recording-id="$all">
-                <div class="checkbox-column">
-                    <input type="checkbox" checked aria-label="Show all recordings in bookmarks table">
+            <div id="all-card" class="card-top">
+                <div class="">
+                    <b>Recordings</b>&nbsp; &nbsp;<span id="sel-info"></span>
                 </div>
+                <div class="recording-stats text-left top-buffer-md right-buffer-sm">
+                    <span id="sel-bookmarks" class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }}</span> bookmarks&nbsp; &nbsp;
+                    <span class="current-size text-right" data-size="{{ collection.size }}"></span>
+                </div>
+                <br/>
                 <div class="content-column">
-                    <div class="recording-title">All recordings</div>
+                    <a id="clear-all" href="#">Clear Selected</a>
                 </div>
             </div>
 

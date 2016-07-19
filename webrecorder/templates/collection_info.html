@@ -43,10 +43,6 @@
 </div>
 
 <div class="row">
-    <span class="pull-right">
-        Size: <b><span data-size="{{ collection.size }}"></span></b>
-    </span>
-
     {% if can_write() and not is_anon() %}
         <div id="about" class="pull-left">
             <div id="home-markdown" class="collapse">{{ collection.desc }}</div>

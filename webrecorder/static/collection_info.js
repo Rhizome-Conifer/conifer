@@ -18,7 +18,7 @@ var UrlManager = (function() {
         var host = window.location.protocol + "//" + window.location.host;
         var url = host + "/" + user + "/" + coll;
 
-        if (recordingIds.length > 0 && recordingIds[0] != "$all") {
+        if (recordingIds.length > 0) {
             url += "/" + recordingIds.join(",");
         }
 
@@ -59,22 +59,14 @@ var RecordingSelector = (function() {
 
     var toggleRecordingSelection = function(event) {
         if(isSelectionEvent(event)) {
-            if (isAllRecordingsCard(event.target)) {
-                setAllCardsSelected();
-            } else {
-                setSomeCardsSelected(event.target);
-            }
+            setSomeCardsSelected(event.target);
 
             BookmarksTable.filterByRecordings(getSelectedRecordingTitles());
 
-            var recordingIds = getSelectedRecordingIds();
-
-            updateRecordingFilterList(recordingIds);
-
-            UrlManager.update(event, recordingIds);
+            updateRecordingFilterList(event, true);
         }
     }
-
+/*
     var setAllCardsSelected = function() {
         var allCard = $('[data-recording-id="$all"]');
 
@@ -85,27 +77,29 @@ var RecordingSelector = (function() {
         $(allCard).find("input[type='checkbox']").prop('indeterminate', false);
         $(allCard).find("input[type='checkbox']").prop('checked', true);
     }
-
+*/
     var setSomeCardsSelected = function(element) {
         var card = $(element).closest('.card');
 
-        $('[data-recording-id="$all"]').removeClass('card-selected');
-        $('[data-recording-id="$all"]').find("input[type='checkbox']").prop('indeterminate', true);
+        //$('[data-recording-id="$all"]').removeClass('card-selected');
+        //$('[data-recording-id="$all"]').find("input[type='checkbox']").prop('indeterminate', true);
 
-        $(card).toggleClass('card-selected');
-        $(card).find("input[type='checkbox']").prop('checked', getNewCheckboxValue(element));
+        var newVal = !$(card).hasClass("card-selected");
+        $(card).toggleClass('card-selected', newVal);
 
-        if (isNothingSelected() || isEverythingSelected()) {
-            setAllCardsSelected();
-        }
+        $(card).find("div.filter-label").toggleClass("active", newVal);
+
+        //if (isNothingSelected() || isEverythingSelected()) {
+        //    setAllCardsSelected();
+        //}
     }
 
     var getNewCheckboxValue = function(element) {
-        if ($(element).is('input[type=checkbox]')) {
-            return $(element).prop('checked');
-        } else {
-            return !$(element).closest('.card').find("input[type='checkbox']").prop('checked');
-        }
+        //if ($(element).is('input[type=checkbox]')) {
+        //    return $(element).prop('checked');
+        //} else {
+        //    return !$(element).closest('.card').find("input[type='checkbox']").prop('checked');
+        //}
     }
 
     var selectRecordings = function(recordingIds) {
@@ -114,17 +108,58 @@ var RecordingSelector = (function() {
         });
     }
 
-    var updateRecordingFilterList = function(recordingIds) {
+    var updateSelectedData = function() {
+        var size = 0;
+        var bookmarks = 0;
+
+        var selected = $(".card-selected");
+
+        if (selected.length == 0) {
+            selected = $(".card");
+            $("#sel-info").hide();
+        } else {
+            var msg = "(" + selected.length + " of " + $(".card").length + ")";
+            $("#sel-info").text(msg);
+            $("#sel-info").show();
+        }
+
+        selected.each(function() {
+            size += parseInt($(this).find("[data-size]").attr("data-size"));
+            bookmarks += parseInt($(this).find("[data-bookmark]").attr("data-bookmark"));
+        });
+
+        $("#all-card").find("[data-size]").attr("data-size", size);
+        $("#sel-bookmarks").text(bookmarks);
+
+        TimesAndSizesFormatter.format();
+    }
+
+    var updateRecordingFilterList = function(event, urlUpdate) {
+        var recordingIds = getSelectedRecordingIds();
+
         var recordingList = "";
 
-        if (recordingIds[0] === "$all") {
-            recordingList = "All recordings";
+        if (recordingIds.length == 0) {
+            //recordingList = "All recordings";
+            $('.recording-filter-list').closest("li").hide();
+            $("#coll-breadcrumb-link").hide();
+            $("#coll-breadcrumb-text").show();
+            
         } else {
             var recordingTitles = getSelectedRecordingTitles();
             recordingList = recordingTitles.join(", ");
+            $('.recording-filter-list').text(recordingList);
+            $('.recording-filter-list').closest("li").show();
+
+            $("#coll-breadcrumb-link").show();
+            $("#coll-breadcrumb-text").hide();
         }
 
-        $('.recording-filter-list').text(recordingList);
+        if (urlUpdate) {
+            UrlManager.update(event, recordingIds);
+        }
+
+        updateSelectedData();
     }
 
     var getSelectedRecordingTitles = function() {
@@ -138,6 +173,7 @@ var RecordingSelector = (function() {
         return $('.card-selected').map( function(){ return $(this).attr('data-recording-id') }).get();
     }
 
+/*
     var isAllRecordingsCard = function(element) {
         return $(element).closest('.card').attr('data-recording-id') === "$all";
     }
@@ -153,22 +189,31 @@ var RecordingSelector = (function() {
     var hasOneRecording = function () {
         return $('.card').length === 2;
     }
-
+*/
     var isSelectionEvent = function(event) {
+        if ($(event.target).hasClass("filter-label")) {
+            return true;
+        }
+
         return !($(event.target).hasClass('btn') ||
             $(event.target).hasClass('glyphicon') ||
             $(event.target).is('input[type=text]'));
     }
 
+    var clearFilters = function(event) {
+        event.preventDefault();
+        $('.card').removeClass("card-selected");
+        $('.filter-label').removeClass("active");
+        updateRecordingFilterList(event, true);
+        return true;
+    }
+
     var start = function() {
-        /*if (hasOneRecording()) {
-            $('.card').addClass('card-selected');
-            $('.card input[type=checkbox]').prop('checked', true);
-            $('.card input[type=checkbox]').attr('disabled', true);
-        }*/ 
-        //} else {
-        $('.recording-selector').on('click', '.card', toggleRecordingSelection);
-        //}
+        $('div[data-recording-id]').on('click', toggleRecordingSelection);
+
+        $("#clear-all").on('click', clearFilters);
+
+        updateRecordingFilterList(undefined, false);
     }
 
     return {
@@ -378,6 +423,7 @@ var BookmarkHiddenSwitch = (function() {
             $("tr[data-bookmark-hidden='1']").hide();
         }
     }
+
             
     var start = function() {
         $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);

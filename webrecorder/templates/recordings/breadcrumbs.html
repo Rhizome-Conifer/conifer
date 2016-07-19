@@ -1,20 +1,29 @@
 
 <ol class="breadcrumb navbar-left wr-breadcrumb">
     <li>
+        {% if not is_home %}
         <a target="_parent" class="branding" title="Return to {{ metadata.product | default('webrecorder.io')}}" href="/">
             webrecorder.io
         </a>
+        {% else %}
+        <span>webrecorder.io</span>
+        {% endif %}
     </li>
 
     {% if user and not is_anon() %}
     <li>
+        {% if coll %}
         <a target="_parent" href="/{{ user }}" title="Return to archive: {{ user }}" class="archive-breadcrumb">{{ user }}</a>
+        {% else %}
+        <span>{{ user }}</span>
+        {% endif %}
     </li>
     {% endif %}
 
     {% if coll %}
     <li>
-        <a target="_parent" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}" data-collection-id="{{ coll }}" class="collection-breadcrumb">{{ coll_title }}</a>
+        <a target="_parent" id="coll-breadcrumb-link" href="{{ get_path(user, coll) }}" title="Return to collection: {{ coll_title }}" data-collection-id="{{ coll }}" class="collection-breadcrumb">{{ coll_title }}</a>
+        <span style="display: none" id="coll-breadcrumb-text">{{ coll_title }}</span>
     </li>
     {% endif %}
 
@@ -22,6 +31,10 @@
     <li>
         <a target="_parent" href="{{ get_path(user, coll, rec) }}" title="Return to recording: {{ rec_title }}" data-recording-id="{{ rec }}" class="recording-breadcrumb">{{ rec_title }}</a>
     </li>
+    {% elif curr_mode == 'new' %}
+    <li><span>Create a new recording</span></li>
+    {% elif not rec and not url %}
+    <li style="display: none"><span class="recording-filter-list" data-recordings-in-content-panel="$all"></span></li>
     {% endif %}
 </ol>
 
