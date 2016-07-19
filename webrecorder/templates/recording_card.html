@@ -4,7 +4,7 @@
 {% set editing_id = "recording-title-" + recording.id %}
 
 <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
-    <div class="pull-right">
+    <div class="checkbox-column">
         <div class="btn btn-default btn-xs filter-label">
             <span class="glyphicon glyphicon-filter filter-label"></span>
         </div>
@@ -29,5 +29,5 @@
         {% include 'recording_card_buttons.html' %}
         {% include 'editable_recording_title.html' %}
     </div>
-
 </div>
+

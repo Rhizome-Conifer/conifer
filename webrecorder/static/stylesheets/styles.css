@@ -317,7 +317,8 @@ div.filter-label.active {
 }
 
 .content-column {
-    display: inline;
+    display: inline-block;
+    max-width: 154px;
 }
 
 .card-top {
