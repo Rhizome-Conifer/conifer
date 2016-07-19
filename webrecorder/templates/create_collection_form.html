@@ -1,26 +1,9 @@
-<script>
-    $(function() {
-        $(".ispublic").bootstrapSwitch();
-
-        /*        $("#collection").on('input', function() {
-            $("#coll-id").text($(this).val());
-        });
-        $("#title").on('input', function() {
-            var filtered = $(this).val();
-            filtered = filtered.replace(/\s/g, '-').replace(/[^\w-]/g, '').toLowerCase().substring(0, 30);
-            $("#collection-id").val(filtered);
-            $("#coll-id").text(filtered);
-        });
-*/
-    });
-
-</script>
 <div class="row top-buffer-md">
     <div class="col-md-10 col-md-offset-1">
         <form method="post" id="create-coll" action="/_create" class="form-horizontal">
             <span class="form-group col-md-5">
                 <label for="collection">Collection Name:</label>
-                <input type="text" id="title" name="title" class="form-control" placeholder="" value="New Collection" aria-describedby="addon2" autofocus>
+                <input type="text" id="title" name="title" class="form-control" placeholder="" value="New Collection" aria-describedby="addon2" required>
             </span>
 
             <span class="col-md-6 col-md-offset-1">
