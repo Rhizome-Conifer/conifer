@@ -338,9 +338,28 @@ div.filter-label {
 
 .card .sub-menu {
     position: absolute;
-    top: 5px;
+    top: 0px;
     right: 2px;
 }
+
+    .card .dropdown-menu {
+        left: -8px;
+    }
+        .card .dropdown-menu:after {
+            position: absolute;
+            top: -24px;
+            right: 16px;
+            font-family: 'Glyphicons Halflings';
+            content: "\e252";
+            font-size: 12px;
+            background: #fff;
+            padding: 1px 6px 5px;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            pointer-events: none;
+        }
 
 
 .card .recording-actions .btn {
@@ -544,9 +563,7 @@ div.filter-label {
     font-size: 0.8em;
 }
 
-.content-column .dropdown-menu {
-    left: -25px;
-}
+
 
 .glyphicon-lg {
     font-size: 1.5em;
