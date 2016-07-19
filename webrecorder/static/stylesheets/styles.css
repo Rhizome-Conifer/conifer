@@ -342,6 +342,11 @@ div.filter-label {
     right: 2px;
 }
 
+.card .sub-menu.disabled {
+    color: lightgray;
+    background-color: white;
+}
+
     .card .dropdown-menu {
         left: -8px;
     }

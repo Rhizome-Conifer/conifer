@@ -18,6 +18,7 @@
                 </div>
             </div>
 
+            {% set oos = is_out_of_space() %}
             {% for recording in collection.recordings %}
                 {% include 'recording_card.html' %}
             {% endfor %}
