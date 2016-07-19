@@ -19,13 +19,13 @@ var EditTitleInPlace = (function() {
 	}
 
 	var hideTitleAndEditButton = function(editingId) {
-		$(".edit-title[data-editing-id='" + editingId + "']").hide();
+		$(".edit-title[data-editing-id='" + editingId + "']").addClass("active");
 		$(".editable-title[data-editing-id='" + editingId + "']").hide();
 	}
 
 	var showTitleAndEditButton = function(editingId) {
 		$(".editable-title[data-editing-id='" + editingId + "']").show();
-		$(".edit-title[data-editing-id='" + editingId + "']").show();
+		$(".edit-title[data-editing-id='" + editingId + "']").removeClass("active");
 	}
 
 	var showForm = function(editingId) {
