@@ -333,12 +333,12 @@ div.filter-label {
 
 .content-column {
     display: inline-block;
-    max-width: 154px;
+    width: 164px;
 }
 
 .card .sub-menu {
     position: absolute;
-    top: 5;
+    top: 5px;
     right: 2px;
 }
 
@@ -536,6 +536,16 @@ div.filter-label {
 .glyphicon-button {
     top: 2px;
     margin-right: 3px;
+}
+
+.dropdown-menu .glyphicon {
+    top: 2px;
+    margin-right: 5px;
+    font-size: 0.8em;
+}
+
+.content-column .dropdown-menu {
+    left: -25px;
 }
 
 .glyphicon-lg {
