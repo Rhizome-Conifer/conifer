@@ -198,7 +198,8 @@ var RecordingSelector = (function() {
             return true;
         }
 
-        return !($(event.target).hasClass('btn') ||
+        return !($(event.target).is('a') ||
+            $(event.target).hasClass('btn') ||
             $(event.target).hasClass('glyphicon') ||
             $(event.target).is('input[type=text]'));
     }
