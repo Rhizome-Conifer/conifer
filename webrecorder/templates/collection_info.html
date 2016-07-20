@@ -32,45 +32,65 @@
 {% block content %}
 
 <div class="row top-buffer-sm">
-    <h1 class="top-buffer-none pull-left">
-        {% include 'editable_collection_title.html' %}
-    </h1>
+    <div class="col-xs-9">
+        <h1 class="top-buffer-none pull-left">
+            {% include 'editable_collection_title.html' %}
+        </h1>
+    </div>
+    <div class="col-xs-3 pull-xs-right">
+        {% if can_write() %}
+            {% if is_out_of_space() %}
+                {% set is_disabled_class = "disabled" %}
+            {% endif %}
+            <div class="access-switch" style="float:right;">
+                {% set is_public = collection['r:@public'] %}
+                {% include 'public_private_switch.html' %}
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 <div class="row">
-    {% if can_write() and not is_anon() %}
-        <div id="about" class="pull-left">
-            <div id="home-markdown" class="collapse">{{ collection.desc }}</div>
+    <div class="col-xs-2">
+        {% if can_write() %}
+            
+            {% if can_admin() %}
+                <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span>Download Collection</a>
+                
+            {% endif %}
+
+            <div>
+                <a href="{{ get_path(user, coll) }}/$new" class="btn btn-default btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
+            </div>
+        {% endif %}
+
+        {% if is_anon() %}
+        <div class="row col-md-6 col-md-offset-3 alert alert-info" role="alert">
+            <p>Note: This collection is accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
+
+            <div>To create permanent, shareable collections <a href="/_register"><b>Sign Up</b></a> or <a href="#" data-toggle="modal" data-target="#login-modal"><b>Log In</b></a></div></div>
+        {% endif %}
+    </div>
+
+    <div class="col-xs-6 collection-description">
+
+
+        {% if can_write() and not is_anon() %}
+            <div id="home-markdown">{{ collection.desc }}</div>
             <div id="home-view"></div>
-        </div>
-        <div class="pull-left left-buffer">
-            <button id="home-edit" type="button" class="edit-description btn btn-default btn-xs icon-button" aria-label="Edit collection description">
+
+            <button id="home-edit" type="button" class="edit-description btn btn-default btn-xs icon-button" title="Edit collection description" aria-label="Edit collection description">
                 <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
             </button>
-        </div>
-    {% endif %}
+        {% endif %}
 
-    {% if can_write() %}
-    {% if is_out_of_space() %}
-    	{% set is_disabled_class = "disabled" %}
-    {% endif %}
-    <div style="clear: both"></div>
-    <div class="access-switch">
-        {% set is_public = collection['r:@public'] %}
-        {% include 'public_private_switch.html' %}
     </div>
+
+    <div class="col-xs-4">
+        <button id="delete-coll-btn" class="btn btn-sm btn-default pull-right" data-toggle="modal" data-target="#confirm-delete-collection-modal"><span class="glyphicon glyphicon-trash glyphicon-button" aria-hidden="true"></span>Delete Collection</button>
+    </div>
+
     
-    <a href="{{ get_path(user, coll) }}/$new" class="btn btn-default btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
-    {% include 'collection_info_buttons.html'%}
-
-    {% endif %}
-
-    {% if is_anon() %}
-    <div class="row col-md-6 col-md-offset-3 alert alert-info" role="alert">
-        <p>Note: This collection is accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
-
-        <div>To create permanent, shareable collections <a href="/_register"><b>Sign Up</b></a> or <a href="#" data-toggle="modal" data-target="#login-modal"><b>Log In</b></a></div></div>
-    {% endif %}
 </div>
 
 {% include 'collection_info_browser.html' %}

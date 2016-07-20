@@ -231,6 +231,12 @@ input.homepage-title {
     display: inline-block;
 }
 
+h1 button.edit-title {
+    position: relative;
+    bottom: 8px;
+}
+
+
 .hide-loading-spinner,
 .edit-title-loading-spinner {
     display: inline-block;
@@ -271,11 +277,6 @@ input.homepage-title {
     margin-top: 8px;
 }
 
-.bookmarks-panel {
-    padding-right: 0px;
-    padding-left: 40px;
-}
-
 .icon-button {
     -webkit-appearance: none;
     outline: none;
@@ -290,6 +291,16 @@ input.homepage-title {
     background: transparent;
 
 }
+
+.collection-description {
+    position: relative;
+}
+    .collection-description button.edit-description {
+        position: absolute;
+        top: 0;
+        right: -18px;
+        z-index: 666;
+    }
 
 div.filter-label {
     background: no-repeat 50% 50%;
