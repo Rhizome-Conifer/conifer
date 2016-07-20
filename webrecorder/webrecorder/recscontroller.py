@@ -55,6 +55,7 @@ class RecsController(BaseController):
                 return {'error_message': err_msg}
 
             if rec == new_rec:
+                self.manager.set_rec_prop(user, coll, rec, 'title', new_rec_title)
                 return {'rec_id': rec, 'coll_id': coll, 'title': new_rec_title}
 
             #if self.manager.has_recording(user, coll, new_rec):

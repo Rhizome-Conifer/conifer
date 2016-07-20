@@ -68,6 +68,7 @@ class CollsController(BaseController):
             new_coll = self.sanitize_title(new_coll_title)
 
             if coll == new_coll:
+                self.manager.set_coll_prop(user, coll, 'title', new_coll_title)
                 return {'rec_id': '*', 'coll_id': new_coll, 'title': new_coll_title}
 
             #if self.manager.has_collection(user, new_coll):
@@ -97,7 +98,7 @@ class CollsController(BaseController):
 
             desc = request.body.read().decode('utf-8')
 
-            self.manager.set_coll_desc(user, coll, desc)
+            self.manager.set_coll_prop(user, coll, 'desc', desc)
             return {}
 
         @self.app.get('/api/v1/collections/<coll>/num_pages')

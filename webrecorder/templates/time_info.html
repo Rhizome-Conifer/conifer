@@ -23,7 +23,7 @@
             <tr>
                 <td><a href="{{ linkurl }}">{{ cdx.url }}</a></td>
                 <td><a href="{{ linkurl }}" data-time-ts="{{ cdx.timestamp }}"></a></td>
-                <td><a href="{{ path + cdx.rec + '/' + cdx.url }}">{{ cdx.rec }}</a></td>
+                <td><a href="{{ path + cdx.rec }}">{{ rec_titles[cdx.rec] }}</a></td>
             </tr>
             {% endfor %}
         </tbody>

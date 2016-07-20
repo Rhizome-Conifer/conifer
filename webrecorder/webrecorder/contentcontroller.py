@@ -243,7 +243,11 @@ class ContentController(BaseController, RewriterApp):
         cdx['rec'] = rec
 
     def get_query_params(self, wb_url, kwargs):
+        collection = self.manager.get_collection(kwargs['user'], kwargs['coll'])
+        kwargs['rec_titles'] = dict((rec['id'], rec['title']) for rec in collection['recordings'])
+
         kwargs['user'] = self.get_view_user(kwargs['user'])
+        kwargs['coll_title'] = collection.get('title', '')
         return kwargs
 
     def get_top_frame_params(self, wb_url, kwargs):

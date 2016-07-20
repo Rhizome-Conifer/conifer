@@ -806,12 +806,20 @@ class CollManagerMixin(object):
 
         return self._send_delete('coll', user, coll)
 
-    def set_coll_desc(self, user, coll, desc):
+    def set_coll_prop(self, user, coll, prop_name, prop_value):
         self.assert_can_admin(user, coll)
 
         key = self.coll_info_key.format(user=user, coll=coll)
 
-        self.redis.hset(key, 'desc', desc)
+        self.redis.hset(key, prop_name, prop_value)
+
+    def set_rec_prop(self, user, coll, rec, prop_name, prop_value):
+        self.assert_can_admin(user, coll)
+
+        key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+
+        self.redis.hset(key, prop_name, prop_value)
+
 
 
 # ============================================================================
