@@ -51,27 +51,26 @@
 </div>
 
 <div class="row">
+        {% if is_anon() %}
+        <div class="col-md-12">
+        <div class="row col-md-6 col-md-offset-3 alert alert-info" role="alert">
+            <p>Note: This collection is accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
+
+            <div>To create permanent, shareable collections <a href="/_register"><b>Sign Up</b></a> or <a href="#" data-toggle="modal" data-target="#login-modal"><b>Log In</b></a></div></div>
+        </div>
+        {% endif %}
+
     <div class="col-xs-2">
-        {% if can_write() %}
-            
+        {% if can_write() %}  
             {% if can_admin() %}
                 <a href="{{ collection.download_url }}" class="btn btn-default btn-sm btn-collection-download"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span>Download Collection</a>
                 
             {% endif %}
 
         {% endif %}
-
-        {% if is_anon() %}
-        <div class="row col-md-6 col-md-offset-3 alert alert-info" role="alert">
-            <p>Note: This collection is accessible only to you and will expire in <b data-anon-timer="{{ anon_ttl }}"></b></p>
-
-            <div>To create permanent, shareable collections <a href="/_register"><b>Sign Up</b></a> or <a href="#" data-toggle="modal" data-target="#login-modal"><b>Log In</b></a></div></div>
-        {% endif %}
     </div>
 
     <div class="col-xs-6 collection-description">
-
-
         {% if can_write() and not is_anon() %}
         <div id="about" class="">
             <div id="home-markdown" class="collapse">{{ collection.desc }}</div>
@@ -82,14 +81,11 @@
             </button>
         </div>
         {% endif %}
-
     </div>
 
     <div class="col-xs-4">
         <button id="delete-coll-btn" class="btn btn-sm btn-default pull-right" data-toggle="modal" data-target="#confirm-delete-collection-modal"><span class="glyphicon glyphicon-trash glyphicon-button" aria-hidden="true"></span>Delete Collection</button>
     </div>
-
-    
 </div>
 
 {% include 'collection_info_browser.html' %}
