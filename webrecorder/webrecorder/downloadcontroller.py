@@ -36,6 +36,7 @@ class DownloadController(BaseController):
                                   id=coll)
 
             title = coll_title = info.get('title', coll)
+            id_ = coll
 
         else:
             info = self.manager.get_recording(user, coll, rec)
@@ -44,9 +45,10 @@ class DownloadController(BaseController):
                                   id=coll)
 
             title = rec_title = info.get('title', rec)
+            id_ = rec
 
         now = timestamp_now()
-        filename = self.download_filename.format(title=title,
+        filename = self.download_filename.format(title=id_,
                                                  timestamp=now)
 
         download_url = self.paths['download']
