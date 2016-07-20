@@ -239,10 +239,15 @@ input.homepage-title {
     display: inline-block;
 }
 
-h1 button.edit-title {
+h1 {
     position: relative;
-    bottom: 8px;
 }
+    h1 button.edit-title {
+        position: absolute;
+        left: -20px;
+        top: 4px;
+        transform: scale(-1,1);
+    }
 
 
 .hide-loading-spinner,
@@ -300,14 +305,19 @@ h1 button.edit-title {
 
 }
 
+.btn-collection-download {
+    margin-left: -15px;
+}
+
 .collection-description {
     position: relative;
 }
     .collection-description button.edit-description {
         position: absolute;
         top: 0;
-        right: -18px;
+        left: -8px;
         z-index: 666;
+        transform: scale(-1,1);
     }
 
 div.filter-label {
