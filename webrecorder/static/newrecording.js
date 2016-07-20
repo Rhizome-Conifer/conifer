@@ -83,9 +83,31 @@ $(function() {
         setStorage("__wr_currColl", currColl);
     });
 
-    $("#create-coll").on('submit', function(event) {
-        var collection = $(this).find("#collection-id").val();
-        setStorage("__wr_currColl", currColl);
+    $('#create-coll').on('submit', function(event) {
+        event.preventDefault();
+
+        var title = $("#create-coll #title").val();
+        var is_public = $("#create-coll #is_public").prop("checked");
+
+        var success = function(data) {
+            if (!data.collection || !data.collection.id) {
+                return;
+            }
+
+            setStorage("__wr_currColl", data.collection.id);
+
+            if (window.location.pathname == "/") {
+                window.location.reload();
+            } else if (curr_user == user) {
+                RouteTo.collectionInfo(user, data.collection.id);
+            }
+        }
+
+        var fail = function(data) {
+            window.location.reload();
+        }
+
+        Collections.create(title, is_public, success, fail);
     });
 
     // Set default recording title

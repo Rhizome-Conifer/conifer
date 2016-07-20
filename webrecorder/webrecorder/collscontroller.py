@@ -19,9 +19,18 @@ class CollsController(BaseController):
             title = request.forms.get('title')
             coll = self.sanitize_title(title)
 
-            collection = self.manager.create_collection(user, coll, title)
+            is_public = self.post_get('public') == 'on'
 
-            return {'collection': collection}
+            try:
+                collection = self.manager.create_collection(user, coll, title,
+                                                            desc='', public=is_public)
+                self.flash_message('Created collection <b>{0}</b>!'.format(collection['title']), 'success')
+                resp = {'collection': collection}
+            except ValidationException as ve:
+                self.flash_message(str(ve))
+                resp = {'error_message': str(ve)}
+
+            return resp
 
         @self.app.get('/api/v1/collections')
         def get_collections():
