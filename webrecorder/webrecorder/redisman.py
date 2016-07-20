@@ -298,12 +298,16 @@ class LoginManagerMixin(object):
         self.redis.setex(key, 300, 1)
 
     def rename(self, user, coll, new_coll, rec='*', new_rec='*',
-               new_user='', title=''):
+               new_user='', title='', is_move=False):
 
         if not new_user:
             new_user = user
 
-        if user != new_user or coll != new_coll:
+        if is_move:
+            if not self.has_collection(new_user, new_coll):
+                return {'error_message': 'No Such Collection'}
+
+        elif user != new_user or coll != new_coll:
             new_coll_info = self.create_collection(new_user, new_coll, title)
             title = new_coll_info['title']
             new_coll = new_coll_info['id']
@@ -333,7 +337,7 @@ class LoginManagerMixin(object):
         if 'success' in msg:
             return {'coll_id': new_coll,
                     'rec_id': new_rec,
-                    'title': title
+                    'title': title,
                    }
 
         else:

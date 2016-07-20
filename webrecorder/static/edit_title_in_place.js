@@ -181,6 +181,12 @@ var EditTitleInPlace = (function() {
 			// Update checkbox aria label
 			$(".card[data-recording-id='" + data.rec_id + "']").find("input[type='checkbox']").attr('aria-label', "Filter bookmarks table by recording: " + data.title);
 
+                        // Update move rec
+                        //$("#move-rec-title[data-move-rec-id='" + oldRecordingId + "']").text(data.title);
+                        $("[data-move-rec-id='" + oldRecordingId + "']").attr("data-recording-title", data.title);
+                        $("[data-move-rec-id='" + oldRecordingId + "']").attr("data-move-rec-id", data.rec_id);
+
+
 			UrlManager.update(new Event("RenameRecording"), RecordingSelector.getSelectedIds());
 
 			hideForm(newEditingId);

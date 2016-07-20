@@ -212,10 +212,54 @@ var RecordingSelector = (function() {
         return true;
     }
 
+    var showMoveModal = function(event) {
+        var recLink = $(event.relatedTarget);
+
+        $("#move-rec-title").attr("data-move-rec-id", recLink.attr("data-move-rec-id"));
+        $("#move-rec-title").text(recLink.attr("data-recording-title"));
+
+        var newColl = $(this).attr("data-collection-title");
+
+        if (!newColl) {
+            $(".collection-select")[0].click();
+        }
+    }
+
+    var selectMoveColl = function(event) {
+        event.preventDefault();
+
+        var newColl = $(this).attr("data-collection-title");
+
+        $("#move-coll").attr("data-move-to", newColl);
+        $("#move-coll").text($(this).text());
+
+        // enable 'Move' if newColl is set and is not current collection
+        $("#confirm-move").prop('disabled', !newColl || newColl == coll_title);
+    }
+
+    var doMove = function(event) {
+        var recordingId = $("#move-rec-title").text();
+        var newColl = $("#move-coll").attr("data-move-to");
+
+        if (!newColl || !recordingId) {
+            return;
+        }
+
+	Recordings.move(recordingId, newColl, RecordingMove.done, RecordingMove.fail);
+
+        $("#move-modal").modal('hide');
+    }
+
     var start = function() {
         $('div[data-recording-id]').on('click', toggleRecordingSelection);
 
         $("#clear-all").on('click', clearFilters);
+
+        $('#move-modal').on('show.bs.modal', showMoveModal);
+
+        $(".collection-select").on('click', selectMoveColl);
+
+        $("#confirm-move").on('click', doMove);
 
         updateRecordingFilterList(undefined, false);
     }
@@ -449,3 +493,23 @@ var BookmarkHiddenSwitch = (function() {
     }
 
 })();
+
+
+var RecordingMove = {
+        done: function(data, collectionId) {
+                window.location.reload();
+                if (data.coll_id) {
+                    //RouteTo.collectionInfo(user, data.coll_id);
+                    //FlashMessage.show("success", "Test");
+                } else {
+                    //FlashMessage.show("danger", data.error_message);
+                }
+        },
+        fail: function(xhr, collectionId) {
+                //var editingId = $(".editable-title[data-collection-id='" + collectionId + "']").attr('data-editing-id');
+                var message = "Uh oh.  Something went wrong with renaming this collection.  Please try again later or <a href='mailto: support@webrecorder.io'>contact us</a>."
+                FlashMessage.show("danger", message);
+        }
+}
+
+

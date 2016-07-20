@@ -24,6 +24,7 @@
 <script>
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
+    var coll_title = "{{ collection.title }}";
 </script>
 
 {% endblock %}
@@ -66,5 +67,7 @@
 {% include 'collection_info_browser.html' %}
 
 {% include 'confirm_delete_collection_modal.html' %}
+
+{% include 'move_collection_modal.html' %}
 
 {% endblock %}

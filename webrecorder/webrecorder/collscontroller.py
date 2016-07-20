@@ -167,6 +167,10 @@ class CollsController(BaseController):
         if result.get('error_message'):
             self._raise_error(404, 'Collection not found')
 
+
+        if self.manager.get_curr_user() == user:
+            result['collections'] = self.manager.get_collections(self.manager.get_curr_user())
+
         result['size_remaining'] = self.manager.get_size_remaining(user)
         result['user'] = self.get_view_user(user)
         result['coll'] = coll

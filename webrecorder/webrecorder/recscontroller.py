@@ -71,21 +71,28 @@ class RecsController(BaseController):
             return res
 
 
-        @self.app.post('/api/v1/recordings/<rec>/move/<new_coll>')
-        def move_recording(rec, new_coll):
+        @self.app.post('/api/v1/recordings/<rec_title>/move/<new_coll_title>')
+        def move_recording(rec_title, new_coll_title):
             user, coll = self.get_user_coll(api=True)
+            rec = self.sanitize_title(rec_title)
             self._ensure_rec_exists(user, coll, rec)
 
-            if not self.manager.has_collection(user, new_coll):
-                err_msg = 'collection "{0}" does not exist'.format(new_coll)
-                return {'error_message': err_msg}
+            new_coll = self.sanitize_title(new_coll_title)
 
             res = self.manager.rename(user=user,
                                       coll=coll,
                                       new_coll=new_coll,
                                       rec=rec,
                                       new_rec=rec,
-                                      title=new_rec_title)
+                                      is_move=True)
+
+            if 'coll_id' in res:
+                msg = 'Recording <b>{0}</b> moved to collection <a href="{1}"><b>{2}</b></a>'
+                msg = msg.format(rec_title, self.get_path(user, new_coll), new_coll_title)
+                self.flash_message(msg, 'success')
+            else:
+                self.flash_message('Error moving {0}: {1}'.format(rec_title, res.get('error_message')))
+
 
             return res
 

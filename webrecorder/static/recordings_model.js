@@ -120,6 +120,20 @@ var Recordings = (function() {
         });
     }
 
+    var move = function(recordingId, newColl, doneCallback, failCallback) {
+        var recordingId = recordingId;
+        $.ajax({
+            url: API_ENDPOINT + "/" + recordingId + "/move/" + newColl + query_string,
+            method: "POST"
+        }).done(function(data, textStatus, xhr) {
+            doneCallback(data, recordingId);
+        }).fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr, recordingId);
+        });
+    }
+
+
+
     return {
         get: get,
         create: create,
@@ -128,6 +142,7 @@ var Recordings = (function() {
         modifyPage: modifyPage,
         getPages: getPages,
         getNumPages: getNumPages,
-        rename: rename
+        rename: rename,
+        move: move,
     }
 }());

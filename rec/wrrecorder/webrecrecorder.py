@@ -304,7 +304,7 @@ class WebRecRecorder(object):
             # change coll size if moving rec and different colls
             if to_rec != '*' and to_coll_key != from_coll_key:
                 pi.hincrby(from_coll_key, 'size', -the_size)
-                pi.hincrby(to_coll_key, 'size', -the_size)
+                pi.hincrby(to_coll_key, 'size', the_size)
 
         # rename WARCs (only if switching users)
         replace_list = []
