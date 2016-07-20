@@ -1,8 +1,0 @@
-{% if can_write() %}
-    {% if is_out_of_space() %}
-    	{% set is_disabled_class = "disabled" %}
-    {% endif %}
-    <a href="{{ get_path(user, coll) }}/$new" class="btn btn-default btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
-{% else %}
-	<div class="recording-panel-top-spacer"></div>
-{% endif %}

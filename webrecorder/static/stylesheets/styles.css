@@ -254,6 +254,8 @@ input.homepage-title {
 
 .access-switch {
     padding-top: 15px;
+    padding-bottom: 15px;
+    clear: both;
 }
 
 .recording-panel {
