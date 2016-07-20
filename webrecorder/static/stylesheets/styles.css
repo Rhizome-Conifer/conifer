@@ -153,8 +153,7 @@ input.homepage-title {
 }
 
 .space-usage {
-    width: 25%;
-    min-width: 150px;
+    width: 150px;
 }
 
 .alert-during-recording {

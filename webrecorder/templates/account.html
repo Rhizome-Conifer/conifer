@@ -16,21 +16,20 @@
                 <table class="table">
                     <tr>
                         <th>Size</th>
-                        <td><b id="total-size" data-size="{{ user_info.size }}"></b> of <b id="max-size" data-size="{{ user_info.max_size }}"></b> used</td>
+                        <td><b id="total-size" data-size="{{ user_info.size }}"></b> of <b id="max-size" data-size="{{ user_info.max_size }}"></b> used
+                        <div class="progress space-usage">
+                            <div class="progress-bar" role="progressbar" data-current-size="{{user_info.size}}" data-max-size="{{user_info.max_size}}" aria-valuenow="" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                            </div>
+                        </div></td>
+
                         <td class="warn-limit" id="limit-size"></td>
-                    </tr>
-                    <tr >
-                        <th>Collections</th>
-                        <td><b id="num-coll" data-count="{{ num_coll }}">{{ num_coll }}</b> of <b id="max-coll" data-count="{{ user_info.max_coll }}">{{ user_info.max_coll }}</b> created</td>
-                        <td class="warn-limit" id="limit-coll"></td>
                     </tr>
                 </table>
             </div>
             <div class="clearfix"></div>
             <div class="row col-md-9">
-                <p><a class="btn btn-success btn-sm disabled" href="/_create" role="button">
-                    <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>Upgrade</a>
-                    Upgrade Options Coming Soon! Please <a href="mailto:support@webrecorder.io">contact us</a> if you have specific requests / suggestions.
+                <p>
+                    Please <a href="mailto:support@webrecorder.io">contact us</a> if you would like to request additional space.
                 </p>
             </div>
         </div>
@@ -45,22 +44,22 @@
             <div class="row col-md-3">
                 <form id="changepassword" action="/_updatepassword" method="post" role="form" data-toggle="validator" data-delay="1000">
                     <div class="form-group">
-                        <label for="curr_password" class="sr-only">Current Password</label>
-                        <input type="password" id="curr_password" name="curr_password" class="form-control input-sm" value="" placeholder="Current Password" required="true">
+                        <label for="curr_password" class="">Current Password</label>
+                        <input type="password" id="curr_password" name="curr_password" class="form-control input-sm" value="" placeholder="" required="true">
                         <div class="help-block with-errors"></div>
                     </div>
 
                     <div class="form-group">
-                        <label for="password" class="sr-only">New Password</label>
-                        <input type="password" id="password" data-minlength="8" name="password" class="form-control input-sm" placeholder="New Password" required="true"
+                        <label for="password" class="">New Password</label>
+                        <input type="password" id="password" data-minlength="8" name="password" class="form-control input-sm" placeholder="" required="true"
                                pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols">
                         <div class="help-block with-errors"></div>
                     </div>
 
                     <div class="form-group">
-                        <label for="password" class="sr-only">Confirm Password</label>
+                        <label for="password" class="">Confirm New Password</label>
                         <input type="password" id="confirmpassword" data-minlength="8" data-match="#password" name="confirmpassword" class="form-control input-sm" 
-                               placeholder="Confirm New Password" required="true" pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols" data-match-error="Password confirmation does not match">
+                               placeholder="" required="true" pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols" data-match-error="Password confirmation does not match">
                         <div class="help-block with-errors"></div>
                     </div>
 

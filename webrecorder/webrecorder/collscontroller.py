@@ -21,6 +21,9 @@ class CollsController(BaseController):
 
             is_public = self.post_get('public') == 'on'
 
+            if self.manager.is_anon(user) and coll != 'temp':
+                return {'error_message': 'Only temp collection available'}
+
             try:
                 collection = self.manager.create_collection(user, coll, title,
                                                             desc='', public=is_public)
