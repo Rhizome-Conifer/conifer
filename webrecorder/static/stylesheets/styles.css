@@ -78,6 +78,14 @@
     color: #74B9F3;
 }
 
+.wr-breadcrumb>li>span,
+.wr-breadcrumb>li>a {
+    max-width: 100px !import;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 
 .wr-timer {
     color: #ccc;
@@ -425,6 +433,7 @@ div.filter-label {
     border-collapse: collapse;
     table-layout: fixed;
     word-wrap:break-word;
+    margin-top: -2px;
 }
 
 .table-bookmarks>thead>tr>th.bookmark-title,

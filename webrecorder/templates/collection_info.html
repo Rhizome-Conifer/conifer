@@ -55,13 +55,10 @@
         {% if can_write() %}
             
             {% if can_admin() %}
-                <a href="{{ collection.download_url }}" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span>Download Collection</a>
+                <a href="{{ collection.download_url }}" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span>Download Collection</a>
                 
             {% endif %}
 
-            <div>
-                <a href="{{ get_path(user, coll) }}/$new" class="btn btn-default btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
-            </div>
         {% endif %}
 
         {% if is_anon() %}
