@@ -1,10 +1,64 @@
-{% if curr_mode == "record" or action == "add_to_recording" %}
-	{% include 'in_progress.html' %}
-{% elif curr_mode == "patch" %}
-	{% include 'in_progress.html' %}
-{% elif curr_mode == "replay" or curr_mode == "replay-coll" %}
-	{% include 'in_progress.html' %}
-{% elif curr_mode == "new" %}
-	{% include 'new.html' %}
-{% endif %}
+{% if curr_mode %}
+<div class="col-md-10">
+    <div class="row left-buffer">
+        <div class="banner-status">
+            {% if curr_mode == "record" %}
+            {% set type = 'Recording' %}
+            <span class="glyphicon glyphicon-lg glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true"></span>
+            {% elif curr_mode == "replay" or curr_mode == "replay-coll" %}
+            {% set type = 'Replaying' %}
+            <span class="glyphicon glyphicon-lg glyphicon-play-circle glyphicon-recording-status" aria-hidden="true"></span>
+            {% elif curr_mode == "patch" %}
+            {% set type = 'Patch Missing' %}
+            <span class="glyphicon glyphicon-lg glyphicon-import glyphicon-recording-status" aria-hidden="true"></span>
+            {% elif curr_mode == "new" %}
+            {% set type = 'Create New Recording' %}
+            <span class="glyphicon glyphicon-lg glyphicon-modal-window glyphicon-recording-status top-buffer-sm" aria-hidden="true"></span>
+            {% endif %}
 
+            <span class="recorder-status strong">{{ type }}</span>
+            
+            {% if curr_mode == 'new' %}
+            <label for="rec-title" class="sr-only">Recording title</label>
+            <input name="rec-title" type="text" class="left-buffer form-control input-sm title-inline" placeholder="Recording title" value="{{ rec_title }}" required>
+            {% else %}
+            <span class="left-buffer bookmark-count">0 bookmarks</span>
+            <span class="size-counter size-counter-active">
+                <span class="badge current-size" data-size="{{ info.size }}"></span>
+            </span>
+            <button id="autoscroll" type="button"
+                    class="left-buffer btn btn-default btn-xs" data-toggle="button" 
+                    aria-pressed="false" autocomplete="off">Autoscroll</button>
+
+
+            {% if (curr_mode == "replay" or curr_mode == "replay-coll") and can_write() %}
+            <button type="button" class="btn btn-default btn-xs patch-page">
+                Patch
+            </button>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} row left-buffer form-group-recorder-url">
+        <div class="input-group">
+            <input type="text" class="url-input-recorder form-control" name="url" value="{{ url }}" autofocus required>
+            <input class="hidden" type="submit">
+            <span id="replay-date" class="replay-date"></span>
+            <div class="input-group-addon"></div>
+        </div>
+    </form>
+</div>
+
+<div class="recording-actions text-center col-md-2">
+    <div class="row">
+        <form class="{{ 'content-action' if curr_mode != 'new' else 'start-recording' }} top-buffer">
+            <button type="submit" class="btn btn-default">
+                {{ 'Finish' if curr_mode != 'new' else 'Start' }}
+            </button>
+        </form>
+
+        <a href="#" data-toggle="modal" data-target="#report-modal" class="doesnt-look-right">Doesn't look right?</a>
+    </div>
+</div>
+{% endif %}

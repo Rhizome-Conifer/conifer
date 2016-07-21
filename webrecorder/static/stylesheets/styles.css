@@ -164,6 +164,7 @@ input.homepage-title {
 
 .title-inline {
     width: 300px;
+    display: inline-block;
 }
 
 .space-usage {
