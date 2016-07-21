@@ -5,7 +5,7 @@
 <form class="start-recording-homepage form-inline">
 
     <div class="input-group col-md-10 col-md-offset-2">
-        <input name="url" type="text" class="form-control" placeholder="Url to record" required {{ disabled_class }}>
+        <input name="url" type="text" class="form-control" placeholder="URL to record" required {{ disabled_class }}>
         <label for="url" class="control-label sr-only">Url</label>
         <span class="input-group-btn">
             <button type="submit" class="btn btn-default {{ disabled_class }}">
@@ -14,10 +14,10 @@
     </div>
 
     <div class="form-group col-md-10 col-md-offset-2 top-buffer">
-        <label for="recording">New Recording Name:</label>
+        <label for="recording-name">New Recording Name:</label>
 
         <span class="input-group">
-            <input name="rec-title" type="text" class="form-control input-sm homepage-title" placeholder="" value="{{ rec_title }}" required {{ disabled_class }}>
+            <input id="recording-name" name="rec-title" type="text" class="form-control input-sm homepage-title" placeholder="" value="{{ rec_title }}" required {{ disabled_class }}>
         </span>
 
         {% if curr_user %}
