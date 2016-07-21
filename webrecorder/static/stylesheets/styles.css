@@ -134,6 +134,44 @@ input.homepage-title {
 /* End homepage */
 
 
+/* 
+ * Archive Page 
+ *
+ */
+
+.collection-list>li {
+    margin: 0;
+    padding: 0;
+}
+    .collection-list>li>a {
+        display: block;
+        position: relative;
+        padding: 8px;
+    }
+        .collection-list>li>a .collection-title:hover {
+            text-decoration: underline;
+        }
+
+.collection-metadata, .collection-desc {
+    color: #333 !important;
+}
+    .collection-desc {
+        font-size: 14px;
+    }
+
+.collection-description {
+    position: relative;
+}
+    .collection-description.page-archive button.edit-description {
+        position: absolute;
+        top: 19px;
+        left: -8px;
+        z-index: 666;
+        transform: scale(-1,1);
+    }
+
+/*End Archive Page*/
+
 /*
  * Recorder
  *
