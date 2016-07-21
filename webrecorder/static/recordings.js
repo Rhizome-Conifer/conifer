@@ -630,6 +630,9 @@ $(function() {
 
             attributes.timestamp = state.ts;
             attributes.title = $('iframe').contents().find('title').text();
+
+            var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
+            setTitle(msg, state.url);
             
             Recordings.addPage(recordingId, attributes);
             lastUrl = attributes.url;
@@ -637,7 +640,16 @@ $(function() {
 
         } else if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
             $("input[name='url']").val(state.url);
+            setTitle("Archived", state.url);
         }
+    }
+
+    function setTitle(status_msg, url) {
+        var title = $('iframe').contents().find('title').text();
+        if (!title) {
+            title = url;
+        }
+        document.title = title + "(" + status_msg + ")";
     }
 
     window.addEventListener("message", handleReplayEvent);
