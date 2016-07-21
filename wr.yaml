@@ -77,8 +77,6 @@ default_coll:
     id: 'default-collection'
     title: 'Default Collection'
     desc: |
-        #### Default Collection
-
         *Welcome to your first collection!*
 
         You can rename it, change this description text, and make your collection public right here on this page.

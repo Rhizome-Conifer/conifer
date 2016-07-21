@@ -4,6 +4,14 @@ $(function() {
         $("#home-view").html(marked($("#home-markdown").html()));
     }
 
+    $.each($(".markdown-html"), function(count, obj) {
+            $(obj).html(marked($(obj).parent().find(".markdown-src").html()));
+    });
+
+    $(".collection-list>li").on('click', function(event) {
+        window.location.href = $(this).find("a")[0].href;
+    });
+
     init_markdown_editor();
 });
 
@@ -49,7 +57,6 @@ function init_markdown_editor() {
                 $.ajax({
                     type: "POST",
                     url: $("#home-markdown").attr('data-desc-url'),
-                    //url: "/api/v1/collections/" + collectionId + "/desc?user=" + user,
                     data: content,
                     success: function() {
                         $("#home-markdown").html(content);

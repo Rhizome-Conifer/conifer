@@ -150,28 +150,31 @@ input.homepage-title {
  */
 
 .collection-list>li {
-    margin: 0;
-    padding: 0;
+    margin: 0px
 }
+
+.collection-title {
+    font-size: 20px;
+}
+
     .collection-list>li>a {
         display: block;
         position: relative;
         padding: 8px;
     }
-        .collection-list>li>a .collection-title:hover {
-            text-decoration: underline;
-        }
-
-        .collection-list>li>a:hover {
+        .collection-list>li:hover {
             text-decoration: underline;
             background-color: #eee;
+            cursor: pointer;
         }
+
 
 .collection-metadata, .collection-desc {
     color: #333 !important;
 }
     .collection-desc {
         font-size: 14px;
+        margin-top: 14px;
     }
 
 .collection-description {
