@@ -1,9 +1,9 @@
 {% if curr_mode == "record" or action == "add_to_recording" %}
 	{% include 'in_progress.html' %}
 {% elif curr_mode == "patch" %}
-	{% include 'patch.html' %}
+	{% include 'in_progress.html' %}
 {% elif curr_mode == "replay" or curr_mode == "replay-coll" %}
-	{% include 'replay.html' %}
+	{% include 'in_progress.html' %}
 {% elif curr_mode == "new" %}
 	{% include 'new.html' %}
 {% endif %}

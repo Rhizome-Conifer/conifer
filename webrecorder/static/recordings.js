@@ -51,13 +51,13 @@ var EventHandlers = (function() {
         });
 
         // 'Replay recording': Url bar 'Go' button / enter key
-        $('header').on('submit', '.replay-recording', function(event) {
-            event.preventDefault();
+        //$('header').on('submit', '.replay-recording', function(event) {
+        //    event.preventDefault();
 
-            var url = $("input[name='url']").val();
+        //    var url = $("input[name='url']").val();
 
-            RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
-        });
+        //    RouteTo.browseRecording(user, coll, wbinfo.info.rec_id, url);
+        //});
 
         // 'Replay recording': 'Add content' button
         $('header').on('submit', '.add-to-recording', function(event){
@@ -213,7 +213,8 @@ var RecordingSizeWidget = (function() {
     var collectionId;
 
     var start = function() {
-        if ($('.size-counter-active').length) {
+        if ($('.size-counter-active').length &&
+            (wbinfo.state == "record" || wbinfo.state == "patch")) {
             recordingId = $('[data-recording-id]').attr('data-recording-id');
             collectionId = $('[data-collection-id]').attr('data-collection-id');
 
