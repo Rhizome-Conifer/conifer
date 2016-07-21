@@ -48,7 +48,8 @@ function init_markdown_editor() {
 
                 $.ajax({
                     type: "POST",
-                    url: "/api/v1/collections/" + collectionId + "/desc?user=" + user,
+                    url: $("#home-markdown").attr('data-desc-url'),
+                    //url: "/api/v1/collections/" + collectionId + "/desc?user=" + user,
                     data: content,
                     success: function() {
                         $("#home-markdown").html(content);
