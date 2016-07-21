@@ -61,13 +61,10 @@
         {% endif %}
 
     <div class="col-xs-2">
-        {% if can_write() %}  
-            {% if can_admin() %}
-                <a href="{{ collection.download_url }}" class="btn btn-default btn-sm btn-collection-download"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span>Download Collection</a>
+    {% if can_admin() %}
+        <a href="{{ collection.download_url }}" class="btn btn-default btn-sm btn-collection-download"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span>Download Collection</a>
                 
-            {% endif %}
-
-        {% endif %}
+    {% endif %}
     </div>
 
     <div class="col-xs-6 collection-description">
@@ -84,7 +81,9 @@
     </div>
 
     <div class="col-xs-4">
+    {% if can_admin() %}
         <button id="delete-coll-btn" class="btn btn-sm btn-default pull-right" data-toggle="modal" data-target="#confirm-delete-collection-modal"><span class="glyphicon glyphicon-trash glyphicon-button" aria-hidden="true"></span>Delete Collection</button>
+    {% endif %}
     </div>
 </div>
 

@@ -1,16 +1,14 @@
 <div class="row top-buffer-sm">
-
-
     <div class="col-xs-2 recording-panel">
+        {% if can_write() %}
         <div>
             <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
         </div>
+        {% endif %}
 
         <div class="recording-selector">
             <div id="all-card" class="card-top">
                 <div class="">
-
-
                     <b>Recordings</b>&nbsp; &nbsp;<span id="sel-info"></span>
                 </div>
                 <div class="recording-stats text-left top-buffer-md right-buffer-sm">
