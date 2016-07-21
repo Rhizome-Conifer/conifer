@@ -87,7 +87,7 @@ var EventHandlers = (function() {
  
          
         // 'Header': 'Login' link to display modal
-        $('#login-link').on('click', function(event) {
+        $('.login-link').on('click', function(event) {
             event.preventDefault();
 
             var link = $(this).attr("href");
