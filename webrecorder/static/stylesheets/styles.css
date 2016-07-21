@@ -162,6 +162,11 @@ input.homepage-title {
             text-decoration: underline;
         }
 
+        .collection-list>li>a:hover {
+            text-decoration: underline;
+            background-color: #eee;
+        }
+
 .collection-metadata, .collection-desc {
     color: #333 !important;
 }
