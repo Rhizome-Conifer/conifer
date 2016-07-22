@@ -36,6 +36,8 @@
                 {% endif %}
             </ul>
         </div>
+        {% else %}
+        <span class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</span>
         {% endif %}
 
         <div class="recording-stats text-left right-buffer-sm">
