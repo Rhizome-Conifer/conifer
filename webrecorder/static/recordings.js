@@ -649,7 +649,7 @@ $(function() {
         if (!title) {
             title = url;
         }
-        document.title = title + "(" + status_msg + ")";
+        document.title = title + " (" + status_msg + ")";
     }
 
     window.addEventListener("message", handleReplayEvent);
