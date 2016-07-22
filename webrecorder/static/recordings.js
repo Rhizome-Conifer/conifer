@@ -331,7 +331,7 @@ var BookmarkCounter = (function() {
             bookmarkString = "bookmark";
         }
 
-        return numBookmarks + " " + bookmarkString;// "<strong> / </strong>"
+        return numBookmarks + "&nbsp;" + bookmarkString;// "<strong> / </strong>"
     }
 
     var dontStartBookmarkCounter = function() {
