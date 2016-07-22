@@ -62,7 +62,7 @@ var EventHandlers = (function() {
             } else if (window.curr_mode == "patch") {
                 var url = $("input[name='url']").val();
 
-                RouteTo.replayRecording(user, coll, rec, url);
+                RouteTo.replayRecording(user, coll, undefined, url);
             } else if (window.curr_mode == "new") {
                 // New handled in newrecordings.js
             }
@@ -331,7 +331,7 @@ var BookmarkCounter = (function() {
             bookmarkString = "bookmark";
         }
 
-        return numBookmarks + " " + bookmarkString + "<strong> / </strong>"
+        return numBookmarks + " " + bookmarkString;// "<strong> / </strong>"
     }
 
     var dontStartBookmarkCounter = function() {
