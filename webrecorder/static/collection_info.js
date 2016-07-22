@@ -208,6 +208,7 @@ var RecordingSelector = (function() {
         event.preventDefault();
         $('.card').removeClass("card-selected");
         $('.filter-label').removeClass("active");
+        BookmarksTable.filterByRecordings([]);
         updateRecordingFilterList(event, true);
         return true;
     }
