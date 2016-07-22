@@ -3,7 +3,7 @@
 session.durations:
     short:
         total: 5400
-        extend: 120
+        extend: 1800
 
     long:
         total: 15724800
