@@ -1,4 +1,4 @@
-{% if (is_owner() or not user) and is_out_of_space() %}
+{% if (is_owner() or not user) and is_out_of_space() and not error %}
 
     {% if is_anon() %}
         {% set message = "
