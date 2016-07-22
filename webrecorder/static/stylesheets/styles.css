@@ -208,6 +208,10 @@ input.homepage-title {
     line-height: 1.5em;
 }
 
+.recorder-status {
+    font-weight: bold;
+}
+
 .Blink {
     animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
     color: darkred;
@@ -492,7 +496,7 @@ div.filter-label {
 }
 
 .recording-actions {
-    height: 22px;
+    margin-bottom: 8px;
 }
 
 .table-noborder  {
