@@ -42,6 +42,10 @@
     color: #74B9F3;
 }
 
+.navbar-user-links {
+    margin-right: 0px;
+}
+
 .navbar-user-links>ul>li>a {
     display: inline;
     font-size: 1.0em;

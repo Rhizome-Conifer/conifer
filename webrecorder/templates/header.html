@@ -1,15 +1,13 @@
 <header>
     <div class="navbar navbar-default navbar-static-top">
-        <nav class="header-webrecorder col-md-12">            
-            <div class="col-md-8">
-                {% include 'recordings/breadcrumbs.html' %}
+        <nav class="container-fluid header-webrecorder">
+            {% include 'recordings/breadcrumbs.html' %}
 
-                <!-- Countdown Timer -->
-                <li class="navbar-left wr-timer" style="display: none">Temporary collection will expire after: <b data-anon-timer="{{ anon_ttl }}"></b>
-                </li>
-            </div>
+            <!-- Countdown Timer -->
+            <li class="navbar-left wr-timer" style="display: none">Temporary collection will expire after: <b data-anon-timer="{{ anon_ttl }}"></b>
+            </li>
 
-            <div class="navbar-user-links navbar-right col-md-3">
+            <div class="navbar-user-links navbar-right">
                 {% include 'user_management_links.html' %}
             </div>
         </nav>
