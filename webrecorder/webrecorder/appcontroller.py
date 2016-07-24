@@ -113,7 +113,6 @@ class AppController(BaseController):
         @contextfunction
         def can_write(context):
             res = self.manager.can_write_coll(get_user(context), get_coll(context))
-            print('CAN WRITE ', get_user(context), get_coll(context), res)
             return res
 
         @contextfunction

@@ -9,7 +9,7 @@ body {
 }
 
 .footer {
-	background-color: #fff;
+    background-color: transparent;
     position: absolute;
     bottom: 0;
     width: 100%;
