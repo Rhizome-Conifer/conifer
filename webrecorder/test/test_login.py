@@ -52,17 +52,17 @@ class TestLogin(BaseWRTests):
         res = self.testapp.get('/_register')
         res.charset = 'utf-8'
 
-        assert 'Webrecorder.io Invite Request' in res.text
+        assert 'Webrecorder Invite Request' in res.text
 
         res = self.testapp.get('/_register?invite=blah')
         res.charset = 'utf-8'
 
-        assert 'Webrecorder.io Invite Request' in res.text
+        assert 'Webrecorder Invite Request' in res.text
 
         res = self.testapp.get('/_register?invite=' + self.invite_key)
         res.charset = 'utf-8'
 
-        assert 'Webrecorder.io Account Sign-Up' in res.text
+        assert 'Webrecorder Account Sign-Up' in res.text
 
     def test_register_post_fail(self):
         # wrong email

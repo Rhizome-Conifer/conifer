@@ -19,8 +19,9 @@
 
     <p>The url <b>{{ url }}</b> was not found in the archive.</p>
 
-    {% if type == 'replay' and rec and can_admin() %}
-    <b><a target="_parent" href="{{ get_path(user, coll, rec) }}/patch/{{ url }}">Record this page?</a></b>
+    {% if (type == 'replay' or type == 'replay-coll') and can_admin() %}
+    <input type="hidden" name="url" value="{{ url }}">
+    <b><a target="_parent" href="#" class="patch-page">Record this page?</a></b>
     {% endif %}
 {% elif status == 402 %}
     <p><a target="_parent" href="{{ get_path(user, coll, rec) }}">View Recording Info</a></p>

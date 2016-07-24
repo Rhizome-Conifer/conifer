@@ -115,7 +115,7 @@ class LoginController(BaseController):
 
                 return resp
 
-            invitecode = request.query.get('invite', '')
+            invitecode = request.query.getunicode('invite', '')
             email = ''
 
             try:

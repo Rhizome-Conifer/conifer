@@ -10,6 +10,14 @@ $(function() {
     SizeProgressBar.start();
 });
 
+function setUrl(url) {
+    $("input[name='url']").val(decodeURI(url));
+}
+
+function getUrl() {
+    return $("input[name='url']").val();
+}
+
 var EventHandlers = (function() {
     var bindAll = function() {
 
@@ -28,7 +36,7 @@ var EventHandlers = (function() {
         $('header').on('submit', '.content-form', function(event) {
             event.preventDefault();
 
-            var url = $("input[name='url']").val();
+            var url = getUrl();
 
             if (window.curr_mode == "record") {
                 //if (ContentMessages.messageIfDuplicateVisit(url)) { return; }
@@ -60,7 +68,7 @@ var EventHandlers = (function() {
             } else if (window.curr_mode == "replay-coll") {
                 RouteTo.collectionInfo(user, coll);
             } else if (window.curr_mode == "patch") {
-                var url = $("input[name='url']").val();
+                var url = getUrl();
 
                 RouteTo.replayRecording(user, coll, undefined, url);
             } else if (window.curr_mode == "new") {
@@ -69,13 +77,20 @@ var EventHandlers = (function() {
         });
 
         // Start patching
-        $('header').on('click', '.patch-page', function(event){
+        $('.patch-page').on('click', function(event){
             event.preventDefault();
 
-            var url = $("input[name='url']").val();
+            var url = getUrl();
+            var target;
+
+            if ($(this).attr("target") == "_parent") {
+                target = window.parent;
+            } else {
+                target = window;
+            }
 
             var createPatch = function(data) {
-                RouteTo.patchPage(user, coll, data.recording.title, url);
+                RouteTo.patchPage(user, coll, data.recording.id, url, target);
             };
 
             var fail = function() {}
@@ -156,12 +171,12 @@ var EventHandlers = (function() {
 var RouteTo = (function(){
     var host = window.location.protocol + "//" + window.location.host;
 
-    var recordingInProgress = function(user, collection, recording, url, mode) {
+    var recordingInProgress = function(user, collection, recording, url, mode, target) {
         if (!mode) {
             mode = "record";
         }
 
-        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + url);
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + url, target);
     }
 
     var collectionInfo = function(user, collection) {
@@ -186,12 +201,16 @@ var RouteTo = (function(){
         routeTo(host + "/" + user + "/" + collection + "/" + recording + "/$add");
     }
 
-    var patchPage = function(user, collection, recording, url) {
-        recordingInProgress(user, collection, recording, url, "patch");
+    var patchPage = function(user, collection, recording, url, target) {
+        recordingInProgress(user, collection, recording, url, "patch", target);
     }
 
-    var routeTo = function(url) {
-        window.location.href = url;
+    var routeTo = function(url, target) {
+        if (!target) {
+            target = window;
+        }
+
+        target.location.href = url;
     }
 
     return {
@@ -304,7 +323,7 @@ var BookmarkCounter = (function() {
     }
 
     var update = function(attributes) {
-        $("input[name='url']").val(attributes.url);
+        setUrl(attributes.url);
         BookmarkCounter.start();
     }
 
@@ -611,7 +630,7 @@ $(function() {
         }
 
         if (state.is_error) {
-            $("input[name='url']").val(state.url);
+            setUrl(state.url);
         } else if (window.curr_mode == "record" || window.curr_mode == "patch") {
             if (lastUrl == state.url && lastTs == state.ts) {
                 return;
@@ -639,7 +658,7 @@ $(function() {
             lastTs = attributes.timestamp;
 
         } else if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
-            $("input[name='url']").val(state.url);
+            setUrl(state.url);
             setTitle("Archived", state.url);
         }
     }

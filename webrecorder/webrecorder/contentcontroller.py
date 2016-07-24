@@ -4,12 +4,13 @@ import base64
 import requests
 import json
 
-from bottle import Bottle, request, redirect, HTTPError, response, HTTPResponse
+from bottle import Bottle, request, HTTPError, response, HTTPResponse
 
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
 from urlrewrite.cookies import CookieTracker
 
 from webrecorder.basecontroller import BaseController
+from six.moves.urllib.parse import quote
 
 
 # ============================================================================
@@ -60,11 +61,11 @@ class ContentController(BaseController, RewriterApp):
                 self._raise_error(404, 'Collection not found',
                                   api=True, id=coll)
 
-            rec = request.query.get('rec', '*')
+            rec = request.query.getunicode('rec', '*')
 
-            name = request.forms.get('name')
-            value = request.forms.get('value')
-            domain = request.forms.get('domain')
+            name = request.forms.getunicode('name')
+            value = request.forms.getunicode('value')
+            domain = request.forms.getunicode('domain')
 
             key = self.get_cookie_key(dict(user=user,
                                            coll=coll,
@@ -153,11 +154,15 @@ class ContentController(BaseController, RewriterApp):
         return self.handle_load_content(wb_url, user, coll, rec, type)
 
     def handle_load_content(self, wb_url, user, coll, rec, type):
+        request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'])
+
         wb_url = self._context_massage(wb_url)
 
         kwargs = dict(user=user,
-                      coll=coll,
-                      rec=rec,
+                      coll_orig=coll,
+                      rec_orig=rec,
+                      coll=quote(coll),
+                      rec=quote(rec, safe='/*'),
                       type=type)
 
         try:
@@ -166,6 +171,7 @@ class ContentController(BaseController, RewriterApp):
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,
                                 headers=resp.status_headers.headers)
+
             return resp
 
         except UpstreamException as ue:
@@ -185,10 +191,9 @@ class ContentController(BaseController, RewriterApp):
 
     def _redir_if_sanitized(self, id, title, wb_url):
         if id != title:
-            target = self.get_host()
-            target += request.script_name.replace(title, id)
+            target = request.script_name.replace(title, id)
             target += wb_url
-            redirect(target)
+            self.redirect(target)
 
     def _context_massage(self, wb_url):
         # reset HTTP_COOKIE to guarded request_cookie for LiveRewriter
@@ -243,7 +248,7 @@ class ContentController(BaseController, RewriterApp):
         cdx['rec'] = rec
 
     def get_query_params(self, wb_url, kwargs):
-        collection = self.manager.get_collection(kwargs['user'], kwargs['coll'])
+        collection = self.manager.get_collection(kwargs['user'], kwargs['coll_orig'])
         kwargs['rec_titles'] = dict((rec['id'], rec['title']) for rec in collection['recordings'])
 
         kwargs['user'] = self.get_view_user(kwargs['user'])
@@ -260,14 +265,16 @@ class ContentController(BaseController, RewriterApp):
         #self.get_session().update_expires()
 
         info = self.manager.get_content_inject_info(kwargs['user'],
-                                                    kwargs['coll'],
-                                                    kwargs['rec'])
+                                                    kwargs['coll_orig'],
+                                                    kwargs['rec_orig'])
 
         return {'info': info,
                 'curr_mode': type,
                 'user': self.get_view_user(kwargs['user']),
                 'coll': kwargs['coll'],
+                'coll_orig': kwargs['coll_orig'],
                 'rec': kwargs['rec'],
+                'rec_orig': kwargs['rec_orig'],
                 'coll_title': info.get('coll_title', ''),
                 'rec_title': info.get('rec_title', '')
                }

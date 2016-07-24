@@ -63,7 +63,10 @@
                             <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ path }}">{{ title }}</a></span>
                         </td>
                         <td class="timestamp" data-time-ts="{{ timestamp }}"></td>
-                        <td class="bookmark-url"><a href="{{ path }}">{{ bookmark.url }}</a></td>
+                        <td class="bookmark-url">
+                          <a href="{{ path }}"
+                             data-value-encoded="{{ bookmark.url }}"
+                             data-target-decoded=""></a></td>
                         <td class="bookmark-recording-title">{{ recording.title }}</td>
                     </tr>
                 {% endif %}

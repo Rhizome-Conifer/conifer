@@ -19,6 +19,7 @@ from bottle import Bottle, request, debug, response
 import os
 import shutil
 from six import iteritems
+from six.moves.urllib.parse import quote
 
 import gevent
 
@@ -140,12 +141,13 @@ class WebRecRecorder(object):
     # Download =======================
 
     def download(self):
-        user = request.query.get('user', '')
-        coll = request.query.get('coll', '*')
-        rec = request.query.get('rec', '*')
-        type = request.query.get('type')
+        user = request.query.getunicode('user', '')
+        coll = request.query.getunicode('coll', '*')
+        rec = request.query.getunicode('rec', '*')
+        type = request.query.getunicode('type')
 
-        filename = request.query.get('filename', 'rec.warc.gz')
+        filename = request.query.getunicode('filename', 'rec.warc.gz')
+        filename = quote(filename)
 
         #if not user:
         #    response.status = 400
@@ -153,9 +155,9 @@ class WebRecRecorder(object):
 
         metadata = {'pages': self.get_pagelist(user, coll, rec)}
 
-        part_of = coll
+        part_of = quote(coll)
         if rec != '*':
-            part_of += '/' + rec
+            part_of += '/' + quote(rec)
 
         # warcinfo Record
         info = {'software': 'Webrecorder Platform v2.0',
@@ -165,13 +167,13 @@ class WebRecRecorder(object):
                 'creator': user,
                }
 
-        title = request.query.get('rec_title')
+        title = request.query.getunicode('rec_title')
         if title:
-            info['title'] = title
+            info['title'] = quote(title)
 
-        coll_title = request.query.get('coll_title')
+        coll_title = request.query.getunicode('coll_title')
         if coll_title:
-            info['isPartOf'] = coll_title
+            info['isPartOf'] = quote(coll_title)
 
         wi_writer = SimpleTempWARCWriter()
         wi_writer.write_record(wi_writer.create_warcinfo_record(filename, **info))
@@ -235,15 +237,15 @@ class WebRecRecorder(object):
     # Rename Handling ===============
 
     def rename(self):
-        from_user = request.query.get('from_user', '')
-        from_coll = request.query.get('from_coll', '')
-        from_rec = request.query.get('from_rec', '*')
+        from_user = request.query.getunicode('from_user', '')
+        from_coll = request.query.getunicode('from_coll', '')
+        from_rec = request.query.getunicode('from_rec', '*')
 
-        to_user = request.query.get('to_user', '')
-        to_coll = request.query.get('to_coll', '')
-        to_rec = request.query.get('to_rec', '*')
+        to_user = request.query.getunicode('to_user', '')
+        to_coll = request.query.getunicode('to_coll', '')
+        to_rec = request.query.getunicode('to_rec', '*')
 
-        to_title = request.query.get('to_title', '')
+        to_title = request.query.getunicode('to_title', '')
 
         if not from_user or not from_coll or not to_user or not to_coll:
             return {'error_message': 'user or coll params missing'}
@@ -353,10 +355,10 @@ class WebRecRecorder(object):
     # Delete Handling ===========
 
     def delete(self):
-        user = request.query.get('user', '')
-        coll = request.query.get('coll', '*')
-        rec = request.query.get('rec', '*')
-        type = request.query.get('type')
+        user = request.query.getunicode('user', '')
+        coll = request.query.getunicode('coll', '*')
+        rec = request.query.getunicode('rec', '*')
+        type = request.query.getunicode('type')
 
         delete_list = []
 
@@ -382,7 +384,7 @@ class WebRecRecorder(object):
 
         if self.storage_committer:
             storage = self.storage_committer.get_storage(user, coll, rec)
-            if storage and not storage.delete(user, coll, rec, type):
+            if not user.startswith('temp!') and storage and not storage.delete(user, coll, rec, type):
                 return {'error_message': 'remote delete failed'}
 
         return {}

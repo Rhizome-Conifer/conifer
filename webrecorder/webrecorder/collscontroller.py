@@ -16,7 +16,8 @@ class CollsController(BaseController):
         def create_collection():
             user = self.get_user(api=True)
 
-            title = request.forms.get('title')
+            title = request.forms.getunicode('title')
+
             coll = self.sanitize_title(title)
 
             is_public = self.post_get('public') == 'on'

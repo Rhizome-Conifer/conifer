@@ -10,9 +10,9 @@ class RecsController(BaseController):
         def create_recording():
             user, coll = self.get_user_coll(api=True)
 
-            title = request.forms.get('title')
+            title = request.forms.getunicode('title')
 
-            coll_title = request.forms.get('coll_title')
+            coll_title = request.forms.getunicode('coll_title')
 
             rec = self.sanitize_title(title)
 
@@ -136,8 +136,8 @@ class RecsController(BaseController):
             user, coll = self.get_user_coll(api=True)
             self._ensure_rec_exists(user, coll, rec)
 
-            url = request.forms.get('url')
-            ts = request.forms.get('timestamp')
+            url = request.forms.getunicode('url')
+            ts = request.forms.getunicode('timestamp')
 
             return self.manager.delete_page(user, coll, rec, url, ts)
 
@@ -188,24 +188,6 @@ class RecsController(BaseController):
             return {'error_message': 'Recording not found', 'id': rec}
 
         return {'recording': recording}
-
-    def get_rec_info_for_view(self, user, coll, rec):
-        result = self.get_rec_info(user, coll, rec)
-        if result.get('error_message'):
-            self._raise_error(404, 'Recording not found')
-
-        result['size_remaining'] = self.manager.get_size_remaining(user)
-        result['collection'] = self.manager.get_collection(user, coll)
-        result['pages'] = self.manager.list_pages(user, coll, rec)
-
-        result['user'] = self.get_view_user(user)
-        result['coll'] = coll
-        result['rec'] = rec
-
-        result['rec_title'] = result['recording']['title']
-        result['coll_title'] = result['collection']['title']
-
-        return result
 
     def get_rec_info_for_new(self, user, coll, rec, action):
         result = {'curr_mode': 'new', 'action': action}

@@ -43,7 +43,7 @@
 
     <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url">
         <div class="input-group">
-            <input type="text" class="url-input-recorder form-control" name="url" value="{{ url }}" autofocus required>
+            <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" autofocus required>
             <input class="hidden" type="submit">
             <span id="replay-date" class="replay-date"></span>
             <div class="input-group-addon"></div>

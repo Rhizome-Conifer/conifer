@@ -93,25 +93,36 @@ class AppController(BaseController):
     def init_jinja_env(self, config, jinja_env):
         jinja_env.globals['metadata'] = config.get('metadata', {})
 
+        def get_coll(context):
+            coll = context.get('coll_orig', '')
+            if not coll:
+                coll = context.get('coll', '')
+            return coll
+
+        def get_user(context):
+            return context.get('user', '')
+
         @contextfunction
         def can_admin(context):
-            return self.manager.can_admin_coll(context.get('user', ''), context.get('coll', ''))
+            return self.manager.can_admin_coll(get_user(context), get_coll(context))
 
         @contextfunction
         def is_owner(context):
-            return self.manager.is_owner(context.get('user', ''))
+            return self.manager.is_owner(get_user(context))
 
         @contextfunction
         def can_write(context):
-            return self.manager.can_write_coll(context.get('user', ''), context.get('coll', ''))
+            res = self.manager.can_write_coll(get_user(context), get_coll(context))
+            print('CAN WRITE ', get_user(context), get_coll(context), res)
+            return res
 
         @contextfunction
         def can_read(context):
-            return self.manager.can_read_coll(context.get('user', ''), context.get('coll', ''))
+            return self.manager.can_read_coll(get_user(context), get_coll(context))
 
         @contextfunction
         def is_anon(context):
-            return self.manager.is_anon(context.get('user'))
+            return self.manager.is_anon(get_user(context))
 
         @contextfunction
         def get_path(context, user, coll=None, rec=None):

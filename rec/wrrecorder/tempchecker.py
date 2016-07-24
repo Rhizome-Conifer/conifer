@@ -87,9 +87,9 @@ class TempChecker(object):
 
         for redis_key in self.data_redis.scan_iter(match=temp_match):
             redis_key = redis_key.decode('utf-8')
-            temp = redis_key[len('u:'):]
+            temp_user = redis_key.rsplit(':', 2)[1]
 
-            if temp not in temps_removed:
-                self._delete_if_expired(temp)
+            if temp_user not in temps_removed:
+                self._delete_if_expired(temp_user)
 
 

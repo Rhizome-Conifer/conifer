@@ -80,7 +80,7 @@ class UserController(BaseController):
         # Skip POST request recording
         @self.app.get('/_skipreq')
         def skip_req():
-            url = request.query.get('url')
+            url = request.query.getunicode('url')
             user = self.manager.get_curr_user()
             if not user:
                 user = self.manager.get_anon_user()

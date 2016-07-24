@@ -1,5 +1,7 @@
 from bottle import request, HTTPError, redirect as bottle_redirect
 from functools import wraps
+from six.moves.urllib.parse import quote
+
 import re
 import os
 
@@ -22,7 +24,7 @@ class BaseController(object):
         raise NotImplemented()
 
     def get_user(self, api=False):
-        user = request.query.get('user')
+        user = request.query.getunicode('user')
         if not user:
             self._raise_error(400, 'User must be specified',
                               api=api)
@@ -41,7 +43,7 @@ class BaseController(object):
     def get_user_coll(self, api=False):
         user = self.get_user(api=api)
 
-        coll = request.query.get('coll')
+        coll = request.query.getunicode('coll')
         if not coll:
             self._raise_error(400, 'Collection must be specified',
                               api=api)
@@ -118,7 +120,7 @@ class BaseController(object):
 
     def redirect(self, url):
         if url.startswith('/'):
-            url = self.get_host() + url
+            url = self.get_host() + quote(url, safe='+ /!:%?=&#')
 
         return bottle_redirect(url)
 
@@ -132,9 +134,6 @@ class BaseController(object):
                     ctx_params = request.environ.get('webrec.template_params')
                     if ctx_params:
                         resp.update(ctx_params)
-
-                    #if refresh_cookie:
-                    #    sesh = self.get_session().update_expires()
 
                     template = self.jinja_env.jinja_env.get_or_select_template(template_name)
                     return template.render(**resp)

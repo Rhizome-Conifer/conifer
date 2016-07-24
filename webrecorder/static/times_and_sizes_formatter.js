@@ -15,6 +15,24 @@ var TimesAndSizesFormatter = (function() {
         format_by_attr("data-time-ts", ts_to_date);
         format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
         format_by_attr("data-time-duration", secondsToStr);
+
+        format_encoded("data-value-encoded", "data-target-decoded");
+    }
+
+    function format_encoded(encoded_attr, decoded_attr) {
+        $("[" + encoded_attr + "]").each(function(i, elem) {
+
+            var value = $(elem).attr(encoded_attr);
+            value = decodeURI(value);
+
+            var dec_val = $(elem).attr(decoded_attr);
+
+            if (dec_val) {
+                $(elem).attr(dec_val, value);
+            } else {
+                $(elem).text(value);
+            }
+        });
     }
 
     //From http://stackoverflow.com/questions/4498866/actual-numbers-to-the-human-readable-values

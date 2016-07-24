@@ -264,7 +264,7 @@ class TestTempContent(FullStackTests):
     def test_anon_download_rec(self):
         res = self._get_anon('/temp/my-rec2/$download')
 
-        assert res.headers['Content-Disposition'].startswith('attachment; filename=My%20Rec2-')
+        assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''My%20Rec2-")
 
         warcin = self._get_dechunked(res.body)
 
@@ -287,7 +287,7 @@ class TestTempContent(FullStackTests):
     def test_anon_download_coll(self):
         res = self._get_anon('/temp/$download')
 
-        assert res.headers['Content-Disposition'].startswith('attachment; filename=Temporary%20Collection-')
+        assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''Temporary%20Collection-")
 
         warcin = self._get_dechunked(res.body)
 

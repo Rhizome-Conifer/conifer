@@ -854,9 +854,10 @@ class Base(object):
         # recording
         if rec != '*' and rec:
             rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+            rec = quote(rec)
             info['rec_title'], info['size'] = self.redis.hmget(rec_key, ['title', 'size'])
             if info.get('rec_title'):
-                info['rec_title'] = info['rec_title'].decode('utf-8')
+                info['rec_title'] = quote(info['rec_title'].decode('utf-8'), safe='/ ')
             else:
                 info['rec_title'] = rec
             info['rec_id'] = rec
@@ -864,11 +865,12 @@ class Base(object):
             info['size'] = self.redis.hget(coll_key, 'size')
 
         # collection
+        coll = quote(coll)
         info['coll_id'] = coll
         info['coll_title'] = self.redis.hget(coll_key, 'title')
 
         if info.get('coll_title'):
-            info['coll_title'] = info['coll_title'].decode('utf-8')
+            info['coll_title'] = quote(info['coll_title'].decode('utf-8'), safe='/ ')
         else:
             info['coll_title'] = coll
 

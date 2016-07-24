@@ -22,6 +22,7 @@ class DownloadController(BaseController):
 
         @self.app.get('/<user>/<coll>/$download')
         def logged_in_download_coll_warc(user, coll):
+
             return self.handle_download('coll', user, coll, '*')
 
     def handle_download(self, type, user, coll, rec):
@@ -48,7 +49,7 @@ class DownloadController(BaseController):
             id_ = rec
 
         now = timestamp_now()
-        filename = self.download_filename.format(title=id_,
+        filename = self.download_filename.format(title=title,
                                                  timestamp=now)
 
         download_url = self.paths['download']
@@ -72,7 +73,7 @@ class DownloadController(BaseController):
             self._raise_error(400, 'Unable to download WARC')
 
         response.headers['Content-Type'] = 'application/octet-stream'
-        response.headers['Content-Disposition'] = 'attachment; filename=' + quote(filename)
+        response.headers['Content-Disposition'] = "attachment; filename*=UTF-8''" + quote(filename)
 
         length = res.headers.get('Content-Length')
         if length:
