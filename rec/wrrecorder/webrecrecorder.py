@@ -375,6 +375,10 @@ class WebRecRecorder(object):
             if not self.queue_message('delete', message):
                 return {'error_message': 'no local clients'}
 
+        elif type == 'user':
+            self.queue_message('delete', {'delete_user': user})
+
+
         try:
             self._delete_redis_keys(type, user, coll, rec)
         except Exception as e:
@@ -424,7 +428,7 @@ class WebRecRecorder(object):
     def handle_delete_local(self, data):
         data = json.loads(data)
 
-        delete_list = data['delete_list']
+        delete_list = data.get('delete_list', [])
 
         for filename in delete_list:
             if os.path.isfile(filename):
@@ -434,6 +438,21 @@ class WebRecRecorder(object):
                     os.remove(filename)
                 except Exception as e:
                     print(e)
+
+        delete_user = data.get('delete_user')
+        if not delete_user:
+            return
+
+        user_path = self.warc_path_templ.format(user=delete_user)
+        user_path += '*.warc.gz'
+
+        for filename in glob.glob(user_path):
+            try:
+                print('Deleting Local WARC: ' + filename)
+                os.remove(filename)
+
+            except Exception as e:
+                print(e)
 
 
 # ============================================================================
@@ -451,6 +470,9 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         with redis.utils.pipeline(self.redis) as pi:
             for key_templ in self.size_keys:
                 key = res_template(key_templ, params)
+                if not self.redis.exists(key):
+                    continue
+
                 pi.hincrby(key, 'size', length)
 
                 if key_templ == self.rec_info_key_templ and cdx_list:

@@ -500,7 +500,11 @@ class RecManagerMixin(object):
         if not result:
             return result
 
-        rec = result['id']
+        rec = result.get('id')
+        # an edge case where rec data is partially filled
+        # considered not a valid recording, so skip
+        if not rec:
+            return None
 
         path = self.download_paths['rec']
         path = path.format(host=self.get_host(),
@@ -570,8 +574,13 @@ class RecManagerMixin(object):
 
             all_recs = pi.execute()
 
-        all_recs = [self._fill_recording(user, coll, x) for x in all_recs]
-        return all_recs
+        all_rec_list = []
+        for rec in all_recs:
+            recording = self._fill_recording(user, coll, rec)
+            if recording:
+                all_rec_list.append(recording)
+
+        return all_rec_list
 
     def delete_recording(self, user, coll, rec):
         self.assert_can_admin(user, coll)
