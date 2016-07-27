@@ -211,12 +211,12 @@ var Snapshot = (function() {
                       top_ts: topinfo.timestamp,
                       }
 
-        params = $.param(params);
-        params += "&user=" + user + "&coll=" + coll + "&rec=" + rec;
-
         if (top_page) {
             params.title = win.document.title;
         }
+
+        params = $.param(params);
+        params += "&user=" + user + "&coll=" + coll + "&rec=" + rec;
 
         //var content = getContents(win);
         var s = new XMLSerializer();
