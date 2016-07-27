@@ -123,7 +123,7 @@ class ContentController(BaseController, RewriterApp):
 
         @self.app.route('/_snapshot', method='PUT')
         def snapshot():
-            user, coll = self.get_user_coll(api=False)
+            user, coll = self.get_user_coll(api=True)
             #rec = request.query.getunicode('rec')
 
             #if rec and rec != '*':

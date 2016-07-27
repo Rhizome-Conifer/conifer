@@ -133,9 +133,10 @@ var EventHandlers = (function() {
 
             var params = $("#report-form").serialize();
 
-            params += "&" + $.param({coll: wbinfo.coll,
-                                     state: window.curr_mode,
+            params += "&" + $.param({state: window.curr_mode,
                                      url: window.location.href});
+
+            params += "&user=" + user + "&coll=" + coll + "&rec=" + rec;
 
             $.post("/_reportissues", params, function() {
                 $("#report-form-submit").text("Report Sent!");
@@ -204,14 +205,14 @@ var Snapshot = (function() {
             counter++;
         }
 
-        var params = {user: user,
-                      coll: coll,
-                      rec: rec,
-                      prefix: topinfo.prefix,
+        var params = {prefix: topinfo.prefix,
                       url: url,
                       top_url: topinfo.url,
                       top_ts: topinfo.timestamp,
                       }
+
+        params = $.param(params);
+        params += "&user=" + user + "&coll=" + coll + "&rec=" + rec;
 
         if (top_page) {
             params.title = win.document.title;
@@ -221,7 +222,7 @@ var Snapshot = (function() {
         var s = new XMLSerializer();
         var content = s.serializeToString(win.document);
 
-        var target = window.location.origin + "/_snapshot?" + $.param(params);
+        var target = window.location.origin + "/_snapshot?" + params;
 
         $.ajax({
             type: "PUT",
