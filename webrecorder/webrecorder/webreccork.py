@@ -29,6 +29,23 @@ class WebRecCork(Cork):
         self._store.users[username]['last_login'] = str(datetime.utcnow())
         self._store.save_users()
 
+    def is_authenticate(self, username, password):
+        """ From login(), just authenticate without setting cookie
+        """
+        authneticated = False
+
+        if username in self._store.users:
+            salted_hash = self._store.users[username]['hash']
+            if hasattr(salted_hash, 'encode'):
+                salted_hash = salted_hash.encode('ascii')
+            authenticated = self._verify_password(
+                username,
+                password,
+                salted_hash,
+            )
+
+        return authenticated
+
     def validate_registration(self, registration_code):
         """Validate pending account registration, create a new account if
         successful.

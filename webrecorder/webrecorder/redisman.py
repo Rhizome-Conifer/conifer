@@ -359,6 +359,13 @@ class LoginManagerMixin(object):
         if result:
             return result['title']
 
+    def has_space_for_new_coll(self, to_user, from_user, from_coll):
+        size_remaining = self.get_size_remaining(to_user)
+
+        new_size = self.get_collection_size(from_user, from_coll)
+
+        return (new_size <= size_remaining)
+
 
 # ============================================================================
 class AccessManagerMixin(object):
@@ -726,6 +733,16 @@ class CollManagerMixin(object):
 
         key = self.coll_info_key.format(user=user, coll=coll)
         return self._fill_collection(user, self.redis.hgetall(key), True)
+
+    def get_collection_size(self, user, coll):
+        key = self.coll_info_key.format(user=user, coll=coll)
+
+        try:
+            size = int(self.redis.hget(key, 'size'))
+        except:
+            size = 0
+
+        return size
 
     def _fill_collection(self, user, data, include_recs=False):
         result = self._format_info(data)

@@ -66,6 +66,19 @@ class LoginController(BaseController):
 
             move_info = self.get_move_temp_info()
 
+            # if a collection is being moved, auth user
+            # and then check for available space
+            # if not enough space, don't continue with login
+            if move_info and (self.manager.cork.
+                              is_authenticate(username, password)):
+
+                if not self.manager.has_space_for_new_coll(username,
+                                                           move_info['from_user'],
+                                                           'temp'):
+                    self.flash_message('Sorry, not enough space to import this Temporary Collection into your account.')
+                    self.redirect('/')
+                    return
+
             if self.manager.cork.login(username, password):
                 sesh = self.get_session()
                 sesh.curr_user = username
