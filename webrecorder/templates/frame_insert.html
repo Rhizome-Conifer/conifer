@@ -42,7 +42,7 @@
 
 <script>
     wbinfo = {}
-    wbinfo.prefix = "{{ wbrequest.wb_prefix }}";
+    wbinfo.prefix = decodeURI("{{ wbrequest.wb_prefix }}");
     wbinfo.coll = "{{ wbrequest.coll }}";
     wbinfo.url = "{{ url }}";
     wbinfo.capture_url = wbinfo.url;

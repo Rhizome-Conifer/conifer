@@ -29,8 +29,7 @@
 
     {% if rec and rec != '*' %}
     <li>
-        <a target="_parent" id="rec-breadcrumb-link" href="{{ get_path(user, coll, rec) }}" data-recording-id="{{ rec }}" data-value-encoded="{{ rec_title }}" data-target-decoded="" class="recording-breadcrumb">
-    <script>document.write(decodeURI("{{ rec_title }}"))</script></a>
+        <a target="_parent" id="rec-breadcrumb-link" href="{{ get_path(user, coll, rec) }}" data-recording-id="{{ rec }}" data-value-encoded="{{ rec_title }}" data-target-decoded="" class="recording-breadcrumb"></a>
     </li>
     {% elif curr_mode == 'new' %}
     <li><span>Create a new recording</span></li>
