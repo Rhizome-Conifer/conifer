@@ -321,7 +321,7 @@ var RecordingSizeWidget = (function() {
             }
 
             pollForSizeUpdate();
-            sizeUpdateId = setInterval(pollForSizeUpdate, 1000);
+            sizeUpdateId = setInterval(pollForSizeUpdate, 5000);
         }
     }
 
