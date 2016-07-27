@@ -31,9 +31,13 @@
                 class="left-buffer btn btn-default btn-xs" data-toggle="button" 
                 aria-pressed="false" autocomplete="off">Autoscroll</button>
 
+        <button id="snapshot" type="button"
+                class="left-buffer btn btn-default btn-xs"
+                autocomplete="off">
+        <span class="glyphicon glyphicon-camera glyphicon-button"></span>Snapshot</button>
 
         {% if (curr_mode == "replay" or curr_mode == "replay-coll") and can_write() %}
-        <button type="button" class="btn btn-default btn-xs patch-page">
+        <button type="button" class="left-buffer btn btn-default btn-xs patch-page">
             Patch
         </button>
         {% endif %}

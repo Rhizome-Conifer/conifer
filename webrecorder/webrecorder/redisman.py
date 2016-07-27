@@ -313,7 +313,8 @@ class LoginManagerMixin(object):
             new_coll = new_coll_info['id']
 
         if rec != new_rec:
-            new_rec_info = self.create_recording(new_user, new_coll, new_rec, title)
+            new_rec_info = self.create_recording(new_user, new_coll, new_rec, title,
+                                                 no_dupe=True)
             title = new_rec_info['title']
             new_rec = new_rec_info['id']
 
@@ -519,7 +520,9 @@ class RecManagerMixin(object):
         #return self.redis.exists(key)
         return self.redis.hget(key, 'id') != None
 
-    def create_recording(self, user, coll, rec, rec_title, coll_title=''):
+    def create_recording(self, user, coll, rec, rec_title, coll_title='',
+                         no_dupe=False):
+
         self.assert_can_write(user, coll)
 
         orig_rec = rec
@@ -531,6 +534,10 @@ class RecManagerMixin(object):
 
             if self.redis.hsetnx(key, 'id', rec) == 1:
                 break
+
+            # don't create a dupelicate, just use the specified recording
+            if no_dupe:
+                return self.get_recording(user, coll, rec)
 
             count += 1
             rec_title = orig_rec_title + ' ' + str(count)

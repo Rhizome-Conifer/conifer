@@ -9,15 +9,21 @@ from bottle import Bottle, request, HTTPError, response, HTTPResponse
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
 from urlrewrite.cookies import CookieTracker
 
+from pywb.utils.timeutils import timestamp_now, iso_date_to_timestamp
+from pywb.utils.timeutils import timestamp_to_datetime, datetime_to_iso_date
+
 from webrecorder.basecontroller import BaseController
+from webrecorder.unrewriter import HTMLDomUnRewriter, UnRewriter
+
 from six.moves.urllib.parse import quote
+from io import BytesIO
 
 
 # ============================================================================
 class ContentController(BaseController, RewriterApp):
     DEF_REC_NAME = 'My First Recording'
 
-    WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?(https?:)?//.*')
+    WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?([a-zA-Z]+:)?//.*')
 
     def __init__(self, app, jinja_env, manager, config):
         BaseController.__init__(self, app, jinja_env, manager, config)
@@ -114,6 +120,94 @@ class ContentController(BaseController, RewriterApp):
                 type_ = 'replay'
 
             return self.handle_routing(wb_url, user, coll, rec=rec_name, type=type_)
+
+        @self.app.route('/_snapshot', method='PUT')
+        def snapshot():
+            user, coll = self.get_user_coll(api=False)
+            #rec = request.query.getunicode('rec')
+
+            #if rec and rec != '*':
+            #    recording = self.manager.get_recording(user, coll, rec)
+            #    if not recording:
+            #        return {'error_message' 'recording not found'}
+
+            #    snap_title = recording['title'] + ' Snapshots'
+            #else:
+            if not self.manager.has_collection(user, coll):
+                return {'error_message' 'collection not found'}
+
+            snap_title = 'Static Snapshots'
+
+            snap_rec = self.sanitize_title(snap_title)
+
+            if not self.manager.has_recording(user, coll, snap_rec):
+                recording = self.manager.create_recording(user, coll, snap_rec, snap_title)
+
+            kwargs = dict(user=user,
+                          coll=quote(coll),
+                          rec=quote(snap_rec, safe='/*'),
+                          type='snapshot')
+
+            html_text = request.body.read().decode('utf-8')
+
+            host = request.urlparts.scheme + '://' + request.urlparts.netloc
+            prefix = request.query.getunicode('prefix')
+
+            html_text = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
+
+            url = request.query.getunicode('url')
+
+            params = {'url': url}
+
+            upstream_url = self.get_upstream_url('', kwargs, params)
+
+            referrer = request.environ.get('HTTP_REFERER', '')
+            referrer = UnRewriter(host, prefix).rewrite(referrer)
+
+            timedate = datetime_to_iso_date(timestamp_to_datetime(request.query.getunicode('top_ts')))
+
+            headers = {'Content-Type': 'text/html; charset=utf-8',
+                       'WARC-User-Agent': request.environ.get('HTTP_USER_AGENT'),
+                       'WARC-Referer': referrer,
+                       #'WARC-Refers-To-Target-URI': request.query.getunicode('top_url'),
+                       #'WARC-Refers-To-Date': timedate,
+                      }
+
+            r = requests.put(upstream_url,
+                             data=BytesIO(html_text.encode('utf-8')),
+                             headers=headers,
+                            )
+
+            try:
+                res = r.json()
+                if res['success'] != 'true':
+                    print(res)
+                    return {'error_message': 'Snapshot Failed'}
+
+                warc_date = res.get('WARC-Date')
+
+            except Exception as e:
+                print(e)
+                return {'error_message': 'Snapshot Failed'}
+
+
+            title = request.query.getunicode('title')
+
+            if title:
+                if warc_date:
+                    timestamp = iso_date_to_timestamp(warc_date)
+                else:
+                    timestamp = timestamp_now()
+
+
+                page_data = {'url': url,
+                             'title': title,
+                             'timestamp': timestamp
+                            }
+
+                res = self.manager.add_page(user, coll, snap_rec, page_data)
+
+            return {'success': 'true'}
 
 
     def handle_routing(self, wb_url, user, coll, rec, type):

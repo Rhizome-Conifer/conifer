@@ -8,6 +8,7 @@ $(function() {
     BookmarkCounter.start();
     CountdownTimer.start();
     SizeProgressBar.start();
+    Snapshot.start();
 });
 
 function setUrl(url) {
@@ -167,6 +168,87 @@ var EventHandlers = (function() {
         bindAll: bindAll
     }
 })();
+
+
+var Snapshot = (function() {
+    var counter = 0;
+
+    function process(win, topinfo, top_page) {
+        for (var i = 0; i < win.frames.length; i++) {
+            var url = process(win.frames[i], topinfo, false);
+
+            win.frames[i].frameElement.setAttribute("data-src-target", url);
+        }
+
+        return addSnapshot(win, topinfo, top_page);
+    }
+
+    function doSnapshot() {
+        var main_window = document.getElementById("replay_iframe").contentWindow;
+
+        var win = main_window;
+
+        process(win, main_window.wbinfo, true);
+    }
+
+    function addSnapshot(win, topinfo, top_page) {
+        if (win.WB_wombat_location && win.WB_wombat_location.href) {
+            url = win.WB_wombat_location.href;
+            //url = url.replace(/^(https?:\/\/)/, '$1snapshot:')
+
+        } else if (win.document.all.length <= 3) {
+            url = "about:blank";
+            return url;
+        } else {
+            url = "http://embed.snapshot/" + counter;
+            counter++;
+        }
+
+        var params = {user: user,
+                      coll: coll,
+                      rec: rec,
+                      prefix: topinfo.prefix,
+                      url: url,
+                      top_url: topinfo.url,
+                      top_ts: topinfo.timestamp,
+                      }
+
+        if (top_page) {
+            params.title = win.document.title;
+        }
+
+        //var content = getContents(win);
+        var s = new XMLSerializer();
+        var content = s.serializeToString(win.document);
+
+        var target = window.location.origin + "/_snapshot?" + $.param(params);
+
+        $.ajax({
+            type: "PUT",
+            url: target,
+            data: content,
+            success: function() {
+                console.log("Saved");
+                $("#snapshot").prop("disabled", false);
+            },
+            error: function() {
+                console.log("err");
+            },
+            dataType: 'html',
+        });
+
+        console.log("Saved: " + url);
+
+        return url;
+    }
+
+    function start() {
+        $("#snapshot").click(doSnapshot);
+    }
+
+    return {start: start};
+}());
+
 
 var RouteTo = (function(){
     var host = window.location.protocol + "//" + window.location.host;
