@@ -1,0 +1,62 @@
+<div class="modal fade" id="upload-modal" tabindex="-1" role="dialog" aria-labelledby="upload-label" aria-hidden="true">
+    <div class="modal-dialog" style="">
+        <form id="upload-form" action="/_upload" method="post" enctype="multipart/form-data">
+            <div class="modal-content" style="padding-bottom: 40px">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4><span class="glyphicon glyphicon-button glyphicon-upload"></span>Upload WARC File</h4>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <span>Upload any web archive (WARC) file <b id="upload-rec-title" data-upload-rec-id=""></b> to:</span>
+
+                            <div class="input-group">
+                                <input type="text" id="upload-file" name="upload-file-text" class="form-control" name="warcfile" placeholder="Click browse to select a .warc.gz file" required readonly style="background-color: white">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" id="choose-upload">Choose</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="upload-progress progress">
+                                <span class="upload-bar progress-bar progress-bar-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+                                </span>
+                                <div class="upload-percent"></div>
+                            </div>
+                            <div id="upload-status"></div>
+                            <input type="file" name="upload-file" id="choose-upload-file" style="display: none">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-ok" id="confirm-upload">Upload</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+{#
+<span class="dropdown">
+    <button type="button" name="collection" class="btn btn-default dropdown-toggle dropdown-toggle-collection" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span id="upload-coll" data-upload-to="" class="dropdown-toggle-label">Collection </span>&nbsp;<span class="caret"></span>
+    </button>
+
+    <ul class="dropdown-menu">
+        {% for collection in collections %}
+        <li>
+            <a href="#" class="collection-select" data-collection-title="{{ collection.title }}">{{ collection.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</span>
+#}
+

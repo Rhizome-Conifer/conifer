@@ -194,6 +194,30 @@ input.homepage-title {
 
 /*End Archive Page*/
 
+/* Upload */
+
+.upload-progress {
+    position: relative;
+    margin-top: 30px;
+    display: none;
+}
+
+#upload-status {
+    display: none;
+}
+
+.upload-percent {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    top: 0px;
+    left: 0px;
+    position: absolute;
+    width: 100%;
+}
+
+
+
 /*
  * Recorder
  *

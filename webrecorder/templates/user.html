@@ -11,6 +11,8 @@
 <link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
 <script src="/static/__shared/external/bootstrap-switch.js"></script>
 
+<script src="http://malsup.github.com/jquery.form.js"></script>
+
 <script src="/static/__shared/editor.js"></script>
 <script src="/static/__shared/newrecording.js"></script>
 <script src="/static/__shared/user.js"></script>
@@ -34,7 +36,10 @@
 <div class="row">
     <div class="col-xs-6" style="padding-top: 14px">
         <a class="btn btn-primary btn-sm" href="#" data-toggle="modal" data-target="#create-modal" role="button">
-            <span class="glyphicon glyphicon-plus" style="margin-right: 4px"></span>New Collection
+            <span class="glyphicon glyphicon-plus glyphicon-button"></span>New Collection
+        </a>
+        <a class="btn btn-success btn-sm" href="#" data-toggle="modal" data-target="#upload-modal" role="button">
+            <span class="glyphicon glyphicon-upload glyphicon-button"></span>Upload...
         </a>
     </div>
 
@@ -93,6 +98,7 @@
 {% block body %}
 {{ super() }}
 {% include 'create_collection_modal.html' %}
+{% include 'upload_modal.html' %}
 {% endblock %}
 
 

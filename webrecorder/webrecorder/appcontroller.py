@@ -22,6 +22,7 @@ from webrecorder.logincontroller import LoginController
 from webrecorder.usercontroller import UserController
 from webrecorder.browsercontroller import BrowserController
 from webrecorder.downloadcontroller import DownloadController
+from webrecorder.uploadcontroller import UploadController
 
 from webrecorder.webreccork import WebRecCork
 
@@ -36,6 +37,7 @@ from webrecorder.basecontroller import BaseController
 # ============================================================================
 class AppController(BaseController):
     ALL_CONTROLLERS = [DownloadController,
+                       UploadController,
                        BrowserController,
                        LoginController,
                        UserController,
