@@ -1,10 +1,16 @@
-from webagg.utils import StreamIter
 from pywb.utils.timeutils import timestamp_now
+from pywb.utils.loaders import BlockLoader
+
+from webagg.utils import StreamIter, chunk_encode_iter
+from recorder.warcwriter import SimpleTempWARCWriter
+
 from webrecorder.basecontroller import BaseController
 
-import requests
 from bottle import response
 from six.moves.urllib.parse import quote
+from six import iteritems
+from collections import OrderedDict
+import json
 
 
 # ============================================================================
@@ -13,76 +19,121 @@ class DownloadController(BaseController):
         super(DownloadController, self).__init__(app, jinja_env, manager, config)
         self.paths = config['url_templates']
         self.download_filename = config['download_paths']['filename']
+        self.warc_key_templ = config['warc_key_templ']
 
     def init_routes(self):
         @self.app.get('/<user>/<coll>/<rec>/$download')
         def logged_in_download_rec_warc(user, coll, rec):
 
-            return self.handle_download('rec', user, coll, rec)
+            return self.handle_download(user, coll, rec)
 
         @self.app.get('/<user>/<coll>/$download')
         def logged_in_download_coll_warc(user, coll):
 
-            return self.handle_download('coll', user, coll, '*')
+            return self.handle_download(user, coll, '*')
 
-    def handle_download(self, type, user, coll, rec):
-        info = {}
-        rec_title = ''
-        coll_title = ''
+    def create_warcinfo(self, creator, title, metadata, filename):
+        info = OrderedDict([
+                ('software', 'Webrecorder Platform v2.5'),
+                ('format', 'WARC File Format 1.0'),
+                ('creator', creator),
+                ('isPartOf', title),
+                ('json-metadata', json.dumps(metadata)),
+               ])
 
-        if rec == '*':
-            info = self.manager.get_collection(user, coll)
-            if not info:
-                self._raise_error(404, 'Collection not found',
-                                  id=coll)
+        wi_writer = SimpleTempWARCWriter()
+        wi_writer.write_record(wi_writer.create_warcinfo_record(filename, info))
+        return wi_writer.get_buffer()
 
-            title = coll_title = info.get('title', coll)
-            id_ = coll
+    def create_coll_warcinfo(self, user, collection, filename=''):
+        metadata = {'desc': collection['desc'],
+                    'title': collection['title']}
 
-        else:
-            info = self.manager.get_recording(user, coll, rec)
-            if not info:
-                self._raise_error(404, 'Collection not found',
-                                  id=coll)
+        title = quote(collection['title'])
+        return self.create_warcinfo(user, title, metadata, filename)
 
-            title = rec_title = info.get('title', rec)
-            id_ = rec
+    def create_rec_warcinfo(self, user, collection, recording, filename=''):
+        metadata = {'pages': self.manager.list_pages(user,
+                                                     collection['id'],
+                                                     recording['id']),
+                    'title': recording['title'],
+                   }
+
+        title = quote(collection['title']) + '/' + quote(recording['title'])
+        return self.create_warcinfo(user, title, metadata, filename)
+
+    def handle_download(self, user, coll, rec):
+        collection = self.manager.get_collection(user, coll, rec)
+        if not collection:
+            self._raise_error(404, 'Collection not found',
+                              id=coll)
 
         now = timestamp_now()
-        filename = self.download_filename.format(title=title,
+
+        name = collection['id']
+        if rec != '*':
+            rec_list = rec.split(',')
+            if len(rec_list) == 1:
+                name = rec
+            else:
+                name += '-' + rec
+        else:
+            rec_list = None
+
+        filename = self.download_filename.format(title=quote(name),
                                                  timestamp=now)
+        loader = BlockLoader()
 
-        download_url = self.paths['download']
-        download_url = download_url.format(record_host=self.record_host,
-                                           user=user,
-                                           coll=coll,
-                                           rec=rec,
-                                           type=type,
-                                           filename=filename,
-                                           rec_title=rec_title,
-                                           coll_title=coll_title)
+        size = 0
+        infos = []
 
-        res = requests.get(download_url, stream=True)
+        warcinfo = self.create_coll_warcinfo(user, collection, filename)
+        size += len(warcinfo)
+        infos.append(warcinfo)
 
-        if res.status_code >= 400:
-            try:
-                res.raw.close()
-            except:
-                pass
+        for recording in collection['recordings']:
+            if rec_list and recording['id'] not in rec_list:
+                continue
 
-            self._raise_error(400, 'Unable to download WARC')
+            warcinfo = self.create_rec_warcinfo(user,
+                                                collection,
+                                                recording,
+                                                filename)
+
+            size += len(warcinfo)
+            size += recording['size']
+            infos.append(warcinfo)
+
+        def read_all():
+            yield infos[0]
+
+            for recording, warcinfo in zip(collection['recordings'], infos[1:]):
+                if rec_list and recording['id'] not in rec_list:
+                    continue
+
+                yield warcinfo
+
+                for warc_path in self._iter_all_warcs(user, coll, recording['id']):
+                    fh = loader.load(warc_path)
+
+                    for chunk in StreamIter(fh):
+                        yield chunk
 
         response.headers['Content-Type'] = 'application/octet-stream'
-        response.headers['Content-Disposition'] = "attachment; filename*=UTF-8''" + quote(filename)
+        response.headers['Content-Disposition'] = "attachment; filename*=UTF-8''" + filename
 
-        length = res.headers.get('Content-Length')
-        if length:
-            response.headers['Content-Length'] = length
+        response.headers['Content-Type'] = 'application/octet-stream'
+        response.headers['Content-Length'] = size
 
-        encoding = res.headers.get('Transfer-Encoding')
-        if encoding:
-            response.headers['Transfer-Encoding'] = encoding
+        #response.headers['Transfer-Encoding'] = 'chunked'
+        #resp = chunk_encode_iter(resp)
 
-        return StreamIter(res.raw)
+        return read_all()
 
+    def _iter_all_warcs(self, user, coll, rec):
+        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
+        allwarcs = self.manager.redis.hgetall(warc_key)
 
+        for n, v in iteritems(allwarcs):
+            #n = n.decode('utf-8')
+            yield v.decode('utf-8')

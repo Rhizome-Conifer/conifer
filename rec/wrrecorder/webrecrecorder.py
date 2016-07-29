@@ -2,18 +2,16 @@ from recorder.recorderapp import RecorderApp
 
 from recorder.redisindexer import WritableRedisIndexer
 
-from recorder.warcwriter import MultiFileWARCWriter, SimpleTempWARCWriter
+from recorder.warcwriter import MultiFileWARCWriter
 from recorder.filters import WriteRevisitDupePolicy
 from recorder.filters import ExcludeSpecificHeaders
-
-from pywb.utils.loaders import BlockLoader
 
 import redis
 import time
 import json
 import glob
 
-from webagg.utils import res_template, ParamFormatter, StreamIter, chunk_encode_iter
+from webagg.utils import res_template, ParamFormatter
 
 from bottle import Bottle, request, debug, response
 import os
@@ -38,8 +36,6 @@ class WebRecRecorder(object):
 
         self.cdxj_key_templ = config['cdxj_key_templ']
 
-        self.rec_page_key_templ = config['page_key_templ']
-
         self.info_keys = config['info_key_templ']
 
         self.warc_key_templ = config['warc_key_templ']
@@ -61,7 +57,6 @@ class WebRecRecorder(object):
         self.recorder = self.init_recorder()
 
         self.app.mount('/record', self.recorder)
-        self.app.get('/download', callback=self.download)
         self.app.delete('/delete', callback=self.delete)
         self.app.get('/rename', callback=self.rename)
 
@@ -104,16 +99,6 @@ class WebRecRecorder(object):
 
         return recorder_app
 
-    def get_pagelist(self, user, coll, rec):
-        page_key_pattern = self.rec_page_key_templ.format(user=user, coll=coll, rec=rec)
-
-        pages = []
-        for page_key in self.redis.scan_iter(match=page_key_pattern):
-            for page in self.redis.hvals(page_key):
-                pages.append(json.loads(page.decode('utf-8')))
-
-        return pages
-
     def get_profile(self, scheme, profile):
         res = self.redis.hgetall('st:' + profile)
         if not res:
@@ -137,74 +122,6 @@ class WebRecRecorder(object):
             for n, v in iteritems(warc_map):
                 n = n.decode('utf-8')
                 yield key, n, v.decode('utf-8')
-
-    # Download =======================
-
-    def download(self):
-        user = request.query.getunicode('user', '')
-        coll = request.query.getunicode('coll', '*')
-        rec = request.query.getunicode('rec', '*')
-        type = request.query.getunicode('type')
-
-        filename = request.query.getunicode('filename', 'rec.warc.gz')
-        filename = quote(filename)
-
-        #if not user:
-        #    response.status = 400
-        #    return {'error_message': 'No User Provided'}
-
-        metadata = {'pages': self.get_pagelist(user, coll, rec)}
-
-        part_of = quote(coll)
-        if rec != '*':
-            part_of += '/' + quote(rec)
-
-        # warcinfo Record
-        info = {'software': 'Webrecorder Platform v2.0',
-                'format': 'WARC File Format 1.0',
-                'json-metadata': json.dumps(metadata),
-                'isPartOf': part_of,
-                'creator': user,
-               }
-
-        title = request.query.getunicode('rec_title')
-        if title:
-            info['title'] = quote(title)
-
-        coll_title = request.query.getunicode('coll_title')
-        if coll_title:
-            info['isPartOf'] = quote(coll_title)
-
-        wi_writer = SimpleTempWARCWriter()
-        wi_writer.write_record(wi_writer.create_warcinfo_record(filename, **info))
-        warcinfo = wi_writer.get_buffer()
-
-        key_templ = self.info_keys.get(type, '')
-        key_pattern = key_templ.format(user=user, coll=coll, rec=rec)
-
-        length = len(warcinfo)
-        try:
-            length += int(self.redis.hget(key_pattern, 'size'))
-        except Exception as e:
-            print(e)
-
-        loader = BlockLoader()
-
-        def read_all():
-            yield warcinfo
-
-            for key, n, v in self._iter_all_warcs(user, coll, rec):
-                fh = loader.load(v)
-
-                for chunk in StreamIter(fh):
-                    yield chunk
-
-        response.headers['Content-Type'] = 'application/octet-stream'
-        response.headers['Content-Length'] = int(length)
-        resp = read_all()
-        #response.headers['Transfer-Encoding'] = 'chunked'
-        #resp = chunk_encode_iter(resp)
-        return resp
 
     # Messaging ===============
     def msg_listen_loop(self):
@@ -369,14 +286,16 @@ class WebRecRecorder(object):
             filename = url[len(self.full_warc_prefix):]
             delete_list.append(filename)
 
+        message = {}
+
         if delete_list:
             message = dict(delete_list=delete_list)
 
-            if not self.queue_message('delete', message):
-                return {'error_message': 'no local clients'}
+        if type == 'user':
+            message['delete_user'] = user
 
-        elif type == 'user':
-            self.queue_message('delete', {'delete_user': user})
+        if not self.queue_message('delete', message):
+            return {'error_message': 'no local clients'}
 
 
         try:
