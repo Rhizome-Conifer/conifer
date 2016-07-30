@@ -389,9 +389,6 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         with redis.utils.pipeline(self.redis) as pi:
             for key_templ in self.size_keys:
                 key = res_template(key_templ, params)
-                if not self.redis.exists(key):
-                    continue
-
                 pi.hincrby(key, 'size', length)
 
                 if key_templ == self.rec_info_key_templ and cdx_list:
@@ -406,6 +403,18 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
         super(SkipCheckingMultiFileWARCWriter, self).__init__(*args, **kwargs)
         self.redis = kwargs.get('redis')
         self.skip_key_template = kwargs.get('skip_key_templ')
+        self.info_key = kwargs.get('key_template')
+
+    def allow_new_file(self, filename, params):
+        key = res_template(self.info_key, params)
+
+        # ensure recording exists before writing anything
+        # if not, abort opening new warc file here
+        if not self.redis.exists(key):
+            print('Writing skipped, recording does not exist for ' + filename)
+            return False
+
+        return True
 
     def _is_write_req(self, req, params):
         if not req or not req.rec_headers or not self.skip_key_template:
