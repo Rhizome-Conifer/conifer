@@ -47,7 +47,9 @@ class DownloadController(BaseController):
 
     def create_coll_warcinfo(self, user, collection, filename=''):
         metadata = {'desc': collection['desc'],
-                    'title': collection['title']}
+                    'title': collection['title'],
+                    'type': 'collection',
+                   }
 
         title = quote(collection['title'])
         return self.create_warcinfo(user, title, metadata, filename)
@@ -57,6 +59,7 @@ class DownloadController(BaseController):
                                                      collection['id'],
                                                      recording['id']),
                     'title': recording['title'],
+                    'type': 'recording',
                    }
 
         title = quote(collection['title']) + '/' + quote(recording['title'])
