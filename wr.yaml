@@ -28,7 +28,8 @@ url_templates:
     delete: '{record_host}/delete?user={user}&coll={coll}&rec={rec}&type={type}'
     rename: '{record_host}/rename?from_user={from_user}&from_coll={from_coll}&from_rec={from_rec}&to_user={to_user}&to_coll={to_coll}&to_title={to_title}&to_rec={to_rec}'
 
-    download: '{record_host}/download?user={user}&coll={coll}&rec={rec}&filename={filename}&type={type}'
+    # upload path
+    upload: '{record_host}/upload?user={user}&coll={coll}&rec={rec}'
  
     # core replay funcs
     live: '{replay_host}/live/resource/postreq?'

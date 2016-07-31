@@ -615,6 +615,30 @@ class RecManagerMixin(object):
 
         return {}
 
+    def import_pages(self, user, coll, rec, pagelist):
+        self.assert_can_write(user, coll)
+
+        key = self.page_key.format(user=user, coll=coll, rec=rec)
+
+        pagemap = {}
+
+        for pagedata in pagelist:
+            url = pagedata['url']
+
+            if not pagedata.get('timestamp'):
+                pagedata['timestamp'] = self._get_url_ts(user, coll, rec, url)
+
+                if not pagedata['timestamp']:
+                    pagedata['timestamp'] = timestamp_now()
+
+            pagedata_json = json.dumps(pagedata).encode('utf-8')
+
+            pagemap[pagedata['url'] + ' ' + pagedata['timestamp']] = pagedata_json
+
+        self.redis.hmset(key, pagemap)
+
+        return {}
+
     def modify_page(self, user, coll, rec, new_pagedata):
         self.assert_can_write(user, coll)
 
