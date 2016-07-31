@@ -214,13 +214,24 @@ class TestLogin(BaseWRTests):
         res = self.testapp.post('/_forgot', params=params)
         assert res.headers['Location'] == 'http://localhost:80/_forgot'
 
+    def test_reset_by_email(self):
+        TestLogin.reset_password_url = None
+        TestLogin.reset_code = None
+
         # reset by email
-        params = {'username': 'foo', 'email': 'test@example.com'}
+        params = {'email': 'test@example.com'}
         with patch('cork.Mailer.send_email', self.mock_send_forgot_email):
             res = self.testapp.post('/_forgot', params=params)
 
-        # valid reset -- TODO
-        assert res.headers['Location'] == 'http://localhost:80/_forgot'
+        # valid reset
+        assert res.headers['Location'] == 'http://localhost:80/'
+        assert TestLogin.reset_code != None
+        assert TestLogin.reset_password_url != None
+
+
+    def test_reset_by_username(self):
+        TestLogin.reset_password_url = None
+        TestLogin.reset_code = None
 
         # reset by username
         params = {'username': 'someuser', 'email': ''}
@@ -229,6 +240,8 @@ class TestLogin(BaseWRTests):
 
         # valid reset
         assert res.headers['Location'] == 'http://localhost:80/'
+        assert TestLogin.reset_code != None
+        assert TestLogin.reset_password_url != None
 
     def test_reset_code_invalid(self):
         # invalid reset

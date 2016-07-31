@@ -143,9 +143,9 @@ class LoginController(BaseController):
         def invite_post():
             self.redirect_home_if_logged_in()
 
-            email = self.post_get('email', '')
-            name = self.post_get('name', '')
-            desc = self.post_get('desc', '')
+            email = self.post_get('email')
+            name = self.post_get('name')
+            desc = self.post_get('desc')
             if self.manager.save_invite(email, name, desc):
                 self.flash_message('Thank you for your interest! We will send you an invite to try webrecorder.io soon!', 'success')
                 self.redirect('/')
@@ -262,8 +262,8 @@ class LoginController(BaseController):
         def forgot_submit():
             self.redirect_home_if_logged_in()
 
-            email = self.post_get('email', None)
-            username = self.post_get('username', None)
+            email = self.post_get('email')
+            username = self.post_get('username')
             host = self.get_host()
 
             try:

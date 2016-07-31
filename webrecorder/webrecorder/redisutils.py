@@ -6,6 +6,7 @@ class RedisTable(object):
     def __init__(self, redis, key):
         self.redis = redis
         self.key = key
+        self.iteritems = self.items
 
     def __contains__(self, name):
         value = self.redis.hget(self.key, name)
