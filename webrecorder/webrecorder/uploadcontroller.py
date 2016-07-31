@@ -9,7 +9,6 @@ from pywb.cdx.cdxobject import CDXObject
 import traceback
 import json
 import requests
-from io import BytesIO
 
 
 BLOCK_SIZE = 16384
@@ -45,7 +44,6 @@ class UploadController(BaseController):
 
                 fh.seek(0)
                 self.process_upload(user, infos, fh, upload.filename)
-                fh.close()
 
             return {'saved': 'true'}
 
@@ -138,17 +136,18 @@ class UploadController(BaseController):
     def do_upload(self, stream, user, coll, rec, offset, length):
         stream.seek(offset)
 
-        #TODO
-        #stream = LimitReader.wrap_stream(stream, length)
-        buff = stream.read(length)
-        stream = BytesIO(buff)
+        stream = LimitReader(stream, length)
+        headers = {'Content-Length': str(length)}
 
         upload_url = self.upload_path.format(record_host=self.record_host,
                                              user=user,
                                              coll=coll,
                                              rec=rec)
 
-        r = requests.put(upload_url, data=stream)
+        r = requests.put(upload_url,
+                         headers=headers,
+                         data=stream)
+
         print(r.json())
 
     def default_collection(self, user, filename):
