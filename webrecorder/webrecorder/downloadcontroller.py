@@ -114,7 +114,11 @@ class DownloadController(BaseController):
                 yield warcinfo
 
                 for warc_path in self._iter_all_warcs(user, coll, recording['id']):
-                    fh = loader.load(warc_path)
+                    try:
+                        fh = loader.load(warc_path)
+                    except:
+                        print('Skipping invalid ' + warc_path)
+                        continue
 
                     for chunk in StreamIter(fh):
                         yield chunk
@@ -123,9 +127,9 @@ class DownloadController(BaseController):
         response.headers['Content-Disposition'] = "attachment; filename*=UTF-8''" + filename
 
         response.headers['Content-Type'] = 'application/octet-stream'
-        response.headers['Content-Length'] = size
+        #response.headers['Content-Length'] = size
 
-        #response.headers['Transfer-Encoding'] = 'chunked'
+        response.headers['Transfer-Encoding'] = 'chunked'
         #resp = chunk_encode_iter(resp)
 
         return read_all()
