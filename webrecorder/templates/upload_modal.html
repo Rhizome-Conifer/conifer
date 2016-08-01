@@ -10,7 +10,7 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-12">
-                            <span>WARC/ARC file to upload: </span>
+                            <label for="upload-file">WARC/ARC file to upload: </label>
 
                             <div class="top-buffer-sm input-group">
                                 <input type="text" id="upload-file" name="upload-file-text" class="form-control" name="warcfile" placeholder="Click Browse... to select a web archive file" required readonly style="background-color: white">
@@ -36,20 +36,19 @@
 
                     <div class="row">   
                         <div class="col-md-12 top-buffer">
-                            <input id="upload-new" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if not collection else ''}}>Automatically create new collection
+                            <input id="upload-new" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if not collection else ''}}><label for="upload-new">Automatically create new collection</label>
                         </div>
                     </div>
 
                     {% if not is_anon() and collections %}
                     <div class="top-buffer">
-                        <input id="upload-add" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if collection else ''}}>Add to existing collection:
+                        <input id="upload-add" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if collection else ''}}><label for="upload-add">Add to existing collection:</label>
                         <span class="dropdown">
                             <button type="button" name="collection" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span id="upload-coll" class="dropdown-toggle-label">New Collection</span>&nbsp;<span class="caret"></span>
+                                <span id="upload-coll" class="dropdown-toggle-label"></span>&nbsp;<span class="caret"></span>
                             </button>
 
                             <ul class="dropdown-menu">
-                                <li role="separator" class="divider"></li>
                                 {% for collection in collections %}
                                 <li>
                                     <a href="#" class="upload-collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>

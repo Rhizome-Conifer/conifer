@@ -4,7 +4,7 @@
             {% set path = get_path(anon_user, 'temp') %}
             <h5>You have temporarily recorded <a href="{{ path }}"><b data-size="{{ anon_size }}"></b></a>.<br/>Would you like to import this collection into your account?</h5>
             <input style="" id="coll-move" type="checkbox" name="move-temp" value="1" aria-label="Move" checked="checked">
-<h5 style="display: inline">Yes, import <a href="{{ path }}"><b>{{ anon_recordings }} recording(s)</b></a> into my account.</h5></input><br/>
+<h5 style="display: inline"><label for="coll-move">Yes, import <a href="{{ path }}"><b>{{ anon_recordings }} recording(s)</b></a> into my account.</h5></input><br/></label>
         </div> 
 
         <div class="form-group">

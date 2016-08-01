@@ -32,7 +32,7 @@ $(function() {
             var force_coll;
 
             if ($("#upload-add").is(":checked")) {
-                force_coll = $("#upload-coll").data("collection-id");
+                force_coll = $("#upload-coll").attr("data-collection-id");
             } else {
                 force_coll = "";
             }
@@ -54,7 +54,7 @@ $(function() {
             $("#upload-modal button").prop("disabled", true);
 
             $("#upload-modal button.upload-cancel").prop("disabled", false);
-            $("#upload-modal button.upload-cancel").text("Cancel");
+            $("#upload-modal button.upload-cancel").text("Cancel Upload");
 
             uploader.show();
             status.show();
@@ -102,7 +102,7 @@ $(function() {
 
     $("#upload-modal").on('show.bs.modal', function() {
         $("#upload-modal button[type='button']").prop("disabled", false);
-        //$("#upload-modal button[type='submit']").prop("disabled", true);
+        $("#upload-modal button.upload-cancel").text("Cancel");
         uploader.hide();
         status.hide();
     });
@@ -110,12 +110,12 @@ $(function() {
     $('.upload-collection-select').on('click', function(event) {
         event.preventDefault();
 
-        var currColl = $(this).data('collection-id');
+        var currColl = $(this).attr('data-collection-id');
 
         $('#upload-coll').text($(this).text());
-        $('#upload-coll').data('collection-id', currColl);
+        $('#upload-coll').attr('data-collection-id', currColl);
 
-        if (!$("#upload-add").is(":checked")) {
+        if (!$("#upload-add").is(":checked") && event.originalEvent) {
             $("#upload-add").click();
         }
 
@@ -125,11 +125,12 @@ $(function() {
     var initialColl = $("#force-coll").val();
     if (initialColl) {
         $("a.upload-collection-select[data-collection-id='" + initialColl + "']").click();
-    }
+    } else {
+        $("a.upload-collection-select").first().click();
+    }   
 
     $(".upload-cancel").on('click', function() {
         if (currXhr) {
-            console.log("ABORTED");
             currXhr.abort();
         }
     });
