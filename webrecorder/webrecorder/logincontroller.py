@@ -98,7 +98,10 @@ class LoginController(BaseController):
                 redir_to = request.headers.get('Referer')
                 host = self.get_host()
 
-                if not redir_to or  redir_to.startswith((host + '/temp!', host + '/_')):
+                temp_prefix = self.manager.temp_prefix
+
+                if not redir_to or redir_to.startswith((host + '/' + temp_prefix,
+                                                        host + '/_')):
                     redir_to = self.get_path(username)
 
             else:
@@ -164,9 +167,14 @@ class LoginController(BaseController):
             confirm_password = self.post_get('confirmpassword')
             invitecode = self.post_get('invite')
 
-            move_info = self.get_move_temp_info()
-
             redir_to = REGISTER_PATH
+
+            if username.startswith(self.manager.temp_prefix):
+                self.flash_message('Sorry, this is not a valid username')
+                self.redirect(redir_to)
+                return
+
+            move_info = self.get_move_temp_info()
 
             if self.invites_enabled:
                 try:

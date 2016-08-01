@@ -44,6 +44,8 @@ class WebRecRecorder(object):
 
         self.full_warc_prefix = config['full_warc_prefix']
 
+        self.temp_prefix = config['temp_prefix']
+
         self.name = config['recorder_name']
 
         self.del_templ = config['del_templ']
@@ -339,7 +341,7 @@ class WebRecRecorder(object):
 
         if self.storage_committer:
             storage = self.storage_committer.get_storage(user, coll, rec)
-            if not user.startswith('temp!') and storage and not storage.delete(user, coll, rec, type):
+            if not user.startswith(self.temp_prefix) and storage and not storage.delete(user, coll, rec, type):
                 return {'error_message': 'remote delete failed'}
 
         return {}

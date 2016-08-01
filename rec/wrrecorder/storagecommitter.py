@@ -28,6 +28,8 @@ class StorageCommitter(object):
 
         self.upload_wait_secs = int(config['upload_wait_secs'])
 
+        self.temp_prefix = config['temp_prefix']
+
         print('Storage Committer Root: ' + self.record_root_dir)
 
     def create_default_profile(self, config):
@@ -54,7 +56,7 @@ class StorageCommitter(object):
                 return True
 
     def is_temp(self, user):
-        return user.startswith('temp!')
+        return user.startswith(self.temp_prefix)
 
     def __call__(self):
         if not os.path.isdir(self.record_root_dir):

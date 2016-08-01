@@ -32,7 +32,7 @@ class WebRecCork(Cork):
     def is_authenticate(self, username, password):
         """ From login(), just authenticate without setting cookie
         """
-        authneticated = False
+        authenticated = False
 
         if username in self._store.users:
             salted_hash = self._store.users[username]['hash']

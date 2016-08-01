@@ -15,6 +15,8 @@ from fakeredis import FakeStrictRedis
 
 from six.moves.urllib.parse import urlsplit
 
+from webrecorder.session import Session
+
 
 # ============================================================================
 class TestTempContent(FullStackTests):
@@ -87,7 +89,7 @@ class TestTempContent(FullStackTests):
         path_parts = parts.path.split('/', 2)
         assert self.anon_user == path_parts[1]
 
-        assert self.anon_user.startswith('temp!')
+        assert self.anon_user.startswith(Session.temp_prefix)
         assert parts.path.endswith('/temp/My Rec/record/mp_/http://example.com/')
 
         # test dupe
@@ -104,7 +106,7 @@ class TestTempContent(FullStackTests):
         path_parts = parts.path.split('/', 2)
         assert self.anon_user == path_parts[1]
 
-        assert self.anon_user.startswith('temp!')
+        assert self.anon_user.startswith(Session.temp_prefix)
         assert parts.path.endswith('/temp/My First Recording/record/mp_/http://example.com/')
 
     #def test_anon_replay_redirect(self):

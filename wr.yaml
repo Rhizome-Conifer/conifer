@@ -22,6 +22,8 @@ default_max_coll: 10
 
 upload_wait_secs: 30
 
+temp_prefix: 'temp-'
+
 
 # Upstream url templates
 url_templates:

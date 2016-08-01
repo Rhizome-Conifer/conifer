@@ -69,6 +69,9 @@ class AppController(BaseController):
         # Init Manager
         manager = RedisDataManager(self.redis, self.cork, self.browser_redis, config)
 
+        # Init Sesion temp_prefix
+        Session.temp_prefix = config['temp_prefix']
+
         # Init Jinja
         jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'})
 
@@ -195,7 +198,7 @@ class AppController(BaseController):
                     #else:
                     #    url = request.environ.get('PATH_INFO', '')[1:]
 
-                    if start_path.startswith('/temp!'):
+                    if start_path.startswith('/' + self.manager.temp_prefix):
                         res = error_view(out, is_temp=True)
                         return res
 

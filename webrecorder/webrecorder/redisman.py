@@ -54,6 +54,8 @@ class LoginManagerMixin(object):
 
         self.default_coll = config['default_coll']
 
+        self.temp_prefix = config['temp_prefix']
+
     def create_user(self, reg):
         try:
             user, init_info = self.cork.validate_registration(reg)

@@ -13,6 +13,8 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature
 
 # ============================================================================
 class Session(object):
+    temp_prefix = ''
+
     def __init__(self, cork, environ, key, sesh, ttl):
         self.environ = environ
         self._sesh = sesh
@@ -138,7 +140,7 @@ class Session(object):
 
     @staticmethod
     def make_anon_user():
-        return 'temp!' + base64.b32encode(os.urandom(5)).decode('utf-8')
+        return Session.temp_prefix + base64.b32encode(os.urandom(5)).decode('utf-8')
 
 
 # ============================================================================

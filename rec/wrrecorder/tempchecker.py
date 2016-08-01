@@ -7,8 +7,6 @@ import requests
 
 # ============================================================================
 class TempChecker(object):
-    TEMP_PREFIX = 'temp!'
-
     def __init__(self, config):
         self.redis_base_url = os.environ['REDIS_BASE_URL']
 
@@ -18,8 +16,9 @@ class TempChecker(object):
         #self.redis_base_url = self.redis_base_url.rsplit('/', 1)[0] + '/0'
         self.sesh_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 
+        self.temp_prefix = config['temp_prefix']
         self.record_root_dir = os.environ['RECORD_ROOT']
-        self.glob_pattern = os.path.join(self.record_root_dir, self.TEMP_PREFIX + '*')
+        self.glob_pattern = os.path.join(self.record_root_dir, self.temp_prefix + '*')
         #self.temp_dir = os.path.join(self.record_root_dir, 'temp')
 
         self.record_host = os.environ['RECORD_HOST']
@@ -81,7 +80,7 @@ class TempChecker(object):
             self._delete_if_expired(temp)
             temps_removed.add(temp)
 
-        temp_match = 'u:{0}*'.format(self.TEMP_PREFIX)
+        temp_match = 'u:{0}*'.format(self.temp_prefix)
 
         print('Temp Key Check')
 
