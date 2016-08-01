@@ -23,7 +23,9 @@ var TimesAndSizesFormatter = (function() {
         $("[" + encoded_attr + "]").each(function(i, elem) {
 
             var value = $(elem).attr(encoded_attr);
-            value = decodeURI(value);
+            if (!value) {
+                return;
+            }
 
             var dec_val = $(elem).attr(decoded_attr);
 

@@ -28,24 +28,68 @@ class UploadController(BaseController):
 
             upload = request.files.get('upload-file')
             if not upload:
-                return {'error_message': 'no file'}
+                return {'error_message': 'No File Specified'}
 
-            with SpooledTemporaryFile(max_size=BLOCK_SIZE) as fh:
-                upload.save(fh)
+            try:
+                stream = SpooledTemporaryFile(max_size=BLOCK_SIZE)
+                upload.save(stream)
+
+                size_rem = self.manager.get_size_remaining(user)
+
+                if size_rem < stream.tell():
+                    return {'error_message': 'Sorry, not enough space to upload this file'}
+
+                filename = upload.filename
+
+                new_coll, error_message = self.handle_upload(stream, filename, user)
+
+                if new_coll:
+                    msg = 'Uploaded file <b>{1}</b> into collection <b>{0}</b>'.format(new_coll, filename)
+
+                    self.flash_message(msg, 'success')
+
+                    return {'upload': new_coll}
+
+                else:
+                    return {'error_message': error_message}
+
+            except Exception as e:
+                traceback.print_exc()
+                return {'error_message': str(e)}
+
+            finally:
                 upload.file.close()
+                stream.close()
 
-                fh.seek(0)
 
-                try:
-                    infos = self.parse_uploaded(fh)
-                except Exception:
-                    traceback.print_exc()
-                    return {'error_message': 'parsing failed'}
+    def handle_upload(self, stream, filename, user):
+        stream.seek(0)
+        total = 0
 
-                fh.seek(0)
-                self.process_upload(user, infos, fh, upload.filename)
+        try:
+            infos = self.parse_uploaded(stream)
+            total = len(infos)
+            #status = 'Processing {0} recordings'.format(total)
+        except Exception:
+            return (None, 'Invalid Web Archive (Parsing Error)')
 
-            return {'saved': 'true'}
+        stream.seek(0)
+
+        count = 0
+
+        first_coll = None
+
+        try:
+            for coll, rec in self.process_upload(user, infos, stream, filename):
+                count += 1
+                #status = 'Processing {0} of {1}'.format(count, total)
+                if not first_coll:
+                    first_coll = coll
+
+        except:
+            return (None, 'Processing Error')
+
+        return (first_coll, None)
 
     def process_upload(self, user, infos, stream, filename):
         collection = None
@@ -81,6 +125,8 @@ class UploadController(BaseController):
                 recording['id'] = actual_recording['id']
                 recording['title'] = actual_recording['title']
 
+                yield collection['id'], recording['id']
+
                 self.do_upload(stream,
                                user,
                                collection['id'],
@@ -103,7 +149,7 @@ class UploadController(BaseController):
         for member, score in self.manager.redis.zscan_iter(key):
             cdxj = CDXObject(member)
 
-            if self.is_page(cdxj):
+            if len(pages) < 500 and self.is_page(cdxj):
                 pages.append(dict(url=cdxj['url'],
                                   timestamp=cdxj['timestamp']))
 

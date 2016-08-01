@@ -4,18 +4,18 @@
             <div class="modal-content" style="padding-bottom: 40px">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4><span class="glyphicon glyphicon-button glyphicon-upload"></span>Upload WARC File</h4>
+                    <h4><span class="glyphicon glyphicon-button glyphicon-upload"></span>Upload Web Archive</h4>
                 </div>
 
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-8">
-                            <span>Upload any web archive (WARC) file <b id="upload-rec-title" data-upload-rec-id=""></b> to:</span>
+                        <div class="col-md-12">
+                            <span>Upload any web archive (WARC/ARC) file <b id="upload-rec-title" data-upload-rec-id=""></b> to:</span>
 
                             <div class="input-group">
                                 <input type="text" id="upload-file" name="upload-file-text" class="form-control" name="warcfile" placeholder="Click browse to select a .warc.gz file" required readonly style="background-color: white">
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="choose-upload">Choose</button>
+                                    <button type="button" class="btn btn-default" id="choose-upload"><span class="glyphicon glyphicon-file glyphicon-button"></span>Choose...</button>
                                 </span>
                             </div>
                         </div>
@@ -29,7 +29,7 @@
                                 <div class="upload-percent"></div>
                             </div>
                             <div id="upload-status"></div>
-                            <input type="file" name="upload-file" id="choose-upload-file" style="display: none">
+                            <input type="file" name="upload-file" id="choose-upload-file" style="display: none" accept=".gz,.warc,.arc">
                         </div>
                     </div>
                 </div>

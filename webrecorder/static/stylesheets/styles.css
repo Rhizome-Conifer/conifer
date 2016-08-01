@@ -216,6 +216,11 @@ input.homepage-title {
     width: 100%;
 }
 
+.upload-error {
+    font-weight: bold;
+    color: red;
+}
+
 
 
 /*
