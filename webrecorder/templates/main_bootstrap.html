@@ -34,7 +34,9 @@
     </div>
 
     {% block footer %}
+        {% if curr_mode != 'new' %}
         {% include 'footer.html' %}
+        {% endif %}
     {% endblock %}
 
 {% endblock %}
