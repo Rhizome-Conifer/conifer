@@ -81,14 +81,13 @@ default_coll:
     id: 'default-collection'
     title: 'Default Collection'
     desc: |
-        *Welcome to your first collection!*
+        *This is your first collection!*
 
-        You can rename it, change this description text, and make your collection public right here on this page.
+        Each collection contains _recordings_, which are sessions of your encounters with the web.
 
-        You can also see all your collections and create new ones on the <a href="/{0}">user page</a>.
+        Attached to a recording are _bookmarks_. They serve as pointers into the recorded material.
 
-        You can also create additional collections via the **Create New Collection** option
-        and orgranize your recordings accordingly.
+        Move recordings in between collections and show or hide bookmarks to curate your archive of the dynamic web.
 
 
 # WARC Paths and Names
