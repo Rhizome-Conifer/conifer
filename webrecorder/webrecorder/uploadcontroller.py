@@ -38,9 +38,11 @@ class UploadController(BaseController):
                     force_coll = request.forms.getunicode('force-coll')
                     is_anon = False
                 else:
-                    user = self.manager.get_anon_user()
-                    force_coll = 'temp'
-                    is_anon = True
+                    return {'error_message': 'Sorry, uploads only available for logged-in users'}
+
+                    #user = self.manager.get_anon_user()
+                    #force_coll = 'temp'
+                    #is_anon = True
 
                 print('Force Coll', force_coll)
 
