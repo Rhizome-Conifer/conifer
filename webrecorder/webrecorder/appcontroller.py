@@ -6,8 +6,6 @@ import redis
 
 import os
 
-#from beaker.middleware import SessionMiddleware
-
 from jinja2 import contextfunction
 from urlrewrite.templateview import JinjaEnv
 
@@ -150,6 +148,14 @@ class AppController(BaseController):
         jinja_env.globals['is_out_of_space'] = is_out_of_space
 
     def init_routes(self):
+        @self.bottle_app.route(['//<url:re:.*>'])
+        def empty(url=''):
+            self.redirect('/' + url)
+
+        @self.bottle_app.route(['/<user>//<url:re:.*>'])
+        def empty2(user, url=''):
+            self.redirect('/' + user + '/' + url)
+
         @self.bottle_app.route(['/', '/index.html'])
         @self.jinja2_view('index.html', refresh_cookie=False)
         def home_page():

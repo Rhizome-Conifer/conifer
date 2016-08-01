@@ -116,7 +116,11 @@ class ContentController(BaseController, RewriterApp):
                 type_ = 'replay-coll'
 
             else:
-                request.path_shift(3)
+                try:
+                    request.path_shift(3)
+                except:
+                    self._raise_error(404, 'Empty Recording')
+
                 type_ = 'replay'
 
             return self.handle_routing(wb_url, user, coll, rec=rec_name, type=type_)
