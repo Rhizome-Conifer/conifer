@@ -24,8 +24,10 @@ class UploadController(BaseController):
     def init_routes(self):
         @self.app.post('/_upload')
         def upload_file():
+            stream = None
+            upload = None
+
             try:
-                stream = None
                 upload = request.files.get('upload-file')
 
                 if not upload:

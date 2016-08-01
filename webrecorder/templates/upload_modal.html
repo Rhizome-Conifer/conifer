@@ -4,7 +4,7 @@
             <div class="modal-content" style="padding-bottom: 40px">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4><span class="glyphicon glyphicon-button glyphicon-upload"></span>Upload Web Archive</h4>
+                    <h4><span class="glyphicon glyphicon-button glyphicon-upload"></span>Upload Web Archive to Webrecorder</h4>
                 </div>
 
                 <div class="modal-body">
@@ -15,35 +15,9 @@
                             <div class="top-buffer-sm input-group">
                                 <input type="text" id="upload-file" name="upload-file-text" class="form-control" name="warcfile" placeholder="Click Browse... to select a web archive file" required readonly style="background-color: white">
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="choose-upload"><span class="glyphicon glyphicon-file glyphicon-button"></span>Browse...</button>
+                                    <button type="button" class="btn btn-default" id="choose-upload"><span class="glyphicon glyphicon-file glyphicon-button"></span>Pick File...</button>
                                 </span>
                             </div>
-
-                            {% if not is_anon() and collections %}
-                            <div class="top-buffer">Upload into:
-                                <span class="dropdown">
-                                    <button type="button" name="collection" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <span id="upload-coll" class="dropdown-toggle-label">New Collection</span>&nbsp;<span class="caret"></span>
-                                    </button>
-
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="#" class="upload-collection-select" data-collection-id="">
-                                                <span class="glyphicon glyphicon-plus right-buffer-sm"></span><i>New Collection</i>
-                                            </a>
-                                        </li>
-                                        <li role="separator" class="divider"></li>
-                                        {% for collection in collections %}
-                                        <li>
-                                            <a href="#" class="upload-collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>
-                                        </li>
-                                        {% endfor %}
-                                    </ul>
-                                </span>
-                            </div>
-                            {% endif %}
-
-
                         </div>
                     </div>
 
@@ -59,9 +33,36 @@
                             <input type="hidden" id="force-coll" name="force-coll" value="{{ collection.id if collection else ''}}">
                         </div>
                     </div>
+
+                    <div class="row">   
+                        <div class="col-md-12 top-buffer">
+                            <input id="upload-new" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if not collection else ''}}>Automatically create new collection
+                        </div>
+                    </div>
+
+                    {% if not is_anon() and collections %}
+                    <div class="top-buffer">
+                        <input id="upload-add" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if collection else ''}}>Add to existing collection:
+                        <span class="dropdown">
+                            <button type="button" name="collection" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span id="upload-coll" class="dropdown-toggle-label">New Collection</span>&nbsp;<span class="caret"></span>
+                            </button>
+
+                            <ul class="dropdown-menu">
+                                <li role="separator" class="divider"></li>
+                                {% for collection in collections %}
+                                <li>
+                                    <a href="#" class="upload-collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </span>
+                    </div>
+                    {% endif %}
+
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="upload-cancel btn btn-default" data-dismiss="modal">Cancel Upload</button>
                     <button type="submit" class="btn btn-success btn-ok" id="confirm-upload">Upload</button>
                 </div>
             </div>

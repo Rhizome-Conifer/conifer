@@ -24,10 +24,20 @@ $(function() {
     var percent = $('.upload-percent');
     var status = $('#upload-status');
     var uploader = $(".upload-progress");
+
+    var currXhr = undefined;
       
     $('#upload-form').ajaxForm({
         beforeSerialize: function() {
-            $("#force-coll").val($("#upload-coll").data("collection-id"));
+            var force_coll;
+
+            if ($("#upload-add").is(":checked")) {
+                force_coll = $("#upload-coll").data("collection-id");
+            } else {
+                force_coll = "";
+            }
+
+            $("#force-coll").val(force_coll);
         },
 
         beforeSend: function(xhr, settings) {
@@ -37,9 +47,15 @@ $(function() {
             bar.width(percentVal)
             percent.html(percentVal);
 
+            currXhr = xhr;
+
             $("body").css("cursor", "wait");
 
             $("#upload-modal button").prop("disabled", true);
+
+            $("#upload-modal button.upload-cancel").prop("disabled", false);
+            $("#upload-modal button.upload-cancel").text("Cancel");
+
             uploader.show();
             status.show();
             status.removeClass("upload-error");
@@ -51,6 +67,7 @@ $(function() {
             percent.html(percentVal);
             if (percentVal == "100%") {
                 status.text("Processing...");
+                $("#upload-modal button.upload-cancel").prop("disabled", true);
             }
         },
 
@@ -79,6 +96,7 @@ $(function() {
 
             status.text(message);
             status.addClass("upload-error");
+            currXhr = undefined;
         }
     });
 
@@ -96,6 +114,11 @@ $(function() {
 
         $('#upload-coll').text($(this).text());
         $('#upload-coll').data('collection-id', currColl);
+
+        if (!$("#upload-add").is(":checked")) {
+            $("#upload-add").click();
+        }
+
     });
 
 
@@ -104,6 +127,12 @@ $(function() {
         $("a.upload-collection-select[data-collection-id='" + initialColl + "']").click();
     }
 
+    $(".upload-cancel").on('click', function() {
+        if (currXhr) {
+            console.log("ABORTED");
+            currXhr.abort();
+        }
+    });
 
 });
 
