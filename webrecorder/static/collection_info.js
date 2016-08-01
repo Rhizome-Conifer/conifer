@@ -262,6 +262,8 @@ var RecordingSelector = (function() {
 
         $("#confirm-move").on('click', doMove);
 
+        $("#num-recs").text($(".card").length)
+
         updateRecordingFilterList(undefined, false);
     }
 

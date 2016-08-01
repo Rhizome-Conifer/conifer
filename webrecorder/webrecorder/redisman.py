@@ -680,6 +680,9 @@ class RecManagerMixin(object):
 
         pagelist = [json.loads(x.decode('utf-8')) for x in pagelist]
 
+        if not self.can_write_coll(user, coll):
+            pagelist = [page for page in pagelist if page.get('hidden') != '1']
+
         return pagelist
 
     def count_pages(self, user, coll, rec):
@@ -719,6 +722,9 @@ class RecManagerMixin(object):
                 page = json.loads(page.decode('utf-8'))
                 page['recording'] = rec
                 pagelist.append(page)
+
+        if not self.can_write_coll(user, coll):
+            pagelist = [page for page in pagelist if page.get('hidden') != '1']
 
         return pagelist
 

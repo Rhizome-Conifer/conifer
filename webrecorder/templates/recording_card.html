@@ -3,6 +3,7 @@
 {% set bookmark_plural = "bookmark" if bookmark_count == 1 else "bookmarks" %}
 {% set editing_id = "recording-title-" + recording.id %}
 
+{% if can_write() or bookmark_count > 0 %}
 <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
     <div class="checkbox-column">
         <div class="btn btn-xs filter-label icon-button">
@@ -58,4 +59,4 @@
         {% include 'confirm_delete_recording_modal.html' %}
     </div>
 </div>
-
+{% endif %}

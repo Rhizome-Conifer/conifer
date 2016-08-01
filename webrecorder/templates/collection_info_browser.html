@@ -16,7 +16,7 @@
         <div class="recording-selector">
             <div id="all-card" class="card-top">
                 <div class="">
-                    <b>Recordings</b>&nbsp; &nbsp;<span id="sel-info"></span>
+                    <b><span id="num-recs"></span>&nbsp;Recordings</b>&nbsp; &nbsp;<span id="sel-info"></span>
                 </div>
                 <div class="recording-stats text-left top-buffer-md right-buffer-sm">
                     <span id="sel-bookmarks" class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }}</span> bookmarks&nbsp; &nbsp;
@@ -28,7 +28,7 @@
             </div>
 
             {% set oos = is_out_of_space() %}
-            {% for recording in collection.recordings %}
+            {% for recording in collection.recordings | sort(attribute='updated_at', reverse=True) %}
                 {% include 'recording_card.html' %}
             {% endfor %}
         </div>
