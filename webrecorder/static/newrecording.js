@@ -131,7 +131,7 @@ $(function() {
     var collSelect = undefined;
 
     if (currColl) {
-        collSelect = $(".dropdown a[data-collection-id='" + currColl + "']");
+        collSelect = $(".dropdown a.collection-select[data-collection-id='" + currColl + "']");
     }
 
     if (!collSelect || !collSelect.length) {

@@ -22,7 +22,7 @@ class UserController(BaseController):
 
             result = {'user': user,
                       'user_info': self.manager.get_user_info(user),
-                      'colls': self.manager.get_collections(user),
+                      'collections': self.manager.get_collections(user),
                      }
 
             if not result['user_info'].get('desc'):

@@ -10,14 +10,40 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-12">
-                            <span>Upload any web archive (WARC/ARC) file <b id="upload-rec-title" data-upload-rec-id=""></b> to:</span>
+                            <span>WARC/ARC file to upload: </span>
 
-                            <div class="input-group">
-                                <input type="text" id="upload-file" name="upload-file-text" class="form-control" name="warcfile" placeholder="Click browse to select a .warc.gz file" required readonly style="background-color: white">
+                            <div class="top-buffer-sm input-group">
+                                <input type="text" id="upload-file" name="upload-file-text" class="form-control" name="warcfile" placeholder="Click Browse... to select a web archive file" required readonly style="background-color: white">
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default" id="choose-upload"><span class="glyphicon glyphicon-file glyphicon-button"></span>Choose...</button>
+                                    <button type="button" class="btn btn-default" id="choose-upload"><span class="glyphicon glyphicon-file glyphicon-button"></span>Browse...</button>
                                 </span>
                             </div>
+
+                            {% if not is_anon() and collections %}
+                            <div class="top-buffer">Upload into:
+                                <span class="dropdown">
+                                    <button type="button" name="collection" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span id="upload-coll" class="dropdown-toggle-label">New Collection</span>&nbsp;<span class="caret"></span>
+                                    </button>
+
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a href="#" class="upload-collection-select" data-collection-id="">
+                                                <span class="glyphicon glyphicon-plus right-buffer-sm"></span><i>New Collection</i>
+                                            </a>
+                                        </li>
+                                        <li role="separator" class="divider"></li>
+                                        {% for collection in collections %}
+                                        <li>
+                                            <a href="#" class="upload-collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </span>
+                            </div>
+                            {% endif %}
+
+
                         </div>
                     </div>
 
@@ -30,6 +56,7 @@
                             </div>
                             <div id="upload-status"></div>
                             <input type="file" name="upload-file" id="choose-upload-file" style="display: none" accept=".gz,.warc,.arc">
+                            <input type="hidden" id="force-coll" name="force-coll" value="{{ collection.id if collection else ''}}">
                         </div>
                     </div>
                 </div>
@@ -44,19 +71,4 @@
 
 
 
-{#
-<span class="dropdown">
-    <button type="button" name="collection" class="btn btn-default dropdown-toggle dropdown-toggle-collection" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <span id="upload-coll" data-upload-to="" class="dropdown-toggle-label">Collection </span>&nbsp;<span class="caret"></span>
-    </button>
-
-    <ul class="dropdown-menu">
-        {% for collection in collections %}
-        <li>
-            <a href="#" class="collection-select" data-collection-title="{{ collection.title }}">{{ collection.title }}</a>
-        </li>
-        {% endfor %}
-    </ul>
-</span>
-#}
 

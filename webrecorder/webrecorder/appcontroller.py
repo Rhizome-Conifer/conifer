@@ -152,10 +152,10 @@ class AppController(BaseController):
         def home_page():
             resp = {'is_home': '1'}
 
-            sesh = self.get_session()
+            curr_user = self.manager.get_curr_user()
 
-            if self.manager.get_curr_user():
-                coll_list = self.manager.get_collections(self.manager.get_curr_user())
+            if curr_user:
+                coll_list = self.manager.get_collections(curr_user)
 
                 resp['collections'] = coll_list
                 resp['num_collections'] = len(coll_list)

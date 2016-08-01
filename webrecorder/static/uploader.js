@@ -26,6 +26,10 @@ $(function() {
     var uploader = $(".upload-progress");
       
     $('#upload-form').ajaxForm({
+        beforeSerialize: function() {
+            $("#force-coll").val($("#upload-coll").data("collection-id"));
+        },
+
         beforeSend: function(xhr, settings) {
             status.text("Uploading...");
 
@@ -59,22 +63,46 @@ $(function() {
         complete: function(xhr) {
             $("#upload-modal button").prop("disabled", false);
             $("body").css("cursor", "inherit");
+
             data = xhr.responseJSON;
-            if (data && data.upload) {
-                window.location.href = window.location.origin + "/" + curr_user + "/" + data.upload;
-            } else if (data.error_message) {
-                status.text(data.error_message);
-                status.addClass("upload-error");
+
+            if (data && data.uploaded && data.user && data.coll) {
+                RouteTo.collectionInfo(data.user, data.coll);
+                return;
             }
+
+            var message = "Upload Status Missing";
+
+            if (data.error_message) {
+                message = data.error_message;
+            }
+
+            status.text(message);
+            status.addClass("upload-error");
         }
     });
 
     $("#upload-modal").on('show.bs.modal', function() {
         $("#upload-modal button[type='button']").prop("disabled", false);
-        $("#upload-modal button[type='submit']").prop("disabled", true);
+        //$("#upload-modal button[type='submit']").prop("disabled", true);
         uploader.hide();
         status.hide();
     });
+
+    $('.upload-collection-select').on('click', function(event) {
+        event.preventDefault();
+
+        var currColl = $(this).data('collection-id');
+
+        $('#upload-coll').text($(this).text());
+        $('#upload-coll').data('collection-id', currColl);
+    });
+
+
+    var initialColl = $("#force-coll").val();
+    if (initialColl) {
+        $("a.upload-collection-select[data-collection-id='" + initialColl + "']").click();
+    }
 
 
 });

@@ -4,6 +4,12 @@
         <div>
             <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
         </div>
+        <div>
+        <a class="top-buffer-sm btn btn-success btn-sm" href="#" data-toggle="modal" data-target="#upload-modal" role="button">
+            <span class="glyphicon glyphicon-upload glyphicon-button"></span>Upload...
+        </a>
+        </div>
+
         {% endif %}
 
         <div class="recording-selector">

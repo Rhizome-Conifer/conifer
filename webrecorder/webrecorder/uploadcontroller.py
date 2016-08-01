@@ -24,14 +24,37 @@ class UploadController(BaseController):
     def init_routes(self):
         @self.app.post('/_upload')
         def upload_file():
-            user = self.get_session().curr_user
-
-            upload = request.files.get('upload-file')
-            if not upload:
-                return {'error_message': 'No File Specified'}
-
             try:
+                stream = None
+                upload = request.files.get('upload-file')
+
+                if not upload:
+                    return {'error_message': 'No File Specified'}
+
+                curr_user = self.manager.get_curr_user()
+
+                if curr_user:
+                    user = curr_user
+                    force_coll = request.forms.getunicode('force-coll')
+                    is_anon = False
+                else:
+                    user = self.manager.get_anon_user()
+                    force_coll = 'temp'
+                    is_anon = True
+
+                print('Force Coll', force_coll)
+
+                if force_coll and not self.manager.has_collection(user, force_coll):
+                    if is_anon:
+                        self.manager.create_collection(user, force_coll, 'Temporary Collection')
+
+                    else:
+                        status = 'Collection {0} not found'.format(force_coll)
+                        return {'error_message': status}
+
+
                 stream = SpooledTemporaryFile(max_size=BLOCK_SIZE)
+
                 upload.save(stream)
 
                 size_rem = self.manager.get_size_remaining(user)
@@ -41,16 +64,21 @@ class UploadController(BaseController):
 
                 filename = upload.filename
 
-                new_coll, error_message = self.handle_upload(stream, filename, user)
+                new_coll, error_message = self.handle_upload(stream, filename, user, force_coll)
 
                 if new_coll:
-                    msg = 'Uploaded file <b>{1}</b> into collection <b>{0}</b>'.format(new_coll, filename)
+                    msg = 'Uploaded file <b>{1}</b> into collection <b>{0}</b>'.format(new_coll['title'], filename)
 
                     self.flash_message(msg, 'success')
 
-                    return {'upload': new_coll}
+                    print('SUCCESS?')
+
+                    return {'uploaded': 'true',
+                            'user': user,
+                            'coll': new_coll['id']}
 
                 else:
+                    print(error_message)
                     return {'error_message': error_message}
 
             except Exception as e:
@@ -58,11 +86,14 @@ class UploadController(BaseController):
                 return {'error_message': str(e)}
 
             finally:
-                upload.file.close()
-                stream.close()
+                if upload:
+                    upload.file.close()
+
+                if stream:
+                    stream.close()
 
 
-    def handle_upload(self, stream, filename, user):
+    def handle_upload(self, stream, filename, user, force_coll):
         stream.seek(0)
         total = 0
 
@@ -70,7 +101,8 @@ class UploadController(BaseController):
             infos = self.parse_uploaded(stream)
             total = len(infos)
             #status = 'Processing {0} recordings'.format(total)
-        except Exception:
+        except:
+            traceback.print_exc()
             return (None, 'Invalid Web Archive (Parsing Error)')
 
         stream.seek(0)
@@ -80,25 +112,29 @@ class UploadController(BaseController):
         first_coll = None
 
         try:
-            for coll, rec in self.process_upload(user, infos, stream, filename):
+            for coll, rec in self.process_upload(user, force_coll, infos, stream, filename):
                 count += 1
                 #status = 'Processing {0} of {1}'.format(count, total)
                 if not first_coll:
                     first_coll = coll
 
         except:
+            traceback.print_exc()
             return (None, 'Processing Error')
 
         return (first_coll, None)
 
-    def process_upload(self, user, infos, stream, filename):
+    def process_upload(self, user, force_coll, infos, stream, filename):
         collection = None
         recording = None
+
+        if force_coll:
+            collection = self.manager.get_collection(user, force_coll)
 
         for info in infos:
             type = info.get('type')
 
-            if type == 'collection':
+            if type == 'collection' and not force_coll:
                 collection = info
                 collection['id'] = self.sanitize_title(collection['title'])
                 actual_collection = self.manager.create_collection(user,
@@ -125,7 +161,7 @@ class UploadController(BaseController):
                 recording['id'] = actual_recording['id']
                 recording['title'] = actual_recording['title']
 
-                yield collection['id'], recording['id']
+                yield collection, recording
 
                 self.do_upload(stream,
                                user,
@@ -193,8 +229,6 @@ class UploadController(BaseController):
         r = requests.put(upload_url,
                          headers=headers,
                          data=stream)
-
-        print(r.json())
 
     def default_collection(self, user, filename):
         desc = 'This collection was automatically created from upload of *{0}*'.format(filename)
