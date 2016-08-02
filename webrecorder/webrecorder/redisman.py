@@ -570,6 +570,25 @@ class RecManagerMixin(object):
 
         return self.get_recording(user, coll, rec)
 
+    def set_recording_timestamps(self, user, coll, rec,
+                                 created_at, updated_at):
+
+        self.assert_can_write(user, coll)
+
+        key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+
+        with redis.utils.pipeline(self.redis) as pi:
+            if not pi.exists(key):
+                return False
+
+            if created_at:
+                pi.hset(key, 'created_at', created_at)
+
+            if updated_at:
+                pi.hset(key, 'updated_at', updated_at)
+
+        return True
+
     def get_recordings(self, user, coll):
         self.assert_can_read(user, coll)
 

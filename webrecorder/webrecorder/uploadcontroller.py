@@ -174,6 +174,12 @@ class UploadController(BaseController):
                                recording['offset'],
                                recording['length'])
 
+                self.manager.set_recording_timestamps(user,
+                                                      collection['id'],
+                                                      recording['id'],
+                                                      recording.get('created_at'),
+                                                      recording.get('updated_at'))
+
                 pages = recording.get('pages')
                 if pages is None:
                     pages = self.detect_pages(user, collection['id'], recording['id'])

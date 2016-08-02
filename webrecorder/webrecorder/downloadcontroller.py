@@ -15,6 +15,8 @@ import json
 
 # ============================================================================
 class DownloadController(BaseController):
+    COPY_FIELDS = ['title', 'desc', 'size', 'updated_at', 'created_at']
+
     def __init__(self, app, jinja_env, manager, config):
         super(DownloadController, self).__init__(app, jinja_env, manager, config)
         self.paths = config['url_templates']
@@ -32,7 +34,11 @@ class DownloadController(BaseController):
 
             return self.handle_download(user, coll, '*')
 
-    def create_warcinfo(self, creator, title, metadata, filename):
+    def create_warcinfo(self, creator, title, metadata, source, filename):
+        for name, value in iteritems(source):
+            if name in self.COPY_FIELDS:
+                metadata[name] = value
+
         info = OrderedDict([
                 ('software', 'Webrecorder Platform v2.5'),
                 ('format', 'WARC File Format 1.0'),
@@ -46,24 +52,21 @@ class DownloadController(BaseController):
         return wi_writer.get_buffer()
 
     def create_coll_warcinfo(self, user, collection, filename=''):
-        metadata = {'desc': collection['desc'],
-                    'title': collection['title'],
-                    'type': 'collection',
-                   }
+        metadata = {}
+        metadata['type'] = 'collection'
 
         title = quote(collection['title'])
-        return self.create_warcinfo(user, title, metadata, filename)
+        return self.create_warcinfo(user, title, metadata, collection, filename)
 
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
-        metadata = {'pages': self.manager.list_pages(user,
-                                                     collection['id'],
-                                                     recording['id']),
-                    'title': recording['title'],
-                    'type': 'recording',
-                   }
+        metadata = {}
+        metadata['pages'] = self.manager.list_pages(user,
+                                                    collection['id'],
+                                                    recording['id'])
+        metadata['type'] = 'recording'
 
         title = quote(collection['title']) + '/' + quote(recording['title'])
-        return self.create_warcinfo(user, title, metadata, filename)
+        return self.create_warcinfo(user, title, metadata, recording, filename)
 
     def handle_download(self, user, coll, rec):
         collection = self.manager.get_collection(user, coll, rec)
