@@ -34,13 +34,13 @@
                         </div>
                     </div>
 
+                    {% if not is_anon() and collections %}
                     <div class="row">   
                         <div class="col-md-12 top-buffer">
                             <input id="upload-new" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if not collection else ''}}><label for="upload-new">Automatically create new collection</label>
                         </div>
                     </div>
 
-                    {% if not is_anon() and collections %}
                     <div class="top-buffer">
                         <input id="upload-add" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if collection else ''}}><label for="upload-add">Add to existing collection:</label>
                         <span class="dropdown">
