@@ -86,10 +86,17 @@ $(function() {
     $('#create-coll').on('submit', function(event) {
         event.preventDefault();
 
+        $("#create-coll-error").text("");
+
         var title = $("#create-coll #title").val();
         var is_public = $("#create-coll #is_public").prop("checked");
 
         var success = function(data) {
+            if (data.error_message) {
+                $("#create-coll-error").text(data.error_message);
+                return;
+            }
+
             if (!data.collection || !data.collection.id) {
                 return;
             }

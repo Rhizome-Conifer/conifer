@@ -218,7 +218,7 @@ input.homepage-title {
 
 .upload-error {
     font-weight: bold;
-    color: red;
+    color: darkred;
 }
 
 input.upload-choice {

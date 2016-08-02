@@ -20,6 +20,9 @@ class CollsController(BaseController):
 
             coll = self.sanitize_title(title)
 
+            if not coll:
+                return {'error_message': 'Invalid Collection Name'}
+
             is_public = self.post_get('public') == 'on'
 
             if self.manager.is_anon(user) and coll != 'temp':
@@ -129,6 +132,9 @@ class CollsController(BaseController):
             user = self.manager.get_curr_user()
 
             try:
+                if not coll:
+                    raise ValidationException('Invalid Collection Name')
+
                 #self.manager.add_collection(user, coll_name, title, access)
                 collection = self.manager.create_collection(user, coll, title,
                                                             desc='', public=is_public)

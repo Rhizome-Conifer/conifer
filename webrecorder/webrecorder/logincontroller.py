@@ -64,7 +64,12 @@ class LoginController(BaseController):
             username = self.post_get('username')
             password = self.post_get('password')
 
-            move_info = self.get_move_temp_info()
+            try:
+                move_info = self.get_move_temp_info()
+            except ValidationException as ve:
+                self.flash_message('Login Failed: ' + str(ve))
+                self.redirect('/')
+                return
 
             # if a collection is being moved, auth user
             # and then check for available space
@@ -174,7 +179,12 @@ class LoginController(BaseController):
                 self.redirect(redir_to)
                 return
 
-            move_info = self.get_move_temp_info()
+            try:
+                move_info = self.get_move_temp_info()
+            except ValidationException as ve:
+                self.flash_message('Registration Failed: ' + str(ve))
+                self.redirect('/')
+                return
 
             if self.invites_enabled:
                 try:
@@ -374,6 +384,9 @@ class LoginController(BaseController):
         if move_temp == '1':
             to_coll_title = self.post_get('to-coll')
             to_coll = self.sanitize_title(to_coll_title)
+
+            if not to_coll:
+                raise ValidationException('Invalid new collection name, please pick a different name')
 
             sesh = self.get_session()
 
