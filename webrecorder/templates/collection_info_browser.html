@@ -3,14 +3,11 @@
         {% if can_write() %}
         <div>
             <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
+            {% if not is_anon() %}
+            <a class="btn btn-success btn-sm upload-coll-button" href="#" data-toggle="modal" title="Upload to Collection" data-target="#upload-modal" data-backdrop="static" data-keyboard="false" role="button">
+                <span class="glyphicon glyphicon-upload glyphicon-button"></span></a>
+            {% endif %}
         </div>
-        {% if not is_anon() %}
-        <div>
-            <a class="top-buffer-sm btn btn-success btn-sm" href="#" data-toggle="modal" data-target="#upload-modal" data-backdrop="static" data-keyboard="false" role="button">
-                <span class="glyphicon glyphicon-upload glyphicon-button"></span>Upload...
-            </a>
-        </div>
-        {% endif %}
         {% endif %}
 
         <div class="recording-selector">

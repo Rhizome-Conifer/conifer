@@ -45,8 +45,15 @@ var UrlManager = (function() {
     };
 
     var getRecordingIdsFromUrl = function() {
-        var url = decodeURI(document.location.href);
-        return url.substring(url.lastIndexOf('/') + 1).split(',');
+        //var url = decodeURI(document.location.href);
+        var url = decodeURI(document.location.pathname);
+        var parts = url.split("/");
+
+        if (parts.length < 4) {
+            return [];
+        }
+
+        return parts[3].split(",");
     }
 
     return {

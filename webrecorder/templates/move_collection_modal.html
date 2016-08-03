@@ -14,7 +14,7 @@
                         </button>
 
                         <ul class="dropdown-menu">
-                            {% for collection in collections %}
+                            {% for collection in collections | sort(attribute='title') %}
                             <li>
                                 <a href="#" class="collection-select" data-collection-title="{{ collection.title }}">{{ collection.title }}</a>
                             </li>
