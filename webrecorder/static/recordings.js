@@ -163,6 +163,9 @@ var EventHandlers = (function() {
                 $("#to-coll").removeAttr("required");
             }
         });
+
+        // Auto select text-boxes on click
+        $("input[type='text']").click(function() { $(this).select(); } );
     }
 
     return {
