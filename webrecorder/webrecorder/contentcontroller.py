@@ -266,6 +266,8 @@ class ContentController(BaseController, RewriterApp):
         try:
             resp = self.render_content(wb_url, kwargs, request.environ)
 
+            self._filter_headers(type, resp.status_headers)
+
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,
                                 headers=resp.status_headers.headers)
@@ -286,6 +288,15 @@ class ContentController(BaseController, RewriterApp):
                        }
 
             return handle_error(ue.status_code, type, ue.url, ue.msg)
+
+    def _filter_headers(self, type, status_headers):
+        if type in ('replay', 'replay-coll'):
+            new_headers = []
+            for name, value in status_headers.headers:
+                if name.lower() != 'set-cookie':
+                    new_headers.append((name, value))
+
+            status_headers.headers = new_headers
 
     def _redir_if_sanitized(self, id, title, wb_url):
         if id != title:
