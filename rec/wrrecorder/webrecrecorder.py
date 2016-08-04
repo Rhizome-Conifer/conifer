@@ -306,31 +306,38 @@ class WebRecRecorder(object):
     # Delete Handling ===========
 
     def delete(self):
+        try:
+            return self.delete_actual()
+        except:
+            import traceback
+            traceback.print_exc()
+
+    def delete_actual(self):
         user = request.query.getunicode('user', '')
         coll = request.query.getunicode('coll', '*')
         rec = request.query.getunicode('rec', '*')
         type = request.query.getunicode('type')
 
-        delete_list = []
+        local_delete_list = []
+        remote_delete_list = []
 
         for key, n, url in self._iter_all_warcs(user, coll, rec):
-            if not url.startswith(self.full_warc_prefix):
-                continue
-
-            filename = url[len(self.full_warc_prefix):]
-            delete_list.append(filename)
+            if url.startswith(self.full_warc_prefix):
+                filename = url[len(self.full_warc_prefix):]
+                local_delete_list.append(filename)
+            else:
+                remote_delete_list.append(url)
 
         message = {}
 
-        if delete_list:
-            message = dict(delete_list=delete_list)
+        if local_delete_list:
+            message = dict(delete_list=local_delete_list)
 
         if type == 'user':
             message['delete_user'] = user
 
         if not self.queue_message('delete', message):
             return {'error_message': 'no local clients'}
-
 
         try:
             self._delete_redis_keys(type, user, coll, rec)
@@ -339,10 +346,20 @@ class WebRecRecorder(object):
             traceback.print_exc()
             return {'error_message': str(e)}
 
-        if self.storage_committer:
-            storage = self.storage_committer.get_storage(user, coll, rec)
-            if not user.startswith(self.temp_prefix) and storage and not storage.delete(user, coll, rec, type):
-                return {'error_message': 'remote delete failed'}
+        if not self.storage_committer:
+            return {}
+
+        storage = self.storage_committer.get_storage(user, coll, rec)
+        if not storage:
+            return {}
+
+        if type == 'user':
+            res = storage.delete_user(user)
+        elif remote_delete_list:
+            res = storage.delete(remote_delete_list)
+
+        if not res:
+            return {'error_message': 'remote delete failed'}
 
         return {}
 

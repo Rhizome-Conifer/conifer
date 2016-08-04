@@ -14,7 +14,7 @@ class StorageCommitter(object):
 
         self.record_root_dir = os.environ['RECORD_ROOT']
 
-        self.glob_pattern = self.record_root_dir + '*/*/*/*.warc.gz'
+        self.glob_pattern = self.record_root_dir + '*/*.warc.gz'
 
         self.warc_key_templ = config['warc_key_templ']
         self.warc_upload_wait_templ = config['warc_upload_wait_templ']
@@ -59,10 +59,13 @@ class StorageCommitter(object):
         return user.startswith(self.temp_prefix)
 
     def __call__(self):
+        print('Checking for new warcs in {0}'.format(self.record_root_dir))
+
         if not os.path.isdir(self.record_root_dir):
             return
 
-        print('Checking for new warcs in {0}'.format(self.record_root_dir))
+        warc_map = None
+        curr_user = None
 
         for full_filename in glob.glob(self.glob_pattern):
             if self.is_locked(full_filename):
@@ -72,13 +75,30 @@ class StorageCommitter(object):
 
             parts = relpath.split('/')
 
-            if len(parts) != 4:
+            if len(parts) != 2:
                 print('Invalid file match: ' + relpath)
                 continue
 
-            user, coll, rec, warcname = parts
+            #user, coll, rec, warcname = parts
+            user, warcname = parts
 
             if self.is_temp(user):
+                continue
+
+            coll = None
+            rec = None
+
+            if curr_user != user or warc_map is None:
+                warc_map = self.get_warcs_for_user(user)
+                curr_user = user
+
+                #coll, rec = self.find_coll_rec_for_warc(user, warcname)
+            res = warc_map.get(warcname)
+            if res:
+                coll, rec = res
+
+            if not coll or not rec:
+                #print('Orphan WARC:', warcname, user, coll, rec)
                 continue
 
             storage = self.get_storage(user, coll, rec)
@@ -100,6 +120,32 @@ class StorageCommitter(object):
                 self.commit_uploaded(user, coll, rec, warcname, full_filename, remote_url)
             else:
                 print('Not yet available: {0}'.format(full_filename))
+
+    def get_warcs_for_user(self, user):
+        key_templ = self.warc_key_templ.format(user=user, coll='*', rec='*')
+        allwarcs = {}
+
+        for key in self.redis.scan_iter(key_templ):
+            parts = key.decode('utf-8').split(':')
+            coll = parts[2]
+            rec = parts[3]
+
+            warcmap = self.redis.hkeys(key)
+            for warc in warcmap:
+                allwarcs[warc.decode('utf-8')] = (coll, rec)
+
+        return allwarcs
+
+    def find_coll_rec_for_warc(self, user, warcname):
+        key_templ = self.warc_key_templ.format(user=user, coll='*', rec='*')
+        for key in self.redis.scan_iter(key_templ):
+            if self.redis.hget(key, warcname):
+                parts = key.decode('utf-8').split(':')
+                coll = parts[2]
+                rec = parts[3]
+                return coll, rec
+
+        return None, None
 
     def commit_uploaded(self, user, coll, rec, warcname, full_filename, remote_url):
         # update path index to point to remote url!

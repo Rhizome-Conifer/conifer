@@ -68,30 +68,21 @@ class S3Storage(object):
 
         return True
 
-    def delete(self, user, coll, rec, type):
-        split_str = '{' + type + '}'
+    def delete(self, delete_list):
+        path_list = []
 
-        # Determine path to delete based on {user}, {coll}, {rec} location
-        del_paths = self.remote_path_templ.split(split_str)
-        if len(del_paths) != 2:
-            return True
+        for remote_file in delete_list:
+            if not remote_file.startswith('s3://'):
+                print('Invalid S3 Filename: ' + remote_file)
+                continue
 
-        del_paths = del_paths[0] + split_str + '/'
+            bucket, path = self._split_bucket_path(remote_file)
+            print('Deleting Remote', remote_file)
 
-        remote_path = del_paths.format(user=user,
-                                       coll=coll,
-                                       rec=rec)
-
-        print('Deleting Remote', self._get_s3_url(remote_path))
-
-        delete_list = []
+            path_list.append(path)
 
         try:
-            for key in self.bucket.list(prefix=remote_path):
-                delete_list.append(key)
-                print('Deleting ' + key.name)
-
-            self.bucket.delete_keys(delete_list)
+            self.bucket.delete_keys(path_list)
 
         except Exception as e:
             print(e)
@@ -99,4 +90,22 @@ class S3Storage(object):
 
         return True
 
+    def delete_user(self, user):
+        remote_path = self.remote_path_templ.format(user=user,
+                                                    filename='')
+
+        path_list = []
+
+        for key in self.bucket.list(prefix=remote_path):
+            path_list.append(key)
+            print('Deleting ' + key.name)
+
+        try:
+            self.bucket.delete_keys(path_list)
+
+        except Exception as e:
+            print(e)
+            return False
+
+        return True
 
