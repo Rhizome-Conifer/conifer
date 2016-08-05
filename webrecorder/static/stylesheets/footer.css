@@ -20,3 +20,9 @@ footer {
     line-height: 56px;
     padding-bottom: 24px;
 }
+
+.footer-label {
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 2.0em;
+}
