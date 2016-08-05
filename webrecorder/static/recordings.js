@@ -156,12 +156,12 @@ var EventHandlers = (function() {
             event.preventDefault();
 
             if ($(this).prop("checked")) {
-                $("#to-coll").parent().show();
-                $("#to-coll").attr("required", "true");
-                $("#to-coll").click()
+                $(".to-coll").parent().show();
+                $(".to-coll").attr("required", "true");
+                $(".to-coll").click()
             } else {
-                $("#to-coll").parent().hide();
-                $("#to-coll").removeAttr("required");
+                $(".to-coll").parent().hide();
+                $(".to-coll").removeAttr("required");
             }
         });
 
