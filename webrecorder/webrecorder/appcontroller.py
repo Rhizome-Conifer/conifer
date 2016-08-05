@@ -176,6 +176,11 @@ class AppController(BaseController):
 
             return resp
 
+        @self.bottle_app.route('/_policies')
+        @self.jinja2_view('policies.html')
+        def policies():
+            return {}
+
         @self.bottle_app.route('/<:re:.*>', method='ANY')
         def fallthrough():
             self._check_refer_redirect()
