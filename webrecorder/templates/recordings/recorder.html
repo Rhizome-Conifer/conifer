@@ -1,4 +1,4 @@
-{% if curr_mode %}
+{% if curr_mode and curr_mode != 'live' %}
 <div class="col-md-11">
     <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url">
         <div class="banner-status">

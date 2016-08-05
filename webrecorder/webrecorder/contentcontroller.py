@@ -90,6 +90,12 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user='$live', coll='temp', rec='', type='live')
 
+        # EMDED
+        @self.app.route('/_embed/<user>/<coll>/<wb_url:path>', method='ANY')
+        def embed_replay(user, coll, wb_url):
+            request.path_shift(1)
+            return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True)
+
         # LOGGED IN ROUTES
         @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
         def logged_in_record(user, coll, rec, wb_url):
@@ -105,25 +111,7 @@ class ContentController(BaseController, RewriterApp):
 
         @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
         def logged_in_replay(user, coll, wb_url):
-            rec_name = '*'
-
-            # recording replay
-            if not self.WB_URL_RX.match(wb_url) and '/' in wb_url:
-                rec_name, wb_url = wb_url.split('/', 1)
-
-            if rec_name == '*':
-                request.path_shift(2)
-                type_ = 'replay-coll'
-
-            else:
-                try:
-                    request.path_shift(3)
-                except:
-                    self._raise_error(404, 'Empty Recording')
-
-                type_ = 'replay'
-
-            return self.handle_routing(wb_url, user, coll, rec=rec_name, type=type_)
+            return self.do_replay_coll_or_rec(user, coll, wb_url)
 
         @self.app.route('/_snapshot', method='PUT')
         def snapshot():
@@ -213,8 +201,33 @@ class ContentController(BaseController, RewriterApp):
 
             return {'success': 'true'}
 
+    def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
+        rec_name = '*'
 
-    def handle_routing(self, wb_url, user, coll, rec, type):
+        # recording replay
+        if not self.WB_URL_RX.match(wb_url) and '/' in wb_url:
+            rec_name, wb_url = wb_url.split('/', 1)
+
+        print('REC NAME', rec_name, wb_url)
+
+        if rec_name == '*':
+            request.path_shift(2)
+            type_ = 'replay-coll'
+
+        else:
+            try:
+                request.path_shift(3)
+            except:
+                self._raise_error(404, 'Empty Recording')
+
+            type_ = 'replay'
+
+        return self.handle_routing(wb_url, user, coll,
+                                   rec=rec_name,
+                                   type=type_,
+                                   is_embed=is_embed)
+
+    def handle_routing(self, wb_url, user, coll, rec, type, is_embed=False):
         wb_url = self.add_query(wb_url)
 
         not_found = False
@@ -249,9 +262,9 @@ class ContentController(BaseController, RewriterApp):
             if type == 'replay':
                 raise HTTPError(404, 'No Such Recording')
 
-        return self.handle_load_content(wb_url, user, coll, rec, type)
+        return self.handle_load_content(wb_url, user, coll, rec, type, is_embed)
 
-    def handle_load_content(self, wb_url, user, coll, rec, type):
+    def handle_load_content(self, wb_url, user, coll, rec, type, is_embed=False):
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'])
 
         wb_url = self._context_massage(wb_url)
@@ -261,7 +274,8 @@ class ContentController(BaseController, RewriterApp):
                       rec_orig=rec,
                       coll=quote(coll),
                       rec=quote(rec, safe='/*'),
-                      type=type)
+                      type=type,
+                      is_embed=is_embed)
 
         try:
             resp = self.render_content(wb_url, kwargs, request.environ)
@@ -367,7 +381,8 @@ class ContentController(BaseController, RewriterApp):
     def get_top_frame_params(self, wb_url, kwargs):
         type = kwargs['type']
         if type == 'live':
-            return {}
+            return {'curr_mode': type,
+                    'is_embed': kwargs.get('is_embed')}
 
         # refresh cookie expiration,
         # disable until can guarantee cookie is not changed!
@@ -385,7 +400,8 @@ class ContentController(BaseController, RewriterApp):
                 'rec': kwargs['rec'],
                 'rec_orig': kwargs['rec_orig'],
                 'coll_title': info.get('coll_title', ''),
-                'rec_title': info.get('rec_title', '')
+                'rec_title': info.get('rec_title', ''),
+                'is_embed': kwargs.get('is_embed'),
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs):
