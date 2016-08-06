@@ -11,22 +11,22 @@
             <form method="post" action="/_reportissues" id="report-form">
                 <div class="modal-body">
                     <div>
-                        <input type="checkbox" name="loading" value="true"/>&nbsp;Page not loading
+                        <input type="checkbox" name="loading" id="err_loading" value="true"/>&nbsp;<label for="err_loading">Page not loading</label>
                     </div>
                     <div>
-                        <input type="checkbox" name="missing" value="true"/>&nbsp;Missing content (Images, Video)
+                        <input type="checkbox" name="missing" id="err_missing" value="true"/>&nbsp;<label for="err_missing">Missing content (Images, Video)</label>
                     </div>
                     <div>
-                        <input type="checkbox" name="video" value="true"/>&nbsp;Video/Audio not playing
+                        <input type="checkbox" name="video" id="err_video" value="true"/>&nbsp;<label for="err_video">Video/Audio not playing</label>
                     </div>
                     <div>
-                        <input type="checkbox" name="embed" value="true"/>&nbsp;Embedded content issues
+                        <input type="checkbox" name="embed" id="err_embed" value="true"/>&nbsp;<label for="err_embed">Embedded content issues</label>
                     </div>
                     <div>
-                        <input type="checkbox" name="scrolling" value="true"/>&nbsp;Scrolling issues
+                        <input type="checkbox" name="scrolling" id="err_scrolling" value="true"/>&nbsp;<label for="err_scrolling">Scrolling issues</label>
                     </div>
                     <div>
-                        <input type="checkbox" name="leak" value="true"/>&nbsp;Some items not archived, loading from live web
+                        <input type="checkbox" name="leak" id="err_leak" value="true"/>&nbsp;<label for="err_leak">Some items not archived, loading from live web</label>
                     </div>
                     <div style="margin-top: 10px">
                         <label for="other" class="sr-only">Additional Info:</label>
