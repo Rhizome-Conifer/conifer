@@ -2,6 +2,7 @@ from bottle import request, response, HTTPError
 from webrecorder.basecontroller import BaseController
 
 from webrecorder.webreccork import ValidationException
+from werkzeug.useragents import UserAgent
 
 
 # ============================================================================
@@ -74,7 +75,24 @@ class UserController(BaseController):
         @self.app.post('/_reportissues')
         def report_issues():
             useragent = request.headers.get('User-Agent')
-            self.manager.report_issues(request.POST, useragent)
+
+            @self.jinja2_view('email_error.html')
+            def error_email(params):
+                ua = UserAgent(params.get('ua'))
+                if ua.browser:
+                    browser = '{0} {1} {2} {3}'
+                    lang = ua.language or ''
+                    browser = browser.format(ua.platform, ua.browser,
+                                             ua.version, lang)
+
+                    params['browser'] = browser
+                else:
+                    params['browser'] = ua.string
+
+                params['time'] = params['time'][:19]
+                return params
+
+            self.manager.report_issues(request.POST, useragent, error_email)
             return {}
 
         # Skip POST request recording

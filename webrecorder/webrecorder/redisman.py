@@ -56,6 +56,8 @@ class LoginManagerMixin(object):
 
         self.temp_prefix = config['temp_prefix']
 
+        self.reports_email = os.environ.get('SUPPORT_EMAIL')
+
     def create_user(self, reg):
         try:
             user, init_info = self.cork.validate_registration(reg)
@@ -283,10 +285,10 @@ class LoginManagerMixin(object):
         entry['sent'] = str(datetime.utcnow())
         return True
 
-    def report_issues(self, issues, ua=''):
+    def report_issues(self, issues, ua='', error_email_templ=None):
         issues_dict = {}
         for key in issues.iterkeys():
-            issues_dict[key] = issues[key]
+            issues_dict[key] = issues.getunicode(key)
 
         issues_dict['user'] = self.get_curr_user()
         issues_dict['time'] = str(datetime.utcnow())
@@ -294,6 +296,10 @@ class LoginManagerMixin(object):
         report = json.dumps(issues_dict)
 
         self.redis.rpush('h:reports', report)
+
+        if self.reports_email and error_email_templ:
+            email_text = error_email_templ(issues_dict)
+            self.cork.mailer.send_email(self.reports_email, "[Doesn't Look Right] Error Report", email_text)
 
     def skip_post_req(self, user, url):
         key = self.user_skip_key.format(user=user, url=url)

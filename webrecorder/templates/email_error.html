@@ -1,0 +1,83 @@
+<html>
+<head>
+<style>
+th, td {
+padding: 8px;
+}
+</style>
+</head>
+
+<body>
+<h2>Doesn't Look Right Error Report</h2>
+<table>
+
+<tr>
+<th>Option</th>
+<th>Status</th>
+</tr>
+
+<tr>
+<td>URL</td>
+<td><a href="{{ url }}">{{ url }}</a></td>
+</tr>
+
+<tr>
+<td>Time</td>
+<td>{{ time }}</td>
+</tr>
+
+{#
+<tr>
+<td>User Path</td>
+<td>{{ user if user else 'anon' }}/{{ coll }}/{{ rec }}</td>
+</tr>
+#}
+
+<tr>
+<td>Browser</td>
+<td>{{ browser }}</td>
+</tr>
+
+<tr>
+<td>State</td>
+<td>{{ state }}</td>
+</tr>
+
+<tr>
+<td>Page Not Loading</td>
+<td>{{ 'yes' if loading else '' }}</td>
+</tr>
+
+<tr>
+<td>Missing content (Images, Video)</td>
+<td>{{ 'yes' if loading else '' }}</td>
+</tr>
+
+<tr>
+<td>Video/Audio not playing</td>
+<td>{{ 'yes' if video else '' }}</td>
+</tr>
+
+<tr>
+<td>Embedded content issues</td>
+<td>{{ 'yes' if embed else '' }}</td>
+</tr>
+
+<tr>
+<td>Scrolling issues</td>
+<td>{{ 'yes' if scrolling else '' }}</td>
+</tr>
+
+<tr>
+<td>Live Web Leak</td>
+<td>{{ 'yes' if scrolling else '' }}</td>
+</tr>
+
+</table>
+
+
+<h3>Additional Info:</h3>
+<p>{{ desc }}</p>
+
+</body>
+</html>
