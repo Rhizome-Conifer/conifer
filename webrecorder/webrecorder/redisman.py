@@ -187,6 +187,16 @@ class LoginManagerMixin(object):
 
         return False
 
+    def get_user_email(self, user):
+        if not user:
+            return ''
+        all_users = RedisTable(self.redis, 'h:users')
+        userdata = all_users[user]
+        if userdata:
+            return userdata.get('email_addr', '')
+        else:
+            return ''
+
     def validate_user(self, user, email):
         if self.has_user(user):
             msg = 'User <b>{0}</b> already exists! Please choose a different username'
@@ -290,9 +300,12 @@ class LoginManagerMixin(object):
         for key in issues.iterkeys():
             issues_dict[key] = issues.getunicode(key)
 
-        issues_dict['user'] = self.get_curr_user()
+        user = self.get_curr_user()
+        issues_dict['user'] = user
         issues_dict['time'] = str(datetime.utcnow())
         issues_dict['ua'] = ua
+        issues_dict['user_email'] = self.get_user_email(user)
+
         report = json.dumps(issues_dict)
 
         self.redis.rpush('h:reports', report)
