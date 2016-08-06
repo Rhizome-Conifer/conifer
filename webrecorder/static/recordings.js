@@ -140,7 +140,7 @@ var EventHandlers = (function() {
 
             $.post("/_reportissues", params, function() {
                 $("#report-form-submit").text("Report Sent!");
-                $("#report-thanks").text("Thank you for testing webrecorder.io beta!");
+                $("#report-thanks").text("Thank you for testing Webrecorder!");
                 $('#report-form-submit').prop('disabled', true);
 
                 setTimeout(function() {
