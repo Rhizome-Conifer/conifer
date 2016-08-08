@@ -53,10 +53,13 @@
     </div>
     {% endif %}
 
+    <p class="text-center"><a id="collapse-vid-toggle" href="#collapse-vid" data-toggle="collapse" aria-controls="collapse-vid" aria-expanded="false">
+    <span class="glyphicon glyphicon-triangle-right"></span><span class="glyphicon glyphicon-triangle-bottom"></span>
+        Watch Webrecorder Introductory Video</a></p> 
 
-    <p class="text-center" style="padding-top:40px">
-        <a href="https://www.youtube.com/watch?v=n3SqusABXEk"><img src="/static/__shared/youtube-symbol.svg" height="24" style="position:relative;bottom:1px"> <b>Watch Webrecorder Introductory Video</b></a>
-    </p>
+    <div class="text-center collapse" id="collapse-vid"> 
+        <iframe width="854" height="480" src="https://www.youtube.com/embed/n3SqusABXEk" frameborder="0" allowfullscreen></iframe>
+    </div>
 
     {% include 'upload_modal.html' %}
 

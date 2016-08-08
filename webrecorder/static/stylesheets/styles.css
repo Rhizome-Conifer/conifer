@@ -143,8 +143,22 @@ input.homepage-title {
         margin-bottom: 1em;
     }
 
-
-
+a#collapse-vid-toggle {text-decoration: none}
+/*a#collapse-vid-toggle .glyphicon {
+    color: #333;
+}*/
+a#collapse-vid-toggle[aria-expanded=false] .glyphicon-triangle-right {
+    display: inline;
+}
+a#collapse-vid-toggle[aria-expanded=false] .glyphicon-triangle-bottom {
+    display: none;
+}
+a#collapse-vid-toggle[aria-expanded=true] .glyphicon-triangle-right {
+    display: none;
+}
+a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
+    display: inline;
+}
 /* End homepage */
 
 
