@@ -340,7 +340,7 @@ var RecordingSizeWidget = (function() {
                 RouteTo.recordingInfo(user, collectionId, recordingId);
             }
 
-            pollForSizeUpdate();
+            setTimeout(pollForSizeUpdate, 1000);
             sizeUpdateId = setInterval(pollForSizeUpdate, 5000);
         }
     }
