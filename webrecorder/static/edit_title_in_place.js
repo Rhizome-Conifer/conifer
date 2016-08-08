@@ -115,10 +115,10 @@ var EditTitleInPlace = (function() {
 			var recordingId = $(bookmarkRow).attr('data-recording-id');
 			var attributes = {}
 			attributes.title = $("[name='" + editingId + "']").val();
-	        attributes.url = $(bookmarkRow).attr("data-bookmark-url");
-	        attributes.timestamp = $(bookmarkRow).attr('data-bookmark-timestamp');
+                        attributes.url = $(bookmarkRow).attr("data-bookmark-url");
+                        attributes.timestamp = $(bookmarkRow).attr('data-bookmark-timestamp');
 
-			Recordings.modifyPage(recordingId, attributes, BookmarkRename.done, BookmarkRename.fail);
+                        Recordings.modifyPage(recordingId, attributes, BookmarkRename.done, BookmarkRename.fail);
 		}
 	}
 
@@ -187,7 +187,8 @@ var EditTitleInPlace = (function() {
                         $("[data-move-rec-id='" + oldRecordingId + "']").attr("data-move-rec-id", data.rec_id);
 
 
-			UrlManager.update(new Event("RenameRecording"), RecordingSelector.getSelectedIds());
+			//UrlManager.update(new Event("RenameRecording"), RecordingSelector.getSelectedIds());
+                        RecordingSelector.updateRecordingFilterList(new Event("RenameRecording"), true);
 
 			hideForm(newEditingId);
 			removeSpinner(newEditingId);

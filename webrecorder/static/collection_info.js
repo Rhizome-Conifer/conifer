@@ -277,7 +277,8 @@ var RecordingSelector = (function() {
     return {
         start: start,
         select: selectRecordings,
-        getSelectedIds: getSelectedRecordingIds
+        getSelectedIds: getSelectedRecordingIds,
+        updateRecordingFilterList: updateRecordingFilterList,
     }
 })();
 
