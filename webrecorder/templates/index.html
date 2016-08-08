@@ -3,6 +3,7 @@
 {% block head %}
 
 {{ super() }}
+<title>Webrecorder</title>
 <script src="/static/__shared/external/jquery.form.js"></script>
 <script src="/static/__shared/uploader.js"></script>
 
@@ -53,11 +54,9 @@
     {% endif %}
 
 
-    <h4 class="text-center"><a href="#collapse-vid" data-toggle="collapse" aria-controls="collapse-vid">Watch Webrecorder Introductory Video</a></h4>
-
-    <div class="text-center collapse" id="collapse-vid">
-    <iframe width="634" height="360" src="https://www.youtube.com/embed/n3SqusABXEk" frameborder="0" allowfullscreen></iframe>
-    </div>
+    <p class="text-center" style="padding-top:40px">
+        <a href="https://www.youtube.com/watch?v=n3SqusABXEk"><img src="/static/__shared/youtube-symbol.svg" height="24" style="position:relative;bottom:1px"> <b>Watch Webrecorder Introductory Video</b></a>
+    </p>
 
     {% include 'upload_modal.html' %}
 
