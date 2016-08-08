@@ -56,6 +56,7 @@
             <div class="input-group-addon"></div>
         </div>
     </form>
+
 </div>
 
 <div class="recording-actions text-center col-md-1">
@@ -65,4 +66,23 @@
         </button>
     </form>
 </div>
+
+{% endif %}
+
+{% if can_write() %}
+    <!-- snapshot modal -->
+    <div class="modal fade" id="snapshot-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <p>Static snapshot <b><a href="collection/snapshot" class="title">Page Title</a></b> created in the recording <b><a href="" class="link">Static Snapshots</a></b>.</p>
+
+                    <p>A <i>static snapshot</i> contains the current state of the document with all scripting removed.</p>
+                </div>
+                <div class="modal-footer">
+                    <button data-dismiss="modal" class="btn btn-primary">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endif %}

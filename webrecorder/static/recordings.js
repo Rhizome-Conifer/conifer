@@ -259,11 +259,26 @@ var Snapshot = (function() {
 
         console.log("Saved: " + url);
 
+        // TODO: URL of static snapshot and page title!!
+        $('#snapshot-modal .title')
+                .attr('href', '/'+wbinfo.user+'/'+wbinfo.coll_id+'/static-snapshots/'+wbinfo.url)
+                .text(params.title);
+        $('#snapshot-modal .link')
+            .attr('href', '/'+wbinfo.user+'/'+wbinfo.coll_id+'/static-snapshots');
+
+        $('#snapshot-modal')
+            .modal({'keyboard': true})
+            .modal('show');
+
         return url;
     }
 
     function start() {
-        $("#snapshot").click(doSnapshot);
+        $('#snapshot-modal').appendTo('body'); // sorry for this hack: makes modal appear on top of faded backgr!
+
+        $("#snapshot").on('click', function() {
+            doSnapshot();
+        });
     }
 
     return {start: start};
