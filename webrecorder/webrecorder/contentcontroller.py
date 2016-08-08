@@ -21,7 +21,7 @@ from io import BytesIO
 
 # ============================================================================
 class ContentController(BaseController, RewriterApp):
-    DEF_REC_NAME = 'My First Recording'
+    DEF_REC_NAME = 'Recording Session'
 
     WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?([a-zA-Z]+:)?//.*')
 
