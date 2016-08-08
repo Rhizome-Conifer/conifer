@@ -1,7 +1,7 @@
 #!/bin/bash
 
-target=./webrecorder/webrecorder.env
-sample=./webrecorder/webrecorder_sample.env
+target=./wr.env
+sample=./wr_sample.env
 
 if [ -e "$target" ]; then
    echo "$target already exists.. exiting to avoid overriding current settings"
@@ -18,4 +18,7 @@ function set_key {
 set_key "SECRET_KEY"
 set_key "ENCRYPT_KEY"
 set_key "VALIDATE_KEY"
+
+mkdir ./data
+mkdir ./data/warcs/
 

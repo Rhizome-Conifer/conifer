@@ -5,7 +5,6 @@ services:
         build: ./webrecorder
         env_file:
             - ./wr.env
-            - ./webrecorder/webrecorder.env
 
         depends_on:
             - webagg
@@ -38,7 +37,6 @@ services:
         build: ./rec
         env_file:
             - ./wr.env
-            - ./webrecorder/webrecorder.env
 
         depends_on:
             - webagg
@@ -55,7 +53,6 @@ services:
         build: ./webagg
         env_file:
             - ./wr.env
-            - ./webrecorder/webrecorder.env
 
         depends_on:
             - redis
@@ -110,7 +107,7 @@ services:
             - data
 
         env_file:
-            - ./webrecorder/webrecorder.env
+            - ./wr.env
 
     # Postfix (if sending mail locally)
     mailserver:
