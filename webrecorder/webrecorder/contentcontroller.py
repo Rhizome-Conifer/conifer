@@ -194,12 +194,16 @@ class ContentController(BaseController, RewriterApp):
 
                 page_data = {'url': url,
                              'title': title,
-                             'timestamp': timestamp
+                             'timestamp': timestamp,
+                             'tags': ['snapshot'],
                             }
 
                 res = self.manager.add_page(user, coll, snap_rec, page_data)
 
-            return {'success': 'true'}
+                print(type(page_data))
+                return {'snapshot': page_data}
+            else:
+                return {'snapshot': ''}
 
     def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
         rec_name = '*'

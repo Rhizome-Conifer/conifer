@@ -230,8 +230,11 @@ var Snapshot = (function() {
                       top_ts: topinfo.timestamp,
                       }
 
+        var title;
+
         if (top_page) {
-            params.title = win.document.title;
+            title = win.document.title;
+            params.title = title;
         }
 
         params = $.param(params);
@@ -246,29 +249,47 @@ var Snapshot = (function() {
         $.ajax({
             type: "PUT",
             url: target,
+            dataType: "json",
             data: content,
-            success: function() {
-                console.log("Saved");
-                $("#snapshot").prop("disabled", false);
+            success: function(data) {
+                if (top_page) {
+                    if (typeof(data) == "string") {
+                        data = JSON.parse(data);
+                    }
+
+                    $("#snapshot").prop("disabled", false);
+
+                    var snapUrl = "/" + user + "/" + coll + "/" + data.snapshot.timestamp + "/" + data.snapshot.url;
+
+                    $("#snapshot-modal .snap-link").attr('href', snapUrl);
+                    $("#snapshot-modal .snap-ts").attr("data-time-ts", data.snapshot.timestamp);
+                    TimesAndSizesFormatter.format();
+
+                    if (!title) {
+                        title = data.snapshot.url;
+                    }
+
+                    $("#snapshot-modal .snap-title").text(title);
+
+                    $('#snapshot-modal .snap-wait').hide();
+                    $('#snapshot-modal .snap-created').show();
+                }
             },
             error: function() {
-                console.log("err");
+                console.log("Snapshot Error");
             },
             dataType: 'html',
         });
 
-        console.log("Saved: " + url);
 
-        // TODO: URL of static snapshot and page title!!
-        $('#snapshot-modal .title')
-                .attr('href', '/'+wbinfo.user+'/'+wbinfo.coll_id+'/static-snapshots/'+wbinfo.url)
-                .text(params.title);
-        $('#snapshot-modal .link')
-            .attr('href', '/'+wbinfo.user+'/'+wbinfo.coll_id+'/static-snapshots');
+        if (top_page) {
+            $('#snapshot-modal .snap-wait').show();
+            $('#snapshot-modal .snap-created').hide();
 
-        $('#snapshot-modal')
-            .modal({'keyboard': true})
-            .modal('show');
+            $('#snapshot-modal')
+                .modal({'keyboard': true})
+                .modal('show');
+        }
 
         return url;
     }

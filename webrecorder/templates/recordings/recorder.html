@@ -75,9 +75,17 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-body">
-                    <p>Static snapshot <b><a href="collection/snapshot" class="title">Page Title</a></b> created in the recording <b><a href="" class="link">Static Snapshots</a></b>.</p>
+                    <p class="snap-wait">Creating Snapshots, Please Wait...</p>
+                    <div class="snap-created">
+                      <a class="pull-right" href="/{{ user }}/{{ coll }}/static-snapshots" class="snap-rec">View all Static Snapshots</a>
+                      <p>Snapshot Created:</p>
+                      <p class="text-center">
+                        <span class="glyphicon glyphicon-camera glyphicon-button"></span>
+                        <a class="snap-link"><b class="snap-title"></b> at <b class="snap-ts" data-time-ts=""></b></a>
+                      </p>
+                    </div>
 
-                    <p>A <i>static snapshot</i> contains the current state of the document with all scripting removed.</p>
+                    <p>(A <i>static snapshot</i> contains the current state of the document with all scripting removed.)</p>
                 </div>
                 <div class="modal-footer">
                     <button data-dismiss="modal" class="btn btn-primary">Ok</button>
