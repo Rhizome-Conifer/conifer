@@ -9,6 +9,11 @@ import os
 from jinja2 import contextfunction
 from urlrewrite.templateview import JinjaEnv
 
+from webassets import Environment as AssetsEnvironment
+from webassets.ext.jinja2 import AssetsExtension
+
+from webassets.loaders import YAMLLoader
+
 from six.moves.urllib.parse import urlsplit, urljoin
 
 from webagg.utils import load_config
@@ -71,7 +76,14 @@ class AppController(BaseController):
         Session.temp_prefix = config['temp_prefix']
 
         # Init Jinja
-        jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'})
+        jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'},
+                             extensions=[AssetsExtension])
+
+        loader = YAMLLoader('assets.yaml')
+        assets_env = loader.load_environment()
+        #print(assets_env['main-bundle-js'].urls())
+
+        jinja_env.jinja_env.assets_environment = assets_env
 
         # Init Core app controllers
         for controller_type in self.ALL_CONTROLLERS:

@@ -4,6 +4,8 @@
 
 {{ super() }}
 <title>Webrecorder</title>
+
+{#
 <script src="/static/__shared/external/jquery.form.js"></script>
 <script src="/static/__shared/uploader.js"></script>
 
@@ -13,6 +15,16 @@
 
 <link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
 <script src="/static/__shared/external/bootstrap-switch.js"></script>
+#}
+
+{% assets "user-js" %}
+<script type="text/javascript" src="{{ ASSET_URL }}"></script>
+{% endassets %}
+
+{% assets "user-css" %}
+<link href="{{ ASSET_URL }}" rel="stylesheet" />
+{% endassets %}
+
 
 
 

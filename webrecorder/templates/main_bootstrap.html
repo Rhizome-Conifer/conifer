@@ -1,6 +1,8 @@
 {% extends "base_bootstrap.html" %}
 
 {% block head %}
+
+{#
 <script src="/static/__shared/external/jquery-ui.min.js"></script>
 <script src="/static/__shared/external/jquery.selectBoxIt.min.js"></script>
 
@@ -13,6 +15,17 @@
 
 <link href="/static/__shared/external/jquery.selectBoxIt.css" rel="stylesheet" />
 <link href="/static/__shared/stylesheets/footer.css" rel="stylesheet" />
+#}
+
+{% assets "main-js" %}
+<script type="text/javascript" src="{{ ASSET_URL }}"></script>
+{% endassets %}
+
+{% assets "main-css" %}
+<link href="{{ ASSET_URL }}" rel="stylesheet" />
+{% endassets %}
+
+
 
 {% endblock %}
 

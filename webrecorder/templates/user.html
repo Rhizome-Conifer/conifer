@@ -4,6 +4,7 @@
 
 {{ super() }}
 
+{#
 <link href="/static/__shared/external/bootstrap-markdown.min.css" rel="stylesheet">
 <script src="/static/__shared/external/marked.min.js"></script>
 <script src="/static/__shared/external/bootstrap-markdown.js"></script>
@@ -17,6 +18,16 @@
 <script src="/static/__shared/editor.js"></script>
 <script src="/static/__shared/newrecording.js"></script>
 <script src="/static/__shared/user.js"></script>
+#}
+
+{% assets "user-js" %}
+<script type="text/javascript" src="{{ ASSET_URL }}"></script>
+{% endassets %}
+
+{% assets "user-css" %}
+<link href="{{ ASSET_URL }}" rel="stylesheet" />
+{% endassets %}
+
 
 {% endblock %}
 

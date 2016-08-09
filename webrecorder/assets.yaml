@@ -1,0 +1,106 @@
+url: /static/__shared/
+
+directory: ./static/
+
+bundles:
+    base-js:
+        output: cache/base.js
+        contents:
+            - external/jquery.min.js
+            - external/bootstrap/js/bootstrap.min.js
+
+    base-css:
+        output: cache/base.css
+        filters: cssrewrite
+        contents:
+            - external/bootstrap/css/bootstrap.min.css
+            - external/bootstrap/css/bootstrap-theme.min.css
+            - stylesheets/styles.css
+
+    main-js:
+        output: cache/main.js
+        contents:
+            - base-js
+            - external/jquery-ui.min.js
+            - external/jquery.selectBoxIt.min.js
+            - flash_message.js
+            - times_and_sizes_formatter.js
+            - recordings_model.js
+            - collections_model.js
+            - recordings.js
+            - external/validator.js
+
+    main-css:
+        output: cache/main.css
+        contents:
+            - base-css
+            - external/jquery.selectBoxIt.css
+            - stylesheets/footer.css
+
+
+    user-js:
+        output: cache/index.js
+        filters: cssrewrite
+        contents:
+            - external/jquery.form.js
+            - external/bootstrap-switch.js
+            - uploader.js
+            - newrecording.js
+            - user.js
+            - editor.js
+            - external/marked.min.js
+            - external/bootstrap-markdown.js
+
+    user-css:
+        output: cache/index.css
+        contents:
+            - external/bootstrap-switch.css
+            - external/bootstrap-markdown.min.css
+
+
+    frame-js:
+        output: cache/frame.js
+        contents:
+            - base-js
+            - times_and_sizes_formatter.js
+            - collections_model.js
+            - recordings_model.js
+            - recordings.js
+            - automate.js
+
+    frame-css:
+        output: cache/frame.css
+        contents:
+            - base-css
+
+
+    coll-js:
+        output: cache/coll.js
+        contents:
+            - external/jquery-ui.min.js
+            - external/bootstrap-switch.js
+            - external/bootstrap-table.min.js
+
+            - external/marked.min.js
+            - external/bootstrap-markdown.js
+
+            - external/jquery.dataTables.min.js
+            - external/dataTables.bootstrap.js
+
+            - editor.js
+            - collection_info.js
+            - edit_title_in_place.js
+
+            - external/jquery.form.js
+            - uploader.js
+
+    coll-css:
+        output: cache/coll.css
+        contents:
+            - external/bootstrap-switch.css
+            - external/bootstrap-table.min.css
+            - external/bootstrap-markdown.min.css
+            - external/dataTables.bootstrap.css
+
+
+        
