@@ -216,7 +216,7 @@ class LoginController(BaseController):
                               host=host)
 
                 self.flash_message('A confirmation e-mail has been sent to <b>{0}</b>. \
-    Please check your e-mail to complete the registration!'.format(username), 'warn')
+    Please check your e-mail to complete the registration!'.format(username), 'warning')
 
                 redir_to = '/'
                 if self.invites_enabled:
