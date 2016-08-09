@@ -20,6 +20,7 @@ import re
 import boto
 import shutil
 import datetime
+import sys
 
 from io import BytesIO
 
@@ -361,9 +362,11 @@ def main():
 
     m.add_h_tables()
 
-    #m.process_all_users()
+    if len(sys.argv) > 1:
+        m.process_user(sys.argv[0])
 
-    m.process_user('fkneist')
+    else:
+        m.process_all_users()
 
 
 main()
