@@ -12,6 +12,8 @@ from bottle import template, request, HTTPError
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.redisutils import RedisTable
+from webrecorder.webreccork import WebRecCork
+
 from cork import AAAException
 
 from six.moves.urllib.parse import quote
@@ -19,6 +21,7 @@ from six.moves.urllib.parse import quote
 from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.timeutils import timestamp_now
+from webagg.utils import load_config
 
 import requests
 
@@ -1024,3 +1027,24 @@ class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin
         self.browser_redis = browser_redis
 
         super(RedisDataManager, self).__init__(config)
+
+
+# ============================================================================
+def init_manager_for_invite():
+        config = load_config('WR_CONFIG', None,
+                             'WR_USER_CONFIG', None)
+
+        # Init Redis
+        redis_url = os.environ['REDIS_BASE_URL']
+
+        r = redis.StrictRedis.from_url(redis_url)
+
+        # Init Cork
+        cork = WebRecCork.create_cork(r, config)
+
+        # Init Manager
+        manager = RedisDataManager(r, cork, None, config)
+
+        return manager
+
+

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser
-from manager import init_manager_for_invite
-from redisutils import RedisTable
+from webrecorder.redisman import init_manager_for_invite
+from webrecorder.redisutils import RedisTable
 
 import sys
 import time
