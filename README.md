@@ -1,6 +1,6 @@
 # Webrecorder Project
 
-**Note: These instructions are for the master branch and have not yet been updated for the upcoming release. Webrecorder is undergoing some architectural changes and this will be reflected here soon.**
+*This version corresponds to the service deployed at https://webrecorder.io/*
 
 *If you are interested in contributing to Webrecorder, or have any general questions, please contact us at support@webrecorder.io*
 
@@ -30,27 +30,27 @@ Webrecorder can be run using Docker and Docker Compose. See [Docker Installation
 
 4). `docker-compose up -d`
 
-(The `init-default.sh` is a convenience script that copies [webrecorder/webrecorder_sample.env](webrecorder/webrecorder_sample.env) -> `webrecorder/webrecorder.env` and creates keys for session encryption.)
+(The `init-default.sh` is a convenience script that copies [wr_sample.env](wr.env) -> `wr.env` and creates keys for session encryption.)
 
 Point your browser to port `http://<DOCKER HOST>:8089/` to view the Webrecorder.
 
 ### Configuration
 
-Webrecorder is fully configured from `webrecorder/config.yaml`, which includes full settings for the application.
+Webrecorder is fully configured from `wr.yaml`, which includes full settings for the application and various containers.
 
 Archived data (WARCs) are stored locally under the `./data/` directory, and all metadata and user info is stored in a persistent Redis instance.
 
-Useful environment and deployment settings are loaded from `webrecorder/webrecorder.env` and can be overriden per-deployment.
+Useful environment and deployment settings are loaded from `wr.env` and can be overriden per-deployment.
 
 Following are a few of these settings:
 
 #### Storage
 
-The `DEFAULT_STORAGE` option in `webrecorder.env` configures storage options. Default is just the local file system.
+The `DEFAULT_STORAGE` option in `wr.env` configures storage options. Default is just the local file system.
 
-Currently, `s3` is also supported. To use s3, set `DEFAULT_STORAGE=s3` and fill in the additional auth settings in `webrecorder.env`
+Currently, `s3` is also supported. To use s3, set `DEFAULT_STORAGE=s3` and fill in the additional auth settings in `wr.env`
 
-With default local storage, archived data is kept in the `./data/accounts` directory only.
+With default local storage, archived data is kept in the `./data/warcs` directory only.
 
 
 #### Mail
@@ -72,7 +72,7 @@ To restart only the Webrecorder container, use the `./rebuild.sh` script.
 
 ### Architecture
 
-Webrecorder is built using a variety of open-source tools and uses [pywb](https://github.com/ikreymer/pywb), [warcprox](https://github.com/ikreymer/warcprox), Redis and Nginx. It is written in Python and uses the [Bottle](http://bottlepy.org/docs/dev/index.html), [Cork](http://cork.firelet.net/), [Beaker](https://beaker.readthedocs.org/en/latest/) frameworks.
+Webrecorder is built using a variety of open-source tools and uses [pywb](https://github.com/ikreymer/pywb), Redis and Nginx. It is written in Python and uses the [Bottle](http://bottlepy.org/docs/dev/index.html), [Cork](http://cork.firelet.net/), [Beaker](https://beaker.readthedocs.org/en/latest/) frameworks.
 
 ### Contact
 
