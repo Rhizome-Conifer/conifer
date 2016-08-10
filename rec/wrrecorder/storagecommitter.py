@@ -116,10 +116,20 @@ class StorageCommitter(object):
             # already uploaded, see if it is accessible
             # if so, finalize and delete original
             remote_url = storage.get_valid_remote_url(user, coll, rec, warcname)
-            if remote_url:
-                self.commit_uploaded(user, coll, rec, warcname, full_filename, remote_url)
-            else:
+            if not remote_url:
                 print('Not yet available: {0}'.format(full_filename))
+                continue
+
+            if not self.commit_uploaded(user, coll, rec, warcname, full_filename, remote_url):
+                continue
+
+            # attempt to remove the dir, if empty
+            try:
+                dirname = os.path.dirname(full_filename)
+                os.rmdir(dirname)
+                print('Removed dir ' + dirname)
+            except:
+                pass
 
     def get_warcs_for_user(self, user):
         key_templ = self.warc_key_templ.format(user=user, coll='*', rec='*')
@@ -155,6 +165,7 @@ class StorageCommitter(object):
         print('Commit Verified, Deleting: {0}'.format(full_filename))
         try:
             os.remove(full_filename)
+            return True
         except Exception as e:
             print(e)
 
