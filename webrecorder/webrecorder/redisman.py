@@ -303,9 +303,11 @@ class LoginManagerMixin(object):
         for key in issues.iterkeys():
             issues_dict[key] = issues.getunicode(key)
 
+        now = str(datetime.utcnow())
+
         user = self.get_curr_user()
         issues_dict['user'] = user
-        issues_dict['time'] = str(datetime.utcnow())
+        issues_dict['time'] = now
         issues_dict['ua'] = ua
         issues_dict['user_email'] = self.get_user_email(user)
 
@@ -313,9 +315,11 @@ class LoginManagerMixin(object):
 
         self.redis.rpush('h:reports', report)
 
+        subject = "[Doesn't Look Right] Error Report - {0}".format(now)
+
         if self.reports_email and error_email_templ:
             email_text = error_email_templ(issues_dict)
-            self.cork.mailer.send_email(self.reports_email, "[Doesn't Look Right] Error Report", email_text)
+            self.cork.mailer.send_email(self.reports_email, subject, email_text)
 
     def skip_post_req(self, user, url):
         key = self.user_skip_key.format(user=user, url=url)
