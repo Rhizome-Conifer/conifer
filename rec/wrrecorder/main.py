@@ -30,18 +30,26 @@ wr = None
 def temp_checker_loop(temp_checker, sleep_secs):
     print('Running temp delete check every {0}'.format(sleep_secs))
     while True:
-        temp_checker()
-        gevent.sleep(sleep_secs)
+        try:
+            temp_checker()
+            gevent.sleep(sleep_secs)
+        except:
+            import traceback
+            traceback.print_exc()
 
 
 # =============================================================================
 def storage_commit_loop(storage_committer, writer, sleep_secs):
     print('Running storage committer {0}'.format(sleep_secs))
     while True:
-        writer.close_idle_files()
+        try:
+            writer.close_idle_files()
 
-        storage_committer()
-        gevent.sleep(sleep_secs)
+            storage_committer()
+            gevent.sleep(sleep_secs)
+        except:
+            import traceback
+            traceback.print_exc()
 
 
 # =============================================================================

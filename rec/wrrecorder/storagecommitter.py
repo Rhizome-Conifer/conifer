@@ -153,7 +153,10 @@ class StorageCommitter(object):
         self.redis.hset(key, warcname, remote_url)
 
         print('Commit Verified, Deleting: {0}'.format(full_filename))
-        os.remove(full_filename)
+        try:
+            os.remove(full_filename)
+        except Exception as e:
+            print(e)
 
     def get_storage(self, user, coll, rec):
         if self.is_temp(user):
