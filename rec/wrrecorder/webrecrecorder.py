@@ -62,7 +62,6 @@ class WebRecRecorder(object):
 
         self.app.delete('/delete', callback=self.delete)
         self.app.get('/rename', callback=self.rename)
-        self.app.put('/upload', callback=self.upload)
 
         debug(True)
 
@@ -272,36 +271,6 @@ class WebRecRecorder(object):
                         self.redis.hset(repl['key'], repl['name'], repl['new_v'])
                 except Exception as e:
                     print(e)
-
-    # Upload Handling ===========
-    def upload(self):
-        try:
-            return self.upload_actual()
-        except:
-            import traceback
-            traceback.print_exc()
-
-    def upload_actual(self):
-        user = request.query.getunicode('user', '')
-        coll = request.query.getunicode('coll', '')
-        rec = request.query.getunicode('rec', '')
-        if not user or not coll or not rec:
-            return {'error_message': 'user, coll, rec required'}
-
-        stream = request.body
-
-        params = {'param.user': user,
-                  'param.coll': coll,
-                  'param.rec': rec
-                 }
-
-        #params['_formatter'] = ParamFormatter(params, name=self.rec_source_name)
-
-        if self.recorder.writer.write_stream_to_file(params, stream):
-            return {'success': 'true'}
-        else:
-            return {'error_message': 'upload error'}
-
 
     # Delete Handling ===========
 

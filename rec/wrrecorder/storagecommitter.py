@@ -1,5 +1,4 @@
 import os
-import glob
 import redis
 import datetime
 import fcntl
@@ -13,8 +12,6 @@ class StorageCommitter(object):
         self.redis = redis.StrictRedis.from_url(self.redis_base_url)
 
         self.record_root_dir = os.environ['RECORD_ROOT']
-
-        self.glob_pattern = self.record_root_dir + '*/*.warc.gz'
 
         self.warc_key_templ = config['warc_key_templ']
         self.warc_upload_wait_templ = config['warc_upload_wait_templ']
@@ -59,7 +56,7 @@ class StorageCommitter(object):
         return user.startswith(self.temp_prefix)
 
     def __call__(self):
-        print('Checking for new warcs in {0}'.format(self.record_root_dir))
+        #print('Checking for new warcs in {0}'.format(self.record_root_dir))
 
         if not os.path.isdir(self.record_root_dir):
             return
@@ -67,20 +64,23 @@ class StorageCommitter(object):
         warc_map = None
         curr_user = None
 
-        for full_filename in glob.glob(self.glob_pattern):
+        for user_dir in os.listdir(self.record_root_dir):
+            full_dir = os.path.join(self.record_root_dir, user_dir)
+            if os.path.isdir(full_dir):
+                self.check_user(user_dir, full_dir)
+
+    def check_user(self, user, full_dir):
+        #print('Checking user ' + user)
+        warc_map = self.get_warcs_for_user(user)
+
+        for warcname in os.listdir(full_dir):
+            if not warcname.endswith('.warc.gz'):
+                continue
+
+            full_filename = os.path.join(full_dir, warcname)
+
             if self.is_locked(full_filename):
                 continue
-
-            relpath = os.path.relpath(full_filename, self.record_root_dir)
-
-            parts = relpath.split('/')
-
-            if len(parts) != 2:
-                print('Invalid file match: ' + relpath)
-                continue
-
-            #user, coll, rec, warcname = parts
-            user, warcname = parts
 
             if self.is_temp(user):
                 continue
@@ -88,17 +88,12 @@ class StorageCommitter(object):
             coll = None
             rec = None
 
-            if curr_user != user or warc_map is None:
-                warc_map = self.get_warcs_for_user(user)
-                curr_user = user
-
-                #coll, rec = self.find_coll_rec_for_warc(user, warcname)
             res = warc_map.get(warcname)
             if res:
                 coll, rec = res
 
             if not coll or not rec:
-                #print('Orphan WARC:', warcname, user, coll, rec)
+                print('Orphan WARC:', warcname)
                 continue
 
             storage = self.get_storage(user, coll, rec)
@@ -123,13 +118,12 @@ class StorageCommitter(object):
             if not self.commit_uploaded(user, coll, rec, warcname, full_filename, remote_url):
                 continue
 
-            # attempt to remove the dir, if empty
-            try:
-                dirname = os.path.dirname(full_filename)
-                os.rmdir(dirname)
-                print('Removed dir ' + dirname)
-            except:
-                pass
+        # attempt to remove the dir, if empty
+        try:
+            os.rmdir(full_dir)
+            print('Removed dir ' + full_dir)
+        except:
+            pass
 
     def get_warcs_for_user(self, user):
         key_templ = self.warc_key_templ.format(user=user, coll='*', rec='*')
@@ -145,17 +139,6 @@ class StorageCommitter(object):
                 allwarcs[warc.decode('utf-8')] = (coll, rec)
 
         return allwarcs
-
-    def find_coll_rec_for_warc(self, user, warcname):
-        key_templ = self.warc_key_templ.format(user=user, coll='*', rec='*')
-        for key in self.redis.scan_iter(key_templ):
-            if self.redis.hget(key, warcname):
-                parts = key.decode('utf-8').split(':')
-                coll = parts[2]
-                rec = parts[3]
-                return coll, rec
-
-        return None, None
 
     def commit_uploaded(self, user, coll, rec, warcname, full_filename, remote_url):
         # update path index to point to remote url!

@@ -34,7 +34,7 @@ class TempChecker(object):
         if sesh:
             sesh = sesh.decode('utf-8')
             if self.sesh_redis.get(self.sesh_key_template.format(sesh)):
-                print('Skipping active temp ' + temp)
+                #print('Skipping active temp ' + temp)
                 return False
 
             self.sesh_redis.delete('t:' + temp)
@@ -82,7 +82,7 @@ class TempChecker(object):
 
         temp_match = 'u:{0}*'.format(self.temp_prefix)
 
-        print('Temp Key Check')
+        #print('Temp Key Check')
 
         for redis_key in self.data_redis.scan_iter(match=temp_match):
             redis_key = redis_key.decode('utf-8')

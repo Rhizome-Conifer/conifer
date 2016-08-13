@@ -75,8 +75,6 @@ class UploadController(BaseController):
 
                     self.flash_message(msg, 'success')
 
-                    print('SUCCESS?')
-
                     return {'uploaded': 'true',
                             'user': user,
                             'coll': new_coll['id']}

@@ -31,7 +31,7 @@ url_templates:
     rename: '{record_host}/rename?from_user={from_user}&from_coll={from_coll}&from_rec={from_rec}&to_user={to_user}&to_coll={to_coll}&to_title={to_title}&to_rec={to_rec}'
 
     # upload path
-    upload: '{record_host}/upload?user={user}&coll={coll}&rec={rec}'
+    upload: '{record_host}/record/$upload?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=stream'
  
     # core replay funcs
     live: '{replay_host}/live/resource/postreq?'
