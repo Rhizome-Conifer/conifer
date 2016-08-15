@@ -115,8 +115,8 @@ services:
         image: catatnight/postfix
 
         environment:
-            - "maildomain=mail.webrecorder.io"
-            - "smtp_user=webrec:archive"
+            - "maildomain=localhost"
+            - "smtp_user=test:archive"
 
 
     # Data Only Volume
