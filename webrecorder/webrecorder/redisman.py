@@ -5,6 +5,7 @@ import re
 import json
 import os
 import base64
+import hashlib
 
 from datetime import datetime
 
@@ -65,7 +66,11 @@ class LoginManagerMixin(object):
         self.mailing_list = mailing_list in ('true', '1', 'yes')
         self.list_endpoint = os.environ.get('MAILING_LIST_ENDPOINT', '')
         self.list_key = os.environ.get('MAILING_LIST_KEY', '')
+        self.list_removal_endpoint = os.path.expandvars(
+                                        os.environ.get('MAILING_LIST_REMOVAL', ''))
         self.payload = os.environ.get('MAILING_LIST_PAYLOAD', '')
+        self.remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
+                                    in ('true', '1', 'yes'))
 
     def create_user(self, reg):
         try:
@@ -187,6 +192,34 @@ class LoginManagerMixin(object):
     def delete_user(self, user):
         if not self.is_anon(user):
             self.assert_user_is_owner(user)
+
+        # Check for mailing list & removal endpoint
+        if self.mailing_list and self.remove_on_delete:
+            if not self.list_removal_endpoint or not self.list_key:
+                # fail silently, log info
+                print('REMOVE_ON_DELETE is turned on, but required '
+                      'fields are missing.')
+            else:
+                # remove user from the mailing list, with a 500ms timeout.
+                # TODO: move this to a task queue
+                try:
+                    email = self.get_user_email(user).encode('utf-8')
+                    email_hash = hashlib.md5(email).hexdigest()
+                    res = requests.delete(self.list_removal_endpoint.format(email_hash),
+                                          auth=('nop', self.list_key),
+                                          timeout=0.5
+                    )
+
+                    if res.status_code != 204:
+                        print('Unexpected mailing list API response.. '
+                              'status code: {0.status_code}\n'
+                              'content: {0.content}'.format(res))
+
+                except Exception as e:
+                    if e is requests.exceptions.Timeout:
+                        print('Mailing list API timed out..')
+                    else:
+                        print('Removing from mailing list failed:', e)
 
         res = self._send_delete('user', user)
         if res and not self.is_anon(user):
