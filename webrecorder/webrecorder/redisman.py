@@ -61,6 +61,12 @@ class LoginManagerMixin(object):
 
         self.reports_email = os.environ.get('SUPPORT_EMAIL')
 
+        mailing_list = os.environ.get('MAILING_LIST', '').lower()
+        self.mailing_list = mailing_list in ('true', '1', 'yes')
+        self.list_endpoint = os.environ.get('MAILING_LIST_ENDPOINT', '')
+        self.list_key = os.environ.get('MAILING_LIST_KEY', '')
+        self.payload = os.environ.get('MAILING_LIST_PAYLOAD', '')
+
     def create_user(self, reg):
         try:
             user, init_info = self.cork.validate_registration(reg)
@@ -102,6 +108,35 @@ class LoginManagerMixin(object):
                                    public=False)
 
             first_coll = self.default_coll['title']
+
+        # Check for mailing list management
+        if self.mailing_list:
+            if not self.list_endpoint or not self.list_key:
+                # fail silently, log info
+                print('MAILING_LIST is turned on, but required '
+                      'fields are missing.')
+            else:
+                # post new user to mailing list, with a 500ms timeout.
+                # TODO: move this to a task queue
+                try:
+                    res = requests.post(self.list_endpoint,
+                                        auth=('nop', self.list_key),
+                                        data=self.payload.format(
+                                            email=self.get_user_email(user),
+                                            username=user),
+                                        timeout=0.5
+                    )
+
+                    if res.status_code != 200:
+                        print('Unexpected mailing list API response.. '
+                              'status code: {0.status_code}\n'
+                              'content: {0.content}'.format(res))
+
+                except Exception as e:
+                    if e is requests.exceptions.Timeout:
+                        print('Mailing list API timed out..')
+                    else:
+                        print('Adding to mailing list failed:', e)
 
         return user, first_coll
 
