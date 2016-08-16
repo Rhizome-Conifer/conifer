@@ -21,12 +21,12 @@
         <form id="invite" action="/_invite" method="post" role="form" data-toggle="validator" data-delay="1000">
             <div class="form-group">
                 <label for="username" class="sr-only">Name:</label>
-                <input type="text" id="name" name="name" class="form-control" placeholder="Your Name" required="true" data-delay="1000"/>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Your Name" data-delay="1000" required>
                 <div class="help-block with-errors"></div>
             </div>
             <div class="form-group">
                 <label for="email" class="sr-only">Email</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="Your Email" required="true">
+                <input type="email" id="email" name="email" class="form-control" placeholder="Your Email" required>
                 <div class="help-block with-errors"></div>
             </div>
             <div class="form-group">
@@ -55,35 +55,35 @@
                 <h5 class="">Choose a username for your archive </h5>
 
                 <label for="username" class="sr-only">Username</label>
-                <input type="text" id="username" name="username" class="form-control" placeholder="username" required="true" 
-                       pattern="[A-Za-z0-9][\w-]{2,15}" data-error="Usernames must be 3-16 characters, and start with letter or digit and contain only letters, digit or -" autofocus="true" data-delay="1000">
+                <input type="text" id="username" name="username" class="form-control" placeholder="username"
+                       pattern="[A-Za-z0-9][\w-]{2,15}" data-error="Usernames must be 3-16 characters, and start with letter or digit and contain only letters, digit or -" autofocus="true" data-delay="1000" required>
                 <div class="help-block with-errors"></div>
             </div>
 
             <div class="form-group">
                 <label for="username" class="sr-only">Name:</label>
-                <input type="text" id="name" name="name" class="form-control" placeholder="Your Name (Optional)" required="false" data-delay="1000"/>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Your Name (Optional)" data-delay="1000"/>
             </div>
 
             <div class="form-group">
                 <label for="email" class="sr-only">Email</label>
-                <input type="email" id="email" name="email" class="form-control" value="{{ email }}" placeholder="Your Email" required="true">
+                <input type="email" id="email" name="email" class="form-control" value="{{ email }}" placeholder="Your Email" required>
                 <div class="help-block with-errors"></div>
             </div>
-            
+
             <input type="hidden" name="invite" value="{{invite}}"/>
 
             <div class="form-group">
                 <label for="password" class="sr-only">Password</label>
-                <input type="password" id="password" data-minlength="8" name="password" class="form-control" placeholder="Password" required="true"
-                       pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols">
+                <input type="password" id="password" data-minlength="8" name="password" class="form-control" placeholder="Password"
+                       pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols" required>
                 <div class="help-block with-errors"></div>
             </div>
 
             <div class="form-group">
                 <label for="password" class="sr-only">Confirm Password</label>
-                <input type="password" id="confirmpassword" data-minlength="8" data-match="#password" name="confirmpassword" class="form-control" 
-                       placeholder="Confirm Password" required="true" pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols" data-match-error="Password confirmation does not match">
+                <input type="password" id="confirmpassword" data-minlength="8" data-match="#password" name="confirmpassword" class="form-control"
+                       placeholder="Confirm Password" pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols" data-match-error="Password confirmation does not match" required>
                 <div class="help-block with-errors"></div>
             </div>
 
