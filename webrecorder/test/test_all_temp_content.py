@@ -107,7 +107,7 @@ class TestTempContent(FullStackTests):
         assert self.anon_user == path_parts[1]
 
         assert self.anon_user.startswith(Session.temp_prefix)
-        assert parts.path.endswith('/temp/My First Recording/record/mp_/http://example.com/')
+        assert parts.path.endswith('/temp/Recording Session/record/mp_/http://example.com/')
 
     #def test_anon_replay_redirect(self):
     #    res = self.testapp.get('/replay/mp_/http://example.com/')

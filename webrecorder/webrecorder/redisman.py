@@ -73,6 +73,11 @@ class LoginManagerMixin(object):
         except AAAException as a:
             raise ValidationException(a)
 
+        if init_info:
+            init_info = json.loads(init_info)
+        else:
+            init_info = {}
+
         key = self.user_key.format(user=user)
         now = int(time.time())
 
@@ -87,6 +92,7 @@ class LoginManagerMixin(object):
             pi.hset(key, 'max_size', max_size)
             pi.hset(key, 'max_coll', max_coll)
             pi.hset(key, 'created_at', now)
+            pi.hset(key, 'name', init_info.get('name', ''))
             pi.hsetnx(key, 'size', '0')
 
         self.cork.do_login(user)
@@ -95,9 +101,10 @@ class LoginManagerMixin(object):
             sesh.curr_user = user
 
         # Move Temp collection to be permanent
-        if init_info:
-            init_info = json.loads(init_info)
-            self.move_temp_coll(user, init_info)
+        move_info = init_info.get('move_info')
+        if move_info:
+            self.move_temp_coll(user, move_info)
+
             first_coll = init_info.get('to_title')
 
         else:
@@ -345,6 +352,8 @@ class LoginManagerMixin(object):
         issues_dict['time'] = now
         issues_dict['ua'] = ua
         issues_dict['user_email'] = self.get_user_email(user)
+        if not issues_dict.get('email'):
+            issues_dict['email'] = issues_dict['user_email']
 
         report = json.dumps(issues_dict)
 

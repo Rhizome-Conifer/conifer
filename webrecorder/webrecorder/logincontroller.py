@@ -169,6 +169,7 @@ class LoginController(BaseController):
             email = self.post_get('email')
             username = self.post_get('username')
             password = self.post_get('password')
+            name = self.post_get('name')
             confirm_password = self.post_get('confirmpassword')
             invitecode = self.post_get('invite')
 
@@ -205,14 +206,18 @@ class LoginController(BaseController):
                 #TODO: set default host?
                 host = self.get_host()
 
+                desc = {'name': name}
+
                 if move_info:
-                    move_info = json.dumps(move_info)
+                    desc['move_info'] = move_info
+
+                desc = json.dumps(desc)
 
                 self.manager.cork.register(username, password, email, role='archivist',
                               max_level=50,
                               subject='webrecorder.io Account Creation',
                               email_template='templates/emailconfirm.html',
-                              description=move_info,
+                              description=desc,
                               host=host)
 
                 self.flash_message('A confirmation e-mail has been sent to <b>{0}</b>. \
