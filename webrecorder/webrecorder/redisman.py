@@ -128,7 +128,7 @@ class LoginManagerMixin(object):
                 print('MAILING_LIST is turned on, but required '
                       'fields are missing.')
             else:
-                # post new user to mailing list, with a 500ms timeout.
+                # post new user to mailing list, with a 1.5s timeout.
                 # TODO: move this to a task queue
                 try:
                     res = requests.post(self.list_endpoint,
@@ -136,7 +136,7 @@ class LoginManagerMixin(object):
                                         data=self.payload.format(
                                             email=self.get_user_email(user),
                                             username=user),
-                                        timeout=0.5
+                                        timeout=1.5
                     )
 
                     if res.status_code != 200:
@@ -200,14 +200,14 @@ class LoginManagerMixin(object):
                 print('REMOVE_ON_DELETE is turned on, but required '
                       'fields are missing.')
             else:
-                # remove user from the mailing list, with a 500ms timeout.
+                # remove user from the mailing list, with a 1.5s timeout.
                 # TODO: move this to a task queue
                 try:
                     email = self.get_user_email(user).encode('utf-8')
                     email_hash = hashlib.md5(email).hexdigest()
                     res = requests.delete(self.list_removal_endpoint.format(email_hash),
                                           auth=('nop', self.list_key),
-                                          timeout=0.5
+                                          timeout=1.5
                     )
 
                     if res.status_code != 204:
