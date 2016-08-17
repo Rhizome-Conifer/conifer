@@ -131,10 +131,12 @@ class LoginManagerMixin(object):
                 # post new user to mailing list, with a 1.5s timeout.
                 # TODO: move this to a task queue
                 try:
+                    uinfo = self.get_user_info(user)
                     res = requests.post(self.list_endpoint,
                                         auth=('nop', self.list_key),
                                         data=self.payload.format(
                                             email=self.get_user_email(user),
+                                            name=(uinfo.get('name', None) or ''),
                                             username=user),
                                         timeout=1.5
                     )
