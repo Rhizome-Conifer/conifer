@@ -60,6 +60,34 @@ class ContentController(BaseController, RewriterApp):
                                                                  url=wb_url)
             return self.redirect(new_url)
 
+        @self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
+        def redir_record_always(coll, rec, wb_url):
+            rec_title = rec
+            rec = self.sanitize_title(rec_title)
+
+            user = self.manager.get_curr_user()
+
+            if not user:
+                user = self.manager.get_anon_user(True)
+                coll = 'temp'
+                coll_title = 'Temporary Collection'
+
+            else:
+                coll_title = coll
+                coll = self.sanitize_title(coll_title)
+
+            if not self.manager.has_collection(user, coll):
+                self.manager.create_collection(user, coll, coll_title)
+
+            recording = self.manager.create_recording(user, coll, rec, rec_title)
+
+            rec = recording['id']
+            new_url = '/{user}/{coll}/{rec}/record/{url}'.format(user=user,
+                                                                 coll=coll,
+                                                                 rec=rec,
+                                                                 url=wb_url)
+            return self.redirect(new_url)
+
         # COOKIES
         @self.app.get(['/<user>/<coll>/$add_cookie'], method='POST')
         def add_cookie(user, coll):
