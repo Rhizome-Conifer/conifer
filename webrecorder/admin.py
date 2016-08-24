@@ -8,7 +8,7 @@ import redis
 import requests
 import time
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, RawTextHelpFormatter
 from datetime import datetime
 from getpass import getpass
 from six import iteritems
@@ -19,9 +19,16 @@ from webrecorder.redisutils import RedisTable
 
 
 def main():
-    parser = ArgumentParser()
-    parser.add_argument('-c', '--create-user', dest='create_user',
-                        action='store_true', help='Interface to add a new user.')
+    parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
+    parser.add_argument('-c', '--create-user',
+                        dest='create_user',
+                        nargs='*',
+                        default=None,
+                        help=('Interface to add a new user. \n\n'
+                              'supply arguments e.g.\n'
+                              '`python admin.py -c <email> <username> <passwd> <role> \'<full name>\'`\n'
+                              '\n or simply `python admin.py -c` for interactive creation.'))
+
     parser.add_argument('-m', '--modify-user', dest='modify_user',
                         action='store_true', help='Interface to modify a user (role, email)')
     parser.add_argument('-d', '--delete-user', dest='delete_user',
@@ -40,8 +47,8 @@ def main():
         list_not_invited(m, r.invite_all)
     elif r.invite:
         do_invite(m, r.invite)
-    elif r.create_user:
-        create_user(m)
+    elif r.create_user is not None:
+        create_user(m, *r.create_user)
     elif r.modify_user:
         modify_user(m)
     elif r.delete_user:
@@ -110,14 +117,16 @@ def remove_email(email):
         print('Removing from mailing list failed:', e)
 
 
-def create_user(m):
-    """Create user with a series of prompts, preform basic validation"""
+def create_user(m, email=None, username=None, passwd=None, role=None, name=None):
+    """Create a new user with command line arguments or series of prompts,
+       preforming basic validation
+    """
     users = m.get_users()
     mailing_list = os.environ.get('MAILING_LIST', '').lower()
     mailing_list = mailing_list in ('true', '1', 'yes')
 
     print('let\'s create a new user..')
-    email = input('email: ').strip()
+    email = email or input('email: ').strip()
 
     # validate email
     if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', email):
@@ -126,7 +135,7 @@ def create_user(m):
     if email in [data['email_addr'] for u, data in users.items()]:
         return print('A user already exists with {0} email!'.format(email))
 
-    username = input('username: ').strip()
+    username = username or input('username: ').strip()
 
     # validate username
     if not username:
@@ -138,12 +147,15 @@ def create_user(m):
     if username in users:
         return print('Username already exists..')
 
-    name = input('name (optional): ').strip()
+    name = name if name is not None else input('name (optional): ').strip()
 
-    role = choose_role(m)
+    role = role if role in [r[0] for r in m.cork.list_roles()] else choose_role(m)
 
-    passwd = getpass('password: ')
-    passwd2 = getpass('repeat password: ')
+    if passwd is not None:
+        passwd2 = passwd
+    else:
+        passwd = getpass('password: ')
+        passwd2 = getpass('repeat password: ')
 
     if passwd != passwd2 or not m.PASS_RX.match(passwd):
         return print('Passwords must match and be at least 8 characters long '
