@@ -4,13 +4,14 @@ import base64
 import requests
 import json
 
-from bottle import Bottle, request, HTTPError, response, HTTPResponse
+from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
 from urlrewrite.cookies import CookieTracker
 
 from pywb.utils.timeutils import timestamp_now, iso_date_to_timestamp
 from pywb.utils.timeutils import timestamp_to_datetime, datetime_to_iso_date
+from pywb.rewrite.wburl import WbUrl
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.unrewriter import HTMLDomUnRewriter, UnRewriter
@@ -36,6 +37,8 @@ class ContentController(BaseController, RewriterApp):
         self.cookie_key_templ = config['cookie_key_templ']
 
         self.cookie_tracker = CookieTracker(manager.redis)
+
+        self.content_host = config.get('content_host')
 
     def init_routes(self):
         # REDIRECTS
@@ -115,95 +118,26 @@ class ContentController(BaseController, RewriterApp):
 
         @self.app.route('/_snapshot', method='PUT')
         def snapshot():
-            user, coll = self.get_user_coll(api=True)
-            #rec = request.query.getunicode('rec')
+            return self.snapshot()
 
-            #if rec and rec != '*':
-            #    recording = self.manager.get_recording(user, coll, rec)
-            #    if not recording:
-            #        return {'error_message' 'recording not found'}
+        @self.app.route(['/_set_session', '/_set_xsession'])
+        def set_sesh():
+            sesh = self.get_session()
+            print('Host', request.environ.get('HTTP_HOST'))
+            print('Cookie', request.environ.get('HTTP_COOKIE'))
 
-            #    snap_title = recording['title'] + ' Snapshots'
-            #else:
-            if not self.manager.has_collection(user, coll):
-                return {'error_message' 'collection not found'}
+            if self.is_content_request():
+                id = request.query.get('id')
+                sesh.set_id(id)
+                return self.redirect(request.query.get('path'))
 
-            snap_title = 'Static Snapshots'
-
-            snap_rec = self.sanitize_title(snap_title)
-
-            if not self.manager.has_recording(user, coll, snap_rec):
-                recording = self.manager.create_recording(user, coll, snap_rec, snap_title)
-
-            kwargs = dict(user=user,
-                          coll=quote(coll),
-                          rec=quote(snap_rec, safe='/*'),
-                          type='snapshot')
-
-            html_text = request.body.read().decode('utf-8')
-
-            host = request.urlparts.scheme + '://' + request.urlparts.netloc
-            prefix = request.query.getunicode('prefix')
-
-            html_text = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
-
-            url = request.query.getunicode('url')
-
-            params = {'url': url}
-
-            upstream_url = self.get_upstream_url('', kwargs, params)
-
-            referrer = request.environ.get('HTTP_REFERER', '')
-            referrer = UnRewriter(host, prefix).rewrite(referrer)
-
-            timedate = datetime_to_iso_date(timestamp_to_datetime(request.query.getunicode('top_ts')))
-
-            headers = {'Content-Type': 'text/html; charset=utf-8',
-                       'WARC-User-Agent': request.environ.get('HTTP_USER_AGENT'),
-                       'WARC-Referer': referrer,
-                       #'WARC-Refers-To-Target-URI': request.query.getunicode('top_url'),
-                       #'WARC-Refers-To-Date': timedate,
-                      }
-
-            r = requests.put(upstream_url,
-                             data=BytesIO(html_text.encode('utf-8')),
-                             headers=headers,
-                            )
-
-            try:
-                res = r.json()
-                if res['success'] != 'true':
-                    print(res)
-                    return {'error_message': 'Snapshot Failed'}
-
-                warc_date = res.get('WARC-Date')
-
-            except Exception as e:
-                print(e)
-                return {'error_message': 'Snapshot Failed'}
-
-
-            title = request.query.getunicode('title')
-
-            if title:
-                if warc_date:
-                    timestamp = iso_date_to_timestamp(warc_date)
-                else:
-                    timestamp = timestamp_now()
-
-
-                page_data = {'url': url,
-                             'title': title,
-                             'timestamp': timestamp,
-                             'tags': ['snapshot'],
-                            }
-
-                res = self.manager.add_page(user, coll, snap_rec, page_data)
-
-                print(type(page_data))
-                return {'snapshot': page_data}
             else:
-                return {'snapshot': ''}
+                url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
+                response.headers['Access-Control-Allow-Origin'] = url
+                response.headers['Cache-Control'] = 'no-cache'
+
+                print(url + '/_set_xsession?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
+                redirect(url + '/_set_xsession?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
 
     def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
         rec_name = '*'
@@ -211,8 +145,6 @@ class ContentController(BaseController, RewriterApp):
         # recording replay
         if not self.WB_URL_RX.match(wb_url) and '/' in wb_url:
             rec_name, wb_url = wb_url.split('/', 1)
-
-        print('REC NAME', rec_name, wb_url)
 
         if rec_name == '*':
             request.path_shift(2)
@@ -231,10 +163,22 @@ class ContentController(BaseController, RewriterApp):
                                    type=type_,
                                    is_embed=is_embed)
 
+    def is_content_request(self):
+        if not self.content_host:
+            return False
+
+        return request.environ.get('HTTP_HOST') == self.content_host
+
     def handle_routing(self, wb_url, user, coll, rec, type, is_embed=False):
         wb_url = self.add_query(wb_url)
 
         not_found = False
+
+        sesh = self.get_session()
+
+        if sesh.is_new() and self.is_content_request():
+            full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
+            return redirect('https://new.webrecorder.io/_set_session?path=' + quote(full_path))
 
         if type in ('record', 'patch', 'replay'):
             if not self.manager.has_recording(user, coll, rec):
@@ -282,9 +226,11 @@ class ContentController(BaseController, RewriterApp):
                       is_embed=is_embed)
 
         try:
+            self.check_if_content(wb_url, request.environ)
+
             resp = self.render_content(wb_url, kwargs, request.environ)
 
-            self._filter_headers(type, resp.status_headers)
+            #self._filter_headers(type, resp.status_headers)
 
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,
@@ -306,6 +252,11 @@ class ContentController(BaseController, RewriterApp):
                        }
 
             return handle_error(ue.status_code, type, ue.url, ue.msg)
+
+    def check_if_content(self, wb_url, environ):
+        wb_url = WbUrl(wb_url)
+        if (wb_url.is_replay()):
+            environ['is_content'] = True
 
     def _filter_headers(self, type, status_headers):
         if type in ('replay', 'replay-coll'):
@@ -382,11 +333,32 @@ class ContentController(BaseController, RewriterApp):
         kwargs['coll_title'] = collection.get('title', '')
         return kwargs
 
+    def get_host_prefix(self, environ):
+        if self.content_host and environ.get('is_content'):
+            return environ['wsgi.url_scheme'] + '://' + self.content_host
+        else:
+            return super(ContentController, self).get_host_prefix(environ)
+
+    def get_top_url(self, full_prefix, wb_url, cdx, kwargs):
+        if wb_url.mod != '':
+            full_prefix = full_prefix.replace('wbrc.io', 'new.webrecorder.io')
+            return super(ContentController, self).get_top_url(full_prefix, wb_url, cdx, kwargs)
+
+        top_url = full_prefix
+        top_url += wb_url.to_str()
+        print('TOP URL', top_url)
+        return top_url
+
     def get_top_frame_params(self, wb_url, kwargs):
         type = kwargs['type']
+
+        top_prefix = super(ContentController, self).get_host_prefix(request.environ)
+        top_prefix += self.get_rel_prefix(request.environ)
+
         if type == 'live':
             return {'curr_mode': type,
-                    'is_embed': kwargs.get('is_embed')}
+                    'is_embed': kwargs.get('is_embed'),
+                    'top_prefix': top_prefix}
 
         # refresh cookie expiration,
         # disable until can guarantee cookie is not changed!
@@ -406,6 +378,7 @@ class ContentController(BaseController, RewriterApp):
                 'coll_title': info.get('coll_title', ''),
                 'rec_title': info.get('rec_title', ''),
                 'is_embed': kwargs.get('is_embed'),
+                'top_prefix': top_prefix,
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs):
@@ -444,4 +417,95 @@ class ContentController(BaseController, RewriterApp):
             return browser_embed('firefox')
 
         return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
+
+    def snapshot():
+        user, coll = self.get_user_coll(api=True)
+        #rec = request.query.getunicode('rec')
+
+        #if rec and rec != '*':
+        #    recording = self.manager.get_recording(user, coll, rec)
+        #    if not recording:
+        #        return {'error_message' 'recording not found'}
+
+        #    snap_title = recording['title'] + ' Snapshots'
+        #else:
+        if not self.manager.has_collection(user, coll):
+            return {'error_message' 'collection not found'}
+
+        snap_title = 'Static Snapshots'
+
+        snap_rec = self.sanitize_title(snap_title)
+
+        if not self.manager.has_recording(user, coll, snap_rec):
+            recording = self.manager.create_recording(user, coll, snap_rec, snap_title)
+
+        kwargs = dict(user=user,
+                      coll=quote(coll),
+                      rec=quote(snap_rec, safe='/*'),
+                      type='snapshot')
+
+        html_text = request.body.read().decode('utf-8')
+
+        host = request.urlparts.scheme + '://' + request.urlparts.netloc
+        prefix = request.query.getunicode('prefix')
+
+        html_text = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
+
+        url = request.query.getunicode('url')
+
+        params = {'url': url}
+
+        upstream_url = self.get_upstream_url('', kwargs, params)
+
+        referrer = request.environ.get('HTTP_REFERER', '')
+        referrer = UnRewriter(host, prefix).rewrite(referrer)
+
+        timedate = datetime_to_iso_date(timestamp_to_datetime(request.query.getunicode('top_ts')))
+
+        headers = {'Content-Type': 'text/html; charset=utf-8',
+                   'WARC-User-Agent': request.environ.get('HTTP_USER_AGENT'),
+                   'WARC-Referer': referrer,
+                   #'WARC-Refers-To-Target-URI': request.query.getunicode('top_url'),
+                   #'WARC-Refers-To-Date': timedate,
+                  }
+
+        r = requests.put(upstream_url,
+                         data=BytesIO(html_text.encode('utf-8')),
+                         headers=headers,
+                        )
+
+        try:
+            res = r.json()
+            if res['success'] != 'true':
+                print(res)
+                return {'error_message': 'Snapshot Failed'}
+
+            warc_date = res.get('WARC-Date')
+
+        except Exception as e:
+            print(e)
+            return {'error_message': 'Snapshot Failed'}
+
+
+        title = request.query.getunicode('title')
+
+        if title:
+            if warc_date:
+                timestamp = iso_date_to_timestamp(warc_date)
+            else:
+                timestamp = timestamp_now()
+
+
+            page_data = {'url': url,
+                         'title': title,
+                         'timestamp': timestamp,
+                         'tags': ['snapshot'],
+                        }
+
+            res = self.manager.add_page(user, coll, snap_rec, page_data)
+
+            return {'snapshot': page_data}
+        else:
+            return {'snapshot': ''}
+
 

@@ -67,6 +67,10 @@ class Session(object):
 
         return self._sesh['id']
 
+    def set_id(self, id):
+        self._sesh['id'] = id
+        self.save()
+
     def save(self):
         self.should_save = True
 

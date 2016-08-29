@@ -176,8 +176,10 @@ var EventHandlers = (function() {
             var height;
 
             if (height = $("header").height()) {
-                $("#replay_iframe").css("padding-bottom", height + "px");
-                $("#replay_iframe").css("margin-top", "-9px");
+                height += 1;
+                $("#replay_iframe").css("top", height + "px");
+                //$("#replay_iframe").css("padding-bottom", height + "px");
+                //$("#replay_iframe").css("margin-top", "-9px");
             } else if (height = $(".embed-footer").height()) {
                 $("#replay_iframe").css("padding-bottom", height + "px");
             }
@@ -383,7 +385,7 @@ var RecordingSizeWidget = (function() {
 
     var pollForSizeUpdate = function() {
         Recordings.get(recordingId, updateSizeCounter, dontUpdateSizeCounter);
-        exclude_password_targets();
+        //exclude_password_targets();
         if (isAlmostOutOfSpace() && !warningPresent()) {
             showWarningMessage();
             disableUrlBar();
@@ -787,10 +789,11 @@ $(function() {
             attributes.url = state.url;
 
             attributes.timestamp = state.ts;
-            attributes.title = $('iframe').contents().find('title').text();
+            attributes.title = state.title;
+            //attributes.title = $('iframe').contents().find('title').text();
 
             var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
-            setTitle(msg, state.url);
+            setTitle(msg, state.url, state.title);
             
             Recordings.addPage(recordingId, attributes);
             lastUrl = attributes.url;
@@ -798,12 +801,12 @@ $(function() {
 
         } else if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
             setUrl(state.url);
-            setTitle("Archived", state.url);
+            setTitle("Archived", state.url, state.title);
         }
     }
 
-    function setTitle(status_msg, url) {
-        var title = $('iframe').contents().find('title').text();
+    function setTitle(status_msg, url, title) {
+        //var title = $('iframe').contents().find('title').text();
         if (!title) {
             title = url;
         }
@@ -816,10 +819,12 @@ $(function() {
     $("#replay_iframe").load(function(e) {
         var replay_iframe = window.document.getElementById("replay_iframe");
 
+        return;
+
         // if WB_wombat_location present, then likely already received a message
-        if (replay_iframe.contentWindow && replay_iframe.contentWindow.wbinfo) {
-            return;
-        }
+        //if (replay_iframe.contentWindow && replay_iframe.contentWindow.wbinfo) {
+        //    return;
+        //}
 
         // extract actual url from replay url
         // no access to timestamp, it will be computed from recording
