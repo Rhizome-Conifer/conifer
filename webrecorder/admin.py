@@ -285,8 +285,12 @@ def delete_user(m):
     if remove_on_delete:
         remove_email(users[username]['email_addr'])
 
-    # delete user from cork
-    m.cork.user(username).delete()
+    # delete user data and remove from redis
+    res = m._send_delete('user', username)
+
+    if res:
+        # delete user from cork
+        m.cork.user(username).delete()
 
 
 def list_not_invited(m, invite=False):
