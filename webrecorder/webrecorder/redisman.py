@@ -72,6 +72,9 @@ class LoginManagerMixin(object):
         self.remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
                                     in ('true', '1', 'yes'))
 
+    def get_users(self):
+        return RedisTable(self.redis, 'h:users')
+
     def create_user(self, reg):
         try:
             user, init_info = self.cork.validate_registration(reg)
@@ -205,12 +208,11 @@ class LoginManagerMixin(object):
                 # remove user from the mailing list, with a 1.5s timeout.
                 # TODO: move this to a task queue
                 try:
-                    email = self.get_user_email(user).encode('utf-8')
+                    email = self.get_user_email(user).encode('utf-8').lower()
                     email_hash = hashlib.md5(email).hexdigest()
                     res = requests.delete(self.list_removal_endpoint.format(email_hash),
                                           auth=('nop', self.list_key),
-                                          timeout=1.5
-                    )
+                                          timeout=1.5)
 
                     if res.status_code != 204:
                         print('Unexpected mailing list API response.. '
@@ -270,7 +272,7 @@ class LoginManagerMixin(object):
     def get_user_email(self, user):
         if not user:
             return ''
-        all_users = RedisTable(self.redis, 'h:users')
+        all_users = self.get_users()
         userdata = all_users[user]
         if userdata:
             return userdata.get('email_addr', '')
@@ -929,8 +931,14 @@ class CollManagerMixin(object):
 
         return self._has_collection_no_access_check(user, coll)
 
-    def create_collection(self, user, coll, coll_title, desc='', public=False):
-        self.assert_can_admin(user, coll)
+    def create_collection(self, user, coll, coll_title, desc='', public=False, synthetic=False):
+        """Create a collection.
+           :param synthetic: whether this request is from a command line script
+                             `True` or web request `False`
+           :type synthetic: boolean
+        """
+        if not synthetic:
+            self.assert_can_admin(user, coll)
 
         orig_coll = coll
         orig_coll_title = coll_title
@@ -956,7 +964,9 @@ class CollManagerMixin(object):
                 pi.hset(key, self.READ_PREFIX + self.PUBLIC, 1)
             pi.hsetnx(key, 'size', '0')
 
-        return self.get_collection(user, coll)
+        if not synthetic:
+            return self.get_collection(user, coll)
+        return None
 
     def num_collections(self, user):
         key_pattern = self.coll_info_key.format(user=user, coll='*')
@@ -1113,7 +1123,7 @@ class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin
 
 
 # ============================================================================
-def init_manager_for_invite():
+def init_manager_for_cli():
         config = load_config('WR_CONFIG', None,
                              'WR_USER_CONFIG', None)
 
@@ -1129,5 +1139,3 @@ def init_manager_for_invite():
         manager = RedisDataManager(r, cork, None, config)
 
         return manager
-
-

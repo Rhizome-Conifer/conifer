@@ -102,11 +102,14 @@ class WebRecCork(Cork):
                         return 100
                 return MockUser()
 
-        try:
-            cork = InitCork(backend=backend)
+        cork = InitCork(backend=backend)
+
+        # role initiation
+        roles = [r[0] for r in cork.list_roles()]
+        if 'archivist' not in roles:
             cork.create_role('archivist', 50)
-        except:
-            pass
+        if 'admin' not in roles:
+            cork.create_role('admin', 100)
 
 
 # ============================================================================
