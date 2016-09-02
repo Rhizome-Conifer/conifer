@@ -20,6 +20,7 @@ class BaseController(object):
 
         self.app_host = os.environ['APP_HOST']
         self.content_host = os.environ['CONTENT_HOST']
+        self.cache_template = config.get('cache_template')
 
         self.init_routes()
 

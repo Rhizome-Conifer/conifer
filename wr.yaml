@@ -34,6 +34,7 @@ temp_prefix: 'temp-'
 # time interval for websocket status updates (in seconds)
 status_update_secs: 1.0
 
+cache_template: 'cache:{0}'
 
 # Upstream url templates
 url_templates:
@@ -42,7 +43,7 @@ url_templates:
 
     # upload path
     upload: '{record_host}/record/$upload?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=stream'
- 
+
     # core replay funcs
     live: '{replay_host}/live/resource/postreq?'
 

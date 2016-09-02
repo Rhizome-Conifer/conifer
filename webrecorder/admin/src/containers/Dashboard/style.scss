@@ -1,0 +1,23 @@
+@import 'src/vars';
+
+h4 {
+    display: inline-block;
+}
+
+.wr-overview {
+    dt {
+        float:left;
+        margin-right: 1rem;
+    }
+
+    @extend .clearfix;
+}
+
+.wr-activity {
+    display: flex;
+    justify-content: flex-start;
+
+    .radial-graph {
+        margin-right: 2.5rem;
+    }
+}

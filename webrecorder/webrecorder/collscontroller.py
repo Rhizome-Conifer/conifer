@@ -92,6 +92,10 @@ class CollsController(BaseController):
             user = self.get_user(api=True)
             self._ensure_coll_exists(user, coll)
 
+            # TODO: notify the user if this is a request from the admin panel
+            if self.post_get('notify') == 'true' and self.manager.is_superuser():
+                pass
+
             public = self.post_get('public') == 'true'
             self.manager.set_public(user, coll, public)
 

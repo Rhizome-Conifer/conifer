@@ -1,0 +1,21 @@
+
+/* colors */
+$white: #FFF;
+$blue: #429EEC; /* link hover */
+$header-bg: #83877E;
+$gray: #A2A2A2;
+$light-gray: #F9F9F9; /* table stripe */
+$list-highlight: rgba(218, 218, 218, 0.33); /* table highlight */
+
+/* space warning colors */
+$green: #65CD49;
+$yellow: #E8DD5F;
+$red: #F04245;
+
+
+/* utils */
+.clearfix:after {
+    content: '';
+    display: block;
+    clear: both;
+}

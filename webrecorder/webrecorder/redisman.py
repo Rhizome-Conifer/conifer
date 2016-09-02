@@ -71,7 +71,58 @@ class LoginManagerMixin(object):
                                         os.environ.get('MAILING_LIST_REMOVAL', ''))
         self.payload = os.environ.get('MAILING_LIST_PAYLOAD', '')
         self.remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
-                                    in ('true', '1', 'yes'))
+                                 in ('true', '1', 'yes'))
+
+    def add_to_mailing_list(self, username, email, name):
+        """3rd party mailing list subscription"""
+        if not self.list_endpoint or not self.list_key:
+            return print('MAILING_LIST is turned on, but required fields are '
+                         'missing.')
+
+        try:
+            res = requests.post(self.list_endpoint,
+                                auth=('nop', self.list_key),
+                                data=self.payload.format(
+                                    email=email,
+                                    name=name,
+                                    username=username),
+                                timeout=1.5)
+
+            if res.status_code != 200:
+                print('Unexpected mailing list API response.. '
+                      'status code: {0.status_code}\n'
+                      'content: {0.content}'.format(res))
+
+        except Exception as e:
+            if e is requests.exceptions.Timeout:
+                print('Mailing list API timed out..')
+            else:
+                print('Adding to mailing list failed:', e)
+
+    def remove_from_mailing_list(self, email):
+        """3rd party mailing list removal"""
+        if not self.list_removal_endpoint or not self.list_key:
+            # fail silently, log info
+            return print('REMOVE_ON_DELETE is turned on, but required '
+                         'fields are missing.')
+
+        try:
+            email = email.encode('utf-8').lower()
+            email_hash = hashlib.md5(email).hexdigest()
+            res = requests.delete(self.list_removal_endpoint.format(email_hash),
+                                  auth=('nop', self.list_key),
+                                  timeout=1.5)
+
+            if res.status_code != 204:
+                print('Unexpected mailing list API response.. '
+                      'status code: {0.status_code}\n'
+                      'content: {0.content}'.format(res))
+
+        except Exception as e:
+            if e is requests.exceptions.Timeout:
+                print('Mailing list API timed out..')
+            else:
+                print('Removing from mailing list failed:', e)
 
     def get_users(self):
         return RedisTable(self.redis, 'h:users')
@@ -127,34 +178,9 @@ class LoginManagerMixin(object):
 
         # Check for mailing list management
         if self.mailing_list:
-            if not self.list_endpoint or not self.list_key:
-                # fail silently, log info
-                print('MAILING_LIST is turned on, but required '
-                      'fields are missing.')
-            else:
-                # post new user to mailing list, with a 1.5s timeout.
-                # TODO: move this to a task queue
-                try:
-                    uinfo = self.get_user_info(user)
-                    res = requests.post(self.list_endpoint,
-                                        auth=('nop', self.list_key),
-                                        data=self.payload.format(
-                                            email=self.get_user_email(user),
-                                            name=(uinfo.get('name', None) or ''),
-                                            username=user),
-                                        timeout=1.5
-                    )
-
-                    if res.status_code != 200:
-                        print('Unexpected mailing list API response.. '
-                              'status code: {0.status_code}\n'
-                              'content: {0.content}'.format(res))
-
-                except Exception as e:
-                    if e is requests.exceptions.Timeout:
-                        print('Mailing list API timed out..')
-                    else:
-                        print('Adding to mailing list failed:', e)
+            self.add_to_mailing_list(user,
+                                     self.get_user_email(user),
+                                     self.get_user_info(user).get('name', ''))
 
         return user, first_coll
 
@@ -196,35 +222,12 @@ class LoginManagerMixin(object):
         self.redis.hset(key, 'desc', desc)
 
     def delete_user(self, user):
-        if not self.is_anon(user):
+        if not self.is_anon(user) and not self.is_superuser():
             self.assert_user_is_owner(user)
 
         # Check for mailing list & removal endpoint
         if self.mailing_list and self.remove_on_delete:
-            if not self.list_removal_endpoint or not self.list_key:
-                # fail silently, log info
-                print('REMOVE_ON_DELETE is turned on, but required '
-                      'fields are missing.')
-            else:
-                # remove user from the mailing list, with a 1.5s timeout.
-                # TODO: move this to a task queue
-                try:
-                    email = self.get_user_email(user).encode('utf-8').lower()
-                    email_hash = hashlib.md5(email).hexdigest()
-                    res = requests.delete(self.list_removal_endpoint.format(email_hash),
-                                          auth=('nop', self.list_key),
-                                          timeout=1.5)
-
-                    if res.status_code != 204:
-                        print('Unexpected mailing list API response.. '
-                              'status code: {0.status_code}\n'
-                              'content: {0.content}'.format(res))
-
-                except Exception as e:
-                    if e is requests.exceptions.Timeout:
-                        print('Mailing list API timed out..')
-                    else:
-                        print('Removing from mailing list failed:', e)
+            self.remove_from_mailing_list(self.get_user_email(user))
 
         res = self._send_delete('user', user)
         if res and not self.is_anon(user):
@@ -232,6 +235,15 @@ class LoginManagerMixin(object):
             self.cork.user(user).delete()
 
         return res
+
+    def get_size_allotment(self, user):
+        user_key = self.user_key.format(user=user)
+        return int(self.redis.hget(user_key, 'max_size')
+                   or self.default_max_size)
+
+    def get_size_usage(self, user):
+        user_key = self.user_key.format(user=user)
+        return int(self.redis.hget(user_key, 'size') or 0)
 
     def get_size_remaining(self, user):
         user_key = self.user_key.format(user=user)
@@ -485,6 +497,16 @@ class AccessManagerMixin(object):
     WRITE_PREFIX = 'w:'
     PUBLIC = '@public'
 
+    def __init__(self, *args, **kwargs):
+        super(AccessManagerMixin, self).__init__(*args, **kwargs)
+
+        # custom cork auth decorators
+        self.admin_view = self.cork.make_auth_decorator(role='admin',
+                                                        fixed_role=True,
+                                                        fail_redirect='/_login')
+        self.auth_view = self.cork.make_auth_decorator(role='archivist',
+                                                       fail_redirect='/_login')
+
     def is_anon(self, user):
         #return not user or user == '@anon' or user.startswith('anon/')
         if not user:
@@ -507,8 +529,8 @@ class AccessManagerMixin(object):
         curr_user = sesh.curr_user
         curr_role = sesh.curr_role
 
-        # current user always has access, if collection exists
-        if user == curr_user:
+        # current user or superusers always have access, if collection exists
+        if user == curr_user or curr_role == 'admin':
             return self._has_collection_no_access_check(user, coll)
 
         key = self.coll_info_key.format(user=user, coll=coll)
@@ -529,7 +551,7 @@ class AccessManagerMixin(object):
         return res == b'1'
 
     def set_public(self, user, coll, is_public):
-        if not self.can_admin_coll(user, coll):
+        if not self.is_superuser() and not self.can_admin_coll(user, coll):
             return False
 
         key = self.coll_info_key.format(user=user, coll=coll)
@@ -558,6 +580,13 @@ class AccessManagerMixin(object):
             return True
 
         return self.is_owner(user)
+
+    def is_superuser(self):
+        """Test if logged in user has 100 level `admin` privledges.
+           Named `superuser` to prevent confusion with `can_admin`
+        """
+        sesh = request.environ['webrec.session']
+        return sesh.curr_role == 'admin'
 
     def is_owner(self, user):
         sesh = request.environ['webrec.session']
@@ -1008,7 +1037,7 @@ class CollManagerMixin(object):
 
         return len(keys)
 
-    def get_collections(self, user):
+    def get_collections(self, user, include_recs=False, api=False):
         key_pattern = self.coll_info_key.format(user=user, coll='*')
 
         keys = list(self.redis.scan_iter(match=key_pattern))
@@ -1019,9 +1048,12 @@ class CollManagerMixin(object):
 
             all_colls = pi.execute()
 
-        all_colls = [self._fill_collection(user, x) for x in all_colls]
+        all_colls = [self._fill_collection(user, x, include_recs=include_recs)
+                     for x in all_colls]
 
-        if not self.is_owner(user):
+        # if this is an API request or the user is not an owner,
+        # filter out private collections
+        if not self.is_owner(user) or api:
             all_colls = [coll for coll in all_colls
                          if coll.get(self.READ_PREFIX + self.PUBLIC)]
 
