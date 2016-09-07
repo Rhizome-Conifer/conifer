@@ -103,8 +103,12 @@
     }
 
     function startCheck() {
+        if (!window.wbinfo.is_live) {
+            return;
+        }
+
         exclude_password_targets();
-        iv = setInterval(exclude_password_targets, 4900);
+        setInterval(exclude_password_targets, 4900);
     }
 
     window.addEventListener("DOMContentLoaded", startCheck);

@@ -24,6 +24,8 @@ default_max_coll: 10
 
 upload_wait_secs: 30
 
+skip_key_secs: 330
+
 temp_prefix: 'temp-'
 
 

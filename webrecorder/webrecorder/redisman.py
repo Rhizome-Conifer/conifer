@@ -53,6 +53,7 @@ class LoginManagerMixin(object):
 
         self.user_key = config['info_key_templ']['user']
         self.user_skip_key = config['skip_key_templ']
+        self.skip_key_secs = int(config['skip_key_secs'])
 
         self.rename_url_templ = config['url_templates']['rename']
 
@@ -402,7 +403,7 @@ class LoginManagerMixin(object):
 
     def skip_post_req(self, user, url):
         key = self.user_skip_key.format(user=user, url=url)
-        r = self.redis.setex(key, 300, 1)
+        r = self.redis.setex(key, self.skip_key_secs, 1)
 
     def rename(self, user, coll, new_coll, rec='*', new_rec='*',
                new_user='', title='', is_move=False):
