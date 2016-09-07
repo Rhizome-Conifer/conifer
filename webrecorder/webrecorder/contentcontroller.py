@@ -418,7 +418,7 @@ class ContentController(BaseController, RewriterApp):
 
         return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
 
-    def snapshot():
+    def snapshot(self):
         user, coll = self.get_user_coll(api=True)
         #rec = request.query.getunicode('rec')
 

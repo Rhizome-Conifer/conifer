@@ -103,6 +103,7 @@ class UserController(BaseController):
             if not user:
                 user = self.manager.get_anon_user()
 
+            print('SKIP', url)
             self.manager.skip_post_req(user, url)
             return {}
 

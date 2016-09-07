@@ -443,7 +443,7 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
         skip_key = res_template(self.skip_key_template, params)
 
         if self.redis.get(skip_key) == b'1':
-            print('SKIPPING REQ', target_uri)
+            print('SKIPPING REQ', params.get('url'))
             return False
 
         return True

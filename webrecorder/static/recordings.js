@@ -193,119 +193,73 @@ var EventHandlers = (function() {
 
 
 var Snapshot = (function() {
-    var counter = 0;
-
-    function process(win, topinfo, top_page) {
-        for (var i = 0; i < win.frames.length; i++) {
-            var url = process(win.frames[i], topinfo, false);
-
-            win.frames[i].frameElement.setAttribute("data-src-target", url);
-        }
-
-        return addSnapshot(win, topinfo, top_page);
-    }
-
-    function doSnapshot() {
+    function queueSnapshot() {
         var main_window = document.getElementById("replay_iframe").contentWindow;
-
-        var win = main_window;
-
-        process(win, main_window.wbinfo, true);
-    }
-
-    function addSnapshot(win, topinfo, top_page) {
-        if (win.WB_wombat_location && win.WB_wombat_location.href) {
-            url = win.WB_wombat_location.href;
-            //url = url.replace(/^(https?:\/\/)/, '$1snapshot:')
-
-        } else if (win.document.all.length <= 3) {
-            url = "about:blank";
-            return url;
-        } else {
-            url = "http://embed.snapshot/" + counter;
-            counter++;
-        }
-
-        var params = {prefix: topinfo.prefix,
-                      url: url,
-                      top_url: topinfo.url,
-                      top_ts: topinfo.timestamp,
-                      }
-
-        var title;
-
-        if (top_page) {
-            title = win.document.title;
-            params.title = title;
-        }
-
-        params = $.param(params);
-        params += "&user=" + user + "&coll=" + coll + "&rec=" + rec;
-
-        //var content = getContents(win);
-        var s = new XMLSerializer();
-        var content = s.serializeToString(win.document);
-
-        var target = window.location.origin + "/_snapshot?" + params;
-
-        $.ajax({
-            type: "PUT",
-            url: target,
-            dataType: "json",
-            data: content,
-            success: function(data) {
-                if (top_page) {
-                    if (typeof(data) == "string") {
-                        data = JSON.parse(data);
-                    }
-
-                    $("#snapshot").prop("disabled", false);
-
-                    var snapUrl = "/" + user + "/" + coll + "/" + data.snapshot.timestamp + "/" + data.snapshot.url;
-
-                    $("#snapshot-modal .snap-link").attr('href', snapUrl);
-                    $("#snapshot-modal .snap-ts").attr("data-time-ts", data.snapshot.timestamp);
-                    TimesAndSizesFormatter.format();
-
-                    if (!title) {
-                        title = data.snapshot.url;
-                    }
-
-                    $("#snapshot-modal .snap-title").text(title);
-
-                    $('#snapshot-modal .snap-wait').hide();
-                    $('#snapshot-modal .snap-created').show();
-                }
-            },
-            error: function() {
-                console.log("Snapshot Error");
-            },
-            dataType: 'html',
-        });
-
-
-        if (top_page) {
-            $('#snapshot-modal .snap-wait').show();
-            $('#snapshot-modal .snap-created').hide();
-
-            $('#snapshot-modal')
-                .modal({'keyboard': true})
-                .modal('show');
-        }
-
-        return url;
+        main_window.postMessage({wb_type: "snapshot-req"}, "*");
     }
 
     function start() {
         $('#snapshot-modal').appendTo('body'); // sorry for this hack: makes modal appear on top of faded backgr!
 
-        $("#snapshot").on('click', function() {
-            doSnapshot();
-        });
+        $("#snapshot").on('click', queueSnapshot);
     }
 
     return {start: start};
-}());
+})();
+
+
+function uploadStaticSnapshot(snapdata) {
+    var params = $.param(snapdata.params)
+    params += "&user=" + user + "&coll=" + coll + "&rec=" + rec;
+
+    var target = window.location.origin + "/_snapshot?" + params;
+
+    $.ajax({
+        type: "PUT",
+        url: target,
+        dataType: "json",
+        data: snapdata.contents,
+        success: function(data) {
+            if (snapdata.top_page) {
+                if (typeof(data) == "string") {
+                    data = JSON.parse(data);
+                }
+
+                $("#snapshot").prop("disabled", false);
+
+                var snapUrl = "/" + user + "/" + coll + "/" + data.snapshot.timestamp + "/" + data.snapshot.url;
+
+                $("#snapshot-modal .snap-link").attr('href', snapUrl);
+                $("#snapshot-modal .snap-ts").attr("data-time-ts", data.snapshot.timestamp);
+                TimesAndSizesFormatter.format();
+
+                if (!snapdata.params.title) {
+                    snapdata.params.title = data.snapshot.url;
+                }
+
+                $("#snapshot-modal .snap-title").text(snapdata.params.title);
+
+                $('#snapshot-modal .snap-wait').hide();
+                $('#snapshot-modal .snap-created').show();
+            }
+        },
+        error: function() {
+            console.log("Snapshot Error");
+        },
+        dataType: 'html',
+    });
+
+    if (snapdata.top_page) {
+        $('#snapshot-modal .snap-wait').show();
+        $('#snapshot-modal .snap-created').hide();
+
+        $('#snapshot-modal')
+            .modal({'keyboard': true})
+            .modal('show');
+    }
+}
+
+
 
 
 var RouteTo = (function(){
@@ -385,7 +339,6 @@ var RecordingSizeWidget = (function() {
 
     var pollForSizeUpdate = function() {
         Recordings.get(recordingId, updateSizeCounter, dontUpdateSizeCounter);
-        //exclude_password_targets();
         if (isAlmostOutOfSpace() && !warningPresent()) {
             showWarningMessage();
             disableUrlBar();
@@ -673,39 +626,10 @@ var ContentMessages = (function() {
     }
 })();
 
-// Check as soon as frame is loaded
-$("#replay_iframe").load(function() {
-    exclude_password_targets();
-});
-
-var pass_form_targets = {};
-
-function exclude_password_targets() {
-    if (typeof wbinfo === "undefined" || (window.curr_mode != "record" && window.curr_mode != "patch")) {
-        return;
-    }
-
-    $("input[type=password]", $("#replay_iframe").contents()[0]).each(function(i, input) {
-        if (input && input.form && input.form.action) {
-            var form_action = extract_replay_url(input.form.action);
-            if (!form_action) {
-                form_action = input.form.action;
-            }
-            if (pass_form_targets[form_action]) {
-                return;
-            }
-
-            $.getJSON("/_skipreq?" + $.param({url: form_action}), function(data) {
-                pass_form_targets[form_action] = true;
-                //console.log("Skipping rec sensitive url: " + form_action);
-            });
-        }
-    });
-}
-
 $(function() {
     var lastUrl = undefined;
     var lastTs = undefined;
+    var lastTitle = undefined;
 
     function handleReplayEvent(event) {
         var replay_iframe = window.document.getElementById("replay_iframe");
@@ -720,16 +644,16 @@ $(function() {
 
         var state = event.data;
 
-        if (!state.wb_type) {
-            return;
-        }
-
         if (state.wb_type == "load") {
             addNewPage(state);
         }
 
         if (state.wb_type == "cookie") {
             setDomainCookie(state);
+        }
+
+        if (state.wb_type == "snapshot") {
+            uploadStaticSnapshot(state);
         }
     }
 
@@ -773,8 +697,18 @@ $(function() {
         if (state.is_error) {
             setUrl(state.url);
         } else if (window.curr_mode == "record" || window.curr_mode == "patch") {
-            if (lastUrl == state.url && lastTs == state.ts) {
-                return;
+            if (lastUrl == state.url) {
+                if (!state.ts && lastTs) {
+                    return;
+                }
+
+                if (!state.title && lastTitle) {
+                    return;
+                }
+
+                if (state.title == lastTitle && state.ts == lastTs) {
+                    return;
+                }
             }
 
             // if not is_live, then this page/bookmark is not a new recording
@@ -790,7 +724,6 @@ $(function() {
 
             attributes.timestamp = state.ts;
             attributes.title = state.title;
-            //attributes.title = $('iframe').contents().find('title').text();
 
             var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
             setTitle(msg, state.url, state.title);
@@ -798,6 +731,7 @@ $(function() {
             Recordings.addPage(recordingId, attributes);
             lastUrl = attributes.url;
             lastTs = attributes.timestamp;
+            lastTitle = attributes.title;
 
         } else if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
             setUrl(state.url);
@@ -819,16 +753,18 @@ $(function() {
     $("#replay_iframe").load(function(e) {
         var replay_iframe = window.document.getElementById("replay_iframe");
 
-        return;
+        if (!replay_iframe) {
+            return;
+        }
 
-        // if WB_wombat_location present, then likely already received a message
-        //if (replay_iframe.contentWindow && replay_iframe.contentWindow.wbinfo) {
-        //    return;
-        //}
+        // Only update if haven't set from postMessage, eg. lastUrl is empty
+        if (lastUrl) {
+            return;
+        }
 
         // extract actual url from replay url
         // no access to timestamp, it will be computed from recording
-        var url = extract_replay_url(replay_iframe.contentWindow.location.href);
+        var url = extract_replay_url(replay_iframe.getAttribute("src"));
         state = {"url": url }
 
         addNewPage(state);
