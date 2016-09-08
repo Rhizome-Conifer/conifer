@@ -651,14 +651,17 @@ $(function() {
 
         if (state.wb_type == "load") {
             addNewPage(state);
-        }
-
-        if (state.wb_type == "cookie") {
+        } else if (state.wb_type == "cookie") {
             setDomainCookie(state);
-        }
-
-        if (state.wb_type == "snapshot") {
+        } else if (state.wb_type == "snapshot") {
             uploadStaticSnapshot(state);
+        } else if (state.wb_type == "hashchange") {
+            var url = getUrl();
+            url = url.split("#", 1)[0];
+            if (state.hash) {
+                url += state.hash;
+            }
+            setUrl(url);
         }
     }
 
