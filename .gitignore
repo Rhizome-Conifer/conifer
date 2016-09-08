@@ -2,7 +2,6 @@
 
 collections
 users
-cache
 
 # C extensions
 *.so
@@ -23,8 +22,6 @@ develop-eggs
 lib
 lib64
 __pycache__
-.cache
-.webassets-cache
 
 # Installer logs
 pip-log.txt
