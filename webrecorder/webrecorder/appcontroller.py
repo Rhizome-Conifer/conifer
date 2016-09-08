@@ -159,6 +159,7 @@ class AppController(BaseController):
         @self.bottle_app.route(['/', '/index.html'])
         @self.jinja2_view('index.html', refresh_cookie=False)
         def home_page():
+            self.redir_host()
             resp = {'is_home': '1'}
 
             curr_user = self.manager.get_curr_user()

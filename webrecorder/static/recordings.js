@@ -265,6 +265,10 @@ function uploadStaticSnapshot(snapdata) {
 var RouteTo = (function(){
     var host = window.location.protocol + "//" + window.location.host;
 
+    var newRecording = function(collection, recording, url, mode, target) {
+        routeTo(host + "/$record/" + collection + "/" + recording + "/" + url, target);
+    }
+
     var recordingInProgress = function(user, collection, recording, url, mode, target) {
         if (!mode) {
             mode = "record";
@@ -308,6 +312,7 @@ var RouteTo = (function(){
     }
 
     return {
+        newRecording: newRecording,
         recordingInProgress: recordingInProgress,
         collectionInfo: collectionInfo,
         recordingInfo: recordingInfo,

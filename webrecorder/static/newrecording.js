@@ -23,25 +23,18 @@ $(function() {
         var title = $("input[name='rec-title']").val();
         var url = $("input[name='url']").val();
 
-        var success = function(data) {
-            title = data.recording.title;
-            var id = data.recording.id;
-
-            RouteTo.recordingInProgress(user, collection, id, url);
-            //window.location.href = "https://wbrc.io/" + user + "/" + collection + "/" + id + "/record/mp_/" + url;
-        };
-
-        var fail = function(data) {
-            //NOP
+        if (isSafari()) {
+            url = "mp_/" + url;
         }
 
-        var attrs = {"title": title,
-                     "coll_title": "Temporary Collection"}
+        RouteTo.newRecording(collection, title, url);
 
         setStorage("__wr_currRec", title);
-
-        Recordings.create(user, collection, attrs, success, fail);
     };
+
+    function isSafari() {
+        return navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') == -1;
+    }
 
     function setStorage(name, value) {
         try {

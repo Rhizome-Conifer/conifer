@@ -26,11 +26,13 @@ class DownloadController(BaseController):
     def init_routes(self):
         @self.app.get('/<user>/<coll>/<rec>/$download')
         def logged_in_download_rec_warc(user, coll, rec):
+            self.redir_by_host()
 
             return self.handle_download(user, coll, rec)
 
         @self.app.get('/<user>/<coll>/$download')
         def logged_in_download_coll_warc(user, coll):
+            self.redir_by_host()
 
             return self.handle_download(user, coll, '*')
 

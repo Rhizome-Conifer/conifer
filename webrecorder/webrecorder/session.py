@@ -15,7 +15,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature
 class Session(object):
     temp_prefix = ''
 
-    def __init__(self, cork, environ, key, sesh, ttl):
+    def __init__(self, cork, environ, key, sesh, ttl, is_restricted):
         self.environ = environ
         self._sesh = sesh
         self.key = key
@@ -26,6 +26,8 @@ class Session(object):
         self.should_delete = False
         self.should_save = False
         self.should_renew = False
+
+        self.is_restricted = is_restricted
 
         if sesh.get('is_long'):
             self.dura_type = 'long'
@@ -69,6 +71,7 @@ class Session(object):
 
     def set_id(self, id):
         self._sesh['id'] = id
+        self.is_restricted = True
         self.save()
 
     def save(self):
@@ -162,20 +165,26 @@ class RedisSessionMiddleware(CookieGuard):
         self.durations = session_opts['session.durations']
 
     def init_session(self, environ):
-        sesh_cookie = self.split_cookie(environ)
-
         data = None
         ttl = -2
+        is_restricted = False
 
-        sesh_id = self.signed_cookie_to_id(sesh_cookie)
+        try:
+            sesh_cookie = self.split_cookie(environ)
 
-        if sesh_id:
-            redis_key = self.key_template.format(sesh_id)
+            sesh_id, is_restricted = self.signed_cookie_to_id(sesh_cookie)
 
-            data = self.redis.get(redis_key)
-            if data:
-                data = pickle.loads(base64.b64decode(data))
-                ttl = self.redis.ttl(redis_key)
+            if sesh_id:
+                redis_key = self.key_template.format(sesh_id)
+
+                result = self.redis.get(redis_key)
+                if result:
+                    data = pickle.loads(base64.b64decode(result))
+                    ttl = self.redis.ttl(redis_key)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print('Invalid Session, Creating New')
 
         # make new session
         if data is None:
@@ -187,7 +196,8 @@ class RedisSessionMiddleware(CookieGuard):
                           environ,
                           redis_key,
                           data,
-                          ttl)
+                          ttl,
+                          is_restricted)
 
         if session.curr_role == 'anon':
             session.template_params['anon_ttl'] = ttl
@@ -260,7 +270,9 @@ class RedisSessionMiddleware(CookieGuard):
         pi.expire(session.key, duration)
 
         # set cookie
-        sesh_cookie = self.id_to_signed_cookie(session['id'])
+        sesh_cookie = self.id_to_signed_cookie(session['id'],
+                                               session.is_restricted)
+
         value = '{0}={1}; Path=/; HttpOnly; max-age={3}'
         value = value.format(self.sesh_key,
                              sesh_cookie,
@@ -315,8 +327,8 @@ class RedisSessionMiddleware(CookieGuard):
         except BadSignature as b:
             return None
 
-    def id_to_signed_cookie(self, sesh_id):
-        return URLSafeTimedSerializer(self.secret_key).dumps(sesh_id)
+    def id_to_signed_cookie(self, sesh_id, is_restricted):
+        return URLSafeTimedSerializer(self.secret_key).dumps([sesh_id, is_restricted])
 
     def make_id(self):
         sesh_id = base64.b64encode(os.urandom(20)).decode('utf-8')

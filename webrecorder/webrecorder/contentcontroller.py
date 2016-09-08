@@ -38,7 +38,7 @@ class ContentController(BaseController, RewriterApp):
 
         self.cookie_tracker = CookieTracker(manager.redis)
 
-        self.content_host = config.get('content_host')
+        self.content_host = os.environ['CONTENT_HOST']
 
     def init_routes(self):
         # REDIRECTS
@@ -148,11 +148,9 @@ class ContentController(BaseController, RewriterApp):
         def snapshot():
             return self.snapshot()
 
-        @self.app.route(['/_set_session', '/_set_xsession'])
+        @self.app.route(['/_set_session'])
         def set_sesh():
             sesh = self.get_session()
-            print('Host', request.environ.get('HTTP_HOST'))
-            print('Cookie', request.environ.get('HTTP_COOKIE'))
 
             if self.is_content_request():
                 id = request.query.get('id')
@@ -164,8 +162,7 @@ class ContentController(BaseController, RewriterApp):
                 response.headers['Access-Control-Allow-Origin'] = url
                 response.headers['Cache-Control'] = 'no-cache'
 
-                print(url + '/_set_xsession?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
-                redirect(url + '/_set_xsession?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
+                redirect(url + '/_set_session?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
 
     def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
         rec_name = '*'
@@ -206,7 +203,8 @@ class ContentController(BaseController, RewriterApp):
 
         if sesh.is_new() and self.is_content_request():
             full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
-            return redirect('https://new.webrecorder.io/_set_session?path=' + quote(full_path))
+            #return redirect('https://new.webrecorder.io/_set_session?path=' + quote(full_path))
+            self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
         if type in ('record', 'patch', 'replay'):
             if not self.manager.has_recording(user, coll, rec):
@@ -285,6 +283,9 @@ class ContentController(BaseController, RewriterApp):
         wb_url = WbUrl(wb_url)
         if (wb_url.is_replay()):
             environ['is_content'] = True
+
+            if self.content_host and not self.is_content_request() and wb_url.mod != self.frame_mod:
+                self.redir_host(self.content_host)
 
     def _filter_headers(self, type, status_headers):
         if type in ('replay', 'replay-coll'):

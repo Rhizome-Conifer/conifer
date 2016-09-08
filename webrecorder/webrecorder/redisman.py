@@ -413,6 +413,8 @@ class LoginManagerMixin(object):
         if not new_user:
             new_user = user
 
+        self.assert_can_admin(new_user, new_coll)
+
         if is_move:
             if not self.has_collection(new_user, new_coll):
                 return {'error_message': 'No Such Collection'}
@@ -548,12 +550,20 @@ class AccessManagerMixin(object):
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
     def can_admin_coll(self, user, coll):
+        sesh = request.environ['webrec.session']
+        if sesh.is_restricted:
+            return False
+
         if self.is_anon(user):
             return True
 
         return self.is_owner(user)
 
     def is_owner(self, user):
+        sesh = request.environ['webrec.session']
+        if sesh.is_restricted:
+            return False
+
         curr_user = self.get_curr_user()
         if not curr_user:
             return self.is_anon(user)

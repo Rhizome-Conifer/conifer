@@ -11,7 +11,7 @@
     </div>
 
     <div class="content-column">
-        {% if can_write() %}
+        {% if can_admin() %}
         {% include 'editable_recording_title.html' %}
         <div class="dropdown"><span class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</span>
             <button class="btn btn-default btn-xs sub-menu icon-button dropdown-toggle" id="dropdown-{{ recording.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"><span class="glyphicon glyphicon glyphicon-triangle-bottom"></span></button>
@@ -25,7 +25,6 @@
                     <a href="#" data-toggle="modal" data-target="#move-modal" data-move-rec-id="{{ recording.id }}" data-recording-title="{{ recording.title }}"><span class="glyphicon glyphicon-pencil glyphicon-export" aria-hidden="true"></span>Move to Collection…</a>
                 </li>
                 {% endif %}
-                {% if can_admin() %}
                 <li role="separator" class="divider"></li>
                 <li>
                     <a href="{{ recording.download_url }}"><span class="glyphicon glyphicon-pencil glyphicon-cloud-download" aria-hidden="true"></span>Download Recording</a>
@@ -34,7 +33,6 @@
                 <li>
                     <a href="#" data-toggle="modal" data-target="#confirm-delete-recording-modal-{{ recording.id }}"><span class="glyphicon glyphicon-pencil glyphicon-trash" aria-hidden="true"></span>Delete</a>
                 </li>
-                {% endif %}
             </ul>
         </div>
         {% else %}

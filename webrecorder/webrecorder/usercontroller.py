@@ -16,6 +16,8 @@ class UserController(BaseController):
         @self.app.get(['/<user>', '/<user>/'])
         @self.jinja2_view('user.html')
         def user_info(user):
+            self.redir_host()
+
             if self.manager.is_anon(user):
                 self.redirect('/' + user + '/temp')
 
@@ -103,7 +105,6 @@ class UserController(BaseController):
             if not user:
                 user = self.manager.get_anon_user()
 
-            print('SKIP', url)
             self.manager.skip_post_req(user, url)
             return {}
 

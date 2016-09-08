@@ -16,8 +16,6 @@ session.key: __wr_sesh
 session.key_template: 'sesh:{0}'
 session.long_sessions_key: 'ls:{0}'
 
-content_host: wbrc.io
-
 default_max_size: 1000000000
 default_max_anon_size: 1000000000
 default_max_coll: 10
