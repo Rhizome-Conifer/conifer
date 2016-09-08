@@ -71,7 +71,9 @@
     function exclude_password_targets() {
         var passFields = document.querySelectorAll("input[type=password]");
 
-        passFields.forEach(function(input, index, array) {
+        for (var i = 0; i < passFields.length; i++) {
+            var input = passFields[i];
+
             if (input && input.form && input.form.action) {
                 var form_action = input.form.action;
 
@@ -99,7 +101,7 @@
                 req.open("GET", url);
                 req.send();
             }
-        });
+        }
     }
 
     function startCheck() {

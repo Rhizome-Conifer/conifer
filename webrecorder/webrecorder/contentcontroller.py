@@ -203,7 +203,6 @@ class ContentController(BaseController, RewriterApp):
 
         if sesh.is_new() and self.is_content_request():
             full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
-            #return redirect('https://new.webrecorder.io/_set_session?path=' + quote(full_path))
             self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
         if type in ('record', 'patch', 'replay'):
@@ -369,8 +368,8 @@ class ContentController(BaseController, RewriterApp):
             return super(ContentController, self).get_host_prefix(environ)
 
     def get_top_url(self, full_prefix, wb_url, cdx, kwargs):
-        if wb_url.mod != '':
-            full_prefix = full_prefix.replace('wbrc.io', 'new.webrecorder.io')
+        if wb_url.mod != self.frame_mod and self.content_host != self.app_host:
+            full_prefix = full_prefix.replace(self.content_host, self.app_host)
             return super(ContentController, self).get_top_url(full_prefix, wb_url, cdx, kwargs)
 
         top_url = full_prefix
