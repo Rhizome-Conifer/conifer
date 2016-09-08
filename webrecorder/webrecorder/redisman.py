@@ -52,7 +52,8 @@ class LoginManagerMixin(object):
             print('WARNING: Unable to init defaults: ' + str(e))
 
         self.user_key = config['info_key_templ']['user']
-        self.user_skip_key = config['user_skip_key']
+        self.user_skip_key = config['skip_key_templ']
+        self.skip_key_secs = int(config['skip_key_secs'])
 
         self.rename_url_templ = config['url_templates']['rename']
 
@@ -404,13 +405,15 @@ class LoginManagerMixin(object):
 
     def skip_post_req(self, user, url):
         key = self.user_skip_key.format(user=user, url=url)
-        self.redis.setex(key, 300, 1)
+        r = self.redis.setex(key, self.skip_key_secs, 1)
 
     def rename(self, user, coll, new_coll, rec='*', new_rec='*',
                new_user='', title='', is_move=False):
 
         if not new_user:
             new_user = user
+
+        self.assert_can_admin(new_user, new_coll)
 
         if is_move:
             if not self.has_collection(new_user, new_coll):
@@ -547,12 +550,20 @@ class AccessManagerMixin(object):
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
     def can_admin_coll(self, user, coll):
+        sesh = request.environ['webrec.session']
+        if sesh.is_restricted:
+            return False
+
         if self.is_anon(user):
             return True
 
         return self.is_owner(user)
 
     def is_owner(self, user):
+        sesh = request.environ['webrec.session']
+        if sesh.is_restricted:
+            return False
+
         curr_user = self.get_curr_user()
         if not curr_user:
             return self.is_anon(user)

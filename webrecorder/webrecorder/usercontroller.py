@@ -16,6 +16,8 @@ class UserController(BaseController):
         @self.app.get(['/<user>', '/<user>/'])
         @self.jinja2_view('user.html')
         def user_info(user):
+            self.redir_host()
+
             if self.manager.is_anon(user):
                 self.redirect('/' + user + '/temp')
 

@@ -21,6 +21,9 @@ class FullStackTests(BaseWRTests):
 
         os.environ['TEMP_SLEEP_CHECK'] = '5'
 
+        os.environ['APP_HOST'] = ''
+        os.environ['CONTENT_HOST'] = ''
+
         super(FullStackTests, cls).setup_class(*args, **kwargs)
 
         cls.agg_greenlet = cls.init_webagg(agg_port)

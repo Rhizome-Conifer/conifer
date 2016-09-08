@@ -22,6 +22,8 @@ default_max_coll: 10
 
 upload_wait_secs: 30
 
+skip_key_secs: 330
+
 temp_prefix: 'temp-'
 
 
@@ -109,8 +111,6 @@ cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj'
 
 page_key_templ: 'r:{user}:{coll}:{rec}:page'
 
-user_skip_key: 'u:{user}:skip:{url}'
-
 info_key_templ:
     rec: 'r:{user}:{coll}:{rec}:info'
     coll: 'c:{user}:{coll}:info'
@@ -121,7 +121,7 @@ cookie_key_templ: 'r:{user}:{coll}:{rec}:{id}:cookie:'
 warc_key_templ: 'r:{user}:{coll}:{rec}:warc'
 warc_upload_wait_templ: 'w:{filename}'
 
-skip_key_templ: 'u:{user}:skip:{url}'
+skip_key_templ: 'us:{user}:s:{url}'
 
 del_templ:
     rec: 'r:{user}:{coll}:{rec}:*'

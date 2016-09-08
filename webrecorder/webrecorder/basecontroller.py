@@ -18,12 +18,29 @@ class BaseController(object):
         self.manager = manager
         self.config = config
 
+        self.app_host = os.environ['APP_HOST']
+
         self.init_routes()
 
     def init_routes(self):
         raise NotImplemented()
 
+    def redir_host(self, host=None, path=None):
+        if not host:
+            host = self.app_host
+
+        if not host or request.environ.get('HTTP_HOST') == host:
+            return
+
+        url = request.environ['wsgi.url_scheme'] + '://' + host
+        if not path:
+            path = request.environ.get('SCRIPT_NAME', '') + request.environ['PATH_INFO']
+
+        url += path
+        return bottle_redirect(url)
+
     def get_user(self, api=False):
+        self.redir_host()
         user = request.query.getunicode('user')
         if not user:
             self._raise_error(400, 'User must be specified',

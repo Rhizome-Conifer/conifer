@@ -9,28 +9,17 @@
         border: 0px;
         overflow: hidden;
     }
-    .wb_iframe_div
+
+   .wb_iframe
     {
-        position: absolute;
         width: 100%;
         height: 100%;
         padding: 0px 0px 0px 0px;
-        border: none;
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        -webkit-box-sizing: border-box;
-    }
-
-    .wb_iframe
-    {
-        width: 100% !important;
-        height: 100% !important;
-        padding: 0px 0px 0px 0px;
         overflow: scroll !important;
-        /*top: 96px !important;*/
+        top: 96px;
         /*padding-bottom: 100px !important;
         margin-top: -9px;*/
-        position: relative;
+        position: fixed;
         border: none;
         box-sizing: border-box;
         -moz-box-sizing: border-box;
@@ -42,6 +31,7 @@
 
 <script>
     wbinfo = {}
+    wbinfo.outer_prefix = decodeURI("{{ top_prefix }}");
     wbinfo.prefix = decodeURI("{{ wbrequest.wb_prefix }}");
     wbinfo.coll = "{{ wbrequest.coll }}";
     wbinfo.url = "{{ url }}";
@@ -76,7 +66,7 @@
 {% include 'header.html' %}
 {% endif %}
 
-<iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="iframe_loaded(event);" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
+<iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe" sandbox2="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
 
 {% if not is_embed %}
 {% include 'links.html' %}

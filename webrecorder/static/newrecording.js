@@ -23,45 +23,49 @@ $(function() {
         var title = $("input[name='rec-title']").val();
         var url = $("input[name='url']").val();
 
-        var success = function(data) {
-            title = data.recording.title;
-            var id = data.recording.id;
-
-            RouteTo.recordingInProgress(user, collection, id, url);
-        };
-
-        var fail = function(data) {
-            //NOP
+        if (isSafari()) {
+            url = "mp_/" + url;
         }
 
-        var attrs = {"title": title,
-                     "coll_title": "Temporary Collection"}
+        RouteTo.newRecording(collection, title, url);
 
         setStorage("__wr_currRec", title);
-
-        Recordings.create(user, collection, attrs, success, fail);
     };
 
-    function setStorage(name, value) {
-        if (window.sessionStorage) {
-            window.sessionStorage.setItem(name, value);
-        }
+    function isSafari() {
+        return navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') == -1;
+    }
 
-        if (window.localStorage) {
-            window.localStorage.setItem(name, value);
+    function setStorage(name, value) {
+        try {
+            if (window.sessionStorage) {
+                window.sessionStorage.setItem(name, value);
+            }
+
+            if (window.localStorage) {
+                window.localStorage.setItem(name, value);
+            }
+        } catch(e) {
+            console.log("localStorage not avail");
         }
     }
 
     function getStorage(name) {
         var value = undefined;
 
-        // First try session, then local
-        if (window.sessionStorage) {
-            value = window.sessionStorage.getItem(name);
-        }
+        try {
 
-        if (!value && window.localStorage) {
-            value = window.localStorage.getItem(name);
+            // First try session, then local
+            if (window.sessionStorage) {
+                value = window.sessionStorage.getItem(name);
+            }
+
+            if (!value && window.localStorage) {
+                value = window.localStorage.getItem(name);
+            }
+
+        } catch(e) {
+            console.log("localStorage not avail");
         }
 
         return value;

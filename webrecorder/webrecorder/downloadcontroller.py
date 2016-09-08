@@ -5,6 +5,7 @@ from webagg.utils import StreamIter, chunk_encode_iter
 from recorder.warcwriter import SimpleTempWARCWriter
 
 from webrecorder.basecontroller import BaseController
+from webrecorder import __version__
 
 from bottle import response
 from six.moves.urllib.parse import quote
@@ -26,11 +27,13 @@ class DownloadController(BaseController):
     def init_routes(self):
         @self.app.get('/<user>/<coll>/<rec>/$download')
         def logged_in_download_rec_warc(user, coll, rec):
+            self.redir_host()
 
             return self.handle_download(user, coll, rec)
 
         @self.app.get('/<user>/<coll>/$download')
         def logged_in_download_coll_warc(user, coll):
+            self.redir_host()
 
             return self.handle_download(user, coll, '*')
 
@@ -40,7 +43,7 @@ class DownloadController(BaseController):
                 metadata[name] = value
 
         info = OrderedDict([
-                ('software', 'Webrecorder Platform v2.5'),
+                ('software', 'Webrecorder Platform v' + __version__),
                 ('format', 'WARC File Format 1.0'),
                 ('creator', creator),
                 ('isPartOf', title),
