@@ -68,6 +68,8 @@ class ContentController(BaseController, RewriterApp):
             rec_title = rec
             rec = self.sanitize_title(rec_title)
 
+            wb_url = self.add_query(wb_url)
+
             user = self.manager.get_curr_user()
 
             if not user:
