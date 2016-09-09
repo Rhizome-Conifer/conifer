@@ -172,9 +172,10 @@ class RedisSessionMiddleware(CookieGuard):
         try:
             sesh_cookie = self.split_cookie(environ)
 
-            sesh_id, is_restricted = self.signed_cookie_to_id(sesh_cookie)
+            result = self.signed_cookie_to_id(sesh_cookie)
 
-            if sesh_id:
+            if result:
+                sesh_id, is_restricted = result
                 redis_key = self.key_template.format(sesh_id)
 
                 result = self.redis.get(redis_key)
