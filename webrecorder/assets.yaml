@@ -2,19 +2,23 @@ url: /static/__shared/
 
 directory: ./static/
 
+url_mapping:
+    '/code/static/': '/static/__shared/'
+    '/usr/local/lib/python3.5/site-packages/pywb/static/': '/static/__pywb/'
+
 load_path:
-    - ./static/
+    - /code/static/
     - /usr/local/lib/python3.5/site-packages/pywb/static/
 
 bundles:
     base-js:
-        output: cache/base.js
+        output: bundle/base.js
         contents:
             - external/jquery.min.js
             - external/bootstrap/js/bootstrap.min.js
 
     base-css:
-        output: cache/base.css
+        output: bundle/base.css
         filters: cssrewrite
         contents:
             - external/bootstrap/css/bootstrap.min.css
@@ -22,7 +26,7 @@ bundles:
             - stylesheets/styles.css
 
     main-js:
-        output: cache/main.js
+        output: bundle/main.js
         contents:
             - base-js
             - external/jquery-ui.min.js
@@ -35,7 +39,7 @@ bundles:
             - external/validator.js
 
     main-css:
-        output: cache/main.css
+        output: bundle/main.css
         contents:
             - base-css
             - external/jquery.selectBoxIt.css
@@ -43,7 +47,7 @@ bundles:
 
 
     user-js:
-        output: cache/index.js
+        output: bundle/index.js
         filters: cssrewrite
         contents:
             - external/jquery.form.js
@@ -56,14 +60,14 @@ bundles:
             - external/bootstrap-markdown.js
 
     user-css:
-        output: cache/index.css
+        output: bundle/index.css
         contents:
             - external/bootstrap-switch.css
             - external/bootstrap-markdown.min.css
 
 
     frame-js:
-        output: cache/frame.js
+        output: bundle/frame.js
         contents:
             - base-js
             - wb.js
@@ -75,14 +79,14 @@ bundles:
             - automate.js
 
     frame-css:
-        output: cache/frame.css
+        output: bundle/frame.css
         contents:
             - base-css
             - scroll-webkit.css
 
 
     coll-js:
-        output: cache/coll.js
+        output: bundle/coll.js
         contents:
             - external/jquery-ui.min.js
             - external/bootstrap-switch.js
@@ -102,7 +106,7 @@ bundles:
             - uploader.js
 
     coll-css:
-        output: cache/coll.css
+        output: bundle/coll.css
         contents:
             - external/bootstrap-switch.css
             - external/bootstrap-table.min.css
@@ -110,7 +114,7 @@ bundles:
             - external/dataTables.bootstrap.css
 
     pywb-js:
-        output: cache/pywb.js
+        output: bundle/pywb.js
         contents:
             - wombat.js
             - wb.js
