@@ -2,6 +2,10 @@ url: /static/__shared/
 
 directory: ./static/
 
+load_path:
+    - ./static/
+    - /usr/local/lib/python3.5/site-packages/pywb/static/
+
 bundles:
     base-js:
         output: cache/base.js
@@ -62,6 +66,8 @@ bundles:
         output: cache/frame.js
         contents:
             - base-js
+            - wb.js
+            - wb_frame.js
             - times_and_sizes_formatter.js
             - collections_model.js
             - recordings_model.js
@@ -72,6 +78,7 @@ bundles:
         output: cache/frame.css
         contents:
             - base-css
+            - scroll-webkit.css
 
 
     coll-js:
@@ -102,5 +109,12 @@ bundles:
             - external/bootstrap-markdown.min.css
             - external/dataTables.bootstrap.css
 
+    pywb-js:
+        output: cache/pywb.js
+        contents:
+            - wombat.js
+            - wb.js
+            - vidrw.js
+            - wrscripts.js
 
-        
+

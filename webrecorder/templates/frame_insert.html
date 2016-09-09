@@ -27,7 +27,15 @@
     }
 </style>
 
+{% assets "frame-css" %}
+<link href="{{ ASSET_URL }}" rel="stylesheet" />
+{% endassets %}
+
+
+
+{#
 <link rel='stylesheet' href='{{ wbrequest.host_prefix }}/{{ static_path }}/scroll-webkit.css'/>
+#}
 
 <script>
     wbinfo = {}
@@ -44,10 +52,10 @@
     wbinfo.info = {{ info | default('{}') | tojson }};
 </script>
 
+{#
 <script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wb.js'> </script>
 <script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wb_frame.js'> </script>
 
-{#
 <script src="/static/__shared/times_and_sizes_formatter.js"></script>
 <script src="/static/__shared/collections_model.js"></script>
 <script src="/static/__shared/recordings_model.js"></script>
@@ -55,10 +63,6 @@
 
 <script src="/static/__shared/automate.js"></script>
 #}
-
-{% assets "frame-css" %}
-<link href="{{ ASSET_URL }}" rel="stylesheet" />
-{% endassets %}
 
 {% assets "frame-js" %}
 <script type="text/javascript" src="{{ ASSET_URL }}"></script>
@@ -76,7 +80,7 @@
 {% include 'header.html' %}
 {% endif %}
 
-<iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe" sandbox2="allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+<iframe id="replay_iframe" src="{{ wbrequest.wb_prefix + embed_url if embed_url else '' }}" onload="" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
 
 {% if not is_embed %}
 {% include 'links.html' %}

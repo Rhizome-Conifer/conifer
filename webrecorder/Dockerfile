@@ -10,8 +10,6 @@ ADD requirements.txt /build/
 
 RUN pip install -r requirements.txt
 
-RUN pip install itsdangerous
-
 #ENV PYWB_VERSION -e git+https://github.com/ikreymer/pywb.git@develop#egg=pywb-0.30-develop
 
 #RUN pip install $PYWB_VERSION
