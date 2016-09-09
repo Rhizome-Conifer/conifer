@@ -285,7 +285,9 @@ class ContentController(BaseController, RewriterApp):
         if (wb_url.is_replay()):
             environ['is_content'] = True
 
-            if self.content_host and not self.is_content_request() and wb_url.mod != self.frame_mod:
+            if (self.content_host and
+                not self.is_content_request() and
+                wb_url.mod not in ('', 'ch_', 'ff_')):
                 self.redir_host(self.content_host)
 
     def _filter_headers(self, type, status_headers):

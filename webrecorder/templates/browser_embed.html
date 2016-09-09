@@ -19,13 +19,22 @@
     var upsid = "{{ upsid }}";
 </script>
 
+{% assets "main-css" %}
+<link href="{{ ASSET_URL }}" rel="stylesheet" />
+{% endassets %}
+
+{% assets "browser-js" %}
+<script type="text/javascript" src="{{ ASSET_URL }}"></script>
+{% endassets %}
+
+{#
 <script src="/static/__shared/collections_model.js"></script>
 <script src="/static/__shared/recordings_model.js"></script>
 <script src="/static/__shared/recordings.js"></script>
 <script src="/static/__shared/browser_controller.js"></script>
 
 <script src="/static/__shared/times_and_sizes_formatter.js"></script>
-
+#}
 
 <style>
 .browser {

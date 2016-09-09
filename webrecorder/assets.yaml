@@ -121,4 +121,12 @@ bundles:
             - vidrw.js
             - wrscripts.js
 
-
+    browser-js:
+        output: bundle/browser.js
+        contents:
+            - base-js
+            - times_and_sizes_formatter.js
+            - recordings_model.js
+            - collections_model.js
+            - recordings.js
+            - browser_controller.js
