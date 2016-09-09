@@ -1,9 +1,7 @@
-<script src="{{ wbrequest.host_prefix }}/static/__shared/banner.js"> </script>
-<script src="/static/__shared/wrscripts.js"></script>
 <script>
 wbinfo.state = "{{ curr_mode }}";
 wbinfo.metadata = {{ cdx.metadata | default('{}') }};
-_wb_js.create_banner_element = __wfa_banner_init;
+_wb_js.create_banner_element = function() {};
 </script>
 
 <!-- Set canonical url -->
