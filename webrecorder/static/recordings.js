@@ -178,7 +178,7 @@ var EventHandlers = (function() {
             if (height = $("header").height()) {
                 height += 1;
                 $("#replay_iframe").css("top", height + "px");
-                //$("#replay_iframe").css("padding-bottom", height + "px");
+                $("#replay_iframe").css("padding-bottom", height + "px");
                 //$("#replay_iframe").css("margin-top", "-9px");
             } else if (height = $(".embed-footer").height()) {
                 $("#replay_iframe").css("padding-bottom", height + "px");
