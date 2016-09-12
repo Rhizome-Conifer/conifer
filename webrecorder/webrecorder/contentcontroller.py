@@ -196,6 +196,11 @@ class ContentController(BaseController, RewriterApp):
 
         return request.environ.get('HTTP_HOST') == self.content_host
 
+    def redir_set_session(self):
+        full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
+        full_path = self.add_query(full_path)
+        self.redir_host(None, '/_set_session?path=' + quote(full_path))
+
     def handle_routing(self, wb_url, user, coll, rec, type, is_embed=False):
         wb_url = self.add_query(wb_url)
 
@@ -204,8 +209,7 @@ class ContentController(BaseController, RewriterApp):
         sesh = self.get_session()
 
         if sesh.is_new() and self.is_content_request():
-            full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
-            self.redir_host(None, '/_set_session?path=' + quote(full_path))
+            self.redir_set_session()
 
         if type in ('record', 'patch', 'replay'):
             if not self.manager.has_recording(user, coll, rec):
