@@ -105,13 +105,16 @@ class LoginController(BaseController):
             remember_me = (self.post_get('remember_me') == '1')
             sesh.logged_in(remember_me)
 
+            temp_prefix = self.manager.temp_prefix
+
             redir_to = request.headers.get('Referer')
             host = self.get_host()
 
-            temp_prefix = self.manager.temp_prefix
+            if redir_to and redir_to.startswith(host):
+                redir_to = redir_to[len(host):]
 
-            if not redir_to or redir_to.startswith((host + '/' + temp_prefix,
-                                                    host + '/_')):
+            if not redir_to or redir_to.startswith(('/' + temp_prefix,
+                                                    '/_')):
                 redir_to = self.get_path(username)
 
             if self.content_host:
