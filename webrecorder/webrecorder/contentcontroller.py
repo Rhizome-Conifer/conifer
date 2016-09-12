@@ -38,8 +38,6 @@ class ContentController(BaseController, RewriterApp):
 
         self.cookie_tracker = CookieTracker(manager.redis)
 
-        self.content_host = os.environ['CONTENT_HOST']
-
     def init_routes(self):
         # REDIRECTS
         @self.app.route(['/record/<wb_url:path>',
@@ -165,6 +163,12 @@ class ContentController(BaseController, RewriterApp):
                 response.headers['Cache-Control'] = 'no-cache'
 
                 redirect(url + '/_set_session?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
+
+        @self.app.route(['/_clear_session'])
+        def clear_sesh():
+            sesh = self.get_session()
+            sesh.delete()
+            return self.redir_host(None, request.query.get('path', '/'))
 
     def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
         rec_name = '*'

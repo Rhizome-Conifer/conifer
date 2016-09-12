@@ -19,6 +19,7 @@ class BaseController(object):
         self.config = config
 
         self.app_host = os.environ['APP_HOST']
+        self.content_host = os.environ['CONTENT_HOST']
 
         self.init_routes()
 
