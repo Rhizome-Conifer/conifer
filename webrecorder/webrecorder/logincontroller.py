@@ -3,6 +3,7 @@ from os.path import expandvars
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.basecontroller import BaseController
+from six.moves.urllib.parse import quote
 import json
 
 
@@ -84,40 +85,54 @@ class LoginController(BaseController):
                     self.redirect('/')
                     return
 
-            if self.manager.cork.login(username, password):
-                sesh = self.get_session()
-                sesh.curr_user = username
-
-                if move_info:
-                    try:
-                        new_title = self.manager.move_temp_coll(username, move_info)
-                        if new_title:
-                            self.flash_message('Collection <b>{0}</b> created!'.format(new_title), 'success')
-                    except:
-                        import traceback
-                        traceback.print_exc()
-
-                remember_me = (self.post_get('remember_me') == '1')
-                sesh.logged_in(remember_me)
-
-                redir_to = request.headers.get('Referer')
-                host = self.get_host()
-
-                temp_prefix = self.manager.temp_prefix
-
-                if not redir_to or redir_to.startswith((host + '/' + temp_prefix,
-                                                        host + '/_')):
-                    redir_to = self.get_path(username)
-
-            else:
+            if not self.manager.cork.login(username, password):
                 self.flash_message('Invalid Login. Please Try Again')
                 redir_to = LOGIN_PATH
+                self.redirect(redir_to)
 
-            self.redirect(redir_to)
+            sesh = self.get_session()
+            sesh.curr_user = username
+
+            if move_info:
+                try:
+                    new_title = self.manager.move_temp_coll(username, move_info)
+                    if new_title:
+                        self.flash_message('Collection <b>{0}</b> created!'.format(new_title), 'success')
+                except:
+                    import traceback
+                    traceback.print_exc()
+
+            remember_me = (self.post_get('remember_me') == '1')
+            sesh.logged_in(remember_me)
+
+            temp_prefix = self.manager.temp_prefix
+
+            redir_to = request.headers.get('Referer')
+            host = self.get_host()
+
+            if redir_to and redir_to.startswith(host):
+                redir_to = redir_to[len(host):]
+
+            if not redir_to or redir_to.startswith(('/' + temp_prefix,
+                                                    '/_')):
+                redir_to = self.get_path(username)
+
+            if self.content_host:
+                path = '/_clear_session?path=' + quote(redir_to)
+                self.redir_host(self.content_host, path)
+            else:
+                self.redirect(redir_to)
 
         @self.app.get(LOGOUT_PATH)
         def logout():
             redir_to = '/'
+
+            if self.content_host:
+                path = '/_clear_session?path=' + quote(redir_to)
+                url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
+                url += path
+                redir_to = url
+
             self.manager.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
 

@@ -38,8 +38,6 @@ class ContentController(BaseController, RewriterApp):
 
         self.cookie_tracker = CookieTracker(manager.redis)
 
-        self.content_host = os.environ['CONTENT_HOST']
-
     def init_routes(self):
         # REDIRECTS
         @self.app.route(['/record/<wb_url:path>',
@@ -166,6 +164,12 @@ class ContentController(BaseController, RewriterApp):
 
                 redirect(url + '/_set_session?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
 
+        @self.app.route(['/_clear_session'])
+        def clear_sesh():
+            sesh = self.get_session()
+            sesh.delete()
+            return self.redir_host(None, request.query.get('path', '/'))
+
     def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
         rec_name = '*'
 
@@ -196,6 +200,11 @@ class ContentController(BaseController, RewriterApp):
 
         return request.environ.get('HTTP_HOST') == self.content_host
 
+    def redir_set_session(self):
+        full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
+        full_path = self.add_query(full_path)
+        self.redir_host(None, '/_set_session?path=' + quote(full_path))
+
     def handle_routing(self, wb_url, user, coll, rec, type, is_embed=False):
         wb_url = self.add_query(wb_url)
 
@@ -204,8 +213,7 @@ class ContentController(BaseController, RewriterApp):
         sesh = self.get_session()
 
         if sesh.is_new() and self.is_content_request():
-            full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
-            self.redir_host(None, '/_set_session?path=' + quote(full_path))
+            self.redir_set_session()
 
         if type in ('record', 'patch', 'replay'):
             if not self.manager.has_recording(user, coll, rec):

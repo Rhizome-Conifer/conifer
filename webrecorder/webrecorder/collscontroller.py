@@ -162,7 +162,11 @@ class CollsController(BaseController):
                 # if anon user/temp collection, delete user and redirect to homepage
                 if self.manager.is_anon(user):
                     self.get_session().delete()
-                    self.redirect('/')
+
+                    if self.content_host:
+                        self.redir_host(self.content_host, '/_clear_session?path=/')
+                    else:
+                        self.redirect('/')
                 else:
                     self.redirect(self.get_path(user))
 

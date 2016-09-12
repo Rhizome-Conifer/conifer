@@ -72,6 +72,7 @@ class Session(object):
     def set_id(self, id):
         self._sesh['id'] = id
         self.is_restricted = True
+        self.ttl = -2
         self.save()
 
     def save(self):
