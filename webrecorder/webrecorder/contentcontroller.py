@@ -567,24 +567,22 @@ class ContentController(BaseController, RewriterApp):
         last_status = None
 
         def get_status():
-            if rec and rec != '*':
-                info = self.manager.get_recording(user, coll, rec)
-            else:
-                info = self.manager.get_collection(user, coll)
-
-            if info:
+            size = self.manager.get_size(user, coll, rec)
+            if size is not None:
                 result = {'ws_type': 'status'}
-                result['size'] = int(info.get('size', 0))
+                result['size'] = size
                 result['numPages'] = self.manager.count_pages(user, coll, rec)
 
             else:
-                result = {'error_message': 'not found'}
+                result = {'ws_type': 'error',
+                          'error_message': 'not found'}
 
             return json.dumps(result)
 
         env = request.environ
 
-        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'], env.get('HTTP_ORIGIN', ''))
+        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'],
+                                  env.get('HTTP_ORIGIN', ''))
 
         while True:
             msg = uwsgi.websocket_recv_nb()

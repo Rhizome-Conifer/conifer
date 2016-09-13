@@ -445,7 +445,9 @@ var RecordingSizeWidget = (function() {
     }
 
     var pollForSizeUpdate = function() {
-        Recordings.get(rec, updateSizeCounter, dontUpdateSizeCounter);
+        if (!hasWS()) {
+            Recordings.get(rec, updateSizeCounter, dontUpdateSizeCounter);
+        }
     }
 
     var updateSizeCounter = function(data) {
