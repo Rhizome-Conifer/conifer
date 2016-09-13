@@ -39,6 +39,7 @@ class ContentController(BaseController, RewriterApp):
         self.cookie_key_templ = config['cookie_key_templ']
 
         self.cookie_tracker = CookieTracker(manager.redis)
+        self.status_update_secs = float(config['status_update_secs'])
 
     def init_routes(self):
         # REDIRECTS
@@ -594,7 +595,7 @@ class ContentController(BaseController, RewriterApp):
                 uwsgi.websocket_send(status)
                 last_status = status
 
-            time.sleep(1)
+            time.sleep(self.status_update_secs)
 
     def receive_ws(self, msg, user, coll, rec):
         msg = json.loads(msg.decode('utf-8'))
