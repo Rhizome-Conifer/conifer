@@ -3,6 +3,8 @@ import re
 import base64
 import requests
 import json
+import uwsgi
+import time
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
@@ -104,14 +106,11 @@ class ContentController(BaseController, RewriterApp):
             value = request.forms.getunicode('value')
             domain = request.forms.getunicode('domain')
 
-            key = self.get_cookie_key(dict(user=user,
-                                           coll=coll,
-                                           rec=rec))
-
             if not domain:
                 return {'error_message': 'no domain'}
 
-            self.cookie_tracker.add_cookie(key, domain, name, value)
+            self.add_cookie(user, coll, rec, name, value, domain)
+
             return {'success': domain}
 
         # LIVE DEBUG
@@ -148,6 +147,14 @@ class ContentController(BaseController, RewriterApp):
         def snapshot():
             return self.snapshot()
 
+        @self.app.get('/_client_ws')
+        def client_ws():
+            try:
+                return self.client_ws()
+            except OSError:
+                print('WS Closed')
+                return
+
         @self.app.route(['/_set_session'])
         def set_sesh():
             sesh = self.get_session()
@@ -169,6 +176,13 @@ class ContentController(BaseController, RewriterApp):
             sesh = self.get_session()
             sesh.delete()
             return self.redir_host(None, request.query.get('path', '/'))
+
+    def add_cookie(self, user, coll, rec, name, value, domain):
+        key = self.get_cookie_key(dict(user=user,
+                                       coll=coll,
+                                       rec=rec))
+
+        self.cookie_tracker.add_cookie(key, domain, name, value)
 
     def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
         rec_name = '*'
@@ -386,7 +400,6 @@ class ContentController(BaseController, RewriterApp):
 
         top_url = full_prefix
         top_url += wb_url.to_str()
-        print('TOP URL', top_url)
         return top_url
 
     def get_top_frame_params(self, wb_url, kwargs):
@@ -548,4 +561,63 @@ class ContentController(BaseController, RewriterApp):
         else:
             return {'snapshot': ''}
 
+    def client_ws(self):
+        user, coll = self.get_user_coll(api=True)
+        rec = request.query.get('rec', '*')
+        last_status = None
 
+        def get_status():
+            if rec and rec != '*':
+                info = self.manager.get_recording(user, coll, rec)
+            else:
+                info = self.manager.get_collection(user, coll)
+
+            if info:
+                result = {'ws_type': 'status'}
+                result['size'] = int(info.get('size', 0))
+                result['numPages'] = self.manager.count_pages(user, coll, rec)
+
+            else:
+                result = {'error_message': 'not found'}
+
+            return json.dumps(result)
+
+        env = request.environ
+
+        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'], env.get('HTTP_ORIGIN', ''))
+
+        while True:
+            msg = uwsgi.websocket_recv_nb()
+            if msg:
+                self.receive_ws(msg, user, coll, rec)
+
+            status = get_status()
+            if status != last_status:
+                uwsgi.websocket_send(status)
+                last_status = status
+
+            time.sleep(1)
+
+    def receive_ws(self, msg, user, coll, rec):
+        msg = json.loads(msg.decode('utf-8'))
+
+        if msg['ws_type'] == 'skipreq':
+            url = msg['url']
+            if not user:
+                user = self.manager.get_anon_user()
+
+            self.manager.skip_post_req(user, url)
+
+        elif msg['ws_type'] == 'addcookie':
+            self.add_cookie(user, coll, rec,
+                            msg['name'], msg['value'], msg['domain'])
+
+
+        elif msg['ws_type'] == 'page':
+            if not self.manager.has_recording(user, coll, rec):
+                print('Invalid Rec for Page Data', user, coll, rec)
+                return
+
+            page_data = msg['page']
+
+            res = self.manager.add_page(user, coll, rec, page_data)

@@ -90,16 +90,21 @@
                     return;
                 }
 
-                var req = new XMLHttpRequest();
-                req._no_rewrite = true;
-
-                req.addEventListener("load", function() {
+                if (window.__WB_top_frame) {
+                    window.__WB_top_frame.postMessage({wb_type: "skipreq", url: form_action}, "*");
                     pass_form_targets[form_action] = Date.now() / 1000;
-                });
-         
-                var url = "/_skipreq?url=" + encodeURIComponent(form_action);
-                req.open("GET", url);
-                req.send();
+                } else {
+                    var req = new XMLHttpRequest();
+                    req._no_rewrite = true;
+
+                    req.addEventListener("load", function() {
+                        pass_form_targets[form_action] = Date.now() / 1000;
+                    });
+             
+                    var url = "/_skipreq?url=" + encodeURIComponent(form_action);
+                    req.open("GET", url);
+                    req.send();
+                }
             }
         }
     }

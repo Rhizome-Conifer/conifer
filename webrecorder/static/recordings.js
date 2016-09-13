@@ -326,28 +326,126 @@ var RecordingSizeWidget = (function() {
     var sizeUpdateId = undefined;
     var recordingId;
     var collectionId;
+    var ws;
+    var useWS = false;
 
     var start = function() {
-        if ($('.size-counter-active').length &&
-            (window.curr_mode == "record" || window.curr_mode == "patch")) {
-            recordingId = $('[data-recording-id]').attr('data-recording-id');
-            collectionId = $('[data-collection-id]').attr('data-collection-id');
+        if ($('.size-counter-active').length && window.curr_mode) {
+            //(window.curr_mode == "record" || window.curr_mode == "patch")) {
+            //recordingId = $('[data-recording-id]').attr('data-recording-id');
+            //collectionId = $('[data-collection-id]').attr('data-collection-id');
 
-            if (isOutOfSpace()) {
-                RouteTo.recordingInfo(user, collectionId, recordingId);
+            try {
+                initWS();
+            } catch (e) {
+                useWS = false;
             }
 
-            setTimeout(pollForSizeUpdate, 1000);
-            sizeUpdateId = setInterval(pollForSizeUpdate, 5000);
+            if (window.curr_mode == "record" || window.curr_mode == "patch") {
+                if (isOutOfSpace()) {
+                    RouteTo.recordingInfo(user, coll, rec);
+                }
+
+                if (isAlmostOutOfSpace() && !warningPresent()) {
+                    showWarningMessage();
+                    disableUrlBar();
+                }
+
+                setTimeout(function() {
+                    if (!hasWS()) {
+                        sizeUpdateId = setInterval(pollForSizeUpdate, 5000);
+                    }
+                }, 1000);
+            }
+        }
+    }
+
+    function ws_openned() {
+        useWS = true;
+    }
+
+    function ws_closed() {
+        console.log("closed");
+        setTimeout(initWS, 1000);
+    }
+
+    function ws_errored() {
+        console.log("errored");
+        setTimeout(initWS, 1000);
+    }
+ 
+    var initWS = function() {
+        var url = window.location.protocol == "https:" ? "wss://" : "ws://";
+        url += window.location.host + "/_client_ws?";
+        url += "user=" + user + "&coll=" + coll;
+        if (rec && rec != "*") {
+            url += "&rec=" + rec;
+        }
+
+        ws = new WebSocket(url);
+
+        ws.addEventListener("open", ws_openned);
+        ws.addEventListener("message", ws_received);
+        ws.addEventListener("close", ws_closed);
+        ws.addEventListener("error", ws_errored);
+    }
+
+    function addCookie(name, value, domain) {
+        if (!hasWS()) {
+            return false;
+        }
+
+        var msg = {"ws_type": "addcookie",
+                   "name": name,
+                   "value": value,
+                   "domain": domain}
+
+        ws.send(JSON.stringify(msg));
+        return true;
+    }
+
+    function addSkipReq(url) {
+        if (!hasWS()) {
+            return false;
+        }
+
+        var msg = {"ws_type": "skipreq",
+                   "url": url
+                  }
+
+        ws.send(JSON.stringify(msg));
+        return true;
+    }
+ 
+    function addPage(page) {
+        if (!hasWS()) {
+            return false;
+        }
+
+        var msg = {"ws_type": "page",
+                   "page": page}
+
+        ws.send(JSON.stringify(msg));
+        return true;
+    }
+    
+    function ws_received(event)
+    {
+        var msg = JSON.parse(event.data);
+        
+        switch (msg.ws_type) {
+            case "status":
+                updateDom(msg.size);
+                BookmarkCounter.setBookmarkCount(msg.numPages);
+                break;
+
+            default:
+                console.log(msg);
         }
     }
 
     var pollForSizeUpdate = function() {
-        Recordings.get(recordingId, updateSizeCounter, dontUpdateSizeCounter);
-        if (isAlmostOutOfSpace() && !warningPresent()) {
-            showWarningMessage();
-            disableUrlBar();
-        }
+        Recordings.get(rec, updateSizeCounter, dontUpdateSizeCounter);
     }
 
     var updateSizeCounter = function(data) {
@@ -399,8 +497,16 @@ var RecordingSizeWidget = (function() {
         $('.recording-in-progress').find('button').prop('disabled', true);
     }
 
+    function hasWS() {
+        return useWS;
+    }
+
     return {
-        start: start
+        start: start,
+        addCookie: addCookie,
+        addSkipReq: addSkipReq,
+        addPage: addPage,
+        hasWS: hasWS,
     }
 
 })();
@@ -409,6 +515,10 @@ var BookmarkCounter = (function() {
     var sortedBookmarks = [];
 
     var start = function() {
+        if (RecordingSizeWidget.hasWS()) {
+            return;
+        }
+
         if ($(".url-input-recorder").length) {
             var recordingId = $('[data-recording-id]').attr('data-recording-id');
 
@@ -471,6 +581,7 @@ var BookmarkCounter = (function() {
     return {
         start: start,
         update: update,
+        setBookmarkCount: setBookmarkCount,
         hasBeenVisited: hasBeenVisited
     }
 })();
@@ -655,6 +766,8 @@ $(function() {
             setDomainCookie(state);
         } else if (state.wb_type == "snapshot") {
             uploadStaticSnapshot(state);
+        } else if (state.wb_type == "skipreq") {
+            addSkipReq(state);
         } else if (state.wb_type == "hashchange") {
             var url = getUrl();
             url = url.split("#", 1)[0];
@@ -673,6 +786,10 @@ $(function() {
             return;
         }
         cookie = cookie.split("=", 2);
+
+        if (RecordingSizeWidget.addCookie(cookie[0], cookie[1], state.domain)) {
+            return;
+        }
 
         var cookie_data = 
                     {
@@ -694,6 +811,16 @@ $(function() {
         .fail(function(xhr, textStatus, errorThrown) {
             console.log("Cookie Domain Update Failed");
         });
+    }
+
+    function addSkipReq(state) {
+        if (RecordingSizeWidget.addSkipReq(state.url)) {
+            return;
+        }
+
+        $.ajax({
+            url: "/_skipreq?url=" + encodeURIComponent(state.url),
+        });        
     }
 
     function addNewPage(state) {
@@ -735,8 +862,11 @@ $(function() {
 
             var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
             setTitle(msg, state.url, state.title);
-            
-            Recordings.addPage(recordingId, attributes);
+ 
+            if (!RecordingSizeWidget.addPage(attributes)) {           
+                Recordings.addPage(recordingId, attributes);
+            }
+
             lastUrl = attributes.url;
             lastTs = attributes.timestamp;
             lastTitle = attributes.title;
