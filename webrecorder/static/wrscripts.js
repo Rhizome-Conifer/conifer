@@ -32,8 +32,11 @@
                       url: url,
                       top_url: topinfo.url,
                       top_ts: topinfo.timestamp,
-                      title: win.document.title,
                      }
+
+        if (top_page) {
+            params['title'] = win.document.title;
+        }
 
         var data = {params: params,
                     wb_type: "snapshot",
