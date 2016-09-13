@@ -26,6 +26,9 @@ skip_key_secs: 330
 
 temp_prefix: 'temp-'
 
+# time interval for websocket status updates (in seconds)
+status_update_secs: 1.0
+
 
 # Upstream url templates
 url_templates:

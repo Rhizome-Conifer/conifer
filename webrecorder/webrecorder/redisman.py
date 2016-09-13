@@ -837,6 +837,20 @@ class RecManagerMixin(object):
 
         return count
 
+    def get_size(self, user, coll, rec):
+        if not self.can_read_coll(user, coll):
+            return None
+
+        if rec and rec != '*':
+            key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+        else:
+            key = self.coll_info_key.format(user=user, coll=coll)
+
+        res = self.redis.hget(key, 'size')
+        if res is not None:
+            res = int(res)
+
+        return res
 
     def list_coll_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
