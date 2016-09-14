@@ -27,7 +27,7 @@ var TimesAndSizesFormatter = (function() {
                 return;
             }
 
-            value = decodeURI(value);
+            value = decodeURIComponent(value);
 
             var dec_val = $(elem).attr(decoded_attr);
 
