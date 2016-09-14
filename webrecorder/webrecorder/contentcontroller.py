@@ -161,9 +161,9 @@ class ContentController(BaseController, RewriterApp):
             sesh = self.get_session()
 
             if self.is_content_request():
-                id = request.query.get('id')
+                id = request.query.getunicode('id')
                 sesh.set_id(id)
-                return self.redirect(request.query.get('path'))
+                return self.redirect(request.query.getunicode('path'))
 
             else:
                 url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
@@ -176,7 +176,7 @@ class ContentController(BaseController, RewriterApp):
         def clear_sesh():
             sesh = self.get_session()
             sesh.delete()
-            return self.redir_host(None, request.query.get('path', '/'))
+            return self.redir_host(None, request.query.getunicode('path', '/'))
 
     def add_cookie(self, user, coll, rec, name, value, domain):
         key = self.get_cookie_key(dict(user=user,
@@ -564,7 +564,7 @@ class ContentController(BaseController, RewriterApp):
 
     def client_ws(self):
         user, coll = self.get_user_coll(api=True)
-        rec = request.query.get('rec', '*')
+        rec = request.query.getunicode('rec', '*')
         last_status = None
 
         def get_status():
