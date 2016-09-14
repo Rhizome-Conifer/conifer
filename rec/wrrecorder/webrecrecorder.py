@@ -322,10 +322,14 @@ class WebRecRecorder(object):
         if not storage:
             return {}
 
+        res = None
+
         if type == 'user':
             res = storage.delete_user(user)
         elif remote_delete_list:
             res = storage.delete(remote_delete_list)
+        else:
+            return {}
 
         if not res:
             return {'error_message': 'remote delete failed'}
