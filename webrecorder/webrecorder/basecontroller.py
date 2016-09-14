@@ -36,6 +36,8 @@ class BaseController(object):
         url = request.environ['wsgi.url_scheme'] + '://' + host
         if not path:
             path = request.environ.get('SCRIPT_NAME', '') + request.environ['PATH_INFO']
+            if request.query_string:
+                path += '?' + request.query_string
 
         url += path
         return bottle_redirect(url)
