@@ -56,6 +56,8 @@ download_paths:
     rec: '{host}/{user}/{coll}/{rec}/$download'
     coll: '{host}/{user}/{coll}/$download'
 
+download_chunk_encoded: true
+
 
 # Misc Settings
 invites_enabled: $REQUIRE_INVITES

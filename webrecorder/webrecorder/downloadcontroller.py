@@ -24,6 +24,8 @@ class DownloadController(BaseController):
         self.download_filename = config['download_paths']['filename']
         self.warc_key_templ = config['warc_key_templ']
 
+        self.download_chunk_encoded = config['download_chunk_encoded']
+
     def init_routes(self):
         @self.app.get('/<user>/<coll>/<rec>/$download')
         def logged_in_download_rec_warc(user, coll, rec):
@@ -93,33 +95,26 @@ class DownloadController(BaseController):
                                                  timestamp=now)
         loader = BlockLoader()
 
-        size = 0
-        infos = []
+        coll_info = self.create_coll_warcinfo(user, collection, filename)
 
-        warcinfo = self.create_coll_warcinfo(user, collection, filename)
-        size += len(warcinfo)
-        infos.append(warcinfo)
-
-        for recording in collection['recordings']:
-            if rec_list and recording['id'] not in rec_list:
-                continue
-
-            warcinfo = self.create_rec_warcinfo(user,
-                                                collection,
-                                                recording,
-                                                filename)
-
-            size += len(warcinfo)
-            size += recording['size']
-            infos.append(warcinfo)
-
-        def read_all():
-            yield infos[0]
-
-            for recording, warcinfo in zip(collection['recordings'], infos[1:]):
+        def iter_infos():
+            for recording in collection['recordings']:
                 if rec_list and recording['id'] not in rec_list:
                     continue
 
+                warcinfo = self.create_rec_warcinfo(user,
+                                                    collection,
+                                                    recording,
+                                                    filename)
+
+                size = len(warcinfo)
+                size += recording['size']
+                yield recording, warcinfo, size
+
+        def read_all(infos):
+            yield coll_info
+
+            for recording, warcinfo, _ in infos:
                 yield warcinfo
 
                 for warc_path in self._iter_all_warcs(user, coll, recording['id']):
@@ -135,13 +130,20 @@ class DownloadController(BaseController):
         response.headers['Content-Type'] = 'application/octet-stream'
         response.headers['Content-Disposition'] = "attachment; filename*=UTF-8''" + filename
 
-        response.headers['Content-Type'] = 'application/octet-stream'
-        #response.headers['Content-Length'] = size
+        # if not transfer-encoding, store infos and calculate total size
+        if not self.download_chunk_encoded:
+            size = len(coll_info)
+            infos = list(iter_infos())
+            size += sum(size for r, i, size in infos)
 
-        response.headers['Transfer-Encoding'] = 'chunked'
-        #resp = chunk_encode_iter(resp)
+            response.headers['Content-Length'] = size
+            return read_all(infos)
 
-        return read_all()
+        else:
+        # stream everything
+            response.headers['Transfer-Encoding'] = 'chunked'
+
+            return read_all(iter_infos())
 
     def _iter_all_warcs(self, user, coll, rec):
         warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
