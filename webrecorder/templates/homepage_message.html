@@ -1,4 +1,4 @@
-{% if anon_size and anon_recordings %}
+{% if anon_ttl and anon_ttl > 0 %}
     {% set path = get_path(anon_user, 'temp') %}
     {% set recording_string = "recording" if (anon_recordings == 1) else "recordings" %}
 

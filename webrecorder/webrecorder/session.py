@@ -29,7 +29,9 @@ class Session(object):
 
         self.is_restricted = is_restricted
 
-        if sesh.get('is_long'):
+        if self.is_restricted:
+            self.dura_type = 'restricted':
+        elif sesh.get('is_long'):
             self.dura_type = 'long'
         else:
             self.dura_type = 'short'

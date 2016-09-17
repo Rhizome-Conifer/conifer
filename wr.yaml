@@ -9,6 +9,9 @@ session.durations:
         total: 15724800
         extend: 604800
 
+    restricted:
+        total: 1800
+        extend: 0
 
 # session settings
 session.secret: $SECRET_KEY
