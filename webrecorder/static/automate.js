@@ -49,7 +49,7 @@ $(function() {
         //});
         win.postMessage({"wb_type": "autoscroll",
                          "start": true,
-                         "timeout": 25000}, "*");
+                         "timeout": 25000}, "*", undefined, true);
     }
 
     function scrollStop()
@@ -64,7 +64,7 @@ $(function() {
 
         win.postMessage({"wb_type": "autoscroll",
                          "start": false,
-                         "skipCallback": true}, "*");
+                         "skipCallback": true}, "*", undefined, true);
          //if (win.Autoscroll) {
         //    win.Autoscroll.stop(true);
         //}

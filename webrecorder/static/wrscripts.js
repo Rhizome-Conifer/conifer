@@ -43,7 +43,7 @@
                     top_page, top_page,
                     contents: contents}
  
-        top_frame.postMessage(data, "*");
+        top_frame.postMessage(data, "*", undefined);
 
         return url;
     }
@@ -60,7 +60,11 @@
         }
     }
 
-    window.addEventListener("message", doSnapshot);
+    function ready() {
+        window.addEventListener("message", doSnapshot);
+    }
+
+    window.addEventListener("DOMContentLoaded", ready);
 
 }());
 
@@ -112,7 +116,7 @@
         }
     }
 
-    function startCheck() {
+    function ready() {
         if (!window.wbinfo.is_live) {
             return;
         }
@@ -121,7 +125,7 @@
         setInterval(exclude_password_targets, 4900);
     }
 
-    window.addEventListener("DOMContentLoaded", startCheck);
+    window.addEventListener("DOMContentLoaded", ready);
 })();
 
 
@@ -173,7 +177,7 @@
         doneCallback = donecb;
     }
 
-    function receiveEvent() {
+    function receiveEvent(event) {
         if (!event.data || event.source != window.__WB_top_frame) { 
             return; 
         } 
@@ -197,9 +201,13 @@
         }
     }
 
-    window.addEventListener("message", receiveEvent);
-    
-    return {"start": start, "stop": stop, "isDone": isDone, "setDoneCallback": setDoneCallback};
+    function ready() {
+        window.addEventListener("message", receiveEvent);
+    }
+
+    window.addEventListener("DOMContentLoaded", ready);
+
+    //return {"start": start, "stop": stop, "isDone": isDone, "setDoneCallback": setDoneCallback};
     
 })();
 

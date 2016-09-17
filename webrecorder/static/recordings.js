@@ -195,7 +195,7 @@ var EventHandlers = (function() {
 var Snapshot = (function() {
     function queueSnapshot() {
         var main_window = document.getElementById("replay_iframe").contentWindow;
-        main_window.postMessage({wb_type: "snapshot-req"}, "*");
+        main_window.postMessage({wb_type: "snapshot-req"}, "*", undefined, true);
     }
 
     function start() {
