@@ -121,7 +121,7 @@ services:
 
     # Data Only Volume
     data:
-      image: python:3.5
+      image: python:3.5.2
 
       command: python -i
       

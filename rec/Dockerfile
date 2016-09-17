@@ -1,4 +1,4 @@
-FROM webrecorder/webrecore
+FROM webrecorder/webrecore:1.0
 
 VOLUME /data
 
