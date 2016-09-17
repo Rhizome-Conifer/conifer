@@ -30,6 +30,9 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.set_nx_env('WEBAGG_HOST', 'http://localhost:8010')
         cls.set_nx_env('RECORD_HOST', 'http://localhost:8080')
 
+        cls.set_nx_env('APP_HOST', '')
+        cls.set_nx_env('CONTENT_HOST', '')
+
         cls.set_nx_env('REQUIRE_INVITES', 'true')
         cls.set_nx_env('EMAIL_SENDER', 'test@localhost')
         cls.set_nx_env('EMAIL_SMTP_URL', 'smtp://webrectest@mail.localhost:test@localhost:25')

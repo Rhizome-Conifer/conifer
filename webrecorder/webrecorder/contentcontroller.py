@@ -3,8 +3,12 @@ import re
 import base64
 import requests
 import json
-import uwsgi
 import time
+
+try:
+    import uwsgi
+except:
+    pass
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
@@ -397,11 +401,8 @@ class ContentController(BaseController, RewriterApp):
     def get_top_url(self, full_prefix, wb_url, cdx, kwargs):
         if wb_url.mod != self.frame_mod and self.content_host != self.app_host:
             full_prefix = full_prefix.replace(self.content_host, self.app_host)
-            return super(ContentController, self).get_top_url(full_prefix, wb_url, cdx, kwargs)
 
-        top_url = full_prefix
-        top_url += wb_url.to_str()
-        return top_url
+        return super(ContentController, self).get_top_url(full_prefix, wb_url, cdx, kwargs)
 
     def get_top_frame_params(self, wb_url, kwargs):
         type = kwargs['type']

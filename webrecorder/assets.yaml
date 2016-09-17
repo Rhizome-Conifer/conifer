@@ -2,14 +2,6 @@ url: /static/__shared/
 
 directory: ./static/
 
-url_mapping:
-    '/code/static/': '/static/__shared/'
-    '/usr/local/lib/python3.5/site-packages/pywb/static/': '/static/__pywb/'
-
-load_path:
-    - /code/static/
-    - /usr/local/lib/python3.5/site-packages/pywb/static/
-
 bundles:
     base-js:
         output: bundle/base.js
@@ -70,8 +62,8 @@ bundles:
         output: bundle/frame.js
         contents:
             - base-js
-            - wb.js
-            - wb_frame.js
+            - pkg://pywb/static/wb.js
+            - pkg://pywb/static/wb_frame.js
             - times_and_sizes_formatter.js
             - collections_model.js
             - recordings_model.js
@@ -82,7 +74,7 @@ bundles:
         output: bundle/frame.css
         contents:
             - base-css
-            - scroll-webkit.css
+            - pkg://pywb/static/scroll-webkit.css
 
 
     coll-js:
@@ -116,9 +108,9 @@ bundles:
     pywb-js:
         output: bundle/pywb.js
         contents:
-            - wombat.js
-            - wb.js
-            - vidrw.js
+            - pkg://pywb/static/wombat.js
+            - pkg://pywb/static/wb.js
+            - pkg://pywb/static/vidrw.js
             - wrscripts.js
 
     browser-js:

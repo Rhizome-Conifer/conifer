@@ -27,6 +27,8 @@ upload_wait_secs: 30
 
 skip_key_secs: 330
 
+assets_path: assets.yaml
+
 temp_prefix: 'temp-'
 
 # time interval for websocket status updates (in seconds)
