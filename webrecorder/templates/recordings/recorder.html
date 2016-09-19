@@ -2,9 +2,11 @@
 <div class="col-md-11">
     <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url">
         <div class="banner-status">
+            {% if curr_mode != "new" %}
             <div class="pull-right">
                 <a href="#" data-toggle="modal" style="margin-right: 25px" data-target="#report-modal" class="left-buffer doesnt-look-right">Doesn't look right?</a>
             </div>
+            {% endif %}
 
             {% if curr_mode == "record" %}
             <span class="glyphicon glyphicon-lg glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true"></span>
