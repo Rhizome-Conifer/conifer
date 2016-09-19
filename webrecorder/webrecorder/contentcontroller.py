@@ -296,7 +296,8 @@ class ContentController(BaseController, RewriterApp):
                         'user': self.get_view_user(user),
                         'coll': coll,
                         'rec': rec,
-                        'type': type
+                        'type': type,
+                        'app_host': self.app_host,
                        }
 
             return handle_error(ue.status_code, type, ue.url, ue.msg)

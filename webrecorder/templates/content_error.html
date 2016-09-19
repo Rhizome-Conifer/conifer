@@ -21,7 +21,7 @@
 
     {% if (type == 'replay' or type == 'replay-coll') and can_write() %}
     <input type="hidden" name="url" value="{{ url }}">
-    <b><a target="_parent" href="/$patch/{{ coll }}/{{ url }}" class="">Record this page?</a></b>
+    <b><a target="_parent" href="{{ '//' + app_host if app_host else '' }}/$patch/{{ coll }}/{{ url }}" class="">Record this page?</a></b>
     {% endif %}
 {% elif status == 402 %}
     <p><a target="_parent" href="{{ get_path(user, coll, rec) }}">View Recording Info</a></p>
