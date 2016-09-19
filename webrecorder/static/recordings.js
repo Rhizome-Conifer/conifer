@@ -323,8 +323,10 @@ var RecordingSizeWidget = (function() {
     var sizeUpdateId = undefined;
     var recordingId;
     var collectionId;
+
     var ws;
     var useWS = false;
+    var errCount = 0;
 
     var start = function() {
         if ($('.size-counter-active').length && window.curr_mode) {
@@ -332,11 +334,7 @@ var RecordingSizeWidget = (function() {
             //recordingId = $('[data-recording-id]').attr('data-recording-id');
             //collectionId = $('[data-collection-id]').attr('data-collection-id');
 
-            try {
-                initWS();
-            } catch (e) {
-                useWS = false;
-            }
+            initWS();
 
             if (window.curr_mode == "record" || window.curr_mode == "patch") {
                 if (isOutOfSpace()) {
@@ -359,16 +357,15 @@ var RecordingSizeWidget = (function() {
 
     function ws_openned() {
         useWS = true;
+        errCount = 0;
     }
 
     function ws_closed() {
-        console.log("closed");
-        setTimeout(initWS, 1000);
-    }
-
-    function ws_errored() {
-        console.log("errored");
-        setTimeout(initWS, 1000);
+        useWS = false;
+        if (errCount < 5) {
+            errCount += 1;
+            setTimeout(initWS, 2000);
+        }
     }
  
     var initWS = function() {
@@ -379,12 +376,16 @@ var RecordingSizeWidget = (function() {
             url += "&rec=" + rec;
         }
 
-        ws = new WebSocket(url);
+        try {
+            ws = new WebSocket(url);
 
-        ws.addEventListener("open", ws_openned);
-        ws.addEventListener("message", ws_received);
-        ws.addEventListener("close", ws_closed);
-        ws.addEventListener("error", ws_errored);
+            ws.addEventListener("open", ws_openned);
+            ws.addEventListener("message", ws_received);
+            ws.addEventListener("close", ws_closed);
+            ws.addEventListener("error", ws_closed);
+        } catch (e) {
+            useWS = false;
+        }
     }
 
     function addCookie(name, value, domain) {
