@@ -80,42 +80,12 @@ class TestTempContent(FullStackTests):
         assert '"http://example.com/"' in res.text
         assert '<iframe' in res.text
 
-    def test_anon_record_redirect(self):
-        res = self.testapp.get('/$temp/temp/My Rec/record/mp_/http://example.com/')
-        assert res.status_code == 302
-
-        parts = urlsplit(res.headers['Location'])
-
-        path_parts = parts.path.split('/', 2)
-        assert self.anon_user == path_parts[1]
-
-        assert self.anon_user.startswith(Session.temp_prefix)
-        assert parts.path.endswith('/temp/My Rec/record/mp_/http://example.com/')
-
-        # test dupe
-        res = self.testapp.get('/$temp/temp/My Rec/record/mp_/http://example.com/')
-        assert res.status_code == 302
-
-
-    def test_anon_record_redirect_old(self):
-        res = self.testapp.get('/record/mp_/http://example.com/')
-        assert res.status_code == 302
-
-        parts = urlsplit(res.headers['Location'])
-
-        path_parts = parts.path.split('/', 2)
-        assert self.anon_user == path_parts[1]
-
-        assert self.anon_user.startswith(Session.temp_prefix)
-        assert parts.path.endswith('/temp/Recording Session/record/mp_/http://example.com/')
-
-    #def test_anon_replay_redirect(self):
-    #    res = self.testapp.get('/replay/mp_/http://example.com/')
-    #    assert res.status_code == 302
-    #    assert res.headers['Location'].endswith('/anonymous/mp_/http://example.com/')
-
     def test_anon_record_1(self):
-        res = self._get_anon('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
+        #res = self._get_anon('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/$record/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
+        assert res.status_code == 302
+        res = res.follow()
+
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -342,6 +312,40 @@ class TestTempContent(FullStackTests):
         res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user), status=404)
 
         assert res.json == {'id': 'my-recording', 'error_message': 'Recording not found'}
+
+    def test_anon_record_redirect_and_delete(self):
+        res = self.testapp.get('/record/mp_/http://example.com/')
+        assert res.status_code == 302
+
+        parts = urlsplit(res.headers['Location'])
+
+        path_parts = parts.path.split('/', 2)
+        assert self.anon_user == path_parts[1]
+
+        assert self.anon_user.startswith(Session.temp_prefix)
+        assert parts.path.endswith('/temp/recording-session/record/mp_/http://example.com/')
+
+        # Delete this recording
+        res = self.testapp.delete('/api/v1/recordings/recording-session?user={user}&coll=temp'.format(user=self.anon_user))
+
+        assert res.json == {'deleted_id': 'recording-session'}
+
+    def test_anon_patch_redirect_and_delete(self):
+        res = self.testapp.get('/$patch/temp/http://example.com/?patch=test')
+        assert res.status_code == 302
+
+        parts = urlsplit(res.headers['Location'])
+        path_parts = parts.path.split('/', 2)
+        assert self.anon_user == path_parts[1]
+
+        assert self.anon_user.startswith(Session.temp_prefix)
+
+        assert res.headers['Location'].endswith('/temp/patch/patch/http://example.com/?patch=test')
+
+        # Delete this recording
+        res = self.testapp.delete('/api/v1/recordings/patch?user={user}&coll=temp'.format(user=self.anon_user))
+
+        assert res.json == {'deleted_id': 'patch'}
 
     def test_error_anon_not_found_recording(self):
         res = self._get_anon('/temp/my-rec/mp_/http://example.com/', status=404)
