@@ -932,7 +932,12 @@ class CollManagerMixin(object):
         if not result:
             return result
 
-        coll = result['id']
+        coll = result.get('id')
+        if not coll:
+            if include_recs:
+                result['title'] = ''
+                result['recordings'] = []
+            return result
 
         path = self.download_paths['coll']
         path = path.format(host=self.get_host(),
