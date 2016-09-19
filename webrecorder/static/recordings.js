@@ -90,15 +90,7 @@ var EventHandlers = (function() {
                 target = window;
             }
 
-            var createPatch = function(data) {
-                RouteTo.patchPage(user, coll, data.recording.id, url, target);
-            };
-
-            var fail = function() {}
-
-            var attributes = {"title": "Patch"};
-
-            Recordings.create(user, coll, attributes, createPatch, fail);
+            RouteTo.newPatch(coll, url, target);
         });
  
          
@@ -269,6 +261,10 @@ var RouteTo = (function(){
         routeTo(host + "/$record/" + collection + "/" + recording + "/" + url, target);
     }
 
+    var newPatch = function(collection, url, target) {
+        routeTo(host + "/$patch/" + collection + "/" + url, target);
+    }
+
     var recordingInProgress = function(user, collection, recording, url, mode, target) {
         if (!mode) {
             mode = "record";
@@ -313,6 +309,7 @@ var RouteTo = (function(){
 
     return {
         newRecording: newRecording,
+        newPatch: newPatch,
         recordingInProgress: recordingInProgress,
         collectionInfo: collectionInfo,
         recordingInfo: recordingInfo,

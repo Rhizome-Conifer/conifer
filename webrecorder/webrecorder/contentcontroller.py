@@ -47,56 +47,19 @@ class ContentController(BaseController, RewriterApp):
 
     def init_routes(self):
         # REDIRECTS
-        @self.app.route(['/record/<wb_url:path>',
-                         '/$temp/temp/record/<wb_url:path>',
-                         '/$temp/temp/<rec>/record/<wb_url:path>'], method='ANY')
-        def redir_anon_rec(rec='', wb_url=''):
-            if not rec:
-                rec = self.DEF_REC_NAME
-
-            wb_url = self.add_query(wb_url)
-
-            user = self.manager.get_anon_user(True)
+        @self.app.route('/record/<wb_url:path>', method='ANY')
+        def redir_new_temp_rec(wb_url):
             coll = 'temp'
-
-            if not self.manager.has_collection(user, coll):
-                self.manager.create_collection(user, coll, 'Temporary Collection')
-
-            new_url = '/{user}/{coll}/{rec}/record/{url}'.format(user=user,
-                                                                 coll=coll,
-                                                                 rec=rec,
-                                                                 url=wb_url)
-            return self.redirect(new_url)
+            rec = self.DEF_REC_NAME
+            return self.do_redir_rec_or_patch(coll, rec, wb_url, 'record')
 
         @self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
-        def redir_record_always(coll, rec, wb_url):
-            rec_title = rec
-            rec = self.sanitize_title(rec_title)
+        def redir_new_record(coll, rec, wb_url):
+            return self.do_redir_rec_or_patch(coll, rec, wb_url, 'record')
 
-            wb_url = self.add_query(wb_url)
-
-            user = self.manager.get_curr_user()
-
-            if not user:
-                user = self.manager.get_anon_user(True)
-                coll = 'temp'
-                coll_title = 'Temporary Collection'
-
-            else:
-                coll_title = coll
-                coll = self.sanitize_title(coll_title)
-
-            if not self.manager.has_collection(user, coll):
-                self.manager.create_collection(user, coll, coll_title)
-
-            recording = self.manager.create_recording(user, coll, rec, rec_title)
-
-            rec = recording['id']
-            new_url = '/{user}/{coll}/{rec}/record/{url}'.format(user=user,
-                                                                 coll=coll,
-                                                                 rec=rec,
-                                                                 url=wb_url)
-            return self.redirect(new_url)
+        @self.app.route('/$patch/<coll>/<wb_url:path>', method='ANY')
+        def redir_new_patch(coll, wb_url):
+            return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
 
         # COOKIES
         @self.app.get(['/<user>/<coll>/$add_cookie'], method='POST')
@@ -181,6 +144,37 @@ class ContentController(BaseController, RewriterApp):
             sesh = self.get_session()
             sesh.delete()
             return self.redir_host(None, request.query.getunicode('path', '/'))
+
+    def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
+        rec_title = rec
+        rec = self.sanitize_title(rec_title)
+
+        wb_url = self.add_query(wb_url)
+
+        user = self.manager.get_curr_user()
+
+        if not user:
+            user = self.manager.get_anon_user(True)
+            coll = 'temp'
+            coll_title = 'Temporary Collection'
+
+        else:
+            coll_title = coll
+            coll = self.sanitize_title(coll_title)
+
+        if not self.manager.has_collection(user, coll):
+            self.manager.create_collection(user, coll, coll_title)
+
+        recording = self.manager.create_recording(user, coll, rec, rec_title)
+
+        rec = recording['id']
+        new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
+                                                             coll=coll,
+                                                             rec=rec,
+                                                             mode=mode,
+                                                             url=wb_url)
+        return self.redirect(new_url)
+
 
     def add_cookie(self, user, coll, rec, name, value, domain):
         key = self.get_cookie_key(dict(user=user,
@@ -302,7 +296,8 @@ class ContentController(BaseController, RewriterApp):
                         'user': self.get_view_user(user),
                         'coll': coll,
                         'rec': rec,
-                        'type': type
+                        'type': type,
+                        'app_host': self.app_host,
                        }
 
             return handle_error(ue.status_code, type, ue.url, ue.msg)
