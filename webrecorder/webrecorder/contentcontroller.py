@@ -496,7 +496,12 @@ class ContentController(BaseController, RewriterApp):
 
         html_text = request.body.read().decode('utf-8')
 
-        host = request.urlparts.scheme + '://' + request.urlparts.netloc
+        host = request.urlparts.scheme + '://'
+        if self.content_host:
+            host += self.content_host
+        else:
+            host += request.urlparts.netloc
+
         prefix = request.query.getunicode('prefix')
 
         html_text = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
