@@ -24,7 +24,7 @@ from webrecorder.rec.s3 import S3Storage
 #    temp_checker()
 
 
-wr = None
+#wr = None
 
 # =============================================================================
 def temp_checker_loop(temp_checker, sleep_secs):
@@ -61,7 +61,6 @@ def init():
 
     storage_committer.add_storage_class('s3', S3Storage)
 
-    global wr
     wr = WebRecRecorder(config, storage_committer)
 
     sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
@@ -69,6 +68,8 @@ def init():
     gevent.spawn(temp_checker_loop, temp_checker, sleep_secs)
 
     gevent.spawn(storage_commit_loop, storage_committer, wr.writer, sleep_secs)
+
+    wr.app.wr = wr
 
     return wr.app
 
