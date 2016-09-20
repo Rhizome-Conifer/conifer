@@ -1,15 +1,15 @@
 from gevent import monkey; monkey.patch_all()
 
-from wrrecorder.webrecrecorder import WebRecRecorder
-from wrrecorder.tempchecker import TempChecker
-from wrrecorder.storagecommitter import StorageCommitter
+from webrecorder.rec.webrecrecorder import WebRecRecorder
+from webrecorder.rec.tempchecker import TempChecker
+from webrecorder.rec.storagecommitter import StorageCommitter
 
 from webagg.utils import load_config
 
 import gevent
 import os
 
-from wrrecorder.s3 import S3Storage
+from webrecorder.rec.s3 import S3Storage
 
 
 # =============================================================================
