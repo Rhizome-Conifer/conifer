@@ -1,13 +1,16 @@
 from fakeredis import FakeStrictRedis
 
-from webagg.test.testutils import TempDirTests, LiveServerTests, BaseTestClass, to_path
-from webagg.test.testutils import FakeRedisTests
+#from .testutils import BaseWRTests
+from .testfullstack import FullStackTests
+
+from webagg.test.testutils import LiveServerTests
+
 import os
+
 import webtest
 
 from six.moves.urllib.parse import quote, urlsplit
-
-from wrrecorder import get_shared_config_root
+import time
 
 general_req_data = "\
 GET {path} HTTP/1.1\r\n\
@@ -19,31 +22,16 @@ Host: {host}\r\n\
 
 
 # ============================================================================
-class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTestClass):
+class TestWebRecRecorder(FullStackTests):
     @classmethod
     def setup_class(cls):
-        super(TestWebRecRecorder, cls).setup_class()
+        super(TestWebRecRecorder, cls).setup_class(rec=False, no_app=True)
 
-        cls.warcs_dir = to_path(cls.root_dir + '/warcs')
+        from webrecorder.rec.main import init
 
-        os.makedirs(cls.warcs_dir)
-
-        cls.upstream_url = 'http://localhost:{0}'.format(cls.server.port)
-
-        os.environ['REDIS_BASE_URL'] = 'redis://localhost/2'
-
-        os.environ['WEBAGG_HOST'] = cls.upstream_url
-        os.environ['RECORD_ROOT'] = cls.warcs_dir
-
-        os.environ['WR_CONFIG'] = os.path.join(get_shared_config_root(), 'wr.yaml')
-
-        from wrrecorder.main import application, wr
-        cls.wr_rec = wr
-        #cls.wr_rec = WebRecRecorder()
-        #cls.testapp = webtest.TestApp(cls.wr_rec.app)
-
-        cls.testapp = webtest.TestApp(application)
-        cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
+        app = init()
+        cls.wr_rec = app.wr
+        cls.testapp = webtest.TestApp(app)
 
     def _test_warc_write(self, url, user, coll, rec):
         parts = urlsplit(url)
@@ -52,11 +40,14 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
         if parts.query:
             path += '?' + parts.query
 
+        # Rec key must exist
+        self.redis.hset('r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec), 'id', rec)
+
         req_url = '/record/live/resource/postreq?url={url}&param.recorder.user={user}&param.recorder.coll={coll}&param.recorder.rec={rec}'
         req_url = req_url.format(url=quote(url), user=user, coll=coll, rec=rec)
         resp = self.testapp.post(req_url, general_req_data.format(host=host, path=path).encode('utf-8'))
 
-        if not self.wr_rec.recorder.write_queue.empty():
+        while not self.wr_rec.recorder.write_queue.empty():
             self.wr_rec.recorder._write_one()
 
         assert resp.headers['WebAgg-Source-Coll'] == 'live'
@@ -70,11 +61,11 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
         keys = [k.decode('utf-8') for k in keys]
 
         assert set(keys) == set([
-            'c:USER:COLL:warc',
+            'r:USER:COLL:REC:warc',
             'r:USER:COLL:REC:cdxj',
             'r:USER:COLL:REC:info',
             'c:USER:COLL:info',
-            'u:USER'
+            'u:USER:info'
         ])
 
         resp.charset = 'utf-8'
@@ -83,10 +74,9 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
         size = self.redis.hget('r:USER:COLL:REC:info', 'size')
         assert size is not None
         assert size == self.redis.hget('c:USER:COLL:info', 'size')
-        assert size == self.redis.hget('u:USER', 'size')
+        assert size == self.redis.hget('u:USER:info', 'size')
 
         assert self.redis.hget('r:USER:COLL:REC:info', 'updated_at') is not None
-
 
     def test_multi_user_rec_2(self):
         resp = self._test_warc_write('http://httpbin.org/get?boo=far', user='USER', coll='COLL', rec='REC2')
@@ -95,13 +85,14 @@ class TestWebRecRecorder(LiveServerTests, FakeRedisTests, TempDirTests, BaseTest
         keys = [k.decode('utf-8') for k in keys]
 
         assert set(keys) == set([
-            'c:USER:COLL:warc',
+            'r:USER:COLL:REC:warc',
+            'r:USER:COLL:REC2:warc',
             'r:USER:COLL:REC:cdxj',
             'r:USER:COLL:REC2:cdxj',
             'r:USER:COLL:REC:info',
             'r:USER:COLL:REC2:info',
             'c:USER:COLL:info',
-            'u:USER'
+            'u:USER:info'
         ])
 
         resp.charset = 'utf-8'

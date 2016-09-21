@@ -3,6 +3,8 @@ version: '2'
 services:
     app:
         build: ./webrecorder
+        command: uwsgi /code/apps/frontend.ini
+
         env_file:
             - ./wr.env
 
@@ -10,31 +12,17 @@ services:
             - webagg
             - recorder
 
-        ports:
-            - 8080:8080
-
         volumes:
             - ./webrecorder/:/code/
             - ./wr.yaml:/wr.yaml
 
-    nginx:
-        build: ./nginx
         ports:
-            - "8089:80"
-
-        #volumes:
-        #    - ./app/:/app/
-
-        volumes_from:
-            - app
-            - browsermanager
-            - data
-
-        depends_on:
-            - app
+            - 8080:8080
 
     recorder:
-        build: ./rec
+        build: ./webrecorder
+        command: uwsgi /code/apps/rec.ini
+
         env_file:
             - ./wr.env
 
@@ -43,23 +31,40 @@ services:
             - redis
 
         volumes:
-            - ./rec/:/rec/
+            - ./webrecorder/:/code/
 
         volumes_from:
             - data
 
-
     webagg:
-        build: ./webagg
+        build: ./webrecorder
+        command: uwsgi /code/apps/load.ini
+
         env_file:
             - ./wr.env
 
         depends_on:
             - redis
 
+        volumes:
+            - ./webrecorder/:/code/
+
         volumes_from:
             - data
 
+
+    nginx:
+        build: ./nginx
+        ports:
+            - "8089:80"
+
+        depends_on:
+            - app
+
+        volumes_from:
+            - app
+            - browsermanager
+            - data
 
     browsermanager:
         image: webrecorder/browsermanager
@@ -88,26 +93,26 @@ services:
     proxy:
         image: webrecorder/proxy
 
-        depends_on:
-            - redis
-
+        command: mitmdump -p 8080 --client-certs /certs/ --no-http2 -s "/code/run.py --host http://webagg:8080/ --redis redis://redis:6379/0"
         env_file:
             - ./wr.env
 
-        command: mitmdump -p 8080 --client-certs /certs/ --no-http2 -s "/code/run.py --host http://webagg:8080/ --redis redis://redis:6379/0"
+        depends_on:
+            - redis
+
  
 
     redis:
         build: ./redis
+
+        env_file:
+            - ./wr.env
 
         ports:
             - "6379:6379"
   
         volumes_from:
             - data
-
-        env_file:
-            - ./wr.env
 
     # Postfix (if sending mail locally)
     mailserver:

@@ -6,8 +6,6 @@ import os
 from gevent.wsgi import WSGIServer
 import gevent
 
-from random import randrange
-
 
 # ============================================================================
 class FullStackTests(BaseWRTests):
@@ -26,28 +24,35 @@ class FullStackTests(BaseWRTests):
 
         super(FullStackTests, cls).setup_class(*args, **kwargs)
 
-        cls.agg_greenlet = cls.init_webagg(agg_port)
-        cls.rec_greenlet = cls.init_rec(agg_port, rec_port)
+        if kwargs.get('agg', True):
+            cls.agg_greenlet = cls.init_webagg(agg_port)
+        else:
+            cls.agg_greenlet = None
+
+        if kwargs.get('rec', True):
+            cls.rec_greenlet = cls.init_rec(agg_port, rec_port)
+        else:
+            cls.rec_greenlet = None
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
-        #gevent.kill(cls.agg_greenlet, block=True)
-        #gevent.kill(cls.rec_greenlet, block=True)
+        if cls.agg_greenlet:
+            cls.agg_greenlet.kill(block=True)
 
-        cls.agg_greenlet.kill(block=True)
-        cls.rec_greenlet.kill(block=True)
+        if cls.rec_greenlet:
+            cls.rec_greenlet.kill(block=True)
 
         super(FullStackTests, cls).teardown_class(*args, **kwargs)
 
     @classmethod
     def init_webagg(cls, port):
-        from wrwebagg.wragg import make_webagg
+        from webrecorder.load.main import make_webagg
         greenlet, port = cls.make_gevent_server(make_webagg(), port)
         return greenlet
 
     @classmethod
     def init_rec(cls, agg_port, rec_port):
-        from wrrecorder.main import init
+        from webrecorder.rec.main import init
         greenlet, port = cls.make_gevent_server(init(), rec_port)
         return greenlet
 

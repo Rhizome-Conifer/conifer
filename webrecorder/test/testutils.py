@@ -11,7 +11,8 @@ from webrecorder.appcontroller import AppController
 # ============================================================================
 class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     @classmethod
-    def setup_class(cls, extra_config_file='test_invites_config.yaml', init_anon=True):
+    def setup_class(cls, extra_config_file='test_invites_config.yaml', init_anon=True,
+                    **kwargs):
         super(BaseWRTests, cls).setup_class()
 
         cls.warcs_dir = to_path(cls.root_dir + '/warcs/')
@@ -38,6 +39,9 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.set_nx_env('EMAIL_SMTP_URL', 'smtp://webrectest@mail.localhost:test@localhost:25')
 
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
+
+        if kwargs.get('no_app'):
+            return
 
         cls.appcont = AppController()
         cls.testapp = webtest.TestApp(cls.appcont.app)

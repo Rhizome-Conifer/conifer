@@ -30,7 +30,7 @@ class PyTest(TestCommand):
         import pytest
         import sys
         import os
-        cmdline = ' --cov-config .coveragerc --cov ./webrecorder/ ../rec/wrrecorder/ ../webagg/wrwebagg/ -vv ./test/'
+        cmdline = ' --cov-config .coveragerc --cov ./webrecorder/ -vv ./test/'
         errcode = pytest.main(cmdline)
         sys.exit(errcode)
 
@@ -47,18 +47,15 @@ setup(
     zip_safe=True,
     provides=[
         'webrecorder',
+        'webrecorder.rec',
+        'webrecorder.load',
     ],
-    install_requires=[
-        #'bottle',
-        #'bottle-cork',
-        #'pywb',
-        #'hiredis',
-        #'uwsgi',
-       ],
     tests_require=[
         'pytest',
         'WebTest',
         'pytest-cov',
+        'fakeredis',
+        'mock',
        ],
     cmdclass={'test': PyTest},
     test_suite='',
