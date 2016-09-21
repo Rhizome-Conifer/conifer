@@ -23,7 +23,7 @@ $(function() {
         var title = $("input[name='rec-title']").val();
         var url = $("input[name='url']").val();
 
-        if (isSafari()) {
+        if (isSafari() || isMS()) {
             url = "mp_/" + url;
         }
 
@@ -34,6 +34,14 @@ $(function() {
 
     function isSafari() {
         return navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') == -1;
+    }
+
+    function isMS() {
+        if (/(MSIE|Edge|rv:11)/i.test(navigator.userAgent)) {
+            return true;
+        }
+
+        return false;
     }
 
     function setStorage(name, value) {

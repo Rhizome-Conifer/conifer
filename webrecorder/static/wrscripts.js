@@ -40,7 +40,7 @@
 
         var data = {params: params,
                     wb_type: "snapshot",
-                    top_page, top_page,
+                    top_page: top_page,
                     contents: contents}
  
         top_frame.postMessage(data, "*", undefined);
