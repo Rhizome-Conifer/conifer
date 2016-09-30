@@ -29,6 +29,7 @@ bundles:
             - collections_model.js
             - recordings.js
             - external/validator.js
+            - containerized_ui.js
 
     main-css:
         output: bundle/main.css

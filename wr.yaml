@@ -42,7 +42,7 @@ url_templates:
 
     # upload path
     upload: '{record_host}/record/$upload?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=stream'
- 
+
     # core replay funcs
     live: '{replay_host}/live/resource/postreq?'
 
@@ -150,3 +150,31 @@ framed_replay: inverse
 query_html: time_info.html
 
 
+# Available containerized browsers
+containerized_browsers:
+    -
+        id: ch45
+        name: chrome
+        os: windows
+        version: 45
+        release: '2015-11-02'
+        capabilities:
+            - flash
+            - mp3
+            - shockwave
+            - java
+    -
+        id: ff42
+        name: firefox
+        os: mac
+        version: 42
+        release: '2014-8-02'
+        capabilities:
+            - flash
+    -
+        id: sf50
+        name: safari
+        os: mac
+        version: 50
+        release: '2003-12-01'
+        capabilities:
