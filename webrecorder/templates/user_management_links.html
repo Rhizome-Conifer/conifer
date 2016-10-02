@@ -12,6 +12,14 @@
                 <span class="glyphicon glyphicon-user right-buffer-sm"></span>{{ curr_user }}
             </a>
         </li>
+
+        {% if curr_role == 'admin' %}
+            <li class="navbar-text navbar-right">
+                <a target="_parent" href="/admin/">
+                    <span class="glyphicon glyphicon-wrench right-buffer-sm"></span>admin
+                </a>
+            </li>
+        {% endif %}
     </ul>
 {% else %}
     <ul class="nav">

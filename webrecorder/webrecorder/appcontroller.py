@@ -1,4 +1,4 @@
-from bottle import Bottle, debug, request, response
+from bottle import Bottle, debug, JSONPlugin, request, response
 
 import logging
 import json
@@ -20,6 +20,7 @@ from six.moves.urllib.parse import urlsplit, urljoin
 
 from webagg.utils import load_config
 
+from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
@@ -57,6 +58,9 @@ class AppController(BaseController):
 
         bottle_app = Bottle()
         self.bottle_app = bottle_app
+
+        # JSON encoding for datetime objects
+        self.bottle_app.install(JSONPlugin(json_dumps=lambda s: json.dumps(s, cls=CustomJSONEncoder)))
 
         config = load_config('WR_CONFIG', configfile, 'WR_USER_CONFIG', overlay_config)
 
