@@ -11,6 +11,7 @@ services:
         depends_on:
             - webagg
             - recorder
+            - redis
 
         volumes:
             - ./webrecorder/:/code/
@@ -91,16 +92,16 @@ services:
             - /dev/shm:/dev/shm
 
     proxy:
-        image: webrecorder/proxy
+        build: ./proxy
 
-        command: mitmdump -p 8080 --client-certs /certs/ --no-http2 -s "/code/run.py --host http://webagg:8080/ --redis redis://redis:6379/0"
         env_file:
             - ./wr.env
 
         depends_on:
             - redis
 
- 
+        volumes:
+            - ./proxy/certs:/home/apprun/.mitmproxy
 
     redis:
         build: ./redis

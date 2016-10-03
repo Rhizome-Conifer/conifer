@@ -12,7 +12,8 @@ class CookieGuard(object):
 
         def guard_start_response(status, headers, exc_info=None):
             self.prepare_response(environ, headers)
-            return start_response(status, headers, exc_info)
+            if not environ.get('webrec.ws_closed'):
+                return start_response(status, headers, exc_info)
 
         return self.app(environ, guard_start_response)
 

@@ -23,9 +23,9 @@ class BrowserController(BaseController):
 
             upsid = params.get('upsid', '')
 
-            print('ups:' + upsid)
+            old_key = 'ups:' + upsid
 
-            upstream_url = self.manager.browser_redis.get('ups:' + upsid)
+            upstream_url = self.manager.browser_redis.hget(old_key, 'upstream_url')
             if not upstream_url:
                 response.status = 400
                 return {'error_message', 'Upstream ID missing or invalid'}
@@ -36,17 +36,23 @@ class BrowserController(BaseController):
                 traceback.print_exc()
                 return {'queue': -1}
 
-            cmd = res.json()
+            try:
+                cmd = res.json()
+            except:
+                return {'error_message': 'Could not create browser: ' + res.text}
 
             # queued or other error
             if cmd.get('queue') != 0:
                 return {'queue': cmd.get('queue', -1)}
 
-            # set upstream url
-            self.manager.browser_redis.hset('ip:' + cmd['ip'],
-                                            'upstream_url', upstream_url)
+            # rename ups: -> ip key, remove ttl
+            #self.manager.browser_redis.hset('ip:' + cmd['ip'],
+            #                                'upstream_url', upstream_url)
 
-            print(cmd)
+            new_key = 'ip:' + cmd['ip']
+
+            self.manager.browser_redis.rename(old_key, new_key)
+            self.manager.browser_redis.persist(new_key)
 
             curr_host = request.urlparts.netloc.split(':')[0]
             new_cmd = {'vnc_host': curr_host + ':' + cmd['vnc_port'],

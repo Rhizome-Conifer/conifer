@@ -316,7 +316,7 @@ $(function() {
 
             // start ping at regular intervals
             //ping_id = window.setTimeout(ping, ping_interval);
-            establish_ping_sock();
+            //establish_ping_sock();
         }
 
         //        var s, sb, cad, level;

@@ -1,5 +1,5 @@
 #Dockerfile for webrecorder
-FROM webrecorder/webrecore:1.0.1
+FROM webrecorder/webrecore:latest
 
 WORKDIR /build
 ADD requirements.txt /build/

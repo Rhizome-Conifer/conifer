@@ -120,7 +120,7 @@ class ContentController(BaseController, RewriterApp):
             try:
                 return self.client_ws()
             except OSError:
-                print('WS Closed')
+                request.environ['webrec.ws_closed'] = True
                 return
 
         @self.app.route(['/_set_session'])
@@ -441,24 +441,41 @@ class ContentController(BaseController, RewriterApp):
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         @self.jinja2_view('browser_embed.html')
-        def browser_embed(browser):  #pragma: no cover
+        def browser_embed(browser):
+            # container redis info
             upstream_url = self.get_upstream_url(wb_url, kwargs, {})
-
             upstream_url += '&url={url}'
 
-            upsid = base64.b64encode(os.urandom(6))
+            upsid = base64.b64encode(os.urandom(6)).decode('utf-8')
+
+            container_data = {'upstream_url': upstream_url,
+                              'user': kwargs['user'],
+                              'coll': kwargs['coll'],
+                              'rec': kwargs['rec'],
+                              'curr_mode': kwargs['type'],
+                             }
 
             # TODO: load settings
-            self.manager.browser_redis.setex(b'ups:' + upsid, 120, upstream_url)
+            #self.manager.browser_redis.setex(b'ups:' + upsid, 120, upstream_url)
+            self.manager.browser_redis.hmset('ups:' + upsid, container_data)
+            self.manager.browser_redis.expire('ups:' + upsid, 120)
 
+            # browser page insert
             data = {'browser': browser,
                     'url': wb_url.url,
                     'ts': wb_url.timestamp,
-                    'upsid': upsid.decode('utf-8'),
+                    'upsid': upsid,
                     'static': '/static/__bp',
                    }
 
             data.update(self.get_top_frame_params(wb_url, kwargs))
+
+            #page_data = {'url': wb_url.url,
+            #             'timestamp': wb_url.timestamp,
+            #            }
+
+            #res = self.manager.add_page(kwargs['user'], kwargs['coll'], kwargs['rec'], page_data)
+
             return data
 
         if wb_url.mod == 'ch_':
@@ -563,7 +580,24 @@ class ContentController(BaseController, RewriterApp):
         else:
             return {'snapshot': ''}
 
+    def init_cont_browser_sesh(self):
+        remote_addr = request.environ.get('HTTP_X_PROXY_FOR')
+        if not remote_addr:
+            remote_addr = request.environ['REMOTE_ADDR']
+
+        container_data = self.manager.browser_redis.hgetall('ip:' + remote_addr)
+
+        if not container_data or 'user' not in container_data:
+            print('Data not found for remote ' + remote_addr)
+            return
+
+        sesh = self.get_session()
+        sesh.set_restricted_user(container_data['user'])
+
     def client_ws(self):
+        if request.query.getunicode('cont_browser'):
+            self.init_cont_browser_sesh()
+
         user, coll = self.get_user_coll(api=True)
         rec = request.query.getunicode('rec', '*')
         last_status = None
