@@ -1,0 +1,65 @@
+
+{% if curr_mode == "replay" or curr_mode == "replay-coll" %}
+    {% set is_replaying = True %}
+    {# TODO: pass on the containerized browser used to capture this recording #}
+    {% set browser = {'name':'safari', 'version': '9.1.3'} %}
+{% endif %}
+
+{% if is_replaying and browser or not is_replaying %}
+<div class="input-group-btn">
+    <button id='cnt-button' type="button" class="btn btn-default dropdown-toggle{% if is_replaying %} disabled{% endif %}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        {% if browser %}
+            <span class='btn-content'><img src="/static/__shared/browsers/{{ browser.name|replace(' ', '-') }}_16x16.png"> {{ browser.name }} v{{ browser.version }}</span>
+        {% else %}
+            <span class='btn-content'>(native) Chrome</span>
+        {% endif %}
+        {% if not is_replaying %} <span class="caret"></span>{% endif %}
+    </button>
+    {% if not is_replaying %}
+        <div class='dropdown-menu'>
+            <div class='container'>
+                <ul class='row'>
+                    <li class='col-xs-2'><h6 class='dropdown-header'>browser</h6></li>
+                    <li class='col-xs-2'><h6 class='dropdown-header'>version</h6></li>
+                    <li class='col-xs-2'><h6 class='dropdown-header'>release</h6></li>
+                    <li class='col-xs-2'><h6 class='dropdown-header'>OS</h6></li>
+                    <li class='col-xs-4'><h6 class='dropdown-header'>capabilities</h6></li>
+                </ul>
+                 {% for browser in cnt_browsers %}
+                    <ul class='row cnt-browser{% if browser.disabled %} disabled{% endif %}' data-browser-id='{{ browser.id }}' data-browser-name='{{ browser.name }}' data-browser-vrs='{{ browser.version }}'>
+                        <li class='col-xs-2'>
+                            <img src='/static/__shared/browsers/{{ browser.name|replace(' ', '-') }}_16x16.png'>
+                            <span>{{ browser.name }}</span>
+                        </li>
+                        <li class='col-xs-2'>
+                            v{{ browser.version }}
+                        </li>
+                        <li class='col-xs-2'>
+                            {{ browser.release }}
+                        </li>
+                        <li class='col-xs-2'>
+                            {{ browser.os }}
+                        </li>
+                        <li class='col-xs-4'>
+                            <span>
+                            {%- if browser.capabilities %}
+                                {{ browser.capabilities|join(', ') }}
+                            {% else %}
+                                unknown
+                            {% endif %}
+                            </span>
+                        </li>
+                    </ul>
+                {% endfor %}
+                <ul class='row cnt-browser' data-native='true'>
+                    <li class='col-xs-2'>(native) current</li>
+                    <li class='col-xs-2'>-</li>
+                    <li class='col-xs-2'>-</li>
+                    <li class='col-xs-2'>-</li>
+                    <li class='col-xs-4'>-</li>
+                </ul>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endif %}

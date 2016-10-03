@@ -51,7 +51,8 @@
 
         </div>
 
-        <div class="input-group">
+        <div class="input-group containerized">
+            {% include '/containerized_browser_select.html' %}
             <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" autofocus required>
             <input class="hidden" type="submit">
             <span id="replay-date" class="replay-date"></span>

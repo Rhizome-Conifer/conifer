@@ -113,6 +113,7 @@ class AppController(BaseController):
 
     def init_jinja_env(self, config, jinja_env):
         jinja_env.globals['metadata'] = config.get('metadata', {})
+        jinja_env.globals['cnt_browsers'] = config.get('containerized_browsers', [])
 
         def get_coll(context):
             coll = context.get('coll_orig', '')
