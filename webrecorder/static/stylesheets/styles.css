@@ -885,7 +885,8 @@ div.filter-label {
     margin-right: 5px;
 }
 
-.containerized .cnt-browser { cursor: pointer; }
+.containerized .cnt-browser:not(.disabled) { cursor: pointer; }
+.containerized .cnt-browser.disabled { opacity: 0.6; filter: grayscale(100%); }
 .containerized .cnt-browser:nth-child(even) { background-color: #F6F6F6; }
 .containerized .cnt-browser:hover { background-color: #E3E3E3; }
 

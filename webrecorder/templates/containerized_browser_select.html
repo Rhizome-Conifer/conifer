@@ -26,7 +26,7 @@
                     <li class='col-xs-4'><h6 class='dropdown-header'>capabilities</h6></li>
                 </ul>
                  {% for browser in cnt_browsers %}
-                    <ul class='row cnt-browser' data-browser-id='{{ browser.id }}' data-browser-name='{{ browser.name }}' data-browser-vrs='{{ browser.version }}'>
+                    <ul class='row cnt-browser{% if browser.disabled %} disabled{% endif %}' data-browser-id='{{ browser.id }}' data-browser-name='{{ browser.name }}' data-browser-vrs='{{ browser.version }}'>
                         <li class='col-xs-2'>
                             <img src='/static/__shared/browsers/{{ browser.name|replace(' ', '-') }}_16x16.png'>
                             <span>{{ browser.name }}</span>
@@ -52,7 +52,7 @@
                     </ul>
                 {% endfor %}
                 <ul class='row cnt-browser' data-native='true'>
-                    <li class='col-xs-2'>current (native)</li>
+                    <li class='col-xs-2'>(native) current</li>
                     <li class='col-xs-2'>-</li>
                     <li class='col-xs-2'>-</li>
                     <li class='col-xs-2'>-</li>

@@ -18,11 +18,11 @@ function getNative() {
     /**
      * Makes a quick attempt to identify the current browser
      */
-    var b = window.navigator.userAgent.match(/(chrome|safari|trident|firefox|opera)/i);
-    var labels = {'trident': 'IE'};
+    var b = window.navigator.userAgent.match(/((chrome|safari|trident|firefox|opera)(?!.+(edge|opr))|(edge|opr))/i);
+    var labels = {'trident': 'IE', 'edge': 'IE', 'opr': 'Opera'};
     if(b) {
         var browser = b[0];
-        return {native: true, name: (typeof labels[browser] !== 'undefined'?labels[browser]:browser)};
+        return {native: true, name: (typeof labels[browser.toLowerCase()] !== 'undefined'?labels[browser.toLowerCase()]:browser)};
     }
     return {native: true, name: 'current'};
 }
@@ -33,7 +33,7 @@ $(function (){
     if(window.curr_mode !== 'replay-coll' && window.curr_mode !== 'replay')
         setActiveBrowser(getNative());
 
-    $('.cnt-browser').on('click', function (evt) {
+    $('.cnt-browser:not(.disabled)').on('click', function (evt) {
         var row = evt.target.tagName === 'UL' ? $(evt.target) : $(evt.target).parents('ul.cnt-browser');
 
         // short-circuit if native browser selected

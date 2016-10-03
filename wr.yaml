@@ -169,6 +169,7 @@ containerized_browsers:
         os: mac
         version: 42
         release: '2014-8-02'
+        disabled: true
         capabilities:
             - flash
     -
@@ -177,4 +178,5 @@ containerized_browsers:
         os: mac
         version: 50
         release: '2003-12-01'
+        disabled: true
         capabilities:
