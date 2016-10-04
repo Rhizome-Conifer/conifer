@@ -8,6 +8,7 @@ bundles:
         contents:
             - external/jquery.min.js
             - external/bootstrap/js/bootstrap.min.js
+            - utils.js
 
     base-css:
         output: bundle/base.css

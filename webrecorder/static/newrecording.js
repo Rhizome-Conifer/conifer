@@ -44,42 +44,6 @@ $(function() {
         return false;
     }
 
-    function setStorage(name, value) {
-        try {
-            if (window.sessionStorage) {
-                window.sessionStorage.setItem(name, value);
-            }
-
-            if (window.localStorage) {
-                window.localStorage.setItem(name, value);
-            }
-        } catch(e) {
-            console.log("localStorage not avail");
-        }
-    }
-
-    function getStorage(name) {
-        var value = undefined;
-
-        try {
-
-            // First try session, then local
-            if (window.sessionStorage) {
-                value = window.sessionStorage.getItem(name);
-            }
-
-            if (!value && window.localStorage) {
-                value = window.localStorage.getItem(name);
-            }
-
-        } catch(e) {
-            console.log("localStorage not avail");
-        }
-
-        return value;
-    }
-
-
     // 'Homepage': Logged in collection dropdown select
     $('.wr-content').on('click', '.collection-select', function(event) {
         event.preventDefault();
