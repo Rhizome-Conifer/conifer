@@ -136,6 +136,12 @@
                 }
                 break;
 
+            case "load_all":
+                if (!document.hidden) {
+                    load_all_links();
+                }
+                break;
+
             default:
                 console.log(msg);
         }
@@ -164,5 +170,39 @@
             sendPageMsg(false);
         }
     });
+
+    function load_all_links() {
+        function get_links(query, win, store) {
+            try {
+                var results = win.document.querySelectorAll(query);
+            } catch (e) {
+                console.log("skipping foreign frame");
+                return;
+            }
+
+            for (var i = 0; i < results.length; i++) {
+                var link = results[i].href;
+                if (!link || link.charAt(0) == "#") {
+                    continue;
+                }
+
+                store[link] = 1;
+            }
+
+            for (var i = 0; i < win.frames.length; i++) {
+                get_links(query, win.frames[i], store);
+            }
+        }
+
+        var link_map = {};
+
+        get_links("a[href]", window, link_map);
+
+        console.log(link_map);
+
+        for (var link in link_map) {
+            window.open(link);
+        }
+    }
 
 })();

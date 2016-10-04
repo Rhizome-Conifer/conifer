@@ -442,6 +442,12 @@ var RecordingSizeWidget = (function() {
         return sendMsg(msg);
     }
 
+    function doLoadAll() {
+        var msg = {"ws_type": "load_all"}
+
+        return sendMsg(msg);
+    }
+
     function setBrowserIP(ip) {
         var msg = {"ws_type": "remote_ip",
                    "ip": ip}
@@ -584,6 +590,7 @@ var RecordingSizeWidget = (function() {
         addSkipReq: addSkipReq,
         addPage: addPage,
         doAutoscroll: doAutoscroll,
+        doLoadAll: doLoadAll,
         setRemoteUrl: setRemoteUrl,
         hasWS: hasWS,
         setBrowserIP: setBrowserIP,
@@ -980,4 +987,8 @@ $(function() {
         addNewPage(state);
     });
 
+
+    $("#load-all").on('click', function() {
+        RecordingSizeWidget.doLoadAll();
+    });
 });

@@ -4,9 +4,6 @@ $(function() {
 
         if (window.cnt_browser) {
             RecordingSizeWidget.doAutoscroll();
-            // don't keep pressed for cont. browsers
-            $("#autoscroll").removeClass("active");
-            $("#autoscroll").attr("aria-pressed", "false");
             return;
         }
 
@@ -77,5 +74,11 @@ $(function() {
         //    win.Autoscroll.stop(true);
         //}
     }
+
+    if (window.cnt_browser) {
+        // don't keep pressed for cont. browsers
+        $("#autoscroll").removeAttr("data-toggle");
+    }
+
 });
 

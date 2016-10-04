@@ -34,13 +34,13 @@
                     class="left-buffer btn btn-default btn-xs" data-toggle="button"
                     aria-pressed="false" autocomplete="off">Autoscroll</button>
 
-            {% if can_write() %}
+            {% if can_write() and not browser %}
             <button id="snapshot" type="button"
                     class="left-buffer btn btn-default btn-xs"
                     autocomplete="off">
                 <span class="glyphicon glyphicon-camera glyphicon-button"></span>Snapshot</button>
 
-            {% if (curr_mode == "replay" or curr_mode == "replay-coll") %}
+            {% if (curr_mode == "replay" or curr_mode == "replay-coll") and not browser %}
             <button type="button" class="left-buffer btn btn-default btn-xs patch-page">
                 Patch
             </button>
@@ -49,6 +49,11 @@
 
             {% endif %}
 
+            {% if browser %}
+            <button id="load-all" type="button"
+                    class="left-buffer btn btn-default btn-xs">
+                <span class="glyphicon glyphicon-th glyphicon-button"></span>Load All</button>
+            {% endif %}
         </div>
 
         <div class="input-group containerized">
