@@ -14,7 +14,7 @@ function setActiveBrowser(data) {
             data.name+(typeof data.version !== 'undefined' ? " v"+data.version:'')
         );
 
-        window.cnt_browser = data.native ? null : data.id;
+        window.cnt_browser = data.native ? undefined : data.id;
     } else if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
 
         RouteTo.replayRecording(

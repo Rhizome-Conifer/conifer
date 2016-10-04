@@ -481,7 +481,7 @@ class ContentController(BaseController, RewriterApp):
 
             return data
 
-        # test if request is for a containerized browser
+        # test if request specifies a containerized browser
         mod = wb_url.mod.strip('_')
         if mod in self.browser_ids:
             idx = next(index for (index, d) in enumerate(self.browsers)
