@@ -22,6 +22,7 @@ from webagg.utils import load_config
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
+from webrecorder.websockcontroller import WebsockController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
 from webrecorder.logincontroller import LoginController
@@ -46,6 +47,7 @@ class AppController(BaseController):
                        LoginController,
                        UserController,
                        ContentController,
+                       WebsockController,
                        RecsController,
                        CollsController
                       ]

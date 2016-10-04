@@ -394,42 +394,61 @@ var RecordingSizeWidget = (function() {
     }
 
     function addCookie(name, value, domain) {
-        if (!hasWS()) {
-            return false;
-        }
-
         var msg = {"ws_type": "addcookie",
                    "name": name,
                    "value": value,
                    "domain": domain}
 
-        ws.send(JSON.stringify(msg));
-        return true;
+        return sendMsg(msg);
     }
 
     function addSkipReq(url) {
-        if (!hasWS()) {
-            return false;
-        }
-
         var msg = {"ws_type": "skipreq",
                    "url": url
                   }
 
-        ws.send(JSON.stringify(msg));
-        return true;
+        return sendMsg(msg);
     }
 
     function addPage(page) {
+        var msg = {"ws_type": "page",
+                   "page": page}
+
+        return sendMsg(msg);
+    }
+
+    function sendMsg(msg) {
         if (!hasWS()) {
             return false;
         }
 
-        var msg = {"ws_type": "page",
-                   "page": page}
-
         ws.send(JSON.stringify(msg));
         return true;
+    }
+
+    // TODO: reuse make_url, postMessage from wb_frame.js
+    function replaceOuterUrl(msg)
+    {
+        var ts = msg.timestamp;
+        var mod = window.cnt_browser + "_";
+        var prefix = wbinfo.outer_prefix;
+        var url = msg.url;
+
+        if (ts || mod) {
+            mod += "/";
+        }
+
+        prefix = prefix || wbinfo.prefix;
+
+        if (ts) {
+            prefix += ts;
+        }
+        window.history.replaceState({}, msg.title, prefix + mod + url);
+
+        if (ts) {
+            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(ts));
+            $(".replay-wrap").show();
+        }
     }
 
     function ws_received(event)
@@ -440,6 +459,13 @@ var RecordingSizeWidget = (function() {
             case "status":
                 updateDom(msg.size);
                 BookmarkCounter.setBookmarkCount(msg.numPages);
+                break;
+
+            case "remote_url":
+                if (window.cnt_browser) {
+                    setUrl(msg.url);
+                    replaceOuterUrl(msg);
+                }
                 break;
 
             default:
@@ -508,10 +534,12 @@ var RecordingSizeWidget = (function() {
 
     return {
         start: start,
+
         addCookie: addCookie,
         addSkipReq: addSkipReq,
         addPage: addPage,
         hasWS: hasWS,
+        sendMsg: sendMsg,
     }
 
 })();

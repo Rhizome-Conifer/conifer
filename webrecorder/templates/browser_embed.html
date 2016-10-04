@@ -5,6 +5,7 @@
 <script src="/static/__shared/novnc/util.js"></script>
 <script>
     wbinfo = {}
+    wbinfo.outer_prefix = decodeURI("{{ top_prefix }}");
     wbinfo.url = "{{ url }}";
     wbinfo.capture_url = wbinfo.url;
     wbinfo.timestamp = "{{ ts }}";

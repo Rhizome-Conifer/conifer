@@ -5,9 +5,6 @@ _wb_js.create_banner_element = function() {};
 <!-- Set canonical url -->
 <link rel="canonical" href="{{ cdx.url }}"/>
 
-<!-- WR Banner -->
-<script src='{{ wbrequest.host_prefix }}/static/__shared/ws.js'> </script>
-
 <script>
 wbinfo.proxy_user = "{{ user }}";
 wbinfo.proxy_coll = "{{ coll }}";
@@ -17,7 +14,11 @@ wbinfo.proxy_ip = "{{ proxy_ip }}";
 
 // for vi_ queries from vidrw
 wbinfo.coll = "$video";
-
 </script>
+
+<!-- WR Banner -->
+<script src='{{ wbrequest.host_prefix }}/static/__shared/ws.js'> </script>
+
+
 
 

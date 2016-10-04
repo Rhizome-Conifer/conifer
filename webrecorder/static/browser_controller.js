@@ -30,8 +30,8 @@ $(function() {
     function init_container() {
         var params = {"url": url, "ts": curr_ts, "browser": browser, "state": "ping"};
 
-        params['width'] = $(window).width() - 40;
-        params['height'] = $(window).height() - 120;
+        params['width'] = Math.max($(window).width() - 40, 800);
+        params['height'] = Math.max($(window).height() - 120, 600);
         params['width'] = parseInt(params['width'] / 16) * 16;
         params['height'] = parseInt(params['height'] / 16) * 16;
         params['upsid'] = upsid;
@@ -68,6 +68,9 @@ $(function() {
             if (data.cmd_host && data.vnc_host) {
                 cmd_host = data.cmd_host;
                 vnc_host = data.vnc_host;
+
+                RecordingSizeWidget.sendMsg({"ws_type": "remote_ip",
+                                             "ip": data.ip});
 
                 $("#currLabel").html("Loading <b>" + url + "</b>");
                 window.setTimeout(do_init, 1000);

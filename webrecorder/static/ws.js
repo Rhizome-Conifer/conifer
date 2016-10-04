@@ -1,4 +1,4 @@
-var __wb_WS = (function() {
+(function() {
     var ws;
     var useWS = false;
     var errCount = 0;
@@ -28,7 +28,7 @@ var __wb_WS = (function() {
     var initWS = function() {
         var url = window.location.protocol == "https:" ? "wss://" : "ws://";
         //var url = "ws://";
-        url += host + "/_client_ws?";
+        url += host + "/_client_ws_cont?";
         url += "user=" + user + "&coll=" + coll;
 
         if (rec && rec != "*") {
@@ -66,46 +66,38 @@ var __wb_WS = (function() {
     }
  
     function addCookie(name, value, domain) {
-        if (!hasWS()) {
-            return false;
-        }
-
         var msg = {"ws_type": "addcookie",
                    "name": name,
                    "value": value,
                    "domain": domain}
 
-        ws.send(JSON.stringify(msg));
-        return true;
+        return sendMsg(msg);
     }
 
     function addSkipReq(url) {
-        if (!hasWS()) {
-            return false;
-        }
-
         var msg = {"ws_type": "skipreq",
                    "url": url
                   }
+
+        return sendMsg(msg);
+    }
+ 
+    function addPage(page) {
+        var msg = {"ws_type": "page",
+                   "page": page}
+
+        return sendMsg(msg);
+    }
+
+    function sendMsg(msg) {
+        if (!hasWS()) {
+            return false;
+        }
 
         ws.send(JSON.stringify(msg));
         return true;
     }
  
-    function addPage(page) {
-        if (!hasWS()) {
-            return false;
-        }
-
-        var msg = {"ws_type": "page",
-                   "page": page}
-
-        console.log(msg);
-
-        ws.send(JSON.stringify(msg));
-        return true;
-    }
-    
     function ws_received(event)
     {
         var msg = JSON.parse(event.data);
@@ -123,34 +115,38 @@ var __wb_WS = (function() {
         return useWS;
     }
 
-    return {
-        addCookie: addCookie,
-        addSkipReq: addSkipReq,
-        addPage: addPage,
-        hasWS: hasWS,
-        start: start,
-    }
+    // INIT
+    window.addEventListener("DOMContentLoaded", function() {
+        var on_init = undefined;
+
+        if (window != window.top) {
+            return;
+        }
+
+        if (wbinfo.proxy_mode == "record" || wbinfo.proxy_mode == "patch") {
+            on_init = function() {
+                var page = {"url": wbinfo.url,
+                            "timestamp": wbinfo.timestamp,
+                            "title": document.title,
+                            "visible": !document.hidden,
+                           };
+
+                addPage(page);
+            }
+        }
+
+        start(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic, on_init);
+    });
+
+    // VIZ CHANGE
+    document.addEventListener("visibilitychange", function() {
+        if (!document.hidden) {
+            sendMsg({"ws_type": "remote_url",
+                     "url": window.location.href,
+                     "timestamp": wbinfo.timestamp,
+                     "title": document.title
+                    });
+        }
+    });
 
 })();
-
-window.addEventListener("DOMContentLoaded", function() {
-    var on_init = undefined;
-
-    if (window != window.top) {
-        return;
-    }
-
-    if (wbinfo.proxy_mode == "record" || wbinfo.proxy_mode == "patch") {
-        on_init = function() {
-            var page = {"url": wbinfo.url,
-                        "timestamp": wbinfo.timestamp,
-                        "title": document.title
-                       };
-
-            __wb_WS.addPage(page);
-        }
-    }
-
-    __wb_WS.start(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic, on_init);
-});
-

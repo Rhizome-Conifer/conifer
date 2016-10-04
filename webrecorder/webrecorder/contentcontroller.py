@@ -2,18 +2,10 @@ import os
 import re
 import base64
 import requests
-import json
-import time
-
-try:
-    import uwsgi
-except:
-    pass
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
-from urlrewrite.cookies import CookieTracker
 
 from pywb.utils.timeutils import timestamp_now, iso_date_to_timestamp
 from pywb.utils.timeutils import timestamp_to_datetime, datetime_to_iso_date
@@ -40,13 +32,11 @@ class ContentController(BaseController, RewriterApp):
                              config=config)
 
         self.paths = config['url_templates']
-        self.cookie_key_templ = config['cookie_key_templ']
 
         self.browsers = config.get('containerized_browsers', [])
         self.browser_ids = [b['id'] for b in self.browsers]
 
-        self.cookie_tracker = CookieTracker(manager.redis)
-        self.status_update_secs = float(config['status_update_secs'])
+        self.cookie_tracker = self.manager.cookie_tracker
 
     def init_routes(self):
         # REDIRECTS
@@ -80,7 +70,7 @@ class ContentController(BaseController, RewriterApp):
             if not domain:
                 return {'error_message': 'no domain'}
 
-            self.add_cookie(user, coll, rec, name, value, domain)
+            self.manager.add_cookie(user, coll, rec, name, value, domain)
 
             return {'success': domain}
 
@@ -117,14 +107,6 @@ class ContentController(BaseController, RewriterApp):
         @self.app.route('/_snapshot', method='PUT')
         def snapshot():
             return self.snapshot()
-
-        @self.app.get('/_client_ws')
-        def client_ws():
-            try:
-                return self.client_ws()
-            except OSError:
-                request.environ['webrec.ws_closed'] = True
-                return
 
         @self.app.route(['/_set_session'])
         def set_sesh():
@@ -177,14 +159,6 @@ class ContentController(BaseController, RewriterApp):
                                                              mode=mode,
                                                              url=wb_url)
         return self.redirect(new_url)
-
-
-    def add_cookie(self, user, coll, rec, name, value, domain):
-        key = self.get_cookie_key(dict(user=user,
-                                       coll=coll,
-                                       rec=rec))
-
-        self.cookie_tracker.add_cookie(key, domain, name, value)
 
     def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
         rec_name = '*'
@@ -368,12 +342,7 @@ class ContentController(BaseController, RewriterApp):
         return base_url
 
     def get_cookie_key(self, kwargs):
-        id = self.get_session().get_id()
-        kwargs['id'] = id
-        if kwargs.get('rec') == '*':
-            kwargs['rec'] = '<all>'
-
-        return self.cookie_key_templ.format(**kwargs)
+        return self.manager.get_cookie_key(kwargs)
 
     def process_query_cdx(self, cdx, wb_url, kwargs):
         rec = kwargs.get('rec')
@@ -585,81 +554,3 @@ class ContentController(BaseController, RewriterApp):
         else:
             return {'snapshot': ''}
 
-    def init_cont_browser_sesh(self):
-        remote_addr = request.environ.get('HTTP_X_PROXY_FOR')
-        if not remote_addr:
-            remote_addr = request.environ['REMOTE_ADDR']
-
-        container_data = self.manager.browser_redis.hgetall('ip:' + remote_addr)
-
-        if not container_data or 'user' not in container_data:
-            print('Data not found for remote ' + remote_addr)
-            return
-
-        sesh = self.get_session()
-        sesh.set_restricted_user(container_data['user'])
-
-    def client_ws(self):
-        if request.query.getunicode('cont_browser'):
-            self.init_cont_browser_sesh()
-            redir_check = False
-        else:
-            redir_check = True
-
-        user, coll = self.get_user_coll(api=True, redir_check=redir_check)
-        rec = request.query.getunicode('rec', '*')
-        last_status = None
-
-        def get_status():
-            size = self.manager.get_size(user, coll, rec)
-            if size is not None:
-                result = {'ws_type': 'status'}
-                result['size'] = size
-                result['numPages'] = self.manager.count_pages(user, coll, rec)
-
-            else:
-                result = {'ws_type': 'error',
-                          'error_message': 'not found'}
-
-            return json.dumps(result)
-
-        env = request.environ
-
-        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'],
-                                  env.get('HTTP_ORIGIN', ''))
-
-        while True:
-            msg = uwsgi.websocket_recv_nb()
-            if msg:
-                self.receive_ws(msg, user, coll, rec)
-
-            status = get_status()
-            if status != last_status:
-                uwsgi.websocket_send(status)
-                last_status = status
-
-            time.sleep(self.status_update_secs)
-
-    def receive_ws(self, msg, user, coll, rec):
-        msg = json.loads(msg.decode('utf-8'))
-
-        if msg['ws_type'] == 'skipreq':
-            url = msg['url']
-            if not user:
-                user = self.manager.get_anon_user()
-
-            self.manager.skip_post_req(user, url)
-
-        elif msg['ws_type'] == 'addcookie':
-            self.add_cookie(user, coll, rec,
-                            msg['name'], msg['value'], msg['domain'])
-
-
-        elif msg['ws_type'] == 'page':
-            if not self.manager.has_recording(user, coll, rec):
-                print('Invalid Rec for Page Data', user, coll, rec)
-                return
-
-            page_data = msg['page']
-
-            res = self.manager.add_page(user, coll, rec, page_data)

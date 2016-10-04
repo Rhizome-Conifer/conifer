@@ -22,7 +22,9 @@ from six.moves.urllib.parse import quote
 from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.timeutils import timestamp_now
+
 from webagg.utils import load_config
+from urlrewrite.cookies import CookieTracker
 
 import requests
 
@@ -934,6 +936,31 @@ class RecManagerMixin(object):
 
 
 # ============================================================================
+class CookieManagerMixin(object):
+    def __init__(self, config):
+        super(CookieManagerMixin, self).__init__(config)
+        self.cookie_key_templ = config['cookie_key_templ']
+
+        self.cookie_tracker = CookieTracker(self.redis)
+
+    def get_cookie_key(self, kwargs):
+        sesh = request.environ['webrec.session']
+        id = sesh.get_id()
+        kwargs['id'] = id
+        if kwargs.get('rec') == '*':
+            kwargs['rec'] = '<all>'
+
+        return self.cookie_key_templ.format(**kwargs)
+
+    def add_cookie(self, user, coll, rec, name, value, domain):
+        key = self.get_cookie_key(dict(user=user,
+                                       coll=coll,
+                                       rec=rec))
+
+        self.cookie_tracker.add_cookie(key, domain, name, value)
+
+
+# ============================================================================
 class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
@@ -1175,7 +1202,8 @@ class Base(object):
 
 
 # ============================================================================
-class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin, RecManagerMixin, CollManagerMixin, Base):
+class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin,
+                       CookieManagerMixin, RecManagerMixin, CollManagerMixin, Base):
     def __init__(self, redis, cork, browser_redis, config):
         self.redis = redis
         self.cork = cork

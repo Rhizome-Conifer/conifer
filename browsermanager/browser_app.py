@@ -157,6 +157,8 @@ def mark_for_removal():
 
     redis.rpush('remove_q', HOST + ' ' + my_ip)
 
+    redis.delete('from_ip:q:' + my_ip)
+
     global closed
     closed = True
 
