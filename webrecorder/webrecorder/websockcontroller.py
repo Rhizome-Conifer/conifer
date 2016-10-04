@@ -18,6 +18,7 @@ class WebsockController(BaseController):
 
         #TODO: move to config
         self.from_ip_q = 'from_ip:q:'
+        self.to_ip_ps = 'to_ip:ps:'
         self.tick_time = 0.25
 
     def init_routes(self):
@@ -42,16 +43,16 @@ class WebsockController(BaseController):
         if not remote_addr:
             remote_addr = request.environ['REMOTE_ADDR']
 
-        container_data = self.manager.browser_redis.hgetall('ip:' + remote_addr)
+        container_local_store = self.manager.browser_redis.hgetall('ip:' + remote_addr)
 
-        if not container_data or 'user' not in container_data:
+        if not container_local_store or 'user' not in container_local_store:
             print('Data not found for remote ' + remote_addr)
             return
 
         sesh = self.get_session()
-        sesh.set_restricted_user(container_data['user'])
-        container_data['ip'] = remote_addr
-        return container_data
+        sesh.set_restricted_user(container_local_store['user'])
+        container_local_store['ip'] = remote_addr
+        return container_local_store
 
     def get_status(self, user, coll, rec):
         size = self.manager.get_size(user, coll, rec)
@@ -91,15 +92,15 @@ class WebsockController(BaseController):
 
         self._init_ws(request.environ)
 
-        data = {}
+        local_store = {}
         if request.query.get('browserIP'):
-            data['remote_ip'] = request.query.get('browserIP')
+            self.init_remote_comm(local_store, request.query.get('browserIP'))
 
         while True:
-            self.handle_client_msg(self._recv_ws(), user, coll, rec, data)
+            self.handle_client_msg(self._recv_ws(), user, coll, rec, local_store)
 
-            if 'remote_ip' in data:
-                msg = self._pop_from_remote_q(data['remote_ip'])
+            if 'remote_ip' in local_store:
+                msg = self._pop_from_remote_q(local_store['remote_ip'])
                 if msg:
                     self._send_ws(msg)
 
@@ -124,20 +125,30 @@ class WebsockController(BaseController):
         user = info['user']
         coll = info['coll']
         rec = info['rec']
+        ip = info['ip']
 
         self._init_ws(request.environ)
 
-        data = {'cbrowser_ip': info['ip']}
+        local_store = {'cbrowser_ip': ip}
+
+        pubsub = self.manager.browser_redis.pubsub()
+        pubsub.subscribe([self.to_ip_ps + ip])
 
         while True:
-            self.handle_client_msg(self._recv_ws(), user, coll, rec, data)
+            self.handle_client_msg(self._recv_ws(), user, coll, rec, local_store)
             time.sleep(self.tick_time)
 
-    def handle_client_msg(self, msg, user, coll, rec, data):
+            ps_msg = pubsub.get_message()
+            if ps_msg and ps_msg['type'] == 'message':
+                self._send_ws(ps_msg['data'])
+
+            time.sleep(self.tick_time)
+
+    def handle_client_msg(self, msg, user, coll, rec, local_store):
         if not msg:
             return
 
-        cbrowser_ip = data.get('cbrowser_ip')
+        cbrowser_ip = local_store.get('cbrowser_ip')
 
         msg = json.loads(msg.decode('utf-8'))
 
@@ -157,9 +168,9 @@ class WebsockController(BaseController):
                 print('Invalid Rec for Page Data', user, coll, rec)
                 return
 
-            page_data = msg['page']
+            page_local_store = msg['page']
 
-            res = self.manager.add_page(user, coll, rec, page_data)
+            res = self.manager.add_page(user, coll, rec, page_local_store)
 
             if cbrowser_ip and msg.get('visible'):
                 msg['ws_type'] = 'remote_url'
@@ -169,6 +180,13 @@ class WebsockController(BaseController):
             self._push_to_remote_q(cbrowser_ip, msg)
 
         elif msg['ws_type'] == 'remote_ip':
-            data['remote_ip'] = msg['ip']
+            self.init_remote_comm(local_store, msg['ip'])
 
+        elif msg['ws_type'] == 'set_url':
+            if local_store.get('channel'):
+                self.manager.browser_redis.publish(local_store['channel'], json.dumps(msg))
+
+    def init_remote_comm(self, local_store, ip):
+        local_store['remote_ip'] = ip
+        local_store['channel'] = self.to_ip_ps + ip
 

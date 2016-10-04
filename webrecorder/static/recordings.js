@@ -51,6 +51,11 @@ var EventHandlers = (function() {
 
             var url = getUrl();
 
+            if (window.cnt_browser && window.curr_mode != "new") {
+                RecordingSizeWidget.setRemoteUrl(url);
+                return false;
+            }
+
             if (window.curr_mode == "record") {
                 //if (ContentMessages.messageIfDuplicateVisit(url)) { return; }
 
@@ -440,6 +445,15 @@ var RecordingSizeWidget = (function() {
         return sendMsg(msg);
     }
 
+    function setRemoteUrl(url) {
+        var msg = {"ws_type": "set_url",
+                   "url": url}
+
+        return sendMsg(msg);
+    }
+
+
+
     function sendMsg(msg) {
         if (!hasWS()) {
             return false;
@@ -563,6 +577,7 @@ var RecordingSizeWidget = (function() {
         addCookie: addCookie,
         addSkipReq: addSkipReq,
         addPage: addPage,
+        setRemoteUrl: setRemoteUrl,
         hasWS: hasWS,
         setBrowserIP: setBrowserIP,
     }

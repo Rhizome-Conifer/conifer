@@ -118,6 +118,12 @@
             case "status":
                 break;
 
+            case "set_url":
+                if (!document.hidden && msg.url != window.location.href) {
+                    window.location.href = msg.url;
+                }
+                break;
+
             default:
                 console.log(msg);
         }
