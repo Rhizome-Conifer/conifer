@@ -14,10 +14,11 @@ except:
 class WebsockController(BaseController):
     def __init__(self, app, jinja_env, manager, config):
         super(WebsockController, self).__init__(app, jinja_env, manager, config)
-        self.from_ip_q = 'from_ip:q:'
         self.status_update_secs = float(config['status_update_secs'])
 
-        self.tick_time = 0.1
+        #TODO: move to config
+        self.from_ip_q = 'from_ip:q:'
+        self.tick_time = 0.25
 
     def init_routes(self):
         @self.app.get('/_client_ws')
@@ -91,6 +92,8 @@ class WebsockController(BaseController):
         self._init_ws(request.environ)
 
         data = {}
+        if request.query.get('browserIP'):
+            data['remote_ip'] = request.query.get('browserIP')
 
         while True:
             self.handle_client_msg(self._recv_ws(), user, coll, rec, data)
@@ -159,7 +162,6 @@ class WebsockController(BaseController):
             res = self.manager.add_page(user, coll, rec, page_data)
 
             if cbrowser_ip and msg.get('visible'):
-                msg = page_data
                 msg['ws_type'] = 'remote_url'
                 self._push_to_remote_q(cbrowser_ip, msg)
 
@@ -167,7 +169,6 @@ class WebsockController(BaseController):
             self._push_to_remote_q(cbrowser_ip, msg)
 
         elif msg['ws_type'] == 'remote_ip':
-            print('REMOTE_IP', msg['ip'])
             data['remote_ip'] = msg['ip']
 
 

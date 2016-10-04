@@ -69,8 +69,7 @@ $(function() {
                 cmd_host = data.cmd_host;
                 vnc_host = data.vnc_host;
 
-                RecordingSizeWidget.sendMsg({"ws_type": "remote_ip",
-                                             "ip": data.ip});
+                RecordingSizeWidget.setBrowserIP(data.ip);
 
                 $("#currLabel").html("Loading <b>" + url + "</b>");
                 window.setTimeout(do_init, 1000);

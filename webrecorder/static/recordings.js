@@ -341,6 +341,9 @@ var RecordingSizeWidget = (function() {
     var useWS = false;
     var errCount = 0;
 
+    // cont browser ip
+    var browserIP = undefined;
+
     var start = function() {
         if ($('.size-counter-active').length && window.curr_mode) {
             //(window.curr_mode == "record" || window.curr_mode == "patch")) {
@@ -388,6 +391,9 @@ var RecordingSizeWidget = (function() {
         if (rec && rec != "*") {
             url += "&rec=" + rec;
         }
+        if (browserIP) {
+            url += "&browserIP=" + browserIP;
+        }
 
         try {
             ws = new WebSocket(url);
@@ -425,6 +431,15 @@ var RecordingSizeWidget = (function() {
         return sendMsg(msg);
     }
 
+    function setBrowserIP(ip) {
+        var msg = {"ws_type": "remote_ip",
+                   "ip": ip}
+
+        browserIP = ip;
+
+        return sendMsg(msg);
+    }
+
     function sendMsg(msg) {
         if (!hasWS()) {
             return false;
@@ -448,7 +463,7 @@ var RecordingSizeWidget = (function() {
 
         prefix = prefix || wbinfo.prefix;
 
-        if (ts) {
+        if (ts && (window.curr_mode != "record" && window.curr_mode != "patch")) {
             prefix += ts;
         }
         window.history.replaceState({}, msg.title, prefix + mod + url);
@@ -471,9 +486,10 @@ var RecordingSizeWidget = (function() {
 
             case "remote_url":
                 if (window.cnt_browser) {
-                    setUrl(msg.url);
-                    setTitle("Containerized", msg.url, msg.title);
-                    replaceOuterUrl(msg);
+                    var page = msg.page;
+                    setUrl(page.url);
+                    setTitle("Containerized", page.url, page.title);
+                    replaceOuterUrl(page);
                 }
                 break;
 
@@ -548,7 +564,7 @@ var RecordingSizeWidget = (function() {
         addSkipReq: addSkipReq,
         addPage: addPage,
         hasWS: hasWS,
-        sendMsg: sendMsg,
+        setBrowserIP: setBrowserIP,
     }
 
 })();

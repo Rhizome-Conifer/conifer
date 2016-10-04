@@ -83,18 +83,19 @@
     }
 
     function sendPageMsg(isAdd) {
-        var msg = {
+        var page = {
                  "url": window.location.href,
                  "timestamp": wbinfo.timestamp,
                  "title": document.title,
-                 "visible": !document.hidden,
         };
+
+        var msg = {"page": page}
 
         if (isAdd) {
             msg["ws_type"] = "page";
+            msg["visible"] = !document.hidden;
         } else {
             msg["ws_type"] = "remote_url";
-            msg["visible"] = !document.hidden;
         }
 
         return sendMsg(msg);
