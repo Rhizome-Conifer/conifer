@@ -43,7 +43,7 @@ class UserList extends Component {
     const keys = [
       { id: 'username', ln: u => `/admin/users/${u.username}`, sortable: true },
       { id: 'email', sortable: true },
-      { id: 'name', sortable: true },
+      { id: 'name', sortable: true, sortFunction: (a,b) => { var _a = a.toLowerCase().split(' '); var _b = b.toLowerCase().split(' '); return _a[_a.length-1].localeCompare(_b[_b.length-1]); }},
       { id: 'role', cl: 'hidden-sm hidden-xs', sortable: true },
       { id: 'space_utilization', label: 'disk utilization', cl: 'hidden-sm hidden-xs', sortable: true, component: item => { const o = item.space_utilization; const p=o.used/o.total*100; return <SizeFormat className={p>75?(p<90?'yellow':'red'):null} bytes={o.used} />}, sortFunction: (a,b) => a.used > b.used ? 1:-1},
       { id: 'created', cl:'hidden-xs', sortable: true },
