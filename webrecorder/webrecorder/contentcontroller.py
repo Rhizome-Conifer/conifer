@@ -42,6 +42,9 @@ class ContentController(BaseController, RewriterApp):
         self.paths = config['url_templates']
         self.cookie_key_templ = config['cookie_key_templ']
 
+        self.browsers = config.get('containerized_browsers', [])
+        self.browser_ids = [b['id'] for b in self.browsers]
+
         self.cookie_tracker = CookieTracker(manager.redis)
         self.status_update_secs = float(config['status_update_secs'])
 
@@ -461,7 +464,8 @@ class ContentController(BaseController, RewriterApp):
             self.manager.browser_redis.expire('ups:' + upsid, 120)
 
             # browser page insert
-            data = {'browser': browser,
+            data = {'browser': browser['name'],
+                    'browser_data': browser,
                     'url': wb_url.url,
                     'ts': wb_url.timestamp,
                     'upsid': upsid,
@@ -477,10 +481,12 @@ class ContentController(BaseController, RewriterApp):
 
             return data
 
-        if wb_url.mod == 'ch_':
-            return browser_embed('chrome')
-        elif wb_url.mod == 'ff_':
-            return browser_embed('firefox')
+        # test if request is for a containerized browser
+        mod = wb_url.mod.strip('_')
+        if mod in self.browser_ids:
+            idx = next(index for (index, d) in enumerate(self.browsers)
+                       if d['id'] == mod)
+            return browser_embed(self.browsers[idx])
 
         return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
 

@@ -13,6 +13,9 @@
 </script>
 <script>
     window.STATIC_PREFIX = "/static/__shared/";
+    {% if browser_data %}
+    window.cnt_browser = "{{ browser_data.id }}";
+    {% endif %}
     var browser = "{{ browser }}";
     var url = "{{ url }}";
     var curr_ts = "{{ ts }}";

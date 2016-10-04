@@ -70,6 +70,7 @@ bundles:
             - recordings_model.js
             - recordings.js
             - automate.js
+            - containerized_ui.js
 
     frame-css:
         output: bundle/frame.css
@@ -123,3 +124,5 @@ bundles:
             - collections_model.js
             - recordings.js
             - browser_controller.js
+            - containerized_ui.js
+

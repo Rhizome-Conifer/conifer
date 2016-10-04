@@ -1,17 +1,28 @@
 
 function setActiveBrowser(data) {
     /**
-     * Sets the containerized dropdown button to provided browser.
+     * Sets the containerized dropdown button to the provided browser for new recordings
+     * otherwise reroutes to a new url, loading the selected container.
      */
-    var btn = $('#cnt-button');
-    if(!btn) return;
 
-    btn.find('> .btn-content').html(
-        (typeof data.native !== 'undefined' && data.native ? '(native)&nbsp;':"<img src='/static/__shared/browsers/"+data.name.replace(' ', '-')+"_16x16.png'>")+
-        data.name+(typeof data.version !== 'undefined' ? " v"+data.version:'')
-    );
+    if(window.curr_mode === 'new' || window.curr_mode === '') {
+        var btn = $('#cnt-button');
+        if(!btn) return;
 
-    window.cnt_browser = data.native ? null : data.id;
+        btn.find('> .btn-content').html(
+            (typeof data.native !== 'undefined' && data.native ? '(native)&nbsp;':"<img src='/static/__shared/browsers/"+data.name.replace(' ', '-')+"_16x16.png'>")+
+            data.name+(typeof data.version !== 'undefined' ? " v"+data.version:'')
+        );
+
+        window.cnt_browser = data.native ? null : data.id;
+    } else if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
+
+        RouteTo.replayRecording(
+            window.curr_user,
+            window.coll,
+            wbinfo.timestamp+(data.native ?'':data.id+'_'),
+            getUrl());
+    }
 }
 
 function getNative() {
@@ -33,7 +44,7 @@ $(function (){
     if(window.curr_mode !== 'replay-coll' && window.curr_mode !== 'replay')
         setActiveBrowser(getNative());
 
-    $('.cnt-browser:not(.disabled)').on('click', function (evt) {
+    $('.cnt-browser:not(.disabled):not(.active)').on('click', function (evt) {
         var row = evt.target.tagName === 'UL' ? $(evt.target) : $(evt.target).parents('ul.cnt-browser');
 
         // short-circuit if native browser selected

@@ -19,6 +19,10 @@ function getUrl() {
     return $("input[name='url']").val();
 }
 
+function containerBrowser() {
+    return typeof window.cnt_browser !== 'undefined'?window.cnt_browser+'_/':'';
+};
+
 var EventHandlers = (function() {
     var bindAll = function() {
 
@@ -71,7 +75,7 @@ var EventHandlers = (function() {
             } else if (window.curr_mode == "patch") {
                 var url = getUrl();
 
-                RouteTo.replayRecording(user, coll, undefined, url);
+                RouteTo.replayRecording(user, coll, (typeof window.cnt_browser!=='undefined'?window.cnt_browser+'_':null), url);
             } else if (window.curr_mode == "new") {
                 // New handled in newrecordings.js
             }
@@ -92,8 +96,8 @@ var EventHandlers = (function() {
 
             RouteTo.newPatch(coll, url, target);
         });
- 
-         
+
+
         // 'Header': 'Login' link to display modal
         $('.login-link').on('click', function(event) {
             event.preventDefault();
@@ -102,7 +106,7 @@ var EventHandlers = (function() {
 
             $.ajax({
                 url: link,
-                success: function (data) { 
+                success: function (data) {
                     $('#login-modal-cont').html(data);
                     TimesAndSizesFormatter.format();
 
@@ -258,11 +262,12 @@ var RouteTo = (function(){
     var host = window.location.protocol + "//" + window.location.host;
 
     var newRecording = function(collection, recording, url, mode, target) {
-        routeTo(host + "/$record/" + collection + "/" + recording + "/" + url, target);
+        // if a containerized browser is set, assign it to the new recording
+        routeTo(host + "/$record/" + collection + "/" + recording + "/" + containerBrowser() + url, target);
     }
 
     var newPatch = function(collection, url, target) {
-        routeTo(host + "/$patch/" + collection + "/" + url, target);
+        routeTo(host + "/$patch/" + collection + "/" + containerBrowser() + url, target);
     }
 
     var recordingInProgress = function(user, collection, recording, url, mode, target) {
@@ -270,7 +275,7 @@ var RouteTo = (function(){
             mode = "record";
         }
 
-        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + url, target);
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + containerBrowser() + url, target);
     }
 
     var collectionInfo = function(user, collection) {
@@ -367,7 +372,7 @@ var RecordingSizeWidget = (function() {
             setTimeout(initWS, 2000);
         }
     }
- 
+
     var initWS = function() {
         var url = window.location.protocol == "https:" ? "wss://" : "ws://";
         url += window.location.host + "/_client_ws?";
@@ -414,7 +419,7 @@ var RecordingSizeWidget = (function() {
         ws.send(JSON.stringify(msg));
         return true;
     }
- 
+
     function addPage(page) {
         if (!hasWS()) {
             return false;
@@ -426,11 +431,11 @@ var RecordingSizeWidget = (function() {
         ws.send(JSON.stringify(msg));
         return true;
     }
-    
+
     function ws_received(event)
     {
         var msg = JSON.parse(event.data);
-        
+
         switch (msg.ws_type) {
             case "status":
                 updateDom(msg.size);
@@ -609,7 +614,7 @@ var CountdownTimer = (function() {
         if (secdiff < 300) {
             $("*[data-anon-timer]").parent().show();
         }
-        
+
         var min = Math.floor(secdiff / 60);
         var sec = secdiff % 60;
         if (sec <= 9) {
@@ -640,9 +645,9 @@ var CountdownTimer = (function() {
             if (end_time == undefined) {
                 setInterval(update_countdown, 1000);
             }
-        
+
             end_time = Math.floor(new Date().getTime() / 1000 + time_left);
-        
+
             update_countdown();
         }
     }
@@ -791,7 +796,7 @@ $(function() {
             return;
         }
 
-        var cookie_data = 
+        var cookie_data =
                     {
                      "name": cookie[0],
                      "value": cookie[1],
@@ -820,7 +825,7 @@ $(function() {
 
         $.ajax({
             url: "/_skipreq?url=" + encodeURIComponent(state.url),
-        });        
+        });
     }
 
     function addNewPage(state) {
@@ -862,8 +867,8 @@ $(function() {
 
             var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
             setTitle(msg, state.url, state.title);
- 
-            if (!RecordingSizeWidget.addPage(attributes)) {           
+
+            if (!RecordingSizeWidget.addPage(attributes)) {
                 Recordings.addPage(recordingId, attributes);
             }
 

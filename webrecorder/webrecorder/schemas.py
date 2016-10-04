@@ -99,3 +99,4 @@ class PageSchema(BaseSchema):
     title = fields.String()
     url = fields.Url()
     timestamp = fields.Number()
+    browser_id = fields.String()
