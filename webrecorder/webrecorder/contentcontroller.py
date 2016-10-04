@@ -257,6 +257,10 @@ class ContentController(BaseController, RewriterApp):
 
             #self._filter_headers(type, resp.status_headers)
 
+            # Checks if this is a containerized replay, injecting strict no-cache rules
+            # to prevent browser history caching.
+            self._inject_nocache_headers(type, resp.status_headers, wb_url)
+
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,
                                 headers=resp.status_headers.headers)
@@ -297,6 +301,14 @@ class ContentController(BaseController, RewriterApp):
                     new_headers.append((name, value))
 
             status_headers.headers = new_headers
+
+    def _inject_nocache_headers(self, type, status_headers, wb_url):
+        wb_url = WbUrl(wb_url)
+        # TODO: Sub in actual browser ids here from wr.yaml
+        if type in ('replay', 'replay-coll') and wb_url.mod in ('ch_', 'ff_'):
+            status_headers.headers.append(
+                ('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            )
 
     def _redir_if_sanitized(self, id, title, wb_url):
         if id != title:
