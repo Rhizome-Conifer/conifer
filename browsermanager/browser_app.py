@@ -155,6 +155,8 @@ def mark_for_removal():
     ttl = redis.ttl('c:' + HOST)
     redis.setex('c:' + HOST, stat_key_expire_time, 'REM:' + str(ttl))
 
+    logging.debug('DELETING IP: ' + my_ip)
+
     redis.delete('ip:' + my_ip)
     redis.delete('from_ip:q:' + my_ip)
 
