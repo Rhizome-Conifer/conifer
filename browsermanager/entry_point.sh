@@ -31,12 +31,12 @@ sudo chmod a-x /bin/*term
 # Run browser here
 eval "$@" &
   
-MY_IP=$(head -n 1 /etc/hosts | cut -f 1)
+#MY_IP=$(head -n 1 /etc/hosts | cut -f 1)
+MY_IP=$(hostname -i)
 
-PYWB_IP=$(grep netcapsule_pywb_1 /etc/hosts | cut -f 1 | head -n 1)
 
 # start controller app
-python /app/browser_app.py --my-ip "$MY_IP" --pywb-ip "$PYWB_IP" --start-url "$URL" --start-ts "$TS" &
+python /app/browser_app.py --my-ip "$MY_IP" --start-url "$URL" --start-ts "$TS" &
 
 NODE_PID=$!
 

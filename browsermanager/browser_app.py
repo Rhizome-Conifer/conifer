@@ -32,7 +32,7 @@ BROWSER = os.environ.get('BROWSER')
 
 my_ip = '127.0.0.1'
 
-pywb_ip = None
+pywb_ip = '127.0.0.1'
 start_url = None
 
 curr_ts = None
