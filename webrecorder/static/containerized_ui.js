@@ -18,7 +18,7 @@ function setActiveBrowser(data) {
     } else if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
 
         RouteTo.replayRecording(
-            window.curr_user,
+            window.user,
             window.coll,
             wbinfo.timestamp+(data.native ?'':data.id+'_'),
             getUrl());
