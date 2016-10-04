@@ -316,7 +316,17 @@ def enable_cors():
     response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
 
+def test_for_done():
+    while True:
+        if os.path.isfile('/home/browser/.done'):
+            mark_for_removal()
+
+        sleep(10)
+
+
 spawn(shutdown)
+
+spawn(test_for_done)
 
 
 if __name__ == "__main__":

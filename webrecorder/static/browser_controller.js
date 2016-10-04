@@ -43,7 +43,8 @@ $(function() {
             
             waiting_for_container = true;
 
-            var init_url = "/api/v1/browsers/init_browser?" + $.param(params);
+            //var init_url = "/api/v1/browsers/init_browser?" + $.param(params);
+            var init_url = "/_init_browser?" + $.param(params);
 
             $.getJSON(init_url, handle_browser_response)
             .fail(function() {

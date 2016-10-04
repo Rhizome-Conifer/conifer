@@ -68,10 +68,10 @@ services:
             - data
 
     browsermanager:
-        image: webrecorder/browsermanager
+        build: ./browsermanager
 
-        ports:
-            - 9020:9020
+        #ports:
+        #    - 9020:9020
 
         env_file:
             - ./wr.env
@@ -86,9 +86,10 @@ services:
 
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - ./browser/browser_app.py:/app/browser_app.py
-            - ./browser/run_browser:/usr/bin/run_browser
-            - ./browser/webrec.pem:/home/browser/self.pem
+            - ./browsermanager/browser_app.py:/app/browser_app.py
+            - ./browsermanager/run_browser:/usr/bin/run_browser
+            - ./browsermanager/webrec.pem:/home/browser/self.pem
+            - ./browsermanager/launch.sh:/novnc/utils/launch.sh
             - /dev/shm:/dev/shm
 
     proxy:

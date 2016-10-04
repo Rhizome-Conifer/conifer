@@ -38,6 +38,7 @@ class BrowserController(BaseController):
 
             try:
                 cmd = res.json()
+                print(cmd)
             except:
                 return {'error_message': 'Could not create browser: ' + res.text}
 
