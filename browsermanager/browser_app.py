@@ -155,9 +155,10 @@ def mark_for_removal():
     ttl = redis.ttl('c:' + HOST)
     redis.setex('c:' + HOST, stat_key_expire_time, 'REM:' + str(ttl))
 
-    redis.rpush('remove_q', HOST + ' ' + my_ip)
-
+    redis.delete('ip:' + my_ip)
     redis.delete('from_ip:q:' + my_ip)
+
+    redis.rpush('remove_q', HOST + ' ' + my_ip)
 
     global closed
     closed = True

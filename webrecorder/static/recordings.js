@@ -19,6 +19,14 @@ function getUrl() {
     return $("input[name='url']").val();
 }
 
+function setTitle(status_msg, url, title) {
+    //var title = $('iframe').contents().find('title').text();
+    if (!title) {
+        title = url;
+    }
+    document.title = title + " (" + status_msg + ")";
+}
+
 function containerBrowser() {
     return typeof window.cnt_browser !== 'undefined'?window.cnt_browser+'_/':'';
 };
@@ -464,6 +472,7 @@ var RecordingSizeWidget = (function() {
             case "remote_url":
                 if (window.cnt_browser) {
                     setUrl(msg.url);
+                    setTitle("Containerized", msg.url, msg.title);
                     replaceOuterUrl(msg);
                 }
                 break;
@@ -908,14 +917,6 @@ $(function() {
             setUrl(state.url);
             setTitle("Archived", state.url, state.title);
         }
-    }
-
-    function setTitle(status_msg, url, title) {
-        //var title = $('iframe').contents().find('title').text();
-        if (!title) {
-            title = url;
-        }
-        document.title = title + " (" + status_msg + ")";
     }
 
     window.addEventListener("message", handleReplayEvent);

@@ -81,10 +81,21 @@
 
         return sendMsg(msg);
     }
- 
-    function addPage(page) {
-        var msg = {"ws_type": "page",
-                   "page": page}
+
+    function sendPageMsg(isAdd) {
+        var msg = {
+                 "url": window.location.href,
+                 "timestamp": wbinfo.timestamp,
+                 "title": document.title,
+                 "visible": !document.hidden,
+        };
+
+        if (isAdd) {
+            msg["ws_type"] = "page";
+        } else {
+            msg["ws_type"] = "remote_url";
+            msg["visible"] = !document.hidden;
+        }
 
         return sendMsg(msg);
     }
@@ -117,22 +128,12 @@
 
     // INIT
     window.addEventListener("DOMContentLoaded", function() {
-        var on_init = undefined;
-
         if (window != window.top) {
             return;
         }
 
-        if (wbinfo.proxy_mode == "record" || wbinfo.proxy_mode == "patch") {
-            on_init = function() {
-                var page = {"url": wbinfo.url,
-                            "timestamp": wbinfo.timestamp,
-                            "title": document.title,
-                            "visible": !document.hidden,
-                           };
-
-                addPage(page);
-            }
+        function on_init() {
+            sendPageMsg((wbinfo.proxy_mode == "record" || wbinfo.proxy_mode == "patch"));
         }
 
         start(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic, on_init);
@@ -141,11 +142,7 @@
     // VIZ CHANGE
     document.addEventListener("visibilitychange", function() {
         if (!document.hidden) {
-            sendMsg({"ws_type": "remote_url",
-                     "url": window.location.href,
-                     "timestamp": wbinfo.timestamp,
-                     "title": document.title
-                    });
+            sendPageMsg(false);
         }
     });
 

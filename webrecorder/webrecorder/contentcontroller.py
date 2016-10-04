@@ -415,7 +415,10 @@ class ContentController(BaseController, RewriterApp):
         @self.jinja2_view('browser_embed.html')
         def browser_embed(browser):
             # container redis info
-            upstream_url = self.get_upstream_url(wb_url, kwargs, {})
+            params = {'closest': wb_url.timestamp}
+            upstream_url = self.get_upstream_url(wb_url, kwargs, params)
+
+            # adding separate to avoid encoding { and }
             upstream_url += '&url={url}'
 
             upsid = base64.b64encode(os.urandom(6)).decode('utf-8')
@@ -424,6 +427,7 @@ class ContentController(BaseController, RewriterApp):
                               'user': kwargs['user'],
                               'coll': kwargs['coll'],
                               'rec': kwargs['rec'],
+                              'request_ts': wb_url.timestamp,
                               'curr_mode': kwargs['type'],
                              }
 
