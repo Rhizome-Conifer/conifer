@@ -63,6 +63,12 @@ class DockerController(object):
         self.redis.setnx('num_containers', '0')
         self.redis.setnx('cpu_auto_adjust', 5.5)
 
+        # if num_containers is invalid, reset to 0
+        try:
+            assert(int(self.redis.get('num_containers') >= 0))
+        except:
+            self.redis.set('num_containers', 0)
+
         throttle_samples = config['throttle_samples']
         self.redis.setnx('throttle_samples', throttle_samples)
 

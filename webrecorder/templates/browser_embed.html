@@ -2,7 +2,7 @@
 {% block head %}
 
 {{ super() }}
-<script src="{{ static }}/novnc/util.js"></script>
+<script src="/static/__shared/novnc/util.js"></script>
 <script>
     wbinfo = {}
     wbinfo.url = "{{ url }}";
@@ -12,7 +12,7 @@
     wbinfo.info = {{ info | default('{}') | tojson }};
 </script>
 <script>
-    window.STATIC_PREFIX = "{{ static }}";
+    window.STATIC_PREFIX = "/static/__shared/";
     var browser = "{{ browser }}";
     var url = "{{ url }}";
     var curr_ts = "{{ ts }}";

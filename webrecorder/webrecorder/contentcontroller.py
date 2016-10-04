@@ -465,7 +465,6 @@ class ContentController(BaseController, RewriterApp):
                     'url': wb_url.url,
                     'ts': wb_url.timestamp,
                     'upsid': upsid,
-                    'static': '/static/__bp',
                    }
 
             data.update(self.get_top_frame_params(wb_url, kwargs))
@@ -597,8 +596,11 @@ class ContentController(BaseController, RewriterApp):
     def client_ws(self):
         if request.query.getunicode('cont_browser'):
             self.init_cont_browser_sesh()
+            redir_check = False
+        else:
+            redir_check = True
 
-        user, coll = self.get_user_coll(api=True)
+        user, coll = self.get_user_coll(api=True, redir_check=redir_check)
         rec = request.query.getunicode('rec', '*')
         last_status = None
 

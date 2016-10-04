@@ -43,8 +43,9 @@ class BaseController(object):
         url += path
         return bottle_redirect(url)
 
-    def get_user(self, api=False):
-        self.redir_host()
+    def get_user(self, api=False, redir_check=True):
+        if redir_check:
+            self.redir_host()
         user = request.query.getunicode('user')
         if not user:
             self._raise_error(400, 'User must be specified',
@@ -61,8 +62,8 @@ class BaseController(object):
 
         return user
 
-    def get_user_coll(self, api=False):
-        user = self.get_user(api=api)
+    def get_user_coll(self, api=False, redir_check=True):
+        user = self.get_user(api=api, redir_check=redir_check)
 
         coll = request.query.getunicode('coll')
         if not coll:
