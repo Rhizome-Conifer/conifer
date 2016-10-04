@@ -182,8 +182,9 @@ class WebsockController(BaseController):
         elif msg['ws_type'] == 'remote_ip':
             self.init_remote_comm(local_store, msg['ip'])
 
-        elif msg['ws_type'] == 'set_url':
-            if local_store.get('channel'):
+        elif 'channel' in local_store:
+        # send to remote browser cmds
+            if msg['ws_type'] in ('set_url', 'autoscroll'):
                 self.manager.browser_redis.publish(local_store['channel'], json.dumps(msg))
 
     def init_remote_comm(self, local_store, ip):

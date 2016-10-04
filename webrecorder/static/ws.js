@@ -10,6 +10,8 @@
 
     var on_openned;
 
+    var is_autoscroll = false;
+
     var start = function(_user, _coll, _rec, _host, _on_openned) {
         user = _user;
         coll = _coll;
@@ -121,6 +123,16 @@
             case "set_url":
                 if (!document.hidden && msg.url != window.location.href) {
                     window.location.href = msg.url;
+                }
+                break;
+
+            case "autoscroll":
+                if (!document.hidden) {
+                    window.postMessage({"wb_type": "autoscroll",
+                                        "start": !is_autoscroll,
+                                        "timeout": 25000}, "*");
+
+                    is_autoscroll = !is_autoscroll;
                 }
                 break;
 

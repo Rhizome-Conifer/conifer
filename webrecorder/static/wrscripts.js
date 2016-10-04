@@ -178,7 +178,12 @@
     }
 
     function receiveEvent(event) {
-        if (!event.data || event.source != window.__WB_top_frame) { 
+        var expected = window.__WB_top_frame;
+        if (!expected) {
+            expected = window;
+        }
+
+        if (!event.data || event.source != expected) {
             return; 
         } 
 
@@ -189,7 +194,7 @@
         }
 
         function sendDone() {
-            window.__WB_top_frame.postMessage({wb_type: "autoscroll", on: false}, "*");
+            expected.postMessage({wb_type: "autoscroll_resp", on: false}, "*");
         }
 
         if (message.wb_type == "autoscroll") {

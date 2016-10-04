@@ -436,6 +436,12 @@ var RecordingSizeWidget = (function() {
         return sendMsg(msg);
     }
 
+    function doAutoscroll() {
+        var msg = {"ws_type": "autoscroll"}
+
+        return sendMsg(msg);
+    }
+
     function setBrowserIP(ip) {
         var msg = {"ws_type": "remote_ip",
                    "ip": ip}
@@ -577,6 +583,7 @@ var RecordingSizeWidget = (function() {
         addCookie: addCookie,
         addSkipReq: addSkipReq,
         addPage: addPage,
+        doAutoscroll: doAutoscroll,
         setRemoteUrl: setRemoteUrl,
         hasWS: hasWS,
         setBrowserIP: setBrowserIP,

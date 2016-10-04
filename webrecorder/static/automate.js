@@ -2,6 +2,14 @@ $(function() {
     $("#autoscroll").click(function(event) {
         event.preventDefault();
 
+        if (window.cnt_browser) {
+            RecordingSizeWidget.doAutoscroll();
+            // don't keep pressed for cont. browsers
+            $("#autoscroll").removeClass("active");
+            $("#autoscroll").attr("aria-pressed", "false");
+            return;
+        }
+
         window.addEventListener("message", onDone);
 
         if ($(this).attr("aria-pressed") == "true") {
@@ -28,7 +36,7 @@ $(function() {
 
         var message = event.data; 
 
-        if (message.wb_type == "autoscroll" && message.on == false) { 
+        if (message.wb_type == "autoscroll_resp" && message.on == false) { 
             $("#autoscroll").removeClass("active");
             $("#autoscroll").attr("aria-pressed", "false");
         }
