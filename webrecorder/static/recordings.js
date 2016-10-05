@@ -346,6 +346,8 @@ var RecordingSizeWidget = (function() {
     var useWS = false;
     var errCount = 0;
 
+    var startmsg = undefined;
+
     // cont browser ip
     var browserIP = undefined;
 
@@ -379,6 +381,10 @@ var RecordingSizeWidget = (function() {
     function ws_openned() {
         useWS = true;
         errCount = 0;
+        if (startmsg) {
+            console.log("sent on start");
+            sendMsg(startmsg);
+        }
     }
 
     function ws_closed() {
@@ -453,8 +459,14 @@ var RecordingSizeWidget = (function() {
                    "ip": ip}
 
         browserIP = ip;
+        startmsg = msg;
 
-        return sendMsg(msg);
+        if (sendMsg(msg)) {
+            startmsg = undefined;
+            return true;
+        }
+
+        return false;
     }
 
     function setRemoteUrl(url) {
