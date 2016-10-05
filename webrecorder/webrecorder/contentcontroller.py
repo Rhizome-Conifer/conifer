@@ -259,7 +259,7 @@ class ContentController(BaseController, RewriterApp):
 
             # Checks if this is a containerized replay, injecting strict no-cache rules
             # to prevent browser history caching.
-            self._inject_nocache_headers(type, resp.status_headers, wb_url)
+            self._inject_nocache_headers(resp.status_headers, kwargs)
 
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,
@@ -302,10 +302,9 @@ class ContentController(BaseController, RewriterApp):
 
             status_headers.headers = new_headers
 
-    def _inject_nocache_headers(self, type, status_headers, wb_url):
-        wb_url = WbUrl(wb_url)
+    def _inject_nocache_headers(self, status_headers, kwargs):
         # TODO: Sub in actual browser ids here from wr.yaml
-        if type in ('replay', 'replay-coll') and wb_url.mod in ('ch_', 'ff_'):
+        if 'browser' in kwargs:
             status_headers.headers.append(
                 ('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
             )
@@ -435,12 +434,15 @@ class ContentController(BaseController, RewriterApp):
 
             upsid = base64.b64encode(os.urandom(6)).decode('utf-8')
 
+            kwargs['browser'] = browser['id']
+
             container_data = {'upstream_url': upstream_url,
                               'user': kwargs['user'],
                               'coll': kwargs['coll'],
                               'rec': kwargs['rec'],
                               'request_ts': wb_url.timestamp,
                               'curr_mode': kwargs['type'],
+                              'browser': kwargs['browser'],
                              }
 
             # TODO: load settings
