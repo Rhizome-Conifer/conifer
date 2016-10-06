@@ -67,6 +67,10 @@ services:
             - browsermanager
             - data
 
+        networks:
+            - browsers
+            - default
+
     browsermanager:
         build: ./browsermanager
 
@@ -105,6 +109,10 @@ services:
         volumes:
             - ./proxy/certs:/home/apprun/.mitmproxy
 
+        networks:
+            - browsers
+            - default
+
     redis:
         build: ./redis
 
@@ -136,4 +144,13 @@ services:
       volumes:
         - ./data:/data
         - ./wr.yaml:/wr.yaml
+
+
+networks:
+    default:
+        driver: bridge
+
+
+    browsers:
+        driver: bridge
 

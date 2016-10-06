@@ -34,7 +34,7 @@ class DockerController(object):
 
         self.image_prefix = config['image_prefix']
 
-        self.network_name = config.get('network_name', 'webrecorder_default')
+        self.network_name = config.get('network_name', 'webrecorder_browsers')
 
         self.browser_list = config['browsers']
         self.browser_paths = {}
