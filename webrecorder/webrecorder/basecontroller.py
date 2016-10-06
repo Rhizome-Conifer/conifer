@@ -186,10 +186,14 @@ class BaseController(object):
     def get_view_user(self, user):
         return user
 
-    def get_body_class(self, action):
-        if action in ["add_to_recording", "new_recording"]:
-            return "interstitial-page"
-        else:
-            return ""
+    def get_body_class(self, context, action):
+        classes = []
 
+        if action in ["add_to_recording", "new_recording"]:
+            classes.append("interstitial-page")
+
+        if 'browser_data' in context:
+            classes.append('cbrowser')
+
+        return ' '.join(classes).strip()
 

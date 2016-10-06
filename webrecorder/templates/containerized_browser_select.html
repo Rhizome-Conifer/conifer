@@ -19,7 +19,7 @@
     {% set active_browser = browser_data %}
 {% endif %}
 
-{% if is_replaying or is_new or (is_recording and active_browser) %}
+{% if is_replaying or is_new or is_recording %}
 <div class="input-group-btn">
     <button id='cnt-button' type="button" class="btn btn-default dropdown-toggle{% if is_recording %} disabled{% endif %}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         {% if active_browser %}

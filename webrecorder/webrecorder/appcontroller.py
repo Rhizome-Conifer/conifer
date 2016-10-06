@@ -151,7 +151,7 @@ class AppController(BaseController):
 
         @contextfunction
         def get_body_class(context, action):
-            return self.get_body_class(action)
+            return self.get_body_class(context, action)
 
         @contextfunction
         def is_out_of_space(context):

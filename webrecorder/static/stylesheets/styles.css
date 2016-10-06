@@ -866,6 +866,9 @@ div.filter-label {
     color: #353535;
     font-weight: bold;
 }
+.containerized .row:first-child {
+    padding: 5px 0;
+}
 .containerized .row {
     padding: 10px 0;
     margin: 0 -15px 0 -15px;
@@ -916,4 +919,24 @@ div.filter-label {
         /* grid width * column fraction + grid gutter * 2 */
         width: calc(1200px * 0.6 + 60px);
     }
+}
+
+/* containerized browser style overrides */
+#browserMsg {
+    margin-top: 50px;
+    font-size: 18px;
+}
+.cbrowser .navbar-default {
+    background: transparent;
+}
+.cbrowser .navbar {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+.cbrowser #noVNC_screen canvas {
+    /*box-shadow: 5px 5px 8px rgba(0,0,0,0.3);*/
+    -webkit-box-shadow: 0px 10px 30px 3px rgba(0,0,0,0.2);
+    -moz-box-shadow: 0px 10px 30px 3px rgba(0,0,0,0.2);
+    box-shadow: 0px 10px 30px 3px rgba(0,0,0,0.2);
 }

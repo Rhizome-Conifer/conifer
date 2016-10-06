@@ -2,10 +2,11 @@
 function setActiveBrowser(data) {
     /**
      * Sets the containerized dropdown button to the provided browser for new recordings
-     * otherwise reroutes to a new url, loading the selected container.
+     * or when a native recording is active.
+     * Otherwise reroute to a new url, loading the selected container.
      */
 
-    if(window.curr_mode === 'new' || window.curr_mode === '') {
+    if(window.curr_mode === 'new' || window.curr_mode === '' || (window.curr_mode === 'record' && data.native)) {
         var btn = $('#cnt-button');
         if(!btn) return;
 
@@ -14,18 +15,21 @@ function setActiveBrowser(data) {
             data.name+(typeof data.version !== 'undefined' ? " v"+data.version:'')
         );
 
-        // clear the previous active setting and set the new one
-        $('.cnt-browser.active').removeClass('active');
+        // recording setup, with dropdown handling
+        if(window.curr_mode === 'new' || window.curr_mode === '') {
+            // clear the previous active setting and set the new one
+            $('.cnt-browser.active').removeClass('active');
 
-        if(data.native) {
-            $('.cnt-browser:last-child').addClass('active');
-            delStorage('__wr_cntBrowser');
-        } else {
-            $('.cnt-browser[data-browser-id='+data.id+']').addClass('active');
-            setStorage('__wr_cntBrowser', data.id);
+            if(data.native) {
+                $('.cnt-browser:last-child').addClass('active');
+                delStorage('__wr_cntBrowser');
+            } else {
+                $('.cnt-browser[data-browser-id='+data.id+']').addClass('active');
+                setStorage('__wr_cntBrowser', data.id);
+            }
+
+            window.cnt_browser = data.native ? undefined : data.id;
         }
-
-        window.cnt_browser = data.native ? undefined : data.id;
     } else if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
 
         RouteTo.replayRecording(
@@ -46,7 +50,7 @@ function getNative() {
         var browser = b[0];
         return {native: true, name: (typeof labels[browser.toLowerCase()] !== 'undefined'?labels[browser.toLowerCase()]:browser)};
     }
-    return {native: true, name: 'current'};
+    return {native: true, name: 'Current'};
 }
 
 $(function (){
@@ -69,8 +73,11 @@ $(function (){
         }
     }
 
-    $('.cnt-browser:not(.disabled):not(.active)').on('click', function (evt) {
+    $('.cnt-browser').on('click', function (evt) {
         var row = evt.target.tagName === 'UL' ? $(evt.target) : $(evt.target).parents('ul.cnt-browser');
+
+        if(row.hasClass('active') || row.hasClass('disabled'))
+            return;
 
         // short-circuit if native browser selected
         if(row.attr('data-native'))
@@ -80,6 +87,6 @@ $(function (){
         var _name = row.attr('data-browser-name');
         var _vrs = row.attr('data-browser-vrs');
 
-        setActiveBrowser({name: _name, version: _vrs, id: _id});
+        setActiveBrowser({name: _name, version: _vrs, id: _id, native: false});
     });
 });
