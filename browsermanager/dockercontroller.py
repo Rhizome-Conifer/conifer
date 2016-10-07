@@ -78,6 +78,8 @@ class DockerController(object):
         self.redis.setnx('container_expire_secs',
                          config['full_container_expire_secs'])
 
+        self.duration = int(self.redis.get('container_expire_secs'))
+
         self.T_EXPIRE_TIME = config['throttle_expire_secs']
 
         if os.path.exists('/var/run/docker.sock'):
@@ -150,12 +152,11 @@ class DockerController(object):
             if not ip:
                 ip = info['NetworkSettings']['Networks'][self.network_name]['IPAddress']
 
-            #self.redis.hset('all_containers', short_id, ip)
-            self.redis.incr('num_containers')
-            self.redis.setex('c:' + short_id, self.C_EXPIRE_TIME, 1)
+            self.redis.hset('all_containers', short_id, ip)
 
             vnc_host = self._get_host_port(info, self.VNC_PORT, default_host)
             cmd_host = self._get_host_port(info, self.CMD_PORT, default_host)
+            print(ip)
             print(vnc_host)
             print(cmd_host)
 
@@ -171,34 +172,52 @@ class DockerController(object):
             traceback.print_exc()
             return {}
 
-    def remove_container(self, short_id, ip=None):
+    def remove_container(self, short_id):
         print('REMOVING ' + short_id)
         try:
             self.cli.remove_container(short_id, force=True)
         except Exception as e:
             print(e)
 
-        #self.redis.hdel('all_containers', short_id)
-        self.redis.delete('c:' + short_id)
+        ip = self.redis.hget('all_containers', short_id)
 
-        if ip:
-            ip_keys = self.redis.keys(ip + ':*')
-            for key in ip_keys:
-                self.redis.delete(key)
+        with redis.utils.pipeline(self.redis) as pi:
+            pi.delete('ct:' + short_id)
+
+            if not ip:
+                return
+
+            pi.hdel('all_containers', short_id)
+            pi.delete('ip:' + ip)
+
+    def event_loop(self):
+        for event in self.cli.events(decode=True):
+            if event['Type'] != 'container':
+                continue
+
+            if event['status'] == 'die' and event['from'].startswith('webrecorder/browser-'):
+                short_id = event['id'][:12]
+                print('EXITED: ' + short_id)
+                self.remove_container(short_id)
+                self.redis.decr('num_containers')
+                continue
+
+            if event['status'] == 'start' and event['from'].startswith('webrecorder/browser-'):
+                self.redis.incr('num_containers')
+                short_id = event['id'][:12]
+                print('STARTED: ' + short_id)
+                self.redis.setex('ct:' + short_id, self.duration, 1)
+                continue
 
     def remove_expired(self):
-        print('Start Expired Check')
         while True:
-            try:
-                value = self.redis.blpop('remove_q', 1000)
-                if not value:
-                    continue
+            all_known_ids = self.redis.hkeys('all_containers')
+            for short_id in all_known_ids:
+                if not self.redis.get('ct:' + short_id):
+                    print('TIME EXPIRED: ' + short_id)
+                    self.remove_container(short_id)
 
-                short_id, ip = value[1].split(' ')
-                self.remove_container(short_id, ip)
-                self.redis.decr('num_containers')
-            except Exception as e:
-                traceback.print_exc()
+            time.sleep(30)
 
     def check_nodes(self):
         print('Check Nodes')

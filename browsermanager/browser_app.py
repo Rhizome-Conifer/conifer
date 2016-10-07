@@ -26,7 +26,7 @@ PYWB_HOST_PORT = os.environ.get('PYWB_HOST_PORT', 'netcapsule_pywb_1:8080')
 
 LOCAL_REDIS_URL = 'redis://redis:6379/0'
 
-REDIS_URL = os.environ.get('REDIS_BROWSER_URL', LOCAL_REDIS_URL)
+#REDIS_URL = os.environ.get('REDIS_BROWSER_URL', LOCAL_REDIS_URL)
 
 BROWSER = os.environ.get('BROWSER')
 
@@ -37,7 +37,6 @@ start_url = None
 
 curr_ts = None
 
-redis = None
 local_redis = None
 
 stat_key_expire_time = 40
@@ -75,7 +74,7 @@ def set_timestamp(timestamp):
 #    res = set_timestamp(ts)
 #    return res
 
-@route('/pingsock', apply=[websocket])
+#@route('/pingsock', apply=[websocket])
 def pingsock(ws):
     if ws:
         spawn(receiver, ws)
@@ -152,15 +151,15 @@ def receiver(ws):
 def mark_for_removal():
     logging.debug('Marked for removal')
 
-    ttl = redis.ttl('c:' + HOST)
-    redis.setex('c:' + HOST, stat_key_expire_time, 'REM:' + str(ttl))
+    #ttl = redis.ttl('c:' + HOST)
+    #redis.setex('c:' + HOST, stat_key_expire_time, 'REM:' + str(ttl))
 
     logging.debug('DELETING IP: ' + my_ip)
 
-    redis.delete('ip:' + my_ip)
-    redis.delete('from_ip:q:' + my_ip)
+    #redis.delete('ip:' + my_ip)
+    #redis.delete('from_ip:q:' + my_ip)
 
-    redis.rpush('remove_q', HOST + ' ' + my_ip)
+    #redis.rpush('remove_q', HOST + ' ' + my_ip)
 
     global closed
     closed = True
@@ -171,7 +170,7 @@ def mark_for_removal():
 
 
 def shutdown():
-    duration = int(redis.get('container_expire_secs'))
+    #duration = int(redis.get('container_expire_secs'))
 
     sleep(duration + 10)
 
@@ -297,14 +296,11 @@ def do_init():
     global curr_ts
     curr_ts = r.start_ts
 
-    global redis
-    redis = StrictRedis.from_url(REDIS_URL)
+    #global redis
+    #redis = StrictRedis.from_url(REDIS_URL)
 
-    global local_redis
-    if REDIS_URL != LOCAL_REDIS_URL:
-        local_redis = StrictRedis.from_url(LOCAL_REDIS_URL)
-    else:
-        local_redis = redis
+    #global local_redis
+    #local_redis = StrictRedis.from_url(LOCAL_REDIS_URL)
 
     # set initial url
     #base_key = my_ip + ':' + curr_ts + ':'

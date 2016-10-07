@@ -99,9 +99,10 @@ def randompage():
 
 dc = DockerController()
 
-application = default_app()
+event_loop_gevent = gevent.spawn(dc.event_loop)
+cleanup_gevent = gevent.spawn(dc.remove_expired)
 
-expire_gevent = gevent.spawn(dc.remove_expired)
+application = default_app()
 
 debug(True)
 
