@@ -237,7 +237,6 @@ $(function() {
 
     function UIresize() {
         if (WebUtil.getQueryVar('resize', false)) {
-            console.log('desktop')
             var innerW = window.innerWidth;
             var innerH = window.innerHeight;
             var controlbarH = $D('noVNC_status_bar').offsetHeight;
