@@ -192,32 +192,50 @@ class DockerController(object):
 
     def event_loop(self):
         for event in self.cli.events(decode=True):
-            if event['Type'] != 'container':
-                continue
+            try:
+                self.handle_docker_event(event)
+            except Exception as e:
+                print(e)
 
-            if event['status'] == 'die' and event['from'].startswith('webrecorder/browser-'):
-                short_id = event['id'][:12]
-                print('EXITED: ' + short_id)
-                self.remove_container(short_id)
-                self.redis.decr('num_containers')
-                continue
+    def handle_docker_event(self, event):
+        if event['Type'] != 'container':
+            return
 
-            if event['status'] == 'start' and event['from'].startswith('webrecorder/browser-'):
-                self.redis.incr('num_containers')
-                short_id = event['id'][:12]
-                print('STARTED: ' + short_id)
-                self.redis.setex('ct:' + short_id, self.duration, 1)
-                continue
+        if event['status'] == 'die' and event['from'].startswith('webrecorder/browser-'):
+            short_id = event['id'][:12]
+            self.remove_container(short_id)
+            print('EXITED: ' + short_id)
+            self.redis.decr('num_containers')
+            return
 
-    def remove_expired(self):
+        if event['status'] == 'start' and event['from'].startswith('webrecorder/browser-'):
+            self.redis.incr('num_containers')
+            short_id = event['id'][:12]
+            print('STARTED: ' + short_id)
+            self.redis.setex('ct:' + short_id, self.duration, 1)
+            return
+
+    def remove_expired_loop(self):
         while True:
-            all_known_ids = self.redis.hkeys('all_containers')
-            for short_id in all_known_ids:
-                if not self.redis.get('ct:' + short_id):
-                    print('TIME EXPIRED: ' + short_id)
-                    self.remove_container(short_id)
+            try:
+                self.remove_expired()
+            except Exception as e:
+                print(e)
 
             time.sleep(30)
+
+    def remove_expired(self):
+        all_known_ids = self.redis.hkeys('all_containers')
+
+        all_containers = {c['Id'][:12] for c in self.cli.containers(quiet=True)}
+
+        for short_id in all_known_ids:
+            if not self.redis.get('ct:' + short_id):
+                print('TIME EXPIRED: ' + short_id)
+                self.remove_container(short_id)
+            elif short_id not in all_containers:
+                print('STALE ID: ' + short_id)
+                self.remove_container(short_id)
 
     def check_nodes(self):
         print('Check Nodes')
