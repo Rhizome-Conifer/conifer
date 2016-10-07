@@ -40,7 +40,7 @@ $(function() {
             if (waiting_for_container) {
                 return;
             }
-            
+
             waiting_for_container = true;
 
             //var init_url = "/api/v1/browsers/init_browser?" + $.param(params);
@@ -129,7 +129,7 @@ $(function() {
         } catch (e) {
             console.log(e);
         }
-        
+
         pingsock.onerror = function(e) {
             //console.log("Sock Error");
             pingsock = undefined;
@@ -148,7 +148,7 @@ $(function() {
             }
         }
     }
-    
+
     function format_date(date) {
         return date.toISOString().slice(0, -5).replace("T", " ");
     }
@@ -171,7 +171,7 @@ $(function() {
                 sparkline.move_current(date);
             }
         }
-        
+
         var any_data = false;
 
         if (data.hosts && data.hosts.length > 0) {
@@ -184,7 +184,7 @@ $(function() {
                     //$("#statsHosts").append(elem);
                     $("#statsHosts li[data-id='" + host + "']").show();
                 });
-                
+
                 data.hosts = curr_hosts;
                 $("#statsHostsWrap").show();
             }
@@ -196,7 +196,7 @@ $(function() {
             $("#statsCountWrap").show();
             any_data = true;
         }
-            
+
         if (data.min_sec && data.max_sec) {
             var min_date = new Date(data.min_sec * 1000);
             var max_date = new Date(data.max_sec * 1000);
@@ -206,19 +206,19 @@ $(function() {
             $("#statsSpanWrap").show();
             any_data = true;
         }
-        
+
         if (any_data) {
             $(".session-info").show();
             $("#session-loading").hide();
         }
-        
+
         if (data.ttl != undefined) {
             set_time_left(data.ttl);
         }
-        
+
         //update_replay_state();
     }
-    
+
     function set_time_left(time_left) {
         end_time = Math.floor(new Date().getTime() / 1000 + time_left);
     }
@@ -237,6 +237,7 @@ $(function() {
 
     function UIresize() {
         if (WebUtil.getQueryVar('resize', false)) {
+            console.log('desktop')
             var innerW = window.innerWidth;
             var innerH = window.innerHeight;
             var controlbarH = $D('noVNC_status_bar').offsetHeight;
@@ -244,7 +245,23 @@ $(function() {
             if (innerW !== undefined && innerH !== undefined)
                 rfb.setDesktopSize(innerW, innerH - controlbarH - padding);
         }
+
+        // client-side resize
+        var hh = $('header').height();
+        var c = $('#noVNC_canvas');
+        var w = window.innerWidth * 0.96;
+        var h = window.innerHeight - (25 + hh);
+
+        var s = rfb._display.autoscale(w, h);
+        var ch = c.height();
+        var cw = c.width();
+        c.css({
+            marginLeft: (window.innerWidth - cw)/2,
+            marginTop: (window.innerHeight - (hh + ch + 25))/2
+        });
+        rfb.get_mouse().set_scale(s);
     }
+
     function FBUComplete(rfb, fbu) {
         UIresize();
         rfb.set_onFBUComplete(function() { });
@@ -365,10 +382,10 @@ $(function() {
         var full_url = window.location.origin + "/" + path + "/" + curr_ts + "/" + url;
         window.location.href = full_url;
     });
-    
+
 
     // Update request dt
-    window.on_change_curr_ts = function(ts) {      
+    window.on_change_curr_ts = function(ts) {
         if (pingsock) {
             pingsock.send(JSON.stringify({"ts": ts}));
             $(".rel_message").show();
@@ -396,12 +413,12 @@ $(function() {
             min = "0" + min;
         }
 
-        $("#expire").text(min + ":" + sec);       
+        $("#expire").text(min + ":" + sec);
     }
-    
+
     // Countdown updater
     cid = setInterval(update_countdown, 1000);
-    
+
     // INIT
     init_container();
 
