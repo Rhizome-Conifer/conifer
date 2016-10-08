@@ -169,12 +169,12 @@ def mark_for_removal():
     sys.exit(0)
 
 
-def shutdown():
+#def shutdown():
     #duration = int(redis.get('container_expire_secs'))
 
-    sleep(duration + 10)
+    #sleep(duration + 10)
 
-    mark_for_removal()
+#    mark_for_removal()
 
 def get_update():
 #    if not redis.hget('all_containers', HOST):
@@ -325,7 +325,7 @@ def test_for_done():
         sleep(10)
 
 
-spawn(shutdown)
+#spawn(shutdown)
 
 spawn(test_for_done)
 

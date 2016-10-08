@@ -67,10 +67,6 @@ services:
             - browsermanager
             - data
 
-        networks:
-            - browsers
-            - default
-
     browsermanager:
         build: ./browsermanager
 
@@ -110,8 +106,8 @@ services:
             - ./proxy/certs:/home/apprun/.mitmproxy
 
         networks:
-            - browsers
             - default
+            - browsers
 
     redis:
         build: ./redis
