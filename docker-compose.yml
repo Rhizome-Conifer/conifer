@@ -103,7 +103,8 @@ services:
             - redis
 
         volumes:
-            - ./proxy/certs:/home/apprun/.mitmproxy
+            #- ./proxy/certs:/home/apprun/.mitmproxy
+            - ./proxy/certs:/certs
 
         networks:
             - default
