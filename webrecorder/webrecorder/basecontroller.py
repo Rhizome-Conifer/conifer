@@ -142,7 +142,7 @@ class BaseController(object):
 
     def redirect(self, url):
         if url.startswith('/'):
-            url = self.get_host() + quote(url, safe='+ /!:%?=&#')
+            url = self.get_host() + quote(url, safe='+ /!:%?$=&#')
 
         return bottle_redirect(url)
 

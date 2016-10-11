@@ -154,7 +154,7 @@ query_html: time_info.html
 # Available containerized browsers
 containerized_browsers:
     -
-        id: ch
+        id: ch-53-lin
         name: chrome
         os: linux
         version: '53'
@@ -163,7 +163,7 @@ containerized_browsers:
             - flash
             - mp3
     -
-        id: ff
+        id: ff-49-lin
         name: firefox
         os: linux
         version: '49'

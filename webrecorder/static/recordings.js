@@ -27,8 +27,11 @@ function setTitle(status_msg, url, title) {
     document.title = title + " (" + status_msg + ")";
 }
 
-function containerBrowser() {
-    return typeof window.cnt_browser !== 'undefined'?window.cnt_browser+'_/':'';
+function cbrowserMod() {
+    if (!window.cnt_browser) {
+        return "";
+    }
+    return "$cbr:" + window.cnt_browser;
 };
 
 var EventHandlers = (function() {
@@ -88,7 +91,7 @@ var EventHandlers = (function() {
             } else if (window.curr_mode == "patch") {
                 var url = getUrl();
 
-                RouteTo.replayRecording(user, coll, (typeof window.cnt_browser!=='undefined'?window.cnt_browser+'_':null), url);
+                RouteTo.replayRecording(user, coll, cbrowserMod(), url);
             } else if (window.curr_mode == "new") {
                 // New handled in newrecordings.js
             }
@@ -276,11 +279,11 @@ var RouteTo = (function(){
 
     var newRecording = function(collection, recording, url, mode, target) {
         // if a containerized browser is set, assign it to the new recording
-        routeTo(host + "/$record/" + collection + "/" + recording + "/" + containerBrowser() + url, target);
+        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod() + "/" + url, target);
     }
 
     var newPatch = function(collection, url, target) {
-        routeTo(host + "/$patch/" + collection + "/" + containerBrowser() + url, target);
+        routeTo(host + "/$patch/" + collection + "/" + cbrowserMod() + "/" + url, target);
     }
 
     var recordingInProgress = function(user, collection, recording, url, mode, target) {
@@ -288,7 +291,7 @@ var RouteTo = (function(){
             mode = "record";
         }
 
-        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + containerBrowser() + url, target);
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + cbrowserMod() + "/" + url, target);
     }
 
     var collectionInfo = function(user, collection) {
@@ -491,7 +494,7 @@ var RecordingSizeWidget = (function() {
     function replaceOuterUrl(msg)
     {
         var ts = msg.timestamp;
-        var mod = window.cnt_browser + "_";
+        var mod = cbrowserMod();
         var prefix = wbinfo.outer_prefix;
         var url = msg.url;
 

@@ -89,6 +89,7 @@
                  "url": window.location.href,
                  "timestamp": wbinfo.timestamp,
                  "title": document.title,
+                 "browser": wbinfo.curr_browser,
         };
 
         var msg = {"page": page}

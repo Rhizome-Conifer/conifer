@@ -22,7 +22,7 @@ from io import BytesIO
 class ContentController(BaseController, RewriterApp):
     DEF_REC_NAME = 'Recording Session'
 
-    WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?([a-zA-Z]+:)?//.*')
+    WB_URL_RX = re.compile('(([\d*]*)([a-z]+_|[$][a-z0-9:.-]+)?/)?([a-zA-Z]+:)?//.*')
 
     def __init__(self, app, jinja_env, manager, config):
         BaseController.__init__(self, app, jinja_env, manager, config)
@@ -33,8 +33,10 @@ class ContentController(BaseController, RewriterApp):
 
         self.paths = config['url_templates']
 
-        self.browsers = config.get('containerized_browsers', [])
-        self.browser_ids = [b['id'] for b in self.browsers]
+        browser_list = config.get('containerized_browsers', [])
+
+        self.browser_ids = [b['id'] for b in browser_list]
+        self.browsers = dict((b['id'], b) for b in browser_list)
 
         self.cookie_tracker = self.manager.cookie_tracker
 
@@ -290,7 +292,8 @@ class ContentController(BaseController, RewriterApp):
 
             if (self.content_host and
                 not self.is_content_request() and
-                wb_url.mod not in ('', 'ch_', 'ff_')):
+                wb_url.mod != '' and
+                not wb_url.mod.startswith('$cbr:')):
                 self.redir_host(self.content_host)
 
     def _filter_headers(self, type, status_headers):
@@ -469,11 +472,10 @@ class ContentController(BaseController, RewriterApp):
             return data
 
         # test if request specifies a containerized browser
-        mod = wb_url.mod.strip('_')
-        if mod in self.browser_ids:
-            idx = next(index for (index, d) in enumerate(self.browsers)
-                       if d['id'] == mod)
-            return browser_embed(self.browsers[idx])
+        if wb_url.mod.startswith('$cbr:'):
+            id_ = wb_url.mod.split(':', 1)[1]
+            if id_ in self.browsers:
+                return browser_embed(self.browsers[id_])
 
         return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
 
