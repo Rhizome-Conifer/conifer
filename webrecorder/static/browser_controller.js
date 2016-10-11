@@ -30,8 +30,13 @@ $(function() {
     function init_container() {
         var params = {"url": url, "ts": curr_ts, "browser": browser, "state": "ping"};
 
-        params['width'] = Math.max($(window).width() - 40, 800);
-        params['height'] = Math.max($(window).height() - 120, 600);
+        // calculate dimensions
+        var hh = $('header').height();
+        var w = window.innerWidth * 0.96;
+        var h = window.innerHeight - (25 + hh);
+
+        params['width'] = Math.max(w, 800);
+        params['height'] = Math.max(h, 600);
         params['width'] = parseInt(params['width'] / 16) * 16;
         params['height'] = parseInt(params['height'] / 16) * 16;
         params['upsid'] = upsid;
@@ -244,25 +249,31 @@ $(function() {
             if (innerW !== undefined && innerH !== undefined)
                 rfb.setDesktopSize(innerW, innerH - controlbarH - padding);
         }
+    }
 
-        // client-side resize
+    function clientPosition() {
         var hh = $('header').height();
         var c = $('#noVNC_canvas');
-        var w = window.innerWidth * 0.96;
-        var h = window.innerHeight - (25 + hh);
-
-        var s = rfb._display.autoscale(w, h);
         var ch = c.height();
         var cw = c.width();
         c.css({
             marginLeft: (window.innerWidth - cw)/2,
             marginTop: (window.innerHeight - (hh + ch + 25))/2
         });
+    }
+
+    function clientResize() {
+        var hh = $('header').height();
+        var w = Math.round(window.innerWidth * 0.96);
+        var h = Math.round(window.innerHeight - (25 + hh));
+
+        var s = rfb._display.autoscale(w, h);
         rfb.get_mouse().set_scale(s);
     }
 
     function FBUComplete(rfb, fbu) {
         UIresize();
+        clientPosition();
         rfb.set_onFBUComplete(function() { });
     }
 
@@ -372,6 +383,8 @@ $(function() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(function(){
             UIresize();
+            clientResize();
+            clientPosition();
         }, 500);
     };
 
