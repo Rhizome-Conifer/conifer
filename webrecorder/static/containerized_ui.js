@@ -35,7 +35,7 @@ function setActiveBrowser(data) {
         RouteTo.replayRecording(
             window.user,
             window.coll,
-            wbinfo.timestamp+(data.native ?'':data.id+'_'),
+            wbinfo.timestamp+(data.native ?'':'$cbr:'+data.id),
             getUrl());
     }
 }
