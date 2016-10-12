@@ -1,7 +1,0 @@
-docker-py
-bottle
-gevent
-uwsgi
-jinja2
-redis
-pyyaml

@@ -526,12 +526,12 @@ var RecordingSizeWidget = (function() {
                 break;
 
             case "remote_url":
-                if (window.cnt_browser) {
-                    var page = msg.page;
-                    setUrl(page.url);
-                    setTitle("Containerized", page.url, page.title);
-                    replaceOuterUrl(page);
-                }
+                //if (window.cnt_browser) {
+                var page = msg.page;
+                setUrl(page.url);
+                setTitle("Containerized", page.url, page.title);
+                replaceOuterUrl(page);
+                //}
                 break;
 
             default:
