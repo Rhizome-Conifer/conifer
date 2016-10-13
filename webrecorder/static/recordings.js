@@ -352,9 +352,6 @@ var RecordingSizeWidget = (function() {
 
     var startmsg = undefined;
 
-    // cont browser ip
-    var browserIP = undefined;
-
     var start = function() {
         if ($('.size-counter-active').length && window.curr_mode) {
             //(window.curr_mode == "record" || window.curr_mode == "patch")) {
@@ -406,8 +403,8 @@ var RecordingSizeWidget = (function() {
         if (rec && rec != "*") {
             url += "&rec=" + rec;
         }
-        if (browserIP) {
-            url += "&browserIP=" + browserIP;
+        if (window.reqid) {
+            url += "&reqid=" + reqid;
         }
 
         try {
@@ -458,29 +455,12 @@ var RecordingSizeWidget = (function() {
         return sendMsg(msg);
     }
 
-    function setBrowserIP(ip) {
-        var msg = {"ws_type": "remote_ip",
-                   "ip": ip}
-
-        browserIP = ip;
-        startmsg = msg;
-
-        if (sendMsg(msg)) {
-            startmsg = undefined;
-            return true;
-        }
-
-        return false;
-    }
-
     function setRemoteUrl(url) {
         var msg = {"ws_type": "set_url",
                    "url": url}
 
         return sendMsg(msg);
     }
-
-
 
     function sendMsg(msg) {
         if (!hasWS()) {
@@ -609,7 +589,6 @@ var RecordingSizeWidget = (function() {
         doLoadAll: doLoadAll,
         setRemoteUrl: setRemoteUrl,
         hasWS: hasWS,
-        setBrowserIP: setBrowserIP,
     }
 
 })();

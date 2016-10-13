@@ -17,12 +17,6 @@ class WebsockController(BaseController):
         super(WebsockController, self).__init__(app, jinja_env, manager, config)
         self.status_update_secs = float(config['status_update_secs'])
 
-        #TODO: move to config
-        self.from_ip_q = 'from_ip:q:'
-        self.from_ip_ps = 'from_ip:ps:'
-        self.to_ip_ps = 'to_ip:ps:'
-        self.tick_time = 0.25
-
     def init_routes(self):
         @self.app.get('/_client_ws')
         def client_ws():
@@ -79,21 +73,15 @@ class WebsockController(BaseController):
     def _send_ws(self, msg):
         uwsgi.websocket_send(msg)
 
-    def _pop_from_remote_q(self, ip):
-        return self.manager.browser_redis.lpop(self.from_ip_q + ip)
+    def _multiplex(self, websocket_fd, local_store, user, coll, rec):
+        fd_list = [websocket_fd]
 
-    def _push_to_remote_q(self, ip, msg):
-        string = json.dumps(msg)
-        self.manager.browser_redis.rpush(self.from_ip_q + ip, string)
-
-    def _multiplex(self, websocket_fd, pubsub, user, coll, rec, local_store):
+        pubsub = local_store.get('pubsub')
         if pubsub:
-            fd_list = [websocket_fd, pubsub.connection._sock.fileno()]
-        else:
-            fd_list = [websocket_fd]
+            fd_list.append(pubsub.connection._sock.fileno())
 
-        # wait max 4 seconds to allow ping to be sent
-        ready = gevent.select.select(fd_list, [], [], 4.0)
+        ready = gevent.select.select(fd_list, [], [], 1.0)
+
         # send ping on timeout
         if not ready[0]:
             uwsgi.websocket_recv_nb()
@@ -110,33 +98,18 @@ class WebsockController(BaseController):
     def client_ws(self):
         user, coll = self.get_user_coll(api=True)
         rec = request.query.getunicode('rec', '*')
-        last_status = None
-        last_status_time = time.time()
 
-        self._init_ws(request.environ)
+        reqid = request.query.get('reqid')
 
-        local_store = {}
-        pubsub = None
+        local_store = self.init_remote_comm('to', reqid,
+                                            'to_cbr_ps:', 'from_cbr_ps:')
 
-        if request.query.get('browserIP'):
-            self.init_remote_comm(local_store, request.query.get('browserIP'))
+        updater = StatusUpdater(self.status_update_secs,
+                                lambda: self.get_status(user, coll, rec)
+                               )
 
-        websocket_fd = uwsgi.connection_fd()
+        return self.run_ws(user, coll, rec, local_store, updater)
 
-        while True:
-            self._multiplex(websocket_fd, local_store.get('pubsub'),
-                            user, coll, rec, local_store)
-
-            curr_time = time.time()
-
-            if (curr_time - last_status_time) > self.status_update_secs:
-                status = self.get_status(user, coll, rec)
-
-                if status != last_status:
-                    self._send_ws(status)
-                    last_status = status
-
-                last_status_time = curr_time
 
     def client_ws_cont(self):
         info = self.init_cont_browser_sesh()
@@ -146,26 +119,36 @@ class WebsockController(BaseController):
         user = info['user']
         coll = info['coll']
         rec = info['rec']
-        ip = info['ip']
 
+        reqid = info['reqid']
+
+        local_store = self.init_remote_comm('from', reqid,
+                                            'from_cbr_ps:', 'to_cbr_ps:')
+
+        return self.run_ws(user, coll, rec, local_store)
+
+    def run_ws(self, user, coll, rec, local_store, updater=None):
         self._init_ws(request.environ)
-
-        local_store = {'cbrowser_ip': ip}
-
-        pubsub = self.manager.browser_redis.pubsub()
-        pubsub.subscribe([self.to_ip_ps + ip])
 
         websocket_fd = uwsgi.connection_fd()
 
         while True:
-            self._multiplex(websocket_fd, pubsub,
-                            user, coll, rec, local_store)
+            self._multiplex(websocket_fd, local_store,
+                            user, coll, rec)
+
+            if updater:
+                res = updater.get_update()
+                if res:
+                    self._send_ws(res)
+
+            gevent.sleep(0)
 
     def handle_client_msg(self, msg, user, coll, rec, local_store):
         if not msg:
             return
 
-        cbrowser_ip = local_store.get('cbrowser_ip')
+        from_browser = local_store.get('from_channel')
+        to_browser = local_store.get('to_channel')
 
         msg = json.loads(msg.decode('utf-8'))
 
@@ -189,31 +172,57 @@ class WebsockController(BaseController):
 
             res = self.manager.add_page(user, coll, rec, page_local_store)
 
-            if cbrowser_ip and msg.get('visible'):
+            if from_browser and msg.get('visible'):
                 msg['ws_type'] = 'remote_url'
-                self._publish(self.from_ip_ps + cbrowser_ip, msg)
+                self._publish(from_browser, msg)
                 #self._push_to_remote_q(cbrowser_ip, msg)
 
-        elif cbrowser_ip and msg['ws_type'] == 'remote_url':
+        elif from_browser and msg['ws_type'] == 'remote_url':
             #self._push_to_remote_q(cbrowser_ip, msg)
-            self._publish(self.from_ip_ps + cbrowser_ip, msg)
+            self._publish(from_browser, msg)
 
-        elif msg['ws_type'] == 'remote_ip':
-            self.init_remote_comm(local_store, msg['ip'])
-
-        elif 'to_channel' in local_store:
+        elif to_browser:
         # send to remote browser cmds
             if msg['ws_type'] in ('set_url', 'autoscroll', 'load_all'):
-                self._publish(local_store['to_channel'], msg)
+                self._publish(to_browser, msg)
 
     def _publish(self, channel, msg):
         self.manager.browser_redis.publish(channel, json.dumps(msg))
 
-    def init_remote_comm(self, local_store, ip):
-        local_store['remote_ip'] = ip
-        local_store['to_channel'] = self.to_ip_ps + ip
+    def init_remote_comm(self, name, reqid, send_to, recv_from):
+        if not reqid:
+            return {}
+
+        local_store = {'reqid': reqid}
+
+        local_store[name + '_channel'] = send_to + reqid
 
         local_store['pubsub'] = self.manager.browser_redis.pubsub()
-        local_store['pubsub'].subscribe(self.from_ip_ps + ip)
-        return local_store['pubsub']
+        local_store['pubsub'].subscribe(recv_from + reqid)
+        return local_store
+
+
+
+class StatusUpdater(object):
+    def __init__(self, status_update_secs, callback):
+        self.last_status = None
+        self.last_status_time = 0.0
+
+        self.status_update_secs = status_update_secs
+        self.callback = callback
+
+    def get_update(self):
+        curr_time = time.time()
+        result = None
+
+        if (curr_time - self.last_status_time) > self.status_update_secs:
+            status = self.callback()
+
+            if status != self.last_status:
+                self.last_status = status
+                result = status
+
+            self.last_status_time = curr_time
+
+        return result
 

@@ -30,9 +30,6 @@
     $(function() {
         var params = {}
         params.static_prefix = "/static/browsers/";
-        params.on_connect = function(data) {
-            RecordingSizeWidget.setBrowserIP(data.ip);
-        };
         params.api_prefix = "/api/browsers";
 
         if (!window.location.port) {
