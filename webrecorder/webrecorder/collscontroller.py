@@ -1,5 +1,7 @@
 from bottle import request, response, HTTPError
 
+import re
+
 from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
 import json
@@ -184,7 +186,7 @@ class CollsController(BaseController):
         def coll_info(user, coll):
             return self.get_collection_info_for_view(user, coll)
 
-        @self.app.get(['/<user>/<coll>/<rec_list>', '/<user>/<coll>/<rec_list>/'])
+        @self.app.get(['/<user>/<coll>/<rec_list:re:([\w-]+)>', '/<user>/<coll>/<rec_list:re:([\w-]+)>/'])
         @self.jinja2_view('collection_info.html')
         def coll_info(user, coll, rec_list):
             rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
