@@ -31,6 +31,9 @@ assets_path: assets.yaml
 
 temp_prefix: 'temp-'
 
+browser_req_url: 'http://shepherd:9020/api/browsers/request_browser/{browser}'
+browser_list_url: 'http://shepherd:9020/api/browsers/browsers'
+
 # time interval for websocket status updates (in seconds)
 status_update_secs: 1.0
 
@@ -150,23 +153,3 @@ framed_replay: inverse
 
 query_html: time_info.html
 
-
-# Available containerized browsers
-containerized_browsers:
-    -
-        id: ch-53-lin
-        name: chrome
-        os: linux
-        version: '53'
-        release: '2016-09-30'
-        capabilities:
-            - flash
-            - mp3
-    -
-        id: ff-49-lin
-        name: firefox
-        os: linux
-        version: '49'
-        release: '2016-09-23'
-        capabilities:
-            - flash

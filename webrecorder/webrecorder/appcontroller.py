@@ -30,6 +30,8 @@ from webrecorder.usercontroller import UserController
 from webrecorder.downloadcontroller import DownloadController
 from webrecorder.uploadcontroller import UploadController
 
+from webrecorder.browsermanager import BrowserManager
+
 from webrecorder.webreccork import WebRecCork
 
 from webrecorder.cookieguard import CookieGuard
@@ -72,6 +74,10 @@ class AppController(BaseController):
         self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'], decode_responses=True)
         self.session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 
+        # Init Browser Mgr
+        self.browser_mgr = BrowserManager(config)
+        self.bottle_app.browser_mgr = self.browser_mgr
+
         # Init Cork
         self.cork = WebRecCork.create_cork(self.redis, config)
 
@@ -113,7 +119,7 @@ class AppController(BaseController):
 
     def init_jinja_env(self, config, jinja_env):
         jinja_env.globals['metadata'] = config.get('metadata', {})
-        jinja_env.globals['cnt_browsers'] = config.get('containerized_browsers', [])
+        jinja_env.globals['get_browsers'] = self.browser_mgr.get_browser_list
 
         def get_coll(context):
             coll = context.get('coll_orig', '')

@@ -15,7 +15,7 @@
             window.user = "{{ user }}";
             window.coll = "{{ coll }}";
             window.rec = "{{ rec }}";
-            window.browsers = {{ cnt_browsers }};
+            window.browsers = {{ get_browsers() }};
         </script>
 
         {% block head %}

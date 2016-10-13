@@ -27,11 +27,12 @@ function setTitle(status_msg, url, title) {
     document.title = title + " (" + status_msg + ")";
 }
 
-function cbrowserMod() {
+function cbrowserMod(sep) {
     if (!window.cnt_browser) {
         return "";
     }
-    return "$cbr:" + window.cnt_browser;
+    sep = sep || "";
+    return "$cbr:" + window.cnt_browser + sep;
 };
 
 var EventHandlers = (function() {
@@ -279,11 +280,11 @@ var RouteTo = (function(){
 
     var newRecording = function(collection, recording, url, mode, target) {
         // if a containerized browser is set, assign it to the new recording
-        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod() + "/" + url, target);
+        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
     }
 
     var newPatch = function(collection, url, target) {
-        routeTo(host + "/$patch/" + collection + "/" + cbrowserMod() + "/" + url, target);
+        routeTo(host + "/$patch/" + collection + "/" + cbrowserMod("/") + url, target);
     }
 
     var recordingInProgress = function(user, collection, recording, url, mode, target) {
@@ -291,7 +292,7 @@ var RouteTo = (function(){
             mode = "record";
         }
 
-        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + cbrowserMod() + "/" + url, target);
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + cbrowserMod("/") + url, target);
     }
 
     var collectionInfo = function(user, collection) {
@@ -526,12 +527,12 @@ var RecordingSizeWidget = (function() {
                 break;
 
             case "remote_url":
-                //if (window.cnt_browser) {
-                var page = msg.page;
-                setUrl(page.url);
-                setTitle("Containerized", page.url, page.title);
-                replaceOuterUrl(page);
-                //}
+                if (window.cnt_browser) {
+                    var page = msg.page;
+                    setUrl(page.url);
+                    setTitle("Containerized", page.url, page.title);
+                    replaceOuterUrl(page);
+                }
                 break;
 
             default:

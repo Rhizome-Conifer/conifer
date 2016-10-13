@@ -33,12 +33,9 @@ class ContentController(BaseController, RewriterApp):
 
         self.paths = config['url_templates']
 
-        browser_list = config.get('containerized_browsers', [])
-
-        self.browser_ids = [b['id'] for b in browser_list]
-        self.browsers = dict((b['id'], b) for b in browser_list)
-
         self.cookie_tracker = self.manager.cookie_tracker
+
+        self.browser_mgr = app.browser_mgr
 
     def init_routes(self):
         # REDIRECTS
@@ -426,58 +423,31 @@ class ContentController(BaseController, RewriterApp):
             cdx['is_live'] = 'true'
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
+        # test if request specifies a containerized browser
+        if not wb_url.mod.startswith('$cbr:'):
+            return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
+
+        #handle cbrowsers
+        browser_id = wb_url.mod.split(':', 1)[1]
+
+        # container redis info
+        params = {'closest': wb_url.timestamp}
+        upstream_url = self.get_upstream_url(wb_url, kwargs, params)
+
+        # adding separate to avoid encoding { and }
+        upstream_url += '&url={url}'
+
+        kwargs['upstream_url'] = upstream_url
+        kwargs['browser'] = browser_id
+
+        inject_data = self.browser_mgr.request_new_browser(wb_url, kwargs)
+        inject_data.update(self.get_top_frame_params(wb_url, kwargs))
+
         @self.jinja2_view('browser_embed.html')
-        def browser_embed(browser):
-            # container redis info
-            params = {'closest': wb_url.timestamp}
-            upstream_url = self.get_upstream_url(wb_url, kwargs, params)
-
-            # adding separate to avoid encoding { and }
-            upstream_url += '&url={url}'
-
-            upsid = base64.b64encode(os.urandom(6)).decode('utf-8')
-
-            kwargs['browser'] = browser['id']
-
-            container_data = {'upstream_url': upstream_url,
-                              'user': kwargs['user'],
-                              'coll': kwargs['coll'],
-                              'rec': kwargs['rec'],
-                              'request_ts': wb_url.timestamp,
-                              'curr_mode': kwargs['type'],
-                              'browser': kwargs['browser'],
-                             }
-
-            # TODO: load settings
-            #self.manager.browser_redis.setex(b'ups:' + upsid, 120, upstream_url)
-            self.manager.browser_redis.hmset('ups:' + upsid, container_data)
-            self.manager.browser_redis.expire('ups:' + upsid, 120)
-
-            # browser page insert
-            data = {'browser': browser['name'],
-                    'browser_data': browser,
-                    'url': wb_url.url,
-                    'ts': wb_url.timestamp,
-                    'upsid': upsid,
-                   }
-
-            data.update(self.get_top_frame_params(wb_url, kwargs))
-
-            #page_data = {'url': wb_url.url,
-            #             'timestamp': wb_url.timestamp,
-            #            }
-
-            #res = self.manager.add_page(kwargs['user'], kwargs['coll'], kwargs['rec'], page_data)
-
+        def browser_embed(data):
             return data
 
-        # test if request specifies a containerized browser
-        if wb_url.mod.startswith('$cbr:'):
-            id_ = wb_url.mod.split(':', 1)[1]
-            if id_ in self.browsers:
-                return browser_embed(self.browsers[id_])
-
-        return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
+        return browser_embed(inject_data)
 
     def snapshot(self):
         user, coll = self.get_user_coll(api=True)

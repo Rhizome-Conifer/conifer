@@ -12,6 +12,7 @@ services:
             - webagg
             - recorder
             - redis
+            - shepherd
 
         volumes:
             - ./webrecorder/:/code/
@@ -56,42 +57,41 @@ services:
 
     nginx:
         build: ./nginx
-        ports:
-            - "8089:80"
-
         depends_on:
             - app
 
         volumes_from:
             - app
-            - browsermanager
+            - shepherd
             - data
 
-    browsermanager:
-        build: ./browsermanager
+        ports:
+            - "8089:80"
 
-        #ports:
-        #    - 9020:9020
+    shepherd:
+        image: webrecorder/shepherd
+
+        command: uwsgi uwsgi.ini --mount /api/browsers=/shepherd/main.py
 
         env_file:
             - ./wr.env
- 
+
         environment:
-            - STATIC_PATH=/static/__bp
             - SCREEN_WIDTH=1280
             - SCREEN_HEIGHT=800
+            - CLUSTER_NAME=wr_users
+            - NETWORK_NAME=webrecorder_browsers
+            - PROXY_HOST=proxy
+            - PROXY_PORT=8080
 
         depends_on:
             - redis
 
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - ./browsermanager/browser_app.py:/app/browser_app.py
-            - ./browsermanager/entry_point.sh:/app/entry_point.sh
-            - ./browsermanager/run_browser:/usr/bin/run_browser
-            - ./browsermanager/webrec.pem:/home/browser/self.pem
-            - ./browsermanager/launch.sh:/novnc/utils/launch.sh
-            - /dev/shm:/dev/shm
+
+        ports:
+            - "9020:9020"
 
     proxy:
         build: ./proxy
@@ -134,13 +134,13 @@ services:
 
     # Data Only Volume
     data:
-      image: python:3.5.2
+        image: python:3.5.2
 
-      command: python -i
+        command: python -i
       
-      volumes:
-        - ./data:/data
-        - ./wr.yaml:/wr.yaml
+        volumes:
+            - ./data:/data
+            - ./wr.yaml:/wr.yaml
 
 
 networks:

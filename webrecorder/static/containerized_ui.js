@@ -11,7 +11,7 @@ function setActiveBrowser(data) {
         if(!btn) return;
 
         btn.find('> .btn-content').html(
-            (typeof data.native !== 'undefined' && data.native ? '(native)&nbsp;':"<img src='/static/__shared/browsers/"+data.name.replace(' ', '-')+"_16x16.png'>")+
+            (typeof data.native !== 'undefined' && data.native ? '(native)&nbsp;' : "<img src='/api/browsers/browsers/" + data.id + "/icon'>")+
             data.name+(typeof data.version !== 'undefined' ? " v"+data.version:'')
         );
 
@@ -24,7 +24,7 @@ function setActiveBrowser(data) {
                 $('.cnt-browser:last-child').addClass('active');
                 delStorage('__wr_cntBrowser');
             } else {
-                $('.cnt-browser[data-browser-id='+data.id+']').addClass('active');
+                $('.cnt-browser[data-browser-id="'+data.id+'"]').addClass('active');
                 setStorage('__wr_cntBrowser', data.id);
             }
 

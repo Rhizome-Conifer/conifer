@@ -23,7 +23,7 @@
 <div class="input-group-btn">
     <button id='cnt-button' type="button" class="btn btn-default dropdown-toggle{% if is_recording %} disabled{% endif %}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         {% if active_browser %}
-            <span class='btn-content'><img src="/static/__shared/browsers/{{ active_browser.name|replace(' ', '-') }}_16x16.png"> {{ active_browser.name }} v{{ active_browser.version }}</span>
+            <span class='btn-content'><img src="/api/browsers/browsers/{{ active_browser.id }}/icon"> {{ active_browser.name }} v{{ active_browser.version }}</span>
         {% else %}
             <span class='btn-content'>(native) Current</span>
         {% endif %}
@@ -39,10 +39,10 @@
                     <li class='col-xs-2'><h6 class='dropdown-header'>OS</h6></li>
                     <li class='col-xs-4'><h6 class='dropdown-header'>capabilities</h6></li>
                 </ul>
-                 {% for browser in cnt_browsers %}
+                 {% for browser in get_browsers() %}
                     <ul class='row cnt-browser{% if active_browser and browser.id == active_browser.id %} active{% endif %}{% if browser.disabled %} disabled{% endif %}' data-browser-id='{{ browser.id }}' data-browser-name='{{ browser.name }}' data-browser-vrs='{{ browser.version }}'>
                         <li class='col-xs-2'>
-                            <img src='/static/__shared/browsers/{{ browser.name|replace(' ', '-') }}_16x16.png'>
+                            <img src='/api/browsers/browsers/{{ browser.id }}/icon'>
                             <span>{{ browser.name }}</span>
                         </li>
                         <li class='col-xs-2'>
@@ -55,13 +55,7 @@
                             {{ browser.os }}
                         </li>
                         <li class='col-xs-4'>
-                            <span>
-                            {%- if browser.capabilities %}
-                                {{ browser.capabilities|join(', ') }}
-                            {% else %}
-                                -
-                            {% endif %}
-                            </span>
+                            <span>{{ browser.caps if browser.caps else '-' }}</span>
                         </li>
                     </ul>
                 {% endfor %}

@@ -125,6 +125,5 @@ bundles:
             - collections_model.js
             - recordings.js
             - automate.js
-            - browser_controller.js
             - containerized_ui.js
 

@@ -2,7 +2,6 @@
 {% block head %}
 
 {{ super() }}
-<script src="/static/__shared/novnc/util.js"></script>
 <script>
     wbinfo = {}
     wbinfo.outer_prefix = decodeURI("{{ top_prefix }}");
@@ -11,16 +10,6 @@
     wbinfo.timestamp = "{{ ts }}";
     wbinfo.state = "{{ curr_mode }}";
     wbinfo.info = {{ info | default('{}') | tojson }};
-</script>
-<script>
-    window.STATIC_PREFIX = "/static/__shared/";
-    {% if browser_data %}
-    window.cnt_browser = "{{ browser_data.id }}";
-    {% endif %}
-    var browser = "{{ browser }}";
-    var url = "{{ url }}";
-    var curr_ts = "{{ ts }}";
-    var upsid = "{{ upsid }}";
 </script>
 
 {% assets "main-css" %}
@@ -31,28 +20,34 @@
 <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}
 
-{#
-<script src="/static/__shared/collections_model.js"></script>
-<script src="/static/__shared/recordings_model.js"></script>
-<script src="/static/__shared/recordings.js"></script>
-<script src="/static/__shared/browser_controller.js"></script>
+<script src="/static/browsers/browser_controller.js"></script>
 
-<script src="/static/__shared/times_and_sizes_formatter.js"></script>
-#}
+<script>
+    window.cnt_browser = "{{ browser }}";
+
+    window.reqid = "{{ reqid }}";
+
+    $(function() {
+        var params = {}
+        params.static_prefix = "/static/browsers/";
+        params.on_connect = function(data) {
+            RecordingSizeWidget.setBrowserIP(data.ip);
+        };
+        params.api_prefix = "/api/browsers";
+
+        var cb = new CBrowser("#browser", params);
+    });
+</script>
+
+
+
 {% endblock %}
 
 {% block body %}
 
 {% include 'header.html' %}
 
-<div class="browser">
-    <div id="browserMsg" class="loading">Initializing Browser...</div>
-    <div id="noVNC_screen">
-        <canvas id="noVNC_canvas" style="display: none">
-            Canvas not supported.
-        </canvas>
-    </div>
-</div>
+<div id="browser" class="browser"></div>
 
 {% endblock %}
 
