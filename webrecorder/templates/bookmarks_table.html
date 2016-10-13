@@ -1,5 +1,5 @@
 {% set recording_column_index = 5 if is_owner() else 3 %}
-{# 
+{#
 {% if is_owner() %}
         <input type="checkbox" checked="checked" name="show-hidden" id="show-hidden" style="margin-left: 8px; margin-right: 8px"><label for="show-hidden">Include Hidden Bookmarks</label>
 {% endif %}
@@ -40,9 +40,9 @@
                         data-bookmark-url="{{ bookmark.url }}"
                         data-bookmark-hidden="{{ hidden }}"
                         data-recording-id="{{ recording.id }}" >
-                        
+
                         {% if can_write() %}
-                            <td class="bookmark-hidden-switch"> 
+                            <td class="bookmark-hidden-switch">
                                 {% include 'bookmark_hidden_switch.html' %}
                             </td>
 
@@ -58,11 +58,11 @@
 
                             </td>
                         {% endif %}
-                        
+
                         <td class="bookmark-title">
                             <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ path }}">{{ title }}</a></span>
                         </td>
-                        <td class="timestamp" data-time-ts="{{ timestamp }}"></td>
+                        <td class="timestamp" data-order="{{ timestamp }}" data-time-ts="{{ timestamp }}"></td>
                         <td class="bookmark-url">
                           <a href="{{ path }}"
                              data-value-encoded="{{ bookmark.url }}"
