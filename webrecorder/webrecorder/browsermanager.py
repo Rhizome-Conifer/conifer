@@ -19,8 +19,8 @@ class BrowserManager(object):
         except Exception as e:
             print(e)
 
-    def get_browser_list(self):
-        return list(self.browsers.values())
+    def get_browsers(self):
+        return self.browsers
 
     def browser_load_loop(self):
         while True:

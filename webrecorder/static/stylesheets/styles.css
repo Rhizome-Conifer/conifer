@@ -628,6 +628,10 @@ div.filter-label {
     width: 100%;
 }
 
+.table-bookmarks>tbody>tr>td.rec-browser.empty {
+    text-align: center;
+}
+
 .table-bookmarks>tbody>tr>td.timestamp,
 .table-bookmarks>tbody>tr>td.bookmark-url,
 .table-bookmarks>tbody>tr>td.bookmark-recording-title {

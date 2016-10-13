@@ -152,7 +152,7 @@ var RecordingSelector = (function() {
             $("#coll-breadcrumb-link").hide();
             $("#coll-breadcrumb-text").show();
             $('#clear-all').addClass('disabled')
-            
+
         } else {
             var recordingTitles = getSelectedRecordingTitles();
             recordingList = recordingTitles.join(", ");
@@ -342,25 +342,25 @@ var BookmarksTable = (function() {
     }
 
     var hasVisibilityColumn = function() {
-        return $('.table-bookmarks th').length === 6;
+        return $('.table-bookmarks th').length === 7;
     }
 
     var getColumnDefs = function() {
         if (hasVisibilityColumn()) {
             return [
-                        { targets: [2, 3, 4, 5], orderable: true },
                         { targets: [0], width: "32px", orderable: false},
                         { targets: [1], width: "12px", orderable: false},
-                        { targets: [2, 4], width: "15em" },
-                        { targets: [3], width: "7.5em" },
-                        { targets: [5], width: "5em" }
+                        { targets: [3], width: '85px'},
+                        { targets: [4], width: "9em" },
+                        { targets: [6], width: "5.5em" },
+                        { targets: [2, 5], width: "14.5em"}
                     ]
         } else {
             return [
-                        { targets: [0, 1, 2, 3], orderable: true },
-                        { targets: [0, 2], width: "15em" },
-                        { targets: [1], width: "7.5em" },
-                        { targets: [3], width: "5em" }
+                        { targets: [1], width: "85px"},
+                        { targets: [2], width: "9em" },
+                        { targets: [4], width: "5em" },
+                        { targets: [0, 3], width: "14.5em" }
                     ]
         }
     }
@@ -484,7 +484,7 @@ var BookmarkHiddenSwitch = (function() {
         }
     }
 
-            
+
     var start = function() {
         $("#show-hidden").bootstrapSwitch();
 

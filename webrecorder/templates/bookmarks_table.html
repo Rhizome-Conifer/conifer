@@ -1,4 +1,4 @@
-{% set recording_column_index = 5 if is_owner() else 3 %}
+{% set recording_column_index = 6 if is_owner() else 4 %}
 {#
 {% if is_owner() %}
         <input type="checkbox" checked="checked" name="show-hidden" id="show-hidden" style="margin-left: 8px; margin-right: 8px"><label for="show-hidden">Include Hidden Bookmarks</label>
@@ -16,6 +16,7 @@
             <th class="bookmark-edit-title"></th>
             {% endif %}
             <th class="bookmark-title"><span>Bookmarks</span></th>
+            <th class="bookmark-title"><span>Browser</span></th>
             <th class="timestamp">Timestamp</th>
             <th class="bookmark-url">URL</th>
             <th class="bookmark-recording-title">Recording</th>
@@ -24,11 +25,14 @@
     <tbody>
         {% for recording in collection.recordings %}
             {% set collection_path = get_path(user, coll) + '/' %}
+            {% set browsers = get_browsers() %}
 
             {% for bookmark in recording.pages %}
                 {% set title = bookmark.title if bookmark.title else "No Title" %}
                 {% set timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
                 {% set path = collection_path + timestamp + '/' + bookmark.url %}
+                {% set browser = browsers[bookmark.browser] if bookmark.browser in browsers else None %}
+                {% set cb_path = collection_path + timestamp + ('$cbr:'+browser.id if browser else '') + '/' + bookmark.url %}
                 {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
 
                 {% set editing_id = "bookmark-" + recording.id + "-" + timestamp + "-" + bookmark.url %}
@@ -61,6 +65,16 @@
 
                         <td class="bookmark-title">
                             <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ path }}">{{ title }}</a></span>
+                        </td>
+                        <td class="rec-browser{% if not browser %} empty{% endif %}">
+                            {% if browser %}
+                                <a href="{{ cb_path }}">
+                                    <img src='/api/browsers/browsers/{{ browser.id }}/icon'>
+                                    {{ browser.name|capitalize }} v{{ browser.version }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
                         </td>
                         <td class="timestamp" data-order="{{ timestamp }}" data-time-ts="{{ timestamp }}"></td>
                         <td class="bookmark-url">
