@@ -35,6 +35,10 @@
         };
         params.api_prefix = "/api/browsers";
 
+        if (!window.location.port) {
+            params.proxy_ws = "_websockify?port=";
+        }
+
         var cb = new CBrowser("#browser", params);
     });
 </script>
