@@ -55,21 +55,15 @@ function getNative() {
 
 $(function (){
     // on init check if we have a localStorage setting for a containerized browser
-    var cntBrowser = getStorage('__wr_cntBrowser');
+    var cntBrowser = window.cnt_browser || getStorage('__wr_cntBrowser');
 
     // display default or native browser if we're not replaying
     if(window.curr_mode !== 'replay-coll' && window.curr_mode !== 'replay'){
 
-        var ids = [];
-        for(var i=0; i < browsers.length; i++)
-            ids.push(browsers[i].id);
-
-        var idx = ids.indexOf(cntBrowser);
-
-        if(!cntBrowser || idx === -1) {
+        if(!cntBrowser || !(cntBrowser in browsers)) {
             setActiveBrowser(getNative());
         } else {
-            setActiveBrowser(browsers[idx]);
+            setActiveBrowser(browsers[cntBrowser]);
         }
     }
 
