@@ -532,7 +532,7 @@ class AccessManagerMixin(object):
         curr_role = sesh.curr_role
 
         # current user or superusers always have access, if collection exists
-        if user == curr_user or curr_role == 'admin':
+        if user == curr_user or (type_prefix == self.READ_PREFIX and curr_role == 'admin'):
             return self._has_collection_no_access_check(user, coll)
 
         key = self.coll_info_key.format(user=user, coll=coll)
