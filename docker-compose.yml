@@ -90,8 +90,8 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
 
-        ports:
-            - "9020:9020"
+        #ports:
+        #    - "9020:9020"
 
     proxy:
         build: ./proxy
