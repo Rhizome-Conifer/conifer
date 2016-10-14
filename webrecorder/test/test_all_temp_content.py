@@ -1,22 +1,19 @@
 from .testfullstack import FullStackTests
 
+import glob
 import os
 import time
 
+from fakeredis import FakeStrictRedis
 from io import BytesIO
 
 from pywb.cdx.cdxobject import CDXObject
 from pywb.warc.cdxindexer import write_cdx_index
 from pywb.utils.bufferedreaders import ChunkedDataReader
 
-from urllib.parse import quote, unquote
 from re import sub
-
-import glob
-
-from fakeredis import FakeStrictRedis
-
 from six.moves.urllib.parse import urlsplit
+from urllib.parse import quote
 
 from webrecorder.session import Session
 
@@ -175,7 +172,8 @@ class TestTempContent(FullStackTests):
     def test_anon_unicode_record_1(self):
         test_url = 'http://httpbin.org/get?bood=far'
         res = self._get_anon(
-            '/temp/{rec}/record/mp_/{url}'.format(rec=quote('вэбрекордэр'), url=test_url))
+            '/temp/{rec}/record/mp_/{url}'.format(rec=quote('вэбрекордэр'), url=test_url)
+        )
         res.charset = 'utf-8'
 
         assert '"bood": "far"' in res.text, res.text
@@ -195,8 +193,6 @@ class TestTempContent(FullStackTests):
 
         self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'вэбрекордэр'])
 
-        print(os.path.isdir(self.warcs_dir))
-
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == 3
 
@@ -212,7 +208,6 @@ class TestTempContent(FullStackTests):
         # accessing the url should route to the replay
         assert res.status_code == 200
         assert '<iframe' in res.text
-
 
     def test_anon_new_add_to_recording(self):
         res = self._get_anon('/temp/my-rec2/$add')
@@ -245,7 +240,6 @@ class TestTempContent(FullStackTests):
 
         assert 'http://httpbin.org/get?food=bar' in res.text
         assert 'http://httpbin.org/get?bood=far' in res.text
-
 
     def test_anon_rec_info(self):
         res = self._get_anon('/temp/my-rec2')
@@ -433,4 +427,3 @@ class TestTempContent(FullStackTests):
 
         assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
         #assert os.listdir(os.path.join(self.warcs_dir, 'anon')) == []
-
