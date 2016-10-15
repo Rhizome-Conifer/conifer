@@ -1204,10 +1204,11 @@ class Base(object):
 # ============================================================================
 class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin,
                        CookieManagerMixin, RecManagerMixin, CollManagerMixin, Base):
-    def __init__(self, redis, cork, browser_redis, config):
+    def __init__(self, redis, cork, browser_redis, browser_mgr, config):
         self.redis = redis
         self.cork = cork
         self.browser_redis = browser_redis
+        self.browser_mgr = browser_mgr
 
         super(RedisDataManager, self).__init__(config)
 

@@ -75,14 +75,14 @@ class AppController(BaseController):
         self.session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 
         # Init Browser Mgr
-        self.browser_mgr = BrowserManager(config)
-        self.bottle_app.browser_mgr = self.browser_mgr
+        self.browser_mgr = BrowserManager(config, self.browser_redis)
 
         # Init Cork
         self.cork = WebRecCork.create_cork(self.redis, config)
 
         # Init Manager
-        manager = RedisDataManager(self.redis, self.cork, self.browser_redis, config)
+        manager = RedisDataManager(self.redis, self.cork,
+                                   self.browser_redis, self.browser_mgr, config)
 
         # Init Sesion temp_prefix
         Session.temp_prefix = config['temp_prefix']

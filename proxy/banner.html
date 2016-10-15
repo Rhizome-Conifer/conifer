@@ -1,5 +1,7 @@
 <script>
-_wb_js.create_banner_element = function() {};
+if (window._wb_js) {
+    window._wb_js.create_banner_element = function() {};
+}
 </script>
 
 <!-- Set canonical url -->
@@ -9,7 +11,7 @@ _wb_js.create_banner_element = function() {};
 wbinfo.proxy_user = "{{ user }}";
 wbinfo.proxy_coll = "{{ coll }}";
 wbinfo.proxy_rec = "{{ rec }}";
-wbinfo.proxy_mode = "{{ curr_mode }}";
+wbinfo.proxy_mode = "{{ type }}";
 wbinfo.proxy_ip = "{{ proxy_ip }}";
 wbinfo.curr_browser = "{{ browser }}";
 

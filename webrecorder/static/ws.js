@@ -84,6 +84,14 @@
         return sendMsg(msg);
     }
 
+    function sendReqPatch(url) {
+        var msg = {"ws_type": "req_switch",
+                   "url": url
+                  }
+
+        return sendMsg(msg);
+    }
+
     function sendPageMsg(isAdd) {
         var page = {
                  "url": window.location.href,
@@ -129,11 +137,21 @@
 
             case "autoscroll":
                 if (!document.hidden) {
-                    window.postMessage({"wb_type": "autoscroll",
-                                        "start": !is_autoscroll,
-                                        "timeout": 25000}, "*");
+                    sendLocalMsg({"wb_type": "autoscroll",
+                                  "start": !is_autoscroll,
+                                  "timeout": 25000});
 
                     is_autoscroll = !is_autoscroll;
+                }
+                break;
+
+            case "switch":
+                window.location.reload();
+                break;
+
+            case "snapshot-req":
+                if (!document.hidden) {
+                    sendLocalMsg({"wb_type": "snapshot-req"});
                 }
                 break;
 
@@ -152,6 +170,10 @@
         return useWS;
     }
 
+    function sendLocalMsg(data) {
+        window.dispatchEvent(new CustomEvent("__wb_to_event", {"detail": data}));
+    }
+
     // INIT
     window.addEventListener("DOMContentLoaded", function() {
         if (window != window.top) {
@@ -159,7 +181,7 @@
         }
 
         function on_init() {
-            sendPageMsg((wbinfo.proxy_mode == "record" || wbinfo.proxy_mode == "patch"));
+            sendPageMsg(wbinfo.is_live);
         }
 
         start(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic, on_init);
@@ -171,6 +193,36 @@
             sendPageMsg(false);
         }
     });
+
+    function localEvent(event) {
+        var message = event.detail;
+        if (!message) {
+            return;
+        }
+
+        console.log(message);
+
+        if (message.wb_type == "skipreq" ||
+            message.wb_type == "patch_req") {
+
+            message.ws_type = message.wb_type;
+            delete message.wb_type;
+
+            sendMsg(message);
+        } else if (message.wb_type == "snapshot") {
+            message.params.user_agent = navigator.userAgent;
+            message.ws_type = "snapshot";
+
+            var contents = message.contents;
+
+            message.contents = "";
+
+            sendMsg(message);
+            ws.send(contents);
+        }
+    }
+
+    window.addEventListener("__wb_from_event", localEvent);
 
     function load_all_links() {
         function get_links(query, win, store) {

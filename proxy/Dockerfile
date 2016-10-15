@@ -1,6 +1,7 @@
 FROM webrecorder/proxy
 
 ADD banner.html /code/banner.html
+ADD error.html /code/error.html
 
 ADD mitmdump.conf /home/apprun/.mitmproxy/mitmdump.conf
 

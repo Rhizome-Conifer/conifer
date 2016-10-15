@@ -39,16 +39,16 @@ class WebsockController(BaseController):
         if not remote_addr:
             remote_addr = request.environ['REMOTE_ADDR']
 
-        container_local_store = self.manager.browser_redis.hgetall('ip:' + remote_addr)
+        container_data = self.manager.browser_redis.hgetall('ip:' + remote_addr)
 
-        if not container_local_store or 'user' not in container_local_store:
+        if not container_data or 'user' not in container_data:
             print('Data not found for remote ' + remote_addr)
             return
 
         sesh = self.get_session()
-        sesh.set_restricted_user(container_local_store['user'])
-        container_local_store['ip'] = remote_addr
-        return container_local_store
+        sesh.set_restricted_user(container_data['user'])
+        container_data['ip'] = remote_addr
+        return container_data
 
     def get_status(self, user, coll, rec):
         size = self.manager.get_size(user, coll, rec)
@@ -63,53 +63,26 @@ class WebsockController(BaseController):
 
         return json.dumps(result)
 
-    def _init_ws(self, env):
-        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'],
-                                  env.get('HTTP_ORIGIN', ''))
-
-    def _recv_ws(self):
-        return uwsgi.websocket_recv_nb()
-
-    def _send_ws(self, msg):
-        uwsgi.websocket_send(msg)
-
-    def _multiplex(self, websocket_fd, local_store, user, coll, rec):
-        fd_list = [websocket_fd]
-
-        pubsub = local_store.get('pubsub')
-        if pubsub:
-            fd_list.append(pubsub.connection._sock.fileno())
-
-        ready = gevent.select.select(fd_list, [], [], 1.0)
-
-        # send ping on timeout
-        if not ready[0]:
-            uwsgi.websocket_recv_nb()
-
-        for fd in ready[0]:
-            if fd == websocket_fd:
-                self.handle_client_msg(self._recv_ws(), user, coll, rec, local_store)
-            elif len(fd_list) == 2 and fd == fd_list[1]:
-
-                ps_msg = pubsub.get_message(ignore_subscribe_messages=True)
-                if ps_msg and ps_msg['type'] == 'message':
-                    self._send_ws(ps_msg['data'])
-
     def client_ws(self):
         user, coll = self.get_user_coll(api=True)
         rec = request.query.getunicode('rec', '*')
 
         reqid = request.query.get('reqid')
 
-        local_store = self.init_remote_comm('to', reqid,
-                                            'to_cbr_ps:', 'from_cbr_ps:')
-
         updater = StatusUpdater(self.status_update_secs,
-                                lambda: self.get_status(user, coll, rec)
-                               )
+                                self.get_status)
+
+        if not user:
+            user = self.manager.get_anon_user()
+
+        WebSockHandler('to', reqid, self.manager,
+                       'to_cbr_ps:', 'from_cbr_ps:',
+                       user, coll, rec,
+                       updater=updater).run()
+
+
 
         return self.run_ws(user, coll, rec, local_store, updater)
-
 
     def client_ws_cont(self):
         info = self.init_cont_browser_sesh()
@@ -122,87 +95,163 @@ class WebsockController(BaseController):
 
         reqid = info['reqid']
 
-        local_store = self.init_remote_comm('from', reqid,
-                                            'from_cbr_ps:', 'to_cbr_ps:')
+        browser = info['browser']
 
-        return self.run_ws(user, coll, rec, local_store)
+        WebSockHandler('from', reqid, self.manager,
+                       'from_cbr_ps:', 'to_cbr_ps:',
+                       user, coll, rec,
+                       browser=browser).run()
 
-    def run_ws(self, user, coll, rec, local_store, updater=None):
+
+# ============================================================================
+class WebSockHandler(object):
+    def __init__(self, name, reqid, manager, send_to, recv_from,
+                       user, coll, rec, browser=None, updater=None):
+
+        self.user = user
+        self.coll = coll
+        self.rec = rec
+        self.browser = browser
+
+        self.manager = manager
+        self.updater = updater
+
+        self.name = name
+        self.channel = None
+        self.pubsub = None
+
+        self.reqid = reqid
+
+        if reqid:
+            self.channel = send_to + reqid
+
+            self.pubsub = self.manager.browser_redis.pubsub()
+            self.pubsub.subscribe(recv_from + reqid)
+
+    def run(self):
         self._init_ws(request.environ)
 
         websocket_fd = uwsgi.connection_fd()
 
         while True:
-            self._multiplex(websocket_fd, local_store,
-                            user, coll, rec)
+            self._multiplex(websocket_fd)
 
-            if updater:
-                res = updater.get_update()
+            if self.updater:
+                res = self.updater.get_update(self.user, self.coll, self.rec)
                 if res:
                     self._send_ws(res)
 
             gevent.sleep(0)
 
-    def handle_client_msg(self, msg, user, coll, rec, local_store):
-        if not msg:
-            return
+    def _init_ws(self, env):
+        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'],
+                                  env.get('HTTP_ORIGIN', ''))
 
-        from_browser = local_store.get('from_channel')
-        to_browser = local_store.get('to_channel')
+    def _recv_ws(self):
+        return uwsgi.websocket_recv_nb()
 
-        msg = json.loads(msg.decode('utf-8'))
+    def _send_ws(self, msg):
+        uwsgi.websocket_send(msg)
 
-        if msg['ws_type'] == 'skipreq':
-            url = msg['url']
-            if not user:
-                user = self.manager.get_anon_user()
+    def _multiplex(self, websocket_fd):
+        fd_list = [websocket_fd]
 
-            self.manager.skip_post_req(user, url)
+        if self.pubsub:
+            fd_list.append(self.pubsub.connection._sock.fileno())
 
-        elif msg['ws_type'] == 'addcookie':
-            self.manager.add_cookie(user, coll, rec,
-                            msg['name'], msg['value'], msg['domain'])
+        ready = gevent.select.select(fd_list, [], [], 1.0)
 
-        elif msg['ws_type'] == 'page':
-            if not self.manager.has_recording(user, coll, rec):
-                print('Invalid Rec for Page Data', user, coll, rec)
-                return
+        # send ping on timeout
+        if not ready[0]:
+            uwsgi.websocket_recv_nb()
 
-            page_local_store = msg['page']
+        for fd in ready[0]:
+            if fd == websocket_fd:
+                self.handle_client_msg(self._recv_ws())
 
-            res = self.manager.add_page(user, coll, rec, page_local_store)
+            elif len(fd_list) == 2 and fd == fd_list[1]:
 
-            if from_browser and msg.get('visible'):
-                msg['ws_type'] = 'remote_url'
-                self._publish(from_browser, msg)
-                #self._push_to_remote_q(cbrowser_ip, msg)
-
-        elif from_browser and msg['ws_type'] == 'remote_url':
-            #self._push_to_remote_q(cbrowser_ip, msg)
-            self._publish(from_browser, msg)
-
-        elif to_browser:
-        # send to remote browser cmds
-            if msg['ws_type'] in ('set_url', 'autoscroll', 'load_all'):
-                self._publish(to_browser, msg)
+                ps_msg = self.pubsub.get_message(ignore_subscribe_messages=True)
+                if ps_msg and ps_msg['type'] == 'message':
+                    self._send_ws(ps_msg['data'])
 
     def _publish(self, channel, msg):
         self.manager.browser_redis.publish(channel, json.dumps(msg))
 
-    def init_remote_comm(self, name, reqid, send_to, recv_from):
-        if not reqid:
-            return {}
+    def handle_client_msg(self, msg):
+        if not msg:
+            return
 
-        local_store = {'reqid': reqid}
+        to_browser = None
+        from_browser = None
+        if self.name == 'to':
+            to_browser = self.channel
+        else:
+            from_browser = self.channel
 
-        local_store[name + '_channel'] = send_to + reqid
+        try:
+            msg = json.loads(msg.decode('utf-8'))
+        except Exception as e:
+            print('WS MSG ERR', e, len(msg))
+            return
 
-        local_store['pubsub'] = self.manager.browser_redis.pubsub()
-        local_store['pubsub'].subscribe(recv_from + reqid)
-        return local_store
+        if msg['ws_type'] == 'skipreq':
+            url = msg['url']
+            self.manager.skip_post_req(self.user, url)
+
+        elif msg['ws_type'] == 'addcookie':
+            self.manager.add_cookie(self.user, self.coll, self.rec,
+                            msg['name'], msg['value'], msg['domain'])
+
+        elif msg['ws_type'] == 'page':
+            if not self.manager.has_recording(self.user, self.coll, self.rec):
+                print('Invalid Rec for Page Data', self.user, self.coll, self.rec)
+                return
+
+            page_local_store = msg['page']
+
+            res = self.manager.add_page(self.user, self.coll, self.rec, page_local_store)
+
+            if from_browser and msg.get('visible'):
+                msg['ws_type'] = 'remote_url'
+
+        elif msg['ws_type'] == 'switch':
+            if not self.manager.can_write_coll(self.user, self.coll):
+                print('No Write Access')
+                return
+
+            self.rec = msg['rec']
+            self.manager.browser_mgr.switch_upstream(msg['rec'], msg['type'], self.reqid)
+
+        elif msg['ws_type'] == 'snapshot':
+            contents = uwsgi.websocket_recv()
+
+            if not self.manager.can_write_coll(self.user, self.coll):
+                print('No Write Access')
+                return
+
+            contents = contents.decode('utf-8')
+            print('CONTENTS', len(contents))
+            msg['contents'] = contents
+
+            result = self.manager.browser_mgr.browser_snapshot(self.user, self.coll, self.browser, msg)
+            snap_info = result.get('snapshot')
+
+            if snap_info and from_browser:
+                snap_info['ws_type'] = 'snapshot'
+                self._publish(from_browser, snap_info)
+
+        # send to remote browser cmds
+        if to_browser:
+            if msg['ws_type'] in ('set_url', 'autoscroll', 'load_all', 'switch', 'snapshot-req'):
+                self._publish(to_browser, msg)
+
+        elif from_browser:
+            if msg['ws_type'] in ('remote_url', 'patch_req'):
+                self._publish(from_browser, msg)
 
 
-
+# ============================================================================
 class StatusUpdater(object):
     def __init__(self, status_update_secs, callback):
         self.last_status = None
@@ -211,12 +260,12 @@ class StatusUpdater(object):
         self.status_update_secs = status_update_secs
         self.callback = callback
 
-    def get_update(self):
+    def get_update(self, user, coll, rec):
         curr_time = time.time()
         result = None
 
         if (curr_time - self.last_status_time) > self.status_update_secs:
-            status = self.callback()
+            status = self.callback(user, coll, rec)
 
             if status != self.last_status:
                 self.last_status = status

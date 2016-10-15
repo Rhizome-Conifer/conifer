@@ -35,7 +35,8 @@ class ContentController(BaseController, RewriterApp):
 
         self.cookie_tracker = self.manager.cookie_tracker
 
-        self.browser_mgr = app.browser_mgr
+        # TODO: separate rewriterapp from the controller to avoid this
+        self.manager.browser_mgr.rewriter = self
 
     def init_routes(self):
         # REDIRECTS
@@ -303,7 +304,7 @@ class ContentController(BaseController, RewriterApp):
             status_headers.headers = new_headers
 
     def _inject_nocache_headers(self, status_headers, kwargs):
-        if 'browser' in kwargs:
+        if 'browser_id' in kwargs:
             status_headers.headers.append(
                 ('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
             )
@@ -432,17 +433,13 @@ class ContentController(BaseController, RewriterApp):
         #handle cbrowsers
         browser_id = wb_url.mod.split(':', 1)[1]
 
+        kwargs['can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
+
         # container redis info
-        params = {'closest': wb_url.timestamp}
-        upstream_url = self.get_upstream_url(wb_url, kwargs, params)
+        inject_data = self.manager.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)
+        if 'error_message' in inject_data:
+            self._raise_error(400, inject_data['error_message'])
 
-        # adding separate to avoid encoding { and }
-        upstream_url += '&url={url}'
-
-        kwargs['upstream_url'] = upstream_url
-        kwargs['browser'] = browser_id
-
-        inject_data = self.browser_mgr.request_new_browser(wb_url, kwargs)
         inject_data.update(self.get_top_frame_params(wb_url, kwargs))
 
         @self.jinja2_view('browser_embed.html')
@@ -453,17 +450,35 @@ class ContentController(BaseController, RewriterApp):
 
     def snapshot(self):
         user, coll = self.get_user_coll(api=True)
-        #rec = request.query.getunicode('rec')
 
-        #if rec and rec != '*':
-        #    recording = self.manager.get_recording(user, coll, rec)
-        #    if not recording:
-        #        return {'error_message' 'recording not found'}
-
-        #    snap_title = recording['title'] + ' Snapshots'
-        #else:
         if not self.manager.has_collection(user, coll):
             return {'error_message' 'collection not found'}
+
+        html_text = request.body.read().decode('utf-8')
+
+        host = request.urlparts.scheme + '://'
+        if self.content_host:
+            host += self.content_host
+        else:
+            host += request.urlparts.netloc
+
+        prefix = request.query.getunicode('prefix')
+
+        url = request.query.getunicode('url')
+
+        referrer = request.environ.get('HTTP_REFERER', '')
+        referrer = UnRewriter(host, prefix).rewrite(referrer)
+
+        user_agent = request.environ.get('HTTP_USER_AGENT')
+
+        title = request.query.getunicode('title')
+
+        html_text = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
+
+        return self.write_snapshot(user, coll, url, title, html_text, referrer, user_agent)
+
+    def write_snapshot(self, user, coll, url, title, html_text, referrer,
+                       user_agent, browser=None):
 
         snap_title = 'Static Snapshots'
 
@@ -477,31 +492,14 @@ class ContentController(BaseController, RewriterApp):
                       rec=quote(snap_rec, safe='/*'),
                       type='snapshot')
 
-        html_text = request.body.read().decode('utf-8')
-
-        host = request.urlparts.scheme + '://'
-        if self.content_host:
-            host += self.content_host
-        else:
-            host += request.urlparts.netloc
-
-        prefix = request.query.getunicode('prefix')
-
-        html_text = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
-
-        url = request.query.getunicode('url')
-
         params = {'url': url}
 
         upstream_url = self.get_upstream_url('', kwargs, params)
 
-        referrer = request.environ.get('HTTP_REFERER', '')
-        referrer = UnRewriter(host, prefix).rewrite(referrer)
-
-        timedate = datetime_to_iso_date(timestamp_to_datetime(request.query.getunicode('top_ts')))
+        #timedate = datetime_to_iso_date(timestamp_to_datetime(request.query.getunicode('top_ts')))
 
         headers = {'Content-Type': 'text/html; charset=utf-8',
-                   'WARC-User-Agent': request.environ.get('HTTP_USER_AGENT'),
+                   'WARC-User-Agent': user_agent,
                    'WARC-Referer': referrer,
                    #'WARC-Refers-To-Target-URI': request.query.getunicode('top_url'),
                    #'WARC-Refers-To-Date': timedate,
@@ -525,8 +523,6 @@ class ContentController(BaseController, RewriterApp):
             return {'error_message': 'Snapshot Failed'}
 
 
-        title = request.query.getunicode('title')
-
         if title:
             if warc_date:
                 timestamp = iso_date_to_timestamp(warc_date)
@@ -539,6 +535,8 @@ class ContentController(BaseController, RewriterApp):
                          'timestamp': timestamp,
                          'tags': ['snapshot'],
                         }
+            if browser:
+                page_data['browser'] = browser
 
             res = self.manager.add_page(user, coll, snap_rec, page_data)
 
