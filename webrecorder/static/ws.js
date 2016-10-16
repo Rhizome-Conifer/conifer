@@ -200,8 +200,6 @@
             return;
         }
 
-        console.log(message);
-
         if (message.wb_type == "skipreq" ||
             message.wb_type == "patch_req") {
 
@@ -210,16 +208,36 @@
 
             sendMsg(message);
         } else if (message.wb_type == "snapshot") {
-            message.params.user_agent = navigator.userAgent;
-            message.ws_type = "snapshot";
-
-            var contents = message.contents;
-
-            message.contents = "";
-
-            sendMsg(message);
-            ws.send(contents);
+            postSnapshot(message);
         }
+    }
+
+    function postSnapshot(message) {
+        var url = window.location.protocol + "//" + wbinfo.proxy_magic;
+        url += "/_snapshot_cont?";
+
+        for (var k in message.params) {
+            var v = message.params[k];
+            if (v) {
+                url += encodeURIComponent(k) + "=" + encodeURIComponent(v) + "&";
+            }
+        }
+
+        var xhr = new XMLHttpRequest(url);
+        xhr.open("POST", url);
+        xhr.setRequestHeader("Content-Type", "text/plain");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                var data = JSON.parse(xhr.responseText);
+                var msg = data.snapshot;
+                if (msg) {
+                    msg["ws_type"] = "snapshot";
+                    sendMsg(msg);
+                }
+            }
+        };
+
+        xhr.send(message.contents);
     }
 
     window.addEventListener("__wb_from_event", localEvent);

@@ -1,22 +1,21 @@
 import requests
 import gevent
-from webrecorder.unrewriter import HTMLDomUnRewriter, NopRewriter
+from bottle import request
 
 
 # ============================================================================
 class BrowserManager(object):
-    def __init__(self, config, browser_redis):
+    def __init__(self, config, browser_redis, content_app):
         self.browser_redis = browser_redis
 
         self.browser_req_url = config['browser_req_url']
         self.browser_list_url = config['browser_list_url']
         self.browsers = {}
 
-        # set from contentcontroller
-        self.rewriter = None
-
         self.load_all_browsers()
         gevent.spawn(self.browser_load_loop)
+
+        self.content_app = content_app
 
     def load_all_browsers(self):
         try:
@@ -34,10 +33,26 @@ class BrowserManager(object):
             gevent.sleep(300)
             self.load_all_browsers()
 
+    def init_cont_browser_sesh(self):
+        remote_addr = request.environ.get('HTTP_X_PROXY_FOR')
+        if not remote_addr:
+            remote_addr = request.environ['REMOTE_ADDR']
+
+        container_data = self.browser_redis.hgetall('ip:' + remote_addr)
+
+        if not container_data or 'user' not in container_data:
+            print('Data not found for remote ' + remote_addr)
+            return
+
+        sesh = request.environ['webrec.session']
+        sesh.set_restricted_user(container_data['user'])
+        container_data['ip'] = remote_addr
+        return container_data
+
     def fill_upstream_url(self, kwargs, timestamp):
         params = {'closest': timestamp or 'now'}
 
-        upstream_url = self.rewriter.get_upstream_url('', kwargs, params)
+        upstream_url = self.content_app.get_upstream_url('', kwargs, params)
 
         # adding separate to avoid encoding { and }
         upstream_url += '&url={url}'
@@ -49,8 +64,8 @@ class BrowserManager(object):
 
         container_data = {'upstream_url': kwargs['upstream_url'],
                           'user': kwargs['user'],
-                          'coll': kwargs['coll'],
-                          'rec': kwargs['rec'],
+                          'coll': kwargs['coll_orig'],
+                          'rec': kwargs['rec_orig'],
                           'request_ts': wb_url.timestamp,
                           'url': wb_url.url,
                           'type': kwargs['type'],
@@ -107,31 +122,3 @@ class BrowserManager(object):
         self.fill_upstream_url(container_data, container_data.get('request_ts'))
 
         self.browser_redis.hmset('ip:' + ip, container_data)
-
-    def browser_snapshot(self, user, coll, browser, msg):
-        params = msg['params']
-
-        url = params['url']
-
-        user_agent = params['user_agent']
-
-        referrer = params['top_url']
-
-        # title included only for top level pages
-        title = params.get('title', '')
-
-        html_text = msg['contents']
-
-        noprewriter = NopRewriter()
-        html_unrewriter = HTMLDomUnRewriter(noprewriter)
-
-        html_text = HTMLDomUnRewriter.remove_head_insert(html_text)
-
-        html_text = html_unrewriter.rewrite(html_text)
-        html_text += html_unrewriter.close()
-
-        return self.rewriter.write_snapshot(user, coll, url,
-                                            title, html_text, referrer,
-                                            user_agent, browser)
-
-

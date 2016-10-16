@@ -1,21 +1,14 @@
-import os
 import re
-import base64
-import requests
+from six.moves.urllib.parse import quote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
+from urlrewrite.cookies import CookieTracker
 
-from pywb.utils.timeutils import timestamp_now, iso_date_to_timestamp
-from pywb.utils.timeutils import timestamp_to_datetime, datetime_to_iso_date
 from pywb.rewrite.wburl import WbUrl
 
 from webrecorder.basecontroller import BaseController
-from webrecorder.unrewriter import HTMLDomUnRewriter, UnRewriter
-
-from six.moves.urllib.parse import quote
-from io import BytesIO
 
 
 # ============================================================================
@@ -24,8 +17,8 @@ class ContentController(BaseController, RewriterApp):
 
     WB_URL_RX = re.compile('(([\d*]*)([a-z]+_|[$][a-z0-9:.-]+)?/)?([a-zA-Z]+:)?//.*')
 
-    def __init__(self, app, jinja_env, manager, config):
-        BaseController.__init__(self, app, jinja_env, manager, config)
+    def __init__(self, app, jinja_env, config, redis):
+        BaseController.__init__(self, app, jinja_env, None, config)
         RewriterApp.__init__(self,
                              framed_replay=True,
                              jinja_env=jinja_env,
@@ -33,10 +26,9 @@ class ContentController(BaseController, RewriterApp):
 
         self.paths = config['url_templates']
 
-        self.cookie_tracker = self.manager.cookie_tracker
+        self.cookie_key_templ = config['cookie_key_templ']
 
-        # TODO: separate rewriterapp from the controller to avoid this
-        self.manager.browser_mgr.rewriter = self
+        self.cookie_tracker = CookieTracker(redis)
 
     def init_routes(self):
         # REDIRECTS
@@ -70,7 +62,7 @@ class ContentController(BaseController, RewriterApp):
             if not domain:
                 return {'error_message': 'no domain'}
 
-            self.manager.add_cookie(user, coll, rec, name, value, domain)
+            self.add_cookie(user, coll, rec, name, value, domain)
 
             return {'success': domain}
 
@@ -337,6 +329,21 @@ class ContentController(BaseController, RewriterApp):
 
         return url
 
+    def get_cookie_key(self, kwargs):
+        sesh = self.get_session()
+        id = sesh.get_id()
+        kwargs['id'] = id
+        if kwargs.get('rec') == '*':
+            kwargs['rec'] = '<all>'
+
+        return self.cookie_key_templ.format(**kwargs)
+
+    def add_cookie(self, user, coll, rec, name, value, domain):
+        key = self.get_cookie_key(dict(user=user,
+                                       coll=coll,
+                                       rec=rec))
+
+        self.cookie_tracker.add_cookie(key, domain, name, value)
 
     ## RewriterApp overrides
     def get_base_url(self, wb_url, kwargs):
@@ -351,9 +358,6 @@ class ContentController(BaseController, RewriterApp):
                                            **kwargs)
 
         return base_url
-
-    def get_cookie_key(self, kwargs):
-        return self.manager.get_cookie_key(kwargs)
 
     def process_query_cdx(self, cdx, wb_url, kwargs):
         rec = kwargs.get('rec')
@@ -447,100 +451,4 @@ class ContentController(BaseController, RewriterApp):
             return data
 
         return browser_embed(inject_data)
-
-    def snapshot(self):
-        user, coll = self.get_user_coll(api=True)
-
-        if not self.manager.has_collection(user, coll):
-            return {'error_message' 'collection not found'}
-
-        html_text = request.body.read().decode('utf-8')
-
-        host = request.urlparts.scheme + '://'
-        if self.content_host:
-            host += self.content_host
-        else:
-            host += request.urlparts.netloc
-
-        prefix = request.query.getunicode('prefix')
-
-        url = request.query.getunicode('url')
-
-        referrer = request.environ.get('HTTP_REFERER', '')
-        referrer = UnRewriter(host, prefix).rewrite(referrer)
-
-        user_agent = request.environ.get('HTTP_USER_AGENT')
-
-        title = request.query.getunicode('title')
-
-        html_text = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
-
-        return self.write_snapshot(user, coll, url, title, html_text, referrer, user_agent)
-
-    def write_snapshot(self, user, coll, url, title, html_text, referrer,
-                       user_agent, browser=None):
-
-        snap_title = 'Static Snapshots'
-
-        snap_rec = self.sanitize_title(snap_title)
-
-        if not self.manager.has_recording(user, coll, snap_rec):
-            recording = self.manager.create_recording(user, coll, snap_rec, snap_title)
-
-        kwargs = dict(user=user,
-                      coll=quote(coll),
-                      rec=quote(snap_rec, safe='/*'),
-                      type='snapshot')
-
-        params = {'url': url}
-
-        upstream_url = self.get_upstream_url('', kwargs, params)
-
-        #timedate = datetime_to_iso_date(timestamp_to_datetime(request.query.getunicode('top_ts')))
-
-        headers = {'Content-Type': 'text/html; charset=utf-8',
-                   'WARC-User-Agent': user_agent,
-                   'WARC-Referer': referrer,
-                   #'WARC-Refers-To-Target-URI': request.query.getunicode('top_url'),
-                   #'WARC-Refers-To-Date': timedate,
-                  }
-
-        r = requests.put(upstream_url,
-                         data=BytesIO(html_text.encode('utf-8')),
-                         headers=headers,
-                        )
-
-        try:
-            res = r.json()
-            if res['success'] != 'true':
-                print(res)
-                return {'error_message': 'Snapshot Failed'}
-
-            warc_date = res.get('WARC-Date')
-
-        except Exception as e:
-            print(e)
-            return {'error_message': 'Snapshot Failed'}
-
-
-        if title:
-            if warc_date:
-                timestamp = iso_date_to_timestamp(warc_date)
-            else:
-                timestamp = timestamp_now()
-
-
-            page_data = {'url': url,
-                         'title': title,
-                         'timestamp': timestamp,
-                         'tags': ['snapshot'],
-                        }
-            if browser:
-                page_data['browser'] = browser
-
-            res = self.manager.add_page(user, coll, snap_rec, page_data)
-
-            return {'snapshot': page_data}
-        else:
-            return {'snapshot': ''}
 

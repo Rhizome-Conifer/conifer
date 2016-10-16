@@ -34,22 +34,6 @@ class WebsockController(BaseController):
                 request.environ['webrec.ws_closed'] = True
                 return
 
-    def init_cont_browser_sesh(self):
-        remote_addr = request.environ.get('HTTP_X_PROXY_FOR')
-        if not remote_addr:
-            remote_addr = request.environ['REMOTE_ADDR']
-
-        container_data = self.manager.browser_redis.hgetall('ip:' + remote_addr)
-
-        if not container_data or 'user' not in container_data:
-            print('Data not found for remote ' + remote_addr)
-            return
-
-        sesh = self.get_session()
-        sesh.set_restricted_user(container_data['user'])
-        container_data['ip'] = remote_addr
-        return container_data
-
     def get_status(self, user, coll, rec):
         size = self.manager.get_size(user, coll, rec)
         if size is not None:
@@ -85,7 +69,7 @@ class WebsockController(BaseController):
         return self.run_ws(user, coll, rec, local_store, updater)
 
     def client_ws_cont(self):
-        info = self.init_cont_browser_sesh()
+        info = self.manager.browser_mgr.init_cont_browser_sesh()
         if not info:
             return {'error_message': 'conn not from valid containerized browser'}
 
@@ -200,7 +184,7 @@ class WebSockHandler(object):
             self.manager.skip_post_req(self.user, url)
 
         elif msg['ws_type'] == 'addcookie':
-            self.manager.add_cookie(self.user, self.coll, self.rec,
+            self.manager.content_app.add_cookie(self.user, self.coll, self.rec,
                             msg['name'], msg['value'], msg['domain'])
 
         elif msg['ws_type'] == 'page':
@@ -223,31 +207,13 @@ class WebSockHandler(object):
             self.rec = msg['rec']
             self.manager.browser_mgr.switch_upstream(msg['rec'], msg['type'], self.reqid)
 
-        elif msg['ws_type'] == 'snapshot':
-            contents = uwsgi.websocket_recv()
-
-            if not self.manager.can_write_coll(self.user, self.coll):
-                print('No Write Access')
-                return
-
-            contents = contents.decode('utf-8')
-            print('CONTENTS', len(contents))
-            msg['contents'] = contents
-
-            result = self.manager.browser_mgr.browser_snapshot(self.user, self.coll, self.browser, msg)
-            snap_info = result.get('snapshot')
-
-            if snap_info and from_browser:
-                snap_info['ws_type'] = 'snapshot'
-                self._publish(from_browser, snap_info)
-
         # send to remote browser cmds
         if to_browser:
             if msg['ws_type'] in ('set_url', 'autoscroll', 'load_all', 'switch', 'snapshot-req'):
                 self._publish(to_browser, msg)
 
         elif from_browser:
-            if msg['ws_type'] in ('remote_url', 'patch_req'):
+            if msg['ws_type'] in ('remote_url', 'patch_req', 'snapshot'):
                 self._publish(from_browser, msg)
 
 

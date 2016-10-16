@@ -22,6 +22,7 @@ from webagg.utils import load_config
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
+from webrecorder.snapshotcontroller import SnapshotController
 from webrecorder.websockcontroller import WebsockController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
@@ -48,7 +49,8 @@ class AppController(BaseController):
                        UploadController,
                        LoginController,
                        UserController,
-                       ContentController,
+                       #ContentController,
+                       SnapshotController,
                        WebsockController,
                        RecsController,
                        CollsController
@@ -74,28 +76,27 @@ class AppController(BaseController):
         self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'], decode_responses=True)
         self.session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 
+        # Init Jinja
+        jinja_env = self.init_jinja_env(config)
+
+        # Init Content Loader/Rewriter
+        content_app = ContentController(app=bottle_app,
+                                        jinja_env=jinja_env,
+                                        config=config,
+                                        redis=self.redis)
+
         # Init Browser Mgr
-        self.browser_mgr = BrowserManager(config, self.browser_redis)
+        self.browser_mgr = BrowserManager(config, self.browser_redis, content_app)
 
         # Init Cork
         self.cork = WebRecCork.create_cork(self.redis, config)
 
         # Init Manager
-        manager = RedisDataManager(self.redis, self.cork,
+        manager = RedisDataManager(self.redis, self.cork, content_app,
                                    self.browser_redis, self.browser_mgr, config)
 
         # Init Sesion temp_prefix
         Session.temp_prefix = config['temp_prefix']
-
-        # Init Jinja
-        jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'},
-                             extensions=[AssetsExtension])
-
-        loader = YAMLLoader(config['assets_path'])
-        assets_env = loader.load_environment()
-        assets_env.resolver = PkgResResolver()
-
-        jinja_env.jinja_env.assets_environment = assets_env
 
         # Init Core app controllers
         for controller_type in self.ALL_CONTROLLERS:
@@ -113,13 +114,21 @@ class AppController(BaseController):
                                            self.session_redis,
                                            config)
 
-        self.init_jinja_env(config, jinja_env.jinja_env)
-
         super(AppController, self).__init__(final_app, jinja_env, manager, config)
 
-    def init_jinja_env(self, config, jinja_env):
+    def init_jinja_env(self, config):
+        jinja_env_wrapper = JinjaEnv(globals={'static_path': 'static/__pywb'},
+                                     extensions=[AssetsExtension])
+
+        loader = YAMLLoader(config['assets_path'])
+        assets_env = loader.load_environment()
+        assets_env.resolver = PkgResResolver()
+
+        jinja_env = jinja_env_wrapper.jinja_env
+
+        jinja_env.assets_environment = assets_env
+
         jinja_env.globals['metadata'] = config.get('metadata', {})
-        jinja_env.globals['get_browsers'] = self.browser_mgr.get_browsers
 
         def get_coll(context):
             coll = context.get('coll_orig', '')
@@ -129,6 +138,9 @@ class AppController(BaseController):
 
         def get_user(context):
             return context.get('user', '')
+
+        def get_browsers():
+            return self.browser_mgr.get_browsers()
 
         @contextfunction
         def can_admin(context):
@@ -171,6 +183,9 @@ class AppController(BaseController):
         jinja_env.globals['get_path'] = get_path
         jinja_env.globals['get_body_class'] = get_body_class
         jinja_env.globals['is_out_of_space'] = is_out_of_space
+        jinja_env.globals['get_browsers'] = get_browsers
+
+        return jinja_env_wrapper
 
     def init_routes(self):
         @self.bottle_app.route(['//<url:re:.*>'])

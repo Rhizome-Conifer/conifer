@@ -6,7 +6,7 @@ from pywb.rewrite.html_rewriter import HTMLRewriter
 
 
 # ============================================================================
-WBURL_MATCH = '(?:[0-9]{0,14}(?:\w+_)?)?/(.*)'
+WBURL_MATCH = '(?:[0-9]{0,14}(?:\w+_)?)?/{0,3}(.*)'
 
 PREFIX_MATCH = '({0})?({1})'
 
@@ -103,6 +103,24 @@ class HTMLDomUnRewriter(HTMLRewriter):
             # write the attr!
             self._write_attr(attr_name, attr_value, empty_attr)
 
+    def unrewrite(self, html_text, host=None):
+        html_text = HTMLDomUnRewriter.remove_head_insert(html_text)
+
+        buff = self.rewrite(html_text)
+        buff += self.close()
+
+        # additional host check
+        if not host:
+            return buff
+
+        host = host.split('//')[-1]
+
+        host_rx = HOST_WBURL_RX.format(re.escape(host))
+        host_rx = re.compile(host_rx)
+
+        buff = host_rx.sub(r'\1', buff)
+        return buff
+
     @staticmethod
     def remove_head_insert(html_text):
         start_marker = '<!-- WB Insert -->'
@@ -117,25 +135,6 @@ class HTMLDomUnRewriter(HTMLRewriter):
             return html_text
 
         return html_text[:start] + html_text[end + len(end_marker):]
-
-    @staticmethod
-    def unrewrite_html(host, prefix, html_text):
-        unrewriter = UnRewriter(host, prefix)
-        html_unrewriter = HTMLDomUnRewriter(unrewriter)
-
-        html_text = HTMLDomUnRewriter.remove_head_insert(html_text)
-
-        buff = html_unrewriter.rewrite(html_text)
-        buff += html_unrewriter.close()
-
-        host = host.split('//')[-1]
-
-        host_rx = HOST_WBURL_RX.format(re.escape(host))
-        host_rx = re.compile(host_rx)
-
-        new_buff = host_rx.sub(r'\1', buff)
-        return new_buff
-
 
 # ============================================================================
 def main():
