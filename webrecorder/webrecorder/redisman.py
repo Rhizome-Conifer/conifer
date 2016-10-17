@@ -1183,7 +1183,9 @@ class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin
         self.cork = cork
 
         self.content_app = content_app
-        self.content_app.manager = self
+
+        if self.content_app:
+            self.content_app.manager = self
 
         self.browser_redis = browser_redis
         self.browser_mgr = browser_mgr
@@ -1206,6 +1208,6 @@ def init_manager_for_cli():
         cork = WebRecCork.create_cork(r, config)
 
         # Init Manager
-        manager = RedisDataManager(r, cork, None, config)
+        manager = RedisDataManager(r, cork, None, None, None, config)
 
         return manager
