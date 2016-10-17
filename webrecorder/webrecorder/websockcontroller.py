@@ -191,9 +191,6 @@ class WebSockHandler(object):
                             msg['name'], msg['value'], msg['domain'])
 
         elif msg['ws_type'] == 'page':
-            if not from_browser:
-                return
-
             if self.type_ != 'live':
                 if self.manager.has_recording(self.user, self.coll, self.rec):
                     page_local_store = msg['page']
@@ -202,7 +199,7 @@ class WebSockHandler(object):
                 else:
                     print('Invalid Rec for Page Data', self.user, self.coll, self.rec)
 
-            if msg.get('visible'):
+            if from_browser and msg.get('visible'):
                 msg['ws_type'] = 'remote_url'
 
         elif msg['ws_type'] == 'switch':
