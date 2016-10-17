@@ -255,6 +255,7 @@ var EventHandlers = (function() {
     return {
         bindAll: bindAll,
         switchCBPatch: switchCBPatch,
+        switchCBReplay: switchCBReplay,
     }
 })();
 
@@ -423,8 +424,11 @@ var RecordingSizeWidget = (function() {
 
     var startmsg = undefined;
 
+    // track window.onpopstate url
+    var lastPopUrl = undefined;
+
     var start = function() {
-        if ($('.size-counter-active').length && window.curr_mode) {
+        if (window.curr_mode && window.curr_mode != "new") {
             //(window.curr_mode == "record" || window.curr_mode == "patch")) {
             //recordingId = $('[data-recording-id]').attr('data-recording-id');
             //collectionId = $('[data-collection-id]').attr('data-collection-id');
@@ -446,6 +450,24 @@ var RecordingSizeWidget = (function() {
                         sizeUpdateId = setInterval(pollForSizeUpdate, 5000);
                     }
                 }, 1000);
+            }
+
+            // For containerized browsers, respond to history changes to reflect in the cbrowser
+            if (window.cnt_browser) {
+                $(window).on('popstate', function(event) {
+                    if (event.originalEvent && event.originalEvent.state) {
+                        var state = event.originalEvent.state;
+                        lastPopUrl = state.url;
+
+                        if (state.change == "load") {
+                            setRemoteUrl(state.url);
+                        } else if (state.change == "patch") {
+                            EventHandlers.switchCBReplay(getUrl());
+                        } else if (state.change == "replay-coll") {
+                            EventHandlers.switchCBPatch(getUrl());
+                        }
+                    }
+                });
             }
         }
     }
@@ -470,7 +492,12 @@ var RecordingSizeWidget = (function() {
     var initWS = function() {
         var url = window.location.protocol == "https:" ? "wss://" : "ws://";
         url += window.location.host + "/_client_ws?";
-        url += "user=" + user + "&coll=" + coll;
+        if (window.curr_mode != "live") {
+            url += "user=" + user + "&coll=" + coll;
+        } else {
+            url += "user=$temp&coll=temp";
+        }
+
         if (rec && rec != "*") {
             url += "&rec=" + rec;
         }
@@ -494,7 +521,7 @@ var RecordingSizeWidget = (function() {
         window.rec = rec;
         window.curr_mode = type;
 
-        replaceOuterUrl(msg);
+        replaceOuterUrl(msg, type);
 
         var msg = {"ws_type": "switch",
                    "type": type,
@@ -564,7 +591,7 @@ var RecordingSizeWidget = (function() {
     }
 
     // TODO: reuse make_url, postMessage from wb_frame.js
-    function replaceOuterUrl(msg)
+    function replaceOuterUrl(msg, change)
     {
         var ts = msg.timestamp;
         var mod = cbrowserMod();
@@ -581,8 +608,15 @@ var RecordingSizeWidget = (function() {
             prefix += ts;
         }
 
-        window.history.pushState({}, msg.title, prefix + mod + url);
+        msg.change = change;
 
+        if (url != lastPopUrl) {
+            window.history.pushState(msg, msg.title, prefix + mod + url);
+            lastPopUrl = undefined;
+        } else if (change == "load") {
+            lastPopUrl = undefined;
+        }
+        
         if (ts) {
             $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(ts));
             $(".replay-wrap").show();
@@ -604,7 +638,7 @@ var RecordingSizeWidget = (function() {
                     var page = msg.page;
                     setUrl(page.url);
                     setTitle("Containerized", page.url, page.title);
-                    replaceOuterUrl(page);
+                    replaceOuterUrl(page, "load");
                 }
                 break;
 

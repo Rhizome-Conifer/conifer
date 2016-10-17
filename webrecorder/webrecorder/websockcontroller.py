@@ -81,21 +81,24 @@ class WebsockController(BaseController):
 
         browser = info['browser']
 
+        type_ = info['type']
+
         WebSockHandler('from', reqid, self.manager,
                        'from_cbr_ps:', 'to_cbr_ps:',
-                       user, coll, rec,
+                       user, coll, rec, type=type_,
                        browser=browser).run()
 
 
 # ============================================================================
 class WebSockHandler(object):
     def __init__(self, name, reqid, manager, send_to, recv_from,
-                       user, coll, rec, browser=None, updater=None):
+                       user, coll, rec, type=None, browser=None, updater=None):
 
         self.user = user
         self.coll = coll
         self.rec = rec
         self.browser = browser
+        self.type_ = type
 
         self.manager = manager
         self.updater = updater
@@ -188,15 +191,18 @@ class WebSockHandler(object):
                             msg['name'], msg['value'], msg['domain'])
 
         elif msg['ws_type'] == 'page':
-            if not self.manager.has_recording(self.user, self.coll, self.rec):
-                print('Invalid Rec for Page Data', self.user, self.coll, self.rec)
+            if not from_browser:
                 return
 
-            page_local_store = msg['page']
+            if self.type_ != 'live':
+                if self.manager.has_recording(self.user, self.coll, self.rec):
+                    page_local_store = msg['page']
 
-            res = self.manager.add_page(self.user, self.coll, self.rec, page_local_store)
+                    res = self.manager.add_page(self.user, self.coll, self.rec, page_local_store)
+                else:
+                    print('Invalid Rec for Page Data', self.user, self.coll, self.rec)
 
-            if from_browser and msg.get('visible'):
+            if msg.get('visible'):
                 msg['ws_type'] = 'remote_url'
 
         elif msg['ws_type'] == 'switch':

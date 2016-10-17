@@ -2,6 +2,8 @@ import requests
 import gevent
 from bottle import request
 
+import socket
+
 
 # ============================================================================
 class BrowserManager(object):
@@ -16,6 +18,17 @@ class BrowserManager(object):
         gevent.spawn(self.browser_load_loop)
 
         self.content_app = content_app
+
+        self.proxy_host = config['proxy_host']
+
+    def _get_proxy_ip(self):
+        ip = None
+        try:
+            ip = socket.gethostbyname(self.proxy_host)
+        except:
+            pass
+
+        return ip
 
     def load_all_browsers(self):
         try:
@@ -34,19 +47,22 @@ class BrowserManager(object):
             self.load_all_browsers()
 
     def init_cont_browser_sesh(self):
-        remote_addr = request.environ.get('HTTP_X_PROXY_FOR')
-        if not remote_addr:
-            remote_addr = request.environ['REMOTE_ADDR']
+        remote_addr = request.environ['REMOTE_ADDR']
+        if remote_addr != self._get_proxy_ip():
+            print('Cont. Browser Request Not From Proxy, Rejecting')
+            return
 
-        container_data = self.browser_redis.hgetall('ip:' + remote_addr)
+        source_addr = request.environ.get('HTTP_X_PROXY_FOR')
+
+        container_data = self.browser_redis.hgetall('ip:' + source_addr)
 
         if not container_data or 'user' not in container_data:
-            print('Data not found for remote ' + remote_addr)
+            print('Data not found for remote ' + source_addr)
             return
 
         sesh = request.environ['webrec.session']
         sesh.set_restricted_user(container_data['user'])
-        container_data['ip'] = remote_addr
+        container_data['ip'] = source_addr
         return container_data
 
     def fill_upstream_url(self, kwargs, timestamp):
