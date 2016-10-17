@@ -54,6 +54,7 @@
     "style-loader": "0.13.1",
     "url-loader": "0.5.7",
     "webpack": "1.13.2",
+    "webpack-bundle-size-analyzer": "^2.2.0",
     "webpack-dev-server": "1.15.1",
     "whatwg-fetch": "1.0.0"
   },
@@ -69,13 +70,15 @@
     "react-router-redux": "^4.0.5",
     "react-router-scroll": "^0.3.2",
     "reactable": "^0.14.0",
+    "recharts": "^0.15.2",
     "redux": "^3.0.0",
     "redux-saga": "^0.11.1"
   },
   "scripts": {
     "dev": "node scripts/start.js",
     "build": "node scripts/build.js",
-    "test": "jest --watch --env=jsdom"
+    "test": "jest --watch --env=jsdom",
+    "analyze": "NODE_ENV=production webpack --config ./config/webpack.config.prod.js --json | webpack-bundle-size-analyzer"
   },
   "eslintConfig": {
     "extends": "./config/eslint.js"
