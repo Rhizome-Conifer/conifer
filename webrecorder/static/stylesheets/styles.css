@@ -98,6 +98,16 @@
     list-style: none;
     font-style: italic;
 }
+
+#browser-countdown-label {
+    float: right;
+    display: none;
+}
+
+#browser-countdown {
+    font-weight: bold;
+}
+
 /* End header top bar */
 
 

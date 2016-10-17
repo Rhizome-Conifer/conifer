@@ -79,10 +79,13 @@ services:
         environment:
             - SCREEN_WIDTH=1280
             - SCREEN_HEIGHT=800
-            - CLUSTER_NAME=wr_users
-            - NETWORK_NAME=webrecorder_browsers
             - PROXY_HOST=proxy
             - PROXY_PORT=8080
+
+            - CLUSTER_NAME=wr_users
+            - NETWORK_NAME=webrecorder_browsers
+
+            - CONTAINER_EXPIRE_SECS=1200
 
         depends_on:
             - redis

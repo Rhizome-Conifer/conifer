@@ -49,11 +49,18 @@
 
             {% endif %}
 
-            {% if browser_dis %}
+
+            {% if browser %}
+            <span id="browser-countdown-label">Browser Time Left: <span id="browser-countdown"></span></span>
+            {% endif %}
+
+            {#
+            <!-- Disabled for now -->
             <button id="load-all" type="button"
                     class="left-buffer btn btn-default btn-xs">
                 <span class="glyphicon glyphicon-th glyphicon-button"></span>Load All</button>
-            {% endif %}
+            #}
+
         </div>
 
         <div class="input-group containerized">

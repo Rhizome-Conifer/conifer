@@ -36,11 +36,20 @@
             params.proxy_ws = "_websockify?port=";
         }
 
+        params.on_countdown = function(seconds, countdownText) {
+            if (seconds <= 300) {
+                $("#browser-countdown-label").show();
+                $("#browser-countdown").text(countdownText);
+            }
+
+            if (seconds <= 0) {
+                $(".content-action").submit();
+            }
+        }
+
         var cb = new CBrowser("#browser", params);
     });
 </script>
-
-
 
 {% endblock %}
 
