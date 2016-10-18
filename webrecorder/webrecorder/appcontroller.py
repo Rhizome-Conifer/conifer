@@ -3,6 +3,7 @@ from bottle import Bottle, debug, JSONPlugin, request, response
 import logging
 import json
 import redis
+import re
 
 import os
 
@@ -175,6 +176,11 @@ class AppController(BaseController):
         def is_out_of_space(context):
             return self.manager.is_out_of_space(context.get('curr_user', ''))
 
+        def trunc_url(value):
+            """ Truncate querystrings, appending an ellipses
+            """
+            return re.sub(r'(\?.*)', '?...', value)
+
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
@@ -184,6 +190,7 @@ class AppController(BaseController):
         jinja_env.globals['get_body_class'] = get_body_class
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
+        jinja_env.filters['trunc_url'] = trunc_url
 
         return jinja_env_wrapper
 

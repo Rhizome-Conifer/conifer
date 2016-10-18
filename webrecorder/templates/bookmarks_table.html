@@ -79,7 +79,8 @@
                         <td class="timestamp" data-order="{{ timestamp }}" data-time-ts="{{ timestamp }}"></td>
                         <td class="bookmark-url">
                           <a href="{{ path }}"
-                             data-value-encoded="{{ bookmark.url }}"
+                             {% if '?' in bookmark.url %}title="{{ bookmark.url }}"{% endif %}
+                             data-value-encoded="{{ bookmark.url|trunc_url }}"
                              data-target-decoded=""></a></td>
                         <td class="bookmark-recording-title">{{ recording.title }}</td>
                     </tr>
