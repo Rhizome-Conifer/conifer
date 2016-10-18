@@ -121,6 +121,7 @@ bundles:
         contents:
             - base-js
             - times_and_sizes_formatter.js
+            - browser_embed.js
             - recordings_model.js
             - collections_model.js
             - recordings.js

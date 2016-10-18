@@ -217,6 +217,14 @@ class AppController(BaseController):
 
             return resp
 
+        @self.bottle_app.route('/_message')
+        def flash_message():
+            message = request.query.getunicode('message', '')
+            msg_type = request.query.getunicode('msg_type', '')
+            print(message, msg_type)
+            self.flash_message(message, msg_type)
+            return {}
+
         @self.bottle_app.route('/_policies')
         @self.jinja2_view('policies.html')
         def policies():

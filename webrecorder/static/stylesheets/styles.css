@@ -99,15 +99,6 @@
     font-style: italic;
 }
 
-#browser-countdown-label {
-    float: right;
-    display: none;
-}
-
-#browser-countdown {
-    font-weight: bold;
-}
-
 /* End header top bar */
 
 
@@ -936,8 +927,8 @@ div.filter-label {
 }
 
 /* containerized browser style overrides */
-#browserMsg {
-    margin-top: 50px;
+#browserMsg, .browser {
+    margin-top: 20px;
     font-size: 18px;
     text-align: center;
 }
@@ -957,3 +948,14 @@ div.filter-label {
     -moz-box-shadow: 0px 10px 30px 3px rgba(0,0,0,0.2);
     box-shadow: 0px 10px 30px 3px rgba(0,0,0,0.2);
 }
+
+#browser-countdown-label {
+    float: right;
+    display: none;
+}
+
+#browser-countdown {
+    font-weight: bold;
+}
+
+

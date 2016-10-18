@@ -3,6 +3,7 @@ import gevent
 from bottle import request
 
 import socket
+import os
 
 
 # ============================================================================
@@ -20,6 +21,8 @@ class BrowserManager(object):
         self.content_app = content_app
 
         self.proxy_host = config['proxy_host']
+
+        self.inactive_time = os.environ.get('INACTIVE_TIME', 30)
 
     def _get_proxy_ip(self):
         ip = None
@@ -116,6 +119,7 @@ class BrowserManager(object):
                 'url': wb_url.url,
                 'ts': wb_url.timestamp,
                 'reqid': reqid,
+                'inactive_time': self.inactive_time,
                }
 
         return data

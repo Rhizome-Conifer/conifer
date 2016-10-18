@@ -10,6 +10,13 @@
     wbinfo.timestamp = "{{ ts }}";
     wbinfo.state = "{{ curr_mode }}";
     wbinfo.info = {{ info | default('{}') | tojson }};
+
+    window.cnt_browser = "{{ browser }}";
+
+    window.reqid = "{{ reqid }}";
+
+    window.inactiveSecs = {{ inactive_time if inactive_time else 0 }};
+
 </script>
 
 {% assets "main-css" %}
@@ -22,43 +29,13 @@
 
 <script src="/static/browsers/browser_controller.js"></script>
 
-<script>
-    window.cnt_browser = "{{ browser }}";
-
-    window.reqid = "{{ reqid }}";
-
-    $(function() {
-        var params = {}
-        params.static_prefix = "/static/browsers/";
-        params.api_prefix = "/api/browsers";
-
-        if (!window.location.port) {
-            params.proxy_ws = "_websockify?port=";
-        }
-
-        params.on_countdown = function(seconds, countdownText) {
-            if (seconds <= 300) {
-                $("#browser-countdown-label").show();
-                $("#browser-countdown").text(countdownText);
-            }
-
-            if (seconds <= 0) {
-                $(".content-action").submit();
-            }
-        }
-
-        params.inactiveSecs = 30;
-
-        var cb = new CBrowser("#browser", params);
-    });
-</script>
-
 {% endblock %}
 
 {% block body %}
 
 {% include 'header.html' %}
 
+<div id="message" class="browser">{{ message }}</div>
 <div id="browser" class="browser"></div>
 
 {% endblock %}
