@@ -56,6 +56,9 @@ var EventHandlers = (function() {
             var url = getUrl();
 
             if (window.cnt_browser && window.curr_mode != "new") {
+                if (url.indexOf("http://") != 0 && url.indexOf("https://") != 0) {
+                    url = "http://" + url;
+                }
                 RecordingSizeWidget.setRemoteUrl(url);
                 return false;
             }

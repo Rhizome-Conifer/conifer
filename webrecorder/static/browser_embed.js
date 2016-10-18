@@ -23,10 +23,10 @@ $(function() {
             $("#message").hide();
         }
 
-        if (type == "reconnect") {
-            $("#message").text("Connection closed due to inactivity");
-            $("#message").show();
-        }
+        //if (type == "reconnect") {
+        //    $("#message").text("Connection closed due to inactivity");
+        //    $("#message").show();
+        //}
 
         if (type == "fail" || type == "expire") {
             reinit_browser();
