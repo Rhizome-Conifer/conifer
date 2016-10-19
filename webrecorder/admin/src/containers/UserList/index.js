@@ -69,8 +69,8 @@ class UserList extends Component {
     return (
       <div>
         <Helmet
-          title='User List' />
-        <Heading type={3}>{`${isTemp?'Temporary':''} User List`}</Heading>
+          title={`${isTemp?'Temporary ':''}User List`} />
+        <Heading type={3}>{`${isTemp?'Temporary ':''}User List`}</Heading>
         {
           <List
             items={users}

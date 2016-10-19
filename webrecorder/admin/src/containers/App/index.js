@@ -44,8 +44,8 @@ export class App extends Component {
     return (
       <div className='app'>
         <Helmet
-          titleTemplate='%s ~ Webrecorder admin'
-          defaultTitle='dashboard ~ Webrecorder admin'
+          titleTemplate='%s ~ Webrecorder Admin'
+          defaultTitle='Dashboard ~ Webrecorder Admin'
         />
         <Header />
         <section className={classes}>

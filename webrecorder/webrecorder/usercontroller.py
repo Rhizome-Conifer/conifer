@@ -162,11 +162,11 @@ class UserController(BaseController):
                         'available': total - used,
                     }
 
-                data, err = TempUserSchema().load(temp_users, many=True)
+                temp_users, err = TempUserSchema().load(temp_users, many=True)
                 if err:
                     return {'errors': err}
 
-            return {'users': data}
+            return {'users': temp_users}
 
         @self.app.post('/api/v1/users/<user>/desc')
         def update_desc(user):
