@@ -22,7 +22,7 @@ class BrowserManager(object):
 
         self.proxy_host = config['proxy_host']
 
-        self.inactive_time = os.environ.get('INACTIVE_TIME', 30)
+        self.inactive_time = os.environ.get('INACTIVE_TIME', 60)
 
     def _get_proxy_ip(self):
         ip = None
