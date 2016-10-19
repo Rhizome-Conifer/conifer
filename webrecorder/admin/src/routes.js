@@ -10,6 +10,12 @@ const routes = [
     component: UserList,
   },
   {
+    path: 'temp-users',
+    name: 'temp-user-list',
+    component: UserList,
+    temp: true,
+  },
+  {
     path: 'users/:username',
     name: 'user-detail',
     component: UserDetail,

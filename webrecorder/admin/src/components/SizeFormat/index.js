@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react';
 
-function bytesToMb(bytes) {
+export function bytesToMb(bytes) {
   return bytes / 1000000;
 }
 

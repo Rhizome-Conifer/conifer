@@ -18,6 +18,10 @@ function buildEndpoint() {
   return endpoint.startsWith('http') ? endpoint : `${window.location.protocol}//${window.location.host}${isAbsolute?'':'/'}${endpoint}`;
 }
 
+function errorHandler(err) {
+  console.log('api', err);
+}
+
 export function getDashboard() {
   return fetch(`${buildEndpoint()}/dashboard/`, fetchOptions)
     .then((res) => {
@@ -25,8 +29,18 @@ export function getDashboard() {
       else if(res.url.endsWith('_login')) window.location = '/_login';
       throw new Error(`Server error! ${res.url}`);
     })
+    .catch(errorHandler);
+}
+
+export function getTempUsers() {
+  return fetch(`${buildEndpoint()}/temp-users`, fetchOptions)
+    .then((res) => {
+      if(res.status === 200 && !res.url.endsWith('_login')) return res.json();
+      else if(res.url.endsWith('_login')) window.location = '/_login';
+      throw new Error(`Server error! ${res.url}`);
+    })
     .then(data => data.users)
-    .catch(err => console.log('api', err));
+    .catch(errorHandler);
 }
 
 export function getUsers(params) {
@@ -42,7 +56,7 @@ export function getUsers(params) {
       throw new Error(`Server error! ${res.url}`);
     })
     .then(data => data.users)
-    .catch(err => console.log('api', err));
+    .catch(errorHandler);
 }
 
 export function getUser(username) {
@@ -53,7 +67,7 @@ export function getUser(username) {
       throw new Error('Server error!');
     })
     .then(data => data.user)
-    .catch(err => console.log('api', err));
+    .catch(errorHandler);
 }
 
 export function updateUser(username, data) {
@@ -76,7 +90,7 @@ export function updateUser(username, data) {
       }
       return json.user;
     })
-    .catch(err => console.log('api', err));
+    .catch(errorHandler);
 }
 
 export function setCollectionVisibility(user, coll, visiblity) {
@@ -94,5 +108,5 @@ export function setCollectionVisibility(user, coll, visiblity) {
       body: data,
     })
     .then(res => res.status === 200)
-    .catch(err => console.log('api', err));
+    .catch(errorHandler);
 }

@@ -13,11 +13,46 @@ h4 {
     @extend .clearfix;
 }
 
-.wr-activity {
-    display: flex;
-    justify-content: flex-start;
+.wr-charts {
+    display:flex;
+    justify-content: space-between;
 
-    .radial-graph {
-        margin-right: 2.5rem;
+    @include breakpoint(xs) {
+        flex-direction: column;
+    }
+
+    .wr-activity {
+        width: 30%;
+        min-width: 40rem;
+
+        @include breakpoint(xs) {
+            width: 100%;
+        }
+
+        .wr-activity-charts {
+            display: flex;
+            justify-content: space-between;
+
+            .radial-graph {
+                margin-right: 2.5rem;
+            }
+        }
+    }
+
+    .wr-usage {
+        width: 70%;
+        height: 35rem;
+
+        h4 {
+            margin-bottom: 0;
+        }
+
+        .wr-dateRange {
+            margin-left: 1.5rem;
+        }
+
+        @include breakpoint(xs) {
+            width: 100%;
+        }
     }
 }

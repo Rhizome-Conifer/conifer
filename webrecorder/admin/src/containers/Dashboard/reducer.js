@@ -13,7 +13,9 @@ export default function dashboard(state = defaultState, action) {
     case LOAD_DASHBOARD_SUCCESS:
       return {
         ...state,
-        users: action.users,
+        users: action.data.users,
+        tempUsage: action.data.temp_usage,
+        userUsage: action.data.user_usage,
         loading: false,
       };
     default:

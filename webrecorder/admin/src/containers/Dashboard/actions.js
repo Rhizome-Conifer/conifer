@@ -7,9 +7,9 @@ export function loadDashboard() {
   };
 }
 
-export function dashboardLoaded(users) {
+export function dashboardLoaded(data) {
   return {
     type: LOAD_DASHBOARD_SUCCESS,
-    users,
+    data,
   };
 }
