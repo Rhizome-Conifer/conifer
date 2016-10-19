@@ -29,6 +29,7 @@ class TestTempContent(FullStackTests):
         'u:{user}:info',
         'h:roles',
         'h:defaults',
+        'h:temp-usage',
     ]
 
     def _get_redis_keys(self, keylist, user, coll, rec):
@@ -423,7 +424,7 @@ class TestTempContent(FullStackTests):
 
         time.sleep(4.0)
 
-        assert set(self.redis.keys()) == set([b'h:roles', b'h:defaults'])
+        assert set(self.redis.keys()) == set([b'h:roles', b'h:defaults', b'h:temp-usage'])
 
         assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
         #assert os.listdir(os.path.join(self.warcs_dir, 'anon')) == []

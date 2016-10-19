@@ -430,13 +430,15 @@ class WebRecRedisIndexer(WritableRedisIndexer):
 
             # write size to usage hashes
             ts = datetime.now().date().isoformat()
-            if params['param.user'].startswith(self.temp_prefix):
-                key = self.temp_usage_key
-            else:
-                key = self.user_usage_key
 
-            if key:
-                pi.hincrby(key, ts, length)
+            if 'param.user' in params:
+                if params['param.user'].startswith(self.temp_prefix):
+                    key = self.temp_usage_key
+                else:
+                    key = self.user_usage_key
+
+                if key:
+                    pi.hincrby(key, ts, length)
 
         return cdx_list
 
