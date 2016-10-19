@@ -7,8 +7,8 @@ import { dashboardLoaded } from './actions';
 
 
 export function* getDashboardFromAPI(params) {
-  const users = yield call(getDashboard, params);
-  yield put(dashboardLoaded(users));
+  const data = yield call(getDashboard, params);
+  yield put(dashboardLoaded(data));
 }
 
 export function* loadDashboardWatcher() {

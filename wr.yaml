@@ -131,6 +131,9 @@ info_key_templ:
     coll: 'c:{user}:{coll}:info'
     user: 'u:{user}:info'
 
+user_usage_key: 'h:user-usage'
+temp_usage_key: 'h:temp-usage'
+
 cookie_key_templ: 'r:{user}:{coll}:{rec}:{id}:cookie:'
 
 warc_key_templ: 'r:{user}:{coll}:{rec}:warc'

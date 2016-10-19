@@ -11,13 +11,12 @@ import time
 import json
 import glob
 
-from webagg.utils import res_template, ParamFormatter
+from webagg.utils import res_template
 
-from bottle import Bottle, request, debug, response
+from bottle import Bottle, request, debug
+from datetime import datetime
 import os
-import shutil
 from six import iteritems
-from six.moves.urllib.parse import quote
 
 import gevent
 
@@ -52,6 +51,9 @@ class WebRecRecorder(object):
 
         self.skip_key_templ = config['skip_key_templ']
 
+        self.user_usage_key = config['user_usage_key']
+        self.temp_usage_key = config['temp_usage_key']
+
         self.redis_base_url = os.environ['REDIS_BASE_URL']
         self.redis = redis.StrictRedis.from_url(self.redis_base_url)
 
@@ -82,6 +84,10 @@ class WebRecRecorder(object):
 
             size_keys=self.info_keys.values(),
             rec_info_key_templ=self.info_keys['rec'],
+
+            temp_prefix=self.temp_prefix,
+            user_usage=self.user_usage_key,
+            temp_usage=self.temp_usage_key,
         )
 
 
@@ -406,6 +412,10 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         self.size_keys = kwargs.get('size_keys', [])
         self.rec_info_key_templ = kwargs.get('rec_info_key_templ')
 
+        self.user_usage_key = kwargs.get('user_usage', None)
+        self.temp_usage_key = kwargs.get('temp_usage', None)
+        self.temp_prefix = kwargs.get('temp_prefix', 'temp-')
+
     def add_urls_to_index(self, stream, params, filename, length):
         cdx_list = (super(WebRecRedisIndexer, self).
                       add_urls_to_index(stream, params, filename, length))
@@ -417,6 +427,16 @@ class WebRecRedisIndexer(WritableRedisIndexer):
 
                 if key_templ == self.rec_info_key_templ and cdx_list:
                     pi.hset(key, 'updated_at', str(int(time.time())))
+
+            # write size to usage hashes
+            ts = datetime.now().date().isoformat()
+            if params['param.user'].startswith(self.temp_prefix):
+                key = self.temp_usage_key
+            else:
+                key = self.user_usage_key
+
+            if key:
+                pi.hincrby(key, ts, length)
 
         return cdx_list
 

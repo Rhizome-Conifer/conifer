@@ -2,17 +2,19 @@
 import json
 import time
 import redis
+import re
 
-from bottle import request, response, HTTPError
-from datetime import datetime
+from collections import OrderedDict
+
+from bottle import request, HTTPError
+from datetime import datetime, timedelta
 from re import sub
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.basecontroller import BaseController
-from webrecorder.schemas import (CollectionSchema, NewUserSchema, UserSchema,
-                                 UserUpdateSchema)
+from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema,
+                                 UserSchema, UserUpdateSchema)
 
-from webrecorder.webreccork import ValidationException
 from werkzeug.useragents import UserAgent
 
 
@@ -21,6 +23,9 @@ class UserController(BaseController):
     def __init__(self, app, jinja_env, manager, config):
         super(UserController, self).__init__(app, jinja_env, manager, config)
         self.default_user_desc = config['user_desc']
+        self.user_usage_key = config['user_usage_key']
+        self.temp_usage_key = config['temp_usage_key']
+        self.temp_user_key = config['temp_prefix']
 
     def init_routes(self):
 
@@ -28,7 +33,7 @@ class UserController(BaseController):
         @self.manager.admin_view()
         def api_dashboard():
             cache_key = self.cache_template.format('dashboard')
-            expiry = 5 * 60  # 5 min
+            expiry = 10 * 60  # 10 min
 
             cache = self.manager.redis.get(cache_key)
 
@@ -45,9 +50,17 @@ class UserController(BaseController):
                                                                    api=True)
                 results.append(data)
 
+            temp = self.manager.redis.hgetall(self.temp_usage_key)
+            user = self.manager.redis.hgetall(self.user_usage_key)
+            temp = [(k.decode('utf-8'), int(v)) for k, v in temp.items()]
+            user = [(k.decode('utf-8'), int(v)) for k, v in user.items()]
+
             data = {
-                # `results` is a list so will always read as `many`
-                'users': UserSchema().load(results, many=True).data
+                'users': UserSchema().load(results, many=True).data,
+                'temp_usage': sorted(temp,
+                                     key=lambda o: datetime.strptime(o[0], '%Y-%m-%d')),
+                'user_usage': sorted(user,
+                                     key=lambda o: datetime.strptime(o[0], '%Y-%m-%d')),
             }
 
             self.manager.redis.setex(cache_key,
@@ -113,6 +126,47 @@ class UserController(BaseController):
         @self.app.get('/api/v1/anon_user')
         def get_anon_user():
             return {'anon_user': self.manager.get_anon_user(True)}
+
+        @self.app.get('/api/v1/temp-users')
+        @self.manager.admin_view()
+        def temp_users():
+            """ Resource returning active temp users
+            """
+            temp_users_keys = self.manager.redis.keys('u:{0}*'.format(self.temp_user_key))
+            temp_users = []
+
+            if len(temp_users_keys):
+                with self.manager.redis.pipeline() as pi:
+                    for user in temp_users_keys:
+                        pi.hgetall(user)
+                    temp_users = pi.execute()
+
+                # convert bytestrings
+                temp_users = [{k.decode('utf-8'): v.decode('utf-8') for k, v in d.items()}
+                              for d in temp_users]
+
+                for idx, user in enumerate(temp_users_keys):
+                    u = re.search(r'{0}\w+'.format(self.temp_user_key),
+                                  user.decode('utf-8')).group()
+
+                    total = int(temp_users[idx]['max_size'])
+                    used = int(temp_users[idx]['size'])
+                    creation = datetime.fromtimestamp(int(temp_users[idx]['created_at']))
+                    removal = creation + timedelta(seconds=self.config['session.durations']['short']['total'])
+
+                    temp_users[idx]['username'] = u
+                    temp_users[idx]['removal'] = removal.isoformat()
+                    temp_users[idx]['space_utilization'] = {
+                        'total': total,
+                        'used': used,
+                        'available': total - used,
+                    }
+
+                data, err = TempUserSchema().load(temp_users, many=True)
+                if err:
+                    return {'errors': err}
+
+            return {'users': data}
 
         @self.app.post('/api/v1/users/<user>/desc')
         def update_desc(user):

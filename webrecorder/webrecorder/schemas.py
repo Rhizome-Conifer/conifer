@@ -1,5 +1,7 @@
 import json
 
+from datetime import datetime
+
 from marshmallow import (Schema, fields, validate, ValidationError,
                          validates_schema)
 
@@ -32,6 +34,15 @@ class UserSchema(BaseSchema):
 
     class Meta(BaseSchema.Meta):
         dateformat = '%Y-%m-%d %H:%M:%S.%f'
+
+
+class TempUserSchema(BaseSchema):
+    username = fields.String(required=True)
+    created = fields.Function(deserialize=lambda x: datetime.fromtimestamp(int(x)),
+                              load_from='created_at')
+    removal = fields.DateTime()
+
+    space_utilization = fields.Nested('SpaceUtilization')
 
 
 class UserUpdateSchema(UserSchema):

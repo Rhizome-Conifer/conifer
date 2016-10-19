@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import Helmet from 'react-helmet';
 import sumBy from 'lodash/sumBy';
+import moment from 'moment';
 import { connect } from 'react-redux';
 
 import Heading from 'components/Heading';
@@ -148,10 +149,10 @@ class UserDetail extends Component {
                     </dd>
 
                     <dt>created at</dt>
-                    <dd>{user.created}</dd>
+                    <dd>{moment.utc(user.created).local().format('LLL')}</dd>
 
                     <dt>last login</dt>
-                    <dd>{user.last_login}</dd>
+                    <dd>{moment.utc(user.last_login).local().format('LLL')}</dd>
                   </dl>
                 </div>
 
