@@ -99,7 +99,7 @@ module.exports = {
       // in development "style" loader enables hot editing of CSS.
       {
         test: /\.scss$/,
-        loaders: ['style','css','sass','postcss']
+        loaders: ['style','css','postcss','sass']
       },
 
       // basic css loader for external libs

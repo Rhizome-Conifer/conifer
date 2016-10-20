@@ -9,8 +9,10 @@ import forEach from 'lodash/forEach';
 import map from 'lodash/map';
 import sum from 'lodash/sum';
 
+import { Grid, Col } from 'react-bootstrap';
 
 import Heading from 'components/Heading';
+import List from 'components/List';
 import RadialGraph from 'components/RadialGraph';
 import { loadDashboard } from './actions';
 import { bytesToMb } from 'components/SizeFormat';
@@ -46,13 +48,18 @@ class Dashboard extends Component {
 
     this.handleChange = this.handleChange.bind(this);
 
+
+    this.collectionKeys = [
+      {id: 'title', sortable: true},
+      {id: 'size', sortable: true, format: (s) => `${(s/1000000).toFixed(1)} MB`},
+    ];
+
     this.state = {
       dateRange: 7,
       usageData: [],
       dayActivePerct: 0,
       weekActivePerct: 0,
       monthActivePerct: 0,
-      collections: 0,
     };
   }
 
@@ -93,14 +100,11 @@ class Dashboard extends Component {
     const monthActive = sum(lastLogins.map(l => Number(l > lmonth)));
     const monthActivePerct = Math.round(monthActive/lastLogins.length * 100);
 
-    const collections = sum(users.map(u => u.collections.length));
-
     this.setState({
       usageData,
       dayActivePerct,
       weekActivePerct,
       monthActivePerct,
-      collections,
     });
   }
 
@@ -109,9 +113,9 @@ class Dashboard extends Component {
   }
 
   render() {
-    const { collections, dateRange, dayActivePerct, monthActivePerct,
+    const { dateRange, dayActivePerct, monthActivePerct,
             usageData, weekActivePerct } = this.state;
-    const { users } = this.props;
+    const { users, collections } = this.props;
 
     if(!users || users.length === 0)
       return (<div><Heading type={3}>Admin dashboard</Heading><p>no user stats</p></div>);
@@ -124,11 +128,11 @@ class Dashboard extends Component {
           <dd>{users.length}</dd>
 
           <dt>Public Collections</dt>
-          <dd>{collections}</dd>
+          <dd>{collections.length}</dd>
         </dl>
 
-        <section className='wr-charts'>
-          <div className='wr-activity'>
+        <Grid className='wr-charts' fluid={true}>
+          <Col md={6} className='wr-activity'>
             <Heading type={4}>Activity</Heading>
             <div className='wr-activity-charts'>
               <RadialGraph
@@ -146,39 +150,49 @@ class Dashboard extends Component {
                 label={`${monthActivePerct}%`}
                 legend='Users active in the last month' />
             </div>
-          </div>
-          <div className='wr-usage'>
-            <Heading type={4}>Usage</Heading>
-            <select
-              className='wr-dateRange'
-              onChange={this.handleChange}
-              defaultValue='7'>
-                <option value='1'>Today</option>
-                <option value='3'>3 days</option>
-                <option value='7'>Week</option>
-                <option value='30'>Month</option>
-                <option value='365'>Year</option>
-                <option value='0'>All</option>
-            </select>
-            <ResponsiveContainer>
-              <AreaChart
-                data={usageData.slice(-dateRange)}
-                margin={{ top: 10, right: 40, bottom: 50, left: 0 }}>
+          </Col>
+          <Col md={6} className='wr-collections'>
+            <Heading type={4}>Collections</Heading>
+            <List
+              emptyMsg={'0 public collections'}
+              items={collections}
+              keys={this.collectionKeys}
+              uniqueKey='title'
+              perPage={10} />
+          </Col>
+        </Grid>
 
-                <XAxis stroke='#727078' dataKey='date' tick={<CustomizedAxisTick />} />
-                <YAxis stroke='#9F9DA5' label='MB' />
+        <div className='wr-usage'>
+          <Heading type={4}>Usage</Heading>
+          <select
+            className='wr-dateRange'
+            onChange={this.handleChange}
+            defaultValue='7'>
+              <option value='1'>Today</option>
+              <option value='3'>3 days</option>
+              <option value='7'>Week</option>
+              <option value='30'>Month</option>
+              <option value='365'>Year</option>
+              <option value='0'>All</option>
+          </select>
+          <ResponsiveContainer>
+            <AreaChart
+              data={usageData.slice(-dateRange)}
+              margin={{ top: 10, right: 40, bottom: 50, left: 0 }}>
 
-                <CartesianGrid stroke='#E0DDE4'/>
-                { dateRange !== 1 &&
-                  <Tooltip formatter={ o => o.toFixed(2) } />
-                }
-                <Legend verticalAlign="top" height={36} />
-                <Area type='monotone' label={dateRange===1 && <CustomizedLabel />} dot={dateRange===1} stackId="1" unit=' MB' dataKey='temp' stroke='#D1C453' fill='#EBEE63' />
-                <Area type='monotone' label={dateRange===1 && <CustomizedLabel />} dot={dateRange===1} stackId="1" unit=' MB' dataKey='user' stroke='#71AB4B' fill='#B2DF97' />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
+              <XAxis stroke='#727078' dataKey='date' tick={<CustomizedAxisTick />} />
+              <YAxis stroke='#9F9DA5' label='MB' />
+
+              <CartesianGrid stroke='#E0DDE4'/>
+              { dateRange !== 1 &&
+                <Tooltip formatter={ o => o.toFixed(2) } />
+              }
+              <Legend verticalAlign="top" height={36} />
+              <Area type='monotone' label={dateRange===1 && <CustomizedLabel />} dot={dateRange===1} stackId="1" unit=' MB' dataKey='temp' stroke='#D1C453' fill='#EBEE63' />
+              <Area type='monotone' label={dateRange===1 && <CustomizedLabel />} dot={dateRange===1} stackId="1" unit=' MB' dataKey='user' stroke='#71AB4B' fill='#B2DF97' />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     );
   }
@@ -188,6 +202,7 @@ function mapStateToProps(state) {
   const { dashboard } = state;
   return {
     users: dashboard.users,
+    collections: dashboard.collections,
     tempUsage: dashboard.tempUsage,
     userUsage: dashboard.userUsage,
   };

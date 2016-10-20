@@ -76,7 +76,8 @@ class UserList extends Component {
             items={users}
             keys={isTemp?this.tempKeys:this.keys}
             sortBy={sorting}
-            uniqueKey='username' />
+            uniqueKey='username'
+            emptyMsg='0 users' />
         }
       </div>
     );

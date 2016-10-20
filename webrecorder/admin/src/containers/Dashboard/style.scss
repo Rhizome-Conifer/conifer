@@ -14,24 +14,19 @@ h4 {
 }
 
 .wr-charts {
-    display:flex;
-    justify-content: space-between;
-
-    @include breakpoint(xs) {
-        flex-direction: column;
-    }
-
     .wr-activity {
-        width: 30%;
-        min-width: 40rem;
-
-        @include breakpoint(xs) {
-            width: 100%;
-        }
-
         .wr-activity-charts {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
+
+            @include breakpoint(xs) {
+                flex-direction: column;
+                align-items: center;
+
+                .radial-graph {
+                    margin: 0 0 2.5rem 0;
+                }
+            }
 
             .radial-graph {
                 margin-right: 2.5rem;
@@ -39,20 +34,32 @@ h4 {
         }
     }
 
-    .wr-usage {
-        width: 70%;
-        height: 35rem;
+    .wr-collections {
+
+        .wr-list-table {
+            th:first-child, tbody.reactable-data > tr td:first-child {
+                text-align: left;
+                padding-left:1rem;
+            }
+        }
 
         h4 {
             margin-bottom: 0;
         }
+    }
+}
 
-        .wr-dateRange {
-            margin-left: 1.5rem;
-        }
 
-        @include breakpoint(xs) {
-            width: 100%;
-        }
+.wr-usage {
+    width: 100%;
+    height: 35rem;
+    margin-bottom: 10rem;
+
+    h4 {
+        margin-bottom: 0;
+    }
+
+    .wr-dateRange {
+        margin-left: 1.5rem;
     }
 }

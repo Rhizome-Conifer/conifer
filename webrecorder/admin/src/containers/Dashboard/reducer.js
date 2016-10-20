@@ -14,6 +14,7 @@ export default function dashboard(state = defaultState, action) {
       return {
         ...state,
         users: action.data.users,
+        collections: action.data.collections,
         tempUsage: action.data.temp_usage,
         userUsage: action.data.user_usage,
         loading: false,

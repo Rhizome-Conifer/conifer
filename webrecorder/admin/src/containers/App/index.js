@@ -4,6 +4,8 @@ import classNames from 'classnames';
 import { connect } from 'react-redux';
 
 import Header from 'components/Header';
+import Loader from 'components/Loader';
+
 import './styles.scss';
 
 
@@ -48,6 +50,7 @@ export class App extends Component {
           defaultTitle='Dashboard ~ Webrecorder Admin'
         />
         <Header />
+        <Loader loading={loading} transition={transition} />
         <section className={classes}>
           {React.Children.toArray(this.props.children)}
         </section>
