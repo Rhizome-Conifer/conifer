@@ -1054,7 +1054,7 @@ class CollManagerMixin(object):
 
         # if this is an API request or the user is not an owner,
         # filter out private collections
-        if not self.is_owner(user) or api:
+        if api or not self.is_owner(user):
             all_colls = [coll for coll in all_colls
                          if coll.get(self.READ_PREFIX + self.PUBLIC)]
 

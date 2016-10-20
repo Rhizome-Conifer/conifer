@@ -4,7 +4,7 @@ import time
 import redis
 import re
 
-from collections import OrderedDict
+from operator import itemgetter
 
 from bottle import request, HTTPError
 from datetime import datetime, timedelta
@@ -33,7 +33,7 @@ class UserController(BaseController):
         @self.manager.admin_view()
         def api_dashboard():
             cache_key = self.cache_template.format('dashboard')
-            expiry = 10 * 60  # 10 min
+            expiry = 5 * 60  # 5 min
 
             cache = self.manager.redis.get(cache_key)
 
@@ -46,8 +46,6 @@ class UserController(BaseController):
             # add username and get collections
             for user, data in users:
                 data['username'] = user
-                data['collections'] = self.manager.get_collections(user,
-                                                                   api=True)
                 results.append(data)
 
             temp = self.manager.redis.hgetall(self.temp_usage_key)
@@ -57,10 +55,9 @@ class UserController(BaseController):
 
             data = {
                 'users': UserSchema().load(results, many=True).data,
-                'temp_usage': sorted(temp,
-                                     key=lambda o: datetime.strptime(o[0], '%Y-%m-%d')),
-                'user_usage': sorted(user,
-                                     key=lambda o: datetime.strptime(o[0], '%Y-%m-%d')),
+                'collections': self.manager.get_collections(user='*', api=True),
+                'temp_usage': sorted(temp, key=itemgetter(0)),
+                'user_usage': sorted(user, key=itemgetter(0)),
             }
 
             self.manager.redis.setex(cache_key,
