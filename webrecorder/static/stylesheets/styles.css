@@ -927,7 +927,7 @@ div.filter-label {
 }
 
 /* containerized browser style overrides */
-#browserMsg, .browser {
+#browserMsg, #message {
     margin-top: 20px;
     font-size: 18px;
     text-align: center;
