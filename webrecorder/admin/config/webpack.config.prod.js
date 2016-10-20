@@ -89,7 +89,7 @@ module.exports = Object.assign(require('./webpack.config.base'), {
         // Webpack 1.x uses Uglify plugin as a signal to minify *all* the assets
         // including CSS. This is confusing and will be removed in Webpack 2:
         // https://github.com/webpack/webpack/issues/283
-        loader: ExtractTextPlugin.extract(['css','sass','postcss'])
+        loader: ExtractTextPlugin.extract(['css','postcss','sass'])
         // Note: this won't work without `new ExtractTextPlugin()` in `plugins`.
       },
 
