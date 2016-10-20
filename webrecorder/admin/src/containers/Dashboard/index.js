@@ -51,6 +51,7 @@ class Dashboard extends Component {
 
     this.collectionKeys = [
       {id: 'title', sortable: true},
+      {id: 'created_at', label: 'created at', sortable: true, format: (d) => moment.unix(d).local().format('L LT')},
       {id: 'size', sortable: true, format: (s) => `${(s/1000000).toFixed(1)} MB`},
     ];
 
@@ -158,7 +159,8 @@ class Dashboard extends Component {
               items={collections}
               keys={this.collectionKeys}
               uniqueKey='title'
-              perPage={10} />
+              perPage={5}
+              defaultSort={{column: 'created at', direction: 'desc'}} />
           </Col>
         </Grid>
 

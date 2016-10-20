@@ -15,12 +15,14 @@ class List extends Component {
     filterFn: PropTypes.func,
     emptyMsg: PropTypes.string,
     perPage: PropTypes.number,
+    defaultSort: PropTypes.object,
   }
 
   static defaultProps = {
     filterFn: null,
     emptyMsg: '0 items',
     perPage: 100,
+    defaultSort: null,
   }
 
   constructor(props) {
@@ -40,7 +42,7 @@ class List extends Component {
   }
 
   render() {
-    const { emptyMsg, filterFn, items, keys, uniqueKey } = this.props;
+    const { defaultSort, emptyMsg, filterFn, items, keys, uniqueKey } = this.props;
     const { perPage } = this.state;
 
     return (
@@ -55,7 +57,8 @@ class List extends Component {
               {column, sortFunction: k.sortFunction} :
               column
           })}
-          onSort={filterFn}>
+          onSort={filterFn}
+          defaultSort={defaultSort}>
           <Thead>
             {
               keys.map(key => {
