@@ -67,6 +67,7 @@ $(function() {
     }
 
     params.inactiveSecs = window.inactiveSecs;
+    params.clipboard = "#clipboard";
 
     var cb = new CBrowser(reqid, "#browser", params);
 });

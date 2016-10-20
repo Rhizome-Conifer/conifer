@@ -38,5 +38,23 @@
 <div id="message" class="browser">{{ message }}</div>
 <div id="browser" class="browser"></div>
 
+<div class="modal fade" id="clipboard-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4>Clipboard</h4>
+            </div>
+            <div class="modal-body">
+                <p>Clipboard for remote browser. You may use this to transfer text to and from the remote browser</p>
+                <textarea id="clipboard" style="width: 100%; min-height: 200px"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
