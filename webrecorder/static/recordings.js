@@ -1082,6 +1082,7 @@ $(function() {
             var attributes = {};
 
             attributes.url = state.url;
+            setUrl(state.url);
 
             attributes.timestamp = state.ts;
             attributes.title = state.title;
