@@ -77,7 +77,8 @@ class UserList extends Component {
             keys={isTemp?this.tempKeys:this.keys}
             sortBy={sorting}
             uniqueKey='username'
-            emptyMsg='0 users' />
+            emptyMsg='0 users'
+            filterable={isTemp?['username']:['username','email','name']} />
         }
       </div>
     );

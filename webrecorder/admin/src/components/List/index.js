@@ -16,6 +16,7 @@ class List extends Component {
     emptyMsg: PropTypes.string,
     perPage: PropTypes.number,
     defaultSort: PropTypes.object,
+    filterable: PropTypes.array,
   }
 
   static defaultProps = {
@@ -23,6 +24,7 @@ class List extends Component {
     emptyMsg: '0 items',
     perPage: 100,
     defaultSort: null,
+    filterable: null,
   }
 
   constructor(props) {
@@ -42,7 +44,7 @@ class List extends Component {
   }
 
   render() {
-    const { defaultSort, emptyMsg, filterFn, items, keys, uniqueKey } = this.props;
+    const { defaultSort, emptyMsg, filterable, filterFn, items, keys, uniqueKey } = this.props;
     const { perPage } = this.state;
 
     return (
@@ -58,7 +60,9 @@ class List extends Component {
               column
           })}
           onSort={filterFn}
-          defaultSort={defaultSort}>
+          defaultSort={defaultSort}
+          filterable={filterable}
+          filterPlaceholder={filterable?`search by ${filterable.join(', ')}`:''}>
           <Thead>
             {
               keys.map(key => {

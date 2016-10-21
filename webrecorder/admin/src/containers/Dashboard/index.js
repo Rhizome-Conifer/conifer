@@ -81,7 +81,7 @@ class Dashboard extends Component {
       if(typeof m !== 'undefined')
         m['user'] = v;
       else
-        usageData.push({'date':item[0], 'temp':0, 'user': v});
+        usageData.splice(1, 0, {'date':item[0], 'temp':0, 'user': v});
     });
 
     const users = nextProps.users;
