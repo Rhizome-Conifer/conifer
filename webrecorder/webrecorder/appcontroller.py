@@ -10,13 +10,6 @@ import os
 from jinja2 import contextfunction
 from urlrewrite.templateview import JinjaEnv
 
-from webassets import Environment as AssetsEnvironment
-from webassets.ext.jinja2 import AssetsExtension
-
-from webassets.loaders import YAMLLoader
-from webassets.env import Resolver
-from pkg_resources import resource_filename
-
 from six.moves.urllib.parse import urlsplit, urljoin
 
 from webagg.utils import load_config
@@ -118,16 +111,9 @@ class AppController(BaseController):
         super(AppController, self).__init__(final_app, jinja_env, manager, config)
 
     def init_jinja_env(self, config):
-        jinja_env_wrapper = JinjaEnv(globals={'static_path': 'static/__pywb'},
-                                     extensions=[AssetsExtension])
-
-        loader = YAMLLoader(config['assets_path'])
-        assets_env = loader.load_environment()
-        assets_env.resolver = PkgResResolver()
+        jinja_env_wrapper = JinjaEnv(assets_path=config['assets_path'])
 
         jinja_env = jinja_env_wrapper.jinja_env
-
-        jinja_env.assets_environment = assets_env
 
         jinja_env.globals['metadata'] = config.get('metadata', {})
 
@@ -323,27 +309,5 @@ class AppController(BaseController):
         boto_log = logging.getLogger('boto')
         if boto_log:
             boto_log.setLevel(logging.ERROR)
-
-
-# ============================================================================
-class PkgResResolver(Resolver):
-    def get_pkg_path(self, item):
-        if not isinstance(item, str):
-            return None
-
-        parts = urlsplit(item)
-        if parts.scheme == 'pkg' and parts.netloc:
-            return (parts.netloc, parts.path)
-
-        return None
-
-    def resolve_source(self, ctx, item):
-        pkg = self.get_pkg_path(item)
-        if pkg:
-            filename = resource_filename(pkg[0], pkg[1])
-            if filename:
-                return filename
-
-        return super(PkgResResolver, self).resolve_source(ctx, item)
 
 
