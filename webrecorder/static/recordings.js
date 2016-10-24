@@ -32,7 +32,7 @@ function cbrowserMod(sep) {
         return "";
     }
     sep = sep || "";
-    return "$cbr:" + window.cnt_browser + sep;
+    return "$br:" + window.cnt_browser + sep;
 };
 
 var EventHandlers = (function() {

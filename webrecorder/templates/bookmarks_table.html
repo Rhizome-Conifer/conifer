@@ -32,7 +32,7 @@
                 {% set timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
                 {% set path = collection_path + timestamp + '/' + bookmark.url %}
                 {% set browser = browsers[bookmark.browser] if bookmark.browser in browsers else None %}
-                {% set cb_path = collection_path + timestamp + ('$cbr:'+browser.id if browser else '') + '/' + bookmark.url %}
+                {% set cb_path = collection_path + timestamp + ('$br:'+browser.id if browser else '') + '/' + bookmark.url %}
                 {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
 
                 {% set editing_id = "bookmark-" + recording.id + "-" + timestamp + "-" + bookmark.url %}

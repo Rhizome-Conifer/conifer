@@ -283,7 +283,7 @@ class ContentController(BaseController, RewriterApp):
             if (self.content_host and
                 not self.is_content_request() and
                 wb_url.mod != '' and
-                not wb_url.mod.startswith('$cbr:')):
+                not wb_url.mod.startswith('$br:')):
                 self.redir_host(self.content_host)
 
     def _filter_headers(self, type, status_headers):
@@ -428,7 +428,7 @@ class ContentController(BaseController, RewriterApp):
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser
-        if wb_url.mod.startswith('$cbr:'):
+        if wb_url.mod.startswith('$br:'):
             return self.handle_browser_embed(wb_url, kwargs)
 
         return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
