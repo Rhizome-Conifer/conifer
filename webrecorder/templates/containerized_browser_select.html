@@ -12,15 +12,15 @@
     <div class='dropdown-menu'>
         <div class='container'>
             <ul class='row'>
-                <li class='col-xs-2'><h6 class='dropdown-header'>browser</h6></li>
+                <li class='col-xs-3'><h6 class='dropdown-header'>browser</h6></li>
                 <li class='col-xs-2'><h6 class='dropdown-header'>version</h6></li>
                 <li class='col-xs-2'><h6 class='dropdown-header'>release</h6></li>
                 <li class='col-xs-2'><h6 class='dropdown-header'>OS</h6></li>
-                <li class='col-xs-4'><h6 class='dropdown-header'>capabilities</h6></li>
+                <li class='col-xs-3'><h6 class='dropdown-header'>capabilities</h6></li>
             </ul>
-            {% for id, browser in get_browsers().items() %}
+            {% for id, browser in get_browsers() | dictsort %}
                 <ul class='row cnt-browser{% if active_browser and browser.id == active_browser.id %} active{% endif %}{% if browser.disabled %} disabled{% endif %}' data-browser-id='{{ browser.id }}' data-browser-name='{{ browser.name }}' data-browser-vrs='{{ browser.version }}'>
-                    <li class='col-xs-2'>
+                    <li class='col-xs-3'>
                         <img src='/api/browsers/browsers/{{ browser.id }}/icon'>
                         <span>{{ browser.name }}</span>
                     </li>
@@ -33,17 +33,17 @@
                     <li class='col-xs-2'>
                         {{ browser.os }}
                     </li>
-                    <li class='col-xs-4'>
+                    <li class='col-xs-3'>
                         <span>{{ browser.caps if browser.caps else '-' }}</span>
                     </li>
                 </ul>
             {% endfor %}
             <ul class='row cnt-browser{% if not active_browser %} active{% endif %}' data-native='true'>
-                <li class='col-xs-2'>(native) Current</li>
+                <li class='col-xs-3'>(native) Current</li>
                 <li class='col-xs-2'>-</li>
                 <li class='col-xs-2'>-</li>
                 <li class='col-xs-2'>-</li>
-                <li class='col-xs-4'>-</li>
+                <li class='col-xs-3'>-</li>
             </ul>
         </div>
     </div>

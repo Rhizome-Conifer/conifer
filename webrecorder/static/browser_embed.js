@@ -1,4 +1,5 @@
 $(function() {
+    var cb = undefined;
     var params = {}
     params.static_prefix = "/static/browsers/";
     params.api_prefix = "/api/browsers";
@@ -21,6 +22,10 @@ $(function() {
     params.on_event = function(type, data) {
         if (type == "connect") {
             $("#message").hide();
+
+            if (cb && document.activeElement && document.activeElement.tagName == "INPUT") {
+                cb.lose_focus();
+            }
         }
 
         //if (type == "reconnect") {
@@ -69,6 +74,6 @@ $(function() {
     params.inactiveSecs = window.inactiveSecs;
     params.clipboard = "#clipboard";
 
-    var cb = new CBrowser(reqid, "#browser", params);
+    cb = new CBrowser(reqid, "#browser", params);
 });
 
