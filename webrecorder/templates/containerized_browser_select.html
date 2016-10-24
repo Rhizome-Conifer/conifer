@@ -19,6 +19,7 @@
                 <li class='col-xs-4'><h6 class='dropdown-header'>capabilities</h6></li>
             </ul>
             {% for id, browser in get_browsers() | dictsort %}
+                {% if not browser.hidden %}
                 <ul class='row cnt-browser{% if active_browser and browser.id == active_browser.id %} active{% endif %}{% if browser.disabled %} disabled{% endif %}' data-browser-id='{{ browser.id }}' data-browser-name='{{ browser.name }}' data-browser-vrs='{{ browser.version }}'>
                     <li class='col-xs-2'>
                         <img src='/api/browsers/browsers/{{ browser.id }}/icon'>
@@ -37,6 +38,7 @@
                         <span>{{ browser.caps if browser.caps else '-' }}</span>
                     </li>
                 </ul>
+                {% endif %}
             {% endfor %}
             <ul class='row cnt-browser{% if not active_browser %} active{% endif %}' data-native='true'>
                 <li class='col-xs-2'>(native) Current</li>

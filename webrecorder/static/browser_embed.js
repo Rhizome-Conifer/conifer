@@ -75,5 +75,9 @@ $(function() {
     params.clipboard = "#clipboard";
 
     cb = new CBrowser(reqid, "#browser", params);
+
+    $("#report-modal").on("shown.bs.modal", function () {
+        cb.lose_focus();
+    });
 });
 
