@@ -53,6 +53,7 @@ $(function() {
             $("#message").show();
             $("#browser").hide();
             msgSet = true;
+            window.containerExpired = true;
             return;
         }
 
@@ -77,6 +78,10 @@ $(function() {
     cb = new CBrowser(reqid, "#browser", params);
 
     $("#report-modal").on("shown.bs.modal", function () {
+        cb.lose_focus();
+    });
+
+    $("input").on("click", function() {
         cb.lose_focus();
     });
 });

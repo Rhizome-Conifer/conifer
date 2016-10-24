@@ -55,7 +55,7 @@ var EventHandlers = (function() {
 
             var url = getUrl();
 
-            if (window.cnt_browser && window.curr_mode != "new") {
+            if (window.cnt_browser && window.curr_mode != "new" && !window.containerExpired) {
                 if (url.indexOf("http://") != 0 && url.indexOf("https://") != 0) {
                     url = "http://" + url;
                 }
