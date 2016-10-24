@@ -640,7 +640,7 @@ var RecordingSizeWidget = (function() {
                 if (window.cnt_browser) {
                     var page = msg.page;
                     setUrl(page.url);
-                    setTitle("Containerized", page.url, page.title);
+                    setTitle("Remote", page.url, page.title);
                     replaceOuterUrl(page, "load");
                 }
                 break;
