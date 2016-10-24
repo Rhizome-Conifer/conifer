@@ -1,4 +1,4 @@
-FROM webrecorder/proxy:1.1
+FROM webrecorder/proxy:1.2
 
 ADD banner.html /code/banner.html
 ADD error.html /code/error.html
