@@ -23,7 +23,7 @@ $(function() {
         var title = $("input[name='rec-title']").val();
         var url = $("input[name='url']").val();
 
-        if (isSafari() || isMS()) {
+        if (!window.cnt_browser && (isSafari() || isMS())) {
             url = "mp_/" + url;
         }
 
