@@ -146,8 +146,8 @@ class UserController(BaseController):
                     u = re.search(r'{0}\w+'.format(self.temp_user_key),
                                   user.decode('utf-8')).group()
 
-                    total = int(temp_users[idx]['max_size'])
-                    used = int(temp_users[idx]['size'])
+                    total = int(temp_users[idx].get('max_size', self.manager.default_max_size))
+                    used = int(temp_users[idx].get('size', 0))
                     creation = datetime.fromtimestamp(int(temp_users[idx]['created_at']))
                     removal = creation + timedelta(seconds=self.config['session.durations']['short']['total'])
 
