@@ -36,7 +36,7 @@ function setActiveBrowser(data) {
                 window.user,
                 window.coll,
                 window.rec,
-                wbinfo.url
+                getUrl()
             );
         }
     } else if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
