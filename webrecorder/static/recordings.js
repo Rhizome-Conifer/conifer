@@ -607,7 +607,7 @@ var RecordingSizeWidget = (function() {
 
         prefix = prefix || wbinfo.prefix;
 
-        if (ts && (window.curr_mode != "record" && window.curr_mode != "patch")) {
+        if (ts && (window.curr_mode == "replay" || window.curr_mode == "replay-coll")) {
             prefix += ts;
         }
 
