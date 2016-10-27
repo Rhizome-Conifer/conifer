@@ -1,5 +1,7 @@
 {% extends "main_bootstrap.html" %}
 
+{% block title %} | {{ user }}'s Account Settings{% endblock %}
+
 {% block content %}
 <style>
     .warn-limit {
@@ -58,7 +60,7 @@
 
                     <div class="form-group">
                         <label for="password" class="">Confirm New Password</label>
-                        <input type="password" id="confirmpassword" data-minlength="8" data-match="#password" name="confirmpassword" class="form-control input-sm" 
+                        <input type="password" id="confirmpassword" data-minlength="8" data-match="#password" name="confirmpassword" class="form-control input-sm"
                                placeholder="" required="true" pattern="(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}" data-error="Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols" data-match-error="Password confirmation does not match">
                         <div class="help-block with-errors"></div>
                     </div>

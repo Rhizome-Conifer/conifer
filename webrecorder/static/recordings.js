@@ -19,6 +19,22 @@ function getUrl() {
     return $("input[name='url']").val();
 }
 
+function setTitle(status_msg, url, title) {
+    //var title = $('iframe').contents().find('title').text();
+    if (!title) {
+        title = url;
+    }
+    document.title = title + " (" + status_msg + ")";
+}
+
+function cbrowserMod(sep) {
+    if (!window.cnt_browser) {
+        return "";
+    }
+    sep = sep || "";
+    return "$br:" + window.cnt_browser + sep;
+};
+
 var EventHandlers = (function() {
     var bindAll = function() {
 
@@ -38,6 +54,14 @@ var EventHandlers = (function() {
             event.preventDefault();
 
             var url = getUrl();
+
+            if (window.cnt_browser && window.curr_mode != "new" && !window.containerExpired) {
+                if (url.indexOf("http://") != 0 && url.indexOf("https://") != 0) {
+                    url = "http://" + url;
+                }
+                RecordingSizeWidget.setRemoteUrl(url);
+                return false;
+            }
 
             if (window.curr_mode == "record") {
                 //if (ContentMessages.messageIfDuplicateVisit(url)) { return; }
@@ -71,7 +95,12 @@ var EventHandlers = (function() {
             } else if (window.curr_mode == "patch") {
                 var url = getUrl();
 
-                RouteTo.replayRecording(user, coll, undefined, url);
+                if (window.cnt_browser) {
+                    switchCBReplay(url);
+                    return;
+                }
+
+                RouteTo.replayRecording(user, coll, cbrowserMod(), url);
             } else if (window.curr_mode == "new") {
                 // New handled in newrecordings.js
             }
@@ -84,6 +113,11 @@ var EventHandlers = (function() {
             var url = getUrl();
             var target;
 
+            if (window.cnt_browser) {
+                switchCBPatch(url);
+                return;
+            }
+
             if ($(this).attr("target") == "_parent") {
                 target = window.parent;
             } else {
@@ -92,8 +126,8 @@ var EventHandlers = (function() {
 
             RouteTo.newPatch(coll, url, target);
         });
- 
-         
+
+
         // 'Header': 'Login' link to display modal
         $('.login-link').on('click', function(event) {
             event.preventDefault();
@@ -102,7 +136,7 @@ var EventHandlers = (function() {
 
             $.ajax({
                 url: link,
-                success: function (data) { 
+                success: function (data) {
                     $('#login-modal-cont').html(data);
                     TimesAndSizesFormatter.format();
 
@@ -162,7 +196,6 @@ var EventHandlers = (function() {
             $(this).select();
         } );
 
-
         // Adjust iframe
         if (curr_mode) {
             var height;
@@ -178,16 +211,69 @@ var EventHandlers = (function() {
         }
     }
 
+    function switchCBPatch(url) {
+        Recordings.create(user, coll, {"title": "Patch"}, createPatch, fail);
+
+        function createPatch(data) {
+            $(".glyphicon-recording-status").removeClass("glyphicon-play-circle").addClass("glyphicon-import Blink");
+            $(".recorder-status").addClass("Blink").text("Record Missing");
+
+            wbinfo.outer_prefix += data.recording.id + "/patch/";
+
+            RecordingSizeWidget.switchMode(data.recording.id, "patch", {"url": url, "title": document.title});
+
+            $(".current-size").text("0 bytes");
+
+            var bc = $("<a>" +  data.recording.title + "</a>");
+            bc.attr("href","/" + user + "/" + coll + "/" + rec);
+            bc.attr("target", "_parent");
+            bc.attr("class", "recording-breadcrumb");
+
+            $("<li>").append(bc).appendTo("ol.breadcrumb");
+
+            $(".patch-page").hide();
+        }
+
+        function fail() {
+            console.log("failed creating patch rec");
+        }
+    }
+
+    function switchCBReplay(url) {
+        $(".glyphicon-recording-status").addClass("glyphicon-play-circle").removeClass("glyphicon-import Blink");
+        $(".recorder-status").removeClass("Blink").text("Replaying");
+
+        var suffix = wbinfo.outer_prefix.lastIndexOf("/" + rec + "/patch/")
+        if (suffix >= 0) {
+            wbinfo.outer_prefix = wbinfo.outer_prefix.substring(0, suffix + 1);
+        }
+
+        RecordingSizeWidget.switchMode("*", "replay-coll", {"url": url, "title": document.title});
+
+        $(".patch-page").show();
+
+        $("ol.breadcrumb li").last().remove();
+    }
+
     return {
-        bindAll: bindAll
+        bindAll: bindAll,
+        switchCBPatch: switchCBPatch,
+        switchCBReplay: switchCBReplay,
     }
 })();
 
 
 var Snapshot = (function() {
     function queueSnapshot() {
-        var main_window = document.getElementById("replay_iframe").contentWindow;
-        main_window.postMessage({wb_type: "snapshot-req"}, "*", undefined, true);
+        if (window.cnt_browser) {
+            showModal();
+            RecordingSizeWidget.snapshotReq();
+        } else {
+            var main_window = document.getElementById("replay_iframe");
+            if (main_window && main_window.contentWindow) {
+                main_window.contentWindow.postMessage({wb_type: "snapshot-req"}, "*", undefined, true);
+            }
+        }
     }
 
     function start() {
@@ -196,52 +282,7 @@ var Snapshot = (function() {
         $("#snapshot").on('click', queueSnapshot);
     }
 
-    return {start: start};
-})();
-
-
-function uploadStaticSnapshot(snapdata) {
-    var params = $.param(snapdata.params)
-    params += "&user=" + user + "&coll=" + coll + "&rec=" + rec;
-
-    var target = window.location.origin + "/_snapshot?" + params;
-
-    $.ajax({
-        type: "PUT",
-        url: target,
-        dataType: "json",
-        data: snapdata.contents,
-        success: function(data) {
-            if (snapdata.top_page) {
-                if (typeof(data) == "string") {
-                    data = JSON.parse(data);
-                }
-
-                $("#snapshot").prop("disabled", false);
-
-                var snapUrl = "/" + user + "/" + coll + "/" + data.snapshot.timestamp + "/" + data.snapshot.url;
-
-                $("#snapshot-modal .snap-link").attr('href', snapUrl);
-                $("#snapshot-modal .snap-ts").attr("data-time-ts", data.snapshot.timestamp);
-                TimesAndSizesFormatter.format();
-
-                if (!snapdata.params.title) {
-                    snapdata.params.title = data.snapshot.url;
-                }
-
-                $("#snapshot-modal .snap-title").text(snapdata.params.title);
-
-                $('#snapshot-modal .snap-wait').hide();
-                $('#snapshot-modal .snap-created').show();
-            }
-        },
-        error: function() {
-            console.log("Snapshot Error");
-        },
-        dataType: 'html',
-    });
-
-    if (snapdata.top_page) {
+    function showModal() {
         $('#snapshot-modal .snap-wait').show();
         $('#snapshot-modal .snap-created').hide();
 
@@ -249,20 +290,76 @@ function uploadStaticSnapshot(snapdata) {
             .modal({'keyboard': true})
             .modal('show');
     }
-}
 
+    function updateModal(snapshot) {
+        $("#snapshot").prop("disabled", false);
 
+        var snapUrl = "/" + user + "/" + coll + "/" + snapshot.timestamp + "/" + snapshot.url;
+
+        $("#snapshot-modal .snap-link").attr('href', snapUrl);
+        $("#snapshot-modal .snap-ts").attr("data-time-ts", snapshot.timestamp);
+        TimesAndSizesFormatter.format();
+
+        if (!snapshot.title) {
+            snapshot.title = snapshot.url;
+        }
+
+        $("#snapshot-modal .snap-title").text(snapshot.title);
+
+        $('#snapshot-modal .snap-wait').hide();
+        $('#snapshot-modal .snap-created').show();
+    }
+
+    function uploadStaticSnapshot(snapdata) {
+        var params = $.param(snapdata.params)
+        params += "&user=" + user + "&coll=" + coll + "&rec=" + rec;
+
+        var target = window.location.origin + "/_snapshot?" + params;
+
+        $.ajax({
+            type: "PUT",
+            url: target,
+            dataType: "json",
+            data: snapdata.contents,
+            success: function(data) {
+                if (snapdata.top_page) {
+                    if (typeof(data) == "string") {
+                        data = JSON.parse(data);
+                    }
+
+                    data.snapshot.title = snapdata.params.title;
+
+                    updateModal(data.snapshot);
+                }
+            },
+            error: function() {
+                console.log("Snapshot Error");
+            },
+            dataType: 'html',
+        });
+
+        if (snapdata.top_page) {
+            showModal();
+        }
+    }
+
+    return {start: start,
+            uploadStaticSnapshot: uploadStaticSnapshot,
+            updateModal: updateModal,
+           }
+})();
 
 
 var RouteTo = (function(){
     var host = window.location.protocol + "//" + window.location.host;
 
     var newRecording = function(collection, recording, url, mode, target) {
-        routeTo(host + "/$record/" + collection + "/" + recording + "/" + url, target);
+        // if a containerized browser is set, assign it to the new recording
+        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
     }
 
     var newPatch = function(collection, url, target) {
-        routeTo(host + "/$patch/" + collection + "/" + url, target);
+        routeTo(host + "/$patch/" + collection + "/" + cbrowserMod("/") + url, target);
     }
 
     var recordingInProgress = function(user, collection, recording, url, mode, target) {
@@ -270,7 +367,7 @@ var RouteTo = (function(){
             mode = "record";
         }
 
-        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + url, target);
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "/" + mode + "/" + cbrowserMod("/") + url, target);
     }
 
     var collectionInfo = function(user, collection) {
@@ -328,8 +425,13 @@ var RecordingSizeWidget = (function() {
     var useWS = false;
     var errCount = 0;
 
+    var startmsg = undefined;
+
+    // track window.onpopstate url
+    var lastPopUrl = undefined;
+
     var start = function() {
-        if ($('.size-counter-active').length && window.curr_mode) {
+        if (window.curr_mode && window.curr_mode != "new") {
             //(window.curr_mode == "record" || window.curr_mode == "patch")) {
             //recordingId = $('[data-recording-id]').attr('data-recording-id');
             //collectionId = $('[data-collection-id]').attr('data-collection-id');
@@ -352,12 +454,34 @@ var RecordingSizeWidget = (function() {
                     }
                 }, 1000);
             }
+
+            // For containerized browsers, respond to history changes to reflect in the cbrowser
+            if (window.cnt_browser) {
+                $(window).on('popstate', function(event) {
+                    if (event.originalEvent && event.originalEvent.state) {
+                        var state = event.originalEvent.state;
+                        lastPopUrl = state.url;
+
+                        if (state.change == "load") {
+                            setRemoteUrl(state.url);
+                        } else if (state.change == "patch") {
+                            EventHandlers.switchCBReplay(getUrl());
+                        } else if (state.change == "replay-coll") {
+                            EventHandlers.switchCBPatch(getUrl());
+                        }
+                    }
+                });
+            }
         }
     }
 
     function ws_openned() {
         useWS = true;
         errCount = 0;
+        if (startmsg) {
+            console.log("sent on start");
+            sendMsg(startmsg);
+        }
     }
 
     function ws_closed() {
@@ -367,13 +491,21 @@ var RecordingSizeWidget = (function() {
             setTimeout(initWS, 2000);
         }
     }
- 
+
     var initWS = function() {
         var url = window.location.protocol == "https:" ? "wss://" : "ws://";
         url += window.location.host + "/_client_ws?";
-        url += "user=" + user + "&coll=" + coll;
+        if (window.curr_mode != "live") {
+            url += "user=" + user + "&coll=" + coll;
+        } else {
+            url += "user=$temp&coll=temp";
+        }
+
         if (rec && rec != "*") {
             url += "&rec=" + rec;
+        }
+        if (window.reqid) {
+            url += "&reqid=" + reqid;
         }
 
         try {
@@ -388,53 +520,140 @@ var RecordingSizeWidget = (function() {
         }
     }
 
-    function addCookie(name, value, domain) {
-        if (!hasWS()) {
-            return false;
-        }
+    function switchMode(rec, type, msg) {
+        window.rec = rec;
+        window.curr_mode = type;
 
+        replaceOuterUrl(msg, type);
+
+        var msg = {"ws_type": "switch",
+                   "type": type,
+                   "rec": rec
+                  }
+
+        return sendMsg(msg);
+    }
+
+    function addCookie(name, value, domain) {
         var msg = {"ws_type": "addcookie",
                    "name": name,
                    "value": value,
                    "domain": domain}
 
-        ws.send(JSON.stringify(msg));
-        return true;
+        return sendMsg(msg);
     }
 
     function addSkipReq(url) {
-        if (!hasWS()) {
-            return false;
-        }
-
         var msg = {"ws_type": "skipreq",
                    "url": url
                   }
 
-        ws.send(JSON.stringify(msg));
-        return true;
+        return sendMsg(msg);
     }
- 
+
+    function snapshotReq() {
+        var msg = {"ws_type": "snapshot-req",
+                  }
+
+        return sendMsg(msg);
+    }
+
     function addPage(page) {
+        var msg = {"ws_type": "page",
+                   "page": page}
+
+        return sendMsg(msg);
+    }
+
+    function doAutoscroll() {
+        var msg = {"ws_type": "autoscroll"}
+
+        return sendMsg(msg);
+    }
+
+    function doLoadAll() {
+        var msg = {"ws_type": "load_all"}
+
+        return sendMsg(msg);
+    }
+
+    function setRemoteUrl(url) {
+        var msg = {"ws_type": "set_url",
+                   "url": url}
+
+        return sendMsg(msg);
+    }
+
+    function sendMsg(msg) {
         if (!hasWS()) {
             return false;
         }
 
-        var msg = {"ws_type": "page",
-                   "page": page}
-
         ws.send(JSON.stringify(msg));
         return true;
     }
-    
+
+    // TODO: reuse make_url, postMessage from wb_frame.js
+    function replaceOuterUrl(msg, change)
+    {
+        var ts = msg.timestamp;
+        var mod = cbrowserMod();
+        var prefix = wbinfo.outer_prefix;
+        var url = msg.url;
+
+        if (ts || mod) {
+            mod += "/";
+        }
+
+        prefix = prefix || wbinfo.prefix;
+
+        if (ts && (window.curr_mode == "replay" || window.curr_mode == "replay-coll")) {
+            prefix += ts;
+        }
+
+        msg.change = change;
+
+        if (url != lastPopUrl) {
+            window.history.pushState(msg, msg.title, prefix + mod + url);
+            lastPopUrl = undefined;
+        } else if (change == "load") {
+            lastPopUrl = undefined;
+        }
+        
+        if (ts) {
+            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(ts));
+            $(".replay-wrap").show();
+        }
+    }
+
     function ws_received(event)
     {
         var msg = JSON.parse(event.data);
-        
+
         switch (msg.ws_type) {
             case "status":
                 updateDom(msg.size);
                 BookmarkCounter.setBookmarkCount(msg.numPages);
+                break;
+
+            case "remote_url":
+                if (window.cnt_browser) {
+                    var page = msg.page;
+                    setUrl(page.url);
+                    setTitle("Remote", page.url, page.title);
+                    replaceOuterUrl(page, "load");
+                }
+                break;
+
+            case "patch_req":
+                if (window.cnt_browser) {
+                    if (window.curr_mode == "replay-coll" || window.curr_mode == "replay") {
+                        EventHandlers.switchCBPatch(getUrl());
+                    }
+                }
+
+            case "snapshot":
+                Snapshot.updateModal(msg);
                 break;
 
             default:
@@ -503,10 +722,17 @@ var RecordingSizeWidget = (function() {
 
     return {
         start: start,
+        switchMode: switchMode,
+
         addCookie: addCookie,
         addSkipReq: addSkipReq,
         addPage: addPage,
+        doAutoscroll: doAutoscroll,
+        doLoadAll: doLoadAll,
+        setRemoteUrl: setRemoteUrl,
         hasWS: hasWS,
+        replaceOuterUrl: replaceOuterUrl,
+        snapshotReq: snapshotReq,
     }
 
 })();
@@ -609,7 +835,7 @@ var CountdownTimer = (function() {
         if (secdiff < 300) {
             $("*[data-anon-timer]").parent().show();
         }
-        
+
         var min = Math.floor(secdiff / 60);
         var sec = secdiff % 60;
         if (sec <= 9) {
@@ -640,9 +866,9 @@ var CountdownTimer = (function() {
             if (end_time == undefined) {
                 setInterval(update_countdown, 1000);
             }
-        
+
             end_time = Math.floor(new Date().getTime() / 1000 + time_left);
-        
+
             update_countdown();
         }
     }
@@ -765,7 +991,7 @@ $(function() {
         } else if (state.wb_type == "cookie") {
             setDomainCookie(state);
         } else if (state.wb_type == "snapshot") {
-            uploadStaticSnapshot(state);
+            Snapshot.uploadStaticSnapshot(state);
         } else if (state.wb_type == "skipreq") {
             addSkipReq(state);
         } else if (state.wb_type == "hashchange") {
@@ -791,7 +1017,7 @@ $(function() {
             return;
         }
 
-        var cookie_data = 
+        var cookie_data =
                     {
                      "name": cookie[0],
                      "value": cookie[1],
@@ -820,7 +1046,7 @@ $(function() {
 
         $.ajax({
             url: "/_skipreq?url=" + encodeURIComponent(state.url),
-        });        
+        });
     }
 
     function addNewPage(state) {
@@ -856,14 +1082,15 @@ $(function() {
             var attributes = {};
 
             attributes.url = state.url;
+            setUrl(state.url);
 
             attributes.timestamp = state.ts;
             attributes.title = state.title;
 
             var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
             setTitle(msg, state.url, state.title);
- 
-            if (!RecordingSizeWidget.addPage(attributes)) {           
+
+            if (!RecordingSizeWidget.addPage(attributes)) {
                 Recordings.addPage(recordingId, attributes);
             }
 
@@ -875,14 +1102,6 @@ $(function() {
             setUrl(state.url);
             setTitle("Archived", state.url, state.title);
         }
-    }
-
-    function setTitle(status_msg, url, title) {
-        //var title = $('iframe').contents().find('title').text();
-        if (!title) {
-            title = url;
-        }
-        document.title = title + " (" + status_msg + ")";
     }
 
     window.addEventListener("message", handleReplayEvent);
@@ -908,4 +1127,8 @@ $(function() {
         addNewPage(state);
     });
 
+
+    $("#load-all").on('click', function() {
+        RecordingSizeWidget.doLoadAll();
+    });
 });

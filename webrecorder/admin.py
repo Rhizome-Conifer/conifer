@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
-import hashlib
 import json
 import os
 import re
 import redis
-import requests
 import time
 
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -70,60 +68,11 @@ def choose_role(m):
     return roles[alpha.index(new_role)][0]
 
 
-def add_email(username, email, name):
-    """3rd party mailing list subscription"""
-    list_endpoint = os.environ.get('MAILING_LIST_ENDPOINT', '')
-    list_key = os.environ.get('MAILING_LIST_KEY', '')
-    payload = os.environ.get('MAILING_LIST_PAYLOAD', '')
-
-    if not list_endpoint or not list_key:
-        return print('MAILING_LIST is turned on, but required fields are '
-                     'missing.')
-
-    try:
-        res = requests.post(list_endpoint,
-                            auth=('nop', list_key),
-                            data=payload.format(
-                                email=email,
-                                name=name,
-                                username=username))
-
-        if res.status_code != 200:
-            print('Unexpected mailing list API response.. '
-                  'status code: {0.status_code}\n'
-                  'content: {0.content}'.format(res))
-
-    except Exception as e:
-        print('Adding to mailing list failed:', e)
-
-
-def remove_email(email):
-    """3rd party mailing list removal"""
-    list_key = os.environ.get('MAILING_LIST_KEY', '')
-    list_removal_endpoint = os.path.expandvars(
-                                os.environ.get('MAILING_LIST_REMOVAL', ''))
-    try:
-        email = email.encode('utf-8').lower()
-        email_hash = hashlib.md5(email).hexdigest()
-        res = requests.delete(list_removal_endpoint.format(email_hash),
-                              auth=('nop', list_key))
-
-        if res.status_code != 204:
-            print('Unexpected mailing list API response.. '
-                  'status code: {0.status_code}\n'
-                  'content: {0.content}'.format(res))
-
-    except Exception as e:
-        print('Removing from mailing list failed:', e)
-
-
 def create_user(m, email=None, username=None, passwd=None, role=None, name=None):
     """Create a new user with command line arguments or series of prompts,
        preforming basic validation
     """
     users = m.get_users()
-    mailing_list = os.environ.get('MAILING_LIST', '').lower()
-    mailing_list = mailing_list in ('true', '1', 'yes')
 
     print('let\'s create a new user..')
     email = email or input('email: ').strip()
@@ -204,8 +153,8 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
                         synthetic=True)
 
     # email subscription set up?
-    if mailing_list:
-        add_email(username, email, name)
+    if m.mailing_list:
+        m.add_to_mailing_list(username, email, name)
 
     print('All done!')
 
@@ -213,10 +162,6 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
 def modify_user(m):
     """Modify an existing users. available modifications: role, email"""
     users = m.get_users()
-    mailing_list = os.environ.get('MAILING_LIST', '').lower()
-    mailing_list = mailing_list in ('true', '1', 'yes')
-    remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
-                        in ('true', '1', 'yes'))
 
     username = input('username to modify: ')
     has_modified = False
@@ -244,10 +189,10 @@ def modify_user(m):
         # assume the 3rd party mailing list doesn't support updating addresses
         # so if add & remove are turned on, remove the old and add the
         # new address.
-        if mailing_list and remove_on_delete:
-            remove_email(users[username]['email_addr'])
+        if m.mailing_list and m.remove_on_delete:
+            m.remove_from_mailing_list(users[username]['email_addr'])
             name = json.loads(m.get_users()[username].get('desc', '{}')).get('name', '')
-            add_email(username, new_email, name)
+            m.add_to_mailing_list(username, new_email, name)
 
         print('assigned {0} with the new email: {1}'.format(username, new_email))
         m.cork._store.users[username]['email_addr'] = new_email
@@ -283,7 +228,7 @@ def delete_user(m):
 
     # email subscription set up?
     if remove_on_delete:
-        remove_email(users[username]['email_addr'])
+        m.remove_from_mailing_list(users[username]['email_addr'])
 
     # delete user data and remove from redis
     res = m._send_delete('user', username)

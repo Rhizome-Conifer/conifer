@@ -1,19 +1,19 @@
 from .testfullstack import FullStackTests
 
+import glob
 import os
 import time
 
+from fakeredis import FakeStrictRedis
 from io import BytesIO
 
 from pywb.cdx.cdxobject import CDXObject
 from pywb.warc.cdxindexer import write_cdx_index
 from pywb.utils.bufferedreaders import ChunkedDataReader
 
-import glob
-
-from fakeredis import FakeStrictRedis
-
+from re import sub
 from six.moves.urllib.parse import urlsplit
+from urllib.parse import quote
 
 from webrecorder.session import Session
 
@@ -29,6 +29,7 @@ class TestTempContent(FullStackTests):
         'u:{user}:info',
         'h:roles',
         'h:defaults',
+        'h:temp-usage',
     ]
 
     def _get_redis_keys(self, keylist, user, coll, rec):
@@ -169,6 +170,46 @@ class TestTempContent(FullStackTests):
         warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
         assert self.redis.hlen(warc_key) == 1
 
+    def test_anon_unicode_record_1(self):
+        test_url = 'http://httpbin.org/get?bood=far'
+        res = self._get_anon(
+            '/temp/{rec}/record/mp_/{url}'.format(rec=quote('вэбрекордэр'), url=test_url)
+        )
+        res.charset = 'utf-8'
+
+        assert '"bood": "far"' in res.text, res.text
+
+        assert self.testapp.cookies['__test_sesh'] != ''
+
+        # Add as page
+        page = {'title': 'вэбрекордэр!', 'url': test_url, 'ts': '2016010203000000'}
+        res = self.testapp.post(
+            '/api/v1/recordings/{rec}/pages?user={user}&coll=temp'.format(rec=quote('вэбрекордэр'), user=self.anon_user),
+            params=page
+        )
+
+        assert res.json == {}
+
+        user = self.anon_user
+
+        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'вэбрекордэр'])
+
+        anon_dir = os.path.join(self.warcs_dir, user)
+        assert len(os.listdir(anon_dir)) == 3
+
+        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='вэбрекордэр')
+        assert self.redis.hlen(warc_key) == 1
+
+        # test non-protocol url replay routing
+        res = self._get_anon(
+            '/temp/{rec}/{url}'.format(rec=quote('вэбрекордэр'), url=sub(r'^http://', '', test_url))
+        )
+        res.charset = 'utf-8'
+
+        # accessing the url should route to the replay
+        assert res.status_code == 200
+        assert '<iframe' in res.text
+
     def test_anon_new_add_to_recording(self):
         res = self._get_anon('/temp/my-rec2/$add')
         res.charset = 'utf-8'
@@ -200,7 +241,6 @@ class TestTempContent(FullStackTests):
 
         assert 'http://httpbin.org/get?food=bar' in res.text
         assert 'http://httpbin.org/get?bood=far' in res.text
-
 
     def test_anon_rec_info(self):
         res = self._get_anon('/temp/my-rec2')
@@ -269,7 +309,7 @@ class TestTempContent(FullStackTests):
         #print(cdxout.getvalue().decode('utf-8'))
 
         cdx = [CDXObject(cdx) for cdx in cdxout.getvalue().rstrip().split(b'\n')]
-        assert len(cdx) == 4
+        assert len(cdx) == 6
 
         # response
         cdx[0]['url'] = 'http://httpbin.org/get?food=bar'
@@ -293,6 +333,10 @@ class TestTempContent(FullStackTests):
         res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'my-recording'}
+
+        res = self.testapp.delete('/api/v1/recordings/{rec}?user={user}&coll=temp'.format(rec=quote('вэбрекордэр'), user=self.anon_user))
+
+        assert res.json == {'deleted_id': 'вэбрекордэр'}
 
         user = self.anon_user
 
@@ -380,8 +424,7 @@ class TestTempContent(FullStackTests):
 
         time.sleep(4.0)
 
-        assert set(self.redis.keys()) == set([b'h:roles', b'h:defaults'])
+        assert set(self.redis.keys()) == set([b'h:roles', b'h:defaults', b'h:temp-usage'])
 
         assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
         #assert os.listdir(os.path.join(self.warcs_dir, 'anon')) == []
-

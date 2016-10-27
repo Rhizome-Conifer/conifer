@@ -2,21 +2,21 @@
 {% block head %}
 
 {{ super() }}
-<script src="{{ static }}/novnc/util.js"></script>
 <script>
     wbinfo = {}
+    wbinfo.outer_prefix = decodeURI("{{ top_prefix }}");
     wbinfo.url = "{{ url }}";
     wbinfo.capture_url = wbinfo.url;
     wbinfo.timestamp = "{{ ts }}";
     wbinfo.state = "{{ curr_mode }}";
     wbinfo.info = {{ info | default('{}') | tojson }};
-</script>
-<script>
-    window.STATIC_PREFIX = "{{ static }}";
-    var browser = "{{ browser }}";
-    var url = "{{ url }}";
-    var curr_ts = "{{ ts }}";
-    var upsid = "{{ upsid }}";
+
+    window.cnt_browser = "{{ browser }}";
+
+    window.reqid = "{{ reqid }}";
+
+    window.inactiveSecs = {{ inactive_time if inactive_time else 0 }};
+
 </script>
 
 {% assets "main-css" %}
@@ -27,41 +27,37 @@
 <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}
 
-{#
-<script src="/static/__shared/collections_model.js"></script>
-<script src="/static/__shared/recordings_model.js"></script>
-<script src="/static/__shared/recordings.js"></script>
-<script src="/static/__shared/browser_controller.js"></script>
+<script src="/static/browsers/browser_controller.js"></script>
 
-<script src="/static/__shared/times_and_sizes_formatter.js"></script>
-#}
-
-<style>
-.browser {
-    text-align: center;
-}
-
-#noVNC_canvas {
-    position: fixed;
-    margin-left: 20px;
-    left: 0px;
-}
-
-</style>
 {% endblock %}
 
 {% block body %}
 
 {% include 'header.html' %}
 
-<div class="browser">
-    <div id="browserMsg" class="loading">Initializing Browser...</div>
-    <div id="noVNC_screen">
-        <canvas id="noVNC_canvas" style="display: none">
-            Canvas not supported.
-        </canvas>
+<div id="message" class="browser">{{ message }}</div>
+<div id="browser" class="browser"></div>
+
+<div class="modal fade" id="clipboard-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4>Remote Browser Clipboard</h4>
+            </div>
+            <div class="modal-body">
+                <p>Any text selected in the remote browser will appear below.</p>
+                <p>You can also enter text here to paste (Ctrl+V) into the remote browser.</p>
+                <textarea id="clipboard" style="width: 100%; min-height: 200px" autofocus></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
 </div>
+
+{% include 'reporterror.html' %}
 
 {% endblock %}
 

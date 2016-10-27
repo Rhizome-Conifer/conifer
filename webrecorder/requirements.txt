@@ -7,3 +7,4 @@ boto
 requests>=2.9.1
 bottle-cork==0.12.0
 webassets
+marshmallow

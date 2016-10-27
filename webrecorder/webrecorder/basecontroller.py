@@ -20,6 +20,7 @@ class BaseController(object):
 
         self.app_host = os.environ['APP_HOST']
         self.content_host = os.environ['CONTENT_HOST']
+        self.cache_template = config.get('cache_template')
 
         self.init_routes()
 
@@ -42,8 +43,9 @@ class BaseController(object):
         url += path
         return bottle_redirect(url)
 
-    def get_user(self, api=False):
-        self.redir_host()
+    def get_user(self, api=False, redir_check=True):
+        if redir_check:
+            self.redir_host()
         user = request.query.getunicode('user')
         if not user:
             self._raise_error(400, 'User must be specified',
@@ -60,8 +62,8 @@ class BaseController(object):
 
         return user
 
-    def get_user_coll(self, api=False):
-        user = self.get_user(api=api)
+    def get_user_coll(self, api=False, redir_check=True):
+        user = self.get_user(api=api, redir_check=redir_check)
 
         coll = request.query.getunicode('coll')
         if not coll:
@@ -140,7 +142,7 @@ class BaseController(object):
 
     def redirect(self, url):
         if url.startswith('/'):
-            url = self.get_host() + quote(url, safe='+ /!:%?=&#')
+            url = self.get_host() + quote(url, safe='+ /!:%?$=&#')
 
         return bottle_redirect(url)
 
@@ -184,10 +186,14 @@ class BaseController(object):
     def get_view_user(self, user):
         return user
 
-    def get_body_class(self, action):
-        if action in ["add_to_recording", "new_recording"]:
-            return "interstitial-page"
-        else:
-            return ""
+    def get_body_class(self, context, action):
+        classes = []
 
+        if action in ["add_to_recording", "new_recording"]:
+            classes.append("interstitial-page")
+
+        if 'browser_data' in context:
+            classes.append('cbrowser')
+
+        return ' '.join(classes).strip()
 

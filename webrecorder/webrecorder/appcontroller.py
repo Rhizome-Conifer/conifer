@@ -1,33 +1,31 @@
-from bottle import Bottle, debug, request, response
+from bottle import Bottle, debug, JSONPlugin, request, response
 
 import logging
 import json
 import redis
+import re
 
 import os
 
 from jinja2 import contextfunction
 from urlrewrite.templateview import JinjaEnv
 
-from webassets import Environment as AssetsEnvironment
-from webassets.ext.jinja2 import AssetsExtension
-
-from webassets.loaders import YAMLLoader
-from webassets.env import Resolver
-from pkg_resources import resource_filename
-
 from six.moves.urllib.parse import urlsplit, urljoin
 
 from webagg.utils import load_config
 
+from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
+from webrecorder.snapshotcontroller import SnapshotController
+from webrecorder.websockcontroller import WebsockController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
 from webrecorder.logincontroller import LoginController
 from webrecorder.usercontroller import UserController
-from webrecorder.browsercontroller import BrowserController
 from webrecorder.downloadcontroller import DownloadController
 from webrecorder.uploadcontroller import UploadController
+
+from webrecorder.browsermanager import BrowserManager
 
 from webrecorder.webreccork import WebRecCork
 
@@ -43,10 +41,11 @@ from webrecorder.basecontroller import BaseController
 class AppController(BaseController):
     ALL_CONTROLLERS = [DownloadController,
                        UploadController,
-                       BrowserController,
                        LoginController,
                        UserController,
-                       ContentController,
+                       #ContentController,
+                       SnapshotController,
+                       WebsockController,
                        RecsController,
                        CollsController
                       ]
@@ -58,6 +57,9 @@ class AppController(BaseController):
         bottle_app = Bottle()
         self.bottle_app = bottle_app
 
+        # JSON encoding for datetime objects
+        self.bottle_app.install(JSONPlugin(json_dumps=lambda s: json.dumps(s, cls=CustomJSONEncoder)))
+
         config = load_config('WR_CONFIG', configfile, 'WR_USER_CONFIG', overlay_config)
 
         # Init Redis
@@ -65,27 +67,30 @@ class AppController(BaseController):
             redis_url = os.environ['REDIS_BASE_URL']
 
         self.redis = redis.StrictRedis.from_url(redis_url)
-        self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
+        self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'], decode_responses=True)
         self.session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
+
+        # Init Jinja
+        jinja_env = self.init_jinja_env(config)
+
+        # Init Content Loader/Rewriter
+        content_app = ContentController(app=bottle_app,
+                                        jinja_env=jinja_env,
+                                        config=config,
+                                        redis=self.redis)
+
+        # Init Browser Mgr
+        self.browser_mgr = BrowserManager(config, self.browser_redis, content_app)
 
         # Init Cork
         self.cork = WebRecCork.create_cork(self.redis, config)
 
         # Init Manager
-        manager = RedisDataManager(self.redis, self.cork, self.browser_redis, config)
+        manager = RedisDataManager(self.redis, self.cork, content_app,
+                                   self.browser_redis, self.browser_mgr, config)
 
         # Init Sesion temp_prefix
         Session.temp_prefix = config['temp_prefix']
-
-        # Init Jinja
-        jinja_env = JinjaEnv(globals={'static_path': 'static/__pywb'},
-                             extensions=[AssetsExtension])
-
-        loader = YAMLLoader(config['assets_path'])
-        assets_env = loader.load_environment()
-        assets_env.resolver = PkgResResolver()
-
-        jinja_env.jinja_env.assets_environment = assets_env
 
         # Init Core app controllers
         for controller_type in self.ALL_CONTROLLERS:
@@ -103,11 +108,13 @@ class AppController(BaseController):
                                            self.session_redis,
                                            config)
 
-        self.init_jinja_env(config, jinja_env.jinja_env)
-
         super(AppController, self).__init__(final_app, jinja_env, manager, config)
 
-    def init_jinja_env(self, config, jinja_env):
+    def init_jinja_env(self, config):
+        jinja_env_wrapper = JinjaEnv(assets_path=config['assets_path'])
+
+        jinja_env = jinja_env_wrapper.jinja_env
+
         jinja_env.globals['metadata'] = config.get('metadata', {})
 
         def get_coll(context):
@@ -118,6 +125,9 @@ class AppController(BaseController):
 
         def get_user(context):
             return context.get('user', '')
+
+        def get_browsers():
+            return self.browser_mgr.get_browsers()
 
         @contextfunction
         def can_admin(context):
@@ -146,11 +156,16 @@ class AppController(BaseController):
 
         @contextfunction
         def get_body_class(context, action):
-            return self.get_body_class(action)
+            return self.get_body_class(context, action)
 
         @contextfunction
         def is_out_of_space(context):
             return self.manager.is_out_of_space(context.get('curr_user', ''))
+
+        def trunc_url(value):
+            """ Truncate querystrings, appending an ellipses
+            """
+            return re.sub(r'(\?.*)', '?...', value)
 
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
@@ -160,6 +175,10 @@ class AppController(BaseController):
         jinja_env.globals['get_path'] = get_path
         jinja_env.globals['get_body_class'] = get_body_class
         jinja_env.globals['is_out_of_space'] = is_out_of_space
+        jinja_env.globals['get_browsers'] = get_browsers
+        jinja_env.filters['trunc_url'] = trunc_url
+
+        return jinja_env_wrapper
 
     def init_routes(self):
         @self.bottle_app.route(['//<url:re:.*>'])
@@ -190,6 +209,14 @@ class AppController(BaseController):
                 self.fill_anon_info(resp)
 
             return resp
+
+        @self.bottle_app.route('/_message')
+        def flash_message():
+            message = request.query.getunicode('message', '')
+            msg_type = request.query.getunicode('msg_type', '')
+            print(message, msg_type)
+            self.flash_message(message, msg_type)
+            return {}
 
         @self.bottle_app.route('/_policies')
         @self.jinja2_view('policies.html')
@@ -282,27 +309,5 @@ class AppController(BaseController):
         boto_log = logging.getLogger('boto')
         if boto_log:
             boto_log.setLevel(logging.ERROR)
-
-
-# ============================================================================
-class PkgResResolver(Resolver):
-    def get_pkg_path(self, item):
-        if not isinstance(item, str):
-            return None
-
-        parts = urlsplit(item)
-        if parts.scheme == 'pkg' and parts.netloc:
-            return (parts.netloc, parts.path)
-
-        return None
-
-    def resolve_source(self, ctx, item):
-        pkg = self.get_pkg_path(item)
-        if pkg:
-            filename = resource_filename(pkg[0], pkg[1])
-            if filename:
-                return filename
-
-        return super(PkgResResolver, self).resolve_source(ctx, item)
 
 

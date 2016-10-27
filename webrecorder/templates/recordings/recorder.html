@@ -49,10 +49,26 @@
 
             {% endif %}
 
+
+            {% if browser %}
+            <button type="button" data-toggle="modal" data-target="#clipboard-modal" class="left-buffer btn btn-xs btn-default">
+            <span class="glyphicon glyphicon-copy glyphicon-button"></span>Clipboard</button>
+
+            <span id="browser-countdown-label">Browser Time Left: <span id="browser-countdown"></span></span>
+            {% endif %}
+
+            {#
+            <!-- Disabled for now -->
+            <button id="load-all" type="button"
+                    class="left-buffer btn btn-default btn-xs">
+                <span class="glyphicon glyphicon-th glyphicon-button"></span>Load All</button>
+            #}
+
         </div>
 
-        <div class="input-group">
-            <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" autofocus required>
+        <div class="input-group containerized">
+            {% include '/containerized_browser_select.html' %}
+            <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" {% if not browser %}autofocus{% endif %} required>
             <input class="hidden" type="submit">
             <span id="replay-date" class="replay-date"></span>
             <div class="input-group-addon"></div>

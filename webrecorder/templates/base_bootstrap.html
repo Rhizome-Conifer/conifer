@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <title>Webrecorder{% block title %}{% endblock %}</title>
 {#
         <script src="/static/__shared/external/jquery.min.js"></script>
         <script src="/static/__shared/external/bootstrap/js/bootstrap.min.js"></script>
@@ -15,6 +16,7 @@
             window.user = "{{ user }}";
             window.coll = "{{ coll }}";
             window.rec = "{{ rec }}";
+            window.browsers = {{ get_browsers() }};
         </script>
 
         {% block head %}

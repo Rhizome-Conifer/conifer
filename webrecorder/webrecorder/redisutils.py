@@ -74,7 +74,7 @@ class RedisHashTable(object):
         self.thedict[name] = value
         self.redistable[self.key] = self.thedict
 
-    def __delitem__(self, entry):
+    def __delitem__(self, name):
         del self.thedict[name]
         self.redistable[self.key] = self.thedict
 

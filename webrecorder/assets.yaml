@@ -8,6 +8,7 @@ bundles:
         contents:
             - external/jquery.min.js
             - external/bootstrap/js/bootstrap.min.js
+            - utils.js
 
     base-css:
         output: bundle/base.css
@@ -29,6 +30,7 @@ bundles:
             - collections_model.js
             - recordings.js
             - external/validator.js
+            - containerized_ui.js
 
     main-css:
         output: bundle/main.css
@@ -69,6 +71,7 @@ bundles:
             - recordings_model.js
             - recordings.js
             - automate.js
+            - containerized_ui.js
 
     frame-css:
         output: bundle/frame.css
@@ -118,7 +121,10 @@ bundles:
         contents:
             - base-js
             - times_and_sizes_formatter.js
+            - browser_embed.js
             - recordings_model.js
             - collections_model.js
             - recordings.js
-            - browser_controller.js
+            - automate.js
+            - containerized_ui.js
+

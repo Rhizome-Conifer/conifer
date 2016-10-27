@@ -1,5 +1,7 @@
 from bottle import request, response, HTTPError
 
+import re
+
 from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
 import json
@@ -92,6 +94,10 @@ class CollsController(BaseController):
             user = self.get_user(api=True)
             self._ensure_coll_exists(user, coll)
 
+            # TODO: notify the user if this is a request from the admin panel
+            if self.post_get('notify') == 'true' and self.manager.is_superuser():
+                pass
+
             public = self.post_get('public') == 'true'
             self.manager.set_public(user, coll, public)
 
@@ -180,7 +186,7 @@ class CollsController(BaseController):
         def coll_info(user, coll):
             return self.get_collection_info_for_view(user, coll)
 
-        @self.app.get(['/<user>/<coll>/<rec_list>', '/<user>/<coll>/<rec_list>/'])
+        @self.app.get(['/<user>/<coll>/<rec_list:re:([\w-]+)>', '/<user>/<coll>/<rec_list:re:([\w-]+)>/'])
         @self.jinja2_view('collection_info.html')
         def coll_info(user, coll, rec_list):
             rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]

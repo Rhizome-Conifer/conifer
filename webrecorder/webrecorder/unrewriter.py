@@ -6,7 +6,7 @@ from pywb.rewrite.html_rewriter import HTMLRewriter
 
 
 # ============================================================================
-WBURL_MATCH = '(?:[0-9]{0,14}(?:\w+_)?)?/(.*)'
+WBURL_MATCH = '(?:[0-9]{0,14}(?:\w+_)?)?/{0,3}(.*)'
 
 PREFIX_MATCH = '({0})?({1})'
 
@@ -14,9 +14,21 @@ HOST_WBURL_RX = r'(?<=["\'(=>\s])(?:https?\:)?//{0}[^\s\'"]+/((?:https?|//)[^\'"
 
 
 # ============================================================================
-class UnRewriter(object):
-    def __init__(self, host, prefix):
+class NopRewriter(object):
+    def __init__(self):
         self.rewrite_opts = {}
+
+    def rewrite(self, url, mod=None):
+        return url
+
+    def rebase_rewriter(self, new_url):
+        return self
+
+
+# ============================================================================
+class UnRewriter(NopRewriter):
+    def __init__(self, host, prefix):
+        super(UnRewriter, self).__init__()
 
         if prefix.startswith(host):
             prefix = prefix[len(host):]
@@ -32,16 +44,11 @@ class UnRewriter(object):
 
         return url
 
-    def rebase_rewriter(self, new_url):
-        return self
-
 
 # ============================================================================
 class HTMLDomUnRewriter(HTMLRewriter):
-    def __init__(self, urlrewriter, host, prefix):
+    def __init__(self, urlrewriter):
         super(HTMLDomUnRewriter, self).__init__(urlrewriter)
-        self.orig_host = host
-        self.orig_prefix = prefix
 
     def _rewrite_script(self, script_content):
         return ''
@@ -86,13 +93,6 @@ class HTMLDomUnRewriter(HTMLRewriter):
                 attr_value = ''
                 empty_attr = True
 
-            elif attr_name == 'data-src-doc':
-                attr_name = 'srcdoc'
-                attr_value = html.unescape(attr_value)
-                attr_value = self.unrewrite_html(self.orig_host,
-                                                 self.orig_prefix,
-                                                 attr_value)
-
             elif attr_name == 'data-src-target':
                 attr_name = 'src'
 
@@ -102,6 +102,24 @@ class HTMLDomUnRewriter(HTMLRewriter):
 
             # write the attr!
             self._write_attr(attr_name, attr_value, empty_attr)
+
+    def unrewrite(self, html_text, host=None):
+        html_text = HTMLDomUnRewriter.remove_head_insert(html_text)
+
+        buff = self.rewrite(html_text)
+        buff += self.close()
+
+        # additional host check
+        if not host:
+            return buff
+
+        host = host.split('//')[-1]
+
+        host_rx = HOST_WBURL_RX.format(re.escape(host))
+        host_rx = re.compile(host_rx)
+
+        buff = host_rx.sub(r'\1', buff)
+        return buff
 
     @staticmethod
     def remove_head_insert(html_text):
@@ -117,25 +135,6 @@ class HTMLDomUnRewriter(HTMLRewriter):
             return html_text
 
         return html_text[:start] + html_text[end + len(end_marker):]
-
-    @staticmethod
-    def unrewrite_html(host, prefix, html_text):
-        unrewriter = UnRewriter(host, prefix)
-        html_unrewriter = HTMLDomUnRewriter(unrewriter, host, prefix)
-
-        html_text = HTMLDomUnRewriter.remove_head_insert(html_text)
-
-        buff = html_unrewriter.rewrite(html_text)
-        buff += html_unrewriter.close()
-
-        host = host.split('//')[-1]
-
-        host_rx = HOST_WBURL_RX.format(re.escape(host))
-        host_rx = re.compile(host_rx)
-
-        new_buff = host_rx.sub(r'\1', buff)
-        return new_buff
-
 
 # ============================================================================
 def main():

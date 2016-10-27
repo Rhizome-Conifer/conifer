@@ -1,0 +1,29 @@
+<html>
+<head>
+<script>
+wbinfo = {}
+wbinfo.proxy_magic = "{{ proxy_magic }}";
+</script>
+{% include 'banner.html' %}
+</head>
+<body>
+<h2>Proxy Error</h2>
+<p>Sorry, the url <b>{{ url }}</b> could not be loaded</p>
+
+{% if can_write == '1' %}
+
+<script>
+function doPatch() {
+    window.dispatchEvent(new CustomEvent("__wb_from_event", {detail: {"wb_type": "patch_req"}}));
+    return false;
+}
+</script>
+
+<a href="#" onclick="doPatch()">Record this page now?</a>
+
+{% endif %}
+
+</body>
+</html>
+
+

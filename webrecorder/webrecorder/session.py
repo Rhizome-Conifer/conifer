@@ -74,6 +74,7 @@ class Session(object):
     def set_id(self, id):
         self._sesh['id'] = id
         self.is_restricted = True
+        self.dura_type = 'restricted'
         self.ttl = -2
         self.save()
 
@@ -119,6 +120,22 @@ class Session(object):
         self.should_renew = True
         self.should_save = True
         self.environ['webrec.delete_all_cookies'] = 'non_sesh'
+
+    def set_restricted_user(self, user):
+        if not self.is_new():
+            return
+
+        if user.startswith(self.temp_prefix):
+            self._sesh['anon'] = user
+            self._anon = user
+            self.curr_role = 'anon'
+        else:
+            self._sesh['username'] = user
+            self.curr_user = user
+            self.curr_role = 'archivist'
+
+        self.should_save = False
+        self.should_renew = False
 
     @property
     def anon_user(self):

@@ -1,49 +1,34 @@
-import os
 import re
-import base64
-import requests
-import json
-import time
-
-try:
-    import uwsgi
-except:
-    pass
+from six.moves.urllib.parse import quote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
 from urlrewrite.rewriterapp import RewriterApp, UpstreamException
 from urlrewrite.cookies import CookieTracker
 
-from pywb.utils.timeutils import timestamp_now, iso_date_to_timestamp
-from pywb.utils.timeutils import timestamp_to_datetime, datetime_to_iso_date
 from pywb.rewrite.wburl import WbUrl
 
 from webrecorder.basecontroller import BaseController
-from webrecorder.unrewriter import HTMLDomUnRewriter, UnRewriter
-
-from six.moves.urllib.parse import quote
-from io import BytesIO
 
 
 # ============================================================================
 class ContentController(BaseController, RewriterApp):
     DEF_REC_NAME = 'Recording Session'
 
-    WB_URL_RX = re.compile('(([\d*]*)([a-z]+_)?/)?([a-zA-Z]+:)?//.*')
+    WB_URL_RX = re.compile('(([\d*]*)([a-z]+_|[$][a-z0-9:.-]+)?/)?([a-zA-Z]+:)?//.*')
 
-    def __init__(self, app, jinja_env, manager, config):
-        BaseController.__init__(self, app, jinja_env, manager, config)
+    def __init__(self, app, jinja_env, config, redis):
+        BaseController.__init__(self, app, jinja_env, None, config)
         RewriterApp.__init__(self,
                              framed_replay=True,
                              jinja_env=jinja_env,
                              config=config)
 
         self.paths = config['url_templates']
+
         self.cookie_key_templ = config['cookie_key_templ']
 
-        self.cookie_tracker = CookieTracker(manager.redis)
-        self.status_update_secs = float(config['status_update_secs'])
+        self.cookie_tracker = CookieTracker(redis)
 
     def init_routes(self):
         # REDIRECTS
@@ -115,14 +100,6 @@ class ContentController(BaseController, RewriterApp):
         def snapshot():
             return self.snapshot()
 
-        @self.app.get('/_client_ws')
-        def client_ws():
-            try:
-                return self.client_ws()
-            except OSError:
-                print('WS Closed')
-                return
-
         @self.app.route(['/_set_session'])
         def set_sesh():
             sesh = self.get_session()
@@ -174,14 +151,6 @@ class ContentController(BaseController, RewriterApp):
                                                              mode=mode,
                                                              url=wb_url)
         return self.redirect(new_url)
-
-
-    def add_cookie(self, user, coll, rec, name, value, domain):
-        key = self.get_cookie_key(dict(user=user,
-                                       coll=coll,
-                                       rec=rec))
-
-        self.cookie_tracker.add_cookie(key, domain, name, value)
 
     def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
         rec_name = '*'
@@ -278,10 +247,14 @@ class ContentController(BaseController, RewriterApp):
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
-            #self._filter_headers(type, resp.status_headers)
+            # check for invalid status line
+            # TODO: move this upstream into rewriter?
+            status = resp.status_headers.statusline
+            if ' ' not in status:
+                status += ' None'
 
             resp = HTTPResponse(body=resp.body,
-                                status=resp.status_headers.statusline,
+                                status=status,
                                 headers=resp.status_headers.headers)
 
             return resp
@@ -309,7 +282,8 @@ class ContentController(BaseController, RewriterApp):
 
             if (self.content_host and
                 not self.is_content_request() and
-                wb_url.mod not in ('', 'ch_', 'ff_')):
+                wb_url.mod != '' and
+                not wb_url.mod.startswith('$br:')):
                 self.redir_host(self.content_host)
 
     def _filter_headers(self, type, status_headers):
@@ -320,6 +294,12 @@ class ContentController(BaseController, RewriterApp):
                     new_headers.append((name, value))
 
             status_headers.headers = new_headers
+
+    def _inject_nocache_headers(self, status_headers, kwargs):
+        if 'browser_id' in kwargs:
+            status_headers.headers.append(
+                ('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate')
+            )
 
     def _redir_if_sanitized(self, id, title, wb_url):
         if id != title:
@@ -349,6 +329,21 @@ class ContentController(BaseController, RewriterApp):
 
         return url
 
+    def get_cookie_key(self, kwargs):
+        sesh = self.get_session()
+        id = sesh.get_id()
+        kwargs['id'] = id
+        if kwargs.get('rec') == '*':
+            kwargs['rec'] = '<all>'
+
+        return self.cookie_key_templ.format(**kwargs)
+
+    def add_cookie(self, user, coll, rec, name, value, domain):
+        key = self.get_cookie_key(dict(user=user,
+                                       coll=coll,
+                                       rec=rec))
+
+        self.cookie_tracker.add_cookie(key, domain, name, value)
 
     ## RewriterApp overrides
     def get_base_url(self, wb_url, kwargs):
@@ -363,14 +358,6 @@ class ContentController(BaseController, RewriterApp):
                                            **kwargs)
 
         return base_url
-
-    def get_cookie_key(self, kwargs):
-        id = self.get_session().get_id()
-        kwargs['id'] = id
-        if kwargs.get('rec') == '*':
-            kwargs['rec'] = '<all>'
-
-        return self.cookie_key_templ.format(**kwargs)
 
     def process_query_cdx(self, cdx, wb_url, kwargs):
         rec = kwargs.get('rec')
@@ -440,184 +427,28 @@ class ContentController(BaseController, RewriterApp):
             cdx['is_live'] = 'true'
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
-        @self.jinja2_view('browser_embed.html')
-        def browser_embed(browser):  #pragma: no cover
-            upstream_url = self.get_upstream_url(wb_url, kwargs, {})
-
-            upstream_url += '&url={url}'
-
-            upsid = base64.b64encode(os.urandom(6))
-
-            # TODO: load settings
-            self.manager.browser_redis.setex(b'ups:' + upsid, 120, upstream_url)
-
-            data = {'browser': browser,
-                    'url': wb_url.url,
-                    'ts': wb_url.timestamp,
-                    'upsid': upsid.decode('utf-8'),
-                    'static': '/static/__bp',
-                   }
-
-            data.update(self.get_top_frame_params(wb_url, kwargs))
-            return data
-
-        if wb_url.mod == 'ch_':
-            return browser_embed('chrome')
-        elif wb_url.mod == 'ff_':
-            return browser_embed('firefox')
+        # test if request specifies a containerized browser
+        if wb_url.mod.startswith('$br:'):
+            return self.handle_browser_embed(wb_url, kwargs)
 
         return RewriterApp.handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs)
 
-    def snapshot(self):
-        user, coll = self.get_user_coll(api=True)
-        #rec = request.query.getunicode('rec')
+    def handle_browser_embed(self, wb_url, kwargs):
+        #handle cbrowsers
+        browser_id = wb_url.mod.split(':', 1)[1]
 
-        #if rec and rec != '*':
-        #    recording = self.manager.get_recording(user, coll, rec)
-        #    if not recording:
-        #        return {'error_message' 'recording not found'}
+        kwargs['can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
 
-        #    snap_title = recording['title'] + ' Snapshots'
-        #else:
-        if not self.manager.has_collection(user, coll):
-            return {'error_message' 'collection not found'}
+        # container redis info
+        inject_data = self.manager.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)
+        if 'error_message' in inject_data:
+            self._raise_error(400, inject_data['error_message'])
 
-        snap_title = 'Static Snapshots'
+        inject_data.update(self.get_top_frame_params(wb_url, kwargs))
 
-        snap_rec = self.sanitize_title(snap_title)
+        @self.jinja2_view('browser_embed.html')
+        def browser_embed(data):
+            return data
 
-        if not self.manager.has_recording(user, coll, snap_rec):
-            recording = self.manager.create_recording(user, coll, snap_rec, snap_title)
+        return browser_embed(inject_data)
 
-        kwargs = dict(user=user,
-                      coll=quote(coll),
-                      rec=quote(snap_rec, safe='/*'),
-                      type='snapshot')
-
-        html_text = request.body.read().decode('utf-8')
-
-        host = request.urlparts.scheme + '://'
-        if self.content_host:
-            host += self.content_host
-        else:
-            host += request.urlparts.netloc
-
-        prefix = request.query.getunicode('prefix')
-
-        html_text = HTMLDomUnRewriter.unrewrite_html(host, prefix, html_text)
-
-        url = request.query.getunicode('url')
-
-        params = {'url': url}
-
-        upstream_url = self.get_upstream_url('', kwargs, params)
-
-        referrer = request.environ.get('HTTP_REFERER', '')
-        referrer = UnRewriter(host, prefix).rewrite(referrer)
-
-        timedate = datetime_to_iso_date(timestamp_to_datetime(request.query.getunicode('top_ts')))
-
-        headers = {'Content-Type': 'text/html; charset=utf-8',
-                   'WARC-User-Agent': request.environ.get('HTTP_USER_AGENT'),
-                   'WARC-Referer': referrer,
-                   #'WARC-Refers-To-Target-URI': request.query.getunicode('top_url'),
-                   #'WARC-Refers-To-Date': timedate,
-                  }
-
-        r = requests.put(upstream_url,
-                         data=BytesIO(html_text.encode('utf-8')),
-                         headers=headers,
-                        )
-
-        try:
-            res = r.json()
-            if res['success'] != 'true':
-                print(res)
-                return {'error_message': 'Snapshot Failed'}
-
-            warc_date = res.get('WARC-Date')
-
-        except Exception as e:
-            print(e)
-            return {'error_message': 'Snapshot Failed'}
-
-
-        title = request.query.getunicode('title')
-
-        if title:
-            if warc_date:
-                timestamp = iso_date_to_timestamp(warc_date)
-            else:
-                timestamp = timestamp_now()
-
-
-            page_data = {'url': url,
-                         'title': title,
-                         'timestamp': timestamp,
-                         'tags': ['snapshot'],
-                        }
-
-            res = self.manager.add_page(user, coll, snap_rec, page_data)
-
-            return {'snapshot': page_data}
-        else:
-            return {'snapshot': ''}
-
-    def client_ws(self):
-        user, coll = self.get_user_coll(api=True)
-        rec = request.query.getunicode('rec', '*')
-        last_status = None
-
-        def get_status():
-            size = self.manager.get_size(user, coll, rec)
-            if size is not None:
-                result = {'ws_type': 'status'}
-                result['size'] = size
-                result['numPages'] = self.manager.count_pages(user, coll, rec)
-
-            else:
-                result = {'ws_type': 'error',
-                          'error_message': 'not found'}
-
-            return json.dumps(result)
-
-        env = request.environ
-
-        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'],
-                                  env.get('HTTP_ORIGIN', ''))
-
-        while True:
-            msg = uwsgi.websocket_recv_nb()
-            if msg:
-                self.receive_ws(msg, user, coll, rec)
-
-            status = get_status()
-            if status != last_status:
-                uwsgi.websocket_send(status)
-                last_status = status
-
-            time.sleep(self.status_update_secs)
-
-    def receive_ws(self, msg, user, coll, rec):
-        msg = json.loads(msg.decode('utf-8'))
-
-        if msg['ws_type'] == 'skipreq':
-            url = msg['url']
-            if not user:
-                user = self.manager.get_anon_user()
-
-            self.manager.skip_post_req(user, url)
-
-        elif msg['ws_type'] == 'addcookie':
-            self.add_cookie(user, coll, rec,
-                            msg['name'], msg['value'], msg['domain'])
-
-
-        elif msg['ws_type'] == 'page':
-            if not self.manager.has_recording(user, coll, rec):
-                print('Invalid Rec for Page Data', user, coll, rec)
-                return
-
-            page_data = msg['page']
-
-            res = self.manager.add_page(user, coll, rec, page_data)
