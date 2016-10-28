@@ -138,22 +138,25 @@ class UserController(BaseController):
                         pi.hgetall(user)
                     temp_users = pi.execute()
 
-                # convert bytestrings
-                temp_users = [{k.decode('utf-8'): v.decode('utf-8') for k, v in d.items()}
-                              for d in temp_users]
-
                 for idx, user in enumerate(temp_users_keys):
-                    u = re.search(r'{0}\w+'.format(self.temp_user_key),
-                                  user.decode('utf-8')).group()
+                    temp_users[idx][b'username'] = user
 
-                    total = int(temp_users[idx].get('max_size', self.manager.default_max_size))
-                    used = int(temp_users[idx].get('size', 0))
-                    creation = datetime.fromtimestamp(int(temp_users[idx]['created_at']))
+                # convert bytestrings, skip over incomplete
+                temp_users = [{k.decode('utf-8'): v.decode('utf-8') for k, v in d.items()}
+                              for d in temp_users
+                              if b'max_size' in d and b'created_at' in d]
+
+                for user in temp_users:
+                    total = int(user['max_size'])
+                    used = int(user.get('size', 0))
+                    creation = datetime.fromtimestamp(int(user['created_at']))
                     removal = creation + timedelta(seconds=self.config['session.durations']['short']['total'])
 
-                    temp_users[idx]['username'] = u
-                    temp_users[idx]['removal'] = removal.isoformat()
-                    temp_users[idx]['space_utilization'] = {
+                    u = re.search(r'{0}\w+'.format(self.temp_user_key),
+                                  user['username']).group()
+                    user['username'] = u
+                    user['removal'] = removal.isoformat()
+                    user['space_utilization'] = {
                         'total': total,
                         'used': used,
                         'available': total - used,
