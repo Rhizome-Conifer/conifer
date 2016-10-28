@@ -785,7 +785,7 @@ class RecManagerMixin(object):
         return {}
 
     def import_pages(self, user, coll, rec, pagelist):
-        self.assert_can_write(user, coll)
+        self.assert_can_admin(user, coll)
 
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
@@ -809,7 +809,7 @@ class RecManagerMixin(object):
         return {}
 
     def modify_page(self, user, coll, rec, new_pagedata):
-        self.assert_can_write(user, coll)
+        self.assert_can_admin(user, coll)
 
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
@@ -828,7 +828,7 @@ class RecManagerMixin(object):
         return {}
 
     def delete_page(self, user, coll, rec, url, ts):
-        self.assert_can_write(user, coll)
+        self.assert_can_admin(user, coll)
 
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
@@ -847,7 +847,7 @@ class RecManagerMixin(object):
 
         pagelist = [json.loads(x.decode('utf-8')) for x in pagelist]
 
-        if not self.can_write_coll(user, coll):
+        if not self.can_admin_coll(user, coll):
             pagelist = [page for page in pagelist if page.get('hidden') != '1']
 
         return pagelist
@@ -904,7 +904,7 @@ class RecManagerMixin(object):
                 page['recording'] = rec
                 pagelist.append(page)
 
-        if not self.can_write_coll(user, coll):
+        if not self.can_admin_coll(user, coll):
             pagelist = [page for page in pagelist if page.get('hidden') != '1']
 
         return pagelist

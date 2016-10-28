@@ -47,6 +47,9 @@ class Session(object):
                 if self.curr_user:
                     self.curr_role = cork.user(self.curr_user).role
 
+                if self.curr_role == 'public-archivist':
+                    self.is_restricted = True
+
         except Exception as e:
             print(e)
             self.curr_user = None
@@ -177,6 +180,8 @@ class RedisSessionMiddleware(CookieGuard):
         self.redis = redis
         self.cork = cork
 
+        self.auto_login_user = os.environ.get('AUTO_LOGIN_USER')
+
         self.secret_key = expandvars(session_opts['session.secret'])
 
         self.key_template = session_opts['session.key_template']
@@ -213,6 +218,10 @@ class RedisSessionMiddleware(CookieGuard):
 
             data = {'id': sesh_id}
 
+            # auto-login as designated user for each new session
+            if self.auto_login_user:
+                data['username'] = self.auto_login_user
+
         session = Session(self.cork,
                           environ,
                           redis_key,
@@ -225,6 +234,9 @@ class RedisSessionMiddleware(CookieGuard):
 
             anon_user = session['anon']
             self.redis.set('t:' + anon_user, sesh_id)
+
+        if self.auto_login_user:
+            session.template_params['auto_login'] = True
 
         environ['webrec.template_params'] = session.template_params
         environ['webrec.session'] = session
