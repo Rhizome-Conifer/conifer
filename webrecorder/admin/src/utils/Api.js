@@ -3,7 +3,7 @@ import forEach from 'lodash/forEach';
 import { endpoint } from 'config';
 
 
-const fetchOptions = {credentials: 'include'};
+const fetchOptions = {credentials: 'same-origin'};
 
 
 function buildQueryString(params) {
