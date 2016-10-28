@@ -1,4 +1,4 @@
-{% if can_write() and not is_anon() %}
+{% if can_admin() %}
 
 	{% set editing_id = "collection-title" %}
 	{% set title_label = "Collection Title" %}
