@@ -1,12 +1,16 @@
 {% if curr_user %}
     <ul class="nav">
+        {% if not auto_login %}
         <li class="navbar-text navbar-right">
             <a target="_parent" title="Logout" href="/_logout">
             <span class="glyphicon glyphicon-log-out" title="Logout"></span></a>
         </li>
+        {% endif %}
+        {% if can_admin() %}
         <li class="navbar-text navbar-right">
             <a target="_parent" href="/{{ curr_user }}/_settings"><span title="Settings" class="glyphicon glyphicon-cog"></span></a>
         </li>
+        {% endif %}
         <li class="navbar-text navbar-right">
             <a target="_parent" href="/{{ curr_user }}">
                 <span class="glyphicon glyphicon-user right-buffer-sm"></span>{{ curr_user }}
