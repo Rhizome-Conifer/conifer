@@ -20,8 +20,24 @@ $(function() {
             collection = $('[data-collection-id]').attr('data-collection-id');
         }
 
-        var title = $("input[name='rec-title']").val();
-        var url = $("input[name='url']").val();
+        var titleInput = $("input[name='rec-title']");
+        var title = titleInput.val();
+        var urlInput = $("input[name='url']");
+        var url = urlInput.val();
+
+        // alert if title is blank
+        if(title.replace(/\s+$/g, '').length === 0) {
+            titleInput.parent().addClass('has-error');
+            return false;
+        } else if( titleInput.parent().hasClass('has-error')) {
+            titleInput.parent().removeClass('has-error');
+        }
+
+        // alert if url is blank
+        if(url.replace(/\s+$/g, '').length === 0) {
+            urlInput.parent().addClass('has-error');
+            return false;
+        }
 
         if (!window.cnt_browser && (isSafari() || isMS())) {
             url = "mp_/" + url;

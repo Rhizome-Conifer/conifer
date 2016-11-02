@@ -167,7 +167,7 @@ class BaseController(object):
         return decorator
 
     def sanitize_title(self, title):
-        id = title.lower()
+        id = title.lower().strip()
         id = id.replace(' ', '-')
         id = self.ALPHA_NUM_RX.sub('', id)
         if self.WB_URL_COLLIDE.match(id):
