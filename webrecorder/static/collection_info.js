@@ -368,6 +368,9 @@ var BookmarksTable = (function() {
     var filterByRecordings = function(recordingTitles) {
         var recordingColumnIndex = $('[data-recording-column-index]').attr('data-recording-column-index');
 
+        // trim trailing spaces
+        recordingTitles = recordingTitles.map(function (t) { return t.replace(/\s+$/g, ''); });
+
         if (recordingTitles.length) {
             var regex = "^(" + recordingTitles.join("|") + ")$";
             theTable.column([recordingColumnIndex]).search(regex, true, false).draw();
