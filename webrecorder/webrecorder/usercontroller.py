@@ -29,6 +29,42 @@ class UserController(BaseController):
 
     def init_routes(self):
 
+        @self.app.route(['/api/v1/settings'], ['GET', 'PUT'])
+        @self.manager.admin_view()
+        def internal_settings():
+            settings = {}
+            config = self.manager.redis.hgetall('h:defaults')
+            tags = list(self.manager.redis.zscan_iter('s:tags'))
+
+            if request.method == 'PUT':
+                data = json.loads(request.forms.json)
+                new_config = {
+                    k.encode('utf-8'): v.encode('utf-8')
+                    for k, v in data['settings'].items()
+                }
+                config.update(new_config)
+                # commit to redis
+                self.manager.redis.hmset('h:defaults', config)
+
+                incoming_tags = [t.encode('utf-8') for t in data['tags']]
+                existing_tags = [t for t, s in tags]
+                # add tags
+                for tag in incoming_tags:
+                    if tag not in existing_tags:
+                        self.manager.redis.zadd('s:tags', 0, self.sanitize_tag(tag.decode('utf-8')))
+
+                # remove tags
+                for tag in existing_tags:
+                    if tag not in incoming_tags:
+                        self.manager.redis.zrem('s:tags', self.sanitize_tag(tag.decode('utf-8')))
+
+                tags = list(self.manager.redis.zscan_iter('s:tags'))
+
+            settings['defaults'] = {k.decode('utf-8'): v.decode('utf-8')
+                                    for k, v in config.items()}
+            settings['tags'] = [t.decode('utf-8') for t, s in tags]
+            return settings
+
         @self.app.get(['/api/v1/dashboard', '/api/v1/dashboard/'])
         @self.manager.admin_view()
         def api_dashboard():
@@ -65,7 +101,6 @@ class UserController(BaseController):
                                      json.dumps(data, cls=CustomJSONEncoder))
 
             return data
-
 
         @self.app.get(['/api/v1/users', '/api/v1/users/'])
         @self.manager.admin_view()
@@ -459,6 +494,7 @@ class UserController(BaseController):
 
             self.manager.skip_post_req(user, url)
             return {}
+
 
 
 

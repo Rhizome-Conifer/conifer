@@ -166,6 +166,15 @@ class BaseController(object):
 
         return decorator
 
+    def sanitize_tag(self, tag):
+        id = tag.strip()
+        id = id.replace(' ', '-')
+        id = self.ALPHA_NUM_RX.sub('', id)
+        if self.WB_URL_COLLIDE.match(id):
+            id += '_'
+
+        return id
+
     def sanitize_title(self, title):
         id = title.lower().strip()
         id = id.replace(' ', '-')
