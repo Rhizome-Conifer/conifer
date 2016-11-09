@@ -46,6 +46,20 @@ class ContentController(BaseController, RewriterApp):
         def redir_new_patch(coll, wb_url):
             return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
 
+        # TAGS
+        @self.app.get('/tag/<tags:re:([\w,-]+)>')
+        def tag_list(tags):
+            tags = tags.split(',')
+            items = {}
+
+            active_tags = self.manager.get_available_tags()
+
+            for tag in tags:
+                if tag in active_tags:
+                    items[tag] = self.manager.get_bookmarks_for_tag(tag)
+
+            return items
+
         # COOKIES
         @self.app.get(['/<user>/<coll>/$add_cookie'], method='POST')
         def add_cookie(user, coll):

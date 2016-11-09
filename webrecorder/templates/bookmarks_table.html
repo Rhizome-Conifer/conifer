@@ -77,11 +77,12 @@
                         {% if can_write() %}
                             <td class='bookmark-tag'>
                                 <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-xs {% if is_tagged(bookmark_id) %}btn-success {% else %}btn-default{% endif %} dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button type="button" class="btn btn-xs {% if is_tagged(bookmark_id) %}btn-success {% else %}btn-default{% endif %} dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"  title='Bookmark tagging'>
                                         <span class='glyphicon glyphicon-tag'></span>
                                         <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu tagging-dropdown">
+                                        <li class="dropdown-header">Available Tags</li>
                                         {% for tag in available_tags %}
                                             <li class='dropdown-item tag{% if tag in tags and bookmark_id in tags[tag] %} tagged{% endif %}' data-tag='{{tag}}'><span class='glyphicon glyphicon-ok'></span><span class='glyphicon glyphicon-minus' ></span><a href="#">{{ tag }}</a></li>
                                         {% endfor %}

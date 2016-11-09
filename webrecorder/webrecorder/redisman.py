@@ -882,6 +882,23 @@ class RecManagerMixin(object):
 
         return res
 
+    def get_bookmarks_for_tag(self, tag):
+        tagged_pages = []
+        for k in self.redis.keys('*:tag:{}'.format(tag)):
+            parts = k.decode('utf-8').split(':')
+            user = parts[1]
+            coll = parts[2]
+            rec = parts[3]
+
+            # display if owner or if collection is public
+            if self.is_owner(user) or self.is_public(user, coll):
+                tagged_pages.extend([
+                    {'user': user, 'coll': coll, 'rec': rec, 'id': i.decode('utf-8')}
+                    for i in self.redis.lrange(k, 0, -1)
+                ])
+
+        return tagged_pages
+
     def get_tags_in_collection(self, user, coll):
         keys = self.redis.keys('*:{user}:{coll}:*:tag:*'.format(user=user,
                                                                 coll=coll))
