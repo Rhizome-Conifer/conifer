@@ -882,6 +882,46 @@ class RecManagerMixin(object):
 
         return res
 
+    def get_tags_in_collection(self, user, coll):
+        keys = self.redis.keys('*:{user}:{coll}:*:tag:*'.format(user=user,
+                                                                coll=coll))
+
+        # return pages grouped by tag
+        tagged_pages = {}
+        for k in keys:
+            dict_key = k.decode('utf-8').split(':')[5]
+            if dict_key in tagged_pages:
+                tagged_pages[dict_key].extend([i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)])
+            else:
+                tagged_pages.update({
+                    dict_key: [i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)]
+                })
+
+        return tagged_pages
+
+    def get_available_tags(self):
+        tags = [t.decode('utf-8') for t, s in list(self.redis.zscan_iter('s:tags'))]
+        # descending order
+        tags.reverse()
+        return tags
+
+    def tag_page(self, tags, user, coll, rec, pg_id):
+        key_template = 'r:{user}:{coll}:{rec}:tag:{tag}'
+        pg_id = pg_id.encode('utf-8')
+
+        for tag in tags:
+            k = key_template.format(user=user, coll=coll, rec=rec, tag=tag)
+            if self.redis.exists(k):
+                # if exists, untag
+                if pg_id in self.redis.lrange(k, 0, -1):
+                    self.redis.lrem(k, 0, pg_id)
+                    self.redis.zincrby('s:tags', tag, -1)
+                    continue
+
+            # if not previously tagged or a new tag, set and add to tag count
+            self.redis.lpush(k, pg_id)
+            self.redis.zincrby('s:tags', tag)
+
     def list_coll_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
 

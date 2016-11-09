@@ -46,7 +46,7 @@ class UserController(BaseController):
                 # commit to redis
                 self.manager.redis.hmset('h:defaults', config)
 
-                incoming_tags = [t.encode('utf-8') for t in data['tags']]
+                incoming_tags = [t['name'].encode('utf-8') for t in data['tags']]
                 existing_tags = [t for t, s in tags]
                 # add tags
                 for tag in incoming_tags:
@@ -60,9 +60,13 @@ class UserController(BaseController):
 
                 tags = list(self.manager.redis.zscan_iter('s:tags'))
 
+            # descending order
+            tags.reverse()
+
             settings['defaults'] = {k.decode('utf-8'): v.decode('utf-8')
                                     for k, v in config.items()}
-            settings['tags'] = [t.decode('utf-8') for t, s in tags]
+            settings['tags'] = [{'name': t.decode('utf-8'), 'usage': int(s)}
+                                for t, s in tags]
             return settings
 
         @self.app.get(['/api/v1/dashboard', '/api/v1/dashboard/'])

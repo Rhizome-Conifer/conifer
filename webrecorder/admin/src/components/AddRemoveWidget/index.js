@@ -25,7 +25,7 @@ class AddRemoveWidget extends Component {
 
   addTag() {
     const tags = this.state.tags;
-    tags.push(this.state.tag);
+    tags.push({name:this.state.tag, usage:0});
 
     this.setState({
       tags: tags,
@@ -86,8 +86,8 @@ class AddRemoveWidget extends Component {
             tags &&
               tags.map(
                 (item, idx) =>
-                  <Tr key={item}>
-                    <Td column='tag'>{item}</Td>
+                  <Tr key={item.name}>
+                    <Td column='tag'>{`${item.name} (${item.usage})`}</Td>
                     <Td column='remove'>
                       <Button bsSize='xsmall' bsStyle='danger' onClick={() => this.removeTag(idx)}>
                         <Glyphicon glyph='remove' />

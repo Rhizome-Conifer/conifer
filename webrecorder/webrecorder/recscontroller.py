@@ -125,6 +125,17 @@ class RecsController(BaseController):
             pages = self.manager.list_pages(user, coll, rec)
             return {'pages': pages}
 
+        @self.app.post('/api/v1/recordings/<rec>/tag')
+        def tag_page(rec):
+            user, coll = self.get_user_coll(api=True)
+            self._ensure_rec_exists(user, coll, rec)
+
+            page_data = request.json
+            tags = page_data['tags']
+            pg_id = page_data['id']
+
+            self.manager.tag_page(tags, user, coll, rec, pg_id)
+
         @self.app.get('/api/v1/recordings/<rec>/num_pages')
         def get_num_pages(rec):
             user, coll = self.get_user_coll(api=True)

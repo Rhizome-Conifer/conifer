@@ -342,7 +342,7 @@ var BookmarksTable = (function() {
     }
 
     var hasVisibilityColumn = function() {
-        return $('.table-bookmarks th').length === 7;
+        return $('.table-bookmarks th').length === 8;
     }
 
     var getColumnDefs = function() {
@@ -350,10 +350,11 @@ var BookmarksTable = (function() {
             return [
                         { targets: [0], width: "32px", orderable: false},
                         { targets: [1], width: "12px", orderable: false},
-                        { targets: [3], width: '85px'},
-                        { targets: [4], width: "9em" },
-                        { targets: [6], width: "5.5em" },
-                        { targets: [2, 5], width: "14.5em"}
+                        { targets: [3], width: '30px', orderable: false},
+                        { targets: [4], width: '70px'},
+                        { targets: [5], width: "9em" },
+                        { targets: [7], width: "5.5em" },
+                        { targets: [2, 6], width: "14.5em"}
                     ]
         } else {
             return [
@@ -487,6 +488,38 @@ var BookmarkHiddenSwitch = (function() {
         }
     }
 
+    var addTag = function(evt) {
+        evt.preventDefault();
+
+        var url = $(this).closest('[data-bookmark-url]').attr('data-bookmark-url');
+        var ts = $(this).closest('[data-bookmark-timestamp]').attr('data-bookmark-timestamp');
+
+        var recordingId = $(this).closest('[data-recording-id]').attr('data-recording-id');
+        var bookmarkId = url + ' ' + ts;
+        var tagElement = $(evt.target).parent('li.tag');
+        var tag = tagElement.data('tag');
+        var successClasss = 'tagged';
+
+        Recordings.tagPage(
+            recordingId,
+            bookmarkId,
+            [tag], // multi tag support soon
+            function (){
+                // update ui
+                if(tagElement.hasClass(successClasss)){
+                    tagElement.removeClass(successClasss);
+
+                    if(tagElement.siblings('.'+successClasss).length === 0)
+                        tagElement.parents('div.btn-group').find('button').switchClass('btn-success','btn-default');
+                } else {
+                    tagElement.addClass(successClasss);
+                    tagElement.parents('div.btn-group').find('button').addClass('btn-success');
+                }
+            },
+            function (){ console.log('tagging error')}
+        );
+    }
+
 
     var start = function() {
         $("#show-hidden").bootstrapSwitch();
@@ -494,6 +527,8 @@ var BookmarkHiddenSwitch = (function() {
         $('th.bookmark-hidden-switch>div.bootstrap-switch').attr('title', 'Show/Hide hidden bookmarks')
 
         $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
+
+        $('.tagging-dropdown').on('click', '.tag', addTag);
 
         $("#show-hidden")
             .on('switchChange.bootstrapSwitch', toggleShowHidden)
