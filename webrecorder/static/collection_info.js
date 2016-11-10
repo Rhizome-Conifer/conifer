@@ -341,12 +341,16 @@ var BookmarksTable = (function() {
         }
     }
 
-    var hasVisibilityColumn = function() {
+    var hasVisibilityAndTaggingColumn = function() {
         return $('.table-bookmarks th').length === 8;
     }
 
+    var hasVisibilityColumn = function() {
+        return $('.table-bookmarks th').length === 7;
+    }
+
     var getColumnDefs = function() {
-        if (hasVisibilityColumn()) {
+        if (hasVisibilityAndTaggingColumn()) {
             return [
                         { targets: [0], width: "32px", orderable: false},
                         { targets: [1], width: "12px", orderable: false},
@@ -355,6 +359,15 @@ var BookmarksTable = (function() {
                         { targets: [5], width: "9em" },
                         { targets: [7], width: "5.5em" },
                         { targets: [2, 6], width: "14.5em"}
+                    ]
+        } else if(hasVisibilityColumn()) {
+            return [
+                        { targets: [0], width: "32px", orderable: false},
+                        { targets: [1], width: "12px", orderable: false},
+                        { targets: [3], width: '85px'},
+                        { targets: [4], width: "9em" },
+                        { targets: [6], width: "5.5em" },
+                        { targets: [2, 5], width: "14.5em"}
                     ]
         } else {
             return [
