@@ -3,8 +3,8 @@ from six.moves.urllib.parse import quote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
-from urlrewrite.rewriterapp import RewriterApp, UpstreamException
-from urlrewrite.cookies import CookieTracker
+from pywb.urlrewrite.rewriterapp import RewriterApp, UpstreamException
+from pywb.urlrewrite.cookies import CookieTracker
 
 from pywb.rewrite.wburl import WbUrl
 
