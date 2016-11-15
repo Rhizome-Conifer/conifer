@@ -1,17 +1,17 @@
-from recorder.recorderapp import RecorderApp
+from pywb.recorder.recorderapp import RecorderApp
 
-from recorder.redisindexer import WritableRedisIndexer
+from pywb.recorder.redisindexer import WritableRedisIndexer
 
-from recorder.warcwriter import MultiFileWARCWriter
-from recorder.filters import WriteRevisitDupePolicy
-from recorder.filters import ExcludeSpecificHeaders
+from pywb.recorder.warcwriter import MultiFileWARCWriter
+from pywb.recorder.filters import WriteRevisitDupePolicy
+from pywb.recorder.filters import ExcludeSpecificHeaders
 
 import redis
 import time
 import json
 import glob
 
-from webagg.utils import res_template
+from pywb.webagg.utils import res_template
 
 from bottle import Bottle, request, debug
 from datetime import datetime

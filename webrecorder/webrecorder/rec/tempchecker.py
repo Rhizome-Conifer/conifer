@@ -39,6 +39,7 @@ class TempChecker(object):
 
             self.sesh_redis.delete('t:' + temp)
 
+        self.record_host = os.environ['RECORD_HOST']
         print('Deleting ' + temp)
 
         delete_url = self.delete_url.format(record_host=self.record_host,
@@ -53,7 +54,11 @@ class TempChecker(object):
         #           'rec': '*'}
 
         #self.sesh_redis.publish('delete', json.dumps(message))
-        requests.delete(delete_url)
+        try:
+            requests.delete(delete_url)
+        except:
+            print('Deleted Failed: ' + delete_url)
+
         return True
 
     def __call__(self):

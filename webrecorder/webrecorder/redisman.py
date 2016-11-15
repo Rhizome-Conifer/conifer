@@ -23,7 +23,7 @@ from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.timeutils import timestamp_now
 
-from webagg.utils import load_config
+from pywb.webagg.utils import load_config
 
 import requests
 

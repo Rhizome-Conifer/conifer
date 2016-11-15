@@ -8,11 +8,11 @@ import re
 import os
 
 from jinja2 import contextfunction
-from urlrewrite.templateview import JinjaEnv
 
 from six.moves.urllib.parse import urlsplit, urljoin
 
-from webagg.utils import load_config
+from pywb.webagg.utils import load_config
+from pywb.urlrewrite.templateview import JinjaEnv
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController

@@ -1,11 +1,11 @@
 from gevent.monkey import patch_all; patch_all()
 
-from webagg.handlers import DefaultResourceHandler, HandlerSeq
-from webagg.app import ResAggApp
-from webagg.indexsource import LiveIndexSource, RedisIndexSource
-from webagg.aggregator import SimpleAggregator, RedisMultiKeyIndexSource
+from pywb.webagg.handlers import DefaultResourceHandler, HandlerSeq
+from pywb.webagg.app import ResAggApp
+from pywb.webagg.indexsource import LiveIndexSource, RedisIndexSource
+from pywb.webagg.aggregator import SimpleAggregator, RedisMultiKeyIndexSource
 
-from webagg.utils import load_config
+from pywb.webagg.utils import load_config
 
 import os
 
@@ -44,9 +44,6 @@ def make_webagg():
     app.add_route('/patch', HandlerSeq([replay_coll, live_rec]))
 
     return app
-
-
-application = make_webagg()
 
 
 if __name__ == "__main__":
