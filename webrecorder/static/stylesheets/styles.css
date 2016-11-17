@@ -1021,6 +1021,7 @@ div.filter-label {
 
 .linklist {
     position: relative;
+    cursor: pointer;
 }
 .linklist .form-control {
     border-radius:0;
@@ -1030,6 +1031,9 @@ div.filter-label {
     background: linear-gradient(90deg, rgba(255,255,255,0), #eee 15%, #eee);
     padding-left: 40px;
     margin-right: 10px;
+    font-style: normal;
+    color: #555;
+    cursor: pointer;
 }
 
 .linklist .dropdown-menu {

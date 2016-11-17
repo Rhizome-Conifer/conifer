@@ -33,7 +33,9 @@
 
 {% block body %}
 
+{% if not is_embed %}
 {% include 'header.html' %}
+{% endif %}
 
 <div id="message" class="browser">{{ message }}</div>
 <div id="browser" class="browser"></div>

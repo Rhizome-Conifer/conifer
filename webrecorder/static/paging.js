@@ -1,6 +1,6 @@
 var input = document.querySelector('.form-control');
-var timestamp = document.querySelector('.replay-date');
 var iframe = document.querySelector('iframe');
+var timestamp = $('.replay-date');
 var linklist = $('.linklist');
 var index = 0;
 var tagIdx = 0;
@@ -21,6 +21,12 @@ prev.on('click', function () {
   if(index - 1 >= 0)
     setInput(data[keys[tagIdx]][--index]);
 });
+
+timestamp.on('click', function (evt) {
+  evt.stopPropagation();
+  console.log('click')
+  linklist.toggleClass('open');
+})
 
 dropdown.on('click', 'a', function (evt) {
   evt.preventDefault();
@@ -82,9 +88,9 @@ function setInput(obj) {
     next.removeClass('disabled');
   }
 
-  input.value = url;
-  timestamp.innerHTML = '('+(index + 1)+' of '+total+') '+TimesAndSizesFormatter.ts_to_date(ts);
-  iframe.src = '/'+obj.user+'/'+obj.coll+'/'+ts+(obj.br?'$br:'+obj.br:'')+'mp_/'+url;
+  input.value = '('+("0000"+(index + 1)).slice(-String(total).split('').length)+' of '+total+')  ' + url;
+  timestamp.html(TimesAndSizesFormatter.ts_to_date(ts));
+  iframe.src = '/_embed/'+obj.user+'/'+obj.coll+'/'+ts+(obj.br?'$br:'+obj.br:'')+'/'+url;
 }
 
 
