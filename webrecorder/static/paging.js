@@ -84,12 +84,14 @@ function setInput(obj) {
 
   input.value = url;
   timestamp.innerHTML = '('+(index + 1)+' of '+total+') '+TimesAndSizesFormatter.ts_to_date(ts);
-  iframe.src = '/_embed/'+obj.user+'/'+obj.coll+'/'+ts+(obj.br?'$br:'+obj.br:'')+'/'+url;
+  iframe.src = '/'+obj.user+'/'+obj.coll+'/'+ts+(obj.br?'$br:'+obj.br:'')+'mp_/'+url;
 }
 
 
 compile_links();
-setInput(data[keys[tagIdx]][0]);
+
+if(data[keys[tagIdx]].length)
+  setInput(data[keys[tagIdx]][0]);
 
 linklist.find('ul.dropdown-menu').html(linklistData[tagIdx]);
 linklist.find('ul.dropdown-menu').on('click', 'li', function () {

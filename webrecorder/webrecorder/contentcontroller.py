@@ -47,10 +47,10 @@ class ContentController(BaseController, RewriterApp):
             return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
 
         # TAGS
-        @self.app.get('/tags/<tags:re:([\w,-]+)>')
+        @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
         @self.jinja2_view('paging_display.html')
-        def tag_display(tags):
-            tags = tags.split(',')
+        def tag_display(tags=None):
+            tags = tags.split(',') if tags else self.manager.get_available_tags()
             items = {}
             keys = []
 
@@ -64,14 +64,13 @@ class ContentController(BaseController, RewriterApp):
             return {'data': items, 'keys': keys}
 
         # COLLECTIONS
-        @self.app.get('/collections/<user>/<collections:re:([\w,-]+)>')
+        @self.app.get(['/_display/<user>', '/_display/<user>/<collections:re:([\w,-]+)>'])
         @self.jinja2_view('paging_display.html')
-        def collection_display(user, collections):
-            colls = collections.split(',')
+        def collection_display(user, collections=None):
+            user_collections = [c['id'] for c in self.manager.get_collections(user)]
+            colls = collections.split(',') if collections else user_collections
             items = {}
             keys = []
-
-            user_collections = [ c['id'] for c in self.manager.get_collections(user)]
 
             for coll in colls:
                 if coll in user_collections:
