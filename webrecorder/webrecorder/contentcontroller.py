@@ -47,18 +47,38 @@ class ContentController(BaseController, RewriterApp):
             return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
 
         # TAGS
-        @self.app.get('/tag/<tags:re:([\w,-]+)>')
-        def tag_list(tags):
+        @self.app.get('/tags/<tags:re:([\w,-]+)>')
+        @self.jinja2_view('paging_display.html')
+        def tag_display(tags):
             tags = tags.split(',')
             items = {}
+            keys = []
 
             active_tags = self.manager.get_available_tags()
 
             for tag in tags:
                 if tag in active_tags:
+                    keys.append(tag)
                     items[tag] = self.manager.get_bookmarks_for_tag(tag)
 
-            return items
+            return {'data': items, 'keys': keys}
+
+        # COLLECTIONS
+        @self.app.get('/collections/<user>/<collections:re:([\w,-]+)>')
+        @self.jinja2_view('paging_display.html')
+        def collection_display(user, collections):
+            colls = collections.split(',')
+            items = {}
+            keys = []
+
+            user_collections = [ c['id'] for c in self.manager.get_collections(user)]
+
+            for coll in colls:
+                if coll in user_collections:
+                    keys.append(coll)
+                    items[coll] = self.manager.get_bookmarks_for_collection(user, coll)
+
+            return {'data': items, 'keys': keys}
 
         # COOKIES
         @self.app.get(['/<user>/<coll>/$add_cookie'], method='POST')

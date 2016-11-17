@@ -637,6 +637,79 @@ class AccessManagerMixin(object):
 
 
 # ============================================================================
+class BookmarkManagerMixin(object):
+    def tag_bookmark(self, tags, user, coll, rec, pg_id):
+        key_template = 'r:{user}:{coll}:{rec}:tag:{tag}'
+        pg_id = pg_id.encode('utf-8')
+
+        for tag in tags:
+            k = key_template.format(user=user, coll=coll, rec=rec, tag=tag)
+            if self.redis.exists(k):
+                # if exists, untag
+                if pg_id in self.redis.lrange(k, 0, -1):
+                    self.redis.lrem(k, 0, pg_id)
+                    self.redis.zincrby('s:tags', tag, -1)
+                    continue
+
+            # if not previously tagged or a new tag, set and add to tag count
+            self.redis.lpush(k, pg_id)
+            self.redis.zincrby('s:tags', tag)
+
+    def get_bookmarks_for_tag(self, tag):
+        tagged_pages = []
+        for k in self.redis.keys('*:tag:{}'.format(tag)):
+            parts = k.decode('utf-8').split(':')
+            user = parts[1]
+            coll = parts[2]
+            rec = parts[3]
+
+            # display if owner or if collection is public
+            if self.is_owner(user) or self.is_public(user, coll):
+                tagged_pages.extend([
+                    {
+                        'user': user,
+                        'coll': coll,
+                        'rec': rec,
+                        'ts': int(i.decode('utf-8').split(' ')[1]),
+                        'id': i.decode('utf-8'),
+                        'br': self.get_browser_for_bookmark(user, coll, rec, i)
+                    }
+                    for i in self.redis.lrange(k, 0, -1)
+                ])
+
+        return sorted(tagged_pages, key=lambda x: x['ts'])
+
+    def get_bookmarks_for_collection(self, user, coll):
+        recs = self.get_recordings(user, coll)
+        bookmarks = []
+
+        # display if owner or if collection is public
+        if self.is_owner(user) or self.is_public(user, coll):
+            for rec in recs:
+                pages = self.list_pages(user, coll, rec['id'])
+
+                bookmarks.extend([
+                    {
+                        'user': user,
+                        'coll': coll,
+                        'rec': rec['id'],
+                        'ts': int(p['timestamp']),
+                        'id': u'{} {}'.format(p['url'], p['timestamp']),
+                        'br': p.get('browser', 0)
+                    }
+                    for p in pages
+                ])
+
+        return sorted(bookmarks, key=lambda x: x['ts'])
+
+    def get_browser_for_bookmark(self, user, coll, rec, id):
+        key = 'r:{user}:{coll}:{rec}:page'.format(user=user, coll=coll, rec=rec)
+        data = self.redis.hget(key, id)
+        data = json.loads(data.decode('utf-8')) if data else {}
+        return data.get('browser', 0)
+
+
+# ============================================================================
 class RecManagerMixin(object):
     def __init__(self, config):
         super(RecManagerMixin, self).__init__(config)
@@ -882,62 +955,11 @@ class RecManagerMixin(object):
 
         return res
 
-    def get_bookmarks_for_tag(self, tag):
-        tagged_pages = []
-        for k in self.redis.keys('*:tag:{}'.format(tag)):
-            parts = k.decode('utf-8').split(':')
-            user = parts[1]
-            coll = parts[2]
-            rec = parts[3]
-
-            # display if owner or if collection is public
-            if self.is_owner(user) or self.is_public(user, coll):
-                tagged_pages.extend([
-                    {'user': user, 'coll': coll, 'rec': rec, 'id': i.decode('utf-8')}
-                    for i in self.redis.lrange(k, 0, -1)
-                ])
-
-        return tagged_pages
-
-    def get_tags_in_collection(self, user, coll):
-        keys = self.redis.keys('*:{user}:{coll}:*:tag:*'.format(user=user,
-                                                                coll=coll))
-
-        # return pages grouped by tag
-        tagged_pages = {}
-        for k in keys:
-            dict_key = k.decode('utf-8').split(':')[5]
-            if dict_key in tagged_pages:
-                tagged_pages[dict_key].extend([i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)])
-            else:
-                tagged_pages.update({
-                    dict_key: [i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)]
-                })
-
-        return tagged_pages
-
     def get_available_tags(self):
         tags = [t.decode('utf-8') for t, s in list(self.redis.zscan_iter('s:tags'))]
         # descending order
         tags.reverse()
         return tags
-
-    def tag_page(self, tags, user, coll, rec, pg_id):
-        key_template = 'r:{user}:{coll}:{rec}:tag:{tag}'
-        pg_id = pg_id.encode('utf-8')
-
-        for tag in tags:
-            k = key_template.format(user=user, coll=coll, rec=rec, tag=tag)
-            if self.redis.exists(k):
-                # if exists, untag
-                if pg_id in self.redis.lrange(k, 0, -1):
-                    self.redis.lrem(k, 0, pg_id)
-                    self.redis.zincrby('s:tags', tag, -1)
-                    continue
-
-            # if not previously tagged or a new tag, set and add to tag count
-            self.redis.lpush(k, pg_id)
-            self.redis.zincrby('s:tags', tag)
 
     def list_coll_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -989,7 +1011,6 @@ class RecManagerMixin(object):
         last_cdx = CDXObject(result[-1])
 
         return last_cdx['timestamp']
-
 
 # ============================================================================
 class CollManagerMixin(object):
@@ -1139,6 +1160,22 @@ class CollManagerMixin(object):
 
         self.redis.hset(key, prop_name, prop_value)
 
+    def get_tags_in_collection(self, user, coll):
+        keys = self.redis.keys('*:{user}:{coll}:*:tag:*'.format(user=user,
+                                                                coll=coll))
+
+        # return pages grouped by tag
+        tagged_pages = {}
+        for k in keys:
+            dict_key = k.decode('utf-8').split(':')[5]
+            if dict_key in tagged_pages:
+                tagged_pages[dict_key].extend([i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)])
+            else:
+                tagged_pages.update({
+                    dict_key: [i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)]
+                })
+
+        return tagged_pages
 
 
 # ============================================================================
@@ -1233,8 +1270,9 @@ class Base(object):
 
 
 # ============================================================================
-class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin,
-                       RecManagerMixin, CollManagerMixin, Base):
+class RedisDataManager(AccessManagerMixin, BookmarkManagerMixin, CollManagerMixin,
+                       DeleteManagerMixin, LoginManagerMixin, RecManagerMixin,
+                       Base):
     def __init__(self, redis, cork, content_app, browser_redis, browser_mgr, config):
         self.redis = redis
         self.cork = cork

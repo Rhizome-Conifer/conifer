@@ -126,7 +126,7 @@ class RecsController(BaseController):
             return {'pages': pages}
 
         @self.app.post('/api/v1/recordings/<rec>/tag')
-        def tag_page(rec):
+        def tag_bookmark(rec):
             user, coll = self.get_user_coll(api=True)
             self._ensure_rec_exists(user, coll, rec)
 
@@ -134,7 +134,7 @@ class RecsController(BaseController):
             tags = page_data['tags']
             pg_id = page_data['id']
 
-            self.manager.tag_page(tags, user, coll, rec, pg_id)
+            self.manager.tag_bookmark(tags, user, coll, rec, pg_id)
 
         @self.app.get('/api/v1/recordings/<rec>/num_pages')
         def get_num_pages(rec):
