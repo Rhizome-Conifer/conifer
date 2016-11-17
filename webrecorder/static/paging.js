@@ -24,7 +24,6 @@ prev.on('click', function () {
 
 timestamp.on('click', function (evt) {
   evt.stopPropagation();
-  console.log('click')
   linklist.toggleClass('open');
 })
 
@@ -88,6 +87,9 @@ function setInput(obj) {
     next.removeClass('disabled');
   }
 
+  if(keys.length === 1)
+    window.location.hash = index;
+
   input.value = '('+("0000"+(index + 1)).slice(-String(total).split('').length)+' of '+total+')  ' + url;
   timestamp.html(TimesAndSizesFormatter.ts_to_date(ts));
   iframe.src = '/_embed/'+obj.user+'/'+obj.coll+'/'+ts+(obj.br?'$br:'+obj.br:'')+'/'+url;
@@ -96,8 +98,10 @@ function setInput(obj) {
 
 compile_links();
 
-if(data[keys[tagIdx]].length)
-  setInput(data[keys[tagIdx]][0]);
+if(data[keys[tagIdx]].length) {
+  index = parseInt(window.location.hash.slice(1), 10) || 0;
+  setInput(data[keys[tagIdx]][index]);
+}
 
 linklist.find('ul.dropdown-menu').html(linklistData[tagIdx]);
 linklist.find('ul.dropdown-menu').on('click', 'li', function () {
