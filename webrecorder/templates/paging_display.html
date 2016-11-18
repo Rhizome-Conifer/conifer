@@ -28,10 +28,10 @@
         <div class='input-group-btn'>
             <button type="button" class="btn btn-default btn-prev disabled"><span class='glyphicon glyphicon-chevron-left'></span></button>
             {% if keys|length > 1 %}
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class='tagName'>{{ keys|first }}</span> <span class="caret"></span></button>
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class='tagName'>{{ keys|first|replace('-', ' ') }}</span> <span class="caret"></span></button>
             <ul class="dropdown-menu">
                 {% for key in keys %}
-                    <li><a href="#">{{ key }}</a></li>
+                    <li><a href="#">{{ key|replace('-', ' ') }}</a></li>
                 {% endfor %}
             </ul>
             {% else %}

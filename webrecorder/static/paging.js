@@ -36,7 +36,7 @@ dropdown.on('click', 'a', function (evt) {
 
   tagIdx = newTagIdx;
   index = 0;
-  $('.tagName').html(keys[tagIdx]);
+  $('.tagName').html(keys[tagIdx].replace(/\-/g, ' '));
 
   if(data[keys[tagIdx]].length > 0) {
     setInput(data[keys[tagIdx]][0]);
@@ -63,7 +63,7 @@ function compile_links() {
     if(data[keys[i]].length > 0) {
       for(var tag of data[keys[i]]) {
         var parts = tag.id.split(' ');
-        linkopts += "<li>"+(parts[0].replace(/(\?.*)/, '?...'))+"<span class='replay-date'>"+TimesAndSizesFormatter.ts_to_date(parts[1])+"</span></li>";
+        linkopts += "<li><div class='url'>"+(parts[0].replace(/(\?.*)/, '?...'))+"</div><span class='replay-date'>"+TimesAndSizesFormatter.ts_to_date(parts[1])+"</span></li>";
       }
       linklistData.push(linkopts);
     } else {

@@ -1051,10 +1051,14 @@ div.filter-label {
 .linklist .dropdown-menu .replay-date {
     background: none;
     position: absolute;
-    top: 10px;
+    top: 50%;
     right: 5px;
     margin: 0;
     float: none;
+    margin-top: -10px;
+}
+.linklist .dropdown-menu .url {
+    width: 75%;
 }
 
 div.paging-container .home-link {
