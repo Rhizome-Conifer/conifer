@@ -5,6 +5,7 @@ var linklist = $('.linklist');
 var index = 0;
 var tagIdx = 0;
 var linklistData = [];
+var emptyMsg = '0 Bookmarks in Collection';
 
 // buttons
 var next = $('.btn-next');
@@ -37,8 +38,12 @@ dropdown.on('click', 'a', function (evt) {
   index = 0;
   $('.tagName').html(keys[tagIdx]);
 
-  if(data[keys[tagIdx]].length > 0)
+  if(data[keys[tagIdx]].length > 0) {
     setInput(data[keys[tagIdx]][0]);
+  } else {
+    input.value = emptyMsg;
+    iframe.src = '';
+  }
 
   // rerender link list
   linklist.find('ul.dropdown-menu').html(linklistData[tagIdx]);
@@ -101,6 +106,8 @@ compile_links();
 if(data[keys[tagIdx]].length) {
   index = parseInt(window.location.hash.slice(1), 10) || 0;
   setInput(data[keys[tagIdx]][index]);
+} else {
+  input.value = emptyMsg;
 }
 
 linklist.find('ul.dropdown-menu').html(linklistData[tagIdx]);
