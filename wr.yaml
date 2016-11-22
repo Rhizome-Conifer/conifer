@@ -131,9 +131,9 @@ info_key_templ:
     coll: 'c:{user}:{coll}:info'
     user: 'u:{user}:info'
 
-
 tags_key: 'z:tags'
 user_tag_templ: 'r:{user}:{coll}:{rec}:tag:{tag}'
+mount_key_templ: 'c:{user}:{coll}:mount'
 
 user_usage_key: 'h:user-usage'
 temp_usage_key: 'h:temp-usage'

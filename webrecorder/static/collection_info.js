@@ -4,6 +4,7 @@ $(function() {
     RecordingSelector.start();
     BookmarkHiddenSwitch.start();
     UrlManager.start();
+    MountInfo.start();
 });
 
 var UrlManager = (function() {
@@ -575,4 +576,33 @@ var RecordingMove = {
         }
 }
 
+
+
+var MountInfo = (function(){
+    function start() {
+        if (!window.mount_info) {
+            return;
+        }
+
+        var value = window.mount_info.ait;
+
+        if (value && value.indexOf("ait://") == 0) {
+            var colls = value.substr(6);
+            if (colls) {
+                $("#ait_colls").val(colls);
+                $("#mount_info").html("Mounted Archive-It: <b>" + colls + "</b>");
+            }
+        }
+
+        $('#mount-form').ajaxForm({
+            success: function() {
+                var colls = $("#ait_colls").val();
+                $("#mount_info").html("Mounted Archive-It: <b>" + colls + "</b>");
+                $("#mount-modal").modal('hide');
+            }
+        });
+
+    }
+    return {start: start};
+})();
 
