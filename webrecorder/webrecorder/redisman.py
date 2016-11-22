@@ -939,6 +939,7 @@ class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
         self.coll_info_key = config['info_key_templ']['coll']
+        self.mount_key = config['mount_key_templ']
 
     def get_collection(self, user, coll, access_check=True):
         if access_check:
@@ -980,6 +981,20 @@ class CollManagerMixin(object):
             result['recordings'] = self.get_recordings(user, coll)
 
         return result
+
+    def get_mount(self, user, coll):
+        mount_key = self.mount_key.format(user=user, coll=coll)
+        res = self.redis.get(mount_key)
+        if res:
+            res = json.loads(res.decode('utf-8'))
+        return res
+
+    def set_mount(self, user, coll, mount_info):
+        mount_key = self.mount_key.format(user=user, coll=coll)
+        if mount_info:
+            self.redis.set(mount_key, json.dumps(mount_info))
+        else:
+            self.redis.delete(mount_key)
 
     def _has_collection_no_access_check(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)

@@ -117,6 +117,27 @@ class CollsController(BaseController):
 
             return {'count': self.manager.count_pages(user, coll, rec='*') }
 
+        @self.app.post('/api/v1/collections/<coll>/mounts')
+        def update_mount(coll):
+            user = self.get_user(api=True)
+            self._ensure_coll_exists(user, coll)
+
+            type_ = request.forms.get('mount_type')
+
+            if type_ == 'ait':
+                ait_colls = request.forms.getunicode('ait_colls', '')
+                if ait_colls:
+                    ait_colls = ait_colls.replace(' ', '')
+                    mount_info = {'ait': 'ait://' + ait_colls}
+                else:
+                    mount_info = None
+
+                self.manager.set_mount(user, coll, mount_info)
+                return {}
+            else:
+                return {'error_message': 'unsupported mount type'}
+
+
         # Create Collection
         @self.app.get('/_create')
         @self.jinja2_view('create_collection.html')
@@ -208,6 +229,8 @@ class CollsController(BaseController):
 
         result['rec_title'] = ''
         result['coll_title'] = result['collection']['title']
+
+        result['mount_info'] = self.manager.get_mount(user, coll) or '{}'
 
         for rec in result['collection']['recordings']:
            rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
