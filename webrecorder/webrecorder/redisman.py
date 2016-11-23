@@ -982,16 +982,21 @@ class CollManagerMixin(object):
 
         return result
 
-    def add_mount(self, user, coll, mount_id, mount_title, mount_str):
-        rec_info = self.create_recording(user, coll, mount_id, mount_title)
+    def add_mount(self, user, coll, rec, rec_title,
+                  mount_type, mount_desc, mount_config):
+        rec_info = self.create_recording(user, coll, rec, rec_title)
         rec = rec_info['id']
 
         mount_key = self.mount_key.format(user=user, coll=coll, rec=rec)
-        self.redis.set(mount_key, mount_str)
 
         rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
-        self.redis.hset(rec_key, 'is_mount', '1')
-        rec_info['is_mount'] = '1'
+
+        with redis.utils.pipeline(self.redis) as pi:
+            pi.set(mount_key, mount_config)
+
+            pi.hset(rec_key, 'mount_type', mount_type)
+            if mount_desc:
+                pi.hset(rec_key, 'mount_desc', mount_desc)
 
         return rec_info
 

@@ -42,13 +42,13 @@
         <div class="recording-stats text-left right-buffer-sm">
             <small>
                 <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
-                {% if not recording.is_mount %}
+                {% if not recording.mount_type %}
                 <span class="current-size text-right" data-size="{{ recording.size }}"></span>
                 {% endif %}
             </small>
         </div>
 
-        {% if not recording.is_mount %}
+        {% if not recording.mount_type %}
         <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
             <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
         </div>
@@ -58,7 +58,17 @@
         </div>
         {% else %}
         <div class="recording-time-info text-left right-buffer-sm">
-        External Collection
+            <span>{{ recording.mount_desc }}</span>
+        </div>
+        <div class="recording-time-info text-left right-buffer-sm">
+        <small><i>
+            {% if recording.mount_type == 'ait' %}
+            Archive-It
+            {% elif recording.mount_type == 'memento' %}
+            Memento
+            {% endif %}
+            Collection
+        </i></small>
         </div>
         {% endif %}
 

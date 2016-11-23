@@ -123,28 +123,41 @@ class CollsController(BaseController):
             user = self.get_user(api=True)
             self._ensure_coll_exists(user, coll)
 
-            type_ = request.forms.get('mount_type')
+            type_ = request.forms.get('mount-type')
+
+            if type_ not in ('ait', 'memento'):
+                return {'error_message': 'unsupported mount type'}
+
+            mount_data = request.forms.getunicode(type_ + '-data', '')
+            if not mount_data:
+                return {'error_message', 'invalid mount data'}
+
+            mount_title = request.forms.getunicode('mount-title')
+            if not mount_title:
+                mount_title = type_.upper()
+
+            mount_id = self.sanitize_title(mount_title)
+            mount_desc = request.forms.getunicode('mount-desc', '')
+            page_data_list = []
 
             if type_ == 'ait':
-                ait_coll = request.forms.getunicode('ait_coll', '')
-                if not ait_coll:
-                    return {'error_message', 'invalid mount data'}
-
-                mount_str = 'ait://' + ait_coll
-                mount_title = 'AIT ' + ait_coll
-                mount_id = self.sanitize_title(mount_title)
-
-                mount_info = self.manager.add_mount(user, coll, mount_id, mount_title, mount_str)
-
                 try:
-                    self._import_ait_metadata(user, coll, mount_info['id'], ait_coll)
+                    mount_config = type_ + '://' + mount_data
+                    mount_desc, page_data_list = self._get_ait_metadata(mount_data)
                 except Exception as e:
                     import traceback
                     traceback.print_exc()
+            elif type_ == 'memento':
+                mount_config = type_ + '+' + mount_data
 
-                return {'mount_rec': mount_info['id']}
-            else:
-                return {'error_message': 'unsupported mount type'}
+            mount_info = self.manager.add_mount(user, coll, mount_id, mount_title,
+                                                type_, mount_desc, mount_config)
+            mount_id = mount_info['id']
+
+            if page_data_list:
+                self.manager.import_pages(user, coll, mount_id, page_data_list)
+
+            return {'mount_rec': mount_id}
 
 
         # Create Collection
@@ -264,9 +277,15 @@ class CollsController(BaseController):
         if not self.manager.has_collection(user, coll):
             self._raise_error(404, 'Collection not found', api=True, id=coll)
 
-    def _import_ait_metadata(self, user, coll, rec, ait_coll):
+    def _get_ait_metadata(self, ait_coll):
         r = requests.get('https://archive-it.org/collections/{0}.json'.format(ait_coll))
         data = r.json()
+
+        desc = data['results']['rootEntity']['name']
+        page_data_list = []
+
+        if not data['results'].get('entities'):
+            return desc, page_data_list
 
         for json_page in data['results']['entities']:
             page_data = {}
@@ -279,5 +298,7 @@ class CollsController(BaseController):
                 if title:
                     page_data['title'] = title[0]
 
-            self.manager.add_page(user, coll, rec, page_data)
+            page_data_list.append(page_data)
+
+        return desc, page_data_list
 
