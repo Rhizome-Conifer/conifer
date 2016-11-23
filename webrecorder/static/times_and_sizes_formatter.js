@@ -55,6 +55,10 @@ var TimesAndSizesFormatter = (function() {
             return "";
         }
 
+        if (ts == "*") {
+            return "-";
+        }
+
         if (ts.length < 14) {
             ts += "00000000000000".substr(ts.length);
         }

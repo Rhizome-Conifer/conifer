@@ -42,7 +42,6 @@
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
     var coll_title = "{{ collection.title }}";
-    var mount_info = {{ mount_info }};
 </script>
 
 {% endblock %}
@@ -56,10 +55,6 @@
         </h1>
     </div>
     <div class="col-xs-3 pull-xs-right">
-        <div class="pull-right">
-            <span id="mount_info"></span>
-            <button class="btn btn-default" data-toggle="modal" data-target="#mount-modal">Mounted Collections...</button>
-        </div>
         {% if can_write() %}
             {% if is_out_of_space() %}
                 {% set is_disabled_class = "disabled" %}

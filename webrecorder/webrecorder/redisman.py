@@ -982,19 +982,18 @@ class CollManagerMixin(object):
 
         return result
 
-    def get_mount(self, user, coll):
-        mount_key = self.mount_key.format(user=user, coll=coll)
-        res = self.redis.get(mount_key)
-        if res:
-            res = json.loads(res.decode('utf-8'))
-        return res
+    def add_mount(self, user, coll, mount_id, mount_title, mount_str):
+        rec_info = self.create_recording(user, coll, mount_id, mount_title)
+        rec = rec_info['id']
 
-    def set_mount(self, user, coll, mount_info):
-        mount_key = self.mount_key.format(user=user, coll=coll)
-        if mount_info:
-            self.redis.set(mount_key, json.dumps(mount_info))
-        else:
-            self.redis.delete(mount_key)
+        mount_key = self.mount_key.format(user=user, coll=coll, rec=rec)
+        self.redis.set(mount_key, mount_str)
+
+        rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+        self.redis.hset(rec_key, 'is_mount', '1')
+        rec_info['is_mount'] = '1'
+
+        return rec_info
 
     def _has_collection_no_access_check(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)

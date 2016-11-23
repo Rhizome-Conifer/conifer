@@ -7,7 +7,7 @@
            </div>
            <div class="row top-buffer-md">
                 <div class="col-md-10 col-md-offset-1">
-                    <form method="post" id="mount-form" action="/api/v1/collections/{{ coll }}/mounts?user={{ user }}" class="form-horizontal">
+                    <form method="post" id="mount-form" action="/api/v1/collections/{{ coll }}/mount?user={{ user }}" class="form-horizontal">
                         <div class="form-group">
                             <label for="collection" class="col-md-4 control-label">Collection Type:</label>
                             <div class="col-md-8">
@@ -19,11 +19,11 @@
                         <div class="form-group">
                             <label for="ait_collection" class="col-md-4 control-label">Collection List:</label>
                             <div class="col-md-8">
-                            <input type="text" id="ait_colls" name="ait_colls" class="form-control input-group-sm"/>
+                            <input type="text" id="ait_coll" name="ait_coll" class="form-control input-group-sm"/>
                             </div>
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-primary" style="display: block" type="submit">Update</button>
+                            <button class="btn btn-primary" style="display: block" type="submit">Add</button>
                         </div>
                     </form>
                 </div>

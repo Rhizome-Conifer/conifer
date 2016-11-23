@@ -1,6 +1,7 @@
 from bottle import request, response, HTTPError
 
 import re
+import requests
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
@@ -117,23 +118,31 @@ class CollsController(BaseController):
 
             return {'count': self.manager.count_pages(user, coll, rec='*') }
 
-        @self.app.post('/api/v1/collections/<coll>/mounts')
-        def update_mount(coll):
+        @self.app.post('/api/v1/collections/<coll>/mount')
+        def add_mount(coll):
             user = self.get_user(api=True)
             self._ensure_coll_exists(user, coll)
 
             type_ = request.forms.get('mount_type')
 
             if type_ == 'ait':
-                ait_colls = request.forms.getunicode('ait_colls', '')
-                if ait_colls:
-                    ait_colls = ait_colls.replace(' ', '')
-                    mount_info = {'ait': 'ait://' + ait_colls}
-                else:
-                    mount_info = None
+                ait_coll = request.forms.getunicode('ait_coll', '')
+                if not ait_coll:
+                    return {'error_message', 'invalid mount data'}
 
-                self.manager.set_mount(user, coll, mount_info)
-                return {}
+                mount_str = 'ait://' + ait_coll
+                mount_title = 'AIT ' + ait_coll
+                mount_id = self.sanitize_title(mount_title)
+
+                mount_info = self.manager.add_mount(user, coll, mount_id, mount_title, mount_str)
+
+                try:
+                    self._import_ait_metadata(user, coll, mount_info['id'], ait_coll)
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
+
+                return {'mount_rec': mount_info['id']}
             else:
                 return {'error_message': 'unsupported mount type'}
 
@@ -230,8 +239,6 @@ class CollsController(BaseController):
         result['rec_title'] = ''
         result['coll_title'] = result['collection']['title']
 
-        result['mount_info'] = self.manager.get_mount(user, coll) or '{}'
-
         for rec in result['collection']['recordings']:
            rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
            result['bookmarks'].append(rec['pages'])
@@ -256,4 +263,21 @@ class CollsController(BaseController):
     def _ensure_coll_exists(self, user, coll):
         if not self.manager.has_collection(user, coll):
             self._raise_error(404, 'Collection not found', api=True, id=coll)
+
+    def _import_ait_metadata(self, user, coll, rec, ait_coll):
+        r = requests.get('https://archive-it.org/collections/{0}.json'.format(ait_coll))
+        data = r.json()
+
+        for json_page in data['results']['entities']:
+            page_data = {}
+            page_data['url'] = json_page['canonicalUrl']
+            page_data['timestamp'] = '*'
+
+            metadata = json_page.get('metadata')
+            if metadata:
+                title = metadata.get('meta_Title')
+                if title:
+                    page_data['title'] = title[0]
+
+            self.manager.add_page(user, coll, rec, page_data)
 
