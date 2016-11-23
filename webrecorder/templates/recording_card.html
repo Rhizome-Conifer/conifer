@@ -42,10 +42,13 @@
         <div class="recording-stats text-left right-buffer-sm">
             <small>
                 <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
+                {% if not recording.is_mount %}
                 <span class="current-size text-right" data-size="{{ recording.size }}"></span>
+                {% endif %}
             </small>
         </div>
 
+        {% if not recording.is_mount %}
         <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
             <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
         </div>
@@ -53,6 +56,11 @@
         <div class="recording-time-info text-left right-buffer-sm">
             <small><span data-time-duration="{{ duration }}"></span></small>
         </div>
+        {% else %}
+        <div class="recording-time-info text-left right-buffer-sm">
+        External Collection
+        </div>
+        {% endif %}
 
         {% include 'confirm_delete_recording_modal.html' %}
     </div>
