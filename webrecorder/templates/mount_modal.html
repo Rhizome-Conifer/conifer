@@ -9,17 +9,30 @@
                 <div class="col-md-10 col-md-offset-1">
                     <form method="post" id="mount-form" action="/api/v1/collections/{{ coll }}/mount?user={{ user }}" class="form-horizontal">
                         <div class="form-group">
-                            <label for="collection" class="col-md-4 control-label">Collection Type:</label>
+                            <label for="collection" class="col-md-4 control-label">Archive Type:</label>
                             <div class="col-md-8">
-                            <select name="mount_type">
+                            <select id="mount-type" name="mount-type">
                               <option value="ait">Archive-It</option>
+                              <option value="memento">Memento API</option>
                             </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="ait_collection" class="col-md-4 control-label">Collection List:</label>
+                        <div class="form-group memento-option hide-option">
+                            <label for="mount-title" class="col-md-4 control-label">Title:</label>
                             <div class="col-md-8">
-                            <input type="text" id="ait_coll" name="ait_coll" class="form-control input-group-sm"/>
+                            <input type="text" id="mount-title" name="mount-title" class="form-control input-group-sm" value="Remote Archive" required/>
+                            </div>
+                        </div>
+                        <div class="form-group ait-option hide-option">
+                            <label for="ait-data" class="col-md-4 control-label">Archive-It Collection:</label>
+                            <div class="col-md-3">
+                            <input type="text" id="ait-data" name="ait-data" class="form-control input-group-sm" placeholder="eg. 1234"/>
+                            </div>
+                        </div>
+                        <div class="form-group memento-option hide-option">
+                            <label for="memento-data" class="col-md-4 control-label">Memento Timegate Url:</label>
+                            <div class="col-md-8">
+                            <input type="url" id="memento-data" name="memento-data" class="form-control input-group-sm" placeholder="http://"/>
                             </div>
                         </div>
                         <div class="form-group">

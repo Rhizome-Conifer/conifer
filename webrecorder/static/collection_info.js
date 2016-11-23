@@ -581,6 +581,12 @@ var RecordingMove = {
 var MountInfo = (function(){
     function start() {
         $('#mount-form').ajaxForm({
+            beforeSerialize: function() {
+                if ($("#mount-type").find(":selected").val() == "ait") {
+                    $("#mount-title").val("AIT " + $("#ait-data").val());
+                }
+            },
+
             complete: function(xhr) {
                 $("#mount-modal").modal('hide');
 
@@ -591,6 +597,17 @@ var MountInfo = (function(){
             }
         });
 
+        function toggle_archive_type() {
+            $("#mount-modal .hide-option").hide();
+            $("#mount-modal .hide-option input").attr("required", false);
+            var value = $("#mount-type").val();
+            $("." + value + "-option").show();
+            $("." + value + "-option input").attr("required", true);
+        }
+
+        $('#mount-modal').on('show.bs.modal', toggle_archive_type);
+
+        $("#mount-type").on('change', toggle_archive_type);
     }
     return {start: start};
 })();
