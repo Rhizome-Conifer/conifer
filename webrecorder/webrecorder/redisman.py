@@ -729,6 +729,9 @@ class RecManagerMixin(object):
                            rec=rec)
 
         result['download_url'] = path
+
+        if result.get('pending_size') and result.get('size'):
+            result['size'] = int(result['size']) + int(result['pending_size'])
         return result
 
     def has_recording(self, user, coll, rec):
@@ -935,11 +938,9 @@ class RecManagerMixin(object):
         else:
             key = self.coll_info_key.format(user=user, coll=coll)
 
-        res = self.redis.hget(key, 'size')
-        if res is not None:
-            res = int(res)
-
-        return res
+        res = self.redis.hmget(key, ['size', 'pending_size'])
+        total = int(res[0] or 0) + int(res[1] or 0)
+        return total
 
     def get_available_tags(self):
         tags = [t.decode('utf-8')

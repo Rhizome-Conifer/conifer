@@ -10,6 +10,7 @@ import redis
 import time
 import json
 import glob
+import tempfile
 
 from pywb.webagg.utils import res_template
 
@@ -104,9 +105,14 @@ class WebRecRecorder(object):
         self.writer = writer
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
-                                   accept_colls='live')
+                                   accept_colls='live',
+                                   create_buff_func=self.create_buffer)
 
         return recorder_app
+
+    def create_buffer(self, params, name):
+        info_key = res_template(self.info_keys['rec'], params)
+        return TempWriteBuffer(self.redis, info_key, name, params['url'])
 
     def get_profile(self, scheme, profile):
         res = self.redis.hgetall('st:' + profile)
@@ -473,4 +479,31 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
             return False
 
         return True
+
+
+# ============================================================================
+class TempWriteBuffer(tempfile.SpooledTemporaryFile):
+    def __init__(self, redis, info_key, class_name, url):
+        super(TempWriteBuffer, self).__init__(max_size=512*1024)
+        self.redis = redis
+        self.info_key = info_key
+        self.redis.hincrby(self.info_key, 'pending_count', 1)
+        self._wsize = 0
+
+    def write(self, buff):
+        super(TempWriteBuffer, self).write(buff)
+        length = len(buff)
+        self._wsize += length
+        self.redis.hincrby(self.info_key, 'pending_size', length)
+
+    def close(self):
+        try:
+            super(TempWriteBuffer, self).close()
+        except:
+            import traceback
+            traceback.print_exc()
+
+        self.redis.hincrby(self.info_key, 'pending_size', -self._wsize)
+        self.redis.hincrby(self.info_key, 'pending_count', -1)
+
 
