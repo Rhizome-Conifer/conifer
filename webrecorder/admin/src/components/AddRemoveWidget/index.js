@@ -16,6 +16,7 @@ class AddRemoveWidget extends Component {
     super(props);
 
     this.tagInput = this.tagInput.bind(this);
+    this.addTag = this.addTag.bind(this);
     this.removeTag = this.removeTag.bind(this);
     this.state = {
       tags: this.props.items,
@@ -23,16 +24,18 @@ class AddRemoveWidget extends Component {
     };
   }
 
-  addTag() {
-    const tags = this.state.tags;
-    tags.push({name:this.state.tag, usage:0});
+  addTag(evt) {
+    if(evt.keyCode === 13 && this.state.tag.length) {
+      const tags = this.state.tags;
+      tags.push({name:this.state.tag, usage:0});
 
-    this.setState({
-      tags: tags,
-      tag:'',
-    });
+      this.setState({
+        tags: tags,
+        tag:'',
+      });
 
-    this.props.modified();
+      this.props.modified();
+    }
   }
 
   removeTag(index) {
@@ -48,13 +51,9 @@ class AddRemoveWidget extends Component {
   tagInput(evt) {
     evt.preventDefault();
 
-    if(evt.key === 'Enter') {
-      this.addTag();
-    } else {
-      this.setState({
-        tag: evt.target.value
-      });
-    }
+    this.setState({
+      tag: evt.target.value
+    });
   }
 
   serialize() {
@@ -72,7 +71,7 @@ class AddRemoveWidget extends Component {
       <div>
         <FormGroup controlId='addTag'>
           <ControlLabel>Add Tag:</ControlLabel>
-          <FormControl type='text' value={tag} onKeyUp={evt => { if(evt.key === 'Enter') this.addTag(); }} onChange={this.tagInput} />
+          <FormControl type='text' value={tag} onKeyUp={this.addTag} onChange={this.tagInput} />
         </FormGroup>
         <Table
           className='wr-addRemove-table'

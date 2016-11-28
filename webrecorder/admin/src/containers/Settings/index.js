@@ -77,11 +77,10 @@ class Settings extends Component {
               </Col>
             </Row>
             <Row>
-              <Col xs={4}
-                   xsOffset={4}
-                   className='save-row'
-                   onClick={this.onSubmit}>
-                <Button bsStyle={changes?'primary':'default'} disabled={!changes}>Save</Button>
+              <Col xs={4} xsOffset={4} className='save-row'>
+                <Button onClick={this.onSubmit}
+                        bsStyle={changes?'primary':'default'}
+                        disabled={!changes}>Save</Button>
               </Col>
             </Row>
           </Grid>

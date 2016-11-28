@@ -499,8 +499,3 @@ class UserController(BaseController):
             self.manager.skip_post_req(user, url)
             return {}
 
-
-
-
-
-

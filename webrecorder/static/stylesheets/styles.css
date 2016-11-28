@@ -1021,11 +1021,11 @@ div.filter-label {
 
 .linklist {
     position: relative;
-    cursor: pointer;
 }
 .linklist .form-control {
     border-radius:0;
     float: none;
+    cursor: pointer;
 }
 .linklist .replay-date {
     background: linear-gradient(90deg, rgba(255,255,255,0), #eee 15%, #eee);

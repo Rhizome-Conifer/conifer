@@ -1167,12 +1167,12 @@ class CollManagerMixin(object):
         # return pages grouped by tag
         tagged_pages = {}
         for k in keys:
-            dict_key = k.decode('utf-8').split(':')[5]
-            if dict_key in tagged_pages:
-                tagged_pages[dict_key].extend([i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)])
+            tag = k.decode('utf-8').split(':')[5]
+            if tag in tagged_pages:
+                tagged_pages[tag].extend([i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)])
             else:
                 tagged_pages.update({
-                    dict_key: [i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)]
+                    tag: [i.decode('utf-8') for i in self.redis.lrange(k, 0, -1)]
                 })
 
         return tagged_pages

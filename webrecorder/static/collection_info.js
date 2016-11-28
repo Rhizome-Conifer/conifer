@@ -516,7 +516,7 @@ var BookmarkHiddenSwitch = (function() {
         Recordings.tagPage(
             recordingId,
             bookmarkId,
-            [tag], // multi tag support soon
+            [tag],
             function (){
                 // update ui
                 if(tagElement.hasClass(successClasss)){
@@ -529,7 +529,7 @@ var BookmarkHiddenSwitch = (function() {
                     tagElement.parents('div.btn-group').find('button').addClass('btn-success');
                 }
             },
-            function (){ console.log('tagging error')}
+            function (){ console.log('error tagging bookmark', bookmarkId); }
         );
     }
 

@@ -173,10 +173,10 @@ class AppController(BaseController):
             available = context.get('available_tags', [])
             tags = context.get('tags', [])
 
-            return any(
-                [True for tag in available
-                 if tag in tags and bookmark_id in tags[tag]]
-            )
+            for tag in available:
+                if tag in tags and bookmark_id in tags[tag]:
+                    return True
+            return False
 
         def trunc_url(value):
             """ Truncate querystrings, appending an ellipses

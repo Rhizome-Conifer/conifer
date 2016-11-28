@@ -100,7 +100,6 @@ function setInput(obj) {
   iframe.src = '/_embed/'+obj.user+'/'+obj.coll+'/'+ts+(obj.br?'$br:'+obj.br:'')+'/'+url;
 }
 
-
 compile_links();
 
 if(data[keys[tagIdx]].length) {
