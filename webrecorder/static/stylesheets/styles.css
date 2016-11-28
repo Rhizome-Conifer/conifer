@@ -573,7 +573,8 @@ div.filter-label {
 }
 
 .table-bookmarks>thead>tr>th.bookmark-title,
-.table-bookmarks>thead>tr>th.timestamp,
+.table-bookmarks>thead>tr>th.bookmark-tag,
+.table-bookmarks>thead>tr>th.bookmark-browser,
 .table-bookmarks>thead>tr>th.timestamp,
 .table-bookmarks>thead>tr>th.bookmark-url {
     border-right: 1px solid #ddd;
