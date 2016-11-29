@@ -147,6 +147,10 @@ class AppController(BaseController):
             return self.manager.can_read_coll(get_user(context), get_coll(context))
 
         @contextfunction
+        def can_mount(context):
+            return self.manager.can_mount_coll(get_user(context), get_coll(context))
+
+        @contextfunction
         def is_anon(context):
             return self.manager.is_anon(get_user(context))
 
@@ -170,6 +174,7 @@ class AppController(BaseController):
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
+        jinja_env.globals['can_mount'] = can_mount
         jinja_env.globals['is_owner'] = is_owner
         jinja_env.globals['is_anon'] = is_anon
         jinja_env.globals['get_path'] = get_path

@@ -123,6 +123,9 @@ class CollsController(BaseController):
             user = self.get_user(api=True)
             self._ensure_coll_exists(user, coll)
 
+            if not self.manager.can_mount_coll(user, coll):
+                return {'error_message': 'mounting not supported'}
+
             type_ = request.forms.get('mount-type')
 
             if type_ not in ('ait', 'memento'):

@@ -116,8 +116,12 @@
 
 {% include 'upload_modal.html' %}
 
-{% include 'mount_modal.html' %}
-
 {% endif %}
+
+{% if can_mount() %}
+{% include 'mount_modal.html' %}
+{% endif %}
+
+
 
 {% endblock %}
