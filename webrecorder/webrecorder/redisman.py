@@ -570,6 +570,16 @@ class AccessManagerMixin(object):
     def can_write_coll(self, user, coll):
         return self._check_access(user, coll, self.WRITE_PREFIX)
 
+    def can_mount_coll(self, user, coll):
+        if not self.can_admin_coll(user, coll):
+            return False
+
+        try:
+            self.cork.require(role='mounts-archivist')
+            return True
+        except Exception:
+            return False
+
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
     def can_admin_coll(self, user, coll):

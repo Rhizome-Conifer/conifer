@@ -2,13 +2,15 @@
     <div class="col-xs-2 recording-panel">
         {% if can_write() %}
         <div>
-            <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New</a>
+            <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
             {% if can_admin() and not is_anon() %}
             <a class="btn btn-success btn-sm upload-coll-button" href="#" data-toggle="modal" title="Upload to Collection" data-target="#upload-modal" data-backdrop="static" data-keyboard="false" role="button">
                 <span class="glyphicon glyphicon-upload glyphicon-button"></span></a>
             {% endif %}
 
-            <button class="btn btn-sm btn-default" data-toggle="modal" data-target="#mount-modal">Mount...</button>
+            {% if can_mount() %}
+            <button class="btn btn-sm btn-default top-buffer-sm" data-toggle="modal" data-target="#mount-modal">Mount External...</button>
+            {% endif %}
         </div>
         {% endif %}
 
