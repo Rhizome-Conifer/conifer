@@ -131,7 +131,7 @@ class RecsController(BaseController):
 
             # check recording exists and user has write permissions
             self._ensure_rec_exists(user, coll, rec)
-            self.assert_can_write(user, coll)
+            self.manager.assert_can_write(user, coll)
 
             page_data = request.json
             tags = page_data.get('tags', [])
