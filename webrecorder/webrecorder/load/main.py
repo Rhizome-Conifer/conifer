@@ -13,6 +13,7 @@ from pywb.webagg.utils import load_config, res_template
 import os
 import json
 
+
 # =============================================================================
 def make_webagg():
     config = load_config('WR_CONFIG', './wr.yaml', 'WR_USER_CONFIG', '')
@@ -25,25 +26,27 @@ def make_webagg():
     coll_url = redis_base + config['cdxj_coll_key_templ']
     warc_url = redis_base + config['warc_key_templ']
 
+    cache_proxy_url = os.environ.get('CACHE_PROXY_URL')
+
     rec_redis_source = RedisIndexSource(rec_url)
     redis = rec_redis_source.redis
 
     live_rec  = DefaultResourceHandler(
                     SimpleAggregator(
                         {'live': LiveIndexSource()}
-                    ), warc_url)
+                    ), warc_url, cache_proxy_url)
 
     replay_rec  = DefaultResourceHandler(
                     SimpleAggregator(
                         {'replay': rec_redis_source}
-                    ), warc_url)
+                    ), warc_url, cache_proxy_url)
 
     replay_coll = DefaultResourceHandler(
                     SimpleAggregator(
                         {'replay': MountMultiKeyIndexSource(timeout=20.0,
                                                             redis_url=coll_url,
                                                             redis=redis)}
-                    ), warc_url)
+                    ), warc_url, cache_proxy_url)
 
     app.add_route('/live', live_rec)
     app.add_route('/replay', replay_rec)
@@ -66,7 +69,7 @@ class AitFilterIndexSource(RemoteIndexSource):
 
     def _set_load_url(self, cdx):
         parts = cdx.get('filename', '').split('-', 2)
-        ait_coll = parts[1] if len(parts) == 2 else 'all'
+        ait_coll = parts[1] if len(parts) == 3 else 'all'
 
         cdx[self.url_field] = self.replay_url.format(
                                  ait_coll=ait_coll,
