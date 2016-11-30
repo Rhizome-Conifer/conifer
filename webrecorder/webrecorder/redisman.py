@@ -637,12 +637,61 @@ class AccessManagerMixin(object):
 
 
 # ============================================================================
+class PageManagerMixin(object):
+    def __init__(self, config):
+        super(PageManagerMixin, self).__init__(config)
+        self.user_tag_templ = config['user_tag_templ']
+        self.tags_key = config['tags_key']
+
+    def tag_page(self, tags, user, coll, rec, pg_id):
+        pg_id = pg_id.encode('utf-8')
+
+        for tag in tags:
+            k = self.user_tag_templ.format(user=user, coll=coll, rec=rec,
+                                           tag=tag)
+            if self.redis.exists(k):
+                # if exists, untag
+                if self.redis.sismember(k, pg_id):
+                    self.redis.srem(k, pg_id)
+                    self.redis.zincrby(self.tags_key, tag, -1)
+                    continue
+
+            # if not previously tagged or a new tag, set and add to tag count
+            self.redis.sadd(k, pg_id)
+            self.redis.zincrby(self.tags_key, tag)
+
+    def get_pages_for_tag(self, tag):
+        tagged_pages = []
+        for k in self.redis.keys('*:tag:{}'.format(tag)):
+            parts = k.decode('utf-8').split(':')
+            user = parts[1]
+            coll = parts[2]
+            rec = parts[3]
+
+            # display if owner or if collection is public
+            if self.is_owner(user) or self.is_public(user, coll):
+                for i in self.redis.smembers(k):
+                    data = i.decode('utf-8').split(' ')
+                    tagged_pages.append({
+                        'user': user,
+                        'collection': coll,
+                        'recording': rec,
+                        'timestamp': data[1],
+                        'url': data[0],
+                        'browser': data[2],
+                    })
+
+        return sorted(tagged_pages, key=lambda x: x['timestamp'])
+
+
+# ============================================================================
 class RecManagerMixin(object):
     def __init__(self, config):
         super(RecManagerMixin, self).__init__(config)
         self.rec_info_key = config['info_key_templ']['rec']
         self.page_key = config['page_key_templ']
         self.cdx_key = config['cdxj_key_templ']
+        self.tags_key = config['tags_key']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -882,10 +931,17 @@ class RecManagerMixin(object):
 
         return res
 
-    def list_coll_pages(self, user, coll, rec):
+    def get_available_tags(self):
+        tags = [t.decode('utf-8')
+                for t, s in list(self.redis.zscan_iter(self.tags_key))]
+        # descending order
+        tags.reverse()
+        return tags
+
+    def list_coll_pages(self, user, coll, rec='*'):
         self.assert_can_read(user, coll)
 
-        match_key = self.page_key.format(user=user, coll=coll, rec='*')
+        match_key = self.page_key.format(user=user, coll=coll, rec=rec)
 
         all_page_keys = list(self.redis.scan_iter(match_key))
 
@@ -898,16 +954,18 @@ class RecManagerMixin(object):
             all_pages = pi.execute()
 
         for key, rec_pagelist in zip(all_page_keys, all_pages):
-            rec = key.rsplit(':', 2)[-2]
+            rec = key.rsplit(b':', 2)[-2]
             for page in rec_pagelist:
                 page = json.loads(page.decode('utf-8'))
-                page['recording'] = rec
+                page['user'] = user
+                page['collection'] = coll
+                page['recording'] = rec.decode('utf-8')
                 pagelist.append(page)
 
         if not self.can_admin_coll(user, coll):
             pagelist = [page for page in pagelist if page.get('hidden') != '1']
 
-        return pagelist
+        return sorted(pagelist, key=lambda x: x['timestamp'])
 
     def num_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -1082,6 +1140,23 @@ class CollManagerMixin(object):
 
         self.redis.hset(key, prop_name, prop_value)
 
+    def get_tags_in_collection(self, user, coll):
+        keys = self.redis.keys('*:{user}:{coll}:*:tag:*'.format(user=user,
+                                                                coll=coll))
+
+        # return pages grouped by tag
+        tagged_pages = {}
+        for k in keys:
+            tag = k.decode('utf-8').split(':')[5]
+            if tag in tagged_pages:
+                tagged_pages[tag].extend([i.decode('utf-8')
+                                          for i in self.redis.smembers(k)])
+            else:
+                tagged_pages.update({
+                    tag: [i.decode('utf-8') for i in self.redis.smembers(k)]
+                })
+
+        return tagged_pages
 
 
 # ============================================================================
@@ -1176,8 +1251,9 @@ class Base(object):
 
 
 # ============================================================================
-class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin,
-                       RecManagerMixin, CollManagerMixin, Base):
+class RedisDataManager(AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
+                       LoginManagerMixin, PageManagerMixin, RecManagerMixin,
+                       Base):
     def __init__(self, redis, cork, content_app, browser_redis, browser_mgr, config):
         self.redis = redis
         self.cork = cork
@@ -1189,7 +1265,6 @@ class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin
 
         self.browser_redis = browser_redis
         self.browser_mgr = browser_mgr
-
 
         super(RedisDataManager, self).__init__(config)
 

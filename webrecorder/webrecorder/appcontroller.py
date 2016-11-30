@@ -129,6 +129,12 @@ class AppController(BaseController):
         def get_browsers():
             return self.browser_mgr.get_browsers()
 
+        def get_tags():
+            return self.manager.get_available_tags()
+
+        def get_tags_in_collection(user, coll):
+            return self.manager.get_tags_in_collection(user, coll)
+
         @contextfunction
         def can_admin(context):
             return self.manager.can_admin_coll(get_user(context), get_coll(context))
@@ -162,6 +168,16 @@ class AppController(BaseController):
         def is_out_of_space(context):
             return self.manager.is_out_of_space(context.get('curr_user', ''))
 
+        @contextfunction
+        def is_tagged(context, bookmark_id):
+            available = context.get('available_tags', [])
+            tags = context.get('tags', [])
+
+            for tag in available:
+                if tag in tags and bookmark_id in tags[tag]:
+                    return True
+            return False
+
         def trunc_url(value):
             """ Truncate querystrings, appending an ellipses
             """
@@ -176,6 +192,9 @@ class AppController(BaseController):
         jinja_env.globals['get_body_class'] = get_body_class
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
+        jinja_env.globals['get_tags'] = get_tags
+        jinja_env.globals['is_tagged'] = is_tagged
+        jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
         jinja_env.filters['trunc_url'] = trunc_url
 
         return jinja_env_wrapper

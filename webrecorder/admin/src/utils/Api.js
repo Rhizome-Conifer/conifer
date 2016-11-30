@@ -3,7 +3,7 @@ import forEach from 'lodash/forEach';
 import { endpoint } from 'config';
 
 
-const fetchOptions = {credentials: 'same-origin'};
+const fetchOptions = { credentials: 'same-origin' };
 
 
 function buildQueryString(params) {
@@ -22,58 +22,19 @@ function errorHandler(err) {
   console.log('api', err);
 }
 
-export function getDashboard() {
-  return fetch(`${buildEndpoint()}/dashboard/`, fetchOptions)
+function apiGet(url) {
+  return fetch(`${buildEndpoint() + url}`, fetchOptions)
     .then((res) => {
       if(res.status === 200 && !res.url.endsWith('_login')) return res.json();
       else if(res.url.endsWith('_login')) window.location = '/_login';
       throw new Error(`Server error! ${res.url}`);
-    })
-    .catch(errorHandler);
+    });
 }
 
-export function getTempUsers() {
-  return fetch(`${buildEndpoint()}/temp-users`, fetchOptions)
-    .then((res) => {
-      if(res.status === 200 && !res.url.endsWith('_login')) return res.json();
-      else if(res.url.endsWith('_login')) window.location = '/_login';
-      throw new Error(`Server error! ${res.url}`);
-    })
-    .then(data => data.users)
-    .catch(errorHandler);
-}
-
-export function getUsers(params) {
-  let qs;
-
-  if(params)
-    qs = buildQueryString(params);
-
-  return fetch(`${buildEndpoint()}/users/${typeof qs !== 'undefined' ? qs : ''}`, fetchOptions)
-    .then((res) => {
-      if(res.status === 200 && !res.url.endsWith('_login')) return res.json();
-      else if(res.url.endsWith('_login')) window.location = '/_login';
-      throw new Error(`Server error! ${res.url}`);
-    })
-    .then(data => data.users)
-    .catch(errorHandler);
-}
-
-export function getUser(username) {
-  return fetch(`${buildEndpoint()}/users/${username}`, fetchOptions)
-    .then((res) => {
-      if(res.status === 200 && !res.url.endsWith('_login')) return res.json();
-      else if(res.url.endsWith('_login')) window.location = '/_login';
-      throw new Error('Server error!');
-    })
-    .then(data => data.user)
-    .catch(errorHandler);
-}
-
-export function updateUser(username, data) {
+function apiPut(url, data) {
   const body = new FormData();
   body.append('json', JSON.stringify(data));
-  return fetch(`${buildEndpoint()}/users/${username}`,
+  return fetch(`${buildEndpoint() + url}`,
     {
       ...fetchOptions,
       method: 'PUT',
@@ -83,14 +44,62 @@ export function updateUser(username, data) {
       if(res.status === 200 && !res.url.endsWith('_login')) return res.json();
       else if(res.url.endsWith('_login')) window.location = '/_login';
       throw new Error('Server error!');
-    })
-    .then((json) => {
-      if(json.errors) {
-        throw(json.errors);
-      }
-      return json.user;
-    })
-    .catch(errorHandler);
+    });
+}
+
+export function getDashboard() {
+  return apiGet('/dashboard/')
+          .catch(errorHandler);
+}
+
+export function getSettings() {
+  return apiGet('/settings')
+          .catch(errorHandler);
+}
+
+export function getTempUsers() {
+  return apiGet('/temp-users')
+          .then(data => data.users)
+          .catch(errorHandler);
+}
+
+export function getUsers(params) {
+  let qs;
+
+  if(params)
+    qs = buildQueryString(params);
+
+  return apiGet(`/users/${typeof qs !== 'undefined' ? qs : ''}`)
+          .then(data => data.users)
+          .catch(errorHandler);
+}
+
+export function getUser(username) {
+  return apiGet(`/users/${username}`)
+          .then(data => data.user)
+          .catch(errorHandler);
+}
+
+export function updateSettings(data) {
+  return apiPut('/settings', data)
+          .then((json) => {
+            if(json.errors) {
+              throw(json.errors);
+            }
+            return json;
+          })
+          .catch(errorHandler);
+}
+
+export function updateUser(username, data) {
+  return apiPut(`/users/${username}`, data)
+          .then((json) => {
+            if(json.errors) {
+              throw(json.errors);
+            }
+            return json.user;
+          })
+          .catch(errorHandler);
 }
 
 export function setCollectionVisibility(user, coll, visiblity) {
@@ -98,7 +107,7 @@ export function setCollectionVisibility(user, coll, visiblity) {
   data.append('public', visiblity);
 
   // notify user if we're turning off visibility
-  if(visiblity===false)
+  if(visiblity === false)
     data.append('notify', true);
 
   return fetch(`${buildEndpoint()}/collections/${coll}/public?user=${user}`,
