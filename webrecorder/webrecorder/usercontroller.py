@@ -164,6 +164,10 @@ class UserController(BaseController):
         def get_anon_user():
             return {'anon_user': self.manager.get_anon_user(True)}
 
+        @self.app.get(['/api/v1/user_roles'])
+        def api_get_user_roles():
+            return {"roles": [x for x in self.manager.cork._store.roles]}
+
         @self.app.get('/api/v1/temp-users')
         @self.manager.admin_view()
         def temp_users():
@@ -220,22 +224,20 @@ class UserController(BaseController):
         @self.manager.admin_view()
         def api_create_user():
             """API enpoint to create a user with schema validation"""
+            available_roles = [x for x in self.manager.cork._store.roles]
             users = self.manager.get_users()
             emails = [u[1]['email_addr'] for u in users.items()]
             data = request.json
             err = NewUserSchema().validate(data)
 
             if 'username' in data and data['username'] in users:
-                if not err:
-                    return {'errors': 'Username already exists'}
-                else:
-                    err.update({'username': 'Username already exists'})
+                err.update({'username': 'Username already exists'})
 
             if 'email' in data and data['email'] in emails:
-                if not err:
-                    return {'errors': 'Email already exists'}
-                else:
-                    err.update({'email': 'Email already exists'})
+                err.update({'email': 'Email already exists'})
+
+            if 'role' in data and data['role'] not in available_roles:
+                err.update({'role': 'Not a valid choice.'})
 
             # validate
             if len(err):
@@ -338,6 +340,8 @@ class UserController(BaseController):
                   patch once availabile.
             """
             users = self.manager.get_users()
+            available_roles = [x for x in self.manager.cork._store.roles]
+
             if username not in users:
                 self._raise_error(404, 'No such user')
 
@@ -356,6 +360,9 @@ class UserController(BaseController):
                 return {'errors': 'empty payload'}
 
             data, err = UserUpdateSchema(only=json_data.keys()).load(json_data)
+
+            if 'role' in data and data['role'] not in available_roles:
+                err.update({'role': 'Not a valid choice.'})
 
             if len(err):
                 return {'errors': err}
@@ -376,7 +383,7 @@ class UserController(BaseController):
 
             if 'role' in data and self.manager.is_superuser():
                 # set new role or default to base role
-                user['role'] = data.get('role', 'archivist')
+                user['role'] = data['role']
 
             #
             # return updated user data

@@ -14,6 +14,7 @@ export default function user(state = defaultState, action) {
       return {
         ...state,
         user: action.user,
+        roles: action.roles,
         loading: false,
       };
     case UPDATE_USER:

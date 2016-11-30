@@ -80,6 +80,12 @@ export function getUser(username) {
           .catch(errorHandler);
 }
 
+export function getUserRoles() {
+  return apiGet('/user_roles')
+          .then(data => data.roles)
+          .catch(errorHandler);
+}
+
 export function updateSettings(data) {
   return apiPut('/settings', data)
           .then((json) => {

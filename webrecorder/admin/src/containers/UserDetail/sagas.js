@@ -1,6 +1,6 @@
 import { take, call, put, fork } from 'redux-saga/effects';
 
-import { getUser, setCollectionVisibility, updateUser } from 'utils/Api';
+import { getUser, getUserRoles, setCollectionVisibility, updateUser } from 'utils/Api';
 
 import { LOAD_USER, UPDATE_USER } from './constants';
 import { userLoaded, userUpdated } from './actions';
@@ -8,7 +8,10 @@ import { userLoaded, userUpdated } from './actions';
 
 export function* getUserFromAPI(username) {
   const user = yield call(getUser, username);
-  yield put(userLoaded(user));
+  // get the user roles available
+  const roles = yield call(getUserRoles);
+
+  yield put(userLoaded(user, roles));
 }
 
 export function* updateUserAPI(username, data) {
