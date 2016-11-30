@@ -27,12 +27,15 @@ function setTitle(status_msg, url, title) {
     document.title = title + " (" + status_msg + ")";
 }
 
-function cbrowserMod(sep) {
-    if (!window.cnt_browser) {
-        return "";
+function cbrowserMod(sep, ts) {
+    var base = ts || "";
+    if (window.cnt_browser) {
+        base += "$br:" + window.cnt_browser;
     }
-    sep = sep || "";
-    return "$br:" + window.cnt_browser + sep;
+    if (base && sep) {
+        base += sep;
+    }
+    return base;
 };
 
 var EventHandlers = (function() {
@@ -124,7 +127,7 @@ var EventHandlers = (function() {
                 target = window;
             }
 
-            RouteTo.newPatch(coll, url, target);
+            RouteTo.newPatch(coll, url, target, wbinfo.timestamp);
         });
 
 
@@ -358,8 +361,8 @@ var RouteTo = (function(){
         routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
     }
 
-    var newPatch = function(collection, url, target) {
-        routeTo(host + "/$patch/" + collection + "/" + cbrowserMod("/") + url, target);
+    var newPatch = function(collection, url, target, ts) {
+        routeTo(host + "/$patch/" + collection + "/" + cbrowserMod("/", ts) + url, target);
     }
 
     var recordingInProgress = function(user, collection, recording, url, mode, target) {
