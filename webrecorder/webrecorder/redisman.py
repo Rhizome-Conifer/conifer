@@ -643,7 +643,7 @@ class PageManagerMixin(object):
         self.user_tag_templ = config['user_tag_templ']
         self.tags_key = config['tags_key']
 
-    def tag_bookmark(self, tags, user, coll, rec, pg_id):
+    def tag_page(self, tags, user, coll, rec, pg_id):
         pg_id = pg_id.encode('utf-8')
 
         for tag in tags:
@@ -660,7 +660,7 @@ class PageManagerMixin(object):
             self.redis.sadd(k, pg_id)
             self.redis.zincrby(self.tags_key, tag)
 
-    def get_bookmarks_for_tag(self, tag):
+    def get_pages_for_tag(self, tag):
         tagged_pages = []
         for k in self.redis.keys('*:tag:{}'.format(tag)):
             parts = k.decode('utf-8').split(':')
@@ -670,17 +670,16 @@ class PageManagerMixin(object):
 
             # display if owner or if collection is public
             if self.is_owner(user) or self.is_public(user, coll):
-                tagged_pages.extend([
-                    {
+                for i in self.redis.smembers(k):
+                    data = i.decode('utf-8').split(' ')
+                    tagged_pages.append({
                         'user': user,
                         'collection': coll,
                         'recording': rec,
-                        'timestamp': i.decode('utf-8').split(' ')[1],
-                        'url': i.decode('utf-8').split(' ')[0],
-                        'browser': i.decode('utf-8').split(' ')[2],
-                    }
-                    for i in self.redis.smembers(k)
-                ])
+                        'timestamp': data[1],
+                        'url': data[0],
+                        'browser': data[2],
+                    })
 
         return sorted(tagged_pages, key=lambda x: x['timestamp'])
 

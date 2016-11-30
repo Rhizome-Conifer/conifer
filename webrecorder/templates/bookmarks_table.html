@@ -50,7 +50,7 @@
                     <tr data-bookmark-timestamp="{{ timestamp }}"
                         data-bookmark-url="{{ bookmark.url }}"
                         data-bookmark-hidden="{{ hidden }}"
-                        data-bookmark-browser="{{ (browser.id if browser else '-') }}"
+                        data-bookmark-browser="{{ browser.id if browser else '-' }}"
                         data-recording-id="{{ recording.id }}" >
 
                         {% if can_admin() %}

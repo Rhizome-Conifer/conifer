@@ -59,7 +59,7 @@ class ContentController(BaseController, RewriterApp):
             for tag in tags:
                 if tag in active_tags:
                     keys.append(tag)
-                    items[tag] = self.manager.get_bookmarks_for_tag(tag)
+                    items[tag] = self.manager.get_pages_for_tag(tag)
 
             return {'data': items, 'keys': keys}
 
