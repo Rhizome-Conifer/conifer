@@ -152,6 +152,7 @@ class CollsController(BaseController):
                     traceback.print_exc()
             elif type_ == 'memento':
                 mount_config = type_ + '+' + mount_data
+                mount_desc = mount_desc or mount_data
 
             mount_info = self.manager.add_mount(user, coll, mount_id, mount_title,
                                                 type_, mount_desc, mount_config)

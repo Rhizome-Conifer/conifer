@@ -40,7 +40,9 @@ def make_webagg():
 
     replay_coll = DefaultResourceHandler(
                     SimpleAggregator(
-                        {'replay': MountMultiKeyIndexSource(redis_url=coll_url, redis=redis)}
+                        {'replay': MountMultiKeyIndexSource(timeout=20.0,
+                                                            redis_url=coll_url,
+                                                            redis=redis)}
                     ), warc_url)
 
     app.add_route('/live', live_rec)
