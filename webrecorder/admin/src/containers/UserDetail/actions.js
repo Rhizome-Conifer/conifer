@@ -8,10 +8,11 @@ export function loadUser(username) {
   };
 }
 
-export function userLoaded(user) {
+export function userLoaded(user, roles) {
   return {
     type: LOAD_USER_SUCCESS,
     user,
+    roles,
   };
 }
 

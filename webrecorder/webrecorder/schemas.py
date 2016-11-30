@@ -26,8 +26,7 @@ class UserSchema(BaseSchema):
                            load_from='desc')
     created = fields.DateTime(load_from='creation_date')
     last_login = fields.DateTime()
-    role = fields.String(validate=validate.OneOf(('admin', 'archivist')),
-                         required=True)
+    role = fields.String(required=True)
 
     space_utilization = fields.Nested('SpaceUtilization')
     collections = fields.Nested('CollectionSchema', many=True)
