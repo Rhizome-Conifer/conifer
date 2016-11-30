@@ -112,6 +112,15 @@ class ContentController(BaseController, RewriterApp):
             request.path_shift(1)
             return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True)
 
+
+        # DISPLAY
+        @self.app.route('/_embed_noborder/<user>/<coll>/<wb_url:path>', method='ANY')
+        def embed_replay(user, coll, wb_url):
+            request.path_shift(1)
+            return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True,
+                                              is_display=True)
+
+
         # LOGGED IN ROUTES
         @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
         def logged_in_record(user, coll, rec, wb_url):
@@ -185,7 +194,8 @@ class ContentController(BaseController, RewriterApp):
                                                              url=wb_url)
         return self.redirect(new_url)
 
-    def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False):
+    def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False,
+                              is_display=False):
         rec_name = '*'
 
         # recording replay
@@ -207,7 +217,8 @@ class ContentController(BaseController, RewriterApp):
         return self.handle_routing(wb_url, user, coll,
                                    rec=rec_name,
                                    type=type_,
-                                   is_embed=is_embed)
+                                   is_embed=is_embed,
+                                   is_display=is_display)
 
     def is_content_request(self):
         if not self.content_host:
@@ -220,7 +231,8 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
-    def handle_routing(self, wb_url, user, coll, rec, type, is_embed=False):
+    def handle_routing(self, wb_url, user, coll, rec, type, is_embed=False,
+                       is_display=False):
         wb_url = self.add_query(wb_url)
 
         not_found = False
@@ -260,9 +272,11 @@ class ContentController(BaseController, RewriterApp):
             if type == 'replay':
                 raise HTTPError(404, 'No Such Recording')
 
-        return self.handle_load_content(wb_url, user, coll, rec, type, is_embed)
+        return self.handle_load_content(wb_url, user, coll, rec, type, is_embed,
+                                        is_display)
 
-    def handle_load_content(self, wb_url, user, coll, rec, type, is_embed=False):
+    def handle_load_content(self, wb_url, user, coll, rec, type, is_embed=False,
+                            is_display=False):
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'])
 
         wb_url = self._context_massage(wb_url)
@@ -273,7 +287,8 @@ class ContentController(BaseController, RewriterApp):
                       coll=quote(coll),
                       rec=quote(rec, safe='/*'),
                       type=type,
-                      is_embed=is_embed)
+                      is_embed=is_embed,
+                      is_display=is_display)
 
         try:
             self.check_if_content(wb_url, request.environ)
@@ -428,6 +443,7 @@ class ContentController(BaseController, RewriterApp):
         if type == 'live':
             return {'curr_mode': type,
                     'is_embed': kwargs.get('is_embed'),
+                    'is_display': kwargs.get('is_display'),
                     'top_prefix': top_prefix}
 
         # refresh cookie expiration,
@@ -448,6 +464,7 @@ class ContentController(BaseController, RewriterApp):
                 'coll_title': info.get('coll_title', ''),
                 'rec_title': info.get('rec_title', ''),
                 'is_embed': kwargs.get('is_embed'),
+                'is_display': kwargs.get('is_display'),
                 'top_prefix': top_prefix,
                }
 

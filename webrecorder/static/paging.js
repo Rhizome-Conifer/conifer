@@ -93,7 +93,7 @@ function setInput(obj) {
 
   input.value = '('+("0000"+(index + 1)).slice(-String(total).split('').length)+' of '+total+')  ' + obj.url;
   timestamp.html(TimesAndSizesFormatter.ts_to_date(obj.timestamp));
-  iframe.src = '/_embed/'+obj.user+'/'+obj.collection+'/'+obj.timestamp+(typeof obj.browser !== 'undefined' && obj.browser !== '-'?'$br:'+obj.browser:'')+'/'+obj.url;
+  iframe.src = '/_embed_noborder/'+obj.user+'/'+obj.collection+'/'+obj.timestamp+(typeof obj.browser !== 'undefined' && obj.browser !== '-'?'$br:'+obj.browser:'')+'/'+obj.url;
 }
 
 compile_links();
