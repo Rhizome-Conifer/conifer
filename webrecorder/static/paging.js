@@ -62,8 +62,7 @@ function compile_links() {
     var linkopts = '';
     if(data[keys[i]].length > 0) {
       for(var tag of data[keys[i]]) {
-        var parts = tag.id.split(' ');
-        linkopts += "<li><div class='url'>"+(parts[0].replace(/(\?.*)/, '?...'))+"</div><span class='replay-date'>"+TimesAndSizesFormatter.ts_to_date(parts[1])+"</span></li>";
+        linkopts += "<li><div class='url'>"+(tag.url.replace(/(\?.*)/, '?...'))+"</div><span class='replay-date'>"+TimesAndSizesFormatter.ts_to_date(tag.timestamp)+"</span></li>";
       }
       linklistData.push(linkopts);
     } else {
@@ -73,9 +72,6 @@ function compile_links() {
 }
 
 function setInput(obj) {
-  var parts = obj.id.split(' ');
-  var url = parts[0];
-  var ts = parts[1];
   var total = data[keys[tagIdx]].length;
 
   // prev button presentation
@@ -95,9 +91,9 @@ function setInput(obj) {
   if(keys.length === 1)
     window.location.hash = index;
 
-  input.value = '('+("0000"+(index + 1)).slice(-String(total).split('').length)+' of '+total+')  ' + url;
-  timestamp.html(TimesAndSizesFormatter.ts_to_date(ts));
-  iframe.src = '/_embed/'+obj.user+'/'+obj.coll+'/'+ts+(obj.br?'$br:'+obj.br:'')+'/'+url;
+  input.value = '('+("0000"+(index + 1)).slice(-String(total).split('').length)+' of '+total+')  ' + obj.url;
+  timestamp.html(TimesAndSizesFormatter.ts_to_date(obj.timestamp));
+  iframe.src = '/_embed/'+obj.user+'/'+obj.collection+'/'+obj.timestamp+(typeof obj.browser !== 'undefined' && obj.browser !== '-'?'$br:'+obj.browser:'')+'/'+obj.url;
 }
 
 compile_links();

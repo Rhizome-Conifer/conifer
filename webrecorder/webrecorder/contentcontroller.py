@@ -75,7 +75,7 @@ class ContentController(BaseController, RewriterApp):
             for coll in colls:
                 if coll in user_collections:
                     keys.append(coll)
-                    items[coll] = self.manager.get_bookmarks_for_collection(user, coll)
+                    items[coll] = self.manager.list_coll_pages(user, coll)
 
             return {'data': items, 'keys': keys}
 

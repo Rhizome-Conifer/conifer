@@ -506,9 +506,10 @@ var BookmarkHiddenSwitch = (function() {
 
         var url = $(this).closest('[data-bookmark-url]').attr('data-bookmark-url');
         var ts = $(this).closest('[data-bookmark-timestamp]').attr('data-bookmark-timestamp');
+        var br = $(this).closest('[data-bookmark-browser]').attr('data-bookmark-browser');
 
         var recordingId = $(this).closest('[data-recording-id]').attr('data-recording-id');
-        var bookmarkId = url + ' ' + ts;
+        var bookmarkId = url + ' ' + ts + ' ' + br;
         var tagElement = $(evt.target).parent('li.tag');
         var tag = tagElement.data('tag');
         var successClasss = 'tagged';
@@ -541,7 +542,7 @@ var BookmarkHiddenSwitch = (function() {
 
         $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
 
-        $('.tagging-dropdown').on('click', '.tag', addTag);
+        $('.tagging-dropdown').on('click', '.tag:not(.disabled)', addTag);
 
         $("#show-hidden")
             .on('switchChange.bootstrapSwitch', toggleShowHidden)

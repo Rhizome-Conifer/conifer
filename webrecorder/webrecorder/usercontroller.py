@@ -26,6 +26,7 @@ class UserController(BaseController):
         self.user_usage_key = config['user_usage_key']
         self.temp_usage_key = config['temp_usage_key']
         self.temp_user_key = config['temp_prefix']
+        self.tags_key = config['tags_key']
 
     def init_routes(self):
 
@@ -34,7 +35,7 @@ class UserController(BaseController):
         def internal_settings():
             settings = {}
             config = self.manager.redis.hgetall('h:defaults')
-            tags = list(self.manager.redis.zscan_iter('s:tags'))
+            tags = list(self.manager.redis.zscan_iter(self.tags_key))
 
             if request.method == 'PUT':
                 data = json.loads(request.forms.json)
@@ -51,14 +52,14 @@ class UserController(BaseController):
                 # add tags
                 for tag in incoming_tags:
                     if tag not in existing_tags:
-                        self.manager.redis.zadd('s:tags', 0, self.sanitize_tag(tag.decode('utf-8')))
+                        self.manager.redis.zadd(self.tags_key, 0, self.sanitize_tag(tag.decode('utf-8')))
 
                 # remove tags
                 for tag in existing_tags:
                     if tag not in incoming_tags:
-                        self.manager.redis.zrem('s:tags', self.sanitize_tag(tag.decode('utf-8')))
+                        self.manager.redis.zrem(self.tags_key, self.sanitize_tag(tag.decode('utf-8')))
 
-                tags = list(self.manager.redis.zscan_iter('s:tags'))
+                tags = list(self.manager.redis.zscan_iter(self.tags_key))
 
             # descending order
             tags.reverse()

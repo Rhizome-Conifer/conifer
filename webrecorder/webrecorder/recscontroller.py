@@ -131,10 +131,11 @@ class RecsController(BaseController):
             self._ensure_rec_exists(user, coll, rec)
 
             page_data = request.json
-            tags = page_data['tags']
-            pg_id = page_data['id']
+            tags = page_data.get('tags', [])
+            pg_id = page_data.get('id', None)
 
-            self.manager.tag_bookmark(tags, user, coll, rec, pg_id)
+            if pg_id:
+                self.manager.tag_bookmark(tags, user, coll, rec, pg_id)
 
         @self.app.get('/api/v1/recordings/<rec>/num_pages')
         def get_num_pages(rec):
