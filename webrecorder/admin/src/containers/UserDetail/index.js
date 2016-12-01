@@ -82,9 +82,9 @@ class UserDetail extends Component {
         type:'text',
         label: 'Change size',
         field: 'max_size',
-        placeholder: user.space_utilization.total,
-        validate: (v) => !isNaN(v) && v > user.space_utilization.used,
-        help: `A number in bytes greater than current utilization (${user.space_utilization.used} bytes)`,
+        placeholder: user.space_utilization.total/1000000000,
+        validate: (v) => !isNaN(v) && v * 1000000000 > user.space_utilization.used,
+        help: `A number in gigabytes greater than current utilization: ${user.space_utilization.used/1000000000} GB`,
       },
     ];
     const editRoleForm = [

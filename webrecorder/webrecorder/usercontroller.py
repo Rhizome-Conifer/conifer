@@ -375,8 +375,9 @@ class UserController(BaseController):
             #
             if 'max_size' in data and self.manager.is_superuser():
                 key = self.manager.user_key.format(user=username)
-                max_size = data.get('max_size', self.manager.default_max_size)
-                max_size = int(max_size) if type(max_size) is not int else max_size
+                max_size = float(data['max_size'])
+                # convert GB to bytes
+                max_size = int(max_size * 1000000000)
 
                 with redis.utils.pipeline(self.manager.redis) as pi:
                     pi.hset(key, 'max_size', max_size)
