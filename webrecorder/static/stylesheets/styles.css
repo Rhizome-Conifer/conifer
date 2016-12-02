@@ -164,6 +164,35 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
 
 
 /*
+ * FAQ
+ *
+ */
+.a {
+    position: relative;
+    padding-left: 10px;
+}
+.a:before {
+    content: '';
+    border: solid 1px;
+    border-width: 0 0 0 2px;
+    border-color: #429EEC;
+    position: absolute;
+    height: calc(100% - 8px);
+    top: 4px;
+    left: 0;
+}
+.support-logos {
+    margin: 56px 0;
+}
+.support-logos > a {
+    margin-right: 56px;
+}
+.support-logos > a img {
+    width: 200px;
+}
+/* end faq */
+
+/*
  * Archive Page
  *
  */
