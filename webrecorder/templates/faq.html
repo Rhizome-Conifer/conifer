@@ -1,0 +1,93 @@
+{% extends "main_bootstrap.html" %}
+
+{% block title %} | Webrecorder FAQ {% endblock %}
+
+{% include 'header.html' %}
+
+{% block body %}
+    <div class="container wr-content faq">
+
+        <div class="row top-buffer" style='margin-bottom:75px;'>
+            <h1 class="text-center"><strong>Webrecorder FAQ</strong></h1>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>What's Webrecorder?</h4>
+            <p class='a'>
+                Webrecorder is both a tool to create high-fidelity, interactive recordings of any web site you browse and a platform to make those recordings accessible.
+            </p>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>What makes Webrecorder different?</h4>
+            <p class='a'>
+                What most differentiates Webrecorder is its focus on "dynamic web content." The web once delivered documents, like HTML pages. Today, it delivers complex software customized for every user, like individualized social media feeds. Other existing digital preservation solutions were built for that earlier time and cannot adequately cope with what the web has become. Webrecorder, by contrast, focuses on all that dynamic content, such as embedded video and complex javascript, addressing our present and future.
+            </p>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>How do I use Webrecorder?</h4>
+            <p class='a'>
+                <a href='https://www.youtube.com/watch?v=n3SqusABXEk' target='_blank'>Here's a video to show you the ropes.</a>
+            </p>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>Where can I see some things captured with Webrecorder?</h4>
+            <p class='a'>
+                <a href='http://webenact.rhizome.org/' target='_blank'>Here's</a> a collection made by Rhizome, and <a href='https://webrecorder.io/despens'>another</a> by preservation director Dragan Espenschied.
+            </p>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>Is Webrecorder free to use?</h4>
+            <p class='a'>
+                Generally, yes! Webrecorder is a free and open-source software (under the Apache License). Check out the details <a href='https://github.com/webrecorder/webrecorder' target='_blank'>here</a>. That said, specific use-cases and integrations may require additional support or storage that will come at a cost. <a href='mailto:support@webrecorder.io'>(Email us for details.)</a>
+            </p>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>There has to be some tiny print, right?</h4>
+            <p class='a'>
+                <a href='/_policies'>Yes!</a>
+            </p>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>Who created Webrecorder?</h4>
+            <p class='a'>
+                Webrecorder was developed by <a href='https://github.com/ikreymer' target='_blank'>Ilya Kreymer</a>, and is a project of Rhizome under its digital preservation program led by <a href='https://github.com/despens' target='_blank'>Dragan Espenschied</a>. It's currently developed by Kreymer with the assistance of <a href='https://github.com/m4rk3r' target='_blank'>Mark Beasley</a>, Senior Front-End Developer.
+            </p>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>What's Rhizome?</h4>
+            <p class='a'>
+                Founded on the internet in 1996, Rhizome is a non-profit organization which commissions, presents, and preserves digital art. Since 2003, Rhizome has been an independent affiliate in residence at the <a href='http://newmuseum.org/' target='_blank'>New Museum</a> in New York City, and is based at <a href='http://www.newinc.org/' target='_blank'>NEW INC</a>, the first museum-led incubator. As it happens, to preserve net art you need to build complex things that can capture complex things.
+            </p>
+        </div>
+
+        <div class="row col-xs-8 col-xs-offset-2">
+            <h4 class='q'>How is Webrecorder funded?</h4>
+            <p class='a'>
+                Major support for the Webrecorder initiative is provided by The Andrew W. Mellon Foundation.
+                <BR><BR>
+                Outreach, events, and research around Webrecorder is supported by James S. and John L. Knight Foundation.
+                <BR><BR>
+                Additional support for Rhizome digital preservation is provided by Google and the Google Cultural Institute, the National Endowment for the Arts, and the New York State Council on the Arts with the support of Governor Andrew Cuomo and the New York State Legislature.
+            </p>
+            <div class='support-logos'>
+                <a href="https://mellon.org/grants/grants-database/grants/rhizome-communications-inc/41500666/" target='_blank'>
+                    <img class="mellonfdn-logo" src="/static/__shared/mellon-fdn.svg" width="100" title="Andrew W. Mellon Foundation">
+                </a>
+
+                <a href="http://www.knightfoundation.org/press/releases/three-projects-will-help-better-inform-the-public-through-technology-innovation-with-540-000-from-knight-foundation" target='_blank'>
+                    <img src="/static/__shared/KF_logo-stacked.png" width="100" target="_blank" title="Knight Foundation">
+                </a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% include 'footer.html' %}

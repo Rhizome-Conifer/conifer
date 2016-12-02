@@ -210,6 +210,11 @@ class AppController(BaseController):
 
             return resp
 
+        @self.bottle_app.route('/_faq')
+        @self.jinja2_view('faq.html')
+        def faq():
+            return {}
+
         @self.bottle_app.route('/_message')
         def flash_message():
             message = request.query.getunicode('message', '')
