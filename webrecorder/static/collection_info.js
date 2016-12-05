@@ -157,13 +157,14 @@ var RecordingSelector = (function() {
         } else {
             var recordingTitles = getSelectedRecordingTitles();
             recordingList = recordingTitles.join(", ");
-            $('.recording-filter-list').text(recordingList);
+            $('.recording-filter-list').text(decodeURI(recordingList));
             $('.recording-filter-list').closest("li").show();
 
             $("#coll-breadcrumb-link").show();
             $("#coll-breadcrumb-text").hide();
 
             $('#clear-all').removeClass('disabled')
+            BookmarksTable.filterByRecordings(recordingTitles);
         }
 
         if (urlUpdate) {
@@ -225,7 +226,7 @@ var RecordingSelector = (function() {
         var recLink = $(event.relatedTarget);
 
         $("#move-rec-title").attr("data-move-rec-id", recLink.attr("data-move-rec-id"));
-        $("#move-rec-title").text(recLink.attr("data-recording-title"));
+        $("#move-rec-title").text(decodeURI(recLink.attr("data-recording-title")));
 
         var newColl = $(this).attr("data-collection-title");
 
@@ -315,9 +316,8 @@ var PublicPrivateSwitch = (function() {
     }
 })();
 
+var theTable;
 var BookmarksTable = (function() {
-
-    var theTable;
 
     var start = function() {
         if ($(".table-bookmarks").length) {
@@ -384,7 +384,7 @@ var BookmarksTable = (function() {
         var recordingColumnIndex = $('[data-recording-column-index]').attr('data-recording-column-index');
 
         // trim trailing spaces
-        recordingTitles = recordingTitles.map(function (t) { return t.replace(/\s+$/g, ''); });
+        recordingTitles = recordingTitles.map(function (t) { return decodeURI(t).replace(/\s+$/g, ''); });
 
         if (recordingTitles.length) {
             var regex = "^(" + recordingTitles.join("|") + ")$";
