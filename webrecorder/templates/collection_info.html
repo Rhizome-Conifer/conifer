@@ -41,7 +41,7 @@
 <script>
     var can_admin = {{ 'true' if can_admin() else 'false' }};
     var can_write = {{ 'true' if can_write() else 'false' }};
-    var coll_title = "{{ collection.title }}";
+    var coll_title = "{{ collection.title|e }}";
 </script>
 
 {% endblock %}
