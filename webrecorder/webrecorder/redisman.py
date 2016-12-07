@@ -507,6 +507,8 @@ class AccessManagerMixin(object):
                                                         fail_redirect='/_login')
         self.auth_view = self.cork.make_auth_decorator(role='archivist',
                                                        fail_redirect='/_login')
+        self.beta_user = self.cork.make_auth_decorator(role='beta-archivist',
+                                                       fail_redirect='/_login')
 
     def is_anon(self, user):
         #return not user or user == '@anon' or user.startswith('anon/')
@@ -591,6 +593,22 @@ class AccessManagerMixin(object):
             return True
 
         return self.is_owner(user)
+
+    def can_tag(self):
+        """Same as `is_beta` for now, with the potential to break off
+        """
+        try:
+            self.cork.require(role='beta-archivist')
+            return True
+        except Exception:
+            return False
+
+    def is_beta(self):
+        try:
+            self.cork.require(role='beta-archivist')
+            return True
+        except Exception:
+            return False
 
     def is_superuser(self):
         """Test if logged in user has 100 level `admin` privledges.

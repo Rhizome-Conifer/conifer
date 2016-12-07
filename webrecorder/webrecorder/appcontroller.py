@@ -135,6 +135,12 @@ class AppController(BaseController):
         def get_tags_in_collection(user, coll):
             return self.manager.get_tags_in_collection(user, coll)
 
+        def is_beta():
+            return self.manager.is_beta()
+
+        def can_tag():
+            return self.manager.can_tag()
+
         @contextfunction
         def can_admin(context):
             return self.manager.can_admin_coll(get_user(context), get_coll(context))
@@ -191,8 +197,10 @@ class AppController(BaseController):
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
         jinja_env.globals['can_mount'] = can_mount
+        jinja_env.globals['can_tag'] = can_tag
         jinja_env.globals['is_owner'] = is_owner
         jinja_env.globals['is_anon'] = is_anon
+        jinja_env.globals['is_beta'] = is_beta
         jinja_env.globals['get_path'] = get_path
         jinja_env.globals['get_body_class'] = get_body_class
         jinja_env.globals['is_out_of_space'] = is_out_of_space

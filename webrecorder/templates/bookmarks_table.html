@@ -1,4 +1,5 @@
 {% set recording_column_index = 7 if is_owner() else 4 %}
+{% set can_tag = can_tag() %}
 {#
 {% if is_owner() %}
         <input type="checkbox" checked="checked" name="show-hidden" id="show-hidden" style="margin-left: 8px; margin-right: 8px"><label for="show-hidden">Include Hidden Bookmarks</label>
@@ -16,7 +17,7 @@
             <th class="bookmark-edit-title"></th>
             {% endif %}
             <th class="bookmark-title"><span>Bookmarks</span></th>
-            {% if can_write() and not is_anon() %}
+            {% if can_write() and can_tag and not is_anon() %}
                 <th class="bookmark-tag">Tag</th>
             {% endif %}
             <th class="bookmark-browser">Browser</th>
@@ -26,8 +27,10 @@
         </tr>
     </thead>
     <tbody>
-        {% set available_tags = get_tags() %}
-        {% set tags = get_tags_in_collection(user, coll) %}
+        {% if can_tag %}
+            {% set available_tags = get_tags() %}
+            {% set tags = get_tags_in_collection(user, coll) %}
+        {% endif %}
 
         {% for recording in collection.recordings %}
             {% set collection_path = get_path(user, coll) + '/' %}
@@ -75,7 +78,7 @@
                             <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ path }}">{{ title }}</a></span>
                         </td>
 
-                        {% if can_write() and not is_anon() %}
+                        {% if can_write() and can_tag and not is_anon() %}
                             <td class='bookmark-tag'>
                                 <div class="btn-group" role="group">
                                     <button type="button" class="btn btn-xs {% if is_tagged(bookmark_id) %}btn-success {% else %}btn-default{% endif %} dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"  title='Bookmark tagging'>

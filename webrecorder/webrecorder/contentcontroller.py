@@ -50,6 +50,9 @@ class ContentController(BaseController, RewriterApp):
         @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
         @self.jinja2_view('paging_display.html')
         def tag_display(tags=None):
+            if not self.manager.is_beta():
+                raise HTTPError(404)
+
             tags = tags.split(',') if tags else self.manager.get_available_tags()
             items = {}
             keys = []
@@ -67,6 +70,9 @@ class ContentController(BaseController, RewriterApp):
         @self.app.get(['/_display/<user>', '/_display/<user>/<collections:re:([\w,-]+)>'])
         @self.jinja2_view('paging_display.html')
         def collection_display(user, collections=None):
+            if not self.manager.is_beta():
+                raise HTTPError(404)
+
             user_collections = [c['id'] for c in self.manager.get_collections(user)]
             colls = collections.split(',') if collections else user_collections
             items = {}
