@@ -27,6 +27,7 @@ def make_webagg():
     warc_url = redis_base + config['warc_key_templ']
 
     cache_proxy_url = os.environ.get('CACHE_PROXY_URL')
+    AitFilterIndexSource.PROXY_PREFIX = cache_proxy_url
 
     rec_redis_source = RedisIndexSource(rec_url)
     redis = rec_redis_source.redis
@@ -61,11 +62,18 @@ class AitFilterIndexSource(RemoteIndexSource):
     DEFAULT_AIT_ROOT = 'http://wayback.archive-it.org/'
     DEFAULT_AIT_QUERY = 'cdx?url={url}&filter=filename:ARCHIVEIT-(%s)-.*'
 
-    def __init__(self, ait_colls, ait_host=None):
+    PROXY_PREFIX = ''
+
+    def __init__(self, ait_coll, ait_host=None):
         ait_host = ait_host or self.DEFAULT_AIT_ROOT
-        api_url = ait_host + self.DEFAULT_AIT_QUERY % ait_colls
+        api_url = ait_host + self.DEFAULT_AIT_QUERY % ait_coll
         replay_url = ait_host + '{ait_coll}/' + WAYBACK_ORIG_SUFFIX
+        self.ait_coll = ait_coll
         super(AitFilterIndexSource, self).__init__(api_url, replay_url)
+
+    def _get_api_url(self, params):
+        results = super(AitFilterIndexSource, self)._get_api_url(params)
+        return self.PROXY_PREFIX + results
 
     def _set_load_url(self, cdx):
         parts = cdx.get('filename', '').split('-', 2)
@@ -75,8 +83,6 @@ class AitFilterIndexSource(RemoteIndexSource):
                                  ait_coll=ait_coll,
                                  timestamp=cdx['timestamp'],
                                  url=cdx['url'])
-
-        print(cdx[self.url_field])
 
     @classmethod
     def init_from_string(cls, value):
@@ -89,8 +95,8 @@ class AitFilterIndexSource(RemoteIndexSource):
             value = value[4:]
             parts = value.split(' ', 1)
             ait_host = parts[0]
-            ait_colls = parts[1] if len(parts) == 2 else '*'
-            return cls(ait_colls, ait_host)
+            ait_coll = parts[1] if len(parts) == 2 else '*'
+            return cls(ait_coll, ait_host)
 
     @classmethod
     def init_from_config(cls, config):
