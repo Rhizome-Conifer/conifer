@@ -10,8 +10,11 @@ import traceback
 import json
 import requests
 
+import logging
+logger = logging.getLogger(__name__)
 
-BLOCK_SIZE = 16384
+
+BLOCK_SIZE = 16384 * 8
 EMPTY_DIGEST = '3I42H3S6NNFQ2MSVX7XZKYAYSCX5QBYJ'
 
 # ============================================================================
@@ -35,18 +38,16 @@ class UploadController(BaseController):
 
                 curr_user = self.manager.get_curr_user()
 
-                if curr_user:
-                    user = curr_user
-                    force_coll = request.forms.getunicode('force-coll')
-                    is_anon = False
-                else:
-                    return {'error_message': 'Sorry, uploads only available for logged-in users'}
-
+                if not curr_user:
                     #user = self.manager.get_anon_user()
                     #force_coll = 'temp'
                     #is_anon = True
 
-                print('Force Coll', force_coll)
+                    return {'error_message': 'Sorry, uploads only available for logged-in users'}
+
+                user = curr_user
+                force_coll = request.forms.getunicode('force-coll', '')
+                is_anon = False
 
                 if force_coll and not self.manager.has_collection(user, force_coll):
                     if is_anon:
@@ -56,17 +57,26 @@ class UploadController(BaseController):
                         status = 'Collection {0} not found'.format(force_coll)
                         return {'error_message': status}
 
-
                 stream = SpooledTemporaryFile(max_size=BLOCK_SIZE)
+
+                logger.debug('Upload Start, Saving')
 
                 upload.save(stream)
 
                 size_rem = self.manager.get_size_remaining(user)
 
-                if size_rem < stream.tell():
+                logger.debug('Size Rem: ' + str(size_rem))
+
+                expected_size = stream.tell()
+
+                logger.debug('Expected Size: ' + str(expected_size))
+
+                if size_rem < expected_size:
                     return {'error_message': 'Sorry, not enough space to upload this file'}
 
                 filename = upload.filename
+
+                logger.debug('Filename: ' + filename)
 
                 new_coll, error_message = self.handle_upload(stream, filename, user, force_coll)
 
@@ -99,10 +109,15 @@ class UploadController(BaseController):
         stream.seek(0)
         total = 0
 
+        logger.debug('handle_upload() begin to: ' + filename + ' force_coll: ' + force_coll)
+
         try:
             infos = self.parse_uploaded(stream)
             total = len(infos)
-            #status = 'Processing {0} recordings'.format(total)
+            # first info is for collection, not recording
+            if total >= 2:
+                total -= 1
+            logger.debug('Parsed {0} recordings'.format(total))
         except:
             traceback.print_exc()
             return (None, 'Invalid Web Archive (Parsing Error)')
@@ -116,7 +131,7 @@ class UploadController(BaseController):
         try:
             for coll, rec in self.process_upload(user, force_coll, infos, stream, filename):
                 count += 1
-                #status = 'Processing {0} of {1}'.format(count, total)
+                logger.debug('Processing Upload Rec {0} of {1}'.format(count, total))
                 if not first_coll:
                     first_coll = coll
 
@@ -225,6 +240,8 @@ class UploadController(BaseController):
 
     def do_upload(self, stream, user, coll, rec, offset, length):
         stream.seek(offset)
+
+        logger.debug('do_upload(): {0} offset: {1}: len: {2}'.format(rec, offset, length))
 
         stream = LimitReader(stream, length)
         headers = {'Content-Length': str(length)}
