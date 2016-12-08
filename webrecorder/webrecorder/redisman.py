@@ -23,7 +23,7 @@ from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.timeutils import timestamp_now
 
-from webagg.utils import load_config
+from pywb.webagg.utils import load_config
 
 import requests
 
@@ -507,6 +507,8 @@ class AccessManagerMixin(object):
                                                         fail_redirect='/_login')
         self.auth_view = self.cork.make_auth_decorator(role='archivist',
                                                        fail_redirect='/_login')
+        self.beta_user = self.cork.make_auth_decorator(role='beta-archivist',
+                                                       fail_redirect='/_login')
 
     def is_anon(self, user):
         #return not user or user == '@anon' or user.startswith('anon/')
@@ -570,6 +572,16 @@ class AccessManagerMixin(object):
     def can_write_coll(self, user, coll):
         return self._check_access(user, coll, self.WRITE_PREFIX)
 
+    def can_mount_coll(self, user, coll):
+        if not self.can_admin_coll(user, coll):
+            return False
+
+        try:
+            self.cork.require(role='mounts-archivist')
+            return True
+        except Exception:
+            return False
+
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
     def can_admin_coll(self, user, coll):
@@ -581,6 +593,22 @@ class AccessManagerMixin(object):
             return True
 
         return self.is_owner(user)
+
+    def can_tag(self):
+        """Same as `is_beta` for now, with the potential to break off
+        """
+        try:
+            self.cork.require(role='beta-archivist')
+            return True
+        except Exception:
+            return False
+
+    def is_beta(self):
+        try:
+            self.cork.require(role='beta-archivist')
+            return True
+        except Exception:
+            return False
 
     def is_superuser(self):
         """Test if logged in user has 100 level `admin` privledges.
@@ -637,12 +665,61 @@ class AccessManagerMixin(object):
 
 
 # ============================================================================
+class PageManagerMixin(object):
+    def __init__(self, config):
+        super(PageManagerMixin, self).__init__(config)
+        self.user_tag_templ = config['user_tag_templ']
+        self.tags_key = config['tags_key']
+
+    def tag_page(self, tags, user, coll, rec, pg_id):
+        pg_id = pg_id.encode('utf-8')
+
+        for tag in tags:
+            k = self.user_tag_templ.format(user=user, coll=coll, rec=rec,
+                                           tag=tag)
+            if self.redis.exists(k):
+                # if exists, untag
+                if self.redis.sismember(k, pg_id):
+                    self.redis.srem(k, pg_id)
+                    self.redis.zincrby(self.tags_key, tag, -1)
+                    continue
+
+            # if not previously tagged or a new tag, set and add to tag count
+            self.redis.sadd(k, pg_id)
+            self.redis.zincrby(self.tags_key, tag)
+
+    def get_pages_for_tag(self, tag):
+        tagged_pages = []
+        for k in self.redis.keys('*:tag:{}'.format(tag)):
+            parts = k.decode('utf-8').split(':')
+            user = parts[1]
+            coll = parts[2]
+            rec = parts[3]
+
+            # display if owner or if collection is public
+            if self.is_owner(user) or self.is_public(user, coll):
+                for i in self.redis.smembers(k):
+                    data = i.decode('utf-8').split(' ')
+                    tagged_pages.append({
+                        'user': user,
+                        'collection': coll,
+                        'recording': rec,
+                        'timestamp': data[1],
+                        'url': data[0],
+                        'browser': data[2],
+                    })
+
+        return sorted(tagged_pages, key=lambda x: x['timestamp'])
+
+
+# ============================================================================
 class RecManagerMixin(object):
     def __init__(self, config):
         super(RecManagerMixin, self).__init__(config)
         self.rec_info_key = config['info_key_templ']['rec']
         self.page_key = config['page_key_templ']
         self.cdx_key = config['cdxj_key_templ']
+        self.tags_key = config['tags_key']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -670,6 +747,9 @@ class RecManagerMixin(object):
                            rec=rec)
 
         result['download_url'] = path
+
+        if result.get('pending_size') and result.get('size'):
+            result['size'] = int(result['size']) + int(result['pending_size'])
         return result
 
     def has_recording(self, user, coll, rec):
@@ -785,7 +865,7 @@ class RecManagerMixin(object):
         return {}
 
     def import_pages(self, user, coll, rec, pagelist):
-        self.assert_can_write(user, coll)
+        self.assert_can_admin(user, coll)
 
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
@@ -809,7 +889,7 @@ class RecManagerMixin(object):
         return {}
 
     def modify_page(self, user, coll, rec, new_pagedata):
-        self.assert_can_write(user, coll)
+        self.assert_can_admin(user, coll)
 
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
@@ -828,7 +908,7 @@ class RecManagerMixin(object):
         return {}
 
     def delete_page(self, user, coll, rec, url, ts):
-        self.assert_can_write(user, coll)
+        self.assert_can_admin(user, coll)
 
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
@@ -847,7 +927,7 @@ class RecManagerMixin(object):
 
         pagelist = [json.loads(x.decode('utf-8')) for x in pagelist]
 
-        if not self.can_write_coll(user, coll):
+        if not self.can_admin_coll(user, coll):
             pagelist = [page for page in pagelist if page.get('hidden') != '1']
 
         return pagelist
@@ -876,16 +956,21 @@ class RecManagerMixin(object):
         else:
             key = self.coll_info_key.format(user=user, coll=coll)
 
-        res = self.redis.hget(key, 'size')
-        if res is not None:
-            res = int(res)
+        res = self.redis.hmget(key, ['size', 'pending_size'])
+        total = int(res[0] or 0) + int(res[1] or 0)
+        return total
 
-        return res
+    def get_available_tags(self):
+        tags = [t.decode('utf-8')
+                for t, s in list(self.redis.zscan_iter(self.tags_key))]
+        # descending order
+        tags.reverse()
+        return tags
 
-    def list_coll_pages(self, user, coll, rec):
+    def list_coll_pages(self, user, coll, rec='*'):
         self.assert_can_read(user, coll)
 
-        match_key = self.page_key.format(user=user, coll=coll, rec='*')
+        match_key = self.page_key.format(user=user, coll=coll, rec=rec)
 
         all_page_keys = list(self.redis.scan_iter(match_key))
 
@@ -898,16 +983,18 @@ class RecManagerMixin(object):
             all_pages = pi.execute()
 
         for key, rec_pagelist in zip(all_page_keys, all_pages):
-            rec = key.rsplit(':', 2)[-2]
+            rec = key.rsplit(b':', 2)[-2]
             for page in rec_pagelist:
                 page = json.loads(page.decode('utf-8'))
-                page['recording'] = rec
+                page['user'] = user
+                page['collection'] = coll
+                page['recording'] = rec.decode('utf-8')
                 pagelist.append(page)
 
-        if not self.can_write_coll(user, coll):
+        if not self.can_admin_coll(user, coll):
             pagelist = [page for page in pagelist if page.get('hidden') != '1']
 
-        return pagelist
+        return sorted(pagelist, key=lambda x: x['timestamp'])
 
     def num_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -939,6 +1026,7 @@ class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
         self.coll_info_key = config['info_key_templ']['coll']
+        self.mount_key = config['mount_key_templ']
 
     def get_collection(self, user, coll, access_check=True):
         if access_check:
@@ -980,6 +1068,24 @@ class CollManagerMixin(object):
             result['recordings'] = self.get_recordings(user, coll)
 
         return result
+
+    def add_mount(self, user, coll, rec, rec_title,
+                  mount_type, mount_desc, mount_config):
+        rec_info = self.create_recording(user, coll, rec, rec_title)
+        rec = rec_info['id']
+
+        mount_key = self.mount_key.format(user=user, coll=coll, rec=rec)
+
+        rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+
+        with redis.utils.pipeline(self.redis) as pi:
+            pi.set(mount_key, mount_config)
+
+            pi.hset(rec_key, 'mount_type', mount_type)
+            if mount_desc:
+                pi.hset(rec_key, 'mount_desc', mount_desc)
+
+        return rec_info
 
     def _has_collection_no_access_check(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)
@@ -1082,6 +1188,23 @@ class CollManagerMixin(object):
 
         self.redis.hset(key, prop_name, prop_value)
 
+    def get_tags_in_collection(self, user, coll):
+        keys = self.redis.keys('*:{user}:{coll}:*:tag:*'.format(user=user,
+                                                                coll=coll))
+
+        # return pages grouped by tag
+        tagged_pages = {}
+        for k in keys:
+            tag = k.decode('utf-8').split(':')[5]
+            if tag in tagged_pages:
+                tagged_pages[tag].extend([i.decode('utf-8')
+                                          for i in self.redis.smembers(k)])
+            else:
+                tagged_pages.update({
+                    tag: [i.decode('utf-8') for i in self.redis.smembers(k)]
+                })
+
+        return tagged_pages
 
 
 # ============================================================================
@@ -1176,8 +1299,9 @@ class Base(object):
 
 
 # ============================================================================
-class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin,
-                       RecManagerMixin, CollManagerMixin, Base):
+class RedisDataManager(AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
+                       LoginManagerMixin, PageManagerMixin, RecManagerMixin,
+                       Base):
     def __init__(self, redis, cork, content_app, browser_redis, browser_mgr, config):
         self.redis = redis
         self.cork = cork
@@ -1189,7 +1313,6 @@ class RedisDataManager(AccessManagerMixin, LoginManagerMixin, DeleteManagerMixin
 
         self.browser_redis = browser_redis
         self.browser_mgr = browser_mgr
-
 
         super(RedisDataManager, self).__init__(config)
 

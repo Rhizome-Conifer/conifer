@@ -26,8 +26,49 @@ class UserController(BaseController):
         self.user_usage_key = config['user_usage_key']
         self.temp_usage_key = config['temp_usage_key']
         self.temp_user_key = config['temp_prefix']
+        self.tags_key = config['tags_key']
 
     def init_routes(self):
+
+        @self.app.route(['/api/v1/settings'], ['GET', 'PUT'])
+        @self.manager.admin_view()
+        def internal_settings():
+            settings = {}
+            config = self.manager.redis.hgetall('h:defaults')
+            tags = list(self.manager.redis.zscan_iter(self.tags_key))
+
+            if request.method == 'PUT':
+                data = json.loads(request.forms.json)
+                new_config = {
+                    k.encode('utf-8'): v.encode('utf-8')
+                    for k, v in data['settings'].items()
+                }
+                config.update(new_config)
+                # commit to redis
+                self.manager.redis.hmset('h:defaults', config)
+
+                incoming_tags = [t['name'].encode('utf-8') for t in data['tags']]
+                existing_tags = [t for t, s in tags]
+                # add tags
+                for tag in incoming_tags:
+                    if tag not in existing_tags:
+                        self.manager.redis.zadd(self.tags_key, 0, self.sanitize_tag(tag.decode('utf-8')))
+
+                # remove tags
+                for tag in existing_tags:
+                    if tag not in incoming_tags:
+                        self.manager.redis.zrem(self.tags_key, self.sanitize_tag(tag.decode('utf-8')))
+
+                tags = list(self.manager.redis.zscan_iter(self.tags_key))
+
+            # descending order
+            tags.reverse()
+
+            settings['defaults'] = {k.decode('utf-8'): v.decode('utf-8')
+                                    for k, v in config.items()}
+            settings['tags'] = [{'name': t.decode('utf-8'), 'usage': int(s)}
+                                for t, s in tags]
+            return settings
 
         @self.app.get(['/api/v1/dashboard', '/api/v1/dashboard/'])
         @self.manager.admin_view()
@@ -65,7 +106,6 @@ class UserController(BaseController):
                                      json.dumps(data, cls=CustomJSONEncoder))
 
             return data
-
 
         @self.app.get(['/api/v1/users', '/api/v1/users/'])
         @self.manager.admin_view()
@@ -124,6 +164,10 @@ class UserController(BaseController):
         def get_anon_user():
             return {'anon_user': self.manager.get_anon_user(True)}
 
+        @self.app.get(['/api/v1/user_roles'])
+        def api_get_user_roles():
+            return {"roles": [x for x in self.manager.cork._store.roles]}
+
         @self.app.get('/api/v1/temp-users')
         @self.manager.admin_view()
         def temp_users():
@@ -180,22 +224,20 @@ class UserController(BaseController):
         @self.manager.admin_view()
         def api_create_user():
             """API enpoint to create a user with schema validation"""
+            available_roles = [x for x in self.manager.cork._store.roles]
             users = self.manager.get_users()
             emails = [u[1]['email_addr'] for u in users.items()]
             data = request.json
             err = NewUserSchema().validate(data)
 
             if 'username' in data and data['username'] in users:
-                if not err:
-                    return {'errors': 'Username already exists'}
-                else:
-                    err.update({'username': 'Username already exists'})
+                err.update({'username': 'Username already exists'})
 
             if 'email' in data and data['email'] in emails:
-                if not err:
-                    return {'errors': 'Email already exists'}
-                else:
-                    err.update({'email': 'Email already exists'})
+                err.update({'email': 'Email already exists'})
+
+            if 'role' in data and data['role'] not in available_roles:
+                err.update({'role': 'Not a valid choice.'})
 
             # validate
             if len(err):
@@ -298,6 +340,8 @@ class UserController(BaseController):
                   patch once availabile.
             """
             users = self.manager.get_users()
+            available_roles = [x for x in self.manager.cork._store.roles]
+
             if username not in users:
                 self._raise_error(404, 'No such user')
 
@@ -317,6 +361,9 @@ class UserController(BaseController):
 
             data, err = UserUpdateSchema(only=json_data.keys()).load(json_data)
 
+            if 'role' in data and data['role'] not in available_roles:
+                err.update({'role': 'Not a valid choice.'})
+
             if len(err):
                 return {'errors': err}
 
@@ -328,15 +375,16 @@ class UserController(BaseController):
             #
             if 'max_size' in data and self.manager.is_superuser():
                 key = self.manager.user_key.format(user=username)
-                max_size = data.get('max_size', self.manager.default_max_size)
-                max_size = int(max_size) if type(max_size) is not int else max_size
+                max_size = float(data['max_size'])
+                # convert GB to bytes
+                max_size = int(max_size * 1000000000)
 
                 with redis.utils.pipeline(self.manager.redis) as pi:
                     pi.hset(key, 'max_size', max_size)
 
             if 'role' in data and self.manager.is_superuser():
                 # set new role or default to base role
-                user['role'] = data.get('role', 'archivist')
+                user['role'] = data['role']
 
             #
             # return updated user data
@@ -459,8 +507,4 @@ class UserController(BaseController):
 
             self.manager.skip_post_req(user, url)
             return {}
-
-
-
-
 

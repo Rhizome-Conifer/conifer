@@ -4,6 +4,7 @@ $(function() {
     RecordingSelector.start();
     BookmarkHiddenSwitch.start();
     UrlManager.start();
+    MountInfo.start();
 });
 
 var UrlManager = (function() {
@@ -156,13 +157,14 @@ var RecordingSelector = (function() {
         } else {
             var recordingTitles = getSelectedRecordingTitles();
             recordingList = recordingTitles.join(", ");
-            $('.recording-filter-list').text(recordingList);
+            $('.recording-filter-list').text(decodeURI(recordingList));
             $('.recording-filter-list').closest("li").show();
 
             $("#coll-breadcrumb-link").show();
             $("#coll-breadcrumb-text").hide();
 
             $('#clear-all').removeClass('disabled')
+            BookmarksTable.filterByRecordings(recordingTitles);
         }
 
         if (urlUpdate) {
@@ -224,7 +226,7 @@ var RecordingSelector = (function() {
         var recLink = $(event.relatedTarget);
 
         $("#move-rec-title").attr("data-move-rec-id", recLink.attr("data-move-rec-id"));
-        $("#move-rec-title").text(recLink.attr("data-recording-title"));
+        $("#move-rec-title").text(decodeURI(recLink.attr("data-recording-title")));
 
         var newColl = $(this).attr("data-collection-title");
 
@@ -314,9 +316,8 @@ var PublicPrivateSwitch = (function() {
     }
 })();
 
+var theTable;
 var BookmarksTable = (function() {
-
-    var theTable;
 
     var start = function() {
         if ($(".table-bookmarks").length) {
@@ -341,12 +342,26 @@ var BookmarksTable = (function() {
         }
     }
 
+    var hasVisibilityAndTaggingColumn = function() {
+        return $('.table-bookmarks th').length === 8;
+    }
+
     var hasVisibilityColumn = function() {
         return $('.table-bookmarks th').length === 7;
     }
 
     var getColumnDefs = function() {
-        if (hasVisibilityColumn()) {
+        if (hasVisibilityAndTaggingColumn()) {
+            return [
+                        { targets: [0], width: "32px", orderable: false},
+                        { targets: [1], width: "12px", orderable: false},
+                        { targets: [3], width: '30px', orderable: false},
+                        { targets: [4], width: '70px'},
+                        { targets: [5], width: "9em" },
+                        { targets: [7], width: "5.5em" },
+                        { targets: [2, 6], width: "14.5em"}
+                    ]
+        } else if(hasVisibilityColumn()) {
             return [
                         { targets: [0], width: "32px", orderable: false},
                         { targets: [1], width: "12px", orderable: false},
@@ -369,7 +384,7 @@ var BookmarksTable = (function() {
         var recordingColumnIndex = $('[data-recording-column-index]').attr('data-recording-column-index');
 
         // trim trailing spaces
-        recordingTitles = recordingTitles.map(function (t) { return t.replace(/\s+$/g, ''); });
+        recordingTitles = recordingTitles.map(function (t) { return decodeURI(t).replace(/\s+$/g, ''); });
 
         if (recordingTitles.length) {
             var regex = "^(" + recordingTitles.join("|") + ")$";
@@ -487,6 +502,39 @@ var BookmarkHiddenSwitch = (function() {
         }
     }
 
+    var addTag = function(evt) {
+        evt.preventDefault();
+
+        var url = $(this).closest('[data-bookmark-url]').attr('data-bookmark-url');
+        var ts = $(this).closest('[data-bookmark-timestamp]').attr('data-bookmark-timestamp');
+        var br = $(this).closest('[data-bookmark-browser]').attr('data-bookmark-browser');
+
+        var recordingId = $(this).closest('[data-recording-id]').attr('data-recording-id');
+        var bookmarkId = url + ' ' + ts + ' ' + br;
+        var tagElement = $(evt.target).parent('li.tag');
+        var tag = tagElement.data('tag');
+        var successClasss = 'tagged';
+
+        Recordings.tagPage(
+            recordingId,
+            bookmarkId,
+            [tag],
+            function (){
+                // update ui
+                if(tagElement.hasClass(successClasss)){
+                    tagElement.removeClass(successClasss);
+
+                    if(tagElement.siblings('.'+successClasss).length === 0)
+                        tagElement.parents('div.btn-group').find('button').switchClass('btn-success','btn-default');
+                } else {
+                    tagElement.addClass(successClasss);
+                    tagElement.parents('div.btn-group').find('button').addClass('btn-success');
+                }
+            },
+            function (){ console.log('error tagging bookmark', bookmarkId); }
+        );
+    }
+
 
     var start = function() {
         $("#show-hidden").bootstrapSwitch();
@@ -494,6 +542,8 @@ var BookmarkHiddenSwitch = (function() {
         $('th.bookmark-hidden-switch>div.bootstrap-switch').attr('title', 'Show/Hide hidden bookmarks')
 
         $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
+
+        $('.tagging-dropdown').on('click', '.tag:not(.disabled)', addTag);
 
         $("#show-hidden")
             .on('switchChange.bootstrapSwitch', toggleShowHidden)
@@ -526,4 +576,39 @@ var RecordingMove = {
         }
 }
 
+
+
+var MountInfo = (function(){
+    function start() {
+        $('#mount-form').ajaxForm({
+            beforeSerialize: function() {
+                if ($("#mount-type").find(":selected").val() == "ait") {
+                    $("#mount-title").val("AIT " + $("#ait-data").val());
+                }
+            },
+
+            complete: function(xhr) {
+                $("#mount-modal").modal('hide');
+
+                data = xhr.responseJSON;
+                if (data && data.mount_rec) {
+                    window.location.href = "/" + user + "/" + coll + "/" + data.mount_rec;
+                }
+            }
+        });
+
+        function toggle_archive_type() {
+            $("#mount-modal .hide-option").hide();
+            $("#mount-modal .hide-option input").attr("required", false);
+            var value = $("#mount-type").val();
+            $("." + value + "-option").show();
+            $("." + value + "-option input").attr("required", true);
+        }
+
+        $('#mount-modal').on('show.bs.modal', toggle_archive_type);
+
+        $("#mount-type").on('change', toggle_archive_type);
+    }
+    return {start: start};
+})();
 

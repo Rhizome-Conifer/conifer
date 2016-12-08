@@ -4,7 +4,7 @@ from webrecorder.rec.webrecrecorder import WebRecRecorder
 from webrecorder.rec.tempchecker import TempChecker
 from webrecorder.rec.storagecommitter import StorageCommitter
 
-from webagg.utils import load_config
+from pywb.webagg.utils import load_config
 
 import gevent
 import os
@@ -72,9 +72,5 @@ def init():
     wr.app.wr = wr
 
     return wr.app
-
-
-# =============================================================================
-application = init()
 
 

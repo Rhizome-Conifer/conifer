@@ -64,6 +64,27 @@ var Recordings = (function() {
         });
     }
 
+    var tagPage = function (recordingId, bookmarkId, tags, doneCallback, failCallback) {
+        var data = JSON.stringify({
+            'tags': tags,
+            'id': bookmarkId
+        });
+
+        $.ajax({
+            url: API_ENDPOINT + "/" + recordingId + "/tag" + query_string,
+            method: "POST",
+            data: data,
+            processData: false,
+            contentType: 'application/json'
+        })
+        .done(function(data, textStatus, xhr) {
+            doneCallback(data);
+        })
+        .fail(function(xhr, textStatus, errorThrown) {
+            failCallback(xhr, textStatus, errorThrown, recordingId, attributes);
+        });
+    }
+
     var removePage = function(recordingId, attributes, doneCallback) {
         $.ajax({
             url: API_ENDPOINT + "/" + recordingId + "/pages" + query_string,
@@ -107,7 +128,7 @@ var Recordings = (function() {
             failCallback(xhr);
         });
     }
-    
+
     var rename = function(recordingId, newTitle, doneCallback, failCallback) {
         var recordingId = recordingId;
         $.ajax({
@@ -140,6 +161,7 @@ var Recordings = (function() {
         addPage: addPage,
         removePage: removePage,
         modifyPage: modifyPage,
+        tagPage: tagPage,
         getPages: getPages,
         getNumPages: getNumPages,
         rename: rename,

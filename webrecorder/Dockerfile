@@ -1,5 +1,4 @@
-#Dockerfile for webrecorder
-FROM webrecorder/webrecore:1.2
+FROM webrecorder/pywb
 
 WORKDIR /build
 ADD requirements.txt /build/
@@ -7,7 +6,7 @@ ADD requirements.txt /build/
 USER root
 RUN pip install -r requirements.txt
 
-USER apprun
+USER archivist
 
 VOLUME /data/
 

@@ -4,7 +4,7 @@
 {% set editing_id = "recording-title-" + recording.id %}
 
 {% if can_write() or bookmark_count > 0 %}
-<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title }}">
+<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|e }}">
     <div class="checkbox-column">
         <div class="btn btn-xs filter-label icon-button">
         </div>
@@ -22,7 +22,7 @@
 
                 {% if not is_anon() %}
                 <li>
-                    <a href="#" data-toggle="modal" data-target="#move-modal" data-move-rec-id="{{ recording.id }}" data-recording-title="{{ recording.title }}"><span class="glyphicon glyphicon-pencil glyphicon-export" aria-hidden="true"></span>Move to Collection…</a>
+                    <a href="#" data-toggle="modal" data-target="#move-modal" data-move-rec-id="{{ recording.id }}" data-recording-title="{{ recording.title|e }}"><span class="glyphicon glyphicon-pencil glyphicon-export" aria-hidden="true"></span>Move to Collection…</a>
                 </li>
                 {% endif %}
                 <li role="separator" class="divider"></li>
@@ -42,10 +42,13 @@
         <div class="recording-stats text-left right-buffer-sm">
             <small>
                 <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
+                {% if not recording.mount_type %}
                 <span class="current-size text-right" data-size="{{ recording.size }}"></span>
+                {% endif %}
             </small>
         </div>
 
+        {% if not recording.mount_type %}
         <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
             <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
         </div>
@@ -53,6 +56,21 @@
         <div class="recording-time-info text-left right-buffer-sm">
             <small><span data-time-duration="{{ duration }}"></span></small>
         </div>
+        {% else %}
+        <div class="recording-time-info text-left right-buffer-sm">
+            <span>{{ recording.mount_desc }}</span>
+        </div>
+        <div class="recording-time-info text-left right-buffer-sm">
+        <small><i>
+            {% if recording.mount_type == 'ait' %}
+            Archive-It
+            {% elif recording.mount_type == 'memento' %}
+            Memento
+            {% endif %}
+            Collection
+        </i></small>
+        </div>
+        {% endif %}
 
         {% include 'confirm_delete_recording_modal.html' %}
     </div>

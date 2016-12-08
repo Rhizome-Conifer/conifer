@@ -1,5 +1,5 @@
-from webagg.test.testutils import FakeRedisTests, BaseTestClass
-from webagg.test.testutils import TempDirTests, to_path
+from pywb.webagg.test.testutils import FakeRedisTests, BaseTestClass
+from pywb.webagg.test.testutils import TempDirTests, to_path
 
 import webtest
 import os
@@ -40,6 +40,8 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
 
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
 
+        cls.custom_init(kwargs)
+
         if kwargs.get('no_app'):
             return
 
@@ -53,7 +55,11 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
             cls.anon_user = None
 
     @classmethod
-    def set_nx_env(self, name, value):
+    def custom_init(cls, kwargs):
+        pass
+
+    @classmethod
+    def set_nx_env(cls, name, value):
         if os.environ.get(name) is None:
             os.environ[name] = value
 

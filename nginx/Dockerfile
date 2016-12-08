@@ -7,9 +7,11 @@ RUN  apt-get update \
 
 WORKDIR /tmp
 
-RUN wget http://nginx.org/download/nginx-1.8.0.tar.gz
+ARG VERSION=1.10.2
 
-RUN tar xvf nginx-1.8.0.tar.gz
+RUN wget http://nginx.org/download/nginx-${VERSION}.tar.gz
+
+RUN tar xvf nginx-${VERSION}.tar.gz
 
 RUN wget https://github.com/openresty/headers-more-nginx-module/archive/v0.26.tar.gz
 
@@ -22,7 +24,7 @@ RUN tar xvf 1.1.1.tar.gz
 
 RUN ls
 
-WORKDIR /tmp/nginx-1.8.0 
+WORKDIR /tmp/nginx-${VERSION}
 
 #RUN apt-get install -y libssl-dev
 

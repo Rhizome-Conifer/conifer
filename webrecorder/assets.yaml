@@ -128,3 +128,9 @@ bundles:
             - automate.js
             - containerized_ui.js
 
+    paging-js:
+        output: bundle/paging.js
+        contents:
+            - paging.js
+
+

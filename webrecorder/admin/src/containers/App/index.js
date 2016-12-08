@@ -63,7 +63,8 @@ function mapStateToProps(state) {
   const isLoading = (
     state.user.loading ||
     state.users.loading ||
-    state.dashboard.loading
+    state.dashboard.loading ||
+    state.settings.loading
   );
   return {
     loading: isLoading,

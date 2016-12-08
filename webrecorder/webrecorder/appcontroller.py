@@ -8,11 +8,11 @@ import re
 import os
 
 from jinja2 import contextfunction
-from urlrewrite.templateview import JinjaEnv
 
 from six.moves.urllib.parse import urlsplit, urljoin
 
-from webagg.utils import load_config
+from pywb.webagg.utils import load_config
+from pywb.urlrewrite.templateview import JinjaEnv
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
@@ -129,6 +129,18 @@ class AppController(BaseController):
         def get_browsers():
             return self.browser_mgr.get_browsers()
 
+        def get_tags():
+            return self.manager.get_available_tags()
+
+        def get_tags_in_collection(user, coll):
+            return self.manager.get_tags_in_collection(user, coll)
+
+        def is_beta():
+            return self.manager.is_beta()
+
+        def can_tag():
+            return self.manager.can_tag()
+
         @contextfunction
         def can_admin(context):
             return self.manager.can_admin_coll(get_user(context), get_coll(context))
@@ -147,6 +159,10 @@ class AppController(BaseController):
             return self.manager.can_read_coll(get_user(context), get_coll(context))
 
         @contextfunction
+        def can_mount(context):
+            return self.manager.can_mount_coll(get_user(context), get_coll(context))
+
+        @contextfunction
         def is_anon(context):
             return self.manager.is_anon(get_user(context))
 
@@ -162,6 +178,16 @@ class AppController(BaseController):
         def is_out_of_space(context):
             return self.manager.is_out_of_space(context.get('curr_user', ''))
 
+        @contextfunction
+        def is_tagged(context, bookmark_id):
+            available = context.get('available_tags', [])
+            tags = context.get('tags', [])
+
+            for tag in available:
+                if tag in tags and bookmark_id in tags[tag]:
+                    return True
+            return False
+
         def trunc_url(value):
             """ Truncate querystrings, appending an ellipses
             """
@@ -170,12 +196,18 @@ class AppController(BaseController):
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
+        jinja_env.globals['can_mount'] = can_mount
+        jinja_env.globals['can_tag'] = can_tag
         jinja_env.globals['is_owner'] = is_owner
         jinja_env.globals['is_anon'] = is_anon
+        jinja_env.globals['is_beta'] = is_beta
         jinja_env.globals['get_path'] = get_path
         jinja_env.globals['get_body_class'] = get_body_class
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
+        jinja_env.globals['get_tags'] = get_tags
+        jinja_env.globals['is_tagged'] = is_tagged
+        jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
         jinja_env.filters['trunc_url'] = trunc_url
 
         return jinja_env_wrapper

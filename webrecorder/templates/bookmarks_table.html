@@ -1,4 +1,5 @@
-{% set recording_column_index = 6 if is_owner() else 4 %}
+{% set recording_column_index = 7 if is_owner() else 4 %}
+{% set can_tag = can_tag() %}
 {#
 {% if is_owner() %}
         <input type="checkbox" checked="checked" name="show-hidden" id="show-hidden" style="margin-left: 8px; margin-right: 8px"><label for="show-hidden">Include Hidden Bookmarks</label>
@@ -9,29 +10,38 @@
        data-recording-column-index="{{  recording_column_index }}">
     <thead>
         <tr>
-            {% if can_write() %}
+            {% if can_admin() %}
             <th class="bookmark-hidden-switch">
                 <input type="checkbox" class="left-buffer-sm" id="show-hidden" name="show-hidden" data-inverse="true" data-size="mini" data-on-text="&#xe105;" data-off-text="&#xe106;" data-on-color="default" data-handle-width="10" checked="checked">
             </th>
             <th class="bookmark-edit-title"></th>
             {% endif %}
             <th class="bookmark-title"><span>Bookmarks</span></th>
-            <th class="bookmark-title"><span>Browser</span></th>
+            {% if can_write() and can_tag and not is_anon() %}
+                <th class="bookmark-tag">Tag</th>
+            {% endif %}
+            <th class="bookmark-browser">Browser</th>
             <th class="timestamp">Timestamp</th>
             <th class="bookmark-url">URL</th>
             <th class="bookmark-recording-title">Recording</th>
         </tr>
     </thead>
     <tbody>
+        {% if can_tag %}
+            {% set available_tags = get_tags() %}
+            {% set tags = get_tags_in_collection(user, coll) %}
+        {% endif %}
+
         {% for recording in collection.recordings %}
             {% set collection_path = get_path(user, coll) + '/' %}
             {% set browsers = get_browsers() %}
 
             {% for bookmark in recording.pages %}
+                {% set browser = browsers[bookmark.browser] if bookmark.browser in browsers else None %}
+                {% set bookmark_id = bookmark.url + ' ' + bookmark.timestamp + ' ' + (browser.id if browser else '-') %}
                 {% set title = bookmark.title if bookmark.title else "No Title" %}
                 {% set timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
                 {% set path = collection_path + timestamp + '/' + bookmark.url %}
-                {% set browser = browsers[bookmark.browser] if bookmark.browser in browsers else None %}
                 {% set cb_path = collection_path + timestamp + ('$br:'+browser.id if browser else '') + '/' + bookmark.url %}
                 {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
 
@@ -43,9 +53,10 @@
                     <tr data-bookmark-timestamp="{{ timestamp }}"
                         data-bookmark-url="{{ bookmark.url }}"
                         data-bookmark-hidden="{{ hidden }}"
+                        data-bookmark-browser="{{ browser.id if browser else '-' }}"
                         data-recording-id="{{ recording.id }}" >
 
-                        {% if can_write() %}
+                        {% if can_admin() %}
                             <td class="bookmark-hidden-switch">
                                 {% include 'bookmark_hidden_switch.html' %}
                             </td>
@@ -66,11 +77,31 @@
                         <td class="bookmark-title">
                             <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ path }}">{{ title }}</a></span>
                         </td>
+
+                        {% if can_write() and can_tag and not is_anon() %}
+                            <td class='bookmark-tag'>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-xs {% if is_tagged(bookmark_id) %}btn-success {% else %}btn-default{% endif %} dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"  title='Bookmark tagging'>
+                                        <span class='glyphicon glyphicon-tag'></span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu tagging-dropdown">
+                                        <li class="dropdown-header">Available Tags</li>
+                                        {% for tag in available_tags %}
+                                            <li class='dropdown-item tag{% if tag in tags and bookmark_id in tags[tag] %} tagged{% endif %}' data-tag='{{tag}}'><span class='glyphicon glyphicon-ok'></span><span class='glyphicon glyphicon-minus' ></span><a href="#">{{ tag }}</a></li>
+                                            {% else %}
+                                            <li class='dropdown-item tag disabled'><a href='#'>no tags available</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </td>
+                        {% endif %}
+
                         <td class="rec-browser{% if not browser %} empty{% endif %}">
                             {% if browser %}
-                                <a href="{{ cb_path }}">
+                                <a href="{{ cb_path }}" title='{{ browser.name|capitalize }} version {{ browser.version }}'>
                                     <img src='/api/browsers/browsers/{{ browser.id }}/icon'>
-                                    {{ browser.name|capitalize }} v{{ browser.version }}
+                                    v{{ browser.version }}
                                 </a>
                             {% else %}
                                 -

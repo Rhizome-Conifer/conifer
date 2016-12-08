@@ -66,7 +66,7 @@ download_paths:
     rec: '{host}/{user}/{coll}/{rec}/$download'
     coll: '{host}/{user}/{coll}/$download'
 
-download_chunk_encoded: true
+download_chunk_encoded: false
 
 
 # Misc Settings
@@ -122,7 +122,7 @@ full_warc_prefix: 'local+http://nginx:6090'
 
 # Redis Keys
 cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj'
-cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj'
+cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj*'
 
 page_key_templ: 'r:{user}:{coll}:{rec}:page'
 
@@ -130,6 +130,11 @@ info_key_templ:
     rec: 'r:{user}:{coll}:{rec}:info'
     coll: 'c:{user}:{coll}:info'
     user: 'u:{user}:info'
+
+tags_key: 'z:tags'
+user_tag_templ: 'r:{user}:{coll}:{rec}:tag:{tag}'
+
+mount_key_templ: 'r:{user}:{coll}:{rec}:cdxj_m'
 
 user_usage_key: 'h:user-usage'
 temp_usage_key: 'h:temp-usage'

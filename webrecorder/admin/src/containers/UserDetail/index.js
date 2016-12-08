@@ -18,6 +18,7 @@ import './style.scss';
 class UserDetail extends Component {
 
   static propTypes = {
+    roles: PropTypes.array,
     user: PropTypes.shape({
       email: PropTypes.string,
       name: PropTypes.string,
@@ -66,7 +67,7 @@ class UserDetail extends Component {
   }
 
   render() {
-    const { user } = this.props;
+    const { user, roles } = this.props;
     const { username } = this.props.params;
     const { showModal, form } = this.state;
 
@@ -81,9 +82,9 @@ class UserDetail extends Component {
         type:'text',
         label: 'Change size',
         field: 'max_size',
-        placeholder: user.space_utilization.total,
-        validate: (v) => !isNaN(v) && v > user.space_utilization.used,
-        help: `A number in bytes greater than current utilization (${user.space_utilization.used} bytes)`,
+        placeholder: user.space_utilization.total/1000000000,
+        validate: (v) => !isNaN(v) && v * 1000000000 > user.space_utilization.used,
+        help: `A number in gigabytes greater than current utilization: ${user.space_utilization.used/1000000000} GB`,
       },
     ];
     const editRoleForm = [
@@ -92,7 +93,7 @@ class UserDetail extends Component {
         label: 'Change Role',
         field: 'role',
         value: user.role,
-        values: ['admin', 'archivist'],
+        values: roles,
         placeholder: 'select',
         validate: (v) => true,
         help: 'Select `archivist` for a standard user or `admin` for superuser (admin panel) access',
@@ -217,6 +218,7 @@ function mapStateToProps(state) {
   const { user } = state;
   return {
     user: user.user,
+    roles: user.roles,
   };
 }
 

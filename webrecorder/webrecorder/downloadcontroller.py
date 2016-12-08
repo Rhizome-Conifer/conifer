@@ -1,8 +1,8 @@
 from pywb.utils.timeutils import timestamp_now
 from pywb.utils.loaders import BlockLoader
 
-from webagg.utils import StreamIter, chunk_encode_iter
-from recorder.warcwriter import SimpleTempWARCWriter
+from pywb.webagg.utils import StreamIter, chunk_encode_iter
+from pywb.recorder.warcwriter import SimpleTempWARCWriter
 
 from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
