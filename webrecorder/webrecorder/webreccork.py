@@ -110,6 +110,8 @@ class WebRecCork(Cork):
             cork.create_role('archivist', 50)
         if 'admin' not in roles:
             cork.create_role('admin', 100)
+        if 'beta-archivist' not in roles:
+            cork.create_role('beta-archivist', 60)
         if 'public-archivist' not in roles:
             cork.create_role('public-archivist', 25)
         if 'mounts-archivist' not in roles:

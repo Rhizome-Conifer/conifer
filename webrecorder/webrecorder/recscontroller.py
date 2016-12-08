@@ -126,6 +126,7 @@ class RecsController(BaseController):
             return {'pages': pages}
 
         @self.app.post('/api/v1/recordings/<rec>/tag')
+        @self.manager.beta_user()
         def tag_page(rec):
             user, coll = self.get_user_coll(api=True)
 
