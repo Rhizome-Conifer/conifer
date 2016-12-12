@@ -6,14 +6,12 @@
 
 This is the official repository of the Webrecorder web archiving platform: https://webrecorder.io/
 
-Webrecorder provides an integrated platform for creating high-fidelity web archives while browsing, sharing, 
+Webrecorder provides an integrated platform for creating high-fidelity web archives while browsing, sharing,
 and disseminating archived content.
 
 Users may try the service anonymously or login and create a permanent online archive.
 
 Webrecorder will support multiple backends and will integrate with existing preservation systems.
-
-For now, Webrecorder is still in a beta prototype stage, and this deployment is recommended for advanced users only.
 
 For best experience, please try Webrecorder at https://webrecorder.io/
 
@@ -60,9 +58,28 @@ Webrecorder sends invitiation, confirmation and lost password emails. By default
 #### Invites
 
 By default, Webrecorder allows anyone with access to the web site to register for an account. However, users may wish to limit
-registration to specifically invited users. The `https://webrecorder.io/` deployment uses this feature at this time.
+registration to specifically invited users.
 
 To require invites, simply set `REQUIRE_INVITES=true`
+
+#### Administration tool
+
+The `admin.py` script provides easy low level management of users. Add, modify and remove users along with creating and managing invites.
+
+To interactively create a user:
+`docker exec -it webrecorder_app_1 python admin.py -c`
+or programmatically add users by supplying the appropriate positional values:
+`... admin.py -c <email> <username> <passwd> <role> '<full name>'`
+
+Other arguments:
+
+* `-m` modify a user
+* `-d` delete a user
+* `-i` create and send a new invite
+* `-l` list invited users
+* `-b` send backlogged invites
+
+See `docker exec -it webrecorder_app_1 python admin.py --help` for full details.
 
 ### Updating Deployment
 
