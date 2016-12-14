@@ -12,6 +12,7 @@ class TestRegisterMigrate(FullStackTests):
     @classmethod
     def setup_class(cls):
         super(TestRegisterMigrate, cls).setup_class(extra_config_file='test_no_invites_config.yaml')
+        cls.val_reg = ''
 
     def test_anon_record_1(self):
         res = self.testapp.get('/' + self.anon_user + '/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
@@ -43,9 +44,9 @@ class TestRegisterMigrate(FullStackTests):
 
         assert '"to-coll"' in res.text
 
-    def mock_send_reg_email(self, sender, title, text):
-        global val_reg_url
-        val_reg_url = re.search('(/_valreg/[^"]+)', text).group(1)
+    @classmethod
+    def mock_send_reg_email(cls, sender, title, text):
+        cls.val_reg = re.search('/_valreg/([^"]+)', text).group(1)
 
     def test_register_post_success(self):
         params = {'email': 'test@example.com',
@@ -62,8 +63,15 @@ class TestRegisterMigrate(FullStackTests):
 
         assert res.headers['Location'] == 'http://localhost:80/'
 
-    def test_val_user_reg(self):
-        res = self.testapp.get(val_reg_url)
+    def test_val_user_reg_page(self):
+        res = self.testapp.get('/_valreg/' + self.val_reg)
+        assert self.val_reg in res.body.decode('utf-8')
+
+    def test_val_user_reg_post(self):
+        params = {'reg': self.val_reg}
+        headers = {'Cookie': 'valreg=' + self.val_reg}
+        res = self.testapp.post('/_valreg', params=params, headers=headers)
+
         assert res.headers['Location'] == 'http://localhost:80/'
 
         user_info = self.redis.hgetall('u:someuser:info')

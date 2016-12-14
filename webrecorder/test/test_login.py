@@ -9,9 +9,11 @@ from .testutils import BaseWRTests
 
 # ============================================================================
 class TestLogin(BaseWRTests):
+    @classmethod
     def setup_class(cls):
         os.environ['WEBAGG_HOST'] = 'http://localhost:8080'
         os.environ['RECORD_HOST'] = 'http://localhost:8010'
+        cls.val_reg = ''
 
         super(TestLogin, cls).setup_class()
 
@@ -122,8 +124,7 @@ class TestLogin(BaseWRTests):
 
     @classmethod
     def mock_send_reg_email(cls, sender, title, text):
-        cls.val_reg_url = re.search('(/_valreg/[^"]+)', text).group(1)
-        print(cls.val_reg_url)
+        cls.val_reg = re.search('/_valreg/([^"]+)', text).group(1)
 
     def test_register_post_success(self):
         params = {'email': 'test@example.com',
@@ -156,14 +157,26 @@ class TestLogin(BaseWRTests):
         assert res.headers['Location'] == 'http://localhost:80/_register'
 
     def test_val_user_reg(self):
-        res = self.testapp.get(self.val_reg_url)
-        assert res.headers['Location'] == 'http://localhost:80/'
+        res = self.testapp.get('/_valreg/' + self.val_reg)
+        assert self.val_reg in res.text
 
-        # already validated, logged in, so ignore
-        res = self.testapp.get(self.val_reg_url)
+        params = {'reg': self.val_reg}
+        headers = {'Cookie': 'valreg=' + self.val_reg}
+
+        # no cookie, error
+        res = self.testapp.post('/_valreg', params=params)
+        assert res.headers['Location'] == 'http://localhost:80/_register'
+
+        res = self.testapp.post('/_valreg', headers=headers, params=params)
         assert res.headers['Location'] == 'http://localhost:80/'
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
+
+        headers['Cookie'] += '; __test_sesh=' + self.testapp.cookies.get('__test_sesh')
+
+        # already validated, logged in, so ignore
+        res = self.testapp.post('/_valreg', headers=headers, params=params)
+        assert res.headers['Location'] == 'http://localhost:80/'
 
         res = self.redis.hgetall('u:someuser:info')
         res = self.appcont.manager._format_info(res)
@@ -178,11 +191,14 @@ class TestLogin(BaseWRTests):
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_invalid_val_reg(self):
-        # already validated, not logged in
-        res = self.testapp.get(self.val_reg_url)
+        # already validated
+        params = {'reg': self.val_reg}
+        res = self.testapp.post('/_valreg', params=params)
         assert res.headers['Location'] == 'http://localhost:80/_register'
 
-        res = self.testapp.get('/_valreg/blah')
+        # invalid valreg
+        params = {'reg': 'blah'}
+        res = self.testapp.post('/_valreg', params=params)
         assert res.headers['Location'] == 'http://localhost:80/_register'
 
     def test_login(self):

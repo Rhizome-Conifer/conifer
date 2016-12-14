@@ -1,4 +1,4 @@
-from bottle import request
+from bottle import request, response
 from os.path import expandvars
 
 from webrecorder.webreccork import ValidationException
@@ -16,6 +16,7 @@ CREATE_PATH = '/_create'
 
 REGISTER_PATH = '/_register'
 VAL_REG_PATH = '/_valreg/<reg>'
+VAL_REG_PATH_POST = '/_valreg'
 INVITE_PATH = '/_invite'
 
 FORGOT_PATH = '/_forgot'
@@ -185,10 +186,14 @@ class LoginController(BaseController):
             username = self.post_get('username')
             password = self.post_get('password')
             name = self.post_get('name')
+            decoy_name = self.post_get('full_name')
             confirm_password = self.post_get('confirmpassword')
             invitecode = self.post_get('invite')
 
             redir_to = REGISTER_PATH
+
+            if decoy_name:
+                return self.redirect(redir_to)
 
             if username.startswith(self.manager.temp_prefix):
                 self.flash_message('Sorry, this is not a valid username')
@@ -250,10 +255,23 @@ class LoginController(BaseController):
 
             self.redirect(redir_to)
 
-        # Validate Registration
         @self.app.get(VAL_REG_PATH)
+        @self.jinja2_view('val_reg.html')
         def val_reg(reg):
+            return {'reg': reg}
+
+        # Validate Registration
+        @self.app.post(VAL_REG_PATH_POST)
+        def val_reg_post():
             self.redirect_home_if_logged_in()
+
+            reg = self.post_get('reg', '')
+
+            val = request.environ.get('webrec.request_cookie', '')
+            cookie_validate = 'valreg=' + reg
+            if cookie_validate not in val:
+                self.flash_message('Registration Not Accepted')
+                self.redirect(REGISTER_PATH)
 
             try:
                 username, first_coll = self.manager.create_user(reg)
