@@ -1,0 +1,27 @@
+{% extends "main_bootstrap.html" %}
+
+{% block title %} | Validating Registration... {% endblock %}
+
+{% block head %}
+
+{{ super() }}
+<script>
+    setTimeout(function() {
+        var reg = $("#reg").val();
+        document.cookie = "valreg=" + reg + "; Max-Age=60; Path=/_valreg";
+        $("form").submit();
+    }, 1000);
+</script>
+
+{% endblock %}
+
+{% block body %}
+    {% include 'header.html' %}
+    <form method="post" action="/_valreg">
+        <input type="hidden" id="reg" name="reg" value="{{ reg }}"/>
+    </form>
+    <div class="container wr-content faq">
+    <h2>Validating Registration...</h2>
+{% endblock %}
+
+
