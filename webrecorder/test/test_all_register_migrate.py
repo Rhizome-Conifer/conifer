@@ -1,4 +1,4 @@
-from .testfullstack import FullStackTests
+from .testutils import FullStackTests
 
 from mock import patch
 

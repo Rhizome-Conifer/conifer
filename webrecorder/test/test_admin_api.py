@@ -1,4 +1,4 @@
-from .testfullstack import FullStackTests
+from .testutils import FullStackTests
 
 from webrecorder.redisman import init_manager_for_cli
 

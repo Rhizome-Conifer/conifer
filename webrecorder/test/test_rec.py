@@ -1,7 +1,7 @@
 from fakeredis import FakeStrictRedis
 
 #from .testutils import BaseWRTests
-from .testfullstack import FullStackTests
+from .testutils import FullStackTests
 
 from pywb.webagg.test.testutils import LiveServerTests
 

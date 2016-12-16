@@ -1,3 +1,5 @@
+from gevent.monkey import patch_all; patch_all()
+
 from pywb.webagg.test.testutils import FakeRedisTests, BaseTestClass
 from pywb.webagg.test.testutils import TempDirTests, to_path
 
@@ -6,6 +8,8 @@ import os
 
 from fakeredis import FakeStrictRedis
 from webrecorder.appcontroller import AppController
+
+from webrecorder.fullstackrunner import FullStackRunner
 
 
 # ============================================================================
@@ -70,4 +74,21 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     @classmethod
     def get_curr_dir(cls):
         return os.path.dirname(os.path.realpath(__file__))
+
+
+# ============================================================================
+class FullStackTests(BaseWRTests):
+    @classmethod
+    def custom_init(cls, kwargs):
+        env_params = {'TEMP_SLEEP_CHECK': '5',
+                      'APP_HOST': '',
+                      'CONTENT_HOST': ''}
+
+        cls.runner = FullStackRunner(app_port=-1, env_params=env_params)
+
+    @classmethod
+    def teardown_class(cls, *args, **kwargs):
+        cls.runner.close()
+        super(FullStackTests, cls).teardown_class(*args, **kwargs)
+
 

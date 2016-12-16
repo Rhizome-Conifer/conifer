@@ -1,4 +1,4 @@
-from .testfullstack import FullStackTests
+from .testutils import FullStackTests
 
 
 class TestNoCookies(FullStackTests):
