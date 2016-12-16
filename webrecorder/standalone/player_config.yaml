@@ -1,0 +1,6 @@
+assets_path: $WRROOT/config/assets.yaml
+
+assets_extra: wrtemp
+
+full_warc_prefix: ''
+

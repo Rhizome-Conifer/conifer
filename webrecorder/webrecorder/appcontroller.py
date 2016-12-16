@@ -1,10 +1,11 @@
-from bottle import Bottle, debug, JSONPlugin, request, response
+from bottle import Bottle, debug, JSONPlugin, request, response, static_file
 
 import logging
 import json
 import redis
 import re
 
+import sys
 import os
 
 from jinja2 import contextfunction
@@ -53,6 +54,11 @@ class AppController(BaseController):
 
     def __init__(self, configfile=None, overlay_config=None, redis_url=None):
         self._init_logging()
+
+        if getattr(sys, 'frozen', False):
+            self.static_root = os.path.join(sys._MEIPASS, 'static/')
+        else:
+            self.static_root = 'static/'
 
         bottle_app = Bottle()
         self.bottle_app = bottle_app
@@ -111,7 +117,15 @@ class AppController(BaseController):
         super(AppController, self).__init__(final_app, jinja_env, manager, config)
 
     def init_jinja_env(self, config):
-        jinja_env_wrapper = JinjaEnv(assets_path=config['assets_path'])
+        assets_path = os.path.expandvars(config['assets_path'])
+        assets_extra = os.path.expandvars(config['assets_extra'])
+        if assets_extra:
+            packages = [assets_extra, 'pywb']
+        else:
+            packages = ['pywb']
+
+        jinja_env_wrapper = JinjaEnv(assets_path=assets_path,
+                                     packages=packages)
 
         jinja_env = jinja_env_wrapper.jinja_env
 
@@ -246,6 +260,10 @@ class AppController(BaseController):
         @self.jinja2_view('faq.html')
         def faq():
             return {}
+
+        @self.bottle_app.route('/static/__shared/<path:path>')
+        def static_files(path):
+            return static_file(path, root=self.static_root)
 
         @self.bottle_app.route('/_message')
         def flash_message():

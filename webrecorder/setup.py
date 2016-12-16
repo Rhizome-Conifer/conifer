@@ -39,7 +39,7 @@ setup(
     name='webrecorder',
     version=__version__,
     url='https://webrecorder.io',
-    author='Ilya Kreymer',
+    author='rhizome.org',
     author_email='support@webrecorder.io',
     description='Webrecorder Archiving Platform',
     long_description=long_description,
@@ -49,6 +49,15 @@ setup(
         'webrecorder',
         'webrecorder.rec',
         'webrecorder.load',
+    ],
+    install_requires=[
+       'pywb>=0.50.0',
+       'webassets==0.12.0',
+       'karellen-geventws'
+    ],
+    dependency_links=[
+        'git+https://github.com/ikreymer/pywb.git@new-pywb#egg=pywb-0.50.0',
+        'git+https://github.com/ikreymer/webassets.git@pyinstaller#egg=webassets-0.12.0',
     ],
     tests_require=[
         'pytest',

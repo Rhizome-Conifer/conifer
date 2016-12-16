@@ -8,14 +8,7 @@ import gevent
 
 try:
     from geventwebsocket.handler import WebSocketHandler
-
-    class WSNoFinalizeHeadersHandler(WebSocketHandler):
-        # disable finalize_headers() as it automatically adds
-        # transfer-encoding: chunked, even if already chunk encoded
-        def finalize_headers(self):
-            return
-
-    ws_handler_class = WSNoFinalizeHeadersHandler
+    ws_handler_class = WebSocketHandler
 except:
     ws_handler_class = None
 

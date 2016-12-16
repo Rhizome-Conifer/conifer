@@ -16,7 +16,7 @@ from webrecorder.redisman import init_manager_for_cli
 from webrecorder.redisutils import RedisTable
 
 
-def main():
+def main(args=None):
     parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
     parser.add_argument('-c', '--create-user',
                         dest='create_user',
@@ -34,8 +34,9 @@ def main():
     parser.add_argument('-i', '--invite')
     parser.add_argument('-l', '--list', action='store_true')
     parser.add_argument('-b', '--backlog')
+    parser.add_argument('-a', '--invite-all', action='store_true', default=False)
 
-    r = parser.parse_args()
+    r = parser.parse_args(args=args)
     m = init_manager_for_cli()
 
     if r.backlog:
@@ -73,8 +74,11 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
     """
     users = m.get_users()
 
-    print('let\'s create a new user..')
-    email = email or input('email: ').strip()
+    print(email, username, passwd, role, name)
+
+    if not email:
+        print('let\'s create a new user..')
+        email = input('email: ').strip()
 
     # validate email
     if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', email):
