@@ -4,7 +4,7 @@ from webrecorder.rec.webrecrecorder import WebRecRecorder
 from webrecorder.rec.tempchecker import TempChecker
 from webrecorder.rec.storagecommitter import StorageCommitter
 
-from pywb.webagg.utils import load_config
+from webrecorder import load_wr_config
 
 import gevent
 import os
@@ -54,7 +54,7 @@ def storage_commit_loop(storage_committer, writer, sleep_secs):
 
 # =============================================================================
 def init():
-    config = load_config('WR_CONFIG', './wr.yaml', 'WR_USER_CONFIG', '')
+    config = load_wr_config()
 
     temp_checker = TempChecker(config)
     storage_committer = StorageCommitter(config)

@@ -8,12 +8,14 @@ import re
 import sys
 import os
 
+
 from jinja2 import contextfunction
+from pkg_resources import resource_filename
 
 from six.moves.urllib.parse import urlsplit, urljoin
 
-from pywb.webagg.utils import load_config
 from pywb.urlrewrite.templateview import JinjaEnv
+from webrecorder import load_wr_config
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
@@ -52,13 +54,13 @@ class AppController(BaseController):
                       ]
 
 
-    def __init__(self, configfile=None, overlay_config=None, redis_url=None):
+    def __init__(self, redis_url=None):
         self._init_logging()
 
         if getattr(sys, 'frozen', False):
-            self.static_root = os.path.join(sys._MEIPASS, 'static/')
+            self.static_root = os.path.join(sys._MEIPASS, 'webrecorder', 'static/')
         else:
-            self.static_root = 'static/'
+            self.static_root = resource_filename('webrecorder', 'static/')
 
         bottle_app = Bottle()
         self.bottle_app = bottle_app
@@ -66,7 +68,7 @@ class AppController(BaseController):
         # JSON encoding for datetime objects
         self.bottle_app.install(JSONPlugin(json_dumps=lambda s: json.dumps(s, cls=CustomJSONEncoder)))
 
-        config = load_config('WR_CONFIG', configfile, 'WR_USER_CONFIG', overlay_config)
+        config = load_wr_config()
 
         # Init Redis
         if not redis_url:
@@ -118,11 +120,7 @@ class AppController(BaseController):
 
     def init_jinja_env(self, config):
         assets_path = os.path.expandvars(config['assets_path'])
-        assets_extra = os.path.expandvars(config['assets_extra'])
-        if assets_extra:
-            packages = [assets_extra, 'pywb']
-        else:
-            packages = ['pywb']
+        packages = [os.environ.get('WR_TEMPLATE_PKG', 'webrecorder'), 'pywb']
 
         jinja_env_wrapper = JinjaEnv(assets_path=assets_path,
                                      packages=packages)
@@ -269,7 +267,6 @@ class AppController(BaseController):
         def flash_message():
             message = request.query.getunicode('message', '')
             msg_type = request.query.getunicode('msg_type', '')
-            print(message, msg_type)
             self.flash_message(message, msg_type)
             return {}
 

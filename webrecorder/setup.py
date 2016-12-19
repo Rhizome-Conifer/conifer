@@ -3,7 +3,7 @@
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
-import glob
+import os
 
 from webrecorder import __version__
 
@@ -44,16 +44,36 @@ setup(
     description='Webrecorder Archiving Platform',
     long_description=long_description,
     packages=find_packages(),
-    zip_safe=True,
+    zip_safe=False,
+    include_package_data=True,
     provides=[
         'webrecorder',
         'webrecorder.rec',
         'webrecorder.load',
     ],
+    package_data={
+        'webrecorder': ['config/*',
+                        'static/*.*',
+                        'static/bundle/*',
+                        'templates/*.*',
+                        'templates/recordings/*',
+                        'static/external/bootstrap/fonts/*'],
+    },
     install_requires=[
-       'pywb>=0.50.0',
-       'webassets==0.12.0',
-       'karellen-geventws'
+        'youtube_dl',
+        'itsdangerous',
+        'bottle',
+        'uwsgi',
+        'gevent==1.1.2',
+        'boto',
+        'requests>=2.9.1',
+        'bottle-cork==0.12.0',
+        'marshmallow',
+        'werkzeug',
+        'urllib3',
+        'pywb>=0.50.0',
+        'webassets==0.12.0',
+        'karellen-geventws'
     ],
     dependency_links=[
         'git+https://github.com/ikreymer/pywb.git@new-pywb#egg=pywb-0.50.0',
@@ -68,4 +88,8 @@ setup(
        ],
     cmdclass={'test': PyTest},
     test_suite='',
+    entry_points="""
+        [console_scripts]
+        webrecorder = webrecorder.standalone.standalone:main
+    """
 )

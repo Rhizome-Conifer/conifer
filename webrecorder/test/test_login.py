@@ -32,7 +32,7 @@ class TestLogin(BaseWRTests):
     def test_send_invite(self):
         m = self.appcont.manager
 
-        email_template = 'templates/emailinvite.html'
+        email_template = 'webrecorder/templates/emailinvite.html'
 
         with patch('cork.Mailer.send_email', self.mock_send_invite_email):
             res = m.send_invite('test@example.com',

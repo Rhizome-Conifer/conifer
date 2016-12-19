@@ -23,7 +23,7 @@ from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.timeutils import timestamp_now
 
-from pywb.webagg.utils import load_config
+from webrecorder import load_wr_config
 
 import requests
 
@@ -1319,18 +1319,17 @@ class RedisDataManager(AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
 
 # ============================================================================
 def init_manager_for_cli():
-        config = load_config('WR_CONFIG', None,
-                             'WR_USER_CONFIG', None)
+    config = load_wr_config()
 
-        # Init Redis
-        redis_url = os.environ['REDIS_BASE_URL']
+    # Init Redis
+    redis_url = os.environ['REDIS_BASE_URL']
 
-        r = redis.StrictRedis.from_url(redis_url)
+    r = redis.StrictRedis.from_url(redis_url)
 
-        # Init Cork
-        cork = WebRecCork.create_cork(r, config)
+    # Init Cork
+    cork = WebRecCork.create_cork(r, config)
 
-        # Init Manager
-        manager = RedisDataManager(r, cork, None, None, None, config)
+    # Init Manager
+    manager = RedisDataManager(r, cork, None, None, None, config)
 
-        return manager
+    return manager

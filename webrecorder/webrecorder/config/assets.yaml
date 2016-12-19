@@ -1,6 +1,7 @@
 url: /static/__shared/
 
-directory: ./static/
+#directory: ./webrecorder/static/
+directory: ../static/
 
 bundles:
     base-js:

@@ -1,0 +1,5 @@
+full_warc_prefix: ''
+
+assets_path: pkg://webrecorder/config/assets.yaml
+
+

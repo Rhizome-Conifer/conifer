@@ -236,7 +236,7 @@ class LoginController(BaseController):
                 self.manager.cork.register(username, password, email, role='archivist',
                               max_level=50,
                               subject='webrecorder.io Account Creation',
-                              email_template='templates/emailconfirm.html',
+                              email_template='webrecorder/templates/emailconfirm.html',
                               description=desc,
                               host=host)
 
@@ -326,7 +326,7 @@ class LoginController(BaseController):
                 self.manager.cork.send_password_reset_email(username=username,
                                           email_addr=email,
                                           subject='webrecorder.io password reset confirmation',
-                                          email_template='templates/emailreset.html',
+                                          email_template='webrecorder/templates/emailreset.html',
                                           host=host)
 
                 self.flash_message('A password reset e-mail has been sent to your e-mail!', 'success')
