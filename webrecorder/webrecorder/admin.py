@@ -74,8 +74,6 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
     """
     users = m.get_users()
 
-    print(email, username, passwd, role, name)
-
     if not email:
         print('let\'s create a new user..')
         email = input('email: ').strip()
@@ -147,13 +145,13 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
         pi.hset(key, 'name', name)
         pi.hsetnx(key, 'size', '0')
 
-    # create initial collection
-    m.create_collection(username,
-                        coll=m.default_coll['id'],
-                        coll_title=m.default_coll['title'],
-                        desc=m.default_coll['desc'].format(username),
-                        public=False,
-                        synthetic=True)
+    if m.default_coll:
+        # create initial collection
+        m.create_collection(username,
+                            coll=m.default_coll['id'],
+                            coll_title=m.default_coll['title'],
+                            desc=m.default_coll['desc'].format(username),
+                            public=False)
 
     # email subscription set up?
     if m.mailing_list:

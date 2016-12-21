@@ -14,6 +14,7 @@ from bottle import template, request, HTTPError
 from webrecorder.webreccork import ValidationException
 from webrecorder.redisutils import RedisTable
 from webrecorder.webreccork import WebRecCork
+from webrecorder.session import Session
 
 from cork import AAAException
 
@@ -125,6 +126,9 @@ class LoginManagerMixin(object):
             else:
                 print('Removing from mailing list failed:', e)
 
+    def get_session(self):
+        return request.environ['webrec.session']
+
     def get_users(self):
         return RedisTable(self.redis, 'h:users')
 
@@ -157,7 +161,7 @@ class LoginManagerMixin(object):
             pi.hsetnx(key, 'size', '0')
 
         self.cork.do_login(user)
-        sesh = request.environ['webrec.session']
+        sesh = self.get_session()
         if not sesh.curr_user:
             sesh.curr_user = user
 
@@ -208,7 +212,7 @@ class LoginManagerMixin(object):
         return self.cork.user(user) is not None
 
     def get_anon_user(self, save_sesh=True):
-        sesh = request.environ['webrec.session']
+        sesh = self.get_session()
         if not sesh.is_anon() and save_sesh:
             sesh.set_anon()
             self._create_anon_user(sesh.anon_user)
@@ -515,12 +519,12 @@ class AccessManagerMixin(object):
         if not user:
             return False
 
-        sesh = request.environ['webrec.session']
+        sesh = self.get_session()
 
         return sesh.is_anon(user)
 
     def get_curr_user(self):
-        sesh = request.environ['webrec.session']
+        sesh = self.get_session()
         return sesh.curr_user
 
     def _check_access(self, user, coll, type_prefix):
@@ -528,7 +532,7 @@ class AccessManagerMixin(object):
         if self.is_anon(user):
             return True
 
-        sesh = request.environ['webrec.session']
+        sesh = self.get_session()
         curr_user = sesh.curr_user
         curr_role = sesh.curr_role
 
@@ -585,7 +589,7 @@ class AccessManagerMixin(object):
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
     def can_admin_coll(self, user, coll):
-        sesh = request.environ['webrec.session']
+        sesh = self.get_session()
         if sesh.is_restricted:
             return False
 
@@ -614,11 +618,11 @@ class AccessManagerMixin(object):
         """Test if logged in user has 100 level `admin` privledges.
            Named `superuser` to prevent confusion with `can_admin`
         """
-        sesh = request.environ['webrec.session']
+        sesh = self.get_session()
         return sesh.curr_role == 'admin'
 
     def is_owner(self, user):
-        sesh = request.environ['webrec.session']
+        sesh = self.get_session()
         if sesh.is_restricted:
             return False
 
@@ -1097,14 +1101,8 @@ class CollManagerMixin(object):
 
         return self._has_collection_no_access_check(user, coll)
 
-    def create_collection(self, user, coll, coll_title, desc='', public=False, synthetic=False):
-        """Create a collection.
-           :param synthetic: whether this request is from a command line script
-                             `True` or web request `False`
-           :type synthetic: boolean
-        """
-        if not synthetic:
-            self.assert_can_admin(user, coll)
+    def create_collection(self, user, coll, coll_title, desc='', public=False):
+        self.assert_can_admin(user, coll)
 
         orig_coll = coll
         orig_coll_title = coll_title
@@ -1130,9 +1128,7 @@ class CollManagerMixin(object):
                 pi.hset(key, self.READ_PREFIX + self.PUBLIC, 1)
             pi.hsetnx(key, 'size', '0')
 
-        if not synthetic:
-            return self.get_collection(user, coll)
-        return None
+        return self.get_collection(user, coll)
 
     def num_collections(self, user):
         key_pattern = self.coll_info_key.format(user=user, coll='*')
@@ -1305,6 +1301,7 @@ class RedisDataManager(AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
     def __init__(self, redis, cork, content_app, browser_redis, browser_mgr, config):
         self.redis = redis
         self.cork = cork
+        self.config = config
 
         self.content_app = content_app
 
@@ -1316,6 +1313,32 @@ class RedisDataManager(AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
 
         super(RedisDataManager, self).__init__(config)
 
+
+# ============================================================================
+class CLIRedisDataManager(RedisDataManager):
+    def can_read_coll(self, user, coll):
+        return True
+
+    def can_write_coll(self, user, coll):
+        return True
+
+    def can_admin_coll(self, user, coll):
+        return True
+
+    def can_mount_coll(self, user, coll):
+        return True
+
+    def can_tag(self):
+        return True
+
+    def is_owner(self, user):
+        return True
+
+    def assert_logged_in(self):
+        return True
+
+    def get_session(self):
+        return self.fake_session
 
 # ============================================================================
 def init_manager_for_cli():
@@ -1330,6 +1353,7 @@ def init_manager_for_cli():
     cork = WebRecCork.create_cork(r, config)
 
     # Init Manager
-    manager = RedisDataManager(r, cork, None, None, None, config)
+    manager = CLIRedisDataManager(r, cork, None, None, None, config)
+    manager.fake_session = Session(cork, {}, '', {'anon': True}, -1, False)
 
     return manager

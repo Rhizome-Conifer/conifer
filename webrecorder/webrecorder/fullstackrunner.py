@@ -15,7 +15,9 @@ except:
 
 # ==================================================================
 class FullStackRunner(object):
-    def __init__(self, app_port=8090, rec_port=0, agg_port=0, env_params=None):
+    def __init__(self, app_port=8090, rec_port=0, agg_port=0,
+                 local_only=False, env_params=None):
+
         if env_params:
             os.environ.update(env_params)
 
@@ -25,7 +27,7 @@ class FullStackRunner(object):
 
         def recorder():
             from webrecorder.rec.main import init as record_init
-            return record_init()
+            return record_init(local_only=local_only)
 
         def app():
             from webrecorder.appcontroller import AppController

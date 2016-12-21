@@ -90,6 +90,7 @@ setup(
     test_suite='',
     entry_points="""
         [console_scripts]
-        webrecorder = webrecorder.standalone.standalone:main
+        webrecorder = webrecorder.standalone.standalone:webrecorder
+        webrecorder-player = webrecorder.standalone.standalone:webrecorder_player
     """
 )
