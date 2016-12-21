@@ -8,7 +8,9 @@ def rename(old, new, t):
 
 
 # Build webassets bundle
-build()
+curr_path = os.path.dirname(__file__)
+assets_path = os.path.abspath(os.path.join(curr_path, '..', '..', 'config', 'assets.yaml'))
+build(assets_path)
 
 datas = []
 

@@ -29,9 +29,7 @@ class FixedBundle(Bundle):
 
 
 # ==================================================================
-def build():
-    curr_path = os.path.dirname(__file__)
-    assets_path = os.path.abspath(os.path.join(curr_path, '..', 'config', 'assets.yaml'))
+def build(assets_path):
     argv = ['-c', assets_path, 'build']
 
     PkgSupportParser().main(argv)
@@ -43,5 +41,9 @@ def patch_bundle():
 
 
 
+# ==================================================================
 if __name__ == "__main__":
-    build()
+    curr_path = os.path.dirname(__file__)
+    assets_path = os.path.abspath(os.path.join(curr_path, '..', 'config', 'assets.yaml'))
+
+    build(curr_path)
