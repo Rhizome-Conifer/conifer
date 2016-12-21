@@ -79,8 +79,7 @@ email_sender: $EMAIL_SENDER
 email_smtp_url: $EMAIL_SMTP_URL
 
 metadata:
-    org: webrecorder.io
-    product: webrecorder.io
+    product: Webrecorder
 
 # Default Descriptions
 

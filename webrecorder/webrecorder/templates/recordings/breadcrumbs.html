@@ -3,10 +3,10 @@
     <li>
         {% if not is_home %}
         <a target="_parent" class="branding" title="Return to {{ metadata.product | default('Webrecorder')}}" href="/">
-            Webrecorder
+            {{ metadata.product }}
         </a>
         {% else %}
-        <span>Webrecorder</span>
+        <span>{{ metadata.product }}</span>
         {% endif %}
     </li>
 
