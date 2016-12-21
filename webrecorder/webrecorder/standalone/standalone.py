@@ -96,23 +96,30 @@ class StandaloneRunner(FullStackRunner):
     def main(cls, args=None):
         parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
 
-        main = cls.run_parser(parser, args)
+        parser.add_argument('--no-browser', action='store_true',
+                            default=False,
+                            help="Don't launch browser automatically")
+
+        cls.add_args(parser)
+        r = parser.parse_args(args=args)
+        main = cls(r)
 
         main.app_serv.ge.join()
 
 
 # ============================================================================
 class WebrecorderRunner(StandaloneRunner):
-    def __init__(self, *args, **kwargs):
-        super(WebrecorderRunner, self).__init__(*args, **kwargs)
-        webbrowser.open_new('http://localhost:8090/')
+    def __init__(self, argres):
+        super(WebrecorderRunner, self).__init__(argres.warcs_dir, argres.db)
+        if argres.no_browser:
+            webbrowser.open_new('http://localhost:8090/')
 
     def _patch_redis(self, redis_db):
         from webrecorder.standalone.hiconn import patch_from_url
         patch_from_url(redis_db)
 
     @classmethod
-    def run_parser(cls, parser, args):
+    def add_args(cls, parser):
         parser.add_argument('-w', '--warcs-dir',
                             default='./data/warcs/',
                             help='WARC Output Root Dir')
@@ -121,15 +128,12 @@ class WebrecorderRunner(StandaloneRunner):
                             default='./data/wr.rld',
                             help='WR Database file')
 
-        r = parser.parse_args(args=args)
-        return cls(r.warcs_dir, r.db)
-
 
 # ============================================================================
 class WebrecPlayerRunner(StandaloneRunner):
     ARCHIVE_EXT = ('.warc', '.arc', '.warc.gz', '.arc.gz', '.warcgz', '.arcgz')
 
-    def __init__(self, inputs):
+    def __init__(self, argres):
         super(WebrecPlayerRunner, self).__init__(rec_port=-1)
 
         manager = init_manager_for_cli()
@@ -138,11 +142,12 @@ class WebrecPlayerRunner(StandaloneRunner):
 
         uploader = InplaceUploader(manager, indexer)
 
-        for filename in self.get_archive_files(inputs):
+        for filename in self.get_archive_files(argres.inputs):
             with open(filename, 'rb') as stream:
                 uploader.handle_upload(stream, filename, 'local', False)
 
-        webbrowser.open_new('http://localhost:8090/local/')
+        if not argres.no_browser:
+            webbrowser.open_new('http://localhost:8090/local/')
 
     def _patch_redis(self, redis_db):
         import redis
@@ -163,11 +168,8 @@ class WebrecPlayerRunner(StandaloneRunner):
                         yield filename_
 
     @classmethod
-    def run_parser(cls, parser, args):
+    def add_args(cls, parser):
         parser.add_argument('inputs', nargs='+')
-
-        r = parser.parse_args(args=args)
-        return cls(r.inputs)
 
 
 # ============================================================================
