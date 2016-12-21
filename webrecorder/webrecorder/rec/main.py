@@ -53,21 +53,29 @@ def storage_commit_loop(storage_committer, writer, sleep_secs):
 
 
 # =============================================================================
-def init():
+def init(local_only=False):
     config = load_wr_config()
 
-    temp_checker = TempChecker(config)
-    storage_committer = StorageCommitter(config)
+    temp_checker = None
+    storage_committer = None
 
-    storage_committer.add_storage_class('s3', S3Storage)
+    wr = WebRecRecorder(config)
 
-    wr = WebRecRecorder(config, storage_committer)
+    if not local_only:
+        temp_checker = TempChecker(config)
+        storage_committer = StorageCommitter(config)
 
-    sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
+        storage_committer.add_storage_class('s3', S3Storage)
 
-    gevent.spawn(temp_checker_loop, temp_checker, sleep_secs)
+        sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
 
-    gevent.spawn(storage_commit_loop, storage_committer, wr.writer, sleep_secs)
+        gevent.spawn(temp_checker_loop, temp_checker, sleep_secs)
+        gevent.spawn(wr.msg_listen_loop)
+
+    wr.init_app(storage_committer)
+
+    if not local_only:
+        gevent.spawn(storage_commit_loop, storage_committer, wr.writer, sleep_secs)
 
     wr.app.wr = wr
 
