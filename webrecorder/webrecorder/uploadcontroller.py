@@ -212,7 +212,8 @@ class UploadController(BaseController):
 
         pages = []
 
-        for member, score in self.manager.redis.zscan_iter(key):
+        #for member, score in self.manager.redis.zscan_iter(key):
+        for member in self.manager.redis.zrange(key, 0, -1):
             cdxj = CDXObject(member)
 
             if len(pages) < 500 and self.is_page(cdxj):
