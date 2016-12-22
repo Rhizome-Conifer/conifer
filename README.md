@@ -67,9 +67,9 @@ To require invites, simply set `REQUIRE_INVITES=true`
 The `admin.py` script provides easy low level management of users. Add, modify and remove users along with creating and managing invites.
 
 To interactively create a user:
-`docker exec -it webrecorder_app_1 python webrecorder.admin -c`
+`docker exec -it webrecorder_app_1 python -m webrecorder.admin -c`
 or programmatically add users by supplying the appropriate positional values:
-`... python webrecorder.admin -c <email> <username> <passwd> <role> '<full name>'`
+`... python -m webrecorder.admin -c <email> <username> <passwd> <role> '<full name>'`
 
 Other arguments:
 
@@ -79,7 +79,7 @@ Other arguments:
 * `-l` list invited users
 * `-b` send backlogged invites
 
-See `docker exec -it webrecorder_app_1 python webrecorder.admin --help` for full details.
+See `docker exec -it webrecorder_app_1 python -m webrecorder.admin --help` for full details.
 
 ### Updating Deployment
 
