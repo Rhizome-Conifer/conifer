@@ -40,10 +40,12 @@ def patch_bundle():
     AssetsExtension.BundleClass = FixedBundle
 
 
+def default_build():
+    curr_path = os.path.dirname(__file__)
+    assets_path = os.path.abspath(os.path.join(curr_path, '..', 'config', 'assets.yaml'))
+    build(assets_path)
+
 
 # ==================================================================
 if __name__ == "__main__":
-    curr_path = os.path.dirname(__file__)
-    assets_path = os.path.abspath(os.path.join(curr_path, '..', 'config', 'assets.yaml'))
-
-    build(curr_path)
+    default_build()

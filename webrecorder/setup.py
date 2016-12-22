@@ -3,6 +3,7 @@
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
+from setuptools.command.install import install
 import os
 
 from webrecorder import __version__
@@ -35,6 +36,13 @@ class PyTest(TestCommand):
         sys.exit(errcode)
 
 
+class Install(install):
+    def initialize_options(self):
+        from webrecorder.standalone.assetsutils import default_build
+        default_build()
+        super(Install, self).initialize_options()
+
+
 setup(
     name='webrecorder',
     version=__version__,
@@ -59,11 +67,14 @@ setup(
                         'templates/recordings/*',
                         'static/external/bootstrap/fonts/*'],
     },
+    setup_requires=[
+        'webassets',
+        'pywb>=0.50.0'
+    ],
     install_requires=[
         'youtube_dl',
         'itsdangerous',
         'bottle',
-        'uwsgi',
         'gevent==1.1.2',
         'boto',
         'requests>=2.9.1',
@@ -73,7 +84,8 @@ setup(
         'urllib3',
         'pywb>=0.50.0',
         'webassets==0.12.0',
-        'karellen-geventws'
+        'karellen-geventws',
+        'fakeredis'
     ],
     dependency_links=[
         'git+https://github.com/ikreymer/pywb.git@new-pywb#egg=pywb-0.50.0',
@@ -86,7 +98,8 @@ setup(
         'fakeredis',
         'mock',
        ],
-    cmdclass={'test': PyTest},
+    cmdclass={'test': PyTest,
+              'install': Install},
     test_suite='',
     entry_points="""
         [console_scripts]
