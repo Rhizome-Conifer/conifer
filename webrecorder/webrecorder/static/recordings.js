@@ -219,7 +219,7 @@ var EventHandlers = (function() {
 
         function createPatch(data) {
             $(".glyphicon-recording-status").removeClass("glyphicon-play-circle").addClass("glyphicon-import Blink");
-            $(".recorder-status").addClass("Blink").text("Record Missing");
+            $(".recorder-status").addClass("patching").text("Patching");
 
             wbinfo.outer_prefix += data.recording.id + "/patch/";
 
@@ -622,7 +622,7 @@ var RecordingSizeWidget = (function() {
         } else if (change == "load") {
             lastPopUrl = undefined;
         }
-        
+
         if (ts) {
             $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(ts));
             $(".replay-wrap").show();
