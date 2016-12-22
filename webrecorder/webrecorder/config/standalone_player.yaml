@@ -6,6 +6,7 @@ default_coll: ''
 
 metadata:
     product: Webrecorder Player
+    type: player
 
 
 

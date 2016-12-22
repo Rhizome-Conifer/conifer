@@ -17,11 +17,9 @@ import logging
 import base64
 
 import redis
-#import redislite.patch
-#import hirlite
+
 #from hiconn import patch_from_url
 
-import webbrowser
 import argparse
 import atexit
 
@@ -47,7 +45,8 @@ class StandaloneRunner(FullStackRunner):
             except OSError:
                 pass
 
-        self.init_env(warcs_dir)
+        self.warcs_dir = warcs_dir
+        self.init_env()
 
         patch_bundle()
 
@@ -62,13 +61,15 @@ class StandaloneRunner(FullStackRunner):
         atexit.register(self.close)
 
     def _patch_redis(self, redis_db):
-        pass
+        import redis
+        import fakeredis
+        redis.StrictRedis = fakeredis.FakeStrictRedis
 
     def admin_init(self):
         admin_main(['-c', 'test@localhost', 'local', 'LocalUser1', 'archivist', 'local'])
         os.environ['AUTO_LOGIN_USER'] = 'local'
 
-    def init_env(self, warcs_dir):
+    def init_env(self):
         fh = pkgutil.get_data('webrecorder', 'config/wr_sample.env')
         for line in fh.decode('utf-8').split('\n'):
             line = line.rstrip()
@@ -80,16 +81,15 @@ class StandaloneRunner(FullStackRunner):
                 os.environ[parts[0]] = os.path.expandvars(parts[1])
 
 
-        os.environ['RECORD_ROOT'] = warcs_dir
+        os.environ['RECORD_ROOT'] = self.warcs_dir
 
         os.environ['WR_CONFIG'] = 'pkg://webrecorder/config/wr.yaml'
-        os.environ['WR_USER_CONFIG'] = 'pkg://webrecorder/config/player_config.yaml'
 
         os.environ['REDIS_BASE_URL'] = 'redis://localhost/1'
         os.environ['REDIS_SESSION_URL'] = 'redis://localhost/0'
         os.environ['REDIS_BROWSER_URL'] = 'redis://localhost/0'
 
-        os.environ['SECRET_KEY'] = base64.b32encode(os.urandom(75)).decode('utf-8')
+        os.environ['NO_REMOTE_BROWSERS'] = 'true'
 
         if getattr(sys, 'frozen', False):
             os.environ['WR_TEMPLATE_PKG'] = 'wrtemp'
@@ -126,12 +126,17 @@ class WebrecorderRunner(StandaloneRunner):
                                                 redis_db=argres.db,
                                                 app_port=argres.port,
                                                 debug=argres.debug)
-        if argres.no_browser:
-            webbrowser.open_new('http://localhost:8090/')
+        if not argres.no_browser:
+            import webbrowser
+            webbrowser.open_new(os.environ['APP_HOST'] + '/')
 
-    def _patch_redis(self, redis_db):
-        from webrecorder.standalone.hiconn import patch_from_url
-        patch_from_url(redis_db)
+  #  def _patch_redis(self, redis_db):
+  #      from webrecorder.standalone.hiconn import patch_from_url
+  #      patch_from_url(redis_db)
+
+    def init_env(self):
+        super(WebrecorderRunner, self).init_env()
+        os.environ['WR_USER_CONFIG'] = 'pkg://webrecorder/config/standalone_recorder.yaml'
 
     @classmethod
     def add_args(cls, parser):
@@ -164,12 +169,13 @@ class WebrecPlayerRunner(StandaloneRunner):
                 uploader.handle_upload(stream, filename, 'local', False)
 
         if not argres.no_browser:
-            webbrowser.open_new('http://localhost:8090/local/')
+            import webbrowser
+            webbrowser.open_new(os.environ['APP_HOST'] + '/local/')
 
-    def _patch_redis(self, redis_db):
-        import redis
-        import fakeredis
-        redis.StrictRedis = fakeredis.FakeStrictRedis
+    def init_env(self):
+        super(WebrecPlayerRunner, self).init_env()
+        os.environ['WR_USER_CONFIG'] = 'pkg://webrecorder/config/standalone_player.yaml'
+        os.environ['SECRET_KEY'] = base64.b32encode(os.urandom(75)).decode('utf-8')
 
     def get_archive_files(self, inputs, prefix=''):
         for filename in inputs:

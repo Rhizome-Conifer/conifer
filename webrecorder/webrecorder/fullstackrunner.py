@@ -36,7 +36,7 @@ class FullStackRunner(object):
 
         self.agg_serv = self.init_server(agg_port, webagg, 'WEBAGG_HOST')
         self.rec_serv = self.init_server(rec_port, recorder, 'RECORD_HOST')
-        self.app_serv = self.init_server(app_port, app)
+        self.app_serv = self.init_server(app_port, app, 'APP_HOST')
 
     def close(self):
         self.stop_server(self.agg_serv)

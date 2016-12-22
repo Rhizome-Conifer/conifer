@@ -80,6 +80,7 @@ email_smtp_url: $EMAIL_SMTP_URL
 
 metadata:
     product: Webrecorder
+    type: default
 
 # Default Descriptions
 
