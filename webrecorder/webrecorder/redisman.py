@@ -24,7 +24,7 @@ from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.timeutils import timestamp_now
 
-from webrecorder import load_wr_config
+from webrecorder.utils import load_wr_config
 
 import requests
 

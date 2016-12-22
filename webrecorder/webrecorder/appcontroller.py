@@ -15,7 +15,7 @@ from pkg_resources import resource_filename
 from six.moves.urllib.parse import urlsplit, urljoin
 
 from pywb.urlrewrite.templateview import JinjaEnv
-from webrecorder import load_wr_config
+from webrecorder.utils import load_wr_config
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController

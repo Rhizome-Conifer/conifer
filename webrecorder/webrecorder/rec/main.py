@@ -4,7 +4,7 @@ from webrecorder.rec.webrecrecorder import WebRecRecorder
 from webrecorder.rec.tempchecker import TempChecker
 from webrecorder.rec.storagecommitter import StorageCommitter
 
-from webrecorder import load_wr_config
+from webrecorder.utils import load_wr_config
 
 import gevent
 import os

@@ -9,7 +9,7 @@ from pywb.webagg.aggregator import SimpleAggregator, BaseRedisMultiKeyIndexSourc
 from pywb.webagg.autoapp import init_index_source
 
 from pywb.webagg.utils import res_template
-from webrecorder import load_wr_config
+from webrecorder.utils import load_wr_config
 
 import os
 import json
