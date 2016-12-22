@@ -61,7 +61,7 @@ setup(
     ],
     package_data={
         'webrecorder': ['config/*',
-                        'static/*.*',
+                        'static/images/*',
                         'static/bundle/*',
                         'templates/*.*',
                         'templates/recordings/*',
