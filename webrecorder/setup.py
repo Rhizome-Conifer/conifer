@@ -72,9 +72,9 @@ setup(
         'pywb>=0.50.0'
     ],
     install_requires=[
+        'bottle==0.12.11',
         'youtube_dl',
         'itsdangerous',
-        'bottle',
         'gevent==1.1.2',
         'boto',
         'requests>=2.9.1',

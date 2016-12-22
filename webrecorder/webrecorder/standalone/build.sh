@@ -2,6 +2,8 @@
 
 CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+pip install pyinstaller
+
 pushd .
 cd $CURR_DIR
 

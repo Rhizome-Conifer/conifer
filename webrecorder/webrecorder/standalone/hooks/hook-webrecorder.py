@@ -1,4 +1,4 @@
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 import os
 
 from webrecorder.standalone.assetsutils import build
@@ -22,3 +22,4 @@ datas += rename('webrecorder/', 'wrtemp/', collect_data_files('webrecorder', sub
 datas += collect_data_files('webrecorder', subdir='static')
 datas += collect_data_files('webrecorder', subdir='config')
 
+datas += copy_metadata('bottle')
