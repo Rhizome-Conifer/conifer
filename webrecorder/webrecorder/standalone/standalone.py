@@ -100,6 +100,10 @@ class StandaloneRunner(FullStackRunner):
                             default=False,
                             help="Don't launch browser automatically")
 
+        parser.add_argument('-p', '--port', type=int,
+                            default=8090,
+                            help="Port to run the application")
+
         cls.add_args(parser)
         r = parser.parse_args(args=args)
         main = cls(r)
@@ -110,7 +114,9 @@ class StandaloneRunner(FullStackRunner):
 # ============================================================================
 class WebrecorderRunner(StandaloneRunner):
     def __init__(self, argres):
-        super(WebrecorderRunner, self).__init__(argres.warcs_dir, argres.db)
+        super(WebrecorderRunner, self).__init__(warcs_dir=argres.warcs_dir,
+                                                redis_db=argres.db,
+                                                app_port=argres.port)
         if argres.no_browser:
             webbrowser.open_new('http://localhost:8090/')
 
@@ -134,7 +140,8 @@ class WebrecPlayerRunner(StandaloneRunner):
     ARCHIVE_EXT = ('.warc', '.arc', '.warc.gz', '.arc.gz', '.warcgz', '.arcgz')
 
     def __init__(self, argres):
-        super(WebrecPlayerRunner, self).__init__(rec_port=-1)
+        super(WebrecPlayerRunner, self).__init__(app_port=argres.port,
+                                                 rec_port=-1)
 
         manager = init_manager_for_cli()
 
