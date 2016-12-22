@@ -4,6 +4,7 @@ from pywb.urlrewrite.templateview import PkgResResolver
 
 from webassets import Bundle
 from webassets.ext.jinja2 import AssetsExtension
+from webassets.bundle import wrap
 
 
 # ==================================================================
@@ -17,15 +18,13 @@ class PkgSupportParser(GenericArgparseImplementation):
 
 # ==================================================================
 class FixedBundle(Bundle):
-    def __init__(self, *a, **kw):
-        super(FixedBundle, self).__init__(*a, **kw)
-        self.output_file = a[0].output
-
     def urls(self, *a, **kw):
-        return ['/static/__shared/' + self.output_file]
+        ctx = wrap(self.env, self)
+        urls = []
+        for bundle, extra_filters, new_ctx in self.iterbuild(ctx):
+            urls.append(ctx.url + bundle.output)
 
-    def _set_filters(self, value):
-        self._filters = ()
+        return urls
 
 
 # ==================================================================
