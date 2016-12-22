@@ -104,12 +104,11 @@ class UploadController(BaseController):
                 if stream:
                     stream.close()
 
-
     def handle_upload(self, stream, filename, user, force_coll):
         stream.seek(0)
         total = 0
 
-        logger.debug('handle_upload() begin to: ' + filename + ' force_coll: ' + force_coll)
+        logger.debug('handle_upload() begin to: ' + filename + ' force_coll: ' + str(force_coll))
 
         try:
             infos = self.parse_uploaded(stream)
@@ -151,17 +150,21 @@ class UploadController(BaseController):
         for info in infos:
             type = info.get('type')
 
-            if type == 'collection' and not force_coll:
-                collection = info
-                collection['id'] = self.sanitize_title(collection['title'])
-                actual_collection = self.manager.create_collection(user,
-                                               collection['id'],
-                                               collection['title'],
-                                               collection.get('desc', ''),
-                                               collection.get('public', False))
+            if type == 'collection':
+                if not force_coll:
+                    collection = self._get_existing_coll(user, info)
 
-                collection['id'] = actual_collection['id']
-                collection['title'] = actual_collection['title']
+                if not collection:
+                    collection = info
+                    collection['id'] = self.sanitize_title(collection['title'])
+                    actual_collection = self.manager.create_collection(user,
+                                                   collection['id'],
+                                                   collection['title'],
+                                                   collection.get('desc', ''),
+                                                   collection.get('public', False))
+
+                    collection['id'] = actual_collection['id']
+                    collection['title'] = actual_collection['title']
 
             elif type == 'recording':
                 if not collection:
@@ -180,7 +183,8 @@ class UploadController(BaseController):
 
                 yield collection, recording
 
-                self.do_upload(stream,
+                self.do_upload(filename,
+                               stream,
                                user,
                                collection['id'],
                                recording['id'],
@@ -200,12 +204,16 @@ class UploadController(BaseController):
                 if pages:
                     self.manager.import_pages(user, collection['id'], recording['id'], pages)
 
+    def _get_existing_coll(self, user, info):
+        return None
+
     def detect_pages(self, user, coll, rec):
         key = self.cdxj_key.format(user=user, coll=coll, rec=rec)
 
         pages = []
 
-        for member, score in self.manager.redis.zscan_iter(key):
+        #for member, score in self.manager.redis.zscan_iter(key):
+        for member in self.manager.redis.zrange(key, 0, -1):
             cdxj = CDXObject(member)
 
             if len(pages) < 500 and self.is_page(cdxj):
@@ -238,7 +246,7 @@ class UploadController(BaseController):
 
         return False
 
-    def do_upload(self, stream, user, coll, rec, offset, length):
+    def do_upload(self, filename, stream, user, coll, rec, offset, length):
         stream.seek(offset)
 
         logger.debug('do_upload(): {0} offset: {1}: len: {2}'.format(rec, offset, length))

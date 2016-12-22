@@ -301,14 +301,8 @@ class ContentController(BaseController, RewriterApp):
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
-            # check for invalid status line
-            # TODO: move this upstream into rewriter?
-            status = resp.status_headers.statusline
-            if ' ' not in status:
-                status += ' None'
-
             resp = HTTPResponse(body=resp.body,
-                                status=status,
+                                status=resp.status_headers.statusline,
                                 headers=resp.status_headers.headers)
 
             return resp

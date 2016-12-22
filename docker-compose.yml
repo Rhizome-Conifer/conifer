@@ -16,7 +16,6 @@ services:
 
         volumes:
             - ./webrecorder/:/code/
-            - ./wr.yaml:/wr.yaml
 
         ports:
             - 8080:8080
@@ -143,7 +142,6 @@ services:
       
         volumes:
             - ./data:/data
-            - ./wr.yaml:/wr.yaml
 
 
 networks:

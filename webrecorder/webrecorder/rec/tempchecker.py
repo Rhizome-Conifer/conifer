@@ -21,8 +21,6 @@ class TempChecker(object):
         self.glob_pattern = os.path.join(self.record_root_dir, self.temp_prefix + '*')
         #self.temp_dir = os.path.join(self.record_root_dir, 'temp')
 
-        self.record_host = os.environ['RECORD_HOST']
-
         self.delete_url = config['url_templates']['delete']
 
         self.sesh_key_template = config['session.key_template']
@@ -39,10 +37,10 @@ class TempChecker(object):
 
             self.sesh_redis.delete('t:' + temp)
 
-        self.record_host = os.environ['RECORD_HOST']
+        record_host = os.environ['RECORD_HOST']
         print('Deleting ' + temp)
 
-        delete_url = self.delete_url.format(record_host=self.record_host,
+        delete_url = self.delete_url.format(record_host=record_host,
                                             user=temp,
                                             coll='temp',
                                             rec='*',

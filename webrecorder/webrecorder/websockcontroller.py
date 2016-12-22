@@ -1,14 +1,11 @@
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 import time
 import json
+
 import gevent
+import gevent.queue
 
 from webrecorder.basecontroller import BaseController
-
-try:
-    import uwsgi
-except:
-    pass
 
 
 # ============================================================================
@@ -90,7 +87,7 @@ class WebsockController(BaseController):
 
 
 # ============================================================================
-class WebSockHandler(object):
+class BaseWebSockHandler(object):
     def __init__(self, name, reqid, manager, send_to, recv_from,
                        user, coll, rec, type=None, browser=None, updater=None):
 
@@ -118,7 +115,7 @@ class WebSockHandler(object):
     def run(self):
         self._init_ws(request.environ)
 
-        websocket_fd = uwsgi.connection_fd()
+        websocket_fd = self._get_ws_fd()
 
         while True:
             self._multiplex(websocket_fd)
@@ -130,16 +127,6 @@ class WebSockHandler(object):
 
             gevent.sleep(0)
 
-    def _init_ws(self, env):
-        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'],
-                                  env.get('HTTP_ORIGIN', ''))
-
-    def _recv_ws(self):
-        return uwsgi.websocket_recv_nb()
-
-    def _send_ws(self, msg):
-        uwsgi.websocket_send(msg)
-
     def _multiplex(self, websocket_fd):
         fd_list = [websocket_fd]
 
@@ -150,7 +137,7 @@ class WebSockHandler(object):
 
         # send ping on timeout
         if not ready[0]:
-            uwsgi.websocket_recv_nb()
+            self._recv_ws()
 
         for fd in ready[0]:
             if fd == websocket_fd:
@@ -221,6 +208,54 @@ class WebSockHandler(object):
 
 
 # ============================================================================
+class UwsgiWebSockHandler(BaseWebSockHandler):
+    def _get_ws_fd(self):
+        return uwsgi.connection_fd()
+
+    def _init_ws(self, env):
+        uwsgi.websocket_handshake(env['HTTP_SEC_WEBSOCKET_KEY'],
+                                  env.get('HTTP_ORIGIN', ''))
+
+    def _recv_ws(self):
+        return uwsgi.websocket_recv_nb()
+
+    def _send_ws(self, msg):
+        uwsgi.websocket_send(msg)
+
+
+# ============================================================================
+class GeventWebSockHandler(BaseWebSockHandler):
+    def _get_ws_fd(self):
+        socket = self._ws.stream.handler.socket
+        return socket
+
+    def _init_ws(self, env):
+        self._ws = env['wsgi.websocket']
+
+        self.q = gevent.queue.Queue()
+        gevent.spawn(self._do_recv)
+
+    def _do_recv(self):
+        while True:
+            try:
+                result = self._ws.receive()
+            except Exception as e:
+                break
+
+            if result:
+                self.q.put(result.encode('utf-8'))
+
+    def _recv_ws(self):
+        try:
+            return self.q.get_nowait()
+        except:
+            return None
+
+    def _send_ws(self, msg):
+        self._ws.send(msg)
+
+
+# ============================================================================
 class StatusUpdater(object):
     def __init__(self, status_update_secs, callback):
         self.last_status = None
@@ -243,4 +278,14 @@ class StatusUpdater(object):
             self.last_status_time = curr_time
 
         return result
+
+
+# ============================================================================
+try:
+    import uwsgi
+    WebSockHandler = UwsgiWebSockHandler
+except:
+    WebSockHandler = GeventWebSockHandler
+
+
 

@@ -8,7 +8,8 @@ from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource, WAYBA
 from pywb.webagg.aggregator import SimpleAggregator, BaseRedisMultiKeyIndexSource, GeventMixin
 from pywb.webagg.autoapp import init_index_source
 
-from pywb.webagg.utils import load_config, res_template
+from pywb.webagg.utils import res_template
+from webrecorder.utils import load_wr_config
 
 import os
 import json
@@ -16,7 +17,7 @@ import json
 
 # =============================================================================
 def make_webagg():
-    config = load_config('WR_CONFIG', './wr.yaml', 'WR_USER_CONFIG', '')
+    config = load_wr_config()
 
     app = ResAggApp(debug=True)
 

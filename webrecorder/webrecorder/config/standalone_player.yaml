@@ -1,0 +1,13 @@
+full_warc_prefix: ''
+
+assets_path: pkg://webrecorder/config/assets.yaml
+
+default_coll: ''
+
+metadata:
+    product: Webrecorder Player
+    type: player
+
+
+
+

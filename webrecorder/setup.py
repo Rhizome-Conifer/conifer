@@ -3,7 +3,8 @@
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
-import glob
+from setuptools.command.install import install
+import os
 
 from webrecorder import __version__
 
@@ -35,20 +36,60 @@ class PyTest(TestCommand):
         sys.exit(errcode)
 
 
+class Install(install):
+    def initialize_options(self):
+        from webrecorder.standalone.assetsutils import default_build
+        default_build()
+        super(Install, self).initialize_options()
+
+
 setup(
     name='webrecorder',
     version=__version__,
     url='https://webrecorder.io',
-    author='Ilya Kreymer',
+    author='rhizome.org',
     author_email='support@webrecorder.io',
     description='Webrecorder Archiving Platform',
     long_description=long_description,
     packages=find_packages(),
-    zip_safe=True,
+    zip_safe=False,
+    include_package_data=True,
     provides=[
         'webrecorder',
         'webrecorder.rec',
         'webrecorder.load',
+    ],
+    package_data={
+        'webrecorder': ['config/*',
+                        'static/images/*',
+                        'static/bundle/*',
+                        'templates/*.*',
+                        'templates/recordings/*',
+                        'static/external/bootstrap/fonts/*'],
+    },
+    setup_requires=[
+        'webassets',
+        'pywb>=0.50.0'
+    ],
+    install_requires=[
+        'bottle==0.12.11',
+        'youtube_dl',
+        'itsdangerous',
+        'gevent==1.1.2',
+        'boto',
+        'requests>=2.9.1',
+        'bottle-cork==0.12.0',
+        'marshmallow',
+        'werkzeug',
+        'urllib3',
+        'pywb>=0.50.0',
+        'webassets==0.12.0',
+        'karellen-geventws',
+        'fakeredis'
+    ],
+    dependency_links=[
+        'git+https://github.com/ikreymer/pywb.git@new-pywb#egg=pywb-0.50.0',
+        'git+https://github.com/ikreymer/webassets.git@pyinstaller#egg=webassets-0.12.0',
     ],
     tests_require=[
         'pytest',
@@ -57,6 +98,12 @@ setup(
         'fakeredis',
         'mock',
        ],
-    cmdclass={'test': PyTest},
+    cmdclass={'test': PyTest,
+              'install': Install},
     test_suite='',
+    entry_points="""
+        [console_scripts]
+        webrecorder = webrecorder.standalone.standalone:webrecorder
+        webrecorder-player = webrecorder.standalone.standalone:webrecorder_player
+    """
 )

@@ -19,14 +19,10 @@ from datetime import datetime
 import os
 from six import iteritems
 
-import gevent
-
 
 # ============================================================================
 class WebRecRecorder(object):
-    def __init__(self, config=None, storage_committer=None):
-        self.storage_committer = storage_committer
-
+    def __init__(self, config=None):
         self.upstream_url = os.environ['WEBAGG_HOST']
 
         self.record_root_dir = os.environ['RECORD_ROOT']
@@ -58,8 +54,12 @@ class WebRecRecorder(object):
         self.redis_base_url = os.environ['REDIS_BASE_URL']
         self.redis = redis.StrictRedis.from_url(self.redis_base_url)
 
+    def init_app(self, storage_committer):
+        self.storage_committer = storage_committer
+
+        self.init_recorder()
+
         self.app = Bottle()
-        self.recorder = self.init_recorder()
 
         self.app.mount('/record', self.recorder)
 
@@ -68,10 +68,8 @@ class WebRecRecorder(object):
 
         debug(True)
 
-        gevent.spawn(self.msg_listen_loop)
-
-    def init_recorder(self):
-        self.dedup_index = WebRecRedisIndexer(
+    def init_indexer(self):
+        return WebRecRedisIndexer(
             name=self.name,
             redis=self.redis,
 
@@ -91,6 +89,12 @@ class WebRecRecorder(object):
             temp_usage=self.temp_usage_key,
         )
 
+    @staticmethod
+    def make_wr_indexer(config):
+        return WebRecRecorder(config).init_indexer()
+
+    def init_recorder(self):
+        self.dedup_index = self.init_indexer()
 
         header_filter = ExcludeSpecificHeaders(['Set-Cookie', 'Cookie'])
 
@@ -108,7 +112,7 @@ class WebRecRecorder(object):
                                    accept_colls='live',
                                    create_buff_func=self.create_buffer)
 
-        return recorder_app
+        self.recorder = recorder_app
 
     def create_buffer(self, params, name):
         info_key = res_template(self.info_keys['rec'], params)
