@@ -34,7 +34,6 @@ def main(args=None):
     parser.add_argument('-i', '--invite')
     parser.add_argument('-l', '--list', action='store_true')
     parser.add_argument('-b', '--backlog')
-    parser.add_argument('-a', '--invite-all', action='store_true', default=False)
 
     r = parser.parse_args(args=args)
     m = init_manager_for_cli()
