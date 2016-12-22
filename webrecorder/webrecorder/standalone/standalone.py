@@ -14,6 +14,7 @@ import os
 import sys
 import pkgutil
 import logging
+import base64
 
 import redis
 #import redislite.patch
@@ -27,9 +28,11 @@ import atexit
 
 # ============================================================================
 class StandaloneRunner(FullStackRunner):
-    def __init__(self, warcs_dir='', redis_db='', app_port=8090, rec_port=0, agg_port=0):
+    def __init__(self, warcs_dir='', redis_db='', debug=False,
+                 app_port=8090, rec_port=0, agg_port=0):
+
         logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
-                            level=logging.INFO)
+                            level=logging.DEBUG if debug else logging.INFO)
 
         if getattr(sys, 'frozen', False):
             self.app_dir = sys._MEIPASS
@@ -86,6 +89,8 @@ class StandaloneRunner(FullStackRunner):
         os.environ['REDIS_SESSION_URL'] = 'redis://localhost/0'
         os.environ['REDIS_BROWSER_URL'] = 'redis://localhost/0'
 
+        os.environ['SECRET_KEY'] = base64.b32encode(os.urandom(75)).decode('utf-8')
+
         if getattr(sys, 'frozen', False):
             os.environ['WR_TEMPLATE_PKG'] = 'wrtemp'
 
@@ -104,6 +109,9 @@ class StandaloneRunner(FullStackRunner):
                             default=8090,
                             help="Port to run the application")
 
+        parser.add_argument('--debug', action='store_true',
+                            help='Enable debug logging')
+
         cls.add_args(parser)
         r = parser.parse_args(args=args)
         main = cls(r)
@@ -116,7 +124,8 @@ class WebrecorderRunner(StandaloneRunner):
     def __init__(self, argres):
         super(WebrecorderRunner, self).__init__(warcs_dir=argres.warcs_dir,
                                                 redis_db=argres.db,
-                                                app_port=argres.port)
+                                                app_port=argres.port,
+                                                debug=argres.debug)
         if argres.no_browser:
             webbrowser.open_new('http://localhost:8090/')
 
@@ -141,7 +150,8 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     def __init__(self, argres):
         super(WebrecPlayerRunner, self).__init__(app_port=argres.port,
-                                                 rec_port=-1)
+                                                 rec_port=-1,
+                                                 debug=argres.debug)
 
         manager = init_manager_for_cli()
 
