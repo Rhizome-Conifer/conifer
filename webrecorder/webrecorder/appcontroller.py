@@ -259,7 +259,7 @@ class AppController(BaseController):
         def faq():
             return {}
 
-        @self.bottle_app.route('/static/__shared/<path:path>')
+        @self.bottle_app.route('/static/<path:path>')
         def static_files(path):
             return static_file(path, root=self.static_root)
 

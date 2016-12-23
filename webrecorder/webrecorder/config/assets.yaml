@@ -1,6 +1,5 @@
-url: /static/__shared/
+url: /static/
 
-#directory: ./webrecorder/static/
 directory: ../static/
 
 bundles:
