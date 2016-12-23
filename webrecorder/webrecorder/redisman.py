@@ -752,8 +752,8 @@ class RecManagerMixin(object):
 
         result['download_url'] = path
 
-        if result.get('pending_size') and result.get('size'):
-            result['size'] = int(result['size']) + int(result['pending_size'])
+        #if result.get('pending_size') and result.get('size'):
+        #    result['size'] = int(result['size']) + int(result['pending_size'])
         return result
 
     def has_recording(self, user, coll, rec):
