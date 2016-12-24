@@ -54,8 +54,7 @@ class StandaloneRunner(FullStackRunner):
 
         self.admin_init()
 
-        super(StandaloneRunner, self).__init__(local_only=True,
-                                               app_port=app_port,
+        super(StandaloneRunner, self).__init__(app_port=app_port,
                                                rec_port=rec_port,
                                                agg_port=agg_port)
         atexit.register(self.close)
