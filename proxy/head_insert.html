@@ -1,0 +1,56 @@
+<!-- WB Insert -->
+<script>
+  wbinfo = {}
+  wbinfo.url = "{{ cdx.url }}";
+  wbinfo.timestamp = "{{ cdx.timestamp }}";
+  wbinfo.request_ts = "{{ wbrequest.wb_url.timestamp }}";
+  wbinfo.prefix = "{{ wbrequest.wb_prefix }}";
+  wbinfo.mod = "{{ wbrequest.wb_url.mod }}";
+  wbinfo.top_url = "{{ top_url }}";
+  wbinfo.is_framed = {{ "true" if wbrequest.options.is_framed else "false" }};
+  wbinfo.is_live = {{ "true" if cdx.is_live else "false" }};
+  wbinfo.coll = "{{ wbrequest.coll }}";
+  wbinfo.proxy_magic = "{{ wbrequest.env.pywb_proxy_magic }}";
+  wbinfo.static_prefix = "{{ wbrequest.host_prefix }}/{{ static_path }}";
+</script>
+
+{% if rule.js_rewrite_location != 'urls' and include_wombat %}
+
+{% assets "proxy-js" %}
+<script type="text/javascript" src="{{ wbrequest.host_prefix }}{{ ASSET_URL }}"></script>
+{% endassets %}
+
+<script>
+{% set urlsplit = cdx.url | urlsplit %}
+  wbinfo.wombat_ts = "{{ cdx['timestamp'] if include_ts else ''}}";
+  wbinfo.wombat_scheme = "{{ urlsplit.scheme }}";
+  wbinfo.wombat_host = "{{ urlsplit.netloc }}";
+  wbinfo.wombat_sec = "{{ cdx.timestamp | format_ts('%s') }}";
+
+  wbinfo.wombat_opts = {{ wbrequest.rewrite_opts.client | tojson if wbrequest.rewrite_opts.client else '{}' }};
+
+
+  if (window && window._WBWombat && !window._wb_js_inited && !window._wb_wombat) {
+    window._wb_wombat = new _WBWombat(wbinfo);
+  }
+</script>
+{% endif %}
+
+
+<!-- Set canonical url -->
+<link rel="canonical" href="{{ cdx.url }}"/>
+
+<script>
+wbinfo.proxy_user = "{{ user }}";
+wbinfo.proxy_coll = "{{ coll }}";
+wbinfo.proxy_rec = "{{ rec }}";
+wbinfo.proxy_mode = "{{ type }}";
+wbinfo.proxy_ip = "{{ proxy_ip }}";
+wbinfo.curr_browser = "{{ browser }}";
+
+// for vi_ queries from vidrw
+wbinfo.coll = "$video";
+</script>
+
+<!-- End WB Insert -->
+
