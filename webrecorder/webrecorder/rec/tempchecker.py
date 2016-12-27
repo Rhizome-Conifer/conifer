@@ -3,6 +3,9 @@ import os
 import json
 import glob
 import requests
+import time
+
+from webrecorder.utils import load_wr_config
 
 
 # ============================================================================
@@ -95,3 +98,22 @@ class TempChecker(object):
                 self._delete_if_expired(temp_user)
 
 
+# =============================================================================
+def run():
+    config = load_wr_config()
+    temp_checker = TempChecker(config)
+
+    sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
+
+    print('Running temp delete check every {0}'.format(sleep_secs))
+    while True:
+        try:
+            temp_checker()
+            time.sleep(sleep_secs)
+        except:
+            import traceback
+            traceback.print_exc()
+
+
+if __name__ == "__main__":
+    run()

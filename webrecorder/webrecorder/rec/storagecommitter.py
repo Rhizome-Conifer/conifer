@@ -2,6 +2,9 @@ import os
 import redis
 import datetime
 import fcntl
+import time
+
+from webrecorder.utils import load_wr_config
 
 
 # ============================================================================
@@ -181,4 +184,33 @@ class StorageCommitter(object):
 
     def add_storage_class(self, type_, cls):
         self.storage_class_map[type_] = cls
+
+
+# =============================================================================
+def run():
+    sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
+    print('Running storage committer {0}'.format(sleep_secs))
+
+    from webrecorder.rec.s3 import S3Storage
+
+    config = load_wr_config()
+
+    storage_committer = StorageCommitter(config)
+    storage_committer.add_storage_class('s3', S3Storage)
+
+    while True:
+        try:
+            storage_committer()
+            time.sleep(sleep_secs)
+
+            storage_committer.redis.publish('close_idle', '')
+        except:
+            import traceback
+            traceback.print_exc()
+
+
+# =============================================================================
+if __name__ == "__main__":
+    run()
+
 
