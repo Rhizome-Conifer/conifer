@@ -6,28 +6,6 @@
 
 {{ super() }}
 
-{#
-<script src="/static/__shared/external/jquery-ui.min.js"></script>
-<script src="/static/__shared/external/bootstrap-switch.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
-<script src="/static/__shared/external/marked.min.js"></script>
-<script src="/static/__shared/external/bootstrap-markdown.js"></script>
-<script src="/static/__shared/external/jquery.dataTables.min.js"></script>
-<script src="/static/__shared/external/dataTables.bootstrap.js"></script>
-
-<script src="/static/__shared/editor.js"></script>
-<script src="/static/__shared/collection_info.js"></script>
-<script src="/static/__shared/edit_title_in_place.js"></script>
-
-<script src="/static/__shared/external/jquery.form.js"></script>
-<script src="/static/__shared/uploader.js"></script>
-
-<link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
-<link href="/static/__shared/external/bootstrap-markdown.min.css" rel="stylesheet">
-<link href="/static/__shared/external/dataTables.bootstrap.css" rel="stylesheet" />
-#}
-
 {% assets "coll-js" %}
 <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}

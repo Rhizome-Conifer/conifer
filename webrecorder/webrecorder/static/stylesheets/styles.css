@@ -412,7 +412,7 @@ h1 {
 .hide-loading-spinner,
 .edit-title-loading-spinner {
     display: inline-block;
-    background-image: url(/static/__shared/images/edit_title_spinner.gif);
+    background-image: url(/static/images/edit_title_spinner.gif);
     background-repeat: no-repeat;
     background-position-x: 3px;
     background-position-y: 3px;
@@ -483,12 +483,12 @@ div.filter-label {
     background: no-repeat 50% 50%;
     width: 20px;
     height: 20px;
-    background-image: url(/static/__shared/images/filter-icon.png);
+    background-image: url(/static/images/filter-icon.png);
     background-size: 16px 16px;
 }
 
     div.filter-label.active {
-        background-image: url(/static/__shared/images/filter-icon-selected.png);
+        background-image: url(/static/images/filter-icon-selected.png);
         background-color: #337ab7;
         color: white
     }

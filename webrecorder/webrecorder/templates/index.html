@@ -4,18 +4,6 @@
 
 {{ super() }}
 
-{#
-<script src="/static/__shared/external/jquery.form.js"></script>
-<script src="/static/__shared/uploader.js"></script>
-
-<script src="/static/__shared/newrecording.js"></script>
-
-<script src="/static/__shared/user.js"></script>
-
-<link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
-<script src="/static/__shared/external/bootstrap-switch.js"></script>
-#}
-
 {% assets "user-js" %}
 <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}
