@@ -68,7 +68,7 @@ services:
             - "8089:80"
 
     shepherd:
-        image: webrecorder/shepherd
+        image: oldwebtoday/shepherd
 
         command: uwsgi uwsgi.ini --mount /api/browsers=/shepherd/main.py
 
