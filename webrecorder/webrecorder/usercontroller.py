@@ -39,35 +39,30 @@ class UserController(BaseController):
 
             if request.method == 'PUT':
                 data = json.loads(request.forms.json)
-                new_config = {
-                    k.encode('utf-8'): v.encode('utf-8')
-                    for k, v in data['settings'].items()
-                }
-                config.update(new_config)
+                config.update(data['settings'])
                 # commit to redis
                 self.manager.redis.hmset('h:defaults', config)
 
-                incoming_tags = [t['name'].encode('utf-8') for t in data['tags']]
+                incoming_tags = [t for t in data['tags']]
                 existing_tags = [t for t, s in tags]
                 # add tags
                 for tag in incoming_tags:
                     if tag not in existing_tags:
-                        self.manager.redis.zadd(self.tags_key, 0, self.sanitize_tag(tag.decode('utf-8')))
+                        self.manager.redis.zadd(self.tags_key, 0, self.sanitize_tag(tag))
 
                 # remove tags
                 for tag in existing_tags:
                     if tag not in incoming_tags:
-                        self.manager.redis.zrem(self.tags_key, self.sanitize_tag(tag.decode('utf-8')))
+                        self.manager.redis.zrem(self.tags_key, self.sanitize_tag(tag))
 
                 tags = list(self.manager.redis.zscan_iter(self.tags_key))
 
             # descending order
             tags.reverse()
 
-            settings['defaults'] = {k.decode('utf-8'): v.decode('utf-8')
-                                    for k, v in config.items()}
-            settings['tags'] = [{'name': t.decode('utf-8'), 'usage': int(s)}
-                                for t, s in tags]
+            settings['defaults'] = config
+            settings['tags'] = [{'name': t,
+                                 'usage': int(s)} for t, s in tags]
             return settings
 
         @self.app.get(['/api/v1/dashboard', '/api/v1/dashboard/'])
@@ -79,7 +74,7 @@ class UserController(BaseController):
             cache = self.manager.redis.get(cache_key)
 
             if cache:
-                return json.loads(cache.decode('utf-8'))
+                return json.loads(cache)
 
             users = self.manager.get_users().items()
             results = []
@@ -91,8 +86,8 @@ class UserController(BaseController):
 
             temp = self.manager.redis.hgetall(self.temp_usage_key)
             user = self.manager.redis.hgetall(self.user_usage_key)
-            temp = [(k.decode('utf-8'), int(v)) for k, v in temp.items()]
-            user = [(k.decode('utf-8'), int(v)) for k, v in user.items()]
+            temp = [(k, int(v)) for k, v in temp.items()]
+            user = [(k, int(v)) for k, v in user.items()]
 
             data = {
                 'users': UserSchema().load(results, many=True).data,
@@ -183,12 +178,12 @@ class UserController(BaseController):
                     temp_users = pi.execute()
 
                 for idx, user in enumerate(temp_users_keys):
-                    temp_users[idx][b'username'] = user
+                    temp_users[idx]['username'] = user
 
-                # convert bytestrings, skip over incomplete
-                temp_users = [{k.decode('utf-8'): v.decode('utf-8') for k, v in d.items()}
+                # skip over incomplete
+                temp_users = [{k: v for k, v in d.items()}
                               for d in temp_users
-                              if b'max_size' in d and b'created_at' in d]
+                              if 'max_size' in d and 'created_at' in d]
 
                 for user in temp_users:
                     total = int(user['max_size'])

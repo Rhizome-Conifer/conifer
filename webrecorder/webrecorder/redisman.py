@@ -555,7 +555,7 @@ class AccessManagerMixin(object):
     def is_public(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)
         res = self.redis.hget(key, self.READ_PREFIX + self.PUBLIC)
-        return res == b'1'
+        return res == '1'
 
     def set_public(self, user, coll, is_public):
         if not self.is_superuser() and not self.can_admin_coll(user, coll):
@@ -676,8 +676,6 @@ class PageManagerMixin(object):
         self.tags_key = config['tags_key']
 
     def tag_page(self, tags, user, coll, rec, pg_id):
-        pg_id = pg_id.encode('utf-8')
-
         for tag in tags:
             k = self.user_tag_templ.format(user=user, coll=coll, rec=rec,
                                            tag=tag)
@@ -695,7 +693,7 @@ class PageManagerMixin(object):
     def get_pages_for_tag(self, tag):
         tagged_pages = []
         for k in self.redis.keys('*:tag:{}'.format(tag)):
-            parts = k.decode('utf-8').split(':')
+            parts = k.split(':')
             user = parts[1]
             coll = parts[2]
             rec = parts[3]
@@ -703,7 +701,7 @@ class PageManagerMixin(object):
             # display if owner or if collection is public
             if self.is_owner(user) or self.is_public(user, coll):
                 for i in self.redis.smembers(k):
-                    data = i.decode('utf-8').split(' ')
+                    data = i.split(' ')
                     tagged_pages.append({
                         'user': user,
                         'collection': coll,
@@ -860,7 +858,7 @@ class RecManagerMixin(object):
             if not pagedata['timestamp']:
                 pagedata['timestamp'] = timestamp_now()
 
-        pagedata_json = json.dumps(pagedata).encode('utf-8')
+        pagedata_json = json.dumps(pagedata)
 
         self.redis.hset(key,
                         pagedata['url'] + ' ' + pagedata['timestamp'],
@@ -884,7 +882,7 @@ class RecManagerMixin(object):
                 if not pagedata['timestamp']:
                     pagedata['timestamp'] = timestamp_now()
 
-            pagedata_json = json.dumps(pagedata).encode('utf-8')
+            pagedata_json = json.dumps(pagedata)
 
             pagemap[pagedata['url'] + ' ' + pagedata['timestamp']] = pagedata_json
 
@@ -900,10 +898,10 @@ class RecManagerMixin(object):
         page_key = new_pagedata['url'] + ' ' + new_pagedata['timestamp']
 
         pagedata = self.redis.hget(key, page_key)
-        pagedata = json.loads(pagedata.decode('utf-8'))
+        pagedata = json.loads(pagedata)
         pagedata.update(new_pagedata)
 
-        pagedata_json = json.dumps(pagedata).encode('utf-8')
+        pagedata_json = json.dumps(pagedata)
 
         self.redis.hset(key,
                         pagedata['url'] + ' ' + pagedata['timestamp'],
@@ -929,7 +927,7 @@ class RecManagerMixin(object):
 
         pagelist = self.redis.hvals(key)
 
-        pagelist = [json.loads(x.decode('utf-8')) for x in pagelist]
+        pagelist = [json.loads(x) for x in pagelist]
 
         if not self.can_admin_coll(user, coll):
             pagelist = [page for page in pagelist if page.get('hidden') != '1']
@@ -965,8 +963,7 @@ class RecManagerMixin(object):
         return total
 
     def get_available_tags(self):
-        tags = [t.decode('utf-8')
-                for t, s in list(self.redis.zscan_iter(self.tags_key))]
+        tags = [t for t, s in list(self.redis.zscan_iter(self.tags_key))]
         # descending order
         tags.reverse()
         return tags
@@ -987,12 +984,12 @@ class RecManagerMixin(object):
             all_pages = pi.execute()
 
         for key, rec_pagelist in zip(all_page_keys, all_pages):
-            rec = key.rsplit(b':', 2)[-2]
+            rec = key.rsplit(':', 2)[-2]
             for page in rec_pagelist:
-                page = json.loads(page.decode('utf-8'))
+                page = json.loads(page)
                 page['user'] = user
                 page['collection'] = coll
-                page['recording'] = rec.decode('utf-8')
+                page['recording'] = rec
                 pagelist.append(page)
 
         if not self.can_admin_coll(user, coll):
@@ -1020,7 +1017,7 @@ class RecManagerMixin(object):
         if not result:
             return None
 
-        last_cdx = CDXObject(result[-1])
+        last_cdx = CDXObject(result[-1].encode('utf-8'))
 
         return last_cdx['timestamp']
 
@@ -1136,7 +1133,7 @@ class CollManagerMixin(object):
         keys = list(self.redis.scan_iter(match=key_pattern))
 
         if not self.is_owner(user):
-            keys = [key for key in keys if self.is_public(user, key.decode('utf-8'))]
+            keys = [key for key in keys if self.is_public(user, key)]
 
         return len(keys)
 
@@ -1191,13 +1188,12 @@ class CollManagerMixin(object):
         # return pages grouped by tag
         tagged_pages = {}
         for k in keys:
-            tag = k.decode('utf-8').split(':')[5]
+            tag = k.split(':')[5]
             if tag in tagged_pages:
-                tagged_pages[tag].extend([i.decode('utf-8')
-                                          for i in self.redis.smembers(k)])
+                tagged_pages[tag].extend(self.redis.smembers(k))
             else:
                 tagged_pages.update({
-                    tag: [i.decode('utf-8') for i in self.redis.smembers(k)]
+                    tag: self.redis.smembers(k)
                 })
 
         return tagged_pages
@@ -1238,7 +1234,7 @@ class Base(object):
             rec = quote(rec)
             info['rec_title'], info['size'] = self.redis.hmget(rec_key, ['title', 'size'])
             if info.get('rec_title'):
-                info['rec_title'] = quote(info['rec_title'].decode('utf-8'), safe='/ ')
+                info['rec_title'] = quote(info['rec_title'], safe='/ ')
             else:
                 info['rec_title'] = rec
             info['rec_id'] = rec
@@ -1251,7 +1247,7 @@ class Base(object):
         info['coll_title'] = self.redis.hget(coll_key, 'title')
 
         if info.get('coll_title'):
-            info['coll_title'] = quote(info['coll_title'].decode('utf-8'), safe='/ ')
+            info['coll_title'] = quote(info['coll_title'], safe='/ ')
         else:
             info['coll_title'] = coll
 
@@ -1273,7 +1269,6 @@ class Base(object):
         if not result:
             return {}
 
-        result = self._conv_dict(result)
         result = self._to_int(result)
         return result
 
@@ -1282,13 +1277,6 @@ class Base(object):
             if x in result:
                 result[x] = int(result[x])
         return result
-
-    def _conv_dict(self, result):
-        if six.PY2 or not result:
-            return result
-
-        return dict(((n.decode('utf-8'), v.decode('utf-8')
-                    if isinstance(v, bytes) else v) for n, v in result.items()))
 
     def get_host(self):
         return request.urlparts.scheme + '://' + request.urlparts.netloc
@@ -1347,7 +1335,7 @@ def init_manager_for_cli():
     # Init Redis
     redis_url = os.environ['REDIS_BASE_URL']
 
-    r = redis.StrictRedis.from_url(redis_url)
+    r = redis.StrictRedis.from_url(redis_url, decode_responses=True)
 
     # Init Cork
     cork = WebRecCork.create_cork(r, config)

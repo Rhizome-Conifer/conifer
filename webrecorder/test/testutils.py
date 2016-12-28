@@ -42,7 +42,7 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.set_nx_env('EMAIL_SENDER', 'test@localhost')
         cls.set_nx_env('EMAIL_SMTP_URL', 'smtp://webrectest@mail.localhost:test@localhost:25')
 
-        cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'])
+        cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'], decode_responses=True)
 
         cls.custom_init(kwargs)
 

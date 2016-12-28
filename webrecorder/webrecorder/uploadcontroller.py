@@ -214,7 +214,7 @@ class UploadController(BaseController):
 
         #for member, score in self.manager.redis.zscan_iter(key):
         for member in self.manager.redis.zrange(key, 0, -1):
-            cdxj = CDXObject(member)
+            cdxj = CDXObject(member.encode('utf-8'))
 
             if len(pages) < 500 and self.is_page(cdxj):
                 pages.append(dict(url=cdxj['url'],

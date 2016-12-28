@@ -150,5 +150,6 @@ class DownloadController(BaseController):
         allwarcs = self.manager.redis.hgetall(warc_key)
 
         for n, v in iteritems(allwarcs):
-            #n = n.decode('utf-8')
-            yield v.decode('utf-8')
+            yield v
+
+
