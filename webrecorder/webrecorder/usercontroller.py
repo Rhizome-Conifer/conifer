@@ -135,9 +135,9 @@ class UserController(BaseController):
             if sorting is not None and sort_key not in filters:
                 raise HTTPError(400, 'Bad Request')
 
-            sort_by = filters[sort_key] if sorting is not None else {}
+            sort_by = filters[sort_key] if sorting is not None else None
             users = sorted(self.manager.get_users().items(),
-                           **sort_by,
+                           key=sort_by,
                            reverse=reverse)
 
             results = []
