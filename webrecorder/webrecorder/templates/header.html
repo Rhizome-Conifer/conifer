@@ -1,7 +1,7 @@
 <header>
     <div class="navbar navbar-default navbar-static-top">
         <nav class="container-fluid header-webrecorder">
-            {% include 'recordings/breadcrumbs.html' %}
+            {% include 'breadcrumbs.html' %}
 
             <!-- Countdown Timer -->
             <li class="navbar-left wr-timer" style="display: none">Temporary collection will expire after: <b data-anon-timer="{{ anon_ttl }}"></b>
@@ -12,7 +12,7 @@
             </div>
         </nav>
 
-        {% include 'recordings/recorder.html' %}
+        {% include 'recorder.html' %}
 
     </div>
 </header>
