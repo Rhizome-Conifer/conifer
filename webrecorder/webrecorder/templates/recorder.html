@@ -1,93 +1,93 @@
+{% from '/utils.html' import sharing_widget %}
+
+{% set is_record = (curr_mode == 'record') %}
+{% set is_replay = (curr_mode == 'replay' or curr_mode == 'replay-coll') %}
+{% set is_patch = curr_mode == 'patch' %}
+{% set is_new = curr_mode == 'new' %}
+
 {% if curr_mode and curr_mode != 'live' %}
-<div class="col-md-11">
-    <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url">
-        <div class="banner-status">
-            {% if curr_mode != "new" %}
-            <div class="pull-right">
-                <a href="#" data-toggle="modal" style="margin-right: 25px" data-target="#report-modal" class="left-buffer doesnt-look-right">Doesn't look right?</a>
+
+    {% if can_admin() and not is_new %}
+        {% include '/mode_dropdown.html' %}
+    {% endif %}
+
+    <div class="{% if is_new %}col-xs-10{% elif is_record or is_patch %}col-xs-7 col-md-7 col-lg-8{% else %}col-xs-8 col-md-7 col-lg-8{% endif %} {% if not can_admin() %}col-sm-offset-2{% endif %}">
+        <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url">
+            <div class="input-group containerized">
+                <div class='input-group-btn'>
+                    {% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}
+                        <button type="button" class="btn btn-default btn-prev hidden-xs" title="Previous bookmark"><span class='glyphicon glyphicon-chevron-left'></span></button>
+                        <input type="text" id='page-display' class='form-control hidden-sm hidden-xs' title="Bookmark index" value="-" readonly/>
+                    {% endif %}
+
+                    {% if can_admin() %}
+                        {% include '/containerized_browser_select.html' %}
+                    {% endif %}
+                </div>
+
+                {% if is_replay %}
+                    <div class="linklist" title="Bookmark list">
+                        <input type="text" class="form-control dropdown-toggle" name="url" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-value-encoded="{{ url }}" data-target-decoded="value" value="" readonly/>
+                        <ul class="dropdown-menu">
+                            {% for rec in get_recs_for_coll() %}
+                                <li title="{{ rec.url }}">
+                                    {% if not can_admin() and rec.br %}
+                                        <img src="/api/browsers/browsers/{{ rec.br }}/icon">
+                                    {% endif %}
+                                    <div class="url" href="/{{ user }}/{{ coll }}/{{ rec.ts }}{% if rec.br %}$br:{{ rec.br }}{% endif %}/{{ rec.url }}">
+                                        {{ rec.url|trunc_url }}
+                                    </div>
+                                    <span class="replay-date hidden-xs" data-date="{{ rec.ts }}"/>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <span class="replay-date hidden-xs hidden-sm hidden-md main-replay-date"></span>
+                    </div>
+                {% else %}
+                    <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" {% if not browser %}autofocus{% endif %} required>
+                {% endif %}
+
+                {% if is_replay %}
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default btn-next hidden-xs" title="Next bookmark"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                    </div>
+                {% endif %}
             </div>
-            {% endif %}
+        </form>
 
-            {% if curr_mode == "record" %}
-            <span class="glyphicon glyphicon-lg glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true"></span>
-            <span class="recorder-status Blink">Recording</span>
-            {% elif curr_mode == "replay" or curr_mode == "replay-coll" %}
-            <span class="glyphicon glyphicon-lg glyphicon-play-circle glyphicon-recording-status" aria-hidden="true"></span>
-            <span class="recorder-status">Replaying</span>
-            {% elif curr_mode == "patch" %}
-            <span class="glyphicon glyphicon-lg glyphicon-import glyphicon-recording-status patching" aria-hidden="true"></span>
-            <span class="recorder-status patching">Patching</span>
-            {% elif curr_mode == "new" %}
-            <span class="glyphicon glyphicon-lg glyphicon-modal-window glyphicon-recording-status top-buffer-sm" aria-hidden="true"></span>
-            <span class="recorder-status">Create New Recording</span>
-            {% endif %}
+    </div>
 
-            {% if curr_mode == 'new' %}
-            <label for="rec-title" class="sr-only">Recording title</label>
-            <input name="rec-title" type="text" class="left-buffer form-control input-sm title-inline" placeholder="Recording title" value="{{ rec_title }}" required>
-            {% else %}
-            <span class="size-counter size-counter-active">
-                <span class="left-buffer badge current-size" data-size="{{ info.size }}"></span>
-            </span>
-            <span class="left-buffer bookmark-count">0 bookmarks</span>
-            <button id="autoscroll" type="button"
-                    class="left-buffer btn btn-default btn-xs" data-toggle="button"
-                    aria-pressed="false" autocomplete="off">Autoscroll</button>
+    <div class="recording-actions text-center {% if is_new %}col-xs-2{% else %}col-lg-2 col-md-3 col-sm-3 col-xs-3{% endif %}">
+        {% if can_admin() %}
+            <form class="{{ 'content-action' if curr_mode != 'new' else 'start-recording' }}">
+                <button type="submit" class="btn btn-default">
+                    {{ 'Finish' if curr_mode != 'new' else 'Start' }}
+                </button>
+            </form>
+        {% endif %}
 
-            {% if can_write() %}
-            <button id="snapshot" type="button"
-                    class="left-buffer btn btn-default btn-xs"
-                    autocomplete="off">
-                <span class="glyphicon glyphicon-camera glyphicon-button"></span>Snapshot</button>
-
-            {% if (curr_mode == "replay" or curr_mode == "replay-coll") %}
-            <button type="button" class="left-buffer btn btn-default btn-xs patch-page">
-                Patch
+        {% if can_admin() and not is_new %}
+            <button id="tool-bin" class="btn btn-default" title="Additional tools">
+                <span class="glyphicon glyphicon-option-vertical" aria-hidden="true"></span>
             </button>
-            {% endif %}
-            {% endif %}
+        {% endif %}
 
-            {% endif %}
+        {% if not is_new %}
+            <button class="btn btn-default" title="Doesn't look right?" data-toggle="modal" data-target="#report-modal">
+                <svg height="1792" viewBox="0 0 1792 1792" width="1792" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1696 960q0 26-19 45t-45 19h-224q0 171-67 290l208 209q19 19 19 45t-19 45q-18 19-45 19t-45-19l-198-197q-5 5-15 13t-42 28.5-65 36.5-82 29-97 13v-896h-128v896q-51 0-101.5-13.5t-87-33-66-39-43.5-32.5l-15-14-183 207q-20 21-48 21-24 0-43-16-19-18-20.5-44.5t15.5-46.5l202-227q-58-114-58-274h-224q-26 0-45-19t-19-45 19-45 45-19h224v-294l-173-173q-19-19-19-45t19-45 45-19 45 19l173 173h844l173-173q19-19 45-19t45 19 19 45-19 45l-173 173v294h224q26 0 45 19t19 45zm-480-576h-640q0-133 93.5-226.5t226.5-93.5 226.5 93.5 93.5 226.5z"/>
+                </svg>
+            </button>
+        {% endif %}
 
+        {% if not is_new %}
+            {{ sharing_widget(get_share_url(), get_embed_url(), coll_title, can_admin(), is_public(user, coll), anon=(not can_write())) }}
+        {% endif %}
+    </div>
 
-            {% if browser %}
-            <button type="button" data-toggle="modal" data-target="#clipboard-modal" class="left-buffer btn btn-xs btn-default">
-            <span class="glyphicon glyphicon-copy glyphicon-button"></span>Clipboard</button>
-
-            <span id="browser-countdown-label">Browser Time Left: <span id="browser-countdown"></span></span>
-            {% endif %}
-
-            {#
-            <!-- Disabled for now -->
-            <button id="load-all" type="button"
-                    class="left-buffer btn btn-default btn-xs">
-                <span class="glyphicon glyphicon-th glyphicon-button"></span>Load All</button>
-            #}
-
-        </div>
-
-        <div class="input-group containerized">
-            {% include '/containerized_browser_select.html' %}
-            <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" {% if not browser %}autofocus{% endif %} required>
-            <input class="hidden" type="submit">
-            <span id="replay-date" class="replay-date"></span>
-            <div class="input-group-addon"></div>
-        </div>
-    </form>
-
-</div>
-
-<div class="recording-actions text-center col-md-1">
-    <form class="{{ 'content-action' if curr_mode != 'new' else 'start-recording' }} top-buffer">
-        <button type="submit" class="btn btn-default">
-            {{ 'Finish' if curr_mode != 'new' else 'Start' }}
-        </button>
-    </form>
-</div>
-
-{% if can_write() %}
-{% include 'snapshot_modal.html' %}
-{% endif %}
+    {% if can_write() %}
+    {% include 'snapshot_modal.html' %}
+    {% endif %}
 
 {% endif %}
 

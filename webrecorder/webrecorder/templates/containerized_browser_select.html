@@ -1,52 +1,51 @@
 {% set active_browser = browser_data %}
 
-<div class="input-group-btn">
-    <button id='cnt-button' type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        {% if active_browser %}
-            <span class='btn-content'><img src="/api/browsers/browsers/{{ active_browser.id }}/icon"> {{ active_browser.name }} v{{ active_browser.version }}</span>
-        {% else %}
-            <span class='btn-content'>(native) Current</span>
-        {% endif %}
-        <span class="caret"></span>
-    </button>
-    <div class='dropdown-menu'>
-        <div class='container'>
-            <ul class='row'>
-                <li class='col-xs-2'><h6 class='dropdown-header'>browser</h6></li>
-                <li class='col-xs-2'><h6 class='dropdown-header'>version</h6></li>
-                <li class='col-xs-2'><h6 class='dropdown-header'>release</h6></li>
-                <li class='col-xs-2'><h6 class='dropdown-header'>OS</h6></li>
-                <li class='col-xs-4'><h6 class='dropdown-header'>capabilities</h6></li>
+<button id='cnt-button' type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Remote browser options">
+    {% if active_browser %}
+        <span class='btn-content'><img src="/api/browsers/browsers/{{ active_browser.id }}/icon"> {{ active_browser.name }} v{{ active_browser.version }}</span>
+    {% else %}
+        <span class='btn-content'>(native) <span class="hidden-sm hidden-xs">Current</span></span>
+    {% endif %}
+    <span class="caret"></span>
+</button>
+<div class='dropdown-menu'>
+    <div class='container'>
+        <ul class='row'>
+            <li class='col-xs-2'><h6 class='dropdown-header'>browser</h6></li>
+            <li class='col-xs-2'><h6 class='dropdown-header'>version</h6></li>
+            <li class='col-xs-2'><h6 class='dropdown-header'>release</h6></li>
+            <li class='col-xs-2'><h6 class='dropdown-header'>OS</h6></li>
+            <li class='col-xs-4'><h6 class='dropdown-header'>capabilities</h6></li>
+        </ul>
+        {% for id, browser in get_browsers() | dictsort %}
+            {% if not browser.hidden or is_beta() %}
+            <ul class='row cnt-browser{% if active_browser and browser.id == active_browser.id %} active{% endif %}{% if browser.disabled %} disabled{% endif %}' data-browser-id='{{ browser.id }}' data-browser-name='{{ browser.name }}' data-browser-vrs='{{ browser.version }}'>
+                <li class='col-xs-2'>
+                    <img src='/api/browsers/browsers/{{ browser.id }}/icon'>
+                    <span>{{ browser.name }}</span>
+                </li>
+                <li class='col-xs-2'>
+                    v{{ browser.version }}
+                </li>
+                <li class='col-xs-2'>
+                    {{ browser.release }}
+                </li>
+                <li class='col-xs-2'>
+                    {{ browser.os }}
+                </li>
+                <li class='col-xs-4'>
+                    <span>{{ browser.caps if browser.caps else '-' }}</span>
+                </li>
             </ul>
-            {% for id, browser in get_browsers() | dictsort %}
-                {% if not browser.hidden or is_beta() %}
-                <ul class='row cnt-browser{% if active_browser and browser.id == active_browser.id %} active{% endif %}{% if browser.disabled %} disabled{% endif %}' data-browser-id='{{ browser.id }}' data-browser-name='{{ browser.name }}' data-browser-vrs='{{ browser.version }}'>
-                    <li class='col-xs-2'>
-                        <img src='/api/browsers/browsers/{{ browser.id }}/icon'>
-                        <span>{{ browser.name }}</span>
-                    </li>
-                    <li class='col-xs-2'>
-                        v{{ browser.version }}
-                    </li>
-                    <li class='col-xs-2'>
-                        {{ browser.release }}
-                    </li>
-                    <li class='col-xs-2'>
-                        {{ browser.os }}
-                    </li>
-                    <li class='col-xs-4'>
-                        <span>{{ browser.caps if browser.caps else '-' }}</span>
-                    </li>
-                </ul>
-                {% endif %}
-            {% endfor %}
-            <ul class='row cnt-browser{% if not active_browser %} active{% endif %}' data-native='true'>
-                <li class='col-xs-2'>(native) Current</li>
-                <li class='col-xs-2'>-</li>
-                <li class='col-xs-2'>-</li>
-                <li class='col-xs-2'>-</li>
-                <li class='col-xs-4'>-</li>
-            </ul>
-        </div>
+            {% endif %}
+        {% endfor %}
+        <ul class='row cnt-browser{% if not active_browser %} active{% endif %}' data-native='true'>
+            <li class='col-xs-2'>(native) Current</li>
+            <li class='col-xs-2'>-</li>
+            <li class='col-xs-2'>-</li>
+            <li class='col-xs-2'>-</li>
+            <li class='col-xs-4'>-</li>
+        </ul>
     </div>
 </div>
+

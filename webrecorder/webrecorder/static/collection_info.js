@@ -321,12 +321,21 @@ var BookmarksTable = (function() {
 
     var start = function() {
         if ($(".table-bookmarks").length) {
+            var defaultOrder;
+            if(getStorage('__wr_defaultOrder')) {
+                defaultOrder = JSON.parse(getStorage('__wr_defaultOrder'));
+            } else if(hasVisibilityAndTaggingColumn()) {
+                defaultOrder = [[5, 'asc']];
+            } else if(hasVisibilityColumn()) {
+                defaultOrder = [[4, 'asc']];
+            } else {
+                defaultOrder = [[2, 'asc']];
+            }
+
             theTable = $(".table-bookmarks").DataTable({
                 paging: false,
                 columnDefs: getColumnDefs(),
-                order: [[2, 'desc']],
-                //lengthMenu: [[-1], ["All"]],
-                //lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+                order: defaultOrder,
                 language: {
                     search: "Filter:",
                     emptyTable: "No bookmarks available in the table",
@@ -339,6 +348,11 @@ var BookmarksTable = (function() {
                 },
                 dom: '<"table-bookmarks-top">tr<"table-bookmarks-bottom"pl><"clear">'
             });
+
+            // make ordering changes sticky
+            theTable.on('order', function (evt) {
+                setStorage('__wr_defaultOrder', JSON.stringify(theTable.order()));
+            })
         }
     }
 

@@ -1,0 +1,108 @@
+
+<div class="mode-selector {% if is_record or is_patch %}col-xs-2 col-sm-2{% else %}col-xs-1 col-sm-1{% endif %} col-md-2">
+    <div class="wr-mode-selector">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            {% if is_replay %}
+                <span class="glyphicon glyphicon-play-circle" aria-hidden="true"></span>
+                <span class="btn-content hidden-sm hidden-xs">Replaying</span>
+            {% elif is_record %}
+                <span class="glyphicon glyphicon-dot-sm glyphicon-recording-status{% if is_record %} Blink{% endif %}" aria-hidden="true"></span>
+                <span class="btn-content hidden-sm hidden-xs">Recording</span>
+            {% elif is_patch %}
+                <svg class="Blink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg2" viewBox="0 0 48 48.000001" height="48" width="48">
+                  <g transform="translate(0,-1004.3622)" id="layer1">
+                    <path id="rect4140" d="m 38.024745,1008.4458 c -2.285133,-2.2851 -6.017461,-2.233 -8.367891,0.1174 l -25.4558439,25.4559 c -2.35043,2.3504 -2.402524,6.0827 -0.117391,8.3678 l 5.8916363,5.8917 c 2.2851326,2.2851 6.0174606,2.233 8.3678906,-0.1174 l 25.455844,-25.4559 c 2.35043,-2.3504 2.402524,-6.0827 0.117391,-8.3678 l -5.891636,-5.8917 z m -0.825879,2.0026 4.714966,4.7149 c 1.828107,1.8281 1.564845,5.0339 -0.589716,7.1885 l -23.334524,23.3345 c -2.15456,2.1546 -5.360351,2.4178 -7.188458,0.5897 l -4.7149659,-4.7149 c -1.8281072,-1.8281 -1.564845,-5.0339 0.5897158,-7.1885 l 23.3345241,-23.3345 c 2.15456,-2.1546 5.360351,-2.4178 7.188458,-0.5897 z" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                    <path id="path4169" transform="translate(0,1004.3622)" d="M 14.134766 2.4042969 C 12.622238 2.3831094 11.117176 2.9414344 9.9746094 4.0839844 L 4.0839844 9.9746094 C 1.7988514 12.259709 1.8507423 15.99335 4.2011719 18.34375 L 8.9296875 23.070312 L 10.34375 21.65625 L 6.6757812 17.990234 C 4.5212205 15.835634 4.2578303 12.628881 6.0859375 10.800781 L 10.800781 6.0859375 C 12.628888 4.2578375 15.835674 4.5211813 17.990234 6.6757812 L 21.65625 10.34375 L 23.070312 8.9296875 L 18.34375 4.2011719 C 17.168535 3.0259719 15.647293 2.4254844 14.134766 2.4042969 z M 39.070312 24.929688 L 37.65625 26.34375 L 41.324219 30.009766 C 43.47878 32.164366 43.742169 35.371119 41.914062 37.199219 L 37.199219 41.914062 C 35.371112 43.742162 32.164326 43.478819 30.009766 41.324219 L 26.34375 37.65625 L 24.929688 39.070312 L 29.65625 43.798828 C 32.00668 46.149228 35.740258 46.201116 38.025391 43.916016 L 43.916016 38.025391 C 46.201149 35.740291 46.149258 32.00665 43.798828 29.65625 L 39.070312 24.929688 z " style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                    <circle r="1.5" cy="1027.8622" cx="18.5" id="path4174" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                    <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4176" cx="21.5" cy="1024.8622" r="1.5" />
+                    <circle r="1.5" cy="1021.8622" cx="24.5" id="circle4178" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                    <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4180" cx="21.5" cy="1030.8622" r="1.5" />
+                    <circle r="1.5" cy="1027.8622" cx="24.5" id="circle4182" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                    <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4184" cx="27.5" cy="1024.8622" r="1.5" />
+                    <circle r="1.5" cy="1033.8622" cx="24.5" id="circle4186" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                    <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4188" cx="27.5" cy="1030.8622" r="1.5" />
+                    <circle r="1.5" cy="1027.8622" cx="30.5" id="circle4190" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                  </g>
+                </svg>
+                <span class="btn-content hidden-sm hidden-xs">Patching</span>
+            {% endif %}
+            <span class="caret"></span>
+        </button>
+        <div class="dropdown-menu">
+            <div class="wr-modes">
+                <ul class="row wr-mode{% if is_replay %} active{% endif %}" data-mode="replay" title="Access an archived version of this URL">
+                    <li class="col-xs-3">
+                        <span class="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true"></span>
+                    </li>
+                    <li class="col-xs-9">
+                        {% if is_replay %}
+                            <h5>Currently Replaying</h5>
+                        {% else %}
+                            <h5>Replay this URL</h5>
+                        {% endif %}
+                    </li>
+                </ul>
+                <ul class="row wr-mode{% if is_record %} disabled{% elif is_patch %} active{% endif %}" data-mode="patch" title="{% if is_record %}Only available from replay after finishing a recording{% else %}Record elements that are not yet in the collection{% endif %}">
+                    <li class="col-xs-3">
+                        <svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg2" viewBox="0 0 48 48.000001" height="48" width="48">
+                          <g transform="translate(0,-1004.3622)" id="layer1">
+                            <path id="rect4140" d="m 38.024745,1008.4458 c -2.285133,-2.2851 -6.017461,-2.233 -8.367891,0.1174 l -25.4558439,25.4559 c -2.35043,2.3504 -2.402524,6.0827 -0.117391,8.3678 l 5.8916363,5.8917 c 2.2851326,2.2851 6.0174606,2.233 8.3678906,-0.1174 l 25.455844,-25.4559 c 2.35043,-2.3504 2.402524,-6.0827 0.117391,-8.3678 l -5.891636,-5.8917 z m -0.825879,2.0026 4.714966,4.7149 c 1.828107,1.8281 1.564845,5.0339 -0.589716,7.1885 l -23.334524,23.3345 c -2.15456,2.1546 -5.360351,2.4178 -7.188458,0.5897 l -4.7149659,-4.7149 c -1.8281072,-1.8281 -1.564845,-5.0339 0.5897158,-7.1885 l 23.3345241,-23.3345 c 2.15456,-2.1546 5.360351,-2.4178 7.188458,-0.5897 z" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                            <path id="path4169" transform="translate(0,1004.3622)" d="M 14.134766 2.4042969 C 12.622238 2.3831094 11.117176 2.9414344 9.9746094 4.0839844 L 4.0839844 9.9746094 C 1.7988514 12.259709 1.8507423 15.99335 4.2011719 18.34375 L 8.9296875 23.070312 L 10.34375 21.65625 L 6.6757812 17.990234 C 4.5212205 15.835634 4.2578303 12.628881 6.0859375 10.800781 L 10.800781 6.0859375 C 12.628888 4.2578375 15.835674 4.5211813 17.990234 6.6757812 L 21.65625 10.34375 L 23.070312 8.9296875 L 18.34375 4.2011719 C 17.168535 3.0259719 15.647293 2.4254844 14.134766 2.4042969 z M 39.070312 24.929688 L 37.65625 26.34375 L 41.324219 30.009766 C 43.47878 32.164366 43.742169 35.371119 41.914062 37.199219 L 37.199219 41.914062 C 35.371112 43.742162 32.164326 43.478819 30.009766 41.324219 L 26.34375 37.65625 L 24.929688 39.070312 L 29.65625 43.798828 C 32.00668 46.149228 35.740258 46.201116 38.025391 43.916016 L 43.916016 38.025391 C 46.201149 35.740291 46.149258 32.00665 43.798828 29.65625 L 39.070312 24.929688 z " style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                            <circle r="1.5" cy="1027.8622" cx="18.5" id="path4174" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                            <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4176" cx="21.5" cy="1024.8622" r="1.5" />
+                            <circle r="1.5" cy="1021.8622" cx="24.5" id="circle4178" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                            <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4180" cx="21.5" cy="1030.8622" r="1.5" />
+                            <circle r="1.5" cy="1027.8622" cx="24.5" id="circle4182" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                            <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4184" cx="27.5" cy="1024.8622" r="1.5" />
+                            <circle r="1.5" cy="1033.8622" cx="24.5" id="circle4186" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                            <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4188" cx="27.5" cy="1030.8622" r="1.5" />
+                            <circle r="1.5" cy="1027.8622" cx="30.5" id="circle4190" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                          </g>
+                        </svg>
+                    </li>
+                    <li class="col-xs-9">
+                        {% if is_patch %}
+                            <h5>Currently Patching</h5>
+                        {% else %}
+                            <h5>Patch this URL</h5>
+                        {% endif %}
+                    </li>
+                </ul>
+
+                <ul class="row wr-mode{% if is_record %} active{% endif %}" data-mode="record" title="Start a new recording session at the current URL">
+                    <li class="col-xs-3">
+                        <span class="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true"></span>
+                    </li>
+                    <li class="col-xs-9">
+                        {% if is_record %}
+                            <h5>Currently Recording</h5>
+                        {% else %}
+                            <h5>Record this URL again</h5>
+                        {% endif %}
+                    </li>
+                </ul>
+                <div class="divider" role="separator"></div>
+                <ul class="row wr-mode" data-mode="snapshot" title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
+                    <li class="col-xs-3">
+                        <svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" id="svg2" xml:space="preserve" style="enable-background:new 0 0 40 40;" viewBox="0 0 40 40" y="0px" x="0px" version="1.1">
+                          <g id="Layer_1">
+                            <g id="g5">
+                              <path id="path7" d="m 35.7,3.4 -25.2,0 c -1,0 -1.8,0.8 -1.8,1.8 l 0,8.3 2,0 0,-7.9239064 24.8,0 0,18.1239064 -2.9,0 0,2 3.1,0 c 1,0 1.8,-0.8 1.8,-1.8 l 0,-18.7 c 0,-1 -0.8,-1.8 -1.8,-1.8 z" /><path id="path9" d="m 29.5,14.4 -18.8,0 -2,0 -4.4,0 c -1,0 -1.8,0.8 -1.8,1.8 l 0,18.6 c 0,1 0.8,1.8 1.8,1.8 l 25.2,0 c 1,0 1.8,-0.8 1.8,-1.8 l 0,-5.6 0,-2 0,-11 c 0,-1 -0.8,-1.8 -1.8,-1.8 z m -0.2,20.2 -24.8,0 0,-17.674474 24.8,0 z" />
+                            </g>
+                          </g>
+                        </svg>
+                    </li>
+                    <li class="col-xs-9">
+                        <h5>Static Copy</h5>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {% if is_record or is_patch %}
+        <span class="size-counter size-counter-active">
+            <span class="left-buffer-md badge current-size" data-size="{{ info.size }}"></span>
+        </span>
+    {% endif %}
+</div>

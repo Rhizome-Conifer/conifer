@@ -72,11 +72,14 @@ bundles:
             - recordings.js
             - automate.js
             - containerized_ui.js
+            - external/bootstrap-switch.js
+            - shareWidget.js
 
     frame-css:
         output: bundle/frame.css
         contents:
             - base-css
+            - external/bootstrap-switch.css
             - pkg://pywb/static/scroll-webkit.css
 
 
@@ -127,6 +130,13 @@ bundles:
             - recordings.js
             - automate.js
             - containerized_ui.js
+            - external/bootstrap-switch.js
+            - shareWidget.js
+
+    browser-css:
+        output: bundle/browser.css
+        contents:
+            - external/bootstrap-switch.css
 
     paging-js:
         output: bundle/paging.js

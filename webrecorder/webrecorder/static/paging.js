@@ -1,6 +1,6 @@
 var input = document.querySelector('.form-control');
 var iframe = document.querySelector('iframe');
-var timestamp = $('.replay-date');
+var timestamp = $('.main-replay-date');
 var linklist = $('.linklist');
 var index = 0;
 var tagIdx = 0;

@@ -1,5 +1,14 @@
 {% extends "base_bootstrap.html" %}
 {% block head %}
+<meta property="og:url" content="{{ get_share_url() }}" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Archived page from the '{{ coll_title }}' Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
+<meta name='og:description' content="{{ info.coll_desc }}">
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:site" content="@webrecorder_io" />
+<meta name="twitter:title" content="Archived page from the '{{ coll_title }}' Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
+<meta name="twitter:description" content="{{ info.coll_desc }}" />
 
 {{ super() }}
 <script>
@@ -19,7 +28,17 @@
 
 </script>
 
+{% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}
+<script type="text/javascript">
+    var recordings = {{ get_recs_for_coll() }};
+</script>
+{% endif %}
+
 {% assets "main-css" %}
+<link href="{{ ASSET_URL }}" rel="stylesheet" />
+{% endassets %}
+
+{% assets "browser-css" %}
 <link href="{{ ASSET_URL }}" rel="stylesheet" />
 {% endassets %}
 
