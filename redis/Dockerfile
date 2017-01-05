@@ -1,4 +1,4 @@
-FROM redis:2.8.21
+FROM redis:3.2.4
 
 ADD init-redis-conf.sh /
 
