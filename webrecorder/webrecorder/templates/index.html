@@ -4,18 +4,6 @@
 
 {{ super() }}
 
-{#
-<script src="/static/__shared/external/jquery.form.js"></script>
-<script src="/static/__shared/uploader.js"></script>
-
-<script src="/static/__shared/newrecording.js"></script>
-
-<script src="/static/__shared/user.js"></script>
-
-<link href="/static/__shared/external/bootstrap-switch.css" rel="stylesheet">
-<script src="/static/__shared/external/bootstrap-switch.js"></script>
-#}
-
 {% assets "user-js" %}
 <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}
@@ -43,8 +31,19 @@
 
     {% block content %}
     <div class="row top-buffer">
-        <h1 class="text-center"><strong>Webrecorder</strong></h1>
+        <h1 class="text-center"><strong>{{ metadata.product }}</strong></h1>
     </div>
+
+    {% if metadata.type == 'player' %}
+    <div class="row">
+        <h4 class="text-center" style="margin-bottom: 30px">Browse high-fidelity web archives</h4>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h2 class="text-center"><a href="/{{ curr_user }}"><b>Browse Archive ({{num_collections}} Collections)</a></h2>
+        </div>
+    </div>
+    {% else %}
     <div class="row">
         <h4 class="text-center" style="margin-bottom: 30px">Create high-fidelity, interactive recordings of any web site you browse</h4>
     </div>
@@ -52,7 +51,7 @@
     {% include 'homepage_message.html' %}
 
     <div class="row top-buffer-lg bottom-buffer-lg">
-        {% include 'recordings/homepage_recorder.html' %}
+        {% include 'homepage_recorder.html' %}
     </div>
 
     {% if is_anon and invites_enabled %}
@@ -71,6 +70,8 @@
     <div class="text-center collapse" id="collapse-vid">
         <iframe width="854" height="480" src="https://www.youtube.com/embed/n3SqusABXEk" frameborder="0" allowfullscreen></iframe>
     </div>
+
+    {% endif %}
 
     {% endblock %}
 </div>

@@ -27,7 +27,7 @@ upload_wait_secs: 30
 
 skip_key_secs: 330
 
-assets_path: assets.yaml
+assets_path: ./webrecorder/config/assets.yaml
 
 temp_prefix: 'temp-'
 
@@ -79,8 +79,8 @@ email_sender: $EMAIL_SENDER
 email_smtp_url: $EMAIL_SMTP_URL
 
 metadata:
-    org: webrecorder.io
-    product: webrecorder.io
+    product: Webrecorder
+    type: default
 
 # Default Descriptions
 

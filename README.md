@@ -28,7 +28,7 @@ Webrecorder can be run using Docker and Docker Compose. See [Docker Installation
 
 4). `docker-compose up -d`
 
-(The `init-default.sh` is a convenience script that copies [wr_sample.env](wr.env) -> `wr.env` and creates keys for session encryption.)
+(The `init-default.sh` is a convenience script that copies [wr_sample.env](webrecorder/webrecorder/config/wr_sample.env) -> `wr.env` and creates keys for session encryption.)
 
 Point your browser to port `http://<DOCKER HOST>:8089/` to view the Webrecorder.
 
@@ -67,9 +67,9 @@ To require invites, simply set `REQUIRE_INVITES=true`
 The `admin.py` script provides easy low level management of users. Add, modify and remove users along with creating and managing invites.
 
 To interactively create a user:
-`docker exec -it webrecorder_app_1 python admin.py -c`
+`docker exec -it webrecorder_app_1 python -m webrecorder.admin -c`
 or programmatically add users by supplying the appropriate positional values:
-`... admin.py -c <email> <username> <passwd> <role> '<full name>'`
+`... python -m webrecorder.admin -c <email> <username> <passwd> <role> '<full name>'`
 
 Other arguments:
 
@@ -79,7 +79,7 @@ Other arguments:
 * `-l` list invited users
 * `-b` send backlogged invites
 
-See `docker exec -it webrecorder_app_1 python admin.py --help` for full details.
+See `docker exec -it webrecorder_app_1 python -m webrecorder.admin --help` for full details.
 
 ### Updating Deployment
 
@@ -89,7 +89,7 @@ To restart only the Webrecorder container, use the `./rebuild.sh` script.
 
 ### Architecture
 
-Webrecorder is built using a variety of open-source tools and uses [pywb](https://github.com/ikreymer/pywb), Redis and Nginx. It is written in Python and uses the [Bottle](http://bottlepy.org/docs/dev/index.html), [Cork](http://cork.firelet.net/), [Beaker](https://beaker.readthedocs.org/en/latest/) frameworks.
+Webrecorder is built using a variety of open-source tools and uses [pywb](https://github.com/ikreymer/pywb), Redis and Nginx. It is written in Python and uses the [Bottle](http://bottlepy.org/docs/dev/index.html), [Cork](http://cork.firelet.net/), [Webassets](https://webassets.readthedocs.io/en/latest/) frameworks. It runs with [Gevent](http://www.gevent.org/) and [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/).
 
 ### Contact
 

@@ -1,15 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Webrecorder{% block title %}{% endblock %}</title>
-{#
-        <script src="/static/__shared/external/jquery.min.js"></script>
-        <script src="/static/__shared/external/bootstrap/js/bootstrap.min.js"></script>
+        <title>{{ metadata.product }}{% block title %}{% endblock %}</title>
 
-        <link href="/static/__shared/external/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
-        <link href="/static/__shared/external/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet" />
-        <link href="/static/__shared/stylesheets/styles.css" rel="stylesheet" />
-#}
         <script>
             window.curr_user = "{{ curr_user if curr_user else '' }}";
             window.curr_mode = "{{ curr_mode }}";

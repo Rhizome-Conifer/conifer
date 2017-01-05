@@ -16,7 +16,7 @@ from webrecorder.redisman import init_manager_for_cli
 from webrecorder.redisutils import RedisTable
 
 
-def main():
+def main(args=None):
     parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
     parser.add_argument('-c', '--create-user',
                         dest='create_user',
@@ -35,7 +35,7 @@ def main():
     parser.add_argument('-l', '--list', action='store_true')
     parser.add_argument('-b', '--backlog')
 
-    r = parser.parse_args()
+    r = parser.parse_args(args=args)
     m = init_manager_for_cli()
 
     if r.backlog:
@@ -73,8 +73,9 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
     """
     users = m.get_users()
 
-    print('let\'s create a new user..')
-    email = email or input('email: ').strip()
+    if not email:
+        print('let\'s create a new user..')
+        email = input('email: ').strip()
 
     # validate email
     if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', email):
@@ -143,13 +144,13 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
         pi.hset(key, 'name', name)
         pi.hsetnx(key, 'size', '0')
 
-    # create initial collection
-    m.create_collection(username,
-                        coll=m.default_coll['id'],
-                        coll_title=m.default_coll['title'],
-                        desc=m.default_coll['desc'].format(username),
-                        public=False,
-                        synthetic=True)
+    if m.default_coll:
+        # create initial collection
+        m.create_collection(username,
+                            coll=m.default_coll['id'],
+                            coll_title=m.default_coll['title'],
+                            desc=m.default_coll['desc'].format(username),
+                            public=False)
 
     # email subscription set up?
     if m.mailing_list:
@@ -246,7 +247,7 @@ def list_not_invited(m, invite=False):
             print((email + ': ' + v.get('name', '') + ' -- ' + v.get('desc', '')))
 
 
-def do_invite(m, email, email_template='templates/emailinvite.html'):
+def do_invite(m, email, email_template='webrecorder/templates/emailinvite.html'):
     res = m.send_invite(email,
                         email_template=email_template,
                         host='https://webrecorder.io')

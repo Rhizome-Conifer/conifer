@@ -1,7 +1,9 @@
 #!/bin/bash
 
-target=./wr.env
-sample=./wr_sample.env
+CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+target=$CURR_DIR/wr.env
+sample=$CURR_DIR/webrecorder/webrecorder/config/wr_sample.env
 
 if [ -e "$target" ]; then
    echo "$target already exists.. exiting to avoid overriding current settings"
@@ -19,6 +21,6 @@ set_key "SECRET_KEY"
 set_key "ENCRYPT_KEY"
 set_key "VALIDATE_KEY"
 
-mkdir ./data
-mkdir ./data/warcs/
+mkdir $CURR_DIR/data
+mkdir $CURR_DIR/data/warcs/
 

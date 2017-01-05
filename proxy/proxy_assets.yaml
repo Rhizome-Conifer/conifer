@@ -1,0 +1,16 @@
+url: /static/
+
+directory: /static/
+
+bundles:
+    proxy-js:
+        output: bundle/proxy.js
+        contents:
+            - pkg://pywb/static/wombat.js
+            - pkg://pywb/static/wb.js
+            - pkg://pywb/static/vidrw.js
+            - wrscripts.js
+            - ws.js
+
+
+

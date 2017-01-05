@@ -15,8 +15,9 @@ class BrowserManager(object):
         self.browser_list_url = config['browser_list_url']
         self.browsers = {}
 
-        self.load_all_browsers()
-        gevent.spawn(self.browser_load_loop)
+        if not os.environ.get('NO_REMOTE_BROWSERS'):
+            self.load_all_browsers()
+            gevent.spawn(self.browser_load_loop)
 
         self.content_app = content_app
 

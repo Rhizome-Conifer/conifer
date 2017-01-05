@@ -1,4 +1,4 @@
-from .testfullstack import FullStackTests
+from .testutils import FullStackTests
 
 import glob
 import os
@@ -16,6 +16,7 @@ from six.moves.urllib.parse import urlsplit
 from urllib.parse import quote
 
 from webrecorder.session import Session
+import gevent
 
 
 # ============================================================================
@@ -31,6 +32,12 @@ class TestTempContent(FullStackTests):
         'h:defaults',
         'h:temp-usage',
     ]
+
+    def setup_class(cls, **kwargs):
+        super(TestTempContent, cls).setup_class(**kwargs)
+
+        from webrecorder.rec.tempchecker import run
+        gevent.spawn(run)
 
     def _get_redis_keys(self, keylist, user, coll, rec):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]

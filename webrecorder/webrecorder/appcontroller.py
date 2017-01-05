@@ -1,18 +1,21 @@
-from bottle import Bottle, debug, JSONPlugin, request, response
+from bottle import Bottle, debug, JSONPlugin, request, response, static_file
 
 import logging
 import json
 import redis
 import re
 
+import sys
 import os
 
+
 from jinja2 import contextfunction
+from pkg_resources import resource_filename
 
 from six.moves.urllib.parse import urlsplit, urljoin
 
-from pywb.webagg.utils import load_config
 from pywb.urlrewrite.templateview import JinjaEnv
+from webrecorder.utils import load_wr_config
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
@@ -51,8 +54,13 @@ class AppController(BaseController):
                       ]
 
 
-    def __init__(self, configfile=None, overlay_config=None, redis_url=None):
+    def __init__(self, redis_url=None):
         self._init_logging()
+
+        if getattr(sys, 'frozen', False):
+            self.static_root = os.path.join(sys._MEIPASS, 'webrecorder', 'static/')
+        else:
+            self.static_root = resource_filename('webrecorder', 'static/')
 
         bottle_app = Bottle()
         self.bottle_app = bottle_app
@@ -60,7 +68,7 @@ class AppController(BaseController):
         # JSON encoding for datetime objects
         self.bottle_app.install(JSONPlugin(json_dumps=lambda s: json.dumps(s, cls=CustomJSONEncoder)))
 
-        config = load_config('WR_CONFIG', configfile, 'WR_USER_CONFIG', overlay_config)
+        config = load_wr_config()
 
         # Init Redis
         if not redis_url:
@@ -111,7 +119,11 @@ class AppController(BaseController):
         super(AppController, self).__init__(final_app, jinja_env, manager, config)
 
     def init_jinja_env(self, config):
-        jinja_env_wrapper = JinjaEnv(assets_path=config['assets_path'])
+        assets_path = os.path.expandvars(config['assets_path'])
+        packages = [os.environ.get('WR_TEMPLATE_PKG', 'webrecorder'), 'pywb']
+
+        jinja_env_wrapper = JinjaEnv(assets_path=assets_path,
+                                     packages=packages)
 
         jinja_env = jinja_env_wrapper.jinja_env
 
@@ -247,11 +259,14 @@ class AppController(BaseController):
         def faq():
             return {}
 
+        @self.bottle_app.route('/static/<path:path>')
+        def static_files(path):
+            return static_file(path, root=self.static_root)
+
         @self.bottle_app.route('/_message')
         def flash_message():
             message = request.query.getunicode('message', '')
             msg_type = request.query.getunicode('msg_type', '')
-            print(message, msg_type)
             self.flash_message(message, msg_type)
             return {}
 

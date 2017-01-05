@@ -109,6 +109,7 @@ class BaseController(object):
         return False
 
     def flash_message(self, *args, **kwargs):
+        print(*args, **kwargs)
         return self.get_session().flash_message(*args, **kwargs)
 
     def get_path(self, user, coll=None, rec=None):

@@ -1,6 +1,6 @@
-url: /static/__shared/
+url: /static/
 
-directory: ./static/
+directory: ../static/
 
 bundles:
     base-js:

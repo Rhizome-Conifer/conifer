@@ -16,7 +16,6 @@ services:
 
         volumes:
             - ./webrecorder/:/code/
-            - ./wr.yaml:/wr.yaml
 
         ports:
             - 8080:8080
@@ -69,7 +68,7 @@ services:
             - "8089:80"
 
     shepherd:
-        image: webrecorder/shepherd
+        image: oldwebtoday/shepherd
 
         command: uwsgi uwsgi.ini --mount /api/browsers=/shepherd/main.py
 
@@ -106,8 +105,8 @@ services:
             - redis
 
         volumes:
-            #- ./proxy/certs:/home/apprun/.mitmproxy
             - ./proxy/certs:/certs
+            - ./webrecorder/webrecorder/static:/static
 
         networks:
             - default
@@ -143,7 +142,6 @@ services:
       
         volumes:
             - ./data:/data
-            - ./wr.yaml:/wr.yaml
 
 
 networks:
