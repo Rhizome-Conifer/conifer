@@ -305,6 +305,15 @@ class UserController(BaseController):
         @self.user_manager.admin_view()
         def api_get_user(username):
             """API enpoint to return user info"""
+            api = True
+            include_recs = True
+
+            if request.query.api:
+                api = request.query.api == 'true'
+
+            if request.query.include_recs:
+                include_recs = request.query.include_recs == 'true'
+
             users = self.manager.get_users()
 
             if username not in users:
@@ -323,14 +332,15 @@ class UserController(BaseController):
 
             user_data, err = UserSchema(exclude=('username',)).load(user)
             colls = self.manager.get_collections(username,
-                                                 include_recs=True,
-                                                 api=True)
+                                                 include_recs=include_recs,
+                                                 api=api)
 
-            for coll in colls:
-                for rec in coll['recordings']:
-                    rec['pages'] = self.manager.list_pages(username,
-                                                           coll['id'],
-                                                           rec['id'])
+            if include_recs:
+                for coll in colls:
+                    for rec in coll['recordings']:
+                        rec['pages'] = self.manager.list_pages(username,
+                                                               coll['id'],
+                                                               rec['id'])
 
             # colls is a list so will always be `many` even if one collection
             collections, err = CollectionSchema().load(colls, many=True)

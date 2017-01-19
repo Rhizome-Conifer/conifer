@@ -1,0 +1,183 @@
+{
+  "name": "webrecorder-frontend",
+  "version": "0.0.1",
+  "license": "Apache 2.0",
+  "devDependencies": {
+    "eslint": "3.6.0",
+    "eslint-config-airbnb": "^12.0.0",
+    "eslint-loader": "1.5.0",
+    "eslint-plugin-flowtype": "2.11.4",
+    "eslint-plugin-import": "1.16.0",
+    "eslint-plugin-jsx-a11y": "^2.2.2",
+    "eslint-plugin-react": "6.3.0",
+    "jest": "15.1.1"
+  },
+  "dependencies": {
+    "autoprefixer": "6.4.0",
+    "babel-core": "6.14.0",
+    "babel-eslint": "6.1.2",
+    "babel-jest": "15.0.0",
+    "babel-loader": "6.2.5",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-react-transform": "^2.0.0",
+    "babel-plugin-transform-class-properties": "6.11.5",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-object-rest-spread": "6.8.0",
+    "babel-plugin-transform-react-constant-elements": "6.9.1",
+    "babel-plugin-transform-react-display-name": "^6.3.13",
+    "babel-plugin-transform-regenerator": "6.14.0",
+    "babel-plugin-transform-runtime": "6.15.0",
+    "babel-plugin-typecheck": "^3.6.0",
+    "babel-polyfill": "^6.3.14",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-latest": "6.14.0",
+    "babel-preset-react": "6.11.1",
+    "babel-preset-stage-0": "^6.3.13",
+    "babel-register": "^6.3.13",
+    "babel-runtime": "6.11.6",
+    "better-npm-run": "^0.0.11",
+    "bootstrap-sass": "^3.3.5",
+    "bootstrap-sass-loader": "^1.0.9",
+    "case-sensitive-paths-webpack-plugin": "1.1.3",
+    "chalk": "1.1.3",
+    "clean-webpack-plugin": "^0.1.6",
+    "compression": "^1.6.0",
+    "concurrently": "^3.1.0",
+    "connect-history-api-fallback": "1.3.0",
+    "css-loader": "0.24.0",
+    "detect-port": "1.0.0",
+    "express": "^4.14.0",
+    "extract-text-webpack-plugin": "1.0.1",
+    "file-loader": "^0.9.0",
+    "filesize": "3.3.0",
+    "gzip-size": "3.0.0",
+    "html-webpack-plugin": "2.22.0",
+    "http-proxy-middleware": "0.17.1",
+    "moment": "^2.15.1",
+    "node-sass": "^4.3.0",
+    "object-assign": "4.1.0",
+    "opn": "4.0.2",
+    "piping": "^1.0.0-rc.4",
+    "postcss-loader": "0.11.1",
+    "pretty-error": "^2.0.2",
+    "promise": "7.1.1",
+    "react": "^15.4.2",
+    "react-addons-css-transition-group": "^15.4.2",
+    "react-bootstrap": "^0.30.7",
+    "react-dom": "^15.4.2",
+    "react-helmet": "^3.3.0",
+    "react-redux": "^5.0.1",
+    "react-router": "^3.0.0",
+    "react-router-redux": "^4.0.7",
+    "react-router-scroll": "^0.4.1",
+    "react-transform-catch-errors": "^1.0.0",
+    "react-transform-hmr": "^1.0.1",
+    "recursive-readdir": "2.0.0",
+    "redbox-react": "^1.3.3",
+    "redux": "^3.6.0",
+    "redux-connect": "^5.0.0",
+    "redux-devtools": "^3.3.1",
+    "redux-devtools-chart-monitor": "^1.5.1",
+    "redux-devtools-dock-monitor": "^1.1.1",
+    "redux-devtools-log-monitor": "^1.0.11",
+    "redux-saga": "^0.14.2",
+    "redux-slider-monitor": "^1.0.7",
+    "rimraf": "2.5.4",
+    "sass-loader": "^4.0.2",
+    "scroll-behavior": "^0.3.2",
+    "serialize-javascript": "^1.1.2",
+    "strip-ansi": "3.0.1",
+    "strip-loader": "^0.1.0",
+    "style-loader": "0.13.1",
+    "superagent": "^3.3.1",
+    "url-loader": "0.5.7",
+    "webpack": "1.14.0",
+    "webpack-bundle-size-analyzer": "^2.2.0",
+    "webpack-dev-middleware": "^1.4.0",
+    "webpack-dev-server": "1.15.1",
+    "webpack-hot-middleware": "^2.5.0",
+    "webpack-isomorphic-tools": "^2.6.6",
+    "whatwg-fetch": "1.0.0"
+  },
+  "engines": {
+    "node": ">=6.9 <7.0"
+  },
+  "scripts": {
+    "analyze": "NODE_ENV=production webpack --config ./config/webpack.config.prod.js --json | webpack-bundle-size-analyzer",
+    "build": "better-npm-run build",
+    "test": "jest --watch --env=jsdom",
+    "start": "concurrent --kill-others \"npm run start-prod\" \"npm run start-prod-api\"",
+    "start-prod": "better-npm-run start-prod",
+    "dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-dev\"",
+    "docker-dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-docker-dev\"",
+    "watch-client": "better-npm-run watch-client",
+    "start-dev": "better-npm-run start-dev",
+    "start-docker-dev": "better-npm-run start-docker-dev"
+  },
+  "betterScripts": {
+    "build": {
+      "command": "webpack --verbose --colors --display-error-details --config webpack/prod.config.js",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "start-prod": {
+      "command": "node ./bin/server.js",
+      "env": {
+        "NODE_PATH": "./src",
+        "NODE_ENV": "production",
+        "INTERNAL_HOST": "nginx",
+        "INTERNAL_PORT": "80"
+      }
+    },
+    "start-dev": {
+      "command": "node ./bin/server.js",
+      "env": {
+        "NODE_PATH": "./src",
+        "NODE_ENV": "development",
+        "PORT": 3000,
+        "INTERNAL_HOST": "localhost",
+        "INTERNAL_PORT": "8089"
+      }
+    },
+    "start-docker-dev": {
+      "command": "node ./bin/server.js",
+      "env": {
+        "NODE_PATH": "./src",
+        "NODE_ENV": "development",
+        "PORT": 3000,
+        "INTERNAL_HOST": "nginx",
+        "INTERNAL_PORT": "80"
+      }
+    },
+    "watch-client": {
+      "command": "node webpack/webpack-dev-server.js",
+      "env": {
+        "UV_THREADPOOL_SIZE": 100,
+        "NODE_PATH": "./src",
+        "PORT": 3000
+      }
+    }
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ],
+    "setupFiles": [
+      "<rootDir>/config/polyfills.js"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>[/\\\\](build|node_modules|scripts)[/\\\\]"
+    ],
+    "testEnvironment": "node",
+    "testURL": "http://localhost",
+    "transform": {
+      "^.+\\.(js|jsx)$": "<rootDir>/node_modules/babel-jest",
+      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
+      "^(?!.*\\.(js|jsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
+    },
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
+    ]
+  }
+}

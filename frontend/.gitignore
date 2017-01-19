@@ -1,0 +1,13 @@
+# dependencies
+node_modules
+
+# testing
+coverage
+
+# production
+build
+
+# misc
+.DS_Store
+npm-debug.log
+webpack-assets.json

@@ -6,6 +6,9 @@ users
 # C extensions
 *.so
 
+# Docker
+docker-compose.override.yml
+
 # Packages
 *.egg
 *.egg-info
@@ -24,6 +27,7 @@ lib64
 __pycache__
 .cache
 *.spec
+*.*~
 
 # Installer logs
 pip-log.txt

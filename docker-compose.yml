@@ -22,6 +22,25 @@ services:
             - default
             - browsers
 
+    frontend:
+        build:
+            context: ./frontend
+
+        environment:
+            NODE_ENV: production
+
+        depends_on:
+            - app
+
+        volumes:
+            - ./frontend/:/opt/app
+            - /opt/app/node_modules
+
+        ports:
+            - 3000:3000
+            - 3001:3001
+
+
     recorder:
         build: ./webrecorder
         command: uwsgi /code/apps/rec.ini
@@ -100,7 +119,7 @@ services:
 
         ports:
             - "6379:6379"
-  
+
         volumes:
             - ./data:/data
 

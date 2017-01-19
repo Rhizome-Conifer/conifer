@@ -1,0 +1,19 @@
+version: '2'
+
+#
+# symlink `ln -s docker-compose.override-dev-example.yaml  docker-compose.override.yaml`
+# to override settings for development
+#
+
+services:
+
+  # override frontend with dev configuration
+  frontend:
+    build:
+      dockerfile: Dockerfile-dev
+
+    environment:
+      NODE_ENV: development
+
+    command: bash -c "cd code; npm run docker-dev"
+    tty: true

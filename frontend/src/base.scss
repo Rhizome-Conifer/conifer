@@ -1,0 +1,62 @@
+@import './vars';
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  background-color: $white;
+}
+
+// body {font-size: 62.5%;}
+
+/*
+ * Spacers and buffers
+ *
+ */
+.top-buffer-none {
+    margin-top: 0px;
+}
+
+.top-buffer-sm {
+    margin-top: 5px;
+}
+
+.top-buffer-md {
+    margin-top: 10px;
+}
+
+.top-buffer {
+    margin-top: 20px;
+}
+
+.top-buffer-lg {
+    margin-top: 40px;
+}
+
+.left-buffer {
+    margin-left: 20px;
+}
+
+.left-buffer-sm {
+  margin-left: 5px;
+}
+
+.left-buffer-xs {
+    margin-left: 1px;
+}
+
+.right-padding {
+  padding-right: 20px;
+}
+
+.right-buffer {
+  margin-right: 20px;
+}
+
+.right-buffer-sm {
+  margin-right: 5px;
+}
+
+.bottom-buffer-lg {
+  margin-bottom: 40px;
+}

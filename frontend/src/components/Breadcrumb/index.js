@@ -1,0 +1,38 @@
+import React, { Component, PropTypes } from 'react';
+import { IndexLink, Link } from 'react-router';
+import filter from 'lodash/filter';
+
+import './style.scss';
+
+
+class Breadcrumb extends Component {
+
+  static contextTypes = {
+    router: PropTypes.func
+  }
+
+  render() {
+    const { routes } = this.props;
+    const { router } = this.context;
+
+    // filter based on whether this item should show up in breadcrumb
+    const trail = filter(routes.slice(1), o => o.breadcrumb);
+    console.log(routes, router);
+
+    return (
+      <ol className="breadcrumb navbar-left wr-breadcrumb">
+        <IndexLink to="/">Webrecorder</IndexLink>
+        {
+          trail.length &&
+          trail.map((item, index) =>
+            <li>
+              <span>{ item.component.title }</span>
+            </li>
+          )
+        }
+      </ol>
+    );
+  }
+}
+
+export default Breadcrumb;
