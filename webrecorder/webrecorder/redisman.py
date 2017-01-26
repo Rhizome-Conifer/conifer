@@ -845,46 +845,46 @@ class RecManagerMixin(object):
 
         return self._send_delete('rec', user, coll, rec)
 
-    def add_page(self, user, coll, rec, pagedata):
-        self.assert_can_write(user, coll)
-
+    def _get_pagedata(self, user, coll, rec, pagedata):
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
         url = pagedata['url']
 
-        if not pagedata.get('timestamp'):
-            pagedata['timestamp'] = self._get_url_ts(user, coll, rec, url)
+        ts = pagedata.get('timestamp')
+        if not ts:
+            ts = pagedata.get('ts')
 
-            if not pagedata['timestamp']:
-                pagedata['timestamp'] = timestamp_now()
+        if not ts:
+            ts = self._get_url_ts(user, coll, rec, url)
 
+        if not ts:
+            ts = timestamp_now()
+
+        pagedata['timestamp'] = ts
         pagedata_json = json.dumps(pagedata)
 
-        self.redis.hset(key,
-                        pagedata['url'] + ' ' + pagedata['timestamp'],
-                        pagedata_json)
+        hkey = pagedata['url'] + ' ' + pagedata['timestamp']
+
+        return key, hkey, pagedata_json
+
+    def add_page(self, user, coll, rec, pagedata):
+        self.assert_can_write(user, coll)
+
+        key, hkey, pagedata_json = self._get_pagedata(user, coll, rec, pagedata)
+
+        self.redis.hset(key, hkey, pagedata_json)
 
         return {}
 
     def import_pages(self, user, coll, rec, pagelist):
         self.assert_can_admin(user, coll)
 
-        key = self.page_key.format(user=user, coll=coll, rec=rec)
-
         pagemap = {}
 
         for pagedata in pagelist:
-            url = pagedata['url']
+            key, hkey, pagedata_json = self._get_pagedata(user, coll, rec, pagedata)
 
-            if not pagedata.get('timestamp'):
-                pagedata['timestamp'] = self._get_url_ts(user, coll, rec, url)
-
-                if not pagedata['timestamp']:
-                    pagedata['timestamp'] = timestamp_now()
-
-            pagedata_json = json.dumps(pagedata)
-
-            pagemap[pagedata['url'] + ' ' + pagedata['timestamp']] = pagedata_json
+            pagemap[hkey] = pagedata_json
 
         self.redis.hmset(key, pagemap)
 
