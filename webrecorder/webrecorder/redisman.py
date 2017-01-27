@@ -1190,7 +1190,7 @@ class CollManagerMixin(object):
         for k in keys:
             tag = k.split(':')[5]
             if tag in tagged_pages:
-                tagged_pages[tag].extend(self.redis.smembers(k))
+                tagged_pages[tag] |= self.redis.smembers(k)
             else:
                 tagged_pages.update({
                     tag: self.redis.smembers(k)
