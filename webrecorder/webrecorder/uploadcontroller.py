@@ -25,15 +25,18 @@ class UploadController(BaseController):
         self.cdxj_key = config['cdxj_key_templ']
 
     def init_routes(self):
-        @self.app.post('/_upload')
+        @self.app.put('/_upload')
         def upload_file():
             stream = None
-            upload = None
+            temp_file = None
+            logger.debug('Upload Begin')
 
             try:
-                upload = request.files.get('upload-file')
+                expected_size = int(request.headers['Content-Length'])
 
-                if not upload:
+                logger.debug('Expected Size: ' + str(expected_size))
+
+                if not expected_size:
                     return {'error_message': 'No File Specified'}
 
                 curr_user = self.manager.get_curr_user()
@@ -46,8 +49,15 @@ class UploadController(BaseController):
                     return {'error_message': 'Sorry, uploads only available for logged-in users'}
 
                 user = curr_user
-                force_coll = request.forms.getunicode('force-coll', '')
+                force_coll = request.query.getunicode('force-coll', '')
                 is_anon = False
+
+                size_rem = self.manager.get_size_remaining(user)
+
+                logger.debug('User Size Rem: ' + str(size_rem))
+
+                if size_rem < expected_size:
+                    return {'error_message': 'Sorry, not enough space to upload this file'}
 
                 if force_coll and not self.manager.has_collection(user, force_coll):
                     if is_anon:
@@ -57,28 +67,17 @@ class UploadController(BaseController):
                         status = 'Collection {0} not found'.format(force_coll)
                         return {'error_message': status}
 
-                stream = SpooledTemporaryFile(max_size=BLOCK_SIZE)
 
-                logger.debug('Upload Start, Saving')
+                temp_file = SpooledTemporaryFile(max_size=BLOCK_SIZE)
 
-                upload.save(stream)
+                stream = request.environ['wsgi.input']
+                stream = CacheingLimitReader(stream, expected_size, temp_file)
 
-                size_rem = self.manager.get_size_remaining(user)
-
-                logger.debug('Size Rem: ' + str(size_rem))
-
-                expected_size = stream.tell()
-
-                logger.debug('Expected Size: ' + str(expected_size))
-
-                if size_rem < expected_size:
-                    return {'error_message': 'Sorry, not enough space to upload this file'}
-
-                filename = upload.filename
+                filename = request.query.getunicode('filename')
 
                 logger.debug('Filename: ' + filename)
 
-                new_coll, error_message = self.handle_upload(stream, filename, user, force_coll)
+                new_coll, error_message = self.handle_upload(stream, temp_file, filename, user, force_coll)
 
                 if new_coll:
                     msg = 'Uploaded file <b>{1}</b> into collection <b>{0}</b>'.format(new_coll['title'], filename)
@@ -98,14 +97,13 @@ class UploadController(BaseController):
                 return {'error_message': str(e)}
 
             finally:
-                if upload:
-                    upload.file.close()
+                if temp_file:
+                    temp_file.close()
 
                 if stream:
                     stream.close()
 
-    def handle_upload(self, stream, filename, user, force_coll):
-        stream.seek(0)
+    def handle_upload(self, stream, temp_file, filename, user, force_coll):
         total = 0
 
         logger.debug('handle_upload() begin to: ' + filename + ' force_coll: ' + str(force_coll))
@@ -121,14 +119,16 @@ class UploadController(BaseController):
             traceback.print_exc()
             return (None, 'Invalid Web Archive (Parsing Error)')
 
-        stream.seek(0)
+        logger.debug('Temp Buffer Size: ' + str(temp_file.tell()))
+
+        temp_file.seek(0)
 
         count = 0
 
         first_coll = None
 
         try:
-            for coll, rec in self.process_upload(user, force_coll, infos, stream, filename):
+            for coll, rec in self.process_upload(user, force_coll, infos, temp_file, filename):
                 count += 1
                 logger.debug('Processing Upload Rec {0} of {1}'.format(count, total))
                 if not first_coll:
@@ -350,4 +350,16 @@ class UploadController(BaseController):
 
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
         return warcinfo if valid else None
+
+
+# ============================================================================
+class CacheingLimitReader(LimitReader):
+    def __init__(self, stream, length, out):
+        super(CacheingLimitReader, self).__init__(stream, length)
+        self.out = out
+
+    def read(self, size=-1):
+        buff = super(CacheingLimitReader, self).read(size)
+        self.out.write(buff)
+        return buff
 

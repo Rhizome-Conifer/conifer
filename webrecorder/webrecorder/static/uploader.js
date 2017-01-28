@@ -26,79 +26,97 @@ $(function() {
     var uploader = $(".upload-progress");
 
     var currXhr = undefined;
-      
-    $('#upload-form').ajaxForm({
-        beforeSerialize: function() {
-            var force_coll;
 
-            if ($("#upload-add").is(":checked")) {
-                force_coll = $("#upload-coll").attr("data-collection-id");
-            } else {
-                force_coll = "";
-            }
+    $('#upload-form').submit(function(event) {
+        event.preventDefault();
 
-            $("#force-coll").val(force_coll);
-        },
+        var xhr = new XMLHttpRequest();
+        var file = $("#choose-upload-file")[0].files[0];
 
-        beforeSend: function(xhr, settings) {
-            status.text("Uploading...");
+        var force_coll;
 
-            var percentVal = '0%';
-            bar.width(percentVal)
-            percent.html(percentVal);
-
-            currXhr = xhr;
-
-            $("body").css("cursor", "wait");
-
-            $("#upload-modal button").prop("disabled", true);
-
-            $("#upload-modal button.upload-cancel").prop("disabled", false);
-            $("#upload-modal button.upload-cancel").text("Cancel Upload");
-
-            uploader.show();
-            status.show();
-            status.removeClass("upload-error");
-
-        },
-        uploadProgress: function(event, position, total, percentComplete) {
-            var percentVal = percentComplete + '%';
-            bar.width(percentVal)
-            percent.html(percentVal);
-            if (percentVal == "100%") {
-                status.text("Processing...");
-                $("#upload-modal button.upload-cancel").prop("disabled", true);
-            }
-        },
-
-        success: function() {
-            var percentVal = '100%';
-            bar.width(percentVal)
-            percent.html(percentVal);
-        },
-
-        complete: function(xhr) {
-            $("#upload-modal button").prop("disabled", false);
-            $("body").css("cursor", "inherit");
-
-            data = xhr.responseJSON;
-
-            if (data && data.uploaded && data.user && data.coll) {
-                RouteTo.collectionInfo(data.user, data.coll);
-                return;
-            }
-
-            var message = "Upload Status Missing";
-
-            if (data.error_message) {
-                message = data.error_message;
-            }
-
-            status.text(message);
-            status.addClass("upload-error");
-            currXhr = undefined;
+        if ($("#upload-add").is(":checked")) {
+            force_coll = $("#upload-coll").attr("data-collection-id");
+        } else {
+            force_coll = "";
         }
+
+        xhr.upload.addEventListener("progress", uploadProgress);
+        xhr.addEventListener("load", uploadSuccess);
+        xhr.addEventListener("loadend", uploadComplete);
+
+        var url = "/_upload?" + $.param({"force-coll": force_coll,
+                                         "filename": file.name});
+
+        xhr.open("PUT", url, true);
+
+        status.text("Uploading...");
+
+        var percentVal = '0%';
+        bar.width(percentVal)
+        percent.html(percentVal);
+
+        currXhr = xhr;
+
+        $("body").css("cursor", "wait");
+
+        $("#upload-modal button").prop("disabled", true);
+
+        $("#upload-modal button.upload-cancel").prop("disabled", false);
+        $("#upload-modal button.upload-cancel").text("Cancel Upload");
+
+        uploader.show();
+        status.show();
+        status.removeClass("upload-error");
+
+        xhr.send(file);
+
+        return false;
     });
+
+    function uploadProgress(event) {
+        var percentVal = Math.round(100.0 * event.loaded / event.total) + '%';
+        bar.width(percentVal)
+        percent.html(percentVal);
+        if (percentVal == "100%") {
+            status.text("Processing...");
+            $("#upload-modal button.upload-cancel").prop("disabled", true);
+        }
+    }
+
+    function uploadSuccess() {
+        var percentVal = '100%';
+        bar.width(percentVal)
+        percent.html(percentVal);
+    }
+
+    function uploadComplete() {
+        $("#upload-modal button").prop("disabled", false);
+        $("body").css("cursor", "inherit");
+
+        var xhr = currXhr;
+
+        if (!xhr) {
+            return;
+        }
+
+        var data = JSON.parse(xhr.responseText);
+
+        if (data && data.uploaded && data.user && data.coll) {
+            RouteTo.collectionInfo(data.user, data.coll);
+            return;
+        }
+
+        var message = "Upload Status Missing";
+
+        if (data.error_message) {
+            message = data.error_message;
+        }
+
+        status.text(message);
+        status.addClass("upload-error");
+        currXhr = undefined;
+    }
 
     $("#upload-modal").on('show.bs.modal', function() {
         $("#upload-modal button[type='button']").prop("disabled", false);
@@ -120,7 +138,6 @@ $(function() {
         }
 
     });
-
 
     var initialColl = $("#force-coll").val();
     if (initialColl) {
