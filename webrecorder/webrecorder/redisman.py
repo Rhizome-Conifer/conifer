@@ -877,7 +877,7 @@ class RecManagerMixin(object):
         return {}
 
     def import_pages(self, user, coll, rec, pagelist):
-        self.assert_can_admin(user, coll)
+        #self.assert_can_admin(user, coll)
 
         pagemap = {}
 
@@ -1028,6 +1028,8 @@ class CollManagerMixin(object):
         super(CollManagerMixin, self).__init__(config)
         self.coll_info_key = config['info_key_templ']['coll']
         self.mount_key = config['mount_key_templ']
+        self.upload_key = config['upload_key_templ']
+        self.upload_exp = int(config['upload_status_expire'])
 
     def get_collection(self, user, coll, access_check=True):
         if access_check:
@@ -1198,6 +1200,26 @@ class CollManagerMixin(object):
 
         return tagged_pages
 
+    def get_upload_status(self, user, upload_id):
+        upload_key = self.upload_key.format(user=user, upid=upload_id)
+
+        props = self.redis.hgetall(upload_key)
+
+        total_size = props.get('total_size')
+        if not total_size:
+            return None
+
+        self.redis.expire(upload_key, self.upload_exp)
+        props['total_size'] = int(total_size)
+        props['size'] = int(props.get('size', 0))
+        props['files'] = int(props['files'])
+        props['total_files'] = int(props['total_files'])
+
+        if props.get('files') == 0:
+            props['size'] = props['total_size']
+
+        return props
+
 
 # ============================================================================
 class DeleteManagerMixin(object):
@@ -1327,6 +1349,10 @@ class CLIRedisDataManager(RedisDataManager):
 
     def get_session(self):
         return self.fake_session
+
+    def get_host(self):
+        return 'http://localhost'
+
 
 # ============================================================================
 def init_manager_for_cli():

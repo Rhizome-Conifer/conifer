@@ -25,6 +25,8 @@ default_max_coll: 10
 
 upload_wait_secs: 30
 
+upload_status_expire: 120
+
 skip_key_secs: 330
 
 assets_path: ./webrecorder/config/assets.yaml
@@ -46,7 +48,7 @@ url_templates:
     rename: '{record_host}/rename?from_user={from_user}&from_coll={from_coll}&from_rec={from_rec}&to_user={to_user}&to_coll={to_coll}&to_title={to_title}&to_rec={to_rec}'
 
     # upload path
-    upload: '{record_host}/record/$upload?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=stream'
+    upload: '{record_host}/record/$upload?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=stream&param.upid={upid}'
 
     # core replay funcs
     live: '{replay_host}/live/resource/postreq?'
@@ -130,6 +132,8 @@ info_key_templ:
     rec: 'r:{user}:{coll}:{rec}:info'
     coll: 'c:{user}:{coll}:info'
     user: 'u:{user}:info'
+
+upload_key_templ: 'u:{user}:upl:{upid}'
 
 tags_key: 'z:tags'
 user_tag_templ: 'r:{user}:{coll}:{rec}:tag:{tag}'

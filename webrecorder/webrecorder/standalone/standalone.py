@@ -3,7 +3,7 @@ from webrecorder.fullstackrunner import FullStackRunner
 from webrecorder.admin import main as admin_main
 from webrecorder.standalone.assetsutils import patch_bundle
 
-from webrecorder.uploadcontroller import UploadController
+from webrecorder.uploadcontroller import UploadController, InplaceUploader
 from webrecorder.rec.webrecrecorder import WebRecRecorder
 
 from argparse import ArgumentParser, RawTextHelpFormatter
@@ -18,9 +18,8 @@ import pkgutil
 import logging
 import base64
 
+import gevent
 import redis
-
-#from hiconn import patch_from_url
 
 import argparse
 import atexit
@@ -62,7 +61,6 @@ class StandaloneRunner(FullStackRunner):
         atexit.register(self.close)
 
     def _patch_redis(self, redis_db):
-        import redis
         import fakeredis
         redis.StrictRedis = fakeredis.FakeStrictRedis
 
@@ -159,19 +157,22 @@ class WebrecPlayerRunner(StandaloneRunner):
                                                  rec_port=-1,
                                                  debug=argres.debug)
 
+        if not argres.no_browser:
+            import webbrowser
+            webbrowser.open_new(os.environ['APP_HOST'] + '/')
+
+        gevent.spawn(self.auto_load_warcs, argres)
+
+    def auto_load_warcs(self, argres):
         manager = init_manager_for_cli()
 
         indexer = WebRecRecorder.make_wr_indexer(manager.config)
 
-        uploader = InplaceUploader(manager, indexer)
+        uploader = InplaceUploader(manager, indexer, '@INIT')
 
-        for filename in self.get_archive_files(argres.inputs):
-            with open(filename, 'rb') as stream:
-                uploader.handle_upload(stream, filename, 'local', False)
+        files = list(self.get_archive_files(argres.inputs))
 
-        if not argres.no_browser:
-            import webbrowser
-            webbrowser.open_new(os.environ['APP_HOST'] + '/local/')
+        uploader.multifile_upload('local', files)
 
     def init_env(self):
         super(WebrecPlayerRunner, self).init_env()
@@ -194,58 +195,6 @@ class WebrecPlayerRunner(StandaloneRunner):
     @classmethod
     def add_args(cls, parser):
         parser.add_argument('inputs', nargs='+')
-
-
-# ============================================================================
-class InplaceUploader(UploadController):
-    def __init__(self, manager, indexer):
-        super(InplaceUploader, self).__init__(None, None, manager, manager.config)
-        self.indexer = indexer
-
-    def init_routes(self):
-        pass
-
-    def do_upload(self, filename, stream, user, coll, rec, offset, length):
-        stream.seek(offset)
-
-        stream = LimitReader(stream, length)
-
-        params = {'param.user': user,
-                  'param.coll': coll,
-                  'param.rec': rec
-                 }
-
-        self.indexer.add_warc_file(filename, params)
-        self.indexer.add_urls_to_index(stream, params, filename, length)
-
-    def _get_existing_coll(self, user, info):
-        # if enabled, force all 'Temporary Collection' into one collection?
-        return None
-
-        if info.get('title') != 'Temporary Collection':
-            return None
-
-        collection = self.manager.get_collection(user, 'webrecorder-collection')
-        if collection:
-            return collection
-
-        desc = ''
-        collection = {'type': 'collection',
-                      'title': 'Webrecorder Collection',
-                      'desc': desc,
-                     }
-
-        collection['id'] = self.sanitize_title(collection['title'])
-        actual_collection = self.manager.create_collection(user,
-                                       collection['id'],
-                                       collection['title'],
-                                       collection.get('desc', ''),
-                                       collection.get('public', False))
-
-        collection['id'] = actual_collection['id']
-        collection['title'] = actual_collection['title']
-
-        return collection
 
 
 # ============================================================================

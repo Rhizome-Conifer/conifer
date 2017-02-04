@@ -4,6 +4,10 @@ assets_path: pkg://webrecorder/config/assets.yaml
 
 default_coll: ''
 
+default_max_size: 10000000000000
+
+init_upload_id: '@INIT'
+
 metadata:
     product: Webrecorder Player
     type: player

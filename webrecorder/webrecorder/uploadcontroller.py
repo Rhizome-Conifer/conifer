@@ -10,6 +10,13 @@ import traceback
 import json
 import requests
 
+import base64
+import os
+import gevent
+import redis
+
+from webrecorder.utils import SizeTrackingReader
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -17,135 +24,208 @@ logger = logging.getLogger(__name__)
 BLOCK_SIZE = 16384 * 8
 EMPTY_DIGEST = '3I42H3S6NNFQ2MSVX7XZKYAYSCX5QBYJ'
 
+
 # ============================================================================
 class UploadController(BaseController):
     def __init__(self, app, jinja_env, manager, config):
         super(UploadController, self).__init__(app, jinja_env, manager, config)
         self.upload_path = config['url_templates']['upload']
         self.cdxj_key = config['cdxj_key_templ']
+        self.upload_key = config['upload_key_templ']
+        self.upload_exp = int(config['upload_status_expire'])
 
     def init_routes(self):
         @self.app.put('/_upload')
         def upload_file():
-            stream = None
-            temp_file = None
-            logger.debug('Upload Begin')
+            return self.upload_file()
 
-            try:
-                expected_size = int(request.headers['Content-Length'])
+        @self.app.get('/_upload/<upload_id>')
+        def get_upload_status(upload_id):
+            user = self.get_user(api=True)
 
-                logger.debug('Expected Size: ' + str(expected_size))
+            props = self.manager.get_upload_status(user, upload_id)
 
-                if not expected_size:
-                    return {'error_message': 'No File Specified'}
+            if not props:
+                return {'error_message': 'upload expired'}
 
-                curr_user = self.manager.get_curr_user()
+            return props
 
-                if not curr_user:
-                    #user = self.manager.get_anon_user()
-                    #force_coll = 'temp'
-                    #is_anon = True
+    def upload_file(self):
+        stream = None
+        temp_file = None
+        logger.debug('Upload Begin')
 
-                    return {'error_message': 'Sorry, uploads only available for logged-in users'}
+        expected_size = int(request.headers['Content-Length'])
 
-                user = curr_user
-                force_coll = request.query.getunicode('force-coll', '')
-                is_anon = False
+        logger.debug('Expected Size: ' + str(expected_size))
 
-                size_rem = self.manager.get_size_remaining(user)
+        if not expected_size:
+            return {'error_message': 'No File Specified'}
 
-                logger.debug('User Size Rem: ' + str(size_rem))
+        curr_user = self.manager.get_curr_user()
 
-                if size_rem < expected_size:
-                    return {'error_message': 'Sorry, not enough space to upload this file'}
+        if not curr_user:
+            #user = self.manager.get_anon_user()
+            #force_coll = 'temp'
+            #is_anon = True
 
-                if force_coll and not self.manager.has_collection(user, force_coll):
-                    if is_anon:
-                        self.manager.create_collection(user, force_coll, 'Temporary Collection')
+            return {'error_message': 'Sorry, uploads only available for logged-in users'}
 
-                    else:
-                        status = 'Collection {0} not found'.format(force_coll)
-                        return {'error_message': status}
+        user = curr_user
+        force_coll = request.query.getunicode('force-coll', '')
+        is_anon = False
 
+        size_rem = self.manager.get_size_remaining(user)
 
-                temp_file = SpooledTemporaryFile(max_size=BLOCK_SIZE)
+        logger.debug('User Size Rem: ' + str(size_rem))
 
-                stream = request.environ['wsgi.input']
-                stream = CacheingLimitReader(stream, expected_size, temp_file)
+        if size_rem < expected_size:
+            return {'error_message': 'Sorry, not enough space to upload this file'}
 
-                filename = request.query.getunicode('filename')
+        if force_coll and not self.manager.has_collection(user, force_coll):
+            if is_anon:
+                self.manager.create_collection(user, force_coll, 'Temporary Collection')
 
-                logger.debug('Filename: ' + filename)
+            else:
+                status = 'Collection {0} not found'.format(force_coll)
+                return {'error_message': status}
 
-                new_coll, error_message = self.handle_upload(stream, temp_file, filename, user, force_coll)
+        temp_file = SpooledTemporaryFile(max_size=BLOCK_SIZE)
 
-                if new_coll:
-                    msg = 'Uploaded file <b>{1}</b> into collection <b>{0}</b>'.format(new_coll['title'], filename)
+        filename = request.query.getunicode('filename')
 
-                    self.flash_message(msg, 'success')
+        stream = request.environ['wsgi.input']
+        stream = CacheingLimitReader(stream, expected_size, temp_file)
 
-                    return {'uploaded': 'true',
-                            'user': user,
-                            'coll': new_coll['id']}
+        infos = self.parse_uploaded(stream, expected_size)
 
-                else:
-                    print(error_message)
-                    return {'error_message': error_message}
+        total_size = temp_file.tell()
+        if total_size != expected_size:
+            return {'error_message': 'size mismatch: expected {0}, got {1}'.format(expected_size, total_size)}
 
-            except Exception as e:
-                traceback.print_exc()
-                return {'error_message': str(e)}
+        upload_id = self._get_upload_id()
 
-            finally:
-                if temp_file:
-                    temp_file.close()
+        upload_key = self.upload_key.format(user=user, upid=upload_id)
 
-                if stream:
-                    stream.close()
+        with redis.utils.pipeline(self.manager.redis) as pi:
+            pi.hset(upload_key, 'size', 0)
+            pi.hset(upload_key, 'total_size', total_size * 2)
+            pi.hset(upload_key, 'filename', filename)
+            pi.hset(upload_key, 'total_files', 1)
+            pi.hset(upload_key, 'files', 1)
 
-    def handle_upload(self, stream, temp_file, filename, user, force_coll):
-        total = 0
+        return self.handle_upload(temp_file, upload_id, upload_key, infos, filename,
+                                  user, force_coll, total_size)
 
-        logger.debug('handle_upload() begin to: ' + filename + ' force_coll: ' + str(force_coll))
+    def handle_upload(self, stream, upload_id, upload_key, infos, filename,
+                      user, force_coll, total_size):
 
+        logger.debug('Begin handle_upload() from: ' + filename + ' force_coll: ' + str(force_coll))
+
+        num_recs = 0
+        num_recs = len(infos)
+        # first info is for collection, not recording
+        if num_recs >= 2:
+            num_recs -= 1
+
+        logger.debug('Parsed {0} recordings, Buffer Size {1}'.format(num_recs, total_size))
+
+        first_coll, rec_infos = self.process_upload(user, force_coll, infos, stream,
+                                                    filename, total_size, num_recs)
+
+        if not rec_infos:
+            print('NO ARCHIVES!')
+            #stream.close()
+            return {'error_message': 'No Archive Data Found'}
+
+        with redis.utils.pipeline(self.manager.redis) as pi:
+            pi.hset(upload_key, 'coll', first_coll['id'])
+            pi.hset(upload_key, 'coll_title', first_coll['title'])
+            pi.hset(upload_key, 'filename', filename)
+            pi.expire(upload_key, self.upload_exp)
+
+        self.launch_upload(self.run_upload,
+                           upload_key,
+                           filename,
+                           stream,
+                           user,
+                           rec_infos,
+                           total_size)
+
+        return {'upload_id': upload_id,
+                'user': user
+               }
+
+    def _get_upload_id(self):
+        return base64.b32encode(os.urandom(5)).decode('utf-8')
+
+    def launch_upload(self, func, *args):
+        gevent.spawn(func, *args)
+
+    def run_upload(self, upload_key, filename, stream, user, rec_infos, total_size):
         try:
-            infos = self.parse_uploaded(stream)
-            total = len(infos)
-            # first info is for collection, not recording
-            if total >= 2:
-                total -= 1
-            logger.debug('Parsed {0} recordings'.format(total))
+            count = 0
+            num_recs = len(rec_infos)
+            last_end = 0
+
+            for info in rec_infos:
+                count += 1
+                logger.debug('Id: {0}, Uploading Rec {1} of {2}'.format(upload_key, count, num_recs))
+
+                self.do_upload(upload_key,
+                               filename,
+                               stream,
+                               user,
+                               info['coll'],
+                               info['rec'],
+                               info['offset'],
+                               info['length'])
+
+                pages = info.get('pages')
+                if pages is None:
+                    pages = self.detect_pages(user, info['coll'], info['rec'])
+
+                if pages:
+                    self.manager.import_pages(user, info['coll'], info['rec'], pages)
+
+                diff = info['offset'] - last_end
+                last_end = info['offset'] + info['length']
+                if diff > 0:
+                    self._add_split_padding(diff, upload_key)
+
         except:
+            import traceback
             traceback.print_exc()
-            return (None, 'Invalid Web Archive (Parsing Error)')
 
-        logger.debug('Temp Buffer Size: ' + str(temp_file.tell()))
+        finally:
+            # add remainder of file, assumed consumed/skipped, if any
+            last_end = stream.tell()
+            if last_end < total_size:
+                diff = total_size - last_end
+                self._add_split_padding(diff, upload_key)
 
-        temp_file.seek(0)
+            self.manager.redis.hincrby(upload_key, 'files', -1)
+            res = self.manager.redis.hgetall(upload_key)
+            print(res['size'], res['total_size'], res['filename'])
+            stream.close()
+
+    def _add_split_padding(self, diff, upload_key):
+        self.manager.redis.hincrby(upload_key, 'size', diff * 2)
+
+    def process_upload(self, user, force_coll, infos, stream, filename, total_size, num_recs):
+        stream.seek(0)
 
         count = 0
 
         first_coll = None
 
-        try:
-            for coll, rec in self.process_upload(user, force_coll, infos, temp_file, filename):
-                count += 1
-                logger.debug('Processing Upload Rec {0} of {1}'.format(count, total))
-                if not first_coll:
-                    first_coll = coll
-
-        except:
-            traceback.print_exc()
-            return (None, 'Processing Error')
-
-        return (first_coll, None)
-
-    def process_upload(self, user, force_coll, infos, stream, filename):
         collection = None
         recording = None
 
         if force_coll:
             collection = self.manager.get_collection(user, force_coll)
+
+        rec_infos = []
 
         for info in infos:
             type = info.get('type')
@@ -181,15 +261,17 @@ class UploadController(BaseController):
                 recording['id'] = actual_recording['id']
                 recording['title'] = actual_recording['title']
 
-                yield collection, recording
+                count += 1
+                #yield collection, recording
 
-                self.do_upload(filename,
-                               stream,
-                               user,
-                               collection['id'],
-                               recording['id'],
-                               recording['offset'],
-                               recording['length'])
+                logger.debug('Processing Upload Rec {0} of {1}'.format(count, num_recs))
+
+                rec_infos.append({'coll': collection['id'],
+                                  'rec': recording['id'],
+                                  'offset': recording['offset'],
+                                  'length': recording['length'],
+                                  'pages': recording.get('pages', None),
+                                 })
 
                 self.manager.set_recording_timestamps(user,
                                                       collection['id'],
@@ -197,12 +279,10 @@ class UploadController(BaseController):
                                                       recording.get('created_at'),
                                                       recording.get('updated_at'))
 
-                pages = recording.get('pages')
-                if pages is None:
-                    pages = self.detect_pages(user, collection['id'], recording['id'])
+            if not first_coll:
+                first_coll = collection
 
-                if pages:
-                    self.manager.import_pages(user, collection['id'], recording['id'], pages)
+        return first_coll, rec_infos
 
     def _get_existing_coll(self, user, info):
         return None
@@ -246,7 +326,7 @@ class UploadController(BaseController):
 
         return False
 
-    def do_upload(self, filename, stream, user, coll, rec, offset, length):
+    def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         stream.seek(offset)
 
         logger.debug('do_upload(): {0} offset: {1}: len: {2}'.format(rec, offset, length))
@@ -257,7 +337,8 @@ class UploadController(BaseController):
         upload_url = self.upload_path.format(record_host=self.record_host,
                                              user=user,
                                              coll=coll,
-                                             rec=rec)
+                                             rec=rec,
+                                             upid=upload_key)
 
         r = requests.put(upload_url,
                          headers=headers,
@@ -282,7 +363,7 @@ class UploadController(BaseController):
 
         return collection
 
-    def parse_uploaded(self, stream):
+    def parse_uploaded(self, stream, expected_size):
         arciterator = ArchiveIterator(stream, no_record_parse=True, verify_http=True)
         infos = []
 
@@ -301,17 +382,23 @@ class UploadController(BaseController):
 
             arciterator.read_to_end(record)
 
+            if last_indexinfo:
+                last_indexinfo['offset'] = arciterator.member_info[0]
+                last_indexinfo = None
+
             if warcinfo:
-                new_offset = self.add_index_info(infos, indexinfo, arciterator)
+                self.add_index_info(infos, indexinfo, arciterator.member_info[0])
 
                 indexinfo = warcinfo.get('json-metadata')
+                indexinfo['offset'] = None
 
-                indexinfo['offset'] = new_offset
                 if 'title' not in indexinfo:
                     indexinfo['title'] = 'Uploaded Recording'
 
                 if 'type' not in indexinfo:
                     indexinfo['type'] = 'recording'
+
+                last_indexinfo = indexinfo
 
             elif is_first:
                 indexinfo = {'type': 'recording',
@@ -322,17 +409,25 @@ class UploadController(BaseController):
             is_first = False
 
         if indexinfo:
-            self.add_index_info(infos, indexinfo, arciterator)
+            self.add_index_info(infos, indexinfo, stream.tell())
+
+        # if anything left over, likely due to WARC error, consume remainder
+        if stream.tell() < expected_size:
+            while True:
+                buff = stream.read(8192)
+                if not buff:
+                    break
 
         return infos
 
-    def add_index_info(self, infos, indexinfo, arciterator):
-        new_offset = arciterator.member_info[0] + arciterator.member_info[1]
-        if indexinfo:
-            indexinfo['length'] = new_offset - indexinfo['offset']
-            infos.append(indexinfo)
+    def add_index_info(self, infos, indexinfo, curr_offset):
+        if not indexinfo or indexinfo.get('offset') is None:
+            return
 
-        return new_offset
+        indexinfo['length'] = curr_offset - indexinfo['offset']
+
+        if indexinfo['length'] > 0:
+            infos.append(indexinfo)
 
     def parse_warcinfo(self, record):
         valid = False
@@ -353,13 +448,110 @@ class UploadController(BaseController):
 
 
 # ============================================================================
-class CacheingLimitReader(LimitReader):
-    def __init__(self, stream, length, out):
-        super(CacheingLimitReader, self).__init__(stream, length)
-        self.out = out
+class InplaceUploader(UploadController):
+    def __init__(self, manager, indexer, upload_id):
+        super(InplaceUploader, self).__init__(None, None, manager, manager.config)
+        self.indexer = indexer
+        self.upload_id = upload_id
 
-    def read(self, size=-1):
-        buff = super(CacheingLimitReader, self).read(size)
-        self.out.write(buff)
-        return buff
+    def _get_upload_id(self):
+        return self.upload_id
+
+    def init_routes(self):
+        pass
+
+    def multifile_upload(self, user, files):
+        total_size = 0
+
+        for filename in files:
+            total_size += os.path.getsize(filename)
+
+        upload_id = self._get_upload_id()
+
+        upload_key = self.upload_key.format(user=user, upid=upload_id)
+
+        with redis.utils.pipeline(self.manager.redis) as pi:
+            pi.hset(upload_key, 'size', 0)
+            pi.hset(upload_key, 'total_size', total_size * 2)
+            pi.hset(upload_key, 'total_files', len(files))
+            pi.hset(upload_key, 'files', len(files))
+            pi.expire(upload_key, 120)
+
+        gevent.sleep(0)
+
+        for filename in files:
+            size = 0
+            fh = None
+            try:
+                size = os.path.getsize(filename)
+                fh = open(filename, 'rb')
+
+                self.manager.redis.hset(upload_key, 'filename', filename)
+
+                stream = SizeTrackingReader(fh, size, self.manager.redis, upload_key)
+
+                infos = self.parse_uploaded(stream, size)
+
+                res = self.handle_upload(fh, upload_id, upload_key, infos, filename,
+                                         user, False, size)
+
+                assert('error_message' not in res)
+            except Exception as e:
+                print('ERROR PARSING: ' + filename)
+                print(e)
+                if fh:
+                    rem = size - fh.tell()
+                    if rem > 0:
+                        self.manager.redis.hincrby(upload_key, 'size', rem)
+                    self.manager.redis.hincrby(upload_key, 'files', -1)
+                    fh.close()
+
+    def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
+        stream.seek(offset)
+
+        #stream = LimitReader(stream, length)
+
+        params = {'param.user': user,
+                  'param.coll': coll,
+                  'param.rec': rec,
+                  'param.upid': upload_key,
+                 }
+
+        self.indexer.add_warc_file(filename, params)
+        self.indexer.add_urls_to_index(stream, params, filename, length)
+
+    def _add_split_padding(self, diff, upload_key):
+        self.manager.redis.hincrby(upload_key, 'size', diff)
+
+    def launch_upload(self, func, *args):
+        func(*args)
+
+    def _get_existing_coll(self, user, info):
+        # if enabled, force all 'Temporary Collection' into one collection?
+        return None
+
+        if info.get('title') != 'Temporary Collection':
+            return None
+
+        collection = self.manager.get_collection(user, 'webrecorder-collection')
+        if collection:
+            return collection
+
+        desc = ''
+        collection = {'type': 'collection',
+                      'title': 'Webrecorder Collection',
+                      'desc': desc,
+                     }
+
+        collection['id'] = self.sanitize_title(collection['title'])
+        actual_collection = self.manager.create_collection(user,
+                                       collection['id'],
+                                       collection['title'],
+                                       collection.get('desc', ''),
+                                       collection.get('public', False))
+
+        collection['id'] = actual_collection['id']
+        collection['title'] = actual_collection['title']
+
+        return collection
 

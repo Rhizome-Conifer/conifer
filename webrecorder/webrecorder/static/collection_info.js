@@ -580,20 +580,9 @@ var RecordingMove = {
 
 var MountInfo = (function(){
     function start() {
-        $('#mount-form').ajaxForm({
-            beforeSerialize: function() {
-                if ($("#mount-type").find(":selected").val() == "ait") {
-                    $("#mount-title").val("AIT " + $("#ait-data").val());
-                }
-            },
-
-            complete: function(xhr) {
-                $("#mount-modal").modal('hide');
-
-                data = xhr.responseJSON;
-                if (data && data.mount_rec) {
-                    window.location.href = "/" + user + "/" + coll + "/" + data.mount_rec;
-                }
+        $('#mount-form').submit(function() {
+            if ($("#mount-type").find(":selected").val() == "ait") {
+                $("#mount-title").val("AIT " + $("#ait-data").val());
             }
         });
 

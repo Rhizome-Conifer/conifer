@@ -78,6 +78,9 @@ class AppController(BaseController):
         self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'], decode_responses=True)
         self.session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 
+        # Auto Upload on Init Id
+        self.init_upload_id = config.get('init_upload_id')
+
         # Init Jinja
         jinja_env = self.init_jinja_env(config)
 
@@ -248,6 +251,9 @@ class AppController(BaseController):
                 resp['num_collections'] = len(coll_list)
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
+
+                if self.init_upload_id:
+                    resp['upload_status'] = self.manager.get_upload_status(curr_user, self.init_upload_id)
 
             else:
                 self.fill_anon_info(resp)

@@ -6,13 +6,16 @@ from pywb.recorder.warcwriter import MultiFileWARCWriter
 from pywb.recorder.filters import WriteRevisitDupePolicy
 from pywb.recorder.filters import ExcludeSpecificHeaders
 
+from webrecorder.utils import SizeTrackingReader
+
 import redis
 import time
 import json
 import glob
 import tempfile
+import traceback
 
-from pywb.webagg.utils import res_template
+from pywb.webagg.utils import res_template, BUFF_SIZE
 
 from bottle import Bottle, request, debug
 from datetime import datetime
@@ -167,7 +170,6 @@ class WebRecRecorder(object):
                     self.recorder.writer.close_idle_files()
 
             except:
-                import traceback
                 traceback.print_exc()
 
     def queue_message(self, channel, message):
@@ -298,7 +300,6 @@ class WebRecRecorder(object):
         try:
             return self.delete_actual()
         except:
-            import traceback
             traceback.print_exc()
 
     def delete_actual(self):
@@ -331,7 +332,6 @@ class WebRecRecorder(object):
         try:
             self._delete_redis_keys(type, user, coll, rec)
         except Exception as e:
-            import traceback
             traceback.print_exc()
             return {'error_message': str(e)}
 
@@ -431,6 +431,10 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         self.temp_prefix = kwargs.get('temp_prefix', 'temp-')
 
     def add_urls_to_index(self, stream, params, filename, length):
+        upload_key = params.get('param.upid')
+        if upload_key:
+            stream = SizeTrackingReader(stream, length, self.redis, upload_key)
+
         cdx_list = (super(WebRecRedisIndexer, self).
                       add_urls_to_index(stream, params, filename, length))
 
@@ -476,6 +480,20 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         return True
 
+    def write_stream_to_file(self, params, stream):
+        upload_id = params.get('param.upid')
+        def write_callback(out, filename):
+            while True:
+                buff = stream.read(BUFF_SIZE)
+                if not buff:
+                    break
+
+                out.write(buff)
+                if upload_id:
+                    self.redis.hincrby(upload_id, 'size', len(buff))
+
+        return self._write_to_file(params, write_callback)
+
     def _is_write_req(self, req, params):
         if not req or not req.rec_headers or not self.skip_key_template:
             return False
@@ -508,7 +526,6 @@ class TempWriteBuffer(tempfile.SpooledTemporaryFile):
         try:
             super(TempWriteBuffer, self).close()
         except:
-            import traceback
             traceback.print_exc()
 
         self.redis.hincrby(self.info_key, 'pending_size', -self._wsize)
