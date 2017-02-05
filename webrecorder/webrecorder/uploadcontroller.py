@@ -172,14 +172,18 @@ class UploadController(BaseController):
                 count += 1
                 logger.debug('Id: {0}, Uploading Rec {1} of {2}'.format(upload_key, count, num_recs))
 
-                self.do_upload(upload_key,
-                               filename,
-                               stream,
-                               user,
-                               info['coll'],
-                               info['rec'],
-                               info['offset'],
-                               info['length'])
+                if info['length'] > 0:
+                    self.do_upload(upload_key,
+                                   filename,
+                                   stream,
+                                   user,
+                                   info['coll'],
+                                   info['rec'],
+                                   info['offset'],
+                                   info['length'])
+                else:
+                    logger.debug('SKIP upload for zero-length recording')
+
 
                 pages = info.get('pages')
                 if pages is None:
@@ -426,8 +430,7 @@ class UploadController(BaseController):
 
         indexinfo['length'] = curr_offset - indexinfo['offset']
 
-        if indexinfo['length'] > 0:
-            infos.append(indexinfo)
+        infos.append(indexinfo)
 
     def parse_warcinfo(self, record):
         valid = False
