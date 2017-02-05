@@ -15,7 +15,7 @@ import os
 import gevent
 import redis
 
-from webrecorder.utils import SizeTrackingReader
+from webrecorder.utils import SizeTrackingReader, CacheingLimitReader
 
 import logging
 logger = logging.getLogger(__name__)
