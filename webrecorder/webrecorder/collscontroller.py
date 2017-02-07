@@ -120,11 +120,13 @@ class CollsController(BaseController):
 
         @self.app.post('/api/v1/collections/<coll>/mount')
         def add_mount(coll):
-            return self.add_mount(coll)
+            user = self.get_user(api=True)
+            return self.add_mount(user, coll)
 
         @self.app.post('/_mount/<coll>')
         def add_mount_post(coll):
-            res = self.add_mount(coll, False)
+            user = self.get_user(api=False)
+            res = self.add_mount(user, coll)
             if 'mount_rec' in res:
                 msg = 'Mount <b>{0}</b> created'.format(res['mount_rec'])
                 self.flash_message(msg, 'success')
@@ -253,8 +255,7 @@ class CollsController(BaseController):
         if not self.manager.has_collection(user, coll):
             self._raise_error(404, 'Collection not found', api=True, id=coll)
 
-    def add_mount(self, coll, api=True):
-        user = self.get_user(api=api)
+    def add_mount(self, user, coll):
         self._ensure_coll_exists(user, coll)
 
         if not self.manager.can_mount_coll(user, coll):

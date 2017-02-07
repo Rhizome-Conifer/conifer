@@ -210,7 +210,6 @@ class UploadController(BaseController):
 
             self.manager.redis.hincrby(upload_key, 'files', -1)
             res = self.manager.redis.hgetall(upload_key)
-            print(res['size'], res['total_size'], res['filename'])
             stream.close()
 
     def _add_split_padding(self, diff, upload_key):
