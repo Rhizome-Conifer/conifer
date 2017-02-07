@@ -16,6 +16,9 @@ import json
 
 
 # =============================================================================
+PROXY_PREFIX = ''
+
+
 def make_webagg():
     config = load_wr_config()
 
@@ -28,10 +31,16 @@ def make_webagg():
     warc_url = redis_base + config['warc_key_templ']
 
     cache_proxy_url = os.environ.get('CACHE_PROXY_URL')
-    AitFilterIndexSource.PROXY_PREFIX = cache_proxy_url
+    global PROXY_PREFIX
+    PROXY_PREFIX = cache_proxy_url
 
-    rec_redis_source = RedisIndexSource(rec_url)
+    rec_redis_source = MountMultiKeyIndexSource(timeout=20.0,
+                                                redis_url=rec_url)
+
     redis = rec_redis_source.redis
+    coll_redis_source = MountMultiKeyIndexSource(timeout=20.0,
+                                                 redis_url=rec_url,
+                                                 redis=redis)
 
     live_rec  = DefaultResourceHandler(
                     SimpleAggregator(
@@ -45,9 +54,7 @@ def make_webagg():
 
     replay_coll = DefaultResourceHandler(
                     SimpleAggregator(
-                        {'replay': MountMultiKeyIndexSource(timeout=20.0,
-                                                            redis_url=coll_url,
-                                                            redis=redis)}
+                        {'replay': coll_redis_source}
                     ), warc_url, cache_proxy_url)
 
     app.add_route('/live', live_rec)
@@ -63,8 +70,6 @@ class AitFilterIndexSource(RemoteIndexSource):
     DEFAULT_AIT_ROOT = 'http://wayback.archive-it.org/'
     DEFAULT_AIT_QUERY = 'cdx?url={url}&filter=filename:ARCHIVEIT-(%s)-.*'
 
-    PROXY_PREFIX = ''
-
     def __init__(self, ait_coll, ait_host=None):
         ait_host = ait_host or self.DEFAULT_AIT_ROOT
         api_url = ait_host + self.DEFAULT_AIT_QUERY % ait_coll
@@ -74,7 +79,7 @@ class AitFilterIndexSource(RemoteIndexSource):
 
     def _get_api_url(self, params):
         results = super(AitFilterIndexSource, self)._get_api_url(params)
-        return self.PROXY_PREFIX + results
+        return PROXY_PREFIX + results
 
     def _set_load_url(self, cdx):
         parts = cdx.get('filename', '').split('-', 2)
@@ -108,10 +113,18 @@ class AitFilterIndexSource(RemoteIndexSource):
 
 
 # ============================================================================
+class ProxyMementoIndexSource(MementoIndexSource):
+    def __init__(self, timegate_url, timemap_url, replay_url):
+        timegate_url = PROXY_PREFIX + timegate_url
+        timemap_url = PROXY_PREFIX + timemap_url
+        super(ProxyMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
+
+
+# ============================================================================
 class MountMultiKeyIndexSource(GeventMixin, BaseRedisMultiKeyIndexSource):
     SUPPORTED_SOURCES = [AitFilterIndexSource,
                          RemoteIndexSource,
-                         MementoIndexSource]
+                         ProxyMementoIndexSource]
 
     def _get_source_for_key(self, key):
         if not key.endswith('_m'):
