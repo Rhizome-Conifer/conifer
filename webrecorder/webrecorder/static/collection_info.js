@@ -248,14 +248,14 @@ var RecordingSelector = (function() {
     }
 
     var doMove = function(event) {
-        var recordingId = $("#move-rec-title").text();
+        var recordingId = $("#move-rec-title").data("move-rec-id");
         var newColl = $("#move-coll").attr("data-move-to");
 
         if (!newColl || !recordingId) {
             return;
         }
 
-	Recordings.move(recordingId, newColl, RecordingMove.done, RecordingMove.fail);
+        Recordings.move(recordingId, newColl, RecordingMove.done, RecordingMove.fail);
 
         $("#move-modal").modal('hide');
     }

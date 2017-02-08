@@ -1,4 +1,8 @@
-{% set recording_column_index = 7 if is_owner() else 4 %}
+{% if is_beta() %}
+    {% set recording_column_index = 7 if is_owner() else 4 %}
+{% else %}
+    {% set recording_column_index = 6 if is_owner() else 4 %}
+{% endif %}
 {% set can_tag = can_tag() %}
 {#
 {% if is_owner() %}

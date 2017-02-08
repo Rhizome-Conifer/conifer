@@ -4,7 +4,7 @@
 {% set editing_id = "recording-title-" + recording.id %}
 
 {% if can_write() or bookmark_count > 0 %}
-<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|e }}">
+<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}">
     <div class="checkbox-column">
         <div class="btn btn-xs filter-label icon-button">
         </div>
@@ -22,7 +22,7 @@
 
                 {% if not is_anon() %}
                 <li>
-                    <a href="#" data-toggle="modal" data-target="#move-modal" data-move-rec-id="{{ recording.id }}" data-recording-title="{{ recording.title|e }}"><span class="glyphicon glyphicon-pencil glyphicon-export" aria-hidden="true"></span>Move to Collection…</a>
+                    <a href="#" data-toggle="modal" data-target="#move-modal" data-move-rec-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}"><span class="glyphicon glyphicon-pencil glyphicon-export" aria-hidden="true"></span>Move to Collection…</a>
                 </li>
                 {% endif %}
                 <li role="separator" class="divider"></li>
