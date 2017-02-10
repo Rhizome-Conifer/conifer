@@ -16,7 +16,7 @@
                         <ul class="dropdown-menu">
                             {% for collection in collections | sort(attribute='title') %}
                             <li>
-                                <a href="#" class="collection-select" data-collection-title="{{ collection.title|e }}">{{ collection.title }}</a>
+                                <a href="#" class="collection-select" data-collection-title="{{ collection.title|urlencode }}">{{ collection.title }}</a>
                             </li>
                             {% endfor %}
                         </ul>

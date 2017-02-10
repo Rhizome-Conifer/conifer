@@ -36,7 +36,7 @@ var Collections = (function() {
     var rename = function(collectionId, newName, doneCallback, failCallback) {
         var collectionId = collectionId;
         $.ajax({
-            url: API_ENDPOINT + "/" + collectionId + "/rename/" + newName + query_string,
+            url: API_ENDPOINT + "/" + collectionId + "/rename/" + encodeURIComponent(newName) + query_string,
             method: "POST"
         })
         .done(function(data, textStatus, xhr) {

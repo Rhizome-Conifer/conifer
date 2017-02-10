@@ -22,14 +22,14 @@
 
     {% if coll %}
     <li>
-        <a target="_parent" id="coll-breadcrumb-link" href="{{ get_path(user, coll) }}" data-collection-id="{{ coll }}" data-value-encoded="{{ coll_title }}" data-target-decoded="" class="collection-breadcrumb"></a>
+        <a target="_parent" id="coll-breadcrumb-link" href="{{ get_path(user, coll) }}" data-collection-id="{{ coll }}" data-value-encoded="{{ coll_title|urlencode }}" data-target-decoded="" class="collection-breadcrumb"></a>
         <span style="display: none" id="coll-breadcrumb-text">{{ coll_title }}</span>
     </li>
     {% endif %}
 
     {% if rec and rec != '*' %}
     <li>
-        <a target="_parent" id="rec-breadcrumb-link" href="{{ get_path(user, coll, rec) }}" data-recording-id="{{ rec }}" data-value-encoded="{{ rec_title }}" data-target-decoded="" class="recording-breadcrumb"></a>
+        <a target="_parent" id="rec-breadcrumb-link" href="{{ get_path(user, coll, rec) }}" data-recording-id="{{ rec }}" data-value-encoded="{{ rec_title|urlencode }}" data-target-decoded="" class="recording-breadcrumb"></a>
     </li>
     {% elif curr_mode == 'new' %}
     <li><span>Create a new recording</span></li>
