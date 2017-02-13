@@ -10,6 +10,8 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 
 from webrecorder.redisman import init_manager_for_cli
 
+from pywb.utils.loaders import LimitReader
+
 import os
 import sys
 import pkgutil
@@ -205,6 +207,8 @@ class InplaceUploader(UploadController):
 
     def do_upload(self, filename, stream, user, coll, rec, offset, length):
         stream.seek(offset)
+
+        stream = LimitReader(stream, length)
 
         params = {'param.user': user,
                   'param.coll': coll,

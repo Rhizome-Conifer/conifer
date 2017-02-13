@@ -50,7 +50,6 @@ class TestTempContent(FullStackTests):
             exp_keys.extend(self._get_redis_keys(self.REDIS_KEYS, user, coll, rec))
 
         res_keys = self.redis.keys()
-        res_keys = [k.decode('utf-8') for k in res_keys]
 
         assert set(exp_keys) == set(res_keys)
 
@@ -290,8 +289,6 @@ class TestTempContent(FullStackTests):
         cdxout = BytesIO()
         write_cdx_index(cdxout, warcin, 'My-Rec2.warc.gz', include_all=True, cdxj=True)
 
-        #print(cdxout.getvalue().decode('utf-8'))
-
         cdx = [CDXObject(cdx) for cdx in cdxout.getvalue().rstrip().split(b'\n')]
         assert len(cdx) == 2
 
@@ -312,8 +309,6 @@ class TestTempContent(FullStackTests):
 
         cdxout = BytesIO()
         write_cdx_index(cdxout, warcin, 'temp.warc.gz', include_all=True, cdxj=True)
-
-        #print(cdxout.getvalue().decode('utf-8'))
 
         cdx = [CDXObject(cdx) for cdx in cdxout.getvalue().rstrip().split(b'\n')]
         assert len(cdx) == 6
@@ -431,7 +426,7 @@ class TestTempContent(FullStackTests):
 
         time.sleep(4.0)
 
-        assert set(self.redis.keys()) == set([b'h:roles', b'h:defaults', b'h:temp-usage'])
+        assert set(self.redis.keys()) == set(['h:roles', 'h:defaults', 'h:temp-usage'])
 
         assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
         #assert os.listdir(os.path.join(self.warcs_dir, 'anon')) == []

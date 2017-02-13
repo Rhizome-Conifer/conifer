@@ -74,7 +74,7 @@ class AppController(BaseController):
         if not redis_url:
             redis_url = os.environ['REDIS_BASE_URL']
 
-        self.redis = redis.StrictRedis.from_url(redis_url)
+        self.redis = redis.StrictRedis.from_url(redis_url, decode_responses=True)
         self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'], decode_responses=True)
         self.session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 

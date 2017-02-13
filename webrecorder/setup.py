@@ -68,7 +68,7 @@ setup(
                         'static/external/bootstrap/fonts/*'],
     },
     setup_requires=[
-        'webassets',
+        'webassets==0.12.1',
         'pywb>=0.50.0'
     ],
     install_requires=[
@@ -83,13 +83,12 @@ setup(
         'werkzeug',
         'urllib3',
         'pywb>=0.50.0',
-        'webassets==0.12.0',
+        'webassets==0.12.1',
         'karellen-geventws',
         'fakeredis'
     ],
     dependency_links=[
         'git+https://github.com/ikreymer/pywb.git@new-pywb#egg=pywb-0.50.0',
-        'git+https://github.com/ikreymer/webassets.git@pyinstaller#egg=webassets-0.12.0',
     ],
     tests_require=[
         'pytest',

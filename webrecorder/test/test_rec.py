@@ -58,7 +58,6 @@ class TestWebRecRecorder(FullStackTests):
         resp = self._test_warc_write('http://httpbin.org/get?foo=bar', user='USER', coll='COLL', rec='REC')
 
         keys = self.redis.keys()
-        keys = [k.decode('utf-8') for k in keys]
 
         assert set(keys) == set([
             'r:USER:COLL:REC:warc',
@@ -82,7 +81,6 @@ class TestWebRecRecorder(FullStackTests):
         resp = self._test_warc_write('http://httpbin.org/get?boo=far', user='USER', coll='COLL', rec='REC2')
 
         keys = self.redis.keys()
-        keys = [k.decode('utf-8') for k in keys]
 
         assert set(keys) == set([
             'r:USER:COLL:REC:warc',
