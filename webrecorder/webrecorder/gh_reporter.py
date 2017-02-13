@@ -1,6 +1,6 @@
 import json
 import requests
-import sys
+import os
 from werkzeug.useragents import UserAgent
 
 
@@ -82,11 +82,15 @@ class GitHubIssueImporter(object):
                    'leak': 'Live Web leak'
                   }
 
-    TEST_RECORD_URL = 'https://webrecorder.io/$record/bug-reports/report/'
-
-    def __init__(self, gh):
-        self.gh = gh
+    def __init__(self, username, token_or_pass, owner, repo):
+        self.gh = GitHubAPI(username, token_or_pass, owner, repo)
         self.label_cache = set()
+
+        self.new_recording_prefix = os.environ.get('APP_HOST')
+
+        if not self.new_recording_prefix:
+            self.new_recording_prefix = 'https://webrecorder.io/'
+        self.new_recording_prefix += '$record/bug-reports/report/'
 
     def add_bug_report(self, report):
         issue = self.format_issue(report)
@@ -112,6 +116,11 @@ class GitHubIssueImporter(object):
             if index < 0:
                 index = url.find('///')
 
+            if index < 0 and report.get('state'):
+                index = url.find(report['state'] + '/')
+                if index > 0:
+                    index += len(report['state'])
+
             if index >= 0:
                 report['actual_url'] = url[index + 1:]
             else:
@@ -119,7 +128,7 @@ class GitHubIssueImporter(object):
         else:
             report['url'] = report['actual_url'] = report['record_url'] = '-'
 
-        report['record_url'] = self.TEST_RECORD_URL + report['actual_url']
+        report['record_url'] = self.new_recording_prefix + report['actual_url']
 
         report['time'] = report['time'][:19]
 
@@ -175,19 +184,3 @@ class GitHubIssueImporter(object):
             params['ua_platform'] = '-'
             params['ua_browser'] = params.get('ua', '-')
             params['ua_version'] = '-'
-
-
-# ============================================================================
-def import_list(username, token_or_pass, owner, repo, issue_list):
-    gh = GitHubAPI(username, token_or_pass, owner, repo)
-    im = IssueImporter(gh)
-
-    print('Importing {0} Issues'.format(len(issue_list)))
-    count = 1
-    for data in issue_list:
-        print('Importing {0} of {1}'.format(count, len(issue_list)))
-        im.add_bug_report(data)
-        count = count + 1
-
-
-

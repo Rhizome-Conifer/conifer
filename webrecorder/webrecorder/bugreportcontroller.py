@@ -1,10 +1,11 @@
 from webrecorder.basecontroller import BaseController
-from webrecorder.gh_reporter import GitHubIssueImporter, GitHubAPI
+from webrecorder.gh_reporter import GitHubIssueImporter
 from werkzeug.useragents import UserAgent
 from bottle import request
 
 from datetime import datetime
 import os
+import json
 
 
 # ============================================================================
@@ -23,8 +24,9 @@ class BugReportController(BaseController):
         if gh_auth and gh_repo:
             owner, repo = gh_repo.split('/')
             username, token_or_pass = gh_auth.split(':')
-            gh = GitHubAPI(username, token_or_pass, owner, repo)
-            self.issue_handler = GitHubIssueImporter(gh)
+            self.issue_handler = GitHubIssueImporter(username,
+                                                     token_or_pass,
+                                                     owner, repo)
         else:
             self.issue_handler = self.redis_issue_handler
 
