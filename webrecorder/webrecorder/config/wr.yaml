@@ -121,7 +121,10 @@ full_warc_prefix: 'local+http://nginx:6090'
 
 
 # Redis Keys
-cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj*'
+cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj'
+
+# search keys
+cdxj_rec_key_templ: 'r:{user}:{coll}:{rec}:cdxj*'
 cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj*'
 
 page_key_templ: 'r:{user}:{coll}:{rec}:page'

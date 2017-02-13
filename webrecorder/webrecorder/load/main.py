@@ -26,7 +26,7 @@ def make_webagg():
 
     redis_base = os.environ['REDIS_BASE_URL'] + '/'
 
-    rec_url = redis_base + config['cdxj_key_templ']
+    rec_url = redis_base + config['cdxj_rec_key_templ']
     coll_url = redis_base + config['cdxj_coll_key_templ']
     warc_url = redis_base + config['warc_key_templ']
 
