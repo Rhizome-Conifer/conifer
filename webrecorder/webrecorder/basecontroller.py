@@ -172,7 +172,7 @@ class BaseController(object):
         id = id.replace(' ', '-')
         id = self.ALPHA_NUM_RX.sub('', id)
         if self.WB_URL_COLLIDE.match(id):
-            id += '_'
+            id += '-'
 
         return id
 
@@ -181,7 +181,7 @@ class BaseController(object):
         id = id.replace(' ', '-')
         id = self.ALPHA_NUM_RX.sub('', id)
         if self.WB_URL_COLLIDE.match(id):
-            id += '_'
+            id += '-'
 
         return id
 

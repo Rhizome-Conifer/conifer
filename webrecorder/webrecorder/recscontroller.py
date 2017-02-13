@@ -1,4 +1,5 @@
-from bottle import request, response, HTTPError
+from bottle import request, response
+from urllib.parse import quote
 
 from webrecorder.basecontroller import BaseController
 
@@ -215,7 +216,7 @@ class RecsController(BaseController):
         if not collection:
             self._raise_error(404, 'Collection not found')
 
-        result['coll_title'] = collection['title']
+        result['coll_title'] = quote(collection['title'])
 
         if rec:
             recording = self.manager.get_recording(user, coll, rec)
