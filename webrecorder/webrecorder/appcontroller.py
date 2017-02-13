@@ -24,6 +24,7 @@ from webrecorder.websockcontroller import WebsockController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
 from webrecorder.logincontroller import LoginController
+from webrecorder.bugreportcontroller import BugReportController
 from webrecorder.usercontroller import UserController
 from webrecorder.downloadcontroller import DownloadController
 from webrecorder.uploadcontroller import UploadController
@@ -46,7 +47,7 @@ class AppController(BaseController):
                        UploadController,
                        LoginController,
                        UserController,
-                       #ContentController,
+                       BugReportController,
                        SnapshotController,
                        WebsockController,
                        RecsController,

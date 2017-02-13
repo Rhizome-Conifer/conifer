@@ -15,8 +15,6 @@ from webrecorder.basecontroller import BaseController
 from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema,
                                  UserSchema, UserUpdateSchema)
 
-from werkzeug.useragents import UserAgent
-
 
 # ============================================================================
 class UserController(BaseController):
@@ -468,29 +466,6 @@ class UserController(BaseController):
         def expire():
             self.flash_message('Sorry, the anonymous collection has expired due to inactivity')
             self.redirect('/')
-
-        @self.app.post('/_reportissues')
-        def report_issues():
-            useragent = request.headers.get('User-Agent')
-
-            @self.jinja2_view('email_error.html')
-            def error_email(params):
-                ua = UserAgent(params.get('ua'))
-                if ua.browser:
-                    browser = '{0} {1} {2} {3}'
-                    lang = ua.language or ''
-                    browser = browser.format(ua.platform, ua.browser,
-                                             ua.version, lang)
-
-                    params['browser'] = browser
-                else:
-                    params['browser'] = ua.string
-
-                params['time'] = params['time'][:19]
-                return params
-
-            self.manager.report_issues(request.POST, useragent, error_email)
-            return {}
 
         # Skip POST request recording
         @self.app.get('/_skipreq')
