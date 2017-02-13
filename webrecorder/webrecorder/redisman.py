@@ -63,8 +63,6 @@ class LoginManagerMixin(object):
 
         self.temp_prefix = config['temp_prefix']
 
-        self.reports_email = os.environ.get('SUPPORT_EMAIL')
-
         mailing_list = os.environ.get('MAILING_LIST', '').lower()
         self.mailing_list = mailing_list in ('true', '1', 'yes')
         self.list_endpoint = os.environ.get('MAILING_LIST_ENDPOINT', '')
@@ -394,31 +392,6 @@ class LoginManagerMixin(object):
         self.cork.mailer.send_email(email, 'You are invited to join webrecorder.io beta!', email_text)
         entry['sent'] = str(datetime.utcnow())
         return True
-
-    def report_issues(self, issues, ua='', error_email_templ=None):
-        issues_dict = {}
-        for key in issues.iterkeys():
-            issues_dict[key] = issues.getunicode(key)
-
-        now = str(datetime.utcnow())
-
-        user = self.get_curr_user()
-        issues_dict['user'] = user
-        issues_dict['time'] = now
-        issues_dict['ua'] = ua
-        issues_dict['user_email'] = self.get_user_email(user)
-        if not issues_dict.get('email'):
-            issues_dict['email'] = issues_dict['user_email']
-
-        report = json.dumps(issues_dict)
-
-        self.redis.rpush('h:reports', report)
-
-        subject = "[Doesn't Look Right] Error Report - {0}".format(now)
-
-        if self.reports_email and error_email_templ:
-            email_text = error_email_templ(issues_dict)
-            self.cork.mailer.send_email(self.reports_email, subject, email_text)
 
     def skip_post_req(self, user, url):
         key = self.user_skip_key.format(user=user, url=url)
