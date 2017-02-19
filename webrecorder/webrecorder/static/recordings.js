@@ -383,7 +383,7 @@ var PagingInterface = (function () {
             linklist.toggleClass('open');
         });
 
-        // set linklist ones TODO: this might be slow and uncessary
+        // set linklist ones TODO: this might be slow and unnecessary
         linklist.find('> .dropdown-menu .replay-date').each(function () {
             var obj = $(this);
 
