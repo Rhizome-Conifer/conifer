@@ -148,11 +148,17 @@ class AppController(BaseController):
         def get_tags_in_collection(user, coll):
             return self.manager.get_tags_in_collection(user, coll)
 
+        def get_app_host():
+            return self.app_host
+
         def is_beta():
             return self.manager.is_beta()
 
         def can_tag():
             return self.manager.can_tag()
+
+        def is_public(user, coll):
+            return self.manager.is_public(user, coll)
 
         @contextfunction
         def can_admin(context):
@@ -188,6 +194,72 @@ class AppController(BaseController):
             return self.get_body_class(context, action)
 
         @contextfunction
+        def get_share_url(context):
+            url = context.get('url')
+            br = context.get('browser', '')
+            user = context.get('user')
+            coll = context.get('coll')
+            host = self.app_host + ('' if self.app_host.endswith('/') else '/')
+            ts = ''
+
+            if br != '':
+                br = '$br:'+br
+
+            if context.get('curr_mode', '') in ('record'):
+                ts = context.get('timestamp', '')
+            else:
+                wbreq = context.get('wbrequest')
+                ts = context.get('ts', '')
+                # get timestamp from context or wbreq (depending if cbrowser)
+                ts = wbreq['wb_url'].timestamp if wbreq else ts
+
+            return 'https://{host}{user}/{coll}/{ts}{browser}/{url}'.format(
+                host=host,
+                user=user,
+                coll=coll,
+                ts=ts,
+                browser=br,
+                url=url
+            )
+
+        @contextfunction
+        def get_embed_url(context):
+            host = self.app_host + ('' if self.app_host.endswith('/') else '/')
+            url = context.get('url')
+            br = context.get('browser', '')
+            user = context.get('user')
+            coll = context.get('coll')
+            ts = ''
+
+            if br != '':
+                br = '$br:'+br
+
+            if context.get('curr_mode', '') in ('record'):
+                ts = context.get('timestamp', '')
+            else:
+                wbreq = context.get('wbrequest')
+                ts = context.get('ts', '')
+
+                # get timestamp from context or wbreq (depending if cbrowser)
+                ts = wbreq['wb_url'].timestamp if wbreq else ts
+
+            return 'https://{host}_embed/{user}/{coll}/{ts}{browser}/{url}'.format(
+                host=host,
+                user=user,
+                coll=coll,
+                ts=ts,
+                browser=br,
+                url=url
+            )
+
+        @contextfunction
+        def get_recs_for_coll(context):
+            user = context.get('user')
+            coll = context.get('coll')
+            return [{'ts': r['timestamp'], 'url': r['url'], 'br': r.get('browser', '')}
+                    for r in self.manager.list_coll_pages(user, coll)]
+
+        @contextfunction
         def is_out_of_space(context):
             return self.manager.is_out_of_space(context.get('curr_user', ''))
 
@@ -214,8 +286,13 @@ class AppController(BaseController):
         jinja_env.globals['is_owner'] = is_owner
         jinja_env.globals['is_anon'] = is_anon
         jinja_env.globals['is_beta'] = is_beta
+        jinja_env.globals['is_public'] = is_public
         jinja_env.globals['get_path'] = get_path
         jinja_env.globals['get_body_class'] = get_body_class
+        jinja_env.globals['get_share_url'] = get_share_url
+        jinja_env.globals['get_embed_url'] = get_embed_url
+        jinja_env.globals['get_recs_for_coll'] = get_recs_for_coll
+        jinja_env.globals['get_app_host'] = get_app_host
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
         jinja_env.globals['get_tags'] = get_tags

@@ -1,6 +1,16 @@
 {% extends "base_bootstrap.html" %}
 
 {% block head %}
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Webrecorder" />
+<meta name='og:description' content='Create high-fidelity, interactive recordings of any web site you browse.'>
+<meta name="og:image" content="//{{ get_app_host() }}/static/images/share.jpg" />
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:site" content="@webrecorder_io" />
+<meta name="twitter:title" content="Webrecorder" />
+<meta name="twitter:description" content="Create high-fidelity, interactive recordings of any web site you browse." />
+<meta name="twitter:image" content="//{{ get_app_host() }}/static/images/share.jpg" />
 
 {% assets "main-js" %}
 <script type="text/javascript" src="{{ ASSET_URL }}"></script>

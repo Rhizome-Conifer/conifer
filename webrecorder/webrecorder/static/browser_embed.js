@@ -74,6 +74,7 @@ $(function() {
 
     params.inactiveSecs = window.inactiveSecs;
     params.clipboard = "#clipboard";
+    params.fill_window = false;
 
     cb = new CBrowser(reqid, "#browser", params);
 

@@ -1,0 +1,93 @@
+
+{#
+    Sharing widget
+    - if public status is unknown (None), request from the api.
+#}
+{% macro sharing_widget(url, embed_url, coll, owner=False, is_public=none, anon=False, bsSize='md') %}
+    {% set safe_url = url|urlencode %}
+    <div id="fb-root"></div>
+    {# load fb and tw apis #}
+    <script>(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    </script>
+    <script>
+      window.twttr = (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0],
+        t = window.twttr || {};
+      if (d.getElementById(id)) return t;
+      js = d.createElement(s);
+      js.id = id;
+      js.src = "https://platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js, fjs);
+
+      t._e = [];
+      t.ready = function(f) {
+        t._e.push(f);
+      };
+
+      return t;
+    }(document, "script", "twitter-wjs"));</script>
+    </script>
+    <div id="share-widget"
+         class="share-container pull-right"
+         title="Sharing options"
+         data-url="{{ url }}"
+         {% if is_public %}data-public="true"
+         {% elif is_public is not none %}data-public="false"{% endif %}>
+        <button type="button"
+                class="btn btn-default btn-{{ bsSize }} dropdown-toggle sharing-widget"
+                data-toggle="dropdown"
+                aria-label="Sharing widget">
+                  <svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg2" viewBox="0 0 48 48.000001" height="48" width="48">
+                    <g transform="translate(0,-1004.3622)" id="layer1">
+                      <g transform="translate(0,1.5000174)" id="g4280">
+                        <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="path4266" cx="11" cy="1026.8622" r="6" />
+                        <circle r="6" cy="1015.3622" cx="35" id="circle4268" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                        <circle style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="circle4270" cx="35" cy="1038.3622" r="6" />
+                        <rect style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" id="rect4274" width="31" height="3" x="-458.04065" y="919.03638" rx="0" ry="0" transform="matrix(0.89098772,-0.45402741,0.45402741,0.89098772,0,0)" />
+                        <rect transform="matrix(0.89098772,0.45402741,0.45402741,-0.89098772,0,0)" ry="0" rx="0" y="-910.87903" x="474.26474" height="3" width="31" id="rect4278" style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+                      </g>
+                    </g>
+                  </svg>
+        </button>
+        <div class="dropdown-menu share-modal arrow_box">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+            {% if owner %}
+                <div class="public-switch clearfix {% if is_public %}hidden{% endif %}">
+                    {% if anon %}
+                      <p class="make-public-desc">
+                        This is a temporary collection. To preserve and share, <a href="/_register" target="_parent">Sign Up</a> or <a class="login-link" href="/_login_modal">Login</a>.
+                      </p>
+                    {% else %}
+                      <p class="make-public-desc">
+                          Collection <strong>{{ coll }}</strong> is set to private. To get a share link, make the collection public:
+                      </p>
+                      <div class="access-switch" style="float:right;">
+                          {% include 'public_private_switch.html' %}
+                      </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="shareables">
+                <div class="platforms clearfix">
+                    <!-- twitter -->
+                    <div id="wr-tw"></div>
+                    <!-- facebook -->
+                    <div id="wr-fb"></div>
+                </div>
+
+                <label for="shareable-url">Copy and paste to share:</label>
+                <input type="text" id="shareable-url" value="{{ url }}" />
+
+                <label for="shareable-embed-code">Embed code:</label>
+                <textarea id="shareable-embed-code"><iframe  src="{{ embed_url }}" onload="" width='640' height='480' seamless="seamless" frameborder="0" scrolling="yes" class="pager_iframe"></iframe></textarea>
+            </div>
+        </div>
+    </div>
+{%- endmacro %}

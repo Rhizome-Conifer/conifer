@@ -1,3 +1,5 @@
+var DEFAULT_RECORDING_SESSION_NAME = "Recording Session";
+
 function setStorage(name, value) {
     try {
         if (window.sessionStorage) {

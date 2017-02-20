@@ -89,6 +89,16 @@ class CollsController(BaseController):
 
             return res
 
+        @self.app.get('/api/v1/collections/<coll>/is_public')
+        def is_public(coll):
+            user = self.get_user(api=True)
+            self._ensure_coll_exists(user, coll)
+
+            # check ownership
+            if not self.manager.can_admin_coll(user, coll):
+                self._raise_error(404, 'Collection not found', api=True)
+
+            return {'is_public': self.manager.is_public(user, coll)}
 
         @self.app.post('/api/v1/collections/<coll>/public')
         def set_public(coll):

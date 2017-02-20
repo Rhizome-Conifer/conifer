@@ -2,8 +2,10 @@
 
 {% if not is_anon() %}
 <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
-<span class="left-buffer-sm">Collection Public?</span> 
-{% if can_admin() %}
+<span class="left-buffer-sm">Collection Public?</span>
+
+{# check first for owner from sharing widget context, otherwise can_admin() #}
+{% if owner or can_admin() %}
 <input type="checkbox" class="ispublic left-buffer-sm" id="is_public" {{ 'checked' if is_public else '' }} data-on-color="success" data-inverse="true" data-size="mini" data-on-text="YES" data-off-text="NO">
 {% else %}
 <b>{{ label_text }}</b>

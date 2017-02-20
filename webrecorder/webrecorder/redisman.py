@@ -1224,6 +1224,8 @@ class Base(object):
         else:
             info['coll_title'] = coll
 
+        info['coll_desc'] = self.redis.hget(coll_key, 'desc')
+
         try:
             info['size'] = int(info['size'])
         except Exception as e:

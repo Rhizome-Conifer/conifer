@@ -1,6 +1,4 @@
 $(function() {
-    var DEFAULT_RECORDING_SESSION_NAME = "Recording Session";
-
     // 'New recording': Start button
     $('header').on('submit', '.start-recording', startNewRecording);
 

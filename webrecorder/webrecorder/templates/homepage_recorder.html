@@ -4,7 +4,9 @@
 
 <form class="start-recording-homepage">
     <div class="input-group col-md-8 col-md-offset-2 containerized">
-        {% include '/containerized_browser_select.html' %}
+        <div class="input-group-btn">
+            {% include '/containerized_browser_select.html' %}
+        </div>
         <input name="url" type="text" class="form-control" placeholder="URL to record" required {{ disabled_class }}>
         <label for="url" class="control-label sr-only">Url</label>
         <span class="input-group-btn">
