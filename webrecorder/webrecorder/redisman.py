@@ -692,6 +692,7 @@ class RecManagerMixin(object):
     def __init__(self, config):
         super(RecManagerMixin, self).__init__(config)
         self.rec_info_key = config['info_key_templ']['rec']
+        self.rec_list_key = config['rec_list_key_templ']
         self.page_key = config['page_key_templ']
         self.cdx_key = config['cdxj_key_templ']
         self.tags_key = config['tags_key']
@@ -745,6 +746,8 @@ class RecManagerMixin(object):
         orig_rec_title = rec_title
         count = 1
 
+        rec_list_key = self.rec_list_key.format(user=user, coll=coll)
+
         while True:
             key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
 
@@ -766,6 +769,7 @@ class RecManagerMixin(object):
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'updated_at', now)
             pi.hsetnx(key, 'size', '0')
+            pi.sadd(rec_list_key, rec)
 
         if not self._has_collection_no_access_check(user, coll):
             coll_title = coll_title or coll
@@ -792,12 +796,19 @@ class RecManagerMixin(object):
 
         return True
 
-    def get_recordings(self, user, coll):
+    def _get_rec_keys(self, user, coll, key_templ):
         self.assert_can_read(user, coll)
 
-        key_pattern = self.rec_info_key.format(user=user, coll=coll, rec='*')
+        key_pattern = key_templ.format(user=user, coll=coll, rec='*')
 
-        keys = list(self.redis.scan_iter(match=key_pattern))
+        rec_list_key = self.rec_list_key.format(user=user, coll=coll)
+        recs = self.redis.smembers(rec_list_key)
+
+        return [key_pattern.replace('*', rec) for rec in recs]
+
+
+    def get_recordings(self, user, coll):
+        keys = self._get_rec_keys(user, coll, self.rec_info_key)
 
         with redis.utils.pipeline(self.redis) as pi:
             for key in keys:
@@ -910,14 +921,15 @@ class RecManagerMixin(object):
     def count_pages(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
-        key = self.page_key.format(user=user, coll=coll, rec=rec)
-
         if rec == '*':
             count = 0
 
-            for pagekey in self.redis.scan_iter(key):
+            keys = self._get_rec_keys(user, coll, self.page_key)
+
+            for pagekey in keys:
                 count += self.redis.hlen(pagekey)
         else:
+            key = self.page_key.format(user=user, coll=coll, rec=rec)
             count = self.redis.hlen(key)
 
         return count
@@ -941,12 +953,8 @@ class RecManagerMixin(object):
         tags.reverse()
         return tags
 
-    def list_coll_pages(self, user, coll, rec='*'):
-        self.assert_can_read(user, coll)
-
-        match_key = self.page_key.format(user=user, coll=coll, rec=rec)
-
-        all_page_keys = list(self.redis.scan_iter(match_key))
+    def list_coll_pages(self, user, coll):
+        all_page_keys = self._get_rec_keys(user, coll, self.page_key)
 
         pagelist = []
 

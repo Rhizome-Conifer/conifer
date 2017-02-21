@@ -26,9 +26,10 @@ def make_webagg():
 
     redis_base = os.environ['REDIS_BASE_URL'] + '/'
 
-    rec_url = redis_base + config['cdxj_rec_key_templ']
+    rec_url = redis_base + config['cdxj_key_templ']
     coll_url = redis_base + config['cdxj_coll_key_templ']
     warc_url = redis_base + config['warc_key_templ']
+    rec_list_key = config['rec_list_key_templ']
 
     cache_proxy_url = os.environ.get('CACHE_PROXY_URL')
     global PROXY_PREFIX
@@ -39,8 +40,10 @@ def make_webagg():
 
     redis = rec_redis_source.redis
     coll_redis_source = MountMultiKeyIndexSource(timeout=20.0,
-                                                 redis_url=rec_url,
-                                                 redis=redis)
+                                                 redis_url=coll_url,
+                                                 redis=redis,
+                                                 member_key_templ=rec_list_key)
+
 
     live_rec  = DefaultResourceHandler(
                     SimpleAggregator(
@@ -126,19 +129,40 @@ class MountMultiKeyIndexSource(GeventMixin, BaseRedisMultiKeyIndexSource):
                          RemoteIndexSource,
                          ProxyMementoIndexSource]
 
-    def _get_source_for_key(self, key):
-        if not key.endswith('_m'):
-            return key, RedisIndexSource(None, self.redis, key)
+    def __init__(self, *args, **kwargs):
+        super(MountMultiKeyIndexSource, self).__init__(*args, **kwargs)
+        self.mounts_only = kwargs.get('mounts_only', False)
 
-        config = self.redis.get(key)
-        if not config:
-            return None, None#{'err': 'no custom config'}
+    def _get_mounts(self, keys):
+        if not keys:
+            return []
+        keys = [key + b'_m' for key in keys]
+        return self.redis.mget(keys)
 
-        config = config.decode('utf-8')
+    def _iter_sources(self, params):
+        redis_key_pattern = res_template(self.redis_key_template, params)
 
-        #config = json.loads(config.decode('utf-8'))
-        index_source = init_index_source(config, source_list=self.SUPPORTED_SOURCES)
-        return key, index_source
+        if '*' not in redis_key_pattern:
+            keys = [redis_key_pattern.encode('utf-8')]
+        else:
+            keys = self.scan_keys(redis_key_pattern, params)
+
+        mount_data_list = self._get_mounts(keys)
+        source = None
+
+        for key, mount_data in zip(keys, mount_data_list):
+            key = key.decode('utf-8')
+            if mount_data:
+                source = init_index_source(mount_data.decode('utf-8'),
+                                           source_list=self.SUPPORTED_SOURCES)
+
+            elif self.mounts_only:
+                continue
+
+            else:
+                source = self._get_source_for_key(key)
+
+            yield key, source
 
 
 # ============================================================================

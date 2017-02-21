@@ -99,14 +99,14 @@ class TempChecker(object):
 
 
 # =============================================================================
-def run():
+def run(loop=True):
     config = load_wr_config()
     temp_checker = TempChecker(config)
 
     sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
 
     print('Running temp delete check every {0}'.format(sleep_secs))
-    while True:
+    while loop:
         try:
             temp_checker()
             time.sleep(sleep_secs)

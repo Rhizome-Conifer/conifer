@@ -27,6 +27,7 @@ class TestTempContent(FullStackTests):
         'r:{user}:{coll}:{rec}:page',
         'r:{user}:{coll}:{rec}:warc',
         'c:{user}:{coll}:info',
+        'c:{user}:{coll}:recs',
         'u:{user}:info',
         'h:roles',
         'h:defaults',
