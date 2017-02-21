@@ -80,7 +80,7 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
 class FullStackTests(BaseWRTests):
     @classmethod
     def custom_init(cls, kwargs):
-        env_params = {'TEMP_SLEEP_CHECK': '5',
+        env_params = {'TEMP_SLEEP_CHECK': '1',
                       'APP_HOST': '',
                       'CONTENT_HOST': ''}
 
