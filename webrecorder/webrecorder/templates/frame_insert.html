@@ -1,5 +1,6 @@
 {% extends "base_bootstrap.html" %}
 {% block head %}
+    {% if curr_mode != 'live' %}
     <meta property="og:url" content="{{ get_share_url() }}" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Archived page from the '{{ coll_title }}' Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
@@ -9,6 +10,7 @@
     <meta name="twitter:site" content="@webrecorder_io" />
     <meta name="twitter:title" content="Archived page from the '{{ coll_title }}' Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
     <meta name="twitter:description" content="{{ info.coll_desc }}" />
+    {% endif %}
 
     <style>
         html, body
