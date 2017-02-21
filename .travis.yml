@@ -1,0 +1,21 @@
+language: python
+
+python:
+  - "3.5"
+
+os:
+  - linux
+
+sudo: false
+
+install:
+  - cd webrecorder
+  - python setup.py install
+  - pip install coverage pytest-cov coveralls
+
+script:
+  - python setup.py test
+
+after_success:
+  - coveralls
+
