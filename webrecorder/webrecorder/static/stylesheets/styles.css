@@ -1401,6 +1401,7 @@ body:not(.cbrowser) .wr-tools {
     right: 0px;
     width: 300px;
     text-align: center;
+    z-index:2;
 }
 .wr-survey strong {
     display: block;
