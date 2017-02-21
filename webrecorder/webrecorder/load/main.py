@@ -45,9 +45,17 @@ def make_webagg():
                                                  member_key_templ=rec_list_key)
 
 
+    mount_only_source = MountMultiKeyIndexSource(timeout=20.0,
+                                                 redis_url=coll_url,
+                                                 redis=redis,
+                                                 member_key_templ=rec_list_key,
+                                                 mounts_only=True)
+
+
     live_rec  = DefaultResourceHandler(
                     SimpleAggregator(
-                        {'live': LiveIndexSource()}
+                        {'live': LiveIndexSource(),
+                         'mount': mount_only_source},
                     ), warc_url, cache_proxy_url)
 
     replay_rec  = DefaultResourceHandler(
