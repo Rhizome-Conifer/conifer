@@ -342,7 +342,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        time.sleep(2.0)
+        time.sleep(3.0)
 
         self._assert_size_all_eq(user, 'temp', 'my-rec2')
 
