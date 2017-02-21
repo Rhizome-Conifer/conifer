@@ -86,7 +86,8 @@ class GitHubIssueImporter(object):
         self.gh = GitHubAPI(username, token_or_pass, owner, repo)
         self.label_cache = set()
 
-        self.new_recording_prefix = os.environ.get('APP_HOST')
+        #self.new_recording_prefix = os.environ.get('APP_HOST')
+        self.new_recording_prefix = ''
 
         if not self.new_recording_prefix:
             self.new_recording_prefix = 'https://webrecorder.io/'
@@ -169,7 +170,7 @@ class GitHubIssueImporter(object):
                 labels.append(prop)
 
         issue = {'body': body,
-                 'title': report['actual_url'],
+                 'title': report['actual_url'][:255],
                  'labels': labels}
 
         return issue
