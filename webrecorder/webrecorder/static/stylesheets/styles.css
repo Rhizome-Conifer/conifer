@@ -1397,6 +1397,10 @@ body:not(.cbrowser) .wr-tools {
 .wr-survey {
     margin: 15px 0 50px 0;
     display: none;
+    position: absolute;
+    right: 0px;
+    width: 300px;
+    text-align: center;
 }
 .wr-survey strong {
     display: block;

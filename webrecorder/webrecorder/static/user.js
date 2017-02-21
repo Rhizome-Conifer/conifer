@@ -8,7 +8,13 @@ $(function(){
 
     // survey countdown
     var survey = $(".survey-countdown");
-    if(survey.length) {
+
+    $('#survey-alert').on('close.bs.alert', function () {
+        window.localStorage.setItem("__wr_skipSurvey", "1");
+    });
+
+    if(survey.length && !window.localStorage.getItem("__wr_skipSurvey")) {
+
       var start = new Date(0);
       start.setUTCSeconds(survey.data('start'));
       var end = new Date(0);
