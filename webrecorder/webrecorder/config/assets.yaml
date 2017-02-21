@@ -44,7 +44,6 @@ bundles:
         output: bundle/index.js
         filters: cssrewrite
         contents:
-            - external/jquery.form.js
             - external/bootstrap-switch.js
             - uploader.js
             - newrecording.js
@@ -100,7 +99,6 @@ bundles:
             - collection_info.js
             - edit_title_in_place.js
 
-            - external/jquery.form.js
             - uploader.js
 
     coll-css:
