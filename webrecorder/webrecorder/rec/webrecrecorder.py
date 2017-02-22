@@ -37,6 +37,8 @@ class WebRecRecorder(object):
 
         self.info_keys = config['info_key_templ']
 
+        self.rec_list_key_templ = config['rec_list_key_templ']
+
         self.warc_key_templ = config['warc_key_templ']
 
         self.warc_name_templ = config['warc_name_templ']
@@ -112,7 +114,7 @@ class WebRecRecorder(object):
         self.writer = writer
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
-                                   accept_colls='live',
+                                   accept_colls='(live|mount:)',
                                    create_buff_func=self.create_buffer)
 
         self.recorder = recorder_app
@@ -217,6 +219,9 @@ class WebRecRecorder(object):
             to_coll_key = self.info_keys['coll'].format(user=to_user, coll=to_coll)
             from_coll_key = self.info_keys['coll'].format(user=from_user, coll=from_coll)
 
+            to_coll_list_key = self.rec_list_key_templ.format(user=to_user, coll=to_coll)
+            from_coll_list_key = self.rec_list_key_templ.format(user=from_user, coll=from_coll)
+
             info_key = self.info_keys['rec'].format(user=from_user, coll=from_coll, rec=from_rec)
 
             to_id = to_rec
@@ -249,6 +254,10 @@ class WebRecRecorder(object):
             if to_rec != '*' and to_coll_key != from_coll_key:
                 pi.hincrby(from_coll_key, 'size', -the_size)
                 pi.hincrby(to_coll_key, 'size', the_size)
+
+            if to_rec != '*':
+                pi.srem(from_coll_list_key, from_rec)
+                pi.sadd(to_coll_list_key, to_rec)
 
         # rename WARCs (only if switching users)
         replace_list = []
@@ -384,6 +393,9 @@ class WebRecRecorder(object):
                 if type == 'rec':
                     coll_key = self.info_keys['coll'].format(user=user, coll=coll)
                     pi.hincrby(coll_key, 'size', -length)
+
+                    rec_list_key = self.rec_list_key_templ.format(user=user, coll=coll)
+                    pi.srem(rec_list_key, rec)
 
             for key in keys_to_del:
                 pi.delete(key)
