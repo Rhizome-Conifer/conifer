@@ -1,8 +1,4 @@
-{% if is_beta() %}
-    {% set recording_column_index = 7 if is_owner() else 4 %}
-{% else %}
-    {% set recording_column_index = 6 if is_owner() else 4 %}
-{% endif %}
+{% set recording_column_index = 6 if is_owner() else 4 %}
 {#
 {% if is_owner() %}
         <input type="checkbox" checked="checked" name="show-hidden" id="show-hidden" style="margin-left: 8px; margin-right: 8px"><label for="show-hidden">Include Hidden Bookmarks</label>
