@@ -41,6 +41,9 @@ $(function() {
             url = "mp_/" + url;
         }
 
+        // urlencode title
+        title = encodeURIComponent(title)
+
         RouteTo.newRecording(collection, title, url);
 
         setStorage("__wr_currRec", title);
@@ -112,6 +115,8 @@ $(function() {
 
     if (!currRec) {
         currRec = DEFAULT_RECORDING_SESSION_NAME;
+    } else {
+        currRec = decodeURIComponent(currRec);
     }
 
     $("input[name='rec-title']").val(currRec);

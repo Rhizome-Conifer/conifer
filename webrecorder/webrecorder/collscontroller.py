@@ -1,11 +1,11 @@
-from bottle import request, response, HTTPError
-
-import re
+import json
 import requests
+
+from bottle import request, response
+from urllib.parse import quote
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
-import json
 
 
 # ============================================================================
@@ -238,7 +238,7 @@ class CollsController(BaseController):
         result['bookmarks'] = []
 
         result['rec_title'] = ''
-        result['coll_title'] = result['collection']['title']
+        result['coll_title'] = quote(result['collection']['title'])
 
         for rec in result['collection']['recordings']:
            rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
