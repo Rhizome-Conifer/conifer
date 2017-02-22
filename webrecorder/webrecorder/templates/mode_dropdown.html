@@ -82,7 +82,7 @@
                     </li>
                 </ul>
 
-                {% if not is_record %}
+                {% if not is_record and can_mount() %}
                     <ul class="row wr-mode" data-mode="extract" title="Start a new extraction at the current URL">
                         <li class="col-xs-3">
                             <span class="glyphicon glyphicon-save glyphicon-recording-status wr-mode-icon" aria-hidden="true"></span>
