@@ -322,10 +322,8 @@ var BookmarksTable = (function() {
     var start = function() {
         if ($(".table-bookmarks").length) {
             var defaultOrder;
-            if(getStorage('__wr_defaultOrder')) {
+            if(getStorage('__wr_defaultOrder') && can_admin) {
                 defaultOrder = JSON.parse(getStorage('__wr_defaultOrder'));
-            } else if(hasVisibilityAndTaggingColumn()) {
-                defaultOrder = [[5, 'asc']];
             } else if(hasVisibilityColumn()) {
                 defaultOrder = [[4, 'asc']];
             } else {
@@ -356,26 +354,12 @@ var BookmarksTable = (function() {
         }
     }
 
-    var hasVisibilityAndTaggingColumn = function() {
-        return $('.table-bookmarks th').length === 8;
-    }
-
     var hasVisibilityColumn = function() {
         return $('.table-bookmarks th').length === 7;
     }
 
     var getColumnDefs = function() {
-        if (hasVisibilityAndTaggingColumn()) {
-            return [
-                        { targets: [0], width: "32px", orderable: false},
-                        { targets: [1], width: "12px", orderable: false},
-                        { targets: [3], width: '30px', orderable: false},
-                        { targets: [4], width: '70px'},
-                        { targets: [5], width: "9em" },
-                        { targets: [7], width: "5.5em" },
-                        { targets: [2, 6], width: "14.5em"}
-                    ]
-        } else if(hasVisibilityColumn()) {
+        if(hasVisibilityColumn()) {
             return [
                         { targets: [0], width: "32px", orderable: false},
                         { targets: [1], width: "12px", orderable: false},
@@ -556,8 +540,6 @@ var BookmarkHiddenSwitch = (function() {
         $('th.bookmark-hidden-switch>div.bootstrap-switch').attr('title', 'Show/Hide hidden bookmarks')
 
         $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
-
-        $('.tagging-dropdown').on('click', '.tag:not(.disabled)', addTag);
 
         $("#show-hidden")
             .on('switchChange.bootstrapSwitch', toggleShowHidden)
