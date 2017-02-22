@@ -65,7 +65,7 @@
                       </p>
                     {% else %}
                       <p class="make-public-desc">
-                          Collection <strong>{{ coll }}</strong> is set to private. To get a share link, make the collection public:
+                          Collection <strong data-value-encoded="{{ coll }}" data-target-decoded=""></strong> is set to private. To get a share link, make the collection public:
                       </p>
                       <div class="access-switch" style="float:right;">
                           {% include 'public_private_switch.html' %}

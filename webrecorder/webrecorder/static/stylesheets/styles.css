@@ -1166,6 +1166,7 @@ div.filter-label {
     float: none;
     margin-top: -10px;
     background: linear-gradient(90deg, rgba(255,255,255,0), #FFF 15%, #FFF);
+    padding-left: 40px;
 }
 .linklist .dropdown-menu li.active .replay-date {
     background: linear-gradient(90deg, rgba(255,255,255,0), #eef9ea 15%, #eef9ea);
