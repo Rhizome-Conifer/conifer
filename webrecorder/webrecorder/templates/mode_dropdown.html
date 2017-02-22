@@ -81,6 +81,18 @@
                         {% endif %}
                     </li>
                 </ul>
+
+                {% if not is_record %}
+                    <ul class="row wr-mode" data-mode="extract" title="Start a new extraction at the current URL">
+                        <li class="col-xs-3">
+                            <span class="glyphicon glyphicon-save glyphicon-recording-status wr-mode-icon" aria-hidden="true"></span>
+                        </li>
+                        <li class="col-xs-9">
+                            <h5>Extract this URL from mounted archive</h5>
+                        </li>
+                    </ul>
+                {% endif %}
+
                 <div class="divider" role="separator"></div>
                 <ul class="row wr-mode" data-mode="snapshot" title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
                     <li class="col-xs-3">
