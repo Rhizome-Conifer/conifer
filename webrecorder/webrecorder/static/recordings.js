@@ -307,6 +307,11 @@ var ModeSelector = (function (){
                 case 'snapshot':
                     Snapshot.queueSnapshot();
                     break;
+                case 'extract':
+                    var url = getUrl();
+                    var rec = getStorage("__wr_currRec") || DEFAULT_RECORDING_SESSION_NAME;
+                    RouteTo.newExtract(coll, rec, url, wbinfo.timestamp);
+                    break;
             }
         });
     }
@@ -670,6 +675,10 @@ var RouteTo = (function(){
         routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
     }
 
+    var newExtract = function(collection, recording, url, ts) {
+        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/", ts) + url);
+    }
+
     var newPatch = function(collection, url, target, ts) {
         routeTo(host + "/$patch/" + collection + "/" + cbrowserMod("/", ts) + url, target);
     }
@@ -718,6 +727,7 @@ var RouteTo = (function(){
 
     return {
         newRecording: newRecording,
+        newExtract: newExtract,
         newPatch: newPatch,
         recordingInProgress: recordingInProgress,
         collectionInfo: collectionInfo,
