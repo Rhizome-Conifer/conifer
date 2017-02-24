@@ -31,14 +31,12 @@
             </button>
 
             <ul class="dropdown-menu">
-                {% if can_admin() %}
                 <li>
                     <a href="#" data-toggle="modal" data-target="#create-modal" role="button">
                         <span class="glyphicon glyphicon-plus right-buffer-sm"></span><i>Create New Collection</i>
                     </a>
                 </li>
                 <li role="separator" class="divider"></li>
-                {% endif %}
                 {% for collection in collections | sort(attribute='title') %}
                 <li>
                     <a href="#" class="collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>
