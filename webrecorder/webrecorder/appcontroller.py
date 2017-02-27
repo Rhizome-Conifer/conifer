@@ -258,7 +258,7 @@ class AppController(BaseController):
         @contextfunction
         def get_recs_for_coll(context):
             user = context.get('user')
-            coll = context.get('coll')
+            coll = get_coll(context)
             return [{'ts': r['timestamp'], 'url': r['url'], 'br': r.get('browser', '')}
                     for r in self.manager.list_coll_pages(user, coll)]
 
