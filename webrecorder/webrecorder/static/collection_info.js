@@ -131,12 +131,21 @@ var RecordingSelector = (function() {
             $("#sel-info").show();
         }
 
+        var onlyMountCards = true;
         selected.each(function() {
-            size += parseInt($(this).find("[data-size-display]").attr("data-size-display"));
+            if($(this).data('mount') === '') {
+                onlyMountCards = false;
+                size += parseInt($(this).find("[data-size-display]").attr("data-size-display"));
+            }
+
             bookmarks += parseInt($(this).find("[data-bookmark]").attr("data-bookmark"));
         });
 
-        $("#all-card").find("[data-size-display]").attr("data-size-display", size);
+        if(onlyMountCards) {
+            $("#all-card").find("[data-size-display]").hide();
+        } else {
+            $("#all-card").find("[data-size-display]").show().attr("data-size-display", size);
+        }
         $("#sel-bookmarks").text(bookmarks);
 
         TimesAndSizesFormatter.format();

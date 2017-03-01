@@ -4,7 +4,7 @@
 {% set editing_id = "recording-title-" + recording.id %}
 
 {% if can_write() or bookmark_count > 0 %}
-<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}">
+<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}" data-mount="{{ recording.mount_type }}">
     <div class="checkbox-column">
         <div class="btn btn-xs filter-label icon-button">
         </div>
@@ -42,9 +42,7 @@
         <div class="recording-stats text-left right-buffer-sm">
             <small>
                 <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
-                {% if not recording.mount_type %}
-                <span class="current-size text-right" data-size-display="{{ recording.size }}"></span>
-                {% endif %}
+                <span class="current-size text-right {% if recording.mount_type %}hidden{% endif %}" data-size-display="{{ recording.size }}"></span>
             </small>
         </div>
 
