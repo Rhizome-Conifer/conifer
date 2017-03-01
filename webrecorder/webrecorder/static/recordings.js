@@ -466,8 +466,6 @@ var ShareWidget = (function () {
     }
 
     function renderSocialWidgets(url) {
-        if(typeof twttr === 'undefined') return;
-
         // new url or initial
         if(typeof url === 'undefined') {
             url = $('#share-widget').data('url');
@@ -475,33 +473,35 @@ var ShareWidget = (function () {
 
         // clear previous widget
         $('#wr-tw').empty();
-        twttr.ready(function (){
-            twttr.widgets.createShareButton(
-                url,
-                document.getElementById('wr-tw'),
-                {
-                    text: '',
-                    size: 'large',
-                    via: 'webrecorder_io'
-                }
-            );
-        });
+        if(typeof twttr !== 'undefined') {
+            twttr.ready(function (){
+                twttr.widgets.createShareButton(
+                    url,
+                    document.getElementById('wr-tw'),
+                    {
+                        text: '',
+                        size: 'large',
+                        via: 'webrecorder_io'
+                    }
+                );
+            });
+        }
 
+        $('#wr-fb').html('<div class="fb-share-button" data-href="'+url+'" data-layout="button" data-size="large" data-mobile-iframe="true"></div>')
 
-        $('#wr-fb').html('<div class="fb-share-button" data-href="'+url+'" data-layout="button" data-size="large" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php">Share</a></div>')
-
-        // fb initialized?
+        // fb sdk loaded?
         if(typeof window.FB === 'undefined') {
             window.fbAsyncInit = function () {
-                FB.init({xfbml: false, version: 'v2.7'});
+                FB.init({xfbml: true, version: 'v2.8'});
                 fbInitialized = true;
             };
         } else {
             if(!fbInitialized) {
-                FB.init({xfbml: false, version: 'v2.7'});
+                FB.init({xfbml: true, version: 'v2.8'});
                 fbInitialized = true;
+            } else {
+                FB.XFBML.parse(document.getElementById('wr-fb'));
             }
-            FB.XFBML.parse();
         }
     }
 
@@ -510,8 +510,6 @@ var ShareWidget = (function () {
         if(shareWidget.length) {
             $(".ispublic").bootstrapSwitch().on('switchChange.bootstrapSwitch', updateVisibility);
 
-            // call render on first click
-            $('.dropdown-toggle').one('click', function (){ FB.XFBML.parse(); })
             $('.dropdown-menu').on('click', function (evt) {evt.stopPropagation(); });
             $('.share-container .glyphicon-remove-circle').on('click', function (evt) { $(this).parents('.share-container').toggleClass('open'); });
 
@@ -995,7 +993,7 @@ var RecordingSizeWidget = (function() {
     }
 
     var updateDom = function(spaceUsed) {
-        $('.size-counter .current-size').attr('data-size', spaceUsed);
+        $('.size-counter .current-size').attr('data-size-display', spaceUsed);
         TimesAndSizesFormatter.format();
         $('.size-counter').removeClass('hidden');
     }

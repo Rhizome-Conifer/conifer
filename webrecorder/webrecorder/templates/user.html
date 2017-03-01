@@ -61,7 +61,7 @@
                     <a href="/{{ user }}/{{ coll.id }}" class="collection-title">{{ coll.title | default(coll.id) }}</a>
                 </div>
                 <div class="col-xs-2 collection-metadata">
-                    <div class="colls-size" data-size="{{ coll.size }}" style="font-size: 14px; margin-top: 4px; text-align: right"></div>
+                    <div class="colls-size" data-size-display="{{ coll.size }}" style="font-size: 14px; margin-top: 4px; text-align: right"></div>
                 </div>
                 {% if is_public %}
                 <div class="cols-xs-1 collection-metadata glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" style="font-size: 14px; margin-top: 5px; margin-left: 12px; text-align: center"></div>

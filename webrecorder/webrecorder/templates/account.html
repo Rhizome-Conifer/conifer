@@ -18,7 +18,7 @@
                 <table class="table">
                     <tr>
                         <th>Size</th>
-                        <td><b id="total-size" data-size="{{ user_info.size }}"></b> of <b id="max-size" data-size="{{ user_info.max_size }}"></b> used
+                        <td><b id="total-size" data-size-display="{{ user_info.size }}"></b> of <b id="max-size" data-size-display="{{ user_info.max_size }}"></b> used
                         <div class="progress space-usage">
                             <div class="progress-bar" role="progressbar" data-current-size="{{user_info.size}}" data-max-size="{{user_info.max_size}}" aria-valuenow="" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
                             </div>
@@ -110,7 +110,7 @@
 
 <script>
     $(function() {
-        if (parseInt($("#total-size").attr("data-size")) >= parseInt($("#max-size").attr("data-size"))) {
+        if (parseInt($("#total-size").attr("data-size-display")) >= parseInt($("#max-size").attr("data-size-display"))) {
             $("#limit-size").text("Size limit reached");
             $("#total-size").addClass("warn-limit");
         }

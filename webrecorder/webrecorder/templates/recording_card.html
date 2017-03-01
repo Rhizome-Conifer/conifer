@@ -43,7 +43,7 @@
             <small>
                 <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
                 {% if not recording.mount_type %}
-                <span class="current-size text-right" data-size="{{ recording.size }}"></span>
+                <span class="current-size text-right" data-size-display="{{ recording.size }}"></span>
                 {% endif %}
             </small>
         </div>
