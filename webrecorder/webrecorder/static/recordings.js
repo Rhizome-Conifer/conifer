@@ -322,23 +322,23 @@ var ModeSelector = (function (){
 })();
 
 var PagingInterface = (function () {
-    var pgDsp;
-    var idx;
+    var dropdown;
+    var idx = 0;
     var iframe;
-    var nextBtn; var prevBtn;
-    var timestamp;
     var li;
+    var liHeight;
+    var nextBtn; var prevBtn;
+    var pgDsp;
+    var timestamp;
 
     function updateCounter(cursor) {
-        if(typeof cursor === 'undefined') cursor = (recordings.length-1);
-
         var value = (cursor+1)+' of '+recordings.length;
         pgDsp.attr('size', value.length);
         pgDsp.val(value);
     }
 
     function updateTimestamp(ts) {
-        timestamp.html(TimesAndSizesFormatter.ts_to_date(ts)+"<span class='glyphicon glyphicon-triangle-bottom' />");
+        timestamp.html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span><span class='glyphicon glyphicon-triangle-bottom' />");
     }
 
     function next() {
@@ -362,6 +362,8 @@ var PagingInterface = (function () {
         timestamp = $('.linklist > .replay-date');
         var linklist = $('.linklist');
         li = linklist.find('li');
+        liHeight = li.eq(0).outerHeight();
+        dropdown = linklist.find('> .dropdown-menu');
 
         nextBtn.on('click', next);
         prevBtn.on('click', previous);
@@ -389,18 +391,16 @@ var PagingInterface = (function () {
         });
 
         // set linklist ones TODO: this might be slow and unnecessary
-        linklist.find('> .dropdown-menu .replay-date').each(function () {
+        dropdown.find('.replay-date').each(function () {
             var obj = $(this);
-
             obj.html(TimesAndSizesFormatter.ts_to_date(String(obj.data('date'))));
         });
 
-        linklist.find('> .dropdown-menu').on('click', 'li:not(.active)', function () {
+        dropdown.on('click', 'li:not(.active)', function () {
             idx = $(this).index();
             update(recordings[idx]);
             linklist.removeClass('open');
         })
-
 
         // set arrow buttons
         update();
@@ -411,6 +411,9 @@ var PagingInterface = (function () {
         updateCounter(idx);
         li.removeClass('active');
         li.eq(idx).addClass('active');
+
+        // update dropdown scroll position
+        dropdown.scrollTop((idx>2?idx-2:0) * liHeight);
 
         // prev, next button presentation
         if(idx===0)

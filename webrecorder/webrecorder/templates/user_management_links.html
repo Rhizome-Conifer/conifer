@@ -3,12 +3,15 @@
         {% if not auto_login %}
         <li class="navbar-text navbar-right">
             <a target="_parent" title="Logout" href="/_logout">
-            <span class="glyphicon glyphicon-log-out" title="Logout"></span></a>
+                <span class="glyphicon glyphicon-log-out" title="Logout"></span><span class="visible-xs-inline-block left-buffer-sm">Log Out</span>
+            </a>
         </li>
         {% endif %}
         {% if can_admin() %}
         <li class="navbar-text navbar-right">
-            <a target="_parent" href="/{{ curr_user }}/_settings"><span title="Settings" class="glyphicon glyphicon-cog"></span></a>
+            <a target="_parent" href="/{{ curr_user }}/_settings">
+                <span title="Settings" class="glyphicon glyphicon-cog"></span><span class="visible-xs-inline-block left-buffer-sm">Settings</span>
+            </a>
         </li>
         {% endif %}
         <li class="navbar-text navbar-right">
