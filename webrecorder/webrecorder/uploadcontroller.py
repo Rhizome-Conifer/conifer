@@ -107,7 +107,7 @@ class UploadController(BaseController):
 
         upload_key = self.upload_key.format(user=user, upid=upload_id)
 
-        with redis_pipeline(self.redis) as pi:
+        with redis_pipeline(self.manager.redis) as pi:
             pi.hset(upload_key, 'size', 0)
             pi.hset(upload_key, 'total_size', total_size * 2)
             pi.hset(upload_key, 'filename', filename)
@@ -138,7 +138,7 @@ class UploadController(BaseController):
             #stream.close()
             return {'error_message': 'No Archive Data Found'}
 
-        with redis_pipeline(self.redis) as pi:
+        with redis_pipeline(self.manager.redis) as pi:
             pi.hset(upload_key, 'coll', first_coll['id'])
             pi.hset(upload_key, 'coll_title', first_coll['title'])
             pi.hset(upload_key, 'filename', filename)
@@ -472,7 +472,7 @@ class InplaceUploader(UploadController):
 
         upload_key = self.upload_key.format(user=user, upid=upload_id)
 
-        with redis_pipeline(self.redis) as pi:
+        with redis_pipeline(self.manager.redis) as pi:
             pi.hset(upload_key, 'size', 0)
             pi.hset(upload_key, 'total_size', total_size * 2)
             pi.hset(upload_key, 'total_files', len(files))
