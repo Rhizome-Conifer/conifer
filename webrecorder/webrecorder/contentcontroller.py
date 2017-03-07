@@ -32,9 +32,10 @@ class ContentController(BaseController, RewriterApp):
         self.cookie_tracker = CookieTracker(redis)
 
         self.record_host = os.environ['RECORD_HOST']
+        self.live_host = os.environ['WEBAGG_HOST']
         self.replay_host = os.environ.get('WEBAGG_PROXY_HOST')
         if not self.replay_host:
-            self.replay_host = os.environ['WEBAGG_HOST']
+            self.replay_host = self.live_host
 
     def init_routes(self):
         # REDIRECTS
@@ -409,6 +410,7 @@ class ContentController(BaseController, RewriterApp):
 
         base_url = self.paths[type].format(record_host=self.record_host,
                                            replay_host=self.replay_host,
+                                           live_host=self.live_host,
                                            **kwargs)
 
         return base_url

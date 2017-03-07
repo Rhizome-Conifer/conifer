@@ -51,7 +51,7 @@ url_templates:
     upload: '{record_host}/record/$upload?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=stream&param.upid={upid}'
 
     # core replay funcs
-    live: '{replay_host}/live/resource/postreq?'
+    live: '{live_host}/live/resource/postreq?'
 
     record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
     patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.replay.rec=*'
