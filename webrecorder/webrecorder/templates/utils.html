@@ -5,42 +5,42 @@
 #}
 {% macro sharing_widget(url, embed_url, coll, owner=False, is_public=none, anon=False, bsSize='md') %}
     {% set safe_url = url|urlencode %}
-    <div id="fb-root"></div>
-    {# load fb and tw apis #}
-    <script>
-      // load twitter
-      window.twttr = (function(d, s, id) {
-        var js, fjs = d.getElementsByTagName(s)[0],
-          t = window.twttr || {};
-        if (d.getElementById(id)) return t;
-        js = d.createElement(s);
-        js.id = id;
-        js.src = "https://platform.twitter.com/widgets.js";
-        fjs.parentNode.insertBefore(js, fjs);
-
-        t._e = [];
-        t.ready = function(f) {
-          t._e.push(f);
-        };
-
-        return t;
-      }(document, "script", "twitter-wjs"));
-
-      // load fb
-      (function(d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
-            js = d.createElement(s); js.id = id;
-            js.src = "//connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode.insertBefore(js, fjs);
-          }(document, 'script', 'facebook-jssdk'));
-    </script>
     <div id="share-widget"
          class="share-container pull-right"
          title="Sharing options"
          data-url="{{ url }}"
          {% if is_public %}data-public="true"
          {% elif is_public is not none %}data-public="false"{% endif %}>
+        <div id="fb-root"></div>
+        {# load fb and tw apis #}
+        <script>
+          // load twitter
+          window.twttr = (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0],
+              t = window.twttr || {};
+            if (d.getElementById(id)) return t;
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "https://platform.twitter.com/widgets.js";
+            fjs.parentNode.insertBefore(js, fjs);
+
+            t._e = [];
+            t.ready = function(f) {
+              t._e.push(f);
+            };
+
+            return t;
+          }(document, "script", "twitter-wjs"));
+
+          // load fb
+          (function(d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s); js.id = id;
+                js.src = "//connect.facebook.net/en_US/sdk.js";
+                fjs.parentNode.insertBefore(js, fjs);
+              }(document, 'script', 'facebook-jssdk'));
+        </script>
         <button type="button"
                 class="btn btn-default btn-{{ bsSize }} dropdown-toggle sharing-widget"
                 data-toggle="dropdown"

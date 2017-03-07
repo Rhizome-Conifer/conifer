@@ -613,7 +613,7 @@ div.filter-label {
     justify-content: center;
     -ms-flex-pack: center;
 }
-.recording-actions .btn {
+.recording-actions > *:not(:last-child) {
     margin-right: 5px;
 }
 
