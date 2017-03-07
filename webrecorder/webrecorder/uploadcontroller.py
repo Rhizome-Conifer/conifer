@@ -33,6 +33,7 @@ class UploadController(BaseController):
         self.cdxj_key = config['cdxj_key_templ']
         self.upload_key = config['upload_key_templ']
         self.upload_exp = int(config['upload_status_expire'])
+        self.record_host = os.environ['RECORD_HOST']
 
     def init_routes(self):
         @self.app.put('/_upload')
