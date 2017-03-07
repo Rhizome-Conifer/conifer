@@ -1,4 +1,5 @@
 import re
+import os
 from six.moves.urllib.parse import quote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
@@ -29,6 +30,11 @@ class ContentController(BaseController, RewriterApp):
         self.cookie_key_templ = config['cookie_key_templ']
 
         self.cookie_tracker = CookieTracker(redis)
+
+        self.record_host = os.environ['RECORD_HOST']
+        self.replay_host = os.environ.get('WEBAGG_PROXY_HOST')
+        if not self.replay_host:
+            self.replay_host = os.environ['WEBAGG_HOST']
 
     def init_routes(self):
         # REDIRECTS

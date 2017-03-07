@@ -185,14 +185,6 @@ class BaseController(object):
 
         return id
 
-    @property
-    def record_host(self):
-        return os.environ['RECORD_HOST']
-
-    @property
-    def replay_host(self):
-        return os.environ['WEBAGG_HOST']
-
     def get_view_user(self, user):
         return user
 
