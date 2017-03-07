@@ -12,7 +12,7 @@ import os
 from jinja2 import contextfunction
 from pkg_resources import resource_filename
 
-from six.moves.urllib.parse import urlsplit, urljoin
+from six.moves.urllib.parse import urlsplit, urljoin, unquote
 
 from pywb.urlrewrite.templateview import JinjaEnv
 from webrecorder.utils import load_wr_config

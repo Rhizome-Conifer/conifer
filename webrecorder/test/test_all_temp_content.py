@@ -12,8 +12,7 @@ from pywb.warc.cdxindexer import write_cdx_index
 from pywb.utils.bufferedreaders import ChunkedDataReader
 
 from re import sub
-from six.moves.urllib.parse import urlsplit
-from urllib.parse import quote
+from six.moves.urllib.parse import urlsplit, quote
 
 from webrecorder.session import Session
 import gevent
