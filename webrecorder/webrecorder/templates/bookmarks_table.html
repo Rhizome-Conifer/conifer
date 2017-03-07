@@ -1,9 +1,4 @@
-{% if is_beta() %}
-    {% set recording_column_index = 7 if is_owner() else 4 %}
-{% else %}
-    {% set recording_column_index = 6 if is_owner() else 4 %}
-{% endif %}
-{% set can_tag = can_tag() %}
+{% set recording_column_index = 6 if is_owner() else 4 %}
 {#
 {% if is_owner() %}
         <input type="checkbox" checked="checked" name="show-hidden" id="show-hidden" style="margin-left: 8px; margin-right: 8px"><label for="show-hidden">Include Hidden Bookmarks</label>
@@ -21,9 +16,6 @@
             <th class="bookmark-edit-title"></th>
             {% endif %}
             <th class="bookmark-title"><span>Bookmarks</span></th>
-            {% if can_write() and can_tag and not is_anon() %}
-                <th class="bookmark-tag">Tag</th>
-            {% endif %}
             <th class="bookmark-browser">Browser</th>
             <th class="timestamp">Timestamp</th>
             <th class="bookmark-url">URL</th>
@@ -31,11 +23,6 @@
         </tr>
     </thead>
     <tbody>
-        {% if can_tag %}
-            {% set available_tags = get_tags() %}
-            {% set tags = get_tags_in_collection(user, coll) %}
-        {% endif %}
-
         {% for recording in collection.recordings %}
             {% set collection_path = get_path(user, coll) + '/' %}
             {% set browsers = get_browsers() %}
@@ -81,25 +68,6 @@
                         <td class="bookmark-title">
                             <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ path }}">{{ title }}</a></span>
                         </td>
-
-                        {% if can_write() and can_tag and not is_anon() %}
-                            <td class='bookmark-tag'>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-xs {% if is_tagged(bookmark_id) %}btn-success {% else %}btn-default{% endif %} dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"  title='Bookmark tagging'>
-                                        <span class='glyphicon glyphicon-tag'></span>
-                                        <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu tagging-dropdown">
-                                        <li class="dropdown-header">Available Tags</li>
-                                        {% for tag in available_tags %}
-                                            <li class='dropdown-item tag{% if tag in tags and bookmark_id in tags[tag] %} tagged{% endif %}' data-tag='{{tag}}'><span class='glyphicon glyphicon-ok'></span><span class='glyphicon glyphicon-minus' ></span><a href="#">{{ tag }}</a></li>
-                                            {% else %}
-                                            <li class='dropdown-item tag disabled'><a href='#'>no tags available</a></li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </td>
-                        {% endif %}
 
                         <td class="rec-browser{% if not browser %} empty{% endif %}">
                             {% if browser %}

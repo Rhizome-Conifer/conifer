@@ -6,7 +6,7 @@ from pywb.recorder.warcwriter import MultiFileWARCWriter
 from pywb.recorder.filters import WriteRevisitDupePolicy
 from pywb.recorder.filters import ExcludeSpecificHeaders
 
-from webrecorder.utils import SizeTrackingReader
+from webrecorder.utils import SizeTrackingReader, redis_pipeline
 
 import redis
 import time
@@ -232,7 +232,7 @@ class WebRecRecorder(object):
 
         the_size = int(self.redis.hget(info_key, 'size'))
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             # Fix Id
             pi.hset(info_key, 'id', to_id)
 
@@ -244,7 +244,7 @@ class WebRecRecorder(object):
             for from_key, to_key in iteritems(moves):
                 pi.rename(from_key, to_key)
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             # change user size, if different users
             if to_user_key != from_user_key:
                 pi.hincrby(from_user_key, 'size', -the_size)
@@ -385,7 +385,7 @@ class WebRecRecorder(object):
         else:
             length = 0
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             if length > 0:
                 user_key = self.info_keys['user'].format(user=user)
                 pi.hincrby(user_key, 'size', -length)
@@ -450,7 +450,7 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         cdx_list = (super(WebRecRedisIndexer, self).
                       add_urls_to_index(stream, params, filename, length))
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             for key_templ in self.size_keys:
                 key = res_template(key_templ, params)
                 pi.hincrby(key, 'size', length)

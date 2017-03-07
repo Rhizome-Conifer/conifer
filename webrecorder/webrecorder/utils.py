@@ -1,11 +1,20 @@
 from pywb.webagg.utils import load_config
 from pywb.utils.loaders import LimitReader
+from contextlib import contextmanager
 import gevent
 
 
 # ============================================================================
 def load_wr_config():
     return load_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
+
+
+# ============================================================================
+@contextmanager
+def redis_pipeline(redis_obj):
+    p = redis_obj.pipeline(transaction=False)
+    yield p
+    p.execute()
 
 
 # ============================================================================

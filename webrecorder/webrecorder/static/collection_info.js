@@ -131,12 +131,21 @@ var RecordingSelector = (function() {
             $("#sel-info").show();
         }
 
+        var onlyMountCards = true;
         selected.each(function() {
-            size += parseInt($(this).find("[data-size]").attr("data-size"));
+            if($(this).data('mount') === '') {
+                onlyMountCards = false;
+                size += parseInt($(this).find("[data-size-display]").attr("data-size-display"));
+            }
+
             bookmarks += parseInt($(this).find("[data-bookmark]").attr("data-bookmark"));
         });
 
-        $("#all-card").find("[data-size]").attr("data-size", size);
+        if(onlyMountCards) {
+            $("#all-card").find("[data-size-display]").hide();
+        } else {
+            $("#all-card").find("[data-size-display]").show().attr("data-size-display", size);
+        }
         $("#sel-bookmarks").text(bookmarks);
 
         TimesAndSizesFormatter.format();
@@ -157,7 +166,7 @@ var RecordingSelector = (function() {
         } else {
             var recordingTitles = getSelectedRecordingTitles();
             recordingList = recordingTitles.join(", ");
-            $('.recording-filter-list').text(decodeURI(recordingList));
+            $('.recording-filter-list').text(decodeURIComponent(recordingList));
             $('.recording-filter-list').closest("li").show();
 
             $("#coll-breadcrumb-link").show();
@@ -226,7 +235,7 @@ var RecordingSelector = (function() {
         var recLink = $(event.relatedTarget);
 
         $("#move-rec-title").attr("data-move-rec-id", recLink.attr("data-move-rec-id"));
-        $("#move-rec-title").text(decodeURI(recLink.attr("data-recording-title")));
+        $("#move-rec-title").text(decodeURIComponent(recLink.attr("data-recording-title")));
 
         var newColl = $(this).attr("data-collection-title");
 
@@ -322,10 +331,8 @@ var BookmarksTable = (function() {
     var start = function() {
         if ($(".table-bookmarks").length) {
             var defaultOrder;
-            if(getStorage('__wr_defaultOrder')) {
+            if(getStorage('__wr_defaultOrder') && can_admin) {
                 defaultOrder = JSON.parse(getStorage('__wr_defaultOrder'));
-            } else if(hasVisibilityAndTaggingColumn()) {
-                defaultOrder = [[5, 'asc']];
             } else if(hasVisibilityColumn()) {
                 defaultOrder = [[4, 'asc']];
             } else {
@@ -356,26 +363,12 @@ var BookmarksTable = (function() {
         }
     }
 
-    var hasVisibilityAndTaggingColumn = function() {
-        return $('.table-bookmarks th').length === 8;
-    }
-
     var hasVisibilityColumn = function() {
         return $('.table-bookmarks th').length === 7;
     }
 
     var getColumnDefs = function() {
-        if (hasVisibilityAndTaggingColumn()) {
-            return [
-                        { targets: [0], width: "32px", orderable: false},
-                        { targets: [1], width: "12px", orderable: false},
-                        { targets: [3], width: '30px', orderable: false},
-                        { targets: [4], width: '70px'},
-                        { targets: [5], width: "9em" },
-                        { targets: [7], width: "5.5em" },
-                        { targets: [2, 6], width: "14.5em"}
-                    ]
-        } else if(hasVisibilityColumn()) {
+        if(hasVisibilityColumn()) {
             return [
                         { targets: [0], width: "32px", orderable: false},
                         { targets: [1], width: "12px", orderable: false},
@@ -398,7 +391,7 @@ var BookmarksTable = (function() {
         var recordingColumnIndex = $('[data-recording-column-index]').attr('data-recording-column-index');
 
         // trim trailing spaces
-        recordingTitles = recordingTitles.map(function (t) { return decodeURI(t).replace(/\s+$/g, ''); });
+        recordingTitles = recordingTitles.map(function (t) { return decodeURIComponent(t).replace(/\s+$/g, ''); });
 
         if (recordingTitles.length) {
             var regex = "^(" + recordingTitles.join("|") + ")$";
@@ -556,8 +549,6 @@ var BookmarkHiddenSwitch = (function() {
         $('th.bookmark-hidden-switch>div.bootstrap-switch').attr('title', 'Show/Hide hidden bookmarks')
 
         $('.bookmarks-panel').on('click', '.hidden-bookmark-toggle', toggleHideBookmark);
-
-        $('.tagging-dropdown').on('click', '.tag:not(.disabled)', addTag);
 
         $("#show-hidden")
             .on('switchChange.bootstrapSwitch', toggleShowHidden)

@@ -231,7 +231,7 @@ class TestTempContent(FullStackTests):
 
         assert '<iframe' not in res.text
 
-        assert 'Temporary Collection' in res.text
+        assert 'Temporary%20Collection' in res.text
 
     def test_anon_user_info_redirect(self):
         res = self._get_anon('')
@@ -404,7 +404,7 @@ class TestTempContent(FullStackTests):
 
     def test_error_anon_invalid_rec_name_redir(self):
         res = self._get_anon('/temp/mp_/example.com', status=302)
-        assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/mp__/example.com')
+        assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/mp_-/example.com')
         assert res.status_code == 302
 
     #def test_edge_anon_not_rec_name(self):

@@ -124,11 +124,11 @@ class TestWebRecRecAPI(BaseWRTests):
 
     def test_collide_wb_url_format(self):
         res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': '2016'})
-        assert res.json['recording']['id'] == '2016_'
+        assert res.json['recording']['id'] == '2016-'
 
     def test_collide_wb_url_format_2(self):
         res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': '2ab_'})
-        assert res.json['recording']['id'] == '2ab__'
+        assert res.json['recording']['id'] == '2ab_-'
 
     #def test_error_already_exists(self):
     #    res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': '2 Another Recording'}, status=400)

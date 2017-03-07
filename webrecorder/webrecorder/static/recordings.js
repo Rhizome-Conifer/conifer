@@ -307,6 +307,11 @@ var ModeSelector = (function (){
                 case 'snapshot':
                     Snapshot.queueSnapshot();
                     break;
+                case 'extract':
+                    var url = getUrl();
+                    var rec = getStorage("__wr_currRec") || DEFAULT_RECORDING_SESSION_NAME;
+                    RouteTo.newExtract(coll, rec, url, wbinfo.timestamp);
+                    break;
             }
         });
     }
@@ -317,23 +322,23 @@ var ModeSelector = (function (){
 })();
 
 var PagingInterface = (function () {
-    var pgDsp;
-    var idx;
+    var dropdown;
+    var idx = 0;
     var iframe;
-    var nextBtn; var prevBtn;
-    var timestamp;
     var li;
+    var liHeight;
+    var nextBtn; var prevBtn;
+    var pgDsp;
+    var timestamp;
 
     function updateCounter(cursor) {
-        if(typeof cursor === 'undefined') cursor = (recordings.length-1);
-
         var value = (cursor+1)+' of '+recordings.length;
         pgDsp.attr('size', value.length);
         pgDsp.val(value);
     }
 
     function updateTimestamp(ts) {
-        timestamp.html(TimesAndSizesFormatter.ts_to_date(ts)+"<span class='glyphicon glyphicon-triangle-bottom' />");
+        timestamp.html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span><span class='glyphicon glyphicon-triangle-bottom' />");
     }
 
     function next() {
@@ -357,6 +362,8 @@ var PagingInterface = (function () {
         timestamp = $('.linklist > .replay-date');
         var linklist = $('.linklist');
         li = linklist.find('li');
+        liHeight = li.eq(0).outerHeight();
+        dropdown = linklist.find('> .dropdown-menu');
 
         nextBtn.on('click', next);
         prevBtn.on('click', previous);
@@ -384,18 +391,16 @@ var PagingInterface = (function () {
         });
 
         // set linklist ones TODO: this might be slow and unnecessary
-        linklist.find('> .dropdown-menu .replay-date').each(function () {
+        dropdown.find('.replay-date').each(function () {
             var obj = $(this);
-
             obj.html(TimesAndSizesFormatter.ts_to_date(String(obj.data('date'))));
         });
 
-        linklist.find('> .dropdown-menu').on('click', 'li:not(.active)', function () {
+        dropdown.on('click', 'li:not(.active)', function () {
             idx = $(this).index();
             update(recordings[idx]);
             linklist.removeClass('open');
         })
-
 
         // set arrow buttons
         update();
@@ -406,6 +411,9 @@ var PagingInterface = (function () {
         updateCounter(idx);
         li.removeClass('active');
         li.eq(idx).addClass('active');
+
+        // update dropdown scroll position
+        dropdown.scrollTop((idx>2?idx-2:0) * liHeight);
 
         // prev, next button presentation
         if(idx===0)
@@ -461,8 +469,6 @@ var ShareWidget = (function () {
     }
 
     function renderSocialWidgets(url) {
-        if(typeof twttr === 'undefined') return;
-
         // new url or initial
         if(typeof url === 'undefined') {
             url = $('#share-widget').data('url');
@@ -470,33 +476,35 @@ var ShareWidget = (function () {
 
         // clear previous widget
         $('#wr-tw').empty();
-        twttr.ready(function (){
-            twttr.widgets.createShareButton(
-                url,
-                document.getElementById('wr-tw'),
-                {
-                    text: '',
-                    size: 'large',
-                    via: 'webrecorder_io'
-                }
-            );
-        });
+        if(typeof twttr !== 'undefined') {
+            twttr.ready(function (){
+                twttr.widgets.createShareButton(
+                    url,
+                    document.getElementById('wr-tw'),
+                    {
+                        text: '',
+                        size: 'large',
+                        via: 'webrecorder_io'
+                    }
+                );
+            });
+        }
 
+        $('#wr-fb').html('<div class="fb-share-button" data-href="'+url+'" data-layout="button" data-size="large" data-mobile-iframe="true"></div>')
 
-        $('#wr-fb').html('<div class="fb-share-button" data-href="'+url+'" data-layout="button" data-size="large" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php">Share</a></div>')
-
-        // fb initialized?
+        // fb sdk loaded?
         if(typeof window.FB === 'undefined') {
             window.fbAsyncInit = function () {
-                FB.init({xfbml: false, version: 'v2.7'});
+                FB.init({xfbml: true, version: 'v2.8'});
                 fbInitialized = true;
             };
         } else {
             if(!fbInitialized) {
-                FB.init({xfbml: false, version: 'v2.7'});
+                FB.init({xfbml: true, version: 'v2.8'});
                 fbInitialized = true;
+            } else {
+                FB.XFBML.parse(document.getElementById('wr-fb'));
             }
-            FB.XFBML.parse();
         }
     }
 
@@ -505,8 +513,6 @@ var ShareWidget = (function () {
         if(shareWidget.length) {
             $(".ispublic").bootstrapSwitch().on('switchChange.bootstrapSwitch', updateVisibility);
 
-            // call render on first click
-            $('.dropdown-toggle').one('click', function (){ FB.XFBML.parse(); })
             $('.dropdown-menu').on('click', function (evt) {evt.stopPropagation(); });
             $('.share-container .glyphicon-remove-circle').on('click', function (evt) { $(this).parents('.share-container').toggleClass('open'); });
 
@@ -670,6 +676,10 @@ var RouteTo = (function(){
         routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
     }
 
+    var newExtract = function(collection, recording, url, ts) {
+        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/", ts) + url);
+    }
+
     var newPatch = function(collection, url, target, ts) {
         routeTo(host + "/$patch/" + collection + "/" + cbrowserMod("/", ts) + url, target);
     }
@@ -718,6 +728,7 @@ var RouteTo = (function(){
 
     return {
         newRecording: newRecording,
+        newExtract: newExtract,
         newPatch: newPatch,
         recordingInProgress: recordingInProgress,
         collectionInfo: collectionInfo,
@@ -985,7 +996,7 @@ var RecordingSizeWidget = (function() {
     }
 
     var updateDom = function(spaceUsed) {
-        $('.size-counter .current-size').attr('data-size', spaceUsed);
+        $('.size-counter .current-size').attr('data-size-display', spaceUsed);
         TimesAndSizesFormatter.format();
         $('.size-counter').removeClass('hidden');
     }

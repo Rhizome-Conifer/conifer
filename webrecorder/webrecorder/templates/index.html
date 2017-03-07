@@ -22,12 +22,14 @@
 
 {% block body %}
 
+{% if metadata.type != 'player' %}
 <div id="survey-alert" class='alert alert-success wr-survey' role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     <strong>Help us improve Webrecorder by participating in <a href="https://docs.google.com/forms/d/e/1FAIpQLSc7ccfiYFAleJ1YidCM8U9MxVoGvug8JB9C58DFnQJChEnJUA/viewform" target="_blank">this survey!</a></strong>
     Rewards: 15GB Webrecorder Storage +<br/> Free admission to the New Museum +<br/> a Google Cardboard!
     <div class='survey-countdown' data-start="1487548800" data-end="1488239999"></div>
 </div>
+{% endif %}
 
 
 <div class="container wr-content">

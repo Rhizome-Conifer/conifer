@@ -8,6 +8,7 @@ import pickle
 import redis
 
 from webrecorder.cookieguard import CookieGuard
+from webrecorder.utils import redis_pipeline
 from itsdangerous import URLSafeTimedSerializer, BadSignature
 
 
@@ -258,7 +259,7 @@ class RedisSessionMiddleware(CookieGuard):
             set_cookie = self.should_set_cookie(session)
 
             if set_cookie or session.should_save:
-                with redis.utils.pipeline(self.redis) as pi:
+                with redis_pipeline(self.redis) as pi:
                     self._update_redis_and_cookie(pi, set_cookie, session, headers)
 
     def should_set_cookie(self, session):
@@ -337,7 +338,7 @@ class RedisSessionMiddleware(CookieGuard):
 
         long_sesh_keys = self.redis.lrange(list_key, 0, -1)
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             for key in long_sesh_keys:
                 pi.delete(key)
 

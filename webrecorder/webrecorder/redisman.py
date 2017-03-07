@@ -24,7 +24,7 @@ from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
 from pywb.utils.timeutils import timestamp_now
 
-from webrecorder.utils import load_wr_config
+from webrecorder.utils import load_wr_config, redis_pipeline
 
 import requests
 
@@ -151,7 +151,7 @@ class LoginManagerMixin(object):
         if not max_coll:
             max_coll = self.default_max_coll
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             pi.hset(key, 'max_size', max_size)
             pi.hset(key, 'max_coll', max_coll)
             pi.hset(key, 'created_at', now)
@@ -195,7 +195,7 @@ class LoginManagerMixin(object):
         key = self.user_key.format(user=user)
         now = int(time.time())
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             pi.hset(key, 'max_size', max_size)
             pi.hset(key, 'max_coll', 1)
             pi.hset(key, 'created_at', now)
@@ -764,7 +764,7 @@ class RecManagerMixin(object):
 
         now = int(time.time())
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             pi.hset(key, 'title', rec_title)
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'updated_at', now)
@@ -784,7 +784,7 @@ class RecManagerMixin(object):
 
         key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             if not pi.exists(key):
                 return False
 
@@ -810,11 +810,11 @@ class RecManagerMixin(object):
     def get_recordings(self, user, coll):
         keys = self._get_rec_keys(user, coll, self.rec_info_key)
 
-        with redis.utils.pipeline(self.redis) as pi:
-            for key in keys:
-                pi.hgetall(key)
+        pi = self.redis.pipeline(transaction=False)
+        for key in keys:
+            pi.hgetall(key)
 
-            all_recs = pi.execute()
+        all_recs = pi.execute()
 
         all_rec_list = []
         for rec in all_recs:
@@ -958,11 +958,11 @@ class RecManagerMixin(object):
 
         pagelist = []
 
-        with redis.utils.pipeline(self.redis) as pi:
-            for key in all_page_keys:
-                pi.hvals(key)
+        pi = self.redis.pipeline(transaction=False)
+        for key in all_page_keys:
+            pi.hvals(key)
 
-            all_pages = pi.execute()
+        all_pages = pi.execute()
 
         for key, rec_pagelist in zip(all_page_keys, all_pages):
             rec = key.rsplit(':', 2)[-2]
@@ -1036,10 +1036,11 @@ class CollManagerMixin(object):
 
         coll = result.get('id')
         if not coll:
-            if include_recs:
-                result['title'] = ''
-                result['recordings'] = []
-            return result
+            return None
+            #if include_recs:
+            #    result['title'] = ''
+            #    result['recordings'] = []
+            #return result
 
         path = self.download_paths['coll']
         path = path.format(host=self.get_host(),
@@ -1062,7 +1063,7 @@ class CollManagerMixin(object):
 
         rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             pi.set(mount_key, mount_config)
 
             pi.hset(rec_key, 'mount_type', mount_type)
@@ -1100,7 +1101,7 @@ class CollManagerMixin(object):
 
         now = int(time.time())
 
-        with redis.utils.pipeline(self.redis) as pi:
+        with redis_pipeline(self.redis) as pi:
             pi.hset(key, 'title', coll_title)
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'desc', desc)
@@ -1125,14 +1126,20 @@ class CollManagerMixin(object):
 
         keys = list(self.redis.scan_iter(match=key_pattern))
 
-        with redis.utils.pipeline(self.redis) as pi:
-            for key in keys:
-                pi.hgetall(key)
+        pi = self.redis.pipeline(transaction=False)
+        for key in keys:
+            pi.hgetall(key)
 
-            all_colls = pi.execute()
+        all_colls = pi.execute()
 
-        all_colls = [self._fill_collection(user, x, include_recs=include_recs)
-                     for x in all_colls]
+        all_coll_list = []
+        for coll in all_colls:
+            collection = self._fill_collection(user, coll,
+                                               include_recs=include_recs)
+            if collection:
+                all_coll_list.append(collection)
+
+        all_colls = all_coll_list
 
         # if this is an API request or the user is not an owner,
         # filter out private collections

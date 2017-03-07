@@ -7,31 +7,33 @@
     {% set safe_url = url|urlencode %}
     <div id="fb-root"></div>
     {# load fb and tw apis #}
-    <script>(function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) return;
-      js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/sdk.js";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
-    </script>
     <script>
+      // load twitter
       window.twttr = (function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0],
-        t = window.twttr || {};
-      if (d.getElementById(id)) return t;
-      js = d.createElement(s);
-      js.id = id;
-      js.src = "https://platform.twitter.com/widgets.js";
-      fjs.parentNode.insertBefore(js, fjs);
+        var js, fjs = d.getElementsByTagName(s)[0],
+          t = window.twttr || {};
+        if (d.getElementById(id)) return t;
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "https://platform.twitter.com/widgets.js";
+        fjs.parentNode.insertBefore(js, fjs);
 
-      t._e = [];
-      t.ready = function(f) {
-        t._e.push(f);
-      };
+        t._e = [];
+        t.ready = function(f) {
+          t._e.push(f);
+        };
 
-      return t;
-    }(document, "script", "twitter-wjs"));</script>
+        return t;
+      }(document, "script", "twitter-wjs"));
+
+      // load fb
+      (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+          }(document, 'script', 'facebook-jssdk'));
     </script>
     <div id="share-widget"
          class="share-container pull-right"
@@ -65,7 +67,7 @@
                       </p>
                     {% else %}
                       <p class="make-public-desc">
-                          Collection <strong>{{ coll }}</strong> is set to private. To get a share link, make the collection public:
+                          Collection <strong data-value-encoded="{{ coll }}" data-target-decoded=""></strong> is set to private. To get a share link, make the collection public:
                       </p>
                       <div class="access-switch" style="float:right;">
                           {% include 'public_private_switch.html' %}

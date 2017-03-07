@@ -11,7 +11,7 @@ var TimesAndSizesFormatter = (function() {
     }
 
     var format = function() {
-        format_by_attr("data-size", format_bytes);
+        format_by_attr("data-size-display", format_bytes);
         format_by_attr("data-time-ts", ts_to_date);
         format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
         format_by_attr("data-time-duration", secondsToStr);
