@@ -1399,24 +1399,6 @@ body:not(.cbrowser) .wr-tools {
     height: 40px;
 }
 
-/* temp survey styles */
-.wr-survey {
-    margin: 15px 0 50px 0;
-    display: none;
-    position: absolute;
-    right: 0px;
-    width: 300px;
-    text-align: center;
-    z-index:2;
-}
-.wr-survey strong {
-    display: block;
-}
-.survey-countdown {
-    color: #393939;
-    font-weight: bold;
-}
-
 
 @media (max-width: 767px) {
     .wr-breadcrumb {
