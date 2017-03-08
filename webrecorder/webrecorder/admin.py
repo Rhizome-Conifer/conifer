@@ -137,7 +137,7 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
     if not max_coll:
         max_coll = m.default_max_coll
 
-    with redis_pipeline(self.redis) as pi:
+    with redis_pipeline(m.redis) as pi:
         pi.hset(key, 'max_size', max_size)
         pi.hset(key, 'max_coll', max_coll)
         pi.hset(key, 'created_at', now)
