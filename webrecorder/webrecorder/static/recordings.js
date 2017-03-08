@@ -5,7 +5,10 @@ if (!user) {
 $(function() {
     EventHandlers.bindAll();
     RecordingSizeWidget.start();
-    BookmarkCounter.start();
+
+    if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll')
+        BookmarkCounter.start();
+
     CountdownTimer.start();
     SizeProgressBar.start();
     Snapshot.start();
@@ -16,6 +19,13 @@ $(function() {
 
 function setUrl(url) {
     $("input[name='url']").val(decodeURI(url));
+    wbinfo.url = decodeURI(url);
+
+    if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
+        PagingInterface.navigationUpdate();
+    } else if(window.curr_mode === 'record' || window.curr_mode === 'patch') {
+        ShareWidget.updateUrl({'url': wbinfo.url, 'ts': wbinfo.timestamp});
+    }
 }
 
 function getUrl() {
@@ -330,6 +340,7 @@ var PagingInterface = (function () {
     var nextBtn; var prevBtn;
     var pgDsp;
     var timestamp;
+    var muted = false;
 
     function updateCounter(cursor) {
         var value = (cursor+1)+' of '+recordings.length;
@@ -343,12 +354,48 @@ var PagingInterface = (function () {
 
     function next() {
         if(idx + 1 < recordings.length)
-            update(recordings[++idx]);
+            update(recordings[++idx], true);
     }
 
     function previous() {
         if(idx - 1 >= 0)
-            update(recordings[--idx]);
+            update(recordings[--idx], true);
+    }
+
+    function findIndex() {
+        /**
+         * Find the index of current page within the collection
+         */
+        var item = {url: wbinfo.url, ts: parseInt(wbinfo.timestamp, 10)};
+
+        var minIdx = 0;
+        var maxIdx = recordings.length - 1;
+        var curIdx;
+        var curEle;
+
+        while(minIdx <= maxIdx) {
+            curIdx = (minIdx + maxIdx)/2 | 0;
+            curEle = parseInt(recordings[curIdx].ts, 10);
+
+            if(curEle < item.ts) {
+                minIdx = curIdx + 1;
+            } else if(curEle > item.ts) {
+                maxIdx = curIdx - 1;
+            } else if(curEle === item.ts && item.url !== recordings[curIdx].url) {
+                /**
+                 * If multiple recordings are within a timestamp, iterate over
+                 * to match the url exactly.
+                 */
+                var url;
+                while(url !== item.url && curEle === item.ts && curIdx < recordings.length) {
+                    url = recordings[++curIdx].url;
+                    curEle = parseInt(recordings[curIdx].ts, 10);
+                }
+                return curIdx;
+            } else {
+                return curIdx;
+            }
+        }
     }
 
     function start() {
@@ -373,16 +420,9 @@ var PagingInterface = (function () {
                 previous();
             else if(evt.keyCode === 39)
                 next();
-        })
+        });
 
-        // find current index
-        for(var i=0; i < recordings.length; i++) {
-            var recording = recordings[i];
-            if(recording.ts == wbinfo.timestamp && recording.url == wbinfo.url) {
-                idx=i;
-                break;
-            }
-        }
+        idx = findIndex();
 
         updateTimestamp(wbinfo.timestamp);
         timestamp.on('click', function (evt) {
@@ -398,16 +438,37 @@ var PagingInterface = (function () {
 
         dropdown.on('click', 'li:not(.active)', function () {
             idx = $(this).index();
-            update(recordings[idx]);
+            update(recordings[idx], true);
             linklist.removeClass('open');
-        })
+        });
 
         // set arrow buttons
         update();
     }
 
-    function update(rec) {
+    function navigationUpdate() {
+        /**
+         * ignore a page update if the update was prompted by
+         * the pagging ui
+         */
+        if(muted) {
+            muted = false;
+            return;
+        }
+
+        idx = findIndex();
+        var rec = recordings[idx];
+        ShareWidget.updateUrl(rec);
+        updateTimestamp(rec.ts);
+        update();
+    }
+
+    function update(rec, mute) {
         /* updates wbinfo, iframe */
+        if(typeof mute !== 'undefined' && mute) {
+            muted = true;
+        }
+
         updateCounter(idx);
         li.removeClass('active');
         li.eq(idx).addClass('active');
@@ -441,7 +502,8 @@ var PagingInterface = (function () {
     }
 
     return {
-        start: start
+        start: start,
+        navigationUpdate: navigationUpdate
     }
 })();
 
@@ -956,12 +1018,14 @@ var RecordingSizeWidget = (function() {
         switch (msg.ws_type) {
             case "status":
                 updateDom(msg.size);
-                BookmarkCounter.setBookmarkCount(msg.numPages);
+                if (window.curr_mode === 'replay-coll' || window.curr_mode === 'replay')
+                    BookmarkCounter.setBookmarkCount(msg.numPages);
                 break;
 
             case "remote_url":
                 if (window.cnt_browser) {
                     var page = msg.page;
+                    setTimestamp(page.timestamp);
                     setUrl(page.url);
                     setTitle("Remote", page.url, page.title);
                     replaceOuterUrl(page, "load");
@@ -1295,8 +1359,13 @@ $(function() {
     var lastUrl = undefined;
     var lastTs = undefined;
     var lastTitle = undefined;
+    var initialReq = true;
 
     function handleReplayEvent(event) {
+        // ignore postMessages from other sources
+        if(event.origin.indexOf(window.appHost) === -1)
+            return;
+
         var replay_iframe = window.document.getElementById("replay_iframe");
 
         if (!replay_iframe || event.source != replay_iframe.contentWindow) {
@@ -1404,12 +1473,12 @@ $(function() {
             var recordingId = wbinfo.info.rec_id;
             var attributes = {};
 
-            attributes.url = state.url;
-            setUrl(state.url);
-
             attributes.timestamp = state.ts;
             setTimestamp(state.ts);
             attributes.title = state.title;
+
+            attributes.url = state.url;
+            setUrl(state.url);
 
             var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
             setTitle(msg, state.url, state.title);
@@ -1423,8 +1492,29 @@ $(function() {
             lastTitle = attributes.title;
 
         } else if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
-            setUrl(state.url);
-            setTitle("Archived", state.url, state.title);
+            if (lastUrl == state.url) {
+                if (!state.ts && lastTs) {
+                    return;
+                }
+
+                if (!state.title && lastTitle) {
+                    return;
+                }
+
+                if (state.title == lastTitle && state.ts == lastTs) {
+                    return;
+                }
+            }
+
+            if(!initialReq) {
+                setTimestamp(state.ts);
+                setUrl(state.url);
+                setTitle("Archived", state.url, state.title);
+            }
+            initialReq = false;
+            lastUrl = state.url;
+            lastTs = state.ts;
+            lastTitle = state.title;
         }
     }
 
