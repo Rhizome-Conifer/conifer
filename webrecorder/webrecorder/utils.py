@@ -1,5 +1,5 @@
+from warcio.limitreader import LimitReader
 from pywb.webagg.utils import load_config
-from pywb.utils.loaders import LimitReader
 from contextlib import contextmanager
 import gevent
 

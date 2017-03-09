@@ -58,6 +58,7 @@ setup(
         'webrecorder',
         'webrecorder.rec',
         'webrecorder.load',
+        'webrecorder.standalone',
     ],
     package_data={
         'webrecorder': ['config/*',
@@ -72,7 +73,7 @@ setup(
         'pywb>=0.50.0'
     ],
     install_requires=[
-        'bottle==0.12.11',
+        'bottle==0.12.13',
         'youtube_dl',
         'itsdangerous',
         'gevent==1.1.2',

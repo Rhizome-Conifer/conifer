@@ -22,7 +22,8 @@ from six.moves.urllib.parse import quote
 
 from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
-from pywb.utils.timeutils import timestamp_now
+
+from warcio.timeutils import timestamp_now
 
 from webrecorder.utils import load_wr_config, redis_pipeline
 
@@ -76,8 +77,9 @@ class LoginManagerMixin(object):
     def add_to_mailing_list(self, username, email, name):
         """3rd party mailing list subscription"""
         if not self.list_endpoint or not self.list_key:
-            return print('MAILING_LIST is turned on, but required fields are '
-                         'missing.')
+            print('MAILING_LIST is turned on, but required fields are '
+                  'missing.')
+            return
 
         try:
             res = requests.post(self.list_endpoint,
@@ -103,8 +105,9 @@ class LoginManagerMixin(object):
         """3rd party mailing list removal"""
         if not self.list_removal_endpoint or not self.list_key:
             # fail silently, log info
-            return print('REMOVE_ON_DELETE is turned on, but required '
-                         'fields are missing.')
+            print('REMOVE_ON_DELETE is turned on, but required '
+                  'fields are missing.')
+            return
 
         try:
             email = email.encode('utf-8').lower()

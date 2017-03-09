@@ -10,8 +10,6 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 
 from webrecorder.redisman import init_manager_for_cli
 
-from pywb.utils.loaders import LimitReader
-
 import os
 import sys
 import pkgutil

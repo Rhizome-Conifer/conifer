@@ -2,7 +2,7 @@ from pywb.recorder.recorderapp import RecorderApp
 
 from pywb.recorder.redisindexer import WritableRedisIndexer
 
-from pywb.recorder.warcwriter import MultiFileWARCWriter
+from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
 from pywb.recorder.filters import WriteRevisitDupePolicy
 from pywb.recorder.filters import ExcludeSpecificHeaders
 
