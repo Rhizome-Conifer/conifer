@@ -1363,7 +1363,7 @@ $(function() {
 
     function handleReplayEvent(event) {
         // ignore postMessages from other sources
-        if(event.origin.indexOf(window.appHost) === -1)
+        if(event.origin.indexOf(window.contentHost) === -1)
             return;
 
         var replay_iframe = window.document.getElementById("replay_iframe");
