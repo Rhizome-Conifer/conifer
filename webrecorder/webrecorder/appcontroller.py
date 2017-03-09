@@ -12,7 +12,7 @@ import os
 from jinja2 import contextfunction
 from pkg_resources import resource_filename
 
-from six.moves.urllib.parse import urlsplit, urljoin
+from six.moves.urllib.parse import urlsplit, urljoin, unquote
 
 from pywb.urlrewrite.templateview import JinjaEnv
 from webrecorder.utils import load_wr_config
@@ -281,6 +281,12 @@ class AppController(BaseController):
             """
             return re.sub(r'(\?.*)', '?...', value)
 
+        def urldecode(value):
+            """ Decode url-encoded value
+            """
+            return unquote(value)
+
+
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
@@ -302,6 +308,7 @@ class AppController(BaseController):
         jinja_env.globals['is_tagged'] = is_tagged
         jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
         jinja_env.filters['trunc_url'] = trunc_url
+        jinja_env.filters['urldecode'] = urldecode
 
         return jinja_env_wrapper
 

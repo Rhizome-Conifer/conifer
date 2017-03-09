@@ -2,7 +2,7 @@ import json
 import requests
 
 from bottle import request, response
-from urllib.parse import quote
+from six.moves.urllib.parse import quote
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException

@@ -11,6 +11,7 @@
             window.coll = "{{ coll }}";
             window.rec = "{{ rec }}";
             window.browsers = {{ get_browsers() }};
+            window.appHost = "{{ get_app_host() }}";
         </script>
 
         {% block head %}

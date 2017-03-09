@@ -613,7 +613,7 @@ div.filter-label {
     justify-content: center;
     -ms-flex-pack: center;
 }
-.recording-actions .btn {
+.recording-actions > *:not(:last-child) {
     margin-right: 5px;
 }
 
@@ -1397,24 +1397,6 @@ body:not(.cbrowser) .wr-tools {
 }
 .wr-tools.open {
     height: 40px;
-}
-
-/* temp survey styles */
-.wr-survey {
-    margin: 15px 0 50px 0;
-    display: none;
-    position: absolute;
-    right: 0px;
-    width: 300px;
-    text-align: center;
-    z-index:2;
-}
-.wr-survey strong {
-    display: block;
-}
-.survey-countdown {
-    color: #393939;
-    font-weight: bold;
 }
 
 

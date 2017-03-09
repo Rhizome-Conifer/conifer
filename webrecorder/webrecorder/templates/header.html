@@ -45,6 +45,13 @@
                     <span class="wr-divider"></span>
                 {% endif %}
                 <button id="autoscroll" type="button" class="btn btn-default btn-xs" data-toggle="button" aria-pressed="false" autocomplete="off">Autoscroll</button>
+
+                {% if browser %}
+                    <button type="button" data-toggle="modal" data-target="#clipboard-modal" class="left-buffer btn btn-xs btn-default">
+                    <span class="glyphicon glyphicon-copy glyphicon-button"></span>Clipboard</button>
+
+                    <span id="browser-countdown-label">Browser Time Left: <span id="browser-countdown"></span></span>
+                {% endif %}
             </div>
         {% endif %}
     </div>

@@ -3,13 +3,13 @@
     {% if curr_mode != 'live' %}
     <meta property="og:url" content="{{ get_share_url() }}" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Archived page from the '{{ coll_title }}' Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
-    <meta name='og:description' content="{{ info.coll_desc }}">
+    <meta property="og:title" content="Archived page from the &ldquo;{{ coll_title|urldecode|e }}&rdquo; Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
+    <meta name="og:description" content="{{ info.coll_desc|e }}">
 
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@webrecorder_io" />
-    <meta name="twitter:title" content="Archived page from the '{{ coll_title }}' Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
-    <meta name="twitter:description" content="{{ info.coll_desc }}" />
+    <meta name="twitter:title" content="Archived page from the &ldquo;{{ coll_title|urldecode|e }}&rdquo; Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
+    <meta name="twitter:description" content="{{ info.coll_desc|e }}" />
     {% endif %}
 
     <style>
