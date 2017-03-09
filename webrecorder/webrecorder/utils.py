@@ -22,11 +22,16 @@ class CacheingLimitReader(LimitReader):
     def __init__(self, stream, length, out):
         super(CacheingLimitReader, self).__init__(stream, length)
         self.out = out
+        self.lenread = 0
 
     def read(self, size=-1):
         buff = super(CacheingLimitReader, self).read(size)
         self.out.write(buff)
+        self.lenread += len(buff)
         return buff
+
+    def tell(self):
+        return self.lenread
 
 
 # ============================================================================

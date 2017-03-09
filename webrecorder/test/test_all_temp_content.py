@@ -9,7 +9,6 @@ from io import BytesIO
 
 from pywb.cdx.cdxobject import CDXObject
 from pywb.warc.cdxindexer import write_cdx_index
-from pywb.utils.bufferedreaders import ChunkedDataReader
 
 from re import sub
 from six.moves.urllib.parse import urlsplit, quote
@@ -64,19 +63,6 @@ class TestTempContent(FullStackTests):
         assert size == self.redis.hget(u_info, 'size')
 
         assert self.redis.hget(r_info, 'updated_at') is not None
-
-    def _get_dechunked(self, stream):
-        buff = ChunkedDataReader(BytesIO(stream))
-
-        warcin = BytesIO()
-        while True:
-            b = buff.read()
-            if not b:
-                break
-            warcin.write(b)
-
-        warcin.seek(0)
-        return warcin
 
     def _get_anon(self, url, status=None):
         return self.testapp.get('/' + self.anon_user + url, status=status)

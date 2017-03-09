@@ -6,6 +6,9 @@ from pywb.webagg.test.testutils import TempDirTests, to_path
 import webtest
 import os
 
+from pywb.utils.bufferedreaders import ChunkedDataReader
+from io import BytesIO
+
 from fakeredis import FakeStrictRedis
 from webrecorder.appcontroller import AppController
 
@@ -85,6 +88,20 @@ class FullStackTests(BaseWRTests):
                       'CONTENT_HOST': ''}
 
         cls.runner = FullStackRunner(app_port=-1, env_params=env_params)
+
+    @classmethod
+    def _get_dechunked(cls, stream):
+        buff = ChunkedDataReader(BytesIO(stream))
+
+        warcin = BytesIO()
+        while True:
+            b = buff.read()
+            if not b:
+                break
+            warcin.write(b)
+
+        warcin.seek(0)
+        return warcin
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
