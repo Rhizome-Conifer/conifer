@@ -4,7 +4,7 @@ from pywb.recorder.redisindexer import WritableRedisIndexer
 
 from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
 from pywb.recorder.filters import WriteRevisitDupePolicy
-from pywb.recorder.filters import ExcludeSpecificHeaders
+from pywb.recorder.filters import ExcludeHttpOnlyCookieHeaders
 
 from webrecorder.utils import SizeTrackingReader, redis_pipeline
 
@@ -101,15 +101,13 @@ class WebRecRecorder(object):
     def init_recorder(self):
         self.dedup_index = self.init_indexer()
 
-        header_filter = ExcludeSpecificHeaders(['Set-Cookie', 'Cookie'])
-
         writer = SkipCheckingMultiFileWARCWriter(dir_template=self.warc_path_templ,
                                      filename_template=self.warc_name_templ,
                                      dedup_index=self.dedup_index,
                                      redis=self.redis,
                                      skip_key_templ=self.skip_key_templ,
                                      key_template=self.info_keys['rec'],
-                                     header_filter=header_filter)
+                                     header_filter=ExcludeHttpOnlyCookieHeaders())
 
         self.writer = writer
         recorder_app = RecorderApp(self.upstream_url,
