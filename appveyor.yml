@@ -5,11 +5,14 @@ environment:
       PYTHON_ARCH: "64"
 
 install:
+  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
+        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
+        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
+          throw "There are newer queued builds for this pull request, failing early." }
   - "pip install --disable-pip-version-check --user --upgrade pip"
   - "pip install pyinstaller"
   - ps: "cd C:\projects\webrecorder\webrecorder"
   - "python setup.py install"
-
 
 build_script:
   # Build the compiled extension
