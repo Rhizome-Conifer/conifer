@@ -7,7 +7,7 @@ environment:
 install:
   - "pip install --disable-pip-version-check --user --upgrade pip"
   - "pip install pyinstaller"
-  - ps: "cd cd C:\projects\webrecorder\webrecorder"
+  - ps: "cd C:\projects\webrecorder\webrecorder"
   - "python setup.py install"
 
 
