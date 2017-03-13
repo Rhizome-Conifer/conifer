@@ -1,3 +1,7 @@
+branches:
+  only:
+  - develop
+
 environment:
   matrix:
     - PYTHON: "C:\\Python34-x64"
