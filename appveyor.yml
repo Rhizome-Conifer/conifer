@@ -11,7 +11,7 @@ install:
           throw "There are newer queued builds for this pull request, failing early." }
   - "pip install --disable-pip-version-check --user --upgrade pip"
   - "pip install pyinstaller"
-  - ps: "cd C:\projects\webrecorder\webrecorder"
+  - "cd C:\projects\webrecorder\webrecorder"
   - "python setup.py install"
 
 build_script:
