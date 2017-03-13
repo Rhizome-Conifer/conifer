@@ -1,6 +1,6 @@
 branches:
   only:
-  - develop
+    - develop
 
 environment:
   matrix:
