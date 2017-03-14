@@ -7,8 +7,8 @@ from bottle import response, request
 from webrecorder.basecontroller import BaseController
 from webrecorder.unrewriter import HTMLDomUnRewriter, UnRewriter, NopRewriter
 
-from pywb.utils.timeutils import timestamp_now, iso_date_to_timestamp
-from pywb.utils.timeutils import timestamp_to_datetime, datetime_to_iso_date
+from warcio.timeutils import timestamp_now, iso_date_to_timestamp
+from warcio.timeutils import timestamp_to_datetime, datetime_to_iso_date
 
 
 # ============================================================================

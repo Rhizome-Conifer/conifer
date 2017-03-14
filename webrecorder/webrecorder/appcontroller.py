@@ -154,6 +154,9 @@ class AppController(BaseController):
         def get_app_host():
             return self.app_host
 
+        def get_content_host():
+            return self.content_host
+
         def is_beta():
             return self.manager.is_beta()
 
@@ -302,6 +305,7 @@ class AppController(BaseController):
         jinja_env.globals['get_embed_url'] = get_embed_url
         jinja_env.globals['get_recs_for_coll'] = get_recs_for_coll
         jinja_env.globals['get_app_host'] = get_app_host
+        jinja_env.globals['get_content_host'] = get_content_host
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
         jinja_env.globals['get_tags'] = get_tags

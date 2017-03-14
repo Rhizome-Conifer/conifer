@@ -1,6 +1,5 @@
 import re
 import sys
-import html
 
 from pywb.rewrite.html_rewriter import HTMLRewriter
 

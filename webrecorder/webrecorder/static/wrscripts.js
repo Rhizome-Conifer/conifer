@@ -34,13 +34,27 @@
         var counter = 0;
 
         function process(win, topinfo, top_page) {
+            var return_url;
+            try {
+                return_url = addSnapshot(win, topinfo, top_page);
+            } catch(e) {
+                console.log("Can't snapshot: " + e);
+                return;
+            }
+
             for (var i = 0; i < win.frames.length; i++) {
                 var url = process(win.frames[i], topinfo, false);
 
-                win.frames[i].frameElement.setAttribute("data-src-target", url);
+                if (url) {
+                    try {
+                        win.frames[i].frameElement.setAttribute("data-src-target", url);
+                    } catch(e) {
+                    }
+                }
             }
 
-            return addSnapshot(win, topinfo, top_page);
+            return return_url;
+
         }
 
         function addSnapshot(win, topinfo, top_page) {

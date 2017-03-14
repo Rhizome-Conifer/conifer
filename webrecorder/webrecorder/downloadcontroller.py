@@ -1,8 +1,9 @@
-from pywb.utils.timeutils import timestamp_now
+from warcio.timeutils import timestamp_now
+from warcio.warcwriter import BufferWARCWriter
+
 from pywb.utils.loaders import BlockLoader
 
 from pywb.webagg.utils import StreamIter, chunk_encode_iter
-from pywb.recorder.warcwriter import SimpleTempWARCWriter
 
 from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
@@ -52,9 +53,9 @@ class DownloadController(BaseController):
                 ('json-metadata', json.dumps(metadata)),
                ])
 
-        wi_writer = SimpleTempWARCWriter()
+        wi_writer = BufferWARCWriter()
         wi_writer.write_record(wi_writer.create_warcinfo_record(filename, info))
-        return wi_writer.get_buffer()
+        return wi_writer.get_contents()
 
     def create_coll_warcinfo(self, user, collection, filename=''):
         metadata = {}

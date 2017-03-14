@@ -16,9 +16,12 @@ try:
 except ImportError:
     pass
 
-
 #long_description = open('README.rst').read()
 long_description = ''
+
+def load_requirements(filename):
+    with open(filename, 'rt') as fh:
+        return fh.read().rstrip().split('\n')
 
 
 class PyTest(TestCommand):
@@ -58,6 +61,7 @@ setup(
         'webrecorder',
         'webrecorder.rec',
         'webrecorder.load',
+        'webrecorder.standalone',
     ],
     package_data={
         'webrecorder': ['config/*',
@@ -68,27 +72,12 @@ setup(
                         'static/external/bootstrap/fonts/*'],
     },
     setup_requires=[
-        'webassets==0.12.1',
         'pywb>=0.50.0'
     ],
-    install_requires=[
-        'bottle==0.12.11',
-        'youtube_dl',
-        'itsdangerous',
-        'gevent==1.1.2',
-        'boto',
-        'requests>=2.9.1',
-        'bottle-cork==0.12.0',
-        'marshmallow',
-        'werkzeug',
-        'urllib3',
-        'pywb>=0.50.0',
-        'webassets==0.12.1',
-        'karellen-geventws',
-        'fakeredis'
-    ],
+    install_requires=load_requirements('requirements.txt'),
     dependency_links=[
         'git+https://github.com/ikreymer/pywb.git@new-pywb#egg=pywb-0.50.0',
+        'git+https://github.com/FedericoCeratto/bottle-cork.git@94d4017a4d1b0d20328e9283e341bd674df3a18a#egg=bottle-cork',
     ],
     tests_require=[
         'pytest',
