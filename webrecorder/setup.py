@@ -19,12 +19,13 @@ except ImportError:
 #long_description = open('README.rst').read()
 long_description = ''
 
-def load_requirements(filename):
-    with open(filename, 'rt') as fh:
-        return fh.read().rstrip().split('\n')
-
 PYWB_DEP = 'pywb>=0.50.0'
 
+def load_requirements(filename):
+    with open(filename, 'rt') as fh:
+        res = fh.read().rstrip().split('\n')
+        res.append(PYWB_DEP)
+        return res
 
 class PyTest(TestCommand):
     def finalize_options(self):
@@ -76,7 +77,7 @@ setup(
     setup_requires=[
         PYWB_DEP
     ],
-    install_requires=load_requirements('requirements.txt').append(PYWB_DEP),
+    install_requires=load_requirements('requirements.txt'),
     dependency_links=[
         'git+https://github.com/ikreymer/pywb.git@new-pywb#egg=pywb-0.50.0',
         'git+https://github.com/FedericoCeratto/bottle-cork.git@94d4017a4d1b0d20328e9283e341bd674df3a18a#egg=bottle-cork',
