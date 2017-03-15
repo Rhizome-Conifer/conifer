@@ -6,6 +6,8 @@ ADD requirements.txt /build/
 USER root
 RUN pip install -r requirements.txt
 
+RUN pip install 'pywb>=0.50.0'
+
 USER archivist
 
 VOLUME /data/

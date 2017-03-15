@@ -1,6 +1,5 @@
-pywb>=0.50.0
 bottle==0.12.13
-bottle-cork
+git+https://github.com/FedericoCeratto/bottle-cork.git@94d4017a4d1b0d20328e9283e341bd674df3a18a#egg=bottle-cork
 boto
 youtube_dl
 itsdangerous
