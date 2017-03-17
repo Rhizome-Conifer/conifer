@@ -13,7 +13,7 @@ import './style.scss';
 
 
 // named export for tests
-class App extends Component { // eslint-disable-line
+export class App extends Component { // eslint-disable-line
 
   static propTypes = {
     children: PropTypes.node.isRequired,

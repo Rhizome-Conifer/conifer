@@ -2,6 +2,14 @@ import React, { Component, PropTypes } from 'react';
 
 
 class HttpStatus extends Component { // eslint-disable-line
+  static defaultProps = {
+    status: '404',
+  }
+
+  static propTypes = {
+    status: PropTypes.string,
+  }
+
   render() {
     const { status } = this.props;
 
@@ -10,13 +18,5 @@ class HttpStatus extends Component { // eslint-disable-line
     );
   }
 }
-
-HttpStatus.propTypes = {
-  status: PropTypes.string,
-};
-
-HttpStatus.defaultProps = {
-  status: '404',
-};
 
 export default HttpStatus;

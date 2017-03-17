@@ -163,17 +163,21 @@
     "collectCoverageFrom": [
       "src/**/*.js"
     ],
+    "moduleFileExtensions": ["js"],
+    "moduleDirectories": ["src", "node_modules"],
     "setupFiles": [
       "<rootDir>/config/polyfills.js"
     ],
     "testPathIgnorePatterns": [
-      "<rootDir>[/\\\\](build|node_modules|scripts)[/\\\\]"
+      "<rootDir>[/\\\\](build|node_modules|static)[/\\\\]"
     ],
     "testEnvironment": "node",
     "testURL": "http://localhost",
+    "moduleNameMapper": {
+      ".+\\.(css|scss)$": "<rootDir>/config/jest/cssTransform.js"
+    },
     "transform": {
-      "^.+\\.(js|jsx)$": "<rootDir>/node_modules/babel-jest",
-      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
+      "^.+\\.js$": "<rootDir>/node_modules/babel-jest",
       "^(?!.*\\.(js|jsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
     },
     "transformIgnorePatterns": [

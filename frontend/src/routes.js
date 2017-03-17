@@ -1,6 +1,6 @@
 import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 
-import { App, CollectionList, CollectionDetail, Home, HttpStatus,
+import { Application, CollectionList, CollectionDetail, Home, HttpStatus,
          UserSettings } from 'containers';
 
 
@@ -63,7 +63,7 @@ export default (store) => {
 
   return {
     path: '/',
-    component: App,
+    component: Application,
     indexRoute: { component: Home },
     childRoutes: routes
   };

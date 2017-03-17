@@ -16,7 +16,7 @@ class Breadcrumb extends Component {
     const { router } = this.context;
 
     // filter based on whether this item should show up in breadcrumb
-    const trail = filter(routes.slice(1), o => o.breadcrumb);
+    const trail = routes ? filter(routes.slice(1), o => o.breadcrumb) : [];
     console.log(routes, router);
 
     return (

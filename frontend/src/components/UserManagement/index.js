@@ -6,7 +6,7 @@ import Modal from 'components/Modal';
 import LoginForm from './forms';
 import './style.scss';
 
-class UserManagement extends Component {
+export class UserManagement extends Component {
 
   static propTypes = {
     auth: PropTypes.shape({
@@ -17,6 +17,13 @@ class UserManagement extends Component {
     }),
     loginFn: PropTypes.func.isRequired,
     logoutFn: PropTypes.func.isRequired
+  }
+
+  static defaultProps = {
+    auth: {
+      username: null,
+      role: null
+    }
   }
 
   constructor(props) {

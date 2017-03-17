@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { App } from './App';
+import { UserManagement } from 'components/UserManagement';
 
 
 it('renders without crashing', () => {
   const div = document.createElement('div');
-  ReactDOM.render(<App>{[]}</App>, div);
+  ReactDOM.render(<UserManagement loginFn={() => {}} logoutFn={() => {}} />, div);
 });
