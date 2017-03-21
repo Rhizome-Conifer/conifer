@@ -19,10 +19,13 @@ except ImportError:
 #long_description = open('README.rst').read()
 long_description = ''
 
+PYWB_DEP = 'pywb>=0.50.0'
+
 def load_requirements(filename):
     with open(filename, 'rt') as fh:
-        return fh.read().rstrip().split('\n')
-
+        res = fh.read().rstrip().split('\n')
+        res.append(PYWB_DEP)
+        return res
 
 class PyTest(TestCommand):
     def finalize_options(self):
@@ -72,7 +75,7 @@ setup(
                         'static/external/bootstrap/fonts/*'],
     },
     setup_requires=[
-        'pywb>=0.50.0'
+        PYWB_DEP
     ],
     install_requires=load_requirements('requirements.txt'),
     dependency_links=[

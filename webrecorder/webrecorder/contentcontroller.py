@@ -262,6 +262,9 @@ class ContentController(BaseController, RewriterApp):
             if type != 'replay':
                 self.manager.assert_can_write(user, coll)
 
+                if self.manager.is_out_of_space(user):
+                    raise HTTPError(402, 'Out of Space')
+
         if ((not_found or type == 'replay-coll') and
             (not (self.manager.is_anon(user) and coll == 'temp')) and
             (not self.manager.has_collection(user, coll))):
@@ -403,10 +406,6 @@ class ContentController(BaseController, RewriterApp):
     ## RewriterApp overrides
     def get_base_url(self, wb_url, kwargs):
         type = kwargs['type']
-
-        if type in ('record', 'patch') and self.manager.is_out_of_space(kwargs['user']):
-            details = {'error': 'Out of Space'}
-            raise UpstreamException(402, url=wb_url.url, details=details)
 
         base_url = self.paths[type].format(record_host=self.record_host,
                                            replay_host=self.replay_host,
