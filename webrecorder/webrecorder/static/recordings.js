@@ -622,7 +622,7 @@ var ShareWidget = (function () {
             });
 
             $('#share-widget').one('show.bs.dropdown', function (){
-                ThirdPartyJS();
+                thirdPartyJS();
                 renderSocialWidgets();
             });
         }
