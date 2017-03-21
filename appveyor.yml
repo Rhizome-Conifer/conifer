@@ -1,0 +1,33 @@
+branches:
+  only:
+    - master
+
+environment:
+  global:
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C obvci_appveyor_python_build_env.cmd"
+  matrix:
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.x"
+      PYTHON_ARCH: "64"
+
+install:
+  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
+        https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
+        Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
+          throw "There are newer queued builds for this pull request, failing early." }
+          
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  - "pip install --disable-pip-version-check --user --upgrade pip"
+  - "pip install -U setuptools"
+  - "pip install pyinstaller"
+  - "pip install cffi"
+  - ps: "cd webrecorder"
+  - "python setup.py install"
+
+build_script:
+  - ps: "cd webrecorder/standalone"
+  - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./standalone.py
+  - ps: "mv dist/standalone.exe dist/webrecorder.exe"
+
+artifacts:
+  - path: webrecorder\webrecorder\standalone\dist\webrecorder.exe
