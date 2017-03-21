@@ -9,8 +9,6 @@ RUN pip install git+https://github.com/FedericoCeratto/bottle-cork.git@94d4017a4
 
 RUN pip install -r requirements.txt
 
-RUN pip install 'pywb>=0.50.0'
-
 USER archivist
 
 VOLUME /data/
