@@ -29,8 +29,8 @@ install:
 
 build_script:
   - ps: "cd webrecorder/standalone"
-  - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./standalone.py
-  - ps: "mv dist/standalone.exe dist/webrecorder.exe"
+  - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
+  #- ps: "mv dist/webrecorder_player.exe dist/webrecorder_player.exe"
 
 artifacts:
-  - path: webrecorder\webrecorder\standalone\dist\webrecorder.exe
+  - path: webrecorder\webrecorder\standalone\dist\webrecorder_player.exe
