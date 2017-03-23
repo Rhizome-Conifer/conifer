@@ -21,11 +21,11 @@ addons:
 install:
   - cd webrecorder
   - python setup.py install
-  - pip install coverage pytest-cov coveralls
+  # - pip install coverage pytest-cov coveralls
   - pip install pyinstaller
 
 script:
-  - python setup.py test
+  # - python setup.py test
   - cd webrecorder/standalone
   - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
 
