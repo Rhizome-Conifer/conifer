@@ -1,6 +1,7 @@
 branches:
   only:
     - master
+    - develop
 
 environment:
   global:
