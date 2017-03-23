@@ -33,7 +33,7 @@ branches:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall python ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pyenv ; fi
+  # - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install pyenv ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.5.3 ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew pyenv global 3.5.3 ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install -U setuptools ; fi
