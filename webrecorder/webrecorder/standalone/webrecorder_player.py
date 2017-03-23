@@ -4,8 +4,9 @@ import os
 
 from webrecorder.standalone.standalone import StandaloneRunner
 from webrecorder.rec.webrecrecorder import WebRecRecorder
-from webrecorder.uploadcontroller import InplaceUploader
+from webrecorder.uploadcontroller import InplaceLoader
 from webrecorder.redisman import init_manager_for_cli
+from webrecorder.admin import main as admin_main
 
 
 # ============================================================================
@@ -23,12 +24,16 @@ class WebrecPlayerRunner(StandaloneRunner):
 
         gevent.spawn(self.auto_load_warcs, argres)
 
+    def admin_init(self):
+        admin_main(['-c', 'test@localhost', 'local', 'LocalUser1', 'public-archivist', 'local'])
+        #os.environ['AUTO_LOGIN_USER'] = 'local'
+
     def auto_load_warcs(self, argres):
         manager = init_manager_for_cli()
 
         indexer = WebRecRecorder.make_wr_indexer(manager.config)
 
-        uploader = InplaceUploader(manager, indexer, '@INIT')
+        uploader = InplaceLoader(manager, indexer, '@INIT')
 
         files = list(self.get_archive_files(argres.inputs))
 

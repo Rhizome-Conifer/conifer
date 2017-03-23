@@ -1209,6 +1209,8 @@ class CollManagerMixin(object):
         if props.get('files') == 0:
             props['size'] = props['total_size']
 
+        props['user'] = user
+        props['upload_id'] = upload_id
         return props
 
 

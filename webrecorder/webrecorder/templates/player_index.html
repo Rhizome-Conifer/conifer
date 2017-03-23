@@ -2,8 +2,7 @@
     <h4 class="text-center" style="margin-bottom: 30px">Browse high-fidelity web archives</h4>
 </div>
 <div class="row">
-    <div class="col-md-6 col-md-offset-3">
-        {% if upload_status and upload_status.size != upload_status.total_size %}
+    <div class="col-md-6 col-md-offset-3 player-load-progress" style="display: none">
         <h4>Please wait while the archive is indexed...</h4>
         Now Indexing:
         <input type="text" id="upload-file" readonly style="font-weight: bold; background-color: white; width: 100%; border: 0px">
@@ -13,13 +12,13 @@
             <div class="upload-percent"></div>
         </div>
         <div id="upload-status"></div>
-        <script>
-        var upload_status = {{ upload_status | tojson }};
-        $(function() { Uploader.initProgress("{{ curr_user }}", "@INIT", upload_status); });
-        </script>
-        {% else %}
-        <h2 class="text-center"><a href="/{{ curr_user }}"><b>Browse Archive ({{num_collections}} Collections)</a></h2>
-        {% endif %}
+        <!--<h2 class="text-center"><a href="/local"><b>Browse Archive ({{num_collections}} Collections)</a></h2>-->
     </div>
 </div>
+<script>
+$(function() {
+    var upload_status = {{ upload_status | tojson }};
+    Uploader.playerInitProgress(upload_status);
+});
+</script>
 

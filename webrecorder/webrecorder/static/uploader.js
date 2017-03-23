@@ -162,7 +162,20 @@ Uploader = (function() {
         }
     }
 
-    function initProgress(user, upload_id, startData) {
+    // for player initial load progress
+    function playerInitProgress(load_data) {
+        if (!load_data) {
+            return;
+        }
+
+        if (load_data.size == load_data.total_size && load_data.user && load_data.coll) {
+            window.location.href = "/" + load_data.user + "/" + load_data.coll;
+            return;
+        }
+
+        var upload_id = load_data.upload_id;
+        var user = load_data.user;
+
         var url = "/_upload/" + upload_id + "?user=" + user;
 
         var done = function(user, data) {
@@ -171,7 +184,8 @@ Uploader = (function() {
 
         pingTime = 1000;
 
-        startIndexProgress(user, upload_id, 0, done, startData);
+        $(".player-load-progress").show();
+        startIndexProgress(user, upload_id, 0, done, load_data);
         uploader.show();
         status.show();
     }
@@ -248,7 +262,7 @@ Uploader = (function() {
     $(init);
 
     return {"startIndexProgress": startIndexProgress,
-            "initProgress": initProgress
+            "playerInitProgress": playerInitProgress
            }
 
 })();

@@ -36,6 +36,8 @@ class UploadController(BaseController):
         self.upload_exp = int(config['upload_status_expire'])
         self.record_host = os.environ['RECORD_HOST']
 
+        self.upload_collection = config['upload_coll']
+
     def init_routes(self):
         @self.app.put('/_upload')
         def upload_file():
@@ -217,6 +219,9 @@ class UploadController(BaseController):
     def _add_split_padding(self, diff, upload_key):
         self.manager.redis.hincrby(upload_key, 'size', diff * 2)
 
+    def is_public(self, collection):
+        return collection.get('public', False)
+
     def process_upload(self, user, force_coll, infos, stream, filename, total_size, num_recs):
         stream.seek(0)
 
@@ -237,7 +242,7 @@ class UploadController(BaseController):
 
             if type == 'collection':
                 if not force_coll:
-                    collection = self._get_existing_coll(user, info)
+                    collection = self._get_existing_coll(user, info, filename)
 
                 if not collection:
                     collection = info
@@ -246,7 +251,7 @@ class UploadController(BaseController):
                                                    collection['id'],
                                                    collection['title'],
                                                    collection.get('desc', ''),
-                                                   collection.get('public', False))
+                                                   self.is_public(collection))
 
                     collection['id'] = actual_collection['id']
                     collection['title'] = actual_collection['title']
@@ -289,7 +294,7 @@ class UploadController(BaseController):
 
         return first_coll, rec_infos
 
-    def _get_existing_coll(self, user, info):
+    def _get_existing_coll(self, user, info, filename):
         return None
 
     def detect_pages(self, user, coll, rec):
@@ -350,21 +355,21 @@ class UploadController(BaseController):
                          data=stream)
 
     def default_collection(self, user, filename):
-        desc = 'This collection was automatically created from upload of *{0}*'.format(filename)
-        collection = {'type': 'collection',
-                      'title': 'Upload Collection',
-                      'desc': desc,
-                     }
+        collection = self.upload_collection
+
+        desc = collection.get('desc', '').format(filename=filename)
+        public = collection.get('public', False)
 
         collection['id'] = self.sanitize_title(collection['title'])
         actual_collection = self.manager.create_collection(user,
                                        collection['id'],
                                        collection['title'],
-                                       collection.get('desc', ''),
-                                       collection.get('public', False))
+                                       desc,
+                                       public)
 
         collection['id'] = actual_collection['id']
         collection['title'] = actual_collection['title']
+        collection['type'] = 'collection'
 
         return collection
 
@@ -455,9 +460,9 @@ class UploadController(BaseController):
 
 
 # ============================================================================
-class InplaceUploader(UploadController):
+class InplaceLoader(UploadController):
     def __init__(self, manager, indexer, upload_id):
-        super(InplaceUploader, self).__init__(None, None, manager, manager.config)
+        super(InplaceLoader, self).__init__(None, None, manager, manager.config)
         self.indexer = indexer
         self.upload_id = upload_id
 
@@ -466,6 +471,9 @@ class InplaceUploader(UploadController):
 
     def init_routes(self):
         pass
+
+    def is_public(self, collection):
+        return True
 
     def multifile_upload(self, user, files):
         total_size = 0
@@ -533,32 +541,11 @@ class InplaceUploader(UploadController):
     def launch_upload(self, func, *args):
         func(*args)
 
-    def _get_existing_coll(self, user, info):
-        # if enabled, force all 'Temporary Collection' into one collection?
+    def _get_existing_coll(self, user, info, filename):
+        if info.get('title') == 'Temporary Collection':
+            info['title'] = 'Collection'
+            if not info.get('desc'):
+                info['desc'] = self.upload_collection.get('desc', '').format(filename=filename)
+
         return None
-
-        if info.get('title') != 'Temporary Collection':
-            return None
-
-        collection = self.manager.get_collection(user, 'webrecorder-collection')
-        if collection:
-            return collection
-
-        desc = ''
-        collection = {'type': 'collection',
-                      'title': 'Webrecorder Collection',
-                      'desc': desc,
-                     }
-
-        collection['id'] = self.sanitize_title(collection['title'])
-        actual_collection = self.manager.create_collection(user,
-                                       collection['id'],
-                                       collection['title'],
-                                       collection.get('desc', ''),
-                                       collection.get('public', False))
-
-        collection['id'] = actual_collection['id']
-        collection['title'] = actual_collection['title']
-
-        return collection
 

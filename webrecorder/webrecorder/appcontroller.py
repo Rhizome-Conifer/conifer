@@ -81,6 +81,7 @@ class AppController(BaseController):
 
         # Auto Upload on Init Id
         self.init_upload_id = config.get('init_upload_id')
+        self.init_upload_user = config.get('init_upload_user')
 
         # Init Jinja
         jinja_env = self.init_jinja_env(config)
@@ -331,6 +332,12 @@ class AppController(BaseController):
             self.redir_host()
             resp = {'is_home': '1'}
 
+            if self.init_upload_id:
+                resp['upload_status'] = self.manager.get_upload_status(
+                                            self.init_upload_user,
+                                            self.init_upload_id)
+                return resp
+
             curr_user = self.manager.get_curr_user()
 
             if curr_user:
@@ -340,9 +347,6 @@ class AppController(BaseController):
                 resp['num_collections'] = len(coll_list)
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
-
-                if self.init_upload_id:
-                    resp['upload_status'] = self.manager.get_upload_status(curr_user, self.init_upload_id)
 
             else:
                 self.fill_anon_info(resp)
