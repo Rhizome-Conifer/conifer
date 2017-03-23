@@ -8,11 +8,6 @@ matrix:
       language: generic
       sudo: required
 
-branches:
-  only:
-  - master
-  - develop
-
 addons:
   artifacts:
     paths:
@@ -26,6 +21,7 @@ before_install: |
       PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.5.3;
       pyenv global 3.5.3;
       pip install -U setuptools;
+  fi
 
 install:
   - cd webrecorder
