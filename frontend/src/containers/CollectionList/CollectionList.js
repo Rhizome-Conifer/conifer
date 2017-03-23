@@ -1,14 +1,31 @@
 import React, { Component, PropTypes } from 'react';
+import { asyncConnect } from 'redux-connect';
 import { Link } from 'react-router';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
+import sortBy from 'lodash/sortBy';
+import sumBy from 'lodash/sumBy';
+
+import { isLoaded, load } from 'redux/modules/collections';
+
+import SizeFormat from 'components/SizeFormat';
 
 import './style.scss';
 
 
 class CollectionList extends Component {
 
+  static propTypes = {
+    collections: PropTypes.array,
+    auth: PropTypes.object
+  }
+
+  static defaultProps = {
+    collections: []
+  }
+
   render() {
     const { user } = this.props.params;
+    const { collections } = this.props.collections;
 
     return (
       <div>
@@ -26,25 +43,31 @@ class CollectionList extends Component {
           </Col>
           <Col xs={2} className="pull-right">
             <strong>Space Used: </strong>
-            <span>1.2 GB</span>
+            <SizeFormat bytes={sumBy(collections, 'size')} />
             <ProgressBar now={20} bsStyle="success" />
           </Col>
         </Row>
         <Row>
           <ul className="list-group collection-list">
-            <li className="left-buffer list-group-item">
-              <Row>
-                <Col xs={9}>
-                  <Link to="/m4rk3r/coll" className="collection-title">coll title</Link>
-                </Col>
-                <Col xs={2}>
-                  0 MB
-                </Col>
-                <Col xs={1}>
-                  <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
-                </Col>
-              </Row>
-            </li>
+            { sortBy(collections, ['created_at']).map((coll) => {
+              return (
+                <li className="left-buffer list-group-item">
+                  <Row>
+                    <Col xs={9}>
+                      <Link to={`${user}/${coll.id}`} className="collection-title">{coll.title}</Link>
+                    </Col>
+                    <Col xs={2}>
+                      <SizeFormat bytes={coll.size} />
+                    </Col>
+                    <Col xs={1}>
+                      { coll['r:@public'] === '1' &&
+                        <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
+                      }
+                    </Col>
+                  </Row>
+                </li>);
+            })
+            }
           </ul>
         </Row>
       </div>
@@ -52,4 +75,28 @@ class CollectionList extends Component {
   }
 }
 
-export default CollectionList;
+const loadCollections = [
+  {
+    promise: ({ params, store: { dispatch, getState }, location }) => {
+      const { auth } = getState();
+
+      if(!isLoaded(getState()) && auth.user.username)
+        return dispatch(load(auth.user.username));
+
+      return undefined;
+    }
+  }
+];
+
+const mapStateToProps = (state) => {
+  const { auth, collections } = state;
+  return {
+    auth,
+    collections
+  };
+};
+
+export default asyncConnect(
+  loadCollections,
+  mapStateToProps
+)(CollectionList);

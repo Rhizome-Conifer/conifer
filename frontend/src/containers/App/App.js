@@ -7,6 +7,7 @@ import { isLoaded as isAuthLoaded, load as loadAuth,
 
 import config from 'config';
 import Breadcrumb from 'components/Breadcrumb';
+import Footer from 'components/Footer';
 import UserManagement from 'components/UserManagement';
 
 import './style.scss';
@@ -48,6 +49,7 @@ export class App extends Component { // eslint-disable-line
         <section className="container wr-content">
           {this.props.children}
         </section>
+        <Footer />
       </div>
     );
   }

@@ -4,11 +4,13 @@ import { reducer as reduxAsyncConnect } from 'redux-connect';
 
 import auth, { LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
 import info from './info';
+import collections from './collections';
 
 const appReducer = combineReducers({
   routing: routerReducer,
   reduxAsyncConnect,
   auth,
+  collections,
   info
 });
 

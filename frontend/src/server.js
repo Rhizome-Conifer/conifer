@@ -30,6 +30,7 @@ const proxy = httpProxy.createProxyServer({
 // Proxy client API requets to server for now to avoid
 // CORS during port 3000 development
 app.use('/api', (req, res) => {
+  console.log('proxying requset', req.url, 'to', targetUrl);
   proxy.web(req, res, { target: targetUrl });
 });
 

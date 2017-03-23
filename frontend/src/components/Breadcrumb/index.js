@@ -17,7 +17,6 @@ class Breadcrumb extends Component {
 
     // filter based on whether this item should show up in breadcrumb
     const trail = routes ? filter(routes.slice(1), o => o.breadcrumb) : [];
-    console.log(routes, router);
 
     return (
       <ol className="breadcrumb navbar-left wr-breadcrumb">
