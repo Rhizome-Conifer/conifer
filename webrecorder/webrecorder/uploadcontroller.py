@@ -2,8 +2,9 @@ from webrecorder.basecontroller import BaseController
 from tempfile import SpooledTemporaryFile
 from bottle import request
 
-from pywb.warc.archiveiterator import ArchiveIterator
-from pywb.utils.loaders import LimitReader
+from warcio.archiveiterator import ArchiveIterator
+from warcio.limitreader import LimitReader
+
 from pywb.cdx.cdxobject import CDXObject
 
 import traceback
@@ -368,14 +369,17 @@ class UploadController(BaseController):
         return collection
 
     def parse_uploaded(self, stream, expected_size):
-        arciterator = ArchiveIterator(stream, no_record_parse=True, verify_http=True)
+        arciterator = ArchiveIterator(stream,
+                                      no_record_parse=True,
+                                      verify_http=True,
+                                      block_size=BLOCK_SIZE)
         infos = []
 
         last_indexinfo = None
         indexinfo = None
         is_first = True
 
-        for record in arciterator(BLOCK_SIZE):
+        for record in arciterator:
             warcinfo = None
             if record.rec_type == 'warcinfo':
                 try:
@@ -435,7 +439,7 @@ class UploadController(BaseController):
     def parse_warcinfo(self, record):
         valid = False
         warcinfo = {}
-        warcinfo_buff = record.stream.read(record.length)
+        warcinfo_buff = record.raw_stream.read(record.length)
         warcinfo_buff = warcinfo_buff.decode('utf-8')
         for line in warcinfo_buff.rstrip().split('\n'):
             parts = line.split(':', 1)

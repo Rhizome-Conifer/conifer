@@ -79,22 +79,27 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
 
     # validate email
     if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', email):
-        return print('valid email required!')
+        print('valid email required!')
+        return
 
     if email in [data['email_addr'] for u, data in users.items()]:
-        return print('A user already exists with {0} email!'.format(email))
+        print('A user already exists with {0} email!'.format(email))
+        return
 
     username = username or input('username: ').strip()
 
     # validate username
     if not username:
-        return print('please enter a username!')
+        print('please enter a username!')
+        return
 
     if not m.USER_RX.match(username) or username in m.RESTRICTED_NAMES:
-        return print('Invalid username..')
+        print('Invalid username..')
+        return
 
     if username in users:
-        return print('Username already exists..')
+        print('Username already exists..')
+        return
 
     name = name if name is not None else input('name (optional): ').strip()
 
@@ -107,8 +112,9 @@ def create_user(m, email=None, username=None, passwd=None, role=None, name=None)
         passwd2 = getpass('repeat password: ')
 
     if passwd != passwd2 or not m.PASS_RX.match(passwd):
-        return print('Passwords must match and be at least 8 characters long '
+        print('Passwords must match and be at least 8 characters long '
                      'with lowercase, uppercase, and either digits or symbols.')
+        return
 
     print('Creating user {username} with the email {email} and the role: '
           '\'{role}\''.format(username=username,
@@ -167,7 +173,8 @@ def modify_user(m):
     has_modified = False
 
     if username not in users:
-        return print('{0} doesn\'t exist'.format(username))
+        print('{0} doesn\'t exist'.format(username))
+        return
 
     mod_role = input('change role? currently {0} (y/n) '.format(users[username]['role']))
     if mod_role.strip().lower() == 'y':
@@ -181,10 +188,12 @@ def modify_user(m):
         new_email = input('new email: ')
 
         if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', new_email):
-            return print('valid email required!')
+            print('valid email required!')
+            return
 
         if new_email in [data['email_addr'] for u, data in users.items()]:
-            return print('A user already exists with {0} email!'.format(new_email))
+            print('A user already exists with {0} email!'.format(new_email))
+            return
 
         # assume the 3rd party mailing list doesn't support updating addresses
         # so if add & remove are turned on, remove the old and add the
@@ -219,10 +228,12 @@ def delete_user(m):
                          'please type the username again to confirm: '.format(username))
 
     if username != confirmation:
-        return print('Username confirmation didn\'t match! Aborting..')
+        print('Username confirmation didn\'t match! Aborting..')
+        return
 
     if username not in users:
-        return print('The username {0} doesn\'t exist..'.format(username))
+        print('The username {0} doesn\'t exist..'.format(username))
+        return
 
     print('removing {0}..'.format(username))
 

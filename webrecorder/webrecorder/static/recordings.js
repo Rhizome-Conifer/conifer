@@ -570,6 +570,34 @@ var ShareWidget = (function () {
         }
     }
 
+    function thirdPartyJS() {
+        window.twttr = (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0],
+              t = window.twttr || {};
+            if (d.getElementById(id)) return t;
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "https://platform.twitter.com/widgets.js";
+            fjs.parentNode.insertBefore(js, fjs);
+
+            t._e = [];
+            t.ready = function(f) {
+              t._e.push(f);
+            };
+
+            return t;
+        }(document, "script", "twitter-wjs"));
+
+      // load fb
+      (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+          }(document, 'script', 'facebook-jssdk'));
+    }
+
     function start() {
         var shareWidget = $("#share-widget");
         if(shareWidget.length) {
@@ -593,7 +621,10 @@ var ShareWidget = (function () {
                 this.setSelectionRange(0, this.value.length);
             });
 
-            renderSocialWidgets();
+            $('#share-widget').one('show.bs.dropdown', function (){
+                thirdPartyJS();
+                renderSocialWidgets();
+            });
         }
     }
 
@@ -1363,7 +1394,7 @@ $(function() {
 
     function handleReplayEvent(event) {
         // ignore postMessages from other sources
-        if(event.origin.indexOf(window.appHost) === -1)
+        if(event.origin.indexOf(window.contentHost) === -1)
             return;
 
         var replay_iframe = window.document.getElementById("replay_iframe");

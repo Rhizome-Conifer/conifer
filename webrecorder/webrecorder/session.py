@@ -1,7 +1,8 @@
 import os
 from os.path import expandvars
 from datetime import timedelta, datetime
-from pywb.utils.timeutils import datetime_to_http_date
+
+from warcio.timeutils import datetime_to_http_date
 
 import base64
 import pickle

@@ -3,22 +3,14 @@ from webrecorder.fullstackrunner import FullStackRunner
 from webrecorder.admin import main as admin_main
 from webrecorder.standalone.assetsutils import patch_bundle
 
-from webrecorder.uploadcontroller import UploadController, InplaceUploader
-from webrecorder.rec.webrecrecorder import WebRecRecorder
 
 from argparse import ArgumentParser, RawTextHelpFormatter
-
-from webrecorder.redisman import init_manager_for_cli
-
-from pywb.utils.loaders import LimitReader
 
 import os
 import sys
 import pkgutil
 import logging
-import base64
 
-import gevent
 import redis
 
 import argparse
@@ -116,94 +108,3 @@ class StandaloneRunner(FullStackRunner):
         main = cls(r)
 
         main.app_serv.ge.join()
-
-
-# ============================================================================
-class WebrecorderRunner(StandaloneRunner):
-    def __init__(self, argres):
-        super(WebrecorderRunner, self).__init__(warcs_dir=argres.warcs_dir,
-                                                redis_db=argres.db,
-                                                app_port=argres.port,
-                                                debug=argres.debug)
-        if not argres.no_browser:
-            import webbrowser
-            webbrowser.open_new(os.environ['APP_HOST'] + '/')
-
-  #  def _patch_redis(self, redis_db):
-  #      from webrecorder.standalone.hiconn import patch_from_url
-  #      patch_from_url(redis_db)
-
-    def init_env(self):
-        super(WebrecorderRunner, self).init_env()
-        os.environ['WR_USER_CONFIG'] = 'pkg://webrecorder/config/standalone_recorder.yaml'
-
-    @classmethod
-    def add_args(cls, parser):
-        parser.add_argument('-w', '--warcs-dir',
-                            default='./data/warcs/',
-                            help='WARC Output Root Dir')
-
-        parser.add_argument('--db',
-                            default='./data/wr.rld',
-                            help='WR Database file')
-
-
-# ============================================================================
-class WebrecPlayerRunner(StandaloneRunner):
-    ARCHIVE_EXT = ('.warc', '.arc', '.warc.gz', '.arc.gz', '.warcgz', '.arcgz')
-
-    def __init__(self, argres):
-        super(WebrecPlayerRunner, self).__init__(app_port=argres.port,
-                                                 rec_port=-1,
-                                                 debug=argres.debug)
-
-        if not argres.no_browser:
-            import webbrowser
-            webbrowser.open_new(os.environ['APP_HOST'] + '/')
-
-        gevent.spawn(self.auto_load_warcs, argres)
-
-    def auto_load_warcs(self, argres):
-        manager = init_manager_for_cli()
-
-        indexer = WebRecRecorder.make_wr_indexer(manager.config)
-
-        uploader = InplaceUploader(manager, indexer, '@INIT')
-
-        files = list(self.get_archive_files(argres.inputs))
-
-        uploader.multifile_upload('local', files)
-
-    def init_env(self):
-        super(WebrecPlayerRunner, self).init_env()
-        os.environ['WR_USER_CONFIG'] = 'pkg://webrecorder/config/standalone_player.yaml'
-        os.environ['SECRET_KEY'] = base64.b32encode(os.urandom(75)).decode('utf-8')
-
-    def get_archive_files(self, inputs, prefix=''):
-        for filename in inputs:
-            if prefix:
-                filename = os.path.join(prefix, filename)
-
-            if os.path.isfile(filename) and filename.endswith(self.ARCHIVE_EXT):
-                yield filename
-
-            if os.path.isdir(filename):
-                for root, dirs, files in os.walk(filename):
-                    for filename_ in self.get_archive_files(files, root):
-                        yield filename_
-
-    @classmethod
-    def add_args(cls, parser):
-        parser.add_argument('inputs', nargs='+')
-
-
-# ============================================================================
-# cli scripts
-webrecorder = WebrecorderRunner.main
-webrecorder_player = WebrecPlayerRunner.main
-
-
-# ============================================================================
-if __name__ == "__main__":
-    webrecorder_player()
-

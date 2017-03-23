@@ -6,7 +6,7 @@ from pywb.webagg.test.testutils import TempDirTests, to_path
 import webtest
 import os
 
-from pywb.utils.bufferedreaders import ChunkedDataReader
+from warcio.bufferedreaders import ChunkedDataReader
 from io import BytesIO
 
 from fakeredis import FakeStrictRedis
