@@ -25,14 +25,14 @@ branches:
   - master
   - develop
 
-addons:
-  artifacts:
-    paths:
-      - webrecorder/webrecorder/standalone/dist/webrecorder_player
+# addons:
+#   artifacts:
+#     paths:
+#       - webrecorder/webrecorder/standalone/dist/webrecorder_player
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install openssl ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew uninstall python ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap derekkwok/python ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install python35 ; fi
 
