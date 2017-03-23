@@ -1,4 +1,4 @@
-language: python
+# language: python
 
 # python:
 #   - "3.5"
@@ -7,15 +7,18 @@ language: python
 matrix:
   include:
     - os: linux
+      language: python
       python: "3.5"
+      sudo: false
     - os: osx
       language: generic
+      sudo: required
 
 # os:
 #   - linux
 #   - osx
 
-sudo: required
+# sudo: required
 
 branches:
   only:
