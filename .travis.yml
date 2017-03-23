@@ -8,13 +8,27 @@ os:
 
 sudo: false
 
+branches:
+  only:
+  - master
+  - develop
+
+addons:
+  artifacts:
+    paths:
+      - webrecorder/webrecorder/standalone/dist/webrecorder_player
+
 install:
   - cd webrecorder
   - python setup.py install
   - pip install coverage pytest-cov coveralls
+  - pip install pyinstaller
 
 script:
   - python setup.py test
+  - cd webrecorder/standalone
+  - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
+
 
 after_success:
   - coveralls
