@@ -30,13 +30,13 @@
     {% endblock %}
 
     {% block content %}
+    {% if metadata.type == 'player' %}
+    {% include 'player_index.html' %}
+    {% else %}
     <div class="row top-buffer">
         <h1 class="text-center"><strong>{{ metadata.product }}</strong></h1>
     </div>
 
-    {% if metadata.type == 'player' %}
-    {% include 'player_index.html' %}
-    {% else %}
     <div class="row">
         <h4 class="text-center" style="margin-bottom: 30px">Create high-fidelity, interactive recordings of any web site you browse</h4>
     </div>
