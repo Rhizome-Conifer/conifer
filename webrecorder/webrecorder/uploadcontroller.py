@@ -246,7 +246,8 @@ class UploadController(BaseController):
 
                 if not collection:
                     collection = info
-                    collection['id'] = self.sanitize_title(collection['title'])
+                    if not collection.get('id'):
+                        collection['id'] = self.sanitize_title(collection['title'])
                     actual_collection = self.manager.create_collection(user,
                                                    collection['id'],
                                                    collection['title'],
@@ -546,6 +547,9 @@ class InplaceLoader(UploadController):
             info['title'] = 'Collection'
             if not info.get('desc'):
                 info['desc'] = self.upload_collection.get('desc', '').format(filename=filename)
+        else:
+        # for now, force player collections to have id 'collection' for predictable paths
+            info['id'] = 'collection'
 
         return None
 

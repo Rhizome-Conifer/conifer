@@ -333,10 +333,7 @@ class AppController(BaseController):
             resp = {'is_home': '1'}
 
             if self.init_upload_id:
-                resp['upload_status'] = self.manager.get_upload_status(
-                                            self.init_upload_user,
-                                            self.init_upload_id)
-                return resp
+                return self.handle_player_load(resp)
 
             curr_user = self.manager.get_curr_user()
 
@@ -416,6 +413,23 @@ class AppController(BaseController):
                 #return default_err_handler(out)
 
         return err_handler
+
+    def handle_player_load(self, resp):
+        """ Initial warc load for player
+        """
+        upload_status = self.manager.get_upload_status(
+                         self.init_upload_user,
+                         self.init_upload_id)
+
+        # if upload already finished, redirect to known coll
+        if (upload_status['size'] == upload_status['total_size'] and
+            upload_status['user'] and upload_status['coll']):
+
+            coll_path = '/' + upload_status['user'] + '/' + upload_status['coll']
+            self.redirect(coll_path)
+
+        resp['upload_status'] = upload_status
+        return resp
 
     def _check_refer_redirect(self):
         referer = request.headers.get('Referer')

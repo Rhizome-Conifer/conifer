@@ -168,8 +168,10 @@ Uploader = (function() {
             return;
         }
 
-        if (load_data.size == load_data.total_size && load_data.user && load_data.coll) {
-            window.location.href = "/" + load_data.user + "/" + load_data.coll;
+        if (load_data.size == load_data.total_size) {
+            if (load_data.user && load_data.coll) {
+                window.location.href = "/" + load_data.user + "/" + load_data.coll;
+            }
             return;
         }
 
