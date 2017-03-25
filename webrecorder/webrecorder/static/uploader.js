@@ -168,10 +168,24 @@ Uploader = (function() {
             return;
         }
 
-        if (load_data.size == load_data.total_size) {
+        if (load_data.size && load_data.size == load_data.total_size) {
             if (load_data.user && load_data.coll) {
                 window.location.href = "/" + load_data.user + "/" + load_data.coll;
             }
+            return;
+        }
+
+        if (load_data.total_size == 0) {
+            var msg;
+            if (load_data.filename) {
+                msg = "Sorry, <b>" + load_data.filename + "</b> is not a valid web archive file";
+            } else {
+                msg = "Sorry, No Valid Files Provided, please try again";
+            }
+            $("#player-msg").html(msg);
+            $("#player-msg").css("color", "red");
+            $("#upload-label").hide();
+            $(".player-load-progress").show();
             return;
         }
 
