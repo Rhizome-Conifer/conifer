@@ -41,11 +41,11 @@ class StandaloneRunner(FullStackRunner):
         self.warcs_dir = warcs_dir
         self.init_env()
 
-        patch_bundle()
-
         self._patch_redis(redis_db)
 
         self.admin_init()
+
+        patch_bundle()
 
         super(StandaloneRunner, self).__init__(app_port=app_port,
                                                rec_port=rec_port,

@@ -1196,9 +1196,12 @@ class CollManagerMixin(object):
 
         props = self.redis.hgetall(upload_key)
 
+        props['user'] = user
+        props['upload_id'] = upload_id
+
         total_size = props.get('total_size')
         if not total_size:
-            return None
+            return props
 
         self.redis.expire(upload_key, self.upload_exp)
         props['total_size'] = int(total_size)
@@ -1209,8 +1212,6 @@ class CollManagerMixin(object):
         if props.get('files') == 0:
             props['size'] = props['total_size']
 
-        props['user'] = user
-        props['upload_id'] = upload_id
         return props
 
 

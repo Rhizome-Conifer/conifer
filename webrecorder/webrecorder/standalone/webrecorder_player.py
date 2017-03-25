@@ -6,7 +6,9 @@ from webrecorder.standalone.standalone import StandaloneRunner
 from webrecorder.rec.webrecrecorder import WebRecRecorder
 from webrecorder.uploadcontroller import InplaceLoader
 from webrecorder.redisman import init_manager_for_cli
-from webrecorder.admin import main as admin_main
+from webrecorder.admin import create_user
+
+from gevent.threadpool import ThreadPool
 
 
 # ============================================================================
@@ -14,6 +16,8 @@ class WebrecPlayerRunner(StandaloneRunner):
     ARCHIVE_EXT = ('.warc', '.arc', '.warc.gz', '.arc.gz', '.warcgz', '.arcgz')
 
     def __init__(self, argres):
+        self.inputs = argres.inputs
+
         super(WebrecPlayerRunner, self).__init__(app_port=argres.port,
                                                  rec_port=-1,
                                                  debug=argres.debug)
@@ -22,20 +26,25 @@ class WebrecPlayerRunner(StandaloneRunner):
             import webbrowser
             webbrowser.open_new(os.environ['APP_HOST'] + '/')
 
-        gevent.spawn(self.auto_load_warcs, argres)
-
     def admin_init(self):
-        admin_main(['-c', 'test@localhost', 'local', 'LocalUser1', 'public-archivist', 'local'])
-        #os.environ['AUTO_LOGIN_USER'] = 'local'
+        pool = ThreadPool(maxsize=1)
+        pool.spawn(self.auto_load_warcs)
 
-    def auto_load_warcs(self, argres):
+    def auto_load_warcs(self):
         manager = init_manager_for_cli()
+
+        create_user(manager,
+                    email='test@localhost',
+                    username='local',
+                    passwd='LocalUser1',
+                    role='public-archivist',
+                    name='local')
 
         indexer = WebRecRecorder.make_wr_indexer(manager.config)
 
         uploader = InplaceLoader(manager, indexer, '@INIT')
 
-        files = list(self.get_archive_files(argres.inputs))
+        files = list(self.get_archive_files(self.inputs))
 
         uploader.multifile_upload('local', files)
 

@@ -421,10 +421,13 @@ class AppController(BaseController):
                          self.init_upload_user,
                          self.init_upload_id)
 
-        # if upload already finished, redirect to known coll
-        if (upload_status['size'] == upload_status['total_size'] and
-            upload_status['user'] and upload_status['coll']):
+        size = upload_status.get('size')
+        total_size = upload_status.get('total_size')
+        user = upload_status.get('user')
+        coll = upload_status.get('coll')
 
+        # if upload already finished, redirect to known coll
+        if size == total_size and size is not None and user and coll:
             coll_path = '/' + upload_status['user'] + '/' + upload_status['coll']
             self.redirect(coll_path)
 
