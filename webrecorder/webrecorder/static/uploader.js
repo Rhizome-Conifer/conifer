@@ -224,7 +224,7 @@ Uploader = (function() {
         $("#choose-upload-file").on('change', function() {
             var filename = $(this).val().replace(/^C:\\fakepath\\/i, "");
 
-            if (!filename.match(/\.w?arc(\.gz)?$/)) {
+            if (!filename.match(/\.w?arc(\.gz)?|\.har$/)) {
                 status.text("Sorry, only WARC or ARC files (.warc, .warc.gz, .arc, .arc.gz) can be uploaded");
                 status.addClass("upload-error");
                 status.show();
