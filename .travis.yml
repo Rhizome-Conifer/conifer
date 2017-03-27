@@ -1,20 +1,45 @@
-language: python
+matrix:
+  include:
+    - os: linux
+      language: python
+      python: "3.5"
+      sudo: false
+    - os: osx
+      language: generic
+      sudo: required
 
-python:
-  - "3.5"
+env:
+  global:
+    - ARTIFACTS_TARGET_PATHS="$TRAVIS_BRANCH"
 
-os:
-  - linux
 
-sudo: false
+addons:
+  artifacts:
+    paths:
+      - webrecorder-player-$TRAVIS_OS_NAME
+
+before_install: |
+  if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+      brew update;
+      brew upgrade pyenv;
+      eval "$(pyenv init -)";
+      PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.5.3;
+      pyenv global 3.5.3;
+      pip install -U setuptools;
+  fi
 
 install:
   - cd webrecorder
   - python setup.py install
   - pip install coverage pytest-cov coveralls
+  - pip install pyinstaller
 
 script:
   - python setup.py test
+  - cd webrecorder/standalone
+  - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
+  - mv ./dist/webrecorder_player $TRAVIS_BUILD_DIR/webrecorder-player-$TRAVIS_OS_NAME
+
 
 after_success:
   - coveralls
