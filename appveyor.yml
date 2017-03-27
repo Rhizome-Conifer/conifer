@@ -40,8 +40,8 @@ artifacts:
 
 deploy:
   provider: S3
-  region: us-east-1
-  bucket: webrecorder-builds
+  region: $(aws_s3_region)
+  bucket: $(aws_s3_bucket)
   access_key_id: $(aws_access_key_id)
   secret_access_key: $(aws_secret_access_key)
   folder: $(APPVEYOR_REPO_BRANCH)
