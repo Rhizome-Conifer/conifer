@@ -41,7 +41,6 @@ artifacts:
 deploy:
   provider: S3
   region: us-east-1
-  set_public: true
   bucket: webrecorder-builds
   access_key_id:
      secure: E7EWRjDx/8+jPwFpwJNQ73Iqe79hhFvy3RfdLoh85NQ=
