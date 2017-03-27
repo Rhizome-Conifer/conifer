@@ -38,14 +38,4 @@ artifacts:
   - path: webrecorder_player_win_*.exe
     name: webrecorder_player
 
-deploy:
-  provider: S3
-  region: us-east-1
-  bucket: webrecorder-builds
-  access_key_id:
-     secure: E7EWRjDx/8+jPwFpwJNQ73Iqe79hhFvy3RfdLoh85NQ=
-  secret_access_key:
-     secure: fF6thImdnfGNvVyiNKxA3DeCxloNFYCUQlhGKIqOIhWIVr4tqXXMB2rrB5sOBtQ4
-  folder: $(APPVEYOR_REPO_BRANCH)
-  artifact: webrecorder_player
 
