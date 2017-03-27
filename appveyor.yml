@@ -2,6 +2,7 @@ branches:
   only:
     - master
     - develop
+    - build-appveyor
 
 environment:
   global:
@@ -31,7 +32,21 @@ install:
 build_script:
   - ps: "cd webrecorder/standalone"
   - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
-  #- ps: "mv dist/webrecorder_player.exe dist/webrecorder_player.exe"
+  - "move .\\dist\\webrecorder_player.exe %APPVEYOR_BUILD_FOLDER%\\webrecorder_player_win_%PYTHON_ARCH%.exe"
 
 artifacts:
-  - path: webrecorder\webrecorder\standalone\dist\webrecorder_player.exe
+  - path: webrecorder_player_win_*.exe
+  - name: webrecorder_player
+
+deploy:
+  provider: S3
+  region: us-east-1
+  set_public: true
+  bucket: webrecorder-builds
+  access_key_id:
+     secure: E7EWRjDx/8+jPwFpwJNQ73Iqe79hhFvy3RfdLoh85NQ=
+  secret_access_key:
+     secure: fF6thImdnfGNvVyiNKxA3DeCxloNFYCUQlhGKIqOIhWIVr4tqXXMB2rrB5sOBtQ4
+  folder: $(APPVEYOR_REPO_BRANCH)
+  artifact: webrecorder_player
+
