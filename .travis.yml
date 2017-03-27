@@ -16,7 +16,7 @@ env:
 addons:
   artifacts:
     paths:
-      - webrecorder_player_$TRAVIS_OS_NAME
+      - webrecorder-player-$TRAVIS_OS_NAME
 
 before_install: |
   if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
@@ -38,7 +38,7 @@ script:
   - python setup.py test
   - cd webrecorder/standalone
   - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
-  - mv ./dist/webrecorder_player $TRAVIS_BUILD_DIR/webrecorder_player_$TRAVIS_OS_NAME
+  - mv ./dist/webrecorder_player $TRAVIS_BUILD_DIR/webrecorder-player-$TRAVIS_OS_NAME
 
 
 after_success:
