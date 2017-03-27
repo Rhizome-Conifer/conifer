@@ -20,10 +20,15 @@ install:
   - "pip install -U setuptools"
   - "pip install pyinstaller"
   - "pip install cffi"
+
+build_script:
   - ps: "cd webrecorder"
   - "python setup.py install"
 
-build_script:
+test_script:
+  - "python setup.py test"
+
+after_test:
   - ps: "cd webrecorder/standalone"
   - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
   - "move .\\dist\\webrecorder_player.exe %APPVEYOR_BUILD_FOLDER%\\webrecorder-player-win-x%PYTHON_ARCH%.exe"
