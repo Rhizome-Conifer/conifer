@@ -36,7 +36,7 @@ build_script:
 
 artifacts:
   - path: webrecorder_player_win_*.exe
-  - name: webrecorder_player
+    name: webrecorder_player
 
 deploy:
   provider: S3
