@@ -13,7 +13,7 @@ from gevent.threadpool import ThreadPool
 
 # ============================================================================
 class WebrecPlayerRunner(StandaloneRunner):
-    ARCHIVE_EXT = ('.warc', '.arc', '.warc.gz', '.arc.gz', '.warcgz', '.arcgz')
+    ARCHIVE_EXT = ('.warc', '.arc', '.warc.gz', '.arc.gz', '.warcgz', '.arcgz', '.har')
 
     def __init__(self, argres):
         self.inputs = argres.inputs

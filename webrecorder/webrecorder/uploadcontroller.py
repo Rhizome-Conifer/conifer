@@ -1,15 +1,21 @@
 from webrecorder.basecontroller import BaseController
-from tempfile import SpooledTemporaryFile
+from tempfile import SpooledTemporaryFile, NamedTemporaryFile
 from bottle import request
 
 from warcio.archiveiterator import ArchiveIterator
 from warcio.limitreader import LimitReader
+
+from har2warc.har2warc import HarParser
+from warcio.warcwriter import BufferWARCWriter, WARCWriter
 
 from pywb.cdx.cdxobject import CDXObject
 
 import traceback
 import json
 import requests
+import atexit
+
+from io import TextIOWrapper
 
 import base64
 import os
@@ -100,6 +106,11 @@ class UploadController(BaseController):
 
         stream = request.environ['wsgi.input']
         stream = CacheingLimitReader(stream, expected_size, temp_file)
+
+        if filename.endswith('.har'):
+            stream, expected_size = self.har2warc(filename, stream)
+            temp_file.close()
+            temp_file = stream
 
         infos = self.parse_uploaded(stream, expected_size)
 
@@ -214,10 +225,30 @@ class UploadController(BaseController):
 
             self.manager.redis.hincrby(upload_key, 'files', -1)
             res = self.manager.redis.hgetall(upload_key)
+
             stream.close()
 
     def _add_split_padding(self, diff, upload_key):
         self.manager.redis.hincrby(upload_key, 'size', diff * 2)
+
+    def _har2warc_temp_file(self):
+        return SpooledTemporaryFile(max_size=BLOCK_SIZE)
+
+    def har2warc(self, filename, stream):
+        out = self._har2warc_temp_file()
+        writer = WARCWriter(out)
+        wrapper = TextIOWrapper(stream)
+        try:
+            rec_title = filename.rsplit('/', 1)[-1]
+            HarParser(wrapper, writer).parse(filename + '.warc.gz', rec_title)
+        except:
+            raise
+        finally:
+            stream.close()
+
+        size = out.tell()
+        out.seek(0)
+        return out, size
 
     def is_public(self, collection):
         return collection.get('public', False)
@@ -506,6 +537,12 @@ class InplaceLoader(UploadController):
 
                 stream = SizeTrackingReader(fh, size, self.manager.redis, upload_key)
 
+                if filename.endswith('.har'):
+                    stream, expected_size = self.har2warc(filename, stream)
+                    fh.close()
+                    fh = stream
+                    atexit.register(lambda: os.remove(stream.name))
+
                 infos = self.parse_uploaded(stream, size)
 
                 res = self.handle_upload(fh, upload_id, upload_key, infos, filename,
@@ -525,7 +562,8 @@ class InplaceLoader(UploadController):
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         stream.seek(offset)
 
-        #stream = LimitReader(stream, length)
+        if hasattr(stream, 'name'):
+            filename = stream.name
 
         params = {'param.user': user,
                   'param.coll': coll,
@@ -538,6 +576,9 @@ class InplaceLoader(UploadController):
 
     def _add_split_padding(self, diff, upload_key):
         self.manager.redis.hincrby(upload_key, 'size', diff)
+
+    def _har2warc_temp_file(self):
+        return NamedTemporaryFile(suffix='.warc.gz', delete=False)
 
     def launch_upload(self, func, *args):
         func(*args)
