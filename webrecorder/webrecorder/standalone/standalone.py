@@ -86,26 +86,22 @@ class StandaloneRunner(FullStackRunner):
             os.environ['WR_TEMPLATE_PKG'] = 'wrtemp'
 
     @classmethod
-    def get_long_version(cls, pkg, attr='git_hash'):
-        import pkg_resources
-        version = pkg_resources.get_distribution(pkg).version
-
-        try:
-            import importlib
-            git_hash = getattr(importlib.import_module(pkg + '.' + attr), attr)
-        except:
-            git_hash = ''
-
-        if git_hash:
-            version += ' (@{0})'.format(git_hash)
-
-        return version
-
-    @classmethod
     def print_version(cls):
-        cmd = sys.argv[0].rsplit('/')[-1]
-        print('{0} {1}'.format(cmd, cls.get_long_version('webrecorder')))
-        print('pywb {0}'.format(cls.get_long_version('pywb')))
+        full_version = 'unknown'
+        # standalone app, read baked-in _full_version
+        if getattr(sys, 'frozen', False):
+            from pywb.utils.loaders import load
+            full_version = load('pkg://webrecorder/config/_full_version').read()
+            full_version = full_version.decode('utf-8')
+        else:
+        # generate full_version dynamically
+            try:
+                from webrecorder.standalone.assetsutils import get_version_str
+                full_version = get_version_str(sys.argv[0].rsplit('/')[-1])
+            except:
+                pass
+
+        print(full_version)
 
     @classmethod
     def main(cls, args=None):

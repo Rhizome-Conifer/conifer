@@ -39,6 +39,7 @@ script:
   - cd webrecorder/standalone
   - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
   - mv ./dist/webrecorder_player $TRAVIS_BUILD_DIR/webrecorder-player-$TRAVIS_OS_NAME
+  - $TRAVIS_BUILD_DIR/webrecorder-player-$TRAVIS_OS_NAME -v
 
 
 after_success:
