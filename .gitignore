@@ -47,3 +47,4 @@ nosetests.xml
 wr.env
 webrecorder/keys/
 data/
+git_hash.py

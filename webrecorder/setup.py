@@ -27,6 +27,23 @@ def load_requirements(filename):
         res.append(PYWB_DEP)
         return res
 
+
+def get_git_short_hash():
+    import subprocess
+    try:
+        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).rstrip().decode('utf-8')
+    except:
+        return ''
+
+def generate_git_hash_py(pkg):
+    try:
+        git_hash = get_git_short_hash()
+        with open(os.path.join(pkg, 'git_hash.py'), 'wt') as fh:
+            fh.write('git_hash = "{0}"\n'.format(git_hash))
+    except:
+        pass
+
+
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -46,7 +63,9 @@ class Install(install):
     def initialize_options(self):
         from webrecorder.standalone.assetsutils import default_build
         default_build()
+        generate_git_hash_py('webrecorder')
         super(Install, self).initialize_options()
+
 
 
 setup(
