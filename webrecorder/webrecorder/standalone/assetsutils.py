@@ -45,6 +45,29 @@ def default_build():
     build(assets_path)
 
 
+# =================================================================
+def get_pkg_version(pkg, attr='git_hash'):
+    import pkg_resources
+    version = pkg_resources.get_distribution(pkg).version
+
+    try:
+        import importlib
+        git_hash = getattr(importlib.import_module(pkg + '.' + attr), attr)
+    except:
+        git_hash = ''
+
+    if git_hash:
+        version += ' (@{0})'.format(git_hash)
+
+    return version
+
+
+def get_version_str(cmd_name):
+    return '{0} {1}\npywb {2}'.format(cmd_name,
+                               get_pkg_version('webrecorder'),
+                               get_pkg_version('pywb'))
+
+
 # ==================================================================
 if __name__ == "__main__":
     default_build()
