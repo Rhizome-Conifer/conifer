@@ -68,7 +68,8 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     @classmethod
     def add_args(cls, parser):
-        parser.add_argument('inputs', nargs='+')
+        parser.add_argument('inputs', nargs='*',
+                            help='web archive (.warc.gz, .warc, .arc.gz, .arc or .har files)')
 
 
 

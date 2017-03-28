@@ -85,8 +85,27 @@ class StandaloneRunner(FullStackRunner):
         if getattr(sys, 'frozen', False):
             os.environ['WR_TEMPLATE_PKG'] = 'wrtemp'
 
-    def close(self):
-        super(StandaloneRunner, self).close()
+    @classmethod
+    def get_long_version(cls, pkg, attr='git_hash'):
+        import pkg_resources
+        version = pkg_resources.get_distribution(pkg).version
+
+        try:
+            import importlib
+            git_hash = getattr(importlib.import_module(pkg + '.' + attr), attr)
+        except:
+            git_hash = ''
+
+        if git_hash:
+            version += ' (@{0})'.format(git_hash)
+
+        return version
+
+    @classmethod
+    def print_version(cls):
+        cmd = sys.argv[0].rsplit('/')[-1]
+        print('{0} {1}'.format(cmd, cls.get_long_version('webrecorder')))
+        print('pywb {0}'.format(cls.get_long_version('pywb')))
 
     @classmethod
     def main(cls, args=None):
@@ -103,8 +122,16 @@ class StandaloneRunner(FullStackRunner):
         parser.add_argument('--debug', action='store_true',
                             help='Enable debug logging')
 
+        parser.add_argument('-v', '--version', action='store_true',
+                            help='Print version and quit')
+
         cls.add_args(parser)
         r = parser.parse_args(args=args)
+
+        if r.version:
+            cls.print_version()
+            return
+
         main = cls(r)
 
         main.app_serv.ge.join()
