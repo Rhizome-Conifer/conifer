@@ -10,7 +10,7 @@ matrix:
 
 env:
   global:
-    - ARTIFACTS_TARGET_PATHS="$TRAVIS_BRANCH"
+    - ARTIFACTS_TARGET_PATHS="webrecorder-player/$TRAVIS_BRANCH"
 
 
 addons:
