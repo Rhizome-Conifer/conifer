@@ -27,7 +27,7 @@
 
                 {% if is_replay %}
                     <div class="linklist" title="Bookmark list">
-                        <input type="text" class="form-control dropdown-toggle" name="url" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-value-encoded="{{ url }}" data-target-decoded="value" value="" readonly/>
+                        <input type="text" class="form-control dropdown-toggle" name="url" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-value-encoded="{{ url }}" data-target-decoded="value" value=""/>
                         <ul class="dropdown-menu">
                             {% for rec in get_recs_for_coll() %}
                                 <li title="{{ rec.url }}">
