@@ -33,7 +33,7 @@ datas += collect_data_files('webrecorder', subdir='config')
 # generate full version
 full_version_path = os.path.abspath(os.path.join(curr_path, '..', '..', 'config', '_full_version'))
 with open(full_version_path, 'wt') as fh:
-    fh.write(get_version_str('webrecorder-player'))
+    fh.write(get_version_str())
     fh.flush()
 
 datas.append((full_version_path, 'webrecorder/config'))

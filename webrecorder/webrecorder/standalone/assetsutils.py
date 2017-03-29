@@ -62,10 +62,9 @@ def get_pkg_version(pkg, attr='git_hash'):
     return version
 
 
-def get_version_str(cmd_name):
-    return '{0} {1}\npywb {2}'.format(cmd_name,
-                               get_pkg_version('webrecorder'),
-                               get_pkg_version('pywb'))
+def get_version_str():
+    return '%s {0}\npywb {1}'.format(get_pkg_version('webrecorder'),
+                                     get_pkg_version('pywb'))
 
 
 # ==================================================================

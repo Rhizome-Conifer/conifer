@@ -88,20 +88,22 @@ class StandaloneRunner(FullStackRunner):
     @classmethod
     def print_version(cls):
         full_version = 'unknown'
-        # standalone app, read baked-in _full_version
-        if getattr(sys, 'frozen', False):
-            from pywb.utils.loaders import load
-            full_version = load('pkg://webrecorder/config/_full_version').read()
-            full_version = full_version.decode('utf-8')
-        else:
-        # generate full_version dynamically
-            try:
-                from webrecorder.standalone.assetsutils import get_version_str
-                full_version = get_version_str(sys.argv[0].rsplit('/')[-1])
-            except:
-                pass
+        curr_app = sys.argv[0].rsplit('/')[-1]
 
-        print(full_version)
+        try:
+            # standalone app, read baked-in _full_version
+            if getattr(sys, 'frozen', False):
+                from pywb.utils.loaders import load
+                full_version = load('pkg://webrecorder/config/_full_version').read()
+                full_version = full_version.decode('utf-8').format(curr_app)
+            else:
+            # generate full_version dynamically
+                from webrecorder.standalone.assetsutils import get_version_str
+                full_version = get_version_str()
+        except:
+            pass
+
+        print(full_version % curr_app)
 
     @classmethod
     def main(cls, args=None):
