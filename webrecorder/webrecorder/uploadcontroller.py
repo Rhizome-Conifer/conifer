@@ -340,6 +340,7 @@ class UploadController(BaseController):
 
             if len(pages) < 500 and self.is_page(cdxj):
                 pages.append(dict(url=cdxj['url'],
+                                  title=cdxj['url'],
                                   timestamp=cdxj['timestamp']))
 
         return pages
