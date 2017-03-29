@@ -518,6 +518,7 @@ var PagingInterface = (function () {
 })();
 
 var ShareWidget = (function () {
+    var hasWidget = false;
     var fbInitialized = false;
 
     function checkPublicStatus(user, coll) {
@@ -611,6 +612,7 @@ var ShareWidget = (function () {
     function start() {
         var shareWidget = $("#share-widget");
         if(shareWidget.length) {
+            hasWidget = true;
             $(".ispublic").bootstrapSwitch().on('switchChange.bootstrapSwitch', updateVisibility);
 
             $('.dropdown-menu').on('click', function (evt) {evt.stopPropagation(); });
@@ -654,6 +656,8 @@ var ShareWidget = (function () {
     }
 
     function updateUrl(rec) {
+        if(!hasWidget) return;
+
         var shareUrl = $('#shareable-url');
         var shareEmbed = $('#shareable-embed-code');
 
