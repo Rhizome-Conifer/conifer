@@ -498,7 +498,7 @@ var PagingInterface = (function () {
             nextBtn.removeClass('disabled');
 
         if(typeof rec !== 'undefined') {
-            if(typeof window.cnt_browser !== 'undefined' || rec.br) {
+            if((typeof window.cnt_browser !== 'undefined' || rec.br) && Object.keys(window.browsers).length > 0) {
                 /* if we're currently in a remote browser view, or the next item is, use fresh navigation to it */
                 window.location.href = '/'+user+'/'+coll+'/'+rec.ts+(typeof rec.br !== 'undefined' && rec.br !== ''?'$br:'+rec.br:'')+'/'+rec.url;
             } else {
