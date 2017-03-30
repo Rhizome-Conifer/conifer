@@ -4,6 +4,7 @@
 {% set is_replay = (curr_mode == 'replay' or curr_mode == 'replay-coll') %}
 {% set is_patch = curr_mode == 'patch' %}
 {% set is_new = curr_mode == 'new' %}
+{% set has_browsers = get_browsers().items()|length > 0 %}
 
 {% if curr_mode and curr_mode != 'live' %}
 
@@ -31,7 +32,7 @@
                         <ul class="dropdown-menu">
                             {% for rec in get_recs_for_coll() %}
                                 <li title="{{ rec.url }}">
-                                    {% if not can_admin() and rec.br %}
+                                    {% if not can_admin() and rec.br and has_browsers %}
                                         <img src="/api/browsers/browsers/{{ rec.br }}/icon">
                                     {% endif %}
                                     <div class="url" href="/{{ user }}/{{ coll }}/{{ rec.ts }}{% if rec.br %}$br:{{ rec.br }}{% endif %}/{{ rec.url }}">
