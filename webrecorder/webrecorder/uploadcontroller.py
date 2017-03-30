@@ -15,8 +15,6 @@ import json
 import requests
 import atexit
 
-from io import TextIOWrapper
-
 import base64
 import os
 import gevent
@@ -237,12 +235,20 @@ class UploadController(BaseController):
     def har2warc(self, filename, stream):
         out = self._har2warc_temp_file()
         writer = WARCWriter(out)
-        wrapper = TextIOWrapper(stream)
+
+        buff_list = []
+        while True:
+            buff = stream.read()
+            if not buff:
+                break
+
+            buff_list.append(buff.decode('utf-8'))
+
+        #wrapper = TextIOWrapper(stream)
         try:
             rec_title = filename.rsplit('/', 1)[-1]
-            HarParser(wrapper, writer).parse(filename + '.warc.gz', rec_title)
-        except:
-            raise
+            har = json.loads(''.join(buff_list))
+            HarParser(har, writer).parse(filename + '.warc.gz', rec_title)
         finally:
             stream.close()
 

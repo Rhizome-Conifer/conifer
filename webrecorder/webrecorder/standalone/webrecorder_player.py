@@ -28,7 +28,15 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     def admin_init(self):
         pool = ThreadPool(maxsize=1)
-        pool.spawn(self.auto_load_warcs)
+        pool.spawn(self.safe_auto_load_warcs)
+
+    def safe_auto_load_warcs(self):
+        try:
+            self.auto_load_warcs()
+        except:
+            print('Initial Load Failed!')
+            import traceback
+            traceback.print_exc()
 
     def auto_load_warcs(self):
         manager = init_manager_for_cli()
