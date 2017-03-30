@@ -225,7 +225,7 @@ Uploader = (function() {
             var filename = $(this).val().replace(/^C:\\fakepath\\/i, "");
 
             if (!filename.match(/\.w?arc(\.gz)?|\.har$/)) {
-                status.text("Sorry, only WARC or ARC files (.warc, .warc.gz, .arc, .arc.gz) can be uploaded");
+                status.text("Sorry, only WARC, ARC, or HAR files (.warc, .warc.gz, .arc, .arc.gz, .har) can be uploaded");
                 status.addClass("upload-error");
                 status.show();
                 $("#upload-modal button[type='submit']").prop("disabled", true);
@@ -266,7 +266,7 @@ Uploader = (function() {
             $("a.upload-collection-select[data-collection-id='" + initialColl + "']").click();
         } else {
             $("a.upload-collection-select").first().click();
-        }   
+        }
 
         $(".upload-cancel").on('click', function() {
             if (currXhr) {
