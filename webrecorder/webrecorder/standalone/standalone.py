@@ -88,7 +88,7 @@ class StandaloneRunner(FullStackRunner):
     @classmethod
     def print_version(cls):
         full_version = 'unknown'
-        curr_app = sys.argv[0].rsplit('/')[-1]
+        curr_app = sys.argv[0].rsplit(os.path.sep)[-1]
 
         try:
             # standalone app, read baked-in _full_version
