@@ -42,4 +42,8 @@ datas.append((full_version_path, 'webrecorder/config'))
 
 datas += copy_metadata('bottle')
 
-hiddenimports = ['webrecorder.git_hash', 'pywb.git_hash']
+hiddenimports = ['webrecorder.git_hash',
+                 'pywb.git_hash',
+                 'brotli',
+                 '_cffi_backend']
+
