@@ -23,6 +23,7 @@ class CacheingLimitReader(LimitReader):
         super(CacheingLimitReader, self).__init__(stream, length)
         self.out = out
         self.lenread = 0
+        self.closed = False
 
     def read(self, size=-1):
         buff = super(CacheingLimitReader, self).read(size)
@@ -32,6 +33,15 @@ class CacheingLimitReader(LimitReader):
 
     def tell(self):
         return self.lenread
+
+    def readable(self):
+        return True
+
+    def writable(self):
+        return False
+
+    def seekable(self):
+        return False
 
 
 # ============================================================================
@@ -51,6 +61,19 @@ class SizeTrackingReader(CacheingLimitReader):
     def __init__(self, stream, length, redis, key):
         super(SizeTrackingReader, self).__init__(stream, length,
                                                  SizeTrackingWriter(redis, key))
+
+        self.closed = False
+
+    def readable(self):
+        return True
+
+    def writable(self):
+        return False
+
+    def seekable(self):
+        return False
+
+
 
 
 

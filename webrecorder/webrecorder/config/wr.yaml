@@ -109,6 +109,13 @@ default_coll:
         Move recordings in between collections and show or hide bookmarks to curate your archive of the dynamic web.
 
 
+upload_coll:
+    id: 'uploaded-collection'
+    title: 'Uploaded Collection'
+    desc: 'This collection was automatically created from the upload of *{filename}*'
+
+
+
 # WARC Paths and Names
 #warc_path_templ: '{user}/{coll}/{rec}/'
 

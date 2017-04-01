@@ -4,15 +4,20 @@ import os
 
 from webrecorder.standalone.standalone import StandaloneRunner
 from webrecorder.rec.webrecrecorder import WebRecRecorder
-from webrecorder.uploadcontroller import InplaceUploader
+from webrecorder.uploadcontroller import InplaceLoader
 from webrecorder.redisman import init_manager_for_cli
+from webrecorder.admin import create_user
+
+from gevent.threadpool import ThreadPool
 
 
 # ============================================================================
 class WebrecPlayerRunner(StandaloneRunner):
-    ARCHIVE_EXT = ('.warc', '.arc', '.warc.gz', '.arc.gz', '.warcgz', '.arcgz')
+    ARCHIVE_EXT = ('.warc', '.arc', '.warc.gz', '.arc.gz', '.warcgz', '.arcgz', '.har')
 
     def __init__(self, argres):
+        self.inputs = argres.inputs
+
         super(WebrecPlayerRunner, self).__init__(app_port=argres.port,
                                                  rec_port=-1,
                                                  debug=argres.debug)
@@ -21,16 +26,33 @@ class WebrecPlayerRunner(StandaloneRunner):
             import webbrowser
             webbrowser.open_new(os.environ['APP_HOST'] + '/')
 
-        gevent.spawn(self.auto_load_warcs, argres)
+    def admin_init(self):
+        pool = ThreadPool(maxsize=1)
+        pool.spawn(self.safe_auto_load_warcs)
 
-    def auto_load_warcs(self, argres):
+    def safe_auto_load_warcs(self):
+        try:
+            self.auto_load_warcs()
+        except:
+            print('Initial Load Failed!')
+            import traceback
+            traceback.print_exc()
+
+    def auto_load_warcs(self):
         manager = init_manager_for_cli()
+
+        create_user(manager,
+                    email='test@localhost',
+                    username='local',
+                    passwd='LocalUser1',
+                    role='public-archivist',
+                    name='local')
 
         indexer = WebRecRecorder.make_wr_indexer(manager.config)
 
-        uploader = InplaceUploader(manager, indexer, '@INIT')
+        uploader = InplaceLoader(manager, indexer, '@INIT')
 
-        files = list(self.get_archive_files(argres.inputs))
+        files = list(self.get_archive_files(self.inputs))
 
         uploader.multifile_upload('local', files)
 
@@ -54,7 +76,8 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     @classmethod
     def add_args(cls, parser):
-        parser.add_argument('inputs', nargs='+')
+        parser.add_argument('inputs', nargs='*',
+                            help='web archive (.warc.gz, .warc, .arc.gz, .arc or .har files)')
 
 
 

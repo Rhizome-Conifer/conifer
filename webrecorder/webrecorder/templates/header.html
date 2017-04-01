@@ -1,5 +1,7 @@
+{% if metadata.type != 'player' or curr_mode %}
 <header>
     <div class="navbar navbar-default navbar-static-top">
+        {% if metadata.type != 'player' %}
         <nav class="container-fluid header-webrecorder">
             {% include 'breadcrumbs.html' %}
 
@@ -16,6 +18,7 @@
                 {% include 'user_management_links.html' %}
             </div>
         </nav>
+        {% endif %}
 
         {% if curr_mode == 'new' %}
             <div class="container-fluid new-recording">
@@ -56,3 +59,4 @@
         {% endif %}
     </div>
 </header>
+{% endif %}

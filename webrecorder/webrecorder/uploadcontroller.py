@@ -1,15 +1,19 @@
 from webrecorder.basecontroller import BaseController
-from tempfile import SpooledTemporaryFile
+from tempfile import SpooledTemporaryFile, NamedTemporaryFile
 from bottle import request
 
 from warcio.archiveiterator import ArchiveIterator
 from warcio.limitreader import LimitReader
+
+from har2warc.har2warc import HarParser
+from warcio.warcwriter import BufferWARCWriter, WARCWriter
 
 from pywb.cdx.cdxobject import CDXObject
 
 import traceback
 import json
 import requests
+import atexit
 
 import base64
 import os
@@ -35,6 +39,8 @@ class UploadController(BaseController):
         self.upload_key = config['upload_key_templ']
         self.upload_exp = int(config['upload_status_expire'])
         self.record_host = os.environ['RECORD_HOST']
+
+        self.upload_collection = config['upload_coll']
 
     def init_routes(self):
         @self.app.put('/_upload')
@@ -98,6 +104,11 @@ class UploadController(BaseController):
 
         stream = request.environ['wsgi.input']
         stream = CacheingLimitReader(stream, expected_size, temp_file)
+
+        if filename.endswith('.har'):
+            stream, expected_size = self.har2warc(filename, stream)
+            temp_file.close()
+            temp_file = stream
 
         infos = self.parse_uploaded(stream, expected_size)
 
@@ -212,10 +223,41 @@ class UploadController(BaseController):
 
             self.manager.redis.hincrby(upload_key, 'files', -1)
             res = self.manager.redis.hgetall(upload_key)
+
             stream.close()
 
     def _add_split_padding(self, diff, upload_key):
         self.manager.redis.hincrby(upload_key, 'size', diff * 2)
+
+    def _har2warc_temp_file(self):
+        return SpooledTemporaryFile(max_size=BLOCK_SIZE)
+
+    def har2warc(self, filename, stream):
+        out = self._har2warc_temp_file()
+        writer = WARCWriter(out)
+
+        buff_list = []
+        while True:
+            buff = stream.read()
+            if not buff:
+                break
+
+            buff_list.append(buff.decode('utf-8'))
+
+        #wrapper = TextIOWrapper(stream)
+        try:
+            rec_title = filename.rsplit('/', 1)[-1]
+            har = json.loads(''.join(buff_list))
+            HarParser(har, writer).parse(filename + '.warc.gz', rec_title)
+        finally:
+            stream.close()
+
+        size = out.tell()
+        out.seek(0)
+        return out, size
+
+    def is_public(self, collection):
+        return collection.get('public', False)
 
     def process_upload(self, user, force_coll, infos, stream, filename, total_size, num_recs):
         stream.seek(0)
@@ -237,16 +279,17 @@ class UploadController(BaseController):
 
             if type == 'collection':
                 if not force_coll:
-                    collection = self._get_existing_coll(user, info)
+                    collection = self._get_existing_coll(user, info, filename)
 
                 if not collection:
                     collection = info
-                    collection['id'] = self.sanitize_title(collection['title'])
+                    if not collection.get('id'):
+                        collection['id'] = self.sanitize_title(collection['title'])
                     actual_collection = self.manager.create_collection(user,
                                                    collection['id'],
                                                    collection['title'],
                                                    collection.get('desc', ''),
-                                                   collection.get('public', False))
+                                                   self.is_public(collection))
 
                     collection['id'] = actual_collection['id']
                     collection['title'] = actual_collection['title']
@@ -289,7 +332,7 @@ class UploadController(BaseController):
 
         return first_coll, rec_infos
 
-    def _get_existing_coll(self, user, info):
+    def _get_existing_coll(self, user, info, filename):
         return None
 
     def detect_pages(self, user, coll, rec):
@@ -303,6 +346,7 @@ class UploadController(BaseController):
 
             if len(pages) < 500 and self.is_page(cdxj):
                 pages.append(dict(url=cdxj['url'],
+                                  title=cdxj['url'],
                                   timestamp=cdxj['timestamp']))
 
         return pages
@@ -350,21 +394,21 @@ class UploadController(BaseController):
                          data=stream)
 
     def default_collection(self, user, filename):
-        desc = 'This collection was automatically created from upload of *{0}*'.format(filename)
-        collection = {'type': 'collection',
-                      'title': 'Upload Collection',
-                      'desc': desc,
-                     }
+        collection = self.upload_collection
+
+        desc = collection.get('desc', '').format(filename=filename)
+        public = collection.get('public', False)
 
         collection['id'] = self.sanitize_title(collection['title'])
         actual_collection = self.manager.create_collection(user,
                                        collection['id'],
                                        collection['title'],
-                                       collection.get('desc', ''),
-                                       collection.get('public', False))
+                                       desc,
+                                       public)
 
         collection['id'] = actual_collection['id']
         collection['title'] = actual_collection['title']
+        collection['type'] = 'collection'
 
         return collection
 
@@ -455,9 +499,9 @@ class UploadController(BaseController):
 
 
 # ============================================================================
-class InplaceUploader(UploadController):
+class InplaceLoader(UploadController):
     def __init__(self, manager, indexer, upload_id):
-        super(InplaceUploader, self).__init__(None, None, manager, manager.config)
+        super(InplaceLoader, self).__init__(None, None, manager, manager.config)
         self.indexer = indexer
         self.upload_id = upload_id
 
@@ -466,6 +510,9 @@ class InplaceUploader(UploadController):
 
     def init_routes(self):
         pass
+
+    def is_public(self, collection):
+        return True
 
     def multifile_upload(self, user, files):
         total_size = 0
@@ -497,6 +544,12 @@ class InplaceUploader(UploadController):
 
                 stream = SizeTrackingReader(fh, size, self.manager.redis, upload_key)
 
+                if filename.endswith('.har'):
+                    stream, expected_size = self.har2warc(filename, stream)
+                    fh.close()
+                    fh = stream
+                    atexit.register(lambda: os.remove(stream.name))
+
                 infos = self.parse_uploaded(stream, size)
 
                 res = self.handle_upload(fh, upload_id, upload_key, infos, filename,
@@ -516,7 +569,8 @@ class InplaceUploader(UploadController):
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         stream.seek(offset)
 
-        #stream = LimitReader(stream, length)
+        if hasattr(stream, 'name'):
+            filename = stream.name
 
         params = {'param.user': user,
                   'param.coll': coll,
@@ -530,35 +584,20 @@ class InplaceUploader(UploadController):
     def _add_split_padding(self, diff, upload_key):
         self.manager.redis.hincrby(upload_key, 'size', diff)
 
+    def _har2warc_temp_file(self):
+        return NamedTemporaryFile(suffix='.warc.gz', delete=False)
+
     def launch_upload(self, func, *args):
         func(*args)
 
-    def _get_existing_coll(self, user, info):
-        # if enabled, force all 'Temporary Collection' into one collection?
+    def _get_existing_coll(self, user, info, filename):
+        if info.get('title') == 'Temporary Collection':
+            info['title'] = 'Collection'
+            if not info.get('desc'):
+                info['desc'] = self.upload_collection.get('desc', '').format(filename=filename)
+        else:
+        # for now, force player collections to have id 'collection' for predictable paths
+            info['id'] = 'collection'
+
         return None
-
-        if info.get('title') != 'Temporary Collection':
-            return None
-
-        collection = self.manager.get_collection(user, 'webrecorder-collection')
-        if collection:
-            return collection
-
-        desc = ''
-        collection = {'type': 'collection',
-                      'title': 'Webrecorder Collection',
-                      'desc': desc,
-                     }
-
-        collection['id'] = self.sanitize_title(collection['title'])
-        actual_collection = self.manager.create_collection(user,
-                                       collection['id'],
-                                       collection['title'],
-                                       collection.get('desc', ''),
-                                       collection.get('public', False))
-
-        collection['id'] = actual_collection['id']
-        collection['title'] = actual_collection['title']
-
-        return collection
 

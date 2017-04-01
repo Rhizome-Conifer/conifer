@@ -8,4 +8,5 @@ marshmallow
 werkzeug
 urllib3
 karellen-geventws
+har2warc
 fakeredis

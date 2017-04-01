@@ -81,6 +81,7 @@ class AppController(BaseController):
 
         # Auto Upload on Init Id
         self.init_upload_id = config.get('init_upload_id')
+        self.init_upload_user = config.get('init_upload_user')
 
         # Init Jinja
         jinja_env = self.init_jinja_env(config)
@@ -331,6 +332,9 @@ class AppController(BaseController):
             self.redir_host()
             resp = {'is_home': '1'}
 
+            if self.init_upload_id:
+                return self.handle_player_load(resp)
+
             curr_user = self.manager.get_curr_user()
 
             if curr_user:
@@ -340,9 +344,6 @@ class AppController(BaseController):
                 resp['num_collections'] = len(coll_list)
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
-
-                if self.init_upload_id:
-                    resp['upload_status'] = self.manager.get_upload_status(curr_user, self.init_upload_id)
 
             else:
                 self.fill_anon_info(resp)
@@ -412,6 +413,26 @@ class AppController(BaseController):
                 #return default_err_handler(out)
 
         return err_handler
+
+    def handle_player_load(self, resp):
+        """ Initial warc load for player
+        """
+        upload_status = self.manager.get_upload_status(
+                         self.init_upload_user,
+                         self.init_upload_id)
+
+        size = upload_status.get('size')
+        total_size = upload_status.get('total_size')
+        user = upload_status.get('user')
+        coll = upload_status.get('coll')
+
+        # if upload already finished, redirect to known coll
+        if size == total_size and size is not None and user and coll:
+            coll_path = '/' + upload_status['user'] + '/' + upload_status['coll']
+            self.redirect(coll_path)
+
+        resp['upload_status'] = upload_status
+        return resp
 
     def _check_refer_redirect(self):
         referer = request.headers.get('Referer')

@@ -42,8 +42,8 @@
     </div>
 
     {% block footer %}
-        {% if curr_mode != 'new' %}
-        {% include 'footer.html' %}
+        {% if curr_mode != 'new' and metadata.type != 'player' %}
+            {% include 'footer.html' %}
         {% endif %}
     {% endblock %}
 

@@ -41,11 +41,11 @@ class StandaloneRunner(FullStackRunner):
         self.warcs_dir = warcs_dir
         self.init_env()
 
-        patch_bundle()
-
         self._patch_redis(redis_db)
 
         self.admin_init()
+
+        patch_bundle()
 
         super(StandaloneRunner, self).__init__(app_port=app_port,
                                                rec_port=rec_port,
@@ -85,8 +85,25 @@ class StandaloneRunner(FullStackRunner):
         if getattr(sys, 'frozen', False):
             os.environ['WR_TEMPLATE_PKG'] = 'wrtemp'
 
-    def close(self):
-        super(StandaloneRunner, self).close()
+    @classmethod
+    def print_version(cls):
+        full_version = 'unknown'
+        curr_app = sys.argv[0].rsplit(os.path.sep)[-1]
+
+        try:
+            # standalone app, read baked-in _full_version
+            if getattr(sys, 'frozen', False):
+                from pywb.utils.loaders import load
+                full_version = load('pkg://webrecorder/config/_full_version').read()
+                full_version = full_version.decode('utf-8').format(curr_app)
+            else:
+            # generate full_version dynamically
+                from webrecorder.standalone.assetsutils import get_version_str
+                full_version = get_version_str()
+        except:
+            pass
+
+        print(full_version % curr_app)
 
     @classmethod
     def main(cls, args=None):
@@ -103,8 +120,16 @@ class StandaloneRunner(FullStackRunner):
         parser.add_argument('--debug', action='store_true',
                             help='Enable debug logging')
 
+        parser.add_argument('-v', '--version', action='store_true',
+                            help='Print version and quit')
+
         cls.add_args(parser)
         r = parser.parse_args(args=args)
+
+        if r.version:
+            cls.print_version()
+            return
+
         main = cls(r)
 
         main.app_serv.ge.join()

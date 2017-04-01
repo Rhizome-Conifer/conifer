@@ -383,15 +383,19 @@ var PagingInterface = (function () {
                 maxIdx = curIdx - 1;
             } else if(curEle === item.ts && item.url !== recordings[curIdx].url) {
                 /**
-                 * If multiple recordings are within a timestamp, iterate over
-                 * to match the url exactly.
+                 * If multiple recordings are within a timestamp, or if the url
+                 * for the timestamp doesn't match exactly, iterate over other
+                 * options. If no exact match is found, resolve to first ts match.
                  */
                 var url;
-                while(url !== item.url && curEle === item.ts && curIdx < recordings.length) {
+                var origIdx = curIdx;
+                while(curEle === item.ts && curIdx < recordings.length-1) {
                     url = recordings[++curIdx].url;
                     curEle = parseInt(recordings[curIdx].ts, 10);
+                    if(url === item.url)
+                        return curIdx;
                 }
-                return curIdx;
+                return origIdx;
             } else {
                 return curIdx;
             }
@@ -406,25 +410,19 @@ var PagingInterface = (function () {
         iframe = document.getElementById('replay_iframe');
         nextBtn = $('.btn-next');
         prevBtn = $('.btn-prev');
-        timestamp = $('.linklist > .replay-date');
+        timestamp = $('.main-replay-date');
         var linklist = $('.linklist');
         li = linklist.find('li');
         liHeight = li.eq(0).outerHeight();
         dropdown = linklist.find('> .dropdown-menu');
+        var inputBar = $('input[name=url]');
 
         nextBtn.on('click', next);
         prevBtn.on('click', previous);
 
-        $(document).on('keyup', function (evt) {
-            if(evt.keyCode === 37)
-                previous();
-            else if(evt.keyCode === 39)
-                next();
-        });
-
         idx = findIndex();
-
         updateTimestamp(wbinfo.timestamp);
+
         timestamp.on('click', function (evt) {
             evt.stopPropagation();
             linklist.toggleClass('open');
@@ -440,6 +438,18 @@ var PagingInterface = (function () {
             idx = $(this).index();
             update(recordings[idx], true);
             linklist.removeClass('open');
+        });
+
+        // offset input bar
+        inputBar.css('padding-right', timestamp.width());
+
+        inputBar.on('keyup', function (e){
+            if(e.keyCode === 13) {
+                linklist.removeClass('open');
+                var urlTo = $(this).val();
+                if(!urlTo.startsWith('http')) urlTo = 'http://'+urlTo;
+                iframe.src = '/'+user+'/'+coll+'/mp_/'+urlTo;
+            }
         });
 
         // set arrow buttons
@@ -488,7 +498,7 @@ var PagingInterface = (function () {
             nextBtn.removeClass('disabled');
 
         if(typeof rec !== 'undefined') {
-            if(typeof window.cnt_browser !== 'undefined' || rec.br) {
+            if((typeof window.cnt_browser !== 'undefined' || rec.br) && Object.keys(window.browsers).length > 0) {
                 /* if we're currently in a remote browser view, or the next item is, use fresh navigation to it */
                 window.location.href = '/'+user+'/'+coll+'/'+rec.ts+(typeof rec.br !== 'undefined' && rec.br !== ''?'$br:'+rec.br:'')+'/'+rec.url;
             } else {
@@ -508,6 +518,7 @@ var PagingInterface = (function () {
 })();
 
 var ShareWidget = (function () {
+    var hasWidget = false;
     var fbInitialized = false;
 
     function checkPublicStatus(user, coll) {
@@ -601,6 +612,7 @@ var ShareWidget = (function () {
     function start() {
         var shareWidget = $("#share-widget");
         if(shareWidget.length) {
+            hasWidget = true;
             $(".ispublic").bootstrapSwitch().on('switchChange.bootstrapSwitch', updateVisibility);
 
             $('.dropdown-menu').on('click', function (evt) {evt.stopPropagation(); });
@@ -644,6 +656,8 @@ var ShareWidget = (function () {
     }
 
     function updateUrl(rec) {
+        if(!hasWidget) return;
+
         var shareUrl = $('#shareable-url');
         var shareEmbed = $('#shareable-embed-code');
 

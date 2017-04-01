@@ -162,7 +162,36 @@ Uploader = (function() {
         }
     }
 
-    function initProgress(user, upload_id, startData) {
+    // for player initial load progress
+    function playerInitProgress(load_data) {
+        if (!load_data) {
+            return;
+        }
+
+        if (load_data.size && load_data.size == load_data.total_size) {
+            if (load_data.user && load_data.coll) {
+                window.location.href = "/" + load_data.user + "/" + load_data.coll;
+            }
+            return;
+        }
+
+        if (load_data.total_size == 0) {
+            var msg;
+            if (load_data.filename) {
+                msg = "Sorry, <b>" + load_data.filename + "</b> is not a valid web archive file";
+            } else {
+                msg = "Sorry, No Valid Files Provided, please try again";
+            }
+            $("#player-msg").html(msg);
+            $("#player-msg").css("color", "red");
+            $("#upload-label").hide();
+            $(".player-load-progress").show();
+            return;
+        }
+
+        var upload_id = load_data.upload_id;
+        var user = load_data.user;
+
         var url = "/_upload/" + upload_id + "?user=" + user;
 
         var done = function(user, data) {
@@ -171,7 +200,8 @@ Uploader = (function() {
 
         pingTime = 1000;
 
-        startIndexProgress(user, upload_id, 0, done, startData);
+        $(".player-load-progress").show();
+        startIndexProgress(user, upload_id, 0, done, load_data);
         uploader.show();
         status.show();
     }
@@ -194,8 +224,8 @@ Uploader = (function() {
         $("#choose-upload-file").on('change', function() {
             var filename = $(this).val().replace(/^C:\\fakepath\\/i, "");
 
-            if (!filename.match(/\.w?arc(\.gz)?$/)) {
-                status.text("Sorry, only WARC or ARC files (.warc, .warc.gz, .arc, .arc.gz) can be uploaded");
+            if (!filename.match(/\.w?arc(\.gz)?|\.har$/)) {
+                status.text("Sorry, only WARC, ARC, or HAR files (.warc, .warc.gz, .arc, .arc.gz, .har) can be uploaded");
                 status.addClass("upload-error");
                 status.show();
                 $("#upload-modal button[type='submit']").prop("disabled", true);
@@ -236,7 +266,7 @@ Uploader = (function() {
             $("a.upload-collection-select[data-collection-id='" + initialColl + "']").click();
         } else {
             $("a.upload-collection-select").first().click();
-        }   
+        }
 
         $(".upload-cancel").on('click', function() {
             if (currXhr) {
@@ -248,7 +278,7 @@ Uploader = (function() {
     $(init);
 
     return {"startIndexProgress": startIndexProgress,
-            "initProgress": initProgress
+            "playerInitProgress": playerInitProgress
            }
 
 })();

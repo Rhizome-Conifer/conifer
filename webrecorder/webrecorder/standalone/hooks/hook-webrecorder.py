@@ -1,7 +1,7 @@
 from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 import os
 
-from webrecorder.standalone.assetsutils import build
+from webrecorder.standalone.assetsutils import build, get_version_str
 
 def rename(old, new, t):
     return [(n, v.replace(old, new)) for n, v in t]
@@ -30,4 +30,20 @@ datas += rename('webrecorder' + os.path.sep,
 datas += collect_data_files('webrecorder', subdir='static')
 datas += collect_data_files('webrecorder', subdir='config')
 
+# generate full version
+full_version_path = os.path.abspath(os.path.join(curr_path, '..', '..', 'config', '_full_version'))
+with open(full_version_path, 'wt') as fh:
+    fh.write(get_version_str())
+    fh.flush()
+
+datas.append((full_version_path, 'webrecorder/config'))
+
+
+
 datas += copy_metadata('bottle')
+
+hiddenimports = ['webrecorder.git_hash',
+                 'pywb.git_hash',
+                 'brotli',
+                 '_cffi_backend']
+
