@@ -168,7 +168,7 @@ Uploader = (function() {
             return;
         }
 
-        if (load_data.size && load_data.size == load_data.total_size) {
+        if (load_data.done && load_data.size && load_data.size == load_data.total_size) {
             if (load_data.user && load_data.coll) {
                 window.location.href = "/" + load_data.user + "/" + load_data.coll;
             }
@@ -195,7 +195,11 @@ Uploader = (function() {
         var url = "/_upload/" + upload_id + "?user=" + user;
 
         var done = function(user, data) {
-            window.location.reload();
+            if (data.done) {
+                window.location.reload();
+            } else {
+                status.text("Almost Done!");
+            }
         }
 
         pingTime = 1000;

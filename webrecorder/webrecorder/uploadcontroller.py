@@ -217,14 +217,15 @@ class UploadController(BaseController):
         finally:
             # add remainder of file, assumed consumed/skipped, if any
             last_end = stream.tell()
+            stream.close()
+
             if last_end < total_size:
                 diff = total_size - last_end
                 self._add_split_padding(diff, upload_key)
 
-            self.manager.redis.hincrby(upload_key, 'files', -1)
-            res = self.manager.redis.hgetall(upload_key)
-
-            stream.close()
+            with redis_pipeline(self.manager.redis) as pi:
+                pi.hincrby(upload_key, 'files', -1)
+                pi.hset(upload_key, 'done', 1)
 
     def _add_split_padding(self, diff, upload_key):
         self.manager.redis.hincrby(upload_key, 'size', diff * 2)
