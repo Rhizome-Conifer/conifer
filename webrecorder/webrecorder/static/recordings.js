@@ -82,12 +82,18 @@ var EventHandlers = (function() {
         $('header').on('submit', '.content-form', function(event) {
             event.preventDefault();
 
-            var url = getUrl();
+            var url = getUrl().trim();
+
+            if (url.indexOf('http') !== 0) {
+                url = 'http://' + url;
+            }
+
+            // check for trailing slash
+            if(url.match(/^https?\:\/\/[\w-.]+$/))
+                url += '/';
+
 
             if (window.cnt_browser && window.curr_mode != "new" && !window.containerExpired) {
-                if (url.indexOf("http://") != 0 && url.indexOf("https://") != 0) {
-                    url = "http://" + url;
-                }
                 RecordingSizeWidget.setRemoteUrl(url);
                 return false;
             }
@@ -446,8 +452,11 @@ var PagingInterface = (function () {
         inputBar.on('keyup', function (e){
             if(e.keyCode === 13) {
                 linklist.removeClass('open');
-                var urlTo = $(this).val();
-                if(!urlTo.startsWith('http')) urlTo = 'http://'+urlTo;
+                var urlTo = $(this).val().trim();
+
+                if(urlTo.indexOf('http') !== 0)
+                    urlTo = 'http://'+urlTo;
+
                 iframe.src = '/'+user+'/'+coll+'/mp_/'+urlTo;
             }
         });

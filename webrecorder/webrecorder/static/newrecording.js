@@ -21,7 +21,7 @@ $(function() {
         var titleInput = $("input[name='rec-title']");
         var title = titleInput.val();
         var urlInput = $("input[name='url']");
-        var url = urlInput.val();
+        var url = urlInput.val().trim();
 
         // alert if title is blank
         if(title.replace(/\s+$/g, '').length === 0) {
@@ -32,7 +32,7 @@ $(function() {
         }
 
         // alert if url is blank
-        if(url.replace(/\s+$/g, '').length === 0) {
+        if(url.length === 0) {
             urlInput.parent().addClass('has-error');
             return false;
         }
@@ -41,8 +41,16 @@ $(function() {
             url = "mp_/" + url;
         }
 
+        if(url.indexOf('http') !== 0) {
+            url = 'http://' + url;
+        }
+
+        // check for trailing slash
+        if(url.match(/^https?\:\/\/[\w-.]+$/))
+            url += '/';
+
         // urlencode title
-        title = encodeURIComponent(title)
+        title = encodeURIComponent(title);
 
         RouteTo.newRecording(collection, title, url);
 
