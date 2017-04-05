@@ -51,7 +51,7 @@ class CollectionList extends Component {
           <ul className="list-group collection-list">
             { sortBy(collections, ['created_at']).map((coll) => {
               return (
-                <li className="left-buffer list-group-item">
+                <li className="left-buffer list-group-item" key={coll.id}>
                   <Row>
                     <Col xs={9}>
                       <Link to={`${user}/${coll.id}`} className="collection-title">{coll.title}</Link>

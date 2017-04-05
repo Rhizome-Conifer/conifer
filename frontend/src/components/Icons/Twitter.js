@@ -1,7 +1,7 @@
 import React from 'react';
 
 
-function Twitter(props) {
+function Twitter() {
   return (
     <svg className="tw" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
       <rect fill="none" width="400" height="400" />
