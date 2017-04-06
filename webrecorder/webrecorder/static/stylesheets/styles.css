@@ -1313,7 +1313,6 @@ div.paging-container:hover .home-link {
     height: 0px !important;
 }
 
-
 .wr-controls > div{
     margin-top: 12px;
     margin-bottom: 12px;
@@ -1344,6 +1343,13 @@ div.paging-container:hover .home-link {
 .wr-modes svg {
     width: 30px;
     height: 30px;
+}
+.wr-mode-selector {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
 }
 .wr-mode-selector ul {
     margin: 0;
@@ -1383,8 +1389,33 @@ div.paging-container:hover .home-link {
     vertical-align: middle;
 }
 
+.wr-mode-message {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+
+    justify-content: center;
+    -ms-flex-pack: center;
+}
+.wr-mode-message span {
+    transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+}
+.wr-mode-message span.stacked {
+    position: absolute;
+    opacity: 0;
+}
+.wr-mode-message:hover span:first-of-type, .wr-mode-message:active span:first-of-type {
+    opacity: 0;
+    transform: scale(0.9, 0.9);
+}
+.wr-mode-message:hover span.stacked, .wr-mode-message:active span.stacked {
+    opacity: 1;
+}
+
 .wr-mode-selector .dropdown-toggle .glyphicon {
-    vertical-align: baseline;
+    vertical-align: text-top;
 }
 .wr-mode-selector .dropdown-toggle svg {
     width: 16px;
