@@ -2,15 +2,17 @@
 <div class="mode-selector {% if is_record or is_patch %}col-xs-4 col-sm-3{% else %}col-xs-2 col-sm-2{% endif %}">
     <div class="wr-mode-selector btn-group">
         {% if is_replay %}
-            {% set mode_message = 'Replaying' %}
+            {% set mode_message = 'Exit Replay' %}
         {% elif is_record %}
             {% set mode_message = 'Recording' %}
         {% elif is_patch %}
             {% set mode_message = 'Patching' %}
         {% endif %}
         <button type="button" class="btn btn-default wr-mode-message content-action" role="button" aria-label="Finish {{ mode_message }} session">
+            {% if not is_replay %}
+                <span class="btn-content stacked">Finish</span>
+            {% endif %}
             <span class="btn-content" >{{ mode_message }}</span>
-            <span class="btn-content stacked">Finish</span>
         </button>
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {% if is_replay %}
