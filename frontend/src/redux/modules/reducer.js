@@ -18,15 +18,15 @@ export default (state, action) => {
   // wipe state after logout, or partially after login
   switch(action.type) {
     case LOGOUT_SUCCESS: {
-      const { routing, reduxAsyncConnect } = state;
-      const stateMod = { routing, reduxAsyncConnect };
+      const { routing, reduxAsyncConnectInstance } = state;
+      const stateMod = { routing, reduxAsyncConnectInstance };
       return appReducer(stateMod, action);
     }
     case LOGIN_SUCCESS: {
       // delete any login errors if they exist
-      const { auth, routing, reduxAsyncConnect } = state;
-      delete auth.loginError;
-      const stateMod = { routing, auth, reduxAsyncConnect };
+      const { authInstance, routing, reduxAsyncConnectInstance } = state;
+      delete authInstance.loginError;
+      const stateMod = { routing, authInstance, reduxAsyncConnectInstance };
       return appReducer(stateMod, action);
     }
     default:

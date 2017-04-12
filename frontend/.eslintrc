@@ -39,7 +39,8 @@
     "no-useless-escape": 0,
     "no-param-reassign": 1,
     "vars-on-top": 1,
-    "no-shadow": 1
+    "no-shadow": 1,
+    "max-length": 0
   },
   "plugins": [
     "react", "import"

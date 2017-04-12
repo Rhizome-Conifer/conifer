@@ -1,0 +1,25 @@
+.share-container .dropdown-menu, .linklist .dropdown-menu, .containerized .dropdown-menu,
+.wr-mode-selector .dropdown-menu {
+    transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+    transform: scale(0.98, 0.98);
+
+    top: -9999px;
+    left: -9999px;
+    opacity: 0;
+    display: block;
+    border-radius: 0px;
+    padding: 0px;
+}
+.linklist .dropdown-menu, .containerized .dropdown-menu { max-height: 33vh; overflow: auto; }
+.linklist.open .dropdown-menu, .containerized .open > .dropdown-menu {
+    opacity: 1;
+    transform: scale(1, 1);
+    top: 100%;
+    left: 0;
+}
+
+.linklist .dropdown-menu, .containerized .dropdown-menu,
+.share-container .dropdown-menu, .wr-mode-selector .dropdown-menu {
+    -webkit-box-shadow: 2px 2px 5px rgba(0,0,0,.175);
+    box-shadow: 2px 2px 5px rgba(0,0,0,.175);
+}

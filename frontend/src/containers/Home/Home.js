@@ -4,6 +4,9 @@ import { Link } from 'react-router';
 
 import { isLoaded, load } from 'redux/modules/info';
 
+import HomepageMessage from 'components/HomepageMessage';
+import RecorderUIStandalone from 'components/RecorderUIStandalone';
+
 
 class Home extends Component {
 
@@ -27,28 +30,11 @@ class Home extends Component {
         </div>
         {
           loaded && auth.user.username && info.data &&
-            <div className="row">
-              <div className="col-md-6 col-md-offset-3">
-                <div className="panel panel-info">
-                  <div className="panel-heading">
-                    You are logged-in as <b><Link to={auth.user.username}>{ auth.user.username }</Link></b>
-                  </div>
-                  <div className="panel-body">
-                    <div className="top-buffer-md">
-                      <ul>
-                        <li>
-                          Browse: There are <Link to={auth.user.username}><b>{ info.data.collections.length } Collections</b></Link> in your archive.
-                        </li>
-                        <li>
-                          Record: Enter a url, choose a collection (or create a new one), then click <b>Record</b> to begin.
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HomepageMessage auth={auth} info={info} />
         }
+        <div className="row top-buffer-lg bottom-buffer-lg">
+          <RecorderUIStandalone />
+        </div>
       </div>
     );
   }

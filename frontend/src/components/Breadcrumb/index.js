@@ -21,13 +21,14 @@ class Breadcrumb extends Component {
     return (
       <ol className="breadcrumb navbar-left wr-breadcrumb">
         <IndexLink to="/">Webrecorder</IndexLink>
-        {
+        {/*
           trail.length &&
           trail.map((item, index) =>
             <li>
               <span>{ item.component.title }</span>
             </li>
           )
+          */
         }
       </ol>
     );

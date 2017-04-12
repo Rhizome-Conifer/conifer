@@ -6,6 +6,7 @@ import Breadcrumb from 'components/Breadcrumb';
 import './style.scss';
 
 
+/* not in use */
 function Header(props) {
   const { auth } = props;
 

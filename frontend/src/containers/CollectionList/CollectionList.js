@@ -15,7 +15,7 @@ import './style.scss';
 class CollectionList extends Component {
 
   static propTypes = {
-    collections: PropTypes.array,
+    collections: PropTypes.object,
     auth: PropTypes.object
   }
 

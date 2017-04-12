@@ -25,7 +25,7 @@ export default (store) => {
   const userRoutes = [
     /* collection */
     {
-      path: ':user',
+      path: '/:user([^_]\w+)',
       name: 'collection',
       breadcrumb: true,
       component: CollectionList,

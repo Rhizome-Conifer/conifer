@@ -1,0 +1,97 @@
+.containerized  {
+    .container {
+        width: 60vw;
+    }
+
+    #cnt-button {
+        border-width: 1px 0px 1px 1px;
+    }
+
+    .dropdown-toggle {
+        background-image: none;
+        background-color: #F8F8F8;
+    }
+
+    .open > .dropdown-toggle, .dropdown-toggle:active,
+    .dropdown-toggle.active, .dropdown-toggle:hover {
+        background-color: #F7F7F7;
+    }
+
+    .dropdown-header {
+        padding: 5px 0;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+
+        li {
+            list-style-type: none;
+        }
+    }
+
+    h6 {
+        margin: 0;
+        font-size: 16px;
+        color: #353535;
+        font-weight: bold;
+    }
+
+    .row {
+        padding: 10px 0;
+        margin: 0 -15px 0 -15px;
+
+        &:first-child {
+            padding: 5px 0;
+        }
+    }
+
+    li {
+        text-align: center;
+        word-wrap: break-word;
+        white-space: normal;
+
+        &:first-of-type {
+            text-align: left;
+        }
+
+        & > img {
+            margin-right: 5px;
+        }
+    }
+
+    .btn img {
+        margin-right: 5px;
+    }
+
+    .cnt-browser:not(.disabled):not(.active) { cursor: pointer; }
+    .cnt-browser.disabled { opacity: 0.6; filter: grayscale(100%); }
+    .cnt-browser:nth-child(odd) { background-color: #FFF; }
+    .cnt-browser:nth-child(even) { background-color: #F6F6F6; }
+    .cnt-browser.active { background-color: #eef9ea;}
+    .cnt-browser:not(.disabled):not(.active):hover { background-color: #E3E3E3; }
+}
+
+
+@media (min-width: 544px) and (max-width: 767px) {
+    .start-recording-homepage .containerized .container {
+        width: 544px;
+    }
+}
+@media (min-width: 768) and (max-width: 991px) {
+    .start-recording-homepage .containerized .container {
+        width: 768px;
+    }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+    .start-recording-homepage .containerized .container {
+        /* grid width * column fraction + grid gutter * 2 */
+        width: calc(992px * 0.6 + 60px);
+    }
+}
+@media (min-width: 1200px) {
+    .start-recording-homepage .containerized .container {
+        /* grid width * column fraction + grid gutter * 2 */
+        width: calc(1200px * 0.6 + 60px);
+    }
+}
