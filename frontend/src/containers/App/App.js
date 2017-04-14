@@ -36,7 +36,7 @@ export class App extends Component { // eslint-disable-line
     const { auth, routes } = this.props;
 
     return (
-      <div>
+      <div className="wr-app">
         <Helmet {...config.app.head} />
         <header>
           <div className="navbar navbar-default navbar-static-top">

@@ -1,0 +1,22 @@
+@import 'src/vars';
+
+
+.tutorial {
+    text-align: center;
+    z-index: 99;
+
+    button {
+        text-align: center;
+        border: none;
+        color: $link;
+        background: none;
+
+        &:hover {
+            color: $linkHover;
+        }
+    }
+
+    & > div {
+        margin-top: 10px;
+    }
+}

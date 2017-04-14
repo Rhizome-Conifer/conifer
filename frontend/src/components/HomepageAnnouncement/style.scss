@@ -1,0 +1,35 @@
+#news-alert {
+    margin: 1rem auto 3rem auto;
+    background-color: white;
+    background-image: none;
+    border: 1px solid #0232F5;
+    color: black;
+
+    a {
+        margin-top: 10px;
+        font-weight: bold;
+        color: #0232F5;
+    }
+
+    .wr-alert-logo {
+        float: left;
+        max-width: 80px;
+        min-height: 100%;
+
+        img {
+            width: 100%;
+        }
+    }
+
+    .wr-alert-info {
+        display: table;
+
+        h5 {
+            padding: 0 4%;
+        }
+
+        p {
+            margin: 0 5% 10px 5%;
+        }
+    }
+}

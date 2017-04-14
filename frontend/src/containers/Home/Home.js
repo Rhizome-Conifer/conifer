@@ -1,11 +1,15 @@
 import React, { Component, PropTypes } from 'react';
 import { asyncConnect } from 'redux-connect';
 import { Link } from 'react-router';
+import { Collapse } from 'react-bootstrap';
 
 import { isLoaded, load } from 'redux/modules/info';
 
 import HomepageMessage from 'components/HomepageMessage';
+import HomepageAnnouncement from 'components/HomepageAnnouncement';
 import RecorderUIStandalone from 'components/RecorderUIStandalone';
+
+import './style.scss';
 
 
 class Home extends Component {
@@ -15,8 +19,17 @@ class Home extends Component {
     info: PropTypes.object
   }
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      introVideoOpen: false
+    };
+  }
+
   render() {
     const { auth, info } = this.props;
+    const { introVideoOpen } = this.state;
 
     const loaded = auth.loaded && info.loaded;
 
@@ -34,6 +47,22 @@ class Home extends Component {
         }
         <div className="row top-buffer-lg bottom-buffer-lg">
           <RecorderUIStandalone />
+        </div>
+        <HomepageAnnouncement />
+        <div className="tutorial col-xs-10 col-xs-push-1">
+          <button onClick={() => this.setState({ introVideoOpen: !introVideoOpen })}>
+            {
+              introVideoOpen ?
+                <span className="glyphicon glyphicon-triangle-bottom" /> :
+                <span className="glyphicon glyphicon-triangle-right" />
+            }
+            &nbsp;Watch Webrecorder Introductory Video
+          </button>
+          <Collapse in={introVideoOpen}>
+            <div>
+              <iframe width="854" height="480" src="https://www.youtube.com/embed/n3SqusABXEk" allowFullScreen />
+            </div>
+          </Collapse>
         </div>
       </div>
     );

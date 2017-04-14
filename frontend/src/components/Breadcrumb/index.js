@@ -7,13 +7,8 @@ import './style.scss';
 
 class Breadcrumb extends Component {
 
-  static contextTypes = {
-    router: PropTypes.func
-  }
-
   render() {
     const { routes } = this.props;
-    const { router } = this.context;
 
     // filter based on whether this item should show up in breadcrumb
     const trail = routes ? filter(routes.slice(1), o => o.breadcrumb) : [];
