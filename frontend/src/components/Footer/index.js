@@ -8,7 +8,7 @@ import './style.scss';
 const logo = require('./rhizome_logo_sm.png');
 
 
-function Footer(props) {
+function Footer() {
   return (
     <footer className="footer top-buffer">
       <div className="container top-buffer bottom-buffer">
@@ -17,20 +17,20 @@ function Footer(props) {
             <Link to="/_faq">
               <HelpIcon />
             </Link>
-            <Link to="https://github.com/webrecorder/webrecorder">
+            <a href="https://github.com/webrecorder/webrecorder" target="_blank">
               <GithubIcon />
-            </Link>
-            <Link to="https://twitter.com/webrecorder_io">
+            </a>
+            <a href="https://twitter.com/webrecorder_io" target="_blank">
               <TwitterIcon />
-            </Link>
-            <Link to="mailto:support@webrecorder.io" className="divider">Support</Link>
+            </a>
+            <a href="mailto:support@webrecorder.io" className="divider">Support</a>
             <Link to="/_policies" className="divider">Terms and Policies</Link>
           </div>
           <div className="col-xs-6 col-xs-offset-3 col-sm-2 col-sm-offset-2 footer-label">
             <div>A Project By</div>
-            <Link to="https://rhizome.org" target="_blank">
+            <a to="https://rhizome.org" target="_blank">
               <img className="rhizome-logo" src={logo} alt="rhizome.org logo" />
-            </Link>
+            </a>
           </div>
         </div>
       </div>

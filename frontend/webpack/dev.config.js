@@ -1,4 +1,4 @@
-require('babel-polyfill');
+/* eslint-disable */
 
 // Webpack config for development
 var autoprefixer = require('autoprefixer');
@@ -30,46 +30,23 @@ var babelrcObjectDevelopment = babelrcObject.env && babelrcObject.env.developmen
 var combinedPlugins = babelrcObject.plugins || [];
 combinedPlugins = combinedPlugins.concat(babelrcObjectDevelopment.plugins);
 
-var babelLoaderQuery = Object.assign({}, babelrcObjectDevelopment, babelrcObject, {plugins: combinedPlugins});
+var babelLoaderQuery = Object.assign({}, babelrcObject, babelrcObjectDevelopment, {plugins: combinedPlugins});
 delete babelLoaderQuery.env;
 
-// Since we use .babelrc for client and server, and we don't want HMR enabled on the server, we have to add
-// the babel plugin react-transform-hmr manually here.
-
-// make sure react-transform is enabled
-babelLoaderQuery.plugins = babelLoaderQuery.plugins || [];
-var reactTransform = null;
-for (var i = 0; i < babelLoaderQuery.plugins.length; ++i) {
-  var plugin = babelLoaderQuery.plugins[i];
-  if (Array.isArray(plugin) && plugin[0] === 'react-transform') {
-    reactTransform = plugin;
-  }
-}
-
-if (!reactTransform) {
-  reactTransform = ['react-transform', {transforms: []}];
-  babelLoaderQuery.plugins.push(reactTransform);
-}
-
-if (!reactTransform[1] || !reactTransform[1].transforms) {
-  reactTransform[1] = Object.assign({}, reactTransform[1], {transforms: []});
-}
-
-// make sure react-transform-hmr is enabled
-reactTransform[1].transforms.push({
-  transform: 'react-transform-hmr',
-  imports: ['react'],
-  locals: ['module']
+babelLoaderQuery.presets = babelLoaderQuery.presets.map(function (v) {
+  return v === 'es2015' ? ['es2015', { modules: false }] : v;
 });
 
-module.exports = {
+
+var webpackConfig = module.exports = {
   devtool: 'inline-source-map',
   context: path.resolve(__dirname, '..'),
   entry: {
     'main': [
+      'babel-polyfill',
+      'react-hot-loader/patch',
       'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
-      'bootstrap-sass!./config/bootstrap.config.js',
-      //'font-awesome-webpack!./src/theme/font-awesome.config.js',
+      'bootstrap-loader',
       './config/polyfills',
       './src/client.js'
     ]
@@ -81,44 +58,92 @@ module.exports = {
     publicPath: 'http://' + host + ':' + port + '/dist/'
   },
   module: {
-    loaders: [
-      { test: /\.(js|jsx)?$/, exclude: /node_modules/, loaders: ['babel?' + JSON.stringify(babelLoaderQuery), 'eslint-loader']},
-      { test: /\.json$/, loader: 'json-loader' },
+    rules: [
+      {
+        test: /\.(js|jsx)?$/,
+        exclude: /node_modules/,
+        use: ['babel-loader?' + JSON.stringify(babelLoaderQuery), 'eslint-loader']
+      },
       {
         test: /\.scss$/,
-        loaders: ['style', 'css', 'postcss', 'sass']
+        use: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: function (){
+                return [
+                  autoprefixer({
+                    browsers: [
+                      '>1%',
+                      'last 4 versions',
+                      'Firefox ESR',
+                      'not ie < 9',
+                    ]
+                  })
+                ]
+              }
+            }
+          },
+          'sass-loader'
+        ]
       },
       {
         test: /\.css$/,
-        loaders: ['style', 'css']
+        use: ['style-loader', 'css-loader']
       },
-      { test: /\.woff(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/font-woff" },
-      { test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/font-woff" },
-      { test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/octet-stream" },
-      { test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: "file" },
-      { test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=image/svg+xml" },
-      { test: webpackIsomorphicToolsPlugin.regular_expression('images'), loader: 'url-loader?limit=10240' }
+      {
+        test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+        loader: "url-loader",
+        options: {
+          limit: 10000,
+          mimetype: "application/font-woff"
+        }
+      },
+      {
+        test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
+        loader: "url-loader",
+        options: {
+          limit: 10000,
+          mimetype: "application/font-woff"
+        }
+      },
+      {
+        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
+        loader: "url-loader",
+        options: {
+          limit: 10000,
+          mimetype: "application/octet-stream"
+        }
+      },
+      {
+        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
+        loader: "file-loader"
+      },
+      {
+        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+        loader: "url-loader",
+        options: {
+          limit: 10000,
+          mimetype: "image/svg+xml"
+        }
+      },
+      {
+        test: webpackIsomorphicToolsPlugin.regular_expression('images'),
+        loader: "url-loader",
+        options: {
+          limit: 10240
+        }
+      }
     ]
   },
-  postcss: function () {
-    return [
-      autoprefixer({
-        browsers: [
-          '>1%',
-          'last 4 versions',
-          'Firefox ESR',
-          'not ie < 9', // React doesn't support IE8 anyway
-        ]
-      }),
-    ];
-  },
-  progress: true,
   resolve: {
-    modulesDirectories: [
+    modules: [
       'src',
       'node_modules'
     ],
-    extensions: ['', '.json', '.js']
+    extensions: ['.json', '.js']
   },
   plugins: [
     // hot reload

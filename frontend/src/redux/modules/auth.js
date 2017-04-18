@@ -1,3 +1,5 @@
+import config from 'config';
+
 const LOAD = 'wr/auth/LOAD';
 const LOAD_SUCCESS = 'wr/auth/LOAD_SUCCESS';
 const LOAD_FAIL = 'wr/auth/LOAD_FAIL';
@@ -85,14 +87,14 @@ export function isLoaded(globalState) {
 export function load() {
   return {
     types: [LOAD, LOAD_SUCCESS, LOAD_FAIL],
-    promise: client => client.get('/load_auth')
+    promise: client => client.get(`${config.apiPath}/load_auth`)
   };
 }
 
 export function login(postData) {
   return {
     types: [LOGIN, LOGIN_SUCCESS, LOGIN_FAIL],
-    promise: client => client.post('/login', {
+    promise: client => client.post(`${config.apiPath}/login`, {
       data: {
         ...postData
       }
@@ -103,6 +105,6 @@ export function login(postData) {
 export function logout() {
   return {
     types: [LOGOUT, LOGOUT_SUCCESS, LOGOUT_FAIL],
-    promise: client => client.get('/logout')
+    promise: client => client.get(`${config.apiPath}/logout`)
   };
 }

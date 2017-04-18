@@ -1,4 +1,5 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { browserHistory, Link } from 'react-router';
 
 import Modal from 'components/Modal';
@@ -86,14 +87,14 @@ export class UserManagement extends Component {
             </li>
 
             <li className="navbar-text navbar-right">
-              <Link to={`/${auth.user.username}`} >
-                <span className="glyphicon glyphicon-user right-buffer-sm" />{ auth.user.username }
+              <Link to={`/${auth.user.username}/_settings`} >
+                <span className="glyphicon glyphicon-cog right-buffer-sm" />
               </Link>
             </li>
 
             <li className="navbar-text navbar-right">
-              <Link to={`/${auth.user.username}/_settings`} >
-                <span className="glyphicon glyphicon-cog right-buffer-sm" />
+              <Link to={`/${auth.user.username}`} >
+                <span className="glyphicon glyphicon-user right-buffer-sm" />{ auth.user.username }
               </Link>
             </li>
 

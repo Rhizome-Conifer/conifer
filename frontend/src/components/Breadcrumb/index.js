@@ -1,4 +1,4 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
 import { IndexLink, Link } from 'react-router';
 import filter from 'lodash/filter';
 

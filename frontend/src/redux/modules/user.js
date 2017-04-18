@@ -1,28 +1,28 @@
 import config from 'config';
 
-const COLL_LOAD = 'wr/coll/LOAD';
-const COLL_LOAD_SUCCESS = 'wr/coll/LOAD_SUCCESS';
-const COLL_LOAD_FAIL = 'wr/coll/LOAD_FAIL';
+const USER_LOAD = 'wr/user/LOAD';
+const USER_LOAD_SUCCESS = 'wr/user/LOAD_SUCCESS';
+const USER_LOAD_FAIL = 'wr/user/LOAD_FAIL';
 
 const initialState = {
   loaded: false
 };
 
-export default function coll(state = initialState, action = {}) {
+export default function user(state = initialState, action = {}) {
   switch (action.type) {
-    case COLL_LOAD:
+    case USER_LOAD:
       return {
         ...state,
         loading: true
       };
-    case COLL_LOAD_SUCCESS:
+    case USER_LOAD_SUCCESS:
       return {
         ...state,
         loading: false,
         loaded: true,
         data: action.result.user
       };
-    case COLL_LOAD_FAIL:
+    case USER_LOAD_FAIL:
       return {
         ...state,
         loading: false,
@@ -35,12 +35,12 @@ export default function coll(state = initialState, action = {}) {
 }
 
 export function isLoaded(globalState) {
-  return globalState.coll && globalState.coll.loaded;
+  return globalState.user && globalState.user.loaded;
 }
 
 export function load(username) {
   return {
-    types: [COLL_LOAD, COLL_LOAD_SUCCESS, COLL_LOAD_FAIL],
+    types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
     promise: client => client.get(`${config.apiPath}/users/${username}?api=false&include_recs=false`)
   };
 }

@@ -7,10 +7,10 @@ function formatUrl(path) {
   const adjustedPath = path[0] !== '/' ? `/${path}` : path;
   if (__SERVER__) {
     // on the server use internal network
-    return `http://${config.internalApiHost}:${config.internalApiPort}${config.apiPath}${adjustedPath}`;
+    return `http://${config.internalApiHost}:${config.internalApiPort}${adjustedPath}`;
   }
   // client side use external network
-  return `${__DEVELOPMENT__ ? '' : config.prodApi}${config.apiPath}${adjustedPath}`;
+  return `${__DEVELOPMENT__ ? '' : config.prodApi}${adjustedPath}`;
 }
 
 export default class ApiClient {

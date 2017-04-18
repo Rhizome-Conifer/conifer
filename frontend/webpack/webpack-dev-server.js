@@ -1,3 +1,4 @@
+/* eslint-disable */
 var Express = require('express');
 var webpack = require('webpack');
 

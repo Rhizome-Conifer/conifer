@@ -1,3 +1,5 @@
+import config from 'config';
+
 const COLLS_LOAD = 'wr/colls/LOAD';
 const COLLS_LOAD_SUCCESS = 'wr/colls/LOAD_SUCCESS';
 const COLLS_LOAD_FAIL = 'wr/colls/LOAD_FAIL';
@@ -39,6 +41,6 @@ export function isLoaded(globalState) {
 export function load(username) {
   return {
     types: [COLLS_LOAD, COLLS_LOAD_SUCCESS, COLLS_LOAD_FAIL],
-    promise: client => client.get(`collections?user=${username}`)
+    promise: client => client.get(`${config.apiPath}/collections?user=${username}`)
   };
 }

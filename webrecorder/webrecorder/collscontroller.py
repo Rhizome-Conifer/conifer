@@ -48,7 +48,7 @@ class CollsController(BaseController):
 
         @self.app.get('/api/v1/collections')
         def get_collections():
-            user = self.get_user(api=True)
+            user = self.get_user(api=True, redir_check=False)
 
             collections = user.get_collections()
 

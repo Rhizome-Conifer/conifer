@@ -1,15 +1,16 @@
 import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { AppContainer } from 'react-hot-loader';
 import { Provider } from 'react-redux';
-import { Router, browserHistory } from 'react-router';
+import { browserHistory } from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux';
-import { ReduxAsyncConnect } from 'redux-connect';
 import useScroll from 'scroll-behavior/lib/useStandardScroll';
 
 import createStore from './redux/create';
 import ApiClient from './helpers/ApiClient';
 import baseRoute from './routes';
+import Root from './root';
 
 import './base.scss';
 
@@ -21,25 +22,31 @@ const dest = document.getElementById('app');
 const store = createStore(browserHistoryScroll, client, window.__data);
 const history = syncHistoryWithStore(browserHistoryScroll, store);
 
-const component = (
-  <Router
-    render={props =>
-      <ReduxAsyncConnect
-        {...props}
-        helpers={{ client }}
-        filter={item => !item.deferred}
-      />
-    }
-    history={history}
-    routes={baseRoute(store)} />
-);
 
-ReactDOM.render(
-  <Provider store={store} key="provider">
-    {component}
-  </Provider>,
-  dest
-);
+const renderApp = (renderProps, includeDevTools = false) => {
+  let DevTools;
+
+  if(includeDevTools)
+    DevTools = require('./containers/DevTools/DevTools');
+
+  ReactDOM.render(
+    <AppContainer>
+      <Provider store={store} key="provider">
+        {
+          includeDevTools ?
+            <div>
+              <Root {...{ store, history, ...renderProps }} />
+              <DevTools />
+            </div> :
+            <Root {...{ store, history, ...renderProps }} />
+        }
+      </Provider>
+    </AppContainer>,
+    dest
+  );
+};
+
+renderApp({ routes: baseRoute(store), client });
 
 if (process.env.NODE_ENV !== 'production') {
   window.React = React; // enable debugger
@@ -51,16 +58,13 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 if (__DEVTOOLS__ && !window.devToolsExtension) {
-  // eslint-disable-next-line global-require
-  const DevTools = require('./containers/DevTools/DevTools');
+  renderApp({ routes: baseRoute(store), client }, true);
+}
 
-  ReactDOM.render(
-    <Provider store={store} key="provider">
-      <div>
-        {component}
-        <DevTools />
-      </div>
-    </Provider>,
-    dest
-  );
+if (module.hot) {
+  module.hot.accept('./routes', () => {
+    const nextRoutes = require('./routes');
+
+    renderApp({ routes: nextRoutes(store), client });
+  });
 }

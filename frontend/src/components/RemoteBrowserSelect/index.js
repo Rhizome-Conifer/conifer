@@ -7,8 +7,22 @@ import 'shared/scss/dropdown.scss';
 
 class RemoteBrowserSelect extends Component {
 
+  constructor(props) {
+    super(props);
+
+    this.getRemoteBrowsers = this.getRemoteBrowsers.bind(this);
+
+    this.state = {
+      browsers: []
+    };
+  }
+
+  getRemoteBrowsers() {
+
+  }
+
   render() {
-    const browsers = [];
+    const { browsers } = this.state;
     const activeBrowser = null;
 
     const nativeClasses = classNames('row cnt-browser', {
@@ -23,7 +37,11 @@ class RemoteBrowserSelect extends Component {
 
     return (
       <div className="input-group-btn">
-        <DropdownButton id="cnt-button" title={btn} bsStyle="default">
+        <DropdownButton
+          id="cnt-button"
+          title={btn}
+          bsStyle="default"
+          onToggle={this.getRemoteBrowsers}>
           <li className="container">
             <ul className="row">
               <li className="col-xs-2"><h6 className="dropdown-header">browser</h6></li>

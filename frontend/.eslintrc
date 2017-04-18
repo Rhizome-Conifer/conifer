@@ -7,7 +7,7 @@
     "mocha": true,
   },
   "rules": {
-    "max-len": [1, 400, 2],
+    "max-len": [0, 800, 2],
     "react/no-multi-comp": 0,
     "import/default": 0,
     "import/no-duplicates": 0,
@@ -27,7 +27,7 @@
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
     "react/jsx-closing-bracket-location": 0,
     "react/forbid-prop-types": 0,
-    "react/prefer-stateless-function": 1,
+    "react/prefer-stateless-function": 0,
     "react/prop-types": 1,
     "react/no-unused-prop-types": 0,
     "spaced-comment": 0,
@@ -40,7 +40,7 @@
     "no-param-reassign": 1,
     "vars-on-top": 1,
     "no-shadow": 1,
-    "max-length": 0
+    "class-methods-use-this": 1
   },
   "plugins": [
     "react", "import"

@@ -1,9 +1,9 @@
-import React, { Component, PropTypes } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
-import { Link } from 'react-router';
 import { Collapse } from 'react-bootstrap';
 
-import { isLoaded, load } from 'redux/modules/info';
+import { isLoaded, load } from 'redux/modules/user';
 
 import HomepageMessage from 'components/HomepageMessage';
 import HomepageAnnouncement from 'components/HomepageAnnouncement';
@@ -16,7 +16,7 @@ class Home extends Component {
 
   static propTypes = {
     auth: PropTypes.object,
-    info: PropTypes.object
+    user: PropTypes.object
   }
 
   constructor(props) {
@@ -28,10 +28,10 @@ class Home extends Component {
   }
 
   render() {
-    const { auth, info } = this.props;
+    const { auth, user } = this.props;
     const { introVideoOpen } = this.state;
 
-    const loaded = auth.loaded && info.loaded;
+    const loaded = auth.loaded && user.loaded;
 
     return (
       <div>
@@ -42,8 +42,8 @@ class Home extends Component {
           <h4 className="text-center">Create high-fidelity, interactive recordings of any web site you browse</h4>
         </div>
         {
-          loaded && auth.user.username && info.data &&
-            <HomepageMessage auth={auth} info={info} />
+          loaded && auth.user.username && user.data &&
+            <HomepageMessage auth={auth} info={user} />
         }
         <div className="row top-buffer-lg bottom-buffer-lg">
           <RecorderUIStandalone />
@@ -83,10 +83,10 @@ const loadInfo = [
 ];
 
 const mapStateToProps = (state) => {
-  const { auth, info } = state;
+  const { auth, user } = state;
   return {
     auth,
-    info
+    user
   };
 };
 

@@ -3,7 +3,7 @@ import { routerReducer } from 'react-router-redux';
 import { reducer as reduxAsyncConnect } from 'redux-connect';
 
 import auth, { LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
-import info from './info';
+import user from './user';
 import collections from './collections';
 
 const appReducer = combineReducers({
@@ -11,7 +11,7 @@ const appReducer = combineReducers({
   reduxAsyncConnect,
   auth,
   collections,
-  info
+  user
 });
 
 export default (state, action) => {
