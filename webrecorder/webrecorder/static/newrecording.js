@@ -24,30 +24,31 @@ $(function() {
         var url = urlInput.val().trim();
 
         // alert if title is blank
-        if(title.replace(/\s+$/g, '').length === 0) {
+        if (title.replace(/\s+$/g, '').length === 0) {
             titleInput.parent().addClass('has-error');
             return false;
-        } else if( titleInput.parent().hasClass('has-error')) {
+        } else if (titleInput.parent().hasClass('has-error')) {
             titleInput.parent().removeClass('has-error');
         }
 
         // alert if url is blank
-        if(url.length === 0) {
+        if (url.length === 0) {
             urlInput.parent().addClass('has-error');
             return false;
+        }
+
+        if (url.indexOf('http') !== 0) {
+            url = 'http://' + url;
+        }
+
+        // check for trailing slash
+        if (url.match(/^https?\:\/\/[\w-.]+$/)) {
+            url += '/';
         }
 
         if (!window.cnt_browser && (isSafari() || isMS())) {
             url = "mp_/" + url;
         }
-
-        if(url.indexOf('http') !== 0) {
-            url = 'http://' + url;
-        }
-
-        // check for trailing slash
-        if(url.match(/^https?\:\/\/[\w-.]+$/))
-            url += '/';
 
         // urlencode title
         title = encodeURIComponent(title);
