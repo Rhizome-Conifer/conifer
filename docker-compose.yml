@@ -56,6 +56,7 @@ services:
 
     nginx:
         build: ./nginx
+        image: webrecorder/nginx
         depends_on:
             - app
 

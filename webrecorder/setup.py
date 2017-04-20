@@ -113,7 +113,7 @@ setup(
     test_suite='',
     entry_points="""
         [console_scripts]
-        webrecorder = webrecorder.standalone.webrecorder:webrecorder
+        webrecorder = webrecorder.standalone.webrecorder_full:webrecorder
         webrecorder-player = webrecorder.standalone.webrecorder_player:webrecorder_player
     """
 )
