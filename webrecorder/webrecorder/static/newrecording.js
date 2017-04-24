@@ -106,7 +106,20 @@ $(function() {
             setStorage("__wr_currColl", data.collection.id);
 
             if (window.location.pathname == "/") {
-                window.location.reload();
+                // hide modal
+                $("#create-modal").modal("hide");
+                $(".modal-backdrop").hide();
+
+                // update dropdown
+                var $btn = $("button[name=collection]");
+                var $dropdown = $btn.siblings(".dropdown-menu");
+                $btn.find("span").html(data.collection.title+" <span class='caret'></span>")
+                                 .attr("data-collection-id", data.collection.id);
+
+                $dropdown.find("li.divider").after(
+                    "<li><a href='#' class='collection-select' data-collection-id='"+data.collection.id+"'>"+data.collection.title+"</a></li>"
+                );
+                FlashMessage.show("success", "Created collection <b>"+data.collection.title+"</b>!");
             } else if (curr_user == user) {
                 RouteTo.collectionInfo(user, data.collection.id);
             }
