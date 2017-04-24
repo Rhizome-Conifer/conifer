@@ -372,22 +372,32 @@ var PagingInterface = (function () {
         /**
          * Find the index of current page within the collection
          */
-        var item = {url: wbinfo.url, ts: parseInt(wbinfo.timestamp, 10)};
 
+        // if there isn't a timestamp restrict match to url descending
+        if (!wbinfo.timestamp) {
+            for (var i = recordings.length-1; i >= 0; i--) {
+                if (wbinfo.url === recordings[i].url) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        var item = {url: wbinfo.url, ts: parseInt(wbinfo.timestamp, 10)};
         var minIdx = 0;
         var maxIdx = recordings.length - 1;
         var curIdx;
         var curEle;
 
-        while(minIdx <= maxIdx) {
+        while (minIdx <= maxIdx) {
             curIdx = (minIdx + maxIdx)/2 | 0;
             curEle = parseInt(recordings[curIdx].ts, 10);
 
-            if(curEle < item.ts) {
+            if (curEle < item.ts) {
                 minIdx = curIdx + 1;
-            } else if(curEle > item.ts) {
+            } else if (curEle > item.ts) {
                 maxIdx = curIdx - 1;
-            } else if(curEle === item.ts && item.url !== recordings[curIdx].url) {
+            } else if (curEle === item.ts && item.url !== recordings[curIdx].url) {
                 /**
                  * If multiple recordings are within a timestamp, or if the url
                  * for the timestamp doesn't match exactly, iterate over other
@@ -395,11 +405,12 @@ var PagingInterface = (function () {
                  */
                 var url;
                 var origIdx = curIdx;
-                while(curEle === item.ts && curIdx < recordings.length-1) {
+                while (curEle === item.ts && curIdx < recordings.length-1) {
                     url = recordings[++curIdx].url;
                     curEle = parseInt(recordings[curIdx].ts, 10);
-                    if(url === item.url)
+                    if (url === item.url) {
                         return curIdx;
+                    }
                 }
                 return origIdx;
             } else {
