@@ -45,16 +45,13 @@ class WebRecRecorder(object):
 
         self.full_warc_prefix = config['full_warc_prefix']
 
-        self.temp_prefix = config['temp_prefix']
-
         self.name = config['recorder_name']
 
         self.del_templ = config['del_templ']
 
         self.skip_key_templ = config['skip_key_templ']
 
-        self.user_usage_key = config['user_usage_key']
-        self.temp_usage_key = config['temp_usage_key']
+        self.config = config
 
         self.redis_base_url = os.environ['REDIS_BASE_URL']
         self.redis = redis.StrictRedis.from_url(self.redis_base_url)
@@ -89,9 +86,7 @@ class WebRecRecorder(object):
             size_keys=self.info_keys.values(),
             rec_info_key_templ=self.info_keys['rec'],
 
-            temp_prefix=self.temp_prefix,
-            user_usage=self.user_usage_key,
-            temp_usage=self.temp_usage_key,
+            config=self.config,
         )
 
     @staticmethod
@@ -436,9 +431,29 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         self.size_keys = kwargs.get('size_keys', [])
         self.rec_info_key_templ = kwargs.get('rec_info_key_templ')
 
-        self.user_usage_key = kwargs.get('user_usage', None)
-        self.temp_usage_key = kwargs.get('temp_usage', None)
-        self.temp_prefix = kwargs.get('temp_prefix', 'temp-')
+        config = kwargs['config']
+
+        self.temp_prefix = config['temp_prefix']
+
+        self.user_usage_key = config['user_usage_key']
+        self.temp_usage_key = config['temp_usage_key']
+
+        self.rate_limit_key = config['rate_limit_key']
+
+        self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
+        self.rate_limit_ttl = self.rate_limit_hours * 60 * 60
+
+    def get_rate_limit_key(self, params):
+        if not self.rate_limit_key or not self.rate_limit_ttl:
+            return None
+
+        ip = params.get('param.ip')
+        if not ip:
+            return None
+
+        h = time.strftime("%H")
+        rate_limit_key = self.rate_limit_key.format(ip=ip, H=h)
+        return rate_limit_key
 
     def add_urls_to_index(self, stream, params, filename, length):
         upload_key = params.get('param.upid')
@@ -462,6 +477,11 @@ class WebRecRedisIndexer(WritableRedisIndexer):
             if 'param.user' in params:
                 if params['param.user'].startswith(self.temp_prefix):
                     key = self.temp_usage_key
+                    rate_limit_key = self.get_rate_limit_key(params)
+                    if rate_limit_key:
+                        pi.incrby(rate_limit_key, length)
+                        pi.expire(rate_limit_key, self.rate_limit_ttl)
+
                 else:
                     key = self.user_usage_key
 
