@@ -10,3 +10,4 @@ urllib3
 gevent-websocket
 har2warc
 fakeredis
+wsgiprox>=1.2

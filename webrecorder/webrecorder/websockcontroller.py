@@ -80,10 +80,15 @@ class WebsockController(BaseController):
 
         type_ = info['type']
 
-        WebSockHandler('from', reqid, self.manager,
-                       'from_cbr_ps:', 'to_cbr_ps:',
-                       user, coll, rec, type=type_,
-                       browser=browser).run()
+        if 'wsgi.websocket' in request.environ:
+            cls = GeventWebSockHandler
+        else:
+            cls = WebSockHandler
+
+        cls('from', reqid, self.manager,
+            'from_cbr_ps:', 'to_cbr_ps:',
+            user, coll, rec, type=type_,
+            browser=browser).run()
 
 
 # ============================================================================

@@ -117,6 +117,15 @@ bundles:
             - pkg://pywb/static/vidrw.js
             - wrscripts.js
 
+    proxy-js:
+        output: bundle/proxy.js
+        contents:
+            - pkg://pywb/static/wombat.js
+            - pkg://pywb/static/wb.js
+            - pkg://pywb/static/vidrw.js
+            - wrscripts.js
+            - ws.js
+
     browser-js:
         output: bundle/browser.js
         contents:

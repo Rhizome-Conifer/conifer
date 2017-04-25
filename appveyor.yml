@@ -21,6 +21,7 @@ install:
 #  - "pip install coverage pytest-cov coveralls"
   - "pip install pyinstaller"
   - "pip install cffi"
+  - "pip install pyopenssl"
 
 build_script:
   - ps: "cd webrecorder"

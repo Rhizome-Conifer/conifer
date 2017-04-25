@@ -196,23 +196,24 @@ class RedisSessionMiddleware(CookieGuard):
         ttl = -2
         is_restricted = False
 
-        try:
-            sesh_cookie = self.split_cookie(environ)
+        if 'wsgiprox.proxy_host' not in environ:
+            try:
+                sesh_cookie = self.split_cookie(environ)
 
-            result = self.signed_cookie_to_id(sesh_cookie)
+                result = self.signed_cookie_to_id(sesh_cookie)
 
-            if result:
-                sesh_id, is_restricted = result
-                redis_key = self.key_template.format(sesh_id)
-
-                result = self.redis.get(redis_key)
                 if result:
-                    data = pickle.loads(base64.b64decode(result))
-                    ttl = self.redis.ttl(redis_key)
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print('Invalid Session, Creating New')
+                    sesh_id, is_restricted = result
+                    redis_key = self.key_template.format(sesh_id)
+
+                    result = self.redis.get(redis_key)
+                    if result:
+                        data = pickle.loads(base64.b64decode(result))
+                        ttl = self.redis.ttl(redis_key)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                print('Invalid Session, Creating New')
 
         # make new session
         if data is None:
@@ -244,6 +245,9 @@ class RedisSessionMiddleware(CookieGuard):
         environ['webrec.session'] = session
 
     def prepare_response(self, environ, headers):
+        if 'wsgiprox.proxy_host' in environ:
+            return
+
         super(RedisSessionMiddleware, self).prepare_response(environ, headers)
 
         session = environ['webrec.session']

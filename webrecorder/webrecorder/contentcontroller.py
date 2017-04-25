@@ -10,6 +10,7 @@ from pywb.urlrewrite.cookies import CookieTracker
 from pywb.rewrite.wburl import WbUrl
 
 from webrecorder.basecontroller import BaseController
+from six.moves.urllib.parse import quote, quote_plus
 
 
 # ============================================================================
@@ -112,6 +113,11 @@ class ContentController(BaseController, RewriterApp):
 
             return {'success': domain}
 
+        # PROXY
+        @self.app.route('/_proxy/<url:path>', method='ANY')
+        def do_proxy(url):
+            return self.do_proxy(url)
+
         # LIVE DEBUG
         @self.app.route('/live/<wb_url:path>', method='ANY')
         def live(wb_url):
@@ -176,6 +182,44 @@ class ContentController(BaseController, RewriterApp):
             sesh = self.get_session()
             sesh.delete()
             return self.redir_host(None, request.query.getunicode('path', '/'))
+
+    def do_proxy(self, url):
+        info = self.manager.browser_mgr.init_cont_browser_sesh()
+        if not info:
+            return {'error_message': 'conn not from valid containerized browser'}
+
+        url = self.add_query(url)
+
+        kwargs = info
+        kwargs['url'] = url
+        wb_url = 'px_/' + url
+
+        request.environ['webrec.template_params'] = kwargs
+
+        try:
+            resp = self.render_content(wb_url, kwargs, request.environ)
+
+            resp = HTTPResponse(body=resp.body,
+                                status=resp.status_headers.statusline,
+                                headers=resp.status_headers.headers)
+
+            return resp
+
+        except UpstreamException as ue:
+            @self.jinja2_view('content_error.html')
+            def handle_error(status_code, type, url, err_info):
+                response.status = status_code
+                return {'url': url,
+                        'status': status_code,
+                        'error': err_info.get('error'),
+                        'user': self.get_view_user(kwargs['user']),
+                        'coll': kwargs['coll'],
+                        'rec': kwargs['rec'],
+                        'type': kwargs['type'],
+                        'app_host': self.app_host,
+                       }
+
+            return handle_error(ue.status_code, kwargs['type'], ue.url, ue.msg)
 
     def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
         rec_title = rec
@@ -413,6 +457,14 @@ class ContentController(BaseController, RewriterApp):
         self.cookie_tracker.add_cookie(key, domain, name, value)
 
     ## RewriterApp overrides
+    def get_upstream_url(self, wb_url, kwargs, params):
+        upstream_url = kwargs.get('upstream_url')
+        if not upstream_url:
+            return super(ContentController, self).get_upstream_url(wb_url, kwargs, params)
+
+        upstream_url = upstream_url.format(url=quote_plus(kwargs['url']), postreq='/postreq')
+        return upstream_url
+
     def get_base_url(self, wb_url, kwargs):
         type = kwargs['type']
 
