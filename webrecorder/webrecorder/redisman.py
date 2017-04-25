@@ -19,6 +19,7 @@ from webrecorder.session import Session
 from cork import AAAException
 
 from six.moves.urllib.parse import quote
+from six.moves import range
 
 from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
@@ -73,6 +74,10 @@ class LoginManagerMixin(object):
         self.payload = os.environ.get('MAILING_LIST_PAYLOAD', '')
         self.remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
                                  in ('true', '1', 'yes'))
+
+        self.rate_limit_key = config['rate_limit_key']
+        self.rate_limit_max = int(os.environ.get('RATE_LIMIT_MAX', 0))
+        self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
 
     def add_to_mailing_list(self, username, email, name):
         """3rd party mailing list subscription"""
@@ -278,6 +283,24 @@ class LoginManagerMixin(object):
             return False
 
         return self.get_size_remaining(user) <= 0
+
+    def is_rate_limited(self, user, ip):
+        if not self.rate_limit_hours or not self.rate_limit_max:
+            return False
+
+        if not self.is_anon(user):
+            return False
+
+        rate_key = self.rate_limit_key.format(ip=ip, H='')
+        h = datetime.utcnow().hour
+
+        rate_keys = [rate_key + '%02d' % ((h - i) % 24)
+                     for i in range(0, self.rate_limit_hours)]
+
+        values = self.redis.mget(rate_keys)
+        total = sum(int(v) for v in values if v)
+
+        return (total >= self.rate_limit_max)
 
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?

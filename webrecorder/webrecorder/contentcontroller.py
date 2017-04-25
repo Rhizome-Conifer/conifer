@@ -255,6 +255,8 @@ class ContentController(BaseController, RewriterApp):
         if sesh.is_new() and self.is_content_request():
             self.redir_set_session()
 
+        remote_ip = None
+
         if type in ('record', 'patch', 'replay'):
             if not self.manager.has_recording(user, coll, rec):
                 not_found = True
@@ -264,6 +266,12 @@ class ContentController(BaseController, RewriterApp):
 
                 if self.manager.is_out_of_space(user):
                     raise HTTPError(402, 'Out of Space')
+
+                remote_ip = request.environ.get('HTTP_X_REAL_IP')
+                remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
+
+                if self.manager.is_rate_limited(user, remote_ip):
+                    raise HTTPError(402, 'Rate Limit')
 
         if ((not_found or type == 'replay-coll') and
             (not (self.manager.is_anon(user) and coll == 'temp')) and
@@ -288,11 +296,11 @@ class ContentController(BaseController, RewriterApp):
             if type == 'replay':
                 raise HTTPError(404, 'No Such Recording')
 
-        return self.handle_load_content(wb_url, user, coll, rec, type, is_embed,
-                                        is_display)
+        return self.handle_load_content(wb_url, user, coll, rec, type, remote_ip,
+                                        is_embed, is_display)
 
-    def handle_load_content(self, wb_url, user, coll, rec, type, is_embed=False,
-                            is_display=False):
+    def handle_load_content(self, wb_url, user, coll, rec, type, remote_ip,
+                            is_embed=False, is_display=False):
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'])
 
         wb_url = self._context_massage(wb_url)
@@ -303,6 +311,7 @@ class ContentController(BaseController, RewriterApp):
                       coll=quote(coll),
                       rec=quote(rec, safe='/*'),
                       type=type,
+                      ip=remote_ip,
                       is_embed=is_embed,
                       is_display=is_display)
 
