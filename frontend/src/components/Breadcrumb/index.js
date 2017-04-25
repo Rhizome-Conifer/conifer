@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { IndexLink, Link } from 'react-router';
+import PropTypes from 'prop-types';
+import { IndexLink } from 'react-router';
 import filter from 'lodash/filter';
 
 import './style.scss';
@@ -8,10 +9,10 @@ import './style.scss';
 class Breadcrumb extends Component {
 
   render() {
-    const { routes } = this.props;
+    //const { routes } = this.props;
 
     // filter based on whether this item should show up in breadcrumb
-    const trail = routes ? filter(routes.slice(1), o => o.breadcrumb) : [];
+    // const trail = routes ? filter(routes.slice(1), o => o.breadcrumb) : [];
 
     return (
       <ol className="breadcrumb navbar-left wr-breadcrumb">

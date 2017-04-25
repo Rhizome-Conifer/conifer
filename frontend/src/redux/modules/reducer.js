@@ -5,12 +5,14 @@ import { reducer as reduxAsyncConnect } from 'redux-connect';
 import auth, { LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
 import user from './user';
 import collections from './collections';
+import remoteBrowsers from './remoteBrowsers';
 
 const appReducer = combineReducers({
   routing: routerReducer,
   reduxAsyncConnect,
   auth,
   collections,
+  remoteBrowsers,
   user
 });
 

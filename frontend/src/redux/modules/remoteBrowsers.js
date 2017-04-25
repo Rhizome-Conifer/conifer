@@ -1,3 +1,4 @@
+const RB_SELECT = 'wr/rb/SELECT';
 const RB_LOAD = 'wr/rb/LOAD';
 const RB_LOAD_SUCCESS = 'wr/rb/LOAD_SUCCESS';
 const RB_LOAD_FAIL = 'wr/rb/LOAD_FAIL';
@@ -18,7 +19,8 @@ export default function remoteBrowsers(state = initialState, action = {}) {
         ...state,
         loading: false,
         loaded: true,
-        browsers: action.result
+        browsers: action.result,
+        accessed: Date.now()
       };
     case RB_LOAD_FAIL:
       return {
@@ -26,6 +28,11 @@ export default function remoteBrowsers(state = initialState, action = {}) {
         loading: false,
         loaded: false,
         error: action.error
+      };
+    case RB_SELECT:
+      return {
+        ...state,
+        active: action.id
       };
     default:
       return state;
@@ -40,5 +47,12 @@ export function load() {
   return {
     types: [RB_LOAD, RB_LOAD_SUCCESS, RB_LOAD_FAIL],
     promise: client => client.get('/api/browsers/browsers')
+  };
+}
+
+export function selectBrowser(id) {
+  return {
+    type: RB_SELECT,
+    id
   };
 }

@@ -17,7 +17,9 @@ class CollectionList extends Component {
 
   static propTypes = {
     collections: PropTypes.object,
-    auth: PropTypes.object
+    auth: PropTypes.object,
+    user: PropTypes.string,
+    params: PropTypes.object
   }
 
   static defaultProps = {

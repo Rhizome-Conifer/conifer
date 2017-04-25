@@ -65,6 +65,6 @@ if (module.hot) {
   module.hot.accept('./routes', () => {
     const nextRoutes = require('./routes');
 
-    renderApp({ routes: nextRoutes(store), client });
+    renderApp({ routes: nextRoutes(store), client }, true);
   });
 }

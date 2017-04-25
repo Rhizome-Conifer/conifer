@@ -180,6 +180,7 @@
     "testEnvironment": "node",
     "testURL": "http://localhost",
     "moduleNameMapper": {
+      ".+\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)$": "<rootDir>/config/jest/fileTransform.js",
       ".+\\.(css|scss)$": "<rootDir>/config/jest/cssTransform.js"
     },
     "transform": {

@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import { Button, InputGroup, FormGroup, FormControl } from 'react-bootstrap';
 
-import RemoteBrowserSelect from 'components/RemoteBrowserSelect';
+import { RemoteBrowserSelect } from 'containers';
+
 import CollectionDropdown from 'components/CollectionDropdown';
+
 import './style.scss';
 
 
