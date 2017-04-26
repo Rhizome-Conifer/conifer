@@ -1396,12 +1396,9 @@ div.paging-container:hover .home-link {
     justify-content: center;
     -ms-flex-pack: center;
 }
-.wr-mode-message span {
+.wr-mode-message > span {
     transition: opacity .2s ease-in-out, transform .2s ease-in-out;
     transition-delay: .045s;
-}
-.wr-mode-message > span:last-of-type {
-    padding: 0 10px;
 }
 .wr-mode-message > span:first-of-type {
     position: absolute;
