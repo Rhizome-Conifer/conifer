@@ -1416,6 +1416,9 @@ div.paging-container:hover .home-link {
 .wr-mode-selector .wr-mode-message .glyphicon {
     vertical-align: text-top;
 }
+.wr-mode-selector .wr-mode-message .glyphicon-stop {
+    font-size:13px;
+}
 .wr-mode-selector .dropdown-toggle .glyphicon {
     vertical-align: middle;
 }
