@@ -5,7 +5,8 @@ const USER_LOAD_SUCCESS = 'wr/user/LOAD_SUCCESS';
 const USER_LOAD_FAIL = 'wr/user/LOAD_FAIL';
 
 const initialState = {
-  loaded: false
+  loaded: false,
+  accessed: null
 };
 
 export default function user(state = initialState, action = {}) {
@@ -41,6 +42,6 @@ export function isLoaded(globalState) {
 export function load(username) {
   return {
     types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
-    promise: client => client.get(`${config.apiPath}/users/${username}?api=false&include_recs=false`)
+    promise: client => client.get(`${config.apiPath}/users/${username}?api=false&include_recs=false&include_colls=false`)
   };
 }

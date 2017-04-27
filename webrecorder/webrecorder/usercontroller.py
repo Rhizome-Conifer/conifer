@@ -307,12 +307,16 @@ class UserController(BaseController):
             """API enpoint to return user info"""
             api = True
             include_recs = True
+            include_colls = True
 
             if request.query.api:
                 api = request.query.api == 'true'
 
             if request.query.include_recs:
                 include_recs = request.query.include_recs == 'true'
+
+            if request.query.include_colls:
+                include_colls = request.query.include_colls == 'true'
 
             users = self.manager.get_users()
 
@@ -331,20 +335,22 @@ class UserController(BaseController):
             }
 
             user_data, err = UserSchema(exclude=('username',)).load(user)
-            colls = self.manager.get_collections(username,
-                                                 include_recs=include_recs,
-                                                 api=api)
 
-            if include_recs:
-                for coll in colls:
-                    for rec in coll['recordings']:
-                        rec['pages'] = self.manager.list_pages(username,
-                                                               coll['id'],
-                                                               rec['id'])
+            if include_colls:
+                colls = self.manager.get_collections(username,
+                                                     include_recs=include_recs,
+                                                     api=api)
 
-            # colls is a list so will always be `many` even if one collection
-            collections, err = CollectionSchema().load(colls, many=True)
-            user_data['collections'] = collections
+                if include_recs:
+                    for coll in colls:
+                        for rec in coll['recordings']:
+                            rec['pages'] = self.manager.list_pages(username,
+                                                                   coll['id'],
+                                                                   rec['id'])
+
+                # colls is a list so will always be `many` even if one collection
+                collections, err = CollectionSchema().load(colls, many=True)
+                user_data['collections'] = collections
 
             return {'user': user_data}
 

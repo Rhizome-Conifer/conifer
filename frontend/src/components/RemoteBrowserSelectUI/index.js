@@ -5,6 +5,8 @@ import isEmpty from 'lodash/isEmpty';
 import map from 'lodash/map';
 import { DropdownButton } from 'react-bootstrap';
 
+import RemoteBrowserOption from 'components/RemoteBrowserOption';
+
 import 'shared/scss/dropdown.scss';
 
 
