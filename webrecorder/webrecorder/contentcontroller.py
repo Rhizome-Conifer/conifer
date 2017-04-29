@@ -205,21 +205,20 @@ class ContentController(BaseController, RewriterApp):
 
             return resp
 
-        except UpstreamException as ue:
-            @self.jinja2_view('content_error.html')
-            def handle_error(status_code, type, url, err_info):
+        except Exception as e:
+            @self.jinja2_view('proxy_error.html')
+            def handle_error(status_code, environ):
                 response.status = status_code
-                return {'url': url,
-                        'status': status_code,
-                        'error': err_info.get('error'),
-                        'user': self.get_view_user(kwargs['user']),
-                        'coll': kwargs['coll'],
-                        'rec': kwargs['rec'],
-                        'type': kwargs['type'],
-                        'app_host': self.app_host,
-                       }
+                kwargs['url'] = url
+                kwargs['host_prefix'] = self.get_host_prefix(environ)
+                kwargs['proxy_magic'] = environ.get('wsgiprox.proxy_host', '')
+                return kwargs
 
-            return handle_error(ue.status_code, kwargs['type'], ue.url, ue.msg)
+            status_code = 500
+            if hasattr(e, 'status_code'):
+                status_code = e.status_code
+
+            return handle_error(status_code, request.environ)
 
     def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
         rec_title = rec
@@ -555,7 +554,7 @@ class ContentController(BaseController, RewriterApp):
         #handle cbrowsers
         browser_id = wb_url.mod.split(':', 1)[1]
 
-        kwargs['can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
+        kwargs['browser_can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
 
         # container redis info
         inject_data = self.manager.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)

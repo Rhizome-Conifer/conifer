@@ -76,7 +76,7 @@ class BrowserManager(object):
                           'url': wb_url.url,
                           'type': kwargs['type'],
                           'browser': browser_id,
-                          'can_write': kwargs['can_write']
+                          'browser_can_write': kwargs['browser_can_write']
                          }
 
         try:
@@ -120,8 +120,8 @@ class BrowserManager(object):
         if not container_data:
             return
 
-        if not container_data.get('can_write'):
-            print('Not a writtable browser')
+        if not container_data.get('browser_can_write'):
+            print('Not a writable browser')
             return
 
         container_data['rec'] = rec
