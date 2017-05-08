@@ -76,7 +76,8 @@ class BrowserManager(object):
                           'url': wb_url.url,
                           'type': kwargs['type'],
                           'browser': browser_id,
-                          'browser_can_write': kwargs['browser_can_write']
+                          'browser_can_write': kwargs['browser_can_write'],
+                          'remote_ip': kwargs.get('remote_ip', ''),
                          }
 
         try:

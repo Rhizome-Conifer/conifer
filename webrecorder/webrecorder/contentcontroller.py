@@ -188,15 +188,22 @@ class ContentController(BaseController, RewriterApp):
         if not info:
             return {'error_message': 'conn not from valid containerized browser'}
 
-        url = self.add_query(url)
-
-        kwargs = info
-        kwargs['url'] = url
-        wb_url = 'px_/' + url
-
-        request.environ['webrec.template_params'] = kwargs
-
         try:
+            kwargs = info
+
+            url = self.add_query(url)
+
+            kwargs['url'] = url
+            wb_url = 'px_/' + url
+
+            request.environ['webrec.template_params'] = kwargs
+
+            remote_ip = info.get('remote_ip')
+
+            if remote_ip and info['type'] in ('record', 'patch'):
+                if self.manager.is_rate_limited(info['user'], remote_ip):
+                    raise HTTPError(402, 'Rate Limit')
+
             resp = self.render_content(wb_url, kwargs, request.environ)
 
             resp = HTTPResponse(body=resp.body,
@@ -207,9 +214,11 @@ class ContentController(BaseController, RewriterApp):
 
         except Exception as e:
             @self.jinja2_view('proxy_error.html')
-            def handle_error(status_code, environ):
+            def handle_error(status_code, err_body, environ):
                 response.status = status_code
                 kwargs['url'] = url
+                kwargs['status_code'] = status_code
+                kwargs['err_body'] = err_body
                 kwargs['host_prefix'] = self.get_host_prefix(environ)
                 kwargs['proxy_magic'] = environ.get('wsgiprox.proxy_host', '')
                 return kwargs
@@ -218,7 +227,14 @@ class ContentController(BaseController, RewriterApp):
             if hasattr(e, 'status_code'):
                 status_code = e.status_code
 
-            return handle_error(status_code, request.environ)
+            if hasattr(e, 'body'):
+                err_body = e.body
+            elif hasattr(e, 'msg'):
+                err_body = e.msg
+            else:
+                err_body = ''
+
+            return handle_error(status_code, err_body, request.environ)
 
     def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
         rec_title = rec
@@ -310,8 +326,7 @@ class ContentController(BaseController, RewriterApp):
                 if self.manager.is_out_of_space(user):
                     raise HTTPError(402, 'Out of Space')
 
-                remote_ip = request.environ.get('HTTP_X_REAL_IP')
-                remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
+                remote_ip = self._get_remote_ip()
 
                 if self.manager.is_rate_limited(user, remote_ip):
                     raise HTTPError(402, 'Rate Limit')
@@ -455,6 +470,11 @@ class ContentController(BaseController, RewriterApp):
 
         self.cookie_tracker.add_cookie(key, domain, name, value)
 
+    def _get_remote_ip(self):
+        remote_ip = request.environ.get('HTTP_X_REAL_IP')
+        remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
+        return remote_ip
+
     ## RewriterApp overrides
     def get_upstream_url(self, wb_url, kwargs, params):
         upstream_url = kwargs.get('upstream_url')
@@ -555,6 +575,8 @@ class ContentController(BaseController, RewriterApp):
         browser_id = wb_url.mod.split(':', 1)[1]
 
         kwargs['browser_can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
+
+        kwargs['remote_ip'] = self._get_remote_ip()
 
         # container redis info
         inject_data = self.manager.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)

@@ -15,8 +15,14 @@ wbinfo.curr_browser = "{{ browser }}";
 {% endassets %}
 
 <body>
-<h2>Proxy Error</h2>
+<h2>Webrecorder Proxy Error</h2>
+{% if not err_body or status_code == 404 %}
 <p>Sorry, the url <b>{{ url }}</b> could not be loaded</p>
+{% elif status_code == 402 and err_body == 'Rate Limit' %}
+<p>Sorry, you have exceeded the rate limit for anonymous recording.</p><p>Please Sign Up and Login to continue recording.</p>
+{% elif err_body %}
+{{ err_body }}
+{% endif %}
 
 {% if browser_can_write == '2' %}
 
