@@ -16,9 +16,11 @@ services:
 
         volumes:
             - ./webrecorder/:/code/
+            - ./ca:/code/ca
 
-#        ports:
-#            - 8080:8080
+        networks:
+            - default
+            - browsers
 
     recorder:
         build: ./webrecorder
@@ -79,14 +81,17 @@ services:
         environment:
             - SCREEN_WIDTH=1280
             - SCREEN_HEIGHT=800
-            - PROXY_HOST=proxy
-            - PROXY_PORT=8080
+
+            - PROXY_HOST=app
+            - PROXY_PORT=8088
+            - PROXY_GET_CA=http://wsgiprox/download/pem
 
             - CLUSTER_NAME=wr_users
             - NETWORK_NAME=webrecorder_browsers
 
             - CONTAINER_EXPIRE_SECS=1200
             - IDLE_TIMEOUT=120
+
 
         depends_on:
             - redis
@@ -96,23 +101,6 @@ services:
 
         #ports:
         #    - "9020:9020"
-
-    proxy:
-        build: ./proxy
-
-        env_file:
-            - ./wr.env
-
-        depends_on:
-            - redis
-
-        volumes:
-            - ./proxy/certs:/certs
-            - ./webrecorder/webrecorder/static:/static
-
-        networks:
-            - default
-            - browsers
 
     redis:
         build: ./redis

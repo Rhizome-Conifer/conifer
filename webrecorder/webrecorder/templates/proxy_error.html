@@ -1,0 +1,43 @@
+<html>
+<head>
+<script>
+wbinfo = {}
+wbinfo.url = "{{ url }}";
+wbinfo.proxy_magic = "{{ proxy_magic }}";
+wbinfo.proxy_user = "{{ user }}";
+wbinfo.proxy_coll = "{{ coll }}";
+wbinfo.proxy_rec = "{{ rec }}";
+wbinfo.proxy_mode = "{{ type }}";
+wbinfo.curr_browser = "{{ browser }}";
+</script>
+{% assets "proxy-js" %}
+<script type="text/javascript" src="{{ host_prefix }}{{ ASSET_URL }}"></script>
+{% endassets %}
+
+<body>
+<h2>Webrecorder Proxy Error</h2>
+{% if not err_body or status_code == 404 %}
+<p>Sorry, the url <b>{{ url }}</b> could not be loaded</p>
+{% elif status_code == 402 and err_body == 'Rate Limit' %}
+<p>Sorry, you have exceeded the rate limit for anonymous recording.</p><p>Please Sign Up and Login to continue recording.</p>
+{% elif err_body %}
+{{ err_body }}
+{% endif %}
+
+{% if browser_can_write == '2' %}
+
+<script>
+function doPatch() {
+    window.dispatchEvent(new CustomEvent("__wb_from_event", {detail: {"wb_type": "patch_req"} }));
+    return false;
+}
+</script>
+
+<a href="#" onclick="doPatch()">Record this page now?</a>
+
+{% endif %}
+
+</body>
+</html>
+
+
