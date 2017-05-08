@@ -121,7 +121,9 @@ class AppController(BaseController):
                                            self.session_redis,
                                            config)
 
-        final_app = WSGIProxMiddleware(final_app, '/_proxy/', proxy_host='webrecorder.io')
+        final_app = WSGIProxMiddleware(final_app, '/_proxy/',
+                                       proxy_host='webrecorder.io',
+                                       proxy_options={'ca_root_dir': 'proxy-certs'})
 
         super(AppController, self).__init__(final_app, jinja_env, manager, config)
 
