@@ -1404,7 +1404,7 @@ div.paging-container:hover .home-link {
     position: absolute;
     opacity: 0;
 }
-.wr-mode-message:hover span + span, .wr-mode-message:active span + span {
+.wr-mode-message:hover > span + span, .wr-mode-message:active > span + span {
     opacity: 0;
     -webkit-transform: scale(0.9, 0.9);
     transform: scale(0.9, 0.9);
