@@ -28,6 +28,7 @@ footer {
     display: block;
 }
 .rhizome-logo {
+    width: 118px; 
     padding-top: 5px;
 }
 .project-info a {
@@ -36,12 +37,23 @@ footer {
 .project-info a svg {
     width: 16px;
     height: 16px;
-    vertical-align: text-top;
+    vertical-align: middle;
 }
 .project-info a svg.tw {
-    width: 18px;
-    height: 18px;
+    width: 26px;
+    height: 26px;
 }
+.project-info a svg.gh {
+    width: 26px;
+    height: 26px;
+}
+.project-info a svg.contact {
+  margin-right: 5px;
+}
+.project-info a:hover svg.contact path{
+    fill: #23527c;
+}
+
 .project-info a:hover svg path {
     fill: #337ab7;
 }
