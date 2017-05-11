@@ -28,6 +28,7 @@ footer {
     display: block;
 }
 .rhizome-logo {
+    width: 118px; 
     padding-top: 5px;
 }
 .project-info a {
