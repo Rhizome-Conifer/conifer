@@ -53,7 +53,7 @@ url_templates:
     # core replay funcs
     live: '{live_host}/live/resource/postreq?'
 
-    record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
+    record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}'
     patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.replay.rec=*'
     snapshot: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=resource'
 
@@ -153,6 +153,8 @@ mount_key_templ: 'r:{user}:{coll}:{rec}:cdxj_m'
 
 user_usage_key: 'h:user-usage'
 temp_usage_key: 'h:temp-usage'
+
+rate_limit_key: 'ipr:{ip}:{H}'
 
 cookie_key_templ: 'r:{user}:{coll}:{rec}:{id}:cookie:'
 

@@ -10,6 +10,7 @@ from pywb.urlrewrite.cookies import CookieTracker
 from pywb.rewrite.wburl import WbUrl
 
 from webrecorder.basecontroller import BaseController
+from six.moves.urllib.parse import quote, quote_plus
 
 
 # ============================================================================
@@ -112,6 +113,11 @@ class ContentController(BaseController, RewriterApp):
 
             return {'success': domain}
 
+        # PROXY
+        @self.app.route('/_proxy/<url:path>', method='ANY')
+        def do_proxy(url):
+            return self.do_proxy(url)
+
         # LIVE DEBUG
         @self.app.route('/live/<wb_url:path>', method='ANY')
         def live(wb_url):
@@ -176,6 +182,59 @@ class ContentController(BaseController, RewriterApp):
             sesh = self.get_session()
             sesh.delete()
             return self.redir_host(None, request.query.getunicode('path', '/'))
+
+    def do_proxy(self, url):
+        info = self.manager.browser_mgr.init_cont_browser_sesh()
+        if not info:
+            return {'error_message': 'conn not from valid containerized browser'}
+
+        try:
+            kwargs = info
+
+            url = self.add_query(url)
+
+            kwargs['url'] = url
+            wb_url = 'px_/' + url
+
+            request.environ['webrec.template_params'] = kwargs
+
+            remote_ip = info.get('remote_ip')
+
+            if remote_ip and info['type'] in ('record', 'patch'):
+                if self.manager.is_rate_limited(info['user'], remote_ip):
+                    raise HTTPError(402, 'Rate Limit')
+
+            resp = self.render_content(wb_url, kwargs, request.environ)
+
+            resp = HTTPResponse(body=resp.body,
+                                status=resp.status_headers.statusline,
+                                headers=resp.status_headers.headers)
+
+            return resp
+
+        except Exception as e:
+            @self.jinja2_view('proxy_error.html')
+            def handle_error(status_code, err_body, environ):
+                response.status = status_code
+                kwargs['url'] = url
+                kwargs['status_code'] = status_code
+                kwargs['err_body'] = err_body
+                kwargs['host_prefix'] = self.get_host_prefix(environ)
+                kwargs['proxy_magic'] = environ.get('wsgiprox.proxy_host', '')
+                return kwargs
+
+            status_code = 500
+            if hasattr(e, 'status_code'):
+                status_code = e.status_code
+
+            if hasattr(e, 'body'):
+                err_body = e.body
+            elif hasattr(e, 'msg'):
+                err_body = e.msg
+            else:
+                err_body = ''
+
+            return handle_error(status_code, err_body, request.environ)
 
     def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
         rec_title = rec
@@ -255,6 +314,8 @@ class ContentController(BaseController, RewriterApp):
         if sesh.is_new() and self.is_content_request():
             self.redir_set_session()
 
+        remote_ip = None
+
         if type in ('record', 'patch', 'replay'):
             if not self.manager.has_recording(user, coll, rec):
                 not_found = True
@@ -264,6 +325,11 @@ class ContentController(BaseController, RewriterApp):
 
                 if self.manager.is_out_of_space(user):
                     raise HTTPError(402, 'Out of Space')
+
+                remote_ip = self._get_remote_ip()
+
+                if self.manager.is_rate_limited(user, remote_ip):
+                    raise HTTPError(402, 'Rate Limit')
 
         if ((not_found or type == 'replay-coll') and
             (not (self.manager.is_anon(user) and coll == 'temp')) and
@@ -288,11 +354,11 @@ class ContentController(BaseController, RewriterApp):
             if type == 'replay':
                 raise HTTPError(404, 'No Such Recording')
 
-        return self.handle_load_content(wb_url, user, coll, rec, type, is_embed,
-                                        is_display)
+        return self.handle_load_content(wb_url, user, coll, rec, type, remote_ip,
+                                        is_embed, is_display)
 
-    def handle_load_content(self, wb_url, user, coll, rec, type, is_embed=False,
-                            is_display=False):
+    def handle_load_content(self, wb_url, user, coll, rec, type, remote_ip,
+                            is_embed=False, is_display=False):
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'])
 
         wb_url = self._context_massage(wb_url)
@@ -303,6 +369,7 @@ class ContentController(BaseController, RewriterApp):
                       coll=quote(coll),
                       rec=quote(rec, safe='/*'),
                       type=type,
+                      ip=remote_ip,
                       is_embed=is_embed,
                       is_display=is_display)
 
@@ -403,7 +470,20 @@ class ContentController(BaseController, RewriterApp):
 
         self.cookie_tracker.add_cookie(key, domain, name, value)
 
+    def _get_remote_ip(self):
+        remote_ip = request.environ.get('HTTP_X_REAL_IP')
+        remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
+        return remote_ip
+
     ## RewriterApp overrides
+    def get_upstream_url(self, wb_url, kwargs, params):
+        upstream_url = kwargs.get('upstream_url')
+        if not upstream_url:
+            return super(ContentController, self).get_upstream_url(wb_url, kwargs, params)
+
+        upstream_url = upstream_url.format(url=quote_plus(kwargs['url']), postreq='/postreq')
+        return upstream_url
+
     def get_base_url(self, wb_url, kwargs):
         type = kwargs['type']
 
@@ -494,7 +574,9 @@ class ContentController(BaseController, RewriterApp):
         #handle cbrowsers
         browser_id = wb_url.mod.split(':', 1)[1]
 
-        kwargs['can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
+        kwargs['browser_can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
+
+        kwargs['remote_ip'] = self._get_remote_ip()
 
         # container redis info
         inject_data = self.manager.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)

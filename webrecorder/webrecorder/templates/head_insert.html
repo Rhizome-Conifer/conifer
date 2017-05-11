@@ -15,11 +15,21 @@
 </script>
 
 {% if rule.js_rewrite_location != 'urls' and include_wombat %}
-{# <script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wombat.js'> </script> #}
+
+
+{% if not wbrequest.env.pywb_proxy_magic %}
 
 {% assets "pywb-js" %}
 <script type="text/javascript" src="{{ ASSET_URL }}"></script>
 {% endassets %}
+
+{% else %}
+
+{% assets "proxy-js" %}
+<script type="text/javascript" src="{{ wbrequest.host_prefix }}{{ ASSET_URL }}"></script>
+{% endassets %}
+
+{% endif %}
 
 <script>
 {% set urlsplit = cdx.url | urlsplit %}
@@ -39,26 +49,36 @@
 </script>
 {% endif %}
 
-{#
-<script src='{{ wbrequest.host_prefix }}/{{ static_path }}/wb.js'> </script>
-<script src='{{ wbrequest.host_prefix }}/{{ static_path }}/vidrw.js'> </script>
-#}
 
-{% include banner_html ignore missing %}
+<script>
+wbinfo.state = "{{ curr_mode }}";
+wbinfo.metadata = {{ cdx.metadata | default('{}') }};
+_wb_js.create_banner_element = function() {};
+</script>
+
+<!-- Set canonical url -->
+<link rel="canonical" href="{{ cdx.url }}"/>
+
+{% if not wbrequest.env.pywb_proxy_magic %}
 
 <!-- load banner -->
 <script> if (_wb_js) { _wb_js.load(); }</script>
 
-{#
-<!-- workaround for chrome iframe scrolling issue -->
-{% if wbrequest.options.is_framed %}
-<style type="text/css">
- * {
-   -webkit-transform: none !important;
- }
-</style>
+{% else %}
+
+<script>
+wbinfo.proxy_user = "{{ user }}";
+wbinfo.proxy_coll = "{{ coll }}";
+wbinfo.proxy_rec = "{{ rec }}";
+wbinfo.proxy_mode = "{{ type }}";
+wbinfo.curr_browser = "{{ browser }}";
+
+// for vi_ queries from vidrw
+wbinfo.coll = "$video";
+</script>
+
+
 {% endif %}
-#}
 
 <!-- End WB Insert -->
 

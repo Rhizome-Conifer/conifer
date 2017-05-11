@@ -37,6 +37,8 @@
       <div class="panel-body">
         {% if err.status_code == 404 %}
         No such page or content is not accessible.
+        {% elif err.status_code == 402 and err.body == 'Rate Limit' %}
+        <p>Sorry, you have exceeded the rate limit for anonymous recording.</p><p>Please <a href="/_register" target="_parent" ><strong>Sign Up</strong></a> or <a href="/_login_modal" class="login-link">Login</a> to continue recording.</p>
         {% else %}
         {{ err.body }}
         {% endif %}

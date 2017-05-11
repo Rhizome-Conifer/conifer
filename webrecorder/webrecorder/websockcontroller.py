@@ -61,10 +61,6 @@ class WebsockController(BaseController):
                        user, coll, rec,
                        updater=updater).run()
 
-
-
-        return self.run_ws(user, coll, rec, local_store, updater)
-
     def client_ws_cont(self):
         info = self.manager.browser_mgr.init_cont_browser_sesh()
         if not info:
@@ -80,10 +76,15 @@ class WebsockController(BaseController):
 
         type_ = info['type']
 
-        WebSockHandler('from', reqid, self.manager,
-                       'from_cbr_ps:', 'to_cbr_ps:',
-                       user, coll, rec, type=type_,
-                       browser=browser).run()
+        if 'wsgi.websocket' in request.environ:
+            cls = GeventWebSockHandler
+        else:
+            cls = WebSockHandler
+
+        cls('from', reqid, self.manager,
+            'from_cbr_ps:', 'to_cbr_ps:',
+            user, coll, rec, type=type_,
+            browser=browser).run()
 
 
 # ============================================================================
@@ -236,7 +237,7 @@ class GeventWebSockHandler(BaseWebSockHandler):
         gevent.spawn(self._do_recv)
 
     def _do_recv(self):
-        while True:
+        while not self._ws.closed:
             try:
                 result = self._ws.receive()
             except Exception as e:
@@ -246,9 +247,12 @@ class GeventWebSockHandler(BaseWebSockHandler):
                 self.q.put(result.encode('utf-8'))
 
     def _recv_ws(self):
+        if self._ws.closed:
+            raise OSError('WS Closed')
+
         try:
             return self.q.get_nowait()
-        except:
+        except gevent.queue.Empty as e:
             return None
 
     def _send_ws(self, msg):

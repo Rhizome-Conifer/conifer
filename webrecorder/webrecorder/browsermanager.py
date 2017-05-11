@@ -25,15 +25,6 @@ class BrowserManager(object):
 
         self.inactive_time = os.environ.get('INACTIVE_TIME', 60)
 
-    def _get_proxy_ip(self):
-        ip = None
-        try:
-            ip = socket.gethostbyname(self.proxy_host)
-        except:
-            pass
-
-        return ip
-
     def load_all_browsers(self):
         try:
             r = requests.get(self.browser_list_url)
@@ -52,21 +43,16 @@ class BrowserManager(object):
 
     def init_cont_browser_sesh(self):
         remote_addr = request.environ['REMOTE_ADDR']
-        if remote_addr != self._get_proxy_ip():
-            print('Cont. Browser Request Not From Proxy, Rejecting')
-            return
 
-        source_addr = request.environ.get('HTTP_X_PROXY_FOR')
-
-        container_data = self.browser_redis.hgetall('ip:' + source_addr)
+        container_data = self.browser_redis.hgetall('ip:' + remote_addr)
 
         if not container_data or 'user' not in container_data:
-            print('Data not found for remote ' + source_addr)
+            print('Data not found for remote ' + remote_addr)
             return
 
         sesh = request.environ['webrec.session']
         sesh.set_restricted_user(container_data['user'])
-        container_data['ip'] = source_addr
+        container_data['ip'] = remote_addr
         return container_data
 
     def fill_upstream_url(self, kwargs, timestamp):
@@ -90,7 +76,8 @@ class BrowserManager(object):
                           'url': wb_url.url,
                           'type': kwargs['type'],
                           'browser': browser_id,
-                          'can_write': kwargs['can_write']
+                          'browser_can_write': kwargs['browser_can_write'],
+                          'remote_ip': kwargs.get('remote_ip', ''),
                          }
 
         try:
@@ -134,8 +121,8 @@ class BrowserManager(object):
         if not container_data:
             return
 
-        if not container_data.get('can_write'):
-            print('Not a writtable browser')
+        if not container_data.get('browser_can_write'):
+            print('Not a writable browser')
             return
 
         container_data['rec'] = rec

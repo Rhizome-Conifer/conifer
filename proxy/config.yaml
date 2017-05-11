@@ -1,8 +1,0 @@
-cadir: /certs
-
-listen_port: 8080
-
-websocket: true
-no_upstream_cert: true
-http2: false
-

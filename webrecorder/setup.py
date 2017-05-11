@@ -54,8 +54,8 @@ class PyTest(TestCommand):
         import pytest
         import sys
         import os
-        cmdline = ' --cov-config .coveragerc --cov ./webrecorder/ -vv ./test/'
-        errcode = pytest.main(cmdline)
+        cmdline = '--cov-config .coveragerc --cov ./webrecorder/ -vv ./test/'
+        errcode = pytest.main(cmdline.split(' '))
         sys.exit(errcode)
 
 

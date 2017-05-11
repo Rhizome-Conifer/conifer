@@ -33,12 +33,12 @@ from webrecorder.browsermanager import BrowserManager
 
 from webrecorder.webreccork import WebRecCork
 
-from webrecorder.cookieguard import CookieGuard
-
 from webrecorder.redisman import RedisDataManager
 from webrecorder.session import Session, RedisSessionMiddleware
 
 from webrecorder.basecontroller import BaseController
+
+from wsgiprox.wsgiprox import WSGIProxMiddleware
 
 
 # ============================================================================
@@ -120,6 +120,10 @@ class AppController(BaseController):
                                            self.cork,
                                            self.session_redis,
                                            config)
+
+        final_app = WSGIProxMiddleware(final_app, '/_proxy/',
+                                       proxy_host='webrecorder.io',
+                                       proxy_options={'ca_root_dir': 'proxy-certs'})
 
         super(AppController, self).__init__(final_app, jinja_env, manager, config)
 

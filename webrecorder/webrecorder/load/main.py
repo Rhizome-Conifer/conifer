@@ -4,7 +4,7 @@ from pywb.webagg.handlers import DefaultResourceHandler, HandlerSeq, ResourceHan
 from pywb.webagg.responseloader import LiveWebLoader
 from pywb.webagg.app import ResAggApp
 from pywb.webagg.indexsource import LiveIndexSource, RedisIndexSource
-from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource, WAYBACK_ORIG_SUFFIX
+from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource
 from pywb.webagg.aggregator import SimpleAggregator, BaseRedisMultiKeyIndexSource, GeventMixin
 from pywb.webagg.autoapp import init_index_source
 
@@ -84,7 +84,7 @@ class AitFilterIndexSource(RemoteIndexSource):
     def __init__(self, ait_coll, ait_host=None):
         ait_host = ait_host or self.DEFAULT_AIT_ROOT
         api_url = ait_host + self.DEFAULT_AIT_QUERY % ait_coll
-        replay_url = ait_host + '{ait_coll}/' + WAYBACK_ORIG_SUFFIX
+        replay_url = ait_host + '{ait_coll}/' + self.WAYBACK_ORIG_SUFFIX
         self.ait_coll = ait_coll
         super(AitFilterIndexSource, self).__init__(api_url, replay_url)
 
@@ -128,6 +128,7 @@ class ProxyMementoIndexSource(MementoIndexSource):
     def __init__(self, timegate_url, timemap_url, replay_url):
         timegate_url = PROXY_PREFIX + timegate_url
         timemap_url = PROXY_PREFIX + timemap_url
+        replay_url = PROXY_PREFIX + replay_url
         super(ProxyMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
 
 

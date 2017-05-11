@@ -9,6 +9,7 @@ from webrecorder.redisman import init_manager_for_cli
 from webrecorder.admin import create_user
 
 from gevent.threadpool import ThreadPool
+import redis
 
 
 # ============================================================================
@@ -55,6 +56,17 @@ class WebrecPlayerRunner(StandaloneRunner):
         files = list(self.get_archive_files(self.inputs))
 
         uploader.multifile_upload('local', files)
+
+        local_info=dict(user='local',
+                        coll='collection',
+                        rec='*',
+                        type='replay-coll',
+                        browser='')
+
+        #manager.browser_mgr.fill_upstream_url(local_info, None)
+
+        browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
+        browser_redis.hmset('ip:127.0.0.1', local_info)
 
     def init_env(self):
         super(WebrecPlayerRunner, self).init_env()

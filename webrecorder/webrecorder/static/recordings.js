@@ -1094,6 +1094,7 @@ var RecordingSizeWidget = (function() {
                         EventHandlers.switchCBPatch(getUrl());
                     }
                 }
+                break;
 
             case "snapshot":
                 Snapshot.updateModal(msg);
