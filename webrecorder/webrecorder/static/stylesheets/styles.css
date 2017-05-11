@@ -1385,7 +1385,6 @@ div.paging-container:hover .home-link {
     height: 0px !important;
 }
 
-
 .wr-controls > div{
     margin-top: 12px;
     margin-bottom: 12px;
@@ -1414,8 +1413,15 @@ div.paging-container:hover .home-link {
     font-size: 2em;
 }
 .wr-modes svg {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
+}
+.wr-mode-selector {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
 }
 .wr-mode-selector ul {
     margin: 0;
@@ -1455,13 +1461,43 @@ div.paging-container:hover .home-link {
     vertical-align: middle;
 }
 
-.wr-mode-selector .dropdown-toggle .glyphicon {
-    vertical-align: baseline;
+.wr-mode-message {
+    display: -ms-flexbox;
+    display: flex;
+
+    justify-content: center;
+    -ms-flex-pack: center;
 }
-.wr-mode-selector .dropdown-toggle svg {
-    width: 16px;
-    height: 16px;
+.wr-mode-message > span {
+    transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+    transition-delay: .045s;
+}
+.wr-mode-message > span:first-of-type {
+    position: absolute;
+    opacity: 0;
+}
+.wr-mode-message:hover > span + span, .wr-mode-message:active > span + span {
+    opacity: 0;
+    -webkit-transform: scale(0.9, 0.9);
+    transform: scale(0.9, 0.9);
+}
+.wr-mode-message:hover > span:first-of-type, .wr-mode-message:active > span:first-of-type {
+    opacity: 1;
+}
+
+.wr-mode-selector .wr-mode-message .glyphicon {
+    vertical-align: text-top;
+}
+.wr-mode-selector .wr-mode-message .glyphicon-stop {
+    font-size:13px;
+}
+.wr-mode-selector .dropdown-toggle .glyphicon {
     vertical-align: middle;
+}
+.wr-mode-selector .wr-mode-message svg {
+    width: 14px;
+    height: 14px;
+    vertical-align: text-top;
 }
 #page-display {
     width: auto;

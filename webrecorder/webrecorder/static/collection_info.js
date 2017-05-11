@@ -272,7 +272,7 @@ var RecordingSelector = (function() {
     var start = function() {
         $('div[data-recording-id]').on('click', toggleRecordingSelection);
 
-        $("#clear-all").on('click', clearFilters);
+        $(".container").on("click", ".clear-all-btn", clearFilters);
 
         $('#move-modal').on('show.bs.modal', showMoveModal);
 
@@ -350,7 +350,7 @@ var BookmarksTable = (function() {
                     infoEmpty: "Showing 0 to 0 of 0 bookmarks",
                     infoFiltered: "(filtered from _MAX_ total bookmarks)",
                     lengthMenu: "Show _MENU_ bookmarks",
-                    zeroRecords: "No matching bookmarks found"
+                    zeroRecords: "No bookmarks found in selection. <a href='#' class='clear-all-btn'>View Entire Collection.</a>"
 
                 },
                 dom: '<"table-bookmarks-top">tr<"table-bookmarks-bottom"pl><"clear">'

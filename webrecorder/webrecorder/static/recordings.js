@@ -120,22 +120,13 @@ var EventHandlers = (function() {
         // - Return to collection if recording or replay
         // - Return to replay if patching
         // - Start recording if on new recording page
-        $('header').on('submit', '.content-action', function(event) {
+        $('header').on('submit click', '.content-action', function(event) {
             event.preventDefault();
 
-            if (window.curr_mode == "record" || window.curr_mode == "replay") {
+            if (window.curr_mode == "record" || window.curr_mode == "replay" || window.curr_mode == "patch") {
                 RouteTo.recordingInfo(user, coll, rec);
             } else if (window.curr_mode == "replay-coll") {
                 RouteTo.collectionInfo(user, coll);
-            } else if (window.curr_mode == "patch") {
-                var url = getUrl();
-
-                if (window.cnt_browser) {
-                    switchCBReplay(url);
-                    return;
-                }
-
-                RouteTo.replayRecording(user, coll, cbrowserMod(), url);
             } else if (window.curr_mode == "new") {
                 // New handled in newrecordings.js
             }
