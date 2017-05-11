@@ -215,10 +215,69 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
  * FAQ
  *
  */
+
+
+.faq .heading {
+    display: flex;
+    display: -ms-flex;
+    align-items: center;
+    -ms-flex-align: center;
+    margin: 50px 0;
+}
+
+.faq .heading aside {
+    text-align: right;
+}
+
+.faq .heading img {
+    width: 100%;
+    max-width: 156px;
+    display: inline-block;
+}
+
+.faq aside {
+    padding-right: 7%;
+}
+
+.faq aside img {
+    width: 75%;
+}
+
+.faq h2 {
+    font-weight: 300;
+    margin: 0;
+    line-height: 1.25;
+}
+
+.faq .credit {
+    color: #CCC;
+    text-align: right;
+    margin-bottom: 25px;
+    font-size: 12px;
+}
+
+.faq .credit > span {
+    display: inline-block;
+    padding: 10px 0;
+}
+
+.faq aside a:link, .faq aside a:visited {
+    color: #CCC;
+    text-decoration: underline;
+}
+.faq aside a:hover {
+    color: #337ab7;
+}
+
+.faq h4:not(:first-of-type) {
+    margin-top: 25px;
+}
+
 .a {
     position: relative;
     padding-left: 10px;
 }
+
 .a:before {
     content: '';
     border: solid 1px;
@@ -229,14 +288,27 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
     top: 4px;
     left: 0;
 }
+
 .support-logos {
     margin: 56px 0;
 }
+
 .support-logos > a {
     margin-right: 56px;
 }
+
 .support-logos > a img {
     width: 200px;
+}
+
+@media (max-width: 544px) {
+    .faq .heading {
+        margin: 25px 0;
+    }
+
+    .faq h2 {
+        font-size: 20px;
+    }
 }
 /* end faq */
 
