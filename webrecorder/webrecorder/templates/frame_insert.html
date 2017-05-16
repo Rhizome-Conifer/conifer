@@ -80,7 +80,7 @@
 {% include 'header.html' %}
 {% endif %}
 
-<iframe id="replay_iframe" src="{{ iframe_url }}" onload="" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
+<iframe id="replay_iframe" src="{{ iframe_url }}" onload="iframeLoadEvent()" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
 
 {% if not is_embed %}
 {% include 'links.html' %}
