@@ -61,7 +61,8 @@ class WebrecPlayerRunner(StandaloneRunner):
                         coll='collection',
                         rec='*',
                         type='replay-coll',
-                        browser='')
+                        browser='',
+                        reqid='@INIT')
 
         #manager.browser_mgr.fill_upstream_url(local_info, None)
 
