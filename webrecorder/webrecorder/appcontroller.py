@@ -123,9 +123,18 @@ class AppController(BaseController):
 
         final_app = WSGIProxMiddleware(final_app, '/_proxy/',
                                        proxy_host='webrecorder.proxy',
-                                       proxy_options={'ca_root_dir': 'proxy-certs'})
+                                       proxy_options=self._get_proxy_options())
 
         super(AppController, self).__init__(final_app, jinja_env, manager, config)
+
+    def _get_proxy_options(self):
+        opts = {'ca_name': 'Webrecorder HTTPS Proxy CA'}
+        if getattr(sys, 'frozen', False):
+            opts['ca_file_cache'] = {}
+        else:
+            opts['ca_file_cache'] = './proxy-certs/webrecorder-ca.pem'
+
+        return opts
 
     def init_jinja_env(self, config):
         assets_path = os.path.expandvars(config['assets_path'])
