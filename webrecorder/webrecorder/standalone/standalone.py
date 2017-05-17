@@ -1,8 +1,7 @@
 from webrecorder.fullstackrunner import FullStackRunner
 
 from webrecorder.admin import main as admin_main
-from webrecorder.standalone.assetsutils import patch_bundle
-
+from webrecorder.standalone.versionbuild import get_full_version
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 
@@ -45,6 +44,7 @@ class StandaloneRunner(FullStackRunner):
 
         self.admin_init()
 
+        from webrecorder.standalone.assetsutils import patch_bundle
         patch_bundle()
 
         super(StandaloneRunner, self).__init__(app_port=app_port,
@@ -86,26 +86,6 @@ class StandaloneRunner(FullStackRunner):
             os.environ['WR_TEMPLATE_PKG'] = 'wrtemp'
 
     @classmethod
-    def print_version(cls):
-        full_version = 'unknown'
-        curr_app = sys.argv[0].rsplit(os.path.sep)[-1]
-
-        try:
-            # standalone app, read baked-in _full_version
-            if getattr(sys, 'frozen', False):
-                from pywb.utils.loaders import load
-                full_version = load('pkg://webrecorder/config/_full_version').read()
-                full_version = full_version.decode('utf-8').format(curr_app)
-            else:
-            # generate full_version dynamically
-                from webrecorder.standalone.assetsutils import get_version_str
-                full_version = get_version_str()
-        except:
-            pass
-
-        print(full_version % curr_app)
-
-    @classmethod
     def main(cls, args=None):
         parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
 
@@ -120,15 +100,12 @@ class StandaloneRunner(FullStackRunner):
         parser.add_argument('--debug', action='store_true',
                             help='Enable debug logging')
 
-        parser.add_argument('-v', '--version', action='store_true',
+        parser.add_argument('-v', '--version', action='version',
+                            version=get_full_version(),
                             help='Print version and quit')
 
         cls.add_args(parser)
         r = parser.parse_args(args=args)
-
-        if r.version:
-            cls.print_version()
-            return
 
         main = cls(r)
 

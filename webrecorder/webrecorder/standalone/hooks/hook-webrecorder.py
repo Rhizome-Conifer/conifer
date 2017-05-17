@@ -1,7 +1,8 @@
 from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 import os
 
-from webrecorder.standalone.assetsutils import build, get_version_str
+from webrecorder.standalone.assetsutils import build
+from webrecorder.standalone.versionbuild import get_version_str
 
 def rename(old, new, t):
     return [(n, v.replace(old, new)) for n, v in t]
