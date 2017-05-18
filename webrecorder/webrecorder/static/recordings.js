@@ -17,6 +17,15 @@ $(function() {
     PagingInterface.start();
 });
 
+/*
+ *  Trigger synthetic inner-frame load event for Webrecorder Player
+ */
+function iframeLoadEvent() {
+    if (typeof window.iframeLoad !== "undefined") {
+        iframeLoad();
+    }
+}
+
 function setUrl(url) {
     $("input[name='url']").val(decodeURI(url));
     wbinfo.url = decodeURI(url);
@@ -1420,8 +1429,9 @@ $(function() {
 
     function handleReplayEvent(event) {
         // ignore postMessages from other sources
-        if(event.origin.indexOf(window.contentHost) === -1)
+        if (event.origin.indexOf(window.contentHost) === -1) {
             return;
+        }
 
         var replay_iframe = window.document.getElementById("replay_iframe");
 
