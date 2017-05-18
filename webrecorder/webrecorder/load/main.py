@@ -52,13 +52,17 @@ def make_webagg():
                                                  mounts_only=True)
 
 
-    live_rec  = DefaultResourceHandler(
+    live_rec = DefaultResourceHandler(
                     SimpleAggregator(
-                        {'live': LiveIndexSource(),
-                         'mount': mount_only_source},
+                        {'live': LiveIndexSource()},
                     ), warc_url, cache_proxy_url)
 
-    replay_rec  = DefaultResourceHandler(
+    extract_rec = DefaultResourceHandler(
+                     SimpleAggregator(
+                        {'mount': mount_only_source},
+                    ), warc_url, cache_proxy_url)
+
+    replay_rec = DefaultResourceHandler(
                     SimpleAggregator(
                         {'replay': rec_redis_source}
                     ), warc_url, cache_proxy_url)
@@ -69,6 +73,7 @@ def make_webagg():
                     ), warc_url, cache_proxy_url)
 
     app.add_route('/live', live_rec)
+    app.add_route('/extract', extract_rec)
     app.add_route('/replay', replay_rec)
     app.add_route('/replay-coll', replay_coll)
     app.add_route('/patch', HandlerSeq([replay_coll, live_rec]))
@@ -128,7 +133,8 @@ class ProxyMementoIndexSource(MementoIndexSource):
     def __init__(self, timegate_url, timemap_url, replay_url):
         timegate_url = PROXY_PREFIX + timegate_url
         timemap_url = PROXY_PREFIX + timemap_url
-        replay_url = PROXY_PREFIX + replay_url
+        #replay_url = PROXY_PREFIX + replay_url
+
         super(ProxyMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
 
 

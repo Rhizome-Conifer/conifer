@@ -19,6 +19,8 @@ class ContentController(BaseController, RewriterApp):
 
     WB_URL_RX = re.compile('(([\d*]*)([a-z]+_|[$][a-z0-9:.-]+)?/)?([a-zA-Z]+:)?//.*')
 
+    MODIFY_MODES = ('record', 'patch', 'extract')
+
     def __init__(self, app, jinja_env, config, redis):
         BaseController.__init__(self, app, jinja_env, None, config)
         RewriterApp.__init__(self,
@@ -53,6 +55,10 @@ class ContentController(BaseController, RewriterApp):
         @self.app.route('/$patch/<coll>/<wb_url:path>', method='ANY')
         def redir_new_patch(coll, wb_url):
             return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
+
+        @self.app.route('/$extract/<coll>/<wb_url:path>', method='ANY')
+        def redir_new_patch(coll, wb_url):
+            return self.do_redir_rec_or_patch(coll, 'Extracted Recording', wb_url, 'extract')
 
         # TAGS
         @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
@@ -140,21 +146,27 @@ class ContentController(BaseController, RewriterApp):
                                               is_display=True)
 
 
-        # LOGGED IN ROUTES
+        # CONTENT ROUTES
         @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
-        def logged_in_record(user, coll, rec, wb_url):
+        def do_record(user, coll, rec, wb_url):
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='record')
 
         @self.app.route('/<user>/<coll>/<rec>/patch/<wb_url:path>', method='ANY')
-        def logged_in_patch(user, coll, rec, wb_url):
+        def do_patch(user, coll, rec, wb_url):
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='patch')
 
+        @self.app.route('/<user>/<coll>/<rec>/extract/<wb_url:path>', method='ANY')
+        def do_extract(user, coll, rec, wb_url):
+            request.path_shift(4)
+
+            return self.handle_routing(wb_url, user, coll, rec, type='extract')
+
         @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
-        def logged_in_replay(user, coll, wb_url):
+        def do_replay(user, coll, wb_url):
             return self.do_replay_coll_or_rec(user, coll, wb_url)
 
         @self.app.route('/_snapshot', method='PUT')
@@ -200,7 +212,7 @@ class ContentController(BaseController, RewriterApp):
 
             remote_ip = info.get('remote_ip')
 
-            if remote_ip and info['type'] in ('record', 'patch'):
+            if remote_ip and info['type'] in self.MODIFY_MODES:
                 if self.manager.is_rate_limited(info['user'], remote_ip):
                     raise HTTPError(402, 'Rate Limit')
 
@@ -316,7 +328,7 @@ class ContentController(BaseController, RewriterApp):
 
         remote_ip = None
 
-        if type in ('record', 'patch', 'replay'):
+        if type == 'replay' or type in self.MODIFY_MODES:
             if not self.manager.has_recording(user, coll, rec):
                 not_found = True
 
@@ -345,7 +357,7 @@ class ContentController(BaseController, RewriterApp):
             title = rec
             rec = self.sanitize_title(title)
 
-            if type == 'record' or type == 'patch':
+            if type in self.MODIFY_MODES:
                 if rec == title or not self.manager.has_recording(user, coll, rec):
                     result = self.manager.create_recording(user, coll, rec, title)
 

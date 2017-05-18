@@ -32,7 +32,7 @@ function setUrl(url) {
 
     if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
         PagingInterface.navigationUpdate();
-    } else if(window.curr_mode === 'record' || window.curr_mode === 'patch') {
+    } else if(window.curr_mode === 'record' || window.curr_mode === 'patch' || window.curr_mode == 'extract') {
         ShareWidget.updateUrl({'url': wbinfo.url, 'ts': wbinfo.timestamp});
     }
 }
@@ -121,6 +121,9 @@ var EventHandlers = (function() {
             } else if (window.curr_mode == "patch") {
                 RouteTo.patchPage(user, coll, rec, url);
 
+            } else if (window.curr_mode == "extract") {
+                RouteTo.extractPage(user, coll, rec, url);
+
             } else if (window.curr_mode == "new") {
                 // New handled in newrecordings.js
             }
@@ -132,7 +135,7 @@ var EventHandlers = (function() {
         $('header').on('submit click', '.content-action', function(event) {
             event.preventDefault();
 
-            if (window.curr_mode == "record" || window.curr_mode == "replay" || window.curr_mode == "patch") {
+            if (window.curr_mode == "record" || window.curr_mode == "replay" || window.curr_mode == "patch" || window.curr_mode == "extract") {
                 RouteTo.recordingInfo(user, coll, rec);
             } else if (window.curr_mode == "replay-coll") {
                 RouteTo.collectionInfo(user, coll);
@@ -804,7 +807,7 @@ var RouteTo = (function(){
     }
 
     var newExtract = function(collection, recording, url, ts) {
-        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/", ts) + url);
+        routeTo(host + "/$extract/" + collection + "/" + cbrowserMod("/", ts) + url);
     }
 
     var newPatch = function(collection, url, target, ts) {
@@ -843,6 +846,10 @@ var RouteTo = (function(){
 
     var patchPage = function(user, collection, recording, url, target) {
         recordingInProgress(user, collection, recording, url, "patch", target);
+    }
+
+    var extractPage = function(user, collection, recording, url, target) {
+        recordingInProgress(user, collection, recording, url, "extract", target);
     }
 
     var routeTo = function(url, target) {
@@ -888,7 +895,7 @@ var RecordingSizeWidget = (function() {
 
             initWS();
 
-            if (window.curr_mode == "record" || window.curr_mode == "patch") {
+            if (window.curr_mode == "record" || window.curr_mode == "patch" || window.curr_mode == "extract") {
                 if (isOutOfSpace()) {
                     RouteTo.recordingInfo(user, coll, rec);
                 }
@@ -1516,7 +1523,7 @@ $(function() {
 
         if (state.is_error) {
             setUrl(state.url);
-        } else if (window.curr_mode == "record" || window.curr_mode == "patch") {
+        } else if (window.curr_mode == "record" || window.curr_mode == "patch" || window.curr_mode == "extract") {
             if (lastUrl == state.url) {
                 if (!state.ts && lastTs) {
                     return;
