@@ -9,4 +9,4 @@ werkzeug
 gevent-websocket
 har2warc
 fakeredis
-wsgiprox>=1.2
+wsgiprox==1.4

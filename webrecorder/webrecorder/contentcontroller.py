@@ -476,15 +476,14 @@ class ContentController(BaseController, RewriterApp):
         return remote_ip
 
     ## RewriterApp overrides
-    def get_upstream_url(self, wb_url, kwargs, params):
-        upstream_url = kwargs.get('upstream_url')
-        if not upstream_url:
-            return super(ContentController, self).get_upstream_url(wb_url, kwargs, params)
-
-        upstream_url = upstream_url.format(url=quote_plus(kwargs['url']), postreq='/postreq')
-        return upstream_url
-
     def get_base_url(self, wb_url, kwargs):
+        # for proxy mode, 'upstream_url' already provided
+        # just use that
+        base_url = kwargs.get('upstream_url')
+        if base_url:
+            base_url = base_url.format(**kwargs)
+            return base_url
+
         type = kwargs['type']
 
         base_url = self.paths[type].format(record_host=self.record_host,

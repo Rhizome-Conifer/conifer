@@ -61,7 +61,8 @@ class WebrecPlayerRunner(StandaloneRunner):
                         coll='collection',
                         rec='*',
                         type='replay-coll',
-                        browser='')
+                        browser='',
+                        reqid='@INIT')
 
         #manager.browser_mgr.fill_upstream_url(local_info, None)
 
@@ -88,7 +89,7 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     @classmethod
     def add_args(cls, parser):
-        parser.add_argument('inputs', nargs='*',
+        parser.add_argument('inputs', nargs='+',
                             help='web archive (.warc.gz, .warc, .arc.gz, .arc or .har files)')
 
 
