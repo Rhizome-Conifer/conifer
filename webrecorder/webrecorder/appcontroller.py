@@ -489,4 +489,6 @@ class AppController(BaseController):
         if boto_log:
             boto_log.setLevel(logging.ERROR)
 
-
+        tld_log = logging.getLogger('tldextract')
+        if tld_log:
+            tld_log.setLevel(logging.ERROR)
