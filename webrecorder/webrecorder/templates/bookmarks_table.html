@@ -32,8 +32,7 @@
                 {% set bookmark_id = bookmark.url + ' ' + bookmark.timestamp + ' ' + (browser.id if browser else '-') %}
                 {% set title = bookmark.title if bookmark.title else "No Title" %}
                 {% set timestamp = bookmark.timestamp if bookmark.timestamp else '' %}
-                {% set path = collection_path + timestamp + '/' + bookmark.url %}
-                {% set cb_path = collection_path + timestamp + ('$br:'+browser.id if browser else '') + '/' + bookmark.url %}
+                {% set rb_path = collection_path + timestamp + ('$br:'+browser.id if browser else '') + '/' + bookmark.url %}
                 {% set hidden = "1" if bookmark.hidden == '1' else "0" %}
 
                 {% set editing_id = "bookmark-" + recording.id + "-" + timestamp + "-" + bookmark.url %}
@@ -66,22 +65,20 @@
                         {% endif %}
 
                         <td class="bookmark-title">
-                            <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ path }}">{{ title }}</a></span>
+                            <span class="editable-title" data-editing-id="{{ editing_id }}" class="collapse"><a href="{{ rb_path }}">{{ title }}</a></span>
                         </td>
 
-                        <td class="rec-browser{% if not browser %} empty{% endif %}">
+                        <td class="rec-browser{% if not browser %} empty{% endif %}" {% if browser %}title="{{ browser.name|capitalize }} version {{ browser.version }}"{% endif %}>
                             {% if browser %}
-                                <a href="{{ cb_path }}" title='{{ browser.name|capitalize }} version {{ browser.version }}'>
-                                    <img src='/api/browsers/browsers/{{ browser.id }}/icon'>
-                                    v{{ browser.version }}
-                                </a>
+                                <img src="/api/browsers/browsers/{{ browser.id }}/icon" alt="Recorded with {{ browser.name|capitalize }} version {{ browser.version }}">
+                                v{{ browser.version }}
                             {% else %}
                                 -
                             {% endif %}
                         </td>
                         <td class="timestamp" data-order="{{ timestamp }}" data-time-ts="{{ timestamp }}"></td>
                         <td class="bookmark-url">
-                          <a href="{{ path }}"
+                          <a href="{{ rb_path }}"
                              {% if '?' in bookmark.url %}title="{{ bookmark.url }}"{% endif %}
                              data-value-encoded="{{ bookmark.url|trunc_url }}"
                              data-target-decoded=""></a></td>
