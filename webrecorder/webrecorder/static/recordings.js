@@ -1554,7 +1554,25 @@ $(function() {
             attributes.url = state.url;
             setUrl(state.url);
 
-            var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
+            var msg;
+
+            switch (window.curr_mode) {
+                case "record":
+                    msg = "Recording";
+                    break;
+
+                case "extract":
+                    msg = "Extracting";
+                    break;
+
+                case "patch":
+                    msg = "Patching";
+                    break;
+
+                default:
+                    msg = "";
+            }
+
             setTitle(msg, state.url, state.title);
 
             if (!RecordingSizeWidget.addPage(attributes)) {

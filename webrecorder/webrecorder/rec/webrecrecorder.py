@@ -107,7 +107,7 @@ class WebRecRecorder(object):
         self.writer = writer
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
-                                   accept_colls='(live|mount:)',
+                                   #accept_colls='(live|mount:)',
                                    create_buff_func=self.create_buffer)
 
         self.recorder = recorder_app

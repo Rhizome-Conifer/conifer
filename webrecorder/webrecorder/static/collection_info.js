@@ -131,21 +131,14 @@ var RecordingSelector = (function() {
             $("#sel-info").show();
         }
 
-        var onlyMountCards = true;
         selected.each(function() {
-            if($(this).data('mount') === '') {
-                onlyMountCards = false;
-                size += parseInt($(this).find("[data-size-display]").attr("data-size-display"));
-            }
+            size += parseInt($(this).find("[data-size-display]").attr("data-size-display"));
 
             bookmarks += parseInt($(this).find("[data-bookmark]").attr("data-bookmark"));
         });
 
-        if(onlyMountCards) {
-            $("#all-card").find("[data-size-display]").hide();
-        } else {
-            $("#all-card").find("[data-size-display]").show().attr("data-size-display", size);
-        }
+        $("#all-card").find("[data-size-display]").show().attr("data-size-display", size);
+
         $("#sel-bookmarks").text(bookmarks);
 
         TimesAndSizesFormatter.format();
@@ -581,28 +574,4 @@ var RecordingMove = {
         }
 }
 
-
-
-var MountInfo = (function(){
-    function start() {
-        $('#mount-form').submit(function() {
-            if ($("#mount-type").find(":selected").val() == "ait") {
-                $("#mount-title").val("AIT " + $("#ait-data").val());
-            }
-        });
-
-        function toggle_archive_type() {
-            $("#mount-modal .hide-option").hide();
-            $("#mount-modal .hide-option input").attr("required", false);
-            var value = $("#mount-type").val();
-            $("." + value + "-option").show();
-            $("." + value + "-option input").attr("required", true);
-        }
-
-        $('#mount-modal').on('show.bs.modal', toggle_archive_type);
-
-        $("#mount-type").on('change', toggle_archive_type);
-    }
-    return {start: start};
-})();
 

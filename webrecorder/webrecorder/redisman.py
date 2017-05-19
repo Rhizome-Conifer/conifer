@@ -723,6 +723,8 @@ class RecManagerMixin(object):
         self.cdx_key = config['cdxj_key_templ']
         self.tags_key = config['tags_key']
 
+        self.ra_key = config['remote_archives_key']
+
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
@@ -854,6 +856,13 @@ class RecManagerMixin(object):
         self.assert_can_admin(user, coll)
 
         return self._send_delete('rec', user, coll, rec)
+
+    def add_remote_archive(self, user, coll, rec, archive):
+        ra_key = self.ra_key.format(user=user,
+                                    coll=coll,
+                                    rec=rec)
+
+        self.redis.sadd(ra_key, archive)
 
     def _get_pagedata(self, user, coll, rec, pagedata):
         key = self.page_key.format(user=user, coll=coll, rec=rec)
@@ -1034,7 +1043,6 @@ class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
         self.coll_info_key = config['info_key_templ']['coll']
-        self.mount_key = config['mount_key_templ']
         self.upload_key = config['upload_key_templ']
         self.upload_exp = int(config['upload_status_expire'])
 
@@ -1079,24 +1087,6 @@ class CollManagerMixin(object):
             result['recordings'] = self.get_recordings(user, coll)
 
         return result
-
-    def add_mount(self, user, coll, rec, rec_title,
-                  mount_type, mount_desc, mount_config):
-        rec_info = self.create_recording(user, coll, rec, rec_title)
-        rec = rec_info['id']
-
-        mount_key = self.mount_key.format(user=user, coll=coll, rec=rec)
-
-        rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
-
-        with redis_pipeline(self.redis) as pi:
-            pi.set(mount_key, mount_config)
-
-            pi.hset(rec_key, 'mount_type', mount_type)
-            if mount_desc:
-                pi.hset(rec_key, 'mount_desc', mount_desc)
-
-        return rec_info
 
     def _has_collection_no_access_check(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)

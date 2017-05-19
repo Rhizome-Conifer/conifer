@@ -6,6 +6,7 @@ from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
 from pywb.urlrewrite.rewriterapp import RewriterApp, UpstreamException
 from pywb.urlrewrite.cookies import CookieTracker
+from pywb.utils.loaders import load_yaml_config
 
 from pywb.rewrite.wburl import WbUrl
 
@@ -39,6 +40,25 @@ class ContentController(BaseController, RewriterApp):
         self.replay_host = os.environ.get('WEBAGG_PROXY_HOST')
         if not self.replay_host:
             self.replay_host = self.live_host
+
+        self.archives = self.load_remote_archives()
+
+    def load_remote_archives(self):
+        archive_config = load_yaml_config('pkg://webrecorder/config/archives.yaml')
+        archive_config = archive_config.get('archives')
+
+        archives = {}
+
+        for name, archive in archive_config.items():
+            try:
+                archive['replay_prefix'] = archive['replay_url'].split('{', 1)[0]
+                # drop scheme
+                archive['replay_prefix'] = archive['replay_prefix'].split('//', 1)[-1]
+                archives[name] = archive
+            except:
+                print('Skipping Invalid Archive: ' + archive)
+
+        return archives
 
     def init_routes(self):
         # REDIRECTS
@@ -134,45 +154,75 @@ class ContentController(BaseController, RewriterApp):
         # EMDED
         @self.app.route('/_embed/<user>/<coll>/<wb_url:path>', method='ANY')
         def embed_replay(user, coll, wb_url):
-            request.path_shift(1)
-            return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True)
+            request.path_shift(5)
+            #return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True)
+            return self.handle_routing(wb_url, user, coll, '*', type='replay-coll',
+                                       is_embed=True)
 
 
         # DISPLAY
         @self.app.route('/_embed_noborder/<user>/<coll>/<wb_url:path>', method='ANY')
         def embed_replay(user, coll, wb_url):
-            request.path_shift(1)
-            return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True,
-                                              is_display=True)
+            request.path_shift(5)
+            #return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True,
+            #                                  is_display=True)
+            return self.handle_routing(wb_url, user, coll, '*', type='replay-coll',
+                                       is_embed=True, is_display=True)
 
 
         # CONTENT ROUTES
+        # Record
         @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
         def do_record(user, coll, rec, wb_url):
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='record')
 
+        # Patch
         @self.app.route('/<user>/<coll>/<rec>/patch/<wb_url:path>', method='ANY')
         def do_patch(user, coll, rec, wb_url):
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='patch')
 
-        @self.app.route('/<user>/<coll>/<rec>/extract/<wb_url:path>', method='ANY')
-        def do_extract(user, coll, rec, wb_url):
+        # Extract
+        @self.app.route('/<user>/<coll>/<rec>/extract\:<archive>/<wb_url:path>', method='ANY')
+        def do_extract_archive(user, coll, rec, wb_url, archive):
             request.path_shift(4)
 
-            return self.handle_routing(wb_url, user, coll, rec, type='extract')
+            if archive == 'all':
+                archive = ''
 
+            return self.handle_routing(wb_url, user, coll, rec, type='extract', remote_archive=archive)
+
+        @self.app.route('/<user>/<coll>/<rec>/extract/<wb_url:path>', method='ANY')
+        def do_extract_all(user, coll, rec, wb_url, archive):
+            request.path_shift(4)
+
+            return self.handle_routing(wb_url, user, coll, rec, type='extract', remote_archive='')
+
+        # Replay
+        #@self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
+        #def do_replay(user, coll, wb_url):
+        #    return self.do_replay_coll_or_rec(user, coll, wb_url)
         @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
-        def do_replay(user, coll, wb_url):
-            return self.do_replay_coll_or_rec(user, coll, wb_url)
+        def do_replay_coll(user, coll, wb_url):
+            request.path_shift(2)
 
+            return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
+
+        @self.app.route('/<user>/<coll>/<rec>/replay/<wb_url:path>', method='ANY')
+        def do_replay_rec(user, coll, rec, wb_url):
+            request.path_shift(4)
+
+            return self.handle_routing(wb_url, user, coll, rec, type='replay')
+
+        # Snapshot
         @self.app.route('/_snapshot', method='PUT')
         def snapshot():
             return self.snapshot()
 
+        # Session redir
         @self.app.route(['/_set_session'])
         def set_sesh():
             sesh = self.get_session()
@@ -206,7 +256,7 @@ class ContentController(BaseController, RewriterApp):
             url = self.add_query(url)
 
             kwargs['url'] = url
-            wb_url = 'px_/' + url
+            wb_url = kwargs.get('request_ts', '') + 'px_/' + url
 
             request.environ['webrec.template_params'] = kwargs
 
@@ -248,7 +298,25 @@ class ContentController(BaseController, RewriterApp):
 
             return handle_error(status_code, err_body, request.environ)
 
+    def check_remote_archive(self, wb_url):
+        wb_url = WbUrl(wb_url)
+
+        schemeless_url = wb_url.url.split('//', 1)[-1]
+
+        for name, archive in self.archives.items():
+            if schemeless_url.startswith(archive['replay_prefix']):
+                mode = 'extract:' + name
+                new_wb_url = schemeless_url[len(archive['replay_prefix']):]
+                new_wb_url = WbUrl(new_wb_url)
+                url = new_wb_url.to_str(mod=wb_url.mod)
+                return mode, url
+
     def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
+        if mode == 'record':
+            result = self.check_remote_archive(wb_url)
+            if result:
+                mode, wb_url = result
+
         rec_title = rec
         rec = self.sanitize_title(rec_title)
 
@@ -278,32 +346,6 @@ class ContentController(BaseController, RewriterApp):
                                                              url=wb_url)
         return self.redirect(new_url)
 
-    def do_replay_coll_or_rec(self, user, coll, wb_url, is_embed=False,
-                              is_display=False):
-        rec_name = '*'
-
-        # recording replay
-        if not self.WB_URL_RX.match(wb_url) and '/' in wb_url:
-            rec_name, wb_url = wb_url.split('/', 1)
-
-        if rec_name == '*':
-            request.path_shift(2)
-            type_ = 'replay-coll'
-
-        else:
-            try:
-                request.path_shift(3)
-            except:
-                self._raise_error(404, 'Empty Recording')
-
-            type_ = 'replay'
-
-        return self.handle_routing(wb_url, user, coll,
-                                   rec=rec_name,
-                                   type=type_,
-                                   is_embed=is_embed,
-                                   is_display=is_display)
-
     def is_content_request(self):
         if not self.content_host:
             return False
@@ -315,8 +357,11 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
-    def handle_routing(self, wb_url, user, coll, rec, type, is_embed=False,
-                       is_display=False):
+    def handle_routing(self, wb_url, user, coll, rec, type,
+                       is_embed=False,
+                       is_display=False,
+                       remote_archive=''):
+
         wb_url = self.add_query(wb_url)
 
         not_found = False
@@ -366,14 +411,14 @@ class ContentController(BaseController, RewriterApp):
             if type == 'replay':
                 raise HTTPError(404, 'No Such Recording')
 
-        return self.handle_load_content(wb_url, user, coll, rec, type, remote_ip,
-                                        is_embed, is_display)
-
-    def handle_load_content(self, wb_url, user, coll, rec, type, remote_ip,
-                            is_embed=False, is_display=False):
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'])
 
         wb_url = self._context_massage(wb_url)
+
+        wb_url_obj = WbUrl(wb_url)
+
+        if remote_archive and wb_url_obj.mod == self.frame_mod:
+            self.manager.add_remote_archive(user, coll, rec, remote_archive)
 
         kwargs = dict(user=user,
                       coll_orig=coll,
@@ -381,12 +426,13 @@ class ContentController(BaseController, RewriterApp):
                       coll=quote(coll),
                       rec=quote(rec, safe='/*'),
                       type=type,
+                      sources=remote_archive,
                       ip=remote_ip,
                       is_embed=is_embed,
                       is_display=is_display)
 
         try:
-            self.check_if_content(wb_url, request.environ)
+            self.check_if_content(wb_url_obj, request.environ)
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
@@ -413,7 +459,6 @@ class ContentController(BaseController, RewriterApp):
             return handle_error(ue.status_code, type, ue.url, ue.msg)
 
     def check_if_content(self, wb_url, environ):
-        wb_url = WbUrl(wb_url)
         if (wb_url.is_replay()):
             environ['is_content'] = True
 
@@ -567,12 +612,7 @@ class ContentController(BaseController, RewriterApp):
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs):
-        #type = kwargs['type']
-        #if type in ('live', 'record'):
-        #    cdx['is_live'] = 'true'
-
-        if resp_headers.get('Webagg-Source-Coll') == 'live':
-            cdx['is_live'] = 'true'
+        pass
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser

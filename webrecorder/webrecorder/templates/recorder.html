@@ -53,6 +53,8 @@
                     </div>
                 {% else %}
                     <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" {% if not browser %}autofocus{% endif %} required>
+                    <span class="replay-date hidden-xs" data-date="{{ rec.ts }}"/>
+                    <span class="replay-date main-replay-date"></span>
                 {% endif %}
             </div>
         </form>

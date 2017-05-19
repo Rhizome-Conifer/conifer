@@ -6,9 +6,11 @@ from pywb.webagg.app import ResAggApp
 from pywb.webagg.indexsource import LiveIndexSource, RedisIndexSource
 from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource
 from pywb.webagg.aggregator import SimpleAggregator, BaseRedisMultiKeyIndexSource, GeventMixin
+from pywb.webagg.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggregator
 from pywb.webagg.autoapp import init_index_source
 
-from pywb.webagg.utils import res_template
+from pywb.webagg.utils import res_template, load_config
+from pywb.utils.loaders import load_yaml_config
 from webrecorder.utils import load_wr_config
 
 import os
@@ -35,32 +37,25 @@ def make_webagg():
     global PROXY_PREFIX
     PROXY_PREFIX = cache_proxy_url
 
-    rec_redis_source = MountMultiKeyIndexSource(timeout=20.0,
+    rec_redis_source = RedisMultiKeyIndexSource(timeout=20.0,
                                                 redis_url=rec_url)
 
     redis = rec_redis_source.redis
-    coll_redis_source = MountMultiKeyIndexSource(timeout=20.0,
+    coll_redis_source = RedisMultiKeyIndexSource(timeout=20.0,
                                                  redis_url=coll_url,
                                                  redis=redis,
                                                  member_key_templ=rec_list_key)
-
-
-    mount_only_source = MountMultiKeyIndexSource(timeout=20.0,
-                                                 redis_url=coll_url,
-                                                 redis=redis,
-                                                 member_key_templ=rec_list_key,
-                                                 mounts_only=True)
-
 
     live_rec = DefaultResourceHandler(
                     SimpleAggregator(
                         {'live': LiveIndexSource()},
                     ), warc_url, cache_proxy_url)
 
+    archives = load_remote_archives()
     extract_rec = DefaultResourceHandler(
-                     SimpleAggregator(
-                        {'mount': mount_only_source},
-                    ), warc_url, cache_proxy_url)
+                     GeventTimeoutAggregator(archives),
+                     warc_url,
+                     cache_proxy_url)
 
     replay_rec = DefaultResourceHandler(
                     SimpleAggregator(
@@ -79,6 +74,20 @@ def make_webagg():
     app.add_route('/patch', HandlerSeq([replay_coll, live_rec]))
 
     return app
+
+
+# ============================================================================
+def load_remote_archives():
+    archive_config = load_yaml_config('pkg://webrecorder/config/archives.yaml')
+    archive_config = archive_config.get('archives')
+
+    archives = {}
+
+    for name, archive in archive_config.items():
+        source = init_index_source(archive)
+        archives[name] = source
+
+    return archives
 
 
 # ============================================================================
@@ -136,48 +145,6 @@ class ProxyMementoIndexSource(MementoIndexSource):
         #replay_url = PROXY_PREFIX + replay_url
 
         super(ProxyMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
-
-
-# ============================================================================
-class MountMultiKeyIndexSource(GeventMixin, BaseRedisMultiKeyIndexSource):
-    SUPPORTED_SOURCES = [AitFilterIndexSource,
-                         RemoteIndexSource,
-                         ProxyMementoIndexSource]
-
-    def __init__(self, *args, **kwargs):
-        super(MountMultiKeyIndexSource, self).__init__(*args, **kwargs)
-        self.mounts_only = kwargs.get('mounts_only', False)
-
-    def _get_mounts(self, keys):
-        if not keys:
-            return []
-        keys = [key + b'_m' for key in keys]
-        return self.redis.mget(keys)
-
-    def _iter_sources(self, params):
-        redis_key_pattern = res_template(self.redis_key_template, params)
-
-        if '*' not in redis_key_pattern:
-            keys = [redis_key_pattern.encode('utf-8')]
-        else:
-            keys = self.scan_keys(redis_key_pattern, params)
-
-        mount_data_list = self._get_mounts(keys)
-        source = None
-
-        for key, mount_data in zip(keys, mount_data_list):
-            key = key.decode('utf-8')
-            if mount_data:
-                source = init_index_source(mount_data.decode('utf-8'),
-                                           source_list=self.SUPPORTED_SOURCES)
-
-            elif self.mounts_only:
-                continue
-
-            else:
-                source = self._get_source_for_key(key)
-
-            yield key, source
 
 
 # ============================================================================
