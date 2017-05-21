@@ -5,13 +5,15 @@ from pywb.webagg.responseloader import LiveWebLoader
 from pywb.webagg.app import ResAggApp
 from pywb.webagg.indexsource import LiveIndexSource, RedisIndexSource
 from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource
-from pywb.webagg.aggregator import SimpleAggregator, BaseRedisMultiKeyIndexSource, GeventMixin
+from pywb.webagg.aggregator import SimpleAggregator
 from pywb.webagg.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggregator
-from pywb.webagg.autoapp import init_index_source
+from pywb.webagg.autoapp import init_index_source, register_source
+
+from pywb.utils.wbexception import NotFoundException
 
 from pywb.webagg.utils import res_template, load_config
 from pywb.utils.loaders import load_yaml_config
-from webrecorder.utils import load_wr_config
+from webrecorder.utils import load_wr_config, init_logging
 
 import os
 import json
@@ -22,6 +24,8 @@ PROXY_PREFIX = ''
 
 
 def make_webagg():
+    init_logging()
+
     config = load_wr_config()
 
     app = ResAggApp(debug=True)
@@ -33,15 +37,22 @@ def make_webagg():
     warc_url = redis_base + config['warc_key_templ']
     rec_list_key = config['rec_list_key_templ']
 
+    patch_ra_key = config['patch_ra_key']
+
     cache_proxy_url = os.environ.get('CACHE_PROXY_URL')
     global PROXY_PREFIX
     PROXY_PREFIX = cache_proxy_url
 
-    rec_redis_source = RedisMultiKeyIndexSource(timeout=20.0,
+    timeout = 20.0
+
+    #register_source(ProxyMementoIndexSource)
+    #register_source(ProxyRemoteIndexSource)
+
+    rec_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
                                                 redis_url=rec_url)
 
     redis = rec_redis_source.redis
-    coll_redis_source = RedisMultiKeyIndexSource(timeout=20.0,
+    coll_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
                                                  redis_url=coll_url,
                                                  redis=redis,
                                                  member_key_templ=rec_list_key)
@@ -52,26 +63,37 @@ def make_webagg():
                     ), warc_url, cache_proxy_url)
 
     archives = load_remote_archives()
+
+    # Extract Source
+    extractor = GeventTimeoutAggregator(archives, timeout=timeout)
     extract_rec = DefaultResourceHandler(
-                     GeventTimeoutAggregator(archives),
+                     extractor,
                      warc_url,
                      cache_proxy_url)
 
+    # Single Rec Replay
     replay_rec = DefaultResourceHandler(
                     SimpleAggregator(
                         {'replay': rec_redis_source}
                     ), warc_url, cache_proxy_url)
 
-    replay_coll = DefaultResourceHandler(
-                    SimpleAggregator(
-                        {'replay': coll_redis_source}
-                    ), warc_url, cache_proxy_url)
+
+    # Remote Replay Source
+    replay_remote_agg = RedisSourceFilterAggregator(archives,
+                                                    redis=redis,
+                                                    source_key=patch_ra_key,
+                                                    timeout=timeout)
+
+    remote_replay = DefaultResourceHandler(replay_remote_agg, warc_url, cache_proxy_url)
+
+    # Coll Replay
+    replay_coll = DefaultResourceHandler(coll_redis_source, warc_url, cache_proxy_url)
 
     app.add_route('/live', live_rec)
     app.add_route('/extract', extract_rec)
     app.add_route('/replay', replay_rec)
-    app.add_route('/replay-coll', replay_coll)
-    app.add_route('/patch', HandlerSeq([replay_coll, live_rec]))
+    app.add_route('/replay-coll', HandlerSeq([replay_coll, remote_replay]))
+    app.add_route('/patch', HandlerSeq([replay_coll, remote_replay, live_rec]))
 
     return app
 
@@ -91,53 +113,6 @@ def load_remote_archives():
 
 
 # ============================================================================
-class AitFilterIndexSource(RemoteIndexSource):
-    DEFAULT_AIT_ROOT = 'http://wayback.archive-it.org/'
-    DEFAULT_AIT_QUERY = 'cdx?url={url}&filter=filename:ARCHIVEIT-(%s)-.*'
-
-    def __init__(self, ait_coll, ait_host=None):
-        ait_host = ait_host or self.DEFAULT_AIT_ROOT
-        api_url = ait_host + self.DEFAULT_AIT_QUERY % ait_coll
-        replay_url = ait_host + '{ait_coll}/' + self.WAYBACK_ORIG_SUFFIX
-        self.ait_coll = ait_coll
-        super(AitFilterIndexSource, self).__init__(api_url, replay_url)
-
-    def _get_api_url(self, params):
-        results = super(AitFilterIndexSource, self)._get_api_url(params)
-        return PROXY_PREFIX + results
-
-    def _set_load_url(self, cdx):
-        parts = cdx.get('filename', '').split('-', 2)
-        ait_coll = parts[1] if len(parts) == 3 else 'all'
-
-        cdx[self.url_field] = self.replay_url.format(
-                                 ait_coll=ait_coll,
-                                 timestamp=cdx['timestamp'],
-                                 url=cdx['url'])
-
-    @classmethod
-    def init_from_string(cls, value):
-        # ait://coll1,coll2
-        if value.startswith('ait://'):
-            return cls(value[6:])
-
-        # ait+http://path/to/ait/wayback coll1,coll2
-        if value.startswith('ait+'):
-            value = value[4:]
-            parts = value.split(' ', 1)
-            ait_host = parts[0]
-            ait_coll = parts[1] if len(parts) == 2 else '*'
-            return cls(ait_coll, ait_host)
-
-    @classmethod
-    def init_from_config(cls, config):
-        if config['type'] != 'ait':
-            return
-
-        return cls(config['ait-colls'])
-
-
-# ============================================================================
 class ProxyMementoIndexSource(MementoIndexSource):
     def __init__(self, timegate_url, timemap_url, replay_url):
         timegate_url = PROXY_PREFIX + timegate_url
@@ -145,6 +120,43 @@ class ProxyMementoIndexSource(MementoIndexSource):
         #replay_url = PROXY_PREFIX + replay_url
 
         super(ProxyMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
+
+
+# ============================================================================
+class ProxyRemoteIndexSource(RemoteIndexSource):
+    def __init__(self, api_url, replay_url, **kwargs):
+        api_url = PROXY_PREFIX + api_url
+        #replay_url = PROXY_PREFIX + replay_url
+
+        super(ProxyRemoteIndexSource, self).__init__(api_url, replay_url, **kwargs)
+
+
+# ============================================================================
+class RedisSourceFilterAggregator(GeventTimeoutAggregator):
+    def __init__(self, sources, **kwargs):
+        super(RedisSourceFilterAggregator, self).__init__(sources, **kwargs)
+        self.redis = kwargs['redis']
+        self.source_key_templ = kwargs['source_key']
+
+    def _iter_sources(self, params):
+        if not params.get('sources'):
+            source_key = res_template(self.source_key_templ, params)
+            remote_sources = self.redis.hgetall(source_key)
+
+            if not remote_sources:
+                return []
+
+            source_list = [name.decode('utf-8')
+                           for name, count in remote_sources.items()
+                           if int(count) > 0]
+
+            if not source_list:
+                return []
+
+            params['sources'] = ','.join(source_list)
+            print(params['sources'])
+
+        return super(RedisSourceFilterAggregator, self)._iter_sources(params)
 
 
 # ============================================================================

@@ -1,7 +1,31 @@
 from warcio.limitreader import LimitReader
 from pywb.webagg.utils import load_config
 from contextlib import contextmanager
+
 import gevent
+import logging
+
+
+# ============================================================================
+def init_logging():
+    logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        level=logging.WARNING)
+
+    # set boto log to error
+    boto_log = logging.getLogger('boto')
+    if boto_log:
+        boto_log.setLevel(logging.ERROR)
+
+    tld_log = logging.getLogger('tldextract')
+    if tld_log:
+        tld_log.setLevel(logging.ERROR)
+
+    try:
+        from requests.packages.urllib3 import disable_warnings
+        disable_warnings()
+    except:
+        pass
 
 
 # ============================================================================

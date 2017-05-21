@@ -55,7 +55,7 @@ url_templates:
 
     record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}'
     extract: '{record_host}/record/extract/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}&sources={sources}'
-    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.replay.rec=*'
+    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.replay.rec=*param.ip={ip}&sources={sources}'
 
     snapshot: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=resource'
 
@@ -150,7 +150,8 @@ upload_key_templ: 'u:{user}:upl:{upid}'
 tags_key: 'z:tags'
 user_tag_templ: 'r:{user}:{coll}:{rec}:tag:{tag}'
 
-remote_archives_key: 'r:{user}:{coll}:{rec}:ra'
+ra_key: 'r:{user}:{coll}:{rec}:ra'
+patch_ra_key: 'c:{user}:{coll}:ra-patched'
 
 user_usage_key: 'h:user-usage'
 temp_usage_key: 'h:temp-usage'

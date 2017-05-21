@@ -14,6 +14,7 @@ import json
 import glob
 import tempfile
 import traceback
+import logging
 
 from pywb.webagg.utils import res_template, BUFF_SIZE
 
@@ -50,6 +51,9 @@ class WebRecRecorder(object):
         self.del_templ = config['del_templ']
 
         self.skip_key_templ = config['skip_key_templ']
+
+        self.ra_key = config['ra_key']
+        self.patch_ra_key = config['patch_ra_key']
 
         self.config = config
 
@@ -105,9 +109,15 @@ class WebRecRecorder(object):
                                      header_filter=ExcludeHttpOnlyCookieHeaders())
 
         self.writer = writer
+
+        accept_colls = {'extract': '.*',
+                        'patch': 'live',
+                        'live': 'live'
+                       }
+
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
-                                   #accept_colls='(live|mount:)',
+                                   accept_colls=accept_colls,
                                    create_buff_func=self.create_buffer)
 
         self.recorder = recorder_app
@@ -248,9 +258,16 @@ class WebRecRecorder(object):
                 pi.hincrby(from_coll_key, 'size', -the_size)
                 pi.hincrby(to_coll_key, 'size', the_size)
 
+            # update coll list
             if to_rec != '*':
                 pi.srem(from_coll_list_key, from_rec)
                 pi.sadd(to_coll_list_key, to_rec)
+
+        # move patch remotes
+        if to_rec != '*' and to_coll_key != from_coll_key:
+            self._update_patch_ra(info_key, to_user, to_coll, to_rec,
+                                  from_user, from_coll,
+                                  to_user, to_coll)
 
         # rename WARCs (only if switching users)
         replace_list = []
@@ -281,6 +298,47 @@ class WebRecRecorder(object):
         #        return {'error_message': 'remote rename failed'}
 
         return {'success': to_user + ':' + to_coll + ':' + to_rec}
+
+    def _update_patch_ra(self, info_key, ra_user, ra_coll, ra_rec,
+                         from_user, from_coll,
+                         to_user=None, to_coll=None):
+
+        logging.debug('Check patch remotes for: ' + info_key)
+
+        if self.redis.hget(info_key, 'is_patch') != b'1':
+            logging.debug(info_key + ' not a patch, done')
+            return
+
+        ra_key = self.ra_key.format(user=ra_user,
+                                    coll=ra_coll,
+                                    rec=ra_rec)
+
+        remotes = self.redis.smembers(ra_key)
+
+        if not remotes:
+            logging.debug('No remotes found from ' + ra_key)
+            return
+
+        from_patch_ra = None
+        to_patch_ra = None
+
+        if from_user and from_coll:
+            from_patch_ra = self.patch_ra_key.format(user=from_user,
+                                                     coll=from_coll)
+
+        if to_user and to_coll:
+            to_patch_ra = self.patch_ra.key.format(user=to_user,
+                                                   coll=to_coll)
+
+        with redis_pipeline(self.redis) as pi:
+            for remote in remotes:
+                if from_patch_ra:
+                    logging.debug('Remote: remove "{0}" from {1}'.format(remote, from_patch_ra))
+                    pi.hincrby(from_patch_ra, remote, -1)
+
+                if to_patch_ra:
+                    logging.debug('Remote: add "{0}" to {1}'.format(remote, to_patch_ra))
+                    pi.hincrby(to_patch_ra, remote, 1)
 
     def handle_rename_local(self, data):
         data = json.loads(data)
@@ -377,6 +435,14 @@ class WebRecRecorder(object):
                 return
         else:
             length = 0
+
+        if type == 'rec':
+            ra_key = self.ra_key.format(user=user,
+                                        coll=coll,
+                                        rec=rec)
+
+            self._update_patch_ra(del_info, user, coll, rec,
+                                  user, coll)
 
         with redis_pipeline(self.redis) as pi:
             if length > 0:

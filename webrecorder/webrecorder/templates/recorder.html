@@ -52,9 +52,10 @@
                         <button type="button" class="btn btn-default btn-next" title="Next bookmark"><span class="glyphicon glyphicon-chevron-right"></span></button>
                     </div>
                 {% else %}
+                <div>
                     <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" {% if not browser %}autofocus{% endif %} required>
-                    <span class="replay-date hidden-xs" data-date="{{ rec.ts }}"/>
                     <span class="replay-date main-replay-date"></span>
+                </div>
                 {% endif %}
             </div>
         </form>

@@ -76,10 +76,6 @@ class ContentController(BaseController, RewriterApp):
         def redir_new_patch(coll, wb_url):
             return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
 
-        @self.app.route('/$extract/<coll>/<wb_url:path>', method='ANY')
-        def redir_new_patch(coll, wb_url):
-            return self.do_redir_rec_or_patch(coll, 'Extracted Recording', wb_url, 'extract')
-
         # TAGS
         @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
         @self.jinja2_view('paging_display.html')
@@ -179,6 +175,15 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_routing(wb_url, user, coll, rec, type='record')
 
         # Patch
+        @self.app.route('/<user>/<coll>/<rec>/patch\:<archive>/<wb_url:path>', method='ANY')
+        def do_patch_archive(user, coll, rec, wb_url, archive):
+            request.path_shift(4)
+
+            if archive == 'all':
+                archive = '*'
+
+            return self.handle_routing(wb_url, user, coll, rec, type='patch', remote_archive=archive)
+
         @self.app.route('/<user>/<coll>/<rec>/patch/<wb_url:path>', method='ANY')
         def do_patch(user, coll, rec, wb_url):
             request.path_shift(4)
@@ -202,20 +207,18 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_routing(wb_url, user, coll, rec, type='extract', remote_archive='')
 
         # Replay
-        #@self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
-        #def do_replay(user, coll, wb_url):
-        #    return self.do_replay_coll_or_rec(user, coll, wb_url)
-        @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
-        def do_replay_coll(user, coll, wb_url):
-            request.path_shift(2)
-
-            return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
-
         @self.app.route('/<user>/<coll>/<rec>/replay/<wb_url:path>', method='ANY')
         def do_replay_rec(user, coll, rec, wb_url):
             request.path_shift(4)
 
             return self.handle_routing(wb_url, user, coll, rec, type='replay')
+
+        # Replay Coll
+        @self.app.route('/<user>/<coll>/<wb_url:path>', method='ANY')
+        def do_replay_coll(user, coll, wb_url):
+            request.path_shift(2)
+
+            return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
 
         # Snapshot
         @self.app.route('/_snapshot', method='PUT')
@@ -298,24 +301,32 @@ class ContentController(BaseController, RewriterApp):
 
             return handle_error(status_code, err_body, request.environ)
 
-    def check_remote_archive(self, wb_url):
+    def check_remote_archive(self, wb_url, mode):
         wb_url = WbUrl(wb_url)
 
         schemeless_url = wb_url.url.split('//', 1)[-1]
 
         for name, archive in self.archives.items():
             if schemeless_url.startswith(archive['replay_prefix']):
-                mode = 'extract:' + name
+                if mode == 'record':
+                    mode = 'extract'
+                mode += ':' + name
+
                 new_wb_url = schemeless_url[len(archive['replay_prefix']):]
+                print(archive)
+                if archive.get('parse_collection'):
+                    coll, new_wb_url = new_wb_url.split('/', 1)
+                    mode += ':' + coll
+
                 new_wb_url = WbUrl(new_wb_url)
+
                 url = new_wb_url.to_str(mod=wb_url.mod)
                 return mode, url
 
     def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
-        if mode == 'record':
-            result = self.check_remote_archive(wb_url)
-            if result:
-                mode, wb_url = result
+        result = self.check_remote_archive(wb_url, mode)
+        if result:
+            mode, wb_url = result
 
         rec_title = rec
         rec = self.sanitize_title(rec_title)
@@ -336,7 +347,12 @@ class ContentController(BaseController, RewriterApp):
         if not self.manager.has_collection(user, coll):
             self.manager.create_collection(user, coll, coll_title)
 
-        recording = self.manager.create_recording(user, coll, rec, rec_title)
+        is_patch = (mode == 'patch') or (mode.startswith('patch:'))
+        recording = self.manager.create_recording(user, coll, rec, rec_title,
+                                                  is_patch=is_patch)
+        if ':' in mode:
+            remote_archive = mode.split(':', 1)[1]
+            self.manager.add_remote_archive(user, coll, rec, remote_archive, is_patch)
 
         rec = recording['id']
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
@@ -365,6 +381,7 @@ class ContentController(BaseController, RewriterApp):
         wb_url = self.add_query(wb_url)
 
         not_found = False
+        is_patch = (type == 'patch')
 
         sesh = self.get_session()
 
@@ -404,7 +421,10 @@ class ContentController(BaseController, RewriterApp):
 
             if type in self.MODIFY_MODES:
                 if rec == title or not self.manager.has_recording(user, coll, rec):
-                    result = self.manager.create_recording(user, coll, rec, title)
+                    result = self.manager.create_recording(user, coll, rec, title, is_patch=is_patch)
+
+                    if remote_archive:
+                        self.manager.add_remote_archive(user, coll, rec, remote_archive, is_patch)
 
             self._redir_if_sanitized(rec, title, wb_url)
 
@@ -417,8 +437,7 @@ class ContentController(BaseController, RewriterApp):
 
         wb_url_obj = WbUrl(wb_url)
 
-        if remote_archive and wb_url_obj.mod == self.frame_mod:
-            self.manager.add_remote_archive(user, coll, rec, remote_archive)
+        #if remote_archive and wb_url_obj.mod == self.frame_mod:
 
         kwargs = dict(user=user,
                       coll_orig=coll,

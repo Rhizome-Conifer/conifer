@@ -575,15 +575,17 @@ class AccessManagerMixin(object):
     def can_write_coll(self, user, coll):
         return self._check_access(user, coll, self.WRITE_PREFIX)
 
-    def can_mount_coll(self, user, coll):
-        if not self.can_admin_coll(user, coll):
+    def is_extractable(self, user, coll):
+        if not self.can_read_coll(user, coll):
             return False
 
-        try:
-            self.cork.require(role='mounts-archivist')
-            return True
-        except Exception:
+        patch_ra_key = self.patch_ra_key.format(user=user, coll=coll)
+
+        patch_ras = self.redis.hgetall(patch_ra_key)
+        if not patch_ras:
             return False
+
+        return any(int(value) > 0 for value in patch_ras.values())
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
@@ -723,7 +725,8 @@ class RecManagerMixin(object):
         self.cdx_key = config['cdxj_key_templ']
         self.tags_key = config['tags_key']
 
-        self.ra_key = config['remote_archives_key']
+        self.ra_key = config['ra_key']
+        self.patch_ra_key = config['patch_ra_key']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -766,7 +769,7 @@ class RecManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def create_recording(self, user, coll, rec, rec_title, coll_title='',
-                         no_dupe=False):
+                         no_dupe=False, is_patch=False):
 
         self.assert_can_write(user, coll)
 
@@ -797,6 +800,8 @@ class RecManagerMixin(object):
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'updated_at', now)
             pi.hsetnx(key, 'size', '0')
+            if is_patch:
+                pi.hset(key, 'is_patch', '1')
             pi.sadd(rec_list_key, rec)
 
         if not self._has_collection_no_access_check(user, coll):
@@ -857,12 +862,21 @@ class RecManagerMixin(object):
 
         return self._send_delete('rec', user, coll, rec)
 
-    def add_remote_archive(self, user, coll, rec, archive):
+    def add_remote_archive(self, user, coll, rec, archive,
+                           is_patch=False):
+
         ra_key = self.ra_key.format(user=user,
                                     coll=coll,
                                     rec=rec)
 
-        self.redis.sadd(ra_key, archive)
+        if is_patch:
+            patch_ra_key = self.patch_ra_key.format(user=user,
+                                                    coll=coll)
+
+        with redis_pipeline(self.redis) as pi:
+            pi.sadd(ra_key, archive)
+            if is_patch:
+                pi.hincrby(patch_ra_key, archive, 1)
 
     def _get_pagedata(self, user, coll, rec, pagedata):
         key = self.page_key.format(user=user, coll=coll, rec=rec)
@@ -1344,8 +1358,8 @@ class CLIRedisDataManager(RedisDataManager):
     def can_admin_coll(self, user, coll):
         return True
 
-    def can_mount_coll(self, user, coll):
-        return True
+    def can_extract_coll(self, user, coll):
+        return False
 
     def can_tag(self):
         return True

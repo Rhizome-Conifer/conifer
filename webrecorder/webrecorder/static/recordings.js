@@ -1078,8 +1078,8 @@ var RecordingSizeWidget = (function() {
         }
 
         if (ts) {
-            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(ts));
-            $(".replay-wrap").show();
+            $(".main-replay-date").text(TimesAndSizesFormatter.ts_to_date(ts));
+            //$(".replay-wrap").show();
         }
     }
 
@@ -1516,9 +1516,9 @@ $(function() {
     }
 
     function addNewPage(state) {
-        if (state && state.ts) {
-            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(state.ts));
-            $(".replay-wrap").show();
+        if (state && state.ts && window.curr_mode != "record") {
+            $(".main-replay-date").text(TimesAndSizesFormatter.ts_to_date(state.ts));
+            //$(".replay-wrap").show();
         }
 
         if (state.is_error) {
