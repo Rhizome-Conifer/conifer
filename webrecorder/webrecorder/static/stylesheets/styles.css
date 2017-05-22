@@ -259,9 +259,18 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
 .faq aside {
     padding-right: 7%;
 }
+.faq aside a {
+    display: block;
+}
 
-.faq aside img {
+.faq aside img.rhizome-logo {
     width: 75%;
+}
+.faq aside img.mellon-logo {
+    width: 85%;
+}
+.faq aside img.knightfdn-logo {
+    width: 65%;
 }
 
 .faq h2 {
