@@ -2,6 +2,7 @@ import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 
 
 import FAQ from 'components/FAQ';
+import TermsAndPolicies from 'components/TermsAndPolicies';
 import { Application, CollectionList, CollectionDetail, Home, HttpStatus,
          UserSettings } from 'containers';
 
@@ -55,7 +56,7 @@ export default (store) => {
     {
       path: '_policies',
       name: 'Terms & Policies',
-      component: HttpStatus
+      component: TermsAndPolicies
     }
   ];
 

@@ -22,7 +22,7 @@ function Footer() {
             </a>
             <a href="mailto:support@webrecorder.io" className="divider"><MailIcon />Contact</a>
             <Link to="/_faq" className="divider">About</Link>
-            <Link to="policies" className="divider">Terms and Policies</Link>
+            <Link to="/_policies" className="divider">Terms & Policies</Link>
           </div>
           <div className="col-xs-6 col-xs-offset-3 col-sm-2 col-sm-offset-2 footer-label">
             <div>A Project By</div>
