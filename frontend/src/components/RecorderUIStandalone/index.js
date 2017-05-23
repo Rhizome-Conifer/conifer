@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import { Button, InputGroup, FormGroup, FormControl } from 'react-bootstrap';
 
-import { RemoteBrowserSelect } from 'containers';
-
-import CollectionDropdown from 'components/CollectionDropdown';
+import { RemoteBrowserSelect, CollectionDropdown } from 'containers';
 
 import './style.scss';
 

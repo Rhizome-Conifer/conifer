@@ -2,18 +2,17 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { info } from 'redux/modules/remoteBrowsers';
-
+import { selectCollection } from 'redux/modules/user';
 import CollectionDropdownUI from 'components/CollectionDropdownUI';
 
 
 class CollectionDropdown extends Component {
-  static propTypes = {
-    collections: PropTypes.array,
-  }
-
   static defaultProps = {
     collections: [],
+  }
+
+  static propTypes = {
+    collections: PropTypes.array
   }
 
   render() {
@@ -24,20 +23,20 @@ class CollectionDropdown extends Component {
 }
 
 const mapStateToProps = (state) => {
-  const { collections } = state.collections;
+  const { user } = state;
   return {
-    collections
+    collections: user.data.collections,
+    activeCollection: user.activeCollection
   };
 };
 
-// const mapDispatchToProps = (dispatch) => {
-//   return {
-//     getBrowsers: () => dispatch(load()),
-//     setBrowser: br => dispatch(selectBrowser(br))
-//   };
-// };
+const mapDispatchToProps = (dispatch) => {
+  return {
+    setCollection: coll => dispatch(selectCollection(coll))
+  };
+};
 
 export default connect(
   mapStateToProps,
-  //mapDispatchToProps
+  mapDispatchToProps
 )(CollectionDropdown);

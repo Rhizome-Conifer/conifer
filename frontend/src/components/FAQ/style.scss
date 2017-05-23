@@ -20,7 +20,13 @@
         padding-right: 7%;
 
         img {
-            width: 75%;
+            &.rhizome-logo {
+                width: 75%;
+            }
+
+            &.mellon-logo {
+                width: 85%;
+            }
 
             &.knight-fnd {
                 width: 65%;

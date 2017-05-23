@@ -4,7 +4,9 @@ const RB_LOAD_SUCCESS = 'wr/rb/LOAD_SUCCESS';
 const RB_LOAD_FAIL = 'wr/rb/LOAD_FAIL';
 
 const initialState = {
-  loaded: false
+  loaded: false,
+  activeBrowser: null,
+  accessed: null
 };
 
 export default function remoteBrowsers(state = initialState, action = {}) {
@@ -32,7 +34,7 @@ export default function remoteBrowsers(state = initialState, action = {}) {
     case RB_SELECT:
       return {
         ...state,
-        active: action.id
+        activeBrowser: action.id
       };
     default:
       return state;

@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 import { Collapse } from 'react-bootstrap';
 
-import { isLoaded, load } from 'redux/modules/user';
+import { isLoaded as isUserLoaded,
+         load as loadUser } from 'redux/modules/user';
+
+import { isLoaded as isCollsLoaded,
+         load as loadColls } from 'redux/modules/collections';
 
 import HomepageMessage from 'components/HomepageMessage';
 import HomepageAnnouncement from 'components/HomepageAnnouncement';
@@ -16,7 +20,8 @@ class Home extends Component {
 
   static propTypes = {
     auth: PropTypes.object,
-    user: PropTypes.object
+    user: PropTypes.object,
+    collections: PropTypes.array,
   }
 
   constructor(props) {
@@ -28,7 +33,7 @@ class Home extends Component {
   }
 
   render() {
-    const { auth, user } = this.props;
+    const { auth, collections, user } = this.props;
     const { introVideoOpen } = this.state;
 
     const loaded = auth.loaded && user.loaded;
@@ -43,7 +48,7 @@ class Home extends Component {
         </div>
         {
           loaded && auth.user.username && user.data &&
-            <HomepageMessage auth={auth} info={user} />
+            <HomepageMessage auth={auth} collsCount={collections.length} />
         }
         <div className="row top-buffer-lg bottom-buffer-lg">
           <RecorderUIStandalone />
@@ -74,8 +79,9 @@ const loadInfo = [
     promise: ({ params, store: { dispatch, getState }, location }) => {
       const { auth } = getState();
 
-      if(!isLoaded(getState()) && auth.user.username)
-        return dispatch(load(auth.user.username));
+      // get user info
+      if(!isUserLoaded(getState()) && auth.user.username)
+        return dispatch(loadUser(auth.user.username));
 
       return undefined;
     }
@@ -86,6 +92,7 @@ const mapStateToProps = (state) => {
   const { auth, user } = state;
   return {
     auth,
+    collections: user.data.collections,
     user
   };
 };

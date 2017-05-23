@@ -13,7 +13,8 @@ class RemoteBrowserSelect extends Component {
   }
 
   static defaultProps = {
-    browsers: {}
+    browsers: {},
+    activeBrowser: null
   }
 
   render() {
@@ -24,8 +25,14 @@ class RemoteBrowserSelect extends Component {
 }
 
 const mapStateToProps = (state) => {
+  const { accessed, activeBrowser, browsers,
+          loaded, loading } = state.remoteBrowsers;
   return {
-    ...state.remoteBrowsers
+    accessed,
+    activeBrowser,
+    browsers,
+    loaded,
+    loading
   };
 };
 

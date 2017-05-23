@@ -20,14 +20,14 @@ function FAQ() {
           <p className="credit">
             <span>A project by</span>
             <a href="https://rhizome.org" target="_blank">
-              <img src={require('shared/images/Rhizome-Logo_med.png')} alt="Rhizome logo" />
+              <img src={require('shared/images/Rhizome-Logo_med.png')} className="rhizome-logo" alt="Rhizome logo" />
             </a>
           </p>
 
           <p className="credit">
             <span>With generous support&nbsp;from</span>
             <a href="https://mellon.org/grants/grants-database/grants/rhizome-communications-inc/41500666/" target="_blank">
-              <img className="mellonfdn-logo" src={require('shared/images/mellon-fdn.svg')} width="100" alt="Andrew W. Mellon Foundation" />
+              <img src={require('shared/images/mellon-fdn.svg')} className="mellon-logo" alt="Andrew W. Mellon Foundation" />
             </a>
           </p>
 
@@ -96,7 +96,7 @@ function FAQ() {
           </p>
           <div className="support-logos">
             <a href="https://mellon.org/grants/grants-database/grants/rhizome-communications-inc/41500666/" target="_blank">
-              <img className="mellonfdn-logo" src={require('shared/images/mellon-fdn.svg')} width="100" alt="Andrew W. Mellon Foundation" />
+              <img src={require('shared/images/mellon-fdn.svg')} width="100" alt="Andrew W. Mellon Foundation" />
             </a>
 
             <a href="https://www.knightfoundation.org/press/releases/three-projects-will-help-better-inform-the-public-through-technology-innovation-with-540-000-from-knight-foundation" target="_blank">

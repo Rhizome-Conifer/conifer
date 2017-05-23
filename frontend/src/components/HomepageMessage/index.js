@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 
 function HomepageMessage(props) {
-  const { auth, info } = props;
+  const { auth, collsCount } = props;
 
   return (
     <div className="row">
@@ -16,7 +16,7 @@ function HomepageMessage(props) {
             <div className="top-buffer-md">
               <ul>
                 <li>
-                  Browse: There are <Link to={auth.user.username}><b>{ info.data.collections.length } Collections</b></Link> in your archive.
+                  Browse: There are <Link to={auth.user.username}><b>{ collsCount } Collections</b></Link> in your archive.
                 </li>
                 <li>
                   Record: Enter a url, choose a collection (or create a new one), then click <b>Record</b> to begin.
@@ -32,7 +32,7 @@ function HomepageMessage(props) {
 
 HomepageMessage.propTypes = {
   auth: PropTypes.object,
-  info: PropTypes.object,
+  collsCount: PropTypes.number
 };
 
 export default HomepageMessage;

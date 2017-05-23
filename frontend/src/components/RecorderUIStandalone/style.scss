@@ -46,34 +46,8 @@
         }
     }
 
-    li {
-        text-align: center;
-        word-wrap: break-word;
-        white-space: normal;
-
-        &:first-of-type {
-            text-align: left;
-        }
-
-        & > img {
-            margin-right: 5px;
-        }
-    }
-
     .btn img {
         margin-right: 5px;
-    }
-
-    //.cnt-browser:not(.disabled):not(.active) { cursor: pointer; }
-    .cnt-browser.disabled { opacity: 0.6; filter: grayscale(100%); }
-    .cnt-browser:nth-child(odd) { background-color: #FFF; }
-    .cnt-browser:nth-child(even) { background-color: #F6F6F6; }
-    .cnt-browser.active { background-color: #eef9ea;}
-    .cnt-browser:not(.disabled):not(.active):hover { background-color: #E3E3E3; }
-
-    .cnt-browser button {
-        border: none;
-        background: transparent;
     }
 }
 
