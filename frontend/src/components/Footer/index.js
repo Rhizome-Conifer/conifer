@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 
-import { GithubIcon, HelpIcon, TwitterIcon } from 'components/Icons';
+import { GithubIcon, MailIcon, TwitterIcon } from 'components/Icons';
 
 import './style.scss';
 
@@ -14,17 +14,15 @@ function Footer() {
       <div className="container top-buffer bottom-buffer">
         <div className="row">
           <div className="col-xs-12 col-sm-8 project-info">
-            <Link to="/_faq">
-              <HelpIcon />
-            </Link>
             <a href="https://github.com/webrecorder/webrecorder" target="_blank">
               <GithubIcon />
             </a>
             <a href="https://twitter.com/webrecorder_io" target="_blank">
               <TwitterIcon />
             </a>
-            <a href="mailto:support@webrecorder.io" className="divider">Support</a>
-            <Link to="/_policies" className="divider">Terms and Policies</Link>
+            <a href="mailto:support@webrecorder.io" className="divider"><MailIcon />Contact</a>
+            <Link to="/_faq" className="divider">About</Link>
+            <Link to="policies" className="divider">Terms and Policies</Link>
           </div>
           <div className="col-xs-6 col-xs-offset-3 col-sm-2 col-sm-offset-2 footer-label">
             <div>A Project By</div>

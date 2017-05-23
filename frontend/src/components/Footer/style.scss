@@ -18,6 +18,7 @@ footer {
 }
 .rhizome-logo {
     padding-top: 5px;
+    width: 118px;
 }
 .project-info {
 
@@ -45,9 +46,16 @@ footer {
         }
 
         svg {
-            width: 16px;
-            height: 16px;
-            vertical-align: text-top;
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            vertical-align: middle;
+
+            &.contact {
+                margin-right: 5px;
+                width: 16px;
+                height: 16px;
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 
+
+import FAQ from 'components/FAQ';
 import { Application, CollectionList, CollectionDetail, Home, HttpStatus,
          UserSettings } from 'containers';
 
@@ -44,6 +46,19 @@ export default (store) => {
     }
   ];
 
+  const infoRoutes = [
+    {
+      path: '_faq',
+      name: 'FAQ',
+      component: FAQ
+    },
+    {
+      path: '_policies',
+      name: 'Terms & Policies',
+      component: HttpStatus
+    }
+  ];
+
   const routes = [
     /* core */
     {
@@ -52,6 +67,7 @@ export default (store) => {
       component: HttpStatus
     },
 
+    ...infoRoutes,
     ...userRoutes,
 
     {
