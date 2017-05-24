@@ -118,7 +118,7 @@
 <div class="embed-footer" lang="en">
 <div class="replay-wrap">
 <span>This is an archived page from <span id="replay-date" style="font-weight: bold"></span></span>
-<div style="font-size: 12px">Archived with <a target="_blank" href="https://webrecorder.io/">Webrecorder</a></div>
+<div style="font-size: 12px">Archived with <a target="_blank" href="https://{{ get_app_host()|default('webrecorder.io', true) }}/">{{ metadata.product }}</a></div>
 </div>
 </div>
 {% endif %}
