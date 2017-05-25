@@ -17,6 +17,7 @@ from webrecorder.utils import load_wr_config, init_logging
 
 import os
 import json
+import copy
 
 
 # =============================================================================
@@ -45,7 +46,7 @@ def make_webagg():
 
     timeout = 20.0
 
-    #register_source(ProxyMementoIndexSource)
+    register_source(ProxyMementoIndexSource)
     #register_source(ProxyRemoteIndexSource)
 
     rec_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
@@ -71,6 +72,16 @@ def make_webagg():
                      warc_url,
                      cache_proxy_url)
 
+    # Patch (all + live)
+    archives_live = copy.copy(archives)
+    archives_live['live'] = LiveIndexSource()
+    patcher = PatchAllFilterAggregator(archives_live, timeout=timeout)
+    patch_rec = DefaultResourceHandler(
+                     patcher,
+                     warc_url,
+                     cache_proxy_url)
+
+
     # Single Rec Replay
     replay_rec = DefaultResourceHandler(
                     SimpleAggregator(
@@ -93,7 +104,7 @@ def make_webagg():
     app.add_route('/extract', extract_rec)
     app.add_route('/replay', replay_rec)
     app.add_route('/replay-coll', HandlerSeq([replay_coll, remote_replay]))
-    app.add_route('/patch', HandlerSeq([replay_coll, remote_replay, live_rec]))
+    app.add_route('/patch', HandlerSeq([replay_coll, remote_replay, patch_rec]))
 
     return app
 
@@ -154,9 +165,31 @@ class RedisSourceFilterAggregator(GeventTimeoutAggregator):
                 return []
 
             params['sources'] = ','.join(source_list)
-            print(params['sources'])
 
+        # don't record here
+        params['recorder_skip'] = '1'
         return super(RedisSourceFilterAggregator, self)._iter_sources(params)
+
+
+# ============================================================================
+class PatchAllFilterAggregator(GeventTimeoutAggregator):
+    def _iter_sources(self, params):
+        replay_sources = params.get('sources')
+
+        # allow recording
+        params.pop('recorder_skip')
+
+        # if no replay source list or all list
+        # then patch from 'live' only
+        if not replay_sources or replay_sources == '*':
+            yield ('live', self.sources['live'])
+            return
+
+        # else patch from every archive *not* in the sources list!
+        replay_list = replay_sources.split(',')
+        for name in self.sources.keys():
+            if name not in replay_list:
+                yield name, self.sources[name]
 
 
 # ============================================================================

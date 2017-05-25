@@ -111,7 +111,7 @@ class WebRecRecorder(object):
         self.writer = writer
 
         accept_colls = {'extract': '.*',
-                        'patch': 'live',
+                        'patch': '.*',
                         'live': 'live'
                        }
 
