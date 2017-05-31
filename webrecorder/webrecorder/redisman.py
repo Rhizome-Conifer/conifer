@@ -579,13 +579,13 @@ class AccessManagerMixin(object):
         if not self.can_read_coll(user, coll):
             return False
 
-        patch_ra_key = self.patch_ra_key.format(user=user, coll=coll)
+        replay_ra_key = self.replay_ra_key.format(user=user, coll=coll)
 
-        patch_ras = self.redis.hgetall(patch_ra_key)
-        if not patch_ras:
+        replay_ras = self.redis.hgetall(replay_ra_key)
+        if not replay_ras:
             return False
 
-        return any(int(value) > 0 for value in patch_ras.values())
+        return any(int(value) > 0 for value in replay_ras.values())
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
@@ -726,7 +726,7 @@ class RecManagerMixin(object):
         self.tags_key = config['tags_key']
 
         self.ra_key = config['ra_key']
-        self.patch_ra_key = config['patch_ra_key']
+        self.replay_ra_key = config['replay_ra_key']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -862,21 +862,20 @@ class RecManagerMixin(object):
 
         return self._send_delete('rec', user, coll, rec)
 
-    def add_remote_archive(self, user, coll, rec, archive,
-                           is_patch=False):
+    def add_remote_replay(self, user, coll, source_id):
+
+        replay_ra_key = self.replay_ra_key.format(user=user,
+                                                  coll=coll)
+
+        self.redis.hincrby(replay_ra_key, source_id, 1)
+
+    def track_remote_archive(self, user, coll, rec, source_id):
 
         ra_key = self.ra_key.format(user=user,
                                     coll=coll,
                                     rec=rec)
 
-        if is_patch:
-            patch_ra_key = self.patch_ra_key.format(user=user,
-                                                    coll=coll)
-
-        with redis_pipeline(self.redis) as pi:
-            pi.sadd(ra_key, archive)
-            if is_patch:
-                pi.hincrby(patch_ra_key, archive, 1)
+        self.redis.sadd(ra_key, source_id)
 
     def _get_pagedata(self, user, coll, rec, pagedata):
         key = self.page_key.format(user=user, coll=coll, rec=rec)

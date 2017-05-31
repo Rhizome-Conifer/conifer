@@ -38,9 +38,9 @@ def make_webagg():
     warc_url = redis_base + config['warc_key_templ']
     rec_list_key = config['rec_list_key_templ']
 
-    patch_ra_key = config['patch_ra_key']
+    replay_ra_key = config['replay_ra_key']
 
-    cache_proxy_url = os.environ.get('CACHE_PROXY_URL')
+    cache_proxy_url = os.environ.get('CACHE_PROXY_URL', '')
     global PROXY_PREFIX
     PROXY_PREFIX = cache_proxy_url
 
@@ -92,7 +92,7 @@ def make_webagg():
     # Remote Replay Source
     replay_remote_agg = RedisSourceFilterAggregator(archives,
                                                     redis=redis,
-                                                    source_key=patch_ra_key,
+                                                    source_key=replay_ra_key,
                                                     timeout=timeout)
 
     remote_replay = DefaultResourceHandler(replay_remote_agg, warc_url, cache_proxy_url)

@@ -151,7 +151,7 @@ tags_key: 'z:tags'
 user_tag_templ: 'r:{user}:{coll}:{rec}:tag:{tag}'
 
 ra_key: 'r:{user}:{coll}:{rec}:ra'
-patch_ra_key: 'c:{user}:{coll}:ra-patched'
+replay_ra_key: 'c:{user}:{coll}:ra-replay'
 
 user_usage_key: 'h:user-usage'
 temp_usage_key: 'h:temp-usage'

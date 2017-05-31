@@ -53,7 +53,7 @@ class WebRecRecorder(object):
         self.skip_key_templ = config['skip_key_templ']
 
         self.ra_key = config['ra_key']
-        self.patch_ra_key = config['patch_ra_key']
+        self.replay_ra_key = config['replay_ra_key']
 
         self.config = config
 
@@ -265,9 +265,9 @@ class WebRecRecorder(object):
 
         # move patch remotes
         if to_rec != '*' and to_coll_key != from_coll_key:
-            self._update_patch_ra(info_key, to_user, to_coll, to_rec,
-                                  from_user, from_coll,
-                                  to_user, to_coll)
+            self._update_replay_ra(info_key, to_user, to_coll, to_rec,
+                                   from_user, from_coll,
+                                   to_user, to_coll)
 
         # rename WARCs (only if switching users)
         replace_list = []
@@ -299,9 +299,9 @@ class WebRecRecorder(object):
 
         return {'success': to_user + ':' + to_coll + ':' + to_rec}
 
-    def _update_patch_ra(self, info_key, ra_user, ra_coll, ra_rec,
-                         from_user, from_coll,
-                         to_user=None, to_coll=None):
+    def _update_replay_ra(self, info_key, ra_user, ra_coll, ra_rec,
+                          from_user, from_coll,
+                          to_user=None, to_coll=None):
 
         logging.debug('Check patch remotes for: ' + info_key)
 
@@ -319,26 +319,26 @@ class WebRecRecorder(object):
             logging.debug('No remotes found from ' + ra_key)
             return
 
-        from_patch_ra = None
-        to_patch_ra = None
+        from_replay_ra = None
+        to_replay_ra = None
 
         if from_user and from_coll:
-            from_patch_ra = self.patch_ra_key.format(user=from_user,
+            from_replay_ra = self.replay_ra_key.format(user=from_user,
                                                      coll=from_coll)
 
         if to_user and to_coll:
-            to_patch_ra = self.patch_ra.key.format(user=to_user,
+            to_replay_ra = self.replay_ra.key.format(user=to_user,
                                                    coll=to_coll)
 
         with redis_pipeline(self.redis) as pi:
             for remote in remotes:
-                if from_patch_ra:
-                    logging.debug('Remote: remove "{0}" from {1}'.format(remote, from_patch_ra))
-                    pi.hincrby(from_patch_ra, remote, -1)
+                if from_replay_ra:
+                    logging.debug('Remote: remove "{0}" from {1}'.format(remote, from_replay_ra))
+                    pi.hincrby(from_replay_ra, remote, -1)
 
-                if to_patch_ra:
-                    logging.debug('Remote: add "{0}" to {1}'.format(remote, to_patch_ra))
-                    pi.hincrby(to_patch_ra, remote, 1)
+                if to_replay_ra:
+                    logging.debug('Remote: add "{0}" to {1}'.format(remote, to_replay_ra))
+                    pi.hincrby(to_replay_ra, remote, 1)
 
     def handle_rename_local(self, data):
         data = json.loads(data)
@@ -441,8 +441,8 @@ class WebRecRecorder(object):
                                         coll=coll,
                                         rec=rec)
 
-            self._update_patch_ra(del_info, user, coll, rec,
-                                  user, coll)
+            self._update_replay_ra(del_info, user, coll, rec,
+                                   user, coll)
 
         with redis_pipeline(self.redis) as pi:
             if length > 0:

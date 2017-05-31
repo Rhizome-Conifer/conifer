@@ -313,7 +313,6 @@ class ContentController(BaseController, RewriterApp):
                 mode += ':' + name
 
                 new_wb_url = schemeless_url[len(archive['replay_prefix']):]
-                print(archive)
                 if archive.get('parse_collection'):
                     coll, new_wb_url = new_wb_url.split('/', 1)
                     mode += ':' + coll
@@ -350,9 +349,9 @@ class ContentController(BaseController, RewriterApp):
         is_patch = (mode == 'patch') or (mode.startswith('patch:'))
         recording = self.manager.create_recording(user, coll, rec, rec_title,
                                                   is_patch=is_patch)
-        if ':' in mode:
+        if ':' in mode and is_patch:
             remote_archive = mode.split(':', 1)[1]
-            self.manager.add_remote_archive(user, coll, rec, remote_archive, is_patch)
+            self.manager.add_remote_replay(user, coll, remote_archive)
 
         rec = recording['id']
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
@@ -423,8 +422,8 @@ class ContentController(BaseController, RewriterApp):
                 if rec == title or not self.manager.has_recording(user, coll, rec):
                     result = self.manager.create_recording(user, coll, rec, title, is_patch=is_patch)
 
-                    if remote_archive:
-                        self.manager.add_remote_archive(user, coll, rec, remote_archive, is_patch)
+                    if remote_archive and is_patch:
+                        self.manager.add_remote_replay(user, coll, remote_archive)
 
             self._redir_if_sanitized(rec, title, wb_url)
 
@@ -436,8 +435,6 @@ class ContentController(BaseController, RewriterApp):
         wb_url = self._context_massage(wb_url)
 
         wb_url_obj = WbUrl(wb_url)
-
-        #if remote_archive and wb_url_obj.mod == self.frame_mod:
 
         kwargs = dict(user=user,
                       coll_orig=coll,
@@ -631,7 +628,10 @@ class ContentController(BaseController, RewriterApp):
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs):
-        pass
+        source = cdx.get('source')
+        skip = cdx.get('recorder_skip')
+        if source and source != 'live' and not skip:
+            self.manager.track_remote_archive(kwargs['user'], kwargs['coll'], kwargs['rec'], source)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser
