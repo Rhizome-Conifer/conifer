@@ -4,7 +4,6 @@ $(function() {
     RecordingSelector.start();
     BookmarkHiddenSwitch.start();
     UrlManager.start();
-    MountInfo.start();
 });
 
 var UrlManager = (function() {

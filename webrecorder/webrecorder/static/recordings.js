@@ -1540,9 +1540,9 @@ $(function() {
 
             // if not is_live, then this page/bookmark is not a new recording
             // but is an existing replay
-            if (window.curr_mode == "patch" && !state.is_live) {
-                return;
-            }
+            //if (window.curr_mode == "patch" && !state.is_live) {
+            //    return;
+            //}
 
             var recordingId = wbinfo.info.rec_id;
             var attributes = {};
