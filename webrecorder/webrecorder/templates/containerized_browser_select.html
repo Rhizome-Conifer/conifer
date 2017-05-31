@@ -1,6 +1,6 @@
 {% set active_browser = browser_data %}
 
-<button id='cnt-button' type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Remote browser options">
+<button id='cnt-button' type="button" class="btn btn-default dropdown-toggle light-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Remote browser options">
     {% if active_browser %}
         <span class='btn-content'><img src="/api/browsers/browsers/{{ active_browser.id }}/icon"> {{ active_browser.name }} v{{ active_browser.version }}</span>
     {% else %}

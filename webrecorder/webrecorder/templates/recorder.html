@@ -15,7 +15,7 @@
         {% include '/mode_dropdown.html' %}
     {% endif %}
 
-    <div class="{% if is_new %}col-xs-10{% elif is_write_mode %}col-xs-7{% elif not can_admin() %}col-sm-offset-2 col-xs-8{% elif is_replay %}col-xs-10 col-sm-8 col-md-7 col-lg-8{% endif %}">
+    <div class="main-bar">
         <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url">
             <div class="input-group containerized">
                 <div class='input-group-btn'>
@@ -62,7 +62,7 @@
 
     </div>
 
-    <div class="recording-actions text-center {% if is_new %}col-xs-4 col-sm-2{% elif not can_admin() %}col-xs-4 col-sm-2{% else %}col-xs-12 col-sm-2 col-md-2{% endif %}">
+    <div class="recording-actions text-center">
         {% if can_admin() and curr_mode == 'new' %}
             <form class="start-recording">
                 <button type="submit" class="btn btn-default">
@@ -85,7 +85,8 @@
             </button>
         {% endif %}
 
-        {% if not is_new and metadata.type != 'player' %}
+
+        {% if not is_new and metadata.type != 'player' and not is_patch and not is_record %}
             {{ sharing_widget(get_share_url(), get_embed_url(), coll_title, owner=can_admin(), is_public=is_public(user, coll_orig), anon=is_anon()) }}
         {% endif %}
     </div>

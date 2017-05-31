@@ -1,20 +1,16 @@
 html {
     position: relative;
-    min-height: 100%;
+    height: 100%;
 }
 
 body {
-    /* Margin bottom by footer height */
-    margin-bottom: 98px;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 98px; /* Set the fixed height of the footer here */
-    /*line-height: 76px;*/
-    padding-bottom: 24px;
+    padding: 20px 0;
 }
 
 .footer-label {
@@ -28,7 +24,7 @@ footer {
     display: block;
 }
 .rhizome-logo {
-    width: 118px; 
+    width: 118px;
     padding-top: 5px;
 }
 .project-info a {

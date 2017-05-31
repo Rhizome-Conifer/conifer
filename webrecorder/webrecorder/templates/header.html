@@ -1,3 +1,5 @@
+{% from '/utils.html' import sharing_widget %}
+
 {% if metadata.type != 'player' or curr_mode %}
 <header>
     <div class="navbar navbar-default navbar-static-top">
@@ -33,7 +35,7 @@
         {% endif %}
 
 
-        <div class="container-fluid wr-controls {% if not can_admin() %}public{% endif %}">
+    <div class="container-fluid wr-controls navbar-default {% if not can_admin() %}public{% endif %}">
             {% include 'recorder.html' %}
         </div>
 
@@ -54,6 +56,10 @@
                     <span class="glyphicon glyphicon-copy glyphicon-button"></span>Clipboard</button>
 
                     <span id="browser-countdown-label">Browser Time Left: <span id="browser-countdown"></span></span>
+                {% endif %}
+
+                {% if curr_mode == 'record' or curr_mode == 'patch' %}
+                    {{ sharing_widget(get_share_url(), get_embed_url(), coll_title, owner=can_admin(), is_public=is_public(user, coll_orig), anon=is_anon(), bsSize='xs') }}
                 {% endif %}
             </div>
         {% endif %}

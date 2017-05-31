@@ -27,12 +27,17 @@
 {% block content %}
 
 <div class="row top-buffer-sm">
-    <div class="col-xs-9">
+    <div class="col-xs-6">
         <h1 class="top-buffer-none pull-left">
             {% include 'editable_collection_title.html' %}
         </h1>
     </div>
-    <div class="col-xs-3 pull-xs-right">
+    <div class="col-xs-6 pull-xs-right wr-coll-actions">
+        {% if can_admin() %}
+            <button id="delete-coll-btn" class="btn btn-sm btn-default" data-toggle="modal" data-target="#confirm-delete-collection-modal"><span class="glyphicon glyphicon-trash glyphicon-button" aria-hidden="true"></span><span class="hidden-xs">Delete Collection</span></button>
+            <a href="{{ collection.download_url }}"><button class="btn btn-default btn-sm btn-collection-download" role="button"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span><span class="hidden-xs">Download Collection</span></button></a>
+        {% endif %}
+
         {% if can_write() %}
             {% if is_out_of_space() %}
                 {% set is_disabled_class = "disabled" %}
@@ -55,14 +60,8 @@
         </div>
         {% endif %}
 
-    <div class="col-xs-2">
-    {% if can_admin() %}
-        <a href="{{ collection.download_url }}" class="btn btn-default btn-sm btn-collection-download"><span class="glyphicon glyphicon-cloud-download glyphicon-button"></span>Download Collection</a>
 
-    {% endif %}
-    </div>
-
-    <div class="col-xs-6 collection-description">
+    <div class="col-xs-10 collection-description">
         {% if not is_anon() %}
         <div id="about" class="">
             <div id="home-markdown" data-desc-url="/api/v1/collections/{{ coll }}/desc?user={{ user }}" class="collapse">{{ collection.desc }}</div>
@@ -76,24 +75,14 @@
         </div>
         {% endif %}
     </div>
-
-    <div class="col-xs-4">
-    {% if can_admin() %}
-        <button id="delete-coll-btn" class="btn btn-sm btn-default pull-right" data-toggle="modal" data-target="#confirm-delete-collection-modal"><span class="glyphicon glyphicon-trash glyphicon-button" aria-hidden="true"></span>Delete Collection</button>
-    {% endif %}
-    </div>
 </div>
 
 {% include 'collection_info_browser.html' %}
 
 {% if can_admin() %}
-
-{% include 'confirm_delete_collection_modal.html' %}
-
-{% include 'move_collection_modal.html' %}
-
-{% include 'upload_modal.html' %}
-
+    {% include 'confirm_delete_collection_modal.html' %}
+    {% include 'move_collection_modal.html' %}
+    {% include 'upload_modal.html' %}
 {% endif %}
 
 {% endblock %}

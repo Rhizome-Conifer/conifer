@@ -1,5 +1,6 @@
-<div class="row top-buffer-sm">
+<div class="row top-buffer-sm wr-collection-info">
     <div class="col-xs-2 recording-panel">
+        <h5>RECORDINGS</h5>
         {% if can_write() %}
         <div>
             <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
@@ -19,19 +20,19 @@
                     <span id="sel-bookmarks" class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }}</span> bookmarks&nbsp; &nbsp;
                     <span class="current-size text-right" data-size-display="{{ collection.size }}"></span>
                 </div>
-                <div class="content-column top-buffer-md">
-                    <small><a id="clear-all" href="" class="btn btn-default btn-xs clear-all-btn">Clear Filters</a></small>
-                </div>
             </div>
-
-            {% set oos = is_out_of_space() %}
-            {% for recording in collection.recordings | sort(attribute='updated_at', reverse=True) %}
-                {% include 'recording_card.html' %}
-            {% endfor %}
+            <div class='rec-filter'>
+                <a id="clear-all" href="#" class="clear-all-btn">Select All</a>
+            </div>
+            <div class="recording-bin">
+                {% for recording in collection.recordings | sort(attribute='updated_at', reverse=True) %}
+                    {% include 'recording_card.html' %}
+                {% endfor %}
+            </div>
         </div>
     </div>
 
-    <div class="col-xs-10 bookmarks-panel">
+    <div class="col-xs-10 col-xs-push-2 bookmarks-panel">
         {% include 'bookmarks_table.html' %}
     </div>
 </div>

@@ -94,7 +94,7 @@ var RecordingSelector = (function() {
         var newVal = !$(card).hasClass("card-selected");
         $(card).toggleClass('card-selected', newVal);
 
-        $(card).find("div.filter-label").toggleClass("active", newVal);
+        $(card).find("input[type='checkbox']").prop("checked", newVal);
 
         //if (isNothingSelected() || isEverythingSelected()) {
         //    setAllCardsSelected();
@@ -217,7 +217,7 @@ var RecordingSelector = (function() {
     var clearFilters = function(event) {
         event.preventDefault();
         $('.card').removeClass("card-selected");
-        $('.filter-label').removeClass("active");
+        $("input[type='checkbox']").prop("checked", false);
         BookmarksTable.filterByRecordings([]);
         updateRecordingFilterList(event, true);
         return true;
@@ -434,16 +434,16 @@ var BookmarkHiddenSwitch = (function() {
         var showHidden = $("#show-hidden").is(':checked');
 
         if (bookmarkInfo.hidden === "1") {
-            $(button).find('.glyphicon').removeClass('glyphicon-eye-open');
-            $(button).find('.glyphicon').addClass('glyphicon-eye-close');
+            $(button).find('.glyphicon').removeClass('glyphicon-star');
+            $(button).find('.glyphicon').addClass('glyphicon-star-empty');
             $(button).find('.hidden-label').text('Show');
             $(button).closest('tr').addClass("hidden-bookmark");
             if (!showHidden) {
                 $(button).closest('tr').hide();
             }
         } else {
-            $(button).find('.glyphicon').removeClass('glyphicon-eye-close');
-            $(button).find('.glyphicon').addClass('glyphicon-eye-open');
+            $(button).find('.glyphicon').removeClass('glyphicon-star-empty');
+            $(button).find('.glyphicon').addClass('glyphicon-star');
             $(button).find('.hidden-label').text('Hide');
             $(button).closest('tr').removeClass("hidden-bookmark");
             if (!showHidden) {

@@ -119,6 +119,19 @@
 /* End header top bar */
 
 
+/* Global */
+
+.wr-content {
+    display: flex;
+    display: -ms-flexbox;
+    flex-direction: column;
+    -ms-flex-direction: column;
+    flex-grow: 1;
+    -ms-flex: 1 1;
+}
+
+/* End global */
+
 /*
  * Homepage
  *
@@ -219,7 +232,7 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
 
 .faq .heading {
     display: flex;
-    display: -ms-flex;
+    display: -ms-flexbox;
     align-items: center;
     -ms-flex-align: center;
     margin: 50px 0;
@@ -463,10 +476,6 @@ input.upload-choice {
   padding: 0px 5px;
 }
 
-.form-group-recorder-url {
-    margin-bottom: 4px;
-}
-
 .form-group-recorder-url .input-group-addon {
     background-color: transparent;
     border: 0px;
@@ -515,16 +524,44 @@ input.upload-choice {
 .edit-title-form-visible {
     display: inline-block;
 }
+.wr-collection-info {
+    position: relative;
+    flex-grow: 1;
+    -ms-flex: 1 1;
+    min-height: 400px;
+}
 
 h1 {
     position: relative;
 }
-    h1 button.edit-title {
-        position: absolute;
-        left: -20px;
-        top: 4px;
-        transform: scale(-1,1);
-    }
+h1 button.edit-title {
+    position: absolute;
+    left: -20px;
+    top: 4px;
+    transform: scale(-1,1);
+}
+
+.glyphicon-star {
+    color: rgb(251,200,24);
+}
+.glyphicon-star-empty {
+    color: rgb(207,207,207);
+}
+
+.wr-coll-actions {
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: flex-end;
+    -ms-flex-pack: end;
+    align-items: center;
+    -ms-flex-align: center;
+}
+.wr-coll-actions > *:not(:last-child) {
+    margin-right: 10px;
+}
+.rec-filter {
+    padding: 10px 15px;
+}
 
 
 .hide-loading-spinner,
@@ -549,14 +586,20 @@ h1 {
 }
 
 .access-switch {
-    padding-top: 15px;
-    padding-bottom: 15px;
-    clear: both;
+
 }
 
 .recording-panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
     padding-right: 0px;
     padding-left: 0px;
+
+    display: flex;
+    display: -ms-flexbox;
+    flex-direction: column;
+    -ms-flex-direction: column;
 }
 
 .recording-panel-top-spacer {
@@ -565,6 +608,24 @@ h1 {
 
 .recording-selector {
     margin-top: 8px;
+    border: solid 1px #b9b9b9;
+    border-radius: 3px;
+
+    display: flex;
+    display: -ms-flexbox;
+    flex-direction: column;
+    -ms-flex-direction: column;
+    height: 100%;
+}
+.recording-selector:after {
+    content: "";
+    position:absolute;
+    z-index: 10;
+    left: 3px;
+    bottom: 1px;
+    height: 30px;
+    width: calc(100% - 6px);
+    background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
 }
 
 .icon-button {
@@ -580,10 +641,6 @@ h1 {
     outline: none;
     background: transparent;
 
-}
-
-.btn-collection-download {
-    margin-left: -15px;
 }
 
 .collection-description {
@@ -613,19 +670,21 @@ div.filter-label {
 
 .card {
     /*border-top: 1px solid #ccc;*/
-    padding-top: 4px;
-    padding-left: 2px;
-    padding-bottom: 4px;
+    padding: 4px 0 4px 10px;
     cursor: pointer;
     position: relative;
+
+    display: flex;
+    display: -ms-flexbox;
+}
+
+.card:last-of-type {
+    margin-bottom: 15px;
 }
 
 .card-top {
     padding: 5px 0px 10px 10px;
-    background: linear-gradient(180deg, #eee, rgba(255,255,255,0));
-    border-bottom: none;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    border-bottom: solid 1px #b9b9b9;
 }
 
     #clear-all {
@@ -654,24 +713,25 @@ div.filter-label {
     background-color: white;
 }
 
-    .card .dropdown-menu {
-        left: -8px;
-    }
-        .card .dropdown-menu:after {
-            position: absolute;
-            top: -24px;
-            right: 16px;
-            font-family: 'Glyphicons Halflings';
-            content: "\e252";
-            font-size: 12px;
-            background: #fff;
-            padding: 1px 6px 5px;
-            border-top-left-radius: 3px;
-            border-top-right-radius: 3px;
-            border: 1px solid #ddd;
-            border-bottom: none;
-            pointer-events: none;
-        }
+.card .dropdown-menu {
+    left: -32px;
+    border-top-right-radius: 0;
+}
+.card .dropdown-menu:after {
+    position: absolute;
+    top: -23px;
+    right: -1px;
+    height: 23px;
+    content: "EDIT";
+    font-size: 12px;
+    background: #fff;
+    padding: 1px 6px 5px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    pointer-events: none;
+}
 
 
 .card .recording-actions .btn {
@@ -687,12 +747,9 @@ div.filter-label {
     background-color: #eee;
 }
 
-.card-selected {
-    background-color: #ddd;
-}
-
 .recording-title {
     overflow-wrap: break-word;
+    font-weight: bold;
     /*font-weight: bold;*/
     /*color: #1932bd;*/
 }
@@ -753,6 +810,10 @@ div.filter-label {
 /* mirror pen glyph */
 .table-bookmarks>tbody>tr>td>button.edit-title {
     transform: scale(-1, 1);
+    opacity: 0;
+}
+.table-bookmarks>tbody>tr:hover button.edit-title {
+    opacity: 1;
 }
 .table-bookmarks>thead>tr>th.bookmark-edit-title,
 .table-bookmarks>tbody>tr>td.bookmark-edit-title {
@@ -894,6 +955,11 @@ div.filter-label {
 }
 .dropdown-menu > .tag.tagged:hover > span.glyphicon-ok {
     display: none;
+}
+
+.recording-bin {
+    overflow: auto;
+    height: 100%;
 }
 
 /* End collection info page */
@@ -1385,10 +1451,36 @@ div.paging-container:hover .home-link {
     height: 0px !important;
 }
 
-.wr-controls > div{
+.wr-controls {
+    display: flex;
+    display: -ms-flexbox;
+    align-items: center;
+    -ms-flex-align: center;
+    position: relative;
+    z-index: 10;
+}
+.wr-controls.public {
+    position: relative;
+    justify-content: center;
+    -ms-flex-pack: center;
+}
+.wr-controls > * {
     margin-top: 12px;
     margin-bottom: 12px;
 }
+.wr-controls > *:not(:last-child) {
+    margin-right: 15px;
+}
+/* anon view */
+.wr-controls.public .main-bar {
+    max-width: 60vw;
+}
+.wr-controls.public .recording-actions {
+    position: absolute;
+    top: 0;
+    right: 15px;
+}
+
 .new-recording {
     margin-top: 12px;
 }
@@ -1524,20 +1616,47 @@ body:not(.cbrowser) .wr-tools {
 }
 
 .wr-tools {
-    transition: height .3s ease-in-out;
-    height: 0px;
-    overflow: hidden;
+    transition: margin-top .3s ease-in-out;
+    margin-top: -40px;
+    height: 40px;
     background: #F3F3F3;
-
     display: flex;
     display: -ms-flexbox;
     align-items: center;
     -ms-flex-align: center;
 }
 .wr-tools.open {
-    height: 40px;
+    margin-top: 0;
+}
+.wr-tools .share-container {
+    margin-left: auto;
 }
 
+@media (max-width: 500px) {
+    .wr-controls:not(.public) {
+        flex-wrap: wrap;
+        -ms-flex-wrap: wrap;
+    }
+
+    .wr-controls > *:not(:last-child) {
+        margin-right: 0;
+    }
+
+    .wr-controls:not(.public) > .main-bar {
+        margin-bottom: 0;
+    }
+
+    .mode-selector {
+        order: 1;
+        -ms-flex-order: 1;
+    }
+
+    .recording-actions {
+        order: 2;
+        -ms-flex-order: 2;
+        margin-left: auto;
+    }
+}
 
 @media (max-width: 767px) {
     .wr-breadcrumb {
@@ -1553,11 +1672,14 @@ body:not(.cbrowser) .wr-tools {
     .navbar-user-links .nav li a {
         display: block;
     }
+
     .public .form-group-recorder-url .input-group {
         display: block;
     }
-    .wr-controls:not(.public) > div:last-child {
-        margin-top: 0;
+
+    .wr-controls.public {
+        justify-content: flex-start;
+        -ms-flex-pack: start;
     }
 
     .containerized .dropdown-menu {
