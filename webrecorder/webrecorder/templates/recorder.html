@@ -1,8 +1,11 @@
 {% from '/utils.html' import sharing_widget %}
 
 {% set is_record = (curr_mode == 'record') %}
-{% set is_replay = (curr_mode == 'replay' or curr_mode == 'replay-coll') %}
+{% set is_extract = (curr_mode == 'extract') %}
 {% set is_patch = curr_mode == 'patch' %}
+{% set is_write_mode = is_record or is_extract or is_patch %}
+
+{% set is_replay = (curr_mode == 'replay' or curr_mode == 'replay-coll') %}
 {% set is_new = curr_mode == 'new' %}
 {% set has_browsers = get_browsers().items()|length > 0 %}
 
@@ -12,7 +15,7 @@
         {% include '/mode_dropdown.html' %}
     {% endif %}
 
-    <div class="{% if is_new %}col-xs-10{% elif is_record or is_patch %}col-xs-7{% elif not can_admin() %}col-sm-offset-2 col-xs-8{% elif is_replay %}col-xs-10 col-sm-8 col-md-7 col-lg-8{% endif %}">
+    <div class="{% if is_new %}col-xs-10{% elif is_write_mode %}col-xs-7{% elif not can_admin() %}col-sm-offset-2 col-xs-8{% elif is_replay %}col-xs-10 col-sm-8 col-md-7 col-lg-8{% endif %}">
         <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url">
             <div class="input-group containerized">
                 <div class='input-group-btn'>
@@ -49,7 +52,10 @@
                         <button type="button" class="btn btn-default btn-next" title="Next bookmark"><span class="glyphicon glyphicon-chevron-right"></span></button>
                     </div>
                 {% else %}
+                <div>
                     <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" {% if not browser %}autofocus{% endif %} required>
+                    <span class="replay-date main-replay-date"></span>
+                </div>
                 {% endif %}
             </div>
         </form>

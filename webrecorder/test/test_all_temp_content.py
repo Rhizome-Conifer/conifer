@@ -106,7 +106,7 @@ class TestTempContent(FullStackTests):
     def test_anon_replay_1(self):
         #print(self.redis.hgetall('c:' + self.anon_user + ':temp:warc'))
 
-        res = self._get_anon('/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/my-recording/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -249,7 +249,7 @@ class TestTempContent(FullStackTests):
         assert '/http://httpbin.org/get?bood=far' in res.text
 
     def test_anon_replay_top_frame(self):
-        res = self._get_anon('/temp/my-rec2/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/my-rec2/replay/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"replay"' in res.text
@@ -383,17 +383,18 @@ class TestTempContent(FullStackTests):
         assert res.json == {'deleted_id': 'patch'}
 
     def test_error_anon_not_found_recording(self):
-        res = self._get_anon('/temp/my-rec/mp_/http://example.com/', status=404)
+        res = self._get_anon('/temp/my-rec/replay/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
     def test_error_anon_not_found_coll_url(self):
         res = self._get_anon('/temp/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
-    def test_error_anon_invalid_rec_name_redir(self):
-        res = self._get_anon('/temp/mp_/example.com', status=302)
-        assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/mp_-/example.com')
-        assert res.status_code == 302
+    def test_anon_rec_name_redir(self):
+        res = self._get_anon('/temp/mp_/example.com', status=307)
+        assert res.status_code == 307
+        print(res.headers['Location'])
+        assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/mp_/http://example.com/')
 
     #def test_edge_anon_not_rec_name(self):
     #    res = self._get_anon('/temp/example.com/')
@@ -402,7 +403,7 @@ class TestTempContent(FullStackTests):
     #    assert '<iframe' in res.text
 
     def test_error_anon_not_found_recording_url(self):
-        res = self._get_anon('/temp/my-recording/mp_/http://example.com/', status=404)
+        res = self._get_anon('/temp/my-recording/replay/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
     def test_error_anon_invalid_coll(self):

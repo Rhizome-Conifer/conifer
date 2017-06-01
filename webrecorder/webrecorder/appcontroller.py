@@ -15,7 +15,7 @@ from pkg_resources import resource_filename
 from six.moves.urllib.parse import urlsplit, urljoin, unquote
 
 from pywb.urlrewrite.templateview import JinjaEnv
-from webrecorder.utils import load_wr_config
+from webrecorder.utils import load_wr_config, init_logging
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
@@ -198,8 +198,8 @@ class AppController(BaseController):
             return self.manager.can_read_coll(get_user(context), get_coll(context))
 
         @contextfunction
-        def can_mount(context):
-            return self.manager.can_mount_coll(get_user(context), get_coll(context))
+        def is_extractable(context):
+            return self.manager.is_extractable(get_user(context), get_coll(context))
 
         @contextfunction
         def is_anon(context):
@@ -307,7 +307,6 @@ class AppController(BaseController):
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
-        jinja_env.globals['can_mount'] = can_mount
         jinja_env.globals['can_tag'] = can_tag
         jinja_env.globals['is_owner'] = is_owner
         jinja_env.globals['is_anon'] = is_anon
@@ -322,6 +321,7 @@ class AppController(BaseController):
         jinja_env.globals['get_content_host'] = get_content_host
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
+        jinja_env.globals['is_extractable'] = is_extractable
         jinja_env.globals['get_tags'] = get_tags
         jinja_env.globals['is_tagged'] = is_tagged
         jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
@@ -479,16 +479,4 @@ class AppController(BaseController):
         # bottle debug
         debug(True)
 
-        # Logging
-        logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
-                            level=logging.DEBUG)
-        logging.debug('')
-
-        # set boto log to error
-        boto_log = logging.getLogger('boto')
-        if boto_log:
-            boto_log.setLevel(logging.ERROR)
-
-        tld_log = logging.getLogger('tldextract')
-        if tld_log:
-            tld_log.setLevel(logging.ERROR)
+        init_logging()

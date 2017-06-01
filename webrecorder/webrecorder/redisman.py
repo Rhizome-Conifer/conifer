@@ -575,15 +575,12 @@ class AccessManagerMixin(object):
     def can_write_coll(self, user, coll):
         return self._check_access(user, coll, self.WRITE_PREFIX)
 
-    def can_mount_coll(self, user, coll):
-        if not self.can_admin_coll(user, coll):
+    def is_extractable(self, user, coll):
+        if not self.can_read_coll(user, coll):
             return False
 
-        try:
-            self.cork.require(role='mounts-archivist')
-            return True
-        except Exception:
-            return False
+        # for now, no extractable view
+        return False
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
@@ -723,6 +720,8 @@ class RecManagerMixin(object):
         self.cdx_key = config['cdxj_key_templ']
         self.tags_key = config['tags_key']
 
+        self.ra_key = config['ra_key']
+
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
@@ -764,7 +763,7 @@ class RecManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def create_recording(self, user, coll, rec, rec_title, coll_title='',
-                         no_dupe=False):
+                         no_dupe=False, is_patch=False):
 
         self.assert_can_write(user, coll)
 
@@ -780,7 +779,7 @@ class RecManagerMixin(object):
             if self.redis.hsetnx(key, 'id', rec) == 1:
                 break
 
-            # don't create a dupelicate, just use the specified recording
+            # don't create a duplicate, just use the specified recording
             if no_dupe:
                 return self.get_recording(user, coll, rec)
 
@@ -795,6 +794,8 @@ class RecManagerMixin(object):
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'updated_at', now)
             pi.hsetnx(key, 'size', '0')
+            if is_patch:
+                pi.hset(key, 'is_patch', '1')
             pi.sadd(rec_list_key, rec)
 
         if not self._has_collection_no_access_check(user, coll):
@@ -854,6 +855,14 @@ class RecManagerMixin(object):
         self.assert_can_admin(user, coll)
 
         return self._send_delete('rec', user, coll, rec)
+
+    def track_remote_archive(self, user, coll, rec, source_id):
+
+        ra_key = self.ra_key.format(user=user,
+                                    coll=coll,
+                                    rec=rec)
+
+        self.redis.sadd(ra_key, source_id)
 
     def _get_pagedata(self, user, coll, rec, pagedata):
         key = self.page_key.format(user=user, coll=coll, rec=rec)
@@ -1034,7 +1043,6 @@ class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
         self.coll_info_key = config['info_key_templ']['coll']
-        self.mount_key = config['mount_key_templ']
         self.upload_key = config['upload_key_templ']
         self.upload_exp = int(config['upload_status_expire'])
 
@@ -1079,24 +1087,6 @@ class CollManagerMixin(object):
             result['recordings'] = self.get_recordings(user, coll)
 
         return result
-
-    def add_mount(self, user, coll, rec, rec_title,
-                  mount_type, mount_desc, mount_config):
-        rec_info = self.create_recording(user, coll, rec, rec_title)
-        rec = rec_info['id']
-
-        mount_key = self.mount_key.format(user=user, coll=coll, rec=rec)
-
-        rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
-
-        with redis_pipeline(self.redis) as pi:
-            pi.set(mount_key, mount_config)
-
-            pi.hset(rec_key, 'mount_type', mount_type)
-            if mount_desc:
-                pi.hset(rec_key, 'mount_desc', mount_desc)
-
-        return rec_info
 
     def _has_collection_no_access_check(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)
@@ -1354,8 +1344,8 @@ class CLIRedisDataManager(RedisDataManager):
     def can_admin_coll(self, user, coll):
         return True
 
-    def can_mount_coll(self, user, coll):
-        return True
+    def can_extract_coll(self, user, coll):
+        return False
 
     def can_tag(self):
         return True
