@@ -870,6 +870,7 @@ var RouteTo = (function(){
         replayRecording: replayRecording,
         addToRecording: addToRecording,
         patchPage: patchPage,
+        extractPage: extractPage,
     }
 }());
 

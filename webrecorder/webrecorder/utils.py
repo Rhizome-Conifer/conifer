@@ -2,6 +2,7 @@ from warcio.limitreader import LimitReader
 from pywb.webagg.utils import load_config
 from contextlib import contextmanager
 
+import re
 import gevent
 import logging
 
@@ -31,6 +32,31 @@ def init_logging():
 # ============================================================================
 def load_wr_config():
     return load_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
+
+
+# ============================================================================
+ALPHA_NUM_RX = re.compile('[^\w-]')
+
+WB_URL_COLLIDE = re.compile('^([\d]+([\w]{2}_)?|([\w]{2}_))$')
+
+
+def sanitize_tag(tag):
+    id = tag.strip()
+    id = id.replace(' ', '-')
+    id = ALPHA_NUM_RX.sub('', id)
+    if WB_URL_COLLIDE.match(id):
+        id += '-'
+
+    return id
+
+def sanitize_title(title):
+    id = title.lower().strip()
+    id = id.replace(' ', '-')
+    id = ALPHA_NUM_RX.sub('', id)
+    if WB_URL_COLLIDE.match(id):
+        id += '-'
+
+    return id
 
 
 # ============================================================================

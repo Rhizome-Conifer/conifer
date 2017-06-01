@@ -1,6 +1,7 @@
 from bottle import request, HTTPError, redirect as bottle_redirect
 from functools import wraps
 from six.moves.urllib.parse import quote
+from webrecorder.utils import sanitize_tag, sanitize_title
 
 import re
 import os
@@ -8,10 +9,6 @@ import os
 
 # ============================================================================
 class BaseController(object):
-    ALPHA_NUM_RX = re.compile('[^\w-]')
-
-    WB_URL_COLLIDE = re.compile('^([\d]+([\w]{2}_)?|([\w]{2}_))$')
-
     def __init__(self, app, jinja_env, manager, config):
         self.app = app
         self.jinja_env = jinja_env
@@ -167,22 +164,10 @@ class BaseController(object):
         return decorator
 
     def sanitize_tag(self, tag):
-        id = tag.strip()
-        id = id.replace(' ', '-')
-        id = self.ALPHA_NUM_RX.sub('', id)
-        if self.WB_URL_COLLIDE.match(id):
-            id += '-'
-
-        return id
+        return sanitize_tag(tag)
 
     def sanitize_title(self, title):
-        id = title.lower().strip()
-        id = id.replace(' ', '-')
-        id = self.ALPHA_NUM_RX.sub('', id)
-        if self.WB_URL_COLLIDE.match(id):
-            id += '-'
-
-        return id
+        return sanitize_title(title)
 
     def get_view_user(self, user):
         return user

@@ -70,7 +70,10 @@ def make_webagg():
                         warc_url,
                         cache_proxy_url)
 
-    extractor2 = GeventTimeoutAggregator(archives, timeout=timeout, invert_sources=True)
+    extractor2 = GeventTimeoutAggregator(archives, timeout=timeout,
+                                         sources_key='inv_sources',
+                                         invert_sources=True)
+
     extract_other = DefaultResourceHandler(
                         extractor2,
                         warc_url,

@@ -60,6 +60,8 @@ class TestWebRecRecorder(FullStackTests):
         keys = self.redis.keys()
 
         assert set(keys) == set([
+            'h:defaults',
+            'h:roles',
             'r:USER:COLL:REC:warc',
             'r:USER:COLL:REC:cdxj',
             'r:USER:COLL:REC:info',
@@ -83,6 +85,8 @@ class TestWebRecRecorder(FullStackTests):
         keys = self.redis.keys()
 
         assert set(keys) == set([
+            'h:defaults',
+            'h:roles',
             'r:USER:COLL:REC:warc',
             'r:USER:COLL:REC2:warc',
             'r:USER:COLL:REC:cdxj',

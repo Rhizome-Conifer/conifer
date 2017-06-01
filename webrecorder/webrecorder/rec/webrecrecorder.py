@@ -6,9 +6,10 @@ from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
 
 from pywb.recorder.filters import WriteRevisitDupePolicy
 from pywb.recorder.filters import ExcludeHttpOnlyCookieHeaders
-from pywb.recorder.filters import SkipRangeRequestFilter, CollectionFilter
+from pywb.recorder.filters import SkipRangeRequestFilter, SkipDefaultFilter
 
-from webrecorder.utils import SizeTrackingReader, redis_pipeline
+from webrecorder.utils import SizeTrackingReader, redis_pipeline, sanitize_title
+from webrecorder.redisman import init_manager_for_cli
 
 import redis
 import time
@@ -112,7 +113,7 @@ class WebRecRecorder(object):
         self.writer = writer
 
         skip_filters = [SkipRangeRequestFilter(),
-                        ExtractingCollectionFilter(self.accept_colls)]
+                        ExtractPatchingFilter()]
 
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
@@ -435,8 +436,14 @@ class WebRecRecorder(object):
 
 
 # ============================================================================
-class ExtractingCollectionFilter(CollectionFilter):
+class ExtractPatchingFilter(SkipDefaultFilter):
+    def __init__(self):
+        self.manager = init_manager_for_cli()
+
     def skip_response(self, path, req_headers, resp_headers, params):
+        if super(ExtractPatchingFilter, self).skip_response(path, req_headers, resp_headers, params):
+            return True
+
         sources = params.get('sources', 'live')
         if not sources or sources == '*':
             return False
@@ -454,7 +461,18 @@ class ExtractingCollectionFilter(CollectionFilter):
         if not patch_rec:
             return True
 
+        user = params['param.user']
+        coll = params['param.coll']
+        patch_rec_title = patch_rec
+        patch_rec = sanitize_title(patch_rec)
+
+        if not self.manager.has_recording(user, coll, patch_rec):
+            res = self.manager.create_recording(user, coll, patch_rec, patch_rec_title, is_patch=True)
+            patch_rec = res['id']
+
         params['param.recorder.rec'] = patch_rec
+        resp_headers['Recorder-Rec'] = patch_rec
+
         return False
 
 
