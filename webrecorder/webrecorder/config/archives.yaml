@@ -44,6 +44,15 @@ archives:
         timemap_url: https://web.archive.org/web/timemap/link/{url}
         replay_url: https://web.archive.org/web/{timestamp}id_/{url}
 
+    iab:
+        name: 'Internet Archive beta'
+        info: 'https://web-beta.archive.org'
+
+        type: memento
+        timegate_url: https://web-beta.archive.org/web/{url}
+        timemap_url: https://web-beta.archive.org/web/timemap/link/{url}
+        replay_url: https://web-beta.archive.org/web/{timestamp}id_/{url}
+
     is:
         name: 'Icelandic Web Archive'
         info: 'http://vefsafn.is/'
