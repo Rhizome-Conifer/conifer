@@ -83,16 +83,13 @@ def make_webagg():
 
 
     # Single Rec Replay
-    replay_rec = DefaultResourceHandler(
-                    SimpleAggregator(
-                        {'replay': rec_redis_source}
-                    ), warc_url, cache_proxy_url)
-
+    replay_rec = DefaultResourceHandler(rec_redis_source, warc_url, cache_proxy_url)
 
     # Remote Replay Source
     replay_remote_agg = RedisSourceFilterAggregator(archives,
                                                     redis=redis,
-                                                    source_key=replay_ra_key,
+                                                    replay_ra_key=replay_ra_key,
+                                                    rec_list_key=rec_list_key,
                                                     timeout=timeout)
 
     remote_replay = DefaultResourceHandler(replay_remote_agg, warc_url, cache_proxy_url)
@@ -147,24 +144,29 @@ class RedisSourceFilterAggregator(GeventTimeoutAggregator):
     def __init__(self, sources, **kwargs):
         super(RedisSourceFilterAggregator, self).__init__(sources, **kwargs)
         self.redis = kwargs['redis']
-        self.source_key_templ = kwargs['source_key']
+        self.replay_ra_key = kwargs['replay_ra_key']
+        self.rec_list_key = kwargs['rec_list_key']
 
     def _iter_sources(self, params):
         if not params.get('sources'):
-            source_key = res_template(self.source_key_templ, params)
-            remote_sources = self.redis.hgetall(source_key)
+            replay_ra_key = res_template(self.replay_ra_key, params)
+
+            rec_list_key = res_template(self.rec_list_key, params)
+
+            keys = params.get('scan:' + rec_list_key)
+
+            if not keys:
+                return []
+
+            keys = [replay_ra_key.replace('*', key.decode('utf-8')) for key in keys]
+
+            remote_sources = self.redis.mget(keys)
+            remote_sources = {source.decode('utf-8') for source in remote_sources if source}
 
             if not remote_sources:
                 return []
 
-            source_list = [name.decode('utf-8')
-                           for name, count in remote_sources.items()
-                           if int(count) > 0]
-
-            if not source_list:
-                return []
-
-            params['sources'] = ','.join(source_list)
+            params['sources'] = ','.join(remote_sources)
 
         # don't record here
         params['recorder_skip'] = '1'
@@ -177,13 +179,14 @@ class PatchAllFilterAggregator(GeventTimeoutAggregator):
         replay_sources = params.get('sources')
 
         # allow recording
-        params.pop('recorder_skip')
+        params.pop('recorder_skip', '')
 
         # if no replay source list or all list
         # then patch from 'live' only
         if not replay_sources or replay_sources == '*':
-            yield ('live', self.sources['live'])
-            return
+            replay_sources = ''
+            #yield ('live', self.sources['live'])
+            #return
 
         # else patch from every archive *not* in the sources list!
         replay_list = replay_sources.split(',')

@@ -579,13 +579,13 @@ class AccessManagerMixin(object):
         if not self.can_read_coll(user, coll):
             return False
 
-        replay_ra_key = self.replay_ra_key.format(user=user, coll=coll)
+        keys = self._get_rec_keys(user, coll, self.replay_ra_key)
 
-        replay_ras = self.redis.hgetall(replay_ra_key)
+        replay_ras = self.redis.mget(keys)
         if not replay_ras:
             return False
 
-        return any(int(value) > 0 for value in replay_ras.values())
+        return any(value for value in replay_ras)
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
@@ -862,12 +862,12 @@ class RecManagerMixin(object):
 
         return self._send_delete('rec', user, coll, rec)
 
-    def add_remote_replay(self, user, coll, source_id):
-
+    def set_remote_replay(self, user, coll, rec, source_id):
         replay_ra_key = self.replay_ra_key.format(user=user,
-                                                  coll=coll)
+                                                  coll=coll,
+                                                  rec=rec)
 
-        self.redis.hincrby(replay_ra_key, source_id, 1)
+        self.redis.set(replay_ra_key, source_id)
 
     def track_remote_archive(self, user, coll, rec, source_id):
 

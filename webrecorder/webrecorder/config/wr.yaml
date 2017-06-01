@@ -55,12 +55,19 @@ url_templates:
 
     record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}'
     extract: '{record_host}/record/extract/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}&sources={sources}'
-    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.replay.rec=*param.ip={ip}&sources={sources}'
+    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.rec=*&param.ip={ip}&sources={sources}'
 
     snapshot: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=resource'
 
-    replay: '{replay_host}/replay/resource/postreq?param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}'
+    replay: '{replay_host}/replay/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
     replay-coll: '{replay_host}/replay-coll/resource/postreq?param.user={user}&param.coll={coll}&param.rec=*'
+
+
+recorder_accept_colls:
+    extract: '.*'
+    #patch: '(live|patch:)'
+    patch: '^[^r][^:].*'
+    live: 'live'
 
 
 # Download paths
@@ -151,7 +158,7 @@ tags_key: 'z:tags'
 user_tag_templ: 'r:{user}:{coll}:{rec}:tag:{tag}'
 
 ra_key: 'r:{user}:{coll}:{rec}:ra'
-replay_ra_key: 'c:{user}:{coll}:ra-replay'
+replay_ra_key: 'r:{user}:{coll}:{rec}:ra-replay'
 
 user_usage_key: 'h:user-usage'
 temp_usage_key: 'h:temp-usage'

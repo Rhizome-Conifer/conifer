@@ -349,11 +349,13 @@ class ContentController(BaseController, RewriterApp):
         is_patch = (mode == 'patch') or (mode.startswith('patch:'))
         recording = self.manager.create_recording(user, coll, rec, rec_title,
                                                   is_patch=is_patch)
-        if ':' in mode and is_patch:
-            remote_archive = mode.split(':', 1)[1]
-            self.manager.add_remote_replay(user, coll, remote_archive)
 
         rec = recording['id']
+
+        if ':' in mode and is_patch:
+            remote_archive = mode.split(':', 1)[1]
+            self.manager.set_remote_replay(user, coll, rec, remote_archive)
+
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
                                                              coll=coll,
                                                              rec=rec,
@@ -421,9 +423,10 @@ class ContentController(BaseController, RewriterApp):
             if type in self.MODIFY_MODES:
                 if rec == title or not self.manager.has_recording(user, coll, rec):
                     result = self.manager.create_recording(user, coll, rec, title, is_patch=is_patch)
+                    rec = result['id']
 
                     if remote_archive and is_patch:
-                        self.manager.add_remote_replay(user, coll, remote_archive)
+                        self.manager.set_remote_replay(user, coll, rec, remote_archive)
 
             self._redir_if_sanitized(rec, title, wb_url)
 
@@ -630,7 +633,7 @@ class ContentController(BaseController, RewriterApp):
     def _add_custom_params(self, cdx, resp_headers, kwargs):
         source = cdx.get('source')
         skip = cdx.get('recorder_skip')
-        if source and source != 'live' and not skip:
+        if source and source != 'live' and not source.startswith('r:') and not skip and kwargs['type'] in self.MODIFY_MODES:
             self.manager.track_remote_archive(kwargs['user'], kwargs['coll'], kwargs['rec'], source)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
