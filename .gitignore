@@ -43,6 +43,9 @@ nosetests.xml
 
 .vagrant
 
+# IDEs
+.idea
+
 # webrecorder specific
 wr.env
 webrecorder/keys/

@@ -16,7 +16,7 @@ wbinfo.curr_browser = "{{ browser }}";
 </head>
 
 <body>
-<h2>Webrecorder Proxy Error</h2>
+<h2>{{ metadata.product }} Proxy Error</h2>
 {% if not err_body or status_code == 404 %}
 <p>Sorry, the url <b>{{ url }}</b> could not be loaded</p>
 {% elif status_code == 402 and err_body == 'Rate Limit' %}

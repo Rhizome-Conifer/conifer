@@ -26,7 +26,7 @@
         {% if curr_user %}
         <p>Create a permanent collection in <a href="/{{ curr_user }}">your account.</a></p>
         {% else %}
-        <p><a href="/_register" target="_parent" ><strong>Sign Up</strong></a> or <a href="/_login_modal" class="login-link">Login</a> to give your collection a shareable permanent address on <a href="/">webrecorder.io</a></p>
+        <p><a href="/_register" target="_parent" ><strong>Sign Up</strong></a> or <a href="/_login_modal" class="login-link">Login</a> to give your collection a shareable permanent address on <a href="/">{{ get_app_host()|default('webrecorder.io', true) }}</a></p>
         {% endif %}
       </div>
 {% else %}
