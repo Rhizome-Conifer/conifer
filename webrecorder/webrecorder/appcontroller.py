@@ -154,7 +154,10 @@ class AppController(BaseController):
             return coll
 
         def get_user(context):
-            return context.get('user', '')
+            u = context.get('user', '')
+            if not u:
+                u = context.get('curr_user', '')
+            return u
 
         def get_browsers():
             return self.browser_mgr.get_browsers()
@@ -170,6 +173,12 @@ class AppController(BaseController):
 
         def get_content_host():
             return self.content_host
+
+        def get_num_collections():
+            curr_user = self.manager.get_curr_user()
+            count = self.manager.num_collections(curr_user) if curr_user else 0
+            return count
+
 
         def is_beta():
             return self.manager.is_beta()
@@ -319,6 +328,7 @@ class AppController(BaseController):
         jinja_env.globals['get_recs_for_coll'] = get_recs_for_coll
         jinja_env.globals['get_app_host'] = get_app_host
         jinja_env.globals['get_content_host'] = get_content_host
+        jinja_env.globals['get_num_collections'] = get_num_collections
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
         jinja_env.globals['is_extractable'] = is_extractable
@@ -354,7 +364,6 @@ class AppController(BaseController):
                 coll_list = self.manager.get_collections(curr_user)
 
                 resp['collections'] = coll_list
-                resp['num_collections'] = len(coll_list)
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
 

@@ -38,10 +38,12 @@
     </div>
 
     <div class="row">
-        <h4 class="text-center" style="margin-bottom: 30px">Create high-fidelity, interactive recordings of any web site you browse</h4>
+        <h4 class="text-center">Create high-fidelity, interactive recordings of any web site you browse</h4>
     </div>
 
-    {% include 'homepage_message.html' %}
+    {% if anon_user and anon_ttl and anon_ttl > 0 %}
+        {% include 'homepage_message.html' %}
+    {% endif %}
 
     <div class="row top-buffer-lg bottom-buffer-lg">
         {% include 'homepage_recorder.html' %}

@@ -6,11 +6,13 @@ html {
 body {
     min-height: 100%;
     display: flex;
+    display: -ms-flexbox;
     flex-direction: column;
+    -ms-flex-direction: column;
 }
 
 footer {
-    padding: 20px 0;
+    padding: 20px 0 40px 0;
 }
 
 .footer-label {
@@ -80,6 +82,8 @@ footer {
 @media (min-width: 767px) {
     footer .container .row {
         display: flex;
+        display: -ms-flexbox;
         align-items: flex-end;
+        -ms-flex-align: end;
     }
 }
