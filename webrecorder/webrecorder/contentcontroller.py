@@ -175,15 +175,6 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_routing(wb_url, user, coll, rec, type='record')
 
         # Patch
-        @self.app.route('/<user>/<coll>/<rec>/patch\:<archive>/<wb_url:path>', method='ANY')
-        def do_patch_archive(user, coll, rec, wb_url, archive):
-            request.path_shift(4)
-
-            if archive == 'all':
-                archive = '*'
-
-            return self.handle_routing(wb_url, user, coll, rec, type='patch', remote_archive=archive)
-
         @self.app.route('/<user>/<coll>/<rec>/patch/<wb_url:path>', method='ANY')
         def do_patch(user, coll, rec, wb_url):
             request.path_shift(4)
@@ -195,16 +186,15 @@ class ContentController(BaseController, RewriterApp):
         def do_extract_archive(user, coll, rec, wb_url, archive):
             request.path_shift(4)
 
-            if archive == 'all':
-                archive = ''
-
-            return self.handle_routing(wb_url, user, coll, rec, type='extract', remote_archive=archive)
+            return self.handle_routing(wb_url, user, coll, rec, type='extract',
+                                       remote_archive=archive,
+                                       include_patch=True)
 
         @self.app.route('/<user>/<coll>/<rec>/extract/<wb_url:path>', method='ANY')
-        def do_extract_all(user, coll, rec, wb_url, archive):
+        def do_extract_all(user, coll, rec, wb_url):
             request.path_shift(4)
 
-            return self.handle_routing(wb_url, user, coll, rec, type='extract', remote_archive='')
+            return self.handle_routing(wb_url, user, coll, rec, type='extract', remote_archive='*')
 
         # Replay
         @self.app.route('/<user>/<coll>/<rec>/replay/<wb_url:path>', method='ANY')
@@ -308,8 +298,8 @@ class ContentController(BaseController, RewriterApp):
 
         for name, archive in self.archives.items():
             if schemeless_url.startswith(archive['replay_prefix']):
-                if mode == 'record':
-                    mode = 'extract'
+                #if mode == 'record':
+                mode = 'extract'
                 mode += ':' + name
 
                 new_wb_url = schemeless_url[len(archive['replay_prefix']):]
@@ -346,15 +336,14 @@ class ContentController(BaseController, RewriterApp):
         if not self.manager.has_collection(user, coll):
             self.manager.create_collection(user, coll, coll_title)
 
-        is_patch = (mode == 'patch') or (mode.startswith('patch:'))
-        recording = self.manager.create_recording(user, coll, rec, rec_title,
-                                                  is_patch=is_patch)
+        if ':' in mode:
+            include_patch = True
+        else:
+            include_patch = False
 
-        rec = recording['id']
-
-        if ':' in mode and is_patch:
-            remote_archive = mode.split(':', 1)[1]
-            self.manager.set_remote_replay(user, coll, rec, remote_archive)
+        rec, patch_rec_id = self._create_new_rec(user, coll, rec,
+                                               rec_title,
+                                               include_patch)
 
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
                                                              coll=coll,
@@ -374,15 +363,36 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
+    def _create_new_rec(self, user, coll, rec, title, include_patch=False):
+        result = self.manager.create_recording(user, coll, rec, title)
+        rec = result['id']
+        patch_rec_id = ''
+
+        if include_patch:
+            patch_rec_id, patch_rec_title = self._get_patch_rec_id(title)
+
+            result = self.manager.create_recording(user, coll,
+                                                   patch_rec_id,
+                                                   patch_rec_title,
+                                                   is_patch=True)
+            patch_rec_id = result['id']
+
+        return rec, patch_rec_id
+
+    def _get_patch_rec_id(self, title):
+        patch_rec_title = 'Patch of ' + title
+        patch_rec_id = self.sanitize_title(patch_rec_title)
+        return patch_rec_id, patch_rec_title
+
     def handle_routing(self, wb_url, user, coll, rec, type,
                        is_embed=False,
                        is_display=False,
-                       remote_archive=''):
+                       remote_archive='',
+                       include_patch=False):
 
         wb_url = self.add_query(wb_url)
 
         not_found = False
-        is_patch = (type == 'patch')
 
         sesh = self.get_session()
 
@@ -390,6 +400,8 @@ class ContentController(BaseController, RewriterApp):
             self.redir_set_session()
 
         remote_ip = None
+
+        patch_rec_id = ''
 
         if type == 'replay' or type in self.MODIFY_MODES:
             if not self.manager.has_recording(user, coll, rec):
@@ -422,16 +434,17 @@ class ContentController(BaseController, RewriterApp):
 
             if type in self.MODIFY_MODES:
                 if rec == title or not self.manager.has_recording(user, coll, rec):
-                    result = self.manager.create_recording(user, coll, rec, title, is_patch=is_patch)
-                    rec = result['id']
-
-                    if remote_archive and is_patch:
-                        self.manager.set_remote_replay(user, coll, rec, remote_archive)
+                    rec, patch_rec_id = self._create_new_rec(user, coll, rec,
+                                                             title,
+                                                             include_patch)
 
             self._redir_if_sanitized(rec, title, wb_url)
 
             if type == 'replay':
                 raise HTTPError(404, 'No Such Recording')
+
+        if include_patch and not patch_rec_id:
+            patch_rec_id, _ = self._get_patch_rec_id(rec)
 
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'])
 
@@ -446,6 +459,7 @@ class ContentController(BaseController, RewriterApp):
                       rec=quote(rec, safe='/*'),
                       type=type,
                       sources=remote_archive,
+                      patch_rec=patch_rec_id,
                       ip=remote_ip,
                       is_embed=is_embed,
                       is_display=is_display)

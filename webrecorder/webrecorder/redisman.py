@@ -579,13 +579,8 @@ class AccessManagerMixin(object):
         if not self.can_read_coll(user, coll):
             return False
 
-        keys = self._get_rec_keys(user, coll, self.replay_ra_key)
-
-        replay_ras = self.redis.mget(keys)
-        if not replay_ras:
-            return False
-
-        return any(value for value in replay_ras)
+        # for now, no extractable view
+        return False
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
@@ -726,7 +721,6 @@ class RecManagerMixin(object):
         self.tags_key = config['tags_key']
 
         self.ra_key = config['ra_key']
-        self.replay_ra_key = config['replay_ra_key']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -785,7 +779,7 @@ class RecManagerMixin(object):
             if self.redis.hsetnx(key, 'id', rec) == 1:
                 break
 
-            # don't create a dupelicate, just use the specified recording
+            # don't create a duplicate, just use the specified recording
             if no_dupe:
                 return self.get_recording(user, coll, rec)
 
@@ -861,13 +855,6 @@ class RecManagerMixin(object):
         self.assert_can_admin(user, coll)
 
         return self._send_delete('rec', user, coll, rec)
-
-    def set_remote_replay(self, user, coll, rec, source_id):
-        replay_ra_key = self.replay_ra_key.format(user=user,
-                                                  coll=coll,
-                                                  rec=rec)
-
-        self.redis.set(replay_ra_key, source_id)
 
     def track_remote_archive(self, user, coll, rec, source_id):
 

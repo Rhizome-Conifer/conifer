@@ -3,8 +3,10 @@ from pywb.recorder.recorderapp import RecorderApp
 from pywb.recorder.redisindexer import WritableRedisIndexer
 
 from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
+
 from pywb.recorder.filters import WriteRevisitDupePolicy
 from pywb.recorder.filters import ExcludeHttpOnlyCookieHeaders
+from pywb.recorder.filters import SkipRangeRequestFilter, CollectionFilter
 
 from webrecorder.utils import SizeTrackingReader, redis_pipeline
 
@@ -109,9 +111,13 @@ class WebRecRecorder(object):
 
         self.writer = writer
 
+        skip_filters = [SkipRangeRequestFilter(),
+                        ExtractingCollectionFilter(self.accept_colls)]
+
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
-                                   accept_colls=self.accept_colls,
+                                   skip_filters=skip_filters,
+                                   #accept_colls=self.accept_colls,
                                    create_buff_func=self.create_buffer)
 
         self.recorder = recorder_app
@@ -426,6 +432,30 @@ class WebRecRecorder(object):
 
             except Exception as e:
                 print(e)
+
+
+# ============================================================================
+class ExtractingCollectionFilter(CollectionFilter):
+    def skip_response(self, path, req_headers, resp_headers, params):
+        sources = params.get('sources', 'live')
+        if not sources or sources == '*':
+            return False
+
+        if sources.startswith('r:'):
+            return True
+
+        sources = sources.split(',')
+
+        source = resp_headers.get('WebAgg-Source-Coll')
+        if source in sources:
+            return False
+
+        patch_rec = params.get('param.recorder.patch_rec')
+        if not patch_rec:
+            return True
+
+        params['param.recorder.rec'] = patch_rec
+        return False
 
 
 # ============================================================================

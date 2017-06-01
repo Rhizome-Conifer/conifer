@@ -38,8 +38,6 @@ def make_webagg():
     warc_url = redis_base + config['warc_key_templ']
     rec_list_key = config['rec_list_key_templ']
 
-    replay_ra_key = config['replay_ra_key']
-
     cache_proxy_url = os.environ.get('CACHE_PROXY_URL', '')
     global PROXY_PREFIX
     PROXY_PREFIX = cache_proxy_url
@@ -67,41 +65,37 @@ def make_webagg():
 
     # Extract Source
     extractor = GeventTimeoutAggregator(archives, timeout=timeout)
-    extract_rec = DefaultResourceHandler(
-                     extractor,
-                     warc_url,
-                     cache_proxy_url)
+    extract_primary = DefaultResourceHandler(
+                        extractor,
+                        warc_url,
+                        cache_proxy_url)
+
+    extractor2 = GeventTimeoutAggregator(archives, timeout=timeout, invert_sources=True)
+    extract_other = DefaultResourceHandler(
+                        extractor2,
+                        warc_url,
+                        cache_proxy_url)
 
     # Patch (all + live)
     archives_live = copy.copy(archives)
     archives_live['live'] = LiveIndexSource()
-    patcher = PatchAllFilterAggregator(archives_live, timeout=timeout)
+    patcher = GeventTimeoutAggregator(archives_live, timeout=timeout)
     patch_rec = DefaultResourceHandler(
                      patcher,
                      warc_url,
                      cache_proxy_url)
 
-
     # Single Rec Replay
     replay_rec = DefaultResourceHandler(rec_redis_source, warc_url, cache_proxy_url)
-
-    # Remote Replay Source
-    replay_remote_agg = RedisSourceFilterAggregator(archives,
-                                                    redis=redis,
-                                                    replay_ra_key=replay_ra_key,
-                                                    rec_list_key=rec_list_key,
-                                                    timeout=timeout)
-
-    remote_replay = DefaultResourceHandler(replay_remote_agg, warc_url, cache_proxy_url)
 
     # Coll Replay
     replay_coll = DefaultResourceHandler(coll_redis_source, warc_url, cache_proxy_url)
 
     app.add_route('/live', live_rec)
-    app.add_route('/extract', extract_rec)
+    app.add_route('/extract', HandlerSeq([extract_primary, extract_other]))
     app.add_route('/replay', replay_rec)
-    app.add_route('/replay-coll', HandlerSeq([replay_coll, remote_replay]))
-    app.add_route('/patch', HandlerSeq([replay_coll, remote_replay, patch_rec]))
+    app.add_route('/replay-coll', replay_coll)
+    app.add_route('/patch', HandlerSeq([replay_coll, patch_rec]))
 
     return app
 
@@ -137,62 +131,6 @@ class ProxyRemoteIndexSource(RemoteIndexSource):
         #replay_url = PROXY_PREFIX + replay_url
 
         super(ProxyRemoteIndexSource, self).__init__(api_url, replay_url, **kwargs)
-
-
-# ============================================================================
-class RedisSourceFilterAggregator(GeventTimeoutAggregator):
-    def __init__(self, sources, **kwargs):
-        super(RedisSourceFilterAggregator, self).__init__(sources, **kwargs)
-        self.redis = kwargs['redis']
-        self.replay_ra_key = kwargs['replay_ra_key']
-        self.rec_list_key = kwargs['rec_list_key']
-
-    def _iter_sources(self, params):
-        if not params.get('sources'):
-            replay_ra_key = res_template(self.replay_ra_key, params)
-
-            rec_list_key = res_template(self.rec_list_key, params)
-
-            keys = params.get('scan:' + rec_list_key)
-
-            if not keys:
-                return []
-
-            keys = [replay_ra_key.replace('*', key.decode('utf-8')) for key in keys]
-
-            remote_sources = self.redis.mget(keys)
-            remote_sources = {source.decode('utf-8') for source in remote_sources if source}
-
-            if not remote_sources:
-                return []
-
-            params['sources'] = ','.join(remote_sources)
-
-        # don't record here
-        params['recorder_skip'] = '1'
-        return super(RedisSourceFilterAggregator, self)._iter_sources(params)
-
-
-# ============================================================================
-class PatchAllFilterAggregator(GeventTimeoutAggregator):
-    def _iter_sources(self, params):
-        replay_sources = params.get('sources')
-
-        # allow recording
-        params.pop('recorder_skip', '')
-
-        # if no replay source list or all list
-        # then patch from 'live' only
-        if not replay_sources or replay_sources == '*':
-            replay_sources = ''
-            #yield ('live', self.sources['live'])
-            #return
-
-        # else patch from every archive *not* in the sources list!
-        replay_list = replay_sources.split(',')
-        for name in self.sources.keys():
-            if name not in replay_list:
-                yield name, self.sources[name]
 
 
 # ============================================================================
