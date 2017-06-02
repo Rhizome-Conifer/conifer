@@ -23,6 +23,7 @@ from six.moves import range
 
 from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
+from pywb.webagg.utils import res_template
 
 from warcio.timeutils import timestamp_now
 
@@ -721,6 +722,9 @@ class RecManagerMixin(object):
         self.tags_key = config['tags_key']
 
         self.ra_key = config['ra_key']
+        self.page_stats_key_templ = config['page_stats_key_templ']
+        self.page_stats_secs = config['page_stats_secs']
+        self.page_ref_templ = config['page_ref_templ']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -856,13 +860,48 @@ class RecManagerMixin(object):
 
         return self._send_delete('rec', user, coll, rec)
 
-    def track_remote_archive(self, user, coll, rec, source_id):
+    def track_remote_archive(self, pi, user, coll, rec, source_id):
 
         ra_key = self.ra_key.format(user=user,
                                     coll=coll,
                                     rec=rec)
 
-        self.redis.sadd(ra_key, source_id)
+        pi.sadd(ra_key, source_id)
+
+    def update_page_stats(self, url, params, referrer, source, ra_rec):
+        if referrer.endswith('.css'):
+            css_res = res_template(self.page_ref_templ, params) + referrer
+            orig_referrer = self.redis.get(css_res)
+            if orig_referrer:
+                referrer = orig_referrer
+
+        page_stats_key = res_template(self.page_stats_key_templ, params)
+        page_stats_key += referrer
+
+        with redis_pipeline(self.redis) as pi:
+            pi.hincrby(page_stats_key, source, 1)
+            pi.expire(page_stats_key, self.page_stats_secs)
+
+            if url.endswith('.css'):
+                css_res = res_template(self.page_ref_templ, params) + url
+                pi.setex(css_res, self.page_stats_secs, referrer)
+
+            if ra_rec:
+                self.track_remote_archive(pi, params['user'], params['coll'],
+                                          ra_rec, source)
+
+    def get_page_stats(self, user, coll, rec, sesh_id, page_url):
+        page_stats_key = self.page_stats_key_templ.format(user=user,
+                                                          coll=coll,
+                                                          rec=rec,
+                                                          id=sesh_id)
+
+        page_stats_key += page_url
+        stats = self.redis.hgetall(page_stats_key)
+        if stats:
+            self.redis.expire(page_stats_key, self.page_stats_secs)
+
+        return stats
 
     def _get_pagedata(self, user, coll, rec, pagedata):
         key = self.page_key.format(user=user, coll=coll, rec=rec)

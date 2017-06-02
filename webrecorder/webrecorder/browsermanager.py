@@ -52,6 +52,7 @@ class BrowserManager(object):
 
         sesh = request.environ['webrec.session']
         sesh.set_restricted_user(container_data['user'])
+        sesh.set_id('reqid_' + container_data['reqid'])
         container_data['ip'] = remote_addr
         return container_data
 

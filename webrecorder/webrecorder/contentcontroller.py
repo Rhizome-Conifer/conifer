@@ -220,11 +220,6 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
 
-        # Snapshot
-        @self.app.route('/_snapshot', method='PUT')
-        def snapshot():
-            return self.snapshot()
-
         # Session redir
         @self.app.route(['/_set_session'])
         def set_sesh():
@@ -439,6 +434,7 @@ class ContentController(BaseController, RewriterApp):
 
         kwargs = dict(user=user,
                       coll_orig=coll,
+                      id=sesh.get_id(),
                       rec_orig=rec,
                       coll=quote(coll),
                       rec=quote(rec, safe='/*'),
@@ -633,12 +629,26 @@ class ContentController(BaseController, RewriterApp):
     def _add_custom_params(self, cdx, resp_headers, kwargs):
         source = cdx.get('source')
         skip = resp_headers.get('Recorder-Skip')
-        if source and source != 'live' and not skip and (kwargs['type'] in self.MODIFY_MODES):
-            new_rec = resp_headers.get('Recorder-Rec')
-            if new_rec:
-                kwargs['rec'] = new_rec
 
-            self.manager.track_remote_archive(kwargs['user'], kwargs['coll'], kwargs['rec'], source)
+        if source and source != 'live' and not skip and (kwargs['type'] in self.MODIFY_MODES):
+            ra_rec = resp_headers.get('Recorder-Rec', kwargs['rec'])
+        else:
+            ra_rec = None
+
+        url = cdx.get('url')
+        referrer = request.environ.get('HTTP_REFERER')
+
+        try:
+            if not referrer:
+                referrer = url
+            elif ('wsgiprox.proxy_host' not in request.environ and
+                request.environ.get('HTTP_HOST') in referrer):
+                referrer = url
+
+            self.manager.update_page_stats(url, kwargs, referrer, source, ra_rec)
+        except:
+            import traceback
+            traceback.print_exc()
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser
