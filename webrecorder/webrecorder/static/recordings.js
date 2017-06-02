@@ -13,6 +13,7 @@ $(function() {
     SizeProgressBar.start();
     Snapshot.start();
     ShareWidget.start();
+    InfoWidget.start();
     ModeSelector.start();
     PagingInterface.start();
 });
@@ -54,6 +55,10 @@ function setTitle(status_msg, url, title) {
 
 function setTimestamp(ts) {
     wbinfo.timestamp = ts;
+}
+
+function updateTimestamp(ts, dropdown) {
+    $(".main-replay-date").html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span>"+(typeof dropdown !== "undefined" && dropdown ? "<span class='glyphicon glyphicon-triangle-bottom' />" : ""));
 }
 
 function cbrowserMod(sep, ts) {
@@ -329,17 +334,28 @@ var ModeSelector = (function (){
                 case 'snapshot':
                     Snapshot.queueSnapshot();
                     break;
-                case 'extract':
-                    var url = getUrl();
-                    var rec = getStorage("__wr_currRec") || DEFAULT_RECORDING_SESSION_NAME;
-                    RouteTo.newExtract(coll, rec, url, wbinfo.timestamp);
-                    break;
             }
         });
     }
 
     return {
         'start': start
+    };
+})();
+
+var InfoWidget = (function () {
+
+    function start() {
+        var $widget = $(".ra-dropdown-menu");
+        if ($widget) {
+            $widget.find(".glyphicon-remove-circle").on("click", function () {
+                $widget.parents(".open").removeClass("open");
+            }.bind(this));
+        }
+    }
+
+    return {
+        start: start
     };
 })();
 
@@ -358,10 +374,6 @@ var PagingInterface = (function () {
         var value = (cursor+1)+' of '+recordings.length;
         pgDsp.attr('size', value.length);
         pgDsp.val(value);
-    }
-
-    function updateTimestamp(ts) {
-        timestamp.html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span><span class='glyphicon glyphicon-triangle-bottom' />");
     }
 
     function next() {
@@ -444,7 +456,7 @@ var PagingInterface = (function () {
         prevBtn.on('click', previous);
 
         idx = findIndex();
-        updateTimestamp(wbinfo.timestamp);
+        updateTimestamp(wbinfo.timestamp, true);
 
         timestamp.on('click', function (evt) {
             evt.stopPropagation();
@@ -495,7 +507,7 @@ var PagingInterface = (function () {
         idx = findIndex();
         var rec = recordings[idx];
         ShareWidget.updateUrl(rec);
-        updateTimestamp(rec.ts);
+        updateTimestamp(rec.ts, true);
         update();
     }
 
@@ -531,7 +543,7 @@ var PagingInterface = (function () {
                 // update share widget
                 ShareWidget.updateUrl(rec);
 
-                updateTimestamp(rec.ts);
+                updateTimestamp(rec.ts, true);
                 iframe.src = '/'+user+'/'+coll+'/'+rec.ts+'mp_/'+rec.url;
             }
         }
@@ -641,7 +653,7 @@ var ShareWidget = (function () {
             hasWidget = true;
             $(".ispublic").bootstrapSwitch().on('switchChange.bootstrapSwitch', updateVisibility);
 
-            $('.dropdown-menu').on('click', function (evt) {evt.stopPropagation(); });
+            $('.dropdown-menu').on('click', function (evt) { evt.stopPropagation(); });
             $('.share-container .glyphicon-remove-circle').on('click', function (evt) { $(this).parents('.share-container').toggleClass('open'); });
 
             var obj = $('.shareables');
@@ -810,7 +822,9 @@ var RouteTo = (function(){
     }
 
     var newExtract = function(collection, recording, url, ts) {
-        routeTo(host + "/$extract/" + collection + "/" + cbrowserMod("/", ts) + url);
+        var allArchives = typeof window.wrExtractModeAllArchives !== "undefined" && window.wrExtractModeAllArchives;
+        var extractMode = (allArchives ? "extract" : "extract_only") + ":" + sourceArchive.id;
+        routeTo(host + "/" + window.curr_user + "/" + collection + "/" + recording + "/" + extractMode+ "/" + cbrowserMod("/", ts) + url);
     }
 
     var newPatch = function(collection, url, target, ts) {
@@ -1093,8 +1107,7 @@ var RecordingSizeWidget = (function() {
         }
 
         if (ts) {
-            $(".main-replay-date").text(TimesAndSizesFormatter.ts_to_date(ts));
-            //$(".replay-wrap").show();
+            updateTimestamp(ts);
         }
     }
 
@@ -1536,9 +1549,8 @@ $(function() {
     }
 
     function addNewPage(state) {
-        if (state && state.ts && window.curr_mode != "record") {
-            $(".main-replay-date").text(TimesAndSizesFormatter.ts_to_date(state.ts));
-            //$(".replay-wrap").show();
+        if (state && state.ts && window.curr_mode != "record" && window.curr_mode != "extract") {
+            updateTimestamp(state.ts, true);
         }
 
         if (state.is_error) {

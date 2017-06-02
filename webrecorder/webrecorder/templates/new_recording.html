@@ -7,6 +7,10 @@
 {{ super() }}
 <script src="/static/newrecording.js"></script>
 
+<script type="text/javascript">
+    var WAM = [{% for id, archive in get_WAM().items() %}{"name": "{{ archive.name }}", "id": "{{ id }}", "prefix": "{{ archive.replay_prefix }}", "info": "{{ archive.info }}"}{% if not loop.last %}, {% endif %}{% endfor %}];
+</script>
+
 {% endblock %}
 
 

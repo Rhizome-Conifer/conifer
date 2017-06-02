@@ -28,9 +28,6 @@
             height: 100%;
             padding: 0px 0px 0px 0px;
             overflow: scroll !important;
-            /*top: 96px;*/
-            /*padding-bottom: 100px !important;
-            margin-top: -9px;*/
             position: fixed;
             border: none;
             box-sizing: border-box;
@@ -55,7 +52,10 @@
         wbinfo.frame_mod = "{{ wbrequest.options.frame_mod }}";
         wbinfo.replay_mod = "{{ wbrequest.options.replay_mod }}";
         wbinfo.state = "{{ curr_mode }}";
+        wbinfo.sources = "{{ sources }}";
         wbinfo.info = {{ info | default('{}') | tojson }};
+
+        var wamKeys = { {% for id, archive in get_WAM().items() %}"{{ id }}": {"name": "{{ archive.name }}", "info": "{{ archive.about }}"}{% if not loop.last %}, {% endif %}{% endfor %} };
     </script>
 
     {% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}

@@ -19,6 +19,7 @@
     wbinfo.timestamp = "{{ ts }}";
     wbinfo.state = "{{ curr_mode }}";
     wbinfo.info = {{ info | default('{}') | tojson }};
+    wbinfo.sources = "{{ sources }}";
 
     window.cnt_browser = "{{ browser }}";
 
@@ -26,6 +27,7 @@
 
     window.inactiveSecs = {{ inactive_time if inactive_time else 0 }};
 
+    var wamKeys = { {% for id, archive in get_WAM().items() %}"{{ id }}": {"name": "{{ archive.name }}", "info": "{{ archive.about }}"}{% if not loop.last %}, {% endif %}{% endfor %} };
 </script>
 
 {% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}

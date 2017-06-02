@@ -12,17 +12,15 @@
 <link href="{{ ASSET_URL }}" rel="stylesheet" />
 {% endassets %}
 
-
-
-
-{% include 'header.html' %}
-
-
+<script type="text/javascript">
+    var WAM = [{% for id, archive in get_WAM().items() %}{"name": "{{ archive.name }}", "id": "{{ id }}", "prefix": "{{ archive.replay_prefix }}", "info": "{{ archive.about }}"}{% if not loop.last %}, {% endif %}{% endfor %}];
+</script>
 {% endblock %}
 
 {% block body %}
+{% include 'header.html' %}
 
-<div class="container wr-content">
+<div class="container wr-content wr-hp">
     {% block message %}
 
     {{ super() }}

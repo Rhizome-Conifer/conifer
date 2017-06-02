@@ -22,22 +22,20 @@
         </nav>
         {% endif %}
 
-        {% if curr_mode == 'new' %}
-            <div class="container-fluid new-recording">
-                <div class="col-sm-12">
-                    <span class="glyphicon glyphicon-lg glyphicon-modal-window glyphicon-recording-status top-buffer-sm" aria-hidden="true"></span>
-                    <span class="recorder-status">Create New Recording</span>
-
-                    <label for="rec-title" class="sr-only">Recording title</label>
-                    <input name="rec-title" type="text" class="left-buffer form-control input-sm title-inline" placeholder="Recording title" value="{{ rec_title }}" required>
-                </div>
+        {% if curr_mode and curr_mode != 'live' %}
+            <div class="container-fluid wr-controls navbar-default new-recording-ui {% if not can_admin() %}public{% endif %}">
+                {% include 'recorder.html' %}
             </div>
         {% endif %}
 
+        {% if curr_mode == 'new' %}
+            <div class="container-fluid new-recording">
+                <span class="recorder-status">Create New Recording</span>
 
-    <div class="container-fluid wr-controls navbar-default {% if not can_admin() %}public{% endif %}">
-            {% include 'recorder.html' %}
-        </div>
+                <label for="rec-title" class="sr-only">Recording title</label>
+                <input name="rec-title" type="text" class="left-buffer form-control input-sm title-inline" placeholder="Recording title" value="{{ rec_title }}" required>
+            </div>
+        {% endif %}
 
         {% if curr_mode and curr_mode != 'live' %}
             <div class='container-fluid wr-tools'>

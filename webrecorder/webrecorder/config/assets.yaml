@@ -31,6 +31,7 @@ bundles:
             - recordings.js
             - external/validator.js
             - containerized_ui.js
+            - extract_ui.js
 
     main-css:
         output: bundle/main.css
@@ -73,6 +74,7 @@ bundles:
             - containerized_ui.js
             - external/bootstrap-switch.js
             - shareWidget.js
+            - extract_ui.js
 
     frame-css:
         output: bundle/frame.css
@@ -139,6 +141,7 @@ bundles:
             - containerized_ui.js
             - external/bootstrap-switch.js
             - shareWidget.js
+            - extract_ui.js
 
     browser-css:
         output: bundle/browser.css

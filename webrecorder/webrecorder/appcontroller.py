@@ -87,19 +87,19 @@ class AppController(BaseController):
         jinja_env = self.init_jinja_env(config)
 
         # Init Content Loader/Rewriter
-        content_app = ContentController(app=bottle_app,
+        self.content_app = ContentController(app=bottle_app,
                                         jinja_env=jinja_env,
                                         config=config,
                                         redis=self.redis)
 
         # Init Browser Mgr
-        self.browser_mgr = BrowserManager(config, self.browser_redis, content_app)
+        self.browser_mgr = BrowserManager(config, self.browser_redis, self.content_app)
 
         # Init Cork
         self.cork = WebRecCork.create_cork(self.redis, config)
 
         # Init Manager
-        manager = RedisDataManager(self.redis, self.cork, content_app,
+        manager = RedisDataManager(self.redis, self.cork, self.content_app,
                                    self.browser_redis, self.browser_mgr, config)
 
         # Init Sesion temp_prefix
@@ -179,6 +179,9 @@ class AppController(BaseController):
             count = self.manager.num_collections(curr_user) if curr_user else 0
             return count
 
+        def get_WAM():
+            """Return web archives manifest."""
+            return self.content_app.archives
 
         def is_beta():
             return self.manager.is_beta()
@@ -329,6 +332,7 @@ class AppController(BaseController):
         jinja_env.globals['get_app_host'] = get_app_host
         jinja_env.globals['get_content_host'] = get_content_host
         jinja_env.globals['get_num_collections'] = get_num_collections
+        jinja_env.globals['get_WAM'] = get_WAM
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
         jinja_env.globals['is_extractable'] = is_extractable

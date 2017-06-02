@@ -607,6 +607,7 @@ class ContentController(BaseController, RewriterApp):
                 'is_embed': kwargs.get('is_embed'),
                 'is_display': kwargs.get('is_display'),
                 'top_prefix': top_prefix,
+                'sources': kwargs.get('sources'),
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs):
