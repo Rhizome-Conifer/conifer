@@ -23,7 +23,6 @@ from six.moves import range
 
 from pywb.utils.canonicalize import calc_search_range
 from pywb.cdx.cdxobject import CDXObject
-from pywb.webagg.utils import res_template
 
 from warcio.timeutils import timestamp_now
 
@@ -868,22 +867,31 @@ class RecManagerMixin(object):
 
         pi.sadd(ra_key, source_id)
 
+    def _res_url_templ(self, base_url, params, url):
+        rec = params['rec_orig']
+        if rec == '*':
+            rec = '<all>'
+        return base_url.format(user=params['user'],
+                               coll=params['coll_orig'],
+                               rec=rec,
+                               id=params['id']) + url
+
     def update_page_stats(self, url, params, referrer, source, ra_rec):
         if referrer.endswith('.css'):
-            css_res = res_template(self.page_ref_templ, params) + referrer
+            css_res = self._res_url_templ(self.page_ref_templ, params, referrer)
             orig_referrer = self.redis.get(css_res)
             if orig_referrer:
                 referrer = orig_referrer
 
-        page_stats_key = res_template(self.page_stats_key_templ, params)
-        page_stats_key += referrer
+        page_stats_key = self._res_url_templ(self.page_stats_key_templ,
+                                             params, referrer)
 
         with redis_pipeline(self.redis) as pi:
             pi.hincrby(page_stats_key, source, 1)
             pi.expire(page_stats_key, self.page_stats_secs)
 
             if url.endswith('.css'):
-                css_res = res_template(self.page_ref_templ, params) + url
+                css_res = self._res_url_templ(self.page_ref_templ, params, url)
                 pi.setex(css_res, self.page_stats_secs, referrer)
 
             if ra_rec:

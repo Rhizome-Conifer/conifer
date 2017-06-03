@@ -15,7 +15,7 @@ class TestLogin(BaseWRTests):
         os.environ['RECORD_HOST'] = 'http://localhost:8010'
         cls.val_reg = ''
 
-        super(TestLogin, cls).setup_class()
+        super(TestLogin, cls).setup_class(extra_config_file='test_invites_config.yaml')
 
     def test_req_invite(self):
         params = {'email': 'test@example.com',

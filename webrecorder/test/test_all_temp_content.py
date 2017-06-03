@@ -8,6 +8,8 @@ import os
 import time
 
 from fakeredis import FakeStrictRedis
+from mock import patch
+
 from io import BytesIO
 
 from pywb.cdx.cdxobject import CDXObject
@@ -35,25 +37,54 @@ class TestTempContent(FullStackTests):
         'h:temp-usage',
     ]
 
+    PAGE_STATS = 'r:{user}:{coll}:{rec}:<sesh_id>:stats:{url}'
+
+
+    @classmethod
     def setup_class(cls, **kwargs):
         super(TestTempContent, cls).setup_class(**kwargs)
 
+        def make_id(self):
+            sesh_id = 'sesh_id'
+            redis_key = self.key_template.format(sesh_id)
+
+            return sesh_id, redis_key
+
+        cls.seshmock = patch('webrecorder.session.RedisSessionMiddleware.make_id', make_id)
+        cls.seshmock.start()
+
+        cls.page_stats = []
+
         from webrecorder.rec.tempchecker import run
         gevent.spawn(run)
+
+    @classmethod
+    def teardown_class(cls, *args, **kwargs):
+        super(TestTempContent, cls).teardown_class(*args, **kwargs)
+
+        cls.seshmock.stop()
 
     def _get_redis_keys(self, keylist, user, coll, rec):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]
         return keylist
 
-    def _assert_rec_keys(self, user, coll, rec_list):
+    def _assert_rec_keys(self, user, coll, rec_list, page_url=''):
         exp_keys = []
 
         for rec in rec_list:
             exp_keys.extend(self._get_redis_keys(self.REDIS_KEYS, user, coll, rec))
 
+        if page_url:
+            self._add_page_stat(user, coll, rec_list[-1], page_url)
+        exp_keys.extend(self.page_stats)
+
         res_keys = self.redis.keys()
 
         assert set(exp_keys) == set(res_keys)
+
+    def _add_page_stat(self, user, coll, rec, url):
+        self.page_stats.append(self.PAGE_STATS.format(user=user, coll=coll,
+                                                      rec=rec, url=url))
 
     def _assert_size_all_eq(self, user, coll, rec):
         r_info = 'r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec)
@@ -77,7 +108,6 @@ class TestTempContent(FullStackTests):
         assert '<iframe' in res.text
 
     def test_anon_record_1(self):
-        #res = self._get_anon('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
         res = self.testapp.get('/$record/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
         assert res.status_code == 302
         res = res.follow()
@@ -96,7 +126,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        self._assert_rec_keys(user, 'temp', ['my-recording'])
+        self._assert_rec_keys(user, 'temp', ['my-recording'], 'http://httpbin.org/get?food=bar')
 
         self._assert_size_all_eq(user, 'temp', 'my-recording')
 
@@ -109,12 +139,15 @@ class TestTempContent(FullStackTests):
         res = self._get_anon('/temp/my-recording/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
+        self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_replay_coll_1(self):
         res = self._get_anon('/temp/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
+        self._add_page_stat(self.anon_user, 'temp', '<all>', 'http://httpbin.org/get?food=bar')
+        self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_record_sanitize_redir(self):
@@ -154,9 +187,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'])
-
-        print(os.path.isdir(self.warcs_dir))
+        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'], 'http://httpbin.org/get?bood=far')
 
         anon_dir = os.path.join(self.warcs_dir, user)
         #assert set(os.listdir(anon_dir)) == set(['my-recording', 'my-rec2'])
@@ -187,7 +218,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'вэбрекордэр'])
+        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'вэбрекордэр'], test_url)
 
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == 3
@@ -341,6 +372,10 @@ class TestTempContent(FullStackTests):
 
         warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
         assert self.redis.hlen(warc_key) == 1
+
+        self.page_stats = [page for page in self.page_stats
+                           if ('my-recording' not in page and
+                               'вэбрекордэр' not in page)]
 
         self._assert_rec_keys(user, 'temp', ['my-rec2'])
 

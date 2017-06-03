@@ -18,7 +18,7 @@ from webrecorder.fullstackrunner import FullStackRunner
 # ============================================================================
 class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     @classmethod
-    def setup_class(cls, extra_config_file='test_invites_config.yaml', init_anon=True,
+    def setup_class(cls, extra_config_file='test_no_invites_config.yaml', init_anon=True,
                     **kwargs):
         super(BaseWRTests, cls).setup_class()
 
