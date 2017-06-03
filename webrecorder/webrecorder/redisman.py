@@ -721,9 +721,9 @@ class RecManagerMixin(object):
         self.tags_key = config['tags_key']
 
         self.ra_key = config['ra_key']
-        self.page_stats_key_templ = config['page_stats_key_templ']
-        self.page_stats_secs = config['page_stats_secs']
-        self.page_ref_templ = config['page_ref_templ']
+        self.dyn_stats_key_templ = config['dyn_stats_key_templ']
+        self.dyn_stats_secs = config['dyn_stats_secs']
+        self.dyn_ref_templ = config['dyn_ref_templ']
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -876,45 +876,45 @@ class RecManagerMixin(object):
                                rec=rec,
                                id=params['id']) + url
 
-    def update_page_stats(self, url, params, referrer, source, ra_rec):
+    def update_dyn_stats(self, url, params, referrer, source, ra_rec):
         if referrer.endswith('.css'):
-            css_res = self._res_url_templ(self.page_ref_templ, params, referrer)
+            css_res = self._res_url_templ(self.dyn_ref_templ, params, referrer)
             orig_referrer = self.redis.get(css_res)
             if orig_referrer:
                 referrer = orig_referrer
 
-        page_stats_key = self._res_url_templ(self.page_stats_key_templ,
+        dyn_stats_key = self._res_url_templ(self.dyn_stats_key_templ,
                                              params, referrer)
 
-        curr_url_key = self._res_url_templ(self.page_stats_key_templ,
+        curr_url_key = self._res_url_templ(self.dyn_stats_key_templ,
                                            params, url)
 
         with redis_pipeline(self.redis) as pi:
             pi.delete(curr_url_key)
 
-            pi.hincrby(page_stats_key, source, 1)
-            pi.expire(page_stats_key, self.page_stats_secs)
+            pi.hincrby(dyn_stats_key, source, 1)
+            pi.expire(dyn_stats_key, self.dyn_stats_secs)
 
             if url.endswith('.css'):
-                css_res = self._res_url_templ(self.page_ref_templ, params, url)
-                pi.setex(css_res, self.page_stats_secs, referrer)
+                css_res = self._res_url_templ(self.dyn_ref_templ, params, url)
+                pi.setex(css_res, self.dyn_stats_secs, referrer)
 
             if ra_rec:
                 self.track_remote_archive(pi, params['user'], params['coll'],
                                           ra_rec, source)
 
-    def get_page_stats(self, user, coll, rec, sesh_id, page_url):
+    def get_dyn_stats(self, user, coll, rec, sesh_id, url):
         params = {'user': user,
                   'coll_orig': coll,
                   'rec_orig': rec,
                   'id': sesh_id}
 
-        page_stats_key = self._res_url_templ(self.page_stats_key_templ,
-                                             params, page_url)
+        dyn_stats_key = self._res_url_templ(self.dyn_stats_key_templ,
+                                             params, url)
 
-        stats = self.redis.hgetall(page_stats_key)
+        stats = self.redis.hgetall(dyn_stats_key)
         if stats:
-            self.redis.expire(page_stats_key, self.page_stats_secs)
+            self.redis.expire(dyn_stats_key, self.dyn_stats_secs)
 
         return stats
 

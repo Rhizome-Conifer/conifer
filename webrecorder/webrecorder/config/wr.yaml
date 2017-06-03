@@ -165,9 +165,10 @@ temp_usage_key: 'h:temp-usage'
 rate_limit_key: 'ipr:{ip}:{H}'
 
 cookie_key_templ: 'r:{user}:{coll}:{rec}:{id}:cookie:'
-page_stats_key_templ: 'r:{user}:{coll}:{rec}:{id}:stats:'
-page_ref_templ: 'r:{user}:{coll}:{rec}:{id}:ref:'
-page_stats_secs: 330
+
+dyn_stats_key_templ: 'r:{user}:{coll}:{rec}:{id}:stats:'
+dyn_ref_templ: 'r:{user}:{coll}:{rec}:{id}:ref:'
+dyn_stats_secs: 330
 
 warc_key_templ: 'r:{user}:{coll}:{rec}:warc'
 warc_upload_wait_templ: 'w:{filename}'

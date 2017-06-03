@@ -53,7 +53,7 @@ class TestTempContent(FullStackTests):
         cls.seshmock = patch('webrecorder.session.RedisSessionMiddleware.make_id', make_id)
         cls.seshmock.start()
 
-        cls.page_stats = []
+        cls.dyn_stats = []
 
         from webrecorder.rec.tempchecker import run
         gevent.spawn(run)
@@ -68,22 +68,22 @@ class TestTempContent(FullStackTests):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]
         return keylist
 
-    def _assert_rec_keys(self, user, coll, rec_list, page_url=''):
+    def _assert_rec_keys(self, user, coll, rec_list, url=''):
         exp_keys = []
 
         for rec in rec_list:
             exp_keys.extend(self._get_redis_keys(self.REDIS_KEYS, user, coll, rec))
 
-        if page_url:
-            self._add_page_stat(user, coll, rec_list[-1], page_url)
-        exp_keys.extend(self.page_stats)
+        if url:
+            self._add_dyn_stat(user, coll, rec_list[-1], url)
+        exp_keys.extend(self.dyn_stats)
 
         res_keys = self.redis.keys()
 
         assert set(exp_keys) == set(res_keys)
 
-    def _add_page_stat(self, user, coll, rec, url):
-        self.page_stats.append(self.PAGE_STATS.format(user=user, coll=coll,
+    def _add_dyn_stat(self, user, coll, rec, url):
+        self.dyn_stats.append(self.PAGE_STATS.format(user=user, coll=coll,
                                                       rec=rec, url=url))
 
     def _assert_size_all_eq(self, user, coll, rec):
@@ -146,7 +146,7 @@ class TestTempContent(FullStackTests):
         res = self._get_anon('/temp/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
-        self._add_page_stat(self.anon_user, 'temp', '<all>', 'http://httpbin.org/get?food=bar')
+        self._add_dyn_stat(self.anon_user, 'temp', '<all>', 'http://httpbin.org/get?food=bar')
         self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
         assert '"food": "bar"' in res.text, res.text
 
@@ -373,9 +373,9 @@ class TestTempContent(FullStackTests):
         warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
         assert self.redis.hlen(warc_key) == 1
 
-        self.page_stats = [page for page in self.page_stats
-                           if ('my-recording' not in page and
-                               'вэбрекордэр' not in page)]
+        self.dyn_stats = [stat for stat in self.dyn_stats
+                           if ('my-recording' not in stat and
+                               'вэбрекордэр' not in stat)]
 
         self._assert_rec_keys(user, 'temp', ['my-rec2'])
 

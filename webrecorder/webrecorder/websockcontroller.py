@@ -49,15 +49,15 @@ class WebsockController(BaseController):
         # starting url (for stats reporting)
         url = request.query.getunicode('url')
         if url:
-            stats_pages = [url]
+            stats_urls = [url]
         else:
-            stats_pages = []
+            stats_urls = []
 
         WebSockHandler('to', reqid, self.manager,
                        'to_cbr_ps:', 'from_cbr_ps:',
                        user, coll, rec, sesh_id=sesh_id,
                        type=type_,
-                       stats_pages=stats_pages,
+                       stats_urls=stats_urls,
                        status_update_secs=self.status_update_secs).run()
 
     def client_ws_cont(self):
@@ -92,7 +92,7 @@ class WebsockController(BaseController):
 class BaseWebSockHandler(object):
     def __init__(self, name, reqid, manager, send_to, recv_from,
                        user, coll, rec, sesh_id=None, type=None,
-                       stats_pages=None, browser=None, status_update_secs=0):
+                       stats_urls=None, browser=None, status_update_secs=0):
 
         self.user = user
         self.coll = coll
@@ -101,7 +101,7 @@ class BaseWebSockHandler(object):
         self.type_ = type
 
         self.sesh_id = sesh_id
-        self.stats_pages = stats_pages or []
+        self.stats_urls = stats_urls or []
 
         self.manager = manager
 
@@ -207,10 +207,10 @@ class BaseWebSockHandler(object):
                 msg['ws_type'] = 'remote_url'
 
         elif msg['ws_type'] == 'config-stats':
-            self.stats_pages = msg['stats_pages']
+            self.stats_urls = msg['stats_urls']
 
         elif msg['ws_type'] == 'set_url':
-            self.stats_pages = [msg['url']]
+            self.stats_urls = [msg['url']]
 
         elif msg['ws_type'] == 'switch':
             if not self.manager.can_write_coll(self.user, self.coll):
@@ -242,8 +242,8 @@ class BaseWebSockHandler(object):
             result['size'] = size
             result['numPages'] = self.manager.count_pages(self.user, self.coll, self.rec)
 
-            if self.stats_pages:
-                result['stats'] = self.get_page_stats()
+            if self.stats_urls:
+                result['stats'] = self.get_dyn_stats()
 
         else:
             result = {'ws_type': 'error',
@@ -251,11 +251,11 @@ class BaseWebSockHandler(object):
 
         return json.dumps(result)
 
-    def get_page_stats(self):
+    def get_dyn_stats(self):
         sum_stats = {}
-        for page in self.stats_pages:
-            stats = self.manager.get_page_stats(self.user, self.coll, self.rec,
-                                                self.sesh_id, page)
+        for url in self.stats_urls:
+            stats = self.manager.get_dyn_stats(self.user, self.coll, self.rec,
+                                                self.sesh_id, url)
             for stat, value in stats.items():
                 sum_stats[stat] = int(value) + int(sum_stats.get(stat, 0))
 

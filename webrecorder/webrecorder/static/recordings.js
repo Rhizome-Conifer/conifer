@@ -37,7 +37,7 @@ function setUrl(url) {
     }
 
     // todo: account for all iframes?
-    RecordingSizeWidget.setStatsPages([url]);
+    RecordingSizeWidget.setStatsUrls([url]);
 }
 
 function getUrl() {
@@ -1030,9 +1030,9 @@ var RecordingSizeWidget = (function() {
         return sendMsg(msg);
     }
 
-    function setStatsPages(pages) {
+    function setStatsUrls(urls) {
         var msg = {"ws_type": "config-stats",
-                   "stats_pages": pages}
+                   "stats_urls": urls}
 
         return sendMsg(msg);
     }
@@ -1206,7 +1206,7 @@ var RecordingSizeWidget = (function() {
         addCookie: addCookie,
         addSkipReq: addSkipReq,
         addPage: addPage,
-        setStatsPages: setStatsPages,
+        setStatsUrls: setStatsUrls,
         doAutoscroll: doAutoscroll,
         doLoadAll: doLoadAll,
         setRemoteUrl: setRemoteUrl,
