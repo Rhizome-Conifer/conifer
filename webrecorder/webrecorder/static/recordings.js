@@ -969,6 +969,8 @@ var RecordingSizeWidget = (function() {
             url += "&reqid=" + reqid;
         }
 
+        url += "&type=" + window.curr_mode;
+
         url += "&url=" + encodeURIComponent(getUrl());
 
         try {

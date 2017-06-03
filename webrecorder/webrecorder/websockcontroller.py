@@ -37,12 +37,14 @@ class WebsockController(BaseController):
 
         reqid = request.query.get('reqid')
         if reqid:
-            sesh_id = 'reqid_' + reqid
+            sesh_id = self.manager.browser_mgr.browser_sesh_id(reqid)
         else:
             sesh_id = self.get_session().get_id()
 
         if not user:
             user = self.manager.get_anon_user()
+
+        type_ = request.query.get('type')
 
         # starting url (for stats reporting)
         url = request.query.getunicode('url')
@@ -54,6 +56,7 @@ class WebsockController(BaseController):
         WebSockHandler('to', reqid, self.manager,
                        'to_cbr_ps:', 'from_cbr_ps:',
                        user, coll, rec, sesh_id=sesh_id,
+                       type=type_,
                        stats_pages=stats_pages,
                        status_update_secs=self.status_update_secs).run()
 
@@ -229,6 +232,12 @@ class BaseWebSockHandler(object):
     def get_status(self):
         size = self.manager.get_size(self.user, self.coll, self.rec)
         if size is not None:
+            # if extracting, also add the size from patch recording, if any
+            if self.type_ == 'extract':
+                patch_size = self.manager.get_size(self.user, self.coll, 'patch-of-' + self.rec)
+                if patch_size is not None:
+                    size += patch_size
+
             result = {'ws_type': 'status'}
             result['size'] = size
             result['numPages'] = self.manager.count_pages(self.user, self.coll, self.rec)

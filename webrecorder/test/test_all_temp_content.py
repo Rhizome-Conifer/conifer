@@ -126,7 +126,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        self._assert_rec_keys(user, 'temp', ['my-recording'], 'http://httpbin.org/get?food=bar')
+        self._assert_rec_keys(user, 'temp', ['my-recording'])
 
         self._assert_size_all_eq(user, 'temp', 'my-recording')
 
@@ -139,7 +139,7 @@ class TestTempContent(FullStackTests):
         res = self._get_anon('/temp/my-recording/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
-        self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
+        self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'], 'http://httpbin.org/get?food=bar')
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_replay_coll_1(self):
@@ -187,7 +187,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'], 'http://httpbin.org/get?bood=far')
+        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'])
 
         anon_dir = os.path.join(self.warcs_dir, user)
         #assert set(os.listdir(anon_dir)) == set(['my-recording', 'my-rec2'])
@@ -218,7 +218,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'вэбрекордэр'], test_url)
+        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'вэбрекордэр'])
 
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == 3

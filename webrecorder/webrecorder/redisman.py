@@ -869,7 +869,7 @@ class RecManagerMixin(object):
 
     def _res_url_templ(self, base_url, params, url):
         rec = params['rec_orig']
-        if rec == '*':
+        if not rec or rec == '*':
             rec = '<all>'
         return base_url.format(user=params['user'],
                                coll=params['coll_orig'],
@@ -886,7 +886,12 @@ class RecManagerMixin(object):
         page_stats_key = self._res_url_templ(self.page_stats_key_templ,
                                              params, referrer)
 
+        curr_url_key = self._res_url_templ(self.page_stats_key_templ,
+                                           params, url)
+
         with redis_pipeline(self.redis) as pi:
+            pi.delete(curr_url_key)
+
             pi.hincrby(page_stats_key, source, 1)
             pi.expire(page_stats_key, self.page_stats_secs)
 
@@ -899,12 +904,14 @@ class RecManagerMixin(object):
                                           ra_rec, source)
 
     def get_page_stats(self, user, coll, rec, sesh_id, page_url):
-        page_stats_key = self.page_stats_key_templ.format(user=user,
-                                                          coll=coll,
-                                                          rec=rec,
-                                                          id=sesh_id)
+        params = {'user': user,
+                  'coll_orig': coll,
+                  'rec_orig': rec,
+                  'id': sesh_id}
 
-        page_stats_key += page_url
+        page_stats_key = self._res_url_templ(self.page_stats_key_templ,
+                                             params, page_url)
+
         stats = self.redis.hgetall(page_stats_key)
         if stats:
             self.redis.expire(page_stats_key, self.page_stats_secs)

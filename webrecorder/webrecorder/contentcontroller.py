@@ -637,14 +637,26 @@ class ContentController(BaseController, RewriterApp):
             traceback.print_exc()
 
     def _add_stats(self, cdx, resp_headers, kwargs):
-        source = cdx.get('source')
-        skip = resp_headers.get('Recorder-Skip')
+        type_ = kwargs['type']
+        if type_ in ('record', 'live'):
+            return
 
-        if source and source != 'live' and not skip and (kwargs['type'] in self.MODIFY_MODES):
-            ra_rec = unquote(resp_headers.get('Recorder-Rec', ''))
-            ra_rec = ra_rec or kwargs['rec_orig']
-        else:
-            ra_rec = None
+        source = cdx.get('source')
+        if not source:
+            return
+
+        ra_rec = None
+
+        if source.startswith('r:'):
+            source = 'replay'
+
+        # set source in recording-key
+        if type_ in self.MODIFY_MODES:
+            skip = resp_headers.get('Recorder-Skip')
+
+            if not skip and source not in ('live', 'replay'):
+                ra_rec = unquote(resp_headers.get('Recorder-Rec', ''))
+                ra_rec = ra_rec or kwargs['rec_orig']
 
         url = cdx.get('url')
         referrer = request.environ.get('HTTP_REFERER')

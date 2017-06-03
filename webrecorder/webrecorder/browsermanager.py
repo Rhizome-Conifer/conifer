@@ -52,9 +52,12 @@ class BrowserManager(object):
 
         sesh = request.environ['webrec.session']
         sesh.set_restricted_user(container_data['user'])
-        sesh.set_id('reqid_' + container_data['reqid'])
+        sesh.set_id(self.browser_sesh_id(container_data['reqid']))
         container_data['ip'] = remote_addr
         return container_data
+
+    def browser_sesh_id(self, reqid):
+        return 'reqid_' + reqid
 
     def fill_upstream_url(self, kwargs, timestamp):
         params = {'closest': timestamp or 'now'}
