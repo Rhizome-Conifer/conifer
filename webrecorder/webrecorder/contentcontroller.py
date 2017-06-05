@@ -1,6 +1,6 @@
 import re
 import os
-from six.moves.urllib.parse import quote
+from six.moves.urllib.parse import quote, unquote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
@@ -11,7 +11,6 @@ from pywb.utils.loaders import load_yaml_config
 from pywb.rewrite.wburl import WbUrl
 
 from webrecorder.basecontroller import BaseController
-from six.moves.urllib.parse import quote, quote_plus
 
 
 # ============================================================================
@@ -220,11 +219,6 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
 
-        # Snapshot
-        @self.app.route('/_snapshot', method='PUT')
-        def snapshot():
-            return self.snapshot()
-
         # Session redir
         @self.app.route(['/_set_session'])
         def set_sesh():
@@ -255,6 +249,10 @@ class ContentController(BaseController, RewriterApp):
 
         try:
             kwargs = info
+            kwargs['coll_orig'] = kwargs['coll']
+            kwargs['coll'] = quote(kwargs['coll'])
+            kwargs['rec_orig'] = kwargs['rec']
+            kwargs['rec'] = quote(kwargs['rec'], '/*')
 
             url = self.add_query(url)
 
@@ -439,6 +437,7 @@ class ContentController(BaseController, RewriterApp):
 
         kwargs = dict(user=user,
                       coll_orig=coll,
+                      id=sesh.get_id(),
                       rec_orig=rec,
                       coll=quote(coll),
                       rec=quote(rec, safe='/*'),
@@ -631,14 +630,44 @@ class ContentController(BaseController, RewriterApp):
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs):
-        source = cdx.get('source')
-        skip = resp_headers.get('Recorder-Skip')
-        if source and source != 'live' and not skip and (kwargs['type'] in self.MODIFY_MODES):
-            new_rec = resp_headers.get('Recorder-Rec')
-            if new_rec:
-                kwargs['rec'] = new_rec
+        try:
+            self._add_stats(cdx, resp_headers, kwargs)
+        except:
+            import traceback
+            traceback.print_exc()
 
-            self.manager.track_remote_archive(kwargs['user'], kwargs['coll'], kwargs['rec'], source)
+    def _add_stats(self, cdx, resp_headers, kwargs):
+        type_ = kwargs['type']
+        if type_ in ('record', 'live'):
+            return
+
+        source = cdx.get('source')
+        if not source:
+            return
+
+        ra_rec = None
+
+        if source.startswith('r:'):
+            source = 'replay'
+
+        # set source in recording-key
+        if type_ in self.MODIFY_MODES:
+            skip = resp_headers.get('Recorder-Skip')
+
+            if not skip and source not in ('live', 'replay'):
+                ra_rec = unquote(resp_headers.get('Recorder-Rec', ''))
+                ra_rec = ra_rec or kwargs['rec_orig']
+
+        url = cdx.get('url')
+        referrer = request.environ.get('HTTP_REFERER')
+
+        if not referrer:
+            referrer = url
+        elif ('wsgiprox.proxy_host' not in request.environ and
+            request.environ.get('HTTP_HOST') in referrer):
+            referrer = url
+
+        self.manager.update_dyn_stats(url, kwargs, referrer, source, ra_rec)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser

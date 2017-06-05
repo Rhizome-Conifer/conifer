@@ -25,6 +25,7 @@ from bottle import Bottle, request, debug
 from datetime import datetime
 import os
 from six import iteritems
+from six.moves.urllib.parse import quote
 
 
 # ============================================================================
@@ -471,7 +472,7 @@ class ExtractPatchingFilter(SkipDefaultFilter):
             patch_rec = res['id']
 
         params['param.recorder.rec'] = patch_rec
-        resp_headers['Recorder-Rec'] = patch_rec
+        resp_headers['Recorder-Rec'] = quote(patch_rec, safe='/*')
 
         return False
 

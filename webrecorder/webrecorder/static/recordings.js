@@ -35,6 +35,9 @@ function setUrl(url) {
     } else if(window.curr_mode === 'record' || window.curr_mode === 'patch' || window.curr_mode == 'extract') {
         ShareWidget.updateUrl({'url': wbinfo.url, 'ts': wbinfo.timestamp});
     }
+
+    // todo: account for all iframes?
+    RecordingSizeWidget.setStatsUrls([url]);
 }
 
 function getUrl() {
@@ -966,6 +969,10 @@ var RecordingSizeWidget = (function() {
             url += "&reqid=" + reqid;
         }
 
+        url += "&type=" + window.curr_mode;
+
+        url += "&url=" + encodeURIComponent(getUrl());
+
         try {
             ws = new WebSocket(url);
 
@@ -1019,6 +1026,13 @@ var RecordingSizeWidget = (function() {
     function addPage(page) {
         var msg = {"ws_type": "page",
                    "page": page}
+
+        return sendMsg(msg);
+    }
+
+    function setStatsUrls(urls) {
+        var msg = {"ws_type": "config-stats",
+                   "stats_urls": urls}
 
         return sendMsg(msg);
     }
@@ -1091,8 +1105,12 @@ var RecordingSizeWidget = (function() {
         switch (msg.ws_type) {
             case "status":
                 updateDom(msg.size);
-                if (window.curr_mode === 'replay-coll' || window.curr_mode === 'replay')
+                if (window.curr_mode === 'replay-coll' || window.curr_mode === 'replay') {
                     BookmarkCounter.setBookmarkCount(msg.numPages);
+                }
+                if (msg.stats) {
+                    console.log(msg.stats);
+                }
                 break;
 
             case "remote_url":
@@ -1188,6 +1206,7 @@ var RecordingSizeWidget = (function() {
         addCookie: addCookie,
         addSkipReq: addSkipReq,
         addPage: addPage,
+        setStatsUrls: setStatsUrls,
         doAutoscroll: doAutoscroll,
         doLoadAll: doLoadAll,
         setRemoteUrl: setRemoteUrl,
