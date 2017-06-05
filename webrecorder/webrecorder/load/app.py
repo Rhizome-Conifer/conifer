@@ -1,6 +1,6 @@
-from webrecorder.load.main import make_webagg
+from webrecorder.load.main import WRWarcServer
 
 
 # ============================================================================
-application = make_webagg()
+application = WRWarcServer().app
 

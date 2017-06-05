@@ -10,111 +10,123 @@ from pywb.webagg.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggreg
 from pywb.webagg.autoapp import init_index_source, register_source
 
 from pywb.utils.wbexception import NotFoundException
+from pywb.utils.loaders import load_yaml_config
 
 from pywb.webagg.utils import res_template, load_config
-from pywb.utils.loaders import load_yaml_config
 from webrecorder.utils import load_wr_config, init_logging
+
+from webrecorder.load.wamloader import WAMLoader
 
 import os
 import json
-import copy
 
 
 # =============================================================================
 PROXY_PREFIX = ''
 
 
-def make_webagg():
-    init_logging()
+class WRWarcServer(object):
+    def __init__(self):
+        init_logging()
 
-    config = load_wr_config()
+        config = load_wr_config()
 
-    app = ResAggApp(debug=True)
+        app = ResAggApp(debug=True)
 
-    redis_base = os.environ['REDIS_BASE_URL'] + '/'
+        redis_base = os.environ['REDIS_BASE_URL'] + '/'
 
-    rec_url = redis_base + config['cdxj_key_templ']
-    coll_url = redis_base + config['cdxj_coll_key_templ']
-    warc_url = redis_base + config['warc_key_templ']
-    rec_list_key = config['rec_list_key_templ']
+        rec_url = redis_base + config['cdxj_key_templ']
+        coll_url = redis_base + config['cdxj_coll_key_templ']
+        warc_url = redis_base + config['warc_key_templ']
+        rec_list_key = config['rec_list_key_templ']
 
-    cache_proxy_url = os.environ.get('CACHE_PROXY_URL', '')
-    global PROXY_PREFIX
-    PROXY_PREFIX = cache_proxy_url
+        cache_proxy_url = os.environ.get('CACHE_PROXY_URL', '')
+        global PROXY_PREFIX
+        PROXY_PREFIX = cache_proxy_url
 
-    timeout = 20.0
+        timeout = 20.0
 
-    register_source(ProxyMementoIndexSource)
-    #register_source(ProxyRemoteIndexSource)
+        register_source(ProxyMementoIndexSource)
+        #register_source(ProxyRemoteIndexSource)
 
-    rec_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
-                                                redis_url=rec_url)
+        rec_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
+                                                    redis_url=rec_url)
 
-    redis = rec_redis_source.redis
-    coll_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
-                                                 redis_url=coll_url,
-                                                 redis=redis,
-                                                 member_key_templ=rec_list_key)
+        redis = rec_redis_source.redis
+        coll_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
+                                                     redis_url=coll_url,
+                                                     redis=redis,
+                                                     member_key_templ=rec_list_key)
 
-    live_rec = DefaultResourceHandler(
-                    SimpleAggregator(
-                        {'live': LiveIndexSource()},
-                    ), warc_url, cache_proxy_url)
+        live_rec = DefaultResourceHandler(
+                        SimpleAggregator(
+                            {'live': LiveIndexSource()},
+                        ), warc_url, cache_proxy_url)
 
-    archives = load_remote_archives()
+        # Extractable archives (all available)
+        wam_loader = WAMLoader()
+        extractable_archives = wam_loader.all_archives
 
-    # Extract Source
-    extractor = GeventTimeoutAggregator(archives, timeout=timeout)
-    extract_primary = DefaultResourceHandler(
-                        extractor,
-                        warc_url,
-                        cache_proxy_url)
+        # Extract Source
+        extractor = GeventTimeoutAggregator(extractable_archives, timeout=timeout)
+        extract_primary = DefaultResourceHandler(
+                            extractor,
+                            warc_url,
+                            cache_proxy_url)
 
-    extractor2 = GeventTimeoutAggregator(archives, timeout=timeout,
-                                         sources_key='inv_sources',
-                                         invert_sources=True)
+        # Patch fallback archives
+        fallback_archives = self.filter_archives(extractable_archives,
+                                                 config['patch_archives_index'])
 
-    extract_other = DefaultResourceHandler(
-                        extractor2,
-                        warc_url,
-                        cache_proxy_url)
+        # patch + live
+        #patch_archives = fallback_archives.copy()
+        patch_archives = fallback_archives
+        patch_archives['live'] = LiveIndexSource()
 
-    # Patch (all + live)
-    archives_live = copy.copy(archives)
-    archives_live['live'] = LiveIndexSource()
-    patcher = GeventTimeoutAggregator(archives_live, timeout=timeout)
-    patch_rec = DefaultResourceHandler(
-                     patcher,
-                     warc_url,
-                     cache_proxy_url)
+        extractor2 = GeventTimeoutAggregator(patch_archives, timeout=timeout,
+                                             sources_key='inv_sources',
+                                             invert_sources=True)
 
-    # Single Rec Replay
-    replay_rec = DefaultResourceHandler(rec_redis_source, warc_url, cache_proxy_url)
+        extract_other = DefaultResourceHandler(
+                            extractor2,
+                            warc_url,
+                            cache_proxy_url)
 
-    # Coll Replay
-    replay_coll = DefaultResourceHandler(coll_redis_source, warc_url, cache_proxy_url)
+        patcher = GeventTimeoutAggregator(patch_archives, timeout=timeout)
+        patch_rec = DefaultResourceHandler(
+                         patcher,
+                         warc_url,
+                         cache_proxy_url)
 
-    app.add_route('/live', live_rec)
-    app.add_route('/extract', HandlerSeq([extract_primary, extract_other]))
-    app.add_route('/replay', replay_rec)
-    app.add_route('/replay-coll', replay_coll)
-    app.add_route('/patch', HandlerSeq([replay_coll, patch_rec]))
+        # Single Rec Replay
+        replay_rec = DefaultResourceHandler(rec_redis_source, warc_url, cache_proxy_url)
 
-    return app
+        # Coll Replay
+        replay_coll = DefaultResourceHandler(coll_redis_source, warc_url, cache_proxy_url)
 
+        app.add_route('/live', live_rec)
+        app.add_route('/extract', HandlerSeq([extract_primary, extract_other]))
+        app.add_route('/replay', replay_rec)
+        app.add_route('/replay-coll', replay_coll)
+        app.add_route('/patch', HandlerSeq([replay_coll, patch_rec]))
 
-# ============================================================================
-def load_remote_archives():
-    archive_config = load_yaml_config('pkg://webrecorder/config/archives.yaml')
-    archive_config = archive_config.get('archives')
+        self.app = app
 
-    archives = {}
+    def filter_archives(self, archives, patch_archives_index):
+        patch_archives = {}
+        if not patch_archives_index:
+            return patch_archives
 
-    for name, archive in archive_config.items():
-        source = init_index_source(archive)
-        archives[name] = source
+        filter_list = load_yaml_config(patch_archives_index)
+        filter_list = filter_list.get('webarchive_ids', {})
 
-    return archives
+        for name in archives.keys():
+            if name in filter_list:
+                patch_archives[name] = archives[name]
+            elif any(name.startswith(key) for key in filter_list):
+                patch_archives[name] = archives[name]
+
+        return patch_archives
 
 
 # ============================================================================

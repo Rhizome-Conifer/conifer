@@ -11,6 +11,7 @@ from pywb.utils.loaders import load_yaml_config
 from pywb.rewrite.wburl import WbUrl
 
 from webrecorder.basecontroller import BaseController
+from webrecorder.load.wamloader import WAMLoader
 
 
 # ============================================================================
@@ -43,19 +44,18 @@ class ContentController(BaseController, RewriterApp):
         self.archives = self.load_remote_archives()
 
     def load_remote_archives(self):
-        archive_config = load_yaml_config('pkg://webrecorder/config/archives.yaml')
-        archive_config = archive_config.get('archives')
+        wam_loader = WAMLoader()
 
         archives = {}
 
-        for name, archive in archive_config.items():
+        for name, archive in wam_loader.replay_info.items():
             try:
+                # drop template and scheme
                 archive['replay_prefix'] = archive['replay_url'].split('{', 1)[0]
-                # drop scheme
                 archive['replay_prefix'] = archive['replay_prefix'].split('//', 1)[-1]
                 archives[name] = archive
             except:
-                print('Skipping Invalid Archive: ' + archive)
+                print('Skipping Invalid Archive: ' + name)
 
         return archives
 

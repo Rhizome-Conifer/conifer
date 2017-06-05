@@ -37,6 +37,9 @@ browser_req_url: 'http://shepherd:9020/api/browsers/request_browser/{browser}'
 browser_list_url: 'http://shepherd:9020/api/browsers/browsers'
 proxy_host: 'proxy'
 
+all_archives_index: './webarchives.yaml'
+patch_archives_index: 'pkg://webrecorder/config/patch_webarchives.yaml'
+
 # time interval for websocket status updates (in seconds)
 status_update_secs: 1.0
 
