@@ -8,7 +8,7 @@ from warcio.limitreader import LimitReader
 from har2warc.har2warc import HarParser
 from warcio.warcwriter import BufferWARCWriter, WARCWriter
 
-from pywb.cdx.cdxobject import CDXObject
+from pywb.warcserver.index.cdxobject import CDXObject
 
 import traceback
 import json

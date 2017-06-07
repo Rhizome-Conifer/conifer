@@ -8,6 +8,9 @@ from pywb.recorder.filters import WriteRevisitDupePolicy
 from pywb.recorder.filters import ExcludeHttpOnlyCookieHeaders
 from pywb.recorder.filters import SkipRangeRequestFilter, SkipDefaultFilter
 
+from pywb.utils.format import res_template
+from pywb.utils.io import BUFF_SIZE
+
 from webrecorder.utils import SizeTrackingReader, redis_pipeline, sanitize_title
 from webrecorder.redisman import init_manager_for_cli
 
@@ -18,8 +21,6 @@ import glob
 import tempfile
 import traceback
 import logging
-
-from pywb.webagg.utils import res_template, BUFF_SIZE
 
 from bottle import Bottle, request, debug
 from datetime import datetime

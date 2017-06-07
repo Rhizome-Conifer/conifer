@@ -1,7 +1,7 @@
 from gevent.monkey import patch_all; patch_all()
 
-from pywb.webagg.test.testutils import FakeRedisTests, BaseTestClass
-from pywb.webagg.test.testutils import TempDirTests, to_path
+from pywb.warcserver.test.testutils import FakeRedisTests, BaseTestClass
+from pywb.warcserver.test.testutils import TempDirTests, to_path
 
 import webtest
 import os

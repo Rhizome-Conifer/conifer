@@ -12,8 +12,8 @@ from mock import patch
 
 from io import BytesIO
 
-from pywb.cdx.cdxobject import CDXObject
-from pywb.warc.cdxindexer import write_cdx_index
+from pywb.warcserver.index.cdxobject import CDXObject
+from pywb.indexer.cdxindexer import write_cdx_index
 
 from re import sub
 from six.moves.urllib.parse import urlsplit, quote

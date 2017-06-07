@@ -1,8 +1,8 @@
 import os
 import glob
 
-from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource
-from pywb.webagg.indexsource import WBMementoIndexSource
+from pywb.warcserver.index.indexsource import MementoIndexSource, RemoteIndexSource
+from pywb.warcserver.index.indexsource import WBMementoIndexSource
 from pywb.utils.loaders import load_yaml_config
 
 
