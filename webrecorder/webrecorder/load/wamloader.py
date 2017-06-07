@@ -14,7 +14,10 @@ class WAMLoader(object):
         self.all_archives = {}
         self.replay_info = {}
 
-        self.load_all()
+        try:
+            self.load_all()
+        except IOError:
+            print('No Archives Loaded')
 
     def load_all(self):
         for filename in self.load_from_index(self.base_dir, self.index_file):

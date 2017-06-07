@@ -1,6 +1,6 @@
 import os
 from webassets.script import GenericArgparseImplementation
-from pywb.urlrewrite.templateview import PkgResResolver
+from pywb.rewrite.templateview import PkgResResolver
 
 from webassets import Bundle
 from webassets.ext.jinja2 import AssetsExtension
