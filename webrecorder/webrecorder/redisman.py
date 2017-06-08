@@ -22,7 +22,7 @@ from six.moves.urllib.parse import quote
 from six.moves import range
 
 from pywb.utils.canonicalize import calc_search_range
-from pywb.cdx.cdxobject import CDXObject
+from pywb.warcserver.index.cdxobject import CDXObject
 
 from warcio.timeutils import timestamp_now
 

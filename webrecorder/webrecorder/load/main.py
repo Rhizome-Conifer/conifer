@@ -1,18 +1,18 @@
 from gevent.monkey import patch_all; patch_all()
 
-from pywb.webagg.handlers import DefaultResourceHandler, HandlerSeq, ResourceHandler
-from pywb.webagg.responseloader import LiveWebLoader
-from pywb.webagg.app import ResAggApp
-from pywb.webagg.indexsource import LiveIndexSource, RedisIndexSource
-from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource
-from pywb.webagg.aggregator import SimpleAggregator
-from pywb.webagg.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggregator
-from pywb.webagg.autoapp import init_index_source, register_source
+from pywb.warcserver.index.indexsource import LiveIndexSource, RedisIndexSource
+from pywb.warcserver.index.indexsource import MementoIndexSource, RemoteIndexSource
+from pywb.warcserver.index.aggregator import SimpleAggregator
+from pywb.warcserver.index.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggregator
+
+from pywb.warcserver.resource.responseloader import LiveWebLoader
+
+from pywb.warcserver.handlers import DefaultResourceHandler, HandlerSeq, ResourceHandler
+from pywb.warcserver.warcserver import BaseWarcServer, init_index_source, register_source
 
 from pywb.utils.wbexception import NotFoundException
 from pywb.utils.loaders import load_yaml_config
 
-from pywb.webagg.utils import res_template, load_config
 from webrecorder.utils import load_wr_config, init_logging
 
 from webrecorder.load.wamloader import WAMLoader
@@ -31,7 +31,7 @@ class WRWarcServer(object):
 
         config = load_wr_config()
 
-        app = ResAggApp(debug=True)
+        app = BaseWarcServer(debug=True)
 
         redis_base = os.environ['REDIS_BASE_URL'] + '/'
 

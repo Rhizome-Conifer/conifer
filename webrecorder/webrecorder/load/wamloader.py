@@ -1,8 +1,8 @@
 import os
 import glob
 
-from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource
-from pywb.webagg.indexsource import WBMementoIndexSource
+from pywb.warcserver.index.indexsource import MementoIndexSource, RemoteIndexSource
+from pywb.warcserver.index.indexsource import WBMementoIndexSource
 from pywb.utils.loaders import load_yaml_config
 
 
@@ -14,7 +14,10 @@ class WAMLoader(object):
         self.all_archives = {}
         self.replay_info = {}
 
-        self.load_all()
+        try:
+            self.load_all()
+        except IOError:
+            print('No Archives Loaded')
 
     def load_all(self):
         for filename in self.load_from_index(self.base_dir, self.index_file):

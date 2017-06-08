@@ -4,11 +4,11 @@ from six.moves.urllib.parse import quote, unquote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
-from pywb.urlrewrite.rewriterapp import RewriterApp, UpstreamException
-from pywb.urlrewrite.cookies import CookieTracker
 from pywb.utils.loaders import load_yaml_config
-
 from pywb.rewrite.wburl import WbUrl
+from pywb.rewrite.cookies import CookieTracker
+
+from pywb.apps.rewriterapp import RewriterApp, UpstreamException
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.load.wamloader import WAMLoader

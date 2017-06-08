@@ -1,5 +1,5 @@
 from warcio.limitreader import LimitReader
-from pywb.webagg.utils import load_config
+from pywb.utils.loaders import load_overlay_config
 from contextlib import contextmanager
 
 import re
@@ -31,7 +31,7 @@ def init_logging():
 
 # ============================================================================
 def load_wr_config():
-    return load_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
+    return load_overlay_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
 
 
 # ============================================================================

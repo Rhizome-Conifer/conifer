@@ -2,8 +2,7 @@ from warcio.timeutils import timestamp_now
 from warcio.warcwriter import BufferWARCWriter
 
 from pywb.utils.loaders import BlockLoader
-
-from pywb.webagg.utils import StreamIter, chunk_encode_iter
+from pywb.utils.io import StreamIter, chunk_encode_iter
 
 from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
