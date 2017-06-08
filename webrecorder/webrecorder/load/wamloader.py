@@ -1,4 +1,5 @@
 import os
+import re
 import glob
 
 from pywb.warcserver.index.indexsource import MementoIndexSource, RemoteIndexSource
@@ -32,7 +33,7 @@ class WAMLoader(object):
 
     def process(self, data):
         webarchives = data['webarchives']
-        for name, webarchive in webarchives.items():
+        for pk, webarchive in webarchives.items():
             if 'apis' not in webarchive:
                 continue
 
@@ -46,14 +47,20 @@ class WAMLoader(object):
             if not replay_url:
                 continue
 
+            archive_name = webarchive.get('name')
+            archive_about = webarchive.get('about')
+            replay_prefix = re.sub(r'https?://', '', replay_url.split('{',1)[0])
             collections = webarchive.get('collections')
 
-            self.replay_info[name] = {'replay_url': replay_url,
-                                      'parse_collection': collections is not None}
+            self.replay_info[pk] = {'replay_url': replay_url,
+                                    'parse_collection': collections is not None,
+                                    'replay_prefix': replay_prefix,
+                                    'name': archive_name,
+                                    'about': archive_about}
 
             if collections and isinstance(collections, list):
                 for coll in collections:
-                    coll_name = name + ':' + coll['id']
+                    coll_name = pk + ':' + coll['id']
                     self.add_index(replay_url, apis, coll_name, coll['id'])
 
             else:
@@ -65,9 +72,9 @@ class WAMLoader(object):
 
                     coll = '{src_coll}'
 
-                self.add_index(replay_url, apis, name, collection=coll)
+                self.add_index(replay_url, apis, pk, collection=coll)
 
-    def add_index(self, replay, apis, name, collection=''):
+    def add_index(self, replay, apis, pk, collection=''):
         replay = replay.replace('{collection}', collection)
         index = None
 
@@ -83,7 +90,7 @@ class WAMLoader(object):
             index = WBMementoIndexSource(replay)
 
         if index:
-            self.all_archives[name] = index
+            self.all_archives[pk] = index
 
 
 # ============================================================================
