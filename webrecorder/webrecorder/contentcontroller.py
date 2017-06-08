@@ -41,8 +41,7 @@ class ContentController(BaseController, RewriterApp):
         if not self.replay_host:
             self.replay_host = self.live_host
 
-        wam_loader = WAMLoader()
-        self.archives = wam_loader.replay_info
+        self.wam_loader = WAMLoader()
 
     def init_routes(self):
         # REDIRECTS
@@ -287,23 +286,19 @@ class ContentController(BaseController, RewriterApp):
     def check_remote_archive(self, wb_url, mode):
         wb_url = WbUrl(wb_url)
 
-        schemeless_url = wb_url.url.split('//', 1)[-1]
+        res = self.wam_loader.find_archive_for_url(wb_url.url)
+        if not res:
+            return
 
-        for name, archive in self.archives.items():
-            if schemeless_url.startswith(archive['replay_prefix']):
-                #if mode == 'record':
-                mode = 'extract'
-                mode += ':' + name
+        pk, new_url, coll = res
 
-                new_wb_url = schemeless_url[len(archive['replay_prefix']):]
-                if archive.get('parse_collection'):
-                    coll, new_wb_url = new_wb_url.split('/', 1)
-                    mode += ':' + coll
+        mode = 'extract:' + pk
+        if coll:
+            mode += ':' + coll
 
-                new_wb_url = WbUrl(new_wb_url)
+        new_url = WbUrl(new_url).to_str(mod=wb_url.mod)
 
-                url = new_wb_url.to_str(mod=wb_url.mod)
-                return mode, url
+        return mode, new_url
 
     def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
         result = self.check_remote_archive(wb_url, mode)
@@ -626,7 +621,10 @@ class ContentController(BaseController, RewriterApp):
         if type_ in ('record', 'live'):
             return
 
-        source = cdx.get('source')
+        source = cdx.get('orig_source_id')
+        if not source:
+            source = cdx.get('source')
+
         if not source:
             return
 

@@ -9,6 +9,8 @@ from pywb.utils.loaders import load_yaml_config
 
 # ============================================================================
 class WAMLoader(object):
+    STRIP_SCHEME = re.compile(r'https?://')
+
     def __init__(self, index_file=None, base_dir=None):
         self.index_file = index_file or './webarchives.yaml'
         self.base_dir = base_dir or './webrecorder/config/webarchives'
@@ -19,6 +21,21 @@ class WAMLoader(object):
             self.load_all()
         except IOError:
             print('No Archives Loaded')
+
+    def find_archive_for_url(self, url):
+        schemeless_url = self.STRIP_SCHEME.sub('', url)
+        for pk, info in self.replay_info.items():
+            if schemeless_url.startswith(info['replay_prefix']):
+                orig_url = schemeless_url[len(info['replay_prefix']):]
+                print('FOUND', pk, info)
+                if info.get('parse_collection'):
+                    coll, orig_url = orig_url.split('/', 1)
+                else:
+                    coll = None
+
+                return pk, orig_url, coll
+
+        print('ARCHIVE NOT FOUND')
 
     def load_all(self):
         for filename in self.load_from_index(self.base_dir, self.index_file):
@@ -49,7 +66,7 @@ class WAMLoader(object):
 
             archive_name = webarchive.get('name')
             archive_about = webarchive.get('about')
-            replay_prefix = re.sub(r'https?://', '', replay_url.split('{',1)[0])
+            replay_prefix = self.STRIP_SCHEME.sub('', replay_url.split('{',1)[0])
             collections = webarchive.get('collections')
 
             self.replay_info[pk] = {'replay_url': replay_url,

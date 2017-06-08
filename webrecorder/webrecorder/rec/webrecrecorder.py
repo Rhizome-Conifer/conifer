@@ -8,11 +8,15 @@ from pywb.recorder.filters import WriteRevisitDupePolicy
 from pywb.recorder.filters import ExcludeHttpOnlyCookieHeaders
 from pywb.recorder.filters import SkipRangeRequestFilter, SkipDefaultFilter
 
+from pywb.indexer.cdxindexer import BaseCDXWriter, CDXJ
+
 from pywb.utils.format import res_template
 from pywb.utils.io import BUFF_SIZE
 
 from webrecorder.utils import SizeTrackingReader, redis_pipeline, sanitize_title
 from webrecorder.redisman import init_manager_for_cli
+
+from webrecorder.load.wamloader import WAMLoader
 
 import redis
 import time
@@ -28,6 +32,9 @@ import os
 from six import iteritems
 from six.moves.urllib.parse import quote
 
+
+
+wam_loader = None
 
 # ============================================================================
 class WebRecRecorder(object):
@@ -75,6 +82,9 @@ class WebRecRecorder(object):
 
         self.app.delete('/delete', callback=self.delete)
         self.app.get('/rename', callback=self.rename)
+
+        global wam_loader
+        wam_loader = WAMLoader()
 
         debug(True)
 
@@ -479,6 +489,18 @@ class ExtractPatchingFilter(SkipDefaultFilter):
 
 
 # ============================================================================
+class CDXJIndexer(CDXJ, BaseCDXWriter):
+    def write_cdx_line(self, out, entry, filename):
+        source_uri = entry.record.rec_headers.get_header('WARC-Source-URI')
+        if source_uri:
+            res = wam_loader.find_archive_for_url(source_uri)
+            if res:
+                entry['orig_source_id'] = res[0]
+
+        super(CDXJIndexer, self).write_cdx_line(out, entry, filename)
+
+
+# ============================================================================
 class WebRecRedisIndexer(WritableRedisIndexer):
     def __init__(self, *args, **kwargs):
         super(WebRecRedisIndexer, self).__init__(*args, **kwargs)
@@ -514,6 +536,8 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         upload_key = params.get('param.upid')
         if upload_key:
             stream = SizeTrackingReader(stream, length, self.redis, upload_key)
+
+        params['writer_cls'] = CDXJIndexer
 
         cdx_list = (super(WebRecRedisIndexer, self).
                       add_urls_to_index(stream, params, filename, length))
