@@ -10,12 +10,13 @@ $(function() {
         BookmarkCounter.start();
 
     CountdownTimer.start();
-    SizeProgressBar.start();
-    Snapshot.start();
-    ShareWidget.start();
     InfoWidget.start();
     ModeSelector.start();
     PagingInterface.start();
+    ResourceStats.start();
+    ShareWidget.start();
+    SizeProgressBar.start();
+    Snapshot.start();
 });
 
 /*
@@ -435,6 +436,7 @@ var PagingInterface = (function () {
                 return curIdx;
             }
         }
+        return 0;
     }
 
     function start() {
@@ -553,6 +555,38 @@ var PagingInterface = (function () {
         start: start,
         navigationUpdate: navigationUpdate
     }
+})();
+
+var ResourceStats = (function () {
+    var $resourceBin;
+
+    function sortFn(a, b) {
+        return ((a[1] > b[1]) ? -1 : ((a[1] < b[1]) ? 1 : 0));
+    }
+
+    function start() {
+        $resourceBin = $(".ra-resources > ul");
+    }
+
+    function update(stats) {
+        if (typeof $resourceBin.get(0) === "undefined") return;
+
+        $resourceBin.empty();
+
+        var resources = [];
+
+        $.each(stats, function (k,v) { resources.push([k, v]); });
+        resources.sort(sortFn);
+
+        for (i = 0; i < resources.length; i++) {
+            $resourceBin.append("<li>"+wamKeys[resources[i][0]].name+" ("+resources[i][1]+")<li>");
+        }
+    }
+
+    return {
+        start: start,
+        update: update
+    };
 })();
 
 var ShareWidget = (function () {
@@ -1122,7 +1156,7 @@ var RecordingSizeWidget = (function() {
                     BookmarkCounter.setBookmarkCount(msg.numPages);
                 }
                 if (msg.stats) {
-                    console.log(msg.stats);
+                    ResourceStats.update(msg.stats);
                 }
                 break;
 

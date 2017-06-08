@@ -648,6 +648,11 @@ input.upload-choice {
     padding: 5px 10px;
     margin-top: 15px;
 }
+.ra-resources > ul {
+    padding: 0;
+    list-style-type: none;
+}
+
 
 .archive-toggle {
     transition: border-color .25s ease-in-out;
