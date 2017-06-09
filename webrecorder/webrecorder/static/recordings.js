@@ -855,19 +855,19 @@ var RouteTo = (function(){
     var newRecording = function(collection, recording, url, mode, target) {
         // if a containerized browser is set, assign it to the new recording
         //routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
-        var curr_user = window.curr_user || "$curr";
+        var curr_user = "$curr";
         routeTo(host + "/" + curr_user + "/" + collection + "/" + recording + "/record/" + cbrowserMod("/") + url, target);
     }
 
     var newExtract = function(collection, recording, url, ts) {
         var allArchives = typeof window.wrExtractModeAllArchives !== "undefined" && window.wrExtractModeAllArchives;
         var extractMode = (allArchives ? "extract" : "extract_only") + ":" + sourceArchive.id;
-        var curr_user = window.curr_user || "$curr";
+        var curr_user = "$curr";
         routeTo(host + "/" + curr_user + "/" + collection + "/" + recording + "/" + extractMode + "/" + cbrowserMod("/", ts) + url);
     }
 
     var newPatch = function(collection, url, target, ts) {
-        var curr_user = window.curr_user || "$curr";
+        var curr_user = "$curr";
         routeTo(host + "/" + curr_user + "/" + collection + "/Patch/patch/" + cbrowserMod("/", ts) + url, target);
     }
 
