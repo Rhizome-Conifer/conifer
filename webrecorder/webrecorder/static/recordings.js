@@ -28,7 +28,7 @@ function iframeLoadEvent() {
     }
 }
 
-function setUrl(url) {
+function setUrl(url, noStatsUpdate) {
     $("input[name='url']").val(decodeURI(url));
     wbinfo.url = decodeURI(url);
 
@@ -38,8 +38,10 @@ function setUrl(url) {
         ShareWidget.updateUrl({'url': wbinfo.url, 'ts': wbinfo.timestamp});
     }
 
-    // todo: account for all iframes?
-    RecordingSizeWidget.setStatsUrls([url]);
+    if (!noStatsUpdate) {
+        // todo: account for all iframes?
+        RecordingSizeWidget.setStatsUrls([url]);
+    }
 }
 
 function getUrl() {
@@ -997,7 +999,7 @@ var RecordingSizeWidget = (function() {
         }
     }
 
-    function ws_closed() {
+    function ws_closed(event) {
         useWS = false;
         if (errCount < 5) {
             errCount += 1;
@@ -1594,6 +1596,8 @@ $(function() {
         if (state.is_error) {
             setUrl(state.url);
         } else if (window.curr_mode == "record" || window.curr_mode == "patch" || window.curr_mode == "extract") {
+
+        /*
             if (lastUrl == state.url) {
                 if (!state.ts && lastTs) {
                     return;
@@ -1607,7 +1611,7 @@ $(function() {
                     return;
                 }
             }
-
+        */
             // if not is_live, then this page/bookmark is not a new recording
             // but is an existing replay
             //if (window.curr_mode == "patch" && !state.is_live) {
@@ -1622,7 +1626,7 @@ $(function() {
             attributes.title = state.title;
 
             attributes.url = state.url;
-            setUrl(state.url);
+            setUrl(state.url, true);
 
             var msg;
 
@@ -1654,6 +1658,8 @@ $(function() {
             lastTitle = attributes.title;
 
         } else if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
+
+        /*
             if (lastUrl == state.url) {
                 if (!state.ts && lastTs) {
                     return;
@@ -1667,8 +1673,8 @@ $(function() {
                     return;
                 }
             }
-
-            if(!initialReq) {
+         */
+            if (!initialReq) {
                 setTimestamp(state.ts);
                 setUrl(state.url);
                 setTitle("Archived", state.url, state.title);

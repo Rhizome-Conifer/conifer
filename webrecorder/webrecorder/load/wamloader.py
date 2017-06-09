@@ -27,15 +27,12 @@ class WAMLoader(object):
         for pk, info in self.replay_info.items():
             if schemeless_url.startswith(info['replay_prefix']):
                 orig_url = schemeless_url[len(info['replay_prefix']):]
-                print('FOUND', pk, info)
                 if info.get('parse_collection'):
                     coll, orig_url = orig_url.split('/', 1)
                 else:
                     coll = None
 
                 return pk, orig_url, coll
-
-        print('ARCHIVE NOT FOUND')
 
     def load_all(self):
         for filename in self.load_from_index(self.base_dir, self.index_file):
