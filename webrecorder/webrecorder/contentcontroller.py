@@ -628,17 +628,21 @@ class ContentController(BaseController, RewriterApp):
         if type_ in ('record', 'live'):
             return
 
-        source = cdx.get('orig_source_id')
-        if not source:
-            source = cdx.get('source')
-
+        source = cdx.get('source')
         if not source:
             return
 
-        ra_rec = None
-
         if source.startswith('r:'):
             source = 'replay'
+
+        if source == 'replay' and type_ == 'patch':
+            return
+
+        orig_source = cdx.get('orig_source_id')
+        if orig_source:
+            source = orig_source
+
+        ra_rec = None
 
         # set source in recording-key
         if type_ in self.MODIFY_MODES:
