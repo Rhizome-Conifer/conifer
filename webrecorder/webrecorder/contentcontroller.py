@@ -49,15 +49,16 @@ class ContentController(BaseController, RewriterApp):
         def redir_new_temp_rec(wb_url):
             coll = 'temp'
             rec = self.DEF_REC_NAME
+            wb_url = self.add_query(wb_url)
             return self.do_redir_rec_or_patch(coll, rec, wb_url, 'record')
 
-        @self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
-        def redir_new_record(coll, rec, wb_url):
-            return self.do_redir_rec_or_patch(coll, rec, wb_url, 'record')
+        #@self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
+        #def redir_new_record(coll, rec, wb_url):
+        #    return self.do_redir_rec_or_patch(coll, rec, wb_url, 'record')
 
-        @self.app.route('/$patch/<coll>/<wb_url:path>', method='ANY')
-        def redir_new_patch(coll, wb_url):
-            return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
+        #@self.app.route('/$patch/<coll>/<wb_url:path>', method='ANY')
+        #def redir_new_patch(coll, wb_url):
+        #    return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
 
         # TAGS
         @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
@@ -301,14 +302,13 @@ class ContentController(BaseController, RewriterApp):
         return mode, new_url
 
     def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
-        result = self.check_remote_archive(wb_url, mode)
-        if result:
-            mode, wb_url = result
+        if mode == 'record':
+            result = self.check_remote_archive(wb_url, mode)
+            if result:
+                mode, wb_url = result
 
         rec_title = rec
         rec = self.sanitize_title(rec_title)
-
-        wb_url = self.add_query(wb_url)
 
         user = self.manager.get_curr_user()
 
@@ -356,6 +356,11 @@ class ContentController(BaseController, RewriterApp):
                        inv_sources=''):
 
         wb_url = self.add_query(wb_url)
+        if user == '$curr':
+            full_mode = type
+            if sources:
+                full_mode += ':' + sources
+            return self.do_redir_rec_or_patch(coll, rec, wb_url, full_mode)
 
         not_found = False
 
@@ -409,7 +414,7 @@ class ContentController(BaseController, RewriterApp):
         if inv_sources and inv_sources != '*':
             patch_rec = 'Patch of ' + rec
 
-        request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'])
+        request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'], safe='/:')
 
         wb_url = self._context_massage(wb_url)
 

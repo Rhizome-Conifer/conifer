@@ -181,7 +181,7 @@ class AppController(BaseController):
 
         def get_WAM():
             """Return web archives manifest."""
-            return self.content_app.archives
+            return self.content_app.wam_loader.replay_info
 
         def is_beta():
             return self.manager.is_beta()
