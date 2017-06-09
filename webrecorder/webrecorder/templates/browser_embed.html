@@ -27,7 +27,7 @@
 
     window.inactiveSecs = {{ inactive_time if inactive_time else 0 }};
 
-    var wamKeys = { {% for id, archive in get_WAM().items() %}"{{ id }}": {"name": "{{ archive.name }}", "info": "{{ archive.about }}"}{% if not loop.last %}, {% endif %}{% endfor %} };
+    var wamKeys = { "live": {"name": "Live Web" }, "replay": {"name": "Live web at time of recording" }, {% for id, archive in get_WAM().items() %}"{{ id }}": {"name": "{{ archive.name }}", "info": "{{ archive.about }}"}{% if not loop.last %}, {% endif %}{% endfor %} };
 </script>
 
 {% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}

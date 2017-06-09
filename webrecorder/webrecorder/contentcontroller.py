@@ -156,14 +156,14 @@ class ContentController(BaseController, RewriterApp):
         def do_record(user, coll, rec, wb_url):
             request.path_shift(4)
 
-            return self.handle_routing(wb_url, user, coll, rec, type='record')
+            return self.handle_routing(wb_url, user, coll, rec, type='record', redir_route='record')
 
         # Patch
         @self.app.route('/<user>/<coll>/<rec>/patch/<wb_url:path>', method='ANY')
         def do_patch(user, coll, rec, wb_url):
             request.path_shift(4)
 
-            return self.handle_routing(wb_url, user, coll, rec, type='patch')
+            return self.handle_routing(wb_url, user, coll, rec, type='patch', redir_route='patch')
 
         # Extract
         @self.app.route('/<user>/<coll>/<rec>/extract\:<archive>/<wb_url:path>', method='ANY')
@@ -172,7 +172,8 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec, type='extract',
                                        sources=archive,
-                                       inv_sources=archive)
+                                       inv_sources=archive,
+                                       redir_route='extract:' + archive)
 
         @self.app.route('/<user>/<coll>/<rec>/extract_only\:<archive>/<wb_url:path>', method='ANY')
         def do_extract_only_archive(user, coll, rec, wb_url, archive):
@@ -180,7 +181,8 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec, type='extract',
                                        sources=archive,
-                                       inv_sources='*')
+                                       inv_sources='*',
+                                       redir_route='extract_only:' + archive)
 
         @self.app.route('/<user>/<coll>/<rec>/extract/<wb_url:path>', method='ANY')
         def do_extract_all(user, coll, rec, wb_url):
@@ -188,7 +190,8 @@ class ContentController(BaseController, RewriterApp):
 
             return self.handle_routing(wb_url, user, coll, rec, type='extract',
                                        sources='*',
-                                       inv_sources='*')
+                                       inv_sources='*',
+                                       redir_route='extract')
 
         # Replay
         @self.app.route('/<user>/<coll>/<rec>/replay/<wb_url:path>', method='ANY')
@@ -353,14 +356,12 @@ class ContentController(BaseController, RewriterApp):
                        is_embed=False,
                        is_display=False,
                        sources='',
-                       inv_sources=''):
+                       inv_sources='',
+                       redir_route=None):
 
         wb_url = self.add_query(wb_url)
-        if user == '$curr' and type in self.MODIFY_MODES:
-            full_mode = type
-            if sources:
-                full_mode += ':' + sources
-            return self.do_create_new_and_redir(coll, rec, wb_url, full_mode)
+        if user == '_new' and redir_route:
+            return self.do_create_new_and_redir(coll, rec, wb_url, redir_route)
 
         not_found = False
 

@@ -561,22 +561,34 @@ var PagingInterface = (function () {
 
 var ResourceStats = (function () {
     var $resourceBin;
+    var $infoWidget;
 
     function sortFn(a, b) {
         return ((a[1] > b[1]) ? -1 : ((a[1] < b[1]) ? 1 : 0));
     }
 
     function start() {
+        $infoWidget = $(".wr-info-widget");
         $resourceBin = $(".ra-resources > ul");
     }
 
     function update(stats) {
         if (typeof $resourceBin.get(0) === "undefined") return;
 
+        // if replaying, check whether local or extract
+        if (window.curr_mode === "replay-coll" || window.curr_mode === "replay") {
+            var sources = Object.keys(stats);
+            if (sources.length > 1 || (sources.length === 1 && sources[0] !== "replay")) {
+                $infoWidget.addClass("visible");
+            } else {
+                // local replay only, skip
+                return;
+            }
+        }
+
         $resourceBin.empty();
 
         var resources = [];
-
         $.each(stats, function (k,v) { resources.push([k, v]); });
         resources.sort(sortFn);
 
@@ -855,20 +867,17 @@ var RouteTo = (function(){
     var newRecording = function(collection, recording, url, mode, target) {
         // if a containerized browser is set, assign it to the new recording
         //routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
-        var curr_user = "$curr";
-        routeTo(host + "/" + curr_user + "/" + collection + "/" + recording + "/record/" + cbrowserMod("/") + url, target);
+        routeTo(host + "/_new/" + collection + "/" + recording + "/record/" + cbrowserMod("/") + url, target);
     }
 
     var newExtract = function(collection, recording, url, ts) {
         var allArchives = typeof window.wrExtractModeAllArchives !== "undefined" && window.wrExtractModeAllArchives;
         var extractMode = (allArchives ? "extract" : "extract_only") + ":" + sourceArchive.id;
-        var curr_user = "$curr";
-        routeTo(host + "/" + curr_user + "/" + collection + "/" + recording + "/" + extractMode + "/" + cbrowserMod("/", ts) + url);
+        routeTo(host + "/_new/" + collection + "/" + recording + "/" + extractMode + "/" + cbrowserMod("/", ts) + url);
     }
 
     var newPatch = function(collection, url, target, ts) {
-        var curr_user = "$curr";
-        routeTo(host + "/" + curr_user + "/" + collection + "/Patch/patch/" + cbrowserMod("/", ts) + url, target);
+        routeTo(host + "/_new/" + collection + "/Patch/patch/" + cbrowserMod("/", ts) + url, target);
     }
 
     var recordingInProgress = function(user, collection, recording, url, mode, target) {

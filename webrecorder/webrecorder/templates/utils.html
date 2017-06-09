@@ -118,23 +118,25 @@
     Replay info widget
 #}
 {% macro info_widget(coll=None) %}
-    <button class="dropdown-toggle" type="button" id="replayInfo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-        <span class="glyphicon glyphicon-info-sign"></span>
-    </button>
-    <div class="dropdown-menu ra-dropdown-menu arrow_box" aria-labelledby="replayInfo">
-        <span class="glyphicon glyphicon-remove-circle"></span>
-        <span class="ra-replay-info-label">Now Viewing Collection</span>
-        <h5 data-value-encoded="{{ coll }}"></h5>
-        <div class="ra-recording-block">
-            {#
-            <div class="ra-replay-info-label">Recording on 3 JUN 2017</div>
-            <h5>Test Recording</h5><span class="ra-mode-badge patch">PATCH</span>
-            #}
-            <div class="ra-resources">
-                <span class="ra-replay-info-label">Resources recorded from:</span>
-                <ul>
-                    <li>loading...</li>
-                </ul>
+    <div class="wr-info-widget">
+        <button class="dropdown-toggle" type="button" id="replayInfo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span class="glyphicon glyphicon-info-sign"></span>
+        </button>
+        <div class="dropdown-menu ra-dropdown-menu arrow_box" aria-labelledby="replayInfo">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+            <span class="ra-replay-info-label">Now Viewing Collection</span>
+            <h5 data-value-encoded="{{ coll }}"></h5>
+            <div class="ra-recording-block">
+                {#
+                <div class="ra-replay-info-label">Recording on 3 JUN 2017</div>
+                <h5>Test Recording</h5><span class="ra-mode-badge patch">PATCH</span>
+                #}
+                <div class="ra-resources">
+                    <span class="ra-replay-info-label">Resources recorded from:</span>
+                    <ul>
+                        <li>loading...</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

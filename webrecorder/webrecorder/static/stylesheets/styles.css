@@ -1355,7 +1355,7 @@ div.filter-label {
 .linklist > .dropdown-menu, .rb-dropdown .dropdown-menu { max-height: 33vh; overflow: auto; }
 .linklist.open > .dropdown-menu,
 .rb-dropdown.open > .dropdown-menu,
-.wr-replay-info.open > .dropdown-menu {
+.wr-info-widget.open > .dropdown-menu {
     opacity: 1;
     transform: scale(1, 1);
     top: 100%;
@@ -1384,12 +1384,12 @@ div.filter-label {
     left: auto;
 }
 
-.wr-replay-info.open > .dropdown-menu {
+.wr-info-widget.open > .dropdown-menu {
     /* -.5 width - 40px padding, -6px icon padding, -.5 icon width */
     left: calc(-250px + (40px + 6px + 7px));
 }
 @media (max-width: 1200px) {
-    .wr-replay-info.open > .dropdown-menu {
+    .wr-info-widget.open > .dropdown-menu {
         left: initial;
         right: 0;
     }
@@ -1632,30 +1632,38 @@ div.filter-label {
 
     background: linear-gradient(90deg, rgba(255,255,255,0), #FFF 15%, #FFF);
 }
-.wr-replay-info .dropdown-toggle {
+
+.wr-info-widget {
+    transition: opacity .25s ease-in-out;
+    opacity: 0;
+}
+.wr-info-widget.visible {
+    opacity: 1;
+}
+.wr-info-widget .dropdown-toggle {
     border: none;
     background: inherit;
 }
-.wr-replay-info .glyphicon-info-sign {
+.wr-info-widget .glyphicon-info-sign {
     transition: color .2s ease-in-out;
     vertical-align: text-top;
 }
-.wr-replay-info .glyphicon-info-sign:hover {
+.wr-info-widget .glyphicon-info-sign:hover {
     color: rgb(89,158,230);
 }
-.wr-replay-info.open .glyphicon-info-sign {
+.wr-info-widget.open .glyphicon-info-sign {
     color: rgb(89,158,230);
 }
-.wr-replay-info > .dropdown-menu {
+.wr-info-widget > .dropdown-menu {
     width: 500px;
     padding: 15px;
     margin-top: 10px;
 }
-.wr-replay-info .arrow_box:before, .wr-replay-info .arrow_box:after {
+.wr-info-widget .arrow_box:before, .wr-info-widget .arrow_box:after {
     left: 50%;
 }
 @media (max-width: 1200px) {
-    .wr-replay-info .arrow_box:before, .wr-replay-info .arrow_box:after {
+    .wr-info-widget .arrow_box:before, .wr-info-widget .arrow_box:after {
         left: initial;
         right: 18px;
     }
