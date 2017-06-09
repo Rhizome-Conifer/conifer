@@ -108,7 +108,7 @@ class TestTempContent(FullStackTests):
         assert '<iframe' in res.text
 
     def test_anon_record_1(self):
-        res = self.testapp.get('/$record/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/$curr/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
         assert res.status_code == 302
         res = res.follow()
 
@@ -401,7 +401,7 @@ class TestTempContent(FullStackTests):
         assert res.json == {'deleted_id': 'recording-session'}
 
     def test_anon_patch_redirect_and_delete(self):
-        res = self.testapp.get('/$patch/temp/http://example.com/?patch=test')
+        res = self.testapp.get('/$curr/temp/patch/patch/http://example.com/?patch=test')
         assert res.status_code == 302
 
         parts = urlsplit(res.headers['Location'])

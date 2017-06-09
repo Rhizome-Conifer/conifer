@@ -50,7 +50,7 @@ class ContentController(BaseController, RewriterApp):
             coll = 'temp'
             rec = self.DEF_REC_NAME
             wb_url = self.add_query(wb_url)
-            return self.do_redir_rec_or_patch(coll, rec, wb_url, 'record')
+            return self.do_create_new_and_redir(coll, rec, wb_url, 'record')
 
         #@self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
         #def redir_new_record(coll, rec, wb_url):
@@ -301,7 +301,7 @@ class ContentController(BaseController, RewriterApp):
 
         return mode, new_url
 
-    def do_redir_rec_or_patch(self, coll, rec, wb_url, mode):
+    def do_create_new_and_redir(self, coll, rec, wb_url, mode):
         if mode == 'record':
             result = self.check_remote_archive(wb_url, mode)
             if result:
@@ -356,11 +356,11 @@ class ContentController(BaseController, RewriterApp):
                        inv_sources=''):
 
         wb_url = self.add_query(wb_url)
-        if user == '$curr':
+        if user == '$curr' and type in self.MODIFY_MODES:
             full_mode = type
             if sources:
                 full_mode += ':' + sources
-            return self.do_redir_rec_or_patch(coll, rec, wb_url, full_mode)
+            return self.do_create_new_and_redir(coll, rec, wb_url, full_mode)
 
         not_found = False
 
