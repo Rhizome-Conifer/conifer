@@ -40,6 +40,12 @@ class BaseController(object):
         url += path
         return bottle_redirect(url)
 
+    def validate_csrf(self):
+        csrf = request.forms.getunicode('csrf')
+        sesh_csrf = self.get_session().get_csrf()
+        if not sesh_csrf or csrf != sesh_csrf:
+            self._raise_error(403, 'Invalid CSRF Token')
+
     def get_user(self, api=False, redir_check=True):
         if redir_check:
             self.redir_host()

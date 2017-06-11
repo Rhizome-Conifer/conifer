@@ -165,6 +165,7 @@ class CollsController(BaseController):
 
         @self.app.post(['/_delete_coll'])
         def delete_collection_post():
+            self.validate_csrf()
             user, coll = self.get_user_coll(api=False)
 
             success = False

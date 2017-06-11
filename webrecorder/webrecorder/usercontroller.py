@@ -451,6 +451,7 @@ class UserController(BaseController):
         # Delete User Account
         @self.app.post('/<user>/$delete')
         def delete_user(user):
+            self.validate_csrf()
             if self.manager.delete_user(user):
                 self.flash_message('The user {0} has been permanently deleted!'.format(user), 'success')
 

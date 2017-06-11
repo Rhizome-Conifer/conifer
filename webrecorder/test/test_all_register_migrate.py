@@ -153,6 +153,10 @@ class TestRegisterMigrate(FullStackTests):
 
         assert 'Created collection' in res.text
 
+        # ensure csrf token present
+        m = re.search('name="csrf" value="([^\"]+)"', res.text)
+        assert m
+
     def test_logged_in_user_info_2(self):
         res = self.testapp.get('/someuser')
         assert '"/someuser/test-migrate"' in res.text
@@ -250,8 +254,21 @@ class TestRegisterMigrate(FullStackTests):
 
         assert '"food": "bar"' in res.text, res.text
 
+    def test_delete_coll_invalid_csrf(self):
+        # no csrf token, should result in 403
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', status=403)
+
+        # invalid csrf token, should result in 403
+        params = {'csrf': 'xyz'}
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params, status=403)
+
     def test_delete_coll(self):
-        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll')
+        res = self.testapp.get('/someuser/new-coll')
+
+        csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
+
+        params = {'csrf': csrf_token}
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
 
         assert res.headers['Location'] == 'http://localhost:80/someuser'
 
