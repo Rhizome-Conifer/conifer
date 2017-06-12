@@ -10,7 +10,10 @@ var wrExtractModeAllArchives = (typeof wbinfo !== "undefined" && wbinfo.inv_sour
 
 function renderExtractWidget(ts, source) {
     recorderUI.querySelector(".sources-widget .ts").innerHTML = ts;
-    recorderUI.querySelector(".sources-widget .mnt-label").innerHTML = (wrExtractModeAllArchives ? source + " <span class='wr-archive-count'></span>&nbsp;<span class='caret'/>" : source);
+
+    if (typeof source !== "undefined") {
+        recorderUI.querySelector(".sources-widget .mnt-label").innerHTML = (wrExtractModeAllArchives ? source + " <span class='wr-archive-count'></span>&nbsp;<span class='caret'/>" : source + " <span class='caret'/>");
+    }
 }
 
 function renderExtractDropdown() {
@@ -151,7 +154,7 @@ $(function () {
 
         $(document).on("updateTs", function () {
             sourceTs = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
-            renderExtractWidget(sourceTs, "All sources");
+            renderExtractWidget(sourceTs);
         });
     }
 });

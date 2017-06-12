@@ -130,13 +130,10 @@ var EventHandlers = (function() {
                 RouteTo.replayRecording(user, coll, rec, url);
 
             } else if (window.curr_mode == "replay-coll") {
-                RouteTo.replayRecording(user, coll, undefined, url);
+                RouteTo.replayRecording(user, coll, null, url);
 
             } else if (window.curr_mode == "patch") {
                 RouteTo.patchPage(user, coll, rec, url);
-
-            } else if (window.curr_mode == "extract") {
-                RouteTo.extractPage(user, coll, rec, url);
 
             } else if (window.curr_mode == "new") {
                 // New handled in newrecordings.js
@@ -176,7 +173,7 @@ var EventHandlers = (function() {
                 target = window;
             }
 
-            RouteTo.newPatch(coll, url, target, wbinfo.timestamp);
+            RouteTo.newPatch(coll, url, wbinfo.timestamp, target);
         });
 
 
@@ -331,11 +328,11 @@ var ModeSelector = (function (){
                     break;
                 case 'replay':
                     var url = getUrl();
-                    RouteTo.replayRecording(user, coll, cbrowserMod('', wbinfo.timestamp), url);
+                    RouteTo.replayRecording(user, coll, null, url, wbinfo.timestamp);
                     break;
                 case 'patch':
                     var url = getUrl();
-                    RouteTo.newPatch(coll, url, window, wbinfo.timestamp);
+                    RouteTo.newPatch(coll, url, wbinfo.timestamp);
                     break;
                 case 'snapshot':
                     Snapshot.queueSnapshot();
@@ -590,7 +587,22 @@ var ResourceStats = (function () {
         }
 
         if (Object.keys(stats).length > 0 && $(".wr-archive-count").get(0) !== "undefined" && wbinfo.inv_sources !== "*") {
-            $(".wr-archive-count").text("+ "+Object.keys(stats).length);
+            var arcSum = Object.keys(stats).length;
+
+            // subtract source archive from count
+            if (window.curr_mode === "extract" && window.wrExtractId in stats) {
+                arcSum -= 1;
+            }
+
+            if (arcSum > 0) {
+                if (window.curr_mode === "patch") {
+                    if(arcSum > 0) {
+                        $(".mnt-label").html("Patched from " + arcSum + " Resources <span class='caret'/>");
+                    }
+                } else {
+                    $(".wr-archive-count").text("+ " + arcSum);
+                }
+            }
         }
 
 
@@ -892,7 +904,7 @@ var RouteTo = (function(){
         routeTo(host + "/_new/" + collection + "/" + recording + "/" + extractMode + "/" + cbrowserMod("/", ts) + url);
     }
 
-    var newPatch = function(collection, url, target, ts) {
+    var newPatch = function(collection, url, ts, target) {
         routeTo(host + "/_new/" + collection + "/Patch/patch/" + cbrowserMod("/", ts) + url, target);
     }
 
@@ -912,13 +924,8 @@ var RouteTo = (function(){
         routeTo(host + "/" + user + "/" + collection + "/" + recording);
     }
 
-    var replayRecording = function(user, collection, recording, url) {
-        var path = host + "/" + user + "/" + collection + "/";
-        if (recording) {
-            path += recording + "/";
-        }
-        path += url;
-
+    var replayRecording = function(user, collection, recording, url, ts) {
+        var path = host + "/" + user + "/" + collection + "/" + (recording ? recording + "/" : "") + cbrowserMod("/", ts) + url;
         routeTo(path);
     }
 

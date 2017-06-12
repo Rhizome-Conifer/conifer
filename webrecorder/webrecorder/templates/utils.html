@@ -75,7 +75,7 @@
         <button class="btn {% if mode == 'extract' %}btn-primary{% elif mode == 'patch' %}btn-warning{% endif %} sources-widget dropdown-toggle" type="button" id="timePicker" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             <ul>
                 <li class="ts main-replay-date" {% if timestamp %}data-time-ts-gmt="{{ timestamp }}" {% endif %}>Most Recent</li>
-                <li class="mnt-label">All sources</li>
+                <li class="mnt-label">Nothing Patched Yet</li>
             </ul>
         </button>
         <div class="dropdown-menu sources-dropdown" aria-labelledby="timePicker">
@@ -111,9 +111,13 @@
                 </div>
             {% else %}
                 <div class="ra-resources">
-                    <span class="ra-replay-info-label">Additional resources loaded from:</span>
+                    {% if mode == 'patch' %}
+                        <span class="ra-replay-info-label">Patched resources from:</span>
+                    {% else %}
+                        <span class="ra-replay-info-label">Resources loaded from:</span>
+                    {% endif %}
                     <ul>
-                        <li>loading...</li>
+                        <li>No resources loaded yet</li>
                     </ul>
                 </div>
             {% endif %}
@@ -142,7 +146,7 @@
                 <div class="ra-resources">
                     <span class="ra-replay-info-label">Additional resources recorded from:</span>
                     <ul>
-                        <li>loading...</li>
+                        <li>No resources loaded yet</li>
                     </ul>
                 </div>
             </div>
