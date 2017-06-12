@@ -627,6 +627,7 @@ class ContentController(BaseController, RewriterApp):
                 'is_display': kwargs.get('is_display'),
                 'top_prefix': top_prefix,
                 'sources': kwargs.get('sources'),
+                'inv_sources': kwargs.get('inv_sources'),
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs):

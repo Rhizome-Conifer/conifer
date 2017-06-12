@@ -556,7 +556,6 @@ input.upload-choice {
 .extract-selector .dropdown-menu {
     margin: 0;
     min-width: 400px;
-    min-height: 200px;
     padding: 15px;
 
     flex-direction: column;
@@ -583,7 +582,7 @@ input.upload-choice {
 }
 .ra-mode-badge.patch {
     background-color: rgb(204,204,204);
-    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .ra-collection {
@@ -677,7 +676,7 @@ input.upload-choice {
     justify-content: center;
     align-items: flex-start;
     background-color: rgb(204,204,204);
-    margin-right: 5px;
+    margin-right: 10px;
 }
 .archive-toggle.on .checkbox-block {
     background-color: rgb(228, 121, 46);

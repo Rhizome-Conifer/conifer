@@ -58,10 +58,13 @@ function setTitle(status_msg, url, title) {
 
 function setTimestamp(ts) {
     wbinfo.timestamp = ts;
+    $(document).trigger("updateTs");
 }
 
 function updateTimestamp(ts, dropdown) {
-    $(".main-replay-date").html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span>"+(typeof dropdown !== "undefined" && dropdown ? "<span class='glyphicon glyphicon-triangle-bottom' />" : ""));
+    if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
+        $(".main-replay-date").html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span>"+(typeof dropdown !== "undefined" && dropdown ? "<span class='glyphicon glyphicon-triangle-bottom' />" : ""));
+    }
 }
 
 function cbrowserMod(sep, ts) {
@@ -576,7 +579,7 @@ var ResourceStats = (function () {
         if (typeof $resourceBin.get(0) === "undefined") return;
 
         // if replaying, check whether local or extract
-        if (window.curr_mode === "replay-coll" || window.curr_mode === "replay") {
+        if (window.curr_mode === "replay-coll" || window.curr_mode === "replay" || window.curr_mode === "patch") {
             var sources = Object.keys(stats);
             if (sources.length > 1 || (sources.length === 1 && sources[0] !== "replay")) {
                 $infoWidget.addClass("visible");
@@ -585,6 +588,11 @@ var ResourceStats = (function () {
                 return;
             }
         }
+
+        if (Object.keys(stats).length > 0 && $(".wr-archive-count").get(0) !== "undefined" && wbinfo.inv_sources !== "*") {
+            $(".wr-archive-count").text("+ "+Object.keys(stats).length);
+        }
+
 
         $resourceBin.empty();
 
@@ -1607,7 +1615,7 @@ $(function() {
 
     function addNewPage(state) {
         if (state && state.ts && window.curr_mode != "record" && window.curr_mode != "extract") {
-            updateTimestamp(state.ts, true);
+            updateTimestamp(state.ts, window.curr_mode.indexOf("replay") !== -1);
         }
 
         if (state.is_error) {

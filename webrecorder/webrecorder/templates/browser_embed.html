@@ -16,10 +16,12 @@
     wbinfo.outer_prefix = decodeURI("{{ top_prefix }}");
     wbinfo.url = "{{ url }}";
     wbinfo.capture_url = wbinfo.url;
+    wbinfo.reqTimestamp = "{{ ts }}";
     wbinfo.timestamp = "{{ ts }}";
     wbinfo.state = "{{ curr_mode }}";
     wbinfo.info = {{ info | default('{}') | tojson }};
     wbinfo.sources = "{{ sources }}";
+    wbinfo.inv_sources = "{{ inv_sources }}";
 
     window.cnt_browser = "{{ browser }}";
 
@@ -27,7 +29,9 @@
 
     window.inactiveSecs = {{ inactive_time if inactive_time else 0 }};
 
-    var wamKeys = { "live": {"name": "Live Web" }, "replay": {"name": "Live web at time of recording" }, {% for id, archive in get_WAM().items() %}"{{ id }}": {"name": "{{ archive.name }}", "info": "{{ archive.about }}"}{% if not loop.last %}, {% endif %}{% endfor %} };
+    var archives = {{ get_archives() | tojson }};
+    archives['live'] = {"name": "Live Web" };
+    archives["replay"] = {"name": "Live web at time of recording"};
 </script>
 
 {% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}

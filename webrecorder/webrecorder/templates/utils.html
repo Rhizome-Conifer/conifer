@@ -70,30 +70,38 @@
 {#
     Recording sources widget
 #}
-{% macro sources_widget(coll=None, active=False) %}
+{% macro sources_widget(target=None, active=False, mode="extract", timestamp=None, req_timestamp=None) %}
     <div class="btn-group">
-        <button class="btn btn-primary sources-widget dropdown-toggle" type="button" id="timePicker" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        <button class="btn {% if mode == 'extract' %}btn-primary{% elif mode == 'patch' %}btn-warning{% endif %} sources-widget dropdown-toggle" type="button" id="timePicker" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
             <ul>
-                <li class="ts">Most Recent</li>
+                <li class="ts main-replay-date" {% if timestamp %}data-time-ts-gmt="{{ timestamp }}" {% endif %}>Most Recent</li>
                 <li class="mnt-label">All sources</li>
             </ul>
         </button>
         <div class="dropdown-menu sources-dropdown" aria-labelledby="timePicker">
             <div class="ra-mode-row">
-                <span class="ra-mode-badge extract">extracting</span> to <div class="ra-collection" {% if coll %}data-value-encoded="{{ coll }}"{% endif %}></div>
+                {% if mode == "extract" %}
+                    <span class="ra-mode-badge extract">extracting</span> to <div class="ra-collection" {% if target %}data-value-encoded="{{ target }}"{% endif %}></div>
+                {% elif mode == "patch" %}
+                    <span class="ra-mode-badge patch">patching</span> to <div class="ra-collection" {% if target %}data-value-encoded="{{ target }}"{% endif %}></div>
+                {% endif %}
             </div>
+            {% if mode == "extract" %}
             <div class="ra-info">
                 <div>
                     <span>URL</span>
                     <span>FROM</span>
+                    {% if req_timestamp %}<span>REQUESTED</span>{% endif %}
                     <span>TIMESTAMP</span>
                 </div>
                 <div>
                     <span class="ra-source"></span>
                     <span class="ra-source-name"></span>
+                    {% if req_timestamp %}<span data-time-ts-gmt="{{ req_timestamp }}"></span>{% endif %}
                     <span class="ra-ts"></span>
                 </div>
             </div>
+            {% endif %}
             {% if not active %}
                 <div class="archive-toggle on">
                     <div class="checkbox-block">
@@ -103,7 +111,7 @@
                 </div>
             {% else %}
                 <div class="ra-resources">
-                    <span class="ra-replay-info-label">Resources loaded from:</span>
+                    <span class="ra-replay-info-label">Additional resources loaded from:</span>
                     <ul>
                         <li>loading...</li>
                     </ul>
@@ -132,7 +140,7 @@
                 <h5>Test Recording</h5><span class="ra-mode-badge patch">PATCH</span>
                 #}
                 <div class="ra-resources">
-                    <span class="ra-replay-info-label">Resources recorded from:</span>
+                    <span class="ra-replay-info-label">Additional resources recorded from:</span>
                     <ul>
                         <li>loading...</li>
                     </ul>

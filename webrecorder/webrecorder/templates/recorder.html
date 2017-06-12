@@ -16,7 +16,7 @@
 {% endif %}
 
 <div class="main-bar">
-    <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url {% if is_extract %}remote-archive{% endif %}">
+    <form class="{{ 'content-form' if curr_mode != 'new' else 'start-recording' }} form-group-recorder-url {% if is_extract or is_patch %}remote-archive{% endif %}">
         <div class="input-group containerized">
             <div class='input-group-btn rb-dropdown'>
                 {% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}
@@ -56,11 +56,10 @@
                 </div>
             {% else %}
                 <input type="text" class="url-input-recorder form-control" name="url" data-value-encoded="{{ url }}" data-target-decoded="value" value="" {% if not browser %}autofocus{% endif %} required>
-                <span class="replay-date main-replay-date"></span>
 
                 {% if can_admin() and is_new %}
                     <div class="input-group-btn extract-selector">
-                        {{ sources_widget(coll=coll_title) }}
+                        {{ sources_widget(target=coll_title) }}
                         <button class="btn btn-default" type="submit" role="button" aria-label="Extract">
                             <span class='glyphicon glyphicon-save' aria-hidden='true'></span> <span>extract</span>
                         </button>
@@ -72,9 +71,13 @@
                             </button>
                         </form>
                     </div>
-                {% elif can_admin() and is_extract %}
+                {% elif is_extract %}
                     <div class="input-group-btn extract-selector">
-                        {{ sources_widget(coll=coll_title, active=True) }}
+                        {{ sources_widget(target=coll_title, active=True, req_timestamp=(ts or wbrequest.wb_url.timestamp)) }}
+                    </div>
+                {% elif is_patch %}
+                    <div class="input-group-btn extract-selector">
+                        {{ sources_widget(target=rec_title, active=True, mode="patch", timestamp=(ts or wbrequest.wb_url.timestamp)) }}
                     </div>
                 {% endif %}
             {% endif %}
