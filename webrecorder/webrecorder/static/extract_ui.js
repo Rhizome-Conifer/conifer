@@ -13,7 +13,7 @@ function renderExtractWidget(ts, source) {
 }
 
 function renderExtractDropdown() {
-    var sourceArchiveDisplay = "<a href='"+sourceArchive.info+"' target='_blank'><span>"+sourceArchive.name+"</span><span class='glyphicon glyphicon-new-window' /></a>";
+    var sourceArchiveDisplay = "<a href='"+sourceArchive.about+"' target='_blank'><span>"+sourceArchive.name+"</span><span class='glyphicon glyphicon-new-window' /></a>";
     sourcesDropdown.querySelector(".ra-source").innerHTML = sourceTarget || "Empty";
     sourcesDropdown.querySelector(".ra-source-name").innerHTML = sourceArchiveDisplay;
     sourcesDropdown.querySelector(".ra-ts").innerHTML = sourceTs;
@@ -23,7 +23,7 @@ function renderExtractDropdown() {
 function clearWidget() {
     recorderUI.querySelector(".input-group").classList.remove("remote-archive");
     sourceArchive = null;
-    window.wrExtractMode = false;
+    window.wrExtractId = undefined;
 }
 
 function urlEntry() {
@@ -36,32 +36,46 @@ function urlEntry() {
 
     var baseVal = val.replace(/https?:\/\//, "");
 
-    var found = false;
+    var foundId = undefined;
     var archive = null;
 
-    for(var i=0; i < WAM.length && !found; i++) {
-        if (baseVal.length >= WAM[i].prefix.length && baseVal.startsWith(WAM[i].prefix)) {
-            found = true;
-            archive = WAM[i];
+    for (var id in archives) {
+        if (archives.hasOwnProperty(id) && baseVal.length >= archives[id].prefix.length && baseVal.startsWith(archives[id].prefix)) {
+            foundId = id;
+            archive = archives[id];
+            break;
         }
     }
 
-    if (found) {
+    if (foundId) {
         if (!!sourceArchive && sourceArchive.prefix === archive.prefix) {
             return;
         }
 
+        sourceArchive = archive;
+        window.wrExtractId = foundId;
+
+        // remove prefix
+        sourceTarget = val.replace(/^https?:\/\//,"").replace(archive.prefix, "");
+
+        // parse collection
+        if (sourceArchive.parse_collection) {
+            var sourceColl = sourceTarget.split("/", 1)[0];
+            sourceTarget = sourceTarget.substr(sourceColl.length + 1);
+            window.wrExtractId += ":" + sourceColl;
+        }
+
+        // parse timestamp
         var ts = "Most recent";
-        var tsMatch = val.match(/\/(\d{8,14})\//);
+        var tsMatch = sourceTarget.match(/^(\d{4,14})\//);
         if (tsMatch) {
             ts = TimesAndSizesFormatter.ts_to_date(tsMatch[1]);
         }
 
         sourceTs = ts;
-        sourceArchive = archive;
-        sourceTarget = val.replace(/^https?:\/\//,"").replace(archive.prefix, "").replace(/\d+\//, "");
+        sourceTarget = sourceTarget.replace(/\d+\//, "");
+
         renderExtractWidget(ts, archive.name);
-        window.wrExtractMode = true;
         window.wrExtractModeAllArchives = true;
 
         recorderUI.querySelector(".input-group").classList.add("remote-archive");
@@ -101,8 +115,16 @@ $(function () {
             sourceTs = "Most Recent";
         }
 
-        sourceArchive = wamKeys[wbinfo.sources];
-        renderExtractWidget(sourceTs, sourceArchive.name);
+        var source_coll = wbinfo.sources.split(":", 2);
+        sourceArchive = archives[source_coll[0]];
+
+        var name = sourceArchive.name;
+
+        if (source_coll.length > 1) {
+            name += " " + source_coll[1];
+        }
+
+        renderExtractWidget(sourceTs, name);
         sourceTarget = wbinfo.url;
         targetCollection = wbinfo.coll;
 

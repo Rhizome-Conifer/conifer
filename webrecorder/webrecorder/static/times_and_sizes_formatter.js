@@ -60,7 +60,7 @@ var TimesAndSizesFormatter = (function() {
         }
 
         if (ts.length < 14) {
-            ts += "00000000000000".substr(ts.length);
+            ts += "10000101000000".substr(ts.length);
         }
 
         var datestr = (ts.substring(0, 4) + "-" +

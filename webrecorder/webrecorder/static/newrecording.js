@@ -53,8 +53,8 @@ $(function() {
         // urlencode title
         title = encodeURIComponent(title);
 
-        if (typeof window.wrExtractMode !== "undefined" && window.wrExtractMode) {
-            url = url.replace(/^https?:\/\//,"").replace(window.sourceArchive.prefix, "");
+        if (window.wrExtractId && window.wrExtractPrefix) {
+            url = url.replace(/^https?:\/\//,"").replace(window.wrExtractPrefix, "");
             RouteTo.newExtract(collection, title, url);
         } else {
             RouteTo.newRecording(collection, title, url);

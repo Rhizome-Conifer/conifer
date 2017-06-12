@@ -179,9 +179,8 @@ class AppController(BaseController):
             count = self.manager.num_collections(curr_user) if curr_user else 0
             return count
 
-        def get_WAM():
-            """Return web archives manifest."""
-            return self.content_app.wam_loader.replay_info
+        def get_archives():
+            return self.content_app.client_archives
 
         def is_beta():
             return self.manager.is_beta()
@@ -332,7 +331,7 @@ class AppController(BaseController):
         jinja_env.globals['get_app_host'] = get_app_host
         jinja_env.globals['get_content_host'] = get_content_host
         jinja_env.globals['get_num_collections'] = get_num_collections
-        jinja_env.globals['get_WAM'] = get_WAM
+        jinja_env.globals['get_archives'] = get_archives
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
         jinja_env.globals['is_extractable'] = is_extractable

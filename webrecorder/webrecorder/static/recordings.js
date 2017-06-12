@@ -593,7 +593,15 @@ var ResourceStats = (function () {
         resources.sort(sortFn);
 
         for (i = 0; i < resources.length; i++) {
-            $resourceBin.append("<li>"+wamKeys[resources[i][0]].name+" ("+resources[i][1]+")<li>");
+            var source_coll = resources[i][0].split(":", 2);
+
+            var name = archives[source_coll[0]].name;
+
+            if (source_coll.length > 1) {
+                name += " " + source_coll[1];
+            }
+
+            $resourceBin.append("<li>" + name + " (" + resources[i][1] + ")<li>");
         }
     }
 
@@ -872,7 +880,7 @@ var RouteTo = (function(){
 
     var newExtract = function(collection, recording, url, ts) {
         var allArchives = typeof window.wrExtractModeAllArchives !== "undefined" && window.wrExtractModeAllArchives;
-        var extractMode = (allArchives ? "extract" : "extract_only") + ":" + sourceArchive.id;
+        var extractMode = (allArchives ? "extract" : "extract_only") + ":" + window.wrExtractId;
         routeTo(host + "/_new/" + collection + "/" + recording + "/" + extractMode + "/" + cbrowserMod("/", ts) + url);
     }
 

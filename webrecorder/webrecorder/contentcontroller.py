@@ -42,6 +42,19 @@ class ContentController(BaseController, RewriterApp):
             self.replay_host = self.live_host
 
         self.wam_loader = WAMLoader()
+        self._init_client_archive_info()
+
+    def _init_client_archive_info(self):
+        self.client_archives = {}
+        for pk, archive in self.wam_loader.replay_info.items():
+            info = {'name': archive['name'],
+                    'about': archive['about'],
+                    'prefix': archive['replay_prefix'],
+                   }
+            if archive.get('parse_collection'):
+                info['parse_collection'] = True
+
+            self.client_archives[pk] = info
 
     def init_routes(self):
         # REDIRECTS
