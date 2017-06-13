@@ -752,6 +752,10 @@ class RecManagerMixin(object):
 
         result['download_url'] = path
 
+        # add any remote archive sources
+        sources_key = self.ra_key.format(user=user, coll=coll, rec=rec)
+        result['ra_sources'] = list(self.redis.smembers(sources_key))
+
         #if result.get('pending_size') and result.get('size'):
         #    result['size'] = int(result['size']) + int(result['pending_size'])
         return result

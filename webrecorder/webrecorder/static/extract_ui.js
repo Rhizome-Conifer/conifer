@@ -12,7 +12,7 @@ function renderExtractWidget(ts, source) {
     recorderUI.querySelector(".sources-widget .ts").innerHTML = ts;
 
     if (typeof source !== "undefined") {
-        recorderUI.querySelector(".sources-widget .mnt-label").innerHTML = (wrExtractModeAllArchives ? source + " <span class='wr-archive-count'></span>&nbsp;<span class='caret'/>" : source + " <span class='caret'/>");
+        recorderUI.querySelector(".sources-widget .mnt-label").innerHTML = (wrExtractModeAllArchives ? source + " <span class='wr-archive-count'></span>&nbsp;<span class='caret'></span>" : source + " <span class='caret'></span>");
     }
 }
 

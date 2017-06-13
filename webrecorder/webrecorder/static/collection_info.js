@@ -134,7 +134,9 @@ var RecordingSelector = (function() {
         selected.each(function() {
             size += parseInt($(this).find("[data-size-display]").attr("data-size-display"));
 
-            bookmarks += parseInt($(this).find("[data-bookmark]").attr("data-bookmark"));
+            if (typeof $(this).find("[data-bookmark]").get(0) !== "undefined") {
+                bookmarks += parseInt($(this).find("[data-bookmark]").attr("data-bookmark"));
+            }
         });
 
         $("#all-card").find("[data-size-display]").show().attr("data-size-display", size);

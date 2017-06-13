@@ -2,6 +2,9 @@
 {% set bookmark_count = recording.pages | count %}
 {% set bookmark_plural = "bookmark" if bookmark_count == 1 else "bookmarks" %}
 {% set editing_id = "recording-title-" + recording.id %}
+{% set is_patch = recording.is_patch == "1" %}
+{% set archives = get_archives() %}
+
 
 {% if can_write() or bookmark_count > 0 %}
 <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}">
@@ -18,10 +21,26 @@
         <div class="recording-details">
             <div class="recording-stats text-left right-buffer-sm">
                 <small>
-                    <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
+                    {% if is_patch %}
+                        <span class="ra-mode-badge patch">PATCH</span>
+                    {% else %}
+                        <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
+                    {% endif %}
                     <span class="current-size text-right" data-size-display="{{ recording.size }}"></span>
                 </small>
             </div>
+
+            {% if recording.ra_sources %}
+                <div class="ra-recording-souces" {% if recording.ra_sources|length > 1 %}title="{% for src in recording.ra_sources %}{{ archives[src].name}}{% if not loop.last %}, {% endif %}{% endfor %}"{% endif %}>
+                    <small>
+                    {% if recording.ra_sources|length > 1 %}
+                        Sources: {{ recording.ra_sources|length }} archives
+                    {% else %}
+                        Source: {{ archives[recording.ra_sources[0]].name }}
+                    {% endif %}
+                    </small>
+                </div>
+            {% endif %}
 
             <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
                 <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
