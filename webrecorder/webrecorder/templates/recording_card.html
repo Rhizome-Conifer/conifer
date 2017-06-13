@@ -31,11 +31,11 @@
             </div>
 
             {% if recording.ra_sources %}
-                <div class="ra-recording-souces" {% if recording.ra_sources|length > 1 %}title="{% for src in recording.ra_sources %}{{ archives[src].name}}{% if not loop.last %}, {% endif %}{% endfor %}"{% endif %}>
+                <div class="ra-recording-souces" {% if recording.ra_sources|length > 1 %}title="{% for src in recording.ra_sources %}{% if src in archives %}{{ archives[src].name}}{% if not loop.last %}, {% endif %}{% endif %}{% endfor %}"{% endif %}>
                     <small>
                     {% if recording.ra_sources|length > 1 %}
                         Sources: {{ recording.ra_sources|length }} archives
-                    {% else %}
+                    {% elif recording.ra_sources[0] in archives %}
                         Source: {{ archives[recording.ra_sources[0]].name }}
                     {% endif %}
                     </small>

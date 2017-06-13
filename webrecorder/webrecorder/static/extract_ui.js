@@ -3,6 +3,7 @@ var archivesToggleContainer;
 var recorderUI;
 var sourcesDropdown;
 var sourceTs;
+var sourceTsStr;
 var sourceTarget;
 var sourceArchive;
 var targetCollection = null;
@@ -12,7 +13,7 @@ function renderExtractWidget(ts, source) {
     recorderUI.querySelector(".sources-widget .ts").innerHTML = ts;
 
     if (typeof source !== "undefined") {
-        recorderUI.querySelector(".sources-widget .mnt-label").innerHTML = (wrExtractModeAllArchives ? source + " <span class='wr-archive-count'></span>&nbsp;<span class='caret'></span>" : source + " <span class='caret'></span>");
+        recorderUI.querySelector(".sources-widget .mnt-label").innerHTML = (wrExtractModeAllArchives ? source + " <span class='wr-archive-count'></span>&nbsp;<span class='caret'></span>" : source + "&nbsp;<span class='caret'></span>");
     }
 }
 
@@ -20,7 +21,7 @@ function renderExtractDropdown() {
     var sourceArchiveDisplay = "<a href='"+sourceArchive.about+"' target='_blank'><span>"+sourceArchive.name+"</span><span class='glyphicon glyphicon-new-window' /></a>";
     sourcesDropdown.querySelector(".ra-source").innerHTML = sourceTarget || "Empty";
     sourcesDropdown.querySelector(".ra-source-name").innerHTML = sourceArchiveDisplay;
-    sourcesDropdown.querySelector(".ra-ts").innerHTML = sourceTs;
+    sourcesDropdown.querySelector(".ra-ts").innerHTML = sourceTsStr;
     sourcesDropdown.querySelector(".ra-collection").innerHTML = targetCollection || getStorage("__wr_currCollTitle") || DEFAULT_RECORDING_SESSION_NAME;
 }
 
@@ -77,9 +78,12 @@ function urlEntry() {
         var tsMatch = sourceTarget.match(/^(\d{4,14})\//);
         if (tsMatch) {
             ts = TimesAndSizesFormatter.ts_to_date(tsMatch[1], true);
+            window.sourceTs = tsMatch[1];
+        } else {
+            window.sourceTs = undefined;
         }
 
-        sourceTs = ts;
+        sourceTsStr = ts;
         sourceTarget = sourceTarget.replace(/\d+\//, "");
 
         renderExtractWidget(ts, archive.name);
@@ -95,7 +99,7 @@ function setArchivesPreference(evt) {
     archivesToggleContainer.classList.toggle("on", evt.target.checked);
     window.wrExtractModeAllArchives = evt.target.checked;
 
-    renderExtractWidget(sourceTs, sourceArchive.name);
+    renderExtractWidget(sourceTsStr, sourceArchive.name);
 }
 
 $(function () {
@@ -119,9 +123,9 @@ $(function () {
     } else if (recorderUI && window.curr_mode === "extract") {
 
         if (wbinfo.timestamp) {
-            sourceTs = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
+            sourceTsStr = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
         } else {
-            sourceTs = "Most Recent";
+            sourceTsStr = "Most Recent";
         }
 
         var source_coll = wbinfo.sources.split(":", 2);
@@ -135,13 +139,13 @@ $(function () {
             name += " " + source_coll[1];
         }
 
-        renderExtractWidget(sourceTs, name);
+        renderExtractWidget(sourceTsStr, name);
         sourceTarget = wbinfo.url;
         targetCollection = wbinfo.coll;
 
         $(document).on("updateTs", function () {
-            sourceTs = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
-            renderExtractWidget(sourceTs, sourceArchive.name);
+            sourceTsStr = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
+            renderExtractWidget(sourceTsStr, sourceArchive.name);
             renderExtractDropdown();
         });
 
@@ -153,7 +157,7 @@ $(function () {
         window.wrExtractId = source_coll[0];
 
         $(document).on("updateTs", function () {
-            sourceTs = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
+            sourceTsStr = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
             renderExtractWidget(sourceTs);
         });
     }

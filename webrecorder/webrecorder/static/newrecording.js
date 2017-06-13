@@ -55,7 +55,7 @@ $(function() {
 
         if (window.wrExtractId && window.wrExtractPrefix) {
             url = url.replace(/^https?:\/\//,"").replace(window.wrExtractPrefix, "");
-            RouteTo.newExtract(collection, title, url);
+            RouteTo.newExtract(collection, title, sourceTarget, sourceTs);
         } else {
             RouteTo.newRecording(collection, title, url);
         }
