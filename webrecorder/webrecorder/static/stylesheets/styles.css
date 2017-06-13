@@ -516,8 +516,11 @@ input.upload-choice {
 .extract-selector .sources-widget ul {
     height: 100%;
     display: flex;
+    display: -ms-flexbox;
     flex-direction: column;
+    -ms-flex-direction: column;
     justify-content: center;
+    -ms-flex-pack: center;
 }
 .extract-selector .sources-widget {
     min-width: 150px;
@@ -564,7 +567,9 @@ input.upload-choice {
 
 .ra-mode-row {
     display: flex;
+    display: -ms-flexbox;
     align-items: flex-start;
+    -ms-flex-align: start;
     margin-bottom: 15px;
 }
 .ra-mode-badge {
@@ -592,22 +597,31 @@ input.upload-choice {
 }
 .ra-info {
     display: flex;
+    display: -ms-flexbox;
     border-left: 10px solid rgb(242,242,242);
     padding-left:15px;
     margin-bottom: 15px;
 }
 .ra-info > div:first-of-type {
     display: flex;
+    display: -ms-flexbox;
     flex-direction: column;
+    -ms-flex-direction: column;
     justify-content: space-between;
+    -ms-flex-pack: justify;
     align-items: flex-end;
+    -ms-flex-align: end;
     margin-right: 10px;
 }
 .ra-info > div:last-of-type {
     display: flex;
+    display: -ms-flexbox;
     flex-direction: column;
+    -ms-flex-direction: column;
     justify-content: space-between;
+    -ms-flex-pack: justify;
     align-items: flex-start;
+    -ms-flex-align: start;
 }
 .ra-source-name {
     white-space: normal;
@@ -659,6 +673,7 @@ input.upload-choice {
     border: solid 1px;
     border-radius: 3px;
     display: flex;
+    display: -ms-flexbox;
     border-color: rgb(204,204,204);
 }
 .archive-toggle.on {
@@ -673,8 +688,11 @@ input.upload-choice {
     width: 75px;
 
     display: flex;
+    display: -ms-flexbox;
     justify-content: center;
+    -ms-flex-pack: center;
     align-items: flex-start;
+    -ms-align-items: start;
     background-color: rgb(204,204,204);
     margin-right: 10px;
 }
@@ -726,6 +744,9 @@ input.upload-choice {
  * Collection Info page
  *
  */
+.edit-title-form input {
+    margin-bottom: 5px;
+}
 .edit-title-form-visible {
     display: inline-block;
 }
@@ -766,6 +787,12 @@ h1 button.edit-title {
 }
 .rec-filter {
     padding: 10px 15px;
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: space-between;
+    -ms-flex-pack: justify;
+    text-transform: uppercase;
+    font-size: 12px;
 }
 
 
@@ -964,7 +991,7 @@ div.filter-label {
 
 .card:hover,
 .card-selected:hover {
-    background-color: #eee;
+    background-color: #F6F9F9;
 }
 
 .recording-title {
@@ -976,6 +1003,52 @@ div.filter-label {
 
 .recording-time-info {
     color: #777;
+}
+
+.recording-bin.animate .card .recording-details {
+    transition: height .3s ease-in-out;
+}
+.recording-details {
+    overflow: hidden;
+}
+.recording-details.closed {
+    height: 0 !important;
+}
+
+.recording-fn-row {
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: space-around;
+    -ms-flex-pack: justify;
+    margin-top: 5px;
+}
+.recording-fn-row > * {
+    flex-grow: 2;
+    -ms-flex: 2 0 auto;
+    text-align: center;
+}
+.recording-fn-row a:link,
+.recording-fn-row a:visited {
+    transition: color .125s ease-in-out;
+    color: rgb(163,163,163);
+}
+.recording-fn-row a:hover {
+    color: #337ab7;
+}
+.recording-fn-row .glyphicon {
+    font-size: 12px;
+}
+.recording-fn-row > *:last-child {
+    flex-grow: 4;
+    -ms-flex: 4 0 auto;
+    text-align: right;
+    margin-right: 20px;
+}
+.recording-fn-row > *:last-child > a {
+    padding: 5px;
+}
+.recording-fn-row > *:last-child > a:hover {
+    color: red;
 }
 
 .mode-selector {
@@ -1347,6 +1420,7 @@ div.filter-label {
     left: -9999px;
     opacity: 0;
     display: flex;
+    display: -ms-flexbox;
     border-radius: 0px;
 }
 
@@ -1521,18 +1595,12 @@ div.filter-label {
 }
 
 .paging-container {
-    display: -webkit-flex;
-    display: -moz-flexbox;
-    display: -ms-flexbox;
     display: flex;
-
-    -webkit-flex-direction: column;
-    -ms-flex-direction: column;
+    display: -ms-flexbox;
     flex-direction: column;
-
-    -webkit-justify-content: center;
-    -ms-flex-pack: center;
+    -ms-flex-direction: column;
     justify-content: center;
+    -ms-flex-pack: center;
 
     height: 65px;
 }
@@ -1620,7 +1688,9 @@ div.filter-label {
 }
 .wr-replay-info {
     display: flex;
+    display: -ms-flexbox;
     align-items: center;
+    -ms-flex-align: center;
     position: absolute;
     right: 0;
     top: 4px;
@@ -1828,10 +1898,7 @@ div.paging-container:hover .home-link {
     height: 28px;
 }
 .wr-mode-selector {
-    display: -webkit-box;
-    display: -moz-box;
     display: -ms-flexbox;
-    display: -webkit-flex;
     display: flex;
 }
 .wr-mode-selector ul {

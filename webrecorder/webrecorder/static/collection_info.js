@@ -63,6 +63,7 @@ var UrlManager = (function() {
 })();
 
 var RecordingSelector = (function() {
+    var showRecDetails = true;
 
     var toggleRecordingSelection = function(event) {
         if(isSelectionEvent(event)) {
@@ -261,18 +262,44 @@ var RecordingSelector = (function() {
         $("#move-modal").modal('hide');
     }
 
+    var toggleDetails = function (evt) {
+        if (typeof evt !== "undefined") {
+            evt.preventDefault();
+        }
+
+        showRecDetails = !showRecDetails;
+        setStorage("__wr_showRecDetails", showRecDetails);
+
+        $(".recording-details").toggleClass("closed", !showRecDetails);
+        $(".toggle-details-btn").text((showRecDetails ? "hide" : "show") + " details");
+    }
+
     var start = function() {
-        $('div[data-recording-id]').on('click', toggleRecordingSelection);
+        $('div[data-recording-id]').on("click", toggleRecordingSelection);
 
-        $(".container").on("click", ".clear-all-btn", clearFilters);
+        $(".container").on("click", ".clear-all-btn", clearFilters)
+                       .on("click", ".toggle-details-btn", toggleDetails);
 
-        $('#move-modal').on('show.bs.modal', showMoveModal);
+        $('#move-modal').on("show.bs.modal", showMoveModal);
 
-        $(".collection-select").on('click', selectMoveColl);
+        $(".collection-select").on("click", selectMoveColl);
 
-        $("#confirm-move").on('click', doMove);
+        $("#confirm-move").on("click", doMove);
 
-        $("#num-recs").text($(".card").length)
+        $("#num-recs").text($(".card").length);
+
+        $(".card").each(function (idx, ele) {
+            var $recDetails = $(ele).find(".recording-details");
+            $recDetails.css("height", $recDetails.height());
+        });
+
+        if (getStorage("__wr_showRecDetails") === "false") {
+            toggleDetails();
+        }
+
+        // wait one frame before adding animations
+        window.requestAnimationFrame(function (){ $(".recording-bin").addClass("animate"); });
+
 
         updateRecordingFilterList(undefined, false);
     }

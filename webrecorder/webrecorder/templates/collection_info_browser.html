@@ -23,6 +23,7 @@
             </div>
             <div class='rec-filter'>
                 <a id="clear-all" href="#" class="clear-all-btn disabled">Select All</a>
+                <a href="#" class="toggle-details-btn">hide details</a>
             </div>
             <div class="recording-bin">
                 {% for recording in collection.recordings | sort(attribute='updated_at', reverse=True) %}
