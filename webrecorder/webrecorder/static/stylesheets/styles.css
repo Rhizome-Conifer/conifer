@@ -963,26 +963,24 @@ div.filter-label {
     background-color: white;
 }
 
-.card .dropdown-menu {
-    left: -32px;
-    border-top-right-radius: 0;
+.recording-sources-dropdown button {
+    background: none;
+    text-decoration: underline;
 }
-.card .dropdown-menu:after {
-    position: absolute;
-    top: -23px;
-    right: -1px;
-    height: 23px;
-    content: "EDIT";
-    font-size: 12px;
-    background: #fff;
-    padding: 1px 6px 5px;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    border: 1px solid #ddd;
-    border-bottom: none;
-    pointer-events: none;
+.recording-sources-dropdown .dropdown-menu {
+    left: 0;
+    border-radius: 0;
+    width: 90%;
+    margin: 10px 5% 0 5%;
+    top: inherit;
 }
-
+.recording-sources-dropdown .dropdown-menu>li>a {
+    white-space: inherit;
+}
+.recording-sources-dropdown .arrow_box:before,
+.recording-sources-dropdown .arrow_box:after {
+    left: 50%;
+}
 
 .card .recording-actions .btn {
     background-color: transparent;
