@@ -181,7 +181,7 @@
         }
 
         function on_init() {
-            sendPageMsg(wbinfo.is_live);
+            sendPageMsg(wbinfo.is_live || wbinfo.proxy_mode == "extract");
         }
 
         start(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic, on_init);

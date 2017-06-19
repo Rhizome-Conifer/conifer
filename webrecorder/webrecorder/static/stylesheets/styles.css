@@ -572,6 +572,9 @@ input.upload-choice {
     -ms-flex-align: start;
     margin-bottom: 15px;
 }
+.ra-mode-row + .ra-resources {
+    margin-top: 0;
+}
 .ra-mode-badge {
     padding: 0 5px;
     font-size: 13px;

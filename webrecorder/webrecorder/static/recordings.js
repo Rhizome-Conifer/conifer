@@ -597,7 +597,7 @@ var ResourceStats = (function () {
             if (arcSum > 0) {
                 if (window.curr_mode === "patch") {
                     if(arcSum > 0) {
-                        $(".mnt-label").html("Patched from " + arcSum + " Resources <span class='caret'/>");
+                        $(".mnt-label").html("Patched from " + arcSum + " Source" + (arcSum === 1 ? "" : "s") + " <span class='caret'/>");
                     }
                 } else {
                     $(".wr-archive-count").text("+ " + arcSum);

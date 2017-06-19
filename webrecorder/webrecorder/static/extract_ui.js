@@ -144,6 +144,7 @@ $(function () {
         targetCollection = wbinfo.coll;
 
         $(document).on("updateTs", function () {
+            sourceTs = wbinfo.timestamp;
             sourceTsStr = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
             renderExtractWidget(sourceTsStr, sourceArchive.name);
             renderExtractDropdown();
@@ -157,8 +158,9 @@ $(function () {
         window.wrExtractId = source_coll[0];
 
         $(document).on("updateTs", function () {
+            sourceTs = wbinfo.timestamp;
             sourceTsStr = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
-            renderExtractWidget(sourceTs);
+            renderExtractWidget(sourceTsStr);
         });
     }
 });

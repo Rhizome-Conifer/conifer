@@ -456,7 +456,7 @@ class ExtractPatchingFilter(SkipDefaultFilter):
         if super(ExtractPatchingFilter, self).skip_response(path, req_headers, resp_headers, params):
             return True
 
-        sources = params.get('sources', 'live')
+        sources = params.get('sources', '*')
         if not sources or sources == '*':
             return False
 
