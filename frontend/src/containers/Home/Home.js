@@ -6,9 +6,6 @@ import { Collapse } from 'react-bootstrap';
 import { isLoaded as isUserLoaded,
          load as loadUser } from 'redux/modules/user';
 
-import { isLoaded as isCollsLoaded,
-         load as loadColls } from 'redux/modules/collections';
-
 import HomepageMessage from 'components/HomepageMessage';
 import HomepageAnnouncement from 'components/HomepageAnnouncement';
 import RecorderUIStandalone from 'components/RecorderUIStandalone';
@@ -43,12 +40,14 @@ class Home extends Component {
         <div className="row top-buffer">
           <h1 className="text-center"><strong>Webrecorder</strong></h1>
         </div>
-        <div className="row">
+        <div className="row tagline">
           <h4 className="text-center">Create high-fidelity, interactive recordings of any web site you browse</h4>
         </div>
         {
+          /* anon only
           loaded && auth.user.username && user.data &&
-            <HomepageMessage auth={auth} collsCount={collections.length} />
+            <HomepageMessage auth={auth} collsCount={collections ? collections.length : 0} />
+          */
         }
         <div className="row top-buffer-lg bottom-buffer-lg">
           <RecorderUIStandalone />
@@ -92,7 +91,6 @@ const mapStateToProps = (state) => {
   const { auth, user } = state;
   return {
     auth,
-    collections: user.data.collections,
     user
   };
 };

@@ -3,13 +3,15 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 
-import { isLoaded as isAuthLoaded, load as loadAuth,
-         login, logout } from 'redux/modules/auth';
+
+import { isLoaded as isAuthLoaded,
+         load as loadAuth } from 'redux/modules/auth';
+
+import { UserManagement } from 'containers';
 
 import config from 'config';
 import Breadcrumb from 'components/Breadcrumb';
 import Footer from 'components/Footer';
-import UserManagement from 'components/UserManagement';
 
 import './style.scss';
 
@@ -20,17 +22,6 @@ export class App extends Component { // eslint-disable-line
   static propTypes = {
     children: PropTypes.node.isRequired,
     auth: PropTypes.object,
-    login: PropTypes.func,
-    logout: PropTypes.func
-  }
-
-  logout = (evt) => {
-    evt.preventDefault();
-    this.props.logout();
-  }
-
-  login = (data) => {
-    this.props.login(data);
   }
 
   render() {
@@ -77,16 +68,8 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    logout: () => dispatch(logout()),
-    login: data => dispatch(login(data))
-  };
-};
-
 
 export default asyncConnect(
   preloadData,
   mapStateToProps,
-  mapDispatchToProps
 )(App);

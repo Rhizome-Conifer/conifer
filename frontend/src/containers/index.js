@@ -5,4 +5,5 @@ export CollectionList from './CollectionList/CollectionList';
 export Home from './Home/Home';
 export HttpStatus from './HttpStatus/HttpStatus';
 export RemoteBrowserSelect from './RemoteBrowserSelect/RemoteBrowserSelect';
+export UserManagement from './UserManagement/UserManagement';
 export UserSettings from './UserSettings/UserSettings';

@@ -1,0 +1,37 @@
+@import 'src/vars';
+
+.wr-header-btn {
+    border: none;
+    background: transparent;
+    color: $link;
+    padding: 0;
+
+    &:hover {
+        color: $linkHover;
+    }
+}
+
+.wr-login-form {
+    margin: 20px 40px 20px 40px;
+
+    p {
+        margin-top: 20px;
+    }
+}
+
+.num-collection {
+    color: #FFF;
+    font-feature-settings: 'tnum';
+    margin-left: 5px;
+
+    &:before {
+        content: '(';
+        color: $link;
+        padding-right: 1px;
+    }
+    &:after {
+        content: ')';
+        color: $link;
+        padding-left: 1px;
+    }
+}

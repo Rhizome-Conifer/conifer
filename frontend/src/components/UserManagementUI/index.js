@@ -16,6 +16,7 @@ export class UserManagement extends Component {
       loggingIn: PropTypes.bool,
       loggingOut: PropTypes.bool
     }),
+    collCount: PropTypes.number,
     loginFn: PropTypes.func.isRequired,
     logoutFn: PropTypes.func.isRequired
   }
@@ -63,7 +64,7 @@ export class UserManagement extends Component {
   }
 
   render() {
-    const { auth, logoutFn } = this.props;
+    const { auth, collCount, logoutFn } = this.props;
     const { showModal, formError } = this.state;
 
     const form = <LoginForm cb={this.save} error={formError} />;
@@ -88,13 +89,13 @@ export class UserManagement extends Component {
 
             <li className="navbar-text navbar-right">
               <Link to={`/${auth.user.username}/_settings`} >
-                <span className="glyphicon glyphicon-cog right-buffer-sm" />
+                <span className="glyphicon glyphicon-user right-buffer-sm" />{ auth.user.username }
               </Link>
             </li>
 
             <li className="navbar-text navbar-right">
               <Link to={`/${auth.user.username}`} >
-                <span className="glyphicon glyphicon-user right-buffer-sm" />{ auth.user.username }
+                My Collections<span className="num-collection">{ collCount }</span>
               </Link>
             </li>
 
