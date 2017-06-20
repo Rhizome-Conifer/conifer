@@ -199,7 +199,10 @@ class BaseWebSockHandler(object):
                 if self.manager.has_recording(self.user, self.coll, self.rec):
                     page_local_store = msg['page']
 
-                    res = self.manager.add_page(self.user, self.coll, self.rec, page_local_store)
+                    check_dupes = (self.type_ == 'patch')
+
+                    res = self.manager.add_page(self.user, self.coll, self.rec,
+                                                page_local_store, check_dupes)
                 else:
                     print('Invalid Rec for Page Data', self.user, self.coll, self.rec)
 

@@ -944,14 +944,32 @@ class RecManagerMixin(object):
 
         return key, hkey, pagedata_json
 
-    def add_page(self, user, coll, rec, pagedata):
+    def add_page(self, user, coll, rec, pagedata, check_dupes=False):
         self.assert_can_write(user, coll)
+
+        # if check dupes, check for existing page and avoid adding duplicate
+        if check_dupes:
+            if self.has_page(user, coll, pagedata['url'], pagedata['timestamp']):
+                return {}
 
         key, hkey, pagedata_json = self._get_pagedata(user, coll, rec, pagedata)
 
         self.redis.hset(key, hkey, pagedata_json)
 
         return {}
+
+    def has_page(self, user, coll, url, ts):
+        self.assert_can_read(user, coll)
+
+        all_page_keys = self._get_rec_keys(user, coll, self.page_key)
+
+        hkey = url + ' ' + ts
+
+        for key in all_page_keys:
+            if self.redis.hget(key, hkey):
+                return True
+
+        return False
 
     def import_pages(self, user, coll, rec, pagelist):
         #self.assert_can_admin(user, coll)

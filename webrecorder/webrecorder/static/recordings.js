@@ -1681,8 +1681,10 @@ $(function() {
 
             setTitle(msg, state.url, state.title);
 
-            if (!RecordingSizeWidget.addPage(attributes)) {
-                Recordings.addPage(recordingId, attributes);
+            if (attributes.timestamp || window.curr_mode != "patch") {
+                if (!RecordingSizeWidget.addPage(attributes)) {
+                    Recordings.addPage(recordingId, attributes);
+                }
             }
 
             lastUrl = attributes.url;

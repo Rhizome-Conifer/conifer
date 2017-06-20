@@ -258,7 +258,7 @@ class ContentController(BaseController, RewriterApp):
             url = self.add_query(url)
 
             kwargs['url'] = url
-            wb_url = kwargs.get('request_ts', '') + 'px_/' + url
+            wb_url = kwargs.get('request_ts', '') + 'bn_/' + url
 
             request.environ['webrec.template_params'] = kwargs
 

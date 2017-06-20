@@ -124,7 +124,7 @@ bundles:
         contents:
             - pkg://pywb/static/wombat.js
             - pkg://pywb/static/wb.js
-            - pkg://pywb/static/vidrw.js
+            #- pkg://pywb/static/vidrw.js
             - wrscripts.js
             - ws.js
 

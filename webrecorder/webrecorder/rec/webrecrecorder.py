@@ -456,16 +456,16 @@ class ExtractPatchingFilter(SkipDefaultFilter):
         if super(ExtractPatchingFilter, self).skip_response(path, req_headers, resp_headers, params):
             return True
 
+        source = resp_headers.get('WebAgg-Source-Coll')
+        if source.startswith('r:'):
+            return True
+
         sources = params.get('sources', '*')
         if not sources or sources == '*':
             return False
 
-        if sources.startswith('r:'):
-            return True
-
         sources = sources.split(',')
 
-        source = resp_headers.get('WebAgg-Source-Coll')
         if source in sources:
             return False
 
