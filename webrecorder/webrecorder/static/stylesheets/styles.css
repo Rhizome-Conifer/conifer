@@ -973,6 +973,7 @@ div.filter-label {
     width: 90%;
     margin: 10px 5% 0 5%;
     top: inherit;
+    font-size: 12px;
 }
 .recording-sources-dropdown .dropdown-menu>li>a {
     white-space: inherit;
