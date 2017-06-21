@@ -426,6 +426,10 @@ input.upload-choice {
     padding-right: 8px;
     margin-left: 8px;
 }
+.upload-coll-button .upload-label {
+    font-size: 12px;
+    vertical-align: text-top;
+}
 
 
 /*

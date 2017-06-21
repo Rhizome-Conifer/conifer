@@ -3,10 +3,10 @@
         <h5>RECORDINGS</h5>
         {% if can_write() %}
         <div>
-            <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
+            <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New</a>
             {% if can_admin() and not is_anon() %}
             <a class="btn btn-success btn-sm upload-coll-button" href="#" data-toggle="modal" title="Upload to Collection" data-target="#upload-modal" data-backdrop="static" data-keyboard="false" role="button">
-                <span class="glyphicon glyphicon-upload glyphicon-button"></span></a>
+                <span class="glyphicon glyphicon-upload glyphicon-button"></span> <span class="upload-label">Upload</span></a>
             {% endif %}
         </div>
         {% endif %}
