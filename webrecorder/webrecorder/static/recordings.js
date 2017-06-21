@@ -63,6 +63,13 @@ function setTimestamp(ts) {
 
 function updateTimestamp(ts, dropdown) {
     if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
+
+        // if embed
+        if ($("#replay-date").length && ts) {
+            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(ts))
+                             .parents(".replay-wrap").show();
+        }
+
         $(".main-replay-date").html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span>"+(typeof dropdown !== "undefined" && dropdown ? "<span class='glyphicon glyphicon-triangle-bottom' />" : ""));
     }
 }

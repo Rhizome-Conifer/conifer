@@ -34,6 +34,33 @@
             -moz-box-sizing: border-box;
             -webkit-box-sizing: border-box;
         }
+
+        {% if is_embed %}
+        .embed-footer {
+            position: fixed;
+            bottom: 0px;
+            font-family: sans-serif;
+            font-size: 14px;
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 8px 0px 8px 0px;
+            width: 100%;
+            z-index: 100000000;
+            min-height: 53px;
+
+        }
+
+        .embed-footer a {
+            font-weight: bold;
+            color: white;
+        }
+
+        .replay-wrap {
+            display: none;
+        }
+        {% endif %}
+
     </style>
 
     {% assets "frame-css" %}
@@ -90,34 +117,7 @@
 {% if not is_embed %}
 {% include 'links.html' %}
 {% include 'reporterror.html' %}
-
 {% else %}
-<style>
-.embed-footer {
-    position: fixed;
-    bottom: 0px;
-    font-family: sans-serif;
-    font-size: 14px;
-    background-color: black;
-    color: white;
-    text-align: center;
-    padding: 8px 0px 8px 0px;
-    width: 100%;
-    z-index: 100000000;
-    min-height: 53px;
-
-}
-
-.embed-footer a {
-    font-weight: bold;
-    color: white;
-}
-
-.replay-wrap {
-    display: none;
-}
-
-</style>
 
 {% if not is_display %}
 <div class="embed-footer" lang="en">
