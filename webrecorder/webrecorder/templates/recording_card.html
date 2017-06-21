@@ -37,7 +37,12 @@
                             <button class="btn btn-xs dropdown-toggle" type="button" id="recordingSourcesDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Sources: {{ recording.ra_sources|length }} archives <span class="caret"></span></button>
                             <ul class="dropdown-menu arrow_box" aria-labelledby="recordingSourcesDropdown">
                                 {% for src in recording.ra_sources %}
-                                    {% if src in archives %}
+                                    {% if ':' in src %}
+                                        {% set arc_parts = src.split(':') %}
+                                        {% if arc_parts[0] in archives %}
+                                            <li><a href="{{ archives[arc_parts[0]].about }}" target="_blank">{{ archives[arc_parts[0]].name }} {{ arc_parts[1] }}</a></li>
+                                        {% endif %}
+                                    {% elif src in archives %}
                                         <li><a href="{{ archives[src].about }}" target="_blank">{{ archives[src].name}}</a></li>
                                     {% endif %}
                                 {% endfor %}
