@@ -43,6 +43,7 @@ class ContentController(BaseController, RewriterApp):
 
         self.wam_loader = WAMLoader()
         self._init_client_archive_info()
+        self.init_csp_header()
 
     def _init_client_archive_info(self):
         self.client_archives = {}
@@ -55,6 +56,29 @@ class ContentController(BaseController, RewriterApp):
                 info['parse_collection'] = True
 
             self.client_archives[pk] = info
+
+    def init_csp_header(self):
+        csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream:"
+        if self.content_host != self.app_host:
+            csp += '{scheme}://' + self.app_host + '/_set_session'
+
+        csp += "; connect-src 'self' {ws_scheme}://{host}"
+        csp += "; form-action 'self'"
+        self.csp_header_temp = csp
+        self.csp_header = None
+
+    def add_csp_header(self, status_headers):
+        if not self.csp_header:
+            host = request.environ['HTTP_HOST']
+            scheme = request.environ['wsgi.url_scheme']
+            ws_scheme = scheme.replace('http', 'ws')
+            csp_header = self.csp_header_temp.format(host=host,
+                                                     scheme=scheme,
+                                                     ws_scheme=ws_scheme)
+
+            self.csp_header = ('Content-Security-Policy', csp_header)
+
+        status_headers.headers.append(self.csp_header)
 
     def init_routes(self):
         # REDIRECTS
@@ -452,6 +476,8 @@ class ContentController(BaseController, RewriterApp):
             self.check_if_content(wb_url_obj, request.environ)
 
             resp = self.render_content(wb_url, kwargs, request.environ)
+
+            self.add_csp_header(resp.status_headers)
 
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,
