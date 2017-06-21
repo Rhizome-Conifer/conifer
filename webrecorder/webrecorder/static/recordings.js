@@ -374,7 +374,7 @@ var PagingInterface = (function () {
     var muted = false;
 
     function updateCounter(cursor) {
-        var value = (cursor+1)+' of '+recordings.length;
+        var value = (cursor + 1) + ' of ' + recordings.length;
         pgDsp.attr('size', value.length);
         pgDsp.val(value);
     }
@@ -519,6 +519,10 @@ var PagingInterface = (function () {
         /* updates wbinfo, iframe */
         if(typeof mute !== 'undefined' && mute) {
             muted = true;
+        }
+
+        if (!pgDsp) {
+            return;
         }
 
         updateCounter(idx);

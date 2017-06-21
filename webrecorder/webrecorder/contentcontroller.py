@@ -147,7 +147,7 @@ class ContentController(BaseController, RewriterApp):
         # EMDED
         @self.app.route('/_embed/<user>/<coll>/<wb_url:path>', method='ANY')
         def embed_replay(user, coll, wb_url):
-            request.path_shift(5)
+            request.path_shift(3)
             #return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True)
             return self.handle_routing(wb_url, user, coll, '*', type='replay-coll',
                                        is_embed=True)
@@ -156,7 +156,7 @@ class ContentController(BaseController, RewriterApp):
         # DISPLAY
         @self.app.route('/_embed_noborder/<user>/<coll>/<wb_url:path>', method='ANY')
         def embed_replay(user, coll, wb_url):
-            request.path_shift(5)
+            request.path_shift(3)
             #return self.do_replay_coll_or_rec(user, coll, wb_url, is_embed=True,
             #                                  is_display=True)
             return self.handle_routing(wb_url, user, coll, '*', type='replay-coll',
