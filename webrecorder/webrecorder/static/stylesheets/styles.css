@@ -1025,6 +1025,7 @@ div.filter-label {
 }
 .recording-details {
     overflow: hidden;
+    margin-right: 5px;
 }
 .recording-details.closed {
     height: 0 !important;
@@ -1057,7 +1058,7 @@ div.filter-label {
     flex-grow: 4;
     -ms-flex: 4 0 auto;
     text-align: right;
-    margin-right: 20px;
+    margin-right: 15px;
 }
 .recording-fn-row > *:last-child > a {
     padding: 5px;

@@ -3,7 +3,6 @@
 {% set bookmark_plural = "bookmark" if bookmark_count == 1 else "bookmarks" %}
 {% set editing_id = "recording-title-" + recording.id %}
 {% set is_patch = recording.rec_type == 'patch' %}
-{% set archives = get_archives() %}
 
 
 {% if can_write() or bookmark_count > 0 %}
@@ -44,8 +43,15 @@
                                 {% endfor %}
                             </ul>
                         </div>
-                    {% elif recording.ra_sources[0] in archives %}
-                        Source: {{ archives[recording.ra_sources[0]].name }}
+                    {% else %}
+                        {% if ':' in recording.ra_sources[0] %}
+                            {% set arc_parts = recording.ra_sources[0].split(':') %}
+                            {% if arc_parts[0] in archives %}
+                                Source: {{ archives[arc_parts[0]].name }} {{ arc_parts[1] }}
+                            {% endif %}
+                        {% elif recording.ra_sources[0] in archives %}
+                            Source: {{ archives[recording.ra_sources[0]].name }}
+                        {% endif %}
                     {% endif %}
                     </small>
                 </div>

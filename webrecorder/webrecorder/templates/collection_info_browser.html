@@ -26,8 +26,9 @@
                 <a href="#" class="toggle-details-btn">hide details</a>
             </div>
             <div class="recording-bin">
+                {% set archives = get_archives() %}
                 {% for recording in collection.recordings | sort(attribute='updated_at', reverse=True) %}
-                    {% include 'recording_card.html' %}
+                    {% include 'recording_card.html' with context %}
                 {% endfor %}
             </div>
         </div>
