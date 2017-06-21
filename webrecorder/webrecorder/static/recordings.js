@@ -584,7 +584,9 @@ var ResourceStats = (function () {
     }
 
     function update(stats) {
-        if (typeof $resourceBin.get(0) === "undefined") return;
+        if (!$resourceBin.length) {
+            return;
+        }
 
         // if replaying, check whether local or extract
         if (window.curr_mode === "replay-coll" || window.curr_mode === "replay" || window.curr_mode === "patch") {
@@ -597,7 +599,7 @@ var ResourceStats = (function () {
             }
         }
 
-        if (Object.keys(stats).length > 0 && $(".wr-archive-count").get(0) !== "undefined" && wbinfo.inv_sources !== "*") {
+        if (Object.keys(stats).length > 0 && $(".wr-archive-count").length && wbinfo.inv_sources !== "*") {
             var arcSum = Object.keys(stats).length;
 
             // subtract source archive from count

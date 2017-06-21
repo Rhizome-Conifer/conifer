@@ -137,6 +137,7 @@ $(function () {
 
         if (source_coll.length > 1) {
             name += " " + source_coll[1];
+            window.wrExtractId += ":" + source_coll[1];
         }
 
         renderExtractWidget(sourceTsStr, name);
@@ -146,7 +147,7 @@ $(function () {
         $(document).on("updateTs", function () {
             sourceTs = wbinfo.timestamp;
             sourceTsStr = TimesAndSizesFormatter.ts_to_date(wbinfo.timestamp, true);
-            renderExtractWidget(sourceTsStr, sourceArchive.name);
+            renderExtractWidget(sourceTsStr);
             renderExtractDropdown();
         });
 
