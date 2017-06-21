@@ -770,7 +770,7 @@ class RecManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def create_recording(self, user, coll, rec, rec_title, coll_title='',
-                         no_dupe=False, is_patch=False):
+                         no_dupe=False, is_patch=False, ra_list=None):
 
         self.assert_can_write(user, coll)
 
@@ -796,6 +796,11 @@ class RecManagerMixin(object):
 
         now = int(time.time())
 
+        if ra_list:
+            ra_key = self.ra_key.format(user=user,
+                                        coll=coll,
+                                        rec=rec)
+
         with redis_pipeline(self.redis) as pi:
             pi.hset(key, 'title', rec_title)
             pi.hset(key, 'created_at', now)
@@ -804,6 +809,8 @@ class RecManagerMixin(object):
             if is_patch:
                 pi.hset(key, 'is_patch', '1')
             pi.sadd(rec_list_key, rec)
+            if ra_list:
+                pi.sadd(ra_key, *ra_list)
 
         if not self._has_collection_no_access_check(user, coll):
             coll_title = coll_title or coll

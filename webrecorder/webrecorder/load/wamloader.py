@@ -29,10 +29,11 @@ class WAMLoader(object):
                 orig_url = schemeless_url[len(info['replay_prefix']):]
                 if info.get('parse_collection'):
                     coll, orig_url = orig_url.split('/', 1)
+                    id_ = pk + ':' + coll
                 else:
-                    coll = None
+                    id_ = pk
 
-                return pk, orig_url, coll
+                return pk, orig_url, id_
 
     def load_all(self):
         for filename in self.load_from_index(self.base_dir, self.index_file):

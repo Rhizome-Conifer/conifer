@@ -69,6 +69,8 @@ class DownloadController(BaseController):
                                                     collection['id'],
                                                     recording['id'])
         metadata['type'] = 'recording'
+        if recording.get('is_patch'):
+            metadata['is_patch'] = True
 
         title = quote(collection['title']) + '/' + quote(recording['title'])
         return self.create_warcinfo(user, title, metadata, recording, filename)

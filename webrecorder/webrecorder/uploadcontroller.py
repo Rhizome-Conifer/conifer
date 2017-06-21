@@ -305,7 +305,9 @@ class UploadController(BaseController):
                                               collection['id'],
                                               recording['id'],
                                               recording['title'],
-                                              collection['title'])
+                                              collection['title'],
+                                              is_patch=recording.get('is_patch'),
+                                              ra_list=recording.get('ra'))
 
                 recording['id'] = actual_recording['id']
                 recording['title'] = actual_recording['title']
@@ -423,6 +425,7 @@ class UploadController(BaseController):
         last_indexinfo = None
         indexinfo = None
         is_first = True
+        remote_archives = None
 
         for record in arciterator:
             warcinfo = None
@@ -432,6 +435,14 @@ class UploadController(BaseController):
                 except Exception as e:
                     print('Error Parsing WARCINFO')
                     traceback.print_exc()
+
+            elif remote_archives is not None:
+                source_uri = record.rec_headers.get('WARC-Source-URI')
+                if source_uri:
+                    res = self.manager.content_app.wam_loader.find_archive_for_url(source_uri)
+
+                    if res:
+                        remote_archives.add(res[2])
 
             arciterator.read_to_end(record)
 
@@ -450,6 +461,9 @@ class UploadController(BaseController):
 
                 if 'type' not in indexinfo:
                     indexinfo['type'] = 'recording'
+
+                indexinfo['ra'] = set()
+                remote_archives = indexinfo['ra']
 
                 last_indexinfo = indexinfo
 

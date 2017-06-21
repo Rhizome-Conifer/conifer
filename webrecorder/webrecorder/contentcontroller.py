@@ -322,11 +322,9 @@ class ContentController(BaseController, RewriterApp):
         if not res:
             return
 
-        pk, new_url, coll = res
+        pk, new_url, id_ = res
 
-        mode = 'extract:' + pk
-        if coll:
-            mode += ':' + coll
+        mode = 'extract:' + id_
 
         new_url = WbUrl(new_url).to_str(mod=wb_url.mod)
 
