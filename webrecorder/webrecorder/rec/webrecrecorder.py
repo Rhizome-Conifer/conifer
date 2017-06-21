@@ -479,7 +479,7 @@ class ExtractPatchingFilter(SkipDefaultFilter):
         patch_rec = sanitize_title(patch_rec)
 
         if not self.manager.has_recording(user, coll, patch_rec):
-            res = self.manager.create_recording(user, coll, patch_rec, patch_rec_title, is_patch=True)
+            res = self.manager.create_recording(user, coll, patch_rec, patch_rec_title, rec_type='patch')
             patch_rec = res['id']
 
         params['param.recorder.rec'] = patch_rec

@@ -306,7 +306,7 @@ class UploadController(BaseController):
                                               recording['id'],
                                               recording['title'],
                                               collection['title'],
-                                              is_patch=recording.get('is_patch'),
+                                              rec_type=recording.get('rec_type'),
                                               ra_list=recording.get('ra'))
 
                 recording['id'] = actual_recording['id']

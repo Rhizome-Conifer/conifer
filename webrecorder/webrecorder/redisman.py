@@ -770,7 +770,7 @@ class RecManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def create_recording(self, user, coll, rec, rec_title, coll_title='',
-                         no_dupe=False, is_patch=False, ra_list=None):
+                         no_dupe=False, rec_type=None, ra_list=None):
 
         self.assert_can_write(user, coll)
 
@@ -806,8 +806,8 @@ class RecManagerMixin(object):
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'updated_at', now)
             pi.hsetnx(key, 'size', '0')
-            if is_patch:
-                pi.hset(key, 'is_patch', '1')
+            if rec_type:
+                pi.hset(key, 'rec_type', rec_type)
             pi.sadd(rec_list_key, rec)
             if ra_list:
                 pi.sadd(ra_key, *ra_list)

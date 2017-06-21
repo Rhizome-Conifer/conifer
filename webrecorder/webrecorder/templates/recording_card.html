@@ -2,7 +2,7 @@
 {% set bookmark_count = recording.pages | count %}
 {% set bookmark_plural = "bookmark" if bookmark_count == 1 else "bookmarks" %}
 {% set editing_id = "recording-title-" + recording.id %}
-{% set is_patch = recording.is_patch == "1" %}
+{% set is_patch = recording.rec_type == 'patch' %}
 {% set archives = get_archives() %}
 
 

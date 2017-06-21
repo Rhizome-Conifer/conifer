@@ -353,7 +353,7 @@ class ContentController(BaseController, RewriterApp):
         if not self.manager.has_collection(user, coll):
             self.manager.create_collection(user, coll, coll_title)
 
-        rec = self._create_new_rec(user, coll, rec, rec_title)
+        rec = self._create_new_rec(user, coll, rec, rec_title, mode)
 
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
                                                              coll=coll,
@@ -373,8 +373,10 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
-    def _create_new_rec(self, user, coll, rec, title):
-        result = self.manager.create_recording(user, coll, rec, title)
+    def _create_new_rec(self, user, coll, rec, title, mode):
+        rec_type = 'patch' if mode == 'patch' else None
+        result = self.manager.create_recording(user, coll, rec, title,
+                                               rec_type=rec_type)
         rec = result['id']
         return rec
 
@@ -429,7 +431,7 @@ class ContentController(BaseController, RewriterApp):
 
             if type in self.MODIFY_MODES:
                 if rec == title or not self.manager.has_recording(user, coll, rec):
-                    rec = self._create_new_rec(user, coll, rec, title)
+                    rec = self._create_new_rec(user, coll, rec, title, type)
 
             self._redir_if_sanitized(rec, title, wb_url)
 
