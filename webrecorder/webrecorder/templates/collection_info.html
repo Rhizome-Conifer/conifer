@@ -61,7 +61,7 @@
         {% endif %}
 
 
-    <div class="col-xs-10 collection-description">
+    <div class="col-xs-12 col-sm-10 collection-description">
         {% if not is_anon() %}
         <div id="about" class="">
             <div id="home-markdown" data-desc-url="/api/v1/collections/{{ coll }}/desc?user={{ user }}" class="collapse">{{ collection.desc }}</div>
@@ -76,6 +76,12 @@
         {% endif %}
     </div>
 </div>
+
+{% if can_write() %}
+<div class="visible-xs">
+    <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
+</div>
+{% endif %}
 
 {% include 'collection_info_browser.html' %}
 

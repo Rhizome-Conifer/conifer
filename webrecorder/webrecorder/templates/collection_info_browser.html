@@ -1,5 +1,5 @@
 <div class="row top-buffer-sm wr-collection-info">
-    <div class="col-xs-2 recording-panel">
+    <div class="hidden-xs recording-panel">
         <h5>RECORDINGS</h5>
         {% if can_write() %}
         <div>
@@ -13,7 +13,7 @@
 
         <div class="recording-selector">
             <div id="all-card" class="card-top">
-                <div class="">
+                <div>
                     <b><span id="num-recs"></span>&nbsp;Recordings</b>&nbsp; &nbsp;<span id="sel-info"></span>
                 </div>
                 <div class="recording-stats text-left top-buffer-md right-buffer-sm">
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <div class="col-xs-10 col-xs-push-2 bookmarks-panel">
+    <div class="bookmarks-panel">
         {% include 'bookmarks_table.html' %}
     </div>
 </div>
