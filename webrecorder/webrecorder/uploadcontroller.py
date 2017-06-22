@@ -175,6 +175,9 @@ class UploadController(BaseController):
     def launch_upload(self, func, *args):
         gevent.spawn(func, *args)
 
+    def get_wam_loader(self):
+        return self.manager.content_app.wam_loader if self.manager.content_app else None
+
     def run_upload(self, upload_key, filename, stream, user, rec_infos, total_size):
         try:
             count = 0
@@ -439,10 +442,11 @@ class UploadController(BaseController):
             elif remote_archives is not None:
                 source_uri = record.rec_headers.get('WARC-Source-URI')
                 if source_uri:
-                    res = self.manager.content_app.wam_loader.find_archive_for_url(source_uri)
-
-                    if res:
-                        remote_archives.add(res[2])
+                    wam_loader = self.get_wam_loader()
+                    if wam_loader:
+                        res = wam_loader.find_archive_for_url(source_uri)
+                        if res:
+                            remote_archives.add(res[2])
 
             arciterator.read_to_end(record)
 
@@ -572,6 +576,7 @@ class InplaceLoader(UploadController):
 
                 assert('error_message' not in res)
             except Exception as e:
+                traceback.print_exc()
                 print('ERROR PARSING: ' + filename)
                 print(e)
                 if fh:
@@ -604,6 +609,9 @@ class InplaceLoader(UploadController):
 
     def launch_upload(self, func, *args):
         func(*args)
+
+    def get_wam_loader(self):
+        return self.indexer.wam_loader
 
     def _get_existing_coll(self, user, info, filename):
         if info.get('title') == 'Temporary Collection':

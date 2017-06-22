@@ -33,9 +33,6 @@ from six import iteritems
 from six.moves.urllib.parse import quote
 
 
-
-wam_loader = None
-
 # ============================================================================
 class WebRecRecorder(object):
     def __init__(self, config=None):
@@ -82,9 +79,6 @@ class WebRecRecorder(object):
 
         self.app.delete('/delete', callback=self.delete)
         self.app.get('/rename', callback=self.rename)
-
-        global wam_loader
-        wam_loader = WAMLoader()
 
         debug(True)
 
@@ -490,10 +484,12 @@ class ExtractPatchingFilter(SkipDefaultFilter):
 
 # ============================================================================
 class CDXJIndexer(CDXJ, BaseCDXWriter):
+    wam_loader = None
+
     def write_cdx_line(self, out, entry, filename):
         source_uri = entry.record.rec_headers.get_header('WARC-Source-URI')
-        if source_uri:
-            res = wam_loader.find_archive_for_url(source_uri)
+        if source_uri and self.wam_loader:
+            res = self.wam_loader.find_archive_for_url(source_uri)
             if res:
                 entry['orig_source_id'] = res[0]
 
@@ -519,6 +515,11 @@ class WebRecRedisIndexer(WritableRedisIndexer):
 
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
         self.rate_limit_ttl = self.rate_limit_hours * 60 * 60
+
+        self.wam_loader = WAMLoader()
+
+        # set shared wam_loader for CDXJIndexer index writers
+        CDXJIndexer.wam_loader = self.wam_loader
 
     def get_rate_limit_key(self, params):
         if not self.rate_limit_key or not self.rate_limit_ttl:
