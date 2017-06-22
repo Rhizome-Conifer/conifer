@@ -69,6 +69,9 @@ class ContentController(BaseController, RewriterApp):
         if wb_url.mod == self.frame_mod:
             return
 
+        if wb_url.mod and wb_url.mod.startswith('$br:'):
+            return
+
         status_headers.headers.append(self.csp_header)
 
     def init_routes(self):
