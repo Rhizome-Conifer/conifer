@@ -801,6 +801,16 @@ h1 button.edit-title {
 .wr-coll-actions > *:not(:last-child) {
     margin-right: 10px;
 }
+@media (max-width: 400px) {
+    .wr-coll-actions {
+        -ms-flex-direction: column;
+        flex-direction: column;
+    }
+    .wr-coll-actions > * {
+        margin: 0 0 10px 0;
+    }
+}
+
 .rec-filter {
     padding: 10px 15px;
     display: flex;
