@@ -634,7 +634,7 @@ var ResourceStats = (function () {
                 name += " " + source_coll[1];
             }
 
-            $resourceBin.append("<li>" + name + " (" + resources[i][1] + ")<li>");
+            $resourceBin.append("<li>" + name + " (" + resources[i][1] + ")</li>");
         }
     }
 

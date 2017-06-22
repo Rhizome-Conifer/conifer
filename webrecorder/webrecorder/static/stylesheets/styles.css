@@ -679,6 +679,7 @@ input.upload-choice {
 }
 .ra-resources > ul {
     padding: 0;
+    margin-bottom: 0;
     list-style-type: none;
 }
 
