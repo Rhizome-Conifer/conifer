@@ -9,6 +9,12 @@
 
     li {
 
+        &:before {
+            content: '/';
+            color: #CCC;
+            padding:0 10px;
+        }
+
         a, span {
             max-width: 100px !important;
             overflow: hidden;

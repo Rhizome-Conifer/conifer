@@ -10,7 +10,7 @@ import { isLoaded as isAuthLoaded,
 import { UserManagement } from 'containers';
 
 import config from 'config';
-import Breadcrumb from 'components/Breadcrumb';
+import Breadcrumb from 'components/Breadcrumbs';
 import Footer from 'components/Footer';
 
 import './style.scss';

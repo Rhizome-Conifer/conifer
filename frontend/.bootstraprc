@@ -82,7 +82,7 @@ styles:
   close: true
 
   # Components w/ JavaScript
-  modals: false
+  modals: true
   tooltip: false
   popovers: false
   carousel: false

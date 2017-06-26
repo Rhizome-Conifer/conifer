@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { asyncConnect } from 'redux-connect';
+import { connect } from 'react-redux';
 
 import { login, logout } from 'redux/modules/auth';
-import { isLoaded as isUserLoaded,
-         load as loadUser } from 'redux/modules/user';
 
 import UserManagementUI from 'components/UserManagementUI';
 
@@ -31,25 +29,14 @@ class UserManagement extends Component {
     const { auth, collections } = this.props;
 
     return (
-      <UserManagementUI auth={auth} collCount={collections ? collections.length : 0} loginFn={this.login} logoutFn={this.logout} />
+      <UserManagementUI
+        auth={auth}
+        collCount={collections ? collections.length : 0}
+        loginFn={this.login}
+        logoutFn={this.logout} />
     );
   }
 }
-
-const preloadData = [
-  {
-    promise: ({ params, store: { dispatch, getState }, location }) => {
-      const promises = [];
-      const { auth } = getState();
-
-      if(!isUserLoaded(getState()) && auth.user.username)
-        return dispatch(loadUser(auth.user.username));
-
-      return Promise.all(promises);
-    }
-  }
-];
-
 
 const mapStateToProps = (state) => {
   const { auth, user } = state;
@@ -67,8 +54,7 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 
-export default asyncConnect(
-  preloadData,
+export default connect(
   mapStateToProps,
   mapDispatchToProps,
 )(UserManagement);
