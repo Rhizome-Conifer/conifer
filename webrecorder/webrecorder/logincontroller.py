@@ -391,8 +391,6 @@ class LoginController(BaseController):
         # Update Password
         @self.app.post(UPDATE_PASS_PATH)
         def update_password():
-            self.redirect_home_if_logged_in()
-
             self.manager.cork.require(role='archivist', fail_redirect=LOGIN_PATH)
 
             curr_password = self.post_get('curr_password')
