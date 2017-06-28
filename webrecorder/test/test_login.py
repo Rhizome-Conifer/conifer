@@ -309,7 +309,7 @@ class TestLogin(BaseWRTests):
         params = {'username': 'someuser',
                   'curr_password': 'Nottherightone!',
                   'password': 'NewPassword1!',
-                  'confirmpassword': 'NewPassword1'}
+                  'confirmpassword': 'NewPassword1!'}
 
         self.testapp.post('/_updatepassword', params=params)
         res = self.testapp.get('/someuser/_settings')
