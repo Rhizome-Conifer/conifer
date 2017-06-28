@@ -13,8 +13,7 @@ from pywb.indexer.cdxindexer import BaseCDXWriter, CDXJ
 from pywb.utils.format import res_template
 from pywb.utils.io import BUFF_SIZE
 
-from webrecorder.utils import SizeTrackingReader, redis_pipeline, sanitize_title
-from webrecorder.redisman import RecManagerMixin, CollManagerMixin, Base
+from webrecorder.utils import SizeTrackingReader, redis_pipeline
 
 from webrecorder.load.wamloader import WAMLoader
 
@@ -71,7 +70,7 @@ class WebRecRecorder(object):
     def init_app(self, storage_committer):
         self.storage_committer = storage_committer
 
-        self.init_recorder(self.config)
+        self.init_recorder()
 
         self.app = Bottle()
 
@@ -105,7 +104,7 @@ class WebRecRecorder(object):
     def make_wr_indexer(config):
         return WebRecRecorder(config).init_indexer()
 
-    def init_recorder(self, config):
+    def init_recorder(self):
         self.dedup_index = self.init_indexer()
 
         writer = SkipCheckingMultiFileWARCWriter(dir_template=self.warc_path_templ,
@@ -119,7 +118,7 @@ class WebRecRecorder(object):
         self.writer = writer
 
         skip_filters = [SkipRangeRequestFilter(),
-                        ExtractPatchingFilter(config)]
+                        ExtractPatchingFilter()]
 
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
@@ -442,22 +441,7 @@ class WebRecRecorder(object):
 
 
 # ============================================================================
-class CollRecManager(RecManagerMixin, CollManagerMixin, Base):
-    def can_read_coll(self, user, coll):
-        return True
-
-    def assert_can_write(self, user, coll):
-        return True
-
-    def assert_can_admin(self, user, coll):
-        return True
-
-
-# ============================================================================
 class ExtractPatchingFilter(SkipDefaultFilter):
-    def __init__(self, config):
-        self.manager = CollRecManager(config)
-
     def skip_response(self, path, req_headers, resp_headers, params):
         if super(ExtractPatchingFilter, self).skip_response(path, req_headers, resp_headers, params):
             return True
@@ -481,12 +465,6 @@ class ExtractPatchingFilter(SkipDefaultFilter):
 
         user = params['param.user']
         coll = params['param.coll']
-        patch_rec_title = patch_rec
-        patch_rec = sanitize_title(patch_rec)
-
-        if not self.manager.has_recording(user, coll, patch_rec):
-            res = self.manager.create_recording(user, coll, patch_rec, patch_rec_title, rec_type='patch')
-            patch_rec = res['id']
 
         params['param.recorder.rec'] = patch_rec
         resp_headers['Recorder-Rec'] = quote(patch_rec, safe='/*')

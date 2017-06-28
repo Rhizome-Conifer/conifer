@@ -68,6 +68,9 @@ class StorageCommitter(object):
         curr_user = None
 
         for user_dir in os.listdir(self.record_root_dir):
+            if self.is_temp(user_dir):
+                continue
+
             full_dir = os.path.join(self.record_root_dir, user_dir)
             if os.path.isdir(full_dir):
                 self.check_user(user_dir, full_dir)
@@ -83,9 +86,6 @@ class StorageCommitter(object):
             full_filename = os.path.join(full_dir, warcname)
 
             if self.is_locked(full_filename):
-                continue
-
-            if self.is_temp(user):
                 continue
 
             coll = None
