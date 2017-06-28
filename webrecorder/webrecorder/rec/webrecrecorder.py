@@ -14,7 +14,7 @@ from pywb.utils.format import res_template
 from pywb.utils.io import BUFF_SIZE
 
 from webrecorder.utils import SizeTrackingReader, redis_pipeline, sanitize_title
-from webrecorder.redisman import init_manager_for_cli
+from webrecorder.redisman import RecManagerMixin, CollManagerMixin, Base
 
 from webrecorder.load.wamloader import WAMLoader
 
@@ -71,7 +71,7 @@ class WebRecRecorder(object):
     def init_app(self, storage_committer):
         self.storage_committer = storage_committer
 
-        self.init_recorder()
+        self.init_recorder(self.config)
 
         self.app = Bottle()
 
@@ -105,7 +105,7 @@ class WebRecRecorder(object):
     def make_wr_indexer(config):
         return WebRecRecorder(config).init_indexer()
 
-    def init_recorder(self):
+    def init_recorder(self, config):
         self.dedup_index = self.init_indexer()
 
         writer = SkipCheckingMultiFileWARCWriter(dir_template=self.warc_path_templ,
@@ -119,7 +119,7 @@ class WebRecRecorder(object):
         self.writer = writer
 
         skip_filters = [SkipRangeRequestFilter(),
-                        ExtractPatchingFilter()]
+                        ExtractPatchingFilter(config)]
 
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
@@ -442,9 +442,21 @@ class WebRecRecorder(object):
 
 
 # ============================================================================
+class CollRecManager(RecManagerMixin, CollManagerMixin, Base):
+    def can_read_coll(self, user, coll):
+        return True
+
+    def assert_can_write(self, user, coll):
+        return True
+
+    def assert_can_admin(self, user, coll):
+        return True
+
+
+# ============================================================================
 class ExtractPatchingFilter(SkipDefaultFilter):
-    def __init__(self):
-        self.manager = init_manager_for_cli()
+    def __init__(self, config):
+        self.manager = CollRecManager(config)
 
     def skip_response(self, path, req_headers, resp_headers, params):
         if super(ExtractPatchingFilter, self).skip_response(path, req_headers, resp_headers, params):
