@@ -83,13 +83,10 @@ class ContentController(BaseController, RewriterApp):
             wb_url = self.add_query(wb_url)
             return self.do_create_new_and_redir(coll, rec, wb_url, 'record')
 
-        #@self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
-        #def redir_new_record(coll, rec, wb_url):
-        #    return self.do_redir_rec_or_patch(coll, rec, wb_url, 'record')
-
-        #@self.app.route('/$patch/<coll>/<wb_url:path>', method='ANY')
-        #def redir_new_patch(coll, wb_url):
-        #    return self.do_redir_rec_or_patch(coll, 'Patch', wb_url, 'patch')
+        @self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
+        def redir_new_record(coll, rec, wb_url):
+            wb_url = self.add_query(wb_url)
+            return self.do_create_new_and_redir(coll, rec, wb_url, 'record')
 
         # TAGS
         @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
@@ -340,7 +337,6 @@ class ContentController(BaseController, RewriterApp):
                 mode, wb_url = result
 
         rec_title = rec
-        rec = self.sanitize_title(rec_title)
 
         user = self.manager.get_curr_user()
 
@@ -356,7 +352,7 @@ class ContentController(BaseController, RewriterApp):
         if not self.manager.has_collection(user, coll):
             self.manager.create_collection(user, coll, coll_title)
 
-        rec = self._create_new_rec(user, coll, rec, rec_title, mode)
+        rec = self._create_new_rec(user, coll, rec_title, mode)
 
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
                                                              coll=coll,
@@ -376,10 +372,12 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
-    def _create_new_rec(self, user, coll, rec, title, mode):
+    def _create_new_rec(self, user, coll, title, mode, no_dupe=False):
+        rec = self.sanitize_title(title)
         rec_type = 'patch' if mode == 'patch' else None
         result = self.manager.create_recording(user, coll, rec, title,
-                                               rec_type=rec_type)
+                                               rec_type=rec_type,
+                                               no_dupe=no_dupe)
         rec = result['id']
         return rec
 
@@ -430,11 +428,9 @@ class ContentController(BaseController, RewriterApp):
 
         if not_found:
             title = rec
-            rec = self.sanitize_title(title)
 
             if type in self.MODIFY_MODES:
-                if rec == title or not self.manager.has_recording(user, coll, rec):
-                    rec = self._create_new_rec(user, coll, rec, title, type)
+                rec = self._create_new_rec(user, coll, title, type, no_dupe=True)
 
             self._redir_if_sanitized(rec, title, wb_url)
 
@@ -444,7 +440,9 @@ class ContentController(BaseController, RewriterApp):
         patch_rec = ''
 
         if inv_sources and inv_sources != '*':
-            patch_rec = 'Patch of ' + rec
+            patch_rec = self._create_new_rec(user, coll, 'Patch of ' + rec,
+                                             mode='patch',
+                                             no_dupe=True)
 
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'], safe='/:')
 
