@@ -216,6 +216,12 @@ class AppController(BaseController):
         def is_anon(context):
             return self.manager.is_anon(get_user(context))
 
+        def get_announce_list():
+            annoucne_list = os.environ.get('ANNOUNCE_MAILING_LIST', False)
+            if annoucne_list:
+                return annoucne_list
+            return False
+
         @contextfunction
         def get_path(context, user, coll=None, rec=None):
             return self.get_path(user, coll, rec)
@@ -323,6 +329,7 @@ class AppController(BaseController):
         jinja_env.globals['is_anon'] = is_anon
         jinja_env.globals['is_beta'] = is_beta
         jinja_env.globals['is_public'] = is_public
+        jinja_env.globals['get_announce_list'] = get_announce_list
         jinja_env.globals['get_path'] = get_path
         jinja_env.globals['get_body_class'] = get_body_class
         jinja_env.globals['get_share_url'] = get_share_url

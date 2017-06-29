@@ -69,7 +69,20 @@ footer {
     vertical-align: sub;
 }
 
+#email-signup {
+    padding-left: 0;
+}
+
 @media (max-width: 767px) {
+    #email-signup {
+        padding-left: inherit;
+        text-align: center;
+    }
+
+    #email-signup button {
+        margin-top: 10px;
+    }
+
     .project-info {
         text-align: center;
     }
