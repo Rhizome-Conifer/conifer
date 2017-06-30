@@ -154,6 +154,10 @@ var EventHandlers = (function() {
             event.preventDefault();
 
             if (window.curr_mode == "record" || window.curr_mode == "replay" || window.curr_mode == "patch" || window.curr_mode == "extract") {
+                if (window.curr_mode === "extract" && wbinfo.inv_sources !== "*") {
+                    return RouteTo.extractionInfo(user, coll, rec);
+                }
+
                 RouteTo.recordingInfo(user, coll, rec);
             } else if (window.curr_mode == "replay-coll") {
                 RouteTo.collectionInfo(user, coll);
@@ -937,6 +941,13 @@ var RouteTo = (function(){
         routeTo(host + "/" + user + "/" + collection + "/" + recording);
     }
 
+    /**
+     * For extract + patch, link to the extraction plus the patch of the extraction
+     */
+    var extractionInfo = function (user, collection, recording) {
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "," + "patch-of-"+recording);
+    }
+
     var replayRecording = function(user, collection, recording, url, ts) {
         var path = host + "/" + user + "/" + collection + "/" + (recording ? recording + "/" : "") + cbrowserMod("/", ts) + url;
         routeTo(path);
@@ -969,6 +980,7 @@ var RouteTo = (function(){
         recordingInProgress: recordingInProgress,
         collectionInfo: collectionInfo,
         recordingInfo: recordingInfo,
+        extractionInfo: extractionInfo,
         replayRecording: replayRecording,
         addToRecording: addToRecording,
         patchPage: patchPage,

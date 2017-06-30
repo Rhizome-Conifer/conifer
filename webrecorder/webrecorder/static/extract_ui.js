@@ -142,7 +142,7 @@ $(function () {
 
         renderExtractWidget(sourceTsStr, name);
         sourceTarget = wbinfo.url;
-        targetCollection = wbinfo.coll;
+        targetCollection = wbinfo.info ? decodeURIComponent(wbinfo.info.coll_title) : null;
 
         $(document).on("updateTs", function () {
             sourceTs = wbinfo.timestamp;
