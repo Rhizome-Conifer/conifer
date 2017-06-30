@@ -2015,6 +2015,8 @@ div.paging-container:hover .home-link {
 .wr-mode-message > span:first-of-type {
     position: absolute;
     opacity: 0;
+    left: 0;
+    right: 0;
 }
 .wr-mode-message:hover > span + span, .wr-mode-message:active > span + span {
     opacity: 0;
