@@ -4,7 +4,7 @@ from pywb.recorder.redisindexer import WritableRedisIndexer
 
 from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
 
-from pywb.recorder.filters import WriteRevisitDupePolicy
+from pywb.recorder.filters import WriteRevisitDupePolicy, SkipDupePolicy
 from pywb.recorder.filters import ExcludeHttpOnlyCookieHeaders
 from pywb.recorder.filters import SkipRangeRequestFilter, SkipDefaultFilter
 
@@ -92,7 +92,8 @@ class WebRecRecorder(object):
 
             full_warc_prefix=self.full_warc_prefix,
 
-            dupe_policy=WriteRevisitDupePolicy(),
+            #dupe_policy=WriteRevisitDupePolicy(),
+            dupe_policy=SkipDupePolicy(),
 
             size_keys=self.info_keys.values(),
             rec_info_key_templ=self.info_keys['rec'],

@@ -102,7 +102,7 @@ class WAMLoader(object):
             index = RemoteIndexSource(query, replay)
 
         else:
-            index = WBMementoIndexSource(replay)
+            index = WBMementoIndexSource('', '', replay)
 
         if index:
             self.all_archives[pk] = index
