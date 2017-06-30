@@ -217,9 +217,9 @@ class AppController(BaseController):
             return self.manager.is_anon(get_user(context))
 
         def get_announce_list():
-            annoucne_list = os.environ.get('ANNOUNCE_MAILING_LIST', False)
-            if annoucne_list:
-                return annoucne_list
+            announce_list = os.environ.get('ANNOUNCE_MAILING_LIST', False)
+            if announce_list:
+                return announce_list
             return False
 
         @contextfunction

@@ -153,21 +153,25 @@ var RecordingSelector = (function() {
 
         if (recordingIds.length == 0) {
             //recordingList = "All recordings";
-            $('.recording-filter-list').closest("li").hide();
+            $(".recording-filter-list").closest("li").hide();
             $("#coll-breadcrumb-link").hide();
             $("#coll-breadcrumb-text").show();
-            $('#clear-all').addClass('disabled')
+
+            $("#clear-all-widget").text("no filters");
+            $(".clear-all-btn").addClass("disabled");
 
         } else {
             var recordingTitles = getSelectedRecordingTitles();
             recordingList = recordingTitles.join(", ");
-            $('.recording-filter-list').text(decodeURIComponent(recordingList));
-            $('.recording-filter-list').closest("li").show();
+            $(".recording-filter-list").text(decodeURIComponent(recordingList));
+            $(".recording-filter-list").closest("li").show();
 
             $("#coll-breadcrumb-link").show();
             $("#coll-breadcrumb-text").hide();
 
-            $('#clear-all').removeClass('disabled')
+            $("#clear-all-widget").text("clear " + recordingIds.length + " filter" + (recordingIds.length === 1 ? "" : "s"));
+            $(".clear-all-btn").removeClass("disabled");
+
             BookmarksTable.filterByRecordings(recordingTitles);
         }
 

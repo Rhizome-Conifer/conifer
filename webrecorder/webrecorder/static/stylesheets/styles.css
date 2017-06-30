@@ -813,13 +813,13 @@ h1 button.edit-title {
 }
 
 .rec-filter {
-    padding: 10px 15px;
+    padding: 10px 0;
     display: flex;
     display: -ms-flexbox;
-    justify-content: space-between;
+    justify-content: space-around;
     -ms-flex-pack: justify;
     text-transform: uppercase;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 
@@ -849,6 +849,7 @@ h1 button.edit-title {
 }
 
 .recording-panel {
+    width: 200px;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -956,14 +957,19 @@ div.filter-label {
     border-bottom: solid 1px #b9b9b9;
 }
 
-#clear-all {
+#clear-all-widget {
     transition: opacity .125s ease-in-out;
     opacity: 1;
-    margin-left: -8px;
+}
+.clear-all-btn.disabled {
+    display: none;
 }
 
-#clear-all.disabled {
-    opacity: 0;
+#clear-all-widget.clear-all-btn.disabled {
+    display: block;
+    color: #CCC;
+    text-decoration: none;
+    cursor: default;
 }
 
 .checkbox-column {
