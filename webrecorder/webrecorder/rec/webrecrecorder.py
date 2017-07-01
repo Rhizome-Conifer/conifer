@@ -3,10 +3,19 @@ from pywb.recorder.recorderapp import RecorderApp
 from pywb.recorder.redisindexer import WritableRedisIndexer
 
 from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
-from pywb.recorder.filters import WriteRevisitDupePolicy
+
+from pywb.recorder.filters import WriteRevisitDupePolicy, SkipDupePolicy
 from pywb.recorder.filters import ExcludeHttpOnlyCookieHeaders
+from pywb.recorder.filters import SkipRangeRequestFilter, SkipDefaultFilter
+
+from pywb.indexer.cdxindexer import BaseCDXWriter, CDXJ
+
+from pywb.utils.format import res_template
+from pywb.utils.io import BUFF_SIZE
 
 from webrecorder.utils import SizeTrackingReader, redis_pipeline
+
+from webrecorder.load.wamloader import WAMLoader
 
 import redis
 import time
@@ -14,13 +23,13 @@ import json
 import glob
 import tempfile
 import traceback
-
-from pywb.webagg.utils import res_template, BUFF_SIZE
+import logging
 
 from bottle import Bottle, request, debug
 from datetime import datetime
 import os
 from six import iteritems
+from six.moves.urllib.parse import quote
 
 
 # ============================================================================
@@ -50,6 +59,8 @@ class WebRecRecorder(object):
         self.del_templ = config['del_templ']
 
         self.skip_key_templ = config['skip_key_templ']
+
+        self.accept_colls = config['recorder_accept_colls']
 
         self.config = config
 
@@ -81,7 +92,8 @@ class WebRecRecorder(object):
 
             full_warc_prefix=self.full_warc_prefix,
 
-            dupe_policy=WriteRevisitDupePolicy(),
+            #dupe_policy=WriteRevisitDupePolicy(),
+            dupe_policy=SkipDupePolicy(),
 
             size_keys=self.info_keys.values(),
             rec_info_key_templ=self.info_keys['rec'],
@@ -105,9 +117,14 @@ class WebRecRecorder(object):
                                      header_filter=ExcludeHttpOnlyCookieHeaders())
 
         self.writer = writer
+
+        skip_filters = [SkipRangeRequestFilter(),
+                        ExtractPatchingFilter()]
+
         recorder_app = RecorderApp(self.upstream_url,
                                    writer,
-                                   accept_colls='(live|mount:)',
+                                   skip_filters=skip_filters,
+                                   #accept_colls=self.accept_colls,
                                    create_buff_func=self.create_buffer)
 
         self.recorder = recorder_app
@@ -248,6 +265,7 @@ class WebRecRecorder(object):
                 pi.hincrby(from_coll_key, 'size', -the_size)
                 pi.hincrby(to_coll_key, 'size', the_size)
 
+            # update coll list
             if to_rec != '*':
                 pi.srem(from_coll_list_key, from_rec)
                 pi.sadd(to_coll_list_key, to_rec)
@@ -424,6 +442,52 @@ class WebRecRecorder(object):
 
 
 # ============================================================================
+class ExtractPatchingFilter(SkipDefaultFilter):
+    def skip_response(self, path, req_headers, resp_headers, params):
+        if super(ExtractPatchingFilter, self).skip_response(path, req_headers, resp_headers, params):
+            return True
+
+        source = resp_headers.get('WebAgg-Source-Coll')
+        if source.startswith('r:'):
+            return True
+
+        sources = params.get('sources', '*')
+        if not sources or sources == '*':
+            return False
+
+        sources = sources.split(',')
+
+        if source in sources:
+            return False
+
+        patch_rec = params.get('param.recorder.patch_rec')
+        if not patch_rec:
+            return True
+
+        user = params['param.user']
+        coll = params['param.coll']
+
+        params['param.recorder.rec'] = patch_rec
+        resp_headers['Recorder-Rec'] = quote(patch_rec, safe='/*')
+
+        return False
+
+
+# ============================================================================
+class CDXJIndexer(CDXJ, BaseCDXWriter):
+    wam_loader = None
+
+    def write_cdx_line(self, out, entry, filename):
+        source_uri = entry.record.rec_headers.get_header('WARC-Source-URI')
+        if source_uri and self.wam_loader:
+            res = self.wam_loader.find_archive_for_url(source_uri)
+            if res:
+                entry['orig_source_id'] = res[0]
+
+        super(CDXJIndexer, self).write_cdx_line(out, entry, filename)
+
+
+# ============================================================================
 class WebRecRedisIndexer(WritableRedisIndexer):
     def __init__(self, *args, **kwargs):
         super(WebRecRedisIndexer, self).__init__(*args, **kwargs)
@@ -443,6 +507,11 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
         self.rate_limit_ttl = self.rate_limit_hours * 60 * 60
 
+        self.wam_loader = WAMLoader()
+
+        # set shared wam_loader for CDXJIndexer index writers
+        CDXJIndexer.wam_loader = self.wam_loader
+
     def get_rate_limit_key(self, params):
         if not self.rate_limit_key or not self.rate_limit_ttl:
             return None
@@ -459,6 +528,8 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         upload_key = params.get('param.upid')
         if upload_key:
             stream = SizeTrackingReader(stream, length, self.redis, upload_key)
+
+        params['writer_cls'] = CDXJIndexer
 
         cdx_list = (super(WebRecRedisIndexer, self).
                       add_urls_to_index(stream, params, filename, length))

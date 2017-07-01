@@ -1,0 +1,3 @@
+[submodule "webrecorder/webrecorder/config/webarchives"]
+	path = webrecorder/webrecorder/config/webarchives
+	url = https://github.com/webrecorder/public-web-archives.git

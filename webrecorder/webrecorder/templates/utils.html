@@ -27,6 +27,7 @@
                       </g>
                     </g>
                   </svg>
+                  {% if bsSize == 'xs' %}&nbsp;Share{% endif %}
         </button>
         <div class="dropdown-menu share-modal arrow_box">
             <span class="glyphicon glyphicon-remove-circle"></span>
@@ -64,3 +65,91 @@
         </div>
     </div>
 {%- endmacro %}
+
+
+{#
+    Recording sources widget
+#}
+{% macro sources_widget(target=None, active=False, mode="extract", timestamp=None, req_timestamp=None) %}
+    <div class="btn-group">
+        <button class="btn {% if mode == 'extract' %}btn-primary{% elif mode == 'patch' %}btn-warning{% endif %} sources-widget dropdown-toggle" type="button" id="timePicker" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <ul>
+                <li class="ts main-replay-date" {% if timestamp %}data-time-ts-gmt="{{ timestamp }}" {% endif %}>Most Recent</li>
+                <li class="mnt-label">Nothing Patched Yet</li>
+            </ul>
+        </button>
+        <div class="dropdown-menu sources-dropdown" aria-labelledby="timePicker">
+            <div class="ra-mode-row">
+                {% if mode == "extract" %}
+                    <span class="ra-mode-badge extract">extracting</span> to <div class="ra-collection" {% if target %}data-value-encoded="{{ target }}"{% endif %}></div>
+                {% elif mode == "patch" %}
+                    <span class="ra-mode-badge patch">patching</span> to <div class="ra-collection" {% if target %}data-value-encoded="{{ target }}"{% endif %}></div>
+                {% endif %}
+            </div>
+            {% if mode == "extract" %}
+            <div class="ra-info">
+                <div>
+                    <span>URL</span>
+                    <span>FROM</span>
+                    {% if req_timestamp %}<span>REQUESTED</span>{% endif %}
+                    <span>TIMESTAMP</span>
+                </div>
+                <div>
+                    <span class="ra-source"></span>
+                    <span class="ra-source-name"></span>
+                    {% if req_timestamp %}<span data-time-ts-gmt="{{ req_timestamp }}"></span>{% endif %}
+                    <span class="ra-ts"></span>
+                </div>
+            </div>
+            {% endif %}
+            {% if not active %}
+                <div class="archive-toggle on">
+                    <div class="checkbox-block">
+                        <input id="all-archives" name="all_archives" type="checkbox" checked>
+                    </div>
+                    <label for="all-archives">Automatically attempt recovery of missing resources using public archives and the live web.</label>
+                </div>
+            {% else %}
+                <div class="ra-resources">
+                    {% if mode == 'patch' %}
+                        <span class="ra-replay-info-label">Patched resources from:</span>
+                    {% else %}
+                        <span class="ra-replay-info-label">Resources loaded from:</span>
+                    {% endif %}
+                    <ul>
+                        <li>No resources loaded yet</li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{%- endmacro %}
+
+
+{#
+    Replay info widget
+#}
+{% macro info_widget(coll=None) %}
+    <div class="wr-info-widget">
+        <button class="dropdown-toggle" type="button" id="replayInfo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <span class="glyphicon glyphicon-info-sign"></span>
+        </button>
+        <div class="dropdown-menu ra-dropdown-menu arrow_box" aria-labelledby="replayInfo">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+            <span class="ra-replay-info-label">Now Viewing Collection</span>
+            <h5 data-value-encoded="{{ coll }}"></h5>
+            <div class="ra-recording-block">
+                {#
+                <div class="ra-replay-info-label">Recording on 3 JUN 2017</div>
+                <h5>Test Recording</h5><span class="ra-mode-badge patch">PATCH</span>
+                #}
+                <div class="ra-resources">
+                    <span class="ra-replay-info-label">Additional resources recorded from:</span>
+                    <ul>
+                        <li>No resources loaded yet</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}

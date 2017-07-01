@@ -182,6 +182,7 @@ class RecsController(BaseController):
         # DELETE REC
         @self.app.post('/_delete_rec/<rec>')
         def delete_rec_post(rec):
+            self.validate_csrf()
             user, coll = self.get_user_coll(api=False)
 
             success = False

@@ -14,8 +14,8 @@ from pkg_resources import resource_filename
 
 from six.moves.urllib.parse import urlsplit, urljoin, unquote
 
-from pywb.urlrewrite.templateview import JinjaEnv
-from webrecorder.utils import load_wr_config
+from pywb.rewrite.templateview import JinjaEnv
+from webrecorder.utils import load_wr_config, init_logging
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.contentcontroller import ContentController
@@ -87,19 +87,19 @@ class AppController(BaseController):
         jinja_env = self.init_jinja_env(config)
 
         # Init Content Loader/Rewriter
-        content_app = ContentController(app=bottle_app,
+        self.content_app = ContentController(app=bottle_app,
                                         jinja_env=jinja_env,
                                         config=config,
                                         redis=self.redis)
 
         # Init Browser Mgr
-        self.browser_mgr = BrowserManager(config, self.browser_redis, content_app)
+        self.browser_mgr = BrowserManager(config, self.browser_redis, self.content_app)
 
         # Init Cork
         self.cork = WebRecCork.create_cork(self.redis, config)
 
         # Init Manager
-        manager = RedisDataManager(self.redis, self.cork, content_app,
+        manager = RedisDataManager(self.redis, self.cork, self.content_app,
                                    self.browser_redis, self.browser_mgr, config)
 
         # Init Sesion temp_prefix
@@ -154,7 +154,10 @@ class AppController(BaseController):
             return coll
 
         def get_user(context):
-            return context.get('user', '')
+            u = context.get('user', '')
+            if not u:
+                u = context.get('curr_user', '')
+            return u
 
         def get_browsers():
             return self.browser_mgr.get_browsers()
@@ -170,6 +173,14 @@ class AppController(BaseController):
 
         def get_content_host():
             return self.content_host
+
+        def get_num_collections():
+            curr_user = self.manager.get_curr_user()
+            count = self.manager.num_collections(curr_user) if curr_user else 0
+            return count
+
+        def get_archives():
+            return self.content_app.client_archives
 
         def is_beta():
             return self.manager.is_beta()
@@ -198,12 +209,18 @@ class AppController(BaseController):
             return self.manager.can_read_coll(get_user(context), get_coll(context))
 
         @contextfunction
-        def can_mount(context):
-            return self.manager.can_mount_coll(get_user(context), get_coll(context))
+        def is_extractable(context):
+            return self.manager.is_extractable(get_user(context), get_coll(context))
 
         @contextfunction
         def is_anon(context):
             return self.manager.is_anon(get_user(context))
+
+        def get_announce_list():
+            announce_list = os.environ.get('ANNOUNCE_MAILING_LIST', False)
+            if announce_list:
+                return announce_list
+            return False
 
         @contextfunction
         def get_path(context, user, coll=None, rec=None):
@@ -307,12 +324,12 @@ class AppController(BaseController):
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
-        jinja_env.globals['can_mount'] = can_mount
         jinja_env.globals['can_tag'] = can_tag
         jinja_env.globals['is_owner'] = is_owner
         jinja_env.globals['is_anon'] = is_anon
         jinja_env.globals['is_beta'] = is_beta
         jinja_env.globals['is_public'] = is_public
+        jinja_env.globals['get_announce_list'] = get_announce_list
         jinja_env.globals['get_path'] = get_path
         jinja_env.globals['get_body_class'] = get_body_class
         jinja_env.globals['get_share_url'] = get_share_url
@@ -320,8 +337,11 @@ class AppController(BaseController):
         jinja_env.globals['get_recs_for_coll'] = get_recs_for_coll
         jinja_env.globals['get_app_host'] = get_app_host
         jinja_env.globals['get_content_host'] = get_content_host
+        jinja_env.globals['get_num_collections'] = get_num_collections
+        jinja_env.globals['get_archives'] = get_archives
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
+        jinja_env.globals['is_extractable'] = is_extractable
         jinja_env.globals['get_tags'] = get_tags
         jinja_env.globals['is_tagged'] = is_tagged
         jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
@@ -354,7 +374,6 @@ class AppController(BaseController):
                 coll_list = self.manager.get_collections(curr_user)
 
                 resp['collections'] = coll_list
-                resp['num_collections'] = len(coll_list)
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
 
@@ -479,16 +498,4 @@ class AppController(BaseController):
         # bottle debug
         debug(True)
 
-        # Logging
-        logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
-                            level=logging.DEBUG)
-        logging.debug('')
-
-        # set boto log to error
-        boto_log = logging.getLogger('boto')
-        if boto_log:
-            boto_log.setLevel(logging.ERROR)
-
-        tld_log = logging.getLogger('tldextract')
-        if tld_log:
-            tld_log.setLevel(logging.ERROR)
+        init_logging()

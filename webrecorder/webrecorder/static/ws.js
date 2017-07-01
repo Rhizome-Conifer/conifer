@@ -12,6 +12,9 @@
 
     var is_autoscroll = false;
 
+    var json_stringify = JSON.stringify;
+    var json_parse = JSON.parse;
+
     var start = function(_user, _coll, _rec, _host, _on_openned) {
         user = _user;
         coll = _coll;
@@ -117,13 +120,13 @@
             return false;
         }
 
-        ws.send(JSON.stringify(msg));
+        ws.send(json_stringify(msg));
         return true;
     }
  
     function ws_received(event)
     {
-        var msg = JSON.parse(event.data);
+        var msg = json_parse(event.data);
         
         switch (msg.ws_type) {
             case "status":
@@ -181,7 +184,7 @@
         }
 
         function on_init() {
-            sendPageMsg(wbinfo.is_live);
+            sendPageMsg(wbinfo.is_live || wbinfo.proxy_mode == "extract");
         }
 
         start(wbinfo.proxy_user, wbinfo.proxy_coll, wbinfo.proxy_rec, wbinfo.proxy_magic, on_init);
@@ -228,7 +231,7 @@
         xhr.setRequestHeader("Content-Type", "text/plain");
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                var data = JSON.parse(xhr.responseText);
+                var data = json_parse(xhr.responseText);
                 var msg = data.snapshot;
                 if (msg) {
                     msg["ws_type"] = "snapshot";

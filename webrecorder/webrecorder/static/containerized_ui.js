@@ -1,22 +1,26 @@
 
 function setActiveBrowser(data) {
     /**
-     * Sets the containerized dropdown button to the provided browser for new recordings
-     * or when a native recording is active.
-     * Otherwise reroute to a new url, loading the selected container.
-     */
+    * Sets the containerized dropdown button to the provided browser for new recordings
+    * or when a native recording is active.
+    * Otherwise reroute to a new url, loading the selected container.
+    */
+    var $btn = $('#cnt-button');
 
-    if(window.curr_mode === 'new' || window.curr_mode === '' || window.curr_mode === 'record') {
-        var btn = $('#cnt-button');
-        if(!btn) return;
+    if (!$btn.get(0)) {
+        return;
+    }
 
-        btn.find('> .btn-content').html(
-            (typeof data.native !== 'undefined' && data.native ? '(native)&nbsp;' : "<img src='/api/browsers/browsers/" + data.id + "/icon'>")+
-            data.name+(typeof data.version !== 'undefined' ? " v"+data.version:'')
-        );
+    $btn.find('> .btn-content').html(
+        (typeof data.native !== 'undefined' && data.native ? '(native)&nbsp;' : "<img src='/api/browsers/browsers/" + data.id + "/icon'>")+
+        data.name+(typeof data.version !== 'undefined' ? " v"+data.version:'')
+    );
 
-        // recording setup, with dropdown handling
-        if(window.curr_mode === 'new' || window.curr_mode === '') {
+    window.cnt_browser = data.native ? undefined : data.id;
+
+    switch (window.curr_mode) {
+        case "":
+        case "new":
             // clear the previous active setting and set the new one
             $('.cnt-browser.active').removeClass('active');
 
@@ -27,25 +31,45 @@ function setActiveBrowser(data) {
                 $('.cnt-browser[data-browser-id="'+data.id+'"]').addClass('active');
                 setStorage('__wr_cntBrowser', data.id);
             }
+            break;
 
-            window.cnt_browser = data.native ? undefined : data.id;
-        } else if(window.curr_mode === 'record') {
-            // if we're recording and there was a browser change, route to new recording url
-            window.cnt_browser = data.native ? undefined : data.id;
-            RouteTo.recordingInProgress(
-                window.user,
-                window.coll,
-                window.rec,
-                getUrl()
-            );
-        }
-    } else if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
+    case "record":
+        // if we're recording and there was a browser change, route to new recording url
+        RouteTo.recordingInProgress(
+            window.user,
+            window.coll,
+            window.rec,
+            getUrl()
+        );
+        break;
 
+    case "extract":
+        RouteTo.newExtract(
+            window.coll,
+            window.rec,
+            getUrl(),
+            wbinfo.timestamp
+        );
+        break;
+
+    case "patch":
+        RouteTo.newPatch(
+            window.coll,
+            getUrl(),
+            wbinfo.timestamp
+        );
+        break;
+
+    case "replay":
+    case "replay-coll":
         RouteTo.replayRecording(
             window.user,
             window.coll,
-            wbinfo.timestamp+(data.native ?'':'$br:'+data.id),
-            getUrl());
+            null,
+            getUrl(),
+            wbinfo.timestamp
+        );
+        break;
     }
 }
 
@@ -66,8 +90,8 @@ $(function (){
     // on init check if we have a localStorage setting for a containerized browser
     var cntBrowser = window.cnt_browser || getStorage('__wr_cntBrowser');
 
-    // display default or native browser if we're not replaying or recording
-    if(['replay-coll', 'replay', 'record'].indexOf(window.curr_mode) === -1){
+    // display default or native browser for new recording uis
+    if (window.curr_mode == "" || window.curr_mode == "new"){
 
         if(!cntBrowser || !(cntBrowser in browsers)) {
             setActiveBrowser(getNative());

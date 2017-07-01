@@ -10,11 +10,13 @@ $(function() {
         BookmarkCounter.start();
 
     CountdownTimer.start();
-    SizeProgressBar.start();
-    Snapshot.start();
-    ShareWidget.start();
+    InfoWidget.start();
     ModeSelector.start();
     PagingInterface.start();
+    ResourceStats.start();
+    ShareWidget.start();
+    SizeProgressBar.start();
+    Snapshot.start();
 });
 
 /*
@@ -26,14 +28,19 @@ function iframeLoadEvent() {
     }
 }
 
-function setUrl(url) {
+function setUrl(url, noStatsUpdate) {
     $("input[name='url']").val(decodeURI(url));
     wbinfo.url = decodeURI(url);
 
     if(window.curr_mode === 'replay' || window.curr_mode === 'replay-coll') {
         PagingInterface.navigationUpdate();
-    } else if(window.curr_mode === 'record' || window.curr_mode === 'patch') {
+    } else if(window.curr_mode === 'record' || window.curr_mode === 'patch' || window.curr_mode == 'extract') {
         ShareWidget.updateUrl({'url': wbinfo.url, 'ts': wbinfo.timestamp});
+    }
+
+    if (!noStatsUpdate) {
+        // todo: account for all iframes?
+        RecordingSizeWidget.setStatsUrls([url]);
     }
 }
 
@@ -51,6 +58,20 @@ function setTitle(status_msg, url, title) {
 
 function setTimestamp(ts) {
     wbinfo.timestamp = ts;
+    $(document).trigger("updateTs");
+}
+
+function updateTimestamp(ts, dropdown) {
+    if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
+
+        // if embed
+        if ($("#replay-date").length && ts) {
+            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(ts))
+                             .parents(".replay-wrap").show();
+        }
+
+        $(".main-replay-date").html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span>"+(typeof dropdown !== "undefined" && dropdown ? "<span class='glyphicon glyphicon-triangle-bottom' />" : ""));
+    }
 }
 
 function cbrowserMod(sep, ts) {
@@ -116,7 +137,7 @@ var EventHandlers = (function() {
                 RouteTo.replayRecording(user, coll, rec, url);
 
             } else if (window.curr_mode == "replay-coll") {
-                RouteTo.replayRecording(user, coll, undefined, url);
+                RouteTo.replayRecording(user, coll, null, url);
 
             } else if (window.curr_mode == "patch") {
                 RouteTo.patchPage(user, coll, rec, url);
@@ -132,7 +153,11 @@ var EventHandlers = (function() {
         $('header').on('submit click', '.content-action', function(event) {
             event.preventDefault();
 
-            if (window.curr_mode == "record" || window.curr_mode == "replay" || window.curr_mode == "patch") {
+            if (window.curr_mode == "record" || window.curr_mode == "replay" || window.curr_mode == "patch" || window.curr_mode == "extract") {
+                if (window.curr_mode === "extract" && wbinfo.inv_sources !== "*") {
+                    return RouteTo.extractionInfo(user, coll, rec);
+                }
+
                 RouteTo.recordingInfo(user, coll, rec);
             } else if (window.curr_mode == "replay-coll") {
                 RouteTo.collectionInfo(user, coll);
@@ -159,7 +184,7 @@ var EventHandlers = (function() {
                 target = window;
             }
 
-            RouteTo.newPatch(coll, url, target, wbinfo.timestamp);
+            RouteTo.newPatch(coll, url, wbinfo.timestamp, target);
         });
 
 
@@ -314,19 +339,14 @@ var ModeSelector = (function (){
                     break;
                 case 'replay':
                     var url = getUrl();
-                    RouteTo.replayRecording(user, coll, cbrowserMod('', wbinfo.timestamp), url);
+                    RouteTo.replayRecording(user, coll, null, url, wbinfo.timestamp);
                     break;
                 case 'patch':
                     var url = getUrl();
-                    RouteTo.newPatch(coll, url, window, wbinfo.timestamp);
+                    RouteTo.newPatch(coll, url, wbinfo.timestamp);
                     break;
                 case 'snapshot':
                     Snapshot.queueSnapshot();
-                    break;
-                case 'extract':
-                    var url = getUrl();
-                    var rec = getStorage("__wr_currRec") || DEFAULT_RECORDING_SESSION_NAME;
-                    RouteTo.newExtract(coll, rec, url, wbinfo.timestamp);
                     break;
             }
         });
@@ -334,6 +354,22 @@ var ModeSelector = (function (){
 
     return {
         'start': start
+    };
+})();
+
+var InfoWidget = (function () {
+
+    function start() {
+        var $widget = $(".ra-dropdown-menu");
+        if ($widget) {
+            $widget.find(".glyphicon-remove-circle").on("click", function () {
+                $widget.parents(".open").removeClass("open");
+            }.bind(this));
+        }
+    }
+
+    return {
+        start: start
     };
 })();
 
@@ -349,13 +385,9 @@ var PagingInterface = (function () {
     var muted = false;
 
     function updateCounter(cursor) {
-        var value = (cursor+1)+' of '+recordings.length;
+        var value = (cursor + 1) + ' of ' + recordings.length;
         pgDsp.attr('size', value.length);
         pgDsp.val(value);
-    }
-
-    function updateTimestamp(ts) {
-        timestamp.html("<span class='hidden-xs hidden-sm hidden-md'>"+TimesAndSizesFormatter.ts_to_date(ts)+"</span><span class='glyphicon glyphicon-triangle-bottom' />");
     }
 
     function next() {
@@ -417,6 +449,7 @@ var PagingInterface = (function () {
                 return curIdx;
             }
         }
+        return 0;
     }
 
     function start() {
@@ -438,7 +471,7 @@ var PagingInterface = (function () {
         prevBtn.on('click', previous);
 
         idx = findIndex();
-        updateTimestamp(wbinfo.timestamp);
+        updateTimestamp(wbinfo.timestamp, true);
 
         timestamp.on('click', function (evt) {
             evt.stopPropagation();
@@ -489,7 +522,7 @@ var PagingInterface = (function () {
         idx = findIndex();
         var rec = recordings[idx];
         ShareWidget.updateUrl(rec);
-        updateTimestamp(rec.ts);
+        updateTimestamp(rec.ts, true);
         update();
     }
 
@@ -497,6 +530,10 @@ var PagingInterface = (function () {
         /* updates wbinfo, iframe */
         if(typeof mute !== 'undefined' && mute) {
             muted = true;
+        }
+
+        if (!pgDsp) {
+            return;
         }
 
         updateCounter(idx);
@@ -525,7 +562,7 @@ var PagingInterface = (function () {
                 // update share widget
                 ShareWidget.updateUrl(rec);
 
-                updateTimestamp(rec.ts);
+                updateTimestamp(rec.ts, true);
                 iframe.src = '/'+user+'/'+coll+'/'+rec.ts+'mp_/'+rec.url;
             }
         }
@@ -535,6 +572,80 @@ var PagingInterface = (function () {
         start: start,
         navigationUpdate: navigationUpdate
     }
+})();
+
+var ResourceStats = (function () {
+    var $resourceBin;
+    var $infoWidget;
+
+    function sortFn(a, b) {
+        return ((a[1] > b[1]) ? -1 : ((a[1] < b[1]) ? 1 : 0));
+    }
+
+    function start() {
+        $infoWidget = $(".wr-info-widget");
+        $resourceBin = $(".ra-resources > ul");
+    }
+
+    function update(stats) {
+        if (!$resourceBin.length) {
+            return;
+        }
+
+        // if replaying, check whether local or extract
+        if (window.curr_mode === "replay-coll" || window.curr_mode === "replay" || window.curr_mode === "patch") {
+            var sources = Object.keys(stats);
+            if (sources.length > 1 || (sources.length === 1 && sources[0] !== "replay")) {
+                $infoWidget.addClass("visible");
+            } else {
+                // local replay only, skip
+                return;
+            }
+        }
+
+        if (Object.keys(stats).length > 0 && $(".wr-archive-count").length && wbinfo.inv_sources !== "*") {
+            var arcSum = Object.keys(stats).length;
+
+            // subtract source archive from count
+            if (window.curr_mode === "extract" && window.wrExtractId in stats) {
+                arcSum -= 1;
+            }
+
+            if (arcSum > 0) {
+                if (window.curr_mode === "patch") {
+                    if(arcSum > 0) {
+                        $(".mnt-label").html("Patched from " + arcSum + " Source" + (arcSum === 1 ? "" : "s") + " <span class='caret'/>");
+                    }
+                } else {
+                    $(".wr-archive-count").text("+ " + arcSum);
+                }
+            }
+        }
+
+
+        $resourceBin.empty();
+
+        var resources = [];
+        $.each(stats, function (k,v) { resources.push([k, v]); });
+        resources.sort(sortFn);
+
+        for (i = 0; i < resources.length; i++) {
+            var source_coll = resources[i][0].split(":", 2);
+
+            var name = archives[source_coll[0]].name;
+
+            if (source_coll.length > 1) {
+                name += " " + source_coll[1];
+            }
+
+            $resourceBin.append("<li>" + name + " (" + resources[i][1] + ")</li>");
+        }
+    }
+
+    return {
+        start: start,
+        update: update
+    };
 })();
 
 var ShareWidget = (function () {
@@ -635,7 +746,7 @@ var ShareWidget = (function () {
             hasWidget = true;
             $(".ispublic").bootstrapSwitch().on('switchChange.bootstrapSwitch', updateVisibility);
 
-            $('.dropdown-menu').on('click', function (evt) {evt.stopPropagation(); });
+            $('.dropdown-menu').on('click', function (evt) { evt.stopPropagation(); });
             $('.share-container .glyphicon-remove-circle').on('click', function (evt) { $(this).parents('.share-container').toggleClass('open'); });
 
             var obj = $('.shareables');
@@ -800,15 +911,18 @@ var RouteTo = (function(){
 
     var newRecording = function(collection, recording, url, mode, target) {
         // if a containerized browser is set, assign it to the new recording
-        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
+        //routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/") + url, target);
+        routeTo(host + "/_new/" + collection + "/" + recording + "/record/" + cbrowserMod("/") + url, target);
     }
 
     var newExtract = function(collection, recording, url, ts) {
-        routeTo(host + "/$record/" + collection + "/" + recording + "/" + cbrowserMod("/", ts) + url);
+        var allArchives = typeof window.wrExtractModeAllArchives !== "undefined" && window.wrExtractModeAllArchives;
+        var extractMode = (allArchives ? "extract" : "extract_only") + ":" + window.wrExtractId;
+        routeTo(host + "/_new/" + collection + "/" + recording + "/" + extractMode + "/" + cbrowserMod("/", ts) + url);
     }
 
-    var newPatch = function(collection, url, target, ts) {
-        routeTo(host + "/$patch/" + collection + "/" + cbrowserMod("/", ts) + url, target);
+    var newPatch = function(collection, url, ts, target) {
+        routeTo(host + "/_new/" + collection + "/Patch/patch/" + cbrowserMod("/", ts) + url, target);
     }
 
     var recordingInProgress = function(user, collection, recording, url, mode, target) {
@@ -827,13 +941,15 @@ var RouteTo = (function(){
         routeTo(host + "/" + user + "/" + collection + "/" + recording);
     }
 
-    var replayRecording = function(user, collection, recording, url) {
-        var path = host + "/" + user + "/" + collection + "/";
-        if (recording) {
-            path += recording + "/";
-        }
-        path += url;
+    /**
+     * For extract + patch, link to the extraction plus the patch of the extraction
+     */
+    var extractionInfo = function (user, collection, recording) {
+        routeTo(host + "/" + user + "/" + collection + "/" + recording + "," + "patch-of-"+recording);
+    }
 
+    var replayRecording = function(user, collection, recording, url, ts) {
+        var path = host + "/" + user + "/" + collection + "/" + (recording ? recording + "/" : "") + cbrowserMod("/", ts) + url;
         routeTo(path);
     }
 
@@ -843,6 +959,10 @@ var RouteTo = (function(){
 
     var patchPage = function(user, collection, recording, url, target) {
         recordingInProgress(user, collection, recording, url, "patch", target);
+    }
+
+    var extractPage = function(user, collection, recording, url, target) {
+        recordingInProgress(user, collection, recording, url, "extract", target);
     }
 
     var routeTo = function(url, target) {
@@ -860,9 +980,11 @@ var RouteTo = (function(){
         recordingInProgress: recordingInProgress,
         collectionInfo: collectionInfo,
         recordingInfo: recordingInfo,
+        extractionInfo: extractionInfo,
         replayRecording: replayRecording,
         addToRecording: addToRecording,
         patchPage: patchPage,
+        extractPage: extractPage,
     }
 }());
 
@@ -888,7 +1010,7 @@ var RecordingSizeWidget = (function() {
 
             initWS();
 
-            if (window.curr_mode == "record" || window.curr_mode == "patch") {
+            if (window.curr_mode == "record" || window.curr_mode == "patch" || window.curr_mode == "extract") {
                 if (isOutOfSpace()) {
                     RouteTo.recordingInfo(user, coll, rec);
                 }
@@ -934,7 +1056,7 @@ var RecordingSizeWidget = (function() {
         }
     }
 
-    function ws_closed() {
+    function ws_closed(event) {
         useWS = false;
         if (errCount < 5) {
             errCount += 1;
@@ -957,6 +1079,10 @@ var RecordingSizeWidget = (function() {
         if (window.reqid) {
             url += "&reqid=" + reqid;
         }
+
+        url += "&type=" + window.curr_mode;
+
+        url += "&url=" + encodeURIComponent(getUrl());
 
         try {
             ws = new WebSocket(url);
@@ -1011,6 +1137,13 @@ var RecordingSizeWidget = (function() {
     function addPage(page) {
         var msg = {"ws_type": "page",
                    "page": page}
+
+        return sendMsg(msg);
+    }
+
+    function setStatsUrls(urls) {
+        var msg = {"ws_type": "config-stats",
+                   "stats_urls": urls}
 
         return sendMsg(msg);
     }
@@ -1071,8 +1204,7 @@ var RecordingSizeWidget = (function() {
         }
 
         if (ts) {
-            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(ts));
-            $(".replay-wrap").show();
+            updateTimestamp(ts);
         }
     }
 
@@ -1083,8 +1215,12 @@ var RecordingSizeWidget = (function() {
         switch (msg.ws_type) {
             case "status":
                 updateDom(msg.size);
-                if (window.curr_mode === 'replay-coll' || window.curr_mode === 'replay')
+                if (window.curr_mode === 'replay-coll' || window.curr_mode === 'replay') {
                     BookmarkCounter.setBookmarkCount(msg.numPages);
+                }
+                if (msg.stats) {
+                    ResourceStats.update(msg.stats);
+                }
                 break;
 
             case "remote_url":
@@ -1180,6 +1316,7 @@ var RecordingSizeWidget = (function() {
         addCookie: addCookie,
         addSkipReq: addSkipReq,
         addPage: addPage,
+        setStatsUrls: setStatsUrls,
         doAutoscroll: doAutoscroll,
         doLoadAll: doLoadAll,
         setRemoteUrl: setRemoteUrl,
@@ -1509,14 +1646,15 @@ $(function() {
     }
 
     function addNewPage(state) {
-        if (state && state.ts) {
-            $("#replay-date").text("from " + TimesAndSizesFormatter.ts_to_date(state.ts));
-            $(".replay-wrap").show();
+        if (state && state.ts && window.curr_mode != "record" && window.curr_mode != "extract") {
+            updateTimestamp(state.ts, window.curr_mode.indexOf("replay") !== -1);
         }
 
         if (state.is_error) {
             setUrl(state.url);
-        } else if (window.curr_mode == "record" || window.curr_mode == "patch") {
+        } else if (window.curr_mode == "record" || window.curr_mode == "patch" || window.curr_mode == "extract") {
+
+        /*
             if (lastUrl == state.url) {
                 if (!state.ts && lastTs) {
                     return;
@@ -1530,12 +1668,12 @@ $(function() {
                     return;
                 }
             }
-
+        */
             // if not is_live, then this page/bookmark is not a new recording
             // but is an existing replay
-            if (window.curr_mode == "patch" && !state.is_live) {
-                return;
-            }
+            //if (window.curr_mode == "patch" && !state.is_live) {
+            //    return;
+            //}
 
             var recordingId = wbinfo.info.rec_id;
             var attributes = {};
@@ -1545,13 +1683,33 @@ $(function() {
             attributes.title = state.title;
 
             attributes.url = state.url;
-            setUrl(state.url);
+            setUrl(state.url, true);
 
-            var msg = (window.curr_mode == "record") ? "Recording" : "Patching";
+            var msg;
+
+            switch (window.curr_mode) {
+                case "record":
+                    msg = "Recording";
+                    break;
+
+                case "extract":
+                    msg = "Extracting";
+                    break;
+
+                case "patch":
+                    msg = "Patching";
+                    break;
+
+                default:
+                    msg = "";
+            }
+
             setTitle(msg, state.url, state.title);
 
-            if (!RecordingSizeWidget.addPage(attributes)) {
-                Recordings.addPage(recordingId, attributes);
+            if (attributes.timestamp || window.curr_mode != "patch") {
+                if (!RecordingSizeWidget.addPage(attributes)) {
+                    Recordings.addPage(recordingId, attributes);
+                }
             }
 
             lastUrl = attributes.url;
@@ -1559,6 +1717,8 @@ $(function() {
             lastTitle = attributes.title;
 
         } else if (window.curr_mode == "replay" || window.curr_mode == "replay-coll") {
+
+        /*
             if (lastUrl == state.url) {
                 if (!state.ts && lastTs) {
                     return;
@@ -1572,8 +1732,8 @@ $(function() {
                     return;
                 }
             }
-
-            if(!initialReq) {
+         */
+            if (!initialReq) {
                 setTimestamp(state.ts);
                 setUrl(state.url);
                 setTitle("Archived", state.url, state.title);

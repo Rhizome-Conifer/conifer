@@ -7,16 +7,18 @@
             </a>
         </li>
         {% endif %}
+
         {% if can_admin() %}
         <li class="navbar-text navbar-right">
             <a target="_parent" href="/{{ curr_user }}/_settings">
-                <span title="Settings" class="glyphicon glyphicon-cog"></span><span class="visible-xs-inline-block left-buffer-sm">Settings</span>
+                <span class="glyphicon glyphicon-user right-buffer-sm"></span>{{ curr_user }}
             </a>
         </li>
         {% endif %}
+
         <li class="navbar-text navbar-right">
             <a target="_parent" href="/{{ curr_user }}">
-                <span class="glyphicon glyphicon-user right-buffer-sm"></span>{{ curr_user }}
+                <span class="left-buffer-sm">My Collections (<span class="num-collections">{{ get_num_collections() }}</span>)</span>
             </a>
         </li>
 

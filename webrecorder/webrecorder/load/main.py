@@ -1,15 +1,21 @@
 from gevent.monkey import patch_all; patch_all()
 
-from pywb.webagg.handlers import DefaultResourceHandler, HandlerSeq, ResourceHandler
-from pywb.webagg.responseloader import LiveWebLoader
-from pywb.webagg.app import ResAggApp
-from pywb.webagg.indexsource import LiveIndexSource, RedisIndexSource
-from pywb.webagg.indexsource import MementoIndexSource, RemoteIndexSource
-from pywb.webagg.aggregator import SimpleAggregator, BaseRedisMultiKeyIndexSource, GeventMixin
-from pywb.webagg.autoapp import init_index_source
+from pywb.warcserver.index.indexsource import LiveIndexSource, RedisIndexSource
+from pywb.warcserver.index.indexsource import MementoIndexSource, RemoteIndexSource
+from pywb.warcserver.index.aggregator import SimpleAggregator
+from pywb.warcserver.index.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggregator
 
-from pywb.webagg.utils import res_template
-from webrecorder.utils import load_wr_config
+from pywb.warcserver.resource.responseloader import LiveWebLoader
+
+from pywb.warcserver.handlers import DefaultResourceHandler, HandlerSeq, ResourceHandler
+from pywb.warcserver.warcserver import BaseWarcServer, init_index_source, register_source
+
+from pywb.utils.wbexception import NotFoundException
+from pywb.utils.loaders import load_yaml_config
+
+from webrecorder.utils import load_wr_config, init_logging
+
+from webrecorder.load.wamloader import WAMLoader
 
 import os
 import json
@@ -19,108 +25,108 @@ import json
 PROXY_PREFIX = ''
 
 
-def make_webagg():
-    config = load_wr_config()
+class WRWarcServer(object):
+    def __init__(self):
+        init_logging()
 
-    app = ResAggApp(debug=True)
+        config = load_wr_config()
 
-    redis_base = os.environ['REDIS_BASE_URL'] + '/'
+        app = BaseWarcServer(debug=True)
 
-    rec_url = redis_base + config['cdxj_key_templ']
-    coll_url = redis_base + config['cdxj_coll_key_templ']
-    warc_url = redis_base + config['warc_key_templ']
-    rec_list_key = config['rec_list_key_templ']
+        redis_base = os.environ['REDIS_BASE_URL'] + '/'
 
-    cache_proxy_url = os.environ.get('CACHE_PROXY_URL')
-    global PROXY_PREFIX
-    PROXY_PREFIX = cache_proxy_url
+        rec_url = redis_base + config['cdxj_key_templ']
+        coll_url = redis_base + config['cdxj_coll_key_templ']
+        warc_url = redis_base + config['warc_key_templ']
+        rec_list_key = config['rec_list_key_templ']
 
-    rec_redis_source = MountMultiKeyIndexSource(timeout=20.0,
-                                                redis_url=rec_url)
+        cache_proxy_url = os.environ.get('CACHE_PROXY_URL', '')
+        global PROXY_PREFIX
+        PROXY_PREFIX = cache_proxy_url
 
-    redis = rec_redis_source.redis
-    coll_redis_source = MountMultiKeyIndexSource(timeout=20.0,
-                                                 redis_url=coll_url,
-                                                 redis=redis,
-                                                 member_key_templ=rec_list_key)
+        timeout = 20.0
 
+        register_source(ProxyMementoIndexSource)
+        #register_source(ProxyRemoteIndexSource)
 
-    mount_only_source = MountMultiKeyIndexSource(timeout=20.0,
-                                                 redis_url=coll_url,
-                                                 redis=redis,
-                                                 member_key_templ=rec_list_key,
-                                                 mounts_only=True)
+        rec_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
+                                                    redis_url=rec_url)
 
+        redis = rec_redis_source.redis
+        coll_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
+                                                     redis_url=coll_url,
+                                                     redis=redis,
+                                                     member_key_templ=rec_list_key)
 
-    live_rec  = DefaultResourceHandler(
-                    SimpleAggregator(
-                        {'live': LiveIndexSource(),
-                         'mount': mount_only_source},
-                    ), warc_url, cache_proxy_url)
+        live_rec = DefaultResourceHandler(
+                        SimpleAggregator(
+                            {'live': LiveIndexSource()},
+                        ), warc_url, cache_proxy_url)
 
-    replay_rec  = DefaultResourceHandler(
-                    SimpleAggregator(
-                        {'replay': rec_redis_source}
-                    ), warc_url, cache_proxy_url)
+        # Extractable archives (all available)
+        wam_loader = WAMLoader()
+        extractable_archives = wam_loader.all_archives
 
-    replay_coll = DefaultResourceHandler(
-                    SimpleAggregator(
-                        {'replay': coll_redis_source}
-                    ), warc_url, cache_proxy_url)
+        # Extract Source
+        extractor = GeventTimeoutAggregator(extractable_archives, timeout=timeout)
+        extract_primary = DefaultResourceHandler(
+                            extractor,
+                            warc_url,
+                            cache_proxy_url)
 
-    app.add_route('/live', live_rec)
-    app.add_route('/replay', replay_rec)
-    app.add_route('/replay-coll', replay_coll)
-    app.add_route('/patch', HandlerSeq([replay_coll, live_rec]))
+        # Patch fallback archives
+        fallback_archives = self.filter_archives(extractable_archives,
+                                                 config['patch_archives_index'])
 
-    return app
+        # patch + live
+        #patch_archives = fallback_archives.copy()
+        patch_archives = fallback_archives
+        patch_archives['live'] = LiveIndexSource()
 
+        extractor2 = GeventTimeoutAggregator(patch_archives, timeout=timeout,
+                                             sources_key='inv_sources',
+                                             invert_sources=True)
 
-# ============================================================================
-class AitFilterIndexSource(RemoteIndexSource):
-    DEFAULT_AIT_ROOT = 'http://wayback.archive-it.org/'
-    DEFAULT_AIT_QUERY = 'cdx?url={url}&filter=filename:ARCHIVEIT-(%s)-.*'
+        extract_other = DefaultResourceHandler(
+                            extractor2,
+                            warc_url,
+                            cache_proxy_url)
 
-    def __init__(self, ait_coll, ait_host=None):
-        ait_host = ait_host or self.DEFAULT_AIT_ROOT
-        api_url = ait_host + self.DEFAULT_AIT_QUERY % ait_coll
-        replay_url = ait_host + '{ait_coll}/' + self.WAYBACK_ORIG_SUFFIX
-        self.ait_coll = ait_coll
-        super(AitFilterIndexSource, self).__init__(api_url, replay_url)
+        patcher = GeventTimeoutAggregator(patch_archives, timeout=timeout)
+        patch_rec = DefaultResourceHandler(
+                         patcher,
+                         warc_url,
+                         cache_proxy_url)
 
-    def _get_api_url(self, params):
-        results = super(AitFilterIndexSource, self)._get_api_url(params)
-        return PROXY_PREFIX + results
+        # Single Rec Replay
+        replay_rec = DefaultResourceHandler(rec_redis_source, warc_url, cache_proxy_url)
 
-    def _set_load_url(self, cdx):
-        parts = cdx.get('filename', '').split('-', 2)
-        ait_coll = parts[1] if len(parts) == 3 else 'all'
+        # Coll Replay
+        replay_coll = DefaultResourceHandler(coll_redis_source, warc_url, cache_proxy_url)
 
-        cdx[self.url_field] = self.replay_url.format(
-                                 ait_coll=ait_coll,
-                                 timestamp=cdx['timestamp'],
-                                 url=cdx['url'])
+        app.add_route('/live', live_rec)
+        app.add_route('/extract', HandlerSeq([extract_primary, extract_other]))
+        app.add_route('/replay', replay_rec)
+        app.add_route('/replay-coll', replay_coll)
+        app.add_route('/patch', HandlerSeq([replay_coll, patch_rec]))
 
-    @classmethod
-    def init_from_string(cls, value):
-        # ait://coll1,coll2
-        if value.startswith('ait://'):
-            return cls(value[6:])
+        self.app = app
 
-        # ait+http://path/to/ait/wayback coll1,coll2
-        if value.startswith('ait+'):
-            value = value[4:]
-            parts = value.split(' ', 1)
-            ait_host = parts[0]
-            ait_coll = parts[1] if len(parts) == 2 else '*'
-            return cls(ait_coll, ait_host)
+    def filter_archives(self, archives, patch_archives_index):
+        patch_archives = {}
+        if not patch_archives_index:
+            return patch_archives
 
-    @classmethod
-    def init_from_config(cls, config):
-        if config['type'] != 'ait':
-            return
+        filter_list = load_yaml_config(patch_archives_index)
+        filter_list = filter_list.get('webarchive_ids', {})
 
-        return cls(config['ait-colls'])
+        for name in archives.keys():
+            if name in filter_list:
+                patch_archives[name] = archives[name]
+            elif any(name.startswith(key) for key in filter_list):
+                patch_archives[name] = archives[name]
+
+        return patch_archives
 
 
 # ============================================================================
@@ -128,50 +134,18 @@ class ProxyMementoIndexSource(MementoIndexSource):
     def __init__(self, timegate_url, timemap_url, replay_url):
         timegate_url = PROXY_PREFIX + timegate_url
         timemap_url = PROXY_PREFIX + timemap_url
-        replay_url = PROXY_PREFIX + replay_url
+        #replay_url = PROXY_PREFIX + replay_url
+
         super(ProxyMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
 
 
 # ============================================================================
-class MountMultiKeyIndexSource(GeventMixin, BaseRedisMultiKeyIndexSource):
-    SUPPORTED_SOURCES = [AitFilterIndexSource,
-                         RemoteIndexSource,
-                         ProxyMementoIndexSource]
+class ProxyRemoteIndexSource(RemoteIndexSource):
+    def __init__(self, api_url, replay_url, **kwargs):
+        api_url = PROXY_PREFIX + api_url
+        #replay_url = PROXY_PREFIX + replay_url
 
-    def __init__(self, *args, **kwargs):
-        super(MountMultiKeyIndexSource, self).__init__(*args, **kwargs)
-        self.mounts_only = kwargs.get('mounts_only', False)
-
-    def _get_mounts(self, keys):
-        if not keys:
-            return []
-        keys = [key + b'_m' for key in keys]
-        return self.redis.mget(keys)
-
-    def _iter_sources(self, params):
-        redis_key_pattern = res_template(self.redis_key_template, params)
-
-        if '*' not in redis_key_pattern:
-            keys = [redis_key_pattern.encode('utf-8')]
-        else:
-            keys = self.scan_keys(redis_key_pattern, params)
-
-        mount_data_list = self._get_mounts(keys)
-        source = None
-
-        for key, mount_data in zip(keys, mount_data_list):
-            key = key.decode('utf-8')
-            if mount_data:
-                source = init_index_source(mount_data.decode('utf-8'),
-                                           source_list=self.SUPPORTED_SOURCES)
-
-            elif self.mounts_only:
-                continue
-
-            else:
-                source = self._get_source_for_key(key)
-
-            yield key, source
+        super(ProxyRemoteIndexSource, self).__init__(api_url, replay_url, **kwargs)
 
 
 # ============================================================================

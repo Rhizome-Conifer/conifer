@@ -2,8 +2,7 @@ from warcio.timeutils import timestamp_now
 from warcio.warcwriter import BufferWARCWriter
 
 from pywb.utils.loaders import BlockLoader
-
-from pywb.webagg.utils import StreamIter, chunk_encode_iter
+from pywb.utils.io import StreamIter, chunk_encode_iter
 
 from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
@@ -70,6 +69,8 @@ class DownloadController(BaseController):
                                                     collection['id'],
                                                     recording['id'])
         metadata['type'] = 'recording'
+        if recording.get('rec_type'):
+            metadata['rec_type'] = recording['rec_type']
 
         title = quote(collection['title']) + '/' + quote(recording['title'])
         return self.create_warcinfo(user, title, metadata, recording, filename)

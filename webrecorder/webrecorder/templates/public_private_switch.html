@@ -2,7 +2,7 @@
 
 {% if not is_anon() %}
 <span class="glyphicon glyphicon-globe" aria-hidden="true"></span>
-<span class="left-buffer-sm">Collection Public?</span>
+<span class="left-buffer-sm hidden-xs">Collection Public?</span>
 
 {# check first for owner from sharing widget context, otherwise can_admin() #}
 {% if owner or can_admin() %}

@@ -4,7 +4,6 @@ $(function() {
     RecordingSelector.start();
     BookmarkHiddenSwitch.start();
     UrlManager.start();
-    MountInfo.start();
 });
 
 var UrlManager = (function() {
@@ -64,6 +63,7 @@ var UrlManager = (function() {
 })();
 
 var RecordingSelector = (function() {
+    var showRecDetails = true;
 
     var toggleRecordingSelection = function(event) {
         if(isSelectionEvent(event)) {
@@ -95,7 +95,7 @@ var RecordingSelector = (function() {
         var newVal = !$(card).hasClass("card-selected");
         $(card).toggleClass('card-selected', newVal);
 
-        $(card).find("div.filter-label").toggleClass("active", newVal);
+        $(card).find("input[type='checkbox']").prop("checked", newVal);
 
         //if (isNothingSelected() || isEverythingSelected()) {
         //    setAllCardsSelected();
@@ -131,21 +131,16 @@ var RecordingSelector = (function() {
             $("#sel-info").show();
         }
 
-        var onlyMountCards = true;
         selected.each(function() {
-            if($(this).data('mount') === '') {
-                onlyMountCards = false;
-                size += parseInt($(this).find("[data-size-display]").attr("data-size-display"));
-            }
+            size += parseInt($(this).find("[data-size-display]").attr("data-size-display"));
 
-            bookmarks += parseInt($(this).find("[data-bookmark]").attr("data-bookmark"));
+            if (typeof $(this).find("[data-bookmark]").get(0) !== "undefined") {
+                bookmarks += parseInt($(this).find("[data-bookmark]").attr("data-bookmark"));
+            }
         });
 
-        if(onlyMountCards) {
-            $("#all-card").find("[data-size-display]").hide();
-        } else {
-            $("#all-card").find("[data-size-display]").show().attr("data-size-display", size);
-        }
+        $("#all-card").find("[data-size-display]").show().attr("data-size-display", size);
+
         $("#sel-bookmarks").text(bookmarks);
 
         TimesAndSizesFormatter.format();
@@ -158,21 +153,25 @@ var RecordingSelector = (function() {
 
         if (recordingIds.length == 0) {
             //recordingList = "All recordings";
-            $('.recording-filter-list').closest("li").hide();
+            $(".recording-filter-list").closest("li").hide();
             $("#coll-breadcrumb-link").hide();
             $("#coll-breadcrumb-text").show();
-            $('#clear-all').addClass('disabled')
+
+            $("#clear-all-widget").text("no filters");
+            $(".clear-all-btn").addClass("disabled");
 
         } else {
             var recordingTitles = getSelectedRecordingTitles();
             recordingList = recordingTitles.join(", ");
-            $('.recording-filter-list').text(decodeURIComponent(recordingList));
-            $('.recording-filter-list').closest("li").show();
+            $(".recording-filter-list").text(decodeURIComponent(recordingList));
+            $(".recording-filter-list").closest("li").show();
 
             $("#coll-breadcrumb-link").show();
             $("#coll-breadcrumb-text").hide();
 
-            $('#clear-all').removeClass('disabled')
+            $("#clear-all-widget").text("clear " + recordingIds.length + " filter" + (recordingIds.length === 1 ? "" : "s"));
+            $(".clear-all-btn").removeClass("disabled");
+
             BookmarksTable.filterByRecordings(recordingTitles);
         }
 
@@ -225,7 +224,7 @@ var RecordingSelector = (function() {
     var clearFilters = function(event) {
         event.preventDefault();
         $('.card').removeClass("card-selected");
-        $('.filter-label').removeClass("active");
+        $("input[type='checkbox']").prop("checked", false);
         BookmarksTable.filterByRecordings([]);
         updateRecordingFilterList(event, true);
         return true;
@@ -269,18 +268,44 @@ var RecordingSelector = (function() {
         $("#move-modal").modal('hide');
     }
 
+    var toggleDetails = function (evt) {
+        if (typeof evt !== "undefined") {
+            evt.preventDefault();
+        }
+
+        showRecDetails = !showRecDetails;
+        setStorage("__wr_showRecDetails", showRecDetails);
+
+        $(".recording-details").toggleClass("closed", !showRecDetails);
+        $(".toggle-details-btn").text((showRecDetails ? "hide" : "show") + " details");
+    }
+
     var start = function() {
-        $('div[data-recording-id]').on('click', toggleRecordingSelection);
+        $('div[data-recording-id]').on("click", toggleRecordingSelection);
 
-        $(".container").on("click", ".clear-all-btn", clearFilters);
+        $(".container").on("click", ".clear-all-btn", clearFilters)
+                       .on("click", ".toggle-details-btn", toggleDetails);
 
-        $('#move-modal').on('show.bs.modal', showMoveModal);
+        $('#move-modal').on("show.bs.modal", showMoveModal);
 
-        $(".collection-select").on('click', selectMoveColl);
+        $(".collection-select").on("click", selectMoveColl);
 
-        $("#confirm-move").on('click', doMove);
+        $("#confirm-move").on("click", doMove);
 
-        $("#num-recs").text($(".card").length)
+        $("#num-recs").text($(".card").length);
+
+        $(".card").each(function (idx, ele) {
+            var $recDetails = $(ele).find(".recording-details");
+            $recDetails.css("height", $recDetails.height());
+        });
+
+        if (getStorage("__wr_showRecDetails") === "false") {
+            toggleDetails();
+        }
+
+        // wait one frame before adding animations
+        window.requestAnimationFrame(function (){ $(".recording-bin").addClass("animate"); });
+
 
         updateRecordingFilterList(undefined, false);
     }
@@ -442,16 +467,16 @@ var BookmarkHiddenSwitch = (function() {
         var showHidden = $("#show-hidden").is(':checked');
 
         if (bookmarkInfo.hidden === "1") {
-            $(button).find('.glyphicon').removeClass('glyphicon-eye-open');
-            $(button).find('.glyphicon').addClass('glyphicon-eye-close');
+            $(button).find('.glyphicon').removeClass('glyphicon-star');
+            $(button).find('.glyphicon').addClass('glyphicon-star-empty');
             $(button).find('.hidden-label').text('Show');
             $(button).closest('tr').addClass("hidden-bookmark");
             if (!showHidden) {
                 $(button).closest('tr').hide();
             }
         } else {
-            $(button).find('.glyphicon').removeClass('glyphicon-eye-close');
-            $(button).find('.glyphicon').addClass('glyphicon-eye-open');
+            $(button).find('.glyphicon').removeClass('glyphicon-star-empty');
+            $(button).find('.glyphicon').addClass('glyphicon-star');
             $(button).find('.hidden-label').text('Hide');
             $(button).closest('tr').removeClass("hidden-bookmark");
             if (!showHidden) {
@@ -581,28 +606,4 @@ var RecordingMove = {
         }
 }
 
-
-
-var MountInfo = (function(){
-    function start() {
-        $('#mount-form').submit(function() {
-            if ($("#mount-type").find(":selected").val() == "ait") {
-                $("#mount-title").val("AIT " + $("#ait-data").val());
-            }
-        });
-
-        function toggle_archive_type() {
-            $("#mount-modal .hide-option").hide();
-            $("#mount-modal .hide-option input").attr("required", false);
-            var value = $("#mount-type").val();
-            $("." + value + "-option").show();
-            $("." + value + "-option input").attr("required", true);
-        }
-
-        $('#mount-modal').on('show.bs.modal', toggle_archive_type);
-
-        $("#mount-type").on('change', toggle_archive_type);
-    }
-    return {start: start};
-})();
 

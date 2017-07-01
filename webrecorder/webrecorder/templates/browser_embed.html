@@ -3,12 +3,12 @@
 <meta property="og:url" content="{{ get_share_url() }}" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Archived page from the &ldquo;{{ coll_title|urldecode|e }}'&rdquo; Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
-<meta name="og:description" content="{{ info.coll_desc|e|default('Create high-fidelity, interactive recordings of any web site you browse.', true) }}">
+<meta name="og:description" content="{{ info.coll_desc|e|default('Create high-fidelity, interactive web archives of any web site you browse.', true) }}">
 
 <meta name="twitter:card" content="summary" />
 <meta name="twitter:site" content="@webrecorder_io" />
 <meta name="twitter:title" content="Archived page from the &ldquo;{{ coll_title|urldecode|e }}&rdquo; Collection on {{ get_app_host()|default('webrecorder.io', true) }}" />
-<meta name="twitter:description" content="{{ info.coll_desc|e|default('Create high-fidelity, interactive recordings of any web site you browse.', true) }}" />
+<meta name="twitter:description" content="{{ info.coll_desc|e|default('Create high-fidelity, interactive web archives of any web site you browse.', true) }}" />
 
 {{ super() }}
 <script>
@@ -16,9 +16,12 @@
     wbinfo.outer_prefix = decodeURI("{{ top_prefix }}");
     wbinfo.url = "{{ url }}";
     wbinfo.capture_url = wbinfo.url;
+    wbinfo.reqTimestamp = "{{ ts }}";
     wbinfo.timestamp = "{{ ts }}";
     wbinfo.state = "{{ curr_mode }}";
     wbinfo.info = {{ info | default('{}') | tojson }};
+    wbinfo.sources = "{{ sources }}";
+    wbinfo.inv_sources = "{{ inv_sources }}";
 
     window.cnt_browser = "{{ browser }}";
 
@@ -26,6 +29,9 @@
 
     window.inactiveSecs = {{ inactive_time if inactive_time else 0 }};
 
+    var archives = {{ get_archives() | tojson }};
+    archives['live'] = {"name": "Live Web" };
+    archives["replay"] = {"name": "Live web at time of recording"};
 </script>
 
 {% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}

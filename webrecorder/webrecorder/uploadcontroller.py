@@ -8,7 +8,7 @@ from warcio.limitreader import LimitReader
 from har2warc.har2warc import HarParser
 from warcio.warcwriter import BufferWARCWriter, WARCWriter
 
-from pywb.cdx.cdxobject import CDXObject
+from pywb.warcserver.index.cdxobject import CDXObject
 
 import traceback
 import json
@@ -175,6 +175,9 @@ class UploadController(BaseController):
     def launch_upload(self, func, *args):
         gevent.spawn(func, *args)
 
+    def get_wam_loader(self):
+        return self.manager.content_app.wam_loader if self.manager.content_app else None
+
     def run_upload(self, upload_key, filename, stream, user, rec_infos, total_size):
         try:
             count = 0
@@ -305,7 +308,9 @@ class UploadController(BaseController):
                                               collection['id'],
                                               recording['id'],
                                               recording['title'],
-                                              collection['title'])
+                                              collection['title'],
+                                              rec_type=recording.get('rec_type'),
+                                              ra_list=recording.get('ra'))
 
                 recording['id'] = actual_recording['id']
                 recording['title'] = actual_recording['title']
@@ -423,6 +428,7 @@ class UploadController(BaseController):
         last_indexinfo = None
         indexinfo = None
         is_first = True
+        remote_archives = None
 
         for record in arciterator:
             warcinfo = None
@@ -432,6 +438,15 @@ class UploadController(BaseController):
                 except Exception as e:
                     print('Error Parsing WARCINFO')
                     traceback.print_exc()
+
+            elif remote_archives is not None:
+                source_uri = record.rec_headers.get('WARC-Source-URI')
+                if source_uri:
+                    wam_loader = self.get_wam_loader()
+                    if wam_loader:
+                        res = wam_loader.find_archive_for_url(source_uri)
+                        if res:
+                            remote_archives.add(res[2])
 
             arciterator.read_to_end(record)
 
@@ -450,6 +465,9 @@ class UploadController(BaseController):
 
                 if 'type' not in indexinfo:
                     indexinfo['type'] = 'recording'
+
+                indexinfo['ra'] = set()
+                remote_archives = indexinfo['ra']
 
                 last_indexinfo = indexinfo
 
@@ -558,6 +576,7 @@ class InplaceLoader(UploadController):
 
                 assert('error_message' not in res)
             except Exception as e:
+                traceback.print_exc()
                 print('ERROR PARSING: ' + filename)
                 print(e)
                 if fh:
@@ -590,6 +609,9 @@ class InplaceLoader(UploadController):
 
     def launch_upload(self, func, *args):
         func(*args)
+
+    def get_wam_loader(self):
+        return self.indexer.wam_loader
 
     def _get_existing_coll(self, user, info, filename):
         if info.get('title') == 'Temporary Collection':

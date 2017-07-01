@@ -106,7 +106,7 @@ class TestRegisterMigrate(FullStackTests):
         assert 'Test Migrate' in res.text
 
     def test_logged_in_replay_1(self):
-        res = self.testapp.get('/someuser/test-migrate/abc/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/someuser/test-migrate/abc/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -153,6 +153,10 @@ class TestRegisterMigrate(FullStackTests):
 
         assert 'Created collection' in res.text
 
+        # ensure csrf token present
+        m = re.search('name="csrf" value="([^\"]+)"', res.text)
+        assert m
+
     def test_logged_in_user_info_2(self):
         res = self.testapp.get('/someuser')
         assert '"/someuser/test-migrate"' in res.text
@@ -167,7 +171,7 @@ class TestRegisterMigrate(FullStackTests):
         assert 'Example Domain' in res.text
 
     def test_logged_in_replay_2(self):
-        res = self.testapp.get('/someuser/new-coll/foo/mp_/http://example.com/')
+        res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
         res.charset = 'utf-8'
         assert 'Example Domain' in res.text
 
@@ -187,7 +191,7 @@ class TestRegisterMigrate(FullStackTests):
         assert '/new-coll' in res.text, res.text
 
     def test_logged_out_replay(self):
-        res = self.testapp.get('/someuser/new-coll/foo/mp_/http://example.com/')
+        res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
         res.charset = 'utf-8'
         assert 'Example Domain' in res.text
 
@@ -221,9 +225,14 @@ class TestRegisterMigrate(FullStackTests):
 
         assert res.json == {'title': 'FOOD BAR', 'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
 
-        #time.sleep(2.0)
+        # rec replay
+        res = self.testapp.get('/someuser/test-migrate/food-bar/replay/mp_/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
 
-        res = self.testapp.get('/someuser/test-migrate/food-bar/mp_/http://httpbin.org/get?food=bar')
+        assert '"food": "bar"' in res.text, res.text
+
+        # coll replay
+        res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -232,15 +241,34 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.post('/api/v1/collections/test-migrate/rename/Test Coll?user=someuser')
 
         assert res.json == {'title': 'Test Coll', 'coll_id': 'test-coll', 'rec_id': '*'}
-        #time.sleep(2.0)
 
-        res = self.testapp.get('/someuser/test-coll/food-bar/mp_/http://httpbin.org/get?food=bar')
+        # rec replay
+        res = self.testapp.get('/someuser/test-coll/food-bar/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
 
+        # coll replay
+        res = self.testapp.get('/someuser/test-coll/mp_/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"food": "bar"' in res.text, res.text
+
+    def test_delete_coll_invalid_csrf(self):
+        # no csrf token, should result in 403
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', status=403)
+
+        # invalid csrf token, should result in 403
+        params = {'csrf': 'xyz'}
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params, status=403)
+
     def test_delete_coll(self):
-        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll')
+        res = self.testapp.get('/someuser/new-coll')
+
+        csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
+
+        params = {'csrf': csrf_token}
+        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
 
         assert res.headers['Location'] == 'http://localhost:80/someuser'
 

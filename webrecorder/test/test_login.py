@@ -15,7 +15,7 @@ class TestLogin(BaseWRTests):
         os.environ['RECORD_HOST'] = 'http://localhost:8010'
         cls.val_reg = ''
 
-        super(TestLogin, cls).setup_class()
+        super(TestLogin, cls).setup_class(extra_config_file='test_invites_config.yaml')
 
     def test_req_invite(self):
         params = {'email': 'test@example.com',
@@ -299,9 +299,37 @@ class TestLogin(BaseWRTests):
         res = self.testapp.post('/_resetpassword', params=params)
         assert res.headers['Location'] == 'http://localhost:80/_login'
 
-    def test_login_2(self):
+    def test_update_password_invalid(self):
+        res = self.testapp.post('/_login', params={
+            'username': 'someuser',
+            'password': 'Password3',
+        })
+        assert res.headers['Location'] == 'http://localhost:80/someuser'
+
         params = {'username': 'someuser',
-                  'password': 'Password3'}
+                  'curr_password': 'Nottherightone!',
+                  'password': 'NewPassword1!',
+                  'confirmpassword': 'NewPassword1!'}
+
+        self.testapp.post('/_updatepassword', params=params)
+        res = self.testapp.get('/someuser/_settings')
+        assert 'Incorrect Current Password' in res.text
+
+    def test_update_password_success(self):
+        params = {'username': 'someuser',
+                  'curr_password': 'Password3',
+                  'password': 'Password4!',
+                  'confirmpassword': 'Password4!'}
+
+        self.testapp.post('/_updatepassword', params=params)
+        res = self.testapp.get('/someuser/_settings')
+        assert 'Password Updated' in res.text
+
+    def test_login_2(self):
+        self.testapp.get('/_logout')
+
+        params = {'username': 'someuser',
+                  'password': 'Password4!'}
 
         res = self.testapp.post('/_login', params=params)
 

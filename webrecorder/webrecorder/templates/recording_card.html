@@ -2,73 +2,85 @@
 {% set bookmark_count = recording.pages | count %}
 {% set bookmark_plural = "bookmark" if bookmark_count == 1 else "bookmarks" %}
 {% set editing_id = "recording-title-" + recording.id %}
+{% set is_patch = recording.rec_type == 'patch' %}
+
 
 {% if can_write() or bookmark_count > 0 %}
-<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}" data-mount="{{ recording.mount_type }}">
+<div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}">
     <div class="checkbox-column">
-        <div class="btn btn-xs filter-label icon-button">
-        </div>
+        <input type="checkbox">
     </div>
 
     <div class="content-column">
         {% if can_admin() %}
-        {% include 'editable_recording_title.html' %}
-        <div class="dropdown"><span class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</span>
-            <button class="btn btn-default btn-xs sub-menu icon-button dropdown-toggle" id="dropdown-{{ recording.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"><span class="glyphicon glyphicon glyphicon-triangle-bottom"></span></button>
-            <ul class="dropdown-menu" aria-labelledby="dropdown-{{ recording.id }}">
-                <li>
-                    <a class="edit-title" data-editing-id="{{ editing_id }}" href="#"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>Rename…</a>
-                </li>
-
-                {% if not is_anon() %}
-                <li>
-                    <a href="#" data-toggle="modal" data-target="#move-modal" data-move-rec-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}"><span class="glyphicon glyphicon-pencil glyphicon-export" aria-hidden="true"></span>Move to Collection…</a>
-                </li>
-                {% endif %}
-                <li role="separator" class="divider"></li>
-                <li>
-                    <a href="{{ recording.download_url }}"><span class="glyphicon glyphicon-pencil glyphicon-cloud-download" aria-hidden="true"></span>Download Recording</a>
-                </li>
-                <li role="separator" class="divider"></li>
-                <li>
-                    <a href="#" data-toggle="modal" data-target="#confirm-delete-recording-modal-{{ recording.id }}"><span class="glyphicon glyphicon-pencil glyphicon-trash" aria-hidden="true"></span>Delete</a>
-                </li>
-            </ul>
-        </div>
-        {% else %}
+            {% include 'editable_recording_title.html' %}
+        {% endif %}
         <span class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</span>
-        {% endif %}
 
-        <div class="recording-stats text-left right-buffer-sm">
-            <small>
-                <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
-                <span class="current-size text-right {% if recording.mount_type %}hidden{% endif %}" data-size-display="{{ recording.size }}"></span>
-            </small>
-        </div>
+        <div class="recording-details">
+            <div class="recording-stats text-left right-buffer-sm">
+                <small>
+                    {% if is_patch %}
+                        <span class="ra-mode-badge patch">PATCH</span>
+                    {% else %}
+                        <span class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }} {{ bookmark_plural }}</span>&nbsp; &nbsp;
+                    {% endif %}
+                    <span class="current-size text-right" data-size-display="{{ recording.size }}"></span>
+                </small>
+            </div>
 
-        {% if not recording.mount_type %}
-        <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
-            <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
-        </div>
-
-        <div class="recording-time-info text-left right-buffer-sm">
-            <small><span data-time-duration="{{ duration }}"></span></small>
-        </div>
-        {% else %}
-        <div class="recording-time-info text-left right-buffer-sm">
-            <span>{{ recording.mount_desc }}</span>
-        </div>
-        <div class="recording-time-info text-left right-buffer-sm">
-        <small><i>
-            {% if recording.mount_type == 'ait' %}
-            Archive-It
-            {% elif recording.mount_type == 'memento' %}
-            Memento
+            {% if recording.ra_sources %}
+                <div class="ra-recording-souces">
+                    <small>
+                    {% if recording.ra_sources|length > 1 %}
+                        <div class="recording-sources-dropdown">
+                            <button class="btn btn-xs dropdown-toggle" type="button" id="recordingSourcesDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Sources: {{ recording.ra_sources|length }} archives <span class="caret"></span></button>
+                            <ul class="dropdown-menu arrow_box" aria-labelledby="recordingSourcesDropdown">
+                                {% for src in recording.ra_sources %}
+                                    {% if ':' in src %}
+                                        {% set arc_parts = src.split(':') %}
+                                        {% if arc_parts[0] in archives %}
+                                            <li><a href="{{ archives[arc_parts[0]].about }}" target="_blank">{{ archives[arc_parts[0]].name }} {{ arc_parts[1] }}</a></li>
+                                        {% endif %}
+                                    {% elif src in archives %}
+                                        <li><a href="{{ archives[src].about }}" target="_blank">{{ archives[src].name}}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% else %}
+                        {% if ':' in recording.ra_sources[0] %}
+                            {% set arc_parts = recording.ra_sources[0].split(':') %}
+                            {% if arc_parts[0] in archives %}
+                                Source: {{ archives[arc_parts[0]].name }} {{ arc_parts[1] }}
+                            {% endif %}
+                        {% elif recording.ra_sources[0] in archives %}
+                            Source: {{ archives[recording.ra_sources[0]].name }}
+                        {% endif %}
+                    {% endif %}
+                    </small>
+                </div>
             {% endif %}
-            Collection
-        </i></small>
+
+            <div class="recording-time-info top-buffer-sm text-left right-buffer-sm">
+                <small><span data-time-sec="{{ recording.updated_at }}"></span></small>
+            </div>
+
+            <div class="recording-time-info text-left right-buffer-sm">
+                <small><span data-time-duration="{{ duration }}"></span></small>
+            </div>
+
+            {% if can_admin() %}
+                <div class="recording-fn-row">
+                    <a class="edit-title" title="Edit recording title" data-editing-id="{{ editing_id }}" href="#"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
+                    <a href="{{ recording.download_url }}" title="Download recording"><span class="glyphicon glyphicon-cloud-download" aria-hidden="true"></span></a>
+                    {% if not is_anon() %}
+                    <a title="Move recording to another collection" data-toggle="modal" data-target="#move-modal" data-move-rec-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}" href="#"><span class="glyphicon glyphicon-export" aria-hidden="true"></span></a>
+                    {% endif %}
+                    <div><a title="Delete recording" data-toggle="modal" data-target="#confirm-delete-recording-modal-{{ recording.id }}" href="#" ><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a></div>
+                </div>
+            {% endif %}
         </div>
-        {% endif %}
 
         {% include 'confirm_delete_recording_modal.html' %}
     </div>

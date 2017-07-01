@@ -3,7 +3,7 @@ from fakeredis import FakeStrictRedis
 #from .testutils import BaseWRTests
 from .testutils import FullStackTests
 
-from pywb.webagg.test.testutils import LiveServerTests
+from pywb.warcserver.test.testutils import LiveServerTests
 
 import os
 

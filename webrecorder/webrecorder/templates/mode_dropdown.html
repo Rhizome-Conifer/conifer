@@ -1,5 +1,5 @@
 
-<div class="mode-selector {% if is_record or is_patch %}col-xs-4 col-sm-3{% else %}col-xs-2 col-sm-2{% endif %}">
+<div class="mode-selector">
     <div class="wr-mode-selector btn-group">
         {% if is_replay %}
             {% set mode_message = 'Replaying' %}
@@ -7,6 +7,8 @@
             {% set mode_message = 'Recording' %}
         {% elif is_patch %}
             {% set mode_message = 'Patching' %}
+        {% elif is_extract %}
+            {% set mode_message = 'Extracting' %}
         {% endif %}
 
         <button type="button" class="btn btn-default wr-mode-message content-action" role="button" aria-label="Finish {{ mode_message }} session">
@@ -16,6 +18,8 @@
                 <span class="btn-content"><span class="glyphicon glyphicon-play-circle" aria-hidden="true"></span> <span class="hidden-xs">{{ mode_message }}</span></span>
             {% elif is_record %}
                 <span class="btn-content"><span class="glyphicon glyphicon-dot-sm glyphicon-recording-status{% if is_record %} Blink{% endif %}" aria-hidden="true"></span> <span class="hidden-xs">{{ mode_message }}</span></span>
+            {% elif is_extract %}
+                <span class="btn-content"><span class="glyphicon glyphicon-save glyphicon-recording-status{% if is_extract %} Blink{% endif %}" aria-hidden="true"></span> <span class="hidden-xs">{{ mode_message }}</span></span>
             {% elif is_patch %}
                 <span class="btn-content">
                     <svg class="Blink" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg2" viewBox="0 0 48 48.000001" height="48" width="48">
@@ -93,13 +97,17 @@
                     </li>
                 </ul>
 
-                {% if not is_record and can_mount() %}
+                {% if is_extractable() or is_extract %}
                     <ul class="row wr-mode" data-mode="extract" title="Start a new extraction at the current URL">
                         <li class="col-xs-3">
                             <span class="glyphicon glyphicon-save glyphicon-recording-status wr-mode-icon" aria-hidden="true"></span>
                         </li>
                         <li class="col-xs-9">
-                            <h5>Extract this URL from mounted archive</h5>
+                            {% if is_extract %}
+                                <h5>Currently Extracting</h5>
+                            {% else %}
+                                <h5>Extract this URL from external archive</h5>
+                            {% endif %}
                         </li>
                     </ul>
                 {% endif %}
@@ -123,7 +131,7 @@
         </div>
     </div>
 
-    {% if is_record or is_patch %}
+    {% if is_write_mode %}
         <span class="size-counter size-counter-active">
             <span class="left-buffer-md badge current-size" data-size-display="{{ info.size }}"></span>
         </span>

@@ -31,35 +31,34 @@ class WebsockController(BaseController):
                 request.environ['webrec.ws_closed'] = True
                 return
 
-    def get_status(self, user, coll, rec):
-        size = self.manager.get_size(user, coll, rec)
-        if size is not None:
-            result = {'ws_type': 'status'}
-            result['size'] = size
-            result['numPages'] = self.manager.count_pages(user, coll, rec)
-
-        else:
-            result = {'ws_type': 'error',
-                      'error_message': 'not found'}
-
-        return json.dumps(result)
-
     def client_ws(self):
         user, coll = self.get_user_coll(api=True)
         rec = request.query.getunicode('rec', '*')
 
         reqid = request.query.get('reqid')
-
-        updater = StatusUpdater(self.status_update_secs,
-                                self.get_status)
+        if reqid:
+            sesh_id = self.manager.browser_mgr.browser_sesh_id(reqid)
+        else:
+            sesh_id = self.get_session().get_id()
 
         if not user:
             user = self.manager.get_anon_user()
 
+        type_ = request.query.get('type')
+
+        # starting url (for stats reporting)
+        url = request.query.getunicode('url')
+        if url:
+            stats_urls = [url]
+        else:
+            stats_urls = []
+
         WebSockHandler('to', reqid, self.manager,
                        'to_cbr_ps:', 'from_cbr_ps:',
-                       user, coll, rec,
-                       updater=updater).run()
+                       user, coll, rec, sesh_id=sesh_id,
+                       type=type_,
+                       stats_urls=stats_urls,
+                       status_update_secs=self.status_update_secs).run()
 
     def client_ws_cont(self):
         info = self.manager.browser_mgr.init_cont_browser_sesh()
@@ -71,6 +70,7 @@ class WebsockController(BaseController):
         rec = info['rec']
 
         reqid = info['reqid']
+        sesh_id = self.get_session().get_id()
 
         browser = info['browser']
 
@@ -84,13 +84,15 @@ class WebsockController(BaseController):
         cls('from', reqid, self.manager,
             'from_cbr_ps:', 'to_cbr_ps:',
             user, coll, rec, type=type_,
+            sesh_id=sesh_id,
             browser=browser).run()
 
 
 # ============================================================================
 class BaseWebSockHandler(object):
     def __init__(self, name, reqid, manager, send_to, recv_from,
-                       user, coll, rec, type=None, browser=None, updater=None):
+                       user, coll, rec, sesh_id=None, type=None,
+                       stats_urls=None, browser=None, status_update_secs=0):
 
         self.user = user
         self.coll = coll
@@ -98,8 +100,14 @@ class BaseWebSockHandler(object):
         self.browser = browser
         self.type_ = type
 
+        self.sesh_id = sesh_id
+        self.stats_urls = stats_urls or []
+
         self.manager = manager
-        self.updater = updater
+
+        self.updater = None
+        if status_update_secs:
+            self.updater = StatusUpdater(status_update_secs, self)
 
         self.name = name
         self.channel = None
@@ -122,7 +130,7 @@ class BaseWebSockHandler(object):
             self._multiplex(websocket_fd)
 
             if self.updater:
-                res = self.updater.get_update(self.user, self.coll, self.rec)
+                res = self.updater.get_update()
                 if res:
                     self._send_ws(res)
 
@@ -140,9 +148,13 @@ class BaseWebSockHandler(object):
         if not ready[0]:
             self._recv_ws()
 
+        accum_buff = None
+
         for fd in ready[0]:
             if fd == websocket_fd:
-                self.handle_client_msg(self._recv_ws())
+                buff = self._recv_ws()
+                accum_buff = buff if not accum_buff else accum_buff + buff
+                accum_buff = self.handle_client_msg(accum_buff)
 
             elif len(fd_list) == 2 and fd == fd_list[1]:
 
@@ -167,8 +179,12 @@ class BaseWebSockHandler(object):
         try:
             msg = json.loads(msg.decode('utf-8'))
         except Exception as e:
-            print('WS MSG ERR', e, len(msg))
-            return
+            # limit msg to 64k, after reading chunks
+            if len(msg) >= 16384 * 4:
+                print('*** WS ERR, could not read message even after buffering', self.channel, e, len(msg))
+                return
+
+            return msg
 
         if msg['ws_type'] == 'skipreq':
             url = msg['url']
@@ -183,12 +199,21 @@ class BaseWebSockHandler(object):
                 if self.manager.has_recording(self.user, self.coll, self.rec):
                     page_local_store = msg['page']
 
-                    res = self.manager.add_page(self.user, self.coll, self.rec, page_local_store)
+                    check_dupes = (self.type_ == 'patch')
+
+                    res = self.manager.add_page(self.user, self.coll, self.rec,
+                                                page_local_store, check_dupes)
                 else:
                     print('Invalid Rec for Page Data', self.user, self.coll, self.rec)
 
             if from_browser and msg.get('visible'):
                 msg['ws_type'] = 'remote_url'
+
+        elif msg['ws_type'] == 'config-stats':
+            self.stats_urls = msg['stats_urls']
+
+        elif msg['ws_type'] == 'set_url':
+            self.stats_urls = [msg['url']]
 
         elif msg['ws_type'] == 'switch':
             if not self.manager.can_write_coll(self.user, self.coll):
@@ -206,6 +231,38 @@ class BaseWebSockHandler(object):
         elif from_browser:
             if msg['ws_type'] in ('remote_url', 'patch_req', 'snapshot'):
                 self._publish(from_browser, msg)
+
+    def get_status(self):
+        size = self.manager.get_size(self.user, self.coll, self.rec)
+        if size is not None:
+            # if extracting, also add the size from patch recording, if any
+            if self.type_ == 'extract':
+                patch_size = self.manager.get_size(self.user, self.coll, 'patch-of-' + self.rec)
+                if patch_size is not None:
+                    size += patch_size
+
+            result = {'ws_type': 'status'}
+            result['size'] = size
+            result['numPages'] = self.manager.count_pages(self.user, self.coll, self.rec)
+
+            if self.stats_urls:
+                result['stats'] = self.get_dyn_stats()
+
+        else:
+            result = {'ws_type': 'error',
+                      'error_message': 'not found'}
+
+        return json.dumps(result)
+
+    def get_dyn_stats(self):
+        sum_stats = {}
+        for url in self.stats_urls:
+            stats = self.manager.get_dyn_stats(self.user, self.coll, self.rec,
+                                                self.sesh_id, url)
+            for stat, value in stats.items():
+                sum_stats[stat] = int(value) + int(sum_stats.get(stat, 0))
+
+        return sum_stats
 
 
 # ============================================================================
@@ -261,19 +318,20 @@ class GeventWebSockHandler(BaseWebSockHandler):
 
 # ============================================================================
 class StatusUpdater(object):
-    def __init__(self, status_update_secs, callback):
+    def __init__(self, status_update_secs, ws_handler):
+        self.ws_handler = ws_handler
+
         self.last_status = None
         self.last_status_time = 0.0
 
         self.status_update_secs = status_update_secs
-        self.callback = callback
 
-    def get_update(self, user, coll, rec):
+    def get_update(self):
         curr_time = time.time()
         result = None
 
         if (curr_time - self.last_status_time) > self.status_update_secs:
-            status = self.callback(user, coll, rec)
+            status = self.ws_handler.get_status()
 
             if status != self.last_status:
                 self.last_status = status

@@ -8,10 +8,12 @@ import os
 import time
 
 from fakeredis import FakeStrictRedis
+from mock import patch
+
 from io import BytesIO
 
-from pywb.cdx.cdxobject import CDXObject
-from pywb.warc.cdxindexer import write_cdx_index
+from pywb.warcserver.index.cdxobject import CDXObject
+from pywb.indexer.cdxindexer import write_cdx_index
 
 from re import sub
 from six.moves.urllib.parse import urlsplit, quote
@@ -35,25 +37,54 @@ class TestTempContent(FullStackTests):
         'h:temp-usage',
     ]
 
+    PAGE_STATS = 'r:{user}:{coll}:{rec}:<sesh_id>:stats:{url}'
+
+
+    @classmethod
     def setup_class(cls, **kwargs):
         super(TestTempContent, cls).setup_class(**kwargs)
 
+        def make_id(self):
+            sesh_id = 'sesh_id'
+            redis_key = self.key_template.format(sesh_id)
+
+            return sesh_id, redis_key
+
+        cls.seshmock = patch('webrecorder.session.RedisSessionMiddleware.make_id', make_id)
+        cls.seshmock.start()
+
+        cls.dyn_stats = []
+
         from webrecorder.rec.tempchecker import run
         gevent.spawn(run)
+
+    @classmethod
+    def teardown_class(cls, *args, **kwargs):
+        super(TestTempContent, cls).teardown_class(*args, **kwargs)
+
+        cls.seshmock.stop()
 
     def _get_redis_keys(self, keylist, user, coll, rec):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]
         return keylist
 
-    def _assert_rec_keys(self, user, coll, rec_list):
+    def _assert_rec_keys(self, user, coll, rec_list, url=''):
         exp_keys = []
 
         for rec in rec_list:
             exp_keys.extend(self._get_redis_keys(self.REDIS_KEYS, user, coll, rec))
 
+        if url:
+            self._add_dyn_stat(user, coll, rec_list[-1], url)
+        exp_keys.extend(self.dyn_stats)
+
         res_keys = self.redis.keys()
 
         assert set(exp_keys) == set(res_keys)
+
+    def _add_dyn_stat(self, user, coll, rec, url):
+        self.dyn_stats.append(self.PAGE_STATS.format(user=user, coll=coll,
+                                                      rec=rec, url=url))
 
     def _assert_size_all_eq(self, user, coll, rec):
         r_info = 'r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec)
@@ -77,8 +108,7 @@ class TestTempContent(FullStackTests):
         assert '<iframe' in res.text
 
     def test_anon_record_1(self):
-        #res = self._get_anon('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
-        res = self.testapp.get('/$record/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/_new/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
         assert res.status_code == 302
         res = res.follow()
 
@@ -106,15 +136,18 @@ class TestTempContent(FullStackTests):
     def test_anon_replay_1(self):
         #print(self.redis.hgetall('c:' + self.anon_user + ':temp:warc'))
 
-        res = self._get_anon('/temp/my-recording/mp_/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/my-recording/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
+        self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'], 'http://httpbin.org/get?food=bar')
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_replay_coll_1(self):
         res = self._get_anon('/temp/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
+        self._add_dyn_stat(self.anon_user, 'temp', '<all>', 'http://httpbin.org/get?food=bar')
+        self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_record_sanitize_redir(self):
@@ -155,8 +188,6 @@ class TestTempContent(FullStackTests):
         user = self.anon_user
 
         self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'])
-
-        print(os.path.isdir(self.warcs_dir))
 
         anon_dir = os.path.join(self.warcs_dir, user)
         #assert set(os.listdir(anon_dir)) == set(['my-recording', 'my-rec2'])
@@ -249,7 +280,7 @@ class TestTempContent(FullStackTests):
         assert '/http://httpbin.org/get?bood=far' in res.text
 
     def test_anon_replay_top_frame(self):
-        res = self._get_anon('/temp/my-rec2/http://httpbin.org/get?food=bar')
+        res = self._get_anon('/temp/my-rec2/replay/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"replay"' in res.text
@@ -342,6 +373,10 @@ class TestTempContent(FullStackTests):
         warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
         assert self.redis.hlen(warc_key) == 1
 
+        self.dyn_stats = [stat for stat in self.dyn_stats
+                           if ('my-recording' not in stat and
+                               'вэбрекордэр' not in stat)]
+
         self._assert_rec_keys(user, 'temp', ['my-rec2'])
 
         res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user), status=404)
@@ -366,7 +401,7 @@ class TestTempContent(FullStackTests):
         assert res.json == {'deleted_id': 'recording-session'}
 
     def test_anon_patch_redirect_and_delete(self):
-        res = self.testapp.get('/$patch/temp/http://example.com/?patch=test')
+        res = self.testapp.get('/_new/temp/patch/patch/http://example.com/?patch=test')
         assert res.status_code == 302
 
         parts = urlsplit(res.headers['Location'])
@@ -383,17 +418,18 @@ class TestTempContent(FullStackTests):
         assert res.json == {'deleted_id': 'patch'}
 
     def test_error_anon_not_found_recording(self):
-        res = self._get_anon('/temp/my-rec/mp_/http://example.com/', status=404)
+        res = self._get_anon('/temp/my-rec/replay/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
     def test_error_anon_not_found_coll_url(self):
         res = self._get_anon('/temp/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
-    def test_error_anon_invalid_rec_name_redir(self):
-        res = self._get_anon('/temp/mp_/example.com', status=302)
-        assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/mp_-/example.com')
-        assert res.status_code == 302
+    def test_anon_rec_name_redir(self):
+        res = self._get_anon('/temp/mp_/example.com', status=307)
+        assert res.status_code == 307
+        print(res.headers['Location'])
+        assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/mp_/http://example.com/')
 
     #def test_edge_anon_not_rec_name(self):
     #    res = self._get_anon('/temp/example.com/')
@@ -402,7 +438,7 @@ class TestTempContent(FullStackTests):
     #    assert '<iframe' in res.text
 
     def test_error_anon_not_found_recording_url(self):
-        res = self._get_anon('/temp/my-recording/mp_/http://example.com/', status=404)
+        res = self._get_anon('/temp/my-recording/replay/mp_/http://example.com/', status=404)
         assert res.status_code == 404
 
     def test_error_anon_invalid_coll(self):

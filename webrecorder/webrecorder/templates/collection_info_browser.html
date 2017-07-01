@@ -1,41 +1,40 @@
-<div class="row top-buffer-sm">
-    <div class="col-xs-2 recording-panel">
+<div class="row top-buffer-sm wr-collection-info">
+    <div class="hidden-xs recording-panel">
+        <h5>RECORDINGS</h5>
         {% if can_write() %}
         <div>
-            <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New Recording</a>
+            <a href="{{ get_path(user, coll) }}/$new" class="btn btn-primary btn-sm {{ is_disabled_class }}"><span class="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true"></span>New</a>
             {% if can_admin() and not is_anon() %}
-            <a class="btn btn-success btn-sm upload-coll-button" href="#" data-toggle="modal" title="Upload to Collection" data-target="#upload-modal" data-backdrop="static" data-keyboard="false" role="button">
-                <span class="glyphicon glyphicon-upload glyphicon-button"></span></a>
-            {% endif %}
-
-            {% if can_mount() %}
-            <button class="btn btn-sm btn-default top-buffer-sm" data-toggle="modal" data-target="#mount-modal">Mount External...</button>
+            <a class="btn btn-default btn-sm upload-coll-button" href="#" data-toggle="modal" title="Upload to Collection" data-target="#upload-modal" data-backdrop="static" data-keyboard="false" role="button">
+                <span class="glyphicon glyphicon-upload glyphicon-button"></span> <span class="upload-label">Upload</span></a>
             {% endif %}
         </div>
         {% endif %}
 
         <div class="recording-selector">
             <div id="all-card" class="card-top">
-                <div class="">
+                <div>
                     <b><span id="num-recs"></span>&nbsp;Recordings</b>&nbsp; &nbsp;<span id="sel-info"></span>
                 </div>
                 <div class="recording-stats text-left top-buffer-md right-buffer-sm">
                     <span id="sel-bookmarks" class="bookmark-count" data-bookmark="{{ bookmark_count }}">{{ bookmark_count }}</span> bookmarks&nbsp; &nbsp;
                     <span class="current-size text-right" data-size-display="{{ collection.size }}"></span>
                 </div>
-                <div class="content-column top-buffer-md">
-                    <small><a id="clear-all" href="" class="btn btn-default btn-xs clear-all-btn">Clear Filters</a></small>
-                </div>
             </div>
-
-            {% set oos = is_out_of_space() %}
-            {% for recording in collection.recordings | sort(attribute='updated_at', reverse=True) %}
-                {% include 'recording_card.html' %}
-            {% endfor %}
+            <div class='rec-filter'>
+                <a id="clear-all-widget" href="#" class="clear-all-btn disabled">no filters</a>
+                <a href="#" class="toggle-details-btn">hide details</a>
+            </div>
+            <div class="recording-bin">
+                {% set archives = get_archives() %}
+                {% for recording in collection.recordings | sort(attribute='updated_at', reverse=True) %}
+                    {% include 'recording_card.html' with context %}
+                {% endfor %}
+            </div>
         </div>
     </div>
 
-    <div class="col-xs-10 bookmarks-panel">
+    <div class="bookmarks-panel">
         {% include 'bookmarks_table.html' %}
     </div>
 </div>

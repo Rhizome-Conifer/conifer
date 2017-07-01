@@ -4,15 +4,16 @@ $(function() {
 
 var TimesAndSizesFormatter = (function() {
 
-    var format_by_attr = function (attr_name, format_func) {
+    var format_by_attr = function (attr_name, format_func, format_func_arg) {
         $("[" + attr_name + "]").each(function(i, elem) {
-            $(elem).text(format_func($(elem).attr(attr_name)));
+            $(elem).text(format_func($(elem).attr(attr_name), (typeof format_func_arg === "undefined" ? false : format_func_arg)));
         });
     }
 
     var format = function() {
         format_by_attr("data-size-display", format_bytes);
         format_by_attr("data-time-ts", ts_to_date);
+        format_by_attr("data-time-ts-gmt", ts_to_date, true);
         format_by_attr("data-time-sec", function(val) { return new Date(parseInt(val) * 1000).toLocaleString(); });
         format_by_attr("data-time-duration", secondsToStr);
 
@@ -60,7 +61,7 @@ var TimesAndSizesFormatter = (function() {
         }
 
         if (ts.length < 14) {
-            ts += "00000000000000".substr(ts.length);
+            ts += "10000101000000".substr(ts.length);
         }
 
         var datestr = (ts.substring(0, 4) + "-" +

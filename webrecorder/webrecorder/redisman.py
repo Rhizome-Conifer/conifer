@@ -22,7 +22,7 @@ from six.moves.urllib.parse import quote
 from six.moves import range
 
 from pywb.utils.canonicalize import calc_search_range
-from pywb.cdx.cdxobject import CDXObject
+from pywb.warcserver.index.cdxobject import CDXObject
 
 from warcio.timeutils import timestamp_now
 
@@ -575,15 +575,12 @@ class AccessManagerMixin(object):
     def can_write_coll(self, user, coll):
         return self._check_access(user, coll, self.WRITE_PREFIX)
 
-    def can_mount_coll(self, user, coll):
-        if not self.can_admin_coll(user, coll):
+    def is_extractable(self, user, coll):
+        if not self.can_read_coll(user, coll):
             return False
 
-        try:
-            self.cork.require(role='mounts-archivist')
-            return True
-        except Exception:
-            return False
+        # for now, no extractable view
+        return False
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
@@ -723,6 +720,11 @@ class RecManagerMixin(object):
         self.cdx_key = config['cdxj_key_templ']
         self.tags_key = config['tags_key']
 
+        self.ra_key = config['ra_key']
+        self.dyn_stats_key_templ = config['dyn_stats_key_templ']
+        self.dyn_stats_secs = config['dyn_stats_secs']
+        self.dyn_ref_templ = config['dyn_ref_templ']
+
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
 
@@ -750,6 +752,10 @@ class RecManagerMixin(object):
 
         result['download_url'] = path
 
+        # add any remote archive sources
+        sources_key = self.ra_key.format(user=user, coll=coll, rec=rec)
+        result['ra_sources'] = list(self.redis.smembers(sources_key))
+
         #if result.get('pending_size') and result.get('size'):
         #    result['size'] = int(result['size']) + int(result['pending_size'])
         return result
@@ -764,7 +770,7 @@ class RecManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def create_recording(self, user, coll, rec, rec_title, coll_title='',
-                         no_dupe=False):
+                         no_dupe=False, rec_type=None, ra_list=None):
 
         self.assert_can_write(user, coll)
 
@@ -780,7 +786,7 @@ class RecManagerMixin(object):
             if self.redis.hsetnx(key, 'id', rec) == 1:
                 break
 
-            # don't create a dupelicate, just use the specified recording
+            # don't create a duplicate, just use the specified recording
             if no_dupe:
                 return self.get_recording(user, coll, rec)
 
@@ -790,12 +796,21 @@ class RecManagerMixin(object):
 
         now = int(time.time())
 
+        if ra_list:
+            ra_key = self.ra_key.format(user=user,
+                                        coll=coll,
+                                        rec=rec)
+
         with redis_pipeline(self.redis) as pi:
             pi.hset(key, 'title', rec_title)
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'updated_at', now)
             pi.hsetnx(key, 'size', '0')
+            if rec_type:
+                pi.hset(key, 'rec_type', rec_type)
             pi.sadd(rec_list_key, rec)
+            if ra_list:
+                pi.sadd(ra_key, *ra_list)
 
         if not self._has_collection_no_access_check(user, coll):
             coll_title = coll_title or coll
@@ -855,6 +870,65 @@ class RecManagerMixin(object):
 
         return self._send_delete('rec', user, coll, rec)
 
+    def track_remote_archive(self, pi, user, coll, rec, source_id):
+
+        ra_key = self.ra_key.format(user=user,
+                                    coll=coll,
+                                    rec=rec)
+
+        pi.sadd(ra_key, source_id)
+
+    def _res_url_templ(self, base_url, params, url):
+        rec = params['rec_orig']
+        if not rec or rec == '*':
+            rec = '<all>'
+        return base_url.format(user=params['user'],
+                               coll=params['coll_orig'],
+                               rec=rec,
+                               id=params['id']) + url
+
+    def update_dyn_stats(self, url, params, referrer, source, ra_rec):
+        if referrer.endswith('.css'):
+            css_res = self._res_url_templ(self.dyn_ref_templ, params, referrer)
+            orig_referrer = self.redis.get(css_res)
+            if orig_referrer:
+                referrer = orig_referrer
+
+        dyn_stats_key = self._res_url_templ(self.dyn_stats_key_templ,
+                                             params, referrer)
+
+        curr_url_key = self._res_url_templ(self.dyn_stats_key_templ,
+                                           params, url)
+
+        with redis_pipeline(self.redis) as pi:
+            pi.delete(curr_url_key)
+
+            pi.hincrby(dyn_stats_key, source, 1)
+            pi.expire(dyn_stats_key, self.dyn_stats_secs)
+
+            if url.endswith('.css'):
+                css_res = self._res_url_templ(self.dyn_ref_templ, params, url)
+                pi.setex(css_res, self.dyn_stats_secs, referrer)
+
+            if ra_rec:
+                self.track_remote_archive(pi, params['user'], params['coll'],
+                                          ra_rec, source)
+
+    def get_dyn_stats(self, user, coll, rec, sesh_id, url):
+        params = {'user': user,
+                  'coll_orig': coll,
+                  'rec_orig': rec,
+                  'id': sesh_id}
+
+        dyn_stats_key = self._res_url_templ(self.dyn_stats_key_templ,
+                                             params, url)
+
+        stats = self.redis.hgetall(dyn_stats_key)
+        if stats:
+            self.redis.expire(dyn_stats_key, self.dyn_stats_secs)
+
+        return stats
+
     def _get_pagedata(self, user, coll, rec, pagedata):
         key = self.page_key.format(user=user, coll=coll, rec=rec)
 
@@ -877,14 +951,32 @@ class RecManagerMixin(object):
 
         return key, hkey, pagedata_json
 
-    def add_page(self, user, coll, rec, pagedata):
+    def add_page(self, user, coll, rec, pagedata, check_dupes=False):
         self.assert_can_write(user, coll)
+
+        # if check dupes, check for existing page and avoid adding duplicate
+        if check_dupes:
+            if self.has_page(user, coll, pagedata['url'], pagedata['timestamp']):
+                return {}
 
         key, hkey, pagedata_json = self._get_pagedata(user, coll, rec, pagedata)
 
         self.redis.hset(key, hkey, pagedata_json)
 
         return {}
+
+    def has_page(self, user, coll, url, ts):
+        self.assert_can_read(user, coll)
+
+        all_page_keys = self._get_rec_keys(user, coll, self.page_key)
+
+        hkey = url + ' ' + ts
+
+        for key in all_page_keys:
+            if self.redis.hget(key, hkey):
+                return True
+
+        return False
 
     def import_pages(self, user, coll, rec, pagelist):
         #self.assert_can_admin(user, coll)
@@ -1034,7 +1126,6 @@ class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
         self.coll_info_key = config['info_key_templ']['coll']
-        self.mount_key = config['mount_key_templ']
         self.upload_key = config['upload_key_templ']
         self.upload_exp = int(config['upload_status_expire'])
 
@@ -1079,24 +1170,6 @@ class CollManagerMixin(object):
             result['recordings'] = self.get_recordings(user, coll)
 
         return result
-
-    def add_mount(self, user, coll, rec, rec_title,
-                  mount_type, mount_desc, mount_config):
-        rec_info = self.create_recording(user, coll, rec, rec_title)
-        rec = rec_info['id']
-
-        mount_key = self.mount_key.format(user=user, coll=coll, rec=rec)
-
-        rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
-
-        with redis_pipeline(self.redis) as pi:
-            pi.set(mount_key, mount_config)
-
-            pi.hset(rec_key, 'mount_type', mount_type)
-            if mount_desc:
-                pi.hset(rec_key, 'mount_desc', mount_desc)
-
-        return rec_info
 
     def _has_collection_no_access_check(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)
@@ -1354,8 +1427,8 @@ class CLIRedisDataManager(RedisDataManager):
     def can_admin_coll(self, user, coll):
         return True
 
-    def can_mount_coll(self, user, coll):
-        return True
+    def can_extract_coll(self, user, coll):
+        return False
 
     def can_tag(self):
         return True

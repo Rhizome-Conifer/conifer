@@ -21,8 +21,8 @@ class FullStackRunner(object):
             os.environ.update(env_params)
 
         def webagg():
-            from webrecorder.load.main import make_webagg
-            return make_webagg()
+            from webrecorder.load.main import WRWarcServer
+            return WRWarcServer().app
 
         def recorder():
             from webrecorder.rec.main import init as record_init

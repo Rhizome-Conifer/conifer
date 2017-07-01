@@ -13,6 +13,7 @@ var EditTitleInPlace = (function() {
     }
 
     var showEditForm = function(event) {
+        event.preventDefault();
         var editingId = $(this).attr('data-editing-id');
         hideTitleAndEditButton(editingId);
         showForm(editingId);
@@ -34,7 +35,7 @@ var EditTitleInPlace = (function() {
         var textInput = $(form).find('input');
 
         $(textInput).val(currentTitle);
-        $(textInput).css('width', "66%");
+        $(textInput).css('width', "calc(100% - 10px)");
 
         showFormButtons(editingId);
 

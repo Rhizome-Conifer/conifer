@@ -62,6 +62,7 @@ class Session(object):
 
         params = {'curr_user': self.curr_user,
                   'curr_role': self.curr_role,
+                  'csrf': self.get_csrf(),
                   'message': message,
                   'msg_type': msg_type}
 
@@ -75,6 +76,9 @@ class Session(object):
             self.save()
 
         return self._sesh['id']
+
+    def get_csrf(self):
+        return self._sesh.get('csrf', '')
 
     def set_id(self, id):
         self._sesh['id'] = id
@@ -195,6 +199,7 @@ class RedisSessionMiddleware(CookieGuard):
         data = None
         ttl = -2
         is_restricted = False
+        force_save = False
 
         if 'wsgiprox.proxy_host' not in environ:
             try:
@@ -210,6 +215,13 @@ class RedisSessionMiddleware(CookieGuard):
                     if result:
                         data = pickle.loads(base64.b64decode(result))
                         ttl = self.redis.ttl(redis_key)
+
+                        # no csrf for existing session?
+                        # add and save
+                        if not data.get('csrf'):
+                            data['csrf'] = self.make_id()
+                            force_save = True
+
             except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -217,9 +229,11 @@ class RedisSessionMiddleware(CookieGuard):
 
         # make new session
         if data is None:
-            sesh_id, redis_key = self.make_id()
+            sesh_id, redis_key = self.make_id_and_key()
 
-            data = {'id': sesh_id}
+            data = {'id': sesh_id,
+                    'csrf': self.make_id()
+                   }
 
             # auto-login as designated user for each new session
             if self.auto_login_user:
@@ -231,6 +245,9 @@ class RedisSessionMiddleware(CookieGuard):
                           data,
                           ttl,
                           is_restricted)
+
+        if force_save:
+            session.save()
 
         if session.curr_role == 'anon':
             session.template_params['anon_ttl'] = ttl
@@ -258,7 +275,7 @@ class RedisSessionMiddleware(CookieGuard):
         else:
             if session.should_renew:
                 self.redis.delete(session.key)
-                sesh_id, session.key = self.make_id()
+                sesh_id, session.key = self.make_id_and_key()
                 session['id'] = sesh_id
 
             set_cookie = self.should_set_cookie(session)
@@ -370,7 +387,10 @@ class RedisSessionMiddleware(CookieGuard):
         return URLSafeTimedSerializer(self.secret_key).dumps([sesh_id, is_restricted])
 
     def make_id(self):
-        sesh_id = base64.b64encode(os.urandom(20)).decode('utf-8')
+        return base64.b64encode(os.urandom(20)).decode('utf-8')
+
+    def make_id_and_key(self):
+        sesh_id = self.make_id()
         redis_key = self.key_template.format(sesh_id)
 
         return sesh_id, redis_key

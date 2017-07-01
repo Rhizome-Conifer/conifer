@@ -1,0 +1,23 @@
+# archives to be included in 'patching from all archives'
+
+webarchive_ids:
+  - ia
+  - perma
+  - ait
+  - loc
+  - rhiz
+  - uk_wa
+  - pt_wa
+  - is_wa
+#  - si_wa
+#  - ee_wa
+#  - sg_wa
+#  - uk_na
+#  - uk_parl
+#  - proni
+#  - eu_wa_coll
+#  - nara
+#  - cat_wa
+  
+
+

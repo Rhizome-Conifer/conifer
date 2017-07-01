@@ -37,6 +37,9 @@ browser_req_url: 'http://shepherd:9020/api/browsers/request_browser/{browser}'
 browser_list_url: 'http://shepherd:9020/api/browsers/browsers'
 proxy_host: 'proxy'
 
+all_archives_index: './webarchives.yaml'
+patch_archives_index: 'pkg://webrecorder/config/patch_webarchives.yaml'
+
 # time interval for websocket status updates (in seconds)
 status_update_secs: 1.0
 
@@ -54,11 +57,20 @@ url_templates:
     live: '{live_host}/live/resource/postreq?'
 
     record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}'
-    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.replay.rec=*'
+    extract: '{record_host}/record/extract/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}&sources={sources}&inv_sources={inv_sources}&param.recorder.patch_rec={patch_rec}'
+    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.rec=*&param.ip={ip}'
+
     snapshot: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=resource'
 
-    replay: '{replay_host}/replay/resource/postreq?param.replay.user={user}&param.replay.coll={coll}&param.replay.rec={rec}'
+    replay: '{replay_host}/replay/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
     replay-coll: '{replay_host}/replay-coll/resource/postreq?param.user={user}&param.coll={coll}&param.rec=*'
+
+
+recorder_accept_colls:
+    extract: '.*'
+    #patch: '(live|patch:)'
+    patch: '^[^r][^:].*'
+    live: 'live'
 
 
 # Download paths
@@ -142,14 +154,13 @@ info_key_templ:
     user: 'u:{user}:info'
 
 rec_list_key_templ: 'c:{user}:{coll}:recs'
-mount_list_key_templ: 'c:{user}:{coll}:mounts'
 
 upload_key_templ: 'u:{user}:upl:{upid}'
 
 tags_key: 'z:tags'
 user_tag_templ: 'r:{user}:{coll}:{rec}:tag:{tag}'
 
-mount_key_templ: 'r:{user}:{coll}:{rec}:cdxj_m'
+ra_key: 'r:{user}:{coll}:{rec}:ra'
 
 user_usage_key: 'h:user-usage'
 temp_usage_key: 'h:temp-usage'
@@ -157,6 +168,10 @@ temp_usage_key: 'h:temp-usage'
 rate_limit_key: 'ipr:{ip}:{H}'
 
 cookie_key_templ: 'r:{user}:{coll}:{rec}:{id}:cookie:'
+
+dyn_stats_key_templ: 'r:{user}:{coll}:{rec}:{id}:stats:'
+dyn_ref_templ: 'r:{user}:{coll}:{rec}:{id}:ref:'
+dyn_stats_secs: 330
 
 warc_key_templ: 'r:{user}:{coll}:{rec}:warc'
 warc_upload_wait_templ: 'w:{filename}'

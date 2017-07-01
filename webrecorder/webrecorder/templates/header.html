@@ -1,3 +1,5 @@
+{% from '/utils.html' import sharing_widget %}
+
 {% if metadata.type != 'player' or curr_mode %}
 <header>
     <div class="navbar navbar-default navbar-static-top">
@@ -10,32 +12,30 @@
             </li>
 
 
-            <button type="button" class="navbar-toggle collapsed btn btn-sm" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <button type="button" class="navbar-toggle collapsed btn btn-sm" data-toggle="collapse" data-target="#bs-navbar-collapse" aria-expanded="false">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="glyphicon glyphicon-menu-hamburger"></span>
             </button>
-            <div class="navbar-user-links navbar-right collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <div class="navbar-user-links navbar-right collapse navbar-collapse" id="bs-navbar-collapse">
                 {% include 'user_management_links.html' %}
             </div>
         </nav>
         {% endif %}
 
-        {% if curr_mode == 'new' %}
-            <div class="container-fluid new-recording">
-                <div class="col-sm-12">
-                    <span class="glyphicon glyphicon-lg glyphicon-modal-window glyphicon-recording-status top-buffer-sm" aria-hidden="true"></span>
-                    <span class="recorder-status">Create New Recording</span>
-
-                    <label for="rec-title" class="sr-only">Recording title</label>
-                    <input name="rec-title" type="text" class="left-buffer form-control input-sm title-inline" placeholder="Recording title" value="{{ rec_title }}" required>
-                </div>
+        {% if curr_mode and curr_mode != 'live' %}
+            <div class="container-fluid wr-controls navbar-default new-recording-ui {% if not can_admin() %}public{% endif %}">
+                {% include 'recorder.html' %}
             </div>
         {% endif %}
 
+        {% if curr_mode == 'new' %}
+            <div class="container-fluid new-recording">
+                <span class="recorder-status">Create New Recording</span>
 
-        <div class="container-fluid wr-controls {% if not can_admin() %}public{% endif %}">
-            {% include 'recorder.html' %}
-        </div>
+                <label for="rec-title" class="sr-only">Recording title</label>
+                <input name="rec-title" type="text" class="left-buffer form-control input-sm title-inline" placeholder="Recording title" value="{{ rec_title }}" required>
+            </div>
+        {% endif %}
 
         {% if curr_mode and curr_mode != 'live' %}
             <div class='container-fluid wr-tools'>
@@ -54,6 +54,10 @@
                     <span class="glyphicon glyphicon-copy glyphicon-button"></span>Clipboard</button>
 
                     <span id="browser-countdown-label">Browser Time Left: <span id="browser-countdown"></span></span>
+                {% endif %}
+
+                {% if curr_mode == 'record' or curr_mode == 'patch' %}
+                    {{ sharing_widget(get_share_url(), get_embed_url(), coll_title, owner=can_admin(), is_public=is_public(user, coll_orig), anon=is_anon(), bsSize='xs') }}
                 {% endif %}
             </div>
         {% endif %}

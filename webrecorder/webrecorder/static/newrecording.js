@@ -53,7 +53,12 @@ $(function() {
         // urlencode title
         title = encodeURIComponent(title);
 
-        RouteTo.newRecording(collection, title, url);
+        if (window.wrExtractId && window.wrExtractPrefix) {
+            url = url.replace(/^https?:\/\//,"").replace(window.wrExtractPrefix, "");
+            RouteTo.newExtract(collection, title, sourceTarget, sourceTs);
+        } else {
+            RouteTo.newRecording(collection, title, url);
+        }
 
         setStorage("__wr_currRec", title);
     };
@@ -83,6 +88,7 @@ $(function() {
                 '<span class="caret"></span>'));
 
         setStorage("__wr_currColl", currColl);
+        setStorage("__wr_currCollTitle", $(this).text());
     });
 
     $('#create-coll').on('submit', function(event) {
@@ -104,6 +110,7 @@ $(function() {
             }
 
             setStorage("__wr_currColl", data.collection.id);
+            setStorage("__wr_currCollTitle", data.collection.title);
 
             if (window.location.pathname == "/") {
                 // hide modal

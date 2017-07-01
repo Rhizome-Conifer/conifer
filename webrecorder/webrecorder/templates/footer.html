@@ -1,4 +1,4 @@
-<footer class="footer top-buffer">
+<footer class="footer">
     <div class="container top-buffer bottom-buffer">
         <div class="row">
             <div class="col-xs-12 col-sm-8 project-info">
@@ -25,5 +25,19 @@
                 </a>
             </div>
         </div>
+        {% set announce_list = get_announce_list() %}
+        {% if announce_list %}
+        <div class="row">
+            <div class="col-xs-12">
+              <form method="post" id="email-signup" class="navbar-form mc-embedded-subscribe-form" action="{{ announce_list }}">
+                  <div class="form-group-sm">
+                      <input type="email" name="EMAIL" class="form-control" placeholder="your@email.com">
+                      <button type="submit" class="btn btn-default btn-sm">Get Updates</button>
+                  </div>
+                  <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_a1487b13ca8ed17d052f71f12_7f979630a1" tabindex="-1" value=""></div>
+              </form>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </footer>
