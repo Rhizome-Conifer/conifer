@@ -1,7 +1,7 @@
 from gevent.monkey import patch_all; patch_all()
 
 from pywb.warcserver.index.indexsource import LiveIndexSource, RedisIndexSource
-from pywb.warcserver.index.indexsource import MementoIndexSource, RemoteIndexSource
+from pywb.warcserver.index.indexsource import MementoIndexSource, WBMementoIndexSource, RemoteIndexSource
 from pywb.warcserver.index.aggregator import SimpleAggregator
 from pywb.warcserver.index.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggregator
 
