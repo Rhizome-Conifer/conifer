@@ -120,8 +120,6 @@ class WRWarcServer(object):
         for name in archives.keys():
             if name in filter_list:
                 patch_archives[name] = archives[name]
-            elif any(name.startswith(key) for key in filter_list):
-                patch_archives[name] = archives[name]
 
         return patch_archives
 
@@ -146,7 +144,7 @@ class ProxyRemoteIndexSource(RemoteIndexSource):
 
 
 # ============================================================================
-class ProxyWBMementoIndexSource(RemoteIndexSource):
+class ProxyWBMementoIndexSource(WBMementoIndexSource):
     def __init__(self, timegate_url, timemap_url, replay_url):
         replay_url = PROXY_PREFIX + replay_url
 
