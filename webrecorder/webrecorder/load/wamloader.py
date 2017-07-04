@@ -11,11 +11,16 @@ from pywb.utils.loaders import load_yaml_config
 class WAMLoader(object):
     STRIP_SCHEME = re.compile(r'https?://')
 
-    def __init__(self, index_file=None, base_dir=None):
+    def __init__(self, index_file=None, base_dir=None,
+                 memento_cls=None, remote_cls=None, wb_memento_cls=None):
         self.index_file = index_file or './webarchives.yaml'
         self.base_dir = base_dir or './webrecorder/config/webarchives'
         self.all_archives = {}
         self.replay_info = {}
+
+        self.memento_cls = memento_cls or MementoIndexSource
+        self.remote_cls = remote_cls or RemoteIndexSource
+        self.wb_memento_cls = wb_memento_cls or WBMementoIndexSource
 
         try:
             self.load_all()
@@ -96,13 +101,13 @@ class WAMLoader(object):
         if 'memento' in apis:
             timegate = apis['memento']['timegate'].replace('{collection}', collection) + '{url}'
             timemap = apis['memento']['timemap'].replace('{collection}', collection) + '{url}'
-            index = MementoIndexSource(timegate, timemap, replay)
+            index = self.memento_cls(timegate, timemap, replay)
         elif 'cdx' in apis:
             query = apis['cdx']['query'].replace('{collection}', collection)
-            index = RemoteIndexSource(query, replay)
+            index = self.remote_cls(query, replay)
 
         else:
-            index = WBMementoIndexSource('', '', replay)
+            index = self.wb_memento_cls('', '', replay)
 
         if index:
             self.all_archives[pk] = index
