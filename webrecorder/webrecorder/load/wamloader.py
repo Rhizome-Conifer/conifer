@@ -1,29 +1,24 @@
-import os
 import re
-import glob
+import yaml
+import os
 
-from pywb.warcserver.index.indexsource import MementoIndexSource, RemoteIndexSource
-from pywb.warcserver.index.indexsource import WBMementoIndexSource
-from pywb.utils.loaders import load_yaml_config
+from pywb.utils.loaders import load
+from contextlib import closing
 
 
 # ============================================================================
 class WAMLoader(object):
+    DEFAULT_WA_FILE = 'pkg://webrecorder/config/_webarchives.yaml'
+
     STRIP_SCHEME = re.compile(r'https?://')
 
-    def __init__(self, index_file=None, base_dir=None,
-                 memento_cls=None, remote_cls=None, wb_memento_cls=None):
-        self.index_file = index_file or './webarchives.yaml'
-        self.base_dir = base_dir or './webrecorder/config/webarchives'
-        self.all_archives = {}
+    def __init__(self):
         self.replay_info = {}
 
-        self.memento_cls = memento_cls or MementoIndexSource
-        self.remote_cls = remote_cls or RemoteIndexSource
-        self.wb_memento_cls = wb_memento_cls or WBMementoIndexSource
+        webarchives_path = self.merge_webarchives()
 
         try:
-            self.load_all()
+            self.load_all(webarchives_path)
         except IOError:
             print('No Archives Loaded')
 
@@ -40,80 +35,66 @@ class WAMLoader(object):
 
                 return pk, orig_url, id_
 
-    def load_all(self):
-        for filename in self.load_from_index(self.base_dir, self.index_file):
-            data = load_yaml_config(filename)
-            res = self.process(data)
+    def load_all(self, webarchives_path):
+        wa_file = load(webarchives_path)
+        with closing(wa_file):
+            for doc in yaml.load_all(wa_file):
+                webarchives = doc['webarchives']
+                for pk, webarchive in webarchives.items():
+                    self.load_archive(pk, webarchive)
 
-    def load_from_index(self, base_dir, index_file):
-        config = load_yaml_config(os.path.join(base_dir, index_file))
-        for pattern in config['webarchive_index']:
-            full = os.path.join(base_dir, pattern)
-            return glob.glob(full)
+    def load_archive(self, pk, webarchive):
+        if 'apis' not in webarchive:
+            return False
 
-    def process(self, data):
-        webarchives = data['webarchives']
-        for pk, webarchive in webarchives.items():
-            if 'apis' not in webarchive:
-                continue
+        apis = webarchive['apis']
+        if 'wayback' not in apis:
+            return False
 
-            apis = webarchive['apis']
-            if 'wayback' not in apis:
-                continue
+        replay = apis['wayback'].get('replay', {})
+        replay_url = replay.get('raw')
 
-            replay = apis['wayback'].get('replay', {})
-            replay_url = replay.get('raw')
+        if not replay_url:
+            return False
 
-            if not replay_url:
-                continue
+        archive_name = webarchive.get('name')
+        archive_about = webarchive.get('about')
+        replay_prefix = self.STRIP_SCHEME.sub('', replay_url.split('{',1)[0])
+        collections = webarchive.get('collections')
 
-            archive_name = webarchive.get('name')
-            archive_about = webarchive.get('about')
-            replay_prefix = self.STRIP_SCHEME.sub('', replay_url.split('{',1)[0])
-            collections = webarchive.get('collections')
+        self.replay_info[pk] = {'replay_url': replay_url,
+                                'parse_collection': collections is not None,
+                                'replay_prefix': replay_prefix,
+                                'name': archive_name,
+                                'about': archive_about}
 
-            self.replay_info[pk] = {'replay_url': replay_url,
-                                    'parse_collection': collections is not None,
-                                    'replay_prefix': replay_prefix,
-                                    'name': archive_name,
-                                    'about': archive_about}
+        return True
 
-            if collections and isinstance(collections, list):
-                for coll in collections:
-                    coll_name = pk + ':' + coll['id']
-                    self.add_index(replay_url, apis, coll_name, coll['id'])
+    @classmethod
+    def merge_webarchives(cls, webarchives_file=None):
+        webarchives_file = webarchives_file or cls.DEFAULT_WA_FILE
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-            else:
-                coll = ''
-                if collections:
-                    if 'cdx' not in apis:
-                        # regex collections only supported with cdx for now
-                        continue
+        if webarchives_file.startswith('pkg://'):
+            webarchives_file = webarchives_file.replace('pkg://webrecorder', root_dir)
+            webarchives_file = webarchives_file.replace('/', os.path.sep)
 
-                    coll = '{src_coll}'
+        webarchives_dir = os.path.join(root_dir, 'config', 'webarchives', 'webarchives')
+        if not os.path.isdir(webarchives_dir):
+            return webarchives_file
 
-                self.add_index(replay_url, apis, pk, collection=coll)
+        if os.path.isfile(webarchives_file):
+            if os.path.getmtime(webarchives_file) > os.path.getmtime(webarchives_dir):
+                print('WAM list up-to-date')
+                return webarchives_file
 
-    def add_index(self, replay, apis, pk, collection=''):
-        replay = replay.replace('{collection}', collection)
-        index = None
+        with open(webarchives_file, 'wt') as out:
+            for filename in os.listdir(webarchives_dir):
+                out.write('---\n')
+                with open(os.path.join(webarchives_dir, filename)) as in_:
+                    out.write(in_.read())
+                    print('Merging ' + filename)
+                out.write('\n...\n')
 
-        if 'memento' in apis:
-            timegate = apis['memento']['timegate'].replace('{collection}', collection) + '{url}'
-            timemap = apis['memento']['timemap'].replace('{collection}', collection) + '{url}'
-            index = self.memento_cls(timegate, timemap, replay)
-        elif 'cdx' in apis:
-            query = apis['cdx']['query'].replace('{collection}', collection)
-            index = self.remote_cls(query, replay)
-
-        else:
-            index = self.wb_memento_cls('', '', replay)
-
-        if index:
-            self.all_archives[pk] = index
-
-
-# ============================================================================
-if __name__ == "__main__":
-    WAMImporter('webarchives.yaml', '../config/webarchives')
+        return webarchives_file
 

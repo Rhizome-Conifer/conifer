@@ -62,7 +62,9 @@ class PyTest(TestCommand):
 class Install(install):
     def initialize_options(self):
         from webrecorder.standalone.assetsutils import default_build
+        from webrecorder.load.wamloader import WAMLoader
         default_build()
+        WAMLoader.merge_webarchives()
         generate_git_hash_py('webrecorder')
         super(Install, self).initialize_options()
 

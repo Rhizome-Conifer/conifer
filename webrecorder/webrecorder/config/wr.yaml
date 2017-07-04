@@ -58,7 +58,7 @@ url_templates:
 
     record: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}'
     extract: '{record_host}/record/extract/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&param.ip={ip}&sources={sources}&inv_sources={inv_sources}&param.recorder.patch_rec={patch_rec}'
-    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&param.recorder.rec={rec}&param.rec=*&param.ip={ip}'
+    patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&filter=!status:[45][\d][\d]&param.recorder.rec={rec}&param.rec=*&param.ip={ip}'
 
     snapshot: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=resource'
 

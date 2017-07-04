@@ -15,7 +15,7 @@ from pywb.utils.loaders import load_yaml_config
 
 from webrecorder.utils import load_wr_config, init_logging
 
-from webrecorder.load.wamloader import WAMLoader
+from webrecorder.load.wamsourceloader import WAMSourceLoader
 
 import os
 import json
@@ -58,20 +58,22 @@ class WRWarcServer(object):
         live_rec = DefaultResourceHandler(
                         SimpleAggregator(
                             {'live': LiveIndexSource()},
-                        ), warc_url)
+                        ), warc_url,
+                        cache_proxy_url)
 
         # Extractable archives (all available)
-        wam_loader = WAMLoader(memento_cls=ProxyMementoIndexSource,
-                               remote_cls=ProxyRemoteIndexSource,
-                               wb_memento_cls=ProxyWBMementoIndexSource)
+        wam_loader = WAMSourceLoader(memento_cls=ProxyMementoIndexSource,
+                                     remote_cls=ProxyRemoteIndexSource,
+                                     wb_memento_cls=ProxyWBMementoIndexSource)
 
-        extractable_archives = wam_loader.all_archives
+        extractable_archives = wam_loader.sources
 
         # Extract Source
         extractor = GeventTimeoutAggregator(extractable_archives, timeout=timeout)
         extract_primary = DefaultResourceHandler(
                             extractor,
-                            warc_url)
+                            warc_url,
+                            cache_proxy_url)
 
         # Patch fallback archives
         fallback_archives = self.filter_archives(extractable_archives,
@@ -88,18 +90,24 @@ class WRWarcServer(object):
 
         extract_other = DefaultResourceHandler(
                             extractor2,
-                            warc_url)
+                            warc_url,
+                            cache_proxy_url)
 
         patcher = GeventTimeoutAggregator(patch_archives, timeout=timeout)
         patch_rec = DefaultResourceHandler(
                          patcher,
-                         warc_url)
+                         warc_url,
+                         cache_proxy_url)
 
         # Single Rec Replay
-        replay_rec = DefaultResourceHandler(rec_redis_source, warc_url)
+        replay_rec = DefaultResourceHandler(rec_redis_source,
+                                            warc_url,
+                                            cache_proxy_url)
 
         # Coll Replay
-        replay_coll = DefaultResourceHandler(coll_redis_source, warc_url)
+        replay_coll = DefaultResourceHandler(coll_redis_source,
+                                             warc_url,
+                                             cache_proxy_url)
 
         app.add_route('/live', live_rec)
         app.add_route('/extract', HandlerSeq([extract_primary, extract_other, replay_rec]))
@@ -129,26 +137,25 @@ class ProxyMementoIndexSource(MementoIndexSource):
     def __init__(self, timegate_url, timemap_url, replay_url):
         timegate_url = PROXY_PREFIX + timegate_url
         timemap_url = PROXY_PREFIX + timemap_url
-        replay_url = PROXY_PREFIX + replay_url
 
         super(ProxyMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
+
+
+# ============================================================================
+class ProxyWBMementoIndexSource(WBMementoIndexSource):
+    def __init__(self, timegate_url, timemap_url, replay_url):
+        timegate_url = PROXY_PREFIX + timegate_url
+        timemap_url = PROXY_PREFIX + timemap_url
+
+        super(ProxyWBMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
 
 
 # ============================================================================
 class ProxyRemoteIndexSource(RemoteIndexSource):
     def __init__(self, api_url, replay_url, **kwargs):
         api_url = PROXY_PREFIX + api_url
-        replay_url = PROXY_PREFIX + replay_url
 
         super(ProxyRemoteIndexSource, self).__init__(api_url, replay_url, **kwargs)
-
-
-# ============================================================================
-class ProxyWBMementoIndexSource(WBMementoIndexSource):
-    def __init__(self, timegate_url, timemap_url, replay_url):
-        replay_url = PROXY_PREFIX + replay_url
-
-        super(ProxyWBMementoIndexSource, self).__init__(timegate_url, timemap_url, replay_url)
 
 
 # ============================================================================

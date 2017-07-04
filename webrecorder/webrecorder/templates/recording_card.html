@@ -5,7 +5,7 @@
 {% set is_patch = recording.rec_type == 'patch' %}
 
 
-{% if can_write() or bookmark_count > 0 %}
+{% if can_write() or bookmark_count > 0 or is_patch %}
 <div class="card" data-recording-id="{{ recording.id }}" data-recording-title="{{ recording.title|urlencode }}">
     <div class="checkbox-column">
         <input type="checkbox">
