@@ -22,7 +22,11 @@ function renderExtractDropdown() {
     sourcesDropdown.querySelector(".ra-source").innerHTML = sourceTarget || "Empty";
     sourcesDropdown.querySelector(".ra-source-name").innerHTML = sourceArchiveDisplay;
     sourcesDropdown.querySelector(".ra-ts").innerHTML = sourceTsStr;
-    sourcesDropdown.querySelector(".ra-collection").innerHTML = targetCollection || getStorage("__wr_currCollTitle") || DEFAULT_RECORDING_SESSION_NAME;
+
+    var collectionEle = sourcesDropdown.querySelector(".ra-collection");
+    if (!collectionEle.hasAttribute("data-value-encoded")) {
+        collectionEle.innerHTML = targetCollection || getStorage("__wr_currCollTitle") || DEFAULT_RECORDING_SESSION_NAME;
+    }
 }
 
 function clearWidget() {
