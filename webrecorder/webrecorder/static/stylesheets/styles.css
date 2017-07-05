@@ -908,7 +908,11 @@ h1 button.edit-title {
 /* Hack for FF flexbox issue, add up recording header, buttons and margin */
 @-moz-document url-prefix() {
     .recording-selector {
-        height: calc(100% - (35px + 30px + 8px));
+        height: calc(100% - (35px + 9px));
+    }
+
+    div + .recording-selector {
+        height: calc(100% - (35px + 30px + 9px));
     }
 }
 
