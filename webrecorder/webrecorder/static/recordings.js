@@ -1678,8 +1678,11 @@ $(function() {
             var recordingId = wbinfo.info.rec_id;
             var attributes = {};
 
-            attributes.timestamp = state.ts;
-            setTimestamp(state.ts);
+            if (state.ts) {
+                attributes.timestamp = state.ts;
+                setTimestamp(state.ts);
+            }
+
             attributes.title = state.title;
 
             attributes.url = state.url;
