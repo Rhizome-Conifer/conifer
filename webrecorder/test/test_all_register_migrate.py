@@ -1,10 +1,10 @@
 from .testutils import FullStackTests
 
 from mock import patch
+from itertools import count
 
 import re
 import os
-import time
 
 
 # ============================================================================
@@ -95,10 +95,12 @@ class TestRegisterMigrate(FullStackTests):
             assert v.decode('utf-8').endswith('/someuser/test-migrate/abc/' + n.decode('utf-8'))
 
     def test_renamed_temp_to_perm(self):
-        time.sleep(2.0)
-
         user_dir = os.path.join(self.warcs_dir, 'someuser')
-        assert len(os.listdir(user_dir)) == 1
+
+        def assert_one_dir():
+            assert len(os.listdir(user_dir)) == 1
+
+        self.sleep_try(0.1, 10.0, assert_one_dir)
 
     def test_logged_in_user_info(self):
         res = self.testapp.get('/someuser')
@@ -152,10 +154,46 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/new-coll')
 
         assert 'Created collection' in res.text
+        assert 'New Coll' in res.text
 
         # ensure csrf token present
         m = re.search('name="csrf" value="([^\"]+)"', res.text)
         assert m
+
+    def test_logged_in_create_coll_dupe_name(self):
+        params = {'title': 'New Coll',
+                  'public': 'on'
+                 }
+
+        res = self.testapp.post('/_create', params=params)
+
+        res.headers['Location'] == 'http://localhost:80/'
+
+        res = self.testapp.get('/someuser/new-coll-2')
+
+        assert 'Created collection' in res.text
+        assert 'New Coll 2' in res.text
+
+        # ensure csrf token present
+        m = re.search('name="csrf" value="([^\"]+)"', res.text)
+        assert m
+
+    def test_logged_in_create_coll_and_rename_to_dupe_name(self):
+        params = {'title': 'Other Coll',
+                  'public': 'off'
+                 }
+
+        res = self.testapp.post('/_create', params=params)
+
+        res.headers['Location'] == 'http://localhost:80/'
+
+        res = self.testapp.get('/someuser/other-coll')
+
+        assert 'Other Coll' in res.text
+
+        res = self.testapp.post('/api/v1/collections/other-coll/rename/New Coll?user=someuser')
+
+        assert res.json == {'title': 'New Coll 3', 'coll_id': 'new-coll-3', 'rec_id': '*'}
 
     def test_logged_in_user_info_2(self):
         res = self.testapp.get('/someuser')

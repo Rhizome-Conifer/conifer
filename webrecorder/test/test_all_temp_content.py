@@ -5,12 +5,12 @@ from .testutils import FullStackTests
 
 import glob
 import os
-import time
 
 from fakeredis import FakeStrictRedis
 from mock import patch
 
 from io import BytesIO
+from itertools import count
 
 from pywb.warcserver.index.cdxobject import CDXObject
 from pywb.indexer.cdxindexer import write_cdx_index
@@ -110,6 +110,7 @@ class TestTempContent(FullStackTests):
     def test_anon_record_1(self):
         res = self.testapp.get('/_new/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
         assert res.status_code == 302
+        assert res.location.endswith('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
         res = res.follow()
 
         res.charset = 'utf-8'
@@ -190,10 +191,34 @@ class TestTempContent(FullStackTests):
         self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2'])
 
         anon_dir = os.path.join(self.warcs_dir, user)
-        #assert set(os.listdir(anon_dir)) == set(['my-recording', 'my-rec2'])
         assert len(os.listdir(anon_dir)) == 2
 
         warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
+        assert self.redis.hlen(warc_key) == 1
+
+    def test_anon_record_3(self):
+        res = self.testapp.get('/$record/temp/my-recording/mp_/http://httpbin.org/get?good=far')
+        assert res.status_code == 302
+        assert res.location.endswith('/temp/my-recording-2/record/mp_/http://httpbin.org/get?good=far')
+        res = res.follow()
+
+        res.charset = 'utf-8'
+
+        assert '"good": "far"' in res.text, res.text
+
+        assert self.testapp.cookies['__test_sesh'] != ''
+
+        # Add as page
+        page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?good=far', 'ts': '2016010203000000'}
+        res = self.testapp.post('/api/v1/recordings/my-recording-2/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
+
+        assert res.json == {}
+
+        user = self.anon_user
+
+        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'my-recording-2'])
+
+        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-recording-2')
         assert self.redis.hlen(warc_key) == 1
 
     def test_anon_unicode_record_1(self):
@@ -218,10 +243,12 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'вэбрекордэр'])
+        all_recs = ['my-recording', 'my-recording-2', 'my-rec2', 'вэбрекордэр']
+
+        self._assert_rec_keys(user, 'temp', all_recs)
 
         anon_dir = os.path.join(self.warcs_dir, user)
-        assert len(os.listdir(anon_dir)) == 3
+        assert len(os.listdir(anon_dir)) == len(all_recs)
 
         warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='вэбрекордэр')
         assert self.redis.hlen(warc_key) == 1
@@ -331,7 +358,7 @@ class TestTempContent(FullStackTests):
         write_cdx_index(cdxout, warcin, 'temp.warc.gz', include_all=True, cdxj=True)
 
         cdx = [CDXObject(cdx) for cdx in cdxout.getvalue().rstrip().split(b'\n')]
-        assert len(cdx) == 6
+        assert len(cdx) == 8
 
         # response
         cdx[0]['url'] = 'http://httpbin.org/get?food=bar'
@@ -349,8 +376,41 @@ class TestTempContent(FullStackTests):
         cdx[3]['url'] = 'http://httpbin.org/get?bood=far'
         cdx[3]['mime'] = '-'
 
-    def test_anon_delete_rec(self):
-        #time.sleep(0.1)
+    def test_rename_rec(self):
+        res = self.testapp.post('/api/v1/recordings/my-rec2/rename/My%20Recording?user={user}&coll=temp'.format(user=self.anon_user))
+
+        assert res.json == {'title': 'My Recording 3', 'rec_id': 'my-recording-3', 'coll_id': 'temp'}
+
+        all_recs = ['my-recording', 'my-recording-2', 'вэбрекордэр', 'my-recording-3']
+
+        # ensure keys up-to-date
+        self._assert_rec_keys(self.anon_user, 'temp', all_recs)
+
+        # rec replay
+        res = self._get_anon('/temp/my-recording-3/replay/mp_/http://httpbin.org/get?bood=far')
+        res.charset = 'utf-8'
+
+        assert '"bood": "far"' in res.text, res.text
+
+        # update dyn stats
+        self._add_dyn_stat(self.anon_user, 'temp', 'my-recording-3', 'http://httpbin.org/get?bood=far')
+        self._assert_rec_keys(self.anon_user, 'temp', all_recs)
+
+        # coll replay
+        res = self._get_anon('/temp/mp_/http://httpbin.org/get?bood=far')
+        res.charset = 'utf-8'
+
+        assert '"bood": "far"' in res.text, res.text
+
+        # update dyn stats
+        self._add_dyn_stat(self.anon_user, 'temp', '<all>', 'http://httpbin.org/get?bood=far')
+        self._assert_rec_keys(self.anon_user, 'temp', all_recs)
+
+
+    def test_anon_delete_recs(self):
+        res = self.testapp.get('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
+        recs = res.json['collection']['recordings']
+        assert set([rec['id'] for rec in recs]) == set(['my-recording', 'my-recording-2', 'my-recording-3', 'вэбрекордэр'])
 
         res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user))
 
@@ -360,24 +420,32 @@ class TestTempContent(FullStackTests):
 
         assert res.json == {'deleted_id': 'вэбрекордэр'}
 
+        res = self.testapp.delete('/api/v1/recordings/my-recording-2?user={user}&coll=temp'.format(user=self.anon_user))
+
+        assert res.json == {'deleted_id': 'my-recording-2'}
+
         user = self.anon_user
 
-        time.sleep(3.0)
+        res = self.testapp.get('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
+        recs = res.json['collection']['recordings']
+        assert set([rec['id'] for rec in recs]) == set(['my-recording-3'])
 
-        self._assert_size_all_eq(user, 'temp', 'my-rec2')
+        self._assert_size_all_eq(user, 'temp', 'my-recording-3')
 
-        anon_dir = os.path.join(self.warcs_dir, user)
-        #assert set(os.listdir(anon_dir)) == set(['my-rec2'])
-        assert len(os.listdir(anon_dir)) == 1
-
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
+        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-recording-3')
         assert self.redis.hlen(warc_key) == 1
 
-        self.dyn_stats = [stat for stat in self.dyn_stats
-                           if ('my-recording' not in stat and
-                               'вэбрекордэр' not in stat)]
+        def assert_one_warc():
+            anon_dir = os.path.join(self.warcs_dir, user)
+            assert len(os.listdir(anon_dir)) == 1
 
-        self._assert_rec_keys(user, 'temp', ['my-rec2'])
+        self.sleep_try(0.1, 10.0, assert_one_warc)
+
+        self.dyn_stats = [stat for stat in self.dyn_stats
+                           if ('my-recording:' not in stat and
+                               'вэбрекордэр:' not in stat)]
+
+        self._assert_rec_keys(user, 'temp', ['my-recording-3'])
 
         res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user), status=404)
 
@@ -431,12 +499,6 @@ class TestTempContent(FullStackTests):
         print(res.headers['Location'])
         assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/mp_/http://example.com/')
 
-    #def test_edge_anon_not_rec_name(self):
-    #    res = self._get_anon('/temp/example.com/')
-    #    res.charset = 'utf-8'
-    #    assert '"http://example.com/"' in res.text
-    #    assert '<iframe' in res.text
-
     def test_error_anon_not_found_recording_url(self):
         res = self._get_anon('/temp/my-recording/replay/mp_/http://example.com/', status=404)
         assert res.status_code == 404
@@ -449,9 +511,9 @@ class TestTempContent(FullStackTests):
         sesh_redis = FakeStrictRedis.from_url('redis://localhost:6379/0')
         sesh_redis.flushdb()
 
-        time.sleep(4.0)
+        def assert_empty_keys():
+            assert set(self.redis.keys()) == set(['h:roles', 'h:defaults', 'h:temp-usage'])
+            assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
 
-        assert set(self.redis.keys()) == set(['h:roles', 'h:defaults', 'h:temp-usage'])
+        self.sleep_try(0.1, 10.0, assert_empty_keys)
 
-        assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
-        #assert os.listdir(os.path.join(self.warcs_dir, 'anon')) == []

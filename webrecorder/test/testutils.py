@@ -5,6 +5,8 @@ from pywb.warcserver.test.testutils import TempDirTests, to_path
 
 import webtest
 import os
+import itertools
+import time
 
 from warcio.bufferedreaders import ChunkedDataReader
 from io import BytesIO
@@ -77,6 +79,19 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     @classmethod
     def get_curr_dir(cls):
         return os.path.dirname(os.path.realpath(__file__))
+
+
+    @classmethod
+    def sleep_try(cls, sleep_interval, max_time, test_func):
+        max_count = float(max_time) / sleep_interval
+        for counter in itertools.count():
+            try:
+                time.sleep(sleep_interval)
+                test_func()
+                return
+            except:
+                if counter >= max_count:
+                    raise
 
 
 # ============================================================================
