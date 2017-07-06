@@ -294,18 +294,20 @@ var RecordingSelector = (function() {
 
         $("#num-recs").text($(".card").length);
 
-        $(".card").each(function (idx, ele) {
-            var $recDetails = $(ele).find(".recording-details");
-            $recDetails.css("height", $recDetails.height());
+        // wait until everything is loaded before setting heights
+        $(window).load(function (){
+            $(".card").each(function (idx, ele) {
+                var $recDetails = $(ele).find(".recording-details");
+                $recDetails.css("height", $recDetails.height());
+            });
+
+            if (getStorage("__wr_showRecDetails") === "false") {
+                toggleDetails();
+            }
+
+            // wait an additional frame before adding animations
+            window.requestAnimationFrame(function (){ $(".recording-bin").addClass("animate"); });
         });
-
-        if (getStorage("__wr_showRecDetails") === "false") {
-            toggleDetails();
-        }
-
-        // wait one frame before adding animations
-        window.requestAnimationFrame(function (){ $(".recording-bin").addClass("animate"); });
-
 
         updateRecordingFilterList(undefined, false);
     }
