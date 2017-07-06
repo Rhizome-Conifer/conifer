@@ -901,8 +901,9 @@ h1 button.edit-title {
     left: 1px;
     bottom: 1px;
     height: 30px;
-    width: calc(100% - 2px);
+    width: calc(100% - 17px);
     background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+    pointer-events: none;
 }
 
 /* Hack for FF flexbox issue, add up recording header, buttons and margin */
@@ -997,7 +998,10 @@ div.filter-label {
 
 .content-column {
     display: inline-block;
-    width: 164px;
+    width: 100%;
+}
+.recording-content {
+    width: calc(100% - 20px);
 }
 
 .card .sub-menu {
@@ -1060,7 +1064,6 @@ div.filter-label {
 }
 .recording-details {
     overflow: hidden;
-    margin-right: 5px;
 }
 .recording-details.closed {
     height: 0 !important;
@@ -1093,7 +1096,6 @@ div.filter-label {
     flex-grow: 4;
     -ms-flex: 4 0 auto;
     text-align: right;
-    margin-right: 15px;
 }
 .recording-fn-row > *:last-child > a {
     padding: 5px;
