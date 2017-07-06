@@ -1,10 +1,12 @@
-from bottle import request, response
+import os
+import json
+
+from bottle import request
 from os.path import expandvars
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.basecontroller import BaseController
 from six.moves.urllib.parse import quote
-import json
 
 
 # ============================================================================
@@ -34,6 +36,7 @@ class LoginController(BaseController):
     def __init__(self, *args, **kwargs):
         config = kwargs.get('config')
 
+        self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
         invites = expandvars(config.get('invites_enabled', 'true')).lower()
         self.invites_enabled = invites in ('true', '1', 'yes')
 
@@ -189,6 +192,7 @@ class LoginController(BaseController):
             decoy_name = self.post_get('full_name')
             confirm_password = self.post_get('confirmpassword')
             invitecode = self.post_get('invite')
+            opt_in_mailer = self.post_get('announce_mailer') == '1'
 
             redir_to = REGISTER_PATH
 
@@ -240,8 +244,15 @@ class LoginController(BaseController):
                               description=desc,
                               host=host)
 
-                self.flash_message('A confirmation e-mail has been sent to <b>{0}</b>. \
-    Please check your e-mail to complete the registration!'.format(username), 'warning')
+                self.flash_message(
+                    ('A confirmation e-mail has been sent to <b>{0}</b>. '
+                     'Please check your e-mail to complete the registration!').format(username),
+                    'warning')
+
+                # add to announce list if user opted in
+                if opt_in_mailer and self.announce_list:
+                    self.manager.add_to_mailing_list(username, email, name,
+                                                     list_endpoint=self.announce_list)
 
                 redir_to = '/'
                 if self.invites_enabled:

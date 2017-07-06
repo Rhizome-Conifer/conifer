@@ -67,7 +67,7 @@ class LoginManagerMixin(object):
 
         mailing_list = os.environ.get('MAILING_LIST', '').lower()
         self.mailing_list = mailing_list in ('true', '1', 'yes')
-        self.list_endpoint = os.environ.get('MAILING_LIST_ENDPOINT', '')
+        self.default_list_endpoint = os.environ.get('MAILING_LIST_ENDPOINT', '')
         self.list_key = os.environ.get('MAILING_LIST_KEY', '')
         self.list_removal_endpoint = os.path.expandvars(
                                         os.environ.get('MAILING_LIST_REMOVAL', ''))
@@ -79,15 +79,19 @@ class LoginManagerMixin(object):
         self.rate_limit_max = int(os.environ.get('RATE_LIMIT_MAX', 0))
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
 
-    def add_to_mailing_list(self, username, email, name):
+    def add_to_mailing_list(self, username, email, name, list_endpoint=None):
         """3rd party mailing list subscription"""
-        if not self.list_endpoint or not self.list_key:
+        if not (list_endpoint or self.default_list_endpoint) or not self.list_key:
             print('MAILING_LIST is turned on, but required fields are '
                   'missing.')
             return
 
+        # if no endpoint provided, use default
+        if list_endpoint is None:
+            list_endpoint = self.default_list_endpoint
+
         try:
-            res = requests.post(self.list_endpoint,
+            res = requests.post(list_endpoint,
                                 auth=('nop', self.list_key),
                                 data=self.payload.format(
                                     email=email,

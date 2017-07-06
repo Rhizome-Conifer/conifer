@@ -232,6 +232,26 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
 /* End homepage */
 
 
+/* registration */
+
+.announce-mailer {
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: space-around;
+    -ms-flex-pack: justify;
+    align-items: center;
+    -ms-flex-align: center;
+}
+.announce-mailer input {
+    margin: 0;
+    font-size: 150%;
+}
+.announce-mailer label {
+    font-weight: 400;
+    width: calc(100% - 50px);
+    margin: 0;
+}
+
 /*
  * FAQ
  *

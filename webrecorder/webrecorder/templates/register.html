@@ -92,6 +92,13 @@
                 <div class="help-block with-errors"></div>
             </div>
 
+            {% if get_announce_list() %}
+            <div class="form-group announce-mailer">
+                <input type="checkbox" id="mailer-opt-in" name="announce_mailer" value="1">
+                <label for="mailer-opt-in">Update me on new features.</label>
+            </div>
+            {% endif %}
+
             <div class="move-temp-cont">
             {% include 'move_temp_form.html' %}
             </div>
