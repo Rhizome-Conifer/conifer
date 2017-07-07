@@ -7,7 +7,7 @@ RUN  apt-get update \
 
 WORKDIR /tmp
 
-ARG VERSION=1.10.2
+ARG VERSION=1.12.0
 
 RUN wget http://nginx.org/download/nginx-${VERSION}.tar.gz
 
