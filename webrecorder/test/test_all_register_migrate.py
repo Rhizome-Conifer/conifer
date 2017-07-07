@@ -213,6 +213,11 @@ class TestRegisterMigrate(FullStackTests):
         res.charset = 'utf-8'
         assert 'Example Domain' in res.text
 
+    def test_logged_in_download(self):
+        res = self.testapp.head('/someuser/new-coll/$download')
+
+        assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''new-coll-")
+
     def test_logout_1(self):
         res = self.testapp.get('/_logout')
         assert res.headers['Location'] == 'http://localhost:80/'
@@ -232,6 +237,10 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
         res.charset = 'utf-8'
         assert 'Example Domain' in res.text
+
+    def test_error_logged_out_download(self):
+        res = self.testapp.get('/someuser/new-coll/$download', status=404)
+        assert 'No such page' in res.text
 
     def test_error_logged_out_no_coll(self):
         res = self.testapp.get('/someuser/test-migrate', status=404)

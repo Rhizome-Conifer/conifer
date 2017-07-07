@@ -76,6 +76,8 @@ class DownloadController(BaseController):
         return self.create_warcinfo(user, title, metadata, recording, filename)
 
     def handle_download(self, user, coll, rec):
+        self.manager.assert_can_write(user, coll)
+
         collection = self.manager.get_collection(user, coll, rec)
         if not collection:
             self._raise_error(404, 'Collection not found',
