@@ -354,6 +354,9 @@ class ContentController(BaseController, RewriterApp):
 
         rec = self._create_new_rec(user, coll, rec_title, mode)
 
+        if mode.startswith('extract:'):
+            patch_rec = self._create_new_rec(user, coll, self.patch_of_name(rec_title), mode)
+
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
                                                              coll=coll,
                                                              rec=rec,
@@ -380,6 +383,12 @@ class ContentController(BaseController, RewriterApp):
                                                no_dupe=no_dupe)
         rec = result['id']
         return rec
+
+    def patch_of_name(self, name, is_id=False):
+        if not is_id:
+            return 'Patch of ' + name
+        else:
+            return 'patch-of-' + name
 
     def handle_routing(self, wb_url, user, coll, rec, type,
                        is_embed=False,
@@ -426,23 +435,27 @@ class ContentController(BaseController, RewriterApp):
 
             raise HTTPError(404, 'No Such Collection')
 
+        patch_rec = ''
+
         if not_found:
             title = rec
 
             if type in self.MODIFY_MODES:
                 rec = self._create_new_rec(user, coll, title, type, no_dupe=True)
 
+            # create patch recording as well
+            if inv_sources and inv_sources != '*':
+                patch_rec = self._create_new_rec(user, coll, self.patch_of_name(title),
+                                                 mode='patch',
+                                                 no_dupe=True)
+
             self._redir_if_sanitized(rec, title, wb_url)
 
             if type == 'replay':
                 raise HTTPError(404, 'No Such Recording')
 
-        patch_rec = ''
-
-        if inv_sources and inv_sources != '*':
-            patch_rec = self._create_new_rec(user, coll, 'Patch of ' + rec,
-                                             mode='patch',
-                                             no_dupe=True)
+        elif inv_sources and inv_sources != '*':
+            patch_rec = self.patch_of_name(rec, True)
 
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'], safe='/:')
 
