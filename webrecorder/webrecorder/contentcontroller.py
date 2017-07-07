@@ -180,7 +180,7 @@ class ContentController(BaseController, RewriterApp):
 
         # CONTENT ROUTES
         # Record
-        @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<rec:path>/record/<wb_url:path>', method='ANY')
         def do_record(user, coll, rec, wb_url):
             request.path_shift(4)
 
@@ -194,7 +194,7 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_routing(wb_url, user, coll, rec, type='patch', redir_route='patch')
 
         # Extract
-        @self.app.route('/<user>/<coll>/<rec>/extract\:<archive>/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<rec:path>/extract\:<archive>/<wb_url:path>', method='ANY')
         def do_extract_patch_archive(user, coll, rec, wb_url, archive):
             request.path_shift(4)
 
@@ -203,7 +203,7 @@ class ContentController(BaseController, RewriterApp):
                                        inv_sources=archive,
                                        redir_route='extract:' + archive)
 
-        @self.app.route('/<user>/<coll>/<rec>/extract_only\:<archive>/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<rec:path>/extract_only\:<archive>/<wb_url:path>', method='ANY')
         def do_extract_only_archive(user, coll, rec, wb_url, archive):
             request.path_shift(4)
 
@@ -212,7 +212,7 @@ class ContentController(BaseController, RewriterApp):
                                        inv_sources='*',
                                        redir_route='extract_only:' + archive)
 
-        @self.app.route('/<user>/<coll>/<rec>/extract/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<rec:path>/extract/<wb_url:path>', method='ANY')
         def do_extract_all(user, coll, rec, wb_url):
             request.path_shift(4)
 
