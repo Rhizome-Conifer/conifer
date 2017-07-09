@@ -205,10 +205,10 @@ class CollsController(BaseController):
             return self.get_collection_info_for_view(user, coll, rec_list)
 
     def get_collection_info_for_view(self, user, coll, rec_list=None):
+        self.redir_host()
         result = self.get_collection_info(user, coll)
         if result.get('error_message'):
             self._raise_error(404, 'Collection not found')
-
 
         if self.manager.get_curr_user() == user:
             result['collections'] = self.manager.get_collections(self.manager.get_curr_user())

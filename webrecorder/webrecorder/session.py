@@ -28,6 +28,7 @@ class Session(object):
         self.should_delete = False
         self.should_save = False
         self.should_renew = False
+        self.should_copy_cookie = False
 
         self.is_restricted = is_restricted
 
@@ -85,7 +86,8 @@ class Session(object):
         self.is_restricted = True
         self.dura_type = 'restricted'
         self.ttl = -2
-        self.save()
+        self.should_copy_cookie = True
+        self.should_save = False
 
     def save(self):
         self.should_save = True
@@ -281,10 +283,12 @@ class RedisSessionMiddleware(CookieGuard):
             set_cookie = self.should_set_cookie(session)
 
             if set_cookie or session.should_save:
-                with redis_pipeline(self.redis) as pi:
-                    self._update_redis_and_cookie(pi, set_cookie, session, headers)
+                self._update_redis_and_cookie(set_cookie, session, headers)
 
     def should_set_cookie(self, session):
+        if session.should_copy_cookie:
+            return True
+
         # new or expired session, set if saving session
         if session.ttl < 0:
             return session.should_save
@@ -303,27 +307,29 @@ class RedisSessionMiddleware(CookieGuard):
 
         return False
 
-    def _update_redis_and_cookie(self, pi, set_cookie, session, headers):
+    def _update_redis_and_cookie(self, set_cookie, session, headers):
         duration = self.durations[session.dura_type]['total']
 
         if session.should_save:
-            data = base64.b64encode(pickle.dumps(session._sesh))
+            with redis_pipeline(self.redis) as pi:
+                data = base64.b64encode(pickle.dumps(session._sesh))
 
-            ttl = session.ttl
-            if ttl < 0:
-                ttl = duration
+                ttl = session.ttl
+                if ttl < 0:
+                    ttl = duration
 
-            pi.setex(session.key, ttl, data)
+                pi.setex(session.key, ttl, data)
+
+                if set_cookie:
+                    self.track_long_term(session, pi)
+
+                # set redis duration
+                pi.expire(session.key, duration)
 
         if not set_cookie:
             return
 
-        self.track_long_term(session)
-
         expires = datetime.utcnow() + timedelta(seconds=duration)
-
-        # set redis duration
-        pi.expire(session.key, duration)
 
         # set cookie
         sesh_cookie = self.id_to_signed_cookie(session['id'],
@@ -341,7 +347,7 @@ class RedisSessionMiddleware(CookieGuard):
 
         headers.append(('Set-Cookie', value))
 
-    def track_long_term(self, session):
+    def track_long_term(self, session, pi):
         if session.dura_type != 'long':
             return
 
@@ -353,7 +359,7 @@ class RedisSessionMiddleware(CookieGuard):
             session['is_long'] = False
             return
 
-        self.redis.lpush(self.long_sessions_key.format(username), session.key)
+        pi.lpush(self.long_sessions_key.format(username), session.key)
 
     def clear_long_term(self, username):
         list_key = self.long_sessions_key.format(username)

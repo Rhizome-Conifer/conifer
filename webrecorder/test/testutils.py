@@ -96,13 +96,13 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
 
 # ============================================================================
 class FullStackTests(BaseWRTests):
+    runner_env_params = {'TEMP_SLEEP_CHECK': '1',
+                         'APP_HOST': '',
+                         'CONTENT_HOST': ''}
+
     @classmethod
     def custom_init(cls, kwargs):
-        env_params = {'TEMP_SLEEP_CHECK': '1',
-                      'APP_HOST': '',
-                      'CONTENT_HOST': ''}
-
-        cls.runner = FullStackRunner(app_port=-1, env_params=env_params)
+        cls.runner = FullStackRunner(app_port=-1, env_params=cls.runner_env_params)
 
     @classmethod
     def _get_dechunked(cls, stream):
