@@ -414,11 +414,16 @@ var BookmarksTable = (function() {
         }
     }
 
+    // escape speicial regex characters
+    var escapeRegex = function (regex) {
+        return regex.replace(/[-[\]{}()*+?.,\\^$|#]/g, "\\$&");
+    }
+
     var filterByRecordings = function(recordingTitles) {
-        var recordingColumnIndex = $('[data-recording-column-index]').attr('data-recording-column-index');
+        var recordingColumnIndex = $("[data-recording-column-index]").attr("data-recording-column-index");
 
         // trim trailing spaces
-        recordingTitles = recordingTitles.map(function (t) { return decodeURIComponent(t).replace(/\s+$/g, ''); });
+        recordingTitles = recordingTitles.map(function (t) { return escapeRegex(decodeURIComponent(t).trim()); });
 
         if (recordingTitles.length) {
             var regex = "^(" + recordingTitles.join("|") + ")$";
