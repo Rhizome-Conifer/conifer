@@ -132,6 +132,13 @@
     flex-grow: 1;
     -ms-flex: 1 0 auto;
 }
+#replay_iframe {
+    transition: padding .3s ease-in-out;
+}
+/* toolbin bodyclass */
+.wr-toolbin-open #replay_iframe {
+    padding-top: 40px;
+}
 
 /* End global */
 
