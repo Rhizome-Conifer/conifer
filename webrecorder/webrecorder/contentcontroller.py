@@ -514,7 +514,6 @@ class ContentController(BaseController, RewriterApp):
             return
 
         is_top_frame = (wb_url.mod == self.frame_mod or wb_url.mod.startswith('$br:'))
-        environ['is_content'] = True
 
         if is_top_frame:
             if self.is_content_request():
@@ -621,7 +620,7 @@ class ContentController(BaseController, RewriterApp):
         return kwargs
 
     def get_host_prefix(self, environ):
-        if self.content_host and environ.get('is_content'):
+        if self.content_host:
             return environ['wsgi.url_scheme'] + '://' + self.content_host
         else:
             return super(ContentController, self).get_host_prefix(environ)
