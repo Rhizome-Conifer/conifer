@@ -1,13 +1,8 @@
 from .testutils import FullStackTests
-import gevent
 
 
 # ============================================================================
 class TestExtractContent(FullStackTests):
-    @classmethod
-    def setup_class(cls, **kwargs):
-        super(TestExtractContent, cls).setup_class(**kwargs)
-
     def test_anon_extract_1(self):
         res = self.testapp.get('/{user}/temp/Extract Test/extract:ia/1996/http://geocities.com/'.format(user=self.anon_user))
         assert res.status_code == 302

@@ -507,13 +507,19 @@ class ContentController(BaseController, RewriterApp):
             return handle_error(ue.status_code, type, ue.url, ue.msg)
 
     def check_if_content(self, wb_url, environ):
-        if (wb_url.is_replay()):
-            environ['is_content'] = True
+        if not wb_url.is_replay():
+            return
 
-            if (self.content_host and
-                not self.is_content_request() and
-                wb_url.mod != '' and
-                not wb_url.mod.startswith('$br:')):
+        if not self.content_host:
+            return
+
+        is_top_frame = (wb_url.mod == self.frame_mod or wb_url.mod.startswith('$br:'))
+
+        if is_top_frame:
+            if self.is_content_request():
+                self.redir_host(self.app_host)
+        else:
+            if not self.is_content_request():
                 self.redir_host(self.content_host)
 
     def _filter_headers(self, type, status_headers):
@@ -614,7 +620,7 @@ class ContentController(BaseController, RewriterApp):
         return kwargs
 
     def get_host_prefix(self, environ):
-        if self.content_host and environ.get('is_content'):
+        if self.content_host:
             return environ['wsgi.url_scheme'] + '://' + self.content_host
         else:
             return super(ContentController, self).get_host_prefix(environ)
