@@ -13,12 +13,18 @@ function renderExtractWidget(ts, source) {
     recorderUI.querySelector(".sources-widget .ts").innerHTML = ts;
 
     if (typeof source !== "undefined") {
-        recorderUI.querySelector(".sources-widget .mnt-label").innerHTML = (wrExtractModeAllArchives ? source + " <span class='wr-archive-count'></span>&nbsp;<span class='caret'></span>" : source + "&nbsp;<span class='caret'></span>");
+        recorderUI.querySelector(".sources-widget .mnt-label").innerHTML = (wrExtractModeAllArchives ? source + "<span class='wr-archive-count'></span>&nbsp;<span class='caret'></span>" : source + "&nbsp;<span class='caret'></span>");
     }
 }
 
 function renderExtractDropdown() {
-    var sourceArchiveDisplay = "<a href='"+sourceArchive.about+"' target='_blank'><span>"+sourceArchive.name+"</span><span class='glyphicon glyphicon-new-window' /></a>";
+    var collId = undefined;
+    if (window.wrExtractId.indexOf(":") !== -1) {
+        collId = window.wrExtractId.split(":")[1];
+    }
+
+    var sourceArchiveDisplay = "<a href='"+(sourceArchive.about + (collId ? collId : ""))+"' target='_blank'>" +
+                               "<span>"+sourceArchive.name+(collId ? "&nbsp;"+collId : "")+"</span><span class='glyphicon glyphicon-new-window' /></a>";
     sourcesDropdown.querySelector(".ra-source").innerHTML = sourceTarget || "Empty";
     sourcesDropdown.querySelector(".ra-source-name").innerHTML = sourceArchiveDisplay;
     sourcesDropdown.querySelector(".ra-ts").innerHTML = sourceTsStr;
@@ -68,11 +74,13 @@ function urlEntry() {
 
         // remove prefix
         sourceTarget = val.replace(/^https?:\/\//,"").replace(archive.prefix, "");
+        var name = archive.name;
 
         // parse collection
         if (sourceArchive.parse_collection) {
             var sourceColl = sourceTarget.split("/", 1)[0];
             sourceTarget = sourceTarget.substr(sourceColl.length + 1);
+            name += " " + sourceColl;
             window.wrExtractId += ":" + sourceColl;
             window.wrExtractPrefix += sourceColl + "/";
         }
@@ -90,7 +98,7 @@ function urlEntry() {
         sourceTsStr = ts;
         sourceTarget = sourceTarget.replace(/\d+\//, "");
 
-        renderExtractWidget(ts, archive.name);
+        renderExtractWidget(ts, name);
         window.wrExtractModeAllArchives = true;
 
         recorderUI.querySelector(".input-group").classList.add("remote-archive");
