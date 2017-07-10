@@ -89,38 +89,43 @@ var EventHandlers = (function() {
     var bindAll = function() {
 
         // Prevent the use of any disabled elements
-        $('body').on('click', '.disabled', function(event){
+        $("body").on("click", ".disabled", function(event){
             event.preventDefault();
             return false;
         });
 
         // Enable autofocus on modals
-        $('body').on('shown.bs.modal', '.modal', function() {
-            $(this).find('[autofocus]').focus();
+        $("body").on("shown.bs.modal", ".modal", function() {
+            $(this).find("[autofocus]").focus();
         });
 
-        var bin = getStorage('__wr_toolBin');
-        if(bin)
-            $('.wr-tools').toggleClass('open', JSON.parse(bin));
+        var bin = getStorage("__wr_toolBin");
 
-        $("#tool-bin").on('click', function () {
-            $('.wr-tools').toggleClass('open');
-            setStorage('__wr_toolBin', $('.wr-tools').hasClass('open'));
+        if (bin) {
+            var toolsOpen = JSON.parse(bin);
+            $(".wr-tools").toggleClass("open", toolsOpen);
+            $(document.body).toggleClass("wr-toolbin-open", toolsOpen);
+        }
+
+        $("#tool-bin").on("click", function () {
+            $(".wr-tools").toggleClass("open");
+            $(document.body).toggleClass("wr-toolbin-open");
+            setStorage("__wr_toolBin", $(".wr-tools").hasClass("open"));
         });
 
         // Switch urls -- Url bar submit / enter key
-        $('header').on('submit', '.content-form', function(event) {
+        $("header").on("submit", ".content-form", function(event) {
             event.preventDefault();
 
             var url = getUrl().trim();
 
-            if (url.indexOf('http') !== 0) {
-                url = 'http://' + url;
+            if (url.indexOf("http") !== 0) {
+                url = "http://" + url;
             }
 
             // check for trailing slash
             if(url.match(/^https?\:\/\/[\w-.]+$/))
-                url += '/';
+                url += "/";
 
 
             if (window.cnt_browser && window.curr_mode != "new" && !window.containerExpired) {
