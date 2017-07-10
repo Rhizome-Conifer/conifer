@@ -622,7 +622,7 @@ var ResourceStats = (function () {
                         $(".mnt-label").html("Patched from " + arcSum + " Source" + (arcSum === 1 ? "" : "s") + " <span class='caret'/>");
                     }
                 } else {
-                    $(".wr-archive-count").text("+ " + arcSum);
+                    $(".wr-archive-count").text(" + " + arcSum);
                 }
             }
         }
