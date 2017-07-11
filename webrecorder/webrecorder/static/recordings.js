@@ -506,7 +506,7 @@ var PagingInterface = (function () {
                 if(urlTo.indexOf('http') !== 0)
                     urlTo = 'http://'+urlTo;
 
-                iframe.src = '/'+user+'/'+coll+'/mp_/'+urlTo;
+                iframe.src = window.wbinfo.prefix + "mp_/" + urlTo;
             }
         });
 
@@ -533,7 +533,7 @@ var PagingInterface = (function () {
 
     function update(rec, mute) {
         /* updates wbinfo, iframe */
-        if(typeof mute !== 'undefined' && mute) {
+        if (typeof mute !== "undefined" && mute) {
             muted = true;
         }
 
@@ -542,33 +542,35 @@ var PagingInterface = (function () {
         }
 
         updateCounter(idx);
-        li.removeClass('active');
-        li.eq(idx).addClass('active');
+        li.removeClass("active");
+        li.eq(idx).addClass("active");
 
         // update dropdown scroll position
         dropdown.scrollTop((idx>2?idx-2:0) * liHeight);
 
         // prev, next button presentation
-        if(idx===0)
-            prevBtn.addClass('disabled');
-        else if(idx > 0 && prevBtn.hasClass('disabled'))
-            prevBtn.removeClass('disabled');
+        if (idx===0) {
+            prevBtn.addClass("disabled");
+        } else if (idx > 0 && prevBtn.hasClass("disabled")) {
+            prevBtn.removeClass("disabled");
+        }
 
-        if(idx===recordings.length-1)
-            nextBtn.addClass('disabled');
-        else if(idx < recordings.length - 1 && nextBtn.hasClass('disabled'))
-            nextBtn.removeClass('disabled');
+        if (idx===recordings.length-1) {
+            nextBtn.addClass("disabled");
+        } else if (idx < recordings.length - 1 && nextBtn.hasClass("disabled")) {
+            nextBtn.removeClass("disabled");
+        }
 
-        if(typeof rec !== 'undefined') {
-            if((typeof window.cnt_browser !== 'undefined' || rec.br) && Object.keys(window.browsers).length > 0) {
-                /* if we're currently in a remote browser view, or the next item is, use fresh navigation to it */
-                window.location.href = '/'+user+'/'+coll+'/'+rec.ts+(typeof rec.br !== 'undefined' && rec.br !== ''?'$br:'+rec.br:'')+'/'+rec.url;
+        if (typeof rec !== "undefined") {
+            if ((typeof window.cnt_browser !== "undefined" || rec.br) && Object.keys(window.browsers).length > 0) {
+                /* if we"re currently in a remote browser view, or the next item is, use fresh navigation to it */
+                window.location.href = "/"+user+"/"+coll+"/"+rec.ts+(typeof rec.br !== "undefined" && rec.br !== "" ? "$br:"+rec.br : "")+"/"+rec.url;
             } else {
                 // update share widget
                 ShareWidget.updateUrl(rec);
 
                 updateTimestamp(rec.ts, true);
-                iframe.src = '/'+user+'/'+coll+'/'+rec.ts+'mp_/'+rec.url;
+                iframe.src = window.wbinfo.prefix + rec.ts + "mp_/" + rec.url;
             }
         }
     }
