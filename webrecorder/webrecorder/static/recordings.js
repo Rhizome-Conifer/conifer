@@ -506,7 +506,7 @@ var PagingInterface = (function () {
                 if(urlTo.indexOf('http') !== 0)
                     urlTo = 'http://'+urlTo;
 
-                iframe.src = window.wbinfo.prefix + "/mp_/" + urlTo;
+                iframe.src = window.wbinfo.prefix + "mp_/" + urlTo;
             }
         });
 
