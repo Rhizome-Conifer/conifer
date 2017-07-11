@@ -355,7 +355,9 @@ class ContentController(BaseController, RewriterApp):
         rec = self._create_new_rec(user, coll, rec_title, mode)
 
         if mode.startswith('extract:'):
-            patch_rec = self._create_new_rec(user, coll, self.patch_of_name(rec_title), mode)
+            patch_rec = self._create_new_rec(user, coll,
+                                             self.patch_of_name(rec_title),
+                                             'patch')
 
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
                                                              coll=coll,
