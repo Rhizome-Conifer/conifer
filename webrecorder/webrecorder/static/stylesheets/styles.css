@@ -1558,7 +1558,7 @@ div.filter-label {
     /* -.5 width - 40px padding, -6px icon padding, -.5 icon width */
     left: calc(-250px + (40px + 6px + 7px));
 }
-@media (min-width: 768px, max-width: 1200px) {
+@media (min-width: 768px) and (max-width: 1200px) {
     .wr-info-widget.open > .dropdown-menu {
         left: initial;
         right: 0;
