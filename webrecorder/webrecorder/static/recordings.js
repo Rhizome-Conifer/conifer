@@ -610,7 +610,7 @@ var ResourceStats = (function () {
             }
         }
 
-        if (Object.keys(stats).length > 0 && $(".wr-archive-count").length && wbinfo.inv_sources !== "*") {
+        if (Object.keys(stats).length > 0 && wbinfo.inv_sources !== "*") {
             var arcSum = Object.keys(stats).length;
 
             // subtract source archive from count
@@ -620,10 +620,10 @@ var ResourceStats = (function () {
 
             if (arcSum > 0) {
                 if (window.curr_mode === "patch") {
-                    if(arcSum > 0) {
+                    if (arcSum > 0) {
                         $(".mnt-label").html("Patched from " + arcSum + " Source" + (arcSum === 1 ? "" : "s") + " <span class='caret'/>");
                     }
-                } else {
+                } else if ($(".wr-archive-count").length) {
                     $(".wr-archive-count").text(" + " + arcSum);
                 }
             }
