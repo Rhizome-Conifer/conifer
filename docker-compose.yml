@@ -35,9 +35,7 @@ services:
 
         volumes:
             - ./webrecorder/:/code/
-
-        volumes_from:
-            - data
+            - ./data:/data
 
     webagg:
         build: ./webrecorder
@@ -51,10 +49,7 @@ services:
 
         volumes:
             - ./webrecorder/:/code/
-
-        volumes_from:
-            - data
-
+            - ./data:/data
 
     nginx:
         build: ./nginx
@@ -62,10 +57,9 @@ services:
         depends_on:
             - app
 
-        volumes_from:
-            - app
-            - shepherd
-            - data
+        volumes:
+            - ./data:/data
+            - ./webrecorder/:/code/
 
         ports:
             - "8089:80"
@@ -92,15 +86,11 @@ services:
             - CONTAINER_EXPIRE_SECS=1200
             - IDLE_TIMEOUT=120
 
-
         depends_on:
             - redis
 
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-
-        #ports:
-        #    - "9020:9020"
 
     redis:
         build: ./redis
@@ -111,8 +101,8 @@ services:
         ports:
             - "6379:6379"
   
-        volumes_from:
-            - data
+        volumes:
+            - ./data:/data
 
     # Postfix (if sending mail locally)
     mailserver:
@@ -122,17 +112,6 @@ services:
         environment:
             - "maildomain=localhost"
             - "smtp_user=test:archive"
-
-
-    # Data Only Volume
-    data:
-        image: python:3.5.2
-
-        command: python -i
-      
-        volumes:
-            - ./data:/data
-
 
 networks:
     default:
