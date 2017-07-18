@@ -44,7 +44,7 @@ class RecsController(BaseController):
 
             return {'deleted_id': rec}
 
-        @self.app.post('/api/v1/recordings/<rec>/rename/<new_rec_title>')
+        @self.app.post('/api/v1/recordings/<rec>/rename/<new_rec_title:path>')
         def rename_recording(rec, new_rec_title):
             user, coll = self.get_user_coll(api=True)
             self._ensure_rec_exists(user, coll, rec)
