@@ -1,11 +1,11 @@
 import time
 import os
 
-from .testutils import BaseWRTests
+from .testutils import FullStackTests
 
 
 # ============================================================================
-class TestWebRecRecAPI(BaseWRTests):
+class TestWebRecRecAPI(FullStackTests):
     def _anon_post(self, url, *args, **kwargs):
         return self.testapp.post(url.format(user=self.anon_user), *args, **kwargs)
 
@@ -154,3 +154,11 @@ class TestWebRecRecAPI(BaseWRTests):
         res = self._anon_post('/api/v1/recordings?user=user&coll=coll', params={'title': 'Recording'}, status=404)
         assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Recording'}}
 
+    def test_rename_rec(self):
+        test_title = 'Test / Special Chars !'
+        res = self._anon_post('/api/v1/recordings/my-rec/rename/Test%20%2F%20Special%20Chars%20!?user={user}&coll=temp')
+
+        res = res.json
+
+        assert res['rec_id'] == 'test--special-chars-'
+        assert res['title'] == test_title
