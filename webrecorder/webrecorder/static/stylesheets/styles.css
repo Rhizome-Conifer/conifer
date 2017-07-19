@@ -624,10 +624,6 @@ input.upload-choice {
     display: -ms-flexbox;
     align-items: flex-start;
     -ms-flex-align: start;
-    margin-bottom: 15px;
-}
-.ra-mode-row + .ra-resources {
-    margin-top: 0;
 }
 .ra-mode-badge {
     padding: 0 5px;
@@ -657,7 +653,7 @@ input.upload-choice {
     display: -ms-flexbox;
     border-left: 10px solid rgb(242,242,242);
     padding-left:15px;
-    margin-bottom: 15px;
+    margin-top: 15px;
 }
 .ra-info > div:first-of-type {
     display: flex;
