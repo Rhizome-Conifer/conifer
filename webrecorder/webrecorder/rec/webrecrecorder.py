@@ -406,20 +406,21 @@ class WebRecRecorder(object):
             length = 0
 
         with redis_pipeline(self.redis) as pi:
+            if type == 'coll':
+                coll_list_key = self.coll_list_key_templ.format(user=user)
+                pi.srem(coll_list_key, coll)
+
+            elif type == 'rec':
+                rec_list_key = self.rec_list_key_templ.format(user=user, coll=coll)
+                pi.srem(rec_list_key, rec)
+
             if length > 0:
                 user_key = self.info_keys['user'].format(user=user)
                 pi.hincrby(user_key, 'size', -length)
 
-                if type == 'coll':
-                    coll_list_key = self.coll_list_key_templ.format(user=user)
-                    pi.srem(coll_list_key, coll)
-
                 if type == 'rec':
                     coll_key = self.info_keys['coll'].format(user=user, coll=coll)
                     pi.hincrby(coll_key, 'size', -length)
-
-                    rec_list_key = self.rec_list_key_templ.format(user=user, coll=coll)
-                    pi.srem(rec_list_key, rec)
 
             for key in keys_to_del:
                 pi.delete(key)
