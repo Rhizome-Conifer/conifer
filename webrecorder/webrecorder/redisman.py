@@ -850,7 +850,6 @@ class RecManagerMixin(object):
 
         return [key_pattern.replace('*', rec) for rec in recs]
 
-
     def get_recordings(self, user, coll):
         keys = self._get_rec_keys(user, coll, self.rec_info_key)
 
@@ -1129,6 +1128,7 @@ class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
         self.coll_info_key = config['info_key_templ']['coll']
+        self.coll_list_key = config['coll_list_key_templ']
         self.upload_key = config['upload_key_templ']
         self.upload_exp = int(config['upload_status_expire'])
 
@@ -1191,6 +1191,8 @@ class CollManagerMixin(object):
         orig_coll_title = coll_title
         count = 1
 
+        coll_list_key = self.coll_list_key.format(user=user)
+
         while True:
             key = self.coll_info_key.format(user=user, coll=coll)
 
@@ -1210,23 +1212,36 @@ class CollManagerMixin(object):
             if public:
                 pi.hset(key, self.READ_PREFIX + self.PUBLIC, 1)
             pi.hsetnx(key, 'size', '0')
+            pi.sadd(coll_list_key, coll)
 
         return self.get_collection(user, coll)
 
-    def num_collections(self, user):
+    def _get_coll_keys(self, user):
         key_pattern = self.coll_info_key.format(user=user, coll='*')
 
-        keys = list(self.redis.scan_iter(match=key_pattern))
+        coll_list_key = self.coll_list_key.format(user=user)
+        colls = self.redis.smembers(coll_list_key)
 
-        if not self.is_owner(user):
-            keys = [key for key in keys if self.is_public(user, key)]
+        return [key_pattern.replace('*', coll) for coll in colls]
 
-        return len(keys)
+    def num_collections(self, user):
+        # if owner, just check num collections
+        if self.is_owner(user):
+            coll_list_key = self.coll_list_key.format(user=user)
+            num_colls = self.redis.scard(coll_list_key)
+            return num_colls
+
+        keys = self._get_coll_keys(user)
+        count = 0
+
+        for key in keys:
+            if self.is_public(user, key):
+                count += 1
+
+        return count
 
     def get_collections(self, user, include_recs=False, api=False):
-        key_pattern = self.coll_info_key.format(user=user, coll='*')
-
-        keys = list(self.redis.scan_iter(match=key_pattern))
+        keys = self._get_coll_keys(user)
 
         pi = self.redis.pipeline(transaction=False)
         for key in keys:

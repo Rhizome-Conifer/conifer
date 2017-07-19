@@ -32,6 +32,7 @@ class TestTempContent(FullStackTests):
         'c:{user}:{coll}:info',
         'c:{user}:{coll}:recs',
         'u:{user}:info',
+        'u:{user}:colls',
         'h:roles',
         'h:defaults',
         'h:temp-usage',
