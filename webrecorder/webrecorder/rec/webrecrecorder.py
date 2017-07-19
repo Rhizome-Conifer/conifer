@@ -264,6 +264,7 @@ class WebRecRecorder(object):
                 pi.hincrby(from_user_key, 'size', -the_size)
                 pi.hincrby(to_user_key, 'size', the_size)
 
+            if from_coll != to_coll:
                 pi.srem(from_coll_list_key, from_coll)
                 pi.sadd(to_coll_list_key, to_coll)
 

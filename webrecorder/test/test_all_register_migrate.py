@@ -102,6 +102,8 @@ class TestRegisterMigrate(FullStackTests):
 
         self.sleep_try(0.1, 10.0, assert_one_dir)
 
+        assert self.redis.smembers('u:someuser:colls') == {'test-migrate'}
+
     def test_logged_in_user_info(self):
         res = self.testapp.get('/someuser')
         assert '"/someuser/test-migrate"' in res.text
@@ -195,6 +197,8 @@ class TestRegisterMigrate(FullStackTests):
 
         assert res.json == {'title': 'New Coll 3', 'coll_id': 'new-coll-3', 'rec_id': '*'}
 
+        assert self.redis.smembers('u:someuser:colls') == {'new-coll-3', 'new-coll', 'test-migrate', 'new-coll-2'}
+
     def test_logged_in_user_info_2(self):
         res = self.testapp.get('/someuser')
         assert '"/someuser/test-migrate"' in res.text
@@ -271,6 +275,7 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.post('/api/v1/recordings/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
 
         assert res.json == {'title': 'FOOD BAR', 'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
+        assert self.redis.smembers('c:someuser:test-migrate:recs') == {'food-bar'}
 
         # rec replay
         res = self.testapp.get('/someuser/test-migrate/food-bar/replay/mp_/http://httpbin.org/get?food=bar')
@@ -288,6 +293,8 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.post('/api/v1/collections/test-migrate/rename/Test Coll?user=someuser')
 
         assert res.json == {'title': 'Test Coll', 'coll_id': 'test-coll', 'rec_id': '*'}
+
+        assert self.redis.smembers('u:someuser:colls') == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
 
         # rec replay
         res = self.testapp.get('/someuser/test-coll/food-bar/replay/mp_/http://httpbin.org/get?food=bar')
@@ -316,6 +323,8 @@ class TestRegisterMigrate(FullStackTests):
 
         params = {'csrf': csrf_token}
         res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
+
+        assert self.redis.smembers('u:someuser:colls') == {'new-coll-3', 'new-coll', 'new-coll-2'}
 
         assert res.headers['Location'] == 'http://localhost:80/someuser'
 
