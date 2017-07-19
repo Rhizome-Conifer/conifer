@@ -153,6 +153,7 @@ info_key_templ:
     coll: 'c:{user}:{coll}:info'
     user: 'u:{user}:info'
 
+coll_list_key_templ: 'u:{user}:colls'
 rec_list_key_templ: 'c:{user}:{coll}:recs'
 
 upload_key_templ: 'u:{user}:upl:{upid}'

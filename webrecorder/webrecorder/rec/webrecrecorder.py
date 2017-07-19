@@ -46,6 +46,7 @@ class WebRecRecorder(object):
 
         self.info_keys = config['info_key_templ']
 
+        self.coll_list_key_templ = config['coll_list_key_templ']
         self.rec_list_key_templ = config['rec_list_key_templ']
 
         self.warc_key_templ = config['warc_key_templ']
@@ -229,14 +230,17 @@ class WebRecRecorder(object):
             to_coll_key = self.info_keys['coll'].format(user=to_user, coll=to_coll)
             from_coll_key = self.info_keys['coll'].format(user=from_user, coll=from_coll)
 
-            to_coll_list_key = self.rec_list_key_templ.format(user=to_user, coll=to_coll)
-            from_coll_list_key = self.rec_list_key_templ.format(user=from_user, coll=from_coll)
+            to_rec_list_key = self.rec_list_key_templ.format(user=to_user, coll=to_coll)
+            from_rec_list_key = self.rec_list_key_templ.format(user=from_user, coll=from_coll)
 
             info_key = self.info_keys['rec'].format(user=from_user, coll=from_coll, rec=from_rec)
 
             to_id = to_rec
         else:
             info_key = self.info_keys['coll'].format(user=from_user, coll=from_coll)
+
+            to_coll_list_key = self.coll_list_key_templ.format(user=to_user)
+            from_coll_list_key = self.coll_list_key_templ.format(user=from_user)
 
             to_id = to_coll
 
@@ -260,6 +264,9 @@ class WebRecRecorder(object):
                 pi.hincrby(from_user_key, 'size', -the_size)
                 pi.hincrby(to_user_key, 'size', the_size)
 
+                pi.srem(from_coll_list_key, from_coll)
+                pi.sadd(to_coll_list_key, to_coll)
+
             # change coll size if moving rec and different colls
             if to_rec != '*' and to_coll_key != from_coll_key:
                 pi.hincrby(from_coll_key, 'size', -the_size)
@@ -267,8 +274,8 @@ class WebRecRecorder(object):
 
             # update coll list
             if to_rec != '*':
-                pi.srem(from_coll_list_key, from_rec)
-                pi.sadd(to_coll_list_key, to_rec)
+                pi.srem(from_rec_list_key, from_rec)
+                pi.sadd(to_rec_list_key, to_rec)
 
         # rename WARCs (only if switching users)
         replace_list = []
@@ -400,6 +407,10 @@ class WebRecRecorder(object):
             if length > 0:
                 user_key = self.info_keys['user'].format(user=user)
                 pi.hincrby(user_key, 'size', -length)
+
+                if type == 'coll':
+                    coll_list_key = self.coll_list_key_templ.format(user=user)
+                    pi.srem(coll_list_key, coll)
 
                 if type == 'rec':
                     coll_key = self.info_keys['coll'].format(user=user, coll=coll)
