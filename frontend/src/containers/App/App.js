@@ -10,7 +10,7 @@ import { isLoaded as isAuthLoaded,
 import { UserManagement } from 'containers';
 
 import config from 'config';
-import Breadcrumb from 'components/Breadcrumbs';
+import Breadcrumbs from 'components/Breadcrumbs';
 import Footer from 'components/Footer';
 
 import './style.scss';
@@ -25,16 +25,14 @@ export class App extends Component { // eslint-disable-line
   }
 
   render() {
-    const { auth, routes } = this.props;
-
     return (
       <div className="wr-app">
         <Helmet {...config.app.head} />
         <header>
           <div className="navbar navbar-default navbar-static-top">
             <nav className="container-fluid header-webrecorder">
-              <Breadcrumb routes={routes} />
-              <UserManagement auth={auth} loginFn={this.login} logoutFn={this.logout} />
+              <Breadcrumbs />
+              <UserManagement />
             </nav>
           </div>
         </header>
@@ -61,15 +59,7 @@ const preloadData = [
   }
 ];
 
-const mapStateToProps = (state) => {
-  const { auth } = state;
-  return {
-    auth
-  };
-};
-
 
 export default asyncConnect(
-  preloadData,
-  mapStateToProps,
+  preloadData
 )(App);

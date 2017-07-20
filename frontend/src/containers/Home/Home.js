@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { asyncConnect } from 'redux-connect';
+import { connect } from 'react-redux';
 import { Collapse } from 'react-bootstrap';
-
-import { isLoaded as isUserLoaded,
-         load as loadUser } from 'redux/modules/user';
 
 import HomepageMessage from 'components/HomepageMessage';
 import HomepageAnnouncement from 'components/HomepageAnnouncement';
@@ -30,10 +27,10 @@ class Home extends Component {
   }
 
   render() {
-    const { auth, collections, user } = this.props;
+    const { auth } = this.props;
     const { introVideoOpen } = this.state;
 
-    const loaded = auth.loaded && user.loaded;
+    const loaded = auth.loaded;
 
     return (
       <div>
@@ -73,19 +70,6 @@ class Home extends Component {
   }
 }
 
-const loadInfo = [
-  {
-    promise: ({ params, store: { dispatch, getState }, location }) => {
-      const { auth } = getState();
-
-      // get user info
-      if(!isUserLoaded(getState()) && auth.user.username)
-        return dispatch(loadUser(auth.user.username));
-
-      return undefined;
-    }
-  }
-];
 
 const mapStateToProps = (state) => {
   const { auth, user } = state;
@@ -95,7 +79,6 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default asyncConnect(
-  loadInfo,
+export default connect(
   mapStateToProps
 )(Home);

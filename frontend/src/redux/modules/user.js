@@ -6,6 +6,7 @@ const USER_LOAD_FAIL = 'wr/user/LOAD_FAIL';
 const SELECT_COLLECTION = 'wr/user/SELECT_COLLECTION';
 
 const initialState = {
+  loading: false,
   loaded: false,
   accessed: null,
   activeCollection: null,

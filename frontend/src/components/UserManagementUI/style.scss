@@ -18,6 +18,9 @@
         margin-top: 20px;
     }
 }
+.navbar-right:not(&:last-child) {
+    margin-right: 10px;
+}
 
 .num-collection {
     color: #FFF;
