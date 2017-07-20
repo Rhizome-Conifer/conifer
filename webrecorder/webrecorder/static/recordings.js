@@ -608,6 +608,7 @@ var ResourceStats = (function () {
                 $infoWidget.addClass("visible");
             } else {
                 // standard replay, skip
+                $infoWidget.removeClass("visible");
                 return;
             }
         }
