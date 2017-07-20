@@ -23,10 +23,10 @@
         </tr>
     </thead>
     <tbody>
-        {% for recording in collection.recordings %}
-            {% set collection_path = get_path(user, coll) + '/' %}
-            {% set browsers = get_browsers() %}
+        {% set collection_path = get_path(user, coll) + '/' %}
+        {% set browsers = get_browsers() %}
 
+        {% for recording in collection.recordings %}
             {% for bookmark in recording.pages %}
                 {% set browser = browsers[bookmark.browser] if bookmark.browser in browsers else None %}
                 {% set bookmark_id = bookmark.url + ' ' + bookmark.timestamp + ' ' + (browser.id if browser else '-') %}
