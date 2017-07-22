@@ -22,15 +22,13 @@ class TestWebRecCollsAPI(BaseWRTests):
 
         assert self.redis.exists('c:' + self.anon_user + ':temp:info')
 
-    def test_create_anon_coll_dup(self):
-        res = self.testapp.post('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'Temp'})
+    def test_create_anon_coll_dup_error(self):
+        res = self.testapp.post('/api/v1/collections?user={user}'.format(user=self.anon_user),
+                                params={'title': 'Temp'})
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
-        assert res.json['collection']['id'] == 'temp-2'
-        assert res.json['collection']['title'] == 'Temp 2'
-
-        assert self.redis.exists('c:' + self.anon_user + ':temp-2:info')
+        assert 'error_message' in res.json
 
     def test_get_anon_coll(self):
         res = self.testapp.get('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
@@ -51,21 +49,13 @@ class TestWebRecCollsAPI(BaseWRTests):
         res = self.testapp.get('/api/v1/collections?user={user}'.format(user=self.anon_user))
 
         colls = res.json['collections']
-        assert len(colls) == 2
+        assert len(colls) == 1
 
         colls.sort(key=lambda x: x['id'])
 
         assert colls[0]['id'] == 'temp'
         assert colls[0]['title'] == 'Temp'
         assert colls[0]['download_url'] == 'http://localhost:80/{user}/temp/$download'.format(user=self.anon_user)
-
-        assert colls[1]['id'] == 'temp-2'
-        assert colls[1]['title'] == 'Temp 2'
-        assert colls[1]['download_url'] == 'http://localhost:80/{user}/temp-2/$download'.format(user=self.anon_user)
-
-    #def test_error_already_exists(self):
-    #    res = self.testapp.post('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'temp'}, status=400)
-    #    assert res.json == {'error_message': 'Collection already exists', 'id': 'temp', 'title': 'Temp'}
 
     def test_error_no_such_rec(self):
         res = self.testapp.get('/api/v1/collections/blah@$?user={user}'.format(user=self.anon_user), status=404)

@@ -113,12 +113,16 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/test-migrate/abc/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
+        # no cache control setting here (only at collection replay)
+        assert 'Cache-Control' not in res.headers
         assert '"food": "bar"' in res.text, res.text
 
     def test_logged_in_replay_coll_1(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
+        # Cache-Control private to ignore cache
+        assert res.headers['Cache-Control'] == 'private'
         assert '"food": "bar"' in res.text, res.text
 
     def test_logged_in_coll_info(self):
@@ -212,9 +216,12 @@ class TestRegisterMigrate(FullStackTests):
         res.charset = 'utf-8'
         assert 'Example Domain' in res.text
 
-    def test_logged_in_replay_2(self):
+    def test_logged_in_replay_public(self):
         res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
         res.charset = 'utf-8'
+
+        # no cache-control for public collections
+        assert 'Cache-Control' not in res.headers
         assert 'Example Domain' in res.text
 
     def test_logged_in_download(self):
@@ -240,6 +247,9 @@ class TestRegisterMigrate(FullStackTests):
     def test_logged_out_replay(self):
         res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
         res.charset = 'utf-8'
+
+        # no cache-control for public collections
+        assert 'Cache-Control' not in res.headers
         assert 'Example Domain' in res.text
 
     def test_error_logged_out_download(self):
