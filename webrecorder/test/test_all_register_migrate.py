@@ -3,6 +3,8 @@ from .testutils import FullStackTests
 from mock import patch
 from itertools import count
 
+from webrecorder.admin import init_manager_for_cli, create_user
+
 import re
 import os
 
@@ -272,7 +274,7 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
         assert 'No such page' in res.text
 
-    def test_login_2(self):
+    def test_login(self):
         params = {'username': 'someuser',
                   'password': 'Password1'}
 
@@ -337,5 +339,62 @@ class TestRegisterMigrate(FullStackTests):
         assert self.redis.smembers('u:someuser:colls') == {'new-coll-3', 'new-coll', 'new-coll-2'}
 
         assert res.headers['Location'] == 'http://localhost:80/someuser'
+
+    def test_create_another_user(self):
+        m = init_manager_for_cli()
+        create_user(m, email='test2@example.com',
+                       username='testauto',
+                       passwd='Test12345',
+                       role='archivist',
+                       name='Test User')
+
+        assert self.redis.exists('u:testauto:info')
+
+    def test_already_logged_in(self):
+        params = {'username': 'testauto',
+                  'password': 'Test12345'}
+
+        res = self.testapp.post('/_login', params=params)
+
+        assert res.headers['Location'] == 'http://localhost:80/'
+        assert self.testapp.cookies.get('__test_sesh', '') != ''
+
+        res = res.follow()
+        assert 'You are already logged' in res.text
+
+    def test_logout_2(self):
+        res = self.testapp.get('/_logout')
+        assert res.headers['Location'] == 'http://localhost:80/'
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+    def test_login_another(self):
+        params = {'username': 'testauto',
+                  'password': 'Test12345'}
+
+        res = self.testapp.post('/_login', params=params)
+
+        assert res.headers['Location'] == 'http://localhost:80/testauto'
+        assert self.testapp.cookies.get('__test_sesh', '') != ''
+
+    def test_different_user_default_coll(self):
+        res = self.testapp.get('/testauto/default-collection')
+        assert '/default-collection' in res.text, res.text
+
+    def test_different_user_coll(self):
+        res = self.testapp.get('/someuser/new-coll')
+        assert '/new-coll' in res.text, res.text
+
+    def test_different_user_replay(self):
+        res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
+        res.charset = 'utf-8'
+
+        # no cache-control for public collections
+        assert 'Cache-Control' not in res.headers
+        assert 'Example Domain' in res.text
+
+    def test_different_user_replay_private_error(self):
+        res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
+        assert 'No such page' in res.text
+
 
 

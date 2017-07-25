@@ -540,9 +540,8 @@ class AccessManagerMixin(object):
         if user == sesh.curr_user:
             return True
 
-        key = self.coll_info_key.format(user=user, coll=coll)
-
         if sesh.curr_user:
+            key = self.coll_info_key.format(user=user, coll=coll)
             return self.redis.hget(key, self.WRITE_PREFIX + sesh.curr_user) != None
 
         return False
@@ -562,6 +561,7 @@ class AccessManagerMixin(object):
             return True
 
         if sesh.curr_user:
+            key = self.coll_info_key.format(user=user, coll=coll)
             return self.redis.hget(key, self.READ_PREFIX + sesh.curr_user) != None
 
         return False
