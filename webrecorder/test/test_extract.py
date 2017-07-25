@@ -24,6 +24,11 @@ class TestExtractContent(FullStackTests):
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
+    def test_anon_extract_redirect(self):
+        res = self.testapp.get('/{user}/temp/extract-test/record/http://web.archive.org/web/1996/geocities.com/'.format(user=self.anon_user))
+        assert res.status_code == 302
+        assert res.location.endswith('/temp/extract-test/extract:ia/1996/http://geocities.com/')
+
     def test_anon_extract_only(self):
         res = self.testapp.get('/{user}/temp/Extract Only Test/extract_only:ia/1996mp_/http://geocities.com/'.format(user=self.anon_user))
         assert res.status_code == 302

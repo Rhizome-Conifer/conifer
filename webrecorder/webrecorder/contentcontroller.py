@@ -66,12 +66,6 @@ class ContentController(BaseController, RewriterApp):
         self.csp_header = ('Content-Security-Policy', csp)
 
     def add_csp_header(self, wb_url, status_headers):
-        if wb_url.mod == self.frame_mod:
-            return
-
-        if wb_url.mod and wb_url.mod.startswith('$br:'):
-            return
-
         status_headers.headers.append(self.csp_header)
 
     def init_routes(self):
@@ -315,10 +309,10 @@ class ContentController(BaseController, RewriterApp):
 
             return handle_error(status_code, err_body, request.environ)
 
-    def check_remote_archive(self, wb_url, mode):
-        wb_url = WbUrl(wb_url)
+    def check_remote_archive(self, wb_url, mode, wb_url_obj=None):
+        wb_url_obj = wb_url_obj or WbUrl(wb_url)
 
-        res = self.wam_loader.find_archive_for_url(wb_url.url)
+        res = self.wam_loader.find_archive_for_url(wb_url_obj.url)
         if not res:
             return
 
@@ -326,7 +320,7 @@ class ContentController(BaseController, RewriterApp):
 
         mode = 'extract:' + id_
 
-        new_url = WbUrl(new_url).to_str(mod=wb_url.mod)
+        new_url = WbUrl(new_url).to_str(mod=wb_url_obj.mod)
 
         return mode, new_url
 
@@ -464,6 +458,18 @@ class ContentController(BaseController, RewriterApp):
         wb_url = self._context_massage(wb_url)
 
         wb_url_obj = WbUrl(wb_url)
+        is_top_frame = (wb_url_obj.mod == self.frame_mod or wb_url_obj.mod.startswith('$br:'))
+
+        if type == 'record' and is_top_frame:
+            result = self.check_remote_archive(wb_url, type, wb_url_obj)
+            if result:
+                mode, wb_url = result
+                new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
+                                                                     coll=coll,
+                                                                     rec=rec,
+                                                                     mode=mode,
+                                                                     url=wb_url)
+                return self.redirect(new_url)
 
         kwargs = dict(user=user,
                       coll_orig=coll,
@@ -480,11 +486,12 @@ class ContentController(BaseController, RewriterApp):
                       is_display=is_display)
 
         try:
-            self.check_if_content(wb_url_obj, request.environ)
+            self.check_if_content(wb_url_obj, request.environ, is_top_frame)
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
-            self.add_csp_header(wb_url_obj, resp.status_headers)
+            if not is_top_frame:
+                self.add_csp_header(wb_url_obj, resp.status_headers)
 
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,
@@ -508,14 +515,12 @@ class ContentController(BaseController, RewriterApp):
 
             return handle_error(ue.status_code, type, ue.url, ue.msg)
 
-    def check_if_content(self, wb_url, environ):
+    def check_if_content(self, wb_url, environ, is_top_frame):
         if not wb_url.is_replay():
             return
 
         if not self.content_host:
             return
-
-        is_top_frame = (wb_url.mod == self.frame_mod or wb_url.mod.startswith('$br:'))
 
         if is_top_frame:
             if self.is_content_request():
