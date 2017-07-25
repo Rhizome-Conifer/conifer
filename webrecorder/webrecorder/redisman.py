@@ -543,7 +543,7 @@ class AccessManagerMixin(object):
         key = self.coll_info_key.format(user=user, coll=coll)
 
         if sesh.curr_user:
-            return self.redis.hget(key, self.WRITE_PREFIX + curr_user) != None
+            return self.redis.hget(key, self.WRITE_PREFIX + sesh.curr_user) != None
 
         return False
 
