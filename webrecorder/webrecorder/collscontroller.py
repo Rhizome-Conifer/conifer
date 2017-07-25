@@ -28,15 +28,19 @@ class CollsController(BaseController):
 
             is_public = self.post_get('public') == 'on'
 
-            if self.manager.is_anon(user) and coll != 'temp':
-                return {'error_message': 'Only temp collection available'}
+            if self.manager.is_anon(user):
+                if coll != 'temp':
+                    return {'error_message': 'Only temp collection available'}
+
+                if self.manager.has_collection(user, coll):
+                    return {'error_message': 'Temp collection already exists'}
 
             try:
                 collection = self.manager.create_collection(user, coll, title,
                                                             desc='', public=is_public)
                 self.flash_message('Created collection <b>{0}</b>!'.format(collection['title']), 'success')
                 resp = {'collection': collection}
-            except ValidationException as ve:
+            except Exception as ve:
                 self.flash_message(str(ve))
                 resp = {'error_message': str(ve)}
 
@@ -157,7 +161,7 @@ class CollsController(BaseController):
                                                             desc='', public=is_public)
                 self.flash_message('Created collection <b>{0}</b>!'.format(collection['title']), 'success')
                 redir_to = self.get_redir_back('/_create')
-            except ValidationException as ve:
+            except Exception as ve:
                 self.flash_message(str(ve))
                 redir_to = '/_create'
 
@@ -234,13 +238,13 @@ class CollsController(BaseController):
         return result
 
     def get_collection_info(self, user, coll):
-        collection = self.manager.get_collection(user, coll)
-
-        if not collection:
+        try:
+            collection = self.manager.get_collection(user, coll)
+            assert(collection)
+            return {'collection': collection}
+        except:
             response.status = 404
             return {'error_message': 'Collection not found', 'id': coll}
-
-        return {'collection': collection}
 
     def _ensure_coll_exists(self, user, coll):
         if not self.manager.has_collection(user, coll):

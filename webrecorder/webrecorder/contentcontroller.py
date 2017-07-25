@@ -405,31 +405,38 @@ class ContentController(BaseController, RewriterApp):
             self.redir_set_session()
 
         remote_ip = None
+        frontend_cache_header = None
 
-        if type == 'replay' or type in self.MODIFY_MODES:
+        if type in self.MODIFY_MODES:
             if not self.manager.has_recording(user, coll, rec):
                 not_found = True
 
-            if type != 'replay':
-                self.manager.assert_can_write(user, coll)
+            self.manager.assert_can_write(user, coll)
 
-                if self.manager.is_out_of_space(user):
-                    raise HTTPError(402, 'Out of Space')
+            if self.manager.is_out_of_space(user):
+                raise HTTPError(402, 'Out of Space')
 
-                remote_ip = self._get_remote_ip()
+            remote_ip = self._get_remote_ip()
 
-                if self.manager.is_rate_limited(user, remote_ip):
-                    raise HTTPError(402, 'Rate Limit')
+            if self.manager.is_rate_limited(user, remote_ip):
+                raise HTTPError(402, 'Rate Limit')
 
-        if ((not_found or type == 'replay-coll') and
-            (not (self.manager.is_anon(user) and coll == 'temp')) and
-            (not self.manager.has_collection(user, coll))):
+        if type == 'replay-coll':
+            res = self.manager.has_collection_is_public(user, coll)
+            not_found = not res
+            if not_found:
+                self._redir_if_sanitized(self.sanitize_title(coll),
+                                         coll,
+                                         wb_url)
 
-            self._redir_if_sanitized(self.sanitize_title(coll),
-                                     coll,
-                                     wb_url)
+                raise HTTPError(404, 'No Such Collection')
 
-            raise HTTPError(404, 'No Such Collection')
+            if res != 'public':
+                frontend_cache_header = ('Cache-Control', 'private')
+
+        elif type == 'replay':
+            if not self.manager.has_recording(user, coll, rec):
+                not_found = True
 
         patch_rec = ''
 
@@ -492,6 +499,9 @@ class ContentController(BaseController, RewriterApp):
 
             if not is_top_frame:
                 self.add_csp_header(wb_url_obj, resp.status_headers)
+
+            if frontend_cache_header:
+                resp.status_headers.headers.append(frontend_cache_header)
 
             resp = HTTPResponse(body=resp.body,
                                 status=resp.status_headers.statusline,

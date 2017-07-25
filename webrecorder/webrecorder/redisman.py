@@ -529,30 +529,42 @@ class AccessManagerMixin(object):
         sesh = self.get_session()
         return sesh.curr_user
 
-    def _check_access(self, user, coll, type_prefix):
+    def _check_write_access(self, user, coll):
         # anon access
-        if self.is_anon(user):
+        if self.is_anon(user) and coll == 'temp':
             return True
 
         sesh = self.get_session()
-        curr_user = sesh.curr_user
-        curr_role = sesh.curr_role
 
-        # current user or superusers always have access, if collection exists
-        if user == curr_user or (type_prefix == self.READ_PREFIX and curr_role == 'admin'):
-            return self._has_collection_no_access_check(user, coll)
+        # current user
+        if user == sesh.curr_user:
+            return True
 
         key = self.coll_info_key.format(user=user, coll=coll)
 
-        #role_key = self.ROLE_KEY.format(role=curr_role)
+        if sesh.curr_user:
+            return self.redis.hget(key, self.WRITE_PREFIX + curr_user) != None
 
-        if not curr_user:
-            res = self.redis.hmget(key, type_prefix + self.PUBLIC)
-        else:
-            res = self.redis.hmget(key, type_prefix + self.PUBLIC,
-                                        type_prefix + curr_user)
+        return False
 
-        return any(res)
+    def _check_read_access_public(self, user, coll):
+        if self.is_public(user, coll):
+            return 'public'
+
+        # anon access
+        if self.is_anon(user) and coll == 'temp':
+            return True
+
+        sesh = self.get_session()
+
+        # current user or superusers always have access, if collection exists
+        if user == sesh.curr_user or sesh.curr_role == 'admin':
+            return True
+
+        if sesh.curr_user:
+            return self.redis.hget(key, self.READ_PREFIX + sesh.curr_user) != None
+
+        return False
 
     def is_public(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)
@@ -573,10 +585,10 @@ class AccessManagerMixin(object):
         return True
 
     def can_read_coll(self, user, coll):
-        return self._check_access(user, coll, self.READ_PREFIX)
+        return bool(self._check_read_access_public(user, coll))
 
     def can_write_coll(self, user, coll):
-        return self._check_access(user, coll, self.WRITE_PREFIX)
+        return self._check_write_access(user, coll)
 
     def is_extractable(self, user, coll):
         if not self.can_read_coll(user, coll):
@@ -1178,6 +1190,16 @@ class CollManagerMixin(object):
         key = self.coll_info_key.format(user=user, coll=coll)
         return self.redis.hget(key, 'id') != None
 
+    def has_collection_is_public(self, user, coll):
+        res = self._check_read_access_public(user, coll)
+        if not res:
+            return False
+
+        if not self._has_collection_no_access_check(user, coll):
+            return False
+
+        return res
+
     def has_collection(self, user, coll):
         if not self.can_read_coll(user, coll):
             return False
@@ -1185,8 +1207,6 @@ class CollManagerMixin(object):
         return self._has_collection_no_access_check(user, coll)
 
     def create_collection(self, user, coll, coll_title, desc='', public=False):
-        self.assert_can_admin(user, coll)
-
         orig_coll = coll
         orig_coll_title = coll_title
         count = 1
@@ -1194,6 +1214,8 @@ class CollManagerMixin(object):
         coll_list_key = self.coll_list_key.format(user=user)
 
         while True:
+            self.assert_can_admin(user, coll)
+
             key = self.coll_info_key.format(user=user, coll=coll)
 
             if self.redis.hsetnx(key, 'id', coll) == 1:
