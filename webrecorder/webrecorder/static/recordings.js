@@ -1589,15 +1589,15 @@ $(function() {
 
         var replay_iframe = window.document.getElementById("replay_iframe");
 
-        if (!replay_iframe || event.source != replay_iframe.contentWindow) {
-            return;
-        }
-
         if (typeof(event.data) != "object") {
             return;
         }
 
         var state = event.data;
+        var specialModes = ["cookie", "skipreq", "bug-report"].indexOf(state.wb_type) !== -1;
+        if (!replay_iframe || (event.source != replay_iframe.contentWindow && !specialModes)) {
+            return;
+        }
 
         if (state.wb_type == "load") {
             addNewPage(state);
@@ -1614,6 +1614,8 @@ $(function() {
                 url += state.hash;
             }
             setUrl(url);
+        } else if (state.wb_type == "bug-report") {
+            $("#report-modal").modal("show");
         }
     }
 
