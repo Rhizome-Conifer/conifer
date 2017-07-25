@@ -1,0 +1,45 @@
+.recording-selector {
+    margin-top: 8px;
+    border: solid 1px #b9b9b9;
+    border-top-right-radius: 3px;
+    border-top-left-radius: 3px;
+
+    display: flex;
+    display: -ms-flexbox;
+    flex-direction: column;
+    -ms-flex-direction: column;
+    height: 100%;
+
+    -ms-flex: 1 1 100%;
+}
+.recording-selector:after {
+    content: "";
+    position:absolute;
+    z-index: 10;
+    left: 1px;
+    bottom: 1px;
+    height: 30px;
+    width: calc(100% - 17px);
+    background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+    pointer-events: none;
+}
+
+.card-top {
+    padding: 5px 0px 10px 10px;
+    border-bottom: solid 1px #b9b9b9;
+}
+.recording-bin {
+    overflow: auto;
+    height: 100%;
+    -ms-flex: 0 1 100%;
+}
+
+.rec-filter {
+    padding: 10px 0;
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: space-around;
+    -ms-flex-pack: justify;
+    text-transform: uppercase;
+    font-size: 11px;
+}

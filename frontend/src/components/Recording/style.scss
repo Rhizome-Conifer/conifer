@@ -1,0 +1,136 @@
+.card {
+    /*border-top: 1px solid #ccc;*/
+    padding: 4px 0 4px 10px;
+    cursor: pointer;
+    position: relative;
+
+    display: flex;
+    display: -ms-flexbox;
+}
+
+.card:last-of-type {
+    margin-bottom: 15px;
+}
+
+.card-top {
+    padding: 5px 0px 10px 10px;
+    border-bottom: solid 1px #b9b9b9;
+}
+
+#clear-all-widget {
+    transition: opacity .125s ease-in-out;
+    opacity: 1;
+}
+.clear-all-btn.disabled {
+    display: none;
+}
+
+#clear-all-widget.clear-all-btn.disabled {
+    display: block;
+    color: #CCC;
+    text-decoration: none;
+    cursor: default;
+}
+.checkbox-column {
+    display: inline-block;
+    width: 25px;
+    vertical-align: top;
+}
+.checkbox-column input {
+    font-size: 20px;
+}
+.content-column {
+    display: inline-block;
+    width: 100%;
+}
+.recording-content {
+    width: calc(100% - 20px);
+}
+
+.card .sub-menu {
+    position: absolute;
+    top: 0px;
+    right: 2px;
+}
+
+.card .sub-menu.disabled {
+    color: lightgray;
+    background-color: white;
+}
+.card .recording-actions .btn {
+    background-color: transparent;
+}
+
+.card-selected .recording-actions .btn {
+    border-color: #aaa;
+}
+
+.card:hover,
+.card-selected:hover {
+    background-color: #F6F9F9;
+}
+
+.recording-title {
+    overflow-wrap: break-word;
+    font-weight: bold;
+    /*font-weight: bold;*/
+    /*color: #1932bd;*/
+}
+
+.recording-time-info {
+    color: #777;
+}
+
+.recording-fn-row {
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: space-around;
+    -ms-flex-pack: justify;
+    margin-top: 5px;
+}
+.recording-fn-row > * {
+    flex-grow: 2;
+    -ms-flex: 2 0 auto;
+    text-align: center;
+}
+.recording-fn-row a:link,
+.recording-fn-row a:visited {
+    transition: color .125s ease-in-out;
+    color: rgb(163,163,163);
+}
+.recording-fn-row a:hover {
+    color: #337ab7;
+}
+.recording-fn-row .glyphicon {
+    font-size: 12px;
+}
+.recording-fn-row > *:last-child {
+    flex-grow: 4;
+    -ms-flex: 4 0 auto;
+    text-align: right;
+}
+.recording-fn-row > *:last-child > a {
+    padding: 5px;
+}
+.recording-fn-row > *:last-child > a:hover {
+    color: red;
+}
+
+.mode-selector {
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: center;
+    -ms-flex-pack: center;
+    align-items: center;
+    -ms-flex-align: center;
+}
+
+.recording-actions {
+    display: flex;
+    display: -ms-flexbox;
+    justify-content: center;
+    -ms-flex-pack: center;
+}
+.recording-actions > *:not(:last-child) {
+    margin-right: 5px;
+}

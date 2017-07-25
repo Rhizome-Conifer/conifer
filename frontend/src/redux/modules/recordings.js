@@ -1,28 +1,28 @@
 import config from 'config';
 
-const COLL_LOAD = 'wr/coll/LOAD';
-const COLL_LOAD_SUCCESS = 'wr/coll/LOAD_SUCCESS';
-const COLL_LOAD_FAIL = 'wr/coll/LOAD_FAIL';
+const REC_LOAD = 'wr/rec/LOAD';
+const REC_LOAD_SUCCESS = 'wr/rec/LOAD_SUCCESS';
+const REC_LOAD_FAIL = 'wr/rec/LOAD_FAIL';
 
 const initialState = {
   loaded: false
 };
 
-export default function collection(state = initialState, action = {}) {
+export default function recordings(state = initialState, action = {}) {
   switch (action.type) {
-    case COLL_LOAD:
+    case REC_LOAD:
       return {
         ...state,
         loading: true
       };
-    case COLL_LOAD_SUCCESS:
+    case REC_LOAD_SUCCESS:
       return {
         ...state,
         loading: false,
         loaded: true,
-        ...action.result
+        recordings: action.result.recordings
       };
-    case COLL_LOAD_FAIL:
+    case REC_LOAD_FAIL:
       return {
         ...state,
         loading: false,
@@ -36,7 +36,7 @@ export default function collection(state = initialState, action = {}) {
 
 export function load(username, coll) {
   return {
-    types: [COLL_LOAD, COLL_LOAD_SUCCESS, COLL_LOAD_FAIL],
-    promise: client => client.get(`${config.apiPath}/collections/${coll}?user=${username}`)
+    types: [REC_LOAD, REC_LOAD_SUCCESS, REC_LOAD_FAIL],
+    promise: client => client.get(`${config.apiPath}/recordings?user=${username}&coll=${coll}`)
   };
 }

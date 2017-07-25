@@ -42,7 +42,9 @@ export default function remoteBrowsers(state = initialState, action = {}) {
 }
 
 export function isLoaded(globalState) {
-  return globalState.remoteBrowsers && globalState.remoteBrowsers.loaded;
+  return globalState.remoteBrowsers &&
+         globalState.remoteBrowsers.loaded &&
+         Date.now() - globalState.remoteBrowsers.accessed < 15 * 60 * 1000;
 }
 
 export function load() {

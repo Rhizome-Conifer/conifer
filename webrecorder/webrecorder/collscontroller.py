@@ -56,7 +56,9 @@ class CollsController(BaseController):
 
         @self.app.get('/api/v1/collections/<coll_name>')
         def get_collection(coll_name):
-            return self.get_collection_info(coll_name)
+            user = self.get_user(api=True)
+
+            return self.get_collection_info_for_view(user, coll_name)
 
         @self.app.delete('/api/v1/collections/<coll_name>')
         def delete_collection(coll_name):
@@ -192,9 +194,30 @@ class CollsController(BaseController):
 
     def get_collection_info_for_view(self, user, coll_name, rec_list=None):
         self.redir_host()
-        result = self.get_collection_info(coll_name, user=user, rec_list=rec_list)
-        if not result or result.get('error_message'):
+
+        result = self.get_collection_info(user, coll_name)
+        if result.get('error_message'):
             self._raise_error(404, 'Collection not found')
+
+        result['size_remaining'] = self.manager.get_size_remaining(user)
+        result['user'] = self.get_view_user(user)
+        result['coll'] = coll_name
+        result['bookmarks'] = []
+
+        result['rec_title'] = ''
+        result['coll_title'] = quote(result['collection']['title'])
+
+        for rec in result['collection']['recordings']:
+            rec['pages'] = self.manager.list_pages(user, coll_name, rec['id'])
+
+            if len(rec['pages']) > 0:
+                result['bookmarks'].append(rec['pages'])
+
+        if not result['collection'].get('desc'):
+            result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])
+
+        rec_list = rec_list or []
+        result['rec_list'] = [rec.serialize() for rec in rec_list]
 
         return result
 
