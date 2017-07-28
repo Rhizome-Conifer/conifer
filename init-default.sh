@@ -21,6 +21,5 @@ set_key "SECRET_KEY"
 set_key "ENCRYPT_KEY"
 set_key "VALIDATE_KEY"
 
-mkdir $CURR_DIR/data
-mkdir $CURR_DIR/data/warcs/
+mkdir -p $CURR_DIR/data
 
