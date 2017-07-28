@@ -286,11 +286,11 @@ class ContentController(BaseController, RewriterApp):
             return resp
 
         except Exception as e:
-            @self.jinja2_view('proxy_error.html')
+            @self.jinja2_view('content_error.html')
             def handle_error(status_code, err_body, environ):
                 response.status = status_code
                 kwargs['url'] = url
-                kwargs['status_code'] = status_code
+                kwargs['status'] = status_code
                 kwargs['err_body'] = err_body
                 kwargs['host_prefix'] = self.get_host_prefix(environ)
                 kwargs['proxy_magic'] = environ.get('wsgiprox.proxy_host', '')

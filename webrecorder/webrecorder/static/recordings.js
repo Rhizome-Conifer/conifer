@@ -594,24 +594,28 @@ var ResourceStats = (function () {
         $resourceBin = $(".ra-resources > ul");
     }
 
-    function update(stats) {
+    function update(stats, size) {
         if (!$resourceBin.length) {
             return;
         }
 
-        // if replaying, check whether local or extract
-        if (window.curr_mode === "replay-coll" || window.curr_mode === "replay" || window.curr_mode === "patch") {
+        var statKeyCount = Object.keys(stats).length;
+
+        // if replaying, check whether standard or extracted
+        if (window.curr_mode === "replay-coll" || window.curr_mode === "replay") {
             var sources = Object.keys(stats);
             if (sources.length > 1 || (sources.length === 1 && sources[0] !== "replay")) {
                 $infoWidget.addClass("visible");
             } else {
-                // local replay only, skip
+                // standard replay, skip
+                $infoWidget.removeClass("visible");
                 return;
             }
         }
 
-        if (Object.keys(stats).length > 0 && wbinfo.inv_sources !== "*") {
-            var arcSum = Object.keys(stats).length;
+        // if we have stats and not extract-only
+        if (statKeyCount > 0 && wbinfo.inv_sources !== "*") {
+            var arcSum = statKeyCount;
 
             // subtract source archive from count
             if (window.curr_mode === "extract" && window.wrExtractId in stats) {
@@ -620,16 +624,22 @@ var ResourceStats = (function () {
 
             if (arcSum > 0) {
                 if (window.curr_mode === "patch") {
-                    if (arcSum > 0) {
-                        $(".mnt-label").html("Patched from " + arcSum + " Source" + (arcSum === 1 ? "" : "s") + " <span class='caret'/>");
-                    }
+                    $(".mnt-label").html("Patched from " + arcSum + " Source" + (arcSum === 1 ? "" : "s") + " <span class='caret'/>");
                 } else if ($(".wr-archive-count").length) {
                     $(".wr-archive-count").text(" + " + arcSum);
                 }
             }
+        // catch instance where stats are missing but data has been captured
+        } else if (window.curr_mode === "patch" && statKeyCount === 0 && size > 0) {
+            $(".mnt-label").html("Patching missing");
         }
 
+        if(statKeyCount === 0) {
+            $resourceBin.parent().hide();
+            return;
+        }
 
+        $resourceBin.parent().show();
         $resourceBin.empty();
 
         var resources = [];
@@ -1225,8 +1235,8 @@ var RecordingSizeWidget = (function() {
                 if (window.curr_mode === 'replay-coll' || window.curr_mode === 'replay') {
                     BookmarkCounter.setBookmarkCount(msg.numPages);
                 }
-                if (msg.stats) {
-                    ResourceStats.update(msg.stats);
+                if (msg.stats || msg.size) {
+                    ResourceStats.update(msg.stats, msg.size);
                 }
                 break;
 
@@ -1579,15 +1589,15 @@ $(function() {
 
         var replay_iframe = window.document.getElementById("replay_iframe");
 
-        if (!replay_iframe || event.source != replay_iframe.contentWindow) {
-            return;
-        }
-
         if (typeof(event.data) != "object") {
             return;
         }
 
         var state = event.data;
+        var specialModes = ["cookie", "skipreq", "bug-report"].indexOf(state.wb_type) !== -1;
+        if (!replay_iframe || (event.source != replay_iframe.contentWindow && !specialModes)) {
+            return;
+        }
 
         if (state.wb_type == "load") {
             addNewPage(state);
@@ -1604,6 +1614,8 @@ $(function() {
                 url += state.hash;
             }
             setUrl(url);
+        } else if (state.wb_type == "bug-report") {
+            $("#report-modal").modal("show");
         }
     }
 
