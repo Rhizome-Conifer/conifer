@@ -34,7 +34,7 @@ class RecordingColumn extends Component {
         </div>
         <div className="recording-bin">
           {
-            recordings.map(rec => <Recording rec={rec} />)
+            recordings.map(rec => <Recording rec={rec} key={rec.id} />)
           }
         </div>
       </div>

@@ -4,7 +4,7 @@ import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 import FAQ from 'components/FAQ';
 import TermsAndPolicies from 'components/TermsAndPolicies';
 import { Application, CollectionList, CollectionDetail, Home, HttpStatus,
-         UserSettings } from 'containers';
+         Replay, UserSettings } from 'containers';
 
 
 export default (store) => {
@@ -31,11 +31,13 @@ export default (store) => {
       path: '/:user([^_]\w+)',
       name: 'collection',
       breadcrumb: true,
+      footer: true,
       component: CollectionList,
     },
     {
       path: ':user/_settings',
       name: 'settings',
+      footer: true,
       onEnter: requireLogin,
       component: UserSettings
     },
@@ -43,7 +45,15 @@ export default (store) => {
       path: ':user/:coll',
       name: 'collectionDetail',
       breadcrumb: true,
+      footer: true,
       component: CollectionDetail
+    },
+    {
+      path: ':user/:coll/:ts/*',
+      name: 'replay',
+      footer: false,
+      classOverride: true,
+      component: Replay
     }
   ];
 
@@ -51,11 +61,13 @@ export default (store) => {
     {
       path: '_faq',
       name: 'FAQ',
+      footer: true,
       component: FAQ
     },
     {
       path: '_policies',
       name: 'Terms & Policies',
+      footer: true,
       component: TermsAndPolicies
     }
   ];
@@ -65,6 +77,7 @@ export default (store) => {
     {
       path: '_register',
       name: 'registration',
+      footer: true,
       component: HttpStatus
     },
 
@@ -74,6 +87,7 @@ export default (store) => {
     {
       path: '*',
       name: 'notfound',
+      footer: true,
       component: HttpStatus
     }
   ];
@@ -81,7 +95,10 @@ export default (store) => {
   return {
     path: '/',
     component: Application,
-    indexRoute: { component: Home },
+    indexRoute: {
+      component: Home,
+      footer: true
+    },
     childRoutes: routes
   };
 };

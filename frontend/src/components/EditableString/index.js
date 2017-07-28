@@ -6,17 +6,17 @@ class EditableString extends Component {
     string: PropTypes.string,
     contentType: PropTypes.string,
     className: PropTypes.string,
-    icon: PropTypes.boolean
+    showIcon: PropTypes.bool
   };
 
   static defaultProps = {
     string: '',
     className: '',
-    icon: true
+    showIcon: true
   }
 
   render() {
-    const { className, contentType, icon, string } = this.props;
+    const { className, contentType, showIcon, string } = this.props;
     const desc = `Edit ${contentType} ${string}`;
 
     let editIcon = '';
@@ -27,7 +27,7 @@ class EditableString extends Component {
     return (
       <div>
         <span className={className}>{ string }</span>
-        { icon &&
+        { showIcon &&
           <button
             type="button"
             className={`btn btn-default btn-xs icon-button ${editIcon}`}

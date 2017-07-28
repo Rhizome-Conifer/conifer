@@ -1,0 +1,16 @@
+#page-display {
+    width: auto;
+    float: none;
+    display: inline-block;
+    vertical-align: bottom;
+    text-align: center;
+    border-width: 1px 0 1px 1px;
+    border-radius: 0;
+    font-feature-settings: "tnum";
+}
+
+.main-bar {
+    width: 100%;
+    flex-grow: 1;
+   -ms-flex: 30%;
+}

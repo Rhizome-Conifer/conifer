@@ -10,8 +10,13 @@ class CollectionMetadata extends Component {
     desc: PropTypes.string
   };
 
+  static contextTypes = {
+    canAdmin: PropTypes.bool
+  }
+
   render() {
     const { desc, dlUrl, title } = this.props;
+    const { canAdmin, canWrite } = this.context;
 
     return (
       <div>
@@ -30,17 +35,22 @@ class CollectionMetadata extends Component {
               <span className="hidden-xs">Delete Collection</span>
             </button>
 
-            <Link to={dlUrl}>
-              <button className="btn btn-success btn-sm btn-collection-download" role="button">
-                <span className="glyphicon glyphicon-cloud-download glyphicon-button" />&nbsp;
-                <span className="hidden-xs">Download Collection</span>
-              </button>
-            </Link>
+            {
+              canAdmin &&
+                <Link to={dlUrl}>
+                  <button className="btn btn-success btn-sm btn-collection-download" role="button">
+                    <span className="glyphicon glyphicon-cloud-download glyphicon-button" />&nbsp;
+                    <span className="hidden-xs">Download Collection</span>
+                  </button>
+                </Link>
+            }
 
-            <div className="access-switch">
-              public?
-            </div>
-
+            {
+              canWrite &&
+                <div className="access-switch">
+                  public?
+                </div>
+            }
           </div>
         </div>
         <div className="row">

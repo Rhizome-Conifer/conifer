@@ -14,8 +14,14 @@ class BookmarksTable extends Component {
     browsers: PropTypes.object
   };
 
+  static contextTypes = {
+    canAdmin: PropTypes.bool
+  }
+
   render() {
     const { browsers, collection } = this.props;
+    const { canAdmin } = this.context;
+
     const { recordings } = collection.collection;
 
     return (
@@ -23,12 +29,14 @@ class BookmarksTable extends Component {
         <table className="table table-noborder table-striped table-hover table-bookmarks">
           <thead>
             <tr>
-              {/* if can_admin() */}
-              <th className="bookmark-hidden-switch hidden-xs" style={{ width: '39px' }}>
-                <input type="checkbox" className="left-buffer-sm" id="show-hidden" name="show-hidden" checked="checked" />
-              </th>
-              <th className="bookmark-edit-title" style={{ width: '1px' }} />
-              {/* endif */}
+              { canAdmin &&
+                <th className="bookmark-hidden-switch hidden-xs" style={{ width: '39px' }}>
+                  <input type="checkbox" className="left-buffer-sm" id="show-hidden" name="show-hidden" checked="checked" />
+                </th>
+              }
+              { canAdmin &&
+                <th className="bookmark-edit-title" style={{ width: '1px' }} />
+              }
               <th className="bookmark-title"><span>Bookmarks</span></th>
               <th className="bookmark-browser hidden-xs hidden-sm hidden-md">Browser</th>
               <th className="timestamp">Timestamp</th>

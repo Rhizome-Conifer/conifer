@@ -48,7 +48,9 @@ var webpackConfig = module.exports = {
       'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
       'bootstrap-loader',
       './config/polyfills',
-      './src/client.js'
+      './src/client.js',
+      './src/shared/js/wb.js',
+      './src/shared/js/wb_frame.js',
     ]
   },
   output: {

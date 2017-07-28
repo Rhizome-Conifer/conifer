@@ -1,0 +1,58 @@
+#wr-tw {
+    display: inline-block;
+    width: 76px;
+    height: 37px;
+    float: left;
+}
+#wr-fb {
+    float: left;
+    margin-left: 5px;
+}
+
+.wr-tools {
+    transition: margin-top .3s ease-in-out;
+    margin-top: -40px;
+    height: 40px;
+    background: #F3F3F3;
+    display: flex;
+    display: -ms-flexbox;
+    align-items: center;
+    -ms-flex-align: center;
+
+    &.open {
+        margin-top: 0;
+    }
+
+    .share-container {
+        margin-left: auto;
+    }
+}
+
+.wr-controls.public .recording-actions {
+    position: absolute;
+    top: 0;
+    right: 15px;
+}
+
+.recording-actions {
+    display: flex;
+    justify-content: center;
+
+    & > *:not(:last-child) {
+        margin-right: 5px;
+    }
+
+    .btn svg {
+        width: 16px;
+        height: 16px;
+        vertical-align: middle;
+    }
+}
+
+@media (max-width: 500px) {
+    .recording-actions {
+        order: 2;
+        -ms-flex-order: 2;
+        margin-left: auto;
+    }
+}

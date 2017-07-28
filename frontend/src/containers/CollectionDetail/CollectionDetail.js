@@ -14,11 +14,31 @@ import './style.scss';
 
 class CollectionDetail extends Component {
   static propTypes = {
-    coll: PropTypes.object
+    coll: PropTypes.object,
+    auth: PropTypes.object,
+    params: PropTypes.object,
+    remoteBrowsers: PropTypes.object
   };
 
+  // TODO move to HOC
+  static childContextTypes = {
+    canAdmin: PropTypes.bool,
+    canWrite: PropTypes.bool
+  };
+
+  getChildContext() {
+    const { auth, params } = this.props;
+
+    return {
+      canAdmin: auth.user.username === params.user,
+      canWrite: auth.user.username === params.user //&& !auth.anon
+    };
+  }
+
   render() {
-    const { coll, remoteBrowsers } = this.props;
+    const { auth, coll, params, remoteBrowsers } = this.props;
+    const canAdmin = auth.user.username === params.user;
+    const canWrite = auth.user.username === params.user; // && !auth.anon
 
     return (
       <div>
@@ -30,15 +50,21 @@ class CollectionDetail extends Component {
         <div className="row wr-collection-info">
           <div className="hidden-xs recording-panel">
             <h5>RECORDINGS</h5>
-            <div>
-              <a href="$new" className="btn btn-primary btn-sm">
-                <span className="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true" />New
-              </a>
-              <a className="btn btn-default btn-sm upload-coll-button">
-                <span className="glyphicon glyphicon-upload glyphicon-button" />&nbsp;
-                <span className="upload-label">Upload</span>
-              </a>
-            </div>
+            {
+              canWrite &&
+                <div>
+                  <a href="$new" className="btn btn-primary btn-sm">
+                    <span className="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true" />New
+                  </a>
+                  {
+                    canAdmin &&
+                      <a className="btn btn-default btn-sm upload-coll-button">
+                        <span className="glyphicon glyphicon-upload glyphicon-button" />&nbsp;
+                        <span className="upload-label">Upload</span>
+                      </a>
+                  }
+                </div>
+            }
 
             <RecordingColumn recordings={coll.collection.recordings} />
           </div>
@@ -56,7 +82,6 @@ const loadCollection = [
   {
     promise: ({ params, store: { dispatch, getState }, location }) => {
       const { user, coll } = params;
-
       return dispatch(loadColl(user, coll));
     }
   },

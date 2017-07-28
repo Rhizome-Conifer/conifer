@@ -24,7 +24,9 @@ class Breadcrumbs extends Component {
         <IndexLink to="/">Webrecorder</IndexLink>
         {
           trail.length &&
-          trail.map((item, index) => <li key={item.name}><span>{ item.name }</span></li>)
+          trail.map((item, index) =>
+            <li key={item.name}><span>{ item.name }</span></li>
+          )
         }
       </ol>
     );

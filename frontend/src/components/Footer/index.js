@@ -31,6 +31,19 @@ function Footer() {
             </a>
           </div>
         </div>
+        <div className="row">
+          <div className="col-xs-12">
+            <form method="post" id="email-signup" className="navbar-form mc-embedded-subscribe-form" action="{{ announce_list }}">
+              <div className="form-group-sm">
+                <input type="email" name="EMAIL" className="form-control" placeholder="your@email.com" />
+                <button type="submit" className="btn btn-default btn-sm">Get Updates</button>
+              </div>
+              <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
+                <input type="text" name="b_a1487b13ca8ed17d052f71f12_7f979630a1" tabIndex="-1" value="" />
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </footer>
   );

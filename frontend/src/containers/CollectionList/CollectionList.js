@@ -28,7 +28,10 @@ class CollectionList extends Component {
 
   render() {
     const { user } = this.props.params;
+    const { auth } = this.props;
     const { collections } = this.props.collections;
+
+    const canAdmin = auth.user.username === user; // && !anon;
 
     return (
       <div>
@@ -40,9 +43,12 @@ class CollectionList extends Component {
         </Row>
         <Row>
           <Col xs={6} className="wr-coll-meta">
-            <Button bsStyle="primary" bsSize="small">
-              <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
-            </Button>
+            {
+              canAdmin &&
+                <Button bsStyle="primary" bsSize="small">
+                  <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
+                </Button>
+            }
           </Col>
           <Col xs={2} className="pull-right">
             <strong>Space Used: </strong>
@@ -81,12 +87,9 @@ class CollectionList extends Component {
 const loadCollections = [
   {
     promise: ({ params, store: { dispatch, getState }, location }) => {
-      const { auth } = getState();
+      const { user } = params;
 
-      if(!isLoaded(getState()) && auth.user.username)
-        return dispatch(load(auth.user.username));
-
-      return undefined;
+      return dispatch(load(user));
     }
   }
 ];
