@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # redeploy just webrecorder and nginx
 docker-compose build app;
 docker-compose stop app;
