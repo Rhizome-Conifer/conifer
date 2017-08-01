@@ -87,9 +87,15 @@ class UserController(BaseController):
             temp = [(k, int(v)) for k, v in temp.items()]
             user = [(k, int(v)) for k, v in user.items()]
 
+            all_collections = []
+            for res in results:
+                all_collections.extend(
+                    self.manager.get_collections(user=res['username'], api=True)
+                )
+
             data = {
                 'users': UserSchema().load(results, many=True).data,
-                'collections': self.manager.get_collections(user='*', api=True),
+                'collections': all_collections,
                 'temp_usage': sorted(temp, key=itemgetter(0)),
                 'user_usage': sorted(user, key=itemgetter(0)),
             }
@@ -135,7 +141,7 @@ class UserController(BaseController):
 
             results = []
 
-            # add username and get collections
+            # add username
             for user, data in users:
                 data['username'] = user
                 # add space usage

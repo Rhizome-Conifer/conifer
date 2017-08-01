@@ -15,7 +15,7 @@ import Heading from 'components/Heading';
 import List from 'components/List';
 import RadialGraph from 'components/RadialGraph';
 import { loadDashboard } from './actions';
-import { bytesToMb } from 'components/SizeFormat';
+import { bytesToGb } from 'components/SizeFormat';
 
 import './style.scss';
 
@@ -32,7 +32,7 @@ function CustomizedAxisTick(props) {
 function CustomizedLabel(props) {
   const { x, y, stroke, payload } = props;
   const v = payload.value[1];
-  return <text x={x} y={y} dy={-10} fill={stroke} fontSize={15} textAnchor="middle">{`${v < 0.01 ? '< 1':v.toFixed(2)} MB`}</text>
+  return <text x={x} y={y} dy={-10} fill={stroke} fontSize={15} textAnchor="middle">{`${v < 0.01 ? '< 1':v.toFixed(2)} GB`}</text>
 }
 
 
@@ -52,7 +52,7 @@ class Dashboard extends Component {
     this.collectionKeys = [
       {id: 'title', sortable: true},
       {id: 'created_at', label: 'created at', sortable: true, format: (d) => moment.unix(d).local().format('L LT')},
-      {id: 'size', sortable: true, format: (s) => `${(s/1000000).toFixed(1)} MB`},
+      {id: 'size', sortable: true, format: (s) => `${(s/1000000).toFixed(1)} GB`},
     ];
 
     this.state = {
@@ -74,10 +74,10 @@ class Dashboard extends Component {
      */
 
     // combine temp and user usage into one array
-    const usageData = map(nextProps.tempUsage, o => ({'date': o[0], 'temp': bytesToMb(o[1]), 'user':0}));
+    const usageData = map(nextProps.tempUsage, o => ({'date': o[0], 'temp': bytesToGb(o[1]), 'user':0}));
     forEach(nextProps.userUsage, item => {
       const m = find(usageData, o => o.date === item[0]);
-      const v = bytesToMb(item[1]);
+      const v = bytesToGb(item[1]);
       if(typeof m !== 'undefined')
         m['user'] = v;
       else
@@ -177,21 +177,21 @@ class Dashboard extends Component {
               <option value='365'>Year</option>
               <option value='0'>All</option>
           </select>
-          <ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={400}>
             <AreaChart
               data={usageData.slice(-dateRange)}
               margin={{ top: 10, right: 40, bottom: 50, left: 0 }}>
 
               <XAxis stroke='#727078' dataKey='date' tick={<CustomizedAxisTick />} />
-              <YAxis stroke='#9F9DA5' label='MB' />
+              <YAxis stroke='#9F9DA5' label='GB' />
 
               <CartesianGrid stroke='#E0DDE4'/>
               { dateRange !== 1 &&
                 <Tooltip formatter={ o => o.toFixed(2) } />
               }
               <Legend verticalAlign="top" height={36} />
-              <Area type='monotone' label={dateRange===1 && <CustomizedLabel />} dot={dateRange===1} stackId="1" unit=' MB' dataKey='temp' stroke='#D1C453' fill='#EBEE63' />
-              <Area type='monotone' label={dateRange===1 && <CustomizedLabel />} dot={dateRange===1} stackId="1" unit=' MB' dataKey='user' stroke='#71AB4B' fill='#B2DF97' />
+              <Area type='monotone' label={dateRange===1 && <CustomizedLabel />} dot={dateRange===1} stackId="1" unit=' GB' dataKey='temp' stroke='#D1C453' fill='#EBEE63' />
+              <Area type='monotone' label={dateRange===1 && <CustomizedLabel />} dot={dateRange===1} stackId="1" unit=' GB' dataKey='user' stroke='#71AB4B' fill='#B2DF97' />
             </AreaChart>
           </ResponsiveContainer>
         </div>

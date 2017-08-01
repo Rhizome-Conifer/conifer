@@ -4,7 +4,11 @@ export function bytesToMb(bytes) {
   return bytes / 1000000;
 }
 
-function mbToGb(mb) {
+export function bytesToGb(bytes) {
+  return bytes / 1000000000;
+}
+
+export function mbToGb(mb) {
   return mb / 1000;
 }
 

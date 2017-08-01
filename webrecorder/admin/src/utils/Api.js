@@ -1,9 +1,9 @@
 import forEach from 'lodash/forEach';
 
-import { endpoint } from 'config';
+import { debug, endpoint } from 'config';
 
 
-const fetchOptions = { credentials: 'same-origin' };
+const fetchOptions = { credentials: debug ? 'include' : 'same-origin' };
 
 
 function buildQueryString(params) {

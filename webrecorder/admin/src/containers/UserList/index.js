@@ -78,6 +78,7 @@ class UserList extends Component {
             sortBy={sorting}
             uniqueKey='username'
             emptyMsg='0 users'
+            defaultSort={{column:'created', direction: 'desc'}}
             filterable={isTemp?['username']:['username','email','name']} />
         }
       </div>
