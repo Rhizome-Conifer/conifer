@@ -8,6 +8,7 @@
  *
  * module.exports = {
  *   endpoint: 'http://a-whole-new-webrecorder.io/api/v3',
+ *   debug: true,
  * };
  *
  */
@@ -22,6 +23,7 @@ try {
 const settings = {
   endpoint: '/api/v1',
   actionKey: 'wr/',
+  debug: false,
 };
 
 module.exports = Object.assign({}, settings, localSettings);

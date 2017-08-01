@@ -82,6 +82,7 @@ class UserDetail extends Component {
         type:'text',
         label: 'Change size',
         field: 'max_size',
+        value: user.space_utilization.total,
         placeholder: user.space_utilization.total/1000000000,
         validate: (v) => !isNaN(v) && v * 1000000000 > user.space_utilization.used,
         help: `A number in gigabytes greater than current utilization: ${user.space_utilization.used/1000000000} GB`,
@@ -159,7 +160,7 @@ class UserDetail extends Component {
 
                 <div id='collections'>
                   <Heading type={4}>Disk Usage</Heading>
-                  <div className='wr-usage'>
+                  <div className='wr-usage-graph'>
                     <RadialGraph
                       percentage={spacePerct}
                       label={`${spacePerct<1?'< 1':spacePerct}%`}
