@@ -50,7 +50,7 @@ class Dashboard extends Component {
 
 
     this.collectionKeys = [
-      {id: 'title', sortable: true},
+      {id: 'title', sortable: true, ln: item => item.download_url.replace('$download', '')},
       {id: 'created_at', label: 'created at', sortable: true, format: (d) => moment.unix(d).local().format('L LT')},
       {id: 'size', sortable: true, format: (s) => `${(s/1000000).toFixed(1)} GB`},
     ];
