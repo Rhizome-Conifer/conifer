@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import Recording from 'components/Recording';
+import Recording from 'components/RecordingCard';
 
 import './style.scss';
 

@@ -7,7 +7,7 @@ import TimeFormat from 'components/TimeFormat';
 
 import './style.scss';
 
-function Recording(props) {
+function RecordingCard(props) {
   const { rec } = props;
 
   return (
@@ -51,7 +51,8 @@ function Recording(props) {
   );
 }
 
-Recording.propTypes = {
+RecordingCard.propTypes = {
+  rec: PropTypes.object
 };
 
-export default Recording;
+export default RecordingCard;
