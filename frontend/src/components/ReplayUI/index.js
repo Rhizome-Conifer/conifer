@@ -8,6 +8,7 @@ import SizeCounter from 'components/SizeCounter';
 
 import './style.scss';
 
+
 class ReplayUI extends Component {
   static propTypes = {
     recordings: PropTypes.array,

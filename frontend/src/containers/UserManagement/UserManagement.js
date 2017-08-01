@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { login, logout } from 'redux/modules/auth';
 import { load as loadUser } from 'redux/modules/user';
 
-import UserManagementUI from 'components/UserManagementUI';
+import { UserManagementUI } from 'components/SiteComponents';
 
 
 class UserManagement extends Component {

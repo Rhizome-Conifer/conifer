@@ -11,8 +11,7 @@ import { isLoaded as isAuthLoaded,
 import { UserManagement } from 'containers';
 
 import config from 'config';
-import Breadcrumbs from 'components/Breadcrumbs';
-import Footer from 'components/Footer';
+import { Breadcrumbs, Footer } from 'components/SiteComponents';
 
 import './style.scss';
 

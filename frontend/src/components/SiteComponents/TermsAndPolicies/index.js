@@ -2,7 +2,6 @@ import React from 'react';
 
 import './style.scss';
 
-
 function TermsAndPolicies() {
   return (
     <div className="container">

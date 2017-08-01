@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import './style.scss';
 
+
 function FAQ() {
   return (
     <div className="container faq">
