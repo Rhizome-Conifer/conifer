@@ -14,6 +14,7 @@ import { Grid, Col } from 'react-bootstrap';
 import Heading from 'components/Heading';
 import List from 'components/List';
 import RadialGraph from 'components/RadialGraph';
+import SizeFormat from 'components/SizeFormat';
 import { loadDashboard } from './actions';
 import { bytesToGb } from 'components/SizeFormat';
 
@@ -52,7 +53,7 @@ class Dashboard extends Component {
     this.collectionKeys = [
       {id: 'title', sortable: true, ln: item => item.download_url.replace('$download', '')},
       {id: 'created_at', label: 'created at', sortable: true, format: (d) => moment.unix(d).local().format('L LT')},
-      {id: 'size', sortable: true, format: (s) => `${(s/1000000).toFixed(1)} GB`},
+      {id: 'size', sortable: true, component: (coll) => <SizeFormat bytes={coll.size} />},
     ];
 
     this.state = {
