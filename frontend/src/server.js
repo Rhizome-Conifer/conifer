@@ -103,3 +103,7 @@ if (config.port) {
 } else {
   console.error('==>     ERROR: No PORT environment variable has been specified');
 }
+
+process.on('unhandledRejection', error => {
+    console.log('ERROR:', error.message);
+});

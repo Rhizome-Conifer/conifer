@@ -18,6 +18,7 @@ import './base.scss';
 const client = new ApiClient();
 const browserHistoryScroll = useScroll(() => browserHistory)();
 const dest = document.getElementById('app');
+window.wrAppContainer = dest;
 // eslint-disable-next-line no-underscore-dangle
 const store = createStore(browserHistoryScroll, client, window.__data);
 const history = syncHistoryWithStore(browserHistoryScroll, store);

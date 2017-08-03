@@ -30,6 +30,7 @@
     "react/prefer-stateless-function": 0,
     "react/prop-types": 1,
     "react/no-unused-prop-types": 0,
+    "react/no-did-mount-set-state": 1,
     "spaced-comment": 0,
     "no-unused-vars": 1,
     "keyword-spacing": 0,
@@ -41,7 +42,12 @@
     "vars-on-top": 1,
     "no-shadow": 1,
     "class-methods-use-this": 1,
-    "prefer-template": 1
+    "prefer-template": 1,
+    "no-bitwise": 0,
+    "no-plusplus": 1,
+    "jsx-a11y/no-static-element-interactions": 1,
+    "object-curly-spacing":1,
+    "import/prefer-default-export": 1
   },
   "plugins": [
     "react", "import"

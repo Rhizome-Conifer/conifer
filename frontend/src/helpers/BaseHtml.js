@@ -1,4 +1,4 @@
-/* eslint-disable react/no-danger, global-require, no-underscore-dangle */
+/* eslint-disable react/no-danger*/
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom/server';
@@ -6,11 +6,11 @@ import serialize from 'serialize-javascript';
 import Helmet from 'react-helmet';
 
 
-export default class BaseHtml extends Component { // eslint-disable-line react/prefer-stateless-function
+export default class BaseHtml extends Component {
   static propTypes = {
-    assets: PropTypes.object, // eslint-disable-line react/forbid-prop-types
+    assets: PropTypes.object,
     component: PropTypes.node,
-    store: PropTypes.object // eslint-disable-line react/forbid-prop-types
+    store: PropTypes.object
   };
 
   render() {
