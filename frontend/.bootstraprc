@@ -52,7 +52,7 @@ styles:
   # Core CSS
   scaffolding: true
   type: true
-  code: true
+  code: false
   grid: true
   tables: true
   forms: true
@@ -66,19 +66,19 @@ styles:
   navs: true
   navbar: true
   breadcrumbs: true
-  pagination: true
-  pager: true
+  pagination: false
+  pager: false
   labels: true
-  badges: true
-  jumbotron: true
-  thumbnails: true
+  badges: false
+  jumbotron: false
+  thumbnails: false
   alerts: true
   progress-bars: true
-  media: true
+  media: false
   list-group: true
   panels: true
-  wells: true
-  responsive-embed: true
+  wells: false
+  responsive-embed: false
   close: true
 
   # Components w/ JavaScript

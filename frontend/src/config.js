@@ -17,6 +17,7 @@ module.exports = Object.assign({
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,
+  product: 'Webrecorder',
   app: {
     title: 'Webrecorder',
     description: '',

@@ -7,7 +7,7 @@ import Modal from 'components/Modal';
 import LoginForm from './forms';
 import './style.scss';
 
-export class UserManagement extends Component {
+class UserManagementUI extends Component {
 
   static propTypes = {
     auth: PropTypes.shape({
@@ -115,4 +115,4 @@ export class UserManagement extends Component {
   }
 }
 
-export default UserManagement;
+export default UserManagementUI;

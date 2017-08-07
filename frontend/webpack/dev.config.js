@@ -46,11 +46,10 @@ var webpackConfig = module.exports = {
       'babel-polyfill',
       'react-hot-loader/patch',
       'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
-      'bootstrap-loader',
       './config/polyfills',
+      'bootstrap-loader',
       './src/client.js',
-      //'./src/shared/js/wb.js',
-      './src/shared/js/wb_frame.js',
+      './src/shared/js/wb_frame.js', //'./src/shared/js/wb.js',
     ]
   },
   output: {

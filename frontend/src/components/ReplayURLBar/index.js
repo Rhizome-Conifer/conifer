@@ -100,7 +100,7 @@ class ReplayURLBar extends Component {
               isReplay &&
                 <OutsideClick handleClick={this.closeBookmarkList}>
                   <div className={listClasses} title="Bookmark list">
-                    <input type="text" onClick={this.toggleBookmarkList} className="form-control dropdown-toggle" name="url" data-toggle="dropdown" aria-haspopup="true" value={url} autoComplete="off" />
+                    <input type="text" onClick={this.toggleBookmarkList} className="form-control dropdown-toggle" name="url" aria-haspopup="true" defaultValue={url} autoComplete="off" />
 
                     <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
                       {
@@ -135,7 +135,7 @@ class ReplayURLBar extends Component {
             }
             {
               !isReplay &&
-                <input type="text" className="url-input-recorder form-control" name="url" value="value" autoFocus required />
+                <input type="text" className="url-input-recorder form-control" name="url" autoFocus required />
             }
             {
               canAdmin && isNew &&
