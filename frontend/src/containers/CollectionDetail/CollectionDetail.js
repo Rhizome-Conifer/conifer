@@ -81,8 +81,13 @@ class CollectionDetail extends Component {
 const loadCollection = [
   {
     promise: ({ params, store: { dispatch, getState }, location }) => {
+      const { collection } = getState();
       const { user, coll } = params;
-      return dispatch(loadColl(user, coll));
+
+      if(!isLoaded(getState()) || collection.coll !== coll || (collection.coll === coll && Date.now() - collection.accessed > 15 * 60 * 1000))
+        return dispatch(loadColl(user, coll));
+
+      return undefined;
     }
   },
   {

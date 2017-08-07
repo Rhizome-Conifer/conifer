@@ -1,0 +1,57 @@
+.share-container {
+    position: relative;
+
+    &.open .dropdown-menu {
+        opacity: 1;
+        transform: scale(1, 1);
+        top: calc(100% + 15px);
+        left: auto;
+        right: 0;
+    }
+
+    .share-modal {
+        min-width: 300px;
+        border-radius: 0;
+        padding: 10px;
+
+        .glyphicon-remove-circle {
+            transition: color .2s ease-in-out;
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            padding: 10px;
+            cursor: pointer;
+
+            &:hover {
+                color: red;
+            }
+        }
+
+        label {
+            display: block;
+            clear: both;
+        }
+
+        input {
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin: 0 40px 10px 0;
+        }
+    }
+
+    .shareables {
+        transition: height .22s ease-out;
+        overflow: hidden;
+
+        &.disabled {
+            height: 0 !important;
+        }
+
+        textarea { overflow: hidden; }
+        textarea, input {
+            width: 100%;
+        }
+    }
+}

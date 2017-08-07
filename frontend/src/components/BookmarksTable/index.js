@@ -54,7 +54,7 @@ class BookmarksTable extends Component {
                     <td className="bookmark-title">
                       <Link to={`/${collection.user}/${collection.coll}/${page.timestamp}${page.browser ? `$br:${page.browser}` : ''}/${page.url}`}>
                         <EditableString
-                          string={page.title}
+                          string={page.title || 'No Title'}
                           className="edit-coll-title" />
                       </Link>
                     </td>

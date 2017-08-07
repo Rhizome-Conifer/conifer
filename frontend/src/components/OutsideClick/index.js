@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 class OutsideClick extends Component {
   /**
-   * Wrapper component to manage whether clicks occur outside
+   * Wrapper component to manage whether clicks (or escape) occur outside
    * of component, calling handleClick if so. (e.g. clicks outside dropdown)
    */
 
@@ -15,10 +15,18 @@ class OutsideClick extends Component {
 
   componentDidMount() {
     window.wrAppContainer.addEventListener('mousedown', this.checkClick);
+    window.wrAppContainer.addEventListener('keyup', this.checkKey);
   }
 
   componentWillUnmount() {
     window.wrAppContainer.removeEventListener('mousedown', this.checkClick);
+    window.wrAppContainer.removeEventListener('keyup', this.checkKey);
+  }
+
+  checkKey = (evt) => {
+    // escape key
+    if(evt.keyCode === 27)
+      this.props.handleClick(evt);
   }
 
   checkClick = (evt) => {

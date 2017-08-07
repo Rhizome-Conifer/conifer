@@ -3,26 +3,35 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 
-import { load as loadColl } from 'redux/modules/collection';
+import { getActiveRecording, getOrderedRecordings } from 'redux/selectors';
+
+import { isLoaded, load as loadColl } from 'redux/modules/collection';
 
 import ReplayIFrame from 'components/ReplayIFrame';
 import ReplayUI from 'components/ReplayUI';
 
 class Replay extends Component {
   static propTypes = {
-    recordings: PropTypes.array,
     auth: PropTypes.object,
-    params: PropTypes.object
+    collection: PropTypes.object,
+    params: PropTypes.object,
+    recordings: PropTypes.array,
+    recordingIndex: PropTypes.number
   };
+
+  static contextTypes = {
+    product: PropTypes.string
+  }
 
   // TODO move to HOC
   static childContextTypes = {
     currMode: PropTypes.string,
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    product: PropTypes.string
   };
 
   getChildContext() {
-    const { auth, collection, params, } = this.props;
+    const { auth, params } = this.props;
 
     return {
       currMode: 'replay',
@@ -31,22 +40,25 @@ class Replay extends Component {
   }
 
   render() {
-    const { collection, params } = this.props;
+    const { collection, recordings, recordingIndex, params } = this.props;
+    const { product } = this.context;
+    const shareUrl = `http://localhost:8089/${params.user}/${params.coll}/${params.ts}/${params.splat}`;
     const iframeUrl = `http://localhost:8089/${params.user}/${params.coll}/${params.ts}mp_/${params.splat}`;
 
+    const coll = collection.collection;
     return (
       <div>
         <Helmet>
-          <meta property="og:url" content="{/* get_share_url() */}" />
+          <meta property="og:url" content={shareUrl} />
           <meta property="og:type" content="website" />
-          <meta property="og:title" content="Archived page from the &ldquo;{{ coll_title|urldecode|e }}&rdquo; Collection on {{ metadata.product }}" />
-          <meta name="og:description" content="Create high-fidelity, interactive web archives of any web site you browse.}" />
+          <meta property="og:title" content={`Archived page from the &ldquo;${coll.title}&rdquo; Collection on ${product}`} />
+          <meta name="og:description" content={coll.desc ? collection.collection.desc : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
         </Helmet>
 
         <ReplayUI
-          recordings={collection.bookmarks}
-          ts={params.ts}
-          url={params.splat} />
+          recordings={recordings}
+          recordingIndex={recordingIndex}
+          params={params} />
 
         <ReplayIFrame
           url={iframeUrl}
@@ -59,15 +71,22 @@ class Replay extends Component {
 const loadRecordings = [
   {
     promise: ({ params, store: { dispatch, getState }, location }) => {
+      const { collection } = getState();
       const { user, coll } = params;
-      return dispatch(loadColl(user, coll));
+
+      if(!isLoaded(getState()) || (collection.coll === coll && Date.now() - collection.accessed > 15 * 60 * 1000))
+        return dispatch(loadColl(user, coll));
+
+      return undefined;
     }
   }
 ];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, props) => {
   const { auth, collection } = state;
   return {
+    recordings: getOrderedRecordings(state),
+    recordingIndex: getActiveRecording(state, props),
     collection,
     auth
   };

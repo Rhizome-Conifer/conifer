@@ -49,7 +49,7 @@ var webpackConfig = module.exports = {
       'bootstrap-loader',
       './config/polyfills',
       './src/client.js',
-      './src/shared/js/wb.js',
+      //'./src/shared/js/wb.js',
       './src/shared/js/wb_frame.js',
     ]
   },

@@ -23,9 +23,19 @@ export class App extends Component { // eslint-disable-line
     router: PropTypes.object
   }
 
+  static childContextTypes = {
+    product: PropTypes.string
+  }
+
   static propTypes = {
     children: PropTypes.node.isRequired,
     auth: PropTypes.object,
+  }
+
+  getChildContext() {
+    return {
+      product: 'Webrecorder'
+    }
   }
 
   render() {

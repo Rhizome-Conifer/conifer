@@ -20,6 +20,8 @@ export default function collections(state = initialState, action = {}) {
         ...state,
         loading: false,
         loaded: true,
+        accessed: Date.now(),
+        user: action.result.user,
         collections: action.result.collections
       };
     case COLLS_LOAD_FAIL:
@@ -35,7 +37,7 @@ export default function collections(state = initialState, action = {}) {
 }
 
 export function isLoaded(globalState) {
-  return globalState.colls && globalState.colls.loaded;
+  return globalState.collections && globalState.collections.loaded;
 }
 
 export function load(username) {

@@ -12,9 +12,7 @@ import './style.scss';
 class ReplayUI extends Component {
   static propTypes = {
     recordings: PropTypes.array,
-    params: PropTypes.object,
-    ts: PropTypes.string,
-    url: PropTypes.string
+    params: PropTypes.object
   };
 
   static contextTypes = {
@@ -27,7 +25,9 @@ class ReplayUI extends Component {
     const isWrite = currMode === 'extract' || currMode === 'patch' || currMode === 'record';
 
     return (
-      <div className="container-fluid wr-controls navbar-default new-recording-ui">
+      <div
+        role="presentation"
+        className="container-fluid wr-controls navbar-default new-recording-ui">
         <ModeSelector />
 
         { isWrite &&

@@ -46,6 +46,29 @@
     }
 
     .wr-mode-message {
+
+        & > span {
+            transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+            transition-delay: .045s;
+
+            &:first-of-type {
+                position: absolute;
+                opacity: 0;
+                transform: scale(1,1);
+                left: 0;
+                right: 0;
+            }
+        }
+
+        &:hover > span + span, &:active > span + span {
+            opacity: 0;
+            transform: scale(0.9, 0.9)
+        }
+
+        &:hover > span:first-of-type, &:active > span:first-of-type {
+            opacity: 1;
+        }
+
         .glyphicon {
             vertical-align: text-top;
         }
@@ -72,27 +95,34 @@
 }
 
 .wr-mode-message {
-    display: flex;
 
-    & > span {
-        transition: opacity .2s ease-in-out, transform .2s ease-in-out;
-        transition-delay: .045s;
+}
 
-        &:first-of-type {
-            position: absolute;
-            opacity: 0;
-            left: 0;
-            right: 0;
-        }
+.wr-modes {
+    min-width: 350px;
+    position: relative;
+
+    .wr-mode-icon {
+        font-size: 2em;
     }
 
-    &:hover > span + span, &:active > span + span {
-        opacity: 0;
-        -webkit-transform: scale(0.9, 0.9);
-        transform: scale(0.9, 0.9);
+    svg {
+        width: 28px;
+        height: 28px;
     }
+}
 
-    &:hover > span:first-of-type, &:active > span:first-of-type {
-        opacity: 1;
+.wr-mode {
+    position: relative;
+
+    &.active:after {
+        content: '';
+        position: absolute;
+        display: block;
+        width: 10px;
+        height: 100%;
+        left: 0;
+        top: 0;
+        background: #5fd85f;
     }
 }

@@ -26,12 +26,9 @@ class RemoteBrowserSelect extends Component {
     super(props);
 
     this.state = { open: false };
-
-    this.getRemoteBrowsers = this.getRemoteBrowsers.bind(this);
-    this.selectBrowser = this.selectBrowser.bind(this);
   }
 
-  getRemoteBrowsers() {
+  getRemoteBrowsers = () => {
     // load remote browsers if we don't already have them or
     // it's been 15min since last retrieval
     if (isEmpty(this.props.browsers) || !this.props.accessed || Date.now() - this.props.accessed > 15 * 60 * 1000) {
@@ -41,7 +38,7 @@ class RemoteBrowserSelect extends Component {
     this.setState({ open: !this.state.open });
   }
 
-  selectBrowser(id) {
+  selectBrowser = (id) => {
     this.setState({ open: false });
     this.props.setBrowser(id);
   }
