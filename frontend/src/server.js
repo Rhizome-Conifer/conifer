@@ -19,19 +19,24 @@ import BaseHtml from './helpers/BaseHtml';
 
 import './base.scss';
 
-const targetUrl = `http://${config.internalApiHost}:${config.internalApiPort}/api`;
+const baseUrl = `http://${config.internalApiHost}:${config.internalApiPort}`;
+const targetUrl = `${baseUrl}/api`;
 const app = new Express();
 const pretty = new PrettyError();
 const server = new http.Server(app);
-const proxy = httpProxy.createProxyServer({
-  target: targetUrl
-});
+const proxy = httpProxy.createProxyServer();
 
 // Proxy client API requets to server for now to avoid
 // CORS during port 3000 development
 app.use('/api', (req, res) => {
   console.log('proxying requset', req.url, 'to', targetUrl);
   proxy.web(req, res, { target: targetUrl });
+});
+
+app.use('/_reportissues', (req, res) => {
+  const newReq = Object.assign(req, { url: '/_reportissues' });
+  console.log('proxying requset', req.url, 'to', baseUrl);
+  proxy.web(newReq, res, { target: baseUrl });
 });
 
 app.use(compression());
@@ -104,6 +109,6 @@ if (config.port) {
   console.error('==>     ERROR: No PORT environment variable has been specified');
 }
 
-process.on('unhandledRejection', error => {
-    console.log('ERROR:', error.message);
+process.on('unhandledRejection', (error) => {
+  console.log('ERROR:', error.message);
 });

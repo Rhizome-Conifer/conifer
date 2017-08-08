@@ -42,8 +42,8 @@ class BookmarkListItem extends Component {
         role="button"
         title={page.url}>
         {
-          !canAdmin && page.br &&
-            <img src={`/api/browsers/browsers/${page.br}/icon`} alt="Browser icon" />
+          page.browser &&
+            <img src={`/api/browsers/browsers/${page.browser}/icon`} alt="Browser icon" />
         }
         <div className="url">
           { page.url }

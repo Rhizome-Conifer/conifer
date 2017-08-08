@@ -6,21 +6,27 @@ import { Modal as BSModal } from 'react-bootstrap';
 class Modal extends Component {
 
   static propTypes = {
-    header: PropTypes.string,
-    body: PropTypes.object,
+    header: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+    body: PropTypes.element,
     visible: PropTypes.bool,
     closeCb: PropTypes.func
   }
 
   render() {
-    const { header, body, visible, closeCb } = this.props;
+    const { body, children, closeCb, header, visible } = this.props;
 
     return (
       <BSModal show={visible} onHide={closeCb}>
-        <BSModal.Header closeButton>
-          <BSModal.Title>{ header || 'Webrecorder' }</BSModal.Title>
-        </BSModal.Header>
-        <BSModal.Body>{ body }</BSModal.Body>
+        { header &&
+          <BSModal.Header closeButton>
+            {
+              typeof header === 'string' ?
+                <BSModal.Title>{ header }</BSModal.Title> :
+                header
+            }
+          </BSModal.Header>
+        }
+        <BSModal.Body>{ body || children }</BSModal.Body>
       </BSModal>
     );
   }

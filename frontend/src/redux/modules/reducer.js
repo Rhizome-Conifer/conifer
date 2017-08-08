@@ -3,16 +3,19 @@ import { routerReducer } from 'react-router-redux';
 import { reducer as reduxAsyncConnect } from 'redux-connect';
 
 import auth, { LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
-import user from './user';
+import bugReport from './bugReport';
 import collection from './collection';
 import collections from './collections';
 import recordings from './recordings';
 import remoteBrowsers from './remoteBrowsers';
+import user from './user';
+
 
 const appReducer = combineReducers({
   routing: routerReducer,
   reduxAsyncConnect,
   auth,
+  bugReport,
   collection,
   collections,
   recordings,
@@ -30,9 +33,9 @@ export default (state, action) => {
     }
     case LOGIN_SUCCESS: {
       // delete any login errors if they exist
-      const { authInstance, routing, reduxAsyncConnectInstance } = state;
-      delete authInstance.loginError;
-      const stateMod = { routing, authInstance, reduxAsyncConnectInstance };
+      const { auth, routing, reduxAsyncConnectInstance } = state;
+      delete auth.loginError;
+      const stateMod = { routing, auth, reduxAsyncConnectInstance };
       return appReducer(stateMod, action);
     }
     default:

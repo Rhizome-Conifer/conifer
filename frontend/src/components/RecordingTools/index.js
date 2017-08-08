@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { BugIcon } from 'components/Icons';
+import BugReport from 'containers/BugReport';
 import ShareWidget from 'containers/ShareWidget';
 
 import './style.scss';
+
 
 class RecordingTools extends Component {
 
@@ -28,9 +29,7 @@ class RecordingTools extends Component {
         }
         {
           !isNew && // metadata.type != 'player'
-            <button className="btn btn-default" title="Doesn't look right?" data-toggle="modal" data-target="#report-modal">
-              <BugIcon />
-            </button>
+            <BugReport />
         }
         {
           !isWrite && // metadata.type != 'player'
