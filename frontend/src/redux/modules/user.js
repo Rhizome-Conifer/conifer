@@ -27,7 +27,7 @@ export default function user(state = initialState, action = {}) {
         ...state,
         loading: false,
         loaded: true,
-        accessed: Date.now(),
+        accessed: action.accessed,
         data: action.result.user
       };
     case USER_LOAD_FAIL:
@@ -54,6 +54,7 @@ export function isLoaded(globalState) {
 export function load(username) {
   return {
     types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
+    accessed: Date.now(),
     promise: client => client.get(`${config.apiPath}/users/${username}?api=false&include_recs=false&include_colls=true`)
   };
 }

@@ -19,7 +19,7 @@ const defaultUser = {
   role: null
 };
 
-export default function auth(state = initialState, action = {}) {
+export function auth(state = initialState, action = {}) {
   switch (action.type) {
     case LOAD:
       return {

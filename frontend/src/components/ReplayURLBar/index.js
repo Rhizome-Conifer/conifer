@@ -116,7 +116,7 @@ class ReplayURLBar extends Component {
 
                     <div className="wr-replay-info">
                       {/* info_widget(coll=coll_title) */}
-                      <span className="replay-date main-replay-date hidden-xs" onClick={this.toggleBookmarkList}>
+                      <span className="replay-date main-replay-date hidden-xs">
                         <TimeFormat dt={ts} />
                         <span className="glyphicon glyphicon-triangle-bottom" />
                       </span>

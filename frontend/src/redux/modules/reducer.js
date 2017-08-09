@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 import { routerReducer } from 'react-router-redux';
 import { reducer as reduxAsyncConnect } from 'redux-connect';
 
-import auth, { LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
+import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
 import bugReport from './bugReport';
 import collection from './collection';
 import collections from './collections';

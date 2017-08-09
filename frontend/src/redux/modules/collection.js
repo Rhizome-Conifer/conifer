@@ -20,7 +20,7 @@ export default function collection(state = initialState, action = {}) {
         ...state,
         loading: false,
         loaded: true,
-        accessed: Date.now(),
+        accessed: action.accessed,
         ...action.result
       };
     case COLL_LOAD_FAIL:
@@ -42,6 +42,7 @@ export function isLoaded(globalState) {
 export function load(username, coll) {
   return {
     types: [COLL_LOAD, COLL_LOAD_SUCCESS, COLL_LOAD_FAIL],
+    accessed: Date.now(),
     promise: client => client.get(`${config.apiPath}/collections/${coll}?user=${username}`)
   };
 }

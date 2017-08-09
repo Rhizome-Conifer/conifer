@@ -117,6 +117,7 @@
     align-items: center;
     -ms-flex-align: center;
     position: absolute;
+    pointer-events: none;
     right: 0;
     top: 4px;
     height: calc(100% - 8px);

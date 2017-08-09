@@ -22,7 +22,7 @@ export default function remoteBrowsers(state = initialState, action = {}) {
         loading: false,
         loaded: true,
         browsers: action.result,
-        accessed: Date.now()
+        accessed: action.accessed
       };
     case RB_LOAD_FAIL:
       return {
@@ -50,6 +50,7 @@ export function isLoaded(globalState) {
 export function load() {
   return {
     types: [RB_LOAD, RB_LOAD_SUCCESS, RB_LOAD_FAIL],
+    accessed: Date.now(),
     promise: client => client.get('/api/browsers/browsers')
   };
 }
