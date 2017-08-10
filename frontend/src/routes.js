@@ -2,7 +2,7 @@ import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 
 import { FAQ, TermsAndPolicies } from 'components/SiteComponents';
 import { Application, CollectionList, CollectionDetail, Home, HttpStatus,
-         Replay, UserSettings } from 'containers';
+         PasswordReset, Replay, UserSignup, UserSettings } from 'containers';
 
 
 export default (store) => {
@@ -76,7 +76,13 @@ export default (store) => {
       path: '_register',
       name: 'registration',
       footer: true,
-      component: HttpStatus
+      component: UserSignup
+    },
+    {
+      path: '_forgot',
+      name: 'Password Reset',
+      footer: true,
+      component: PasswordReset
     },
 
     ...infoRoutes,

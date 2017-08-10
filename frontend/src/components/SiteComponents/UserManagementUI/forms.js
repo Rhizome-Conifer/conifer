@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
-
 import { Alert, Button, Col, Form, FormGroup,
          FormControl, Row } from 'react-bootstrap';
+
+import config from 'config';
 
 
 class LoginForm extends Component {
@@ -30,7 +31,7 @@ class LoginForm extends Component {
   }
 
   validateUsername = () => {
-    const pattern = /[A-Za-z0-9][\w-]{2,15}/;
+    const pattern = config.userRegex;
     if(typeof this.state.username !== 'undefined')
       return this.state.username.match(pattern) === this.state.username ? null : 'warning';
     return null;

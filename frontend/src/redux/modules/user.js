@@ -48,7 +48,7 @@ export default function user(state = initialState, action = {}) {
 }
 
 export function isLoaded(globalState) {
-  return globalState.user && globalState.user.loaded;
+  return globalState && globalState.user && globalState.user.loaded;
 }
 
 export function load(username) {

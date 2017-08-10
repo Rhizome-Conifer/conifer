@@ -3,5 +3,7 @@ export HomepageAnnouncement from './HomepageAnnouncement';
 export HomepageMessage from './HomepageMessage';
 export FAQ from './FAQ';
 export Footer from './Footer';
+export PasswordReset from './PasswordReset';
 export TermsAndPolicies from './TermsAndPolicies';
 export UserManagementUI from './UserManagementUI';
+export UserSignup from './UserSignup';

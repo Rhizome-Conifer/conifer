@@ -41,3 +41,13 @@ class ApiController(BaseController):
             if sesh:
                 return {'username': sesh.curr_user, 'role': sesh.curr_role}
             return {'username': None, 'role': None}
+
+        @self.app.get('/api/v1/username_check')
+        def test_username():
+            username = request.query.username
+            users = self.manager.get_users()
+
+            if username in users or username in self.manager.RESTRICTED_NAMES:
+                return {'available': False}
+
+            return {'available': True}

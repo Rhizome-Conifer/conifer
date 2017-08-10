@@ -27,7 +27,7 @@ class UserSchema(BaseSchema):
                            load_from='desc')
     created = fields.DateTime(load_from='creation_date')
     last_login = fields.DateTime()
-    role = fields.String(required=True)
+    role = fields.String(default='archivist')
 
     space_utilization = fields.Nested('SpaceUtilization')
     collections = fields.Nested('CollectionSchema', many=True)
@@ -54,6 +54,7 @@ class NewUserSchema(UserSchema):
     """Thin extension of `UserSchema` including username and
        password validation.
     """
+    announce_mailer = fields.Boolean(default=False)
     password = fields.String()
 
     @validates_schema
@@ -68,7 +69,9 @@ class NewUserSchema(UserSchema):
                                   'long with lowercase, uppercase, and either '
                                   'digits or symbols.')
 
-        if not UM.USER_RX.match(data['username']) or data['username'] in UM.RESTRICTED_NAMES:
+        if not (UM.USER_RX.match(data['username']) or
+                data['username'] in UM.RESTRICTED_NAMES or
+                data['username'].startsWith(UM.temp_prefix)):
             raise ValidationError('Invalid username..')
 
 

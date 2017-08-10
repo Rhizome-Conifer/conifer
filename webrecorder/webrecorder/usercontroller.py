@@ -2,6 +2,7 @@
 import json
 import time
 import redis
+import os
 import re
 
 from operator import itemgetter
@@ -14,6 +15,7 @@ from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.basecontroller import BaseController
 from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema,
                                  UserSchema, UserUpdateSchema)
+from webrecorder.webreccork import ValidationException
 
 
 # ============================================================================
@@ -29,6 +31,7 @@ class UserController(BaseController):
         self.temp_usage_key = config['temp_usage_key']
         self.temp_user_key = config['temp_prefix']
         self.tags_key = config['tags_key']
+        self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
 
     def init_routes(self):
 
@@ -228,6 +231,70 @@ class UserController(BaseController):
 
             self.manager.set_user_desc(user, desc)
             return {}
+
+        @self.app.post(['/api/v1/userreg', '/api/v1/userreg/'])
+        def api_register_user():
+            users = self.manager.get_users()
+            emails = [u[1]['email_addr'] for u in users.items()]
+            data = request.json
+            err = NewUserSchema(exclude=('name',)).validate(data)
+            # TODO: temp user move info
+            move_info = False
+
+            if 'full_name' in data:
+                err.update({'invalid': 'Invalid signup'})
+
+            if 'username' in data and data['username'].startswith(self.manager.temp_prefix):
+                err.update({'username': 'Sorry, this is not a valid username'})
+
+            if 'username' in data and data['username'] in users:
+                err.update({'username': 'Username already exists'})
+
+            if 'email' in data and data['email'] in emails:
+                err.update({'email': 'Email already in use'})
+
+            try:
+                self.manager.validate_user(data['username'], data['email'])
+                self.manager.validate_password(data['password'],
+                                               data['password2'])
+            except ValidationException as ve:
+                err.update({'validation': ve})
+
+            if len(err):
+                return {'errors': err}
+
+            desc = {'name': data['name']}
+
+            if move_info:
+                desc['move_info'] = move_info
+
+            #TODO: set default host?
+            host = self.get_host()
+
+            desc = json.dumps(desc)
+            self.manager.cork.register(
+                data['username'],
+                data['password'],
+                data['email'],
+                role='archivist',
+                max_level=50,
+                subject='webrecorder.io Account Creation',
+                email_template='webrecorder/templates/emailconfirm.html',
+                description=desc,
+                host=host
+            )
+
+            # add to announce list if user opted in
+            if self.announce_list and data.get('announce_list', False):
+                self.manager.add_to_mailing_list(data['username'],
+                                                 data['email'],
+                                                 data.get('name', ''),
+                                                 list_endpoint=self.announce_list)
+
+            return {
+                'success': ('A confirmation e-mail has been sent to <b>{0}</b>. '
+                            'Please check your e-mail to complete the registration!').format(data['email']),
+            }
 
         @self.app.post(['/api/v1/users', '/api/v1/users/'])
         @self.user_manager.admin_view()

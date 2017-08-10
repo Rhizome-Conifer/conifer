@@ -17,13 +17,6 @@ class ReportBugForm extends Component {
     this.state = {};
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    if(nextProps.cb === this.props.cb)
-      return false;
-
-    return true;
-  }
-
   save = (evt) => {
     evt.preventDefault();
 
@@ -35,6 +28,7 @@ class ReportBugForm extends Component {
   }
 
   render() {
+    const { email, desc } = this.state;
     const fields = [
       { name: 'loading', label: 'Page not loading' },
       { name: 'missing', label: 'Missing content (Images, Video)' },
@@ -56,6 +50,7 @@ class ReportBugForm extends Component {
             name="desc"
             onChange={this.handleChange}
             componentClass="textarea"
+            value={desc}
             placeholder="Additional Info (optional)" />
         </FormGroup>
         <FormGroup>
@@ -65,6 +60,7 @@ class ReportBugForm extends Component {
             type="email"
             name="email"
             onChange={this.handleChange}
+            value={email}
             placeholder="Email" />
         </FormGroup>
         <Button bsStyle="primary" type="submit" block>Send Report</Button>

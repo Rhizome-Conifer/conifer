@@ -6,9 +6,11 @@ import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
 import bugReport from './bugReport';
 import collection from './collection';
 import collections from './collections';
+import passwordReset from './passwordReset';
 import recordings from './recordings';
 import remoteBrowsers from './remoteBrowsers';
 import user from './user';
+import userSignup from './userSignup';
 
 
 const appReducer = combineReducers({
@@ -18,9 +20,11 @@ const appReducer = combineReducers({
   bugReport,
   collection,
   collections,
+  passwordReset,
   recordings,
   remoteBrowsers,
-  user
+  user,
+  userSignup
 });
 
 export default (state, action) => {

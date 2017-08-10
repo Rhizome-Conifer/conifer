@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { UserManagementUI } from 'components/SiteComponents/UserManagementUI';
+import { UserManagementUI } from 'components/SiteComponents';
 
 
 it('renders without crashing', () => {

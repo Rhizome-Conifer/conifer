@@ -19,8 +19,10 @@ class UserManagement extends Component {
   }
 
   componentDidMount() {
-    if(this.props.auth.user && !this.props.user.loading)
-      this.props.loadUser(this.props.auth.user.username);
+    const { auth } = this.props;
+
+    if(!auth.loading && auth.user && auth.user.username)
+      this.props.loadUser(auth.user.username);
   }
 
   logout = (evt) => {
