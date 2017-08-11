@@ -29,7 +29,7 @@ class Home extends Component {
     const { auth } = this.props;
     const { introVideoOpen } = this.state;
 
-    const loaded = auth.loaded;
+    // const loaded = auth.get('loaded');
 
     return (
       <div>
@@ -69,12 +69,10 @@ class Home extends Component {
   }
 }
 
-
 const mapStateToProps = (state) => {
-  const { auth, user } = state;
   return {
-    auth,
-    user
+    auth: state.get('auth'),
+    user: state.get('user')
   };
 };
 

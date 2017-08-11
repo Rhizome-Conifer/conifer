@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
+import { fromJS } from 'immutable';
 import { Link } from 'react-router';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
-import sortBy from 'lodash/sortBy';
-import sumBy from 'lodash/sumBy';
 
+import { sumCollectionsSize } from 'redux/selectors';
 import { isLoaded, load } from 'redux/modules/collections';
 
 import SizeFormat from 'components/SizeFormat';
@@ -17,27 +17,29 @@ class CollectionList extends Component {
 
   static propTypes = {
     collections: PropTypes.object,
+    collSum: PropTypes.number,
     auth: PropTypes.object,
-    user: PropTypes.string,
+    user: PropTypes.object,
     params: PropTypes.object
   }
 
-  static defaultProps = {
+  static defaultProps = fromJS({
     collections: []
-  }
+  })
 
   render() {
-    const { user } = this.props.params;
-    const { auth } = this.props;
-    const { collections } = this.props.collections;
+    const userParam = this.props.params.user;
+    const { auth, collSum, user } = this.props;
+    const collections = this.props.collections.get('collections');
 
-    const canAdmin = auth.user.username === user; // && !anon;
+    const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;
+    const totalSpace = user.getIn(['data', 'space_utilization', 'total']);
 
     return (
       <div>
         <Row className="collection-description page-archive">
           <Col xs={12}>
-            <h2>{ user } Archive</h2>
+            <h2>{ userParam } Archive</h2>
             <p>Available collections are listed below.</p>
           </Col>
         </Row>
@@ -50,35 +52,43 @@ class CollectionList extends Component {
                 </Button>
             }
           </Col>
-          <Col xs={2} className="pull-right">
-            <strong>Space Used: </strong>
-            <SizeFormat bytes={sumBy(collections, 'size')} />
-            <ProgressBar now={20} bsStyle="success" />
-          </Col>
+          {
+            canAdmin &&
+              <Col xs={2} className="pull-right">
+                <strong>Space Used: </strong>
+                <SizeFormat bytes={collSum} />
+                <ProgressBar now={(collSum / totalSpace) * 100} bsStyle="success" />
+              </Col>
+          }
         </Row>
-        <Row>
-          <ul className="list-group collection-list">
-            { sortBy(collections, ['created_at']).map((coll) => {
-              return (
-                <li className="left-buffer list-group-item" key={coll.id}>
-                  <Row>
-                    <Col xs={9}>
-                      <Link to={`${user}/${coll.id}`} className="collection-title">{coll.title}</Link>
-                    </Col>
-                    <Col xs={2}>
-                      <SizeFormat bytes={coll.size} />
-                    </Col>
-                    <Col xs={1}>
-                      { coll['r:@public'] === '1' &&
-                        <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
-                      }
-                    </Col>
-                  </Row>
-                </li>);
-            })
-            }
-          </ul>
-        </Row>
+
+        {
+          collections &&
+            <Row>
+              <ul className="list-group collection-list">
+                { collections.sortBy(coll => coll.get('created_at')).map((coll) => {
+                  return (
+                    <li className="left-buffer list-group-item" key={coll.get('id')}>
+                      <Row>
+                        <Col xs={9}>
+                          <Link to={`${userParam}/${coll.get('id')}`} className="collection-title">{coll.get('title')}</Link>
+                        </Col>
+                        <Col xs={2}>
+                          <SizeFormat bytes={coll.get('size')} />
+                        </Col>
+                        <Col xs={1}>
+                          { coll.get('r:@public') === '1' &&
+                            <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
+                          }
+                        </Col>
+                      </Row>
+                    </li>);
+                })
+                }
+              </ul>
+            </Row>
+        }
+
       </div>
     );
   }
@@ -87,11 +97,14 @@ class CollectionList extends Component {
 const loadCollections = [
   {
     promise: ({ params, store: { dispatch, getState }, location }) => {
-      const { collections } = getState();
+      const state = getState();
+      const collections = state.get('collections');
       const { user } = params;
 
-      if(!isLoaded(getState()) || (collections.user === user && Date.now() - collections.accessed > 15 * 60 * 1000))
+      if(!isLoaded(state) || (collections.get('user') === user &&
+         Date.now() - collections.get('accessed') > 15 * 60 * 1000)) {
         return dispatch(load(user));
+      }
 
       return undefined;
     }
@@ -99,10 +112,12 @@ const loadCollections = [
 ];
 
 const mapStateToProps = (state) => {
-  const { auth, collections } = state;
+  const collections = state.get('collections');
   return {
-    auth,
-    collections
+    auth: state.get('auth'),
+    collections,
+    collSum: collections ? sumCollectionsSize(collections) : 0,
+    user: state.get('user')
   };
 };
 

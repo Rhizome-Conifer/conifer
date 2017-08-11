@@ -1,21 +1,24 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import sumBy from 'lodash/sumBy';
-
+import { asyncConnect } from 'redux-connect';
 import { Panel, ProgressBar } from 'react-bootstrap';
+
+import { isLoaded as isAuthLoaded } from 'redux/modules/auth';
+import { load as loadUser, isLoaded as isUserLoaded } from 'redux/modules/user';
+import { sumCollectionsSize } from 'redux/selectors';
 import SizeFormat from 'components/SizeFormat';
 
 import './style.scss';
 
 class UserSettings extends Component {
   static propTypes = {
-    user: PropTypes.string
+    collSize: PropTypes.number,
+    user: PropTypes.object
   }
 
   render() {
-    const { user } = this.props;
-    const userInfo = <h2>Usage for <b>{ user.data.username }</b></h2>;
+    const { collSize, user } = this.props;
+    const userInfo = <h2>Usage for <b>{ user.getIn(['data', 'username']) }</b></h2>;
     const passReset = (
       <div className="pw-reset">
         <h3 className="panel-title">Change Password</h3>
@@ -28,7 +31,7 @@ class UserSettings extends Component {
       <div className="row top-buffer col-xs-10 col-xs-push-1">
         <Panel header={userInfo}>
           <span>Space Used: </span>
-          <SizeFormat bytes={sumBy(user.data.collections, 'size')} />
+          <SizeFormat bytes={collSize} />
           <ProgressBar now={20} bsStyle="success" />
           Please <a href="mailto:support@webrecorder.io">contact us</a> if you would like to request additional space.
         </Panel>
@@ -87,10 +90,23 @@ class UserSettings extends Component {
   }
 }
 
+const preloadData = [
+  {
+    promise: ({ store: { dispatch, getState } }) => {
+      const state = getState();
+
+      if(isAuthLoaded(state) && !isUserLoaded(state))
+        return dispatch(loadUser(state.getIn(['auth', 'user', 'username'])));
+
+      return undefined;
+    }
+  }
+];
+
 const mapStateToProps = (state) => {
-  const { user } = state;
   return {
-    user
+    user: state.get('user'),
+    collSize: sumCollectionsSize(state.getIn(['user', 'data'])),
   };
 };
 
@@ -100,6 +116,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(
+export default asyncConnect(
+  preloadData,
   mapStateToProps
 )(UserSettings);

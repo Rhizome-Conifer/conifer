@@ -18,23 +18,23 @@ function RecordingCard(props) {
 
       <div className="content-column">
         <div className="recording-content">
-          <EditableString string={rec.title} icon={false} />
+          <EditableString string={rec.get('title')} icon={false} />
           <div className="recording-details">
             <div className="recording-stats text-left right-buffer-sm">
               <small>
-                { rec.is_patch ?
+                { rec.get('is_patch') ?
                   <span className="ra-mode-badge patch">PATCH</span> :
                   <span className="bookmark-count">{`${0} bookmarks`}</span>
                 }
-                <span className="current-size text-right"><SizeFormat bytes={rec.size} /></span>
+                <span className="current-size text-right"><SizeFormat bytes={rec.get('size')} /></span>
               </small>
             </div>
             <div className="recording-time-info top-buffer-sm text-left right-buffer-sm">
-              <TimeFormat epoch={rec.updated_at} />
+              <TimeFormat epoch={rec.get('updated_at')} />
             </div>
 
             <div className="recording-time-info text-left right-buffer-sm">
-              { rec.duration }
+              { rec.get('duration') }
             </div>
 
             <div className="recording-fn-row">

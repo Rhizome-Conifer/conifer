@@ -8,8 +8,8 @@ import { Application, CollectionList, CollectionDetail, Home, HttpStatus,
 export default (store) => {
   const requireLogin = (nextState, replace, cb) => {
     function checkAuth() {
-      const { auth: { user } } = store.getState();
-      if (!user.username) {
+      const state = store.getState();
+      if (!state.getIn(['auth', 'user', 'username'])) {
         // oops, not logged in, so can't be here!
         replace('/');
       }

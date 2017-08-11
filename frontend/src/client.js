@@ -21,7 +21,23 @@ const dest = document.getElementById('app');
 window.wrAppContainer = dest;
 // eslint-disable-next-line no-underscore-dangle
 const store = createStore(browserHistoryScroll, client, window.__data);
-const history = syncHistoryWithStore(browserHistoryScroll, store);
+
+const createSelectLocationState = () => {
+  let prevRoutingState;
+  let prevRoutingStateJS;
+  return (state) => {
+    const routingState = state.get('routing'); // or state.routing
+    if (typeof prevRoutingState === 'undefined' || prevRoutingState !== routingState) {
+      prevRoutingState = routingState;
+      prevRoutingStateJS = routingState.toJS();
+    }
+    return prevRoutingStateJS;
+  };
+};
+
+const history = syncHistoryWithStore(browserHistoryScroll, store, {
+  selectLocationState: createSelectLocationState()
+});
 
 
 const renderApp = (renderProps, includeDevTools = false) => {

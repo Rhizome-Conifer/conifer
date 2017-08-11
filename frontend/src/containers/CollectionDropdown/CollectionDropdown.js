@@ -1,19 +1,15 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { fromJS } from 'immutable';
 
 import { selectCollection } from 'redux/modules/user';
 import CollectionDropdownUI from 'components/CollectionDropdownUI';
 
 
 class CollectionDropdown extends Component {
-  static defaultProps = {
+  static defaultProps = fromJS({
     collections: [],
-  }
-
-  static propTypes = {
-    collections: PropTypes.array
-  }
+  })
 
   render() {
     return (
@@ -23,10 +19,10 @@ class CollectionDropdown extends Component {
 }
 
 const mapStateToProps = (state) => {
-  const { user } = state;
+  const user = state.get('user');
   return {
-    collections: user.data.collections,
-    activeCollection: user.activeCollection
+    collections: user.getIn(['data', 'collections']),
+    activeCollection: user.get('activeCollection')
   };
 };
 

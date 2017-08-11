@@ -6,9 +6,8 @@ import { PasswordReset } from 'components/SiteComponents';
 
 
 const mapStateToProps = (state) => {
-  const { passwordReset } = state;
   return {
-    errors: passwordReset.errors
+    errors: state.getIn(['passwordReset', 'errors'])
   };
 };
 

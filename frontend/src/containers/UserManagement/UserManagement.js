@@ -15,18 +15,38 @@ class UserManagement extends Component {
     collections: PropTypes.number,
     login: PropTypes.func,
     logout: PropTypes.func,
-    loadUser: PropTypes.func
+    loadUser: PropTypes.func,
+    user: PropTypes.object
   }
 
   componentDidMount() {
-    const { auth } = this.props;
+    const { auth, user } = this.props;
+    const shouldLoad = !auth.get('loading') &&
+                        auth.get('user') &&
+                        auth.getIn(['user', 'username']) &&
+                       !user.get('loading');
 
-    if(!auth.loading && auth.user && auth.user.username)
-      this.props.loadUser(auth.user.username);
+    console.log('coll list should load', shouldLoad);
+    // TODO: rethink, this causes a double render on first load
+    if(shouldLoad)
+      this.props.loadUser(auth.getIn(['user', 'username']));
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { auth, user } = this.props;
+    const shouldLoad = !auth.get('loading') &&
+                        auth.get('user') &&
+                        auth.getIn(['user', 'username']) &&
+                       !user.get('loading') &&
+                       !user.get('loaded');
+
+    console.log('coll list should load', shouldLoad);
+    // TODO: rethink, this causes a double render on first load
+    if(shouldLoad)
+      this.props.loadUser(auth.getIn(['user', 'username']));
   }
 
   logout = (evt) => {
-    evt.preventDefault();
     this.props.logout();
   }
 
@@ -40,7 +60,7 @@ class UserManagement extends Component {
     return (
       <UserManagementUI
         auth={auth}
-        collCount={user.data ? user.data.collections.length : 0}
+        collCount={user.get('data') ? user.getIn(['data', 'collections']).size : 0}
         loginFn={this.login}
         logoutFn={this.logout} />
     );
@@ -48,10 +68,9 @@ class UserManagement extends Component {
 }
 
 const mapStateToProps = (state) => {
-  const { auth, user } = state;
   return {
-    auth,
-    user
+    auth: state.get('auth'),
+    user: state.get('user')
   };
 };
 

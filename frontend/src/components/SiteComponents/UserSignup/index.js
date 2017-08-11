@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import { Link } from 'react-router';
 import PropTypes from 'prop-types';
 import map from 'lodash/map';
@@ -6,6 +7,8 @@ import { Alert, Button, Checkbox, ControlLabel, Form,
          HelpBlock, FormControl, FormGroup } from 'react-bootstrap';
 
 import config from 'config';
+
+import './style.scss';
 
 
 class UserSignup extends Component {
@@ -32,8 +35,12 @@ class UserSignup extends Component {
     const { announce_mailer, username, name, full_name,
             email, password, password2 } = this.state;
 
+    if(!password || !password2) {
+      this.setState({ missingPw: true });
+    }
+
     if(username && this.validateUsername() === 'success' &&
-       password && this.validatePassword() === null && email) {
+       password && password2 && this.validatePassword() === null && email) {
       // core fields to send to server
       let data = { username, email, password, password2 };
 
@@ -122,12 +129,12 @@ class UserSignup extends Component {
   }
 
   validatePassword = () => {
-    const { password, password2 } = this.state;
+    const { password, password2, missingPw } = this.state;
 
     if(password && !this.passwordPassRegex(password))
       return 'warning';
 
-    if(password && password2 && password !== password2)
+    if((password && password2 && password !== password2) || missingPw)
       return 'error';
 
     return null;
@@ -138,6 +145,10 @@ class UserSignup extends Component {
     const { available, checkedUsername, errors, result,
             success, userCheck } = this.props;
     const { email, name, password, password2, username } = this.state;
+
+    const classes = classNames('col-sm-6 col-md-4 col-md-offset-2 wr-signup', {
+      success
+    });
 
     return (
       <div className="row">
@@ -170,7 +181,7 @@ class UserSignup extends Component {
           <h4>To begin, please fill out the registration form below.</h4>
           <br />
         </div>
-        <div className="col-sm-6 col-md-4 col-md-offset-2">
+        <div className={classes}>
           <Form onSubmit={this.save}>
             <FormGroup validationState={this.validateUsername()}>
               <ControlLabel>Choose a username for your archive</ControlLabel>
@@ -243,7 +254,8 @@ class UserSignup extends Component {
                 name="password2"
                 placeholder="Confirm Password"
                 value={password2}
-                onChange={this.handleChange} />
+                onChange={this.handleChange}
+                onBlur={this.validatePassword} />
               {
                 password && password2 && password !== password2 &&
                   <HelpBlock>Password confirmation does not match</HelpBlock>
@@ -258,7 +270,7 @@ class UserSignup extends Component {
               </Checkbox>
             </FormGroup>
 
-            <Button bsStyle="primary" bsSize="large" type="submit" block>Register</Button>
+            <Button bsStyle="primary" bsSize="large" type="submit" block disabled={success}>Register</Button>
 
             <p className="top-buffer">
               By registering, you agree to our <Link to="/_policies">terms of service</Link>, including that we may use the provided email address to contact you from time to time in reference to the service and your account.

@@ -81,7 +81,7 @@ class ReplayURLBar extends Component {
               {
                 isReplay &&
                   <ReplayArrowButton
-                    page={recordingIndex - 1 >= 0 ? recordings[recordingIndex - 1] : null}
+                    page={recordingIndex - 1 >= 0 ? recordings.get(recordingIndex - 1) : null}
                     params={params}
                     direction="left" />
               }
@@ -89,7 +89,7 @@ class ReplayURLBar extends Component {
                 isReplay &&
                   <ReplayPageDisplay
                     index={recordingIndex}
-                    total={recordings.length} />
+                    total={recordings.size} />
               }
               {
                 canAdmin &&
@@ -100,13 +100,13 @@ class ReplayURLBar extends Component {
               isReplay &&
                 <OutsideClick handleClick={this.closeBookmarkList}>
                   <div className={listClasses} title="Bookmark list">
-                    <input type="text" onClick={this.toggleBookmarkList} className="form-control dropdown-toggle" name="url" aria-haspopup="true" defaultValue={url} autoComplete="off" />
+                    <input type="text" onClick={this.toggleBookmarkList} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
 
                     <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
                       {
                         recordings.map((page, idx) =>
                           <BookmarkListItem
-                            key={`${page.timestamp}${page.url}${idx}`}
+                            key={`${page.get('timestamp')}${page.url}${idx}`}
                             page={page}
                             params={params}
                             closeList={this.closeBookmarkList} />
@@ -128,7 +128,7 @@ class ReplayURLBar extends Component {
               isReplay &&
                 <div className="input-group-btn hidden-xs">
                   <ReplayArrowButton
-                    page={recordingIndex + 1 < recordings.length ? recordings[recordingIndex + 1] : null}
+                    page={recordingIndex + 1 < recordings.size ? recordings.get(recordingIndex + 1) : null}
                     params={params}
                     direction="right" />
                 </div>

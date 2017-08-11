@@ -4,7 +4,6 @@ import Helmet from 'react-helmet';
 import classNames from 'classnames';
 import { asyncConnect } from 'redux-connect';
 
-
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
 
@@ -43,6 +42,7 @@ export class App extends Component { // eslint-disable-line
     const match = routes[routes.length - 1];
     const hasFooter = match.footer;
     const classOverride = match.classOverride;
+    console.log('rendering app');
 
     return (
       <div className="wr-app">
@@ -70,7 +70,7 @@ export class App extends Component { // eslint-disable-line
 
 const preloadData = [
   {
-    promise: ({ params, store: { dispatch, getState }, location }) => {
+    promise: ({ store: { dispatch, getState } }) => {
       const promises = [];
 
       if(!isAuthLoaded(getState()))

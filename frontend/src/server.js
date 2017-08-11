@@ -57,7 +57,23 @@ app.use((req, res) => {
   const client = new ApiClient(req);
   const memoryHistory = createHistory(req.originalUrl);
   const store = createStore(memoryHistory, client);
-  const history = syncHistoryWithStore(memoryHistory, store);
+
+  const createSelectLocationState = () => {
+    let prevRoutingState;
+    let prevRoutingStateJS;
+    return (state) => {
+      const routingState = state.get('routing'); // or state.routing
+      if (typeof prevRoutingState === 'undefined' || prevRoutingState !== routingState) {
+        prevRoutingState = routingState;
+        prevRoutingStateJS = routingState.toJS();
+      }
+      return prevRoutingStateJS;
+    };
+  };
+
+  const history = syncHistoryWithStore(memoryHistory, store, {
+    selectLocationState: createSelectLocationState()
+  });
 
   function hydrateOnClient() {
     res.send(`<!doctype html>\n
@@ -110,5 +126,5 @@ if (config.port) {
 }
 
 process.on('unhandledRejection', (error) => {
-  console.log('ERROR:', error.message);
+  console.log('ERROR:', error);
 });

@@ -7,7 +7,7 @@ import { DropdownButton, MenuItem } from 'react-bootstrap';
 
 class CollectionDropdownUI extends Component {
   static propTypes = {
-    collections: PropTypes.array,
+    collections: PropTypes.object,
     activeCollection: PropTypes.string,
     setCollection: PropTypes.func
   }
@@ -18,14 +18,14 @@ class CollectionDropdownUI extends Component {
 
   render() {
     const { collections, activeCollection } = this.props;
-    const title = activeCollection ? find(collections, { id: activeCollection }).title : 'Choose a collection';
+    const title = activeCollection ? collections.find(coll => coll.get('id') === activeCollection).title : 'Choose a collection';
 
     return (
       <DropdownButton title={title} id="wr-collecton-dropdown" onSelect={this.collectionChoice}>
         <MenuItem>+ Create new collection</MenuItem>
         <MenuItem divider />
         {
-          collections.map(coll => <MenuItem key={coll.id} eventKey={coll.id} active={activeCollection === coll.id}>{ coll.title }</MenuItem>)
+          collections.map(coll => <MenuItem key={coll.get('id')} eventKey={coll.get('id')} active={activeCollection === coll.get('id')}>{ coll.get('title') }</MenuItem>)
         }
       </DropdownButton>
     );

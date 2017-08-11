@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { fromJS } from 'immutable';
 
 import OutsideClick from 'components/OutsideClick';
 import { ShareIcon } from 'components/Icons';
@@ -22,9 +23,9 @@ class ShareWidgetUI extends Component {
     coll: PropTypes.object
   };
 
-  static defaultProps = {
+  static defaultProps = fromJS({
     bsSize: ''
-  };
+  });
 
   constructor(props) {
     super(props);

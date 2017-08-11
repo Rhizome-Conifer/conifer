@@ -14,21 +14,21 @@ function RemoteBrowserOption(props) {
 
   const click = (evt) => {
     evt.preventDefault();
-    props.selectBrowser(props.browser.id);
+    props.selectBrowser(props.browser.get('id'));
   };
 
   return (
     <ul className={classes} onClick={click} role="button" data-native="true">
       <li className="col-xs-2">
-        { browser.id &&
-          <img src={`/api/browsers/browsers/${browser.id}/icon`} role="presentation" />
+        { browser.get('id') &&
+          <img src={`/api/browsers/browsers/${browser.get('id')}/icon`} role="presentation" />
         }
-        <span>{ browser.name }</span>
+        <span>{ browser.get('name') }</span>
       </li>
-      <li className="col-xs-2">{ browser.version ? `v${browser.version}` : '-' }</li>
-      <li className="col-xs-2">{ browser.release ? browser.release : '-' }</li>
-      <li className="col-xs-2">{ browser.os ? browser.os : '-' }</li>
-      <li className="col-xs-4">{ browser.caps ? browser.caps : '-' }</li>
+      <li className="col-xs-2">{ browser.get('version') ? `v${browser.get('version')}` : '-' }</li>
+      <li className="col-xs-2">{ browser.get('release') ? browser.get('release') : '-' }</li>
+      <li className="col-xs-2">{ browser.get('os') ? browser.get('os') : '-' }</li>
+      <li className="col-xs-4">{ browser.get('caps') ? browser.get('caps') : '-' }</li>
     </ul>
   );
 }

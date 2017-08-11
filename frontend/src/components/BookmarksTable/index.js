@@ -22,7 +22,7 @@ class BookmarksTable extends Component {
     const { browsers, collection } = this.props;
     const { canAdmin } = this.context;
 
-    const { recordings } = collection.collection;
+    const recordings = collection.getIn(['collection', 'recordings']).sortBy(o => o.get('timestamp'));
 
     return (
       <div className="bookmarks-panel">
@@ -47,29 +47,36 @@ class BookmarksTable extends Component {
           <tbody>
             {
               recordings.map(rec =>
-                rec.pages.map(page =>
-                  <tr key={`${page.timestamp}${page.url}`}>
-                    <td className="bookmark-hidden-switch" />
-                    <td className="bookmark-edit-title" />
-                    <td className="bookmark-title">
-                      <Link to={`/${collection.user}/${collection.coll}/${page.timestamp}${page.browser ? `$br:${page.browser}` : ''}/${page.url}`}>
-                        <EditableString
-                          string={page.title || 'No Title'}
-                          className="edit-coll-title" />
-                      </Link>
-                    </td>
-                    <td className="rec-browser" >
-                      {
-                        page.browser && page.browser in browsers ?
-                          <img src={`/api/browsers/browsers/${browsers[page.browser].id}/icon`} alt={`Recorded with ${capitalize(browsers[page.browser].name)} version ${browsers[page.browser].version}`} /> :
-                          '-'
-                      }
-                    </td>
-                    <td className="timestamp"><TimeFormat dt={page.timestamp} /></td>
-                    <td className="bookmark-url">{page.url}</td>
-                    <td className="bookmark-recording-title">{rec.title}</td>
-                  </tr>
-                )
+                rec.get('pages').sortBy(o => o.get('timestamp')).map((page) => {
+                  const url = page.get('url');
+                  const ts = page.get('timestamp');
+                  const browser = page.get('browser');
+                  const browserObj = browser && browser in browsers ? browsers.get(browser) : null;
+
+                  return (
+                    <tr key={`${ts}${url}`}>
+                      <td className="bookmark-hidden-switch" />
+                      <td className="bookmark-edit-title" />
+                      <td className="bookmark-title">
+                        <Link to={`/${collection.get('user')}/${collection.get('coll')}/${ts}${browser ? `$br:${browser}` : ''}/${url}`}>
+                          <EditableString
+                            string={page.get('title') || 'No Title'}
+                            className="edit-coll-title" />
+                        </Link>
+                      </td>
+                      <td className="rec-browser" >
+                        {
+                          browserObj ?
+                            <img src={`/api/browsers/browsers/${browserObj.get('id')}/icon`} alt={`Recorded with ${capitalize(browserObj.get('name'))} version ${browserObj.get('version')}`} /> :
+                            '-'
+                        }
+                      </td>
+                      <td className="timestamp"><TimeFormat dt={ts} /></td>
+                      <td className="bookmark-url">{url}</td>
+                      <td className="bookmark-recording-title">{rec.get('title')}</td>
+                    </tr>
+                  );
+                })
               )
             }
           </tbody>

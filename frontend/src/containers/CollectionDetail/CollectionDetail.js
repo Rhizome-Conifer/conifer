@@ -4,7 +4,6 @@ import { asyncConnect } from 'redux-connect';
 
 import { load as loadColl } from 'redux/modules/collection';
 import { isLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
-//import { load as loadRecs } from 'redux/modules/recordings';
 
 import BookmarksTable from 'components/BookmarksTable';
 import CollectionMetadata from 'components/CollectionMetadata';
@@ -28,24 +27,28 @@ class CollectionDetail extends Component {
 
   getChildContext() {
     const { auth, params } = this.props;
+    const username = auth.getIn(['user', 'username']);
 
     return {
-      canAdmin: auth.user.username === params.user,
-      canWrite: auth.user.username === params.user //&& !auth.anon
+      canAdmin: username === params.user,
+      canWrite: username === params.user //&& !auth.anon
     };
   }
 
   render() {
     const { auth, coll, params, remoteBrowsers } = this.props;
-    const canAdmin = auth.user.username === params.user;
-    const canWrite = auth.user.username === params.user; // && !auth.anon
+
+    const username = auth.getIn(['user', 'username']);
+    const canAdmin = username === params.user;
+    const canWrite = username === params.user; // && !auth.anon
+    const collection = coll.get('collection');
 
     return (
       <div>
         <CollectionMetadata
-          title={coll.collection.title}
-          desc={coll.collection.desc}
-          dlUrl={coll.collection.download_url} />
+          title={collection.get('title')}
+          desc={collection.get('desc')}
+          dlUrl={collection.get('download_url')} />
 
         <div className="row wr-collection-info">
           <div className="hidden-xs recording-panel">
@@ -66,12 +69,12 @@ class CollectionDetail extends Component {
                 </div>
             }
 
-            <RecordingColumn recordings={coll.collection.recordings} />
+            <RecordingColumn recordings={collection.get('recordings')} />
           </div>
 
           <BookmarksTable
             collection={coll}
-            browsers={remoteBrowsers.browsers} />
+            browsers={remoteBrowsers.get('browsers')} />
         </div>
       </div>
     );
@@ -80,38 +83,32 @@ class CollectionDetail extends Component {
 
 const loadCollection = [
   {
-    promise: ({ params, store: { dispatch, getState }, location }) => {
-      const { collection } = getState();
+    promise: ({ params, store: { dispatch, getState } }) => {
+      const state = getState();
+      const collection = state.get('collection');
       const { user, coll } = params;
 
-      if(!isLoaded(getState()) || collection.coll !== coll || (collection.coll === coll && Date.now() - collection.accessed > 15 * 60 * 1000))
+      if(!isLoaded(state) || collection.get('coll') !== coll || (collection.get('coll') === coll && Date.now() - collection.get('accessed') > 15 * 60 * 1000))
         return dispatch(loadColl(user, coll));
 
       return undefined;
     }
   },
   {
-    promise: ({ params, store: { dispatch, getState }, location }) => {
+    promise: ({ store: { dispatch, getState } }) => {
       if(!isLoaded(getState()))
         return dispatch(loadRB());
 
       return undefined;
     }
   }
-  // {
-  //   promise: ({ params, store: { dispatch, getState }, location }) => {
-  //     const { user, coll } = params;
-  //     return dispatch(loadRecs(user, coll));
-  //   }
-  // }
 ];
 
 const mapStateToProps = (state) => {
-  const { auth, collection, remoteBrowsers } = state;
   return {
-    auth,
-    coll: collection,
-    remoteBrowsers
+    auth: state.get('auth'),
+    coll: state.get('collection'),
+    remoteBrowsers: state.get('remoteBrowsers')
   };
 };
 

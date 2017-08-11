@@ -6,16 +6,15 @@ import { UserSignup } from 'components/SiteComponents';
 
 
 const mapStateToProps = (state) => {
-  const { available, checkedUsername, errors,
-          result, success, userCheck } = state.userSignup;
+  const userSignup = state.get('userSignup');
 
   return {
-    available,
-    checkedUsername,
-    errors,
-    result,
-    success,
-    userCheck
+    available: userSignup.get('available'),
+    checkedUsername: userSignup.get('checkedUsername'),
+    errors: userSignup.get('errors'),
+    result: userSignup.get('result'),
+    success: userSignup.get('success'),
+    userCheck: userSignup.get('userCheck')
   };
 };
 

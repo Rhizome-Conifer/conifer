@@ -11,14 +11,6 @@ import ReplayIFrame from 'components/ReplayIFrame';
 import ReplayUI from 'components/ReplayUI';
 
 class Replay extends Component {
-  static propTypes = {
-    auth: PropTypes.object,
-    collection: PropTypes.object,
-    params: PropTypes.object,
-    recordings: PropTypes.array,
-    recordingIndex: PropTypes.number
-  };
-
   static contextTypes = {
     product: PropTypes.string
   }
@@ -35,7 +27,7 @@ class Replay extends Component {
 
     return {
       currMode: 'replay',
-      canAdmin: auth.user.username === params.user
+      canAdmin: auth.getIn(['user', 'username']) === params.user
     };
   }
 
@@ -45,14 +37,14 @@ class Replay extends Component {
     const shareUrl = `http://localhost:8089/${params.user}/${params.coll}/${params.ts}/${params.splat}`;
     const iframeUrl = `http://localhost:8089/${params.user}/${params.coll}/${params.ts}mp_/${params.splat}`;
 
-    const coll = collection.collection;
+    const coll = collection.get('collection');
     return (
       <div>
         <Helmet>
           <meta property="og:url" content={shareUrl} />
           <meta property="og:type" content="website" />
-          <meta property="og:title" content={`Archived page from the &ldquo;${coll.title}&rdquo; Collection on ${product}`} />
-          <meta name="og:description" content={coll.desc ? collection.collection.desc : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
+          <meta property="og:title" content={`Archived page from the &ldquo;${coll.get('title')}&rdquo; Collection on ${product}`} />
+          <meta name="og:description" content={coll.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
         </Helmet>
 
         <ReplayUI
@@ -70,12 +62,15 @@ class Replay extends Component {
 
 const loadRecordings = [
   {
-    promise: ({ params, store: { dispatch, getState }, location }) => {
-      const { collection } = getState();
+    promise: ({ params, store: { dispatch, getState } }) => {
+      const state = getState();
+      const collection = state.get('collection');
       const { user, coll } = params;
 
-      if(!isLoaded(getState()) || (collection.coll === coll && Date.now() - collection.accessed > 15 * 60 * 1000))
+      if(!isLoaded(state) || (collection.get('coll') === coll &&
+         Date.now() - collection.get('accessed') > 15 * 60 * 1000)) {
         return dispatch(loadColl(user, coll));
+      }
 
       return undefined;
     }
@@ -83,12 +78,11 @@ const loadRecordings = [
 ];
 
 const mapStateToProps = (state, props) => {
-  const { auth, collection } = state;
   return {
     recordings: getOrderedRecordings(state),
     recordingIndex: getActiveRecording(state, props),
-    collection,
-    auth
+    collection: state.get('collection'),
+    auth: state.get('auth')
   };
 };
 

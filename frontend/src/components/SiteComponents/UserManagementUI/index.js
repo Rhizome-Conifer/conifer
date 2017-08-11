@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { fromJS } from 'immutable';
 import { browserHistory, Link } from 'react-router';
 
 import Modal from 'components/Modal';
@@ -8,6 +9,10 @@ import LoginForm from './forms';
 import './style.scss';
 
 class UserManagementUI extends Component {
+
+  static contextTypes = {
+    router: PropTypes.object
+  }
 
   static propTypes = {
     auth: PropTypes.shape({
@@ -21,12 +26,12 @@ class UserManagementUI extends Component {
     logoutFn: PropTypes.func.isRequired
   }
 
-  static defaultProps = {
+  static defaultProps = fromJS({
     auth: {
       username: null,
       role: null
     }
-  }
+  })
 
   constructor(props) {
     super(props);
@@ -37,13 +42,13 @@ class UserManagementUI extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(this.props.auth.loggingOut && !nextProps.auth.loggingOut)
-      setTimeout(() => browserHistory.push('/'), 500);
+    if(this.props.auth.get('loggingOut') && !nextProps.auth.get('loggingOut'))
+      setTimeout(() => this.context.router.push('/'), 500);
 
-    if(this.props.auth.loggingIn && !nextProps.auth.loggingIn) {
-      if(typeof nextProps.auth.loginError === 'undefined') {
+    if(this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
+      if(!nextProps.auth.get('loginError')) {
         this.closeLogin();
-        setTimeout(() => browserHistory.push('/'), 500);
+        setTimeout(() => this.context.router.push('/'), 500);
       } else {
         this.setState({ formError: true });
       }
@@ -68,10 +73,11 @@ class UserManagementUI extends Component {
     const { showModal, formError } = this.state;
 
     const form = <LoginForm cb={this.save} error={formError} />;
+    const username = auth.getIn(['user', 'username']);
 
     return (
       <div className="navbar-user-links navbar-right">
-        { !auth.loaded || !auth.user.username ?
+        { !auth.get('loaded') || !username ?
           <ul className="nav">
             <li className="navbar-right">
               <button className="login-link wr-header-btn" onClick={this.showLogin}>Login</button>
@@ -88,19 +94,19 @@ class UserManagementUI extends Component {
             </li>
 
             <li className="navbar-text navbar-right">
-              <Link to={`/${auth.user.username}/_settings`} >
-                <span className="glyphicon glyphicon-user right-buffer-sm" />{ auth.user.username }
+              <Link to={`/${username}/_settings`} >
+                <span className="glyphicon glyphicon-user right-buffer-sm" />{ username }
               </Link>
             </li>
 
             <li className="navbar-text navbar-right">
-              <Link to={`/${auth.user.username}`} >
+              <Link to={`/${username}`} >
                 My Collections<span className="num-collection">{ collCount }</span>
               </Link>
             </li>
 
             {
-              auth.user.role === 'admin' &&
+              auth.getIn(['user', 'role']) === 'admin' &&
                 <li className="navbar-text navbar-right">
                   <Link to="/admin/">
                     <span className="glyphicon glyphicon-wrench right-buffer-sm" />admin

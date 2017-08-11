@@ -24,7 +24,7 @@ class BookmarkListItem extends Component {
     const { user, coll } = params;
 
     closeList();
-    this.context.router.push(`/${user}/${coll}/${page.timestamp}/${page.url}`);
+    this.context.router.push(`/${user}/${coll}/${page.get('timestamp')}/${page.get('url')}`);
   }
 
   render() {
@@ -33,22 +33,22 @@ class BookmarkListItem extends Component {
 
     const { splat, ts } = params;
     const url = splat;
-    const classes = classNames({ active: rts(url) === rts(page.url) && ts === page.timestamp });
+    const classes = classNames({ active: rts(url) === rts(page.get('url')) && ts === page.get('timestamp') });
 
     return (
       <li
         className={classes}
         onClick={this.changeUrl}
         role="button"
-        title={page.url}>
+        title={page.get('url')}>
         {
-          page.browser &&
-            <img src={`/api/browsers/browsers/${page.browser}/icon`} alt="Browser icon" />
+          page.get('browser') &&
+            <img src={`/api/browsers/browsers/${page.get('browser')}/icon`} alt="Browser icon" />
         }
         <div className="url">
-          { page.url }
+          { page.get('url') }
         </div>
-        <span className="replay-date hidden-xs"><TimeFormat dt={page.timestamp} /></span>
+        <span className="replay-date hidden-xs"><TimeFormat dt={page.get('timestamp')} /></span>
       </li>
     );
   }

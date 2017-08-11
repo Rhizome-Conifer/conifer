@@ -11,7 +11,7 @@ import './style.scss';
 
 class ReplayUI extends Component {
   static propTypes = {
-    recordings: PropTypes.array,
+    recordings: PropTypes.object,
     params: PropTypes.object
   };
 

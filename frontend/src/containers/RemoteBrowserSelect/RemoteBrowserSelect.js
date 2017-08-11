@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { fromJS } from 'immutable';
 
 import { load, selectBrowser } from 'redux/modules/remoteBrowsers';
 
@@ -8,14 +9,10 @@ import RemoteBrowserSelectUI from 'components/RemoteBrowserSelectUI';
 
 
 class RemoteBrowserSelect extends Component {
-  static propTypes = {
-    browsers: PropTypes.object,
-  }
-
-  static defaultProps = {
+  static defaultProps = fromJS({
     browsers: {},
     activeBrowser: null
-  }
+  })
 
   render() {
     return (
@@ -25,14 +22,13 @@ class RemoteBrowserSelect extends Component {
 }
 
 const mapStateToProps = (state) => {
-  const { accessed, activeBrowser, browsers,
-          loaded, loading } = state.remoteBrowsers;
+  const remoteBrowsers = state.get('remoteBrowsers');
   return {
-    accessed,
-    activeBrowser,
-    browsers,
-    loaded,
-    loading
+    accessed: remoteBrowsers.get('accessed'),
+    activeBrowser: remoteBrowsers.get('activeBrowser'),
+    browsers: remoteBrowsers.get('browsers'),
+    loaded: remoteBrowsers.get('loaded'),
+    loading: remoteBrowsers.get('loading')
   };
 };
 

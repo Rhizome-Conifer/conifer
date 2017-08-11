@@ -1,3 +1,4 @@
+import { fromJS } from 'immutable';
 import config from 'config';
 
 const LOAD = 'wr/auth/LOAD';
@@ -10,78 +11,64 @@ const LOGOUT = 'wr/auth/LOGOUT';
 export const LOGOUT_SUCCESS = 'wr/auth/LOGOUT_SUCCESS';
 const LOGOUT_FAIL = 'wr/auth/LOGOUT_FAIL';
 
-const initialState = {
+const initialState = fromJS({
   loaded: false
-};
+});
 
-const defaultUser = {
+const defaultUser = fromJS({
   username: null,
   role: null
-};
+});
 
 export function auth(state = initialState, action = {}) {
   switch (action.type) {
     case LOAD:
-      return {
-        ...state,
-        loading: true
-      };
+      return state.set('loading', true);
     case LOAD_SUCCESS:
-      return {
-        ...state,
+      return state.merge({
         loading: false,
         loaded: true,
         user: action.result
-      };
+      });
     case LOAD_FAIL:
-      return {
-        ...state,
+      return state.merge({
         loading: false,
         loaded: false,
         error: action.error
-      };
+      });
     case LOGIN:
-      return {
-        ...state,
-        loggingIn: true
-      };
+      return state.set('loggingIn', true);
     case LOGIN_SUCCESS:
-      return {
-        ...state,
+      return state.merge({
         loggingIn: false,
-        user: action.result
-      };
+        user: action.result,
+        loginError: null,
+      });
     case LOGIN_FAIL:
-      return {
-        ...state,
+      return state.merge({
         loggingIn: false,
         user: defaultUser,
         loginError: action.error
-      };
+      });
     case LOGOUT:
-      return {
-        ...state,
-        loggingOut: true
-      };
+      return state.set('loggingOut', true);
     case LOGOUT_SUCCESS:
-      return {
-        ...state,
+      return state.merge({
         loggingOut: false,
         user: defaultUser
-      };
+      });
     case LOGOUT_FAIL:
-      return {
-        ...state,
+      return state.merge({
         loggingOut: false,
         logoutError: action.error
-      };
+      });
     default:
       return state;
   }
 }
 
 export function isLoaded(globalState) {
-  return globalState.auth && globalState.auth.loaded;
+  return globalState.get('auth') && globalState.getIn(['auth', 'loaded']);
 }
 
 export function load() {

@@ -33,7 +33,7 @@ function FAQ() {
           </p>
 
           <p className="credit">
-            Additional outreach support is provided by
+            Outreach support is provided by
             <a href="https://www.knightfoundation.org/press/releases/three-projects-will-help-better-inform-the-public-through-technology-innovation-with-540-000-from-knight-foundation" target="_blank">
               <img src={require('shared/images/KF_logo-stacked.svg')} className="knight-fnd" alt="James S. and John L. Knight Foundation" />
             </a>

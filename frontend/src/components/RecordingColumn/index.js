@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { fromJS } from 'immutable';
 
-import Recording from 'components/RecordingCard';
+import RecordingCard from 'components/RecordingCard';
 
 import './style.scss';
 
 class RecordingColumn extends Component {
   static propTypes = {
-    recordings: PropTypes.array
+    recordings: PropTypes.object
   };
 
-  static defaultProps = {
-    recordings: []
-  }
+  static defaultProps = fromJS({
+    recordings: {}
+  })
 
   render() {
     const { recordings } = this.props;
@@ -34,7 +35,7 @@ class RecordingColumn extends Component {
         </div>
         <div className="recording-bin">
           {
-            recordings.map(rec => <Recording rec={rec} key={rec.id} />)
+            recordings.map(rec => <RecordingCard rec={rec} key={rec.get('id')} />)
           }
         </div>
       </div>

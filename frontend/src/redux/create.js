@@ -1,5 +1,6 @@
 import { createStore as _createStore, applyMiddleware, compose } from 'redux';
 import { routerMiddleware } from 'react-router-redux';
+import { fromJS } from 'immutable';
 
 import createMiddleware from './middleware/clientMiddleware';
 
@@ -28,7 +29,7 @@ export default function createStore(history, client, data) {
   // eslint-disable-next-line global-require
   const reducer = require('./modules/reducer');
 
-  const store = finalCreateStore(reducer, data);
+  const store = finalCreateStore(reducer, fromJS(data));
 
   if (__DEVELOPMENT__ && module.hot) {
     module.hot.accept('./modules/reducer', () => {

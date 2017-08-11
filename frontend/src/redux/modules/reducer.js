@@ -1,8 +1,14 @@
-import { combineReducers } from 'redux';
-import { routerReducer } from 'react-router-redux';
-import { reducer as reduxAsyncConnect } from 'redux-connect';
+import Immutable from 'immutable';
+//import { combineReducers } from 'redux';
+import { combineReducers } from 'redux-immutable';
+//import { routerReducer } from 'react-router-redux';
+//import { reducer as reduxAsyncConnect } from 'redux-connect';
+import { setToImmutableStateFunc, setToMutableStateFunc,
+         immutableReducer as immutableReduxAsyncConnect } from 'redux-connect';
 
 import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
+import routerReducer from './routerReducer';
+
 import bugReport from './bugReport';
 import collection from './collection';
 import collections from './collections';
@@ -13,15 +19,19 @@ import user from './user';
 import userSignup from './userSignup';
 
 
+// Set the mutability/immutability functions
+setToImmutableStateFunc(mutableState => Immutable.fromJS(mutableState));
+setToMutableStateFunc(immutableState => immutableState.toJS());
+
 const appReducer = combineReducers({
   routing: routerReducer,
-  reduxAsyncConnect,
+  reduxAsyncConnect: immutableReduxAsyncConnect,
   auth,
   bugReport,
   collection,
   collections,
   passwordReset,
-  recordings,
+  // recordings,
   remoteBrowsers,
   user,
   userSignup
@@ -31,15 +41,15 @@ export default (state, action) => {
   // wipe state after logout, or partially after login
   switch(action.type) {
     case LOGOUT_SUCCESS: {
-      const { routing, reduxAsyncConnectInstance } = state;
-      const stateMod = { routing, reduxAsyncConnectInstance };
+      const { auth, routing, reduxAsyncConnect } = state;
+      const stateMod = Immutable.Map({ auth, routing, reduxAsyncConnect });
       return appReducer(stateMod, action);
     }
     case LOGIN_SUCCESS: {
       // delete any login errors if they exist
-      const { auth, routing, reduxAsyncConnectInstance } = state;
-      delete auth.loginError;
-      const stateMod = { routing, auth, reduxAsyncConnectInstance };
+      const { auth, routing, reduxAsyncConnect } = state;
+      // auth.set('loginError', null);
+      const stateMod = Immutable.Map({ routing, auth, reduxAsyncConnect });
       return appReducer(stateMod, action);
     }
     default:

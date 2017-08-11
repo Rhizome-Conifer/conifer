@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import ShareWidgetUI from 'components/ShareWidgetUI';
 
 class ShareWidget extends Component {
+  static PropTypes = {
+    collection: PropTypes.object
+  }
 
   render() {
     const { collection } = this.props;
@@ -11,7 +15,7 @@ class ShareWidget extends Component {
     return (
       <ShareWidgetUI
         isPublic={false}
-        coll={collection.collection}
+        coll={collection.get('collection')}
         shareUrl="http://example.com"
         embedUrl="http://example/com" />
     );
@@ -19,11 +23,10 @@ class ShareWidget extends Component {
 }
 
 const mapStateToProps = (state) => {
-  const { collection } = state;
   return {
-    collection
+    collection: state.get('collection')
   };
-}
+};
 
 export default connect(
   mapStateToProps

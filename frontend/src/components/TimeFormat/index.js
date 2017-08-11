@@ -21,6 +21,25 @@ class TimeFormat extends Component {
 
   componentDidMount() {
     const { dt, epoch, gmt } = this.props;
+    this.setState({ displayTime: this.buildDate(dt, epoch, gmt) });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.dt !== this.props.dt || nextProps.epoch !== this.props.epoch) {
+      const { dt, epoch, gmt } = nextProps;
+      this.setState({ displayTime: this.buildDate(dt, epoch, gmt) });
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if(nextProps.dt !== this.props.dt || nextProps.epoch !== this.props.epoch ||
+       nextState.displayTime !== this.state.displayTime)
+      return true;
+
+    return false;
+  }
+
+  buildDate = (dt, epoch, gmt) => {
     let displayTime;
 
     if(dt) {
@@ -46,7 +65,7 @@ class TimeFormat extends Component {
       displayTime = new Date(epoch * 1000).toLocaleString();
     }
 
-    this.setState({ displayTime });
+    return displayTime;
   }
 
   render() {

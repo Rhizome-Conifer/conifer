@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
-import find from 'lodash/find';
-import map from 'lodash/map';
+import { fromJS } from 'immutable';
 import { DropdownButton } from 'react-bootstrap';
 
 import RemoteBrowserOption from 'components/RemoteBrowserOption';
@@ -47,11 +46,11 @@ class RemoteBrowserSelect extends Component {
     const { activeBrowser, browsers, loading, loaded } = this.props;
     const { open } = this.state;
 
-    const activeBrowserEle = find(browsers, { id: activeBrowser });
+    const activeBrowserEle = browsers ? browsers.find(b => b.get('id') === activeBrowser) : null;
 
     const btn = activeBrowserEle ?
       <span className="btn-content">
-        <img src={`/api/browsers/browsers/${activeBrowserEle.id}/icon`} alt="Browser Icon" />{ ` ${activeBrowserEle.name} v${activeBrowserEle.version}` }
+        <img src={`/api/browsers/browsers/${activeBrowserEle.get('id')}/icon`} alt="Browser Icon" />{ ` ${activeBrowserEle.get('name')} v${activeBrowserEle.get('version')}` }
       </span> :
       <span className="btn-content">(native) <span className="hidden-sm hidden-xs">Current</span></span>;
 
@@ -75,10 +74,10 @@ class RemoteBrowserSelect extends Component {
               <div>loading options..</div>
             }
             { loaded && !isEmpty(browsers) &&
-                map(browsers, browser => <RemoteBrowserOption browser={browser} key={browser.id ? browser.id : 'native'} selectBrowser={this.selectBrowser} isActive={activeBrowser === browser.id} />)
+                browsers.map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={activeBrowser === browser.get('id')} />)
             }
             {
-              <RemoteBrowserOption browser={{ id: null, name: '(native) Current' }} selectBrowser={this.selectBrowser} isActive={activeBrowser === null} />
+              <RemoteBrowserOption browser={fromJS({ id: null, name: '(native) Current' })} selectBrowser={this.selectBrowser} isActive={activeBrowser === null} />
             }
           </div>
         </DropdownButton>

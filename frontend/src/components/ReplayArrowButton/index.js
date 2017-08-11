@@ -21,7 +21,7 @@ class ReplayArrowButton extends Component {
     if(page === null)
       return;
 
-    this.context.router.push(`/${user}/${coll}/${page.timestamp}/${page.url}`);
+    this.context.router.push(`/${user}/${coll}/${page.get('timestamp')}/${page.get('url')}`);
   }
 
   render() {
