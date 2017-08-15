@@ -15,7 +15,7 @@ $(function() {
             user = "$temp";
             collection = "temp";
         } else {
-            collection = $('[data-collection-id]').attr('data-collection-id');
+            collection = $('[data-collection-id]').attr("data-collection-id");
         }
 
         var titleInput = $("input[name='rec-title']");
@@ -24,26 +24,27 @@ $(function() {
         var url = urlInput.val().trim();
 
         // alert if title is blank
-        if (title.replace(/\s+$/g, '').length === 0) {
-            titleInput.parent().addClass('has-error');
+        if (title.replace(/\s+$/g, "").length === 0) {
+            titleInput.parent().addClass("has-error");
             return false;
-        } else if (titleInput.parent().hasClass('has-error')) {
-            titleInput.parent().removeClass('has-error');
+        } else if (titleInput.parent().hasClass("has-error")) {
+            titleInput.parent().removeClass("has-error");
         }
 
         // alert if url is blank
         if (url.length === 0) {
-            urlInput.parent().addClass('has-error');
+            urlInput.parent().addClass("has-error");
             return false;
         }
 
-        if (url.indexOf('http') !== 0) {
-            url = 'http://' + url;
+        if (!url.match(/^https?:\/\//)) {
+            var malformed = url.match(/^([https]+)?[:/]{1,3}/);
+            url = "http://" + url.substr(malformed ? malformed[0].length : 0);
         }
 
         // check for trailing slash
         if (url.match(/^https?\:\/\/[\w-.]+$/)) {
-            url += '/';
+            url += "/";
         }
 
         if (!window.cnt_browser && (isSafari() || isMS())) {

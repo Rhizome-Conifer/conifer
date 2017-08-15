@@ -119,8 +119,9 @@ var EventHandlers = (function() {
 
             var url = getUrl().trim();
 
-            if (url.indexOf("http") !== 0) {
-                url = "http://" + url;
+            if (!url.match(/^https?:\/\//)) {
+                var malformed = url.match(/^([https]+)?[:/]{1,3}/);
+                url = "http://" + url.substr(malformed ? malformed[0].length : 0);
             }
 
             // check for trailing slash
@@ -458,53 +459,55 @@ var PagingInterface = (function () {
     }
 
     function start() {
-        if(!$('.linklist').length)
+        if(!$(".linklist").length)
             return;
 
-        pgDsp = $('#page-display');
-        iframe = document.getElementById('replay_iframe');
-        nextBtn = $('.btn-next');
-        prevBtn = $('.btn-prev');
-        timestamp = $('.main-replay-date');
-        var linklist = $('.linklist');
-        li = linklist.find('li');
+        pgDsp = $("#page-display");
+        iframe = document.getElementById("replay_iframe");
+        nextBtn = $(".btn-next");
+        prevBtn = $(".btn-prev");
+        timestamp = $(".main-replay-date");
+        var linklist = $(".linklist");
+        li = linklist.find("li");
         liHeight = li.eq(0).outerHeight();
-        dropdown = linklist.find('> .dropdown-menu');
-        var inputBar = $('input[name=url]');
+        dropdown = linklist.find("> .dropdown-menu");
+        var inputBar = $("input[name=url]");
 
-        nextBtn.on('click', next);
-        prevBtn.on('click', previous);
+        nextBtn.on("click", next);
+        prevBtn.on("click", previous);
 
         idx = findIndex();
         updateTimestamp(wbinfo.timestamp, true);
 
-        timestamp.on('click', function (evt) {
+        timestamp.on("click", function (evt) {
             evt.stopPropagation();
-            linklist.toggleClass('open');
+            linklist.toggleClass("open");
         });
 
         // set linklist ones TODO: this might be slow and unnecessary
-        dropdown.find('.replay-date').each(function () {
+        dropdown.find(".replay-date").each(function () {
             var obj = $(this);
-            obj.html(TimesAndSizesFormatter.ts_to_date(String(obj.data('date'))));
+            obj.html(TimesAndSizesFormatter.ts_to_date(String(obj.data("date"))));
         });
 
-        dropdown.on('click', 'li:not(.active)', function () {
+        dropdown.on("click", "li:not(.active)", function () {
             idx = $(this).index();
             update(recordings[idx], true);
-            linklist.removeClass('open');
+            linklist.removeClass("open");
         });
 
         // offset input bar
-        inputBar.css('padding-right', timestamp.width());
+        inputBar.css("padding-right", timestamp.width());
 
-        inputBar.on('keyup', function (e){
+        inputBar.on("keyup", function (e){
             if(e.keyCode === 13) {
-                linklist.removeClass('open');
+                linklist.removeClass("open");
                 var urlTo = $(this).val().trim();
 
-                if(urlTo.indexOf('http') !== 0)
-                    urlTo = 'http://'+urlTo;
+                if (!urlTo.match(/^https?:\/\//)) {
+                    var malformed = urlTo.match(/^([https]+)?[:/]{1,3}/);
+                    urlTo = "http://" + urlTo.substr(malformed ? malformed[0].length : 0);
+                }
 
                 iframe.src = window.wbinfo.prefix + "mp_/" + urlTo;
             }
