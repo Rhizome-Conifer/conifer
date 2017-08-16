@@ -172,7 +172,7 @@ class UserController(BaseController):
         def temp_users():
             """ Resource returning active temp users
             """
-            temp_users_keys = self.manager.redis.keys('u:{0}*'.format(self.temp_user_key))
+            temp_users_keys = self.manager.redis.keys('u:{0}*:info'.format(self.temp_user_key))
             temp_users = []
 
             if len(temp_users_keys):
