@@ -120,7 +120,7 @@ var EventHandlers = (function() {
             var url = getUrl().trim();
 
             if (!url.match(/^https?:\/\//)) {
-                var malformed = url.match(/^([https]+)?[:/]{1,3}/);
+                var malformed = url.match(/^([https]+)?[:/]{1,3}/i);
                 url = "http://" + url.substr(malformed ? malformed[0].length : 0);
             }
 
@@ -505,7 +505,7 @@ var PagingInterface = (function () {
                 var urlTo = $(this).val().trim();
 
                 if (!urlTo.match(/^https?:\/\//)) {
-                    var malformed = urlTo.match(/^([https]+)?[:/]{1,3}/);
+                    var malformed = urlTo.match(/^([https]+)?[:/]{1,3}/i);
                     urlTo = "http://" + urlTo.substr(malformed ? malformed[0].length : 0);
                 }
 

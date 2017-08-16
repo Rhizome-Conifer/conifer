@@ -38,7 +38,7 @@ $(function() {
         }
 
         if (!url.match(/^https?:\/\//)) {
-            var malformed = url.match(/^([https]+)?[:/]{1,3}/);
+            var malformed = url.match(/^([https]+)?[:/]{1,3}/i);
             url = "http://" + url.substr(malformed ? malformed[0].length : 0);
         }
 
