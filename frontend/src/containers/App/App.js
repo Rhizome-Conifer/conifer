@@ -22,26 +22,37 @@ export class App extends Component { // eslint-disable-line
     router: PropTypes.object
   }
 
-  static childContextTypes = {
-    product: PropTypes.string
-  }
-
   static propTypes = {
     children: PropTypes.node.isRequired,
     auth: PropTypes.object,
+    loaded: PropTypes.bool
+  }
+
+  static childContextTypes = {
+    product: PropTypes.string,
+    isAnon: PropTypes.bool
   }
 
   getChildContext() {
+    const { auth } = this.props;
+
     return {
-      product: 'Webrecorder'
-    }
+      product: 'Webrecorder',
+      isAnon: auth ? auth.getIn(['user', 'anon']) : null
+    };
   }
 
   render() {
     const { routes } = this.context.router;
+    const { loaded } = this.props;
+
     const match = routes[routes.length - 1];
     const hasFooter = match.footer;
     const classOverride = match.classOverride;
+    const classes = classNames({
+      'container wr-content': !classOverride,
+      loading: !loaded
+    });
     console.log('rendering app');
 
     return (
@@ -55,7 +66,7 @@ export class App extends Component { // eslint-disable-line
             </nav>
           </div>
         </header>
-        <section className={classNames({ 'container wr-content': !classOverride })}>
+        <section className={classes}>
           {this.props.children}
         </section>
         {
@@ -81,7 +92,16 @@ const preloadData = [
   }
 ];
 
+const mapStateToProps = (state) => {
+  const auth = state.get('auth');
+  const loaded = state.getIn(['reduxAsyncConnect', 'loaded']);
+  return {
+    auth,
+    loaded
+  };
+};
 
 export default asyncConnect(
-  preloadData
+  preloadData,
+  mapStateToProps
 )(App);
