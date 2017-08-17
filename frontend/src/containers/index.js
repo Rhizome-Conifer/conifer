@@ -4,6 +4,7 @@ export CollectionDropdown from './CollectionDropdown/CollectionDropdown';
 export CollectionList from './CollectionList/CollectionList';
 export Home from './Home/Home';
 export HttpStatus from './HttpStatus/HttpStatus';
+export Logout from './Logout/Logout';
 export PasswordReset from './PasswordReset/PasswordReset';
 export RemoteBrowserSelect from './RemoteBrowserSelect/RemoteBrowserSelect';
 export Replay from './Replay/Replay';

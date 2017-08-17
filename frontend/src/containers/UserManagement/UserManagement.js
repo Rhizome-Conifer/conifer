@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { login, logout } from 'redux/modules/auth';
+import { login } from 'redux/modules/auth';
 import { load as loadUser } from 'redux/modules/user';
 
 import { UserManagementUI } from 'components/SiteComponents';
@@ -14,7 +14,6 @@ class UserManagement extends Component {
     auth: PropTypes.object,
     collections: PropTypes.number,
     login: PropTypes.func,
-    logout: PropTypes.func,
     loadUser: PropTypes.func,
     user: PropTypes.object
   }
@@ -26,7 +25,6 @@ class UserManagement extends Component {
                         auth.getIn(['user', 'username']) &&
                        !user.get('loading');
 
-    console.log('coll list should load', shouldLoad);
     // TODO: rethink, this causes a double render on first load
     if(shouldLoad)
       this.props.loadUser(auth.getIn(['user', 'username']));
@@ -40,14 +38,9 @@ class UserManagement extends Component {
                        !user.get('loading') &&
                        !user.get('loaded');
 
-    console.log('coll list should load', shouldLoad);
     // TODO: rethink, this causes a double render on first load
     if(shouldLoad)
       this.props.loadUser(auth.getIn(['user', 'username']));
-  }
-
-  logout = (evt) => {
-    this.props.logout();
   }
 
   login = (data) => {
@@ -61,8 +54,7 @@ class UserManagement extends Component {
       <UserManagementUI
         auth={auth}
         collCount={user.get('data') ? user.getIn(['data', 'collections']).size : 0}
-        loginFn={this.login}
-        logoutFn={this.logout} />
+        loginFn={this.login} />
     );
   }
 }
@@ -77,7 +69,6 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     login: data => dispatch(login(data)),
-    logout: () => dispatch(logout()),
     loadUser: username => dispatch(loadUser(username))
   };
 };

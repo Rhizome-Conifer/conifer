@@ -1,8 +1,18 @@
 import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 
 import { FAQ, TermsAndPolicies } from 'components/SiteComponents';
-import { Application, CollectionList, CollectionDetail, Home, HttpStatus,
-         PasswordReset, Replay, UserSignup, UserSettings } from 'containers';
+import {
+  Application,
+  CollectionList,
+  CollectionDetail,
+  Home,
+  HttpStatus,
+  Logout,
+  PasswordReset,
+  Replay,
+  UserSignup,
+  UserSettings
+} from 'containers';
 
 
 export default (store) => {
@@ -83,6 +93,12 @@ export default (store) => {
       name: 'Password Reset',
       footer: true,
       component: PasswordReset
+    },
+    {
+      path: '/_logout',
+      name: 'logout',
+      footer: false,
+      component: Logout,
     },
 
     ...infoRoutes,

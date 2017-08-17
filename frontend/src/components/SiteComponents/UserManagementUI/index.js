@@ -23,7 +23,6 @@ class UserManagementUI extends Component {
     }),
     collCount: PropTypes.number,
     loginFn: PropTypes.func.isRequired,
-    logoutFn: PropTypes.func.isRequired
   }
 
   static defaultProps = fromJS({
@@ -42,13 +41,10 @@ class UserManagementUI extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(this.props.auth.get('loggingOut') && !nextProps.auth.get('loggingOut'))
-      setTimeout(() => this.context.router.push('/'), 500);
-
     if(this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
       if(!nextProps.auth.get('loginError')) {
         this.closeLogin();
-        setTimeout(() => this.context.router.push('/'), 500);
+        setTimeout(() => this.context.router.replace('/'), 500);
       } else {
         this.setState({ formError: true });
       }
@@ -69,7 +65,7 @@ class UserManagementUI extends Component {
   }
 
   render() {
-    const { auth, collCount, logoutFn } = this.props;
+    const { auth, collCount } = this.props;
     const { showModal, formError } = this.state;
 
     const form = <LoginForm cb={this.save} error={formError} />;
@@ -88,9 +84,9 @@ class UserManagementUI extends Component {
           </ul> :
           <ul className="nav">
             <li className="navbar-text navbar-right">
-              <button className="wr-header-btn" title="Logout" onClick={logoutFn}>
+              <Link to="/_logout" className="wr-header-btn" title="Logout">
                 <span className="glyphicon glyphicon-log-out" title="Logout" />
-              </button>
+              </Link>
             </li>
 
             <li className="navbar-text navbar-right">
