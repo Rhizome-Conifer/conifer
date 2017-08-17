@@ -87,7 +87,7 @@ function urlEntry() {
 
         // parse timestamp
         var ts = "Most recent";
-        var tsMatch = sourceTarget.match(/^(\d{4,14})\//);
+        var tsMatch = sourceTarget.match(/^(\d{4,14})(\w{2}_)?\//);
         if (tsMatch) {
             ts = TimesAndSizesFormatter.ts_to_date(tsMatch[1], true);
             window.sourceTs = tsMatch[1];
@@ -96,7 +96,7 @@ function urlEntry() {
         }
 
         sourceTsStr = ts;
-        sourceTarget = sourceTarget.replace(/\d+\//, "");
+        sourceTarget = sourceTarget.replace(/\d+(\w{2}_)?\//, "");
 
         renderExtractWidget(ts, name);
         window.wrExtractModeAllArchives = true;
