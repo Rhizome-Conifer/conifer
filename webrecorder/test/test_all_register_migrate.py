@@ -231,6 +231,28 @@ class TestRegisterMigrate(FullStackTests):
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''new-coll-")
 
+    def test_logged_in_move_rec(self):
+        assert self.redis.smembers('c:someuser:new-coll:recs') == {'foo'}
+        assert self.redis.smembers('c:someuser:new-coll-2:recs') == set()
+
+        res = self.testapp.post('/api/v1/recordings/foo/move/new-coll-2?user=someuser&coll=new-coll')
+
+        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'foo', 'title': ''}
+        assert self.redis.smembers('c:someuser:new-coll:recs') == set()
+        assert self.redis.smembers('c:someuser:new-coll-2:recs') == {'foo'}
+
+        # rec replay
+        res = self.testapp.get('/someuser/new-coll-2/foo/replay/mp_/http://example.com/')
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text
+
+        # coll replay
+        res = self.testapp.get('/someuser/new-coll-2/mp_/http://example.com/')
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text
+
     def test_logout_1(self):
         res = self.testapp.get('/_logout')
         assert res.headers['Location'] == 'http://localhost:80/'
@@ -247,7 +269,7 @@ class TestRegisterMigrate(FullStackTests):
         assert '/new-coll' in res.text, res.text
 
     def test_logged_out_replay(self):
-        res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
+        res = self.testapp.get('/someuser/new-coll-2/mp_/http://example.com/')
         res.charset = 'utf-8'
 
         # no cache-control for public collections
@@ -381,11 +403,11 @@ class TestRegisterMigrate(FullStackTests):
         assert '/default-collection' in res.text, res.text
 
     def test_different_user_coll(self):
-        res = self.testapp.get('/someuser/new-coll')
+        res = self.testapp.get('/someuser/new-coll-2')
         assert '/new-coll' in res.text, res.text
 
     def test_different_user_replay(self):
-        res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
+        res = self.testapp.get('/someuser/new-coll-2/mp_/http://example.com/')
         res.charset = 'utf-8'
 
         # no cache-control for public collections
