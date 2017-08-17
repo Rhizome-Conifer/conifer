@@ -51,7 +51,7 @@ class BookmarksTable extends Component {
                   const url = page.get('url');
                   const ts = page.get('timestamp');
                   const browser = page.get('browser');
-                  const browserObj = browser && browser in browsers ? browsers.get(browser) : null;
+                  const browserObj = browser && browsers.has(browser) ? browsers.get(browser) : null;
 
                   return (
                     <tr key={`${ts}${url}`}>
@@ -67,7 +67,10 @@ class BookmarksTable extends Component {
                       <td className="rec-browser" >
                         {
                           browserObj ?
-                            <img src={`/api/browsers/browsers/${browserObj.get('id')}/icon`} alt={`Recorded with ${capitalize(browserObj.get('name'))} version ${browserObj.get('version')}`} /> :
+                            <span>
+                              <img src={`/api/browsers/browsers/${browserObj.get('id')}/icon`} alt={`Recorded with ${capitalize(browserObj.get('name'))} version ${browserObj.get('version')}`} />
+                              { ` v${browserObj.get('version')}` }
+                            </span> :
                             '-'
                         }
                       </td>
