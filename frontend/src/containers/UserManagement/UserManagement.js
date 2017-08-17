@@ -13,34 +13,7 @@ class UserManagement extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collections: PropTypes.number,
-    login: PropTypes.func,
-    loadUser: PropTypes.func,
-    user: PropTypes.object
-  }
-
-  componentDidMount() {
-    const { auth, user } = this.props;
-    const shouldLoad = !auth.get('loading') &&
-                        auth.get('user') &&
-                        auth.getIn(['user', 'username']) &&
-                       !user.get('loading');
-
-    // TODO: rethink, this causes a double render on first load
-    if(shouldLoad)
-      this.props.loadUser(auth.getIn(['user', 'username']));
-  }
-
-  componentWillReceiveProps(nextProps) {
-    const { auth, user } = this.props;
-    const shouldLoad = !auth.get('loading') &&
-                        auth.get('user') &&
-                        auth.getIn(['user', 'username']) &&
-                       !user.get('loading') &&
-                       !user.get('loaded');
-
-    // TODO: rethink, this causes a double render on first load
-    if(shouldLoad)
-      this.props.loadUser(auth.getIn(['user', 'username']));
+    login: PropTypes.func
   }
 
   login = (data) => {
@@ -48,12 +21,11 @@ class UserManagement extends Component {
   }
 
   render() {
-    const { auth, user } = this.props;
+    const { auth } = this.props;
 
     return (
       <UserManagementUI
         auth={auth}
-        collCount={user.get('data') ? user.getIn(['data', 'collections']).size : 0}
         loginFn={this.login} />
     );
   }
@@ -61,15 +33,13 @@ class UserManagement extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    auth: state.get('auth'),
-    user: state.get('user')
+    auth: state.get('auth')
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    login: data => dispatch(login(data)),
-    loadUser: username => dispatch(loadUser(username))
+    login: data => dispatch(login(data))
   };
 };
 

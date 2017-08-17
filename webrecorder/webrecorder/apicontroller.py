@@ -37,9 +37,15 @@ class ApiController(BaseController):
         @self.app.get('/api/v1/load_auth')
         def loadAuth():
             sesh = self.get_session()
+
             if sesh:
-                return {'username': sesh.curr_user, 'role': sesh.curr_role}
-            return {'username': None, 'role': None}
+                return {
+                    'username': sesh.curr_user,
+                    'role': sesh.curr_role,
+                    'anon': sesh.is_anon(),
+                }
+
+            return {'username': None, 'role': None, 'anon': None}
 
         @self.app.get('/api/v1/username_check')
         def test_username():

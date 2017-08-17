@@ -18,10 +18,11 @@ class UserManagementUI extends Component {
     auth: PropTypes.shape({
       username: PropTypes.string,
       role: PropTypes.string,
+      anon: PropTypes.bool,
+      coll_count: PropTypes.number,
       loggingIn: PropTypes.bool,
       loggingOut: PropTypes.bool
     }),
-    collCount: PropTypes.number,
     loginFn: PropTypes.func.isRequired,
   }
 
@@ -65,9 +66,10 @@ class UserManagementUI extends Component {
   }
 
   render() {
-    const { auth, collCount } = this.props;
+    const { auth } = this.props;
     const { showModal, formError } = this.state;
 
+    const collCount = auth.getIn(['user', 'coll_count']);
     const form = <LoginForm cb={this.save} error={formError} />;
     const username = auth.getIn(['user', 'username']);
 

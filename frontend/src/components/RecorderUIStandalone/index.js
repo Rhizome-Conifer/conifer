@@ -33,8 +33,6 @@ class RecorderUIStandalone extends Component {
           <InputGroup>
             <FormControl id="recording-name" name="rec-title" type="text" bsSize="sm" className="homepage-title" defaultValue={'rec title'} required disabled={isOutOfSpace} />
           </InputGroup>
-          {/* TODO: add anon check */}
-          <label className="left-buffer" htmlFor="collection">Add to collection:&emsp;</label>
           <CollectionDropdown />
         </FormGroup>
       </form>

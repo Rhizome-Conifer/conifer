@@ -11,13 +11,16 @@ const LOGOUT = 'wr/auth/LOGOUT';
 export const LOGOUT_SUCCESS = 'wr/auth/LOGOUT_SUCCESS';
 const LOGOUT_FAIL = 'wr/auth/LOGOUT_FAIL';
 
-const initialState = fromJS({
-  loaded: false
-});
 
 const defaultUser = fromJS({
   username: null,
-  role: null
+  role: null,
+  anon: null
+});
+
+const initialState = fromJS({
+  loaded: false,
+  user: defaultUser
 });
 
 export function auth(state = initialState, action = {}) {

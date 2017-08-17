@@ -12,15 +12,28 @@ class CollectionDropdown extends Component {
   })
 
   render() {
+    const { auth } = this.props;
+    const user = auth.get('user');
+
     return (
-      <CollectionDropdownUI {...this.props} />
+      <div style={{ display: 'inline' }}>
+        {
+          user && user.get('username') && !user.get('anon') &&
+            <div style={{ display: 'inline' }}>
+              <label className="left-buffer" htmlFor="collection">Add to collection:&emsp;</label>
+              <CollectionDropdownUI {...this.props} />
+            </div>
+        }
+      </div>
     );
   }
 }
 
 const mapStateToProps = (state) => {
   const user = state.get('user');
+  const auth = state.get('auth');
   return {
+    auth,
     collections: user.getIn(['data', 'collections']),
     activeCollection: user.get('activeCollection')
   };

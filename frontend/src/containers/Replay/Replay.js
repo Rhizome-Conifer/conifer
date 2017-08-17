@@ -15,6 +15,13 @@ class Replay extends Component {
     product: PropTypes.string
   }
 
+  static propTypes = {
+    collection: PropTypes.object,
+    recordings: PropTypes.object,
+    recordingIndex: PropTypes.number,
+    params: PropTypes.object
+  }
+
   // TODO move to HOC
   static childContextTypes = {
     currMode: PropTypes.string,
