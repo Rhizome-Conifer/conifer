@@ -32,8 +32,7 @@ class ApiController(BaseController):
 
         @self.app.get('/api/v1/logout')
         def logout():
-            self.manager.cork.logout()
-            return {}
+            self.manager.cork.logout(success_redirect='/')
 
         @self.app.get('/api/v1/load_auth')
         def loadAuth():
