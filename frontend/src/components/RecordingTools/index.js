@@ -9,13 +9,20 @@ import './style.scss';
 
 class RecordingTools extends Component {
 
+  static propTypes = {
+    params: PropTypes.object
+  }
+
   static contextTypes = {
     canAdmin: PropTypes.bool,
-    currMode: PropTypes.string
+    currMode: PropTypes.string,
+    metadata: PropTypes.object
   }
 
   render() {
-    const { canAdmin, currMode } = this.context;
+    const { canAdmin, currMode, metadata } = this.context;
+    const { params } = this.props;
+
     const isNew = currMode === 'new';
     const isWrite = currMode === 'new' || currMode === 'patch' || currMode === 'record' || currMode === 'extract';
 
@@ -28,12 +35,12 @@ class RecordingTools extends Component {
             </button>
         }
         {
-          !isNew && // metadata.type != 'player'
+          !isNew && metadata.type !== 'player' &&
             <BugReport />
         }
         {
-          !isWrite && // metadata.type != 'player'
-            <ShareWidget />
+          !isWrite && metadata.type !== 'player' &&
+            <ShareWidget params={params} />
         }
       </div>
     );

@@ -12,12 +12,13 @@ import './style.scss';
 
 class UserSettings extends Component {
   static propTypes = {
-    collSize: PropTypes.number,
+    collSum: PropTypes.number,
     user: PropTypes.object
   }
 
   render() {
-    const { collSize, user } = this.props;
+    const { collSum, user } = this.props;
+
     const userInfo = <h2>Usage for <b>{ user.getIn(['data', 'username']) }</b></h2>;
     const passReset = (
       <div className="pw-reset">
@@ -26,13 +27,14 @@ class UserSettings extends Component {
       </div>
     );
     const deleteAccount = <h3 className="panel-title">Delete Account</h3>;
+    const totalSpace = user.getIn(['data', 'space_utilization', 'total']);
 
     return (
       <div className="row top-buffer col-xs-10 col-xs-push-1">
         <Panel header={userInfo}>
           <span>Space Used: </span>
-          <SizeFormat bytes={collSize} />
-          <ProgressBar now={20} bsStyle="success" />
+          <SizeFormat bytes={collSum} />
+          <ProgressBar now={(collSum / totalSpace) * 100} bsStyle="success" />
           Please <a href="mailto:support@webrecorder.io">contact us</a> if you would like to request additional space.
         </Panel>
 
@@ -106,7 +108,7 @@ const preloadData = [
 const mapStateToProps = (state) => {
   return {
     user: state.get('user'),
-    collSize: sumCollectionsSize(state.getIn(['user', 'data'])),
+    collSum: sumCollectionsSize(state.getIn(['user', 'data']))
   };
 };
 

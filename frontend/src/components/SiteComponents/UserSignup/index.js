@@ -24,6 +24,10 @@ class UserSignup extends Component {
     validUsername: PropTypes.bool
   };
 
+  static contextTypes = {
+    metadata: PropTypes.object
+  }
+
   constructor(props) {
     super(props);
 
@@ -142,6 +146,7 @@ class UserSignup extends Component {
 
 
   render() {
+    const { metadata } = this.context;
     const { available, checkedUsername, errors, result,
             success, userCheck } = this.props;
     const { email, name, password, password2, username } = this.state;
@@ -175,7 +180,7 @@ class UserSignup extends Component {
             </Alert>
         }
         <div className="col-sm-8 col-md-6 col-md-offset-2">
-          <h2>{ config.product } Account Sign-Up</h2>
+          <h2>{ metadata.product } Account Sign-Up</h2>
           <h4>Create your own web archive as you browse!</h4>
           <br />
           <h4>To begin, please fill out the registration form below.</h4>

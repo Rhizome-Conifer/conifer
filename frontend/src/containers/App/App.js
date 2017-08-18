@@ -30,15 +30,24 @@ export class App extends Component { // eslint-disable-line
 
   static childContextTypes = {
     product: PropTypes.string,
-    isAnon: PropTypes.bool
+    isAnon: PropTypes.bool,
+    metadata: PropTypes.shape({
+      product: PropTypes.string,
+      type: PropTypes.string,
+      host: PropTypes.string,
+    })
   }
 
   getChildContext() {
     const { auth } = this.props;
 
     return {
-      product: 'Webrecorder',
-      isAnon: auth ? auth.getIn(['user', 'anon']) : null
+      isAnon: auth.getIn(['user', 'anon']),
+      metadata: {
+        product: 'Webrecorder',
+        type: 'hosted',
+        host: 'http://localhost:3000/'
+      }
     };
   }
 

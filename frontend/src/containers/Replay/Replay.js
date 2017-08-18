@@ -67,7 +67,7 @@ class Replay extends Component {
   }
 }
 
-const loadRecordings = [
+const loadCollection = [
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
@@ -94,6 +94,6 @@ const mapStateToProps = (state, props) => {
 };
 
 export default asyncConnect(
-  loadRecordings,
+  loadCollection,
   mapStateToProps
 )(Replay);

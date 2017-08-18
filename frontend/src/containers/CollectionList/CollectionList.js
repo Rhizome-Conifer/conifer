@@ -6,7 +6,12 @@ import { Link } from 'react-router';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
 
 import { sumCollectionsSize } from 'redux/selectors';
-import { isLoaded, load } from 'redux/modules/collections';
+
+import { isLoaded as areCollsLoaded,
+         load as loadCollections } from 'redux/modules/collections';
+import { isLoaded as isAuthLoaded } from 'redux/modules/auth';
+import { load as loadUser, isLoaded as isUserLoaded } from 'redux/modules/user';
+
 
 import SizeFormat from 'components/SizeFormat';
 
@@ -94,17 +99,27 @@ class CollectionList extends Component {
   }
 }
 
-const loadCollections = [
+const preloadCollections = [
   {
-    promise: ({ params, store: { dispatch, getState }, location }) => {
+    promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
       const collections = state.get('collections');
       const { user } = params;
 
-      if(!isLoaded(state) || (collections.get('user') === user &&
+      if(!areCollsLoaded(state) || (collections.get('user') === user &&
          Date.now() - collections.get('accessed') > 15 * 60 * 1000)) {
-        return dispatch(load(user));
+        return dispatch(loadCollections(user));
       }
+
+      return undefined;
+    }
+  },
+  {
+    promise: ({ store: { dispatch, getState } }) => {
+      const state = getState();
+
+      if(isAuthLoaded(state) && !isUserLoaded(state))
+        return dispatch(loadUser(state.getIn(['auth', 'user', 'username'])));
 
       return undefined;
     }
@@ -122,6 +137,6 @@ const mapStateToProps = (state) => {
 };
 
 export default asyncConnect(
-  loadCollections,
+  preloadCollections,
   mapStateToProps
 )(CollectionList);

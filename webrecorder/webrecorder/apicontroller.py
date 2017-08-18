@@ -39,10 +39,15 @@ class ApiController(BaseController):
             sesh = self.get_session()
 
             if sesh:
+                # current user
+                u = self.manager.get_curr_user()
+                count = self.manager.num_collections(u) if u else 0
+
                 return {
                     'username': sesh.curr_user,
                     'role': sesh.curr_role,
                     'anon': sesh.is_anon(),
+                    'coll_count': count,
                 }
 
             return {'username': None, 'role': None, 'anon': None}

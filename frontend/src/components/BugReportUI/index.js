@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { BugIcon } from 'components/Icons';
-import config from 'config';
 import Modal from 'components/Modal';
 
 import ReportBugForm from './forms';
@@ -12,6 +11,10 @@ class BugReportUI extends Component {
   static propTypes = {
     submit: PropTypes.func,
   };
+
+  static contextTypes = {
+    metadata: PropTypes.object
+  }
 
   constructor(props) {
     super(props);
@@ -34,12 +37,13 @@ class BugReportUI extends Component {
 
   render() {
     const { showModal } = this.state;
+    const { metadata } = this.context;
 
     const reportHeader = (
       <div>
         <h4>This Page Doesn't Look Right? Let Us Know!</h4>
-        <p>{`Some pages are tricky for ${config.product} to capture and replay. Our goal is to make it work as best as possible on any page!`}</p>
-        <p>{`Please indicate anything that may have gone wrong on this page. Your feedback will help make ${config.product} better!`}</p>
+        <p>{`Some pages are tricky for ${metadata.product} to capture and replay. Our goal is to make it work as best as possible on any page!`}</p>
+        <p>{`Please indicate anything that may have gone wrong on this page. Your feedback will help make ${metadata.product} better!`}</p>
       </div>
     );
 
