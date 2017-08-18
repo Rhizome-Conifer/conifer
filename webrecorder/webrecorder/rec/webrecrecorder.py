@@ -258,6 +258,7 @@ class WebRecRecorder(object):
             for from_key, to_key in iteritems(moves):
                 pi.rename(from_key, to_key)
 
+        with redis_pipeline(self.redis) as pi:
             # change user size, if different users
             if to_user_key != from_user_key:
                 pi.hincrby(from_user_key, 'size', -the_size)

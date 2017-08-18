@@ -86,6 +86,7 @@ class RecsController(BaseController):
                                       new_coll=new_coll,
                                       rec=rec,
                                       new_rec=rec,
+                                      title=rec_title,
                                       is_move=True)
 
             if 'coll_id' in res:

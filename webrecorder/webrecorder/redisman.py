@@ -444,7 +444,7 @@ class LoginManagerMixin(object):
             title = new_coll_info['title']
             new_coll = new_coll_info['id']
 
-        if rec != new_rec:
+        if rec != '*' and new_rec != '*':
             new_rec_info = self.create_recording(new_user, new_coll, new_rec, title)
             title = new_rec_info['title']
             new_rec = new_rec_info['id']
