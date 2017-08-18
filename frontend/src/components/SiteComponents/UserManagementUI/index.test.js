@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { fromJS } from 'immutable';
+
 import { UserManagementUI } from 'components/SiteComponents';
 
 
@@ -7,13 +9,12 @@ it('renders without crashing', () => {
   const div = document.createElement('div');
   ReactDOM.render(
     <UserManagementUI
-      auth={{
+      auth={fromJS({
         username: 'test',
-        role: 'archivist'
-      }}
-      collCount={0}
-      loginFn={() => {}}
-      logoutFn={() => {}} />,
+        role: 'archivist',
+        anon: false
+      })}
+      loginFn={() => {}} />,
     div
   );
 });
