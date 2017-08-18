@@ -5,9 +5,14 @@ from itertools import count
 
 from webrecorder.admin import init_manager_for_cli, create_user
 
+from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
+
+
 import re
 import os
 
+
+all_closed = False
 
 # ============================================================================
 class TestRegisterMigrate(FullStackTests):
@@ -15,6 +20,26 @@ class TestRegisterMigrate(FullStackTests):
     def setup_class(cls):
         super(TestRegisterMigrate, cls).setup_class(extra_config_file='test_no_invites_config.yaml')
         cls.val_reg = ''
+
+    def _move_rec(self, url):
+        global all_closed
+        all_closed = False
+
+        def close_file(actual_self, filename):
+            MultiFileWARCWriter.close_file(actual_self, filename)
+            assert list(actual_self.iter_open_files()) == []
+            global all_closed
+            all_closed = True
+
+        with patch('webrecorder.rec.webrecrecorder.SkipCheckingMultiFileWARCWriter.close_file', close_file):
+            res = self.testapp.post(url)
+
+            def assert_move():
+                assert all_closed == True
+
+            self.sleep_try(0.1, 5.0, assert_move)
+
+        return res
 
     def test_anon_record_1(self):
         res = self.testapp.get('/' + self.anon_user + '/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
@@ -214,7 +239,9 @@ class TestRegisterMigrate(FullStackTests):
         assert 'New Coll' in res.text
 
     def test_logged_in_patch(self):
-        res = self.testapp.get('/someuser/new-coll/foo/patch/mp_/http://example.com/')
+        res = self.testapp.get('/someuser/new-coll/Move Test/patch/mp_/http://example.com/')
+        assert res.status_code == 302
+        res = res.follow()
         res.charset = 'utf-8'
         assert 'Example Domain' in res.text
 
@@ -230,6 +257,64 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.head('/someuser/new-coll/$download')
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''new-coll-")
+
+    def test_logged_in_move_rec(self):
+        assert self.redis.smembers('c:someuser:new-coll:recs') == {'move-test'}
+        assert self.redis.smembers('c:someuser:new-coll-2:recs') == set()
+
+        res = self._move_rec('/api/v1/recordings/Move Test/move/new-coll-2?user=someuser&coll=new-coll')
+
+        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test', 'title': 'Move Test'}
+
+        assert self.redis.smembers('c:someuser:new-coll:recs') == set()
+        assert self.redis.smembers('c:someuser:new-coll-2:recs') == {'move-test'}
+
+        # rec replay
+        res = self.testapp.get('/someuser/new-coll-2/move-test/replay/mp_/http://example.com/')
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text
+
+        # coll replay
+        res = self.testapp.get('/someuser/new-coll-2/mp_/http://example.com/')
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text
+
+    def test_logged_in_record(self):
+        res = self.testapp.get('/someuser/new-coll/Move Test/record/mp_/http://httpbin.org/get?rec=test')
+        assert res.status_code == 302
+        res = res.follow()
+        res.charset = 'utf-8'
+        assert '"rec": "test"' in res.text
+
+    def test_logged_in_replay_2(self):
+        res = self.testapp.get('/someuser/new-coll/move-test/replay/mp_/http://httpbin.org/get?rec=test')
+        res.charset = 'utf-8'
+        assert '"rec": "test"' in res.text
+
+    def test_logged_in_move_rec_dupe(self):
+        assert self.redis.smembers('c:someuser:new-coll:recs') == {'move-test'}
+        assert self.redis.smembers('c:someuser:new-coll-2:recs') == {'move-test'}
+
+        res = self._move_rec('/api/v1/recordings/Move Test/move/new-coll-2?user=someuser&coll=new-coll')
+
+        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test-2', 'title': 'Move Test 2'}
+
+        assert self.redis.smembers('c:someuser:new-coll:recs') == set()
+        assert self.redis.smembers('c:someuser:new-coll-2:recs') == {'move-test', 'move-test-2'}
+
+        # rec replay
+        res = self.testapp.get('/someuser/new-coll-2/move-test-2/replay/mp_/http://httpbin.org/get?rec=test')
+        res.charset = 'utf-8'
+
+        assert '"rec": "test"' in res.text
+
+        # coll replay
+        res = self.testapp.get('/someuser/new-coll-2/mp_/http://httpbin.org/get?rec=test')
+        res.charset = 'utf-8'
+
+        assert '"rec": "test"' in res.text
 
     def test_logout_1(self):
         res = self.testapp.get('/_logout')
@@ -247,7 +332,7 @@ class TestRegisterMigrate(FullStackTests):
         assert '/new-coll' in res.text, res.text
 
     def test_logged_out_replay(self):
-        res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
+        res = self.testapp.get('/someuser/new-coll-2/mp_/http://example.com/')
         res.charset = 'utf-8'
 
         # no cache-control for public collections
@@ -263,11 +348,11 @@ class TestRegisterMigrate(FullStackTests):
         assert 'No such page' in res.text
 
     def test_error_logged_out_record(self):
-        res = self.testapp.get('/someuser/new-coll/foo/record/mp_/http://example.com/', status=404)
+        res = self.testapp.get('/someuser/new-coll/move-test/record/mp_/http://example.com/', status=404)
         assert 'No such page' in res.text
 
     def test_error_logged_out_patch(self):
-        res = self.testapp.get('/someuser/new-coll/foo/patch/mp_/http://example.com/', status=404)
+        res = self.testapp.get('/someuser/new-coll/move-test/patch/mp_/http://example.com/', status=404)
         assert 'No such page' in res.text
 
     def test_error_logged_in_replay_coll_1(self):
@@ -381,20 +466,25 @@ class TestRegisterMigrate(FullStackTests):
         assert '/default-collection' in res.text, res.text
 
     def test_different_user_coll(self):
-        res = self.testapp.get('/someuser/new-coll')
+        res = self.testapp.get('/someuser/new-coll-2')
         assert '/new-coll' in res.text, res.text
 
     def test_different_user_replay(self):
-        res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
+        res = self.testapp.get('/someuser/new-coll-2/mp_/http://example.com/')
         res.charset = 'utf-8'
 
         # no cache-control for public collections
         assert 'Cache-Control' not in res.headers
         assert 'Example Domain' in res.text
 
+    def test_different_user_replay_2(self):
+        res = self.testapp.get('/someuser/new-coll-2/mp_/http://httpbin.org/get?rec=test')
+        res.charset = 'utf-8'
+
+        assert '"rec": "test"' in res.text
+
     def test_different_user_replay_private_error(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
         assert 'No such page' in res.text
-
 
 

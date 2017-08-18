@@ -265,7 +265,7 @@ class WebRecRecorder(object):
                 pi.hincrby(to_user_key, 'size', the_size)
 
             # if collection or user names different, update list
-            if to_user_key != from_user_key or to_coll != from_coll:
+            if to_rec == '*' and (to_user_key != from_user_key or to_coll != from_coll):
                 pi.srem(from_coll_list_key, from_coll)
                 pi.sadd(to_coll_list_key, to_coll)
 
