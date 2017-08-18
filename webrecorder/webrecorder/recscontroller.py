@@ -81,6 +81,8 @@ class RecsController(BaseController):
 
             new_coll = self.sanitize_title(new_coll_title)
 
+            rec_title = self.manager.get_recording_title(user, coll, rec)
+
             res = self.manager.rename(user=user,
                                       coll=coll,
                                       new_coll=new_coll,

@@ -747,6 +747,11 @@ class RecManagerMixin(object):
 
         return self._fill_recording(user, coll, self.redis.hgetall(key))
 
+    def get_recording_title(self, user, coll, rec):
+        self.assert_can_read(user, coll)
+        key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
+        return self.redis.hget(key, 'title')
+
     def _fill_recording(self, user, coll, data):
         result = self._format_info(data)
 

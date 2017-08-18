@@ -297,7 +297,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.redis.smembers('c:someuser:new-coll:recs') == {'move-test'}
         assert self.redis.smembers('c:someuser:new-coll-2:recs') == {'move-test'}
 
-        res = self._move_rec('/api/v1/recordings/Move Test/move/new-coll-2?user=someuser&coll=new-coll')
+        res = self._move_rec('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
         assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test-2', 'title': 'Move Test 2'}
 
