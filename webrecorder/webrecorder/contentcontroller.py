@@ -490,7 +490,8 @@ class ContentController(BaseController, RewriterApp):
                       patch_rec=patch_rec,
                       ip=remote_ip,
                       is_embed=is_embed,
-                      is_display=is_display)
+                      is_display=is_display,
+                      use_js_obj_proxy=True)
 
         try:
             self.check_if_content(wb_url_obj, request.environ, is_top_frame)
@@ -637,7 +638,7 @@ class ContentController(BaseController, RewriterApp):
         return kwargs
 
     def get_host_prefix(self, environ):
-        if self.content_host:
+        if self.content_host and 'wsgiprox.proxy_host' not in environ:
             return environ['wsgi.url_scheme'] + '://' + self.content_host
         else:
             return super(ContentController, self).get_host_prefix(environ)
