@@ -50,7 +50,8 @@
     "object-curly-spacing":1,
     "import/prefer-default-export": 1,
     "new-cap": 0,
-    "quote-props": 1
+    "quote-props": 1,
+    "quotes": 1
   },
   "plugins": [
     "react", "import"
