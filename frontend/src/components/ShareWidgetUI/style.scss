@@ -9,6 +9,14 @@
         right: 0;
     }
 
+    .access-switch {
+        display: flex;
+
+        & > div {
+            margin-left: 10px;
+        }
+    }
+
     .share-modal {
         min-width: 300px;
         border-radius: 0;

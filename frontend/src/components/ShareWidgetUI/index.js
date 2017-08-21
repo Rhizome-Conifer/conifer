@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { fromJS } from 'immutable';
+import ToggleButton from 'react-toggle-button';
 
 import OutsideClick from 'components/OutsideClick';
 import { ShareIcon } from 'components/Icons';
@@ -12,15 +13,17 @@ import './style.scss';
 class ShareWidgetUI extends Component {
 
   static contextTypes = {
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
-    isPublic: PropTypes.bool,
-    shareUrl: PropTypes.string,
-    embedUrl: PropTypes.string,
     bsSize: PropTypes.string,
-    coll: PropTypes.object
+    collection: PropTypes.object,
+    embedUrl: PropTypes.string,
+    isPublic: PropTypes.bool,
+    setPublic: PropTypes.func,
+    shareUrl: PropTypes.string
   };
 
   static defaultProps = fromJS({
@@ -30,11 +33,105 @@ class ShareWidgetUI extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { open: false };
+    this.state = {
+      open: false,
+      sizeSet: false,
+      widgetHeight: 0
+    };
   }
 
-  toggleOpen = () => {
-    this.setState({ open: !this.state.open });
+  componentDidMount() {
+    if(!this.props.isPublic) {
+      this.setState({
+        sizeSet: true,
+        widgetHeight: this.shareables.getBoundingClientRect().height
+      });
+    }
+  }
+
+  componentWillReceiveProps(nextProps, nextState) {
+    if(nextProps.isPublic && nextProps.collection !== this.props.collection) {
+      this.thirdPartyJS();
+      this.buildSocialWidgets();
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(!prevState.open && this.state.open) {
+      this.thirdPartyJS();
+      this.buildSocialWidgets();
+    }
+  }
+
+  setPublic = () => {
+    const { collection } = this.props;
+    const collId = collection.get('id');
+    const user = collection.get('user');
+    this.props.setPublic(collId, user);
+  }
+
+  thirdPartyJS = () => {
+    /* eslint-disable */
+    window.twttr = (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0],
+        t = window.twttr || {};
+      if (d.getElementById(id)) return t;
+      js = d.createElement(s);
+      js.id = id;
+      js.src = "https://platform.twitter.com/widgets.js";
+      fjs.parentNode.insertBefore(js, fjs);
+
+      t._e = [];
+      t.ready = function(f) {
+        t._e.push(f);
+      };
+
+      return t;
+    }(document, "script", "twitter-wjs"));
+
+    // load fb
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+    /* eslint-enable */
+  }
+
+  buildSocialWidgets = () => {
+    const { shareUrl } = this.props;
+
+    // clear previous widget
+    if(this.wrTW.childNodes.length)
+      this.wrTW.removeChild(this.wrTW.childNodes[0]);
+
+    if(typeof window.twttr !== 'undefined') {
+      window.twttr.ready(() =>
+        window.twttr.widgets.createShareButton(
+          shareUrl,
+          document.getElementById('wr-tw'),
+          {
+            text: '',
+            size: 'large',
+            via: 'webrecorder_io'
+          }
+        ));
+    }
+
+    // fb sdk loaded?
+    if(typeof window.FB === 'undefined') {
+      window.fbAsyncInit = () => {
+        window.FB.init({ xfbml: true, version: 'v2.8' });
+        window.fbInitialized = true;
+      };
+    } else if(!window.fbInitialized) {
+      window.FB.init({ xfbml: true, version: 'v2.8' });
+      window.fbInitialized = true;
+    } else {
+      window.FB.XFBML.parse(this.wrFB);
+    }
   }
 
   close = () => {
@@ -42,14 +139,18 @@ class ShareWidgetUI extends Component {
       this.setState({ open: false });
   }
 
+  toggleOpen = () => {
+    this.setState({ open: !this.state.open });
+  }
+
   render() {
-    const { bsSize, coll, embedUrl, isPublic, shareUrl } = this.props;
-    const { open } = this.state;
-    const { canAdmin } = this.context;
+    const { canAdmin, isAnon } = this.context;
+    const { bsSize, collection, embedUrl, isPublic, shareUrl } = this.props;
+    const { open, sizeSet, widgetHeight } = this.state;
 
     const shareClasses = classNames('share-container', { open });
     const widgetClasses = classNames('public-switch clearfix', { hidden: isPublic });
-    const shareableClasses = classNames('shareables', { disabled: !isPublic });
+    const shareableClasses = classNames('shareables', { disabled: !isPublic && sizeSet });
 
     return (
       <OutsideClick handleClick={this.close}>
@@ -70,24 +171,36 @@ class ShareWidgetUI extends Component {
               canAdmin &&
                 <div className={widgetClasses}>
                   {
-                  /* if anon
-                    <p className="make-public-desc">
-                      This is a temporary collection. To preserve and share, <a href="/_register" target="_parent">Sign Up</a> or <a className="login-link" href="/_login_modal">Login</a>.
-                    </p>
-                    else */
+                    isAnon ?
+                      <p className="make-public-desc">
+                        This is a temporary collection. To preserve and share, <a href="/_register" target="_parent">Sign Up</a> or <a className="login-link" href="/_login_modal">Login</a>.
+                      </p> :
+                      <div>
+                        <p className="make-public-desc">
+                          Collection <strong >{ collection.get('title') }</strong> is set to private. To get a share link, make the collection public:
+                        </p>
+                        <div className="access-switch">
+                          <span className="glyphicon glyphicon-globe" aria-hidden="true" />
+                          <span className="left-buffer-sm hidden-xs">Collection Public?</span>
+                          <ToggleButton
+                            inactiveLabel="NO"
+                            activeLavel="YES"
+                            value={isPublic}
+                            onToggle={this.setPublic} />
+                        </div>
+                      </div>
                   }
-                  <p className="make-public-desc">
-                    Collection <strong >{ coll.title }</strong> is set to private. To get a share link, make the collection public:
-                  </p>
-                  <div className="access-switch">
-                    {/* include 'public_private_switch.html' */}
-                  </div>
                 </div>
             }
-            <div className={shareableClasses}>
+            <div
+              className={shareableClasses}
+              ref={(obj) => { this.shareables = obj; }}
+              style={widgetHeight !== 0 ? { height: widgetHeight } : {}}>
               <div className="platforms clearfix">
-                <div id="wr-tw" />
-                <div id="wr-fb" />
+                <div id="wr-tw" ref={(obj) => { this.wrTW = obj; }} />
+                <div id="wr-fb" ref={(obj) => { this.wrFB = obj; }}>
+                  <div className="fb-share-button" data-href={shareUrl} data-layout="button" data-size="large" data-mobile-iframe="true" />
+                </div>
               </div>
 
               <label htmlFor="shareable-url">Copy and paste to share:</label>

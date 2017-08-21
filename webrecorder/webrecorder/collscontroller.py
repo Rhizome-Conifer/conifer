@@ -98,6 +98,8 @@ class CollsController(BaseController):
             public = self.post_get('public') == 'true'
             self.access.set_public(collection, public)
 
+            return {'is_public': '1' if public else False}
+
         @self.app.post('/api/v1/collections/<coll_name>/desc')
         def update_desc(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
