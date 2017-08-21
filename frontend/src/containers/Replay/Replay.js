@@ -41,17 +41,17 @@ class Replay extends Component {
   render() {
     const { collection, recordings, recordingIndex, params } = this.props;
     const { product } = this.context;
+
     const shareUrl = `http://localhost:8089/${params.user}/${params.coll}/${params.ts}/${params.splat}`;
     const iframeUrl = `http://localhost:8089/${params.user}/${params.coll}/${params.ts}mp_/${params.splat}`;
 
-    const coll = collection.get('collection');
     return (
       <div>
         <Helmet>
           <meta property="og:url" content={shareUrl} />
           <meta property="og:type" content="website" />
-          <meta property="og:title" content={`Archived page from the &ldquo;${coll.get('title')}&rdquo; Collection on ${product}`} />
-          <meta name="og:description" content={coll.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
+          <meta property="og:title" content={`Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${product}`} />
+          <meta name="og:description" content={collection.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
         </Helmet>
 
         <ReplayUI
@@ -74,7 +74,7 @@ const loadCollection = [
       const collection = state.get('collection');
       const { user, coll } = params;
 
-      if(!isLoaded(state) || (collection.get('coll') === coll &&
+      if(!isLoaded(state) || (collection.get('id') === coll &&
          Date.now() - collection.get('accessed') > 15 * 60 * 1000)) {
         return dispatch(loadColl(user, coll));
       }

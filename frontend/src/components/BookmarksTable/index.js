@@ -22,7 +22,7 @@ class BookmarksTable extends Component {
     const { browsers, collection } = this.props;
     const { canAdmin } = this.context;
 
-    const recordings = collection.getIn(['collection', 'recordings']).sortBy(o => o.get('timestamp'));
+    const recordings = collection.get('recordings').sortBy(o => o.get('timestamp'));
 
     return (
       <div className="bookmarks-panel">
@@ -58,7 +58,7 @@ class BookmarksTable extends Component {
                       <td className="bookmark-hidden-switch" />
                       <td className="bookmark-edit-title" />
                       <td className="bookmark-title">
-                        <Link to={`/${collection.get('user')}/${collection.get('coll')}/${ts}${browser ? `$br:${browser}` : ''}/${url}`}>
+                        <Link to={`/${collection.get('user')}/${collection.get('id')}/${ts}${browser ? `$br:${browser}` : ''}/${url}`}>
                           <EditableString
                             string={page.get('title') || 'No Title'}
                             className="edit-coll-title" />

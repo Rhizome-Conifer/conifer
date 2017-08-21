@@ -21,6 +21,7 @@ class ReplayUI extends Component {
 
   render() {
     const { currMode } = this.context;
+    const { params } = this.props;
 
     const isWrite = currMode === 'extract' || currMode === 'patch' || currMode === 'record';
 
@@ -36,7 +37,7 @@ class ReplayUI extends Component {
 
         <ReplayURLBar {...this.props} />
 
-        <RecordingTools />
+        <RecordingTools params={params} />
       </div>
     );
   }

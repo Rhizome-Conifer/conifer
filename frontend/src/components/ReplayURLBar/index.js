@@ -16,7 +16,7 @@ import './style.scss';
 class ReplayURLBar extends Component {
 
   static propTypes = {
-    recordings: PropTypes.array,
+    recordings: PropTypes.object,
     params: PropTypes.object,
     recordingIndex: PropTypes.number
   }

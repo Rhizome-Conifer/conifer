@@ -8,7 +8,7 @@ const getTimestamp = (state, props) => props.params.ts;
 const getUrl = (state, props) => props.params.splat;
 const getRecordings = state => state.getIn(['collection', 'bookmarks']);
 const userOrderBy = state => state.get('userOrderBy') || 'timestamp';
-const getCollections = (state) => { return state.get('collections') ? state.get('collections') : List(); };
+const getCollections = state => state.get('collections');
 
 export const sumCollectionsSize = createSelector(
   [getCollections],

@@ -13,7 +13,7 @@ import './style.scss';
 
 class CollectionDetail extends Component {
   static propTypes = {
-    coll: PropTypes.object,
+    collection: PropTypes.object,
     auth: PropTypes.object,
     params: PropTypes.object,
     remoteBrowsers: PropTypes.object
@@ -36,12 +36,11 @@ class CollectionDetail extends Component {
   }
 
   render() {
-    const { auth, coll, params, remoteBrowsers } = this.props;
+    const { auth, collection, params, remoteBrowsers } = this.props;
 
     const username = auth.getIn(['user', 'username']);
     const canAdmin = username === params.user;
     const canWrite = username === params.user; // && !auth.anon
-    const collection = coll.get('collection');
 
     return (
       <div>
@@ -73,7 +72,7 @@ class CollectionDetail extends Component {
           </div>
 
           <BookmarksTable
-            collection={coll}
+            collection={collection}
             browsers={remoteBrowsers.get('browsers')} />
         </div>
       </div>
@@ -86,9 +85,10 @@ const loadCollection = [
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
       const collection = state.get('collection');
+      const collId = collection.get('id');
       const { user, coll } = params;
 
-      if(!isLoaded(state) || collection.get('coll') !== coll || (collection.get('coll') === coll && Date.now() - collection.get('accessed') > 15 * 60 * 1000))
+      if(!isLoaded(state) || collId !== coll || (collId === coll && Date.now() - collection.get('accessed') > 15 * 60 * 1000))
         return dispatch(loadColl(user, coll));
 
       return undefined;
@@ -107,7 +107,7 @@ const loadCollection = [
 const mapStateToProps = (state) => {
   return {
     auth: state.get('auth'),
-    coll: state.get('collection'),
+    collection: state.get('collection'),
     remoteBrowsers: state.get('remoteBrowsers')
   };
 };

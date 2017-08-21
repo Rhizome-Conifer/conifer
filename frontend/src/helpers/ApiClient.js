@@ -17,7 +17,7 @@ export default class ApiClient {
   constructor(req) {
     // eslint-disable-next-line no-return-assign
     methods.forEach(method =>
-      this[method] = (path, { params, data } = {}) => new Promise((resolve, reject) => {
+      this[method] = (path, { params, data } = {}, dataType = false) => new Promise((resolve, reject) => {
         const request = superagent[method](formatUrl(path));
 
         console.log('requesting', formatUrl(path));
@@ -32,6 +32,11 @@ export default class ApiClient {
 
         if (data) {
           console.log('sending data..', data);
+
+          if(dataType) {
+            request.type(dataType);
+          }
+
           request.send(data);
         }
         // eslint-disable-next-line no-confusing-arrow
