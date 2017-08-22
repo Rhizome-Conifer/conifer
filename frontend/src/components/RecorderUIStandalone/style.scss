@@ -4,7 +4,7 @@
     }
 
     #cnt-button {
-        border-width: 1px 0px 1px 1px;
+        border-width: .1rem 0 .1rem .1rem;
     }
 
     .dropdown-toggle {
@@ -18,7 +18,7 @@
     }
 
     .dropdown-header {
-        padding: 5px 0;
+        padding: .5rem 0;
     }
 
     ul {
@@ -32,22 +32,22 @@
 
     h6 {
         margin: 0;
-        font-size: 16px;
+        font-size: 1.6rem;
         color: #353535;
         font-weight: bold;
     }
 
     .row {
-        padding: 10px 0;
-        margin: 0 -15px 0 -15px;
+        padding: 1rem 0;
+        margin: 0 -1.5rem 0 -1.5rem;
 
         &:first-child {
-            padding: 5px 0;
+            padding: .5rem 0;
         }
     }
 
     .btn img {
-        margin-right: 5px;
+        margin-right: .5rem;
     }
 }
 
@@ -57,7 +57,7 @@
         width: 544px;
     }
 }
-@media (min-width: 768) and (max-width: 991px) {
+@media (min-width: 768) and (max-width: 99.1rem) {
     .start-recording-homepage .containerized .container {
         width: 768px;
     }

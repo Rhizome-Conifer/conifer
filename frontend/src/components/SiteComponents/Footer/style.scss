@@ -1,7 +1,6 @@
 footer {
     width: 100%;
-    height: 98px;
-    padding-bottom: 24px;
+    padding-bottom: 2.4rem;
 
     #email-signup {
         padding-left: 0;
@@ -10,10 +9,10 @@ footer {
 
 .footer-label {
     position: relative;
-    font-size: 9px;
+    font-size: .9rem;
 
     & > div {
-        margin-left: 2px;
+        margin-left: .2rem;
     }
 
     & > a {
@@ -21,13 +20,13 @@ footer {
     }
 }
 .rhizome-logo {
-    padding-top: 5px;
-    width: 118px;
+    padding-top: .5rem;
+    width: 11.8rem;
 }
 .project-info {
 
     a {
-        margin-right: 10px;
+        margin-right: 1rem;
 
         &:hover {
             svg path {
@@ -42,23 +41,23 @@ footer {
         &.divider:before {
             content:'';
             display: inline-block;
-            width: 1px;
-            height: 15px;
-            margin-right: 10px;
+            width: .1rem;
+            height: 1.5rem;
+            margin-right: 1rem;
             background: #000;
             vertical-align: sub;
         }
 
         svg {
-            width: 18px;
-            height: 18px;
-            margin-right: 10px;
+            width: 1.8rem;
+            height: 1.8rem;
+            margin-right: 1rem;
             vertical-align: middle;
 
             &.contact {
-                margin-right: 5px;
-                width: 16px;
-                height: 16px;
+                margin-right: .5rem;
+                width: 1.6rem;
+                height: 1.6rem;
             }
         }
     }
@@ -69,7 +68,7 @@ footer {
         text-align: center;
     }
     .footer-label {
-        padding: 10px 0;
+        padding: 1rem 0;
         text-align: center;
     }
 }

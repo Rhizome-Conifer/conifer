@@ -3,7 +3,7 @@
     .heading {
         display: flex;
         align-items: center;
-        margin: 50px 0;
+        margin: 5rem 0;
 
         aside  {
             text-align: right;
@@ -11,7 +11,7 @@
 
         img {
             width: 100%;
-            max-width: 156px;
+            max-width: 15.6rem;
             display: inline-block;
         }
     }
@@ -56,45 +56,45 @@
     .credit {
         color: #CCC;
         text-align: right;
-        margin-bottom: 25px;
-        font-size: 12px;
+        margin-bottom: 2.5rem;
+        font-size: 1.2rem;
 
         & > span {
             display: inline-block;
-            padding: 10px 0;
+            padding: 1rem 0;
         }
     }
 
     h4:not(:first-of-type) {
-        margin-top: 25px;
+        margin-top: 2.5rem;
     }
 
 }
 
 .a {
     position: relative;
-    padding-left: 10px;
+    padding-left: 1rem;
 
     &:before {
         content: '';
-        border: solid 1px;
-        border-width: 0 0 0 2px;
+        border: solid .1rem;
+        border-width: 0 0 0 .2rem;
         border-color: #429EEC;
         position: absolute;
-        height: calc(100% - 8px);
-        top: 4px;
+        height: calc(100% - .8rem);
+        top: .4rem;
         left: 0;
     }
 }
 
 .support-logos {
-    margin: 56px 0;
+    margin: 5.6rem 0;
 
     & > a {
-        margin-right: 56px;
+        margin-right: 5.6rem;
 
         img {
-            width: 200px;
+            width: 20rem;
         }
     }
 }
@@ -103,10 +103,10 @@
 @media (max-width: 544px) {
     .faq {
         .heading {
-            margin: 25px 0;
+            margin: 2.5rem 0;
         }
         h2 {
-            font-size: 20px;
+            font-size: 2rem;
         }
     }
 }

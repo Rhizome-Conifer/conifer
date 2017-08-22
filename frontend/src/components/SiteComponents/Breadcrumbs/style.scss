@@ -2,9 +2,9 @@
 
 .wr-breadcrumb {
     background-color: transparent;
-    padding: 0px !important;
-    padding-left: 5px;
-    margin: 1px;
+    padding: 0 !important;
+    padding-left: .5rem;
+    margin: .1rem;
     border: none;
 
     li {
@@ -12,11 +12,11 @@
         &:before {
             content: '/';
             color: #CCC;
-            padding:0 10px;
+            padding:0 1rem;
         }
 
         a, span {
-            max-width: 100px !important;
+            max-width: 10rem !important;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;

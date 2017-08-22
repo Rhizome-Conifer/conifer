@@ -12,29 +12,29 @@
 }
 
 .wr-login-form {
-    margin: 20px 40px 20px 40px;
+    margin: 2rem 4rem 2rem 4rem;
 
     p {
-        margin-top: 20px;
+        margin-top: 2rem;
     }
 }
 .navbar-right:not(&:last-child) {
-    margin-right: 10px;
+    margin-right: 1rem;
 }
 
 .num-collection {
     color: #FFF;
     font-feature-settings: 'tnum';
-    margin-left: 5px;
+    margin-left: .5rem;
 
     &:before {
         content: '(';
         color: $link;
-        padding-right: 1px;
+        padding-right: .1rem;
     }
     &:after {
         content: ')';
         color: $link;
-        padding-left: 1px;
+        padding-left: .1rem;
     }
 }

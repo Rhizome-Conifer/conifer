@@ -4,7 +4,7 @@
     position: relative;
     z-index: 10;
     border-radius: 0;
-    border-bottom: solid 1px #97989A;
+    border-bottom: solid .1rem #97989A;
 
     .public {
         position: relative;
@@ -16,17 +16,17 @@
         .recording-actions {
             position: absolute;
             top: 0;
-            right: 15px;
+            right: 1.5rem;
         }
     }
 
     & > * {
-        margin-top: 12px;
-        margin-bottom: 12px;
+        margin-top: 1.2rem;
+        margin-bottom: 1.2rem;
     }
 
     & > *:not(:last-child) {
-        margin-right: 15px;
+        margin-right: 1.5rem;
     }
 }
 

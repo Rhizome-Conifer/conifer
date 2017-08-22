@@ -1,15 +1,15 @@
 .bookmarks-panel {
-    margin-left: 220px;
+    margin-left: 22rem;
 }
 .table-bookmarks {
     table-layout: auto;
     width: 100% !important;
 }
 .table-noborder  {
-    border: 0px;
+    border: 0;
 }
 .table-noborder>tbody>tr, .table-noborder>tbody>tr>td {
-    border: 0px;
+    border: 0;
 }
 
 .table-bookmarks {
@@ -19,7 +19,7 @@
     border-collapse: collapse;
     table-layout: fixed;
     word-wrap:break-word;
-    margin-top: -2px;
+    margin-top: -.2rem;
 }
 .edit-coll-title-edit-icon {
     opacity: 0;
@@ -38,7 +38,7 @@
 .table-bookmarks>thead>tr>th.bookmark-browser,
 .table-bookmarks>thead>tr>th.timestamp,
 .table-bookmarks>thead>tr>th.bookmark-url {
-    border-right: 1px solid #ddd;
+    border-right: .1rem solid #ddd;
 }
 
 .table-bookmarks>thead>tr>th {
@@ -61,9 +61,7 @@
 
 .table-bookmarks>thead>tr>th.bookmark-hidden-switch,
 .table-bookmarks>tbody>tr>td.bookmark-hidden-switch {
-    padding: 0px !important;
-    /*padding-right: 0px !important;*/
-
+    padding: 0 !important;
     text-align: center;
 }
 
@@ -71,8 +69,8 @@
 .table-bookmarks>thead>tr>th.bookmark-hidden-switch>.bootstrap-switch.bootstrap-switch-mini .bootstrap-switch-handle-off,
 .table-bookmarks>thead>tr>th.bookmark-hidden-switch>.bootstrap-switch.bootstrap-switch-mini .bootstrap-switch-label {
     font-family: 'Glyphicons Halflings';
-    padding: 1px 3px;
-    font-size: 12px;
+    padding: .1rem .3rem;
+    font-size: 1.2rem;
     font-weight: normal;
     line-height: 1.5;
     color: #999;
@@ -119,17 +117,17 @@
 
 .table-bookmarks>tbody>tr>td.timestamp {
     text-align: right;
-    padding-right: 20px;
+    padding-right: 2rem;
 }
 
 .table-bookmarks thead>tr>th {
-    padding-right: 0px !important;
+    padding-right: 0 !important;
 }
 
 .table-bookmarks.dataTable thead .sorting:after,
 .table-bookmarks.dataTable thead .sorting_asc:after,
 .table-bookmarks.dataTable thead .sorting_desc:after {
-    top: 8px;
+    top: .8rem;
 }
 @media (max-width: 1200px) {
     .table-bookmarks.dataTable thead .sorting:after,
@@ -145,7 +143,7 @@
 
 .table-bookmarks-bottom div.dataTables_length {
     display: inline-block;
-    margin-left: 20px;
+    margin-left: 2rem;
 }
 
 .table-bookmarks-bottom div.dataTables_paginate {

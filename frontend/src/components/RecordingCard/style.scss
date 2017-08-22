@@ -1,6 +1,5 @@
 .card {
-    /*border-top: 1px solid #ccc;*/
-    padding: 4px 0 4px 10px;
+    padding: .4rem 0 .4rem 1rem;
     cursor: pointer;
     position: relative;
 
@@ -9,12 +8,12 @@
 }
 
 .card:last-of-type {
-    margin-bottom: 15px;
+    margin-bottom: 1.5rem;
 }
 
 .card-top {
-    padding: 5px 0px 10px 10px;
-    border-bottom: solid 1px #b9b9b9;
+    padding: .5rem 0 1rem 1rem;
+    border-bottom: solid .1rem #b9b9b9;
 }
 
 #clear-all-widget {
@@ -33,24 +32,24 @@
 }
 .checkbox-column {
     display: inline-block;
-    width: 25px;
+    width: 2.5rem;
     vertical-align: top;
 }
 .checkbox-column input {
-    font-size: 20px;
+    font-size: 2rem;
 }
 .content-column {
     display: inline-block;
     width: 100%;
 }
 .recording-content {
-    width: calc(100% - 20px);
+    width: calc(100% - 2rem);
 }
 
 .card .sub-menu {
     position: absolute;
-    top: 0px;
-    right: 2px;
+    top: 0;
+    right: .2rem;
 }
 
 .card .sub-menu.disabled {
@@ -86,7 +85,7 @@
     display: -ms-flexbox;
     justify-content: space-around;
     -ms-flex-pack: justify;
-    margin-top: 5px;
+    margin-top: .5rem;
 }
 .recording-fn-row > * {
     flex-grow: 2;
@@ -102,7 +101,7 @@
     color: #337ab7;
 }
 .recording-fn-row .glyphicon {
-    font-size: 12px;
+    font-size: 1.2rem;
 }
 .recording-fn-row > *:last-child {
     flex-grow: 4;
@@ -110,7 +109,7 @@
     text-align: right;
 }
 .recording-fn-row > *:last-child > a {
-    padding: 5px;
+    padding: .5rem;
 }
 .recording-fn-row > *:last-child > a:hover {
     color: red;
@@ -123,5 +122,5 @@
     -ms-flex-pack: center;
 }
 .recording-actions > *:not(:last-child) {
-    margin-right: 5px;
+    margin-right: .5rem;
 }

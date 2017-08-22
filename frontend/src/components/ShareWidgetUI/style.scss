@@ -4,7 +4,7 @@
     &.open .dropdown-menu {
         opacity: 1;
         transform: scale(1, 1);
-        top: calc(100% + 15px);
+        top: calc(100% + 1.5rem);
         left: auto;
         right: 0;
     }
@@ -13,21 +13,21 @@
         display: flex;
 
         & > div {
-            margin-left: 10px;
+            margin-left: 1rem;
         }
     }
 
     .share-modal {
-        min-width: 300px;
+        min-width: 30rem;
         border-radius: 0;
-        padding: 10px;
+        padding: 1rem;
 
         .glyphicon-remove-circle {
             transition: color .2s ease-in-out;
             position: absolute;
-            right: 0px;
-            top: 0px;
-            padding: 10px;
+            right: 0;
+            top: 0;
+            padding: 1rem;
             cursor: pointer;
 
             &:hover {
@@ -41,11 +41,11 @@
         }
 
         input {
-            margin-bottom: 10px;
+            margin-bottom: 1rem;
         }
 
         p {
-            margin: 0 40px 10px 0;
+            margin: 0 4rem 1rem 0;
         }
     }
 

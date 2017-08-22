@@ -1,10 +1,10 @@
 .recording-panel {
-    width: 200px;
+    width: 20rem;
     position: absolute;
     top: 0;
     bottom: 0;
-    padding-right: 0px;
-    padding-left: 0px;
+    padding-right: 0;
+    padding-left: 0;
 
     display: flex;
     display: -ms-flexbox;
@@ -16,17 +16,17 @@
     position: relative;
     flex-grow: 1;
     -ms-flex: 1 0 auto;
-    min-height: 400px;
+    min-height: 40rem;
 }
 
 .upload-coll-button {
-    font-size: 16px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-right: 8px;
-    margin-left: 8px;
+    font-size: 1.6rem;
+    padding-top: .2rem;
+    padding-bottom: .2rem;
+    padding-right: .8rem;
+    margin-left: .8rem;
 }
 .upload-coll-button .upload-label {
-    font-size: 12px;
+    font-size: 1.2rem;
     vertical-align: text-top;
 }

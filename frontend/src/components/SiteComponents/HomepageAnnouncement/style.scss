@@ -2,18 +2,18 @@
     margin: 1rem auto 3rem auto;
     background-color: white;
     background-image: none;
-    border: 1px solid #0232F5;
+    border: .1rem solid #0232F5;
     color: black;
 
     a {
-        margin-top: 10px;
+        margin-top: 1rem;
         font-weight: bold;
         color: #0232F5;
     }
 
     .wr-alert-logo {
         float: left;
-        max-width: 80px;
+        max-width: 8rem;
         min-height: 100%;
 
         img {
@@ -29,7 +29,7 @@
         }
 
         p {
-            margin: 0 5% 10px 5%;
+            margin: 0 5% 1rem 5%;
         }
     }
 }

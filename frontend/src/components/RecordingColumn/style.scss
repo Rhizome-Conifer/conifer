@@ -1,8 +1,8 @@
 .recording-selector {
-    margin-top: 8px;
-    border: solid 1px #b9b9b9;
-    border-top-right-radius: 3px;
-    border-top-left-radius: 3px;
+    margin-top: .8rem;
+    border: solid .1rem #b9b9b9;
+    border-top-right-radius: .3rem;
+    border-top-left-radius: .3rem;
 
     display: flex;
     display: -ms-flexbox;
@@ -16,17 +16,17 @@
     content: "";
     position:absolute;
     z-index: 10;
-    left: 1px;
-    bottom: 1px;
-    height: 30px;
-    width: calc(100% - 17px);
+    left: .1rem;
+    bottom: .1rem;
+    height: 3rem;
+    width: calc(100% - 1.7rem);
     background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
     pointer-events: none;
 }
 
 .card-top {
-    padding: 5px 0px 10px 10px;
-    border-bottom: solid 1px #b9b9b9;
+    padding: .5rem 0 1rem 1rem;
+    border-bottom: solid .1rem #b9b9b9;
 }
 .recording-bin {
     overflow: auto;
@@ -35,11 +35,11 @@
 }
 
 .rec-filter {
-    padding: 10px 0;
+    padding: 1rem 0;
     display: flex;
     display: -ms-flexbox;
     justify-content: space-around;
     -ms-flex-pack: justify;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 1.1rem;
 }

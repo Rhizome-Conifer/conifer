@@ -1,16 +1,16 @@
 
 .wr-coll-meta {
-    margin: 15px 0;
+    margin: 1.5rem 0;
 }
 
 .collection-title {
-    font-size: 20px;
+    font-size: 2rem;
 }
 
 .collection-list {
 
     li {
-        margin: 0px;
+        margin: 0;
 
         &:hover {
             text-decoration: underline;
@@ -21,7 +21,7 @@
         a {
             display: block;
             position: relative;
-            padding: 8px;
+            padding: .8rem;
         }
     }
 }

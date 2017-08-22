@@ -4,7 +4,7 @@
     display: inline-block;
     vertical-align: bottom;
     text-align: center;
-    border-width: 1px 0 1px 1px;
+    border-width: .1rem 0 .1rem .1rem;
     border-radius: 0;
     font-feature-settings: "tnum";
     background: #FFF;
@@ -35,7 +35,7 @@
 
     .replay-date > span {
         transition: color .125s ease-in-out;
-        margin-left: 5px;
+        margin-left: .5rem;
     }
 
     .form-control {
@@ -58,7 +58,7 @@
 
         li {
             position: relative;
-            padding: 10px 5px;
+            padding: 1rem .5rem;
             cursor: pointer;
 
             &:hover {
@@ -81,12 +81,12 @@
         .replay-date {
             position: absolute;
             top: 50%;
-            right: 5px;
+            right: .5rem;
             margin: 0;
             float: none;
-            margin-top: -10px;
+            margin-top: -1rem;
             background: linear-gradient(90deg, rgba(255,255,255,0), #FFF 15%, #FFF);
-            padding-left: 40px;
+            padding-left: 4rem;
         }
 
         li {
@@ -119,11 +119,11 @@
     position: absolute;
     pointer-events: none;
     right: 0;
-    top: 4px;
-    height: calc(100% - 8px);
+    top: .4rem;
+    height: calc(100% - .8rem);
     z-index: 10;
-    padding-left: 40px;
-    margin-right: 10px;
+    padding-left: 4rem;
+    margin-right: 1rem;
 
     background: linear-gradient(90deg, rgba(255,255,255,0), #FFF 15%, #FFF);
 }
@@ -137,9 +137,9 @@
     }
 
     & > .dropdown-menu {
-        width: 500px;
-        padding: 15px;
-        margin-top: 10px;
+        width: 50rem;
+        padding: 1.5rem;
+        margin-top: 1rem;
     }
 
     .dropdown-toggle {
@@ -167,7 +167,7 @@
     @media (max-width: 1200px) {
         .arrow_box:before, .arrow_box:after {
             left: initial;
-            right: 18px;
+            right: 1.8rem;
         }
     }
 

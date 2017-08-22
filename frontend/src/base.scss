@@ -1,64 +1,70 @@
 @import './vars';
 
+html {
+  font-size: 62.5%;
+}
+
 html, body {
   margin: 0;
   padding: 0;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: $font-family-sans-serif;
   background-color: $white;
 }
 
-// body {font-size: 62.5%;}
+body {
+  font-size: $font-size-base;
+}
 
 /*
  * Spacers and buffers
  *
  */
 .top-buffer-none {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 .top-buffer-sm {
-    margin-top: 5px;
+    margin-top: .5rem;
 }
 
 .top-buffer-md {
-    margin-top: 10px;
+    margin-top: 1rem;
 }
 
 .top-buffer {
-    margin-top: 20px;
+    margin-top: 2rem;
 }
 
 .top-buffer-lg {
-    margin-top: 40px;
+    margin-top: 4rem;
 }
 
 .left-buffer {
-    margin-left: 20px;
+    margin-left: 2rem;
 }
 
 .left-buffer-sm {
-  margin-left: 5px;
+  margin-left: .5rem;
 }
 
 .left-buffer-xs {
-    margin-left: 1px;
+    margin-left: .1rem;
 }
 
 .right-padding {
-  padding-right: 20px;
+  padding-right: 2rem;
 }
 
 .right-buffer {
-  margin-right: 20px;
+  margin-right: 2rem;
 }
 
 .right-buffer-sm {
-  margin-right: 5px;
+  margin-right: .5rem;
 }
 
 .bottom-buffer-lg {
-  margin-bottom: 40px;
+  margin-bottom: 4rem;
 }
 
 .glyphicon.glyphicon-dot:before {

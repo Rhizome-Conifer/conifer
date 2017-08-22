@@ -1,18 +1,18 @@
 #wr-tw {
     display: inline-block;
-    width: 76px;
-    height: 37px;
+    width: 7.6rem;
+    height: 3.7rem;
     float: left;
 }
 #wr-fb {
     float: left;
-    margin-left: 5px;
+    margin-left: .5rem;
 }
 
 .wr-tools {
     transition: margin-top .3s ease-in-out;
-    margin-top: -40px;
-    height: 40px;
+    margin-top: -4rem;
+    height: 4rem;
     background: #F3F3F3;
     display: flex;
     display: -ms-flexbox;
@@ -31,7 +31,7 @@
 .wr-controls.public .recording-actions {
     position: absolute;
     top: 0;
-    right: 15px;
+    right: 1.5rem;
 }
 
 .recording-actions {
@@ -39,12 +39,12 @@
     justify-content: center;
 
     & > *:not(:last-child) {
-        margin-right: 5px;
+        margin-right: .5rem;
     }
 
     .btn svg {
-        width: 16px;
-        height: 16px;
+        width: 1.6rem;
+        height: 1.6rem;
         vertical-align: middle;
     }
 }
