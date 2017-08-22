@@ -6,6 +6,7 @@ from pywb.warcserver.index.aggregator import SimpleAggregator
 from pywb.warcserver.index.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggregator
 
 from pywb.warcserver.resource.responseloader import LiveWebLoader
+from pywb.warcserver.resource.pathresolvers import RedisResolver
 
 from pywb.warcserver.handlers import DefaultResourceHandler, HandlerSeq, ResourceHandler
 from pywb.warcserver.warcserver import BaseWarcServer, init_index_source, register_source
@@ -40,6 +41,11 @@ class WRWarcServer(object):
         warc_url = redis_base + config['warc_key_templ']
         rec_list_key = config['rec_list_key_templ']
 
+        redis_resolver = RedisResolver(redis_url=warc_url,
+                                       member_key_templ=rec_list_key)
+        redis = redis_resolver.redis
+        warc_resolvers = [redis_resolver]
+
         cache_proxy_url = os.environ.get('CACHE_PROXY_URL', '')
         global PROXY_PREFIX
         PROXY_PREFIX = cache_proxy_url
@@ -47,9 +53,9 @@ class WRWarcServer(object):
         timeout = 20.0
 
         rec_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
-                                                    redis_url=rec_url)
+                                                    redis_url=rec_url,
+                                                    redis=redis)
 
-        redis = rec_redis_source.redis
         coll_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
                                                      redis_url=coll_url,
                                                      redis=redis,
@@ -58,7 +64,7 @@ class WRWarcServer(object):
         live_rec = DefaultResourceHandler(
                         SimpleAggregator(
                             {'live': LiveIndexSource()},
-                        ), warc_url,
+                        ), warc_resolvers,
                         cache_proxy_url)
 
         # Extractable archives (all available)
@@ -72,7 +78,7 @@ class WRWarcServer(object):
         extractor = GeventTimeoutAggregator(extractable_archives, timeout=timeout)
         extract_primary = DefaultResourceHandler(
                             extractor,
-                            warc_url,
+                            warc_resolvers,
                             cache_proxy_url)
 
         # Patch fallback archives
@@ -90,23 +96,23 @@ class WRWarcServer(object):
 
         extract_other = DefaultResourceHandler(
                             extractor2,
-                            warc_url,
+                            warc_resolvers,
                             cache_proxy_url)
 
         patcher = GeventTimeoutAggregator(patch_archives, timeout=timeout)
         patch_rec = DefaultResourceHandler(
                          patcher,
-                         warc_url,
+                         warc_resolvers,
                          cache_proxy_url)
 
         # Single Rec Replay
         replay_rec = DefaultResourceHandler(rec_redis_source,
-                                            warc_url,
+                                            warc_resolvers,
                                             cache_proxy_url)
 
         # Coll Replay
         replay_coll = DefaultResourceHandler(coll_redis_source,
-                                             warc_url,
+                                             warc_resolvers,
                                              cache_proxy_url)
 
         app.add_route('/live', live_rec)
