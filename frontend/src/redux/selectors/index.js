@@ -1,19 +1,27 @@
 import { createSelector } from 'reselect';
-import { List } from 'immutable';
 
 import { rts } from 'helpers/utils';
 
 
-const getTimestamp = (state, props) => props.params.ts;
-const getUrl = (state, props) => props.params.splat;
-const getRecordings = state => state.getIn(['collection', 'bookmarks']);
-const userOrderBy = state => state.get('userOrderBy') || 'timestamp';
 const getCollections = state => state.get('collections');
+const getRecordings = state => state.getIn(['collection', 'bookmarks']);
+const getTimestamp = (state, props) => props.params.ts;
+const getUserCollections = state => state.getIn(['user', 'collections']);
+const getUrl = (state, props) => props.params.splat;
+const selectedCollection = state => state.getIn(['user', 'activeCollection']);
+const userOrderBy = state => state.get('userOrderBy') || 'timestamp';
 
-export const sumCollectionsSize = createSelector(
-  [getCollections],
-  (collections) => {
-    return collections.reduce((sum, coll) => parseInt(coll.get('size'), 10) + sum, 0);
+
+export const getActiveCollection = createSelector(
+  [getUserCollections, selectedCollection],
+  (collections, activeCollection) => {
+    if(!activeCollection)
+      return { title: null, id: null };
+
+    const selected = collections.find(coll => coll.get('id') === activeCollection);
+    const title = selected.get('title');
+    const id = selected.get('id');
+    return { title: title.length > 40 ? `${title.substr(0, 40).trim()}...` : title, id };
   }
 );
 
@@ -70,5 +78,12 @@ export const getActiveRecording = createSelector(
     }
 
     return 0;
+  }
+);
+
+export const sumCollectionsSize = createSelector(
+  [getCollections],
+  (collections) => {
+    return collections.reduce((sum, coll) => parseInt(coll.get('size'), 10) + sum, 0);
   }
 );

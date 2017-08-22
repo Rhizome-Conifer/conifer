@@ -1,0 +1,18 @@
+
+.wr-collection-menu {
+    display: inline-block;
+
+    & > div {
+        display: inline-block;
+    }
+
+    .dropdown-menu {
+        height: 40rem;
+        overflow: auto;
+
+        li.make-wrap a {
+            white-space: normal;
+        }
+    }
+}
+

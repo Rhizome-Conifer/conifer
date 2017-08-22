@@ -4,11 +4,14 @@ import find from 'lodash/find';
 
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 
+import './style.scss';
+
 
 class CollectionDropdownUI extends Component {
   static propTypes = {
+    auth: PropTypes.object,
     collections: PropTypes.object,
-    activeCollection: PropTypes.string,
+    activeCollection: PropTypes.object,
     setCollection: PropTypes.func
   }
 
@@ -17,17 +20,40 @@ class CollectionDropdownUI extends Component {
   }
 
   render() {
-    const { collections, activeCollection } = this.props;
-    const title = activeCollection ? collections.find(coll => coll.get('id') === activeCollection).title : 'Choose a collection';
+    const { auth, collections, activeCollection } = this.props;
+
+    const user = auth.get('user');
+    const buttonTitle = activeCollection.title ? activeCollection.title : 'Choose a collection';
 
     return (
-      <DropdownButton title={title} id="wr-collecton-dropdown" onSelect={this.collectionChoice}>
-        <MenuItem>+ Create new collection</MenuItem>
-        <MenuItem divider />
+      <div className="wr-collection-menu">
         {
-          collections.map(coll => <MenuItem key={coll.get('id')} eventKey={coll.get('id')} active={activeCollection === coll.get('id')}>{ coll.get('title') }</MenuItem>)
+          user && user.get('username') && !user.get('anon') &&
+            <div>
+              <label className="left-buffer" htmlFor="collection">Add to collection:&emsp;</label>
+              <DropdownButton title={buttonTitle} id="wr-collecton-dropdown" onSelect={this.collectionChoice}>
+                <MenuItem>+ Create new collection</MenuItem>
+                <MenuItem divider />
+                {
+                  collections.map((coll) => {
+                    const id = coll.get('id');
+                    const title = coll.get('title');
+
+                    return (
+                      <MenuItem
+                        key={id}
+                        eventKey={id}
+                        className={title.length > 50 ? 'make-wrap' : ''}
+                        active={activeCollection.id === id}>
+                        { title }
+                      </MenuItem>
+                    );
+                  })
+                }
+              </DropdownButton>
+            </div>
         }
-      </DropdownButton>
+      </div>
     );
   }
 }
