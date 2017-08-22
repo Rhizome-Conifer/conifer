@@ -11,22 +11,28 @@ const initialState = fromJS({
   loaded: false,
   accessed: null,
   activeCollection: null,
-  data: {
-    collections: []
-  }
+  space_utilization: {},
+  colletions: []
 });
 
 export default function user(state = initialState, action = {}) {
   switch (action.type) {
     case USER_LOAD:
       return state.set('loading', true);
-    case USER_LOAD_SUCCESS:
+    case USER_LOAD_SUCCESS: {
+      const {
+        space_utilization,
+        collections
+      } = action.result.user;
+
       return state.merge({
         loading: false,
         loaded: true,
         accessed: action.accessed,
-        data: action.result.user
+        space_utilization,
+        collections
       });
+    }
     case USER_LOAD_FAIL:
       return state.merge({
         loading: false,

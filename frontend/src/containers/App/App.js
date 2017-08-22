@@ -6,6 +6,7 @@ import { asyncConnect } from 'redux-connect';
 
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
+import { load as loadUser } from 'redux/modules/user';
 
 import { UserManagement } from 'containers';
 
@@ -91,12 +92,13 @@ export class App extends Component { // eslint-disable-line
 const preloadData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
-      const promises = [];
+      if(!isAuthLoaded(getState())) {
+        return dispatch(loadAuth()).then(
+          (auth) => { return auth.username ? dispatch(loadUser(auth.username)) : undefined; }
+        );
+      }
 
-      if(!isAuthLoaded(getState()))
-        promises.push(dispatch(loadAuth()));
-
-      return Promise.all(promises);
+      return undefined;
     }
   }
 ];
