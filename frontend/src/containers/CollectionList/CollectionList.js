@@ -19,10 +19,8 @@ import './style.scss';
 
 
 class CollectionList extends Component {
-
   static propTypes = {
     collections: PropTypes.object,
-    collSum: PropTypes.number,
     auth: PropTypes.object,
     user: PropTypes.object,
     params: PropTypes.object
@@ -33,12 +31,13 @@ class CollectionList extends Component {
   })
 
   render() {
+    const { auth, user } = this.props;
     const userParam = this.props.params.user;
-    const { auth, collSum, user } = this.props;
-    const collections = this.props.collections.get('collections');
 
     const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;
-    const totalSpace = user.getIn(['data', 'space_utilization', 'total']);
+    const collections = this.props.collections.get('collections');
+    const spaceUsed = user.getIn(['space_utilization', 'used']);
+    const totalSpace = user.getIn(['space_utilization', 'total']);
 
     return (
       <div>
@@ -61,8 +60,8 @@ class CollectionList extends Component {
             canAdmin &&
               <Col xs={2} className="pull-right">
                 <strong>Space Used: </strong>
-                <SizeFormat bytes={collSum} />
-                <ProgressBar now={(collSum / totalSpace) * 100} bsStyle="success" />
+                <SizeFormat bytes={spaceUsed} />
+                <ProgressBar now={(spaceUsed / totalSpace) * 100} bsStyle="success" />
               </Col>
           }
         </Row>
@@ -131,7 +130,6 @@ const mapStateToProps = (state) => {
   return {
     auth: state.get('auth'),
     collections,
-    collSum: collections ? sumCollectionsSize(collections) : 0,
     user: state.get('user')
   };
 };

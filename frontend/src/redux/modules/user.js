@@ -21,16 +21,17 @@ export default function user(state = initialState, action = {}) {
       return state.set('loading', true);
     case USER_LOAD_SUCCESS: {
       const {
-        space_utilization,
-        collections
+        collections,
+        space_utilization
       } = action.result.user;
 
       return state.merge({
         loading: false,
         loaded: true,
         accessed: action.accessed,
+        collections,
         space_utilization,
-        collections
+        username: action.username
       });
     }
     case USER_LOAD_FAIL:
@@ -56,6 +57,7 @@ export function load(username) {
   return {
     types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
     accessed: Date.now(),
+    username,
     promise: client => client.get(`${config.apiPath}/users/${username}?api=false&include_recs=false&include_colls=true`)
   };
 }

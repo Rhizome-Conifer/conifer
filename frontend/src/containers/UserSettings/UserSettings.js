@@ -17,9 +17,12 @@ class UserSettings extends Component {
   }
 
   render() {
-    const { collSum, user } = this.props;
+    const { user } = this.props;
 
-    const userInfo = <h2>Usage for <b>{ user.getIn(['data', 'username']) }</b></h2>;
+    const usedSpace = user.getIn(['space_utilization', 'used']);
+    const totalSpace = user.getIn(['space_utilization', 'total']);
+
+    const userInfo = <h2>Usage for <b>{ user.get('username') }</b></h2>;
     const passReset = (
       <div className="pw-reset">
         <h3 className="panel-title">Change Password</h3>
@@ -27,14 +30,13 @@ class UserSettings extends Component {
       </div>
     );
     const deleteAccount = <h3 className="panel-title">Delete Account</h3>;
-    const totalSpace = user.getIn(['data', 'space_utilization', 'total']);
 
     return (
       <div className="row top-buffer col-xs-10 col-xs-push-1">
         <Panel header={userInfo}>
           <span>Space Used: </span>
-          <SizeFormat bytes={collSum} />
-          <ProgressBar now={(collSum / totalSpace) * 100} bsStyle="success" />
+          <SizeFormat bytes={usedSpace} />
+          <ProgressBar now={(usedSpace / totalSpace) * 100} bsStyle="success" />
           Please <a href="mailto:support@webrecorder.io">contact us</a> if you would like to request additional space.
         </Panel>
 
@@ -107,8 +109,7 @@ const preloadData = [
 
 const mapStateToProps = (state) => {
   return {
-    user: state.get('user'),
-    collSum: sumCollectionsSize(state.getIn(['user', 'data']))
+    user: state.get('user')
   };
 };
 
