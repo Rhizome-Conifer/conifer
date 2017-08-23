@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import find from 'lodash/find';
+import { List } from 'immutable';
 
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 
@@ -13,6 +13,10 @@ class CollectionDropdownUI extends Component {
     collections: PropTypes.object,
     activeCollection: PropTypes.object,
     setCollection: PropTypes.func
+  }
+
+  static defaultProps = {
+    collections: List(),
   }
 
   collectionChoice = (id) => {
