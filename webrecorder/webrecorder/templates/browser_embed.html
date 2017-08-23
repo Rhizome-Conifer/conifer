@@ -16,7 +16,7 @@
     wbinfo.outer_prefix = decodeURI("{{ top_prefix }}");
     wbinfo.url = "{{ url }}";
     wbinfo.capture_url = wbinfo.url;
-    wbinfo.reqTimestamp = "{{ ts }}";
+    wbinfo.request_ts = "{{ ts }}";
     wbinfo.timestamp = "{{ ts }}";
     wbinfo.state = "{{ curr_mode }}";
     wbinfo.info = {{ info | default('{}') | tojson }};
