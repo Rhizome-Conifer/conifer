@@ -25,7 +25,7 @@ export default function userSignup(state = initialState, action = {}) {
       return state.merge({
         success: action.result && 'success' in action.result,
         result: action.result.success,
-        errors: action.result.errors
+        errors: null
       });
     case SIGNUP_FAIL:
       return state.merge({

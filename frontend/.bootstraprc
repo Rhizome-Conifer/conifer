@@ -69,7 +69,7 @@ styles:
   pagination: false
   pager: false
   labels: true
-  badges: false
+  badges: true
   jumbotron: false
   thumbnails: false
   alerts: true

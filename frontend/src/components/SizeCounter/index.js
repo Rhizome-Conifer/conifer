@@ -5,9 +5,10 @@ import SizeFormat from 'components/SizeFormat';
 
 function SizeCounter(props) {
   const { bytes } = props;
+
   return (
-    <span className="size-counter size-counter-active">
-      <span className="left-buffer-md badge current-size">
+    <span className="size-counter">
+      <span className="left-buffer-md badge">
         <SizeFormat {...props} />
       </span>
     </span>

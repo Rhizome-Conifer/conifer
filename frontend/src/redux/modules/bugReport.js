@@ -6,7 +6,8 @@ const REPORT_FAIL = 'wr/bugReport/REPORT_FAIL';
 
 const initialState = fromJS({
   submitting: false,
-  submitted: false
+  submitted: false,
+  error: null
 });
 
 export default function bugReport(state = initialState, action = {}) {
@@ -19,7 +20,8 @@ export default function bugReport(state = initialState, action = {}) {
     case REPORT_SUCCESS:
       return state.merge({
         submitting: false,
-        sbumitted: true
+        sbumitted: true,
+        error: null
       });
     case REPORT_FAIL:
       return state.merge({

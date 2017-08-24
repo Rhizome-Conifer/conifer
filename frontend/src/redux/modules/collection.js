@@ -9,7 +9,9 @@ const COLL_SET_PUBLIC_SUCCESS = 'wr/coll/SET_PUBLIC_SUCCESS';
 const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
 
 const initialState = fromJS({
-  loaded: false
+  loading: false,
+  loaded: false,
+  error: null,
 });
 
 
@@ -28,6 +30,7 @@ export default function collection(state = initialState, action = {}) {
         loading: false,
         loaded: true,
         accessed: action.accessed,
+        error: null,
 
         bookmarks,
         created_at,

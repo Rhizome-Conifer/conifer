@@ -6,7 +6,9 @@ const COLLS_LOAD_SUCCESS = 'wr/colls/LOAD_SUCCESS';
 const COLLS_LOAD_FAIL = 'wr/colls/LOAD_FAIL';
 
 const initialState = fromJS({
-  loaded: false
+  loading: false,
+  loaded: false,
+  error: null,
 });
 
 export default function collections(state = initialState, action = {}) {
@@ -18,6 +20,8 @@ export default function collections(state = initialState, action = {}) {
         loading: false,
         loaded: true,
         accessed: action.accessed,
+        error: null,
+
         user: action.result.user,
         collections: action.result.collections
       });

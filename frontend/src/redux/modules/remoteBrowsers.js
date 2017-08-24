@@ -8,7 +8,8 @@ const RB_LOAD_FAIL = 'wr/rb/LOAD_FAIL';
 const initialState = fromJS({
   loaded: false,
   activeBrowser: null,
-  accessed: null
+  accessed: null,
+  error: null
 });
 
 export default function remoteBrowsers(state = initialState, action = {}) {
@@ -20,7 +21,8 @@ export default function remoteBrowsers(state = initialState, action = {}) {
         loading: false,
         loaded: true,
         browsers: action.result,
-        accessed: action.accessed
+        accessed: action.accessed,
+        error: null
       });
     case RB_LOAD_FAIL:
       return state.merge({

@@ -10,6 +10,7 @@ const initialState = fromJS({
   loading: false,
   loaded: false,
   accessed: null,
+  error: null,
   activeCollection: null,
   space_utilization: {},
   collections: []
@@ -29,6 +30,8 @@ export default function user(state = initialState, action = {}) {
         loading: false,
         loaded: true,
         accessed: action.accessed,
+        error: null,
+
         collections,
         space_utilization,
         username: action.username

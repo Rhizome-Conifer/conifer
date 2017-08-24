@@ -4,7 +4,8 @@ const RESET_FAIL = 'wr/passwordReset/RESET_FAIL';
 
 
 const initialState = {
-  resest: false
+  resest: false,
+  errors: null
 };
 
 export default function passwordReset(state = initialState, action = {}) {
@@ -15,7 +16,8 @@ export default function passwordReset(state = initialState, action = {}) {
       };
     case RESET_SUCCESS:
       return {
-        reset: true
+        reset: true,
+        errors: null
       };
     case RESET_FAIL:
       return {
