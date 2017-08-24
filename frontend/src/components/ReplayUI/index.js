@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { RecordingTools, ToolBin } from 'containers';
+
 import ModeSelector from 'components/ModeSelector';
-import RecordingTools from 'components/RecordingTools';
 import ReplayURLBar from 'components/ReplayURLBar';
 import SizeCounter from 'components/SizeCounter';
 
@@ -11,7 +12,7 @@ import './style.scss';
 
 class ReplayUI extends Component {
   static propTypes = {
-    recordings: PropTypes.object,
+    bookmarks: PropTypes.object,
     params: PropTypes.object
   };
 
@@ -26,18 +27,21 @@ class ReplayUI extends Component {
     const isWrite = currMode === 'extract' || currMode === 'patch' || currMode === 'record';
 
     return (
-      <div
-        role="presentation"
-        className="container-fluid wr-controls navbar-default new-recording-ui">
-        <ModeSelector />
+      <div>
+        <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
 
-        { isWrite &&
-          <SizeCounter bytes={0} />
-        }
+          <ModeSelector />
 
-        <ReplayURLBar {...this.props} />
+          { isWrite &&
+            <SizeCounter bytes={0} />
+          }
 
-        <RecordingTools params={params} />
+          <ReplayURLBar {...this.props} />
+
+          <RecordingTools params={params} />
+        </div>
+
+        <ToolBin />
       </div>
     );
   }

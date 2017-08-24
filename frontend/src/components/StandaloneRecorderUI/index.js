@@ -44,7 +44,9 @@ class StandaloneRecorderUI extends Component {
       <form className="start-recording-homepage" onSubmit={this.startRecording}>
         <InputGroup className="col-md-8 col-md-offset-2 containerized">
 
-          <RemoteBrowserSelect />
+          <div className="input-group-btn rb-dropdown">
+            <RemoteBrowserSelect />
+          </div>
 
           {/* TODO: annoying discrepancy in bootstrap height.. adding fixed height here */}
           <FormControl type="text" name="url" onChange={this.urlInput} style={{ height: '33px' }} value={url} placeholder="URL to record" required disabled={isOutOfSpace} />

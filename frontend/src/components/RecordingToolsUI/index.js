@@ -7,16 +7,23 @@ import ShareWidget from 'containers/ShareWidget';
 import './style.scss';
 
 
-class RecordingTools extends Component {
+class RecordingToolsUI extends Component {
 
   static propTypes = {
-    params: PropTypes.object
+    params: PropTypes.object,
+    toolsOpen: PropTypes.bool,
+    toggleTools: PropTypes.func
   }
 
   static contextTypes = {
     canAdmin: PropTypes.bool,
     currMode: PropTypes.string,
     metadata: PropTypes.object
+  }
+
+  toggleTools = () => {
+    const { toolsOpen, toggleTools } = this.props;
+    toggleTools(!toolsOpen);
   }
 
   render() {
@@ -30,7 +37,7 @@ class RecordingTools extends Component {
       <div className="recording-actions text-center">
         {
           canAdmin && !isNew &&
-            <button id="tool-bin" className="btn btn-default" title="Additional tools">
+            <button id="tool-bin" className="btn btn-default" title="Additional tools" onClick={this.toggleTools}>
               <span className="glyphicon glyphicon-option-vertical" aria-hidden="true" />
             </button>
         }
@@ -47,4 +54,4 @@ class RecordingTools extends Component {
   }
 }
 
-export default RecordingTools;
+export default RecordingToolsUI;

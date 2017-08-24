@@ -55,33 +55,31 @@ class RemoteBrowserSelect extends Component {
       <span className="btn-content">(native) <span className="hidden-sm hidden-xs">Current</span></span>;
 
     return (
-      <div className="input-group-btn">
-        <DropdownButton
-          id="cnt-button"
-          title={btn}
-          bsStyle="default"
-          open={open}
-          onToggle={this.getRemoteBrowsers}>
-          <div className="container">
-            <ul className="row">
-              <li className="col-xs-2"><h6 className="dropdown-header">browser</h6></li>
-              <li className="col-xs-2"><h6 className="dropdown-header">version</h6></li>
-              <li className="col-xs-2"><h6 className="dropdown-header">release</h6></li>
-              <li className="col-xs-2"><h6 className="dropdown-header">OS</h6></li>
-              <li className="col-xs-4"><h6 className="dropdown-header">capabilities</h6></li>
-            </ul>
-            { loading &&
-              <div>loading options..</div>
-            }
-            { loaded && !isEmpty(browsers) &&
-                browsers.map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={activeBrowser === browser.get('id')} />)
-            }
-            {
-              <RemoteBrowserOption browser={fromJS({ id: null, name: '(native) Current' })} selectBrowser={this.selectBrowser} isActive={activeBrowser === null} />
-            }
-          </div>
-        </DropdownButton>
-      </div>
+      <DropdownButton
+        id="cnt-button"
+        title={btn}
+        bsStyle="default"
+        open={open}
+        onToggle={this.getRemoteBrowsers}>
+        <div className="container">
+          <ul className="row">
+            <li className="col-xs-2"><h6 className="dropdown-header">browser</h6></li>
+            <li className="col-xs-2"><h6 className="dropdown-header">version</h6></li>
+            <li className="col-xs-2"><h6 className="dropdown-header">release</h6></li>
+            <li className="col-xs-2"><h6 className="dropdown-header">OS</h6></li>
+            <li className="col-xs-4"><h6 className="dropdown-header">capabilities</h6></li>
+          </ul>
+          { loading &&
+            <div>loading options..</div>
+          }
+          { loaded && !isEmpty(browsers) &&
+              browsers.map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={activeBrowser === browser.get('id')} />)
+          }
+          {
+            <RemoteBrowserOption browser={fromJS({ id: null, name: '(native) Current' })} selectBrowser={this.selectBrowser} isActive={activeBrowser === null} />
+          }
+        </div>
+      </DropdownButton>
     );
   }
 }

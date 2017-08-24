@@ -5,8 +5,6 @@ import { fromJS } from 'immutable';
 import { Link } from 'react-router';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
 
-import { sumCollectionsSize } from 'redux/selectors';
-
 import { isLoaded as areCollsLoaded,
          load as loadCollections } from 'redux/modules/collections';
 import { isLoaded as isAuthLoaded } from 'redux/modules/auth';

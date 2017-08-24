@@ -5,7 +5,6 @@ import { Panel, ProgressBar } from 'react-bootstrap';
 
 import { isLoaded as isAuthLoaded } from 'redux/modules/auth';
 import { load as loadUser, isLoaded as isUserLoaded } from 'redux/modules/user';
-import { sumCollectionsSize } from 'redux/selectors';
 import SizeFormat from 'components/SizeFormat';
 
 import './style.scss';

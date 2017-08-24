@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 
-import { getActiveRecording, getOrderedRecordings } from 'redux/selectors';
-
+import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 
 import ReplayIFrame from 'components/ReplayIFrame';
 import ReplayUI from 'components/ReplayUI';
+
 
 class Replay extends Component {
   static contextTypes = {
@@ -17,7 +17,7 @@ class Replay extends Component {
 
   static propTypes = {
     collection: PropTypes.object,
-    recordings: PropTypes.object,
+    bookmarks: PropTypes.object,
     recordingIndex: PropTypes.number,
     params: PropTypes.object
   }
@@ -39,7 +39,7 @@ class Replay extends Component {
   }
 
   render() {
-    const { collection, recordings, recordingIndex, params } = this.props;
+    const { collection, bookmarks, recordingIndex, params } = this.props;
     const { product } = this.context;
 
     const shareUrl = `http://localhost:8089/${params.user}/${params.coll}/${params.ts}/${params.splat}`;
@@ -55,7 +55,7 @@ class Replay extends Component {
         </Helmet>
 
         <ReplayUI
-          recordings={recordings}
+          bookmarks={bookmarks}
           recordingIndex={recordingIndex}
           params={params} />
 
@@ -86,7 +86,7 @@ const loadCollection = [
 
 const mapStateToProps = (state, props) => {
   return {
-    recordings: getOrderedRecordings(state),
+    bookmarks: getOrderedBookmarks(state),
     recordingIndex: getActiveRecording(state, props),
     collection: state.get('collection'),
     auth: state.get('auth')

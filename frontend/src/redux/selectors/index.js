@@ -4,7 +4,7 @@ import { rts } from 'helpers/utils';
 
 
 const getCollections = state => state.get('collections');
-const getRecordings = state => state.getIn(['collection', 'bookmarks']);
+const getBookmarks = state => state.getIn(['collection', 'bookmarks']);
 const getTimestamp = (state, props) => props.params.ts;
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const getUrl = (state, props) => props.params.splat;
@@ -25,15 +25,22 @@ export const getActiveCollection = createSelector(
   }
 );
 
-export const getOrderedRecordings = createSelector(
-  [getRecordings, userOrderBy],
-  (recordings, order) => {
-    return recordings.flatten(true).sortBy(o => o.get(order));
+export const getBookmarkCount = createSelector(
+  [getBookmarks],
+  (bookmarks) => {
+    return bookmarks.flatten(true).size;
+  }
+);
+
+export const getOrderedBookmarks = createSelector(
+  [getBookmarks, userOrderBy],
+  (bookmarks, order) => {
+    return bookmarks.flatten(true).sortBy(o => o.get(order));
   }
 );
 
 export const getActiveRecording = createSelector(
-  [getOrderedRecordings, getTimestamp, getUrl],
+  [getOrderedBookmarks, getTimestamp, getUrl],
   (bookmarks, ts, url) => {
     if (!ts) {
       const idx = bookmarks.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });

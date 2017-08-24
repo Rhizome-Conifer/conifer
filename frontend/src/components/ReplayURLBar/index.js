@@ -14,16 +14,16 @@ import './style.scss';
 
 
 class ReplayURLBar extends Component {
-
-  static propTypes = {
-    recordings: PropTypes.object,
-    params: PropTypes.object,
-    recordingIndex: PropTypes.number
-  }
-
   static contextTypes = {
+    canAdmin: PropTypes.bool,
     currMode: PropTypes.string,
     router: PropTypes.object
+  }
+
+  static propTypes = {
+    bookmarks: PropTypes.object,
+    params: PropTypes.object,
+    recordingIndex: PropTypes.number
   }
 
   constructor(props) {
@@ -58,7 +58,7 @@ class ReplayURLBar extends Component {
   }
 
   render() {
-    const { recordings, recordingIndex, params } = this.props;
+    const { bookmarks, recordingIndex, params } = this.props;
     const { currMode, canAdmin } = this.context;
     const { showList } = this.state;
 
@@ -81,7 +81,7 @@ class ReplayURLBar extends Component {
               {
                 isReplay &&
                   <ReplayArrowButton
-                    page={recordingIndex - 1 >= 0 ? recordings.get(recordingIndex - 1) : null}
+                    page={recordingIndex - 1 >= 0 ? bookmarks.get(recordingIndex - 1) : null}
                     params={params}
                     direction="left" />
               }
@@ -89,7 +89,7 @@ class ReplayURLBar extends Component {
                 isReplay &&
                   <ReplayPageDisplay
                     index={recordingIndex}
-                    total={recordings.size} />
+                    total={bookmarks.size} />
               }
               {
                 canAdmin &&
@@ -104,7 +104,7 @@ class ReplayURLBar extends Component {
 
                     <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
                       {
-                        recordings.map((page, idx) =>
+                        bookmarks.map((page, idx) =>
                           <BookmarkListItem
                             key={`${page.get('timestamp')}${page.url}${idx}`}
                             page={page}
@@ -128,7 +128,7 @@ class ReplayURLBar extends Component {
               isReplay &&
                 <div className="input-group-btn hidden-xs">
                   <ReplayArrowButton
-                    page={recordingIndex + 1 < recordings.size ? recordings.get(recordingIndex + 1) : null}
+                    page={recordingIndex + 1 < bookmarks.size ? bookmarks.get(recordingIndex + 1) : null}
                     params={params}
                     direction="right" />
                 </div>
