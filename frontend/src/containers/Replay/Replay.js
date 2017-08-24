@@ -6,7 +6,7 @@ import { asyncConnect } from 'redux-connect';
 import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 
-import ReplayIFrame from 'components/ReplayIFrame';
+import IFrame from 'components/IFrame';
 import ReplayUI from 'components/ReplayUI';
 
 
@@ -59,7 +59,7 @@ class Replay extends Component {
           recordingIndex={recordingIndex}
           params={params} />
 
-        <ReplayIFrame
+        <IFrame
           url={iframeUrl}
           params={params} />
       </div>
