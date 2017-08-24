@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Collapse } from 'react-bootstrap';
 
 import { HomepageAnnouncement, HomepageMessage } from 'components/SiteComponents';
-import RecorderUIStandalone from 'components/RecorderUIStandalone';
+import { StandaloneRecorder } from 'containers';
 
 import './style.scss';
 
@@ -46,7 +46,7 @@ class Home extends Component {
           */
         }
         <div className="row top-buffer-lg bottom-buffer-lg">
-          <RecorderUIStandalone />
+          <StandaloneRecorder />
         </div>
         <HomepageAnnouncement />
         <div className="tutorial col-xs-10 col-xs-push-1">

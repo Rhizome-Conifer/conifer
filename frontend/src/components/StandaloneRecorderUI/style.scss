@@ -7,13 +7,13 @@
         border-width: .1rem 0 .1rem .1rem;
     }
 
-    .dropdown-toggle {
+    .rb-dropdown .dropdown-toggle {
         background-image: none;
         background-color: #F8F8F8;
     }
 
-    .open > .dropdown-toggle, .dropdown-toggle:active,
-    .dropdown-toggle.active, .dropdown-toggle:hover {
+    .rb-dropdown .open > .dropdown-toggle, .rb-dropdown .dropdown-toggle:active,
+    .rb-dropdown .dropdown-toggle.active, .rb-dropdown .dropdown-toggle:hover {
         background-color: #F7F7F7;
     }
 
@@ -51,6 +51,11 @@
     }
 }
 
+.record-action button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left-width: 0;
+}
 
 @media (min-width: 544px) and (max-width: 767px) {
     .start-recording-homepage .containerized .container {

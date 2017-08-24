@@ -7,3 +7,7 @@
 export function rts(val) {
   return val.replace(/\/$/, '');
 }
+
+export function stripProtocol(val) {
+  return val.replace(/https?:\/\//i, '');
+}

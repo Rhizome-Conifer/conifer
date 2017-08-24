@@ -12,8 +12,9 @@ import routerReducer from './routerReducer';
 import bugReport from './bugReport';
 import collection from './collection';
 import collections from './collections';
+import controls from './controls';
 import passwordReset from './passwordReset';
-import recordings from './recordings';
+//import recordings from './recordings';
 import remoteBrowsers from './remoteBrowsers';
 import user from './user';
 import userSignup from './userSignup';
@@ -30,6 +31,7 @@ const appReducer = combineReducers({
   bugReport,
   collection,
   collections,
+  controls,
   passwordReset,
   // recordings,
   remoteBrowsers,
