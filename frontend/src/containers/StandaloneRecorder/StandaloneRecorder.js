@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import StandaloneRecorderUI from 'components/StandaloneRecorderUI';
+import { StandaloneRecorderUI } from 'components/Controls';
 
 
 const mapStateToProps = (state) => {

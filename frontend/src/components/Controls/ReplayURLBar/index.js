@@ -6,9 +6,9 @@ import { RemoteBrowserSelect } from 'containers';
 
 import BookmarkListItem from 'components/BookmarkListItem';
 import OutsideClick from 'components/OutsideClick';
-import ReplayArrowButton from 'components/ReplayArrowButton';
-import ReplayPageDisplay from 'components/ReplayPageDisplay';
 import TimeFormat from 'components/TimeFormat';
+
+import { ReplayArrowButton, ReplayPageDisplay } from 'components/Controls';
 
 import './style.scss';
 

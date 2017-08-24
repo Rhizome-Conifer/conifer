@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import './style.scss';
 
-class ReplayIFrame extends Component {
+class IFrame extends Component {
   static propTypes = {
     url: PropTypes.string,
     params: PropTypes.object
@@ -47,4 +47,4 @@ class ReplayIFrame extends Component {
   }
 }
 
-export default ReplayIFrame;
+export default IFrame;

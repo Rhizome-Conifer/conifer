@@ -6,8 +6,7 @@ import { asyncConnect } from 'redux-connect';
 import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 
-import IFrame from 'components/IFrame';
-import ReplayUI from 'components/ReplayUI';
+import { IFrame, ReplayUI } from 'components/Controls';
 
 
 class Replay extends Component {

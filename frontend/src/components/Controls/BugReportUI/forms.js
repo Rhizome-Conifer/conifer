@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button, ControlLabel, Form,
          FormControl, FormGroup } from 'react-bootstrap';
 
-import { CheckboxField } from 'components/BugReportUI/fields';
+import { CheckboxField } from './fields';
 
 
 class ReportBugForm extends Component {

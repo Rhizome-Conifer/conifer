@@ -5,7 +5,7 @@ import { fromJS } from 'immutable';
 
 import { load, selectBrowser } from 'redux/modules/remoteBrowsers';
 
-import RemoteBrowserSelectUI from 'components/RemoteBrowserSelectUI';
+import { RemoteBrowserSelectUI } from 'components/Controls';
 
 
 class RemoteBrowserSelect extends Component {

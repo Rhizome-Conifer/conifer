@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 
 import { RecordingTools, ToolBin } from 'containers';
 
-import ModeSelector from 'components/ModeSelector';
-import ReplayURLBar from 'components/ReplayURLBar';
-import SizeCounter from 'components/SizeCounter';
+import { ModeSelector, ReplayURLBar, SizeCounter } from 'components/Controls';
 
 import './style.scss';
 

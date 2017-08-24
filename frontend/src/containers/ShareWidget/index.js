@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { setPublic } from 'redux/modules/collection';
 
-import ShareWidgetUI from 'components/ShareWidgetUI';
+import { ShareWidgetUI } from 'components/Controls';
 
 class ShareWidget extends Component {
 
