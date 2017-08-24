@@ -43,6 +43,10 @@ body {
     margin-left: 2rem;
 }
 
+.left-buffer-md {
+    margin-left: 1rem;
+}
+
 .left-buffer-sm {
   margin-left: .5rem;
 }
@@ -84,4 +88,11 @@ body {
     font-size: 2em;
     vertical-align: sub;
     line-height: 0.1em;
+}
+
+.wr-divider {
+    margin: 0 15px;
+    width: 1px;
+    height: 60%;
+    background: #333;
 }
