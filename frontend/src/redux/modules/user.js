@@ -12,7 +12,7 @@ const initialState = fromJS({
   accessed: null,
   activeCollection: null,
   space_utilization: {},
-  colletions: []
+  collections: []
 });
 
 export default function user(state = initialState, action = {}) {
