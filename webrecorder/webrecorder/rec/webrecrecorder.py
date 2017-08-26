@@ -53,6 +53,10 @@ class WebRecRecorder(object):
 
         self.warc_name_templ = config['warc_name_templ']
 
+        self.temp_prefix = config['temp_prefix']
+        self.user_usage_key = config['user_usage_key']
+        self.temp_usage_key = config['temp_usage_key']
+
         self.full_warc_prefix = config['full_warc_prefix']
 
         self.name = config['recorder_name']
@@ -278,6 +282,14 @@ class WebRecRecorder(object):
             if to_rec != '*':
                 pi.srem(from_rec_list_key, from_rec)
                 pi.sadd(to_rec_list_key, to_rec)
+
+            # check if usage stats need updating
+            if (from_user.startswith(self.temp_prefix) and not
+                to_user.startswith(self.temp_prefix)):
+                # remove temp usage data, add user usage data
+                ts = datetime.now().date().isoformat()
+                pi.hincrby(self.temp_usage_key, ts, -the_size)
+                pi.hincrby(self.user_usage_key, ts, the_size)
 
         # rename WARCs (only if switching users)
         replace_list = []
