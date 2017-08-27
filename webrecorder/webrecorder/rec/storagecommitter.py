@@ -1,8 +1,9 @@
 import os
 import redis
-import datetime
-import fcntl
 import time
+import base64
+
+from warcio.timeutils import sec_to_timestamp
 
 from webrecorder.utils import load_wr_config
 
@@ -12,12 +13,21 @@ class StorageCommitter(object):
     def __init__(self, config):
         self.redis_base_url = os.environ['REDIS_BASE_URL']
 
-        self.redis = redis.StrictRedis.from_url(self.redis_base_url)
+        self.redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
 
         self.record_root_dir = os.environ['RECORD_ROOT']
 
         self.warc_key_templ = config['warc_key_templ']
-        self.warc_upload_wait_templ = config['warc_upload_wait_templ']
+
+        self.commit_wait_templ = config['commit_wait_templ']
+        self.commit_wait_secs = int(config['commit_wait_secs'])
+
+        self.index_name_templ = config['index_name_templ']
+        self.info_index_key = config['info_index_key']
+
+        self.full_warc_prefix = config['full_warc_prefix']
+
+        self.cdxj_key = config['cdxj_key_templ'].format(user='*', coll='*', rec='*')
 
         self.default_storage_profile = self.create_default_profile(config)
 
@@ -25,8 +35,6 @@ class StorageCommitter(object):
 
         self.storage_key_templ = config['storage_key_templ']
         self.info_key_templ = config['info_key_templ']
-
-        self.upload_wait_secs = int(config['upload_wait_secs'])
 
         self.temp_prefix = config['temp_prefix']
 
@@ -45,115 +53,121 @@ class StorageCommitter(object):
 
         return profile
 
-    def is_locked(self, filename):
-        with open(filename, 'rb') as fh:
-            try:
-                fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                return False
-            except Exception as e:
-                print(e)
-                print('Skipping {0}, not yet done'.format(filename))
-                return True
-
     def is_temp(self, user):
         return user.startswith(self.temp_prefix)
 
-    def __call__(self):
-        #print('Checking for new warcs in {0}'.format(self.record_root_dir))
+    def commit_file(self, user, coll, rec, dirname, filename,
+                    update_key, update_prop=None):
 
-        if not os.path.isdir(self.record_root_dir):
-            return
+        full_filename = os.path.join(dirname, filename)
 
-        warc_map = None
-        curr_user = None
+        storage = self.get_storage(user, coll, rec)
+        if not storage:
+            return True
 
-        for user_dir in os.listdir(self.record_root_dir):
-            if self.is_temp(user_dir):
-                continue
+        commit_wait = self.commit_wait_templ.format(filename=full_filename)
 
-            full_dir = os.path.join(self.record_root_dir, user_dir)
-            if os.path.isdir(full_dir):
-                self.check_user(user_dir, full_dir)
+        if self.redis.get(commit_wait) != b'1':
+            if not storage.upload_file(user, coll, rec, filename, full_filename):
+                return False
 
-    def check_user(self, user, full_dir):
-        #print('Checking user ' + user)
-        warc_map = self.get_warcs_for_user(user)
+            self.redis.setex(commit_wait, self.commit_wait_secs, 1)
 
-        for warcname in os.listdir(full_dir):
-            if not warcname.endswith('.warc.gz'):
-                continue
+        # already uploaded, see if it is accessible
+        # if so, finalize and delete original
+        remote_url = storage.get_valid_remote_url(user, coll, rec, filename)
+        if not remote_url:
+            print('Not yet available: {0}'.format(full_filename))
+            return False
 
-            full_filename = os.path.join(full_dir, warcname)
+        update_prop = update_prop or filename
+        self.redis.hset(update_key, update_prop, remote_url)
 
-            if self.is_locked(full_filename):
-                continue
+        if not self.delete_committed(full_filename):
+            return False
 
-            coll = None
-            rec = None
+        return True
 
-            res = warc_map.get(warcname)
-            if res:
-                coll, rec = res
+    def write_cdxj(self, rec_info_key, dirname, cdxj_key):
+        cdxj_filename = self.redis.hget(rec_info_key, self.info_index_key)
+        if cdxj_filename:
+            return cdxj_filename
 
-            if not coll or not rec:
-                print('Orphan WARC:', warcname)
-                continue
+        timestamp = sec_to_timestamp(int(self.redis.hget(rec_info_key, 'updated_at')))
 
-            storage = self.get_storage(user, coll, rec)
-            if not storage:
-                continue
+        randstr = base64.b32encode(os.urandom(5)).decode('utf-8')
 
-            warc_upload_wait = self.warc_upload_wait_templ.format(filename=full_filename)
+        cdxj_filename = self.index_name_templ.format(timestamp=timestamp,
+                                                 random=randstr)
 
-            if self.redis.get(warc_upload_wait) != b'1':
-                if not storage.upload_file(user, coll, rec, warcname, full_filename):
-                    continue
+        full_filename = os.path.join(dirname, cdxj_filename)
 
-                self.redis.setex(warc_upload_wait, self.upload_wait_secs, 1)
+        cdxj_list = self.redis.zrange(cdxj_key, 0, -1)
 
-            # already uploaded, see if it is accessible
-            # if so, finalize and delete original
-            remote_url = storage.get_valid_remote_url(user, coll, rec, warcname)
-            if not remote_url:
-                print('Not yet available: {0}'.format(full_filename))
-                continue
+        with open(full_filename, 'wt') as fh:
+            for cdxj in cdxj_list:
+                fh.write(cdxj)
 
-            if not self.commit_uploaded(user, coll, rec, warcname, full_filename, remote_url):
-                continue
+        full_url = self.full_warc_prefix + full_filename.replace(os.path.sep, '/')
 
+        self.redis.hset(rec_info_key, self.info_index_key, full_url)
+
+        return cdxj_filename
+
+    def remove_if_empty(self, user_dir):
         # attempt to remove the dir, if empty
         try:
-            os.rmdir(full_dir)
-            print('Removed dir ' + full_dir)
+            os.rmdir(user_dir)
+            print('Removed dir ' + user_dir)
         except:
             pass
 
-    def get_warcs_for_user(self, user):
-        key_templ = self.warc_key_templ.format(user=user, coll='*', rec='*')
-        allwarcs = {}
+    def __call__(self):
+        for cdxj_key in self.redis.scan_iter(self.cdxj_key):
+            self.process_cdxj_key(cdxj_key)
 
-        for key in self.redis.scan_iter(key_templ):
-            parts = key.decode('utf-8').split(':')
-            coll = parts[2]
-            rec = parts[3]
+    def process_cdxj_key(self, cdxj_key):
+        base_key = cdxj_key.rsplit(':cdxj', 1)[0]
+        if self.redis.exists(base_key + ':open'):
+            return
 
-            warcmap = self.redis.hkeys(key)
-            for warc in warcmap:
-                allwarcs[warc.decode('utf-8')] = (coll, rec)
+        _, user, coll, rec = base_key.split(':', 3)
 
-        return allwarcs
+        if self.is_temp(user):
+            return
 
-    def commit_uploaded(self, user, coll, rec, warcname, full_filename, remote_url):
-        # update path index to point to remote url!
-        key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
-        self.redis.hset(key, warcname, remote_url)
+        user_dir = os.path.join(self.record_root_dir, user)
 
+        warc_key = base_key + ':warc'
+        warcs = self.redis.hgetall(warc_key)
+
+        info_key = base_key + ':info'
+
+        cdxj_filename = self.write_cdxj(info_key, user_dir, cdxj_key)
+
+        all_done = self.commit_file(user, coll, rec, user_dir,
+                                    cdxj_filename, info_key, self.info_index_key)
+
+        for warc_filename in warcs.keys():
+            done = self.commit_file(user, coll, rec, user_dir,
+                                    warc_filename, warc_key)
+
+            all_done = all_done and done
+
+        if all_done:
+            print('Deleting Redis Key: ' + cdxj_key)
+            self.redis.delete(cdxj_key)
+            self.remove_if_empty(user_dir)
+
+    def delete_committed(self, full_filename):
         print('Commit Verified, Deleting: {0}'.format(full_filename))
         try:
             os.remove(full_filename)
             return True
         except Exception as e:
             print(e)
+
+        return False
 
     def get_storage(self, user, coll, rec):
         if self.is_temp(user):

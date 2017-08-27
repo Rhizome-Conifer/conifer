@@ -2,8 +2,7 @@ from gevent.monkey import patch_all; patch_all()
 
 from pywb.warcserver.index.indexsource import LiveIndexSource, RedisIndexSource
 from pywb.warcserver.index.indexsource import MementoIndexSource, WBMementoIndexSource, RemoteIndexSource
-from pywb.warcserver.index.aggregator import SimpleAggregator
-from pywb.warcserver.index.aggregator import RedisMultiKeyIndexSource, GeventTimeoutAggregator
+from pywb.warcserver.index.aggregator import SimpleAggregator, GeventTimeoutAggregator
 
 from pywb.warcserver.resource.responseloader import LiveWebLoader
 from pywb.warcserver.resource.pathresolvers import RedisResolver
@@ -37,7 +36,7 @@ class WRWarcServer(object):
         redis_base = os.environ['REDIS_BASE_URL'] + '/'
 
         rec_url = redis_base + config['cdxj_key_templ']
-        coll_url = redis_base + config['cdxj_coll_key_templ']
+        coll_url = redis_base + config['coll_cdxj_key_templ']
         warc_url = redis_base + config['warc_key_templ']
         rec_list_key = config['rec_list_key_templ']
 
@@ -52,14 +51,13 @@ class WRWarcServer(object):
 
         timeout = 20.0
 
-        rec_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
-                                                    redis_url=rec_url,
-                                                    redis=redis)
+        rec_redis_source = RedisIndexSource(timeout=timeout,
+                                            redis_url=rec_url,
+                                            redis=redis)
 
-        coll_redis_source = RedisMultiKeyIndexSource(timeout=timeout,
-                                                     redis_url=coll_url,
-                                                     redis=redis,
-                                                     member_key_templ=rec_list_key)
+        coll_redis_source = RedisIndexSource(timeout=timeout,
+                                             redis_url=coll_url,
+                                             redis=redis)
 
         live_rec = DefaultResourceHandler(
                         SimpleAggregator(
@@ -106,12 +104,12 @@ class WRWarcServer(object):
                          cache_proxy_url)
 
         # Single Rec Replay
-        replay_rec = DefaultResourceHandler(rec_redis_source,
+        replay_rec = DefaultResourceHandler(SimpleAggregator({'local': rec_redis_source}),
                                             warc_resolvers,
                                             cache_proxy_url)
 
         # Coll Replay
-        replay_coll = DefaultResourceHandler(coll_redis_source,
+        replay_coll = DefaultResourceHandler(SimpleAggregator({'local': coll_redis_source}),
                                              warc_resolvers,
                                              cache_proxy_url)
 

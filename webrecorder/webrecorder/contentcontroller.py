@@ -398,6 +398,7 @@ class ContentController(BaseController, RewriterApp):
             return self.do_create_new_and_redir(coll, rec, wb_url, redir_route)
 
         not_found = False
+        no_dupe = True
 
         sesh = self.get_session()
 
@@ -410,6 +411,10 @@ class ContentController(BaseController, RewriterApp):
         if type in self.MODIFY_MODES:
             if not self.manager.has_recording(user, coll, rec):
                 not_found = True
+            elif not self.manager.is_recording_open(user, coll, rec):
+                # force creation of new recording as this one is closed
+                not_found = True
+                no_dupe = False
 
             self.manager.assert_can_write(user, coll)
 
@@ -444,13 +449,13 @@ class ContentController(BaseController, RewriterApp):
             title = rec
 
             if type in self.MODIFY_MODES:
-                rec = self._create_new_rec(user, coll, title, type, no_dupe=True)
+                rec = self._create_new_rec(user, coll, title, type, no_dupe=no_dupe)
 
             # create patch recording as well
             if inv_sources and inv_sources != '*':
                 patch_rec = self._create_new_rec(user, coll, self.patch_of_name(title),
                                                  mode='patch',
-                                                 no_dupe=True)
+                                                 no_dupe=no_dupe)
 
             self._redir_if_sanitized(rec, title, wb_url)
 
@@ -477,6 +482,10 @@ class ContentController(BaseController, RewriterApp):
                                                                      mode=mode,
                                                                      url=wb_url)
                 return self.redirect(new_url)
+
+        elif type == 'replay-coll' :
+            self.manager.cache_coll_replay(user, coll, exists=False,
+                                           do_async=is_top_frame)
 
         kwargs = dict(user=user,
                       coll_orig=coll,
@@ -701,7 +710,7 @@ class ContentController(BaseController, RewriterApp):
         if not source:
             return
 
-        if source.startswith('r:'):
+        if source == 'local':
             source = 'replay'
 
         if source == 'replay' and type_ == 'patch':

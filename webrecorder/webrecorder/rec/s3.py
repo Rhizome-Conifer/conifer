@@ -36,11 +36,11 @@ class S3Storage(object):
         s3_url += self.bucket_name + '/' + remote_path
         return s3_url
 
-    def get_valid_remote_url(self, user, coll, rec, warcname):
+    def get_valid_remote_url(self, user, coll, rec, filename):
         remote_path = self.remote_path_templ.format(user=user,
                                                     coll=coll,
                                                     rec=rec,
-                                                    filename=warcname)
+                                                    filename=filename)
 
         key = self.bucket.get_key(remote_path)
         if key is not None:
@@ -48,11 +48,11 @@ class S3Storage(object):
         else:
             return None
 
-    def upload_file(self, user, coll, rec, warcname, full_filename):
+    def upload_file(self, user, coll, rec, filename, full_filename):
         remote_path = self.remote_path_templ.format(user=user,
                                                     coll=coll,
                                                     rec=rec,
-                                                    filename=warcname)
+                                                    filename=filename)
 
         s3_url = self._get_s3_url(remote_path)
 

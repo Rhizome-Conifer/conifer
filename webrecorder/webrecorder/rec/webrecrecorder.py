@@ -51,8 +51,6 @@ class WebRecRecorder(object):
 
         self.warc_key_templ = config['warc_key_templ']
 
-        self.warc_name_templ = config['warc_name_templ']
-
         self.temp_prefix = config['temp_prefix']
         self.user_usage_key = config['user_usage_key']
         self.temp_usage_key = config['temp_usage_key']
@@ -62,8 +60,6 @@ class WebRecRecorder(object):
         self.name = config['recorder_name']
 
         self.del_templ = config['del_templ']
-
-        self.skip_key_templ = config['skip_key_templ']
 
         self.accept_colls = config['recorder_accept_colls']
 
@@ -114,12 +110,11 @@ class WebRecRecorder(object):
         self.dedup_index = self.init_indexer()
 
         writer = SkipCheckingMultiFileWARCWriter(dir_template=self.warc_path_templ,
-                                     filename_template=self.warc_name_templ,
                                      dedup_index=self.dedup_index,
                                      redis=self.redis,
-                                     skip_key_templ=self.skip_key_templ,
                                      key_template=self.info_keys['rec'],
-                                     header_filter=ExcludeHttpOnlyCookieHeaders())
+                                     header_filter=ExcludeHttpOnlyCookieHeaders(),
+                                     config=self.config)
 
         self.writer = writer
 
@@ -533,6 +528,11 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
         self.rate_limit_ttl = self.rate_limit_hours * 60 * 60
 
+        self.open_rec_key = config['open_rec_key_templ']
+        self.open_rec_ttl = int(config['open_rec_ttl'])
+
+        self.coll_cdxj_key = config['coll_cdxj_key_templ']
+
         self.wam_loader = WAMLoader()
 
         # set shared wam_loader for CDXJIndexer index writers
@@ -560,20 +560,35 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         cdx_list = (super(WebRecRedisIndexer, self).
                       add_urls_to_index(stream, params, filename, length))
 
+
+        # if replay key exists, add to it as well!
+        coll_cdxj_key = res_template(self.coll_cdxj_key, params)
+        if self.redis.exists(coll_cdxj_key):
+            for cdx in cdx_list:
+                if cdx:
+                    self.redis.zadd(coll_cdxj_key, 0, cdx)
+
+        ts = datetime.now().date().isoformat()
+        ts_sec = str(int(time.time()))
+
         with redis_pipeline(self.redis) as pi:
             for key_templ in self.size_keys:
                 key = res_template(key_templ, params)
                 pi.hincrby(key, 'size', length)
 
                 if key_templ == self.rec_info_key_templ and cdx_list:
-                    pi.hset(key, 'updated_at', str(int(time.time())))
+                    pi.hset(key, 'updated_at', ts_sec)
+
+            # keep recording open
+            open_key = res_template(self.open_rec_key, params)
+            pi.expire(open_key, self.open_rec_ttl)
 
             # write size to usage hashes
-            ts = datetime.now().date().isoformat()
-
             if 'param.user' in params:
                 if params['param.user'].startswith(self.temp_prefix):
                     key = self.temp_usage_key
+
+                    # rate limiting
                     rate_limit_key = self.get_rate_limit_key(params)
                     if rate_limit_key:
                         pi.incrby(rate_limit_key, length)
@@ -591,9 +606,16 @@ class WebRecRedisIndexer(WritableRedisIndexer):
 # ============================================================================
 class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
     def __init__(self, *args, **kwargs):
+        config = kwargs.get('config')
+        kwargs['filename_template'] = config['warc_name_templ']
+        kwargs['max_size'] = int(config['max_warc_size'])
+        kwargs['max_idle_secs'] = int(config['open_rec_ttl'])
+
+        self.skip_key_template = config['skip_key_templ']
+
         super(SkipCheckingMultiFileWARCWriter, self).__init__(*args, **kwargs)
+
         self.redis = kwargs.get('redis')
-        self.skip_key_template = kwargs.get('skip_key_templ')
         self.info_key = kwargs.get('key_template')
 
     def allow_new_file(self, filename, params):
