@@ -1,0 +1,18 @@
+invites_enabled: 'false'
+
+full_warc_prefix: ''
+
+session.secret: 'secret'
+   
+session.key: __test_sesh
+
+session.key_template: test_key
+
+dyn_stats_key_templ: 'r:{user}:{coll}:{rec}:<sesh_id>:stats:'
+dyn_ref_templ: 'r:{user}:{coll}:{rec}:<sesh_id>:ref:'
+
+open_rec_ttl: 1
+coll_cdxj_ttl: 1
+
+
+

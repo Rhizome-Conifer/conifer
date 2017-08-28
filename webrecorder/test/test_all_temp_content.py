@@ -19,6 +19,9 @@ from re import sub
 from six.moves.urllib.parse import urlsplit, quote
 
 from webrecorder.session import Session
+
+from webrecorder.rec.tempchecker import TempChecker
+from webrecorder.rec.worker import Worker
 import gevent
 
 
@@ -57,14 +60,15 @@ class TestTempContent(FullStackTests):
 
         cls.dyn_stats = []
 
-        from webrecorder.rec.tempchecker import run
-        gevent.spawn(run)
+        cls.worker = Worker(TempChecker)
+        gevent.spawn(cls.worker.run)
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
-        super(TestTempContent, cls).teardown_class(*args, **kwargs)
-
         cls.seshmock.stop()
+        cls.worker.stop()
+
+        super(TestTempContent, cls).teardown_class(*args, **kwargs)
 
     def _get_redis_keys(self, keylist, user, coll, rec):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]

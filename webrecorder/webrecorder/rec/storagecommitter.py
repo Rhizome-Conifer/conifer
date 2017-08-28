@@ -1,16 +1,15 @@
 import os
 import redis
-import time
 import base64
 
 from warcio.timeutils import sec_to_timestamp
-
-from webrecorder.utils import load_wr_config
 
 
 # ============================================================================
 class StorageCommitter(object):
     def __init__(self, config):
+        super(StorageCommitter, self).__init__()
+
         self.redis_base_url = os.environ['REDIS_BASE_URL']
 
         self.redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
@@ -38,7 +37,13 @@ class StorageCommitter(object):
 
         self.temp_prefix = config['temp_prefix']
 
+        self._init_storage()
+
         print('Storage Committer Root: ' + self.record_root_dir)
+
+    def _init_storage(self):
+        from webrecorder.rec.s3 import S3Storage
+        self.add_storage_class('s3', S3Storage)
 
     def create_default_profile(self, config):
         storage_type = os.environ.get('DEFAULT_STORAGE', 'local')
@@ -58,6 +63,9 @@ class StorageCommitter(object):
 
     def commit_file(self, user, coll, rec, dirname, filename,
                     update_key, update_prop=None):
+
+        if self.is_temp(user):
+            return True
 
         full_filename = os.path.join(dirname, filename)
 
@@ -126,15 +134,14 @@ class StorageCommitter(object):
         for cdxj_key in self.redis.scan_iter(self.cdxj_key):
             self.process_cdxj_key(cdxj_key)
 
+        self.redis.publish('close_idle', '')
+
     def process_cdxj_key(self, cdxj_key):
         base_key = cdxj_key.rsplit(':cdxj', 1)[0]
         if self.redis.exists(base_key + ':open'):
             return
 
         _, user, coll, rec = base_key.split(':', 3)
-
-        if self.is_temp(user):
-            return
 
         user_dir = os.path.join(self.record_root_dir, user)
 
@@ -154,6 +161,7 @@ class StorageCommitter(object):
 
             all_done = all_done and done
 
+        print('Done? ', all_done)
         if all_done:
             print('Deleting Redis Key: ' + cdxj_key)
             self.redis.delete(cdxj_key)
@@ -201,30 +209,8 @@ class StorageCommitter(object):
 
 
 # =============================================================================
-def run():
-    sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
-    print('Running storage committer {0}'.format(sleep_secs))
-
-    from webrecorder.rec.s3 import S3Storage
-
-    config = load_wr_config()
-
-    storage_committer = StorageCommitter(config)
-    storage_committer.add_storage_class('s3', S3Storage)
-
-    while True:
-        try:
-            storage_committer()
-            time.sleep(sleep_secs)
-
-            storage_committer.redis.publish('close_idle', '')
-        except:
-            import traceback
-            traceback.print_exc()
-
-
-# =============================================================================
 if __name__ == "__main__":
-    run()
+    from webrecorder.rec.worker import Worker
+    Worker(StorageCommitter).run()
 
 

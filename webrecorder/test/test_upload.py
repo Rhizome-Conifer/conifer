@@ -9,6 +9,10 @@ import os
 
 import webtest
 
+from webrecorder.rec.tempchecker import TempChecker
+from webrecorder.rec.worker import Worker
+import gevent
+
 
 # ============================================================================
 class TestUpload(FullStackTests):
@@ -17,14 +21,16 @@ class TestUpload(FullStackTests):
         os.environ['AUTO_LOGIN_USER'] = 'test'
         super(TestUpload, cls).setup_class(**kwargs)
 
-        from webrecorder.rec.tempchecker import run
-        gevent.spawn(run)
-
         cls.manager = init_manager_for_cli()
 
         cls.warc = None
 
+        cls.worker = Worker(TempChecker)
+        gevent.spawn(cls.worker.run)
+
     def teardown_class(cls, *args, **kwargs):
+        cls.worker.stop()
+
         super(TestUpload, cls).teardown_class(*args, **kwargs)
         del os.environ['AUTO_LOGIN_USER']
 
