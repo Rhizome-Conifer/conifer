@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/server';
 import compression from 'compression';
 import http from 'http';
-import httpProxy from 'http-proxy';
+import proxy from 'http-proxy-middleware';
 import PrettyError from 'pretty-error';
 import createHistory from 'react-router/lib/createMemoryHistory';
 import { match } from 'react-router';
@@ -19,25 +19,20 @@ import BaseHtml from './helpers/BaseHtml';
 
 import './base.scss';
 
+
 const baseUrl = `http://${config.internalApiHost}:${config.internalApiPort}`;
-const targetUrl = `${baseUrl}/api`;
 const app = new Express();
 const pretty = new PrettyError();
 const server = new http.Server(app);
-const proxy = httpProxy.createProxyServer();
+const bypassUrls = [
+  '/api',
+  '/_(reportissues|set_session|clear_session)',
+];
+
 
 // Proxy client API requets to server for now to avoid
 // CORS during port 3000 development
-app.use('/api', (req, res) => {
-  console.log('proxying requset', req.url, 'to', targetUrl);
-  proxy.web(req, res, { target: targetUrl });
-});
-
-app.use('/_reportissues', (req, res) => {
-  const newReq = Object.assign(req, { url: '/_reportissues' });
-  console.log('proxying requset', req.url, 'to', baseUrl);
-  proxy.web(newReq, res, { target: baseUrl });
-});
+app.use(bypassUrls, proxy({ target: baseUrl, logLevel: 'debug' }));
 
 app.use(compression());
 
