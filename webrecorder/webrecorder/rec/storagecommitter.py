@@ -61,7 +61,7 @@ class StorageCommitter(object):
     def is_temp(self, user):
         return user.startswith(self.temp_prefix)
 
-    def commit_file(self, user, coll, rec, dirname, filename,
+    def commit_file(self, user, coll, rec, dirname, filename, obj_type,
                     update_key, curr_value, update_prop=None):
 
         if self.is_temp(user):
@@ -80,14 +80,14 @@ class StorageCommitter(object):
         commit_wait = self.commit_wait_templ.format(filename=full_filename)
 
         if self.redis.get(commit_wait) != b'1':
-            if not storage.upload_file(user, coll, rec, filename, full_filename):
+            if not storage.upload_file(user, coll, rec, filename, full_filename, obj_type):
                 return False
 
             self.redis.setex(commit_wait, self.commit_wait_secs, 1)
 
         # already uploaded, see if it is accessible
         # if so, finalize and delete original
-        remote_url = storage.get_valid_remote_url(user, coll, rec, filename)
+        remote_url = storage.get_valid_remote_url(user, coll, rec, filename, obj_type)
         if not remote_url:
             print('Not yet available: {0}'.format(full_filename))
             return False
@@ -159,12 +159,14 @@ class StorageCommitter(object):
         cdxj_filename = self.write_cdxj(info_key, user_dir, cdxj_key)
 
         all_done = self.commit_file(user, coll, rec, user_dir,
-                                    cdxj_filename, info_key, cdxj_filename, self.info_index_key)
+                                    cdxj_filename, 'indexes', info_key,
+                                    cdxj_filename, self.info_index_key)
 
         for warc_filename in warcs.keys():
             value = warcs[warc_filename]
             done = self.commit_file(user, coll, rec, user_dir,
-                                    warc_filename, warc_key, value)
+                                    warc_filename, 'warcs', warc_key,
+                                    value)
 
             all_done = all_done and done
 

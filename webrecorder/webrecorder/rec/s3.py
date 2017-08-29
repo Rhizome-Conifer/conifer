@@ -36,10 +36,11 @@ class S3Storage(object):
         s3_url += self.bucket_name + '/' + remote_path
         return s3_url
 
-    def get_valid_remote_url(self, user, coll, rec, filename):
+    def get_valid_remote_url(self, user, coll, rec, filename, obj_type):
         remote_path = self.remote_path_templ.format(user=user,
                                                     coll=coll,
                                                     rec=rec,
+                                                    obj_type=obj_type,
                                                     filename=filename)
 
         key = self.bucket.get_key(remote_path)
@@ -48,10 +49,11 @@ class S3Storage(object):
         else:
             return None
 
-    def upload_file(self, user, coll, rec, filename, full_filename):
+    def upload_file(self, user, coll, rec, filename, full_filename, obj_type):
         remote_path = self.remote_path_templ.format(user=user,
                                                     coll=coll,
                                                     rec=rec,
+                                                    obj_type=obj_type,
                                                     filename=filename)
 
         s3_url = self._get_s3_url(remote_path)
@@ -60,7 +62,7 @@ class S3Storage(object):
             new_key = self.bucket.new_key(remote_path)
             print('Uploading {0} -> {1}'.format(full_filename, s3_url))
             with open(full_filename, 'rb') as fh:
-                new_key.set_contents_from_file(fh, replace=True)
+                new_key.set_contents_from_file(fh, replace=False)
         except Exception as e:
             print(e)
             print('Failed to Upload to {0}'.format(s3_url))

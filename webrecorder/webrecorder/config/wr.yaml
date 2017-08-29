@@ -132,8 +132,7 @@ upload_coll:
 
 warc_path_templ: '{user}/'
 
-#storage_path_templ: 'accounts/{user}/collections/{coll}/archive/{rec}/{filename}'
-storage_path_templ: 'accounts/{user}/warcs/{filename}'
+storage_path_templ: 'accounts/{user}/{obj_type}/{filename}'
 
 warc_name_templ: 'rec-{timestamp}-{hostname}-{random}.warc.gz'
 index_name_templ: 'index-{timestamp}-{random}.cdxj'
