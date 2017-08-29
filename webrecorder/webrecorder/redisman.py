@@ -7,6 +7,7 @@ import os
 import base64
 import hashlib
 import gevent
+import logging
 
 from datetime import datetime
 
@@ -26,7 +27,6 @@ from pywb.utils.canonicalize import calc_search_range
 from pywb.warcserver.index.cdxobject import CDXObject
 
 from pywb.utils.loaders import load
-from contextlib import closing
 
 from warcio.timeutils import timestamp_now
 
@@ -997,6 +997,9 @@ class RecManagerMixin(object):
     def add_page(self, user, coll, rec, pagedata, check_dupes=False):
         self.assert_can_write(user, coll)
 
+        if not self.is_recording_open(user, coll, rec):
+            return {'error_msg': 'recording not open'}
+
         # if check dupes, check for existing page and avoid adding duplicate
         if check_dupes:
             if self.has_page(user, coll, pagedata['url'], pagedata['timestamp']):
@@ -1388,7 +1391,6 @@ class CollManagerMixin(object):
 
     def cache_coll_replay(self, user, coll, exists=False, do_async=False):
         coll_cdxj_key = self.coll_cdxj_key.format(user=user, coll=coll)
-        print(self.redis.exists(coll_cdxj_key))
         if exists != self.redis.exists(coll_cdxj_key):
             self.redis.expire(coll_cdxj_key, self.coll_cdxj_ttl)
             return
@@ -1398,7 +1400,7 @@ class CollManagerMixin(object):
         if self.redis.exists(write_key):
             if not do_async:
                 while self.redis.exists(write_key):
-                    print('Already Downloading')
+                    logging.debug('Already Downloading')
                     time.sleep(1)
             return
 
@@ -1422,23 +1424,28 @@ class CollManagerMixin(object):
                 rec_info_key = cdxj_key.rsplit(':', 1)[0] + ':info'
                 cdxj_filename = self.redis.hget(rec_info_key, self.info_index_key)
                 if not cdxj_filename:
-                    print('Missing index filename for ' + rec_info_key)
+                    logging.debug('Missing index filename for ' + rec_info_key)
                     continue
 
+                logging.debug('Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
+
                 try:
-                    with closing(load(cdxj_filename)) as fh:
-                        for cdxj_line in fh:
-                            self.redis.zadd(write_key, 0, cdxj_line.rstrip())
+                    fh = load(cdxj_filename)
+                    buff = fh.read()
+
+                    for cdxj_line in buff.splitlines():
+                        self.redis.zadd(write_key, 0, cdxj_line)
                 except:
-                    print('Could not load: ' + cdxj_filename)
+                    logging.debug('Could not load: ' + cdxj_filename)
+
+                finally:
+                    fh.close()
 
             self.redis.rename(write_key, coll_cdxj_key)
             self.redis.expire(coll_cdxj_key, self.coll_cdxj_ttl)
 
         except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print('Error downloading cache: ' + str(e))
+            logging.debug('Error downloading cache: ' + str(e))
             self.redis.delete(write_key)
 
 

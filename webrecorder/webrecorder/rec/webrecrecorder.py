@@ -617,11 +617,12 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         self.redis = kwargs.get('redis')
         self.info_key = kwargs.get('key_template')
+        self.open_rec_key = config['open_rec_key_templ']
 
     def allow_new_file(self, filename, params):
-        key = res_template(self.info_key, params)
+        key = res_template(self.open_rec_key, params)
 
-        # ensure recording exists before writing anything
+        # ensure recording exists and is open for writing
         # if not, abort opening new warc file here
         if not self.redis.exists(key):
             print('Writing skipped, recording does not exist for ' + filename)

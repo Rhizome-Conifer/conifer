@@ -35,6 +35,15 @@ class TestCDXJCache(FullStackTests):
         time.sleep(0.0)
         assert self.redis.exists('r:{user}:temp:rec:cdxj'.format(user=self.anon_user))
 
+    def test_record_2(self):
+        res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?bood=far')
+        res.charset = 'utf-8'
+
+        assert '"bood": "far"' in res.text, res.text
+
+        time.sleep(0.0)
+        assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 2
+
     def test_expire_cdxj(self):
         assert self.redis.exists('r:{user}:temp:rec:open'.format(user=self.anon_user))
 
@@ -54,6 +63,7 @@ class TestCDXJCache(FullStackTests):
         res = self.testapp.get('/{user}/temp/http://httpbin.org/get?food=bar'.format(user=self.anon_user))
 
         self.sleep_try(0.1, 0.5, self.assert_exists('c:{user}:temp:cdxj', True))
+        assert len(self.redis.zrange('c:{user}:temp:cdxj'.format(user=self.anon_user), 0, -1)) == 2
 
         self.sleep_try(1.0, 1.0, self.assert_exists('c:{user}:temp:cdxj', False))
 
@@ -67,4 +77,5 @@ class TestCDXJCache(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
         assert self.redis.exists('c:{user}:temp:cdxj'.format(user=self.anon_user))
 
+        assert len(self.redis.zrange('c:{user}:temp:cdxj'.format(user=self.anon_user), 0, -1)) == 2
 

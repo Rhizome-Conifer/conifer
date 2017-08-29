@@ -62,9 +62,13 @@ class StorageCommitter(object):
         return user.startswith(self.temp_prefix)
 
     def commit_file(self, user, coll, rec, dirname, filename,
-                    update_key, update_prop=None):
+                    update_key, curr_value, update_prop=None):
 
         if self.is_temp(user):
+            return True
+
+        # not a local filename
+        if '://' in curr_value and not curr_value.startswith('local'):
             return True
 
         full_filename = os.path.join(dirname, filename)
@@ -108,13 +112,15 @@ class StorageCommitter(object):
         cdxj_filename = self.index_name_templ.format(timestamp=timestamp,
                                                  random=randstr)
 
+        os.makedirs(dirname, exist_ok=True)
+
         full_filename = os.path.join(dirname, cdxj_filename)
 
         cdxj_list = self.redis.zrange(cdxj_key, 0, -1)
 
         with open(full_filename, 'wt') as fh:
             for cdxj in cdxj_list:
-                fh.write(cdxj)
+                fh.write(cdxj + '\n')
 
         full_url = self.full_warc_prefix + full_filename.replace(os.path.sep, '/')
 
@@ -153,15 +159,15 @@ class StorageCommitter(object):
         cdxj_filename = self.write_cdxj(info_key, user_dir, cdxj_key)
 
         all_done = self.commit_file(user, coll, rec, user_dir,
-                                    cdxj_filename, info_key, self.info_index_key)
+                                    cdxj_filename, info_key, cdxj_filename, self.info_index_key)
 
         for warc_filename in warcs.keys():
+            value = warcs[warc_filename]
             done = self.commit_file(user, coll, rec, user_dir,
-                                    warc_filename, warc_key)
+                                    warc_filename, warc_key, value)
 
             all_done = all_done and done
 
-        print('Done? ', all_done)
         if all_done:
             print('Deleting Redis Key: ' + cdxj_key)
             self.redis.delete(cdxj_key)
