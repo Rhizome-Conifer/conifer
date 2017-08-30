@@ -3,6 +3,10 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, InputGroup, FormGroup, FormControl } from 'react-bootstrap';
 
+import config from 'config';
+import { addTrailingSlash, fixMalformedUrls, isMS, isSafari,
+         remoteBrowserMod } from 'helpers/utils';
+
 import { CollectionDropdown, ExtractWidget,
          RemoteBrowserSelect } from 'containers';
 
@@ -11,29 +15,49 @@ import './style.scss';
 
 class StandaloneRecorderUI extends Component {
   static propTypes = {
-    extractable: PropTypes.object
+    activeCollection: PropTypes.string,
+    extractable: PropTypes.object,
+    remoteBrowserSelected: PropTypes.object,
+    username: PropTypes.string
   }
 
   constructor(props) {
     super(props);
 
     this.state = {
-      url: '',
+      recordingTitle: config.defaultRecordingTitle,
+      url: ''
     };
   }
 
-  urlInput = (evt) => {
+  handleInput = (evt) => {
     evt.preventDefault();
-    this.setState({ url: evt.target.value });
+    this.setState({ [evt.target.name]: evt.target.value });
   }
 
   startRecording = (evt) => {
     evt.preventDefault();
+    const { activeCollection, extractable, remoteBrowserSelected } = this.props;
+    const { recordingTitle, url } = this.state;
+    const cleanRecordingTitle = encodeURIComponent(recordingTitle.trim());
+
+    let cleanUrl = addTrailingSlash(fixMalformedUrls(url));
+
+    if (!remoteBrowserSelected && (isSafari() || isMS())) {
+      cleanUrl = `mp_${cleanUrl}`;
+    }
+
+    if (extractable) {
+      const extractMode = `${extractable.get('allSources') ? 'extract' : 'extract_only'}:${extractable.get('id')}`;
+      window.location = `/_new/${activeCollection}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(remoteBrowserSelected, extractable.get('timestamp'))}/${extractable.get('targetUrl')}`;
+    } else {
+      window.location = `/_new/${activeCollection}/${cleanRecordingTitle}/record/${remoteBrowserMod(remoteBrowserSelected, null, '/')}${cleanUrl}`;
+    }
   }
 
   render() {
     const { extractable } = this.props;
-    const { url } = this.state;
+    const { recordingTitle, url } = this.state;
 
     const isOutOfSpace = false;
     const btnClasses = classNames({
@@ -49,7 +73,7 @@ class StandaloneRecorderUI extends Component {
           </div>
 
           {/* TODO: annoying discrepancy in bootstrap height.. adding fixed height here */}
-          <FormControl type="text" name="url" onChange={this.urlInput} style={{ height: '33px' }} value={url} placeholder="URL to record" required disabled={isOutOfSpace} />
+          <FormControl type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to record" required disabled={isOutOfSpace} />
           <label htmlFor="url" className="control-label sr-only">Url</label>
 
           {
@@ -62,7 +86,7 @@ class StandaloneRecorderUI extends Component {
           }
 
           <ExtractWidget
-            active={false}
+            includeButton
             url={url} />
 
         </InputGroup>
@@ -70,7 +94,7 @@ class StandaloneRecorderUI extends Component {
 
           <label htmlFor="recording-name">New Recording Name:&emsp;</label>
           <InputGroup>
-            <FormControl id="recording-name" name="rec-title" type="text" bsSize="sm" className="homepage-title" defaultValue={'rec title'} required disabled={isOutOfSpace} />
+            <FormControl id="recording-name" name="recordingTitle" onChange={this.handleInput} type="text" bsSize="sm" className="homepage-title" value={recordingTitle} required disabled={isOutOfSpace} />
           </InputGroup>
 
           <CollectionDropdown />

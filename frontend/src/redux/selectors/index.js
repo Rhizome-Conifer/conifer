@@ -4,7 +4,9 @@ import { rts } from 'helpers/utils';
 
 
 const getCollections = state => state.get('collections');
+const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
 const getBookmarks = state => state.getIn(['collection', 'bookmarks']);
+const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
 const getTimestamp = (state, props) => props.params.ts;
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const getUrl = (state, props) => props.params.splat;
@@ -22,6 +24,13 @@ export const getActiveCollection = createSelector(
     const title = selected.get('title');
     const id = selected.get('id');
     return { title: title.length > 40 ? `${title.substr(0, 40).trim()}...` : title, id };
+  }
+);
+
+export const getActiveRemoteBrowser = createSelector(
+  [getActiveRemoteBrowserId, getRemoteBrowsers],
+  (activeBrowserId, browsers) => {
+    return activeBrowserId ? browsers.get(activeBrowserId) : null;
   }
 );
 

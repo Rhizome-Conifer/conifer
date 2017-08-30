@@ -27,6 +27,7 @@ const server = new http.Server(app);
 const bypassUrls = [
   '/api',
   '/_(reportissues|set_session|clear_session)',
+  '/_new*',
 ];
 
 

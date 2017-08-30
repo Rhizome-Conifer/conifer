@@ -14,10 +14,12 @@ module.exports = Object.assign({
   port: process.env.PORT,
   devApi: 'http://localhost:8089',
   prodApi: 'https://webrecorder.io',
+  contentHost: 'http://localhost:8089',
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,
   product: 'Webrecorder',
+  defaultRecordingTitle: 'Recording Session',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),
   app: {
@@ -34,8 +36,8 @@ module.exports = Object.assign({
         { property: 'og:title', content: 'Webrecorder' },
         { property: 'og:description', content: '' }
         // { property: 'og:card', content: 'summary' },
-        // { property: 'og:site', content: '@erikras' },
-        // { property: 'og:creator', content: '@erikras' },
+        // { property: 'og:site', content: '' },
+        // { property: 'og:creator', content: '' },
         // { property: 'og:image:width', content: '200' },
         // { property: 'og:image:height', content: '200' }
       ]
