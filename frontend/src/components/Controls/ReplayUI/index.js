@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Map } from 'immutable';
 
-import { RecordingTools, ToolBin } from 'containers';
+import { ModeSelector, RecordingTools, ToolBin } from 'containers';
 
-import { ModeSelector, ReplayURLBar, SizeCounter } from 'components/Controls';
+import { ReplayURLBar, RecordURLBar,
+         SizeCounter } from 'components/Controls';
 
 import './style.scss';
 
@@ -13,6 +15,10 @@ class ReplayUI extends Component {
     bookmarks: PropTypes.object,
     params: PropTypes.object
   };
+
+  static defaultProps = {
+    bookmarks: Map(),
+  }
 
   static contextTypes = {
     currMode: PropTypes.string
@@ -28,13 +34,17 @@ class ReplayUI extends Component {
       <div>
         <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
 
-          <ModeSelector />
+          <ModeSelector params={params} />
 
           { isWrite &&
             <SizeCounter bytes={0} />
           }
 
-          <ReplayURLBar {...this.props} />
+          {
+            isWrite ?
+              <RecordURLBar {...this.props} /> :
+              <ReplayURLBar {...this.props} />
+          }
 
           <RecordingTools params={params} />
         </div>

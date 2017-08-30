@@ -4,6 +4,16 @@
     align-items: center;
 }
 
+@keyframes blinker {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.Blink {
+    animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
+    color: darkred;
+}
+
 .wr-mode-selector.open > .dropdown-menu {
     opacity: 1;
     transform: scale(1, 1);

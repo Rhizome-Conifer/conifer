@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
 
-import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 
 import { IFrame, ReplayUI } from 'components/Controls';
 
 
-class Replay extends Component {
+class Extract extends Component {
   static contextTypes = {
     product: PropTypes.string
   }
@@ -19,8 +17,6 @@ class Replay extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
-    bookmarks: PropTypes.object,
-    recordingIndex: PropTypes.number,
     params: PropTypes.object
   }
 
@@ -35,35 +31,26 @@ class Replay extends Component {
     const { auth, params } = this.props;
 
     return {
-      currMode: 'replay',
+      currMode: 'extract',
       canAdmin: auth.getIn(['user', 'username']) === params.user
     };
   }
 
   render() {
-    const { collection, bookmarks, recordingIndex, params } = this.props;
-    const { product } = this.context;
+    const { params } = this.props;
+    const { user, coll, rec, splat } = params;
 
-    const shareUrl = `${config.host}${params.user}/${params.coll}/${params.ts}/${params.splat}`;
-    const iframeUrl = `${config.contentHost}/${params.user}/${params.coll}/${params.ts}mp_/${params.splat}`;
+    const iframeUrl = `${config.contentHost}/${user}/${coll}/${rec}/extract/mp_/${splat}`;
 
     return (
       <div>
-        <Helmet>
-          <meta property="og:url" content={shareUrl} />
-          <meta property="og:type" content="website" />
-          <meta property="og:title" content={`Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${product}`} />
-          <meta name="og:description" content={collection.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
-        </Helmet>
+        <ReplayUI params={params} />
 
-        <ReplayUI
-          bookmarks={bookmarks}
-          recordingIndex={recordingIndex}
-          params={params} />
-
-        <IFrame
-          url={iframeUrl}
-          params={params} />
+        {/*
+          <IFrame
+            url={iframeUrl}
+            params={params} />
+        */}
       </div>
     );
   }
@@ -86,10 +73,8 @@ const loadCollection = [
   }
 ];
 
-const mapStateToProps = (state, props) => {
+const mapStateToProps = (state) => {
   return {
-    bookmarks: getOrderedBookmarks(state),
-    recordingIndex: getActiveRecording(state, props),
     collection: state.get('collection'),
     auth: state.get('auth')
   };
@@ -98,4 +83,4 @@ const mapStateToProps = (state, props) => {
 export default asyncConnect(
   loadCollection,
   mapStateToProps
-)(Replay);
+)(Extract);

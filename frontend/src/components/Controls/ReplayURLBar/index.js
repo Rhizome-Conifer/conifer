@@ -40,7 +40,7 @@ class ReplayURLBar extends Component {
     console.log(url);
   }
 
-  closeBookmarkList = (evt) => {
+  closeBookmarkList = () => {
     if(this.state.showList)
       this.setState({ showList: false });
   }
@@ -59,103 +59,63 @@ class ReplayURLBar extends Component {
 
   render() {
     const { bookmarks, recordingIndex, params } = this.props;
-    const { currMode, canAdmin } = this.context;
+    const { canAdmin } = this.context;
     const { showList } = this.state;
 
-    const { splat, ts, user } = params;
+    const { splat, ts } = params;
     const url = splat;
-
-    const isReplay = currMode.indexOf('replay') !== -1;
-    const isNew = currMode === 'new';
-    const isExtract = currMode === 'extract';
-    const isPatch = currMode === 'patch';
 
     const listClasses = classNames('bookmark-list', { open: showList });
 
     /* TODO: fabric-ify these */
     return (
       <div className="main-bar">
-        <form className={classNames('form-group-recorder-url', { 'start-recording': currMode === 'new', 'content-form': currMode !== 'new', 'remote-archive': currMode in ['extract', 'patch'] })}>
+        <form className="form-group-recorder-url">
           <div className="input-group containerized">
             <div className="input-group-btn rb-dropdown">
-              {
-                isReplay &&
-                  <ReplayArrowButton
-                    page={recordingIndex - 1 >= 0 ? bookmarks.get(recordingIndex - 1) : null}
-                    params={params}
-                    direction="left" />
-              }
-              {
-                isReplay &&
-                  <ReplayPageDisplay
-                    index={recordingIndex}
-                    total={bookmarks.size} />
-              }
+              <ReplayArrowButton
+                page={recordingIndex - 1 >= 0 ? bookmarks.get(recordingIndex - 1) : null}
+                params={params}
+                direction="left" />
+              <ReplayPageDisplay
+                index={recordingIndex}
+                total={bookmarks.size} />
               {
                 canAdmin &&
                   <RemoteBrowserSelect />
               }
             </div>
-            {
-              isReplay &&
-                <OutsideClick handleClick={this.closeBookmarkList}>
-                  <div className={listClasses} title="Bookmark list">
-                    <input type="text" onClick={this.toggleBookmarkList} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
+            <OutsideClick handleClick={this.closeBookmarkList}>
+              <div className={listClasses} title="Bookmark list">
+                <input type="text" onClick={this.toggleBookmarkList} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
 
-                    <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
-                      {
-                        bookmarks.map((page, idx) =>
-                          <BookmarkListItem
-                            key={`${page.get('timestamp')}${page.url}${idx}`}
-                            page={page}
-                            params={params}
-                            closeList={this.closeBookmarkList} />
-                        )
-                      }
-                    </ul>
+                <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
+                  {
+                    bookmarks.map((page, idx) =>
+                      <BookmarkListItem
+                        key={`${page.get('timestamp')}${page.url}${idx}`}
+                        page={page}
+                        params={params}
+                        closeList={this.closeBookmarkList} />
+                    )
+                  }
+                </ul>
 
-                    <div className="wr-replay-info">
-                      {/* info_widget(coll=coll_title) */}
-                      <span className="replay-date main-replay-date hidden-xs">
-                        <TimeFormat dt={ts} />
-                        <span className="glyphicon glyphicon-triangle-bottom" />
-                      </span>
-                    </div>
-                  </div>
-                </OutsideClick>
-            }
-            {
-              isReplay &&
-                <div className="input-group-btn hidden-xs">
-                  <ReplayArrowButton
-                    page={recordingIndex + 1 < bookmarks.size ? bookmarks.get(recordingIndex + 1) : null}
-                    params={params}
-                    direction="right" />
+                <div className="wr-replay-info">
+                  {/* info_widget(coll=coll_title) */}
+                  <span className="replay-date main-replay-date hidden-xs">
+                    <TimeFormat dt={ts} />
+                    <span className="glyphicon glyphicon-triangle-bottom" />
+                  </span>
                 </div>
-            }
-            {
-              !isReplay &&
-                <input type="text" className="url-input-recorder form-control" name="url" autoFocus required />
-            }
-            {
-              canAdmin && isNew &&
-                <div className="input-group-btn extract-selector">
-                  {/* sources_widget(target=coll_title) */}
-                  <button className="btn btn-default" type="submit" role="button" aria-label="Extract">
-                    <span className="glyphicon glyphicon-save" aria-hidden="true" /> <span>extract</span>
-                  </button>
-                </div>
-            }
-            {
-              isNew &&
-                <div className="input-group-btn record-action">
-                  <form className="start-recording">
-                    <button type="submit" className="btn btn-default">
-                      Start
-                    </button>
-                  </form>
-                </div>
-            }
+              </div>
+            </OutsideClick>
+            <div className="input-group-btn hidden-xs">
+              <ReplayArrowButton
+                page={recordingIndex + 1 < bookmarks.size ? bookmarks.get(recordingIndex + 1) : null}
+                params={params}
+                direction="right" />
+            </div>
             {/*
               isExtract &&
                 <div class="input-group-btn extract-selector">

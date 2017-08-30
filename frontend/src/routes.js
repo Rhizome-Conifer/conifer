@@ -5,10 +5,14 @@ import {
   Application,
   CollectionList,
   CollectionDetail,
+  Extract,
   Home,
   HttpStatus,
   Logout,
+  NewRecording,
   PasswordReset,
+  Patch,
+  Record,
   Replay,
   UserSignup,
   UserSettings
@@ -50,15 +54,55 @@ export default (store) => {
       component: UserSettings
     },
     {
-      path: ':user/:coll',
+      path: ':user/:coll(/:rec)',
       name: 'collectionDetail',
       breadcrumb: true,
       footer: true,
       component: CollectionDetail
+    }
+  ];
+
+  const controllerRoutes = [
+    /* TODO: add permissions check */
+    {
+      path: ':user/:coll/$new',
+      name: 'new recording',
+      footer: false,
+      classOverride: true,
+      component: NewRecording
+    },
+    {
+      path: ':user/:coll/:rec/record/*',
+      name: 'record',
+      footer: false,
+      classOverride: true,
+      component: Record
+    },
+    {
+      path: ':user/:coll/:rec/patch/*',
+      name: 'patch',
+      footer: false,
+      classOverride: true,
+      component: Patch
+    },
+    {
+      path: ':user/:coll/:rec/extract:**/:ts/*',
+      name: 'patch',
+      footer: false,
+      classOverride: true,
+      component: Extract
+    },
+    {
+      path: ':user/:coll/:rec/extract_only:**/:ts/*',
+      name: 'patch',
+      footer: false,
+      classOverride: true,
+      component: Extract
     },
     {
       path: ':user/:coll/:ts/*',
       name: 'replay',
+      mode: 'replay',
       footer: false,
       classOverride: true,
       component: Replay
@@ -95,13 +139,14 @@ export default (store) => {
       component: PasswordReset
     },
     {
-      path: '/_logout',
+      path: '_logout',
       name: 'logout',
       footer: false,
       component: Logout,
     },
 
     ...infoRoutes,
+    ...controllerRoutes,
     ...userRoutes,
 
     {

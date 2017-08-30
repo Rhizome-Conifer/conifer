@@ -19,6 +19,7 @@ class ExtractWidget extends Component {
     archivesLoading: PropTypes.bool,
     extractable: PropTypes.object,
     getArchives: PropTypes.func,
+    includeButton: PropTypes.bool,
     setExtractWidget: PropTypes.func,
     timestamp: PropTypes.number,
     toCollection: PropTypes.string,
@@ -26,7 +27,12 @@ class ExtractWidget extends Component {
     useAllSources: PropTypes.func
   };
 
+  static defaultProps = {
+    active: false
+  };
+
   componentDidMount() {
+    console.log('component did mount')
     const { archives, archivesLoading } = this.props;
 
     if(!archivesLoading && archives.size === 0)
@@ -34,8 +40,13 @@ class ExtractWidget extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    console.log('next prop url', nextProps.url);
     if(nextProps.url !== this.props.url)
       this.parseURL(nextProps.url);
+  }
+
+  componentWillUnmount() {
+    this.props.setExtractWidget(null);
   }
 
   parseURL = (url) => {
@@ -50,16 +61,16 @@ class ExtractWidget extends Component {
     if(match) {
       const archive = archives.get(match);
 
-      let targetURL = baseURL.replace(archive.get('prefix'), '');
+      let targetUrl = baseURL.replace(archive.get('prefix'), '');
       let targetColl = null;
 
       if(archive.get('parse_collection')) {
-        targetColl = targetURL.split('/', 1)[0];
-        targetURL = targetURL.substr(targetColl.length + 1);
+        targetColl = targetUrl.split('/', 1)[0];
+        targetUrl = targetUrl.substr(targetColl.length + 1);
       }
 
-      const timestamp = targetURL.match(/^(\d{4,14})(\w{2}_)?\//)[1];
-      targetURL = targetURL.replace(/\d+(\w+)?\//, '');
+      const timestamp = targetUrl.match(/^(\d{4,14})(\w{2}_)?\//)[1];
+      targetUrl = targetUrl.replace(/\d+(\w+)?\//, '');
 
       // enable widget
       setExtractWidget({
@@ -68,7 +79,7 @@ class ExtractWidget extends Component {
         fullUrl: url,
         id: match,
         targetColl,
-        targetURL,
+        targetUrl,
         timestamp
       });
     } else if(extractable) {
@@ -78,28 +89,26 @@ class ExtractWidget extends Component {
   }
 
   render() {
-    const { active, archiveSources, extractable,
+    const { active, archiveSources, extractable, includeButton,
             toCollection, url, useAllSources } = this.props;
 
     return (
-      <div className="input-group-btn extract-selector">
-        {
-          extractable &&
-            <ExtractWidgetUI
-              active={active}
-              archiveSources={archiveSources}
-              extractable={extractable}
-              toCollection={toCollection}
-              url={url}
-              toggleAllSources={useAllSources} />
-        }
-        {
-          extractable &&
-            <button className="btn btn-default" type="submit" role="button" aria-label="Extract">
-              <span className="glyphicon glyphicon-save" aria-hidden="true" /><span className="hidden-xs"> extract</span>
-            </button>
-        }
-      </div>
+      extractable &&
+        <div className="input-group-btn extract-selector">
+          <ExtractWidgetUI
+            active={active}
+            archiveSources={archiveSources}
+            extractable={extractable}
+            toCollection={toCollection}
+            url={url}
+            toggleAllSources={useAllSources} />
+          {
+            includeButton &&
+              <button className="btn btn-default" type="submit" role="button" aria-label="Extract">
+                <span className="glyphicon glyphicon-save" aria-hidden="true" /><span className="hidden-xs"> extract</span>
+              </button>
+          }
+        </div>
     );
   }
 }

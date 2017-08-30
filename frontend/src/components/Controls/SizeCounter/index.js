@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 import SizeFormat from 'components/SizeFormat';
 
 function SizeCounter(props) {
-  const { bytes } = props;
+  const { bytes, classes } = props;
 
   return (
     <span className="size-counter">
-      <span className="left-buffer-md badge">
+      <span className={`badge ${classes}`}>
         <SizeFormat {...props} />
       </span>
     </span>
