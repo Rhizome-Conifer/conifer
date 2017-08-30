@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { reportBug } from 'redux/modules/bugReport';
 
-import { BugReportUI } from 'components/Controls';
+import { BugReportUI } from 'components/controls';
 
 
 class BugReport extends Component {

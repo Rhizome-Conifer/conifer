@@ -5,7 +5,7 @@ import { asyncConnect } from 'redux-connect';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getActiveRemoteBrowser } from 'redux/selectors';
 
-import { NewRecordingUI } from 'components/Controls';
+import { NewRecordingUI } from 'components/controls';
 
 
 class NewRecording extends Component {

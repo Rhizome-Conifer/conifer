@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { getBookmarkCount } from 'redux/selectors';
 
-import { ToolBinUI } from 'components/Controls';
+import { ToolBinUI } from 'components/controls';
 
 
 const mapStateToProps = (state, context) => {

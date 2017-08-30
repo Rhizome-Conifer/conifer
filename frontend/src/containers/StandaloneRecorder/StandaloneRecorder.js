@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { getActiveRemoteBrowser } from 'redux/selectors';
 
-import { StandaloneRecorderUI } from 'components/Controls';
+import { StandaloneRecorderUI } from 'components/controls';
 
 
 const mapStateToProps = (state) => {

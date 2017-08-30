@@ -6,7 +6,7 @@ import { getActiveCollection } from 'redux/selectors';
 import { getArchives, setExtractable,
          setAllSourcesOption } from 'redux/modules/controls';
 
-import { ExtractWidgetUI } from 'components/Controls';
+import { ExtractWidgetUI } from 'components/controls';
 
 import { stripProtocol } from 'helpers/utils';
 

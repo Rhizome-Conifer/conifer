@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { getActiveRemoteBrowser } from 'redux/selectors';
 
-import { ModeSelector } from 'components/Controls';
+import { ModeSelector } from 'components/controls';
 
 
 const mapStateToProps = (state) => {

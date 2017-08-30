@@ -5,7 +5,7 @@ import { Map } from 'immutable';
 import { ModeSelector, RecordingTools, ToolBin } from 'containers';
 
 import { ReplayURLBar, RecordURLBar,
-         SizeCounter } from 'components/Controls';
+         SizeCounter } from 'components/controls';
 
 import './style.scss';
 

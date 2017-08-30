@@ -8,7 +8,7 @@ import BookmarkListItem from 'components/BookmarkListItem';
 import OutsideClick from 'components/OutsideClick';
 import TimeFormat from 'components/TimeFormat';
 
-import { ReplayArrowButton, ReplayPageDisplay } from 'components/Controls';
+import { ReplayArrowButton, ReplayPageDisplay } from 'components/controls';
 
 import './style.scss';
 

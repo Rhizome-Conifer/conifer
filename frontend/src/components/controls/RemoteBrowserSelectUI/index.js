@@ -4,7 +4,7 @@ import isEmpty from 'lodash/isEmpty';
 import { fromJS } from 'immutable';
 import { DropdownButton } from 'react-bootstrap';
 
-import { RemoteBrowserOption } from 'components/Controls';
+import { RemoteBrowserOption } from 'components/controls';
 
 import 'shared/scss/dropdown.scss';
 

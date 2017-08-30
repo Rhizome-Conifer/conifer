@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { toggleToolBin } from 'redux/modules/toolBin';
 
-import { RecordingToolsUI } from 'components/Controls';
+import { RecordingToolsUI } from 'components/controls';
 
 
 const mapStateToProps = (state) => {

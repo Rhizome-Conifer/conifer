@@ -6,7 +6,7 @@ import config from 'config';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 
-import { IFrame, ReplayUI } from 'components/Controls';
+import { IFrame, ReplayUI } from 'components/controls';
 
 
 class Extract extends Component {

@@ -8,7 +8,7 @@ import config from 'config';
 import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 
-import { IFrame, ReplayUI } from 'components/Controls';
+import { IFrame, ReplayUI } from 'components/controls';
 
 
 class Replay extends Component {
