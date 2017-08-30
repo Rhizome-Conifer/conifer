@@ -32,6 +32,7 @@ export default function user(state = initialState, action = {}) {
         accessed: action.accessed,
         error: null,
 
+        activeCollection: collections ? collections[0].id : null,
         collections,
         space_utilization,
         username: action.username

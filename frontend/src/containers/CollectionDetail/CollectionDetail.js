@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
+import { Link } from 'react-router';
 
-import { load as loadColl } from 'redux/modules/collection';
-import { isLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
+import { isLoaded as isCollLoaded,
+         load as loadColl } from 'redux/modules/collection';
+import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 
 import BookmarksTable from 'components/BookmarksTable';
 import CollectionMetadata from 'components/CollectionMetadata';
@@ -26,21 +28,21 @@ class CollectionDetail extends Component {
   };
 
   getChildContext() {
-    const { auth, params } = this.props;
+    const { auth, params: { user } } = this.props;
     const username = auth.getIn(['user', 'username']);
 
     return {
-      canAdmin: username === params.user,
-      canWrite: username === params.user //&& !auth.anon
+      canAdmin: username === user,
+      canWrite: username === user //&& !auth.anon
     };
   }
 
   render() {
-    const { auth, collection, params, remoteBrowsers } = this.props;
+    const { auth, collection, params: { user, coll }, remoteBrowsers } = this.props;
 
     const username = auth.getIn(['user', 'username']);
-    const canAdmin = username === params.user;
-    const canWrite = username === params.user; // && !auth.anon
+    const canAdmin = username === user;
+    const canWrite = username === user; // && !auth.anon
 
     return (
       <div>
@@ -55,9 +57,9 @@ class CollectionDetail extends Component {
             {
               canWrite &&
                 <div>
-                  <a href="$new" className="btn btn-primary btn-sm">
+                  <Link to={`${user}/${coll}/$new`} className="btn btn-primary btn-sm">
                     <span className="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true" />New
-                  </a>
+                  </Link>
                   {
                     canAdmin &&
                       <a className="btn btn-default btn-sm upload-coll-button">
@@ -88,7 +90,7 @@ const loadCollection = [
       const collId = collection.get('id');
       const { user, coll } = params;
 
-      if(!isLoaded(state) || collId !== coll || (collId === coll && Date.now() - collection.get('accessed') > 15 * 60 * 1000))
+      if(!isCollLoaded(state) || collId !== coll || (collId === coll && Date.now() - collection.get('accessed') > 15 * 60 * 1000))
         return dispatch(loadColl(user, coll));
 
       return undefined;
@@ -96,7 +98,7 @@ const loadCollection = [
   },
   {
     promise: ({ store: { dispatch, getState } }) => {
-      if(!isLoaded(getState()))
+      if(!isRBLoaded(getState()))
         return dispatch(loadRB());
 
       return undefined;

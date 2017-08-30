@@ -10,6 +10,7 @@ class OutsideClick extends Component {
 
   static propTypes = {
     children: PropTypes.node.isRequired,
+    classes: PropTypes.object,
     handleClick: PropTypes.func,
     inlineBlock: PropTypes.bool
   };
@@ -37,10 +38,10 @@ class OutsideClick extends Component {
   }
 
   render() {
-    const { inlineBlock } = this.props;
+    const { classes, inlineBlock } = this.props;
 
     return (
-      <div ref={(obj) => { this.container = obj; }} style={inlineBlock ? { display: 'inline-block' } : {}}>
+      <div className={classes} ref={(obj) => { this.container = obj; }} style={inlineBlock ? { display: 'inline-block' } : {}}>
         { this.props.children }
       </div>
     );

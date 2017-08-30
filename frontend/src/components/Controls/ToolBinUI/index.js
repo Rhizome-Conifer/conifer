@@ -19,7 +19,9 @@ function ToolBinUI(props, context) {
             <strong>collection info:</strong>
             <span className="left-buffer bookmark-count">{`${bookmarkCount} bookmark${bookmarkCount === 1 ? '' : 's'}`}</span>
             <span className="size-counter size-counter-active">
-              <SizeCounter bytes={collSize} />
+              <SizeCounter
+                bytes={collSize}
+                classes="left-buffer-md" />
             </span>
           </div>
       }
