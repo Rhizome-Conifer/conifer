@@ -11,7 +11,7 @@ import { load as loadUser } from 'redux/modules/user';
 import { UserManagement } from 'containers';
 
 import config from 'config';
-import { Breadcrumbs, Footer } from 'components/SiteComponents';
+import { Breadcrumbs, Footer } from 'components/siteComponents';
 
 import './style.scss';
 

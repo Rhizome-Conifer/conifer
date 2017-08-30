@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
+import config from 'config';
+
 import { remoteBrowserMod } from 'helpers/utils';
 
 import OutsideClick from 'components/OutsideClick';
@@ -19,7 +21,7 @@ class ModeSelector extends Component {
   static propTypes = {
     params: PropTypes.object,
     remoteBrowserSelected: PropTypes.object
-  }
+  };
 
   constructor(props) {
     super(props);
@@ -52,6 +54,20 @@ class ModeSelector extends Component {
     const ts = window.wbinfo.timestamp;
 
     window.location = `/_new/${coll}/Patch/patch/${remoteBrowserMod(remoteBrowserSelected, ts, '/')}/${splat}`;
+  }
+
+  onRecord = () => {
+    if (this.context.currMode === 'record') return;
+
+    const { params: { coll, rec, splat, ts }, remoteBrowserSelected } = this.props;
+    const timestamp = ts || window.wbinfo.timestamp;
+    const recording = rec && !rec.startswith('patch') ? rec : encodeURIComponent(config.defaultRecordingTitle);
+
+    window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(remoteBrowserSelected, timestamp, '/')}/${splat}`;
+  }
+
+  onStaticCopy = () => {
+
   }
 
   close = () => {
@@ -127,7 +143,7 @@ class ModeSelector extends Component {
                   </li>
                 </ul>
 
-                <ul className={classNames('row wr-mode', { active: isRecord })} title="Start a new recording session at the current URL">
+                <ul className={classNames('row wr-mode', { active: isRecord })} onClick={this.onRecord} title="Start a new recording session at the current URL">
                   <li className="col-xs-3">
                     <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
                   </li>
@@ -150,7 +166,7 @@ class ModeSelector extends Component {
 
                 <div className="divider" role="separator" />
 
-                <ul className="row wr-mode" title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
+                <ul className="row wr-mode" onClikc={this.onStaticCopy} title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
                   <li className="col-xs-3">
                     <SnapshotIcon />
                   </li>

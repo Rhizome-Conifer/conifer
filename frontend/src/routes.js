@@ -1,6 +1,6 @@
 import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 
-import { FAQ, TermsAndPolicies } from 'components/SiteComponents';
+import { FAQ, TermsAndPolicies } from 'components/siteComponents';
 import {
   Application,
   CollectionList,

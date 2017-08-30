@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { fromJS } from 'immutable';
 
-import { UserManagementUI } from 'components/SiteComponents';
+import { UserManagementUI } from 'components/siteComponents';
 
 
 it('renders without crashing', () => {

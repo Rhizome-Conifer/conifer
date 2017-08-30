@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Collapse } from 'react-bootstrap';
 
-import { HomepageAnnouncement, HomepageMessage } from 'components/SiteComponents';
+import { HomepageAnnouncement, HomepageMessage } from 'components/siteComponents';
 import { StandaloneRecorder } from 'containers';
 
 import './style.scss';
