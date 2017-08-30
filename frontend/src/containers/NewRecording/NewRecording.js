@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getActiveRemoteBrowser } from 'redux/selectors';
 
 import { NewRecordingUI } from 'components/controls';
 
@@ -71,7 +70,7 @@ const mapStateToProps = (state) => {
     auth: state.get('auth'),
     collection: state.get('collection'),
     extractable: state.getIn(['controls', 'extractable']),
-    remoteBrowserSelected: getActiveRemoteBrowser(state)
+    remoteBrowserSelected: state.getIn(['remoteBrowsers', 'activeBrowser'])
   };
 };
 

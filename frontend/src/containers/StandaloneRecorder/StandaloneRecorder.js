@@ -1,8 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getActiveRemoteBrowser } from 'redux/selectors';
-
 import { StandaloneRecorderUI } from 'components/controls';
 
 
@@ -13,7 +11,7 @@ const mapStateToProps = (state) => {
   return {
     activeCollection: user.get('activeCollection'),
     extractable: controls.get('extractable'),
-    remoteBrowserSelected: getActiveRemoteBrowser(state),
+    remoteBrowserSelected: state.getIn(['remoteBrowsers', 'activeBrowser']),
     username: user.get('username')
   };
 };
