@@ -57,16 +57,6 @@ class TestCDXJCache(FullStackTests):
         res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
         assert res.status_code == 302
 
-    def test_replay_load_cdxj_top_frame(self):
-        assert not self.redis.exists('c:{user}:temp:cdxj'.format(user=self.anon_user))
-
-        res = self.testapp.get('/{user}/temp/http://httpbin.org/get?food=bar'.format(user=self.anon_user))
-
-        self.sleep_try(0.1, 0.5, self.assert_exists('c:{user}:temp:cdxj', True))
-        assert len(self.redis.zrange('c:{user}:temp:cdxj'.format(user=self.anon_user), 0, -1)) == 2
-
-        self.sleep_try(1.0, 1.0, self.assert_exists('c:{user}:temp:cdxj', False))
-
     def test_replay_load_cdxj(self):
         assert not self.redis.exists('c:{user}:temp:cdxj'.format(user=self.anon_user))
 
@@ -75,7 +65,9 @@ class TestCDXJCache(FullStackTests):
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
-        assert self.redis.exists('c:{user}:temp:cdxj'.format(user=self.anon_user))
+        self.sleep_try(0.1, 0.5, self.assert_exists('c:{user}:temp:cdxj', True))
+        #assert self.redis.exists('c:{user}:temp:cdxj'.format(user=self.anon_user))
 
         assert len(self.redis.zrange('c:{user}:temp:cdxj'.format(user=self.anon_user), 0, -1)) == 2
+        self.sleep_try(1.0, 1.0, self.assert_exists('c:{user}:temp:cdxj', False))
 

@@ -472,8 +472,8 @@ class LoginManagerMixin(object):
 
         if 'success' in msg:
             if coll != new_coll and rec != '*':
-                self.cache_coll_replay(user, coll, exists=True, do_async=True)
-                self.cache_coll_replay(new_user, new_coll, exists=True, do_async=True)
+                self.sync_coll_index(user, coll, exists=True, do_async=True)
+                self.sync_coll_index(new_user, new_coll, exists=True, do_async=True)
 
             return {'coll_id': new_coll,
                     'rec_id': new_rec,
@@ -909,7 +909,7 @@ class RecManagerMixin(object):
 
         res = self._send_delete('rec', user, coll, rec)
 
-        self.cache_coll_replay(user, coll, exists=True, do_async=True)
+        self.sync_coll_index(user, coll, exists=True, do_async=True)
 
         return res
 
@@ -1389,64 +1389,68 @@ class CollManagerMixin(object):
 
         return props
 
-    def cache_coll_replay(self, user, coll, exists=False, do_async=False):
+    def sync_coll_index(self, user, coll, exists=False, do_async=False):
         coll_cdxj_key = self.coll_cdxj_key.format(user=user, coll=coll)
         if exists != self.redis.exists(coll_cdxj_key):
             self.redis.expire(coll_cdxj_key, self.coll_cdxj_ttl)
-            return
-
-        write_key = coll_cdxj_key + ':_'
-
-        if self.redis.exists(write_key):
-            if not do_async:
-                while self.redis.exists(write_key):
-                    logging.debug('Already Downloading')
-                    time.sleep(1)
             return
 
         cdxj_keys = self._get_rec_keys(user, coll, self.cdxj_key)
         if not cdxj_keys:
             return
 
+        self.redis.zunionstore(coll_cdxj_key, cdxj_keys)
+
+        ges = []
+        for cdxj_key in cdxj_keys:
+            if self.redis.exists(cdxj_key):
+                continue
+
+            ges.append(gevent.spawn(self._do_download_cdxj, cdxj_key, coll_cdxj_key))
+
         if not do_async:
-            self._do_download_cdxj(cdxj_keys, write_key, coll_cdxj_key)
-        else:
-            gevent.spawn(self._do_download_cdxj, cdxj_keys, write_key, coll_cdxj_key)
+            res = gevent.joinall(ges)
 
-    def _do_download_cdxj(self, cdxj_keys, write_key, coll_cdxj_key):
+    def _do_download_cdxj(self, cdxj_key, output_key):
         try:
-            self.redis.zunionstore(write_key, cdxj_keys)
+            rec_info_key = cdxj_key.rsplit(':', 1)[0] + ':info'
+            cdxj_filename = self.redis.hget(rec_info_key, self.info_index_key)
+            if not cdxj_filename:
+                logging.debug('No index for ' + rec_info_key)
+                return
 
-            for cdxj_key in cdxj_keys:
-                if self.redis.exists(cdxj_key):
-                    continue
+            lock_key = cdxj_key + ':_'
 
-                rec_info_key = cdxj_key.rsplit(':', 1)[0] + ':info'
-                cdxj_filename = self.redis.hget(rec_info_key, self.info_index_key)
-                if not cdxj_filename:
-                    logging.debug('Missing index filename for ' + rec_info_key)
-                    continue
+            logging.debug('Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
+            attempts = 0
 
-                logging.debug('Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
+            if not self.redis.set(cdxj_key, 1, nx=True):
+                logging.warning('Already downloading, skipping')
+                return
 
+            while attempts < 10:
                 try:
                     fh = load(cdxj_filename)
                     buff = fh.read()
 
                     for cdxj_line in buff.splitlines():
-                        self.redis.zadd(write_key, 0, cdxj_line)
+                        self.redis.zadd(output_key, 0, cdxj_line)
+
+                    break
                 except:
-                    logging.debug('Could not load: ' + cdxj_filename)
+                    logging.error('Could not load: ' + cdxj_filename)
+                    attempts += 1
 
                 finally:
                     fh.close()
 
-            self.redis.rename(write_key, coll_cdxj_key)
-            self.redis.expire(coll_cdxj_key, self.coll_cdxj_ttl)
+            self.redis.expire(output_key, self.coll_cdxj_ttl)
 
         except Exception as e:
-            logging.debug('Error downloading cache: ' + str(e))
-            self.redis.delete(write_key)
+            logging.error('Error downloading cache: ' + str(e))
+
+        finally:
+            self.redis.delete(lock_key)
 
 
 # ============================================================================

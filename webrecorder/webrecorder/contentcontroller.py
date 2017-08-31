@@ -483,9 +483,9 @@ class ContentController(BaseController, RewriterApp):
                                                                      url=wb_url)
                 return self.redirect(new_url)
 
-        elif type == 'replay-coll' :
-            self.manager.cache_coll_replay(user, coll, exists=False,
-                                           do_async=is_top_frame)
+        elif type == 'replay-coll' and not is_top_frame:
+            self.manager.sync_coll_index(user, coll, exists=False,
+                                         do_async=False)
 
         kwargs = dict(user=user,
                       coll_orig=coll,
