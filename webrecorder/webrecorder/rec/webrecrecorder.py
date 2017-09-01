@@ -119,6 +119,7 @@ class WebRecRecorder(object):
                                      redis=self.redis,
                                      skip_key_templ=self.skip_key_templ,
                                      key_template=self.info_keys['rec'],
+                                     user_key=self.info_keys['user'],
                                      header_filter=ExcludeHttpOnlyCookieHeaders())
 
         self.writer = writer
@@ -595,6 +596,7 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
         self.redis = kwargs.get('redis')
         self.skip_key_template = kwargs.get('skip_key_templ')
         self.info_key = kwargs.get('key_template')
+        self.user_key = kwargs.get('user_key')
 
     def allow_new_file(self, filename, params):
         key = res_template(self.info_key, params)
@@ -620,6 +622,20 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
                     self.redis.hincrby(upload_id, 'size', len(buff))
 
         return self._write_to_file(params, write_callback)
+
+    def _is_write_resp(self, resp, params):
+        user_key = res_template(self.user_key, params)
+        size, max_size = self.redis.hmget(user_key, ['size', 'max_size'])
+
+        size = int(size or 0)
+        max_size = int(max_size or 0)
+        length = resp.length or resp.rec_headers.get_header('Content-Length') or 0
+
+        if size + length > max_size:
+            print('New Record for {0} exceeds max size, not recording!'.format(params['url']))
+            return False
+
+        return True
 
     def _is_write_req(self, req, params):
         if not req or not req.rec_headers or not self.skip_key_template:
