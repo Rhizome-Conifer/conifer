@@ -528,9 +528,6 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
         self.rate_limit_ttl = self.rate_limit_hours * 60 * 60
 
-        self.open_rec_key = config['open_rec_key_templ']
-        self.open_rec_ttl = int(config['open_rec_ttl'])
-
         self.coll_cdxj_key = config['coll_cdxj_key_templ']
 
         self.wam_loader = WAMLoader()
@@ -579,10 +576,6 @@ class WebRecRedisIndexer(WritableRedisIndexer):
                 if key_templ == self.rec_info_key_templ and cdx_list:
                     pi.hset(key, 'updated_at', ts_sec)
 
-            # keep recording open
-            open_key = res_template(self.open_rec_key, params)
-            pi.expire(open_key, self.open_rec_ttl)
-
             # write size to usage hashes
             if 'param.user' in params:
                 if params['param.user'].startswith(self.temp_prefix):
@@ -617,18 +610,26 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         self.redis = kwargs.get('redis')
         self.info_key = kwargs.get('key_template')
+
         self.open_rec_key = config['open_rec_key_templ']
+        self.open_rec_ttl = kwargs['max_idle_secs']
 
-    def allow_new_file(self, filename, params):
-        key = res_template(self.open_rec_key, params)
+        self.user_key = config['info_key_templ']['user']
 
-        # ensure recording exists and is open for writing
+    def is_rec_open(self, params):
+        open_key = res_template(self.open_rec_key, params)
+
+        # update ttl for open recroding key, if it exists
         # if not, abort opening new warc file here
-        if not self.redis.exists(key):
-            print('Writing skipped, recording does not exist for ' + filename)
+        if not self.redis.expire(open_key, self.open_rec_ttl):
+            # if expire fails, recording not open!
+            logging.debug('Writing skipped, recording not open for write: ' + open_key)
             return False
 
         return True
+
+    def allow_new_file(self, filename, params):
+        return self.is_rec_open(params)
 
     def write_stream_to_file(self, params, stream):
         upload_id = params.get('param.upid')
@@ -643,6 +644,23 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
                     self.redis.hincrby(upload_id, 'size', len(buff))
 
         return self._write_to_file(params, write_callback)
+
+    def _is_write_resp(self, resp, params):
+        if not self.is_rec_open(params):
+            return False
+
+        user_key = res_template(self.user_key, params)
+        size, max_size = self.redis.hmget(user_key, ['size', 'max_size'])
+
+        size = int(size or 0)
+        max_size = int(max_size or 0)
+        length = resp.length or resp.rec_headers.get_header('Content-Length') or 0
+
+        if size + length > max_size:
+            print('New Record for {0} exceeds max size, not recording!'.format(params['url']))
+            return False
+
+        return True
 
     def _is_write_req(self, req, params):
         if not req or not req.rec_headers or not self.skip_key_template:

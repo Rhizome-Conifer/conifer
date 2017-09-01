@@ -10,6 +10,7 @@ from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
 
 import re
 import os
+import time
 
 
 all_closed = False
@@ -289,6 +290,8 @@ class TestRegisterMigrate(FullStackTests):
         assert '"rec": "test"' in res.text
 
     def test_logged_in_replay_2(self):
+        # allow recording to be written
+        time.sleep(0.0)
         res = self.testapp.get('/someuser/new-coll/move-test/replay/mp_/http://httpbin.org/get?rec=test')
         res.charset = 'utf-8'
         assert '"rec": "test"' in res.text

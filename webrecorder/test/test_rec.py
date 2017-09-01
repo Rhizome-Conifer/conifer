@@ -43,6 +43,8 @@ class TestWebRecRecorder(FullStackTests):
         # Rec must be open
         #self.redis.hset('r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec), 'id', rec)
         self.redis.setex('r:{user}:{coll}:{rec}:open'.format(user=user, coll=coll, rec=rec), 30, 1)
+        self.redis.hset('u:{user}:info'.format(user=user), 'size', 0)
+        self.redis.hset('u:{user}:info'.format(user=user), 'max_size', 10000)
 
         req_url = '/record/live/resource/postreq?url={url}&param.recorder.user={user}&param.recorder.coll={coll}&param.recorder.rec={rec}'
         req_url = req_url.format(url=quote(url), user=user, coll=coll, rec=rec)
