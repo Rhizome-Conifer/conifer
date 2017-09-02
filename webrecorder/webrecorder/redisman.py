@@ -803,7 +803,8 @@ class RecManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def is_recording_open(self, user, coll, rec):
-        return self.redis.exists(self.open_rec_key.format(user=user, coll=coll, rec=rec))
+        key = self.open_rec_key.format(user=user, coll=coll, rec=rec)
+        return self.redis.expire(key, self.open_rec_ttl)
 
     def create_recording(self, user, coll, rec, rec_title, coll_title='',
                          no_dupe=False, rec_type=None, ra_list=None):
@@ -1412,6 +1413,7 @@ class CollManagerMixin(object):
             res = gevent.joinall(ges)
 
     def _do_download_cdxj(self, cdxj_key, output_key):
+        lock_key = None
         try:
             rec_info_key = cdxj_key.rsplit(':', 1)[0] + ':info'
             cdxj_filename = self.redis.hget(rec_info_key, self.info_index_key)
@@ -1420,12 +1422,12 @@ class CollManagerMixin(object):
                 return
 
             lock_key = cdxj_key + ':_'
-
             logging.debug('Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
             attempts = 0
 
             if not self.redis.set(cdxj_key, 1, nx=True):
                 logging.warning('Already downloading, skipping')
+                lock_key = None
                 return
 
             while attempts < 10:
@@ -1450,7 +1452,8 @@ class CollManagerMixin(object):
             logging.error('Error downloading cache: ' + str(e))
 
         finally:
-            self.redis.delete(lock_key)
+            if lock_key:
+                self.redis.delete(lock_key)
 
 
 # ============================================================================
@@ -1460,6 +1463,12 @@ class DeleteManagerMixin(object):
         self.delete_url_templ = config['url_templates']['delete']
 
     def _send_delete(self, type_, user, coll='*', rec='*'):
+        # first, remove open key for any recordings that are being deleted
+        # to prevent further writing
+        open_key_templ = self.open_rec_key.format(user=user, coll=coll, rec=rec)
+        for open_key in self.redis.scan_iter(open_key_templ):
+            self.redis.delete(open_key)
+
         delete_url = self.delete_url_templ.format(record_host=os.environ['RECORD_HOST'],
                                                   user=user,
                                                   coll=coll,

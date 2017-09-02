@@ -41,7 +41,9 @@ class TestUpload(FullStackTests):
         assert '"test"' in res.text
 
     def test_logged_in_record_1(self):
-        res = self.testapp.get('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/_new/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
+        assert res.headers['Location'].endswith('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
+        res = res.follow()
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text

@@ -397,9 +397,6 @@ class ContentController(BaseController, RewriterApp):
         if user == '_new' and redir_route:
             return self.do_create_new_and_redir(coll, rec, wb_url, redir_route)
 
-        not_found = False
-        no_dupe = True
-
         sesh = self.get_session()
 
         if sesh.is_new() and self.is_content_request():
@@ -407,14 +404,20 @@ class ContentController(BaseController, RewriterApp):
 
         remote_ip = None
         frontend_cache_header = None
+        patch_rec = ''
 
         if type in self.MODIFY_MODES:
             if not self.manager.has_recording(user, coll, rec):
-                not_found = True
+                self._redir_if_sanitized(self.sanitize_title(rec),
+                                         rec,
+                                         wb_url)
+
+                # don't auto create recording for inner frame w/o accessing outer frame
+                raise HTTPError(404, 'No Such Recording')
+
             elif not self.manager.is_recording_open(user, coll, rec):
                 # force creation of new recording as this one is closed
-                not_found = True
-                no_dupe = False
+                raise HTTPError(404, 'Recording not open')
 
             self.manager.assert_can_write(user, coll)
 
@@ -426,10 +429,12 @@ class ContentController(BaseController, RewriterApp):
             if self.manager.is_rate_limited(user, remote_ip):
                 raise HTTPError(402, 'Rate Limit')
 
+            if inv_sources and inv_sources != '*':
+                patch_rec = self.patch_of_name(rec, True)
+
         if type == 'replay-coll':
             res = self.manager.has_collection_is_public(user, coll)
-            not_found = not res
-            if not_found:
+            if not res:
                 self._redir_if_sanitized(self.sanitize_title(coll),
                                          coll,
                                          wb_url)
@@ -441,29 +446,7 @@ class ContentController(BaseController, RewriterApp):
 
         elif type == 'replay':
             if not self.manager.has_recording(user, coll, rec):
-                not_found = True
-
-        patch_rec = ''
-
-        if not_found:
-            title = rec
-
-            if type in self.MODIFY_MODES:
-                rec = self._create_new_rec(user, coll, title, type, no_dupe=no_dupe)
-
-            # create patch recording as well
-            if inv_sources and inv_sources != '*':
-                patch_rec = self._create_new_rec(user, coll, self.patch_of_name(title),
-                                                 mode='patch',
-                                                 no_dupe=no_dupe)
-
-            self._redir_if_sanitized(rec, title, wb_url)
-
-            if type == 'replay':
                 raise HTTPError(404, 'No Such Recording')
-
-        elif inv_sources and inv_sources != '*':
-            patch_rec = self.patch_of_name(rec, True)
 
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'], safe='/:')
 

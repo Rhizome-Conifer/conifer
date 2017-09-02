@@ -628,9 +628,6 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         return True
 
-    def allow_new_file(self, filename, params):
-        return self.is_rec_open(params)
-
     def write_stream_to_file(self, params, stream):
         upload_id = params.get('param.upid')
         def write_callback(out, filename):
@@ -654,7 +651,7 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         size = int(size or 0)
         max_size = int(max_size or 0)
-        length = resp.length or resp.rec_headers.get_header('Content-Length') or 0
+        length = int(resp.length or resp.rec_headers.get_header('Content-Length') or 0)
 
         if size + length > max_size:
             print('New Record for {0} exceeds max size, not recording!'.format(params['url']))

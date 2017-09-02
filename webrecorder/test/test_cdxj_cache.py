@@ -27,7 +27,9 @@ class TestCDXJCache(FullStackTests):
         return func
 
     def test_record_1(self):
-        res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/_new/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
+        assert res.status_code == 302
+        res = res.follow()
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -53,9 +55,8 @@ class TestCDXJCache(FullStackTests):
 
         self.sleep_try(0.1, 5.0, self.assert_exists('r:{user}:temp:rec:cdxj', False))
 
-    def test_record_2_closed_redir(self):
-        res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
-        assert res.status_code == 302
+    def test_record_2_closed_not_found(self):
+        res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar', status=404)
 
     def test_replay_load_cdxj(self):
         assert not self.redis.exists('c:{user}:temp:cdxj'.format(user=self.anon_user))

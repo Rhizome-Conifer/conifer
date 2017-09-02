@@ -110,18 +110,18 @@ class TestTempContent(FullStackTests):
     def _get_anon(self, url, status=None):
         return self.testapp.get('/' + self.anon_user + url, status=status)
 
-    def test_live_top_frame(self):
-        res = self.testapp.get('/live/http://example.com/')
+    def test_rec_top_frame(self):
+        res = self.testapp.get('/_new/temp/my-recording/record/http://httpbin.org/get?food=bar')
+        assert res.status_code == 302
+        assert res.location.endswith('/temp/my-recording/record/http://httpbin.org/get?food=bar')
+        res = res.follow()
+
         res.charset = 'utf-8'
-        assert '"http://example.com/"' in res.text
+        assert '"http://httpbin.org/get?food=bar"' in res.text
         assert '<iframe' in res.text
 
     def test_anon_record_1(self):
-        res = self.testapp.get('/_new/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
-        assert res.status_code == 302
-        assert res.location.endswith('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
-        res = res.follow()
-
+        res = self._get_anon('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -161,7 +161,8 @@ class TestTempContent(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_record_sanitize_redir(self):
-        res = self._get_anon('/temp/My%20Rec2/record/http://httpbin.org/get?bood=far')
+        res = self.testapp.get('/_new/temp/My%20Rec2/record/http://httpbin.org/get?bood=far')
+
         res.charset = 'utf-8'
 
         assert self.testapp.cookies['__test_sesh'] != ''
@@ -232,9 +233,12 @@ class TestTempContent(FullStackTests):
 
     def test_anon_unicode_record_1(self):
         test_url = 'http://httpbin.org/get?bood=far'
-        res = self._get_anon(
-            '/temp/{rec}/record/mp_/{url}'.format(rec=quote('вэбрекордэр'), url=test_url)
+        res = self.testapp.get(
+            '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('вэбрекордэр'), url=test_url)
         )
+        # follow() breaks due to unicode encoding
+        # res = res.follow()
+        res = self.testapp.get(res.headers['Location'])
         res.charset = 'utf-8'
 
         assert '"bood": "far"' in res.text, res.text
