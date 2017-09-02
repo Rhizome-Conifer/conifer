@@ -24,7 +24,10 @@ class Worker(object):
         while self._running:
             try:
                 self.worker()
-                time.sleep(self.sleep_secs)
 
             except:
                 traceback.print_exc()
+
+            finally:
+                time.sleep(self.sleep_secs)
+

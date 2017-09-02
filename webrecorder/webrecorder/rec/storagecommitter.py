@@ -100,17 +100,15 @@ class StorageCommitter(object):
 
         return True
 
-    def write_cdxj(self, rec_info_key, dirname, cdxj_key):
-        cdxj_filename = self.redis.hget(rec_info_key, self.info_index_key)
+    def write_cdxj(self, warc_key, dirname, cdxj_key, timestamp):
+        cdxj_filename = self.redis.hget(warc_key, self.info_index_key)
         if cdxj_filename:
             return cdxj_filename
-
-        timestamp = sec_to_timestamp(int(self.redis.hget(rec_info_key, 'updated_at')))
 
         randstr = base64.b32encode(os.urandom(5)).decode('utf-8')
 
         cdxj_filename = self.index_name_templ.format(timestamp=timestamp,
-                                                 random=randstr)
+                                                     random=randstr)
 
         os.makedirs(dirname, exist_ok=True)
 
@@ -124,7 +122,7 @@ class StorageCommitter(object):
 
         full_url = self.full_warc_prefix + full_filename.replace(os.path.sep, '/')
 
-        self.redis.hset(rec_info_key, self.info_index_key, full_url)
+        self.redis.hset(warc_key, self.info_index_key, full_url)
 
         return cdxj_filename
 
@@ -156,10 +154,12 @@ class StorageCommitter(object):
 
         info_key = base_key + ':info'
 
-        cdxj_filename = self.write_cdxj(info_key, user_dir, cdxj_key)
+        timestamp = sec_to_timestamp(int(self.redis.hget(info_key, 'updated_at')))
+
+        cdxj_filename = self.write_cdxj(warc_key, user_dir, cdxj_key, timestamp)
 
         all_done = self.commit_file(user, coll, rec, user_dir,
-                                    cdxj_filename, 'indexes', info_key,
+                                    cdxj_filename, 'indexes', warc_key,
                                     cdxj_filename, self.info_index_key)
 
         for warc_filename in warcs.keys():

@@ -137,7 +137,7 @@ storage_path_templ: 'accounts/{user}/{obj_type}/{filename}'
 warc_name_templ: 'rec-{timestamp}-{hostname}-{random}.warc.gz'
 index_name_templ: 'index-{timestamp}-{random}.cdxj'
 
-info_index_key: 'index_file'
+info_index_key: '@index_file'
 
 full_warc_prefix: 'local+http://nginx:6090'
 

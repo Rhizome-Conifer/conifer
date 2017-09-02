@@ -1415,14 +1415,14 @@ class CollManagerMixin(object):
     def _do_download_cdxj(self, cdxj_key, output_key):
         lock_key = None
         try:
-            rec_info_key = cdxj_key.rsplit(':', 1)[0] + ':info'
-            cdxj_filename = self.redis.hget(rec_info_key, self.info_index_key)
+            rec_warc_key = cdxj_key.rsplit(':', 1)[0] + ':warc'
+            cdxj_filename = self.redis.hget(rec_warc_key, self.info_index_key)
             if not cdxj_filename:
-                logging.debug('No index for ' + rec_info_key)
+                logging.debug('No index for ' + rec_warc_key)
                 return
 
             lock_key = cdxj_key + ':_'
-            logging.debug('Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
+            logging.debug('Downloading for {0} file {1}'.format(rec_warc_key, cdxj_filename))
             attempts = 0
 
             if not self.redis.set(lock_key, 1, nx=True):
