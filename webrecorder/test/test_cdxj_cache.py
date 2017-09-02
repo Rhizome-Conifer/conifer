@@ -4,6 +4,19 @@ import time
 import gevent
 from webrecorder.rec.storagecommitter import StorageCommitter
 from webrecorder.rec.worker import Worker
+from webrecorder.redisman import init_manager_for_cli
+from pywb.utils.loaders import load as load_test
+
+from mock import patch
+
+load_counter = 0
+
+# ============================================================================
+def slow_load(self, *args, **kwargs):
+    time.sleep(0.4)
+    global load_counter
+    load_counter += 1
+    return load_test(*args, **kwargs)
 
 
 # ============================================================================
@@ -14,6 +27,8 @@ class TestCDXJCache(FullStackTests):
 
         cls.worker = Worker(StorageCommitter)
         gevent.spawn(cls.worker.run)
+
+        cls.m = init_manager_for_cli()
 
     @classmethod
     def teardown_class(cls):
@@ -71,4 +86,27 @@ class TestCDXJCache(FullStackTests):
 
         assert len(self.redis.zrange('c:{user}:temp:cdxj'.format(user=self.anon_user), 0, -1)) == 2
         self.sleep_try(1.0, 1.0, self.assert_exists('c:{user}:temp:cdxj', False))
+
+    @patch('webrecorder.redisman.load', slow_load)
+    def test_sync_avoid_double_load(self):
+        self.assert_exists('c:{user}:temp:cdxj', False)()
+        self.assert_exists('r:{user}:temp:rec:cdxj', False)()
+
+        self.m.sync_coll_index(self.anon_user, 'temp', exists=False, do_async=True)
+
+        time.sleep(0.1)
+
+        self.assert_exists('r:{user}:temp:rec:cdxj:_', True)()
+
+        self.m.sync_coll_index(self.anon_user, 'temp', exists=True, do_async=True)
+
+        time.sleep(0.1)
+
+        self.assert_exists('r:{user}:temp:rec:cdxj:_', True)()
+
+        self.sleep_try(0.1, 0.5, self.assert_exists('r:{user}:temp:rec:cdxj:_', False))
+
+        assert load_counter == 1
+
+
 

@@ -1425,7 +1425,7 @@ class CollManagerMixin(object):
             logging.debug('Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
             attempts = 0
 
-            if not self.redis.set(cdxj_key, 1, nx=True):
+            if not self.redis.set(lock_key, 1, nx=True):
                 logging.warning('Already downloading, skipping')
                 lock_key = None
                 return
