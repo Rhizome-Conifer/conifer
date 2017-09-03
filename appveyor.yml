@@ -22,13 +22,15 @@ install:
   - "pip install pyinstaller"
   - "pip install cffi"
   - "pip install pyopenssl"
+  - "pip install coverage pytest-cov coveralls"
+  - "pip install certauth boto youtube-dl"
 
 build_script:
   - ps: "cd webrecorder"
   - "python setup.py install"
 
-#test_script:
-#  - "python setup.py test"
+test_script:
+  - "python setup.py test"
 
 after_test:
   - ps: "cd webrecorder/standalone"
