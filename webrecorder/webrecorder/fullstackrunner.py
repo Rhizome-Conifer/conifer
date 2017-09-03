@@ -1,10 +1,9 @@
 from gevent.monkey import patch_all; patch_all()
 
+from pywb.utils.geventserver import GeventServer
+
 import os
 import traceback
-
-from gevent.wsgi import WSGIServer
-import gevent
 
 try:
     from geventwebsocket.handler import WebSocketHandler
@@ -42,11 +41,18 @@ class FullStackRunner(object):
         self.stop_server(self.rec_serv)
         self.stop_server(self.app_serv)
 
+        # try closing writer
+        try:
+            if self.rec_serv:
+                self.rec_serv.server.application.wr.writer.close()
+        except Exception as e:
+            traceback.print_exc()
+
     def init_server(self, port, func, env_var_name=None):
         if port < 0:
             return None
 
-        result = GeventServer(func(), port)
+        result = GeventServer(func(), port, handler_class=ws_handler_class)
 
         if env_var_name:
             os.environ[env_var_name] = 'http://localhost:{0}'.format(result.port)
@@ -57,32 +63,4 @@ class FullStackRunner(object):
     def stop_server(self, serv):
         if serv:
             serv.stop()
-
-
-# ============================================================================
-class GeventServer(object):
-    def __init__(self, app, port):
-        self.port = port
-        self.make_server(app, port)
-
-    def stop(self):
-        if self.server:
-            self.server.stop()
-
-    def run(self, server, port):
-        print('starting server on ' + str(port))
-        try:
-            server.serve_forever()
-        except Exception as e:
-            print('server stopped on ' + str(port))
-            traceback.print_exc()
-
-    def make_server(self, app, port=0):
-        server = WSGIServer(('localhost', port), app, handler_class=ws_handler_class)
-        server.init_socket()
-        self.port = server.address[1]
-
-        self.server = server
-        self.ge = gevent.spawn(self.run, server, self.port)
-
 
