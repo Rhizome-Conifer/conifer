@@ -264,6 +264,10 @@ class ContentController(BaseController, RewriterApp):
             kwargs['rec_orig'] = kwargs['rec']
             kwargs['rec'] = quote(kwargs['rec'], '/*')
 
+            if kwargs['type'] == 'replay-coll':
+                self.manager.sync_coll_index(kwargs['user'], kwargs['coll_orig'], exists=False,
+                                             do_async=False)
+
             url = self.add_query(url)
 
             kwargs['url'] = url
