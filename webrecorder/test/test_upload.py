@@ -78,11 +78,11 @@ class TestUpload(FullStackTests):
         assert res.json['files'] == 1
         assert res.json['total_size'] >= 3000
 
-        if res.json['size'] < res.json['total_size']:
-            gevent.sleep(1.0)
-
+        def assert_finished():
             res = self.testapp.get('/_upload/' + upload_id + '?user=test')
             assert res.json['size'] >= res.json['total_size']
+
+        self.sleep_try(0.1, 5.0, assert_finished)
 
     def test_logged_in_replay(self):
         res = self.testapp.get('/test/default-collection-2/mp_/http://httpbin.org/get?food=bar')
