@@ -80,7 +80,7 @@ class TempChecker(object):
             except Exception as e:
                 print(e)
 
-            temp = temp.rsplit('/', 1)[1]
+            temp = temp.rsplit(os.path.sep, 1)[1]
 
             self._delete_if_expired(temp)
             temps_removed.add(temp)

@@ -33,6 +33,11 @@ class TestWebRecRecorder(FullStackTests):
         cls.wr_rec = app.wr
         cls.testapp = webtest.TestApp(app)
 
+    @classmethod
+    def teardown_class(cls):
+        cls.wr_rec.writer.close()
+        super(TestWebRecRecorder, cls).teardown_class()
+
     def _test_warc_write(self, url, user, coll, rec):
         parts = urlsplit(url)
         host = parts.netloc
