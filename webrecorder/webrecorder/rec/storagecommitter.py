@@ -2,7 +2,7 @@ import os
 import redis
 import base64
 
-from warcio.timeutils import sec_to_timestamp
+from warcio.timeutils import sec_to_timestamp, timestamp_now
 
 
 # ============================================================================
@@ -154,7 +154,10 @@ class StorageCommitter(object):
 
         info_key = base_key + ':info'
 
-        timestamp = sec_to_timestamp(int(self.redis.hget(info_key, 'updated_at')))
+        try:
+            timestamp = sec_to_timestamp(int(self.redis.hget(info_key, 'updated_at')))
+        except:
+            timestamp = timestamp_now()
 
         cdxj_filename = self.write_cdxj(warc_key, user_dir, cdxj_key, timestamp)
 
