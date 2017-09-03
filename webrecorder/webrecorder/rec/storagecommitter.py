@@ -154,6 +154,8 @@ class StorageCommitter(object):
 
         info_key = base_key + ':info'
 
+        self.redis.publish('close_rec', info_key)
+
         try:
             timestamp = sec_to_timestamp(int(self.redis.hget(info_key, 'updated_at')))
         except:

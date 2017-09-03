@@ -66,9 +66,16 @@ class TestCDXJCache(FullStackTests):
     def test_expire_cdxj(self):
         assert self.redis.exists('r:{user}:temp:rec:open'.format(user=self.anon_user))
 
+        assert len(self.runner.rec_serv.server.application.wr.writer.fh_cache) == 1
+
         self.sleep_try(0.5, 5.0, self.assert_exists('r:{user}:temp:rec:open', False))
 
         self.sleep_try(0.1, 5.0, self.assert_exists('r:{user}:temp:rec:cdxj', False))
+
+        def assert_files_closed():
+            assert len(self.runner.rec_serv.server.application.wr.writer.fh_cache) == 0
+
+        self.sleep_try(0.1, 3.0, assert_files_closed)
 
     def test_record_2_closed_not_found(self):
         res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar', status=404)
@@ -82,7 +89,6 @@ class TestCDXJCache(FullStackTests):
 
         assert '"food": "bar"' in res.text, res.text
         self.sleep_try(0.1, 0.5, self.assert_exists('c:{user}:temp:cdxj', True))
-        #assert self.redis.exists('c:{user}:temp:cdxj'.format(user=self.anon_user))
 
         assert len(self.redis.zrange('c:{user}:temp:cdxj'.format(user=self.anon_user), 0, -1)) == 2
         self.sleep_try(1.0, 1.0, self.assert_exists('c:{user}:temp:cdxj', False))

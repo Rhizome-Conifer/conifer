@@ -163,6 +163,7 @@ class WebRecRecorder(object):
 
         self.pubsub.subscribe('delete')
         self.pubsub.subscribe('rename')
+        self.pubsub.subscribe('close_rec')
         self.pubsub.subscribe('close_idle')
 
         print('Waiting for messages')
@@ -180,6 +181,9 @@ class WebRecRecorder(object):
 
                 elif item['channel'] == b'close_idle':
                     self.recorder.writer.close_idle_files()
+
+                elif item['channel'] == b'close_rec':
+                    self.recorder.writer.close_key(item['data'].decode('utf-8'))
 
             except:
                 traceback.print_exc()
