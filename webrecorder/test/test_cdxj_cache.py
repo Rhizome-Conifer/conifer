@@ -1,5 +1,6 @@
 from .testutils import FullStackTests
 import time
+import os
 
 import gevent
 from webrecorder.rec.storagecommitter import StorageCommitter
@@ -108,5 +109,21 @@ class TestCDXJCache(FullStackTests):
 
         assert load_counter == 1
 
+    def test_ensure_all_files_delete(self):
+        user_dir = os.path.join(self.warcs_dir, self.anon_user)
+        files = os.listdir(user_dir)
+        assert len(files) == 2
+
+        # verify .cdxj is written
+        assert set(fn.split('.', 1)[1] for fn in files) == {'cdxj', 'warc.gz'}
+
+        res = self.testapp.delete('/api/v1/recordings/rec?user={user}&coll=temp'.format(user=self.anon_user))
+
+        assert res.json == {'deleted_id': 'rec'}
+
+        def assert_deleted():
+            assert len(os.listdir(user_dir)) == 0
+
+        self.sleep_try(0.1, 10.0, assert_deleted)
 
 
