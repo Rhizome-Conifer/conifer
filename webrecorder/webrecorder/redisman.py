@@ -1401,6 +1401,7 @@ class CollManagerMixin(object):
             return
 
         self.redis.zunionstore(coll_cdxj_key, cdxj_keys)
+        self.redis.expire(coll_cdxj_key, self.coll_cdxj_ttl)
 
         ges = []
         for cdxj_key in cdxj_keys:

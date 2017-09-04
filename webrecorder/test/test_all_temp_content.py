@@ -160,6 +160,8 @@ class TestTempContent(FullStackTests):
         self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
         assert '"food": "bar"' in res.text, res.text
 
+        assert int(self.redis.ttl('c:{user}:temp:cdxj'.format(user=self.anon_user)) > 0)
+
     def test_anon_record_sanitize_redir(self):
         res = self.testapp.get('/_new/temp/My%20Rec2/record/http://httpbin.org/get?bood=far')
 
