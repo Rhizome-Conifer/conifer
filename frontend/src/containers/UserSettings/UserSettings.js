@@ -34,7 +34,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     updatePass: (currPass, newPass, newPass2) => dispatch(updatePassword(currPass, newPass, newPass2)),
     deleteUser: (user) => {
-      return dispatch(deleteUser(user)).then(dispatch(push('/')));
+      return dispatch(deleteUser(user)).then(dispatch(push('/_logout')));
     }
   };
 };
