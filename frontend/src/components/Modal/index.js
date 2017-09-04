@@ -8,12 +8,13 @@ class Modal extends Component {
   static propTypes = {
     header: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     body: PropTypes.element,
+    footer: PropTypes.element,
     visible: PropTypes.bool,
     closeCb: PropTypes.func
   }
 
   render() {
-    const { body, children, closeCb, header, visible } = this.props;
+    const { body, children, closeCb, footer, header, visible } = this.props;
 
     return (
       <BSModal show={visible} onHide={closeCb}>
@@ -27,6 +28,12 @@ class Modal extends Component {
           </BSModal.Header>
         }
         <BSModal.Body>{ body || children }</BSModal.Body>
+        {
+          footer &&
+            <BSModal.Footer>
+              { footer }
+            </BSModal.Footer>
+        }
       </BSModal>
     );
   }
