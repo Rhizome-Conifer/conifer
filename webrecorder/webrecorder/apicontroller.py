@@ -3,6 +3,7 @@ import json
 from bottle import request, HTTPError
 
 from webrecorder.basecontroller import BaseController
+from webrecorder.webreccork import ValidationException
 
 
 class ApiController(BaseController):
@@ -61,3 +62,18 @@ class ApiController(BaseController):
                 return {'available': False}
 
             return {'available': True}
+
+        @self.app.post('/api/v1/updatepassword')
+        def update_password():
+            self.manager.cork.require(role='archivist', fail_redirect='/_login')
+
+            curr_password = self.post_get('currPass')
+            password = self.post_get('newPass')
+            confirm_password = self.post_get('newPass2')
+
+            try:
+                self.manager.update_password(curr_password, password,
+                                             confirm_password)
+                return {}
+            except ValidationException as ve:
+                return self._raise_error(403, str(ve), api=True)

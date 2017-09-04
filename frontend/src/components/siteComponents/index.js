@@ -6,4 +6,5 @@ export Footer from './Footer';
 export PasswordReset from './PasswordReset';
 export TermsAndPolicies from './TermsAndPolicies';
 export UserManagementUI from './UserManagementUI';
+export UserSettingsUI from './UserSettingsUI';
 export UserSignup from './UserSignup';

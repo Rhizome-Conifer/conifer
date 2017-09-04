@@ -54,7 +54,6 @@ def main(args=None):
         print('All systems go! See --help for usage')
 
 
-
 def list_not_invited(m, invite=False):
     invites = RedisTable(m.redis, 'h:invites')
     for email, v in iteritems(invites):

@@ -7,6 +7,7 @@ import { Alert, Button, Checkbox, ControlLabel, Form,
          HelpBlock, FormControl, FormGroup } from 'react-bootstrap';
 
 import config from 'config';
+import { passwordPassRegex } from 'helpers/utils';
 
 import './style.scss';
 
@@ -125,17 +126,10 @@ class UserSignup extends Component {
     return null;
   }
 
-  passwordPassRegex = (password) => {
-    if(!password) return false;
-
-    const rgx = password.match(config.passwordRegex);
-    return rgx && rgx[0] === password;
-  }
-
   validatePassword = () => {
     const { password, password2, missingPw } = this.state;
 
-    if(password && !this.passwordPassRegex(password))
+    if(password && !passwordPassRegex(password))
       return 'warning';
 
     if((password && password2 && password !== password2) || missingPw)
@@ -143,7 +137,6 @@ class UserSignup extends Component {
 
     return null;
   }
-
 
   render() {
     const { metadata } = this.context;
@@ -247,7 +240,7 @@ class UserSignup extends Component {
                 value={password}
                 onChange={this.handleChange} />
               {
-                password && !this.passwordPassRegex(password) &&
+                password && !passwordPassRegex(password) &&
                   <HelpBlock>Password must be at least 8 characters and contain lower, uppercase, and either digits or symbols</HelpBlock>
               }
             </FormGroup>

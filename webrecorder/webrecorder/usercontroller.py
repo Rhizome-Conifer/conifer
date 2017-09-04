@@ -369,9 +369,14 @@ class UserController(BaseController):
                 )
 
         @self.app.get(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
-        @self.user_manager.admin_view()
+        @self.user_manager.auth_view()
         def api_get_user(username):
             """API enpoint to return user info"""
+
+            # check permissings
+            if not self.manager.is_superuser():
+                self.manager.assert_user_is_owner(username)
+
             api = True
             include_recs = True
             include_colls = True
@@ -508,12 +513,13 @@ class UserController(BaseController):
             return {'user': user_data}
 
         @self.app.delete(['/api/v1/users/<user>', '/api/v1/users/<user>/'])
-        @self.user_manager.admin_view()
+        @self.user_manager.auth_view()
         def api_delete_user(user):
             """API enpoint to delete a user"""
-            if user not in self.manager.get_users():
-                self._raise_error(404, 'No such user')
+            if not self.manager.is_superuser():
+                self.manager.assert_user_is_owner(user)
 
+            self.manager.assert_user_exists(user)
             self.manager.delete_user(user)
 
         @self.app.get(['/<user>', '/<user>/'])

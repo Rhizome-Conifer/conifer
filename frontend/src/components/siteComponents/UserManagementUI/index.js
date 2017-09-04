@@ -113,7 +113,7 @@ class UserManagementUI extends Component {
             }
           </ul>
         }
-        <Modal header={'Webrecorder Login'} body={form} visible={showModal} closeCb={this.closeLogin} />
+        <Modal header="Webrecorder Login" body={form} visible={showModal} closeCb={this.closeLogin} />
       </div>
     );
   }
