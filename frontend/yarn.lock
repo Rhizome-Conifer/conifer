@@ -5142,6 +5142,19 @@ react-bootstrap@^0.30.8:
     uncontrollable "^4.0.1"
     warning "^3.0.0"
 
+react-breadcrumbs-dynamic@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/react-breadcrumbs-dynamic/-/react-breadcrumbs-dynamic-1.0.6.tgz#6348275eeb0006409dc6e974871828ef27369453"
+  dependencies:
+    react-broadcast "^0.3.1"
+
+react-broadcast@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/react-broadcast/-/react-broadcast-0.3.1.tgz#8eb61fc812abc6e6579d373f93649163a97c26dd"
+  dependencies:
+    invariant "^2.2.1"
+    prop-types "^15.5.6"
+
 react-deep-force-update@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/react-deep-force-update/-/react-deep-force-update-2.0.1.tgz#4f7f6c12c3e7de42f345992a3c518236fa1ecad3"

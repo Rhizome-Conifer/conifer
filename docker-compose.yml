@@ -37,9 +37,11 @@ services:
             - /opt/app/node_modules
 
         ports:
-            - 3000:3000
+            - 8080:8080
             - 3001:3001
 
+        command: bash -c "cd code; npm run build; npm run docker-prod"
+        tty: true
 
     recorder:
         build: ./webrecorder

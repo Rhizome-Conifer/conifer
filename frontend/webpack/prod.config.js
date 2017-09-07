@@ -1,8 +1,9 @@
 /* eslint-disable */
-
+require('babel-polyfill');
 
 // Webpack config for creating the production bundle.
 var autoprefixer = require('autoprefixer');
+var fs = require('fs');
 var path = require('path');
 var webpack = require('webpack');
 var CleanPlugin = require('clean-webpack-plugin');
@@ -21,10 +22,10 @@ module.exports = {
   context: path.resolve(__dirname, '..'),
   entry: {
     main: [
-      'babel-polyfill',
-      //'bootstrap-sass!./src/utils/bootstrap.config.prod.js',
       './config/polyfills',
+      'bootstrap-loader/extractStyles',
       './src/client.js'
+      //'./src/shared/js/wb_frame.js', //'./src/shared/js/wb.js',
     ]
   },
   output: {
@@ -38,23 +39,17 @@ module.exports = {
       {
         test: /\.(js|jsx)?$/,
         exclude: /node_modules/,
-        loaders: [
-          strip.loader('debug'), 'babel-loader'
+        use: [
+          strip.loader('debug'),
+          'babel-loader'
         ]
       },
       {
         test: /\.scss$/,
-        loader: ExtractTextPlugin.extract({
-            fallback:'style-loader',
+        use: ExtractTextPlugin.extract({
+            fallback: 'style-loader',
             use: [
-              {
-                loader:'css-loader',
-                options: {
-                  modules: true,
-                  importLoaders:2,
-                  sourceMap:true
-                },
-              },
+              'css-loader',
               {
                 loader: 'postcss-loader',
                 options: {
@@ -72,16 +67,13 @@ module.exports = {
                   }
                 }
               },
-              {
-                loader: 'sass-loader',
-                options: {
-                  outputStyle: 'expanded',
-                  sourceMap: true,
-                  sourceMapContents: true
-                }
-              }
+              'sass-loader',
             ]
           })
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
       },
       {
         test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,

@@ -1,4 +1,4 @@
-FROM node:6.9.4
+FROM node:8.2.1
 
 RUN useradd --user-group --create-home --shell /bin/false app && mkdir -p /opt/app
 
@@ -28,4 +28,4 @@ USER app
 RUN npm install --global yarn
 
 # RUN yarn install && yarn upgrade
-RUN rm -rf node_modules && yarn install && yarn cache clean && npm cache clean && rm -rf ~/tmp/*
+RUN rm -rf node_modules && yarn install && yarn cache clean && rm -rf ~/tmp/*

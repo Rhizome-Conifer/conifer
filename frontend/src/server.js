@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/server';
 import compression from 'compression';
 import http from 'http';
 import proxy from 'http-proxy-middleware';
+import path from 'path';
 import PrettyError from 'pretty-error';
 import createHistory from 'react-router/lib/createMemoryHistory';
 import { match } from 'react-router';
@@ -30,6 +31,8 @@ const bypassUrls = [
   '/_new*',
 ];
 
+
+app.use(Express.static(path.join(__dirname, '..', 'static')));
 
 // Proxy client API requets to server for now to avoid
 // CORS during port 3000 development

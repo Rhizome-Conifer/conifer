@@ -53,7 +53,7 @@
     "css-loader": "0.24.0",
     "detect-port": "1.0.0",
     "express": "^4.14.0",
-    "extract-text-webpack-plugin": "2.1.0",
+    "extract-text-webpack-plugin": "2.1.2",
     "file-loader": "^0.9.0",
     "filesize": "3.3.0",
     "gzip-size": "3.0.0",
@@ -70,6 +70,7 @@
     "react": "^15.6.0",
     "react-addons-css-transition-group": "^15.4.2",
     "react-bootstrap": "^0.30.8",
+    "react-breadcrumbs-dynamic": "^1.0.6",
     "react-dom": "^15.4.2",
     "react-helmet": "^3.3.0",
     "react-hot-loader": "^3.0.0-beta.6",
@@ -107,13 +108,15 @@
     "stats": "NODE_ENV=production webpack --config ./webpack/prod.config.js --json > stats.json",
     "build": "better-npm-run build",
     "test": "jest --watch --env=jsdom",
-    "start": "concurrent --kill-others \"npm run start-prod\" \"npm run start-prod-api\"",
+    "prod": "concurrently --kill-others \"npm run start-prod\"",
     "start-prod": "better-npm-run start-prod",
     "dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-dev\"",
     "docker-dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-docker-dev\"",
+    "docker-prod": "concurrently --kill-others \"npm run start-docker-prod\"",
     "watch-client": "better-npm-run watch-client",
     "start-dev": "better-npm-run start-dev",
-    "start-docker-dev": "better-npm-run start-docker-dev"
+    "start-docker-dev": "better-npm-run start-docker-dev",
+    "start-docker-prod": "better-npm-run start-docker-prod"
   },
   "betterScripts": {
     "build": {
@@ -127,8 +130,9 @@
       "env": {
         "NODE_PATH": "./src",
         "NODE_ENV": "production",
-        "INTERNAL_HOST": "nginx",
-        "INTERNAL_PORT": "80"
+        "PORT": 8080,
+        "INTERNAL_HOST": "localhost",
+        "INTERNAL_PORT": "8089"
       }
     },
     "start-dev": {
@@ -147,6 +151,16 @@
         "NODE_PATH": "./src",
         "NODE_ENV": "development",
         "PORT": 3000,
+        "INTERNAL_HOST": "nginx",
+        "INTERNAL_PORT": "80"
+      }
+    },
+    "start-docker-prod": {
+      "command": "node ./bin/server.js",
+      "env": {
+        "NODE_PATH": "./src",
+        "NODE_ENV": "production",
+        "PORT": 8080,
         "INTERNAL_HOST": "nginx",
         "INTERNAL_PORT": "80"
       }
