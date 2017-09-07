@@ -51,8 +51,6 @@ class WebRecRecorder(object):
 
         self.warc_key_templ = config['warc_key_templ']
 
-        self.warc_name_templ = config['warc_name_templ']
-
         self.temp_prefix = config['temp_prefix']
         self.user_usage_key = config['user_usage_key']
         self.temp_usage_key = config['temp_usage_key']
@@ -62,8 +60,6 @@ class WebRecRecorder(object):
         self.name = config['recorder_name']
 
         self.del_templ = config['del_templ']
-
-        self.skip_key_templ = config['skip_key_templ']
 
         self.accept_colls = config['recorder_accept_colls']
 
@@ -114,12 +110,11 @@ class WebRecRecorder(object):
         self.dedup_index = self.init_indexer()
 
         writer = SkipCheckingMultiFileWARCWriter(dir_template=self.warc_path_templ,
-                                     filename_template=self.warc_name_templ,
                                      dedup_index=self.dedup_index,
                                      redis=self.redis,
-                                     skip_key_templ=self.skip_key_templ,
                                      key_template=self.info_keys['rec'],
-                                     header_filter=ExcludeHttpOnlyCookieHeaders())
+                                     header_filter=ExcludeHttpOnlyCookieHeaders(),
+                                     config=self.config)
 
         self.writer = writer
 
@@ -168,6 +163,7 @@ class WebRecRecorder(object):
 
         self.pubsub.subscribe('delete')
         self.pubsub.subscribe('rename')
+        self.pubsub.subscribe('close_rec')
         self.pubsub.subscribe('close_idle')
 
         print('Waiting for messages')
@@ -185,6 +181,9 @@ class WebRecRecorder(object):
 
                 elif item['channel'] == b'close_idle':
                     self.recorder.writer.close_idle_files()
+
+                elif item['channel'] == b'close_rec':
+                    self.recorder.writer.close_key(item['data'].decode('utf-8'))
 
             except:
                 traceback.print_exc()
@@ -533,6 +532,8 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
         self.rate_limit_ttl = self.rate_limit_hours * 60 * 60
 
+        self.coll_cdxj_key = config['coll_cdxj_key_templ']
+
         self.wam_loader = WAMLoader()
 
         # set shared wam_loader for CDXJIndexer index writers
@@ -560,20 +561,31 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         cdx_list = (super(WebRecRedisIndexer, self).
                       add_urls_to_index(stream, params, filename, length))
 
+
+        # if replay key exists, add to it as well!
+        coll_cdxj_key = res_template(self.coll_cdxj_key, params)
+        if self.redis.exists(coll_cdxj_key):
+            for cdx in cdx_list:
+                if cdx:
+                    self.redis.zadd(coll_cdxj_key, 0, cdx)
+
+        ts = datetime.now().date().isoformat()
+        ts_sec = str(int(time.time()))
+
         with redis_pipeline(self.redis) as pi:
             for key_templ in self.size_keys:
                 key = res_template(key_templ, params)
                 pi.hincrby(key, 'size', length)
 
                 if key_templ == self.rec_info_key_templ and cdx_list:
-                    pi.hset(key, 'updated_at', str(int(time.time())))
+                    pi.hset(key, 'updated_at', ts_sec)
 
             # write size to usage hashes
-            ts = datetime.now().date().isoformat()
-
             if 'param.user' in params:
                 if params['param.user'].startswith(self.temp_prefix):
                     key = self.temp_usage_key
+
+                    # rate limiting
                     rate_limit_key = self.get_rate_limit_key(params)
                     if rate_limit_key:
                         pi.incrby(rate_limit_key, length)
@@ -591,18 +603,31 @@ class WebRecRedisIndexer(WritableRedisIndexer):
 # ============================================================================
 class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
     def __init__(self, *args, **kwargs):
+        config = kwargs.get('config')
+        kwargs['filename_template'] = config['warc_name_templ']
+        kwargs['max_size'] = int(config['max_warc_size'])
+        kwargs['max_idle_secs'] = int(config['open_rec_ttl'])
+
+        self.skip_key_template = config['skip_key_templ']
+
         super(SkipCheckingMultiFileWARCWriter, self).__init__(*args, **kwargs)
+
         self.redis = kwargs.get('redis')
-        self.skip_key_template = kwargs.get('skip_key_templ')
         self.info_key = kwargs.get('key_template')
 
-    def allow_new_file(self, filename, params):
-        key = res_template(self.info_key, params)
+        self.open_rec_key = config['open_rec_key_templ']
+        self.open_rec_ttl = kwargs['max_idle_secs']
 
-        # ensure recording exists before writing anything
+        self.user_key = config['info_key_templ']['user']
+
+    def is_rec_open(self, params):
+        open_key = res_template(self.open_rec_key, params)
+
+        # update ttl for open recroding key, if it exists
         # if not, abort opening new warc file here
-        if not self.redis.exists(key):
-            print('Writing skipped, recording does not exist for ' + filename)
+        if not self.redis.expire(open_key, self.open_rec_ttl):
+            # if expire fails, recording not open!
+            logging.debug('Writing skipped, recording not open for write: ' + open_key)
             return False
 
         return True
@@ -620,6 +645,23 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
                     self.redis.hincrby(upload_id, 'size', len(buff))
 
         return self._write_to_file(params, write_callback)
+
+    def _is_write_resp(self, resp, params):
+        if not self.is_rec_open(params):
+            return False
+
+        user_key = res_template(self.user_key, params)
+        size, max_size = self.redis.hmget(user_key, ['size', 'max_size'])
+
+        size = int(size or 0)
+        max_size = int(max_size or 0)
+        length = int(resp.length or resp.rec_headers.get_header('Content-Length') or 0)
+
+        if size + length > max_size:
+            print('New Record for {0} exceeds max size, not recording!'.format(params['url']))
+            return False
+
+        return True
 
     def _is_write_req(self, req, params):
         if not req or not req.rec_headers or not self.skip_key_template:

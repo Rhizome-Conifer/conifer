@@ -23,11 +23,10 @@ default_max_size: 1000000000
 default_max_anon_size: 1000000000
 default_max_coll: 10
 
-upload_wait_secs: 30
-
-upload_status_expire: 120
-
 skip_key_secs: 330
+
+open_rec_ttl: 1800
+max_warc_size: 500000000
 
 assets_path: ./webrecorder/config/assets.yaml
 
@@ -133,10 +132,12 @@ upload_coll:
 
 warc_path_templ: '{user}/'
 
-#storage_path_templ: 'accounts/{user}/collections/{coll}/archive/{rec}/{filename}'
-storage_path_templ: 'accounts/{user}/warcs/{filename}'
+storage_path_templ: 'accounts/{user}/{obj_type}/{filename}'
 
 warc_name_templ: 'rec-{timestamp}-{hostname}-{random}.warc.gz'
+index_name_templ: 'index-{timestamp}-{random}.cdxj'
+
+info_index_key: '@index_file'
 
 full_warc_prefix: 'local+http://nginx:6090'
 
@@ -144,7 +145,10 @@ full_warc_prefix: 'local+http://nginx:6090'
 # Redis Keys
 cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj'
 
-cdxj_coll_key_templ: 'r:{user}:{coll}:*:cdxj'
+coll_cdxj_key_templ: 'c:{user}:{coll}:cdxj'
+coll_cdxj_ttl: 1800
+
+open_rec_key_templ: 'r:{user}:{coll}:{rec}:open'
 
 page_key_templ: 'r:{user}:{coll}:{rec}:page'
 
@@ -175,7 +179,11 @@ dyn_ref_templ: 'r:{user}:{coll}:{rec}:{id}:ref:'
 dyn_stats_secs: 330
 
 warc_key_templ: 'r:{user}:{coll}:{rec}:warc'
-warc_upload_wait_templ: 'w:{filename}'
+
+commit_wait_templ: 'w:{filename}'
+commit_wait_secs: 30
+
+upload_status_expire: 120
 
 skip_key_templ: 'us:{user}:s:{url}'
 

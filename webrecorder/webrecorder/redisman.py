@@ -6,6 +6,8 @@ import json
 import os
 import base64
 import hashlib
+import gevent
+import logging
 
 from datetime import datetime
 
@@ -23,6 +25,8 @@ from six.moves import range
 
 from pywb.utils.canonicalize import calc_search_range
 from pywb.warcserver.index.cdxobject import CDXObject
+
+from pywb.utils.loaders import load
 
 from warcio.timeutils import timestamp_now
 
@@ -467,6 +471,10 @@ class LoginManagerMixin(object):
         msg = res.json()
 
         if 'success' in msg:
+            if coll != new_coll and rec != '*':
+                self.sync_coll_index(user, coll, exists=True, do_async=True)
+                self.sync_coll_index(new_user, new_coll, exists=True, do_async=True)
+
             return {'coll_id': new_coll,
                     'rec_id': new_rec,
                     'title': title,
@@ -731,8 +739,12 @@ class RecManagerMixin(object):
         super(RecManagerMixin, self).__init__(config)
         self.rec_info_key = config['info_key_templ']['rec']
         self.rec_list_key = config['rec_list_key_templ']
+
+        self.open_rec_key = config['open_rec_key_templ']
+        self.open_rec_ttl = int(config['open_rec_ttl'])
+
         self.page_key = config['page_key_templ']
-        self.cdx_key = config['cdxj_key_templ']
+        self.cdxj_key = config['cdxj_key_templ']
         self.tags_key = config['tags_key']
 
         self.ra_key = config['ra_key']
@@ -786,8 +798,13 @@ class RecManagerMixin(object):
             return False
 
         key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
-        #return self.redis.exists(key)
+
+        # ensure id is valid
         return self.redis.hget(key, 'id') != None
+
+    def is_recording_open(self, user, coll, rec):
+        key = self.open_rec_key.format(user=user, coll=coll, rec=rec)
+        return self.redis.expire(key, self.open_rec_ttl)
 
     def create_recording(self, user, coll, rec, rec_title, coll_title='',
                          no_dupe=False, rec_type=None, ra_list=None):
@@ -821,6 +838,8 @@ class RecManagerMixin(object):
                                         coll=coll,
                                         rec=rec)
 
+        open_key = self.open_rec_key.format(user=user, coll=coll, rec=rec)
+
         with redis_pipeline(self.redis) as pi:
             pi.hset(key, 'title', rec_title)
             pi.hset(key, 'created_at', now)
@@ -831,6 +850,8 @@ class RecManagerMixin(object):
             pi.sadd(rec_list_key, rec)
             if ra_list:
                 pi.sadd(ra_key, *ra_list)
+
+            pi.setex(open_key, self.open_rec_ttl, 1)
 
         if not self._has_collection_no_access_check(user, coll):
             coll_title = coll_title or coll
@@ -887,7 +908,11 @@ class RecManagerMixin(object):
     def delete_recording(self, user, coll, rec):
         self.assert_can_admin(user, coll)
 
-        return self._send_delete('rec', user, coll, rec)
+        res = self._send_delete('rec', user, coll, rec)
+
+        self.sync_coll_index(user, coll, exists=True, do_async=True)
+
+        return res
 
     def track_remote_archive(self, pi, user, coll, rec, source_id):
 
@@ -972,6 +997,9 @@ class RecManagerMixin(object):
 
     def add_page(self, user, coll, rec, pagedata, check_dupes=False):
         self.assert_can_write(user, coll)
+
+        if not self.is_recording_open(user, coll, rec):
+            return {'error_msg': 'recording not open'}
 
         # if check dupes, check for existing page and avoid adding duplicate
         if check_dupes:
@@ -1127,9 +1155,9 @@ class RecManagerMixin(object):
         except:
             return None
 
-        cdx_key = self.cdx_key.format(user=user, coll=coll, rec=rec)
+        cdxj_key = self.cdxj_key.format(user=user, coll=coll, rec=rec)
 
-        result = self.redis.zrangebylex(cdx_key,
+        result = self.redis.zrangebylex(cdxj_key,
                                         '[' + key,
                                         '(' + end_key)
         if not result:
@@ -1144,8 +1172,15 @@ class RecManagerMixin(object):
 class CollManagerMixin(object):
     def __init__(self, config):
         super(CollManagerMixin, self).__init__(config)
+
         self.coll_info_key = config['info_key_templ']['coll']
         self.coll_list_key = config['coll_list_key_templ']
+
+        self.coll_cdxj_key = config['coll_cdxj_key_templ']
+        self.coll_cdxj_ttl = int(config['coll_cdxj_ttl'])
+        self.info_index_key = config['info_index_key']
+        self.record_root_dir = os.environ['RECORD_ROOT']
+
         self.upload_key = config['upload_key_templ']
         self.upload_exp = int(config['upload_status_expire'])
 
@@ -1355,6 +1390,72 @@ class CollManagerMixin(object):
 
         return props
 
+    def sync_coll_index(self, user, coll, exists=False, do_async=False):
+        coll_cdxj_key = self.coll_cdxj_key.format(user=user, coll=coll)
+        if exists != self.redis.exists(coll_cdxj_key):
+            self.redis.expire(coll_cdxj_key, self.coll_cdxj_ttl)
+            return
+
+        cdxj_keys = self._get_rec_keys(user, coll, self.cdxj_key)
+        if not cdxj_keys:
+            return
+
+        self.redis.zunionstore(coll_cdxj_key, cdxj_keys)
+        self.redis.expire(coll_cdxj_key, self.coll_cdxj_ttl)
+
+        ges = []
+        for cdxj_key in cdxj_keys:
+            if self.redis.exists(cdxj_key):
+                continue
+
+            ges.append(gevent.spawn(self._do_download_cdxj, cdxj_key, coll_cdxj_key))
+
+        if not do_async:
+            res = gevent.joinall(ges)
+
+    def _do_download_cdxj(self, cdxj_key, output_key):
+        lock_key = None
+        try:
+            rec_warc_key = cdxj_key.rsplit(':', 1)[0] + ':warc'
+            cdxj_filename = self.redis.hget(rec_warc_key, self.info_index_key)
+            if not cdxj_filename:
+                logging.debug('No index for ' + rec_warc_key)
+                return
+
+            lock_key = cdxj_key + ':_'
+            logging.debug('Downloading for {0} file {1}'.format(rec_warc_key, cdxj_filename))
+            attempts = 0
+
+            if not self.redis.set(lock_key, 1, nx=True):
+                logging.warning('Already downloading, skipping')
+                lock_key = None
+                return
+
+            while attempts < 10:
+                try:
+                    fh = load(cdxj_filename)
+                    buff = fh.read()
+
+                    for cdxj_line in buff.splitlines():
+                        self.redis.zadd(output_key, 0, cdxj_line)
+
+                    break
+                except:
+                    logging.error('Could not load: ' + cdxj_filename)
+                    attempts += 1
+
+                finally:
+                    fh.close()
+
+            self.redis.expire(output_key, self.coll_cdxj_ttl)
+
+        except Exception as e:
+            logging.error('Error downloading cache: ' + str(e))
+
+        finally:
+            if lock_key:
+                self.redis.delete(lock_key)
+
 
 # ============================================================================
 class DeleteManagerMixin(object):
@@ -1363,6 +1464,12 @@ class DeleteManagerMixin(object):
         self.delete_url_templ = config['url_templates']['delete']
 
     def _send_delete(self, type_, user, coll='*', rec='*'):
+        # first, remove open key for any recordings that are being deleted
+        # to prevent further writing
+        open_key_templ = self.open_rec_key.format(user=user, coll=coll, rec=rec)
+        for open_key in self.redis.scan_iter(open_key_templ):
+            self.redis.delete(open_key)
+
         delete_url = self.delete_url_templ.format(record_host=os.environ['RECORD_HOST'],
                                                   user=user,
                                                   coll=coll,

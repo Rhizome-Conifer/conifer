@@ -19,6 +19,9 @@ from re import sub
 from six.moves.urllib.parse import urlsplit, quote
 
 from webrecorder.session import Session
+
+from webrecorder.rec.tempchecker import TempChecker
+from webrecorder.rec.worker import Worker
 import gevent
 
 
@@ -26,6 +29,7 @@ import gevent
 class TestTempContent(FullStackTests):
     REDIS_KEYS = [
         'r:{user}:{coll}:{rec}:cdxj',
+        'r:{user}:{coll}:{rec}:open',
         'r:{user}:{coll}:{rec}:info',
         'r:{user}:{coll}:{rec}:page',
         'r:{user}:{coll}:{rec}:warc',
@@ -56,24 +60,28 @@ class TestTempContent(FullStackTests):
 
         cls.dyn_stats = []
 
-        from webrecorder.rec.tempchecker import run
-        gevent.spawn(run)
+        cls.worker = Worker(TempChecker)
+        gevent.spawn(cls.worker.run)
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
-        super(TestTempContent, cls).teardown_class(*args, **kwargs)
-
         cls.seshmock.stop()
+        cls.worker.stop()
+
+        super(TestTempContent, cls).teardown_class(*args, **kwargs)
 
     def _get_redis_keys(self, keylist, user, coll, rec):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]
         return keylist
 
-    def _assert_rec_keys(self, user, coll, rec_list, url=''):
+    def _assert_rec_keys(self, user, coll, rec_list, url='', replay_coll=True):
         exp_keys = []
 
         for rec in rec_list:
             exp_keys.extend(self._get_redis_keys(self.REDIS_KEYS, user, coll, rec))
+
+        if replay_coll:
+            exp_keys.append('c:{user}:{coll}:cdxj'.format(user=user, coll=coll))
 
         if url:
             self._add_dyn_stat(user, coll, rec_list[-1], url)
@@ -102,18 +110,18 @@ class TestTempContent(FullStackTests):
     def _get_anon(self, url, status=None):
         return self.testapp.get('/' + self.anon_user + url, status=status)
 
-    def test_live_top_frame(self):
-        res = self.testapp.get('/live/http://example.com/')
+    def test_rec_top_frame(self):
+        res = self.testapp.get('/_new/temp/my-recording/record/http://httpbin.org/get?food=bar')
+        assert res.status_code == 302
+        assert res.location.endswith('/temp/my-recording/record/http://httpbin.org/get?food=bar')
+        res = res.follow()
+
         res.charset = 'utf-8'
-        assert '"http://example.com/"' in res.text
+        assert '"http://httpbin.org/get?food=bar"' in res.text
         assert '<iframe' in res.text
 
     def test_anon_record_1(self):
-        res = self.testapp.get('/_new/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
-        assert res.status_code == 302
-        assert res.location.endswith('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
-        res = res.follow()
-
+        res = self._get_anon('/temp/my-recording/record/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -128,7 +136,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        self._assert_rec_keys(user, 'temp', ['my-recording'])
+        self._assert_rec_keys(user, 'temp', ['my-recording'], replay_coll=False)
 
         self._assert_size_all_eq(user, 'temp', 'my-recording')
 
@@ -141,7 +149,7 @@ class TestTempContent(FullStackTests):
         res = self._get_anon('/temp/my-recording/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
-        self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'], 'http://httpbin.org/get?food=bar')
+        self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'], 'http://httpbin.org/get?food=bar', replay_coll=False)
         assert '"food": "bar"' in res.text, res.text
 
     def test_anon_replay_coll_1(self):
@@ -152,8 +160,11 @@ class TestTempContent(FullStackTests):
         self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
         assert '"food": "bar"' in res.text, res.text
 
+        assert int(self.redis.ttl('c:{user}:temp:cdxj'.format(user=self.anon_user)) > 0)
+
     def test_anon_record_sanitize_redir(self):
-        res = self._get_anon('/temp/My%20Rec2/record/http://httpbin.org/get?bood=far')
+        res = self.testapp.get('/_new/temp/My%20Rec2/record/http://httpbin.org/get?bood=far')
+
         res.charset = 'utf-8'
 
         assert self.testapp.cookies['__test_sesh'] != ''
@@ -224,9 +235,12 @@ class TestTempContent(FullStackTests):
 
     def test_anon_unicode_record_1(self):
         test_url = 'http://httpbin.org/get?bood=far'
-        res = self._get_anon(
-            '/temp/{rec}/record/mp_/{url}'.format(rec=quote('вэбрекордэр'), url=test_url)
+        res = self.testapp.get(
+            '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('вэбрекордэр'), url=test_url)
         )
+        # follow() breaks due to unicode encoding
+        # res = res.follow()
+        res = self.testapp.get(res.headers['Location'])
         res.charset = 'utf-8'
 
         assert '"bood": "far"' in res.text, res.text

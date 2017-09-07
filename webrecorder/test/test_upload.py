@@ -9,6 +9,10 @@ import os
 
 import webtest
 
+from webrecorder.rec.tempchecker import TempChecker
+from webrecorder.rec.worker import Worker
+import gevent
+
 
 # ============================================================================
 class TestUpload(FullStackTests):
@@ -17,14 +21,16 @@ class TestUpload(FullStackTests):
         os.environ['AUTO_LOGIN_USER'] = 'test'
         super(TestUpload, cls).setup_class(**kwargs)
 
-        from webrecorder.rec.tempchecker import run
-        gevent.spawn(run)
-
         cls.manager = init_manager_for_cli()
 
         cls.warc = None
 
+        cls.worker = Worker(TempChecker)
+        gevent.spawn(cls.worker.run)
+
     def teardown_class(cls, *args, **kwargs):
+        cls.worker.stop()
+
         super(TestUpload, cls).teardown_class(*args, **kwargs)
         del os.environ['AUTO_LOGIN_USER']
 
@@ -35,7 +41,9 @@ class TestUpload(FullStackTests):
         assert '"test"' in res.text
 
     def test_logged_in_record_1(self):
-        res = self.testapp.get('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/_new/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
+        assert res.headers['Location'].endswith('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
+        res = res.follow()
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -70,11 +78,11 @@ class TestUpload(FullStackTests):
         assert res.json['files'] == 1
         assert res.json['total_size'] >= 3000
 
-        if res.json['size'] < res.json['total_size']:
-            gevent.sleep(1.0)
-
+        def assert_finished():
             res = self.testapp.get('/_upload/' + upload_id + '?user=test')
             assert res.json['size'] >= res.json['total_size']
+
+        self.sleep_try(0.1, 5.0, assert_finished)
 
     def test_logged_in_replay(self):
         res = self.testapp.get('/test/default-collection-2/mp_/http://httpbin.org/get?food=bar')

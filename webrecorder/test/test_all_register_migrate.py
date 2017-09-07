@@ -42,7 +42,9 @@ class TestRegisterMigrate(FullStackTests):
         return res
 
     def test_anon_record_1(self):
-        res = self.testapp.get('/' + self.anon_user + '/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/_new/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
+        res.headers['Location'].endswith('/' + self.anon_user + '/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
+        res = res.follow()
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
@@ -238,12 +240,21 @@ class TestRegisterMigrate(FullStackTests):
         assert '"/someuser/new-coll"' in res.text
         assert 'New Coll' in res.text
 
-    def test_logged_in_patch(self):
-        res = self.testapp.get('/someuser/new-coll/Move Test/patch/mp_/http://example.com/')
+    def test_logged_in_record_1(self):
+        res = self.testapp.get('/_new/new-coll/Move Test/record/mp_/http://example.com/')
         assert res.status_code == 302
+        assert res.headers['Location'].endswith('/someuser/new-coll/move-test/record/mp_/http://example.com/')
         res = res.follow()
+
         res.charset = 'utf-8'
         assert 'Example Domain' in res.text
+
+        # allow recording to be written
+        def assert_written():
+            assert self.redis.exists('r:someuser:new-coll:move-test:cdxj')
+            assert self.redis.exists('r:someuser:new-coll:move-test:warc')
+
+        self.sleep_try(0.1, 5.0, assert_written)
 
     def test_logged_in_replay_public(self):
         res = self.testapp.get('/someuser/new-coll/mp_/http://example.com/')
@@ -281,12 +292,23 @@ class TestRegisterMigrate(FullStackTests):
 
         assert 'Example Domain' in res.text
 
-    def test_logged_in_record(self):
-        res = self.testapp.get('/someuser/new-coll/Move Test/record/mp_/http://httpbin.org/get?rec=test')
+    def test_logged_in_record_2(self):
+        res = self.testapp.get('/_new/new-coll/Move Test/record/mp_/http://httpbin.org/get?rec=test')
         assert res.status_code == 302
+        assert res.headers['Location'].endswith('/someuser/new-coll/move-test/record/mp_/http://httpbin.org/get?rec=test')
         res = res.follow()
+
         res.charset = 'utf-8'
         assert '"rec": "test"' in res.text
+
+        assert self.redis.exists('r:someuser:new-coll:move-test:open')
+
+        # allow recording to be written
+        def assert_written():
+            assert self.redis.exists('r:someuser:new-coll:move-test:cdxj')
+            assert self.redis.exists('r:someuser:new-coll:move-test:warc')
+
+        self.sleep_try(0.1, 5.0, assert_written)
 
     def test_logged_in_replay_2(self):
         res = self.testapp.get('/someuser/new-coll/move-test/replay/mp_/http://httpbin.org/get?rec=test')

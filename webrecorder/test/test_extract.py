@@ -4,7 +4,7 @@ from .testutils import FullStackTests
 # ============================================================================
 class TestExtractContent(FullStackTests):
     def test_anon_extract_1(self):
-        res = self.testapp.get('/{user}/temp/Extract Test/extract:ia/1996/http://geocities.com/'.format(user=self.anon_user))
+        res = self.testapp.get('/_new/temp/Extract Test/extract:ia/1996/http://geocities.com/'.format(user=self.anon_user))
         assert res.status_code == 302
         assert res.location.endswith('/temp/extract-test/extract:ia/1996/http://geocities.com/')
 
@@ -30,7 +30,7 @@ class TestExtractContent(FullStackTests):
         assert res.location.endswith('/temp/extract-test/extract:ia/1996/http://geocities.com/')
 
     def test_anon_extract_only(self):
-        res = self.testapp.get('/{user}/temp/Extract Only Test/extract_only:ia/1996mp_/http://geocities.com/'.format(user=self.anon_user))
+        res = self.testapp.get('/_new/temp/Extract Only Test/extract_only:ia/1996mp_/http://geocities.com/'.format(user=self.anon_user))
         assert res.status_code == 302
         res = res.follow()
 
@@ -38,6 +38,13 @@ class TestExtractContent(FullStackTests):
         assert b'wbinfo.timestamp = "19961226' in res.body
 
         assert self.testapp.cookies['__test_sesh'] != ''
+
+    def test_anon_extract_only_no_rec(self):
+        res = self.testapp.get('/{user}/temp/Extract Only No Rec/extract_only:ia/1996mp_/http://geocities.com/'.format(user=self.anon_user))
+        assert res.status_code == 302
+        res = res.follow(status=404)
+
+        assert res.status_code == 404
 
     def test_anon_extract_replay(self):
         res = self.testapp.get('/{user}/temp/1996mp_/http://geocities.com/'.format(user=self.anon_user))

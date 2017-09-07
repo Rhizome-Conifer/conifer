@@ -3,14 +3,13 @@ import os
 import json
 import glob
 import requests
-import time
-
-from webrecorder.utils import load_wr_config
 
 
 # ============================================================================
 class TempChecker(object):
     def __init__(self, config):
+        super(TempChecker, self).__init__()
+
         self.redis_base_url = os.environ['REDIS_BASE_URL']
 
         self.data_redis = redis.StrictRedis.from_url(self.redis_base_url)
@@ -81,7 +80,7 @@ class TempChecker(object):
             except Exception as e:
                 print(e)
 
-            temp = temp.rsplit('/', 1)[1]
+            temp = temp.rsplit(os.path.sep, 1)[1]
 
             self._delete_if_expired(temp)
             temps_removed.add(temp)
@@ -99,21 +98,7 @@ class TempChecker(object):
 
 
 # =============================================================================
-def run(loop=True):
-    config = load_wr_config()
-    temp_checker = TempChecker(config)
-
-    sleep_secs = int(os.environ.get('TEMP_SLEEP_CHECK', 30))
-
-    print('Running temp delete check every {0}'.format(sleep_secs))
-    while loop:
-        try:
-            temp_checker()
-            time.sleep(sleep_secs)
-        except:
-            import traceback
-            traceback.print_exc()
-
-
 if __name__ == "__main__":
-    run()
+    from webrecorder.rec.worker import Worker
+    Worker(TempChecker).run()
+

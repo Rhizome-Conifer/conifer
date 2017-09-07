@@ -1,0 +1,15 @@
+invites_enabled: 'false'
+
+full_warc_prefix: ''
+
+max_warc_size: 1500
+
+session.secret: 'secret'
+   
+session.key: __test_sesh
+
+session.key_template: test_key
+
+dyn_stats_key_templ: 'r:{user}:{coll}:{rec}:<sesh_id>:stats:'
+dyn_ref_templ: 'r:{user}:{coll}:{rec}:<sesh_id>:ref:'
+

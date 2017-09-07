@@ -33,6 +33,11 @@ class TestWebRecRecorder(FullStackTests):
         cls.wr_rec = app.wr
         cls.testapp = webtest.TestApp(app)
 
+    @classmethod
+    def teardown_class(cls):
+        cls.wr_rec.writer.close()
+        super(TestWebRecRecorder, cls).teardown_class()
+
     def _test_warc_write(self, url, user, coll, rec):
         parts = urlsplit(url)
         host = parts.netloc
@@ -40,8 +45,11 @@ class TestWebRecRecorder(FullStackTests):
         if parts.query:
             path += '?' + parts.query
 
-        # Rec key must exist
-        self.redis.hset('r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec), 'id', rec)
+        # Rec must be open
+        #self.redis.hset('r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec), 'id', rec)
+        self.redis.setex('r:{user}:{coll}:{rec}:open'.format(user=user, coll=coll, rec=rec), 30, 1)
+        self.redis.hset('u:{user}:info'.format(user=user), 'size', 0)
+        self.redis.hset('u:{user}:info'.format(user=user), 'max_size', 10000)
 
         req_url = '/record/live/resource/postreq?url={url}&param.recorder.user={user}&param.recorder.coll={coll}&param.recorder.rec={rec}'
         req_url = req_url.format(url=quote(url), user=user, coll=coll, rec=rec)
@@ -63,6 +71,7 @@ class TestWebRecRecorder(FullStackTests):
             'r:USER:COLL:REC:warc',
             'r:USER:COLL:REC:cdxj',
             'r:USER:COLL:REC:info',
+            'r:USER:COLL:REC:open',
             'c:USER:COLL:info',
             'u:USER:info'
         ])
@@ -88,7 +97,9 @@ class TestWebRecRecorder(FullStackTests):
             'r:USER:COLL:REC:cdxj',
             'r:USER:COLL:REC2:cdxj',
             'r:USER:COLL:REC:info',
+            'r:USER:COLL:REC:open',
             'r:USER:COLL:REC2:info',
+            'r:USER:COLL:REC2:open',
             'c:USER:COLL:info',
             'u:USER:info'
         ])
