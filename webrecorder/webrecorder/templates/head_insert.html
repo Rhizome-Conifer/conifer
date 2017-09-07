@@ -30,7 +30,7 @@
 
 <script>
 {% set urlsplit = cdx.url | urlsplit %}
-  wbinfo.wombat_ts = "{{ cdx['timestamp'] if include_ts else ''}}";
+  wbinfo.wombat_ts = "{{ wbrequest.wb_url.timestamp if include_ts else ''}}";
   wbinfo.wombat_scheme = "{{ urlsplit.scheme }}";
   wbinfo.wombat_host = "{{ urlsplit.netloc }}";
   wbinfo.wombat_sec = "{{ cdx.timestamp | format_ts('%s') }}";

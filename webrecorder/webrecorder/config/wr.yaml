@@ -25,7 +25,7 @@ default_max_coll: 10
 
 skip_key_secs: 330
 
-open_rec_ttl: 1800
+open_rec_ttl: 5400
 max_warc_size: 500000000
 
 assets_path: ./webrecorder/config/assets.yaml

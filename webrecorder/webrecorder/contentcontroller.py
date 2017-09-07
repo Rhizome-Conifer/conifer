@@ -147,7 +147,7 @@ class ContentController(BaseController, RewriterApp):
             return self.do_proxy(url)
 
         # LIVE DEBUG
-        @self.app.route('/live/<wb_url:path>', method='ANY')
+        #@self.app.route('/live/<wb_url:path>', method='ANY')
         def live(wb_url):
             request.path_shift(1)
 
