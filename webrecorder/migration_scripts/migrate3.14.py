@@ -9,6 +9,8 @@ def main():
     """
     r = redis.StrictRedis.from_url(os.environ['REDIS_BASE_URL'], decode_responses=True)
 
+    count = 30
+
     if len(sys.argv) > 1 and sys.argv[1] == '-d':
         print('Dry Run')
         dry = True
@@ -19,10 +21,12 @@ def main():
 
     for key in r.scan_iter('r:*:cdxj'):
         open_key = key.rsplit(':', 1)[0] + ':open'
-        print('setex {0} 600 1'.format(open_key))
+        print('setex {0} {1} 1'.format(open_key, count))
 
         if not dry:
-            r.set(open_key, 1, ex=600)
+            r.set(open_key, 1, ex=count)
+
+        count = count + 1
 
 if __name__ == "__main__":
     main()
