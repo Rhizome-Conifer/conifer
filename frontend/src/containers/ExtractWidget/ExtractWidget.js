@@ -32,7 +32,6 @@ class ExtractWidget extends Component {
   };
 
   componentDidMount() {
-    console.log('component did mount')
     const { archives, archivesLoading } = this.props;
 
     if(!archivesLoading && archives.size === 0)
@@ -40,7 +39,6 @@ class ExtractWidget extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('next prop url', nextProps.url);
     if(nextProps.url !== this.props.url)
       this.parseURL(nextProps.url);
   }
@@ -50,7 +48,7 @@ class ExtractWidget extends Component {
   }
 
   parseURL = (url) => {
-    const { archives, archiveSources, extractable, setExtractWidget } = this.props;
+    const { archives, extractable, setExtractWidget } = this.props;
 
     if(!archives || archives.size === 0)
       return;
