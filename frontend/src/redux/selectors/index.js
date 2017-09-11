@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
 
-import { rts } from 'helpers/utils';
+import { rts, truncate } from 'helpers/utils';
 
 
 const getCollections = state => state.get('collections');
@@ -23,7 +23,7 @@ export const getActiveCollection = createSelector(
     const selected = collections.find(coll => coll.get('id') === activeCollection);
     const title = selected.get('title');
     const id = selected.get('id');
-    return { title: title.length > 40 ? `${title.substr(0, 40).trim()}...` : title, id };
+    return { title: truncate(title, 40), id };
   }
 );
 

@@ -4,6 +4,7 @@ import { asyncConnect } from 'redux-connect';
 import { fromJS } from 'immutable';
 import { Link } from 'react-router';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
+import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { isLoaded as areCollsLoaded,
          load as loadCollections } from 'redux/modules/collections';
@@ -29,8 +30,8 @@ class CollectionList extends Component {
   })
 
   render() {
-    const { auth, user } = this.props;
-    const userParam = this.props.params.user;
+    const { auth, user, params } = this.props;
+    const userParam = params.user;
 
     const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;
     const collections = this.props.collections.get('collections');
@@ -39,6 +40,7 @@ class CollectionList extends Component {
 
     return (
       <div>
+        <BreadcrumbsItem to={`/${params.user}`}>{ params.user }</BreadcrumbsItem>
         <Row className="collection-description page-archive">
           <Col xs={12}>
             <h2>{ userParam } Archive</h2>

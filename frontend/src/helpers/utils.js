@@ -63,3 +63,7 @@ export function rts(val) {
 export function stripProtocol(url) {
   return url.replace(/https?:\/\//i, '');
 }
+
+export function truncate(str, length) {
+  return str.length > length ? `${str.substr(0, length).trim()}...` : str;
+}

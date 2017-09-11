@@ -16,10 +16,8 @@ function Root(props) {
         <ReduxAsyncConnect
           {...renderProps}
           helpers={{ client }}
-          filter={item => !item.deferred}
-        />
-      }
-    />
+          filter={item => !item.deferred} />
+      } />
   );
 }
 

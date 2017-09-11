@@ -1,4 +1,4 @@
-export Breadcrumbs from './Breadcrumbs';
+export BreadcrumbsUI from './BreadcrumbsUI';
 export HomepageAnnouncement from './HomepageAnnouncement';
 export HomepageMessage from './HomepageMessage';
 export FAQ from './FAQ';

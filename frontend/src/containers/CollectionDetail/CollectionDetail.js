@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 import { Link } from 'react-router';
+import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { isLoaded as isCollLoaded,
          load as loadColl } from 'redux/modules/collection';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
+import { truncate } from 'helpers/utils';
 
 import BookmarksTable from 'components/BookmarksTable';
 import CollectionMetadata from 'components/CollectionMetadata';
@@ -46,6 +48,9 @@ class CollectionDetail extends Component {
 
     return (
       <div>
+        <BreadcrumbsItem to={`/${user}`}>{ user }</BreadcrumbsItem>
+        <BreadcrumbsItem to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>
+
         <CollectionMetadata
           title={collection.get('title')}
           desc={collection.get('desc')}

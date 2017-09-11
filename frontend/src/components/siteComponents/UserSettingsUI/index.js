@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Alert, ControlLabel, FormControl, FormGroup,
          HelpBlock, Panel, ProgressBar } from 'react-bootstrap';
+import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { passwordPassRegex } from 'helpers/utils';
 
@@ -88,8 +89,9 @@ class UserSettingsUI extends Component {
     const totalSpace = user.getIn(['space_utilization', 'total']);
     const passUpdate = user.get('passUpdate');
     const passUpdateFail = user.get('passUpdateFail');
+    const username = user.get('username');
 
-    const userInfo = <h2>Usage for <b>{ user.get('username') }</b></h2>;
+    const userInfo = <h2>Usage for <b>{ username }</b></h2>;
     const passReset = (
       <div className="pw-reset">
         <h3 className="panel-title">Change Password</h3>
@@ -102,7 +104,7 @@ class UserSettingsUI extends Component {
     const deleteAccount = <h3 className="panel-title">Delete Account</h3>;
     const confirmDeleteBody = (
       <div>
-        Are you sure you want to delete the <b>{user.get('username')}</b> account?
+        Are you sure you want to delete the <b>{username}</b> account?
         If you continue, <b>all archived data in all collections will be permanently deleted.</b>
         You will need to re-register to use the service again.
       </div>
@@ -116,6 +118,8 @@ class UserSettingsUI extends Component {
 
     return (
       <div className="row top-buffer col-xs-10 col-xs-push-1">
+        <BreadcrumbsItem to={`/${username}/_settings`}>{`${username} settings`}</BreadcrumbsItem>
+
         <Panel header={userInfo}>
           <span>Space Used: </span>
           <SizeFormat bytes={usedSpace} />

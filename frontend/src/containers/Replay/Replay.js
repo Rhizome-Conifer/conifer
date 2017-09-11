@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
+import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
+import { truncate } from 'helpers/utils';
 import config from 'config';
 
 import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
@@ -55,6 +57,9 @@ class Replay extends Component {
           <meta property="og:title" content={`Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${product}`} />
           <meta name="og:description" content={collection.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
         </Helmet>
+
+        <BreadcrumbsItem to={`/${params.user}`}>{ params.user }</BreadcrumbsItem>
+        <BreadcrumbsItem to={`/${params.user}/${params.coll}`}>{ truncate(collection.get('title'))}</BreadcrumbsItem>
 
         <ReplayUI
           bookmarks={bookmarks}

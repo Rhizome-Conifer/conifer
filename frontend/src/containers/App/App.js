@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import classNames from 'classnames';
 import { asyncConnect } from 'redux-connect';
+import { BreadcrumbsProvider, BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
@@ -11,7 +12,7 @@ import { load as loadUser } from 'redux/modules/user';
 import { UserManagement } from 'containers';
 
 import config from 'config';
-import { Breadcrumbs, Footer } from 'components/siteComponents';
+import { BreadcrumbsUI, Footer } from 'components/siteComponents';
 
 import './style.scss';
 
@@ -66,24 +67,27 @@ export class App extends Component { // eslint-disable-line
     console.log('rendering app');
 
     return (
-      <div className="wr-app">
-        <Helmet {...config.app.head} />
-        <header>
-          <div className="navbar navbar-default navbar-static-top">
-            <nav className="container-fluid header-webrecorder">
-              <Breadcrumbs />
-              <UserManagement />
-            </nav>
-          </div>
-        </header>
-        <section className={classes}>
-          {this.props.children}
-        </section>
-        {
-          hasFooter &&
-            <Footer />
-        }
-      </div>
+      <BreadcrumbsProvider>
+        <div className="wr-app">
+          <Helmet {...config.app.head} />
+          <header>
+            <div className="navbar navbar-default navbar-static-top">
+              <nav className="container-fluid header-webrecorder">
+                <BreadcrumbsUI />
+                <UserManagement />
+                <BreadcrumbsItem to="/">Webrecorder</BreadcrumbsItem>
+              </nav>
+            </div>
+          </header>
+          <section className={classes}>
+            {this.props.children}
+          </section>
+          {
+            hasFooter &&
+              <Footer />
+          }
+        </div>
+      </BreadcrumbsProvider>
     );
   }
 }
