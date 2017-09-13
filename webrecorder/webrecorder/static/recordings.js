@@ -1603,7 +1603,9 @@ $(function() {
         }
 
         if (state.wb_type == "load") {
-            addNewPage(state);
+            updatePage(state, true);
+        } else if (state.wb_type == "replace-url") {
+            updatePage(state, false);
         } else if (state.wb_type == "cookie") {
             setDomainCookie(state);
         } else if (state.wb_type == "snapshot") {
@@ -1667,7 +1669,7 @@ $(function() {
         });
     }
 
-    function addNewPage(state) {
+    function updatePage(state, doAdd) {
         if (state && state.ts && window.curr_mode != "record" && window.curr_mode != "extract") {
             updateTimestamp(state.ts, window.curr_mode.indexOf("replay") !== -1);
         }
@@ -1731,7 +1733,7 @@ $(function() {
 
             setTitle(msg, state.url, state.title);
 
-            if (attributes.timestamp || window.curr_mode != "patch") {
+            if (doAdd && (attributes.timestamp || window.curr_mode != "patch")) {
                 if (!RecordingSizeWidget.addPage(attributes)) {
                     Recordings.addPage(recordingId, attributes);
                 }
@@ -1790,7 +1792,7 @@ $(function() {
         var url = extract_replay_url(replay_iframe.getAttribute("src"));
         state = {"url": url }
 
-        addNewPage(state);
+        updatePage(state, true);
     });
 
 
