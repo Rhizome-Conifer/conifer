@@ -1371,6 +1371,8 @@ class CollManagerMixin(object):
         upload_key = self.upload_key.format(user=user, upid=upload_id)
 
         props = self.redis.hgetall(upload_key)
+        if not props:
+            return {}
 
         props['user'] = user
         props['upload_id'] = upload_id

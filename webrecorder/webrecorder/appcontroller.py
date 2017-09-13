@@ -82,6 +82,7 @@ class AppController(BaseController):
         # Auto Upload on Init Id
         self.init_upload_id = config.get('init_upload_id')
         self.init_upload_user = config.get('init_upload_user')
+        self.init_upload_coll = config.get('init_upload_coll')
 
         # Init Jinja
         jinja_env = self.init_jinja_env(config)
@@ -449,17 +450,16 @@ class AppController(BaseController):
     def handle_player_load(self, resp):
         """ Initial warc load for player
         """
-        upload_status = self.manager.get_upload_status(
-                         self.init_upload_user,
-                         self.init_upload_id)
+        user = self.init_upload_user
+        coll = self.init_upload_coll
+        upload_id = self.init_upload_id
 
-        user = upload_status.get('user')
-        coll = upload_status.get('coll')
+        upload_status = self.manager.get_upload_status(user, upload_id)
 
         # if upload already finished, redirect to known coll
-        if upload_status.get('done') and user and coll:
-            coll_path = '/' + upload_status['user'] + '/' + upload_status['coll']
-            self.redirect(coll_path)
+        if not upload_status or upload_status.get('done'):
+            if user and coll:
+                self.redirect('/' + user + '/' + coll)
 
         resp['upload_status'] = upload_status
         return resp

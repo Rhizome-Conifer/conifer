@@ -56,7 +56,7 @@ class FullStackRunner(object):
 
         if env_var_name:
             os.environ[env_var_name] = 'http://localhost:{0}'.format(result.port)
-            print(env_var_name + '=' + os.environ[env_var_name])
+            print(env_var_name + '=' + os.environ[env_var_name], flush=True)
 
         return result
 
