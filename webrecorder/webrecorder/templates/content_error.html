@@ -141,6 +141,10 @@
                     window.top.postMessage({"wb_type": "bug-report"}, "*");
                 });
             }
+            // if receiving popstate event, reload url to navigate to original page
+            window.addEventListener("popstate", function(event) {
+                window.location.reload();
+            });
         </script>
     </body>
 </html>
