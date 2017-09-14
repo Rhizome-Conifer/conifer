@@ -34,7 +34,7 @@ test_script:
 
 after_test:
   - ps: "cd webrecorder/standalone"
-  - pyinstaller --clean --additional-hooks-dir ./hooks/ -y -F ./webrecorder_player.py
+  - pyinstaller --clean --additional-hooks-dir ./hooks/ -w -y -F ./webrecorder_player.py
   - "move .\\dist\\webrecorder_player.exe %APPVEYOR_BUILD_FOLDER%\\webrecorder-player-win-x%PYTHON_ARCH%.exe"
   - "%APPVEYOR_BUILD_FOLDER%\\webrecorder-player-win-x%PYTHON_ARCH%.exe -v"
 
