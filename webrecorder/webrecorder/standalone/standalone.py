@@ -18,11 +18,19 @@ import atexit
 
 # ============================================================================
 class StandaloneRunner(FullStackRunner):
-    def __init__(self, warcs_dir='', redis_db='', debug=False,
+    def __init__(self, warcs_dir='', redis_db='', loglevel=None,
                  app_port=8090, rec_port=0, agg_port=0):
 
+        if isinstance(loglevel, str):
+            try:
+                loglevel = getattr(logging, loglevel.upper())
+            except:
+                loglevel = None
+
+        loglevel = loglevel or logging.INFO
+
         logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
-                            level=logging.DEBUG if debug else logging.INFO)
+                            level=loglevel)
 
         if getattr(sys, 'frozen', False):
             self.app_dir = sys._MEIPASS
@@ -97,8 +105,8 @@ class StandaloneRunner(FullStackRunner):
                             default=8090,
                             help="Port to run the application")
 
-        parser.add_argument('--debug', action='store_true',
-                            help='Enable debug logging')
+        parser.add_argument('--loglevel',
+                            help='Set logging level')
 
         parser.add_argument('-v', '--version', action='version',
                             version=get_full_version(),

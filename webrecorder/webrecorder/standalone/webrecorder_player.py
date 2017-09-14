@@ -21,7 +21,7 @@ class WebrecPlayerRunner(StandaloneRunner):
 
         super(WebrecPlayerRunner, self).__init__(app_port=argres.port,
                                                  rec_port=-1,
-                                                 debug=argres.debug)
+                                                 loglevel=argres.loglevel)
 
         if not argres.no_browser:
             import webbrowser

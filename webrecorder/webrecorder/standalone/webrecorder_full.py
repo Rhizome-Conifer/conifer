@@ -8,7 +8,7 @@ class WebrecorderRunner(StandaloneRunner):
         super(WebrecorderRunner, self).__init__(warcs_dir=argres.warcs_dir,
                                                 redis_db=argres.db,
                                                 app_port=argres.port,
-                                                debug=argres.debug)
+                                                loglevel=argres.loglevel)
         if not argres.no_browser:
             import webbrowser
             webbrowser.open_new(os.environ['APP_HOST'] + '/')
