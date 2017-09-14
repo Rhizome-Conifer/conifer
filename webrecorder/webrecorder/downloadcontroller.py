@@ -23,6 +23,7 @@ class DownloadController(BaseController):
         self.paths = config['url_templates']
         self.download_filename = config['download_paths']['filename']
         self.warc_key_templ = config['warc_key_templ']
+        self.index_file_key = config['info_index_key']
 
         self.download_chunk_encoded = config['download_chunk_encoded']
 
@@ -154,6 +155,9 @@ class DownloadController(BaseController):
         allwarcs = self.manager.redis.hgetall(warc_key)
 
         for n, v in iteritems(allwarcs):
+            if n == self.index_file_key:
+                continue
+
             yield v
 
 

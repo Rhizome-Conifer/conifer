@@ -77,6 +77,15 @@ class TestCDXJCache(FullStackTests):
 
         self.sleep_try(0.1, 3.0, assert_files_closed)
 
+    def test_download(self):
+        assert self.redis.hget('r:{user}:temp:rec:warc'.format(user=self.anon_user), '@index_file') != None
+
+        res = self.testapp.get('/{user}/temp/$download'.format(user=self.anon_user))
+
+        assert len(res.body) == int(res.headers['Content-Length'])
+
+        assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''temp-")
+
     def test_record_2_closed_not_found(self):
         res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar', status=404)
 
