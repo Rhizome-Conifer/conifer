@@ -16,7 +16,7 @@ export default function createStore(history, client, data) {
     // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     const { persistState } = require('redux-devtools');
     // eslint-disable-next-line global-require
-    const DevTools = require('../containers/DevTools/DevTools');
+    const DevTools = require('containers/DevTools/DevTools');
 
     finalCreateStore = compose(
       applyMiddleware(...middleware),
