@@ -16,15 +16,16 @@ import { IFrame, ReplayUI } from 'components/controls';
 class Replay extends Component {
   static contextTypes = {
     product: PropTypes.string
-  }
+  };
 
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
+    dispatch: PropTypes.func,
     bookmarks: PropTypes.object,
     recordingIndex: PropTypes.number,
     params: PropTypes.object
-  }
+  };
 
   // TODO move to HOC
   static childContextTypes = {
@@ -43,7 +44,7 @@ class Replay extends Component {
   }
 
   render() {
-    const { collection, bookmarks, recordingIndex, params } = this.props;
+    const { bookmarks, collection, dispatch, params, recordingIndex } = this.props;
     const { product } = this.context;
 
     const shareUrl = `${config.host}${params.user}/${params.coll}/${params.ts}/${params.splat}`;
@@ -68,7 +69,8 @@ class Replay extends Component {
 
         <IFrame
           url={iframeUrl}
-          params={params} />
+          params={params}
+          dispatch={dispatch} />
       </div>
     );
   }

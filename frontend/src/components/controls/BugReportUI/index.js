@@ -9,6 +9,9 @@ import ReportBugForm from './forms';
 
 class BugReportUI extends Component {
   static propTypes = {
+    closeBugReport: PropTypes.func,
+    openBugReport: PropTypes.func,
+    showModal: PropTypes.bool,
     submit: PropTypes.func,
   };
 
@@ -16,27 +19,13 @@ class BugReportUI extends Component {
     metadata: PropTypes.object
   }
 
-  constructor(props) {
-    super(props);
-
-    this.state = { showModal: false };
-  }
-
-  closeModal = () => {
-    this.setState({ showModal: false });
-  }
-
-  showModal = () => {
-    this.setState({ showModal: true });
-  }
-
   submitWrapper = (data) => {
     this.props.submit(data);
-    this.closeModal();
+    this.props.closeBugReport();
   }
 
   render() {
-    const { showModal } = this.state;
+    const { closeBugReport, showModal, openBugReport } = this.props;
     const { metadata } = this.context;
 
     const reportHeader = (
@@ -52,13 +41,13 @@ class BugReportUI extends Component {
         <button
           className="btn btn-default"
           title="Doesn't look right?"
-          onClick={this.showModal}>
+          onClick={openBugReport}>
           <BugIcon />
         </button>
         <Modal
           header={reportHeader}
           visible={showModal}
-          closeCb={this.closeModal}>
+          closeCb={closeBugReport}>
           <ReportBugForm cb={this.submitWrapper} />
         </Modal>
       </div>

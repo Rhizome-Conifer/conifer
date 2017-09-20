@@ -17,8 +17,9 @@ class Record extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
+    dispatch: PropTypes.func,
     params: PropTypes.object
-  }
+  };
 
   // TODO move to HOC
   static childContextTypes = {
@@ -37,7 +38,7 @@ class Record extends Component {
   }
 
   render() {
-    const { params } = this.props;
+    const { dispatch, params } = this.props;
     const { user, coll, rec, splat } = params;
 
     const iframeUrl = `${config.contentHost}/${user}/${coll}/${rec}/record/mp_/${splat}`;
@@ -48,7 +49,8 @@ class Record extends Component {
 
         <IFrame
           url={iframeUrl}
-          params={params} />
+          params={params}
+          dispatch={dispatch} />
       </div>
     );
   }

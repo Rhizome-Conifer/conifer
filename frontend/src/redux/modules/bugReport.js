@@ -3,6 +3,8 @@ import { fromJS } from 'immutable';
 const REPORT = 'wr/bugReport/REPORT';
 const REPORT_SUCCESS = 'wr/bugReport/REPORT_SUCCESS';
 const REPORT_FAIL = 'wr/bugReport/REPORT_FAIL';
+const SHOW_MODAL = 'wr/bugReport/SHOW_MODAL';
+const CLOSE_MODAL = 'wr/bugReport/CLOSE_MODAL';
 
 const initialState = fromJS({
   submitting: false,
@@ -12,6 +14,10 @@ const initialState = fromJS({
 
 export default function bugReport(state = initialState, action = {}) {
   switch (action.type) {
+    case SHOW_MODAL:
+      return state.set('showModal', true);
+    case CLOSE_MODAL:
+      return state.set('showModal', false);
     case REPORT:
       return state.merge({
         submitting: true,
@@ -34,6 +40,17 @@ export default function bugReport(state = initialState, action = {}) {
   }
 }
 
+export function showModal() {
+  return {
+    type: SHOW_MODAL,
+  };
+}
+
+export function closeModal() {
+  return {
+    type: CLOSE_MODAL,
+  };
+}
 
 export function reportBug(postData) {
   return {

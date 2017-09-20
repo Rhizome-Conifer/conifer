@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import { Link } from 'react-router';
 import PropTypes from 'prop-types';
-import map from 'lodash/map';
 import { Alert, Button, Checkbox, ControlLabel, Form,
          HelpBlock, FormControl, FormGroup } from 'react-bootstrap';
 
@@ -161,7 +160,7 @@ class UserSignup extends Component {
                     <b>Errors:</b>
                     <ul>
                       {
-                        map(errors, (val, key) => <li>{`Error ${key}: ${val}`}</li>)
+                        Object.entries(errors).map(error => <li>{`Error ${error[0]}: ${error[1]}`}</li>)
                       }
                     </ul>
                   </div>
