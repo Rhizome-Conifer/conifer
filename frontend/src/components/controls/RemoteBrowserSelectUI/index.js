@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import isEmpty from 'lodash/isEmpty';
 import { fromJS } from 'immutable';
 import { DropdownButton } from 'react-bootstrap';
 
@@ -30,7 +29,7 @@ class RemoteBrowserSelect extends Component {
   getRemoteBrowsers = () => {
     // load remote browsers if we don't already have them or
     // it's been 15min since last retrieval
-    if (isEmpty(this.props.browsers) || !this.props.accessed || Date.now() - this.props.accessed > 15 * 60 * 1000) {
+    if (this.props.browsers || !this.props.accessed || Date.now() - this.props.accessed > 15 * 60 * 1000) {
       this.props.getBrowsers();
     }
 
@@ -72,7 +71,7 @@ class RemoteBrowserSelect extends Component {
           { loading &&
             <div>loading options..</div>
           }
-          { loaded && !isEmpty(browsers) &&
+          { loaded && browsers &&
               browsers.map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={activeBrowser === browser.get('id')} />)
           }
           {

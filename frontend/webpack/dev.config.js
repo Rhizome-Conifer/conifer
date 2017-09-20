@@ -45,11 +45,13 @@ var webpackConfig = module.exports = {
     'main': [
       'babel-polyfill',
       'react-hot-loader/patch',
-      'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr',
+      'webpack-hot-middleware/client?path=http://' + host + ':' + port + '/__webpack_hmr&quiet=true',
       './config/polyfills',
       'bootstrap-loader',
       './src/client.js',
-      './src/shared/js/wb_frame.js', //'./src/shared/js/wb.js',
+      // pywb glue
+      //'./src/shared/js/wb.js',
+      //'./src/shared/js/wb_frame.js'
     ]
   },
   output: {
@@ -154,7 +156,7 @@ var webpackConfig = module.exports = {
       __CLIENT__: true,
       __SERVER__: false,
       __DEVELOPMENT__: true,
-      __DEVTOOLS__: true  // <-------- DISABLE redux-devtools HERE
+      __DEVTOOLS__: true
     }),
     webpackIsomorphicToolsPlugin.development()
   ]

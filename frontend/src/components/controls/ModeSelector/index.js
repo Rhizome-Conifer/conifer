@@ -166,7 +166,7 @@ class ModeSelector extends Component {
 
                 <div className="divider" role="separator" />
 
-                <ul className="row wr-mode" onClikc={this.onStaticCopy} title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
+                <ul className="row wr-mode" onClick={this.onStaticCopy} title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
                   <li className="col-xs-3">
                     <SnapshotIcon />
                   </li>

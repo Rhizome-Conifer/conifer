@@ -8,6 +8,10 @@ export function addTrailingSlash(url) {
   return url;
 }
 
+export function capitalize(str) {
+  return str.length ? str[0].toUpperCase() + str.slice(1) : '';
+}
+
 export function fixMalformedUrls(url) {
   if (!url.match(/^https?:\/\//)) {
     const malformed = url.match(/^([https]+)?[:/]{1,3}/i);
@@ -53,6 +57,14 @@ export function remoteBrowserMod(rb, ts, sep) {
  */
 export function rts(val) {
   return val.replace(/\/$/, '');
+}
+
+export function setTitle(msg, url, title) {
+  if (!title) {
+    title = url;
+  }
+
+  document.title = `${title} (${msg})`;
 }
 
 /**

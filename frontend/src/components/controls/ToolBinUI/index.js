@@ -46,7 +46,7 @@ ToolBinUI.propTypes = {
 };
 
 ToolBinUI.contextTypes = {
-  currMode: PropTypes.bool
+  currMode: PropTypes.string
 };
 
 export default ToolBinUI;

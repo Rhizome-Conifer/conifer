@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
-import capitalize from 'lodash/capitalize';
+
+import { capitalize } from 'helpers/utils';
 
 import EditableString from 'components/EditableString';
 import TimeFormat from 'components/TimeFormat';

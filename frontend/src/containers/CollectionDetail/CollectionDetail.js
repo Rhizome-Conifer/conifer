@@ -62,7 +62,7 @@ class CollectionDetail extends Component {
             {
               canWrite &&
                 <div>
-                  <Link to={`${user}/${coll}/$new`} className="btn btn-primary btn-sm">
+                  <Link to={`/${user}/${coll}/$new`} className="btn btn-primary btn-sm">
                     <span className="glyphicon glyphicon-plus glyphicon-button" aria-hidden="true" />New
                   </Link>
                   {
