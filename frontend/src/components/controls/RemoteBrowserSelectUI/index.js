@@ -29,7 +29,7 @@ class RemoteBrowserSelect extends Component {
   getRemoteBrowsers = () => {
     // load remote browsers if we don't already have them or
     // it's been 15min since last retrieval
-    if (this.props.browsers || !this.props.accessed || Date.now() - this.props.accessed > 15 * 60 * 1000) {
+    if (!this.props.browsers || !this.props.accessed || Date.now() - this.props.accessed > 15 * 60 * 1000) {
       this.props.getBrowsers();
     }
 
