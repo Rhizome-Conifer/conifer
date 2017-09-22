@@ -8,7 +8,6 @@ import config from 'config';
 import { setTitle } from 'helpers/utils';
 import { showModal } from 'redux/modules/bugReport';
 
-
 import './style.scss';
 
 
@@ -65,8 +64,6 @@ class IFrame extends Component {
       iframe: this.iframe
     });
 
-    window.cf = this.contentFrame;
-
     this.socket = new WebSocketHandler(params, currMode, dispatch);
   }
 
@@ -104,8 +101,6 @@ class IFrame extends Component {
   }
 
   handleReplayEvent = (evt) => {
-    console.log('handleReplayEvent', evt.data);
-
     // ignore postMessages from other sources
     if (evt.origin.indexOf(config.contentHost) === -1 || typeof evt.data !== 'object') {
       return;
@@ -175,7 +170,6 @@ class IFrame extends Component {
 
       if (attributes.timestamp || currMode !== 'patch') {
         if (!this.socket.addPage(attributes)) {
-          console.log('ws add page failed');
           // TODO: addPage fallback
           // addPage(recordingId, attributes);
         }
