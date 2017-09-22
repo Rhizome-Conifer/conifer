@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Map } from 'immutable';
 
-import { ModeSelector, RecordingTools, ToolBin } from 'containers';
+import { ModeSelector, RecordingTools, SizeCounter, ToolBin } from 'containers';
 
-import { ReplayURLBar, RecordURLBar,
-         SizeCounter } from 'components/controls';
+import { ReplayURLBar, RecordURLBar } from 'components/controls';
 
 import './style.scss';
 

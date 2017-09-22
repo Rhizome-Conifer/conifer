@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import SizeFormat from 'components/SizeFormat';
 
-function SizeCounter(props) {
+function SizeCounterUI(props) {
   const { bytes, classes } = props;
 
   return (
@@ -15,8 +15,8 @@ function SizeCounter(props) {
   );
 }
 
-SizeCounter.propTypes = {
+SizeCounterUI.propTypes = {
   bytes: PropTypes.number,
 };
 
-export default SizeCounter;
+export default SizeCounterUI;

@@ -16,6 +16,7 @@ import controls from './controls';
 import passwordReset from './passwordReset';
 //import recordings from './recordings';
 import remoteBrowsers from './remoteBrowsers';
+import sizeCounter from './sizeCounter';
 import toolBin from './toolBin';
 import user from './user';
 import userSignup from './userSignup';
@@ -36,6 +37,7 @@ const appReducer = combineReducers({
   passwordReset,
   // recordings,
   remoteBrowsers,
+  sizeCounter,
   toolBin,
   user,
   userSignup

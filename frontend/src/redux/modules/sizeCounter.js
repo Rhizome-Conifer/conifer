@@ -9,7 +9,7 @@ const initialState = fromJS({
 export default function sizeCounter(state = initialState, action = {}) {
   switch(action.type) {
     case SET_SIZE_COUNTER:
-      return state.set('size', action.size);
+      return state.set('bytes', action.bytes);
     default:
       return state;
   }
@@ -18,6 +18,6 @@ export default function sizeCounter(state = initialState, action = {}) {
 export function setSizeCounter(bytes) {
   return {
     type: SET_SIZE_COUNTER,
-    size: bytes
+    bytes
   };
 }

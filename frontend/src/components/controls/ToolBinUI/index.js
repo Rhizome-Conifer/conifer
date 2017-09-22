@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-import { SizeCounter } from 'components/controls';
+import { SizeCounter } from 'containers';
 
 
 function ToolBinUI(props, context) {

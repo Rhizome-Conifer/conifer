@@ -15,6 +15,7 @@ export RecordingTools from './RecordingTools/RecordingTools';
 export RemoteBrowserSelect from './RemoteBrowserSelect/RemoteBrowserSelect';
 export Record from './Record/Record';
 export Replay from './Replay/Replay';
+export SizeCounter from './SizeCounter/SizeCounter';
 export StandaloneRecorder from './StandaloneRecorder/StandaloneRecorder';
 export ToolBin from './ToolBin/ToolBin';
 export UserSignup from './UserSignup/UserSignup';
