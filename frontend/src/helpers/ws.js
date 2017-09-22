@@ -48,8 +48,7 @@ class WebSocketHandler {
   hasWS = _ => this.useWS;
 
   wsOpened = () => {
-    console.log('ws opened');
-    this.userWS = true;
+    this.useWS = true;
     this.errCount = 0;
     if (this.startMsg) {
       this.sendMsg(this.startMsg);

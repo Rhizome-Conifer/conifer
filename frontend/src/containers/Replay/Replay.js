@@ -48,7 +48,7 @@ class Replay extends Component {
     const { product } = this.context;
 
     const shareUrl = `${config.host}${params.user}/${params.coll}/${params.ts}/${params.splat}`;
-    const iframeUrl = `${config.contentHost}/${params.user}/${params.coll}/${params.ts}mp_/${params.splat}`;
+    const prefix = `${config.contentHost}/${params.user}/${params.coll}/`;
 
     return (
       <div>
@@ -68,8 +68,8 @@ class Replay extends Component {
           params={params} />
 
         <IFrame
-          url={iframeUrl}
           params={params}
+          prefix={prefix}
           dispatch={dispatch} />
       </div>
     );

@@ -41,15 +41,15 @@ class Record extends Component {
     const { dispatch, params } = this.props;
     const { user, coll, rec, splat } = params;
 
-    const iframeUrl = `${config.contentHost}/${user}/${coll}/${rec}/record/mp_/${splat}`;
+    const prefix = `${config.contentHost}/${user}/${coll}/${rec}/record/`;
 
     return (
       <div>
         <ReplayUI params={params} />
 
         <IFrame
-          url={iframeUrl}
           params={params}
+          prefix={prefix}
           dispatch={dispatch} />
       </div>
     );

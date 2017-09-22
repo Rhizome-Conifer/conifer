@@ -1,18 +1,22 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import ContentFrame from 'shared/js/wb_frame2';
 import WebSocketHandler from 'helpers/ws';
 import config from 'config';
+
 import { setTitle } from 'helpers/utils';
 import { showModal } from 'redux/modules/bugReport';
 
+
 import './style.scss';
+
 
 class IFrame extends Component {
   static propTypes = {
     dispatch: PropTypes.func,
-    url: PropTypes.string,
     params: PropTypes.object,
+    prefix: PropTypes.string,
     updateSizeCounter: PropTypes.func
   };
 
@@ -25,10 +29,13 @@ class IFrame extends Component {
 
     this.initialReq = false;
     this.socket = null;
+
+    this.contentFrame = null;
+    this.frameContainer = null;
   }
 
   componentDidMount() {
-    const { dispatch, params, url } = this.props;
+    const { dispatch, params, prefix } = this.props;
     const { currMode } = this.context;
 
     window.addEventListener('message', this.handleReplayEvent);
@@ -36,9 +43,9 @@ class IFrame extends Component {
     // TODO: fill out wbinfo
     window.wbinfo = {
       outer_prefix: '',
-      prefix: '',
+      prefix,
       coll: params.coll,
-      url,
+      //url,
       capture_url: '',
       reqTimestamp: params.ts,
       timestamp: params.ts,
@@ -51,10 +58,27 @@ class IFrame extends Component {
       info: {}
     };
 
+    this.contentFrame = new ContentFrame({
+      url: params.splat + window.location.hash,
+      prefix,
+      requests_ts: params.ts,
+      iframe: this.iframe
+    });
+
+    window.cf = this.contentFrame;
+
     this.socket = new WebSocketHandler(params, currMode, dispatch);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.params.splat !== this.props.params.splat ||
+        nextProps.params.ts !== this.props.params.ts) {
+      this.contentFrame.load_url(nextProps.params.splat, nextProps.params.ts);
+    }
+  }
+
   componentWillUnmount() {
+    this.contentFrame.close();
     window.removeEventListener('message', this.handleReplayEvent);
     this.socket = null;
   }
@@ -80,6 +104,8 @@ class IFrame extends Component {
   }
 
   handleReplayEvent = (evt) => {
+    console.log('handleReplayEvent', evt.data);
+
     // ignore postMessages from other sources
     if (evt.origin.indexOf(config.contentHost) === -1 || typeof evt.data !== 'object') {
       return;
@@ -88,7 +114,7 @@ class IFrame extends Component {
     const state = evt.data;
     const specialModes = ['cookie', 'skipreq', 'bug-report'].indexOf(state.wb_type) !== -1;
 
-    if (!this.iframeHandle || (evt.source !== this.iframeHandle.contentWindow && !specialModes)) {
+    if (!this.iframe || (evt.source !== this.iframe.contentWindow && !specialModes)) {
       return;
     }
 
@@ -122,6 +148,7 @@ class IFrame extends Component {
 
   addNewPage = (state) => {
     const { currMode } = this.context;
+    console.log('wr add new page');
 
     if (state && state.ts && currMode !== 'record' && currMode !== 'extract') {
       // updateTimestamp(state.ts, window.curr_mode.indexOf("replay") !== -1);
@@ -148,6 +175,7 @@ class IFrame extends Component {
 
       if (attributes.timestamp || currMode !== 'patch') {
         if (!this.socket.addPage(attributes)) {
+          console.log('ws add page failed');
           // TODO: addPage fallback
           // addPage(recordingId, attributes);
         }
@@ -156,26 +184,18 @@ class IFrame extends Component {
       if (!this.initialReq) {
         // setTimestamp(state.ts);
         // setUrl(state.url);
-        setTitle("Archives", state.url, state.title);
+        setTitle('Archives', state.url, state.title);
       }
       this.initialReq = false;
     }
   }
 
   render() {
-    const { url } = this.props;
-
     return (
-      <iframe
-        ref={(obj) => { this.iframeHandle = obj; }}
-        id="replay_iframe"
-        src={url}
-        seamless="seamless"
-        frameBorder="0"
-        scrolling="yes"
-        className="wb_iframe" />
+      <iframe className="wb_iframe" ref={(obj) => { this.iframe = obj; }} />
     );
   }
 }
+
 
 export default IFrame;
