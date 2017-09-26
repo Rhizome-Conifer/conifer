@@ -1,6 +1,7 @@
 export BugReportUI from './BugReportUI';
 export ExtractWidgetUI from './ExtractWidgetUI';
 export IFrame from './IFrame';
+export InfoWidgetUI from './InfoWidgetUI';
 export ModeSelector from './ModeSelector';
 export NewRecordingUI from './NewRecordingUI';
 export RecordingToolsUI from './RecordingToolsUI';
@@ -8,6 +9,7 @@ export RemoteBrowserOption from './RemoteBrowserOption';
 export RemoteBrowserSelectUI from './RemoteBrowserSelectUI';
 export RecordUI from './RecordUI';
 export RecordURLBar from './RecordURLBar';
+export RemoteBrowserUI from './RemoteBrowserUI';
 export ReplayArrowButton from './ReplayArrowButton';
 export ReplayPageDisplay from './ReplayPageDisplay';
 export ReplayUI from './ReplayUI';

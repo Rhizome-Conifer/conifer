@@ -75,7 +75,7 @@ class ModeSelector extends Component {
       this.setState({ open: false });
   }
 
-  toggleOpen = () => {
+  toggle = () => {
     this.setState({ open: !this.state.open });
   }
 
@@ -118,7 +118,7 @@ class ModeSelector extends Component {
               <span className="btn-content"><span className="glyphicon glyphicon-stop" /> <span className="hidden-xs">Stop</span></span>
               { modeMarkup }
             </button>
-            <button onClick={this.toggleOpen} type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button onClick={this.toggle} type="button" className="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <span className="glyphicon glyphicon-triangle-bottom" />
             </button>
 

@@ -1,0 +1,116 @@
+.wr-info-widget {
+    transition: opacity .25s ease-in-out;
+    opacity: 0;
+
+    &.visible {
+        opacity: 1;
+    }
+
+    & > .dropdown-menu {
+        transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+        transform: scale(0.98, 0.98);
+
+        top: -9999px;
+        left: -9999px;
+        opacity: 0;
+        display: block;
+        border-radius: 0;
+
+        width: 50rem;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .dropdown-toggle {
+        border: none;
+        background: inherit;
+    }
+
+    .glyphicon-info-sign {
+        transition: color .2s ease-in-out;
+        vertical-align: text-top;
+
+        &:hover {
+            color: rgb(89,158,230);
+        }
+    }
+
+    &.open > .dropdown-menu {
+        opacity: 1;
+        transform: scale(1, 1);
+        top: 100%;
+        /* -.5 width - 40px padding, -6px icon padding, -.5 icon width */
+        left: calc(-250px + (40px + 6px + 7px));
+    }
+
+    &.open .glyphicon-info-sign {
+        color: rgb(89,158,230);
+    }
+
+    .ra-replay-info-label {
+        color: rgb(153,153,153);
+        font-size: 12px;
+        font-weight: 300;
+        letter-spacing: 1px
+    }
+    .ra-recording-block {
+        margin-top: 15px;
+
+        h5 {
+            display: inline-block;
+        }
+    }
+
+    .ra-resources {
+        border: solid 1px rgb(204,204,204);
+        padding: 5px 10px;
+        margin-top: 15px;
+
+        & > ul {
+            padding: 0;
+            margin-bottom: 0;
+            list-style-type: none;
+
+            li {
+                text-align: left;
+            }
+        }
+    }
+
+    .glyphicon-remove-circle {
+        transition: color .2s ease-in-out;
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding: 1rem;
+        cursor: pointer;
+
+        &:hover {
+            color: red;
+        }
+    }
+
+    .arrow_box:before, .arrow_box:after {
+        left: 50%;
+    }
+
+    @media (max-width: 1200px) {
+        .arrow_box:before, .arrow_box:after {
+            left: initial;
+            right: 1.8rem;
+        }
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1200px) {
+    .wr-info-widget.open > .dropdown-menu {
+        left: initial;
+        right: 0;
+    }
+}
+@media (max-width: 767px) {
+    .wr-info-widget.open > .dropdown-menu {
+        left: initial;
+        right: -1.9rem;
+    }
+}

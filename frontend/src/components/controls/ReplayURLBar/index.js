@@ -2,12 +2,11 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
-import { RemoteBrowserSelect } from 'containers';
+import { InfoWidget, RemoteBrowserSelect } from 'containers';
 
 import BookmarkListItem from 'components/BookmarkListItem';
 import OutsideClick from 'components/OutsideClick';
 import TimeFormat from 'components/TimeFormat';
-
 import { ReplayArrowButton, ReplayPageDisplay } from 'components/controls';
 
 import './style.scss';
@@ -102,8 +101,8 @@ class ReplayURLBar extends Component {
                 </ul>
 
                 <div className="wr-replay-info">
-                  {/* info_widget(coll=coll_title) */}
-                  <span className="replay-date main-replay-date hidden-xs">
+                  <InfoWidget />
+                  <span className="replay-date main-replay-date hidden-xs" onClick={this.toggleBookmarkList}>
                     <TimeFormat dt={ts} />
                     <span className="glyphicon glyphicon-triangle-bottom" />
                   </span>
@@ -116,21 +115,6 @@ class ReplayURLBar extends Component {
                 params={params}
                 direction="right" />
             </div>
-            {/*
-              isExtract &&
-                <div class="input-group-btn extract-selector">
-                    {{ sources_widget(target=coll_title, active=True, req_timestamp=(ts or (wbrequest.wb_url.timestamp if webrequest else None))) }}
-                </div>
-              */
-            }
-            {
-              /*
-              isPatch &&
-                <div class="input-group-btn extract-selector">
-                  {{ sources_widget(target=rec_title, active=True, mode="patch", timestamp=(ts or wbrequest.wb_url.timestamp)) }}
-                </div>
-              */
-            }
           </div>
         </form>
       </div>

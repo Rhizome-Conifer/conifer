@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import ContentFrame from 'shared/js/wb_frame2';
+import ContentFrame from 'shared/js/wb_frame';
 import WebSocketHandler from 'helpers/ws';
 import config from 'config';
 
@@ -94,9 +94,20 @@ class IFrame extends Component {
     }
   }
 
-  addSkipReq = (state) => {
-    if (!this.socket.addSkipReq(state.url)) {
-      // TODO: ajax fallback
+  setUrl = (url, noStatsUpdate = false) => {
+    const { currMode } = this.context;
+    const rawUrl = decodeURI(url);
+
+    // this.props.dispatch(setUrl(rawUrl));
+
+    if (currMode.indexOf('replay') !== -1) {
+      // PagingInterface.navigationUpdate();
+    } else if (['record', 'patch', 'extract'].includes(currMode)) {
+      // ShareWidget.updateUrl({url: rawUrl, ts: wbinfo.timestamp });
+    }
+
+    if (!noStatsUpdate) {
+      this.socket.setStatsUrls([rawUrl]);
     }
   }
 
@@ -163,7 +174,7 @@ class IFrame extends Component {
 
       attributes.title = state.title;
       attributes.url = state.url;
-      // setUrl(state.url, true);
+      this.setUrl(state.url, true);
 
       const modeMsg = { record: 'recording', patch: 'Patching', extract: 'Extracting' };
       setTitle(currMode in modeMsg ? modeMsg[currMode] : '', state.url, state.tittle);
@@ -177,10 +188,16 @@ class IFrame extends Component {
     } else if (['replay', 'replay-coll'].includes(currMode)) {
       if (!this.initialReq) {
         // setTimestamp(state.ts);
-        // setUrl(state.url);
+        this.setUrl(state.url);
         setTitle('Archives', state.url, state.title);
       }
       this.initialReq = false;
+    }
+  }
+
+  addSkipReq = (state) => {
+    if (!this.socket.addSkipReq(state.url)) {
+      // TODO: ajax fallback
     }
   }
 

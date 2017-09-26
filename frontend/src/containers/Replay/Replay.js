@@ -9,7 +9,10 @@ import config from 'config';
 
 import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
+import { getArchives } from 'redux/modules/controls';
+import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
+import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -19,6 +22,7 @@ class Replay extends Component {
   };
 
   static propTypes = {
+    activeBrowser: PropTypes.object,
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
@@ -44,7 +48,7 @@ class Replay extends Component {
   }
 
   render() {
-    const { bookmarks, collection, dispatch, params, recordingIndex } = this.props;
+    const { activeBrowser, bookmarks, collection, dispatch, params, recordingIndex } = this.props;
     const { product } = this.context;
 
     const shareUrl = `${config.host}${params.user}/${params.coll}/${params.ts}/${params.splat}`;
@@ -67,16 +71,20 @@ class Replay extends Component {
           recordingIndex={recordingIndex}
           params={params} />
 
-        <IFrame
-          params={params}
-          prefix={prefix}
-          dispatch={dispatch} />
+        {
+          activeBrowser ?
+            <RemoteBrowser /> :
+            <IFrame
+              params={params}
+              prefix={prefix}
+              dispatch={dispatch} />
+        }
       </div>
     );
   }
 }
 
-const loadCollection = [
+const initialData = [
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
@@ -90,19 +98,46 @@ const loadCollection = [
 
       return undefined;
     }
+  },
+  /*
+  {
+    promise: ({ store: { dispatch, getState } }) => {
+      const state = getState();
+      const rb = state.getIn(['remoteBrowsers', 'activeBrowser']);
+
+      // if remote browser is active, load up a new instance
+      if (rb) {
+        return dispatch(createRemoteBrowser(rb));
+      }
+
+      return undefined;
+    }
+  },*/
+  {
+    promise: ({ store: { dispatch, getState } }) => {
+      const state = getState();
+
+      // TODO: determine if we need to test for stale archives
+      if (!state.getIn(['controls', 'archives']).size) {
+        return dispatch(getArchives());
+      }
+
+      return undefined;
+    }
   }
 ];
 
 const mapStateToProps = (state, props) => {
   return {
+    activeBrowser: state.getIn(['remoteBrowsers', 'activeBrowser']),
+    auth: state.get('auth'),
     bookmarks: getOrderedBookmarks(state),
-    recordingIndex: getActiveRecording(state, props),
     collection: state.get('collection'),
-    auth: state.get('auth')
+    recordingIndex: getActiveRecording(state, props)
   };
 };
 
 export default asyncConnect(
-  loadCollection,
+  initialData,
   mapStateToProps
 )(Replay);

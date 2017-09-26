@@ -139,7 +139,7 @@ class ShareWidgetUI extends Component {
       this.setState({ open: false });
   }
 
-  toggleOpen = () => {
+  toggle = () => {
     this.setState({ open: !this.state.open });
   }
 
@@ -161,7 +161,7 @@ class ShareWidgetUI extends Component {
             className={`btn btn-default btn-${bsSize} dropdown-toggle sharing-widget`}
             data-toggle="dropdown"
             aria-label="Sharing widget"
-            onClick={this.toggleOpen}>
+            onClick={this.toggle}>
             <ShareIcon />
             { bsSize === 'xs' && <span>&nbsp;Share</span> }
           </button>

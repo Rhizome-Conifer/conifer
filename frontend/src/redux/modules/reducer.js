@@ -13,6 +13,7 @@ import bugReport from './bugReport';
 import collection from './collection';
 import collections from './collections';
 import controls from './controls';
+import infoWidget from './infoWidget';
 import passwordReset from './passwordReset';
 //import recordings from './recordings';
 import remoteBrowsers from './remoteBrowsers';
@@ -34,6 +35,7 @@ const appReducer = combineReducers({
   collection,
   collections,
   controls,
+  infoWidget,
   passwordReset,
   // recordings,
   remoteBrowsers,

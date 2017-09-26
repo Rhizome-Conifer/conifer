@@ -117,7 +117,6 @@
     align-items: center;
     -ms-flex-align: center;
     position: absolute;
-    pointer-events: none;
     right: 0;
     top: .4rem;
     height: calc(100% - .8rem);
@@ -126,49 +125,4 @@
     margin-right: 1rem;
 
     background: linear-gradient(90deg, rgba(255,255,255,0), #FFF 15%, #FFF);
-}
-
-.wr-info-widget {
-    transition: opacity .25s ease-in-out;
-    opacity: 0;
-
-    &.visible {
-        opacity: 1;
-    }
-
-    & > .dropdown-menu {
-        width: 50rem;
-        padding: 1.5rem;
-        margin-top: 1rem;
-    }
-
-    .dropdown-toggle {
-        border: none;
-        background: inherit;
-    }
-
-    .glyphicon-info-sign {
-        transition: color .2s ease-in-out;
-        vertical-align: text-top;
-
-        &:hover {
-            color: rgb(89,158,230);
-        }
-    }
-
-    &.open .glyphicon-info-sign {
-        color: rgb(89,158,230);
-    }
-
-    .arrow_box:before, .arrow_box:after {
-        left: 50%;
-    }
-
-    @media (max-width: 1200px) {
-        .arrow_box:before, .arrow_box:after {
-            left: initial;
-            right: 1.8rem;
-        }
-    }
-
 }

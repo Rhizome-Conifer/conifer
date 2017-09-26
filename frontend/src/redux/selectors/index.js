@@ -1,15 +1,19 @@
 import { createSelector } from 'reselect';
+import { forEach } from 'immutable';
 
 import { rts, truncate } from 'helpers/utils';
 
 
-const getCollections = state => state.get('collections');
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
+const getArchives = state => state.getIn(['controls', 'archives']);
 const getBookmarks = state => state.getIn(['collection', 'bookmarks']);
+const getCollections = state => state.get('collections');
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
+const getSize = state => state.getIn(['infoWidget', 'size']);
+const getStats = state => state.getIn(['infoWidget', 'stats']);
 const getTimestamp = (state, props) => props.params.ts;
-const getUserCollections = state => state.getIn(['user', 'collections']);
 const getUrl = (state, props) => props.params.splat;
+const getUserCollections = state => state.getIn(['user', 'collections']);
 const selectedCollection = state => state.getIn(['user', 'activeCollection']);
 const userOrderBy = state => state.get('userOrderBy') || 'timestamp';
 
@@ -24,20 +28,6 @@ export const getActiveCollection = createSelector(
     const title = selected.get('title');
     const id = selected.get('id');
     return { title: truncate(title, 40), id };
-  }
-);
-
-export const getActiveRemoteBrowser = createSelector(
-  [getActiveRemoteBrowserId, getRemoteBrowsers],
-  (activeBrowserId, browsers) => {
-    return activeBrowserId ? browsers.get(activeBrowserId) : null;
-  }
-);
-
-export const getBookmarkCount = createSelector(
-  [getBookmarks],
-  (bookmarks) => {
-    return bookmarks.flatten(true).size;
   }
 );
 
@@ -94,6 +84,67 @@ export const getActiveRecording = createSelector(
     }
 
     return 0;
+  }
+);
+
+export const getActiveRemoteBrowser = createSelector(
+  [getActiveRemoteBrowserId, getRemoteBrowsers],
+  (activeBrowserId, browsers) => {
+    return activeBrowserId ? browsers.get(activeBrowserId) : null;
+  }
+);
+
+export const getBookmarkCount = createSelector(
+  [getBookmarks],
+  (bookmarks) => {
+    return bookmarks.flatten(true).size;
+  }
+);
+
+export const getReplayStats = createSelector(
+  [getStats, getSize, getArchives],
+  (stats, size, archives) => {
+    const resources = [];
+
+    const sortFn = (a, b) => {
+      if (a > b) return -1;
+      if (a < b) return 1;
+      return 0;
+    };
+
+    if (stats.size > 0) {
+      const sortedStats = stats.sort(sortFn);
+      sortedStats.forEach((stat, id) => {
+        // fixed resources
+        if (['live', 'replay'].includes(id)) {
+          switch (id) {
+            case 'live':
+              return resources.push({ name: 'Live web', id, stat });
+            case 'replay':
+              return resources.push({ name: 'Live web at time of recording', id, stat });
+            default:
+              break;
+          }
+        }
+
+        const srcCollection = id.split(':', 2);
+        let name = archives.getIn([srcCollection[0], 'name']);
+
+        if (srcCollection.length > 1) {
+          name += ` ${srcCollection[1]}`;
+        }
+
+        return resources.push({
+          name,
+          id,
+          stat
+        });
+      });
+
+      return resources;
+    }
+
+    return null;
   }
 );
 

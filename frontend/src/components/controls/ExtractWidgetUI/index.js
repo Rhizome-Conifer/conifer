@@ -27,7 +27,7 @@ class ExtractWidgetUI extends Component {
     };
   }
 
-  toggleOpen = () => {
+  toggle = () => {
     this.setState({ open: !this.state.open });
   }
 
@@ -58,7 +58,7 @@ class ExtractWidgetUI extends Component {
 
     return (
       <OutsideClick classes={classes} handleClick={this.close}>
-        <button className="btn btn-primary sources-widget dropdown-toggle" onClick={this.toggleOpen} type="button" id="timePicker" aria-haspopup="true" aria-expanded="true">
+        <button className="btn btn-primary sources-widget dropdown-toggle" onClick={this.toggle} type="button" id="timePicker" aria-haspopup="true" aria-expanded="true">
           <ul>
             <li className="ts main-replay-date">{timestamp ? <TimeFormat dt={timestamp} gmt /> : 'Most Recent'}</li>
             <li className="mnt-label">
