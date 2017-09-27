@@ -39,7 +39,7 @@ babelLoaderQuery.presets = babelLoaderQuery.presets.map(function (v) {
 
 
 var webpackConfig = module.exports = {
-  devtool: 'inline-source-map',
+  devtool: 'cheap-module-source-map',
   context: path.resolve(__dirname, '..'),
   entry: {
     'main': [

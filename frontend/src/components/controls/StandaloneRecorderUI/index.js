@@ -30,6 +30,10 @@ class StandaloneRecorderUI extends Component {
     };
   }
 
+  componentDidMount() {
+    console.log('StandaloneRecorderUI mounted');
+  }
+
   handleInput = (evt) => {
     evt.preventDefault();
     this.setState({ [evt.target.name]: evt.target.value });

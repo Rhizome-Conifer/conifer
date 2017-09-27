@@ -26,7 +26,7 @@ function Root(props) {
 Root.propTypes = {
   client: PropTypes.object.isRequired,
   history: PropTypes.object.isRequired,
-  routes: React.PropTypes.oneOfType([
+  routes: PropTypes.oneOfType([
     PropTypes.array,
     PropTypes.object,
   ]).isRequired

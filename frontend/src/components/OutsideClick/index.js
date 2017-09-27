@@ -10,7 +10,7 @@ class OutsideClick extends Component {
 
   static propTypes = {
     children: PropTypes.node.isRequired,
-    classes: PropTypes.object,
+    classes: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     handleClick: PropTypes.func,
     inlineBlock: PropTypes.bool
   };
@@ -32,7 +32,7 @@ class OutsideClick extends Component {
   }
 
   checkClick = (evt) => {
-    if (!this.container.contains(evt.target) && this.props.handleClick) {
+    if (this.container && !this.container.contains(evt.target) && this.props.handleClick) {
       this.props.handleClick(evt);
     }
   }

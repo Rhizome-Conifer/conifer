@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { fromJS } from 'immutable';
-import ToggleButton from 'react-toggle-button';
+import Toggle from 'react-toggle';
 
 import OutsideClick from 'components/OutsideClick';
 import { ShareIcon } from 'components/Icons';
 
+import 'shared/css/toggle.css';
 import './style.scss';
 
 
@@ -182,11 +183,13 @@ class ShareWidgetUI extends Component {
                         <div className="access-switch">
                           <span className="glyphicon glyphicon-globe" aria-hidden="true" />
                           <span className="left-buffer-sm hidden-xs">Collection Public?</span>
-                          <ToggleButton
-                            inactiveLabel="NO"
-                            activeLavel="YES"
-                            value={isPublic}
-                            onToggle={this.setPublic} />
+                          <Toggle
+                            icons={{
+                              unchecked: 'NO',
+                              checked: 'YES'
+                            }}
+                            defaultChecked={isPublic}
+                            onChange={this.setPublic} />
                         </div>
                       </div>
                   }

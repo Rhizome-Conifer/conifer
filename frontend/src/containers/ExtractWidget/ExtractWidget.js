@@ -32,6 +32,7 @@ class ExtractWidget extends Component {
   };
 
   componentDidMount() {
+    console.log('extract widget mounting');
     const { archives, archivesLoading } = this.props;
 
     if(!archivesLoading && archives.size === 0)
