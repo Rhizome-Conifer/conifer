@@ -58,7 +58,7 @@ class ContentController(BaseController, RewriterApp):
             self.client_archives[pk] = info
 
     def init_csp_header(self):
-        csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss:"
+        csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
         if self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
 
