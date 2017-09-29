@@ -12,6 +12,7 @@ export ModeSelector from './ModeSelector/ModeSelector';
 export NewRecording from './NewRecording/NewRecording';
 export PasswordReset from './PasswordReset/PasswordReset';
 export Patch from './Patch/Patch';
+export PatchWidget from './PatchWidget/PatchWidget';
 export RecordingTools from './RecordingTools/RecordingTools';
 export RemoteBrowserSelect from './RemoteBrowserSelect/RemoteBrowserSelect';
 export Record from './Record/Record';

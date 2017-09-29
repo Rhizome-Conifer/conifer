@@ -79,7 +79,7 @@ export default (store) => {
       component: Record
     },
     {
-      path: ':user/:coll/:rec/patch/*',
+      path: ':user/:coll/:rec/patch/:ts/*',
       name: 'patch',
       footer: false,
       classOverride: true,

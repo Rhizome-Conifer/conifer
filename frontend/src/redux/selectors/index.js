@@ -101,16 +101,16 @@ export const getBookmarkCount = createSelector(
   }
 );
 
-export const getReplayStats = createSelector(
+const sortFn = (a, b) => {
+  if (a > b) return -1;
+  if (a < b) return 1;
+  return 0;
+};
+
+export const getRemoteArchiveStats = createSelector(
   [getStats, getSize, getArchives],
   (stats, size, archives) => {
     const resources = [];
-
-    const sortFn = (a, b) => {
-      if (a > b) return -1;
-      if (a < b) return 1;
-      return 0;
-    };
 
     if (stats.size > 0) {
       const sortedStats = stats.sort(sortFn);

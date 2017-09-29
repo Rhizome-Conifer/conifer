@@ -5,6 +5,7 @@ import { asyncConnect } from 'redux-connect';
 import config from 'config';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
+import { getArchives } from 'redux/modules/controls';
 
 import { IFrame, ReplayUI } from 'components/controls';
 
@@ -17,6 +18,7 @@ class Patch extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
+    dispatch: PropTypes.func,
     params: PropTypes.object
   }
 
@@ -37,26 +39,29 @@ class Patch extends Component {
   }
 
   render() {
-    const { params } = this.props;
-    const { user, coll, rec, splat } = params;
+    const { dispatch, params } = this.props;
+    const { user, coll, rec } = params;
 
-    const iframeUrl = `${config.contentHost}/${user}/${coll}/${rec}/patch/mp_/${splat}`;
+    const prefix = `${config.contentHost}/${user}/${coll}/${rec}/patch/`;
+    //const iframeUrl = `${config.contentHost}/${user}/${coll}/${rec}/patch/mp_/${splat}`;
 
     return (
       <div>
         <ReplayUI params={params} />
 
         <IFrame
-          url={iframeUrl}
-          params={params} />
+          dispatch={dispatch}
+          params={params}
+          prefix={prefix} />
       </div>
     );
   }
 }
 
-const loadCollection = [
+const initialData = [
   {
     promise: ({ params, store: { dispatch, getState } }) => {
+      // load collection
       const state = getState();
       const collection = state.get('collection');
       const { user, coll } = params;
@@ -64,6 +69,18 @@ const loadCollection = [
       if(!isLoaded(state) || (collection.get('id') === coll &&
          Date.now() - collection.get('accessed') > 15 * 60 * 1000)) {
         return dispatch(loadColl(user, coll));
+      }
+
+      return undefined;
+    }
+  },
+  {
+    promise: ({ store: { dispatch, getState } }) => {
+      const state = getState();
+
+      // TODO: determine if we need to test for stale archives
+      if (!state.getIn(['controls', 'archives']).size) {
+        return dispatch(getArchives());
       }
 
       return undefined;
@@ -79,6 +96,6 @@ const mapStateToProps = (state) => {
 };
 
 export default asyncConnect(
-  loadCollection,
+  initialData,
   mapStateToProps
 )(Patch);

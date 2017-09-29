@@ -60,7 +60,7 @@ class IFrame extends Component {
     this.contentFrame = new ContentFrame({
       url: params.splat + window.location.hash,
       prefix,
-      requests_ts: params.ts,
+      request_ts: params.ts,
       iframe: this.iframe
     });
 
@@ -137,6 +137,7 @@ class IFrame extends Component {
         this.addSkipReq(state);
         break;
       case 'hashchange': {
+        console.log('pywb hashchange')
         let url = this.props.params.splat.split("#", 1)[0];
         if (state.hash) {
           url = state.hash;
@@ -154,7 +155,7 @@ class IFrame extends Component {
 
   addNewPage = (state) => {
     const { currMode } = this.context;
-    console.log('wr add new page');
+    console.log('wr add new page', state);
 
     if (state && state.ts && currMode !== 'record' && currMode !== 'extract') {
       // updateTimestamp(state.ts, window.curr_mode.indexOf("replay") !== -1);

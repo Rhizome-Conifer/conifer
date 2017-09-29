@@ -56,7 +56,7 @@ class Extract extends Component {
   }
 }
 
-const loadCollection = [
+const initialData = [
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
@@ -81,6 +81,6 @@ const mapStateToProps = (state) => {
 };
 
 export default asyncConnect(
-  loadCollection,
+  initialData,
   mapStateToProps
 )(Extract);

@@ -27,7 +27,7 @@ class ReplayUI extends Component {
     const { currMode } = this.context;
     const { params } = this.props;
 
-    const isWrite = currMode === 'extract' || currMode === 'patch' || currMode === 'record';
+    const isWrite = ['extract', 'patch', 'record'].includes(currMode);
 
     return (
       <div>

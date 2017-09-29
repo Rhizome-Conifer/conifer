@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
-import { RemoteBrowserSelect } from 'containers';
-
-import TimeFormat from 'components/TimeFormat';
+import { PatchWidget, RemoteBrowserSelect } from 'containers';
 
 import './style.scss';
 
@@ -39,6 +37,7 @@ class RecordURLBar extends Component {
 
   render() {
     const { currMode, canAdmin } = this.context;
+    const { params } = this.props;
     const { urlInput } = this.state;
 
     const isNew = currMode === 'new';
@@ -68,12 +67,8 @@ class RecordURLBar extends Component {
               */
             }
             {
-              /*
               isPatch &&
-                <div class="input-group-btn extract-selector">
-                  {{ sources_widget(target=rec_title, active=True, mode="patch", timestamp=(ts or wbrequest.wb_url.timestamp)) }}
-                </div>
-              */
+                <PatchWidget params={params} />
             }
           </div>
         </form>

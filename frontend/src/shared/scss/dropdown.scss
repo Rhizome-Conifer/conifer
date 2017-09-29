@@ -1,7 +1,8 @@
 /* TODO: clean this up */
 .share-container .dropdown-menu,
 .bookmark-list > .dropdown-menu,
-.start-recording-homepage .containerized .dropdown-menu {
+.start-recording-homepage .containerized .dropdown-menu,
+.patch-selector .dropdown-menu {
     transition: opacity .2s ease-in-out, transform .2s ease-in-out;
     transform: scale(0.98, 0.98);
 
@@ -18,7 +19,8 @@
 }
 
 .bookmark-list.open > .dropdown-menu,
-.start-recording-homepage .containerized .open > .dropdown-menu {
+.start-recording-homepage .containerized .open > .dropdown-menu,
+.patch-selector.open > .dropdown-menu {
     opacity: 1;
     transform: scale(1, 1);
     top: 100%;

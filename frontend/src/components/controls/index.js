@@ -4,6 +4,7 @@ export IFrame from './IFrame';
 export InfoWidgetUI from './InfoWidgetUI';
 export ModeSelector from './ModeSelector';
 export NewRecordingUI from './NewRecordingUI';
+export PatchWidgetUI from './PatchWidgetUI';
 export RecordingToolsUI from './RecordingToolsUI';
 export RemoteBrowserOption from './RemoteBrowserOption';
 export RemoteBrowserSelectUI from './RemoteBrowserSelectUI';

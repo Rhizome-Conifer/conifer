@@ -19,6 +19,10 @@ class ExtractWidgetUI extends Component {
     toggleAllSources: PropTypes.func
   };
 
+  static defaultProps = {
+    active: false
+  };
+
   constructor(props) {
     super(props);
 
@@ -67,7 +71,7 @@ class ExtractWidgetUI extends Component {
               <span className="caret" /></li>
           </ul>
         </button>
-        <div className="dropdown-menu sources-dropdown" aria-labelledby="timePicker">
+        <div className="dropdown-menu" aria-labelledby="timePicker">
           <div className="ra-mode-row">
             <span className="ra-mode-badge extract">extracting</span> to <div className="ra-collection">{ toCollection || 'Choose a collection' }</div>
           </div>
