@@ -1,0 +1,123 @@
+.containerized .patch-selector li {
+    text-align: left;
+}
+
+.patch-selector {
+    display: table-cell;
+    height: 100%;
+
+    & > button {
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+
+        & > span {
+            &:last-child {
+                display:inline-block;
+
+                &::first-letter {
+                    text-transform: uppercase;
+                }
+            }
+        }
+    }
+
+    .btn-group.open > .dropdown-menu {
+        opacity: 1;
+        transform: scale(1, 1);
+        top: 100%;
+        left: inherit;
+        right: 0;
+    }
+
+    .btn-group {
+        height: 100%;
+    }
+
+    img {
+        width: 1.6rem;
+        height: 1.6rem;
+    }
+
+    .ra-recording {
+        text-decoration: underline;
+        margin-left: .5rem;
+        white-space: normal;
+    }
+
+    .ra-mode-badge.patch {
+        background-color: rgb(204,204,204);
+        margin-right: .5rem;
+    }
+
+    .ra-mode-row {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .ra-replay-info-label {
+        color: rgb(153,153,153);
+        font-size: 1.2rem;
+        font-weight: 300;
+        letter-spacing: .1rem
+    }
+
+    .ra-resources {
+        border: solid .1rem rgb(204,204,204);
+        padding: .5rem 1rem;
+        margin-top: 1.5rem;
+
+        & > ul {
+            padding: 0;
+            margin-bottom: 0;
+            list-style-type: none;
+        }
+    }
+
+    .sources-widget {
+        min-width: 15rem;
+        padding: 0 1.5rem 0 .8rem;
+        height: 100%;
+        border-radius: 0;
+
+        ul {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            li {
+                font-size: 1.1rem;
+
+                &.ts {
+                   font-weight: 300;
+                }
+
+                &.mnt-label {
+                    font-weight: 400;
+                    letter-spacing: .1rem;
+                }
+            }
+        }
+    }
+}
+
+.containerized .patch-selector .dropdown-menu {
+    transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+    transform: scale(0.98, 0.98);
+
+    top: -9999px;
+    left: -9999px;
+    opacity: 0;
+    display: flex;
+    border-radius: 0;
+    margin: 0;
+    min-width: 40rem;
+    padding: 1.5rem;
+
+    flex-direction: column;
+    justify-content: space-between;
+
+    @media (max-width: 768px) {
+        min-width: 30rem;
+    }
+}
