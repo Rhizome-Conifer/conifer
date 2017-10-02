@@ -7,9 +7,8 @@ import { RecordingToolsUI } from 'components/controls';
 
 
 const mapStateToProps = (state) => {
-  const toolBin = state.get('toolBin');
   return {
-    toolsOpen: toolBin.get('open')
+    toolsOpen: state.getIn(['toolBin', 'open'])
   };
 };
 

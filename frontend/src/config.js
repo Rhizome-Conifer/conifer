@@ -14,6 +14,7 @@ module.exports = Object.assign({
   port: process.env.PORT,
   devApi: 'http://localhost:8089',
   prodApi: 'http://localhost:8080', //'https://webrecorder.io',
+  appHost: 'http://localhost:3000',
   contentHost: 'http://localhost:8089',
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
@@ -11,7 +11,7 @@ import { PatchIcon, SnapshotIcon } from 'components/Icons';
 
 import './style.scss';
 
-class ModeSelector extends Component {
+class ModeSelector extends PureComponent {
 
   static contextTypes = {
     currMode: PropTypes.string,
@@ -20,7 +20,9 @@ class ModeSelector extends Component {
 
   static propTypes = {
     params: PropTypes.object,
-    remoteBrowserSelected: PropTypes.object
+    remoteBrowserSelected: PropTypes.object,
+    ts: PropTypes.string,
+    url: PropTypes.string
   };
 
   constructor(props) {
@@ -41,29 +43,26 @@ class ModeSelector extends Component {
   }
 
   onReplay = () => {
-    const { params: { coll, user, splat } } = this.props;
-    const ts = window.wbinfo.timestamp;
+    const { params: { coll, user }, ts, url } = this.props;
 
-    this.context.router.push(`/${user}/${coll}/${ts}/${splat}`);
+    this.context.router.push(`/${user}/${coll}/${ts}/${url}`);
   }
 
   onPatch = () => {
     if (this.context.currMode === 'record') return;
 
-    const { params: { coll, splat }, remoteBrowserSelected } = this.props;
-    const ts = window.wbinfo.timestamp;
+    const { params: { coll }, remoteBrowserSelected, ts, url } = this.props;
 
-    window.location = `/_new/${coll}/Patch/patch/${remoteBrowserMod(remoteBrowserSelected, ts, '/')}/${splat}`;
+    window.location = `/_new/${coll}/Patch/patch/${remoteBrowserMod(remoteBrowserSelected, ts, '/')}/${url}`;
   }
 
   onRecord = () => {
     if (this.context.currMode === 'record') return;
 
-    const { params: { coll, rec, splat, ts }, remoteBrowserSelected } = this.props;
-    const timestamp = ts || window.wbinfo.timestamp;
+    const { params: { coll, rec }, remoteBrowserSelected, ts, url } = this.props;
     const recording = rec && !rec.startswith('patch') ? rec : encodeURIComponent(config.defaultRecordingTitle);
 
-    window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(remoteBrowserSelected, timestamp, '/')}/${splat}`;
+    window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(remoteBrowserSelected, ts, '/')}/${url}`;
   }
 
   onStaticCopy = () => {
@@ -134,7 +133,7 @@ class ModeSelector extends Component {
                   </li>
                 </ul>
 
-                <ul className={classNames('row wr-mode', { active: isPatch, disabled: isRecord })} onClick={this.onPatch} title={isRecord ? 'Only available from replay after finishing a recording' : 'Record elements that are not yet in the collection'}>
+                <ul className={classNames('row wr-mode', { active: isPatch, disabled: isRecord })} onClick={this.onPatch} role="button" title={isRecord ? 'Only available from replay after finishing a recording' : 'Record elements that are not yet in the collection'}>
                   <li className="col-xs-3">
                     <PatchIcon />
                   </li>
@@ -143,7 +142,7 @@ class ModeSelector extends Component {
                   </li>
                 </ul>
 
-                <ul className={classNames('row wr-mode', { active: isRecord })} onClick={this.onRecord} title="Start a new recording session at the current URL">
+                <ul className={classNames('row wr-mode', { active: isRecord })} onClick={this.onRecord} role="button" title="Start a new recording session at the current URL">
                   <li className="col-xs-3">
                     <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
                   </li>
@@ -166,7 +165,7 @@ class ModeSelector extends Component {
 
                 <div className="divider" role="separator" />
 
-                <ul className="row wr-mode" onClick={this.onStaticCopy} title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
+                <ul className="row wr-mode" onClick={this.onStaticCopy} role="button" title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
                   <li className="col-xs-3">
                     <SnapshotIcon />
                   </li>

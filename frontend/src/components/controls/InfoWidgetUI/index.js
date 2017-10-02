@@ -26,6 +26,8 @@ class InfoWidgetUI extends Component {
   }
 
   close = () => {
+    if (!this.state.open) return;
+
     this.setState({ open: false });
   }
 
@@ -35,7 +37,7 @@ class InfoWidgetUI extends Component {
 
     const widgetClass = classNames('wr-info-widget', {
       open,
-      visible: (stats && stats.length > 1) || (stats && stats.length === 1 && stats[0] !== 'replay')
+      visible: (stats && stats.length > 1) || (stats && stats.length === 1 && stats[0].id !== 'replay')
     });
 
     return (

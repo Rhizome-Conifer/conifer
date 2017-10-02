@@ -16,23 +16,32 @@ class BookmarkListItem extends Component {
   static propTypes = {
     closeList: PropTypes.func,
     page: PropTypes.object,
-    params: PropTypes.object
+    params: PropTypes.object,
+    ts: PropTypes.string,
+    url: PropTypes.string,
   };
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const { page, ts, url } = this.props;
+
+    if (nextProps.page === page &&
+        nextProps.ts === ts &&
+        nextProps.url === url) {
+      return false;
+    }
+
+    return true;
+  }
+
   changeUrl = () => {
-    const { closeList, params, page } = this.props;
-    const { user, coll } = params;
+    const { closeList, page, params: { user, coll} } = this.props;
 
     closeList();
     this.context.router.push(`/${user}/${coll}/${page.get('timestamp')}/${page.get('url')}`);
   }
 
   render() {
-    const { page, params } = this.props;
-    const { canAdmin } = this.context;
-
-    const { splat, ts } = params;
-    const url = splat;
+    const { page, ts, url } = this.props;
     const classes = classNames({ active: rts(url) === rts(page.get('url')) && ts === page.get('timestamp') });
 
     return (

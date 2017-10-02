@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
-import { browserHistory, Link } from 'react-router';
+import { Link } from 'react-router';
 
 import Modal from 'components/Modal';
 

@@ -2,12 +2,9 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
-import { InfoWidget, RemoteBrowserSelect } from 'containers';
+import { RemoteBrowserSelect } from 'containers';
 
-import BookmarkListItem from 'components/BookmarkListItem';
-import OutsideClick from 'components/OutsideClick';
-import TimeFormat from 'components/TimeFormat';
-import { ReplayArrowButton, ReplayPageDisplay } from 'components/controls';
+import { BookmarkList, ReplayArrowButton, ReplayPageDisplay } from 'components/controls';
 
 import './style.scss';
 
@@ -22,7 +19,9 @@ class ReplayURLBar extends Component {
   static propTypes = {
     bookmarks: PropTypes.object,
     params: PropTypes.object,
-    recordingIndex: PropTypes.number
+    recordingIndex: PropTypes.number,
+    timestamp: PropTypes.string,
+    url: PropTypes.string
   }
 
   constructor(props) {
@@ -31,40 +30,10 @@ class ReplayURLBar extends Component {
     this.state = { showList: false };
   }
 
-  componentDidMount() {
-    this.liHeight = Math.ceil(this.bookmarkList.querySelector('li').getBoundingClientRect().height);
-  }
-
-  changeURL = (evt, url) => {
-    console.log(url);
-  }
-
-  closeBookmarkList = () => {
-    if(this.state.showList)
-      this.setState({ showList: false });
-  }
-
-  toggleBookmarkList = (evt) => {
-    evt.stopPropagation();
-    const nextState = !this.state.showList;
-    const { recordingIndex } = this.props;
-
-    this.setState({ showList: nextState });
-
-    if(nextState) {
-      this.bookmarkList.scrollTop = (recordingIndex > 2 ? recordingIndex - 2 : 0) * this.liHeight;
-    }
-  }
-
   render() {
-    const { bookmarks, recordingIndex, params } = this.props;
+    const { bookmarks, recordingIndex, params, timestamp, url } = this.props;
     const { canAdmin } = this.context;
-    const { showList } = this.state;
 
-    const { splat, ts } = params;
-    const url = splat;
-
-    const listClasses = classNames('bookmark-list', { open: showList });
 
     /* TODO: fabric-ify these */
     return (
@@ -84,31 +53,9 @@ class ReplayURLBar extends Component {
                   <RemoteBrowserSelect />
               }
             </div>
-            <OutsideClick handleClick={this.closeBookmarkList}>
-              <div className={listClasses} title="Bookmark list">
-                <input type="text" onClick={this.toggleBookmarkList} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
 
-                <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
-                  {
-                    bookmarks.map((page, idx) =>
-                      <BookmarkListItem
-                        key={`${page.get('timestamp')}${page.url}${idx}`}
-                        page={page}
-                        params={params}
-                        closeList={this.closeBookmarkList} />
-                    )
-                  }
-                </ul>
+            <BookmarkList {...this.props} />
 
-                <div className="wr-replay-info">
-                  <InfoWidget />
-                  <span className="replay-date main-replay-date hidden-xs" onClick={this.toggleBookmarkList}>
-                    <TimeFormat dt={ts} />
-                    <span className="glyphicon glyphicon-triangle-bottom" />
-                  </span>
-                </div>
-              </div>
-            </OutsideClick>
             <div className="input-group-btn hidden-xs">
               <ReplayArrowButton
                 page={recordingIndex + 1 < bookmarks.size ? bookmarks.get(recordingIndex + 1) : null}

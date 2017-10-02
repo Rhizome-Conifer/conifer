@@ -1,3 +1,4 @@
+export BookmarkList from './BookmarkList';
 export BugReportUI from './BugReportUI';
 export ExtractWidgetUI from './ExtractWidgetUI';
 export IFrame from './IFrame';

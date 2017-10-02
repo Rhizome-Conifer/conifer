@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import ContentFrame from 'shared/js/wb_frame';
 import WebSocketHandler from 'helpers/ws';
 import config from 'config';
+import { updateTimestamp, updateUrl } from 'redux/modules/controls';
 
 import { setTitle } from 'helpers/utils';
 import { showModal } from 'redux/modules/bugReport';
@@ -15,7 +16,8 @@ class IFrame extends Component {
   static propTypes = {
     dispatch: PropTypes.func,
     params: PropTypes.object,
-    prefix: PropTypes.string,
+    app_prefix: PropTypes.string,
+    content_prefix: PropTypes.string,
     updateSizeCounter: PropTypes.func
   };
 
@@ -34,7 +36,7 @@ class IFrame extends Component {
   }
 
   componentDidMount() {
-    const { dispatch, params, prefix } = this.props;
+    const { app_prefix, content_prefix, dispatch, params } = this.props;
     const { currMode } = this.context;
 
     window.addEventListener('message', this.handleReplayEvent);
@@ -42,7 +44,7 @@ class IFrame extends Component {
     // TODO: fill out wbinfo
     window.wbinfo = {
       outer_prefix: '',
-      prefix,
+      content_prefix,
       coll: params.coll,
       //url,
       capture_url: '',
@@ -59,7 +61,8 @@ class IFrame extends Component {
 
     this.contentFrame = new ContentFrame({
       url: params.splat + window.location.hash,
-      prefix,
+      prefix: app_prefix,
+      content_prefix,
       request_ts: params.ts,
       iframe: this.iframe
     });
@@ -98,7 +101,7 @@ class IFrame extends Component {
     const { currMode } = this.context;
     const rawUrl = decodeURI(url);
 
-    // this.props.dispatch(setUrl(rawUrl));
+    this.props.dispatch(updateUrl(rawUrl));
 
     if (currMode.indexOf('replay') !== -1) {
       // PagingInterface.navigationUpdate();
@@ -142,7 +145,7 @@ class IFrame extends Component {
         if (state.hash) {
           url = state.hash;
         }
-        // setUrl(url);
+        this.setUrl(url);
         break;
       }
       case 'bug-report':
@@ -162,14 +165,14 @@ class IFrame extends Component {
     }
 
     if (state.is_error) {
-      // setUrl(state.url);
+      this.setUrl(state.url);
     } else if (['record', 'patch', 'extract'].includes(currMode)) {
       const recordingId = window.wbinfo.info.rec_id;
       const attributes = {};
 
       if (state.ts) {
         attributes.timestamp = state.ts;
-        // setTimestamp(state.ts);
+        this.props.dispatch(updateTimestamp(state.ts));
         window.wbinfo.timestamp = state.ts;
       }
 
@@ -188,7 +191,7 @@ class IFrame extends Component {
       }
     } else if (['replay', 'replay-coll'].includes(currMode)) {
       if (!this.initialReq) {
-        // setTimestamp(state.ts);
+        this.props.dispatch(updateTimestamp(state.ts));
         this.setUrl(state.url);
         setTitle('Archives', state.url, state.title);
       }

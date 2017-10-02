@@ -14,6 +14,14 @@ class ReplayArrowButton extends Component {
     params: PropTypes.object
   };
 
+  shouldComponentUpdate(nextProps) {
+    if(nextProps.page === this.props.page) {
+      return false;
+    }
+
+    return true;
+  }
+
   changeUrl = () => {
     const { params, page } = this.props;
     const { user, coll } = params;

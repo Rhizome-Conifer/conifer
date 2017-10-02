@@ -8,29 +8,6 @@ import { load as loadUser } from 'redux/modules/user';
 import { UserManagementUI } from 'components/siteComponents';
 
 
-class UserManagement extends Component {
-
-  static propTypes = {
-    auth: PropTypes.object,
-    collections: PropTypes.number,
-    login: PropTypes.func
-  }
-
-  login = (data) => {
-    this.props.login(data);
-  }
-
-  render() {
-    const { auth } = this.props;
-
-    return (
-      <UserManagementUI
-        auth={auth}
-        loginFn={this.login} />
-    );
-  }
-}
-
 const mapStateToProps = (state) => {
   return {
     auth: state.get('auth')
@@ -39,7 +16,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    login: data => dispatch(login(data))
+    loginFn: data => dispatch(login(data))
   };
 };
 
@@ -47,4 +24,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(UserManagement);
+)(UserManagementUI);
