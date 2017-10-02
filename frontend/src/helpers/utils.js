@@ -9,6 +9,10 @@ export function addTrailingSlash(url) {
 }
 
 export function capitalize(str) {
+  if (!str) {
+    return str;
+  }
+
   return str.length ? str[0].toUpperCase() + str.slice(1) : '';
 }
 
@@ -77,5 +81,9 @@ export function stripProtocol(url) {
 }
 
 export function truncate(str, length) {
+  if (!str) {
+    return str;
+  }
+
   return str.length > length ? `${str.substr(0, length).trim()}...` : str;
 }
