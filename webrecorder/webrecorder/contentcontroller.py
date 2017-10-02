@@ -36,8 +36,8 @@ class ContentController(BaseController, RewriterApp):
         self.cookie_tracker = CookieTracker(redis)
 
         self.record_host = os.environ['RECORD_HOST']
-        self.live_host = os.environ['WEBAGG_HOST']
-        self.replay_host = os.environ.get('WEBAGG_PROXY_HOST')
+        self.live_host = os.environ['WARCSERVER_HOST']
+        self.replay_host = os.environ.get('WARCSERVER_PROXY_HOST')
         if not self.replay_host:
             self.replay_host = self.live_host
 

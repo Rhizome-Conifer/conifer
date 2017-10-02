@@ -9,7 +9,7 @@ services:
             - ./wr.env
 
         depends_on:
-            - webagg
+            - warcserver
             - recorder
             - redis
             - shepherd
@@ -30,14 +30,14 @@ services:
             - ./wr.env
 
         depends_on:
-            - webagg
+            - warcserver
             - redis
 
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
 
-    webagg:
+    warcserver:
         build: ./webrecorder
         command: uwsgi /code/apps/load.ini
 

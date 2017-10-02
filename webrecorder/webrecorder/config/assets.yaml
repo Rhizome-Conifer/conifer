@@ -64,7 +64,6 @@ bundles:
         output: bundle/frame.js
         contents:
             - base-js
-            - pkg://pywb/static/wb.js
             - pkg://pywb/static/wb_frame.js
             - times_and_sizes_formatter.js
             - collections_model.js
@@ -115,7 +114,6 @@ bundles:
         output: bundle/pywb.js
         contents:
             - pkg://pywb/static/wombat.js
-            - pkg://pywb/static/wb.js
             - pkg://pywb/static/vidrw.js
             - wrscripts.js
 
@@ -123,7 +121,6 @@ bundles:
         output: bundle/proxy.js
         contents:
             - pkg://pywb/static/wombat.js
-            - pkg://pywb/static/wb.js
             #- pkg://pywb/static/vidrw.js
             - wrscripts.js
             - ws.js

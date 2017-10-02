@@ -142,7 +142,8 @@ class AppController(BaseController):
         packages = [os.environ.get('WR_TEMPLATE_PKG', 'webrecorder'), 'pywb']
 
         jinja_env_wrapper = JinjaEnv(assets_path=assets_path,
-                                     packages=packages)
+                                     packages=packages,
+                                     env_template_params_key='webrec.template_params')
 
         jinja_env = jinja_env_wrapper.jinja_env
 

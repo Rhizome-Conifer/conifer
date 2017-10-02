@@ -14,12 +14,12 @@ except:
 
 # ==================================================================
 class FullStackRunner(object):
-    def __init__(self, app_port=8090, rec_port=0, agg_port=0, env_params=None):
+    def __init__(self, app_port=8090, rec_port=0, warc_port=0, env_params=None):
 
         if env_params:
             os.environ.update(env_params)
 
-        def webagg():
+        def warcserver():
             from webrecorder.load.main import WRWarcServer
             return WRWarcServer().app
 
@@ -32,12 +32,12 @@ class FullStackRunner(object):
             app = AppController().app
             return app
 
-        self.agg_serv = self.init_server(agg_port, webagg, 'WEBAGG_HOST')
+        self.warc_serv = self.init_server(warc_port, warcserver, 'WARCSERVER_HOST')
         self.rec_serv = self.init_server(rec_port, recorder, 'RECORD_HOST')
         self.app_serv = self.init_server(app_port, app, 'APP_HOST')
 
     def close(self):
-        self.stop_server(self.agg_serv)
+        self.stop_server(self.warc_serv)
         self.stop_server(self.rec_serv)
         self.stop_server(self.app_serv)
 

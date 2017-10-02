@@ -7,7 +7,7 @@ from .testutils import BaseWRTests
 # ============================================================================
 class TestWebRecCollsAPI(BaseWRTests):
     def setup_class(cls):
-        os.environ['WEBAGG_HOST'] = 'http://localhost:8080'
+        os.environ['WARCSERVER_HOST'] = 'http://localhost:8080'
         os.environ['RECORD_HOST'] = 'http://localhost:8010'
 
         super(TestWebRecCollsAPI, cls).setup_class()

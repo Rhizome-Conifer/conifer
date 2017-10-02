@@ -48,8 +48,8 @@ class TestAppContentDomain(FullStackTests):
         m = re.search('temp-[\w\d]+', res.text)
         TestAppContentDomain.anon_user = m.group(0)
 
-        content_host_str = 'http://content-host/{user}/temp/rec/record/mp_/http://httpbin.org/get?food=bar'.format(user=self.anon_user)
-        assert content_host_str in res.text
+        assert 'wbinfo.app_prefix = decodeURI("http://app-host/{user}/temp/rec/record/");'.format(user=self.anon_user) in res.text
+        assert 'wbinfo.content_prefix = decodeURI("http://content-host/{user}/temp/rec/record/");'.format(user=self.anon_user) in res.text
 
     def test_record_set_session_content_frame(self):
         res = self.content_get('/{user}/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
@@ -72,7 +72,9 @@ class TestAppContentDomain(FullStackTests):
 
     def test_replay_app_frame(self):
         res = self.app_get('/{user}/temp/http://httpbin.org/get?food=bar')
-        assert 'http://content-host/{user}/temp/mp_/http://httpbin.org/get?food=bar'.format(user=self.anon_user) in res.text
+
+        assert 'wbinfo.app_prefix = decodeURI("http://app-host/{user}/temp/");'.format(user=self.anon_user) in res.text
+        assert 'wbinfo.content_prefix = decodeURI("http://content-host/{user}/temp/");'.format(user=self.anon_user) in res.text
 
     def test_replay_content_frame(self):
         res = self.content_get('/{user}/temp/mp_/http://httpbin.org/get?food=bar')

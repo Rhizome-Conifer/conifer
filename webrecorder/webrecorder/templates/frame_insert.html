@@ -69,25 +69,26 @@
 
     <script>
         wbinfo = {}
-        wbinfo.outer_prefix = decodeURI("{{ top_prefix }}");
-        wbinfo.prefix = decodeURI("{{ wbrequest.wb_prefix }}");
-        wbinfo.coll = "{{ wbrequest.coll }}";
-        wbinfo.url = "{{ url }}";
+        wbinfo.app_prefix = decodeURI("{{ top_prefix }}");
+        wbinfo.content_prefix = decodeURI("{{ wb_prefix }}");
+        wbinfo.prefix = decodeURI("{{ wb_prefix }}");
+        wbinfo.coll = "{{ coll }}";
+        wbinfo.url = "{{ url }}" + window.location.hash;
         wbinfo.capture_url = wbinfo.url;
-        wbinfo.request_ts = "{{ wbrequest.wb_url.timestamp }}";
-        wbinfo.timestamp = "{{ wbrequest.wb_url.timestamp }}";
+        wbinfo.request_ts = "{{ wb_url.timestamp }}";
+        wbinfo.timestamp = "{{ wb_url.timestamp }}";
         wbinfo.is_frame = true;
-        wbinfo.frame_mod = "{{ wbrequest.options.frame_mod }}";
-        wbinfo.replay_mod = "{{ wbrequest.options.replay_mod }}";
+        wbinfo.frame_mod = "{{ options.frame_mod }}";
+        wbinfo.replay_mod = "{{ options.replay_mod }}";
         wbinfo.state = "{{ curr_mode }}";
         wbinfo.sources = "{{ sources }}";
         wbinfo.inv_sources = "{{ inv_sources }}";
         wbinfo.info = {{ info | default('{}') | tojson }};
+        wbinfo.iframe = "#replay_iframe";
 
         var archives = {{ get_archives() | tojson }};
         archives['live'] = {"name": "Live Web" };
         archives["replay"] = {"name": "Live web at time of recording"};
-
     </script>
 
     {% if curr_mode == 'replay' or curr_mode == 'replay-coll' %}
@@ -99,6 +100,10 @@
     {% assets "frame-js" %}
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {% endassets %}
+
+    <script>
+        var cframe = new ContentFrame(wbinfo);
+    </script>
 
     {% if curr_mode == "new" %}
     <script src="/static/newrecording.js"></script>
@@ -112,7 +117,7 @@
 {% include 'header.html' %}
 {% endif %}
 
-<iframe id="replay_iframe" src="{{ iframe_url }}" onload="iframeLoadEvent()" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
+<iframe id="replay_iframe" onload="iframeLoadEvent()" seamless="seamless" frameborder="0" scrolling="yes" class="wb_iframe"></iframe>
 
 {% if not is_embed %}
 {% include 'links.html' %}

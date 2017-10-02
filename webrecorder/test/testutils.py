@@ -37,7 +37,7 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.set_nx_env('REDIS_SESSION_URL', 'redis://localhost:6379/0')
 
         cls.set_nx_env('REDIS_BROWSER_URL', 'redis://localhost:6379/0')
-        cls.set_nx_env('WEBAGG_HOST', 'http://localhost:8010')
+        cls.set_nx_env('WARCSERVER_HOST', 'http://localhost:8010')
         cls.set_nx_env('RECORD_HOST', 'http://localhost:8080')
 
         cls.set_nx_env('APP_HOST', '')

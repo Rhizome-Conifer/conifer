@@ -1795,6 +1795,17 @@ $(function() {
         updatePage(state, true);
     });
 
+    function extract_replay_url(url) {
+        var inx = url.indexOf("/http:");
+        if (inx < 0) {
+            inx = url.indexOf("/https:");
+            if (inx < 0) {
+                return "";
+            }
+        }
+        return url.substring(inx + 1);
+    }
+
 
     $("#load-all").on('click', function() {
         RecordingSizeWidget.doLoadAll();

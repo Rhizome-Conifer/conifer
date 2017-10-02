@@ -35,7 +35,7 @@ from six.moves.urllib.parse import quote
 # ============================================================================
 class WebRecRecorder(object):
     def __init__(self, config=None):
-        self.upstream_url = os.environ['WEBAGG_HOST']
+        self.upstream_url = os.environ['WARCSERVER_HOST']
 
         self.record_root_dir = os.environ['RECORD_ROOT']
 
@@ -477,7 +477,7 @@ class ExtractPatchingFilter(SkipDefaultFilter):
         if super(ExtractPatchingFilter, self).skip_response(path, req_headers, resp_headers, params):
             return True
 
-        source = resp_headers.get('WebAgg-Source-Coll')
+        source = resp_headers.get('Warcserver-Source-Coll')
         if source.startswith('r:'):
             return True
 

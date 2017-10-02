@@ -58,7 +58,7 @@ class TestWebRecRecorder(FullStackTests):
         while not self.wr_rec.recorder.write_queue.empty():
             self.wr_rec.recorder._write_one()
 
-        assert resp.headers['WebAgg-Source-Coll'] == 'live'
+        assert resp.headers['Warcserver-Source-Coll'] == 'live'
 
         return resp
 

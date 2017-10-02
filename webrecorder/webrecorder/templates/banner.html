@@ -1,8 +1,15 @@
 <script>
 wbinfo.state = "{{ curr_mode }}";
+
+{% if cdx %}
 wbinfo.metadata = {{ cdx.metadata | default('{}') }};
-_wb_js.create_banner_element = function() {};
 </script>
 
 <!-- Set canonical url -->
 <link rel="canonical" href="{{ cdx.url }}"/>
+
+{% else %}
+
+</script>
+
+{% endif %}
