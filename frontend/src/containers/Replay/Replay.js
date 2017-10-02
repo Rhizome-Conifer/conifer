@@ -9,7 +9,7 @@ import config from 'config';
 
 import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives } from 'redux/modules/controls';
+import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
 import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
@@ -28,7 +28,9 @@ class Replay extends Component {
     dispatch: PropTypes.func,
     bookmarks: PropTypes.object,
     recordingIndex: PropTypes.number,
-    params: PropTypes.object
+    params: PropTypes.object,
+    timestamp: PropTypes.string,
+    url: PropTypes.string
   };
 
   // TODO move to HOC
@@ -37,6 +39,11 @@ class Replay extends Component {
     canAdmin: PropTypes.bool,
     product: PropTypes.string
   };
+
+  constructor(props) {
+    super(props);
+    this.lastProps = null;
+  }
 
   getChildContext() {
     const { auth, params } = this.props;
@@ -48,16 +55,18 @@ class Replay extends Component {
   }
 
   render() {
-    const { activeBrowser, bookmarks, collection, dispatch, params, recordingIndex } = this.props;
+    const { activeBrowser, bookmarks, collection, dispatch, params, recordingIndex,
+            timestamp, url } = this.props;
     const { product } = this.context;
 
     const shareUrl = `${config.host}${params.user}/${params.coll}/${params.ts}/${params.splat}`;
-    const prefix = `${config.contentHost}/${params.user}/${params.coll}/`;
+    const appPrefix = `${config.appHost}/${params.user}/${params.coll}/`;
+    const contentPrefix = `${config.contentHost}/${params.user}/${params.coll}/`;
 
     return (
       <div>
         <Helmet>
-          <meta property="og:url" content={shareUrl} />
+          <meta property="og:url" content={url} />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={`Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${product}`} />
           <meta name="og:description" content={collection.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
@@ -69,14 +78,17 @@ class Replay extends Component {
         <ReplayUI
           bookmarks={bookmarks}
           recordingIndex={recordingIndex}
-          params={params} />
+          params={params}
+          timestamp={timestamp}
+          url={url} />
 
         {
           activeBrowser ?
             <RemoteBrowser /> :
             <IFrame
               params={params}
-              prefix={prefix}
+              appPrefix={appPrefix}
+              contentPrefix={contentPrefix}
               dispatch={dispatch} />
         }
       </div>
@@ -85,6 +97,17 @@ class Replay extends Component {
 }
 
 const initialData = [
+  {
+    // set url and ts in store
+    promise: ({ params: { ts, splat }, store: { dispatch } }) => {
+      const promises = [
+        dispatch(updateUrl(splat)),
+        dispatch(updateTimestamp(ts))
+      ];
+
+      return Promise.all(promises);
+    }
+  },
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
@@ -133,7 +156,9 @@ const mapStateToProps = (state, props) => {
     auth: state.get('auth'),
     bookmarks: getOrderedBookmarks(state),
     collection: state.get('collection'),
-    recordingIndex: getActiveRecording(state, props)
+    recordingIndex: getActiveRecording(state),
+    timestamp: state.getIn(['controls', 'timestamp']),
+    url: state.getIn(['controls', 'url'])
   };
 };
 

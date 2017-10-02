@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { forEach } from 'immutable';
+import { is, forEach } from 'immutable';
 
 import { rts, truncate } from 'helpers/utils';
 
@@ -9,10 +9,10 @@ const getArchives = state => state.getIn(['controls', 'archives']);
 const getBookmarks = state => state.getIn(['collection', 'bookmarks']);
 const getCollections = state => state.get('collections');
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
-const getSize = state => state.getIn(['infoWidget', 'size']);
-const getStats = state => state.getIn(['infoWidget', 'stats']);
-const getTimestamp = (state, props) => props.params.ts;
-const getUrl = (state, props) => props.params.splat;
+const getSize = state => state.getIn(['infoStats', 'size']);
+const getStats = state => state.getIn(['infoStats', 'stats']);
+const getTimestamp = state => state.getIn(['controls', 'timestamp']);
+const getUrl = state => state.getIn(['controls', 'url']);
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const selectedCollection = state => state.getIn(['user', 'activeCollection']);
 const userOrderBy = state => state.get('userOrderBy') || 'timestamp';
@@ -31,9 +31,12 @@ export const getActiveCollection = createSelector(
   }
 );
 
+//let lastBookmarks = null;
 export const getOrderedBookmarks = createSelector(
-  [getBookmarks, userOrderBy],
+  getBookmarks, userOrderBy,
   (bookmarks, order) => {
+    //console.log('running', 'getOrderedBookmarks', bookmarks === lastBookmarks, is(bookmarks, lastBookmarks));
+    //lastBookmarks = bookmarks;
     return bookmarks.flatten(true).sortBy(o => o.get(order));
   }
 );

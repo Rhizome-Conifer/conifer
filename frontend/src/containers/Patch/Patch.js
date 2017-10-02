@@ -42,8 +42,8 @@ class Patch extends Component {
     const { dispatch, params } = this.props;
     const { user, coll, rec } = params;
 
-    const prefix = `${config.contentHost}/${user}/${coll}/${rec}/patch/`;
-    //const iframeUrl = `${config.contentHost}/${user}/${coll}/${rec}/patch/mp_/${splat}`;
+    const appPrefix = `${config.contentHost}/${user}/${coll}/${rec}/patch/`;
+    const contentPrefix = `${config.contentHost}/${user}/${coll}/${rec}/patch/`;
 
     return (
       <div>
@@ -52,7 +52,8 @@ class Patch extends Component {
         <IFrame
           dispatch={dispatch}
           params={params}
-          prefix={prefix} />
+          app_prefix={appPrefix}
+          content_prefix={contentPrefix} />
       </div>
     );
   }

@@ -16,8 +16,8 @@ class IFrame extends Component {
   static propTypes = {
     dispatch: PropTypes.func,
     params: PropTypes.object,
-    app_prefix: PropTypes.string,
-    content_prefix: PropTypes.string,
+    appPrefix: PropTypes.string,
+    contentPrefix: PropTypes.string,
     updateSizeCounter: PropTypes.func
   };
 
@@ -36,7 +36,7 @@ class IFrame extends Component {
   }
 
   componentDidMount() {
-    const { app_prefix, content_prefix, dispatch, params } = this.props;
+    const { appPrefix, contentPrefix, dispatch, params } = this.props;
     const { currMode } = this.context;
 
     window.addEventListener('message', this.handleReplayEvent);
@@ -44,7 +44,7 @@ class IFrame extends Component {
     // TODO: fill out wbinfo
     window.wbinfo = {
       outer_prefix: '',
-      content_prefix,
+      content_prefix: contentPrefix,
       coll: params.coll,
       //url,
       capture_url: '',
@@ -61,8 +61,8 @@ class IFrame extends Component {
 
     this.contentFrame = new ContentFrame({
       url: params.splat + window.location.hash,
-      prefix: app_prefix,
-      content_prefix,
+      prefix: appPrefix,
+      content_prefix: contentPrefix,
       request_ts: params.ts,
       iframe: this.iframe
     });

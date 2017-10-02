@@ -51,7 +51,8 @@
     "import/prefer-default-export": 1,
     "new-cap": 0,
     "quote-props": 1,
-    "quotes": 1
+    "quotes": 1,
+    "no-underscore-dangle": 1
   },
   "plugins": [
     "react", "import"
