@@ -13,7 +13,7 @@ import bugReport from './bugReport';
 import collection from './collection';
 import collections from './collections';
 import controls from './controls';
-import infoWidget from './infoWidget';
+import infoStats from './infoStats';
 import passwordReset from './passwordReset';
 //import recordings from './recordings';
 import remoteBrowsers from './remoteBrowsers';
@@ -23,7 +23,7 @@ import user from './user';
 import userSignup from './userSignup';
 
 
-// Set the mutability/immutability functions
+// Set the mutability/immutability functions for reduxAsyncConnect
 setToImmutableStateFunc(mutableState => Immutable.fromJS(mutableState));
 setToMutableStateFunc(immutableState => immutableState.toJS());
 
@@ -35,11 +35,11 @@ const appReducer = combineReducers({
   collection,
   collections,
   controls,
-  infoWidget,
   passwordReset,
   // recordings,
   remoteBrowsers,
   sizeCounter,
+  infoStats,
   toolBin,
   user,
   userSignup

@@ -8,7 +8,7 @@ const initialState = fromJS({
   size: 0
 });
 
-export default function sizeCounter(state = initialState, action = {}) {
+export default function infoStats(state = initialState, action = {}) {
   switch(action.type) {
     case SET_RESOURCE_STATS:
       return state.merge(action.resourceStats);

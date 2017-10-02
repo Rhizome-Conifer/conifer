@@ -1,5 +1,5 @@
 import { setSizeCounter } from 'redux/modules/sizeCounter';
-import { setStats } from 'redux/modules/infoWidget';
+import { setStats } from 'redux/modules/infoStats';
 
 import config from 'config';
 
@@ -69,7 +69,7 @@ class WebSocketHandler {
 
     switch (msg.ws_type) {
       case 'status':
-        console.log('ws received status message', msg);
+        console.log('ws received status message:', msg.ws_type);
         this.dispatch(setSizeCounter(msg.size));
 
         if (this.currMode.indexOf('replay') !== -1) {
