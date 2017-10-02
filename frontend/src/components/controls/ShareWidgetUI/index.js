@@ -7,7 +7,7 @@ import Toggle from 'react-toggle';
 import OutsideClick from 'components/OutsideClick';
 import { ShareIcon } from 'components/Icons';
 
-import 'shared/css/toggle.css';
+import 'shared/scss/toggle.scss';
 import './style.scss';
 
 
