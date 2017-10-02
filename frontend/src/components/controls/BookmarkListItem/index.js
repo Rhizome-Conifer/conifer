@@ -21,7 +21,7 @@ class BookmarkListItem extends Component {
     url: PropTypes.string,
   };
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps) {
     const { page, ts, url } = this.props;
 
     if (nextProps.page === page &&
@@ -34,7 +34,7 @@ class BookmarkListItem extends Component {
   }
 
   changeUrl = () => {
-    const { closeList, page, params: { user, coll} } = this.props;
+    const { closeList, page, params: { user, coll } } = this.props;
 
     closeList();
     this.context.router.push(`/${user}/${coll}/${page.get('timestamp')}/${page.get('url')}`);

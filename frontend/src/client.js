@@ -67,7 +67,8 @@ const renderApp = (renderProps, includeDevTools = false) => {
 };
 
 // render app, conditionally with dev tools
-renderApp({ routes: baseRoute(store), client }, (__DEVTOOLS__ && !window.devToolsExtension));
+// eslint-disable-next-line
+renderApp({ routes: baseRoute(store), client }, (__DEVTOOLS__ && !window.__REDUX_DEVTOOLS_EXTENSION__));
 
 if (module.hot) {
   module.hot.accept('./routes', () => {
