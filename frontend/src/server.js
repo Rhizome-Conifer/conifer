@@ -1,4 +1,4 @@
-import Express from 'express';
+import express from 'express';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
 import compression from 'compression';
@@ -22,7 +22,7 @@ import './base.scss';
 
 
 const baseUrl = `http://${config.internalApiHost}:${config.internalApiPort}`;
-const app = new Express();
+const app = new express();
 const pretty = new PrettyError();
 const server = new http.Server(app);
 const bypassUrls = [
@@ -32,7 +32,9 @@ const bypassUrls = [
 ];
 
 
-app.use(Express.static(path.join(__dirname, '..', 'static')));
+//app.use(express.static(path.join(__dirname, '..', 'static')));
+// TODO: temp static mount for external js libs
+app.use('/shared', express.static(path.join(__dirname, 'shared')));
 
 // Proxy client API requets to server for now to avoid
 // CORS during port 3000 development
@@ -44,8 +46,6 @@ app.use(compression());
 app.use('/favicon.ico', (req, res) => {
   res.status(404).send('Not Found');
 });
-
-// app.use(Express.static(path.join(__dirname, '..', 'static')));
 
 app.use((req, res) => {
   if (__DEVELOPMENT__) {
