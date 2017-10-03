@@ -40,6 +40,12 @@ export class App extends Component { // eslint-disable-line
     })
   }
 
+  constructor(props) {
+    super(props);
+
+    this.state = { };
+  }
+
   getChildContext() {
     const { auth } = this.props;
 
@@ -53,9 +59,14 @@ export class App extends Component { // eslint-disable-line
     };
   }
 
+  componentDidCatch(error, info) {
+    this.setState({ error, info });
+  }
+
   render() {
     const { routes } = this.context.router;
     const { loaded } = this.props;
+    const { error, info } = this.state;
 
     const match = routes[routes.length - 1];
     const hasFooter = match.footer;
@@ -66,6 +77,10 @@ export class App extends Component { // eslint-disable-line
     });
     console.log('rendering app');
 
+    if (error || info) {
+      console.log('ERROR', error, info);
+    }
+
     return (
       <BreadcrumbsProvider>
         <div className="wr-app">
@@ -73,15 +88,35 @@ export class App extends Component { // eslint-disable-line
           <header>
             <div className="navbar navbar-default navbar-static-top">
               <nav className="container-fluid header-webrecorder">
-                <BreadcrumbsUI />
+                {
+                  !error ?
+                    <BreadcrumbsUI /> :
+                    <a href="/">Webrecorder</a>
+                }
                 <UserManagement />
                 <BreadcrumbsItem to="/">Webrecorder</BreadcrumbsItem>
               </nav>
             </div>
           </header>
-          <section className={classes}>
-            {this.props.children}
-          </section>
+          {
+            error ?
+              <div>
+                <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
+                  <div className="panel panel-danger">
+                    <div className="panel-heading">
+                      <span className="glyphicon glyphicon-exclamation-sign" aria-hidden="true" />
+                      <strong className="left-buffer">Oop!</strong>
+                    </div>
+                    <div className="panel-body">
+                      <p>It borked!</p>
+                    </div>
+                  </div>
+                </div>
+              </div> :
+              <section className={classes}>
+                {this.props.children}
+              </section>
+          }
           {
             hasFooter &&
               <Footer />

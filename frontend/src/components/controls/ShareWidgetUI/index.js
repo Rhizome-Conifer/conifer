@@ -207,10 +207,10 @@ class ShareWidgetUI extends Component {
               </div>
 
               <label htmlFor="shareable-url">Copy and paste to share:</label>
-              <input type="text" id="shareable-url" value={shareUrl} />
+              <input type="text" id="shareable-url" defaultValue={shareUrl} />
 
               <label htmlFor="shareable-embed-code">Embed code:</label>
-              <textarea id="shareable-embed-code" value={`<iframe  src="${embedUrl}" onload="" width='640' height='480' seamless="seamless" frameborder="0" scrolling="yes" className="pager_iframe"></iframe>`} />
+              <textarea id="shareable-embed-code" defaultValue={`<iframe  src="${embedUrl}" onload="" width='640' height='480' seamless="seamless" frameborder="0" scrolling="yes" className="pager_iframe"></iframe>`} />
             </div>
           </div>
         </div>

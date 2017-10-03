@@ -32,7 +32,7 @@ class BookmarksTable extends Component {
             <tr>
               { canAdmin &&
                 <th className="bookmark-hidden-switch hidden-xs" style={{ width: '39px' }}>
-                  <input type="checkbox" className="left-buffer-sm" id="show-hidden" name="show-hidden" checked="checked" />
+                  <input type="checkbox" className="left-buffer-sm" id="show-hidden" name="show-hidden" defaultChecked="checked" />
                 </th>
               }
               { canAdmin &&

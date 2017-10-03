@@ -70,7 +70,8 @@ class CollectionList extends Component {
           collections &&
             <Row>
               <ul className="list-group collection-list">
-                { collections.sortBy(coll => coll.get('created_at')).map((coll) => {
+                { /* TODO: move sort to selector */ }
+                { collections.sort((a, b) => a.get('created_at') < b.get('created_at')).map((coll) => {
                   return (
                     <li className="left-buffer list-group-item" key={coll.get('id')}>
                       <Row>

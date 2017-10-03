@@ -18,10 +18,14 @@ class BookmarkList extends Component {
     url: PropTypes.string
   };
 
+  static contextTypes = {
+    router: PropTypes.object
+  }
+
   constructor(props) {
     super(props);
 
-    this.state = { showList: false };
+    this.state = { showList: false, url: props.url };
   }
 
   componentDidMount() {
@@ -45,8 +49,30 @@ class BookmarkList extends Component {
     }
   }
 
+  // TODO: update iframe src not page url
+  changeUrl = () => {
+    const { params: { user, coll } } = this.props;
+    const { url } = this.state;
+
+    this.close();
+    this.context.router.push(`/${user}/${coll}/${url}`);
+  }
+
+  handleInput = (evt) => {
+    evt.preventDefault();
+    this.setState({ url: evt.target.value });
+  }
+
+  handleSubmit = (evt) => {
+    if (evt.key === 'Enter') {
+      console.log('unimplemented');
+      //this.changeUrl();
+    }
+  }
+
   render() {
-    const { bookmarks, params, timestamp, url } = this.props;
+    const { bookmarks, params, timestamp } = this.props;
+    const { url } = this.state;
     const { showList } = this.state;
 
     const listClasses = classNames('bookmark-list', { open: showList });
@@ -54,7 +80,7 @@ class BookmarkList extends Component {
     return (
       <OutsideClick handleClick={this.close}>
         <div className={listClasses} title="Bookmark list">
-          <input type="text" onClick={this.toggle} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
+          <input type="text" onClick={this.toggle} onChange={this.handleInput} onKeyPress={this.handleSubmit} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
 
           <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
             {
