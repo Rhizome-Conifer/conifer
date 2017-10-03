@@ -193,8 +193,13 @@ class WebRecRecorder(object):
         return (res > 0)
 
     # Rename Handling ===============
-
     def rename(self):
+        try:
+            return self.rename_actual()
+        except:
+            traceback.print_exc()
+
+    def rename_actual(self):
         from_user = request.query.getunicode('from_user', '')
         from_coll = request.query.getunicode('from_coll', '')
         from_rec = request.query.getunicode('from_rec', '*')
@@ -330,7 +335,7 @@ class WebRecRecorder(object):
 
                     if repl['old_v'] != repl['new_v']:
                         os.renames(repl['old_v'], repl['new_v'])
-                        self.redis.hset(repl['key'], repl['name'], repl['new_v'])
+                        self.redis.hset(repl['key'], repl['name'], self.full_warc_prefix + repl['new_v'])
                 except Exception as e:
                     print(e)
 
