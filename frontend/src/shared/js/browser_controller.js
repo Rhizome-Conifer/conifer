@@ -1,5 +1,28 @@
 /* eslint-disable */
 
+function toQueryString(obj) {
+    var parts = [];
+    for (var i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            parts.push(encodeURIComponent(i) + "=" + encodeURIComponent(obj[i]));
+        }
+    }
+    return parts.join("&");
+}
+
+var controllerScripts = [];
+function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+        var s;
+        s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+        controllerScripts.push(s);
+    });
+}
+
 export default function CBrowser(reqid, target_div, init_params) {
     var cmd_host = undefined;
     var vnc_host = undefined;
@@ -30,6 +53,12 @@ export default function CBrowser(reqid, target_div, init_params) {
 
     var req_params = {};
 
+    var maxRetry = 10;
+    var retryCount = 0;
+
+    var clipEvents = ['change', 'keyup', 'paste'];
+    var target_div_obj = document.querySelector(target_div);
+
 
     function start() {
         if (!window.INCLUDE_URI) {
@@ -39,15 +68,16 @@ export default function CBrowser(reqid, target_div, init_params) {
 
             window.INCLUDE_URI = init_params.static_prefix + "novnc/";
 
-            $.getScript(window.INCLUDE_URI + "core/util.js", function() {
-                $.getScript(window.INCLUDE_URI + "app/webutil.js", function() {
-
-                    WebUtil.load_scripts(
-                        {'core': ["base64.js", "websock.js", "des.js", "input/keysymdef.js",
-                                  "input/xtscancodes.js", "input/util.js", "input/devices.js",
-                                  "display.js", "inflator.js", "rfb.js", "input/keysym.js"]});
+            Promise.all([
+                loadScript(window.INCLUDE_URI + 'core/util.js'),
+                loadScript(window.INCLUDE_URI + 'app/webutil.js'),
+            ]).then(function (res) {
+                WebUtil.load_scripts({
+                    'core': ["base64.js", "websock.js", "des.js", "input/keysymdef.js",
+                             "input/xtscancodes.js", "input/util.js", "input/devices.js",
+                             "display.js", "inflator.js", "rfb.js", "input/keysym.js"]
                 });
-            });
+            }).catch(err => console.log(err));
         }
 
         // Countdown updater
@@ -55,11 +85,37 @@ export default function CBrowser(reqid, target_div, init_params) {
             setInterval(update_countdown, 1000);
         }
 
-        init_html(target_div);
+        init_html();
 
         setup_browser();
 
         init_clipboard();
+    }
+
+    function close() {
+        destroy_clipboard();
+
+        var cnvs = canvas();
+        var _screen = screen();
+        _screen.removeEventListener('blur', lose_focus);
+        _screen.removeEventListener('mouseleave', lose_focus);
+        _screen.removeEventListener('mouseenter', grab_focus);
+        cnvs.removeEventListener('click', grab_focus);
+
+        for (var i = 0; i < controllerScripts.length; i++) {
+            document.head.removeChild(controllerScripts[i]);
+        }
+
+        document.removeEventListener("visibilitychange", visibilityChangeCB);
+    }
+
+    function clipHandler(evt) {
+        var text = document.querySelector(init_params.clipboard).value;
+
+        if (connected && rfb && lastText != text) {
+            rfb.clipboardPasteFrom(text);
+            lastText = text;
+        }
     }
 
     function init_clipboard() {
@@ -69,40 +125,55 @@ export default function CBrowser(reqid, target_div, init_params) {
 
         var lastText = undefined;
 
-        $(init_params.clipboard).on('change keyup paste', function() {
-            var text = $(init_params.clipboard).val();
+        for (var i = 0; i < clipEvents.length; i++) {
+            document.querySelector(init_params.clipboard).addEventListener(clipEvents[i], clipHandler);
+        }
+    }
 
-            if (connected && rfb && lastText != text) {
-                rfb.clipboardPasteFrom(text);
-                lastText = text;
-            }
-        });
+    function destroy_clipboard() {
+        for (var i = 0; i < clipEvents.length; i++) {
+            document.querySelector(init_params.clipboard).removeEventListener(clipEvents[i], clipHandler);
+        }
     }
 
     function canvas() {
-        return $("canvas", target_div);
+        return target_div_obj.querySelector('canvas');
     }
 
-    function msgdiv() {
-        return $("#browserMsg", target_div);
+    function getMsgDiv() {
+        return target_div_obj.querySelector("#browserMsg");
     }
 
     function screen() {
-        return $("#noVNC_screen", target_div);
+        return target_div_obj.querySelector("#noVNC_screen");
+    }
+
+    function getHeaderHeight() {
+        var hh = document.querySelector('header').getBoundingClientRect().height;
+        hh += document.querySelector('.wr-controls').getBoundingClientRect().height;
+        return hh;
     }
 
     function init_html() {
-        $(target_div).append($("<div>", {"id": "browserMsg", "class": "loading"}).text(""));
-        $(target_div).append($("<div>", {"id": "noVNC_screen"}).append($("<canvas>", {"tabindex": "0"})));
+        var msgDiv = document.createElement('div');
+        msgDiv.setAttribute('id', 'browserMsg');
+        msgDiv.setAttribute('class', 'loading');
+        target_div_obj.appendChild(msgDiv)
 
-        canvas().hide();
+        var _canvas = document.createElement('canvas')
+        _canvas.setAttribute('tabindex', 0);
+        var cnvsDiv = document.createElement('div');
+        cnvsDiv.setAttribute('id', 'noVNC_screen');
+        cnvsDiv.appendChild(_canvas)
+        target_div_obj.appendChild(cnvsDiv);
 
-        screen().blur(lose_focus);
-        screen().mouseleave(lose_focus);
+        _canvas.style.display = 'none';
 
-        screen().mouseenter(grab_focus);
-
-        canvas().on('click', grab_focus);
+        var _screen = screen();
+        _screen.addEventListener('blur', lose_focus);
+        _screen.addEventListener('mouseleave', lose_focus);
+        _screen.addEventListener('mouseenter', grab_focus);
+        _canvas.addEventListener('click', grab_focus);
     }
 
     function setup_browser() {
@@ -118,11 +189,11 @@ export default function CBrowser(reqid, target_div, init_params) {
             msg = "Initializing Remote Browser...";
         }
 
-        msgdiv().html(msg);
-        msgdiv().show();
+        getMsgDiv().innerHTML = msg;
+        getMsgDiv().style.display = 'block';
 
         // calculate dimensions
-        var hh = $('header').height();
+        var hh = getHeaderHeight();
         var w, h;
         if (!init_params.fill_window) {
             w = window.innerWidth * 0.96;
@@ -141,8 +212,8 @@ export default function CBrowser(reqid, target_div, init_params) {
 
         req_params['width'] = Math.max(w, min_width);
         req_params['height'] = Math.max(h, min_height);
-        req_params['width'] = parseInt(req_params['width'] / 8) * 8;
-        req_params['height'] = parseInt(req_params['height'] / 8) * 8;
+        req_params['width'] = parseInt(req_params['width'] / 8, 10) * 8;
+        req_params['height'] = parseInt(req_params['height'] / 8, 10) * 8;
 
         req_params['reqid'] = reqid;
 
@@ -156,37 +227,46 @@ export default function CBrowser(reqid, target_div, init_params) {
 
         waiting_for_container = true;
 
-        var init_url = init_params.api_prefix + "/init_browser?" + $.param(req_params);
+        var init_url = init_params.api_prefix + "/init_browser?" + toQueryString(req_params);
 
-        $.getJSON(init_url)
-        .done(handle_browser_response)
-        .fail(function(jqxhr) {
-            if (!jqxhr || jqxhr.status != 404) {
-                msgdiv().text("Reconnecting to Remote Browser...");
-                msgdiv().show();
-                setTimeout(init_browser, 1000);
-                return;
-            }
+        // expects json response
+        fetch(init_url)
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                waiting_for_container = false;
+                handle_browser_response(data);
+            })
+            .catch(function (err) {
+                console.log('fetch error', err);
+                waiting_for_container = false;
 
-            if (init_params.on_event) {
-                init_params.on_event("expire");
-            } else {
-                msgdiv().text("Remote Browser Expired... Please try again...");
-                msgdiv().show();
-            }
-        }).always(function() {
-            waiting_for_container = false;
-        });
+                if (!err || err.status !== 404) {
+                    getMsgDiv().innerHTML = 'Reconnection to Remote Browser...';
+
+                    if(retryCount++ < maxRetry) {
+                        setTimeout(init_browser, 1000);
+                    }
+
+                    return;
+                }
+
+                if (init_params.on_event) {
+                    init_params.on_event('expire');
+                } else {
+                    getMsgDiv().innerHTML = 'Remote Browser Expired... Please try again...';
+                    getMsgDiv().style.display = 'block';
+                }
+            });
     }
 
     function handle_browser_response(data) {
-        qid = data.id;
+        console.log('handle_browser_response', data);
 
         if (data.cmd_host && data.vnc_host) {
             cmd_host = data.cmd_host;
             vnc_host = data.vnc_host;
 
-            end_time = parseInt(Date.now() / 1000) + data.ttl;
+            end_time = parseInt(Date.now() / 1000, 10) + data.ttl;
 
             vnc_pass = data.vnc_pass;
 
@@ -202,7 +282,7 @@ export default function CBrowser(reqid, target_div, init_params) {
                 init_params.on_event("init", data);
             }
 
-            window.setTimeout(try_init_vnc, 1000);
+            setTimeout(try_init_vnc, 1000);
 
         } else if (data.queue != undefined) {
             var msg = "Waiting for empty slot... ";
@@ -211,9 +291,9 @@ export default function CBrowser(reqid, target_div, init_params) {
             } else {
                 msg += "At most <b>" + data.queue + " user(s)</b> ahead of you";
             }
-            msgdiv().html(msg);
+            getMsgDiv().innerHTML = msg;
 
-            window.setTimeout(init_browser, 3000);
+            setTimeout(init_browser, 3000);
         }
     }
 
@@ -226,13 +306,13 @@ export default function CBrowser(reqid, target_div, init_params) {
         fail_count++;
 
         if (fail_count <= num_vnc_retries) {
-            msgdiv().text("Retrying to connect to remote browser...");
+            getMsgDiv().innerHTML = "Retrying to connect to remote browser...";
             setTimeout(init_browser, 500);
         } else {
             if (init_params.on_event) {
                 init_params.on_event("fail");
             } else {
-                msgdiv().text("Failed to connect to remote browser... Please try again later");
+                getMsgDiv().innerHTML = "Failed to connect to remote browser... Please try again later";
             }
         }
     }
@@ -261,20 +341,19 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function clientPosition() {
-        var hh = $('header').height();
+        var hh = getHeaderHeight();
         var c = canvas();
-        var ch = c.height();
-        var cw = c.width();
+        var ch = c.getBoundingClientRect().height;
+        var cw = c.getBoundingClientRect().width;
+
         if (!init_params.fill_window) {
-            c.css({
-                marginLeft: (window.innerWidth - cw)/2,
-                marginTop: (window.innerHeight - (hh + ch + 25))/2
-            });
+            c.style.marginLeft = ((window.innerWidth - cw)/2) + 'px';
+            c.style.marginTop = ((window.innerHeight - (hh + ch + 25))/2) + 'px';
         }
     }
 
     function clientResize() {
-        var hh = $('header').height();
+        var hh = getHeaderHeight();
         var w, h;
 
         if (init_params.fill_window) {
@@ -303,7 +382,7 @@ export default function CBrowser(reqid, target_div, init_params) {
     function onVNCCopyCut(rfb, text)
     {
         if (init_params.clipboard) {
-            $(init_params.clipboard).val(text);
+            document.querySelector(init_params.clipboard).value = text;
         }
     }
 
@@ -315,7 +394,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         waiting_for_vnc = true;
 
         try {
-            rfb = new RFB({'target':       canvas()[0],
+            rfb = new RFB({'target':       canvas(),
                            'encrypt':      (window.location.protocol === "https:"),
                            'repeaterID':   '',
                            'true_color':   true,
@@ -366,7 +445,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         if (state == "disconnecting") {
             connected = false;
 
-            canvas().hide();
+            canvas().style.display = 'none';
 
             var reinit = !document.hidden;
 
@@ -378,12 +457,12 @@ export default function CBrowser(reqid, target_div, init_params) {
                 setup_browser();
             }
         } else if (state == "connected") {
-            canvas().show();
+            canvas().style.display = 'block';
             if (init_params.fill_window) {
                 canvas().focus();
             }
 
-            msgdiv().hide();
+            getMsgDiv().style.display = 'none';
 
             ever_connected = true;
             connected = true;
@@ -407,6 +486,27 @@ export default function CBrowser(reqid, target_div, init_params) {
             clientPosition();
         }, 500);
     };
+
+    var did;
+    function visibilityChangeCB() {
+        if (document.hidden) {
+            did = setTimeout(function() {
+                if (rfb) {
+                    rfb.disconnect();
+                }
+            },
+            init_params.inactiveSecs * 1000);
+        } else {
+            clearTimeout(did);
+            if (!connected) {
+                if (init_params.on_event) {
+                    init_params.on_event("reconnect");
+                }
+
+                setup_browser();
+            }
+        }
+    }
 
     function update_countdown() {
         if (!end_time) {
@@ -433,27 +533,7 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     if (init_params.inactiveSecs) {
-        var did;
-
-        document.addEventListener("visibilitychange", function() {
-            if (document.hidden) {
-                did = setTimeout(function() {
-                    if (rfb) {
-                        rfb.disconnect();
-                    }
-                },
-                init_params.inactiveSecs * 1000);
-            } else {
-                clearTimeout(did);
-                if (!connected) {
-                    if (init_params.on_event) {
-                        init_params.on_event("reconnect");
-                    }
-
-                    setup_browser();
-                }
-            }
-        });
+        document.addEventListener("visibilitychange", visibilityChangeCB);
     }
 
 
@@ -556,6 +636,12 @@ export default function CBrowser(reqid, target_div, init_params) {
                 console.log(e);
                 restart();
             }
+        }
+
+        function close_ws() {
+            audio_ws.removeEventListener("open", ws_open);
+            audio_ws.removeEventListener("message", ws_message);
+            audio_ws.removeEventListener('error', ws_error);
         }
 
         function init_ws() {
@@ -696,5 +782,6 @@ export default function CBrowser(reqid, target_div, init_params) {
     start();
 
     return {"grab_focus": grab_focus,
-            "lose_focus": lose_focus}
+            "lose_focus": lose_focus,
+            "close": close};
 };

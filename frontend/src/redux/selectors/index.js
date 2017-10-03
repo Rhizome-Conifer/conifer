@@ -8,6 +8,7 @@ const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'active
 const getArchives = state => state.getIn(['controls', 'archives']);
 const getBookmarks = state => state.getIn(['collection', 'bookmarks']);
 const getCollections = state => state.get('collections');
+const getRecordings = state => state.getIn(['collection', 'recordings']);
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
 const getSize = state => state.getIn(['infoStats', 'size']);
 const getStats = state => state.getIn(['infoStats', 'stats']);
@@ -38,6 +39,27 @@ export const getOrderedBookmarks = createSelector(
     //console.log('running', 'getOrderedBookmarks', bookmarks === lastBookmarks, is(bookmarks, lastBookmarks));
     //lastBookmarks = bookmarks;
     return bookmarks.flatten(true).sortBy(o => o.get(order));
+  }
+);
+
+/**
+ * Match the current `url` and `timestamp` with a recording in the collection
+ */
+export const getRecording = createSelector(
+  [getRecordings, getTimestamp, getUrl],
+  (recordings, ts, url) => {
+    const matchFn = ts ? obj => rts(obj.get('url')) === rts(url) && obj.get('timestamp') === ts :
+                         obj => rts(obj.get('url')) === rts(url);
+
+    for (const rec of recordings) {
+      const match = rec.get('pages').find(matchFn);
+
+      if (match) {
+        return rec;
+      }
+    }
+
+    return null;
   }
 );
 

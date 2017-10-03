@@ -80,6 +80,42 @@ class ContentController(BaseController, RewriterApp):
         def get_client_archives():
             return self.client_archives
 
+        @self.app.get(['/api/v1/create_remote_browser', '/api/v1/create_remote_browser/'])
+        def create_browser():
+            """ Api to launch remote browser instances
+            """
+            sesh = self.get_session()
+
+            if sesh.is_new() and self.is_content_request():
+                return {'error': 'Invalid request'}
+
+            browser_id = request.query.br
+            coll = request.query.coll
+            rec = request.query.rec
+            mode = request.query.mode
+            user = self.get_user(redir_check=False)
+
+            wb_url = WbUrl(request.query.wb_url)
+
+            # build kwargs
+            kwargs = dict(user=user,
+                          rec_orig=rec,
+                          coll_orig=coll,
+                          coll=quote(coll),
+                          rec=quote(rec, safe='/*'),
+                          type=mode,
+                          remote_ip=self._get_remote_ip(),
+                          browser_can_write='1' if self.manager.can_write_coll(user, coll) else '0')
+
+            data = self.manager.browser_mgr.request_new_browser(browser_id,
+                                                                wb_url,
+                                                                kwargs)
+
+            if 'error_message' in data:
+                self._raise_error(400, data['error_message'])
+
+            return data
+
         # REDIRECTS
         @self.app.route('/record/<wb_url:path>', method='ANY')
         def redir_new_temp_rec(wb_url):

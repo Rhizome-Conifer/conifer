@@ -7,7 +7,7 @@ import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 import { truncate } from 'helpers/utils';
 import config from 'config';
 
-import { getActiveRecording, getOrderedBookmarks } from 'redux/selectors';
+import { getOrderedBookmarks, getActiveRecording, getRecording } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
 import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
@@ -22,12 +22,13 @@ class Replay extends Component {
   };
 
   static propTypes = {
-    activeBrowser: PropTypes.object,
+    activeBrowser: PropTypes.string,
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     bookmarks: PropTypes.object,
     recordingIndex: PropTypes.number,
+    reqId: PropTypes.string,
     params: PropTypes.object,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -42,6 +43,8 @@ class Replay extends Component {
 
   constructor(props) {
     super(props);
+
+    this.mode = 'replay';
     this.lastProps = null;
   }
 
@@ -49,14 +52,14 @@ class Replay extends Component {
     const { auth, params } = this.props;
 
     return {
-      currMode: 'replay',
+      currMode: this.mode,
       canAdmin: auth.getIn(['user', 'username']) === params.user
     };
   }
 
   render() {
-    const { activeBrowser, bookmarks, collection, dispatch, params, recordingIndex,
-            timestamp, url } = this.props;
+    const { activeBrowser, bookmarks, collection, dispatch, params, recording,
+            recordingIndex, reqId, timestamp, url } = this.props;
     const { product } = this.context;
 
     const shareUrl = `${config.host}${params.user}/${params.coll}/${params.ts}/${params.splat}`;
@@ -84,7 +87,13 @@ class Replay extends Component {
 
         {
           activeBrowser ?
-            <RemoteBrowser /> :
+            <RemoteBrowser
+              dispatch={dispatch}
+              mode={this.mode}
+              params={params}
+              rb={activeBrowser}
+              rec={recording ? recording.get('id') : null}
+              recId={reqId} /> :
             <IFrame
               params={params}
               appPrefix={appPrefix}
@@ -122,20 +131,20 @@ const initialData = [
       return undefined;
     }
   },
-  /*
   {
-    promise: ({ store: { dispatch, getState } }) => {
+    promise: ({ params: { coll, rec, ts, splat }, store: { dispatch, getState } }) => {
       const state = getState();
       const rb = state.getIn(['remoteBrowsers', 'activeBrowser']);
+      const urlFrag = `${ts}/${splat}`;
 
       // if remote browser is active, load up a new instance
       if (rb) {
-        return dispatch(createRemoteBrowser(rb));
+        return dispatch(createRemoteBrowser(rb, coll, rec, this.mode, urlFrag));
       }
 
       return undefined;
     }
-  },*/
+  },
   {
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();
@@ -156,7 +165,9 @@ const mapStateToProps = (state, props) => {
     auth: state.get('auth'),
     bookmarks: getOrderedBookmarks(state),
     collection: state.get('collection'),
+    recording: getRecording(state),
     recordingIndex: getActiveRecording(state),
+    reqId: state.getIn(['remoteBrowsers', 'reqId']),
     timestamp: state.getIn(['controls', 'timestamp']),
     url: state.getIn(['controls', 'url'])
   };

@@ -17,7 +17,7 @@ class RemoteBrowserSelect extends Component {
     loading: PropTypes.bool,
     loaded: PropTypes.bool,
     accessed: PropTypes.number,
-    activeBrowser: PropTypes.object
+    activeBrowser: PropTypes.string
   }
 
   constructor(props) {
