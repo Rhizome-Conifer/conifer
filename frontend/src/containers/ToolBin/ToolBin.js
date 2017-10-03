@@ -7,12 +7,10 @@ import { ToolBinUI } from 'components/controls';
 
 
 const mapStateToProps = (state, context) => {
-  const toolBin = state.get('toolBin');
-  const collection = state.get('collection');
-
   return {
-    open: toolBin.get('open'),
-    collSize: collection.get('size'),
+    activeBrowser: state.getIn(['remoteBrowsers', 'activeBrowser']),
+    open: state.getIn(['toolBin', 'open']),
+    collSize: state.getIn(['collection', 'size']),
     bookmarkCount: getBookmarkCount(state)
   };
 };

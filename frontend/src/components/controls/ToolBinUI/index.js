@@ -6,7 +6,7 @@ import { SizeCounter } from 'containers';
 
 
 function ToolBinUI(props, context) {
-  const { bookmarkCount, collSize, open } = props;
+  const { activeBrowser, bookmarkCount, collSize, open } = props;
   const { currMode } = context;
   const classes = classNames('container-fluid wr-tools', { open });
   const isReplay = (currMode === 'replay' || currMode === 'replay-coll');
@@ -35,11 +35,16 @@ function ToolBinUI(props, context) {
         (currMode === 'recorder' || currMode === 'patch') &&
           <span />
       }
+      {
+        activeBrowser &&
+          <textarea id="clipboard" />
+      }
     </div>
   );
 }
 
 ToolBinUI.propTypes = {
+  activeBrowser: PropTypes.string,
   open: PropTypes.bool,
   collSize: PropTypes.number,
   bookmarkCount: PropTypes.number
