@@ -31,8 +31,9 @@ const bypassUrls = [
   '/_new*',
 ];
 
+// TODO: use nginx
+app.use(express.static(path.join(__dirname, '..', 'static')));
 
-//app.use(express.static(path.join(__dirname, '..', 'static')));
 // TODO: temp static mount for external js libs
 app.use('/shared', express.static(path.join(__dirname, 'shared')));
 
