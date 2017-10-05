@@ -5,10 +5,16 @@ const COLLS_LOAD = 'wr/colls/LOAD';
 const COLLS_LOAD_SUCCESS = 'wr/colls/LOAD_SUCCESS';
 const COLLS_LOAD_FAIL = 'wr/colls/LOAD_FAIL';
 
+const CREATE_COLL = 'wr/coll/CREATE_COLL';
+const CREATE_COLL_SUCCESS = 'wr/coll/CREATE_COLL_SUCCESS';
+const CREATE_COLL_FAIL = 'wr/coll/CREATE_COLL_FAIL';
+
 const initialState = fromJS({
   loading: false,
   loaded: false,
   error: null,
+  creatingCollection: false,
+  accessed: null
 });
 
 export default function collections(state = initialState, action = {}) {
@@ -31,6 +37,19 @@ export default function collections(state = initialState, action = {}) {
         loaded: false,
         error: action.error
       });
+
+    case CREATE_COLL:
+      return state.set('creatingCollection', true);
+    case CREATE_COLL_SUCCESS:
+      return state.merge({
+        newCollection: action.result.collection.id,
+        creatingCollection: false,
+        // nullify collections cache
+        accessed: null
+      });
+    case CREATE_COLL_FAIL:
+      return state.set('error', action.error_message);
+
     default:
       return state;
   }
@@ -39,6 +58,18 @@ export default function collections(state = initialState, action = {}) {
 export function isLoaded(globalState) {
   return globalState.get('collections') &&
          globalState.getIn(['collections', 'loaded']);
+}
+
+export function createCollection(user, title, makePublic = false) {
+  return {
+    types: [CREATE_COLL, CREATE_COLL_SUCCESS, CREATE_COLL_FAIL],
+    promise: client => client.post(`${config.apiPath}/collections?user=${user}`, {
+      data: {
+        title,
+        'public': makePublic ? 'on' : 'no'
+      }
+    }, 'form')
+  };
 }
 
 export function load(username) {

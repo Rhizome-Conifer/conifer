@@ -15,7 +15,7 @@ class CollsController(BaseController):
     def init_routes(self):
         @self.app.post('/api/v1/collections')
         def create_collection():
-            user = self.get_user(api=True)
+            user = self.get_user(api=True, redir_check=False)
 
             title = request.forms.getunicode('title')
 

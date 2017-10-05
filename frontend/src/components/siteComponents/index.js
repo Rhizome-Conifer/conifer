@@ -1,4 +1,5 @@
 export BreadcrumbsUI from './BreadcrumbsUI';
+export CollectionListUI from './CollectionListUI';
 export HomepageAnnouncement from './HomepageAnnouncement';
 export HomepageMessage from './HomepageMessage';
 export FAQ from './FAQ';

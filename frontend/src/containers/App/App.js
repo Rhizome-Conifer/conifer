@@ -128,7 +128,7 @@ export class App extends Component { // eslint-disable-line
 }
 
 
-const preloadData = [
+const initalData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
       if(!isAuthLoaded(getState())) {
@@ -152,6 +152,6 @@ const mapStateToProps = (state) => {
 };
 
 export default asyncConnect(
-  preloadData,
+  initalData,
   mapStateToProps
 )(App);

@@ -4,6 +4,7 @@ import { fromJS } from 'immutable';
 const COLL_LOAD = 'wr/coll/LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/LOAD_FAIL';
+
 const COLL_SET_PUBLIC = 'wr/coll/SET_PUBLIC';
 const COLL_SET_PUBLIC_SUCCESS = 'wr/coll/SET_PUBLIC_SUCCESS';
 const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
@@ -75,7 +76,6 @@ export function load(username, coll) {
 export function setPublic(coll, user, makePublic = true) {
   return {
     types: [COLL_SET_PUBLIC, COLL_SET_PUBLIC_SUCCESS, COLL_SET_PUBLIC_FAIL],
-    accessed: Date.now(),
     promise: client => client.post(`${config.apiPath}/collections/${coll}/public?user=${user}`, {
       data: {
         'public': makePublic

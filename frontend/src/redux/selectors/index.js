@@ -7,7 +7,7 @@ import { rts, truncate } from 'helpers/utils';
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
 const getArchives = state => state.getIn(['controls', 'archives']);
 const getBookmarks = state => state.getIn(['collection', 'bookmarks']);
-const getCollections = state => state.get('collections');
+const getCollections = state => state.getIn(['collections', 'collections']);
 const getRecordings = state => state.getIn(['collection', 'recordings']);
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
 const getSize = state => state.getIn(['infoStats', 'size']);
@@ -17,6 +17,17 @@ const getUrl = state => state.getIn(['controls', 'url']);
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const selectedCollection = state => state.getIn(['user', 'activeCollection']);
 const userOrderBy = state => state.get('userOrderBy') || 'timestamp';
+
+const sortFn = (a, b, by = null) => {
+  if (by) {
+    if (a.get(by) > b.get(by)) return -1;
+    if (a.get(by) < b.get(by)) return 1;
+  } else {
+    if (a > b) return -1;
+    if (a < b) return 1;
+  }
+  return 0;
+};
 
 
 export const getActiveCollection = createSelector(
@@ -32,6 +43,7 @@ export const getActiveCollection = createSelector(
   }
 );
 
+
 //let lastBookmarks = null;
 export const getOrderedBookmarks = createSelector(
   getBookmarks, userOrderBy,
@@ -41,6 +53,7 @@ export const getOrderedBookmarks = createSelector(
     return bookmarks.flatten(true).sortBy(o => o.get(order));
   }
 );
+
 
 /**
  * Match the current `url` and `timestamp` with a recording in the collection
@@ -62,6 +75,7 @@ export const getRecording = createSelector(
     return null;
   }
 );
+
 
 export const getActiveRecording = createSelector(
   [getOrderedBookmarks, getTimestamp, getUrl],
@@ -112,12 +126,14 @@ export const getActiveRecording = createSelector(
   }
 );
 
+
 export const getActiveRemoteBrowser = createSelector(
   [getActiveRemoteBrowserId, getRemoteBrowsers],
   (activeBrowserId, browsers) => {
     return activeBrowserId ? browsers.get(activeBrowserId) : null;
   }
 );
+
 
 export const getBookmarkCount = createSelector(
   [getBookmarks],
@@ -126,11 +142,6 @@ export const getBookmarkCount = createSelector(
   }
 );
 
-const sortFn = (a, b) => {
-  if (a > b) return -1;
-  if (a < b) return 1;
-  return 0;
-};
 
 export const getRemoteArchiveStats = createSelector(
   [getStats, getSize, getArchives],
@@ -172,6 +183,15 @@ export const getRemoteArchiveStats = createSelector(
     return null;
   }
 );
+
+
+export const sortCollsByCreatedAt = createSelector(
+  [getCollections],
+  (collections) => {
+    return collections.sort((a, b) => sortFn(a, b, 'created_at'));
+  }
+);
+
 
 export const sumCollectionsSize = createSelector(
   [getCollections],
