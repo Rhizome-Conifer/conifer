@@ -3,6 +3,8 @@ import { setStats } from 'redux/modules/infoStats';
 
 import config from 'config';
 
+import { stripProtocol } from 'helpers/utils';
+
 
 class WebSocketHandler {
   constructor(params, currMode, dispatch) {
@@ -24,8 +26,8 @@ class WebSocketHandler {
 
   initWS = () => {
     console.log('init ws');
-    const protocol = window.location.protocol === 'https' ? 'wss://' : 'ws://';
-    let url = `${protocol}${config.devApi.replace('http://', '')}/_client_ws?user=${this.user}&coll=${this.coll}&type=${this.currMode}&url=${encodeURIComponent(this.reqUrl)}`;
+    const wsProtocol = window.location.protocol === 'https' ? 'wss://' : 'ws://';
+    let url = `${wsProtocol}${stripProtocol(__DEVELOPMENT__ ? config.devApi : config.prodApi)}/_client_ws?user=${this.user}&coll=${this.coll}&type=${this.currMode}&url=${encodeURIComponent(this.reqUrl)}`;
 
     if(this.rec && this.rec !== '*') {
       url += `&rec=${this.rec}`;

@@ -34,12 +34,13 @@ const bypassUrls = [
 // TODO: use nginx
 app.use(express.static(path.join(__dirname, '..', 'static')));
 
-// TODO: temp static mount for external js libs
-app.use('/shared', express.static(path.join(__dirname, 'shared')));
+if (__DEVELOPMENT__) {
+  app.use('/shared', express.static(path.join(__dirname, 'shared')));
 
-// Proxy client API requets to server for now to avoid
-// CORS during port 3000 development
-app.use(bypassUrls, proxy({ target: baseUrl, logLevel: 'debug' }));
+  // Proxy client API requets to server for now to avoid
+  // CORS during port 3000 development
+  app.use(bypassUrls, proxy({ target: baseUrl, logLevel: 'debug' }));
+}
 
 app.use(compression());
 

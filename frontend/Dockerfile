@@ -1,8 +1,8 @@
 FROM node:8.2.1
 
-RUN useradd --user-group --create-home --shell /bin/false app && mkdir -p /opt/app
+RUN useradd --user-group --create-home --shell /bin/false app && mkdir -p /code
 
-ENV HOME=/home/app TERM=xterm APP=/opt/app
+ENV TERM=xterm APP=/code
 
 # add more arguments from CI to the image so that `$ env` should reveal more info
 ARG CI_BUILD_ID

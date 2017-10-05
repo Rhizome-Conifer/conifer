@@ -129,7 +129,7 @@
       "env": {
         "NODE_PATH": "./src",
         "NODE_ENV": "production",
-        "PORT": 8080,
+        "PORT": 8095,
         "INTERNAL_HOST": "localhost",
         "INTERNAL_PORT": "8089"
       }
@@ -159,7 +159,7 @@
       "env": {
         "NODE_PATH": "./src",
         "NODE_ENV": "production",
-        "PORT": 8080,
+        "PORT": 8095,
         "INTERNAL_HOST": "nginx",
         "INTERNAL_PORT": "80"
       }

@@ -26,6 +26,8 @@ services:
         build:
             context: ./frontend
 
+        command: bash -c "cd /code; npm run build; npm run docker-prod"
+
         environment:
             NODE_ENV: production
 
@@ -33,15 +35,12 @@ services:
             - app
 
         volumes:
-            - ./frontend/:/opt/app
-            - /opt/app/node_modules
+            - ./frontend/:/code/
+            - /code/node_modules
 
         ports:
             - 8080:8080
-            - 3001:3001
-
-        command: bash -c "cd code; npm run build; npm run docker-prod"
-        tty: true
+            - 8095:8095
 
     recorder:
         build: ./webrecorder
