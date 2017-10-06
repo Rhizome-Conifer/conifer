@@ -8,6 +8,9 @@ class TestExtractContent(FullStackTests):
         assert res.status_code == 302
         assert res.location.endswith('/temp/extract-test/extract:ia/1996/http://geocities.com/')
 
+        res = res.follow()
+        assert '"extract"' in res.text
+
         res = self.testapp.get('/{user}/temp/extract-test/extract:ia/1996mp_/http://geocities.com/'.format(user=self.anon_user))
         assert b'GeoCities' in res.body
         assert b'wbinfo.timestamp = "19961226' in res.body

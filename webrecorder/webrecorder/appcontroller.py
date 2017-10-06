@@ -247,10 +247,7 @@ class AppController(BaseController):
             if context.get('curr_mode', '') in ('record'):
                 ts = context.get('timestamp', '')
             else:
-                wbreq = context.get('wbrequest')
                 ts = context.get('ts', '')
-                # get timestamp from context or wbreq (depending if cbrowser)
-                ts = wbreq['wb_url'].timestamp if wbreq else ts
 
             return 'https://{host}{user}/{coll}/{ts}{browser}/{url}'.format(
                 host=host,
@@ -276,11 +273,7 @@ class AppController(BaseController):
             if context.get('curr_mode', '') in ('record'):
                 ts = context.get('timestamp', '')
             else:
-                wbreq = context.get('wbrequest')
                 ts = context.get('ts', '')
-
-                # get timestamp from context or wbreq (depending if cbrowser)
-                ts = wbreq['wb_url'].timestamp if wbreq else ts
 
             return 'https://{host}_embed/{user}/{coll}/{ts}{browser}/{url}'.format(
                 host=host,

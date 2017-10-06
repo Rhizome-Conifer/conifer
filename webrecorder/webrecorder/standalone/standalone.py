@@ -19,7 +19,7 @@ import atexit
 # ============================================================================
 class StandaloneRunner(FullStackRunner):
     def __init__(self, warcs_dir='', redis_db='', loglevel=None,
-                 app_port=8090, rec_port=0, agg_port=0):
+                 app_port=8090, rec_port=0, warc_port=0):
 
         if isinstance(loglevel, str):
             try:
@@ -57,7 +57,7 @@ class StandaloneRunner(FullStackRunner):
 
         super(StandaloneRunner, self).__init__(app_port=app_port,
                                                rec_port=rec_port,
-                                               agg_port=agg_port)
+                                               warc_port=warc_port)
         atexit.register(self.close)
 
     def _patch_redis(self, redis_db):

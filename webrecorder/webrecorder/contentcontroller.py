@@ -24,6 +24,9 @@ class ContentController(BaseController, RewriterApp):
 
     def __init__(self, app, jinja_env, config, redis):
         BaseController.__init__(self, app, jinja_env, None, config)
+
+        config['csp-header'] = self.get_csp_header()
+
         RewriterApp.__init__(self,
                              framed_replay=True,
                              jinja_env=jinja_env,
@@ -43,7 +46,6 @@ class ContentController(BaseController, RewriterApp):
 
         self.wam_loader = WAMLoader()
         self._init_client_archive_info()
-        self.init_csp_header()
 
     def _init_client_archive_info(self):
         self.client_archives = {}
@@ -57,16 +59,13 @@ class ContentController(BaseController, RewriterApp):
 
             self.client_archives[pk] = info
 
-    def init_csp_header(self):
+    def get_csp_header(self):
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
         if self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
 
         csp += "; form-action 'self'"
-        self.csp_header = ('Content-Security-Policy', csp)
-
-    def add_csp_header(self, wb_url, status_headers):
-        status_headers.headers.append(self.csp_header)
+        return csp
 
     def init_routes(self):
         # REDIRECTS
@@ -493,9 +492,6 @@ class ContentController(BaseController, RewriterApp):
             self.check_if_content(wb_url_obj, request.environ, is_top_frame)
 
             resp = self.render_content(wb_url, kwargs, request.environ)
-
-            if not is_top_frame:
-                self.add_csp_header(wb_url_obj, resp.status_headers)
 
             if frontend_cache_header:
                 resp.status_headers.headers.append(frontend_cache_header)
