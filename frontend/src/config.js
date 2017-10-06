@@ -1,4 +1,28 @@
+/* eslint-disable */
 require('babel-polyfill');
+
+/**
+ * For local settings override, create `config.local.js` in the same directory
+ * as this file..
+ *
+ * example contents:
+ *
+ * module.exports = {
+ *   devApi: 'http://localhost:8089',
+ *   prodApi: 'http://localhost:8080',
+ *   appHost: 'http://localhost:3000',
+ *   contentHost: 'http://localhost:8089',
+ *   defaultRecordingTitle: "Session"
+ * };
+ *
+ */
+
+let localSettings;
+try {
+  localSettings = require('./config.local');
+} catch (e) {
+  localSettings = {};
+}
 
 const environment = {
   development: {
@@ -12,10 +36,10 @@ const environment = {
 module.exports = Object.assign({
   host: process.env.HOST || '0.0.0.0',
   port: process.env.PORT,
-  devApi: 'http://localhost:8089',
-  prodApi: 'http://localhost:8080', //'https://webrecorder.io',
-  appHost: 'http://localhost:3000',
-  contentHost: 'http://localhost:8089',
+  devApi: '',
+  prodApi: '',
+  appHost: '',
+  contentHost: '',
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,
@@ -45,4 +69,4 @@ module.exports = Object.assign({
     }
   },
 
-}, environment);
+}, environment, localSettings);

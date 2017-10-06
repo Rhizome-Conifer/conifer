@@ -1,8 +1,8 @@
 FROM node:8.2.1
 
-RUN useradd --user-group --create-home --shell /bin/false app && mkdir -p /code
-
 ENV TERM=xterm APP=/code
+
+USER root
 
 # add more arguments from CI to the image so that `$ env` should reveal more info
 ARG CI_BUILD_ID
@@ -19,13 +19,8 @@ ENV CI_BUILD_ID=$CI_BUILD_ID CI_BUILD_REF=$CI_BUILD_REF CI_REGISTRY_IMAGE=$CI_RE
 
 ADD package.json yarn.lock $APP/
 
-RUN chown -R app $APP && chgrp -R app $APP && chown -R app /usr/local
-
 WORKDIR $APP
-
-USER app
 
 RUN npm install --global yarn
 
-# RUN yarn install && yarn upgrade
 RUN rm -rf node_modules && yarn install && yarn cache clean && rm -rf ~/tmp/*
