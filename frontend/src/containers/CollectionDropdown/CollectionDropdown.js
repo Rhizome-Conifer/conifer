@@ -1,24 +1,27 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { selectCollection } from 'redux/modules/user';
+import { createCollection } from 'redux/modules/collections';
+import { load as loadUser, selectCollection } from 'redux/modules/user';
 import { getActiveCollection } from 'redux/selectors';
 import CollectionDropdownUI from 'components/CollectionDropdownUI';
 
 
 const mapStateToProps = (state) => {
-  const user = state.get('user');
-  const auth = state.get('auth');
   return {
-    auth,
-    collections: user.get('collections'),
-    activeCollection: getActiveCollection(state)
+    activeCollection: getActiveCollection(state),
+    collections: state.getIn(['user', 'collections']),
+    creatingCollection: state.getIn(['collections', 'creatingCollection']),
+    newCollection: state.getIn(['collections', 'newCollection']),
+    user: state.getIn(['auth', 'user'])
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    setCollection: coll => dispatch(selectCollection(coll))
+    createNewCollection: (user, collTitle, makePublic) => dispatch(createCollection(user, collTitle, makePublic)),
+    setCollection: coll => dispatch(selectCollection(coll)),
+    loadUser: username => dispatch(loadUser(username))
   };
 };
 

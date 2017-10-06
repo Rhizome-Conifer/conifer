@@ -4,6 +4,7 @@ export HomepageAnnouncement from './HomepageAnnouncement';
 export HomepageMessage from './HomepageMessage';
 export FAQ from './FAQ';
 export Footer from './Footer';
+export NewCollection from './NewCollection';
 export PasswordReset from './PasswordReset';
 export TermsAndPolicies from './TermsAndPolicies';
 export UserManagementUI from './UserManagementUI';

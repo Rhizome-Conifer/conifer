@@ -6,8 +6,9 @@ import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
 import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 import Toggle from 'react-toggle';
 
-import Modal from 'components/Modal';
 import SizeFormat from 'components/SizeFormat';
+
+import { NewCollection } from 'components/siteComponents';
 
 import 'shared/scss/toggle.scss';
 import './style.scss';
@@ -53,11 +54,8 @@ class CollectionListUI extends Component {
     }
   }
 
-  createCollection = (evt) => {
-    evt.preventDefault();
-
+  createCollection = (collTitle, isPublic) => {
     const { createNewCollection, params: { user } } = this.props;
-    const { collTitle, isPublic } = this.state;
 
     createNewCollection(user, collTitle, isPublic);
   }
@@ -66,46 +64,18 @@ class CollectionListUI extends Component {
     this.setState({ showModal: !this.state.showModal });
   }
 
-  togglePublic = (evt) => {
-    this.setState({ isPublic: !this.state.isPublic });
-  }
-
   close = (evt) => {
     this.setState({ showModal: false });
   }
 
-  handleInput = (evt) => {
-    this.setState({ collTitle: evt.target.value });
-  }
-
   render() {
     const { auth, collections, orderedCollections, params, user } = this.props;
-    const { collTitle, isPublic, showModal } = this.state;
+    const { showModal } = this.state;
     const userParam = params.user;
 
     const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;
     const spaceUsed = user.getIn(['space_utilization', 'used']);
     const totalSpace = user.getIn(['space_utilization', 'total']);
-
-    const creatingCollection = collections.get('creatingCollection');
-    const newCollectionBody = (
-      <form onSubmit={this.createCollection} id="create-coll" className="form-horizontal">
-        <span className="form-group col-md-5">
-          <label htmlFor="collection">Collection Name:</label>
-          <input type="text" id="title" name="title" className="form-control" onChange={this.handleInput} value={collTitle} required />
-        </span>
-
-        <span className="col-md-6 col-md-offset-1">
-          <div><label htmlFor="public-switch"><span className="glyphicon glyphicon-globe" style={{ marginRight: '4px' }} />Make public (visible to all)?</label></div>
-          <Toggle
-            id="public-switch"
-            defaultChecked={isPublic}
-            onChange={this.togglePublic} />
-        </span>
-
-        <button className="btn btn-lg btn-primary btn-block" type="submit" disabled={creatingCollection}>Create</button>
-      </form>
-    );
 
     return (
       <div>
@@ -162,11 +132,11 @@ class CollectionListUI extends Component {
             </Row>
         }
 
-        <Modal
-          body={newCollectionBody}
-          closeCb={this.close}
-          header="Create New Collection"
-          visible={showModal} />
+        <NewCollection
+          close={this.close}
+          visible={showModal}
+          createCollection={this.createCollection}
+          creatingCollection={collections.get('creatingCollection')} />
       </div>
     );
   }

@@ -1,32 +1,72 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { List } from 'immutable';
-
 import { DropdownButton, MenuItem } from 'react-bootstrap';
+
+import { NewCollection } from 'components/siteComponents';
 
 import './style.scss';
 
 
 class CollectionDropdownUI extends Component {
   static propTypes = {
-    auth: PropTypes.object,
-    collections: PropTypes.object,
     activeCollection: PropTypes.object,
-    setCollection: PropTypes.func
-  }
+    collections: PropTypes.object,
+    creatingCollection: PropTypes.bool,
+    createNewCollection: PropTypes.func,
+    loadUser: PropTypes.func,
+    newCollection: PropTypes.string,
+    setCollection: PropTypes.func,
+    user: PropTypes.object
+  };
 
   static defaultProps = {
     collections: List(),
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = { showModal: false };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { creatingCollection, loadUser, user } = this.props;
+    const { newCollection } = nextProps;
+
+    // if incoming prop has a newCollection object and we are currently creating
+    // a collection, close the modal and select the new collection
+    if (newCollection && creatingCollection) {
+      loadUser(user.get('username'))
+        .then(this.close)
+        .then(
+          () => this.collectionChoice(newCollection)
+        );
+    }
   }
 
   collectionChoice = (id) => {
     this.props.setCollection(id);
   }
 
-  render() {
-    const { auth, collections, activeCollection } = this.props;
+  createCollection = (collTitle, isPublic) => {
+    const { createNewCollection, user } = this.props;
 
-    const user = auth.get('user');
+    createNewCollection(user.get('username'), collTitle, isPublic);
+  }
+
+  toggle = () => {
+    this.setState({ showModal: !this.state.showModal });
+  }
+
+  close = () => {
+    this.setState({ showModal: false });
+  }
+
+  render() {
+    const { activeCollection, collections, creatingCollection, user } = this.props;
+    const { showModal } = this.state;
+
     const buttonTitle = activeCollection.title ? activeCollection.title : 'Choose a collection';
 
     return (
@@ -36,7 +76,7 @@ class CollectionDropdownUI extends Component {
             <div>
               <label className="left-buffer" htmlFor="collection">Add to collection:&emsp;</label>
               <DropdownButton title={buttonTitle} id="wr-collecton-dropdown" onSelect={this.collectionChoice}>
-                <MenuItem>+ Create new collection</MenuItem>
+                <MenuItem onClick={this.toggle}>+ Create new collection</MenuItem>
                 <MenuItem divider />
                 {
                   collections.map((coll) => {
@@ -57,6 +97,11 @@ class CollectionDropdownUI extends Component {
               </DropdownButton>
             </div>
         }
+        <NewCollection
+          close={this.close}
+          visible={showModal}
+          createCollection={this.createCollection}
+          creatingCollection={creatingCollection} />
       </div>
     );
   }
