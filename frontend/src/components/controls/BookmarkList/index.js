@@ -32,6 +32,12 @@ class BookmarkList extends Component {
     this.liHeight = Math.ceil(this.bookmarkList.querySelector('li').getBoundingClientRect().height);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.url !== this.props.url) {
+      this.setState({ url: nextProps.url });
+    }
+  }
+
   close = () => {
     if(this.state.showList)
       this.setState({ showList: false });
