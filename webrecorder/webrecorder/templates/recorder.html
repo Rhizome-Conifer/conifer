@@ -73,11 +73,11 @@
                     </div>
                 {% elif is_extract %}
                     <div class="input-group-btn extract-selector">
-                        {{ sources_widget(target=coll_title, active=True, req_timestamp=(ts or (wbrequest.wb_url.timestamp if webrequest else None))) }}
+                        {{ sources_widget(target=coll_title, active=True, req_timestamp=(ts or wb_url.timestamp)) }}
                     </div>
                 {% elif is_patch %}
                     <div class="input-group-btn extract-selector">
-                        {{ sources_widget(target=rec_title, active=True, mode="patch", timestamp=(ts or wbrequest.wb_url.timestamp)) }}
+                        {{ sources_widget(target=rec_title, active=True, mode="patch", timestamp=(ts or wb_url.timestamp)) }}
                     </div>
                 {% endif %}
             {% endif %}

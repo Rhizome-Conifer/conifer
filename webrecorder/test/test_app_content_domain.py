@@ -72,6 +72,7 @@ class TestAppContentDomain(FullStackTests):
 
     def test_replay_app_frame(self):
         res = self.app_get('/{user}/temp/http://httpbin.org/get?food=bar')
+        assert res.headers.get('Content-Security-Policy') == None
 
         assert 'wbinfo.app_prefix = decodeURI("http://app-host/{user}/temp/");'.format(user=self.anon_user) in res.text
         assert 'wbinfo.content_prefix = decodeURI("http://content-host/{user}/temp/");'.format(user=self.anon_user) in res.text
@@ -79,6 +80,9 @@ class TestAppContentDomain(FullStackTests):
     def test_replay_content_frame(self):
         res = self.content_get('/{user}/temp/mp_/http://httpbin.org/get?food=bar')
         assert '"food": "bar"' in res.text
+
+        csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: app-host/_set_session; form-action 'self'"
+        assert res.headers['Content-Security-Policy'] == csp
 
     def test_redir_to_content_frame(self):
         res = self.app_get('/{user}/temp/mp_/http://httpbin.org/get?food=bar')
