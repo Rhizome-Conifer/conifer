@@ -88,7 +88,6 @@ export default function ContentFrame(content_info) {
     }
 
     this.handle_event = function(event) {
-        console.log('wb_frame handle event')
         var frame_win = this.iframe.contentWindow;
         if (event.source == window.parent) {
             // Pass to replay frame

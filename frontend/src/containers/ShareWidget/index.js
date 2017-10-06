@@ -15,15 +15,17 @@ class ShareWidget extends Component {
   static propTypes = {
     collection: PropTypes.object,
     params: PropTypes.object,
-    setCollPublic: PropTypes.func
+    setCollPublic: PropTypes.func,
+    timestamp: PropTypes.string,
+    url: PropTypes.string
   }
 
   render() {
     const { metadata: { host } } = this.context;
-    const { collection, params: { user, coll, ts, splat } } = this.props;
+    const { collection, params: { user, coll }, timestamp, url } = this.props;
 
-    const shareUrl = `${host}${user}/${coll}/${ts}/${splat}`;
-    const embedUrl = `${host}_embed/${user}/${coll}/${ts}/${splat}`;
+    const shareUrl = `${host}${user}/${coll}/${timestamp}/${url}`;
+    const embedUrl = `${host}_embed/${user}/${coll}/${timestamp}/${url}`;
     const isPublic = collection.get('isPublic') === '1';
 
     return (
@@ -40,6 +42,8 @@ class ShareWidget extends Component {
 const mapStateToProps = (state) => {
   return {
     collection: state.get('collection'),
+    timestamp: state.getIn(['controls', 'timestamp']),
+    url: state.getIn(['controls', 'url'])
   };
 };
 

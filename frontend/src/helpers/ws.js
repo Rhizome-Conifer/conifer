@@ -71,7 +71,6 @@ class WebSocketHandler {
 
     switch (msg.ws_type) {
       case 'status':
-        console.log('ws received status message:', msg.ws_type);
         this.dispatch(setSizeCounter(msg.size));
 
         if (this.currMode.indexOf('replay') !== -1) {
@@ -149,7 +148,6 @@ class WebSocketHandler {
   }
 
   addPage = (page) => {
-    console.log('addPage', page);
     return this.sendMsg({ ws_type: 'page', page });
   }
 
