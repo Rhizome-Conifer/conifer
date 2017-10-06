@@ -14,11 +14,12 @@ import './style.scss';
 
 class IFrame extends Component {
   static propTypes = {
-    dispatch: PropTypes.func,
-    params: PropTypes.object,
     appPrefix: PropTypes.string,
     contentPrefix: PropTypes.string,
-    updateSizeCounter: PropTypes.func
+    dispatch: PropTypes.func,
+    params: PropTypes.object,
+    timestamp: PropTypes.string,
+    url: PropTypes.string
   };
 
   static contextTypes = {
@@ -46,7 +47,7 @@ class IFrame extends Component {
       outer_prefix: '',
       content_prefix: contentPrefix,
       coll: params.coll,
-      //url,
+      url: params.splat,
       capture_url: '',
       reqTimestamp: params.ts,
       timestamp: params.ts,
@@ -71,8 +72,10 @@ class IFrame extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.params.splat !== this.props.params.splat ||
-        nextProps.params.ts !== this.props.params.ts) {
+    const { params: { splat, ts } } = this.props;
+
+    if (nextProps.params.splat !== splat ||
+        nextProps.params.ts !== ts) {
       this.contentFrame.load_url(nextProps.params.splat, nextProps.params.ts);
     }
   }
@@ -101,12 +104,10 @@ class IFrame extends Component {
     const { currMode } = this.context;
     const rawUrl = decodeURI(url);
 
-    this.props.dispatch(updateUrl(rawUrl));
+    console.log('setUrl called', this.props.url, rawUrl);
 
-    if (currMode.indexOf('replay') !== -1) {
-      // PagingInterface.navigationUpdate();
-    } else if (['record', 'patch', 'extract'].includes(currMode)) {
-      // ShareWidget.updateUrl({url: rawUrl, ts: wbinfo.timestamp });
+    if (this.props.url !== rawUrl) {
+      this.props.dispatch(updateUrl(rawUrl));
     }
 
     if (!noStatsUpdate) {
@@ -140,8 +141,8 @@ class IFrame extends Component {
         this.addSkipReq(state);
         break;
       case 'hashchange': {
-        console.log('pywb hashchange')
-        let url = this.props.params.splat.split("#", 1)[0];
+        console.log('pywb hashchange');
+        let url = this.props.url.split("#", 1)[0];
         if (state.hash) {
           url = state.hash;
         }
@@ -158,10 +159,10 @@ class IFrame extends Component {
 
   addNewPage = (state) => {
     const { currMode } = this.context;
-    console.log('wr add new page', state);
+    const { timestamp } = this.props;
 
-    if (state && state.ts && currMode !== 'record' && currMode !== 'extract') {
-      // updateTimestamp(state.ts, window.curr_mode.indexOf("replay") !== -1);
+    if (state && state.ts && currMode !== 'record' && currMode !== 'extract' && state.ts !== timestamp) {
+      this.props.dispatch(updateTimestamp(state.ts));
     }
 
     if (state.is_error) {
@@ -172,7 +173,11 @@ class IFrame extends Component {
 
       if (state.ts) {
         attributes.timestamp = state.ts;
-        this.props.dispatch(updateTimestamp(state.ts));
+
+        if (state.ts !== timestamp) {
+          this.props.dispatch(updateTimestamp(state.ts));
+        }
+
         window.wbinfo.timestamp = state.ts;
       }
 
@@ -191,7 +196,10 @@ class IFrame extends Component {
       }
     } else if (['replay', 'replay-coll'].includes(currMode)) {
       if (!this.initialReq) {
-        this.props.dispatch(updateTimestamp(state.ts));
+        if (state.ts !== timestamp) {
+          this.props.dispatch(updateTimestamp(state.ts));
+        }
+
         this.setUrl(state.url);
         setTitle('Archives', state.url, state.title);
       }

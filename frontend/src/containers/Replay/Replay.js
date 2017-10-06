@@ -95,10 +95,12 @@ class Replay extends Component {
               rec={recording ? recording.get('id') : null}
               recId={reqId} /> :
             <IFrame
-              params={params}
               appPrefix={appPrefix}
               contentPrefix={contentPrefix}
-              dispatch={dispatch} />
+              dispatch={dispatch}
+              params={params}
+              timestamp={timestamp}
+              url={url} />
         }
       </div>
     );
