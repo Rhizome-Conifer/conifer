@@ -7,7 +7,7 @@ import config from 'config';
 import { remoteBrowserMod } from 'helpers/utils';
 
 import OutsideClick from 'components/OutsideClick';
-import { PatchIcon, SnapshotIcon } from 'components/Icons';
+import { PatchIcon, SnapshotIcon } from 'components/icons';
 
 import './style.scss';
 

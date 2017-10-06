@@ -5,7 +5,7 @@ import { fromJS } from 'immutable';
 import Toggle from 'react-toggle';
 
 import OutsideClick from 'components/OutsideClick';
-import { ShareIcon } from 'components/Icons';
+import { ShareIcon } from 'components/icons';
 
 import 'shared/scss/toggle.scss';
 import './style.scss';

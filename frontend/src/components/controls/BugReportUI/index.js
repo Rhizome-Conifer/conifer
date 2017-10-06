@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { BugIcon } from 'components/Icons';
+import { BugIcon } from 'components/icons';
 import Modal from 'components/Modal';
 
 import ReportBugForm from './forms';

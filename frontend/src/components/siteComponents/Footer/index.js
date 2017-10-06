@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 
-import { GithubIcon, MailIcon, TwitterIcon } from 'components/Icons';
+import { GithubIcon, MailIcon, TwitterIcon } from 'components/icons';
 
 import './style.scss';
 
