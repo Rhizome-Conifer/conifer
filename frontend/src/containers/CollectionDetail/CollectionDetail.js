@@ -95,10 +95,10 @@ const loadCollection = [
       const collId = collection.get('id');
       const { user, coll } = params;
 
-      if(!isCollLoaded(state) || collId !== coll || (collId === coll && Date.now() - collection.get('accessed') > 15 * 60 * 1000))
-        return dispatch(loadColl(user, coll));
+      //if(!isCollLoaded(state) || collId !== coll || (collId === coll && Date.now() - collection.get('accessed') > 15 * 60 * 1000))
+      return dispatch(loadColl(user, coll));
 
-      return undefined;
+      //return undefined;
     }
   },
   {
