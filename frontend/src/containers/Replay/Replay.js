@@ -37,15 +37,13 @@ class Replay extends Component {
   // TODO move to HOC
   static childContextTypes = {
     currMode: PropTypes.string,
-    canAdmin: PropTypes.bool,
-    product: PropTypes.string
+    canAdmin: PropTypes.bool
   };
 
   constructor(props) {
     super(props);
 
     this.mode = 'replay';
-    this.lastProps = null;
   }
 
   getChildContext() {
@@ -69,7 +67,7 @@ class Replay extends Component {
     return (
       <div>
         <Helmet>
-          <meta property="og:url" content={url} />
+          <meta property="og:url" content={shareUrl} />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={`Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${product}`} />
           <meta name="og:description" content={collection.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
@@ -133,6 +131,7 @@ const initialData = [
       return undefined;
     }
   },
+  /*
   {
     promise: ({ params: { coll, rec, ts, splat }, store: { dispatch, getState } }) => {
       const state = getState();
@@ -146,7 +145,7 @@ const initialData = [
 
       return undefined;
     }
-  },
+  },*/
   {
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();

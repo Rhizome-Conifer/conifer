@@ -105,6 +105,7 @@ class ContentController(BaseController, RewriterApp):
                           rec=quote(rec, safe='/*'),
                           type=mode,
                           remote_ip=self._get_remote_ip(),
+                          ip=self._get_remote_ip(),
                           browser_can_write='1' if self.manager.can_write_coll(user, coll) else '0')
 
             data = self.manager.browser_mgr.request_new_browser(browser_id,
