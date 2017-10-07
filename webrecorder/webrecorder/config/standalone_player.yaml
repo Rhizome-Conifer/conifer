@@ -10,6 +10,8 @@ init_upload_id: '@INIT'
 init_upload_user: 'local'
 init_upload_coll: 'collection'
 
+cdxj_key_templ: 'c:{user}:{coll}:cdxj'
+
 upload_coll:
     id: 'collection'
     title: 'Collection'

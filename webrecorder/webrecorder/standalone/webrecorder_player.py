@@ -8,6 +8,8 @@ from webrecorder.uploadcontroller import InplaceLoader
 from webrecorder.redisman import init_manager_for_cli
 from webrecorder.admin import create_user
 
+from webrecorder.standalone.serializefakeredis import SerializableFakeRedis
+
 from gevent.threadpool import ThreadPool
 import redis
 
@@ -19,13 +21,19 @@ class WebrecPlayerRunner(StandaloneRunner):
     def __init__(self, argres):
         self.inputs = argres.inputs
 
-        super(WebrecPlayerRunner, self).__init__(app_port=argres.port,
-                                                 rec_port=-1,
-                                                 loglevel=argres.loglevel)
+        super(WebrecPlayerRunner, self).__init__(argres)
 
         if not argres.no_browser:
             import webbrowser
             webbrowser.open_new(os.environ['APP_HOST'] + '/')
+
+    def close(self):
+        SerializableFakeRedis.save_db()
+        super(WebrecPlayerRunner, self).close()
+
+    def _patch_redis(self, cache_db):
+        redis.StrictRedis = SerializableFakeRedis
+        SerializableFakeRedis.filename = cache_db
 
     def admin_init(self):
         pool = ThreadPool(maxsize=1)
@@ -41,6 +49,10 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     def auto_load_warcs(self):
         manager = init_manager_for_cli()
+
+        if manager.redis.exists('c:local:collection:cdxj'):
+            logging.debug('Index Loaded from Cache, Skipping')
+            return
 
         create_user(manager,
                     email='test@localhost',
@@ -63,8 +75,6 @@ class WebrecPlayerRunner(StandaloneRunner):
                         type='replay-coll',
                         browser='',
                         reqid='@INIT')
-
-        #manager.browser_mgr.fill_upstream_url(local_info, None)
 
         browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
         browser_redis.hmset('ip:127.0.0.1', local_info)
@@ -93,6 +103,7 @@ class WebrecPlayerRunner(StandaloneRunner):
         parser.add_argument('inputs', nargs='+',
                             help='web archive (.warc.gz, .warc, .arc.gz, .arc or .har files)')
 
+        parser.add_argument('--cache-db')
 
 
 # ============================================================================
