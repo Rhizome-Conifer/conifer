@@ -132,6 +132,37 @@ class CollsController(BaseController):
 
             return {'count': self.manager.count_pages(user, coll, rec='*') }
 
+        @self.app.get('/api/v1/collections/<coll>/pages')
+        def get_pages(coll):
+            user = self.get_user(api=True)
+            self._ensure_coll_exists(user, coll)
+
+            pages = self.manager.list_coll_pages(user, coll)
+            return {'pages': pages}
+
+        @self.app.get('/api/v1/collections/<coll>/start')
+        def to_first_page(coll):
+            user = self.get_user(api=True)
+            self._ensure_coll_exists(user, coll)
+
+            pages = self.manager.list_coll_pages(user, coll)
+            for page in pages:
+                if page.get('hidden'):
+                    continue
+
+                break
+
+            if not page:
+                return {'error_msg': 'no pages found'}
+
+            redir_url = '/' + user + '/' + coll + '/'
+            ts = page.get('timestamp')
+            if ts:
+                redir_url += ts + '/'
+            redir_url += page['url']
+
+            self.redirect(redir_url)
+
         # Create Collection
         @self.app.get('/_create')
         @self.jinja2_view('create_collection.html')

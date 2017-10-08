@@ -1,6 +1,7 @@
 import os
 import logging
 import json
+from gzip import open
 import fakeredis
 from fakeredis import DATABASES, _StrKeyDict, _ZSet, _Hash
 
