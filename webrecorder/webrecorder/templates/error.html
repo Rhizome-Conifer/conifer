@@ -38,7 +38,7 @@
         {% if err.status_code == 404 %}
         No such page or content is not accessible.
         {% elif err.status_code == 402 and err.body == 'Rate Limit' %}
-        <p>Sorry, you have exceeded the rate limit for anonymous recording.</p><p>Please <a href="/_register" target="_parent" ><strong>Sign Up</strong></a> or <a href="/_login_modal" class="login-link">Login</a> to continue recording.</p>
+        <p>Sorry, you have exceeded the rate limit for recording.</p><p>If you think this may in error, please contact us with your use case and we may be able to raise the limit<a href="mailto:support@webrecorder.io" target="_parent" ></p>
         {% else %}
         {{ err.body }}
         {% endif %}

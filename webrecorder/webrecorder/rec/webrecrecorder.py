@@ -552,7 +552,7 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         if not ip:
             return None
 
-        h = time.strftime("%H")
+        h = datetime.utcnow().strftime('%H')
         rate_limit_key = self.rate_limit_key.format(ip=ip, H=h)
         return rate_limit_key
 
@@ -589,15 +589,14 @@ class WebRecRedisIndexer(WritableRedisIndexer):
             if 'param.user' in params:
                 if params['param.user'].startswith(self.temp_prefix):
                     key = self.temp_usage_key
-
-                    # rate limiting
-                    rate_limit_key = self.get_rate_limit_key(params)
-                    if rate_limit_key:
-                        pi.incrby(rate_limit_key, length)
-                        pi.expire(rate_limit_key, self.rate_limit_ttl)
-
                 else:
                     key = self.user_usage_key
+
+                # rate limiting
+                rate_limit_key = self.get_rate_limit_key(params)
+                if rate_limit_key:
+                    pi.incrby(rate_limit_key, length)
+                    pi.expire(rate_limit_key, self.rate_limit_ttl)
 
                 if key:
                     pi.hincrby(key, ts, length)
