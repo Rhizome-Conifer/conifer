@@ -22,7 +22,7 @@ class StandaloneRunner(FullStackRunner):
         self.argres = argres
 
         warcs_dir = self._get_prop('warcs_dir')
-        cache_db = self._get_prop('cache_db')
+        cache_dir = self._get_prop('cache_dir')
 
         app_port = self._get_prop('port', 8090)
         rec_port = self._get_prop('rec_port', -1)
@@ -47,16 +47,10 @@ class StandaloneRunner(FullStackRunner):
         else:
             self.app_dir = os.getcwd()
 
-        if cache_db:
-            try:
-                os.makedirs(os.path.dirname(cache_db))
-            except OSError:
-                pass
-
         self.warcs_dir = warcs_dir
         self.init_env()
 
-        self._patch_redis(cache_db)
+        self._patch_redis(cache_dir)
 
         self.admin_init()
 
@@ -77,7 +71,7 @@ class StandaloneRunner(FullStackRunner):
         except:
             return default
 
-    def _patch_redis(self, redis_db):
+    def _patch_redis(self, cache_dir):
         import fakeredis
         redis.StrictRedis = fakeredis.FakeStrictRedis
 

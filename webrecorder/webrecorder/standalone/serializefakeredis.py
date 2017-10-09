@@ -2,36 +2,52 @@ import os
 import logging
 import json
 from gzip import open
-import fakeredis
+
 from fakeredis import DATABASES, _StrKeyDict, _ZSet, _Hash
 
 
 # ============================================================================
-class SerializableFakeRedis(fakeredis.FakeStrictRedis):
-    filename = None
-    load_needed = True
+class FakeRedisSerializer(object):
+    def __init__(self, filename):
+        self.filename = filename
+        self.update_needed = True
 
-    def __init__(self, *args, **kwargs):
-        super(SerializableFakeRedis, self).__init__(*args, **kwargs)
-
-        if self.filename and os.path.isfile(self.filename):
-            self.load_db()
-
-    @classmethod
-    def save_db(cls):
-        if not cls.load_needed:
+    def save_db(self):
+        if not self.update_needed:
             logging.debug('Redis DB Loaded from Cache, No Save Needed')
             return
 
         all_dbs = {}
         for db in DATABASES:
-            all_dbs[db] = cls.save_redis_dict(DATABASES[db])
+            all_dbs[db] = self.save_redis_dict(DATABASES[db])
 
-        with open(cls.filename, 'wt') as fh:
+        with open(self.filename, 'wt') as fh:
             fh.write(json.dumps(all_dbs))
 
-    @classmethod
-    def save_redis_dict(cls, value):
+    def load_db(self):
+        if not self.update_needed:
+            return False
+
+        logging.debug('Loading Redis DB')
+        try:
+            with open(self.filename, 'rt') as fh:
+                buff = fh.read()
+
+            all_dbs = json.loads(buff)
+
+            DATABASES.clear()
+            for db, obj in all_dbs.items():
+                db = int(db)
+                DATABASES[db] = self.load_redis_dict(obj)
+
+        except Exception as e:
+            logging.debug('Redis DB Load from {0} Failed: {1}'.format(self.filename, e))
+            return False
+
+        self.update_needed = False
+        return True
+
+    def save_redis_dict(self, value):
         new_dict = {}
 
         if hasattr(value, 'redis_type'):
@@ -45,13 +61,12 @@ class SerializableFakeRedis(fakeredis.FakeStrictRedis):
             elif isinstance(value, set):
                 value = [val.decode('utf-8') for val in value]
             elif hasattr(value, '_dict'):
-                value = cls.save_redis_dict(value)
+                value = self.save_redis_dict(value)
 
             new_dict[key] = value
         return new_dict
 
-    @classmethod
-    def load_redis_dict(cls, obj):
+    def load_redis_dict(self, obj):
         new_dict = {}
         redis_type = None
         for key, value in obj.items():
@@ -66,7 +81,7 @@ class SerializableFakeRedis(fakeredis.FakeStrictRedis):
             elif isinstance(value, list):
                 value = {val.encode('utf-8') for val in value}
             elif isinstance(value, dict):
-                value = cls.load_redis_dict(value)
+                value = self.load_redis_dict(value)
 
             new_dict[key] = value
 
@@ -79,25 +94,4 @@ class SerializableFakeRedis(fakeredis.FakeStrictRedis):
 
         redis_dict._dict = new_dict
         return redis_dict
-
-    @classmethod
-    def load_db(cls):
-        if not cls.load_needed:
-            return False
-
-        logging.debug('Loading Redis DB')
-        cls.load_needed = False
-        try:
-            with open(cls.filename, 'rt') as fh:
-                buff = fh.read()
-
-            all_dbs = json.loads(buff)
-
-            DATABASES.clear()
-            for db, obj in all_dbs.items():
-                db = int(db)
-                DATABASES[db] = cls.load_redis_dict(obj)
-
-        except Exception as e:
-            logging.debug('Redis DB Load from {0} Failed: {1}'.format(cls.filename, e))
 
