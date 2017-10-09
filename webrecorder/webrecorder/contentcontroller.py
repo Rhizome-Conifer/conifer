@@ -594,6 +594,7 @@ class ContentController(BaseController, RewriterApp):
     def _get_remote_ip(self):
         remote_ip = request.environ.get('HTTP_X_REAL_IP')
         remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
+        remote_ip = remote_ip.rsplit('.', 1)[0]
         return remote_ip
 
     ## RewriterApp overrides

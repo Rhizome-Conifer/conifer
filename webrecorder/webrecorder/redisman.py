@@ -82,6 +82,10 @@ class LoginManagerMixin(object):
         self.rate_limit_key = config['rate_limit_key']
         self.rate_limit_max = int(os.environ.get('RATE_LIMIT_MAX', 0))
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
+        self.rate_limit_restricted_max = int(os.environ.get('RATE_LIMIT_RESTRICTED_MAX', self.rate_limit_max))
+        self.rate_limit_restricted_hours = int(os.environ.get('RATE_LIMIT_RESTRICTED_HOURS', self.rate_limit_hours))
+
+        self.rate_restricted_ips = os.environ.get('RATE_LIMIT_RESTRICTED_IPS', '').split(',')
 
     def add_to_mailing_list(self, username, email, name, list_endpoint=None):
         """3rd party mailing list subscription"""
@@ -296,19 +300,26 @@ class LoginManagerMixin(object):
         if not self.rate_limit_hours or not self.rate_limit_max:
             return False
 
-        if not self.is_anon(user):
+        if self.is_superuser():
             return False
 
         rate_key = self.rate_limit_key.format(ip=ip, H='')
-        h = datetime.utcnow().hour
+        h = int(datetime.utcnow().strftime('%H'))
+
+        if ip in self.rate_restricted_ips:
+            limit_hours = self.rate_limit_restricted_hours
+            limit_max = self.rate_limit_restricted_max
+        else:
+            limit_hours = self.rate_limit_hours
+            limit_max = self.rate_limit_max
 
         rate_keys = [rate_key + '%02d' % ((h - i) % 24)
-                     for i in range(0, self.rate_limit_hours)]
+                     for i in range(0, limit_hours)]
 
         values = self.redis.mget(rate_keys)
         total = sum(int(v) for v in values if v)
 
-        return (total >= self.rate_limit_max)
+        return (total >= limit_max)
 
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
