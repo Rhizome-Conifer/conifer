@@ -1,8 +1,8 @@
-import boto
+import boto3
 from six.moves.urllib.parse import urlsplit, quote_plus
 
 
-## ============================================================================
+# ============================================================================
 class S3Storage(object):
     def __init__(self, config):
         self.remote_url_templ = config['remote_url_templ']
@@ -12,10 +12,10 @@ class S3Storage(object):
 
         self.config = config
 
-        self.conn = boto.connect_s3(aws_access_key_id=config.get('aws_access_key_id'),
-                                    aws_secret_access_key=config.get('aws_secret_access_key'))
+        self.s3 = boto3.client('s3', aws_access_key_id=config.get('aws_access_key_id'),
+                                         aws_secret_access_key=config.get('aws_secret_access_key'))
 
-        self.bucket = self.conn.get_bucket(self.bucket_name)
+        #self.bucket = self.conn.get_bucket(self.bucket_name)
 
     def _split_bucket_path(self, url):
         parts = urlsplit(url)
@@ -42,11 +42,11 @@ class S3Storage(object):
                                                     rec=rec,
                                                     obj_type=obj_type,
                                                     filename=filename)
-
-        key = self.bucket.get_key(remote_path)
-        if key is not None:
+        try:
+            res = client.head_object(Bucket=bucket_name, Key=remote_path)
             return self._get_s3_url(remote_path, self.config.get('profile'))
-        else:
+        except Exception as e:
+            print(e)
             return None
 
     def upload_file(self, user, coll, rec, filename, full_filename, obj_type):
@@ -59,10 +59,11 @@ class S3Storage(object):
         s3_url = self._get_s3_url(remote_path)
 
         try:
-            new_key = self.bucket.new_key(remote_path)
             print('Uploading {0} -> {1}'.format(full_filename, s3_url))
-            with open(full_filename, 'rb') as fh:
-                new_key.set_contents_from_file(fh, replace=False)
+            #new_key = self.bucket.new_key(remote_path)
+            #with open(full_filename, 'rb') as fh:
+            #    new_key.set_contents_from_file(fh, replace=False)
+            self.s3.Object(self.bucket_name, remote_path).put(Body=open(full_filename, 'rb'))
         except Exception as e:
             print(e)
             print('Failed to Upload to {0}'.format(s3_url))
@@ -71,7 +72,7 @@ class S3Storage(object):
         return True
 
     def delete(self, delete_list):
-        path_list = []
+        objects = []
 
         for remote_file in delete_list:
             if not remote_file.startswith('s3://'):
@@ -81,10 +82,12 @@ class S3Storage(object):
             bucket, path = self._split_bucket_path(remote_file)
             print('Deleting Remote', remote_file)
 
-            path_list.append(path)
+            objects.append({'Key': path})
 
         try:
-            self.bucket.delete_keys(path_list)
+            #self.bucket.delete_keys(path_list)
+            self.s3.delete_objects(Bucket=self.bucket_name,
+                                       Delete={'Objects': objects})
 
         except Exception as e:
             print(e)
@@ -96,14 +99,17 @@ class S3Storage(object):
         remote_path = self.remote_path_templ.format(user=user,
                                                     filename='')
 
-        path_list = []
+        objects = []
 
-        for key in self.bucket.list(prefix=remote_path):
-            path_list.append(key)
+        for key in self.s3.list_objects(Bucket=self.bucket_name,
+                                        Prefix=remote_path):
+
+            objects.append({'Key': key})
             print('Deleting ' + key.name)
 
         try:
-            self.bucket.delete_keys(path_list)
+            self.s3.delete_objects(Bucket=self.bucket_name,
+                                   Delete={'Objects': objects})
 
         except Exception as e:
             print(e)
