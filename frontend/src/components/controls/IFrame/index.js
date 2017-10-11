@@ -83,7 +83,7 @@ class IFrame extends Component {
   componentWillUnmount() {
     this.contentFrame.close();
     window.removeEventListener('message', this.handleReplayEvent);
-    this.socket = null;
+    this.socket.close();
   }
 
   setDomainCookie = (state) => {
@@ -161,13 +161,13 @@ class IFrame extends Component {
     const { currMode } = this.context;
     const { timestamp } = this.props;
 
-    if (state && state.ts && currMode !== 'record' && currMode !== 'extract' && state.ts !== timestamp) {
+    if (state && state.ts && currMode !== 'record' && currMode.indexOf('extract') === -1 && state.ts !== timestamp) {
       this.props.dispatch(updateTimestamp(state.ts));
     }
 
     if (state.is_error) {
       this.setUrl(state.url);
-    } else if (['record', 'patch', 'extract'].includes(currMode)) {
+    } else if (['record', 'patch', 'extract', 'extract_only'].includes(currMode)) {
       const recordingId = window.wbinfo.info.rec_id;
       const attributes = {};
 

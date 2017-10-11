@@ -25,7 +25,7 @@ class WebSocketHandler {
   }
 
   initWS = () => {
-    console.log('init ws');
+    console.log('init ws', this.reqUrl);
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     let url = `${wsProtocol}${stripProtocol(__DEVELOPMENT__ ? config.devApi : config.prodApi)}/_client_ws?user=${this.user}&coll=${this.coll}&type=${this.currMode}&url=${encodeURIComponent(this.reqUrl)}`;
 
@@ -46,6 +46,14 @@ class WebSocketHandler {
     } catch (e) {
       this.useWS = false;
     }
+  }
+
+  close = () => {
+    this.ws.removeEventListener('open', this.wsOpened);
+    this.ws.removeEventListener('message', this.wsReceived);
+    this.ws.removeEventListener('close', this.wsClosed);
+    this.ws.removeEventListener('error', this.wsClosed);
+    return this.ws.close();
   }
 
   hasWS = _ => this.useWS;
