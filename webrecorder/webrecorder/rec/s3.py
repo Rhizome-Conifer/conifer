@@ -13,7 +13,7 @@ class S3Storage(object):
         self.config = config
 
         self.s3 = boto3.client('s3', aws_access_key_id=config.get('aws_access_key_id'),
-                                         aws_secret_access_key=config.get('aws_secret_access_key'))
+                                     aws_secret_access_key=config.get('aws_secret_access_key'))
 
         #self.bucket = self.conn.get_bucket(self.bucket_name)
 
@@ -43,7 +43,8 @@ class S3Storage(object):
                                                     obj_type=obj_type,
                                                     filename=filename)
         try:
-            res = client.head_object(Bucket=bucket_name, Key=remote_path)
+            res = self.s3.head_object(Bucket=self.bucket_name,
+                                      Key=remote_path)
             return self._get_s3_url(remote_path, self.config.get('profile'))
         except Exception as e:
             print(e)
@@ -61,9 +62,11 @@ class S3Storage(object):
         try:
             print('Uploading {0} -> {1}'.format(full_filename, s3_url))
             #new_key = self.bucket.new_key(remote_path)
-            #with open(full_filename, 'rb') as fh:
             #    new_key.set_contents_from_file(fh, replace=False)
-            self.s3.Object(self.bucket_name, remote_path).put(Body=open(full_filename, 'rb'))
+            with open(full_filename, 'rb') as fh:
+                self.s3.put_object(Bucket=self.bucket_name,
+                                   Key=remote_path,
+                                   Body=fh)
         except Exception as e:
             print(e)
             print('Failed to Upload to {0}'.format(s3_url))
@@ -87,7 +90,7 @@ class S3Storage(object):
         try:
             #self.bucket.delete_keys(path_list)
             self.s3.delete_objects(Bucket=self.bucket_name,
-                                       Delete={'Objects': objects})
+                                   Delete={'Objects': objects})
 
         except Exception as e:
             print(e)

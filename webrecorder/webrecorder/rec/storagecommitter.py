@@ -162,12 +162,16 @@ class StorageCommitter(object):
             timestamp = timestamp_now()
 
         cdxj_filename = self.write_cdxj(warc_key, user_dir, cdxj_key, timestamp)
+        cdxj_base_name = os.path.basename(cdxj_filename)
 
         all_done = self.commit_file(user, coll, rec, user_dir,
-                                    cdxj_filename, 'indexes', warc_key,
+                                    cdxj_base_name, 'indexes', warc_key,
                                     cdxj_filename, self.info_index_key)
 
         for warc_filename in warcs.keys():
+            if warc_filename == self.info_index_key:
+                continue
+
             value = warcs[warc_filename]
             done = self.commit_file(user, coll, rec, user_dir,
                                     warc_filename, 'warcs', warc_key,
