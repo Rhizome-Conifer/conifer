@@ -13,7 +13,7 @@ export default function infoStats(state = initialState, action = {}) {
     case SET_RESOURCE_STATS:
       return state.merge(action.resourceStats);
     case RESET_RESOURCE_STATS:
-      return state.merge(initialState);
+      return initialState;
     default:
       return state;
   }

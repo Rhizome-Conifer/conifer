@@ -3,7 +3,7 @@ import { fromJS } from 'immutable';
 const SET_SIZE_COUNTER = 'wr/sizeCoutner/SET_SIZE_COUNTER';
 
 const initialState = fromJS({
-  size: 0
+  bytes: 0
 });
 
 export default function sizeCounter(state = initialState, action = {}) {

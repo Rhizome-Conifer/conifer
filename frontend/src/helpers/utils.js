@@ -72,12 +72,12 @@ export function setTitle(msg, url, title) {
 }
 
 /**
- * Remove http/https from urls
+ * Remove http/https from the beginning of a url
  * @param  {string} val url to modify
  * @return {string}     url without protocol
  */
 export function stripProtocol(url) {
-  return url.replace(/https?:\/\//i, '');
+  return url.replace(/^https?:\/\//i, '');
 }
 
 export function truncate(str, length) {

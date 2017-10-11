@@ -10,6 +10,7 @@ import config from 'config';
 import { getOrderedBookmarks, getActiveRecording, getRecording } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { resetStats } from 'redux/modules/infoStats';
 import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
@@ -53,6 +54,11 @@ class Replay extends Component {
       currMode: this.mode,
       canAdmin: auth.getIn(['user', 'username']) === params.user
     };
+  }
+
+  componentWillUnmount() {
+    // clear info stats
+    this.props.dispatch(resetStats());
   }
 
   render() {

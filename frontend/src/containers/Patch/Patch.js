@@ -6,6 +6,7 @@ import config from 'config';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { resetStats } from 'redux/modules/infoStats';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -46,6 +47,11 @@ class Patch extends Component {
       currMode: 'patch',
       canAdmin: auth.getIn(['user', 'username']) === params.user
     };
+  }
+
+  componentWillUnmount() {
+    // clear info stats
+    this.props.dispatch(resetStats());
   }
 
   render() {
