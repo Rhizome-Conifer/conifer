@@ -86,7 +86,7 @@ class ModeSelector extends PureComponent {
 
     const isReplay = currMode.indexOf('replay') !== -1;
     const isRecord = currMode === 'record';
-    const isExtract = currMode === 'extract';
+    const isExtract = currMode.indexOf('extract') !== -1;
     const isPatch = currMode === 'patch';
 
     switch(currMode) {
@@ -102,6 +102,11 @@ class ModeSelector extends PureComponent {
       case 'patch':
         modeMessage = 'Patching';
         modeMarkup = <span className="btn-content"><PatchIcon /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        break;
+      case 'extract':
+      case 'extract_only':
+        modeMessage = 'Extracting';
+        modeMarkup = <span className="btn-content"><span className="glyphicon glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       default:
         break;
@@ -123,7 +128,6 @@ class ModeSelector extends PureComponent {
 
             <div className="dropdown-menu">
               <div className="wr-modes">
-
                 <ul className={classNames('row wr-mode', { active: isReplay })} onClick={this.onReplay} role="button" title="Access an archived version of this URL">
                   <li className="col-xs-3">
                     <span className="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true" />
@@ -153,7 +157,7 @@ class ModeSelector extends PureComponent {
 
                 {
                   isExtract &&
-                    <ul className="row wr-mode" title="Start a new extraction at the current URL">
+                    <ul className={classNames('row wr-mode', { active: isExtract })} title="Start a new extraction at the current URL">
                       <li className="col-xs-3">
                         <span className="glyphicon glyphicon-save glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
                       </li>

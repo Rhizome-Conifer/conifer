@@ -40,8 +40,8 @@ class PatchWidgetUI extends Component {
 
     const classes = classNames('btn-group', { open });
     const archiveName = (
-      stats && stats.size ?
-        `Patched from ${stats.size} source${stats.size === 1 ? '' : 's'}` :
+      stats && stats.length ?
+        `Patched from ${stats.length} source${stats.length === 1 ? '' : 's'}` :
         'Nothing Patched Yet'
     );
 
@@ -53,7 +53,7 @@ class PatchWidgetUI extends Component {
             <li className="mnt-label">
               {archiveName}
               {
-                stats && stats.size &&
+                stats && stats.length &&
                   <span className="caret" />
               }
             </li>

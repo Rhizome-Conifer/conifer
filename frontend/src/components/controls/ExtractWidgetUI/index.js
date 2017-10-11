@@ -11,8 +11,8 @@ import './style.scss';
 class ExtractWidgetUI extends Component {
   static propTypes = {
     active: PropTypes.bool,
-    archiveSources: PropTypes.object,
     extractable: PropTypes.object,
+    stats: PropTypes.array,
     toCollection: PropTypes.string,
     timestamp: PropTypes.number,
     url: PropTypes.string,
@@ -46,7 +46,7 @@ class ExtractWidgetUI extends Component {
   }
 
   render() {
-    const { active, archiveSources, extractable, toCollection } = this.props;
+    const { active, extractable, stats, toCollection } = this.props;
     const { open } = this.state;
     const allSources = extractable.get('allSources');
 
@@ -67,7 +67,7 @@ class ExtractWidgetUI extends Component {
             <li className="ts main-replay-date">{timestamp ? <TimeFormat dt={timestamp} gmt /> : 'Most Recent'}</li>
             <li className="mnt-label">
               {archiveName}
-              {archiveSources.size ? ` + ${archiveSources.size}` : ''}
+              { (stats && stats.length > 1) || (stats && stats.length === 1 && stats[0].id !== extractable.get('id')) ? ` + ${stats.length} ` : ''}
               <span className="caret" /></li>
           </ul>
         </button>
@@ -110,11 +110,15 @@ class ExtractWidgetUI extends Component {
               <div className="ra-resources">
                 <span className="ra-replay-info-label">Resources loaded from:</span>
                 <ul>
-                  <li>No resources loaded yet</li>
+                  {
+                    stats && stats.length ?
+                      stats.map(obj => <li key={obj.id}>{`${obj.name} (${obj.stat})`}</li>) :
+                      <li>No resources loaded yet</li>
+                  }
                 </ul>
               </div> :
               <div className={archiveToggleClasses}>
-                <div className="checkbox-block" onClick={this.toggleSources}>
+                <div className="checkbox-block" role="button" onClick={this.toggleSources}>
                   <input
                     key="sourcesCheckbox"
                     id="all-archives"

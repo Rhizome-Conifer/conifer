@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { getActiveCollection } from 'redux/selectors';
+import { getActiveCollection, getRemoteArchiveStats } from 'redux/selectors';
 import { getArchives, setExtractable,
          setAllSourcesOption } from 'redux/modules/controls';
 
@@ -14,15 +14,17 @@ import { stripProtocol } from 'helpers/utils';
 class ExtractWidget extends Component {
   static propTypes = {
     active: PropTypes.bool,
+    includeButton: PropTypes.bool,
+    toCollection: PropTypes.string,
+
+    // from state
     archives: PropTypes.object,
-    archiveSources: PropTypes.object,
     archivesLoading: PropTypes.bool,
     extractable: PropTypes.object,
     getArchives: PropTypes.func,
-    includeButton: PropTypes.bool,
     setExtractWidget: PropTypes.func,
-    timestamp: PropTypes.number,
-    toCollection: PropTypes.string,
+    stats: PropTypes.array,
+    timestamp: PropTypes.string,
     url: PropTypes.string,
     useAllSources: PropTypes.func
   };
@@ -40,8 +42,9 @@ class ExtractWidget extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(nextProps.url !== this.props.url)
+    if(nextProps.url !== this.props.url) {
       this.parseURL(nextProps.url);
+    }
   }
 
   componentWillUnmount() {
@@ -75,7 +78,6 @@ class ExtractWidget extends Component {
       setExtractWidget({
         allSources: true, // test if exists and enabled?
         archive,
-        fullUrl: url,
         id: match,
         targetColl,
         targetUrl,
@@ -88,19 +90,19 @@ class ExtractWidget extends Component {
   }
 
   render() {
-    const { active, archiveSources, extractable, includeButton,
-            toCollection, url, useAllSources } = this.props;
+    const { active, extractable, includeButton,
+            stats, toCollection, url, useAllSources } = this.props;
 
     return (
       extractable &&
         <div className="input-group-btn extract-selector">
           <ExtractWidgetUI
             active={active}
-            archiveSources={archiveSources}
             extractable={extractable}
+            stats={stats}
             toCollection={toCollection}
-            url={url}
-            toggleAllSources={useAllSources} />
+            toggleAllSources={useAllSources}
+            url={url} />
           {
             includeButton &&
               <button className="btn btn-default" type="submit" role="button" aria-label="Extract">
@@ -112,15 +114,17 @@ class ExtractWidget extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, props) => {
   const controls = state.get('controls');
 
   return {
     archivesLoading: controls.get('archivesLodaing'),
     archives: controls.get('archives'),
-    archiveSources: controls.get('archiveSources'),
     extractable: controls.get('extractable'),
-    toCollection: getActiveCollection(state).title
+    stats: getRemoteArchiveStats(state),
+    timestamp: state.getIn(['controls', 'timestamp']),
+    // use collection provided to widget, or fallback to collection active in global state
+    toCollection: props.toCollection ? props.toCollection : getActiveCollection(state).title
   };
 };
 

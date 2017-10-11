@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
-import { PatchWidget, RemoteBrowserSelect } from 'containers';
+import { ExtractWidget, PatchWidget, RemoteBrowserSelect } from 'containers';
 
 import './style.scss';
 
@@ -12,11 +12,12 @@ class RecordURLBar extends Component {
     canAdmin: PropTypes.bool,
     currMode: PropTypes.string,
     router: PropTypes.object
-  }
+  };
 
   static propTypes = {
+    activeCollection: PropTypes.object,
     params: PropTypes.object
-  }
+  };
 
   constructor(props) {
     super(props);
@@ -37,11 +38,11 @@ class RecordURLBar extends Component {
 
   render() {
     const { currMode, canAdmin } = this.context;
-    const { params } = this.props;
+    const { activeCollection, params } = this.props;
     const { urlInput } = this.state;
 
     const isNew = currMode === 'new';
-    const isExtract = currMode === 'extract';
+    const isExtract = currMode.indexOf('extract') !== -1;
     const isPatch = currMode === 'patch';
 
     /* TODO: fabric-ify these */
@@ -59,12 +60,11 @@ class RecordURLBar extends Component {
               /* {% if not browser %}autofocus{% endif %} */
               <input type="text" onChange={this.handleChange} className="url-input-recorder form-control" name="url" value={urlInput} autoFocus required />
             }
-            {/*
+            {
               isExtract &&
-                <div class="input-group-btn extract-selector">
-                    {{ sources_widget(target=coll_title, active=True, req_timestamp=(ts or (wbrequest.wb_url.timestamp if webrequest else None))) }}
-                </div>
-              */
+                <ExtractWidget
+                  active
+                  toCollection={activeCollection.title} />
             }
             {
               isPatch &&

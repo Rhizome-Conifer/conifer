@@ -15,7 +15,7 @@ import './style.scss';
 
 class StandaloneRecorderUI extends Component {
   static propTypes = {
-    activeCollection: PropTypes.string,
+    activeCollection: PropTypes.object,
     extractable: PropTypes.object,
     remoteBrowserSelected: PropTypes.object,
     username: PropTypes.string
@@ -52,15 +52,15 @@ class StandaloneRecorderUI extends Component {
     }
 
     if (extractable) {
-      const extractMode = `${extractable.get('allSources') ? 'extract' : 'extract_only'}:${extractable.get('id')}`;
-      window.location = `/_new/${activeCollection}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(remoteBrowserSelected, extractable.get('timestamp'))}/${extractable.get('targetUrl')}`;
+      const extractMode = `${extractable.get('allSources') ? 'extract' : 'extract_only'}:${extractable.get('id')}${extractable.get('targetColl') ? `:${extractable.get('targetColl')}` : ''}`;
+      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(remoteBrowserSelected, extractable.get('timestamp'))}/${extractable.get('targetUrl')}`;
     } else {
-      window.location = `/_new/${activeCollection}/${cleanRecordingTitle}/record/${remoteBrowserMod(remoteBrowserSelected, null, '/')}${cleanUrl}`;
+      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/record/${remoteBrowserMod(remoteBrowserSelected, null, '/')}${cleanUrl}`;
     }
   }
 
   render() {
-    const { extractable } = this.props;
+    const { activeCollection, extractable } = this.props;
     const { recordingTitle, url } = this.state;
 
     const isOutOfSpace = false;
@@ -91,6 +91,7 @@ class StandaloneRecorderUI extends Component {
 
           <ExtractWidget
             includeButton
+            toCollection={activeCollection.title}
             url={url} />
 
         </InputGroup>

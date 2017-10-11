@@ -11,6 +11,7 @@ import './style.scss';
 
 class ReplayUI extends Component {
   static propTypes = {
+    activeCollection: PropTypes.object,
     bookmarks: PropTypes.object,
     params: PropTypes.object,
     timestamp: PropTypes.string,
@@ -19,17 +20,17 @@ class ReplayUI extends Component {
 
   static defaultProps = {
     bookmarks: Map(),
-  }
+  };
 
   static contextTypes = {
     currMode: PropTypes.string
-  }
+  };
 
   render() {
     const { currMode } = this.context;
     const { params, timestamp, url } = this.props;
 
-    const isWrite = ['extract', 'patch', 'record'].includes(currMode);
+    const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
 
     return (
       <div>
@@ -39,8 +40,9 @@ class ReplayUI extends Component {
             ts={timestamp}
             url={url} />
 
-          { isWrite &&
-            <SizeCounter bytes={0} />
+          {
+            isWrite &&
+              <SizeCounter bytes={0} />
           }
 
           {

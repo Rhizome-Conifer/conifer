@@ -80,6 +80,7 @@ class NewRecordingUI extends Component {
 
                 <ExtractWidget
                   includeButton
+                  toCollection={collection.get('title')}
                   url={url} />
 
                 {

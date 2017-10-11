@@ -10,14 +10,14 @@ import { NewRecordingUI } from 'components/controls';
 class NewRecording extends Component {
   static contextTypes = {
     product: PropTypes.string
-  }
+  };
 
   static propTypes = {
     auth: PropTypes.object,
-    collection: PropTypes.string,
+    collection: PropTypes.object,
     extractable: PropTypes.object,
     params: PropTypes.object
-  }
+  };
 
   // TODO move to HOC
   static childContextTypes = {
