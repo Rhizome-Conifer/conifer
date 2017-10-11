@@ -40,7 +40,7 @@ export default (store) => {
   const userRoutes = [
     /* collection */
     {
-      path: '/:user([^_]\w+)',
+      path: ':user',
       name: 'collection',
       breadcrumb: true,
       footer: true,
@@ -72,35 +72,28 @@ export default (store) => {
       component: NewRecording
     },
     {
-      path: ':user/:coll/:rec/record/*',
+      path: ':user/:coll/:rec/record/**',
       name: 'record',
       footer: false,
       classOverride: true,
       component: Record
     },
     {
-      path: ':user/:coll/:rec/patch/:ts/*',
+      path: ':user/:coll/:rec/patch/:ts/**',
       name: 'patch',
       footer: false,
       classOverride: true,
       component: Patch
     },
     {
-      path: ':user/:coll/:rec/extract:**/:ts/*',
-      name: 'patch',
+      path: ':user/:coll/:rec/:extractMode::archiveId(::collId)/:ts/**',
+      name: 'extract',
       footer: false,
       classOverride: true,
       component: Extract
     },
     {
-      path: ':user/:coll/:rec/extract_only:**/:ts/*',
-      name: 'patch',
-      footer: false,
-      classOverride: true,
-      component: Extract
-    },
-    {
-      path: ':user/:coll/:ts/*',
+      path: ':user/:coll/:ts/**',
       name: 'replay',
       mode: 'replay',
       footer: false,
