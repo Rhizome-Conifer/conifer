@@ -460,7 +460,7 @@ class WebRecRecorder(object):
             return
 
         user_path = self.warc_path_templ.format(user=delete_user)
-        user_path += '*.warc.gz'
+        user_path += '*.*'
 
         for filename in glob.glob(user_path):
             try:
