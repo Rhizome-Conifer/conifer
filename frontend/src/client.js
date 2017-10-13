@@ -43,37 +43,24 @@ const history = syncHistoryWithStore(browserHistory, store, {
   selectLocationState: createSelectLocationState()
 });
 
-const renderApp = (renderProps, includeDevTools = false) => {
-  let DevTools;
-
-  if(includeDevTools)
-    DevTools = require('./containers/DevTools/DevTools');
-
+const renderApp = (renderProps) => {
   ReactDOM.hydrate(
     <AppContainer>
       <Provider store={store} key="provider">
-        {
-          includeDevTools ?
-            <div>
-              <Root {...{ store, history, ...renderProps }} />
-              <DevTools />
-            </div> :
-            <Root {...{ store, history, ...renderProps }} />
-        }
+        <Root {...{ store, history, ...renderProps }} />
       </Provider>
     </AppContainer>,
     dest
   );
 };
 
-// render app, conditionally with dev tools
-// eslint-disable-next-line
-renderApp({ routes: baseRoute(store), client }, (__DEVTOOLS__ && !window.__REDUX_DEVTOOLS_EXTENSION__));
+// render app
+renderApp({ routes: baseRoute(store), client });
 
 if (module.hot) {
   module.hot.accept('./routes', () => {
     const nextRoutes = require('./routes');
 
-    renderApp({ routes: nextRoutes(store), client }, true);
+    renderApp({ routes: nextRoutes(store), client });
   });
 }

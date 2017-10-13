@@ -15,13 +15,13 @@ export default function createStore(history, client, data) {
   if (__DEVELOPMENT__ && __CLIENT__ && __DEVTOOLS__) {
     // eslint-disable-next-line global-require, import/no-extraneous-dependencies
     const { persistState } = require('redux-devtools');
-    // eslint-disable-next-line global-require
-    const DevTools = require('containers/DevTools/DevTools');
 
-    finalCreateStore = compose(
+    const composeEnhancer = typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?
+                              window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ :
+                              compose;
+
+    finalCreateStore = composeEnhancer(
       applyMiddleware(...middleware),
-      // eslint-disable-next-line
-      window.__REDUX_DEVTOOLS_EXTENSION__ ? window.__REDUX_DEVTOOLS_EXTENSION__() : DevTools.instrument({ maxAge: 20 }),
       persistState(window.location.href.match(/[?&]debug_session=([^&]+)\b/))
     )(_createStore);
   } else {
