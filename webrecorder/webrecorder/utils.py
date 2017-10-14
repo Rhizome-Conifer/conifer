@@ -60,6 +60,14 @@ def sanitize_title(title):
 
 
 # ============================================================================
+def get_bool(string):
+    if not string:
+        return False
+
+    return string.lower() not in ('0', 'false', 'f', 'off')
+
+
+# ============================================================================
 @contextmanager
 def redis_pipeline(redis_obj):
     p = redis_obj.pipeline(transaction=False)
