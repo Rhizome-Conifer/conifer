@@ -19,6 +19,11 @@ class TestNoAnon(BaseWRTests):
         os.environ['ANON_DISABLED'] = '1'
         super(TestNoAnon, cls).setup_class()
 
+    @classmethod
+    def teardown_class(cls):
+        super(TestNoAnon, cls).teardown_class()
+        os.environ['ANON_DISABLED'] = '0'
+
     def test_anon_rec_disabled(self, url):
         res = self.testapp.get(url)
         assert res.status_code == 302
