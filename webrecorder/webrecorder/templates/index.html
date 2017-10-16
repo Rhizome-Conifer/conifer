@@ -43,9 +43,11 @@ var archives = {{ get_archives() | tojson }};
         {% include 'homepage_message.html' %}
     {% endif %}
 
+    {% if curr_user or not anon_disabled %}
     <div class="row top-buffer-lg bottom-buffer-lg">
         {% include 'homepage_recorder.html' %}
     </div>
+    {% endif %}
 
     {% if is_anon and invites_enabled %}
     <div class="row top-buffer">

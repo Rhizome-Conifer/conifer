@@ -46,5 +46,6 @@ datas += copy_metadata('bottle')
 hiddenimports = ['webrecorder.git_hash',
                  'pywb.git_hash',
                  'brotli',
+                 'configparser',
                  '_cffi_backend']
 

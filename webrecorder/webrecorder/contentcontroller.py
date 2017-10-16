@@ -12,6 +12,7 @@ from pywb.apps.rewriterapp import RewriterApp, UpstreamException
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.load.wamloader import WAMLoader
+from webrecorder.utils import get_bool
 
 
 # ============================================================================
@@ -338,6 +339,11 @@ class ContentController(BaseController, RewriterApp):
         user = self.manager.get_curr_user()
 
         if not user:
+            if self.anon_disabled:
+                self.flash_message('Sorry, anonymous recording is not available.')
+                self.redirect('/')
+                return
+
             user = self.manager.get_anon_user(True)
             coll = 'temp'
             coll_title = 'Temporary Collection'

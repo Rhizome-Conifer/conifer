@@ -1,7 +1,7 @@
 from bottle import request, HTTPError, redirect as bottle_redirect
 from functools import wraps
 from six.moves.urllib.parse import quote
-from webrecorder.utils import sanitize_tag, sanitize_title
+from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
 
 import re
 import os
@@ -18,6 +18,7 @@ class BaseController(object):
         self.app_host = os.environ['APP_HOST']
         self.content_host = os.environ['CONTENT_HOST']
         self.cache_template = config.get('cache_template')
+        self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
 
         self.init_routes()
 
@@ -99,6 +100,8 @@ class BaseController(object):
 
     def fill_anon_info(self, resp):
         sesh = self.get_session()
+
+        resp['anon_disabled'] = self.anon_disabled
 
         if sesh.is_anon():
             anon_user = sesh.anon_user

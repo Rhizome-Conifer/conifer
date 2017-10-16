@@ -130,8 +130,6 @@ class TestRecordLimits(FullStackTests):
 
         time.sleep(0.1)
 
-        assert warc_size == os.path.getsize(warc_file)
-
         assert 0 == int(self.redis.hget(user_key, 'size'))
 
         assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 0
