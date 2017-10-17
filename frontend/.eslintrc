@@ -53,7 +53,7 @@
     "new-cap": 0,
     "quote-props": 1,
     "quotes": 1,
-    "no-underscore-dangle": 1
+    "no-underscore-dangle": 0
   },
   "plugins": [
     "react", "import"
