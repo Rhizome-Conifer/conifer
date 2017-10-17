@@ -29,6 +29,7 @@ const bypassUrls = [
   '/api',
   '/_(reportissues|set_session|clear_session)',
   '/_new*',
+  '/_message'
 ];
 
 // TODO: use nginx
