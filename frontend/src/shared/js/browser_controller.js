@@ -72,11 +72,16 @@ export default function CBrowser(reqid, target_div, init_params) {
                 loadScript(window.INCLUDE_URI + 'core/util.js'),
                 loadScript(window.INCLUDE_URI + 'app/webutil.js'),
             ]).then(function (res) {
-                WebUtil.load_scripts({
-                    'core': ["base64.js", "websock.js", "des.js", "input/keysymdef.js",
-                             "input/xtscancodes.js", "input/util.js", "input/devices.js",
-                             "display.js", "inflator.js", "rfb.js", "input/keysym.js"]
-                });
+                var scripts = ["core/base64.js", "core/websock.js", "core/des.js", "core/input/keysymdef.js",
+                                 "core/input/xtscancodes.js", "core/input/util.js", "core/input/devices.js",
+                                 "core/display.js", "core/inflator.js", "core/rfb.js", "core/input/keysym.js"];
+
+                var promises = []
+                for(var i=0; i < scripts.length; i++) {
+                    promises.push(loadScript(window.INCLUDE_URI + scripts[i]));
+                }
+
+                return Promise.all(promises);
             }).catch(err => console.log(err));
         }
 
@@ -103,7 +108,11 @@ export default function CBrowser(reqid, target_div, init_params) {
         cnvs.removeEventListener('click', grab_focus);
 
         for (var i = 0; i < controllerScripts.length; i++) {
-            document.head.removeChild(controllerScripts[i]);
+            try {
+                document.head.removeChild(controllerScripts[i]);
+            } catch (e) {
+                console.log('Error cleaning up after remote browser session', e);
+            }
         }
 
         document.removeEventListener("visibilitychange", visibilityChangeCB);
@@ -294,6 +303,8 @@ export default function CBrowser(reqid, target_div, init_params) {
             getMsgDiv().innerHTML = msg;
 
             setTimeout(init_browser, 3000);
+        } else if (data.error_message && init_params.on_event) {
+            init_params.on_event("error", data.error_message);
         }
     }
 
