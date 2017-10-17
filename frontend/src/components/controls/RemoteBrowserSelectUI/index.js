@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
 import { DropdownButton } from 'react-bootstrap';
 
+import { remoteBrowserMod } from 'helpers/utils';
 import { RemoteBrowserOption } from 'components/controls';
 
 import 'shared/scss/dropdown.scss';
@@ -11,14 +12,28 @@ import 'shared/scss/dropdown.scss';
 class RemoteBrowserSelect extends Component {
 
   static propTypes = {
-    getBrowsers: PropTypes.func,
-    setBrowser: PropTypes.func,
+    accessed: PropTypes.number,
+    active: PropTypes.bool,
+    activeBrowser: PropTypes.string,
     browsers: PropTypes.object,
+    getBrowsers: PropTypes.func,
     loading: PropTypes.bool,
     loaded: PropTypes.bool,
-    accessed: PropTypes.number,
-    activeBrowser: PropTypes.string
-  }
+    params: PropTypes.object,
+    selectRemoteBrowser: PropTypes.func,
+    selectedBrowser: PropTypes.string,
+    timestamp: PropTypes.string,
+    url: PropTypes.string
+  };
+
+  static contextTypes = {
+    router: PropTypes.object,
+    currMode: PropTypes.string
+  };
+
+  static defaultProps = {
+    active: false
+  };
 
   constructor(props) {
     super(props);
@@ -37,15 +52,35 @@ class RemoteBrowserSelect extends Component {
   }
 
   selectBrowser = (id) => {
+    const { active, params, timestamp, url } = this.props;
+    const { currMode } = this.context;
+
     this.setState({ open: false });
-    this.props.setBrowser(id);
+
+    if (active) {
+      const { user, coll, rec } = params;
+
+      if (currMode.indexOf('replay') !== -1) {
+        this.context.router.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
+      } else if (['patch', 'record'].includes(currMode)) {
+        this.context.router.push(`/${user}/${coll}/${rec}/${remoteBrowserMod(id)}/${url}`);
+      } else if (['extract', 'extract_only'].includes(currMode)) {
+        // TODO: extract route
+      }
+    } else {
+      this.props.selectRemoteBrowser(id);
+    }
   }
 
   render() {
-    const { activeBrowser, browsers, loading, loaded } = this.props;
+    const { active, activeBrowser, browsers, loading, loaded, selectedBrowser } = this.props;
     const { open } = this.state;
 
-    const activeBrowserEle = browsers ? browsers.find(b => b.get('id') === activeBrowser) : null;
+    // if this in an active instance of the widget (on replay/record interface) use activeBrowser prop
+    // otherwise use the selected browser from the ui.
+    const instanceContext = active ? activeBrowser : selectedBrowser;
+
+    const activeBrowserEle = browsers ? browsers.find(b => b.get('id') === instanceContext) : null;
 
     const btn = activeBrowserEle ?
       <span className="btn-content">
@@ -72,10 +107,10 @@ class RemoteBrowserSelect extends Component {
             <div>loading options..</div>
           }
           { loaded && browsers &&
-              browsers.valueSeq().map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={activeBrowser === browser.get('id')} />)
+              browsers.valueSeq().map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={instanceContext === browser.get('id')} />)
           }
           {
-            <RemoteBrowserOption browser={fromJS({ id: null, name: '(native) Current' })} selectBrowser={this.selectBrowser} isActive={activeBrowser === null} />
+            <RemoteBrowserOption browser={fromJS({ id: null, name: '(native) Current' })} selectBrowser={this.selectBrowser} isActive={instanceContext === null} />
           }
         </div>
       </DropdownButton>

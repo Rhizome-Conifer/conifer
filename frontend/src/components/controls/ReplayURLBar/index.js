@@ -50,7 +50,9 @@ class ReplayURLBar extends Component {
                 total={bookmarks.size} />
               {
                 canAdmin &&
-                  <RemoteBrowserSelect />
+                  <RemoteBrowserSelect
+                    active
+                    params={params} />
               }
             </div>
 

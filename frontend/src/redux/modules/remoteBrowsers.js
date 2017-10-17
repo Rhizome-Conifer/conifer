@@ -6,6 +6,7 @@ const RB_CREATE_BROWSER = 'wr/rb/CREATE_BROWSER';
 const RB_CREATE_BROWSER_SUCCESS = 'wr/rb/CREATE_BROWSER_SUCCESS';
 const RB_CREATE_BROWSER_FAILURE = 'wr/rb/CREATE_BROWSER_FAILURE';
 const RB_SELECT = 'wr/rb/SELECT';
+const RB_SET = 'wr/rb/SET';
 const RB_LOAD = 'wr/rb/LOAD';
 const RB_LOAD_SUCCESS = 'wr/rb/LOAD_SUCCESS';
 const RB_LOAD_FAIL = 'wr/rb/LOAD_FAIL';
@@ -17,7 +18,8 @@ const initialState = fromJS({
   error: null,
   inactiveTime: null,
   loaded: false,
-  recId: null
+  recId: null,
+  selectedBrowser: null
 });
 
 export default function remoteBrowsers(state = initialState, action = {}) {
@@ -50,6 +52,8 @@ export default function remoteBrowsers(state = initialState, action = {}) {
         error: action.error
       });
     case RB_SELECT:
+      return state.set('selectedBrowser', action.id);
+    case RB_SET:
       return state.set('activeBrowser', action.id);
     default:
       return state;
@@ -82,6 +86,13 @@ export function load() {
 export function selectBrowser(id) {
   return {
     type: RB_SELECT,
+    id
+  };
+}
+
+export function setBrowser(id) {
+  return {
+    type: RB_SET,
     id
   };
 }

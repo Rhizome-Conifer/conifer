@@ -22,7 +22,7 @@ class NewRecordingUI extends Component {
     collection: PropTypes.object,
     extractable: PropTypes.object,
     params: PropTypes.object,
-    remoteBrowserSelected: PropTypes.object
+    remoteBrowserSelected: PropTypes.string
   }
 
   constructor(props) {

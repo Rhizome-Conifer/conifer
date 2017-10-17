@@ -13,7 +13,7 @@ const mapStateToProps = (state) => {
   return {
     activeCollection: getActiveCollection(state),
     extractable: controls.get('extractable'),
-    remoteBrowserSelected: state.getIn(['remoteBrowsers', 'activeBrowser']),
+    selectedBrowser: state.getIn(['remoteBrowsers', 'selectedBrowser']),
     username: user.get('username')
   };
 };

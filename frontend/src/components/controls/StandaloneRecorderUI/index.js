@@ -17,7 +17,7 @@ class StandaloneRecorderUI extends Component {
   static propTypes = {
     activeCollection: PropTypes.object,
     extractable: PropTypes.object,
-    remoteBrowserSelected: PropTypes.object,
+    selectedBrowser: PropTypes.string,
     username: PropTypes.string
   }
 
@@ -41,21 +41,21 @@ class StandaloneRecorderUI extends Component {
 
   startRecording = (evt) => {
     evt.preventDefault();
-    const { activeCollection, extractable, remoteBrowserSelected } = this.props;
+    const { activeCollection, extractable, selectedBrowser } = this.props;
     const { recordingTitle, url } = this.state;
     const cleanRecordingTitle = encodeURIComponent(recordingTitle.trim());
 
     let cleanUrl = addTrailingSlash(fixMalformedUrls(url));
 
-    if (!remoteBrowserSelected && (isSafari() || isMS())) {
+    if (!selectedBrowser && (isSafari() || isMS())) {
       cleanUrl = `mp_${cleanUrl}`;
     }
 
     if (extractable) {
       const extractMode = `${extractable.get('allSources') ? 'extract' : 'extract_only'}:${extractable.get('id')}${extractable.get('targetColl') ? `:${extractable.get('targetColl')}` : ''}`;
-      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(remoteBrowserSelected, extractable.get('timestamp'))}/${extractable.get('targetUrl')}`;
+      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(selectedBrowser, extractable.get('timestamp'))}/${extractable.get('targetUrl')}`;
     } else {
-      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/record/${remoteBrowserMod(remoteBrowserSelected, null, '/')}${cleanUrl}`;
+      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/record/${remoteBrowserMod(selectedBrowser)}/${cleanUrl}`;
     }
   }
 

@@ -28,6 +28,7 @@ const mapStateToProps = (state) => {
     browsers: remoteBrowsers.get('browsers'),
     loaded: remoteBrowsers.get('loaded'),
     loading: remoteBrowsers.get('loading'),
+    selectedBrowser: remoteBrowsers.get('selectedBrowser'),
     timestamp: state.getIn(['controls', 'timestamp']),
     url: state.getIn(['controls', 'url'])
   };
@@ -36,7 +37,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     getBrowsers: () => dispatch(load()),
-    setBrowser: br => dispatch(selectBrowser(br))
+    selectRemoteBrowser: br => dispatch(selectBrowser(br))
   };
 };
 

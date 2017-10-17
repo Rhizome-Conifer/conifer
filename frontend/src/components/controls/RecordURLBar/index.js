@@ -53,7 +53,9 @@ class RecordURLBar extends Component {
             <div className="input-group-btn rb-dropdown">
               {
                 canAdmin &&
-                  <RemoteBrowserSelect />
+                  <RemoteBrowserSelect
+                    active
+                    params={params} />
               }
             </div>
             {

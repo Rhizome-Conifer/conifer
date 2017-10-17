@@ -11,7 +11,7 @@ import { getOrderedBookmarks, getActiveRecording, getRecording } from 'redux/sel
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
-import { createRemoteBrowser, load as loadBrowsers, selectBrowser } from 'redux/modules/remoteBrowsers';
+import { createRemoteBrowser, load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -136,36 +136,13 @@ const initialData = [
 
       const promises = [
         dispatch(updateUrl(splat)),
-        dispatch(updateTimestamp(timestamp))
+        dispatch(updateTimestamp(timestamp)),
+        dispatch(setBrowser(rb))
       ];
-
-      if (rb) {
-        promises.concat([
-          dispatch(selectBrowser(rb))
-        ]);
-      }
 
       return Promise.all(promises);
     }
   },
-  // send request to create remote browser
-  /*
-  {
-    promise: ({ params: { user, coll, ts, splat }, store: { dispatch } }) => {
-      let timestamp = ts;
-      let rb = null;
-
-      if (ts.indexOf('$br:') !== -1) {
-        const parts = ts.split('$br:');
-        timestamp = parts[0];
-        rb = parts[1];
-
-        return dispatch(createRemoteBrowser(rb, user, coll, null, 'replay-coll', `${timestamp}/${splat}`));
-      }
-
-      return undefined;
-    }
-  }*/
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
