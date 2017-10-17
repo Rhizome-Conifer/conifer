@@ -87,3 +87,33 @@ export function truncate(str, length) {
 
   return str.length > length ? `${str.substr(0, length).trim()}...` : str;
 }
+
+export function promiseDelay(t) {
+  return new Promise(resolve => setTimeout(resolve, t));
+}
+
+export function deleteStorage(key, device = window.localStorage) {
+  try {
+    return device.removeItem(`${config.storageKey}${key}`);
+  } catch (e) {
+    console.log(`Failed deleting ${key} in ${device}`);
+  }
+  return null;
+}
+
+export function getStorage(key, device = window.localStorage) {
+  try {
+    return device.getItem(`${config.storageKey}${key}`);
+  } catch (e) {
+    console.log(`Failed getting ${key} in ${device}`);
+  }
+  return null;
+}
+
+export function setStorage(key, value, device = window.localStorage) {
+  try {
+    device.setItem(`${config.storageKey}${key}`, value);
+  } catch (e) {
+    console.log(`Failed setting ${key}=${value} in ${device}`);
+  }
+}

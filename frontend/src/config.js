@@ -45,6 +45,7 @@ module.exports = Object.assign({
   internalApiPort: process.env.INTERNAL_PORT,
   product: 'Webrecorder',
   defaultRecordingTitle: 'Recording Session',
+  storageKey: 'wrLocalData',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),
   app: {
