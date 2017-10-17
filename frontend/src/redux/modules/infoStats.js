@@ -1,7 +1,7 @@
 import { fromJS } from 'immutable';
 
-const SET_RESOURCE_STATS = 'wr/infoWidget/SET_RESOURCE_STATS';
-const RESET_RESOURCE_STATS = 'wr/infoWidget/RESET_RESOURCE_STATS';
+const SET_RESOURCE_STATS = 'wr/infoStats/SET_RESOURCE_STATS';
+const RESET_RESOURCE_STATS = 'wr/infoStats/RESET_RESOURCE_STATS';
 
 const initialState = fromJS({
   stats: {},

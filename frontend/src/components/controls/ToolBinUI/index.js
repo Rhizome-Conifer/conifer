@@ -9,7 +9,7 @@ function ToolBinUI(props, context) {
   const { activeBrowser, bookmarkCount, collSize, open } = props;
   const { currMode } = context;
   const classes = classNames('container-fluid wr-tools', { open });
-  const isReplay = (currMode === 'replay' || currMode === 'replay-coll');
+  const isReplay = currMode.indexOf('replay') !== -1;
 
   return (
     <div className={classes}>
