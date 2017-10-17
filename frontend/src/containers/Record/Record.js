@@ -3,9 +3,11 @@ import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
+import { getRemoteBrowser } from 'helpers/utils';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -57,7 +59,9 @@ class Record extends Component {
 
     return (
       <div>
-        <ReplayUI params={params} />
+        <ReplayUI
+          params={params}
+          url={url} />
 
         {
           activeBrowser ?
@@ -67,7 +71,8 @@ class Record extends Component {
               params={params}
               rb={activeBrowser}
               rec={rec}
-              recId={reqId} /> :
+              recId={reqId}
+              url={url} /> :
             <IFrame
               appPrefix={appPrefix}
               contentPrefix={contentPrefix}
@@ -83,11 +88,18 @@ class Record extends Component {
 
 const initialData = [
   {
-    // set url and ts in store
-    promise: ({ params: { ts, splat }, store: { dispatch } }) => {
+    promise: ({ store: { dispatch } }) => {
+      return dispatch(loadBrowsers());
+    }
+  },
+  {
+    // set url and remote browser
+    promise: ({ params: { br, splat }, store: { dispatch } }) => {
+      const rb = getRemoteBrowser(br);
+
       const promises = [
         dispatch(updateUrl(splat)),
-        dispatch(updateTimestamp(ts))
+        dispatch(setBrowser(rb))
       ];
 
       return Promise.all(promises);

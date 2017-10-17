@@ -63,7 +63,7 @@ class RemoteBrowserSelect extends Component {
       if (currMode.indexOf('replay') !== -1) {
         this.context.router.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
       } else if (['patch', 'record'].includes(currMode)) {
-        this.context.router.push(`/${user}/${coll}/${rec}/${remoteBrowserMod(id)}/${url}`);
+        this.context.router.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id)}/${url}`);
       } else if (['extract', 'extract_only'].includes(currMode)) {
         // TODO: extract route
       }

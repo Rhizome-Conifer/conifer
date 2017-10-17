@@ -72,7 +72,8 @@ export default (store) => {
       component: NewRecording
     },
     {
-      path: ':user/:coll/:rec/record/**',
+      // TODO: rr4 fix optional br id with regex
+      path: ':user/:coll/:rec/record/(:br)/**',
       name: 'record',
       footer: false,
       classOverride: true,

@@ -44,7 +44,7 @@ export function passwordPassRegex(password) {
 }
 
 export function getRemoteBrowser(tsFragment) {
-  if (tsFragment.indexOf('$br') !== -1) {
+  if (tsFragment && tsFragment.indexOf('$br') !== -1) {
     return tsFragment.split('$br:')[1];
   }
   return null;

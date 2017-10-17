@@ -62,6 +62,7 @@ class RemoteBrowser extends Component {
   componentDidMount() {
     const { dispatch, params, rb, rec, timestamp, url } = this.props;
     const { currMode } = this.context;
+    const urlFrag = timestamp ? `${timestamp}/${url}` : url;
 
     if (!window.location.port) {
       this.pywbParams.proxy_ws = '_websockify?port=';
@@ -73,7 +74,7 @@ class RemoteBrowser extends Component {
 
     // generate remote browser
     if (!reqFromStorage) {
-      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, `${timestamp}/${url}`));
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, urlFrag));
     } else {
       this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
     }
@@ -108,6 +109,7 @@ class RemoteBrowser extends Component {
     } else if(nextProps.rb !== rb) {
       // remote browser change request, load from storage or create a new one
       const reqFromStorage = this.getReqFromStorage(nextProps.rb);
+      const urlFrag = timestamp ? `${timestamp}/${url}` : url;
 
       // close current connections
       this.cb.close();
@@ -115,7 +117,7 @@ class RemoteBrowser extends Component {
 
       // generate remote browser
       if (!reqFromStorage) {
-        dispatch(createRemoteBrowser(nextProps.rb, params.user, params.coll, rec, currMode, `${timestamp}/${url}`));
+        dispatch(createRemoteBrowser(nextProps.rb, params.user, params.coll, rec, currMode, urlFrag));
       } else {
         this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
       }
@@ -154,7 +156,8 @@ class RemoteBrowser extends Component {
       this.recreateBrowser();
     } else if (type === 'error') {
       deleteStorage('reqId', window.sessionStorage);
-      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, `${timestamp}/${url}`));
+      const urlFrag = timestamp ? `${timestamp}/${url}` : url;
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, urlFrag));
     }
   }
 

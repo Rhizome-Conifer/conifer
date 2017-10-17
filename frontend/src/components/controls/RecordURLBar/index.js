@@ -16,14 +16,20 @@ class RecordURLBar extends Component {
 
   static propTypes = {
     activeCollection: PropTypes.object,
-    params: PropTypes.object
+    params: PropTypes.object,
+    url: PropTypes.string
   };
 
   constructor(props) {
     super(props);
 
-    const { params } = props;
-    this.state = { urlInput: params.splat || '' };
+    this.state = { urlInput: props.url || '' };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.url !== this.props.url) {
+      this.setState({ urlInput: nextProps.url });
+    }
   }
 
   handleChange = (evt) => {

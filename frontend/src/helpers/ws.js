@@ -4,12 +4,12 @@ import { setStats } from 'redux/modules/infoStats';
 
 import config from 'config';
 
-import { remoteBrowserMod, stripProtocol } from 'helpers/utils';
+import { getRemoteBrowser, remoteBrowserMod, stripProtocol } from 'helpers/utils';
 
 
 class WebSocketHandler {
   constructor(params, currMode, dispatch, remoteBrowser = false, reqId = null) {
-    const { user, coll, rec, splat, ts } = params;
+    const { user, coll, rec, splat, ts, br } = params;
 
     this.startMsg = undefined;
     this.currMode = currMode;
@@ -29,7 +29,8 @@ class WebSocketHandler {
     this.wsEndpoint = '_client_ws';
 
     if (this.isRemoteBrowser) {
-      this.br = ts.split('$br:')[1];
+      // br from write modes, ts modified from replay
+      this.br = getRemoteBrowser(br || ts);
       window.addEventListener('popstate', this.syncOuterFrameState);
     }
 
