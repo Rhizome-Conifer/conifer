@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
+import { remoteBrowserMod } from 'helpers/utils';
 import { setPublic } from 'redux/modules/collection';
 
 import { ShareWidgetUI } from 'components/controls';
@@ -13,6 +14,7 @@ class ShareWidget extends Component {
   }
 
   static propTypes = {
+    activeBrowser: PropTypes.string,
     collection: PropTypes.object,
     params: PropTypes.object,
     setCollPublic: PropTypes.func,
@@ -21,11 +23,13 @@ class ShareWidget extends Component {
   }
 
   render() {
-    const { metadata: { host } } = this.context;
+    const { activeBrowser, metadata: { host } } = this.context;
     const { collection, params: { user, coll }, timestamp, url } = this.props;
 
-    const shareUrl = `${host}${user}/${coll}/${timestamp}/${url}`;
-    const embedUrl = `${host}_embed/${user}/${coll}/${timestamp}/${url}`;
+    const tsMod = remoteBrowserMod(activeBrowser, timestamp);
+
+    const shareUrl = `${host}${user}/${coll}/${tsMod}/${url}`;
+    const embedUrl = `${host}_embed/${user}/${coll}/${tsMod}/${url}`;
     const isPublic = collection.get('isPublic') === '1';
 
     return (
@@ -41,6 +45,7 @@ class ShareWidget extends Component {
 
 const mapStateToProps = (state) => {
   return {
+    activeBrowser: state.getIn(['remoteBrowsers', 'activeBrowser']),
     collection: state.get('collection'),
     timestamp: state.getIn(['controls', 'timestamp']),
     url: state.getIn(['controls', 'url'])

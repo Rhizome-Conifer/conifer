@@ -4,14 +4,14 @@ import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
-import { truncate } from 'helpers/utils';
+import { remoteBrowserMod, truncate } from 'helpers/utils';
 import config from 'config';
 
 import { getOrderedBookmarks, getActiveRecording, getRecording } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
-import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
+import { createRemoteBrowser, load as loadBrowsers, selectBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -44,7 +44,9 @@ class Replay extends Component {
   constructor(props) {
     super(props);
 
-    this.mode = 'replay';
+
+    // TODO: unify replay and replay-coll
+    this.mode = 'replay-coll';
   }
 
   getChildContext() {
@@ -66,7 +68,9 @@ class Replay extends Component {
             recordingIndex, reqId, timestamp, url } = this.props;
     const { product } = this.context;
 
-    const shareUrl = `${config.host}${params.user}/${params.coll}/${params.ts}/${params.splat}`;
+    const tsMod = remoteBrowserMod(activeBrowser, timestamp);
+
+    const shareUrl = `${config.host}${params.user}/${params.coll}/${tsMod}/${params.splat}`;
     const appPrefix = `${config.appHost}/${params.user}/${params.coll}/`;
     const contentPrefix = `${config.contentHost}/${params.user}/${params.coll}/`;
 
@@ -93,11 +97,12 @@ class Replay extends Component {
           activeBrowser ?
             <RemoteBrowser
               dispatch={dispatch}
-              mode={this.mode}
               params={params}
               rb={activeBrowser}
               rec={recording ? recording.get('id') : null}
-              recId={reqId} /> :
+              reqId={reqId}
+              timestamp={timestamp}
+              url={url} /> :
             <IFrame
               appPrefix={appPrefix}
               contentPrefix={contentPrefix}
@@ -113,16 +118,54 @@ class Replay extends Component {
 
 const initialData = [
   {
+    promise: ({ store: { dispatch } }) => {
+      return dispatch(loadBrowsers());
+    }
+  },
+  {
     // set url and ts in store
     promise: ({ params: { ts, splat }, store: { dispatch } }) => {
+      let timestamp = ts;
+      let rb = null;
+
+      if (ts.indexOf('$br:') !== -1) {
+        const parts = ts.split('$br:');
+        timestamp = parts[0];
+        rb = parts[1];
+      }
+
       const promises = [
         dispatch(updateUrl(splat)),
-        dispatch(updateTimestamp(ts))
+        dispatch(updateTimestamp(timestamp))
       ];
+
+      if (rb) {
+        promises.concat([
+          dispatch(selectBrowser(rb))
+        ]);
+      }
 
       return Promise.all(promises);
     }
   },
+  // send request to create remote browser
+  /*
+  {
+    promise: ({ params: { user, coll, ts, splat }, store: { dispatch } }) => {
+      let timestamp = ts;
+      let rb = null;
+
+      if (ts.indexOf('$br:') !== -1) {
+        const parts = ts.split('$br:');
+        timestamp = parts[0];
+        rb = parts[1];
+
+        return dispatch(createRemoteBrowser(rb, user, coll, null, 'replay-coll', `${timestamp}/${splat}`));
+      }
+
+      return undefined;
+    }
+  }*/
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
@@ -137,21 +180,6 @@ const initialData = [
       return undefined;
     }
   },
-  /*
-  {
-    promise: ({ params: { coll, rec, ts, splat }, store: { dispatch, getState } }) => {
-      const state = getState();
-      const rb = state.getIn(['remoteBrowsers', 'activeBrowser']);
-      const urlFrag = `${ts}/${splat}`;
-
-      // if remote browser is active, load up a new instance
-      if (rb) {
-        return dispatch(createRemoteBrowser(rb, coll, rec, this.mode, urlFrag));
-      }
-
-      return undefined;
-    }
-  },*/
   {
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();

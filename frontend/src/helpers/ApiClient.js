@@ -17,7 +17,7 @@ export default class ApiClient {
   constructor(req) {
     // eslint-disable-next-line no-return-assign
     methods.forEach(method =>
-      this[method] = (path, { params, data } = {}, dataType = false) => new Promise((resolve, reject) => {
+      ApiClient.prototype[method] = (path, { params, data } = {}, dataType = false) => new Promise((resolve, reject) => {
         const request = superagent[method](formatUrl(path));
 
         console.log('requesting', formatUrl(path));

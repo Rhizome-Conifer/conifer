@@ -27,7 +27,9 @@ const mapStateToProps = (state) => {
     activeBrowser: remoteBrowsers.get('activeBrowser'),
     browsers: remoteBrowsers.get('browsers'),
     loaded: remoteBrowsers.get('loaded'),
-    loading: remoteBrowsers.get('loading')
+    loading: remoteBrowsers.get('loading'),
+    timestamp: state.getIn(['controls', 'timestamp']),
+    url: state.getIn(['controls', 'url'])
   };
 };
 

@@ -1,6 +1,7 @@
 import { fromJS } from 'immutable';
 import config from 'config';
 
+
 const RB_CREATE_BROWSER = 'wr/rb/CREATE_BROWSER';
 const RB_CREATE_BROWSER_SUCCESS = 'wr/rb/CREATE_BROWSER_SUCCESS';
 const RB_CREATE_BROWSER_FAILURE = 'wr/rb/CREATE_BROWSER_FAILURE';

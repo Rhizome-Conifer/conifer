@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import WebSocketHandler from 'helpers/ws';
+import { deleteStorage, getStorage, setStorage } from 'helpers/utils';
 import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
 import CBrowser from 'shared/js/browser_controller';
@@ -14,11 +16,13 @@ class RemoteBrowser extends Component {
 
   static propTypes = {
     dispatch: PropTypes.func,
-    mode: PropTypes.string,
+    inactiveTime: PropTypes.number,
     params: PropTypes.object,
     rb: PropTypes.string,
     rec: PropTypes.string,
-    reqId: PropTypes.string
+    reqId: PropTypes.string,
+    timestamp: PropTypes.string,
+    url: PropTypes.string
   }
 
   constructor(props) {
@@ -36,12 +40,13 @@ class RemoteBrowser extends Component {
       api_prefix: '/api/browsers'
     };
 
-    if (!window.location.port) {
-      this.pywbParams.proxy_ws = '_websockify?port=';
-    }
-
     this.pywbParams.clipboard = '#clipboard';
     this.pywbParams.fill_window = false;
+    this.pywbParams.static_prefix = '/shared/';
+
+    // event callbacks
+    this.pywbParams.on_countdown = this.onCountdown;
+    this.pywbParams.on_event = this.onEvent;
 
     /* TODO:
     $("#report-modal").on("shown.bs.modal", function () {
@@ -55,33 +60,71 @@ class RemoteBrowser extends Component {
   }
 
   componentDidMount() {
-    const { dispatch, mode, params: { coll, splat, ts, user }, rb, rec } = this.props;
-    const urlFrag = `${ts}/${splat}`;
+    const { dispatch, params, rb, rec, timestamp, url } = this.props;
+    const { currMode } = this.context;
+
+    if (!window.location.port) {
+      this.pywbParams.proxy_ws = '_websockify?port=';
+    }
+
+    // get any preexisting remote browsers from session storage,
+    // checking whether they are stale. If so request a new one.
+    const reqFromStorage = this.getReqFromStorage(rb);
 
     // generate remote browser
-    dispatch(createRemoteBrowser(rb, user, coll, rec, mode, urlFrag));
-
-    // event callbacks
-    this.pywbParams.onCountdown = this.onCountdown;
-    this.pywbParams.onEvent = this.onEvent;
-
-    // TODO: get from api
-    this.pywbParams.inactiveSecs = window.inacticeSecs;
-
-    this.pywbParams.static_prefix = '/shared/';
+    if (!reqFromStorage) {
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, `${timestamp}/${url}`));
+    } else {
+      this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.reqId !== this.props.reqId) {
-      // TODO: reqid in global state/localStorage?
-      // TODO: reuse remote browsers
-      this.cb = new CBrowser(nextProps.reqId, '#browser', this.pywbParams);
-      window.cb = this.cb;
+    const { dispatch, params, rb, rec, reqId, timestamp, url } = this.props;
+    const { currMode } = this.context;
+
+    if (nextProps.reqId !== reqId && nextProps.rb === rb) {
+      // new reqId for browser, initialize and save
+      this.connectToRemoteBrowser(nextProps.reqId, nextProps.inactiveTime);
+
+      // get any existing local browser sessions
+      let existingData;
+      try {
+        existingData = JSON.parse(getStorage('reqId', window.sessionStorage) || '{}');
+      } catch (e) {
+        existingData = {};
+      }
+      const data = JSON.stringify({
+        ...existingData,
+        [rb]: {
+          reqId: nextProps.reqId,
+          accessed: Date.now(),
+          inactiveTime: nextProps.inactiveTime
+        }
+      });
+
+      // write to storage for later reuse
+      setStorage('reqId', data, window.sessionStorage);
+    } else if(nextProps.rb !== rb) {
+      // remote browser change request, load from storage or create a new one
+      const reqFromStorage = this.getReqFromStorage(nextProps.rb);
+
+      // close current connections
+      this.cb.close();
+      this.socket.close();
+
+      // generate remote browser
+      if (!reqFromStorage) {
+        dispatch(createRemoteBrowser(nextProps.rb, params.user, params.coll, rec, currMode, `${timestamp}/${url}`));
+      } else {
+        this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
+      }
     }
   }
 
   componentWillUnmount() {
     this.cb.close();
+    this.socket.close();
   }
 
   onCountdown = (seconds, countdownText) => {
@@ -98,6 +141,9 @@ class RemoteBrowser extends Component {
   }
 
   onEvent = (type, data) => {
+    const { dispatch, rb, params, rec, timestamp, url } = this.props;
+    const { currMode } = this.context;
+
     if (type === 'connect') {
       this.setState({ message: '' });
 
@@ -106,7 +152,41 @@ class RemoteBrowser extends Component {
       }
     }else if (['fail', 'expire'].includes(type)) {
       this.recreateBrowser();
+    } else if (type === 'error') {
+      deleteStorage('reqId', window.sessionStorage);
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, `${timestamp}/${url}`));
     }
+  }
+
+  getReqFromStorage = (rb) => {
+    /* Returns a browser info object if it exists in storage and hasn't expired,
+       otherwise `null`.
+     */
+    let reqFromStorage;
+    try {
+      reqFromStorage = JSON.parse(getStorage('reqId', window.sessionStorage) || '{}');
+    } catch (e) {
+      console.log('error loading from storage', e);
+      reqFromStorage = {};
+    }
+
+    return reqFromStorage[rb] && (Date.now() - reqFromStorage[rb].accessed) / 1000 < reqFromStorage[rb].inactiveTime ? reqFromStorage[rb] : null;
+  }
+
+  connectToRemoteBrowser = (reqId, inactiveTime) => {
+    /* Connect to the initialized remote browser session and open the websocket
+    */
+    const { dispatch, params } = this.props;
+    const { currMode } = this.context;
+
+    this.pywbParams.inactiveSecs = inactiveTime;
+
+    // set up socket
+    this.socket = new WebSocketHandler(params, currMode, dispatch, true, reqId);
+
+    // connect to rb
+    this.cb = new CBrowser(reqId, '#browser', this.pywbParams);
+    window.cb = this.cb;
   }
 
   recreateBrowser = () => {
@@ -152,6 +232,7 @@ class RemoteBrowser extends Component {
   }
 
   render() {
+    const { message } = this.state;
     return (
       <div>
         <div id="message" className="browser" />

@@ -1,14 +1,15 @@
+import { updateUrl, updateTimestamp } from 'redux/modules/controls';
 import { setSizeCounter } from 'redux/modules/sizeCounter';
 import { setStats } from 'redux/modules/infoStats';
 
 import config from 'config';
 
-import { stripProtocol } from 'helpers/utils';
+import { remoteBrowserMod, stripProtocol } from 'helpers/utils';
 
 
 class WebSocketHandler {
-  constructor(params, currMode, dispatch) {
-    const { user, coll, rec, splat } = params;
+  constructor(params, currMode, dispatch, remoteBrowser = false, reqId = null) {
+    const { user, coll, rec, splat, ts } = params;
 
     this.startMsg = undefined;
     this.currMode = currMode;
@@ -18,8 +19,19 @@ class WebSocketHandler {
     this.reqUrl = splat;
     this.useWS = false;
     this.dispatch = dispatch;
+    this.lastPopUrl = undefined;
+    this.params = params;
 
     this.isProxy = false;
+    this.isRemoteBrowser = remoteBrowser;
+    this.br = null;
+    this.reqId = reqId;
+    this.wsEndpoint = '_client_ws';
+
+    if (this.isRemoteBrowser) {
+      this.br = ts.split('$br:')[1];
+      window.addEventListener('popstate', this.syncOuterFrameState);
+    }
 
     this.initWS();
   }
@@ -27,15 +39,17 @@ class WebSocketHandler {
   initWS = () => {
     console.log('init ws', this.reqUrl);
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    let url = `${wsProtocol}${stripProtocol(__DEVELOPMENT__ ? config.devApi : config.prodApi)}/_client_ws?user=${this.user}&coll=${this.coll}&type=${this.currMode}&url=${encodeURIComponent(this.reqUrl)}`;
+    let url = `${wsProtocol}${stripProtocol(__DEVELOPMENT__ ? config.devApi : config.prodApi)}/${this.wsEndpoint}?user=${this.user}&coll=${this.coll}`;
 
     if(this.rec && this.rec !== '*') {
       url += `&rec=${this.rec}`;
     }
 
-    if (window.reqid) {
-      url += `&reqid=${window.reqid}`;
+    if (this.reqId) {
+      url += `&reqid=${this.reqId}`;
     }
+
+    url += `&type=${this.currMode}&url=${encodeURIComponent(this.reqUrl)}`;
 
     try {
       this.ws = new WebSocket(url);
@@ -53,6 +67,11 @@ class WebSocketHandler {
     this.ws.removeEventListener('message', this.wsReceived);
     this.ws.removeEventListener('close', this.wsClosed);
     this.ws.removeEventListener('error', this.wsClosed);
+
+    if (this.isRemoteBrowser) {
+      window.removeEventListener('popstate', this.syncOuterFrameState);
+    }
+
     return this.ws.close();
   }
 
@@ -89,24 +108,26 @@ class WebSocketHandler {
           this.dispatch(setStats(msg.stats, msg.size));
         }
         break;
-      case 'remote_url':
-        /*
-        if (window.cnt_browser) {
-          var page = msg.page;
-          setTimestamp(page.timestamp);
-          setUrl(page.url);
-          setTitle("Remote", page.url, page.title);
-          replaceOuterUrl(page, "load");
+      case 'remote_url': {
+        if (this.isRemoteBrowser) {
+          const page = msg.page;
+          this.dispatch(updateTimestamp(page.timestamp));
+          this.dispatch(updateUrl(page.url));
+
+          //setTitle("Remote", page.url, page.title);
+          this.replaceOuterUrl(page, "load");
         }
-         */
         break;
+      }
       case 'patch_req':
-        /*
-        if (window.cnt_browser) {
-          if (window.curr_mode == "replay-coll" || window.curr_mode == "replay") {
-            EventHandlers.switchCBPatch(getUrl());
+        console.log('patch_req', msg);
+        if (this.isRemoteBrowser) {
+          // if we're replaying
+          if (this.currMode.indexOf('replay') !== -1) {
+            // TODO
+            // EventHandlers.switchCBPatch(getUrl());
           }
-        }*/
+        }
         break;
       case 'snapshot':
           // Snapshot.updateModal(msg);
@@ -123,6 +144,29 @@ class WebSocketHandler {
 
     this.ws.send(JSON.stringify(msg));
     return true;
+  }
+
+  syncOuterFrameState = (evt) => {
+    if (evt && evt.state) {
+      const { state } = evt;
+      this.lastPopUrl = state.url;
+
+      switch (state.change) {
+        case 'load':
+          this.setRemoteUrl(state.url);
+          break;
+        case 'patch':
+          // TODO:
+          // EventHandlers.switchCBReplay(getUrl());
+          break;
+        case 'replay-coll':
+          // TODO:
+          // EventHandlers.switchCBPatch(getUrl());
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   /* proxy specific fns */
@@ -148,6 +192,29 @@ class WebSocketHandler {
     }
 
     return this.sendMsg(msg);
+  }
+
+  replaceOuterUrl = (msg, change) => {
+    const ts = msg.timestamp;
+    const mod = remoteBrowserMod(this.br, this.currMode.indexOf('replay') !== -1 && ts ? ts : null, '/');
+    const url = msg.url;
+    let prefix;
+
+    if (this.currMode.indexOf('replay') !== -1) {
+      prefix = `${config.appHost}/${this.user}/${this.coll}/`;
+    } else {
+      // TODO: build extract prefix
+      prefix = `${config.appHost}/${this.user}/${this.coll}/${this.rec}/${this.currMode}/`;
+    }
+
+    msg.change = change;
+
+    if (url !== this.lastPopUrl) {
+      window.history.pushState(msg, msg.title, prefix + mod + url);
+      this.lastPopUrl = undefined;
+    } else if (change === 'load') {
+      this.lastPopUrl = undefined;
+    }
   }
 
   /* actions */

@@ -7,7 +7,8 @@ import { RemoteBrowserUI } from 'components/controls';
 const mapStateToProps = (state) => {
   const remoteBrowsers = state.get('remoteBrowsers');
   return {
-    reqId: remoteBrowsers.get('reqId')
+    inactiveTime: remoteBrowsers.get('inactiveTime'),
+    reqId: remoteBrowsers.get('reqId'),
   };
 };
 
