@@ -72,7 +72,8 @@ class Extract extends Component {
       <div>
         <ReplayUI
           activeCollection={activeCollection}
-          params={params} />
+          params={params}
+          url={url} />
 
         {
           activeBrowser ?

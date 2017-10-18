@@ -3,8 +3,8 @@ import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 import { FAQ, TermsAndPolicies } from 'components/siteComponents';
 import {
   Application,
-  CollectionList,
   CollectionDetail,
+  CollectionList,
   Extract,
   Home,
   HttpStatus,
@@ -72,8 +72,15 @@ export default (store) => {
       component: NewRecording
     },
     {
-      // TODO: rr4 fix optional br id with regex
-      path: ':user/:coll/:rec/record/(:br)/**',
+      // record with remote browser id
+      path: ':user/:coll/:rec/record/$br::br/**',
+      name: 'record',
+      footer: false,
+      classOverride: true,
+      component: Record
+    },
+    {
+      path: ':user/:coll/:rec/record/**',
       name: 'record',
       footer: false,
       classOverride: true,
