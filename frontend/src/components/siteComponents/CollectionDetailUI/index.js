@@ -57,15 +57,20 @@ class CollectionDetailUI extends Component {
           {
             recordings.map(rec =>
               <div className="wr-coll-session">
-                <header>
-                  <h2>{rec.get('title')}</h2>
-                  <TimeFormat epoch={rec.get('updated_at')} />
-                  <SizeFormat bytes={rec.get('size')} />
-                </header>
-                <PageList
-                  browsers={browsers}
-                  coll={collection}
-                  pages={rec.get('pages')} />
+                <Collapsible
+                  lazyRender
+                  trigger={
+                    <header>
+                      <h2>{rec.get('title')}</h2>
+                      <TimeFormat epoch={rec.get('updated_at')} />
+                      <SizeFormat bytes={rec.get('size')} />
+                    </header>
+                  }>
+                  <PageList
+                    browsers={browsers}
+                    coll={collection}
+                    pages={rec.get('pages')} />
+                </Collapsible>
               </div>
             )
           }

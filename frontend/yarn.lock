@@ -5229,6 +5229,10 @@ react-broadcast@^0.5.2:
     invariant "^2.2.1"
     prop-types "^15.5.6"
 
+react-collapsible@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/react-collapsible/-/react-collapsible-2.0.3.tgz#b7228b002428a6e0a9f41646ea61ba28aacfcb00"
+
 react-deep-force-update@^2.0.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/react-deep-force-update/-/react-deep-force-update-2.1.1.tgz#8ea4263cd6455a050b37445b3f08fd839d86e909"

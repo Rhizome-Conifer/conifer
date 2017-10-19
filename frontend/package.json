@@ -68,6 +68,7 @@
     "react-addons-css-transition-group": "^15.4.2",
     "react-bootstrap": "^0.31.3",
     "react-breadcrumbs-dynamic": "^1.0.9",
+    "react-collapsible": "^2.0.3",
     "react-dom": "^16.0.0",
     "react-helmet": "^5.2.0",
     "react-hot-loader": "^3.0.0-beta.6",
