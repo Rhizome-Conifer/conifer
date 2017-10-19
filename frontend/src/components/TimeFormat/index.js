@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 class TimeFormat extends Component {
   static propTypes = {
+    classes: PropTypes.string,
     dt: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
     epoch: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
     gmt: PropTypes.bool
@@ -69,9 +70,11 @@ class TimeFormat extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const { displayTime } = this.state;
+
     return (
-      <span>
+      <span className={classes}>
         { displayTime }
       </span>
     );

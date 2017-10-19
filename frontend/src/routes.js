@@ -58,6 +58,7 @@ export default (store) => {
       name: 'collectionDetail',
       breadcrumb: true,
       footer: false,
+      classOverride: true,
       component: CollectionDetail
     }
   ];

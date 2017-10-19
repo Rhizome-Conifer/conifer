@@ -1,5 +1,8 @@
+@import 'src/vars';
 
 .wr-coll-detail {
+    margin: 0 2.5rem;
+
     & > header {
         margin-bottom: 5rem;
 
@@ -17,6 +20,7 @@
             display: flex;
             justify-content: flex-start;
             align-items: center;
+            margin-bottom: 2.5rem;
 
             & > * {
                 margin-right: 2.5rem;
@@ -24,6 +28,18 @@
 
                 &.glyphicon {
                     font-size: 1.8rem;
+                }
+            }
+
+            .toggle-label {
+                display: flex;
+                align-items: center;
+
+                & > span:first-of-type {
+                    vertical-align: top;
+                    font-weight: bold;
+                    padding-right: 1rem;
+                    cursor: pointer;
                 }
             }
 
@@ -54,7 +70,7 @@
                     }
 
                     &.bookmark-url {
-                        white-space: nowrap;
+                        //white-space: nowrap;
                     }
                 }
 
@@ -67,14 +83,45 @@
             display: flex;
             justify-content: flext-start;
             align-items: center;
+            padding: 1rem 0;
 
-            h2 {
-                font-size: 1.4rem;
+            &.collapsible {
+                cursor: pointer;
+
+                &:hover {
+                    color: $collTrigger;
+                }
             }
 
-            & > *:nth-child(2) {
+            h2 {
+                transition: color 200ms ease-in-out;
+                font-size: 1.4rem;
+                margin: 0;
+            }
+
+            .session-ts {
                 margin-left: auto;
                 margin-right: 1.5rem;
+            }
+
+
+            .glyphicon-triangle-right {
+                transition: transform 350ms ease-in-out;
+                transform-origin: center center;
+                margin-right: .5rem;
+                color: $collTrigger;
+            }
+        }
+
+        .Collapsible__trigger {
+            &.is-open {
+                h2 {
+                    color: $collTrigger;
+                }
+
+                .glyphicon-triangle-right {
+                    transform: rotateZ(90deg);
+                }
             }
         }
     }
