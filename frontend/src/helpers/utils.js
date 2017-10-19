@@ -124,3 +124,12 @@ export function setStorage(key, value, device = window.localStorage) {
     console.log(`Failed setting ${key}=${value} in ${device}`);
   }
 }
+
+export function inStorage(key, device = window.localStorage) {
+  try {
+    return Object.prototype.hasOwnProperty.call(device, `${config.storageKey}${key}`);
+  } catch (e) {
+    console.log(`Failed checking ${device} for key ${key}`);
+    return false;
+  }
+}

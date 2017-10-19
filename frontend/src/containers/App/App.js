@@ -59,6 +59,26 @@ export class App extends Component { // eslint-disable-line
     };
   }
 
+  componentWillMount() {
+    const { routes } = this.context.router;
+    const currMatch = routes[routes.length - 1];
+
+    // set initial route
+    this.setState({ lastMatch: currMatch });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { routes } = this.context.router;
+    const currMatch = routes[routes.length - 1];
+
+    if (!this.props.loaded && nextProps.loaded) {
+      if (!this.state.lastMatch || this.state.lastMatch.path !== currMatch.path) {
+        // set last matched route for classOverride check
+        this.setState({ lastMatch: currMatch });
+      }
+    }
+  }
+
   componentDidCatch(error, info) {
     this.setState({ error, info });
   }
@@ -66,15 +86,18 @@ export class App extends Component { // eslint-disable-line
   render() {
     const { routes } = this.context.router;
     const { loaded } = this.props;
-    const { error, info } = this.state;
+    const { error, info, lastMatch } = this.state;
 
     const match = routes[routes.length - 1];
-    const hasFooter = match.footer;
+    const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
     const classOverride = match.classOverride;
+    const lastClassOverride = lastMatch ? lastMatch.classOverride : classOverride;
+
     const classes = classNames({
-      'container wr-content': !classOverride,
+      'container wr-content': !loaded ? !lastClassOverride : !classOverride,
       loading: !loaded
     });
+
     console.log('rendering app');
 
     if (error || info) {
