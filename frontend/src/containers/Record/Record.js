@@ -95,11 +95,10 @@ const initialData = [
   {
     // set url and remote browser
     promise: ({ params: { br, splat }, store: { dispatch } }) => {
-      const rb = getRemoteBrowser(br);
-
+      console.log('br', br);
       const promises = [
         dispatch(updateUrl(splat)),
-        dispatch(setBrowser(rb))
+        dispatch(setBrowser(br || null))
       ];
 
       return Promise.all(promises);

@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
+import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
+import { truncate } from 'helpers/utils';
 
 import { NewRecordingUI } from 'components/controls';
 
@@ -36,15 +38,18 @@ class NewRecording extends Component {
   }
 
   render() {
-    const { collection, extractable } = this.props;
+    const { collection, extractable, params: { user, coll } } = this.props;
 
-    return (
-      <div>
-        <NewRecordingUI
-          collection={collection}
-          extractable={extractable} />
-      </div>
-    );
+    return [
+      <BreadcrumbsItem to={`/${user}`}>{ user }</BreadcrumbsItem>,
+      <BreadcrumbsItem to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>,
+      <BreadcrumbsItem to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>,
+      <BreadcrumbsItem to={`/${user}/${coll}/$new`}>Create a new recording</BreadcrumbsItem>,
+
+      <NewRecordingUI
+        collection={collection}
+        extractable={extractable} />
+    ];
   }
 }
 
