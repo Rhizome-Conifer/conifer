@@ -1,5 +1,4 @@
 export Application from './App/App';
-export CollectionDetail from './CollectionDetail/CollectionDetail';
 export CollectionDropdown from './CollectionDropdown/CollectionDropdown';
 export CollectionList from './CollectionList/CollectionList';
 export Extract from './Extract/Extract';
@@ -9,7 +8,9 @@ export HttpStatus from './HttpStatus/HttpStatus';
 export InfoWidget from './InfoWidget/InfoWidget';
 export Logout from './Logout/Logout';
 export ModeSelector from './ModeSelector/ModeSelector';
+export CollectionDetail from './CollectionDetail/CollectionDetail';
 export NewRecording from './NewRecording/NewRecording';
+export LegacyCollectionDetail from './LegacyCollectionDetail/CollectionDetail';
 export PasswordReset from './PasswordReset/PasswordReset';
 export Patch from './Patch/Patch';
 export PatchWidget from './PatchWidget/PatchWidget';

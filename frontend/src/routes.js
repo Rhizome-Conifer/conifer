@@ -57,7 +57,7 @@ export default (store) => {
       path: ':user/:coll(/:rec)',
       name: 'collectionDetail',
       breadcrumb: true,
-      footer: true,
+      footer: false,
       component: CollectionDetail
     }
   ];
