@@ -35,6 +35,10 @@ class TestPatchContent(FullStackTests):
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == 1
 
+    def test_patch_js(self):
+        res = self.testapp.get('/{user}/temp/new-patch/patch/mp_/https://www.iana.org/_js/2013.1/jquery.js'.format(user=self.anon_user))
+        assert 'let window' in res.text
+
     def test_patch_content_at_timestamp(self):
         res = self.testapp.get('/_new/temp/new-patch-2/patch/2000mp_/http://example.com/')
         assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/new-patch-2/patch/2000mp_/http://example.com/')

@@ -491,8 +491,7 @@ class ContentController(BaseController, RewriterApp):
                       patch_rec=patch_rec,
                       ip=remote_ip,
                       is_embed=is_embed,
-                      is_display=is_display,
-                      use_js_obj_proxy=True)
+                      is_display=is_display)
 
         try:
             self.check_if_content(wb_url_obj, request.environ, is_top_frame)
