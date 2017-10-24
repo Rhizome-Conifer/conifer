@@ -208,6 +208,12 @@ class CollsController(BaseController):
             rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
             return self.get_collection_info_for_view(user, coll, rec_list)
 
+        @self.app.get('/api/v1/collections/<coll>/urls')
+        def url_query(coll):
+            user = self.get_user(api=True)
+
+            return self.list_urls(user, coll)
+
     def get_collection_info_for_view(self, user, coll, rec_list=None):
         self.redir_host()
         result = self.get_collection_info(user, coll)
@@ -274,4 +280,57 @@ class CollsController(BaseController):
             page_data_list.append(page_data)
 
         return desc, page_data_list
+
+    def list_urls(self, user, coll):
+        mime_lookup = {'html': 'text/html',
+                       'image': 'image/',
+                       'video': 'video/',
+                       'audio': 'audio/',
+                       'pdf': 'application/pdf'
+                      }
+
+        self.manager.assert_can_read(user, coll)
+
+        self.manager.sync_coll_index(user, coll)
+
+        match = ''
+
+        url = request.query.getunicode('url')
+        if url:
+            match += '*"url":"*{0}*'.format(url)
+
+        mime = mime_lookup.get(request.query.getunicode('type'))
+
+        if mime:
+            match += '*"mime":"{0}*'.format(mime)
+
+        if not match:
+            match = None
+
+        #match = request.query.getunicode('match')
+
+        print('MATCH', match)
+
+        count = int(request.query.get('count', 1000))
+
+        coll_cdxj_key = self.manager.coll_cdxj_key.format(user=user, coll=coll)
+
+        warcs_to_rec = self.manager.get_warcs_to_rec(user, coll)
+
+        output = []
+        for cdx_line, _ in self.manager.redis.zscan_iter(coll_cdxj_key,
+                                                      match=match,
+                                                      count=count):
+            cdx = json.loads(cdx_line.split(' ', 2)[2])
+            res = {'url': cdx['url'],
+                   'mime': cdx['mime']}
+
+            rec = warcs_to_rec.get(cdx['filename'])
+            if rec:
+                res['rec'] = rec
+
+            output.append(res)
+
+        return {'results': output}
+
 

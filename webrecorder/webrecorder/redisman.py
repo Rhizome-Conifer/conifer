@@ -758,6 +758,8 @@ class RecManagerMixin(object):
         self.cdxj_key = config['cdxj_key_templ']
         self.tags_key = config['tags_key']
 
+        self.warc_key_templ = config['warc_key_templ']
+
         self.ra_key = config['ra_key']
         self.dyn_stats_key_templ = config['dyn_stats_key_templ']
         self.dyn_stats_secs = config['dyn_stats_secs']
@@ -1177,6 +1179,19 @@ class RecManagerMixin(object):
         last_cdx = CDXObject(result[-1].encode('utf-8'))
 
         return last_cdx['timestamp']
+
+    def get_warcs_to_rec(self, user, coll):
+        keys = self._get_rec_keys(user, coll, self.warc_key_templ)
+
+        warc_to_rec = {}
+
+        for key in keys:
+            rec = key.split(':')[3]
+            warcs = self.redis.hkeys(key)
+            for warc in warcs:
+                warc_to_rec[warc] = rec
+
+        return warc_to_rec
 
 
 # ============================================================================
