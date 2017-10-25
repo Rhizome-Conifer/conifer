@@ -93,8 +93,8 @@ export class App extends Component { // eslint-disable-line
     const classOverride = match.classOverride;
     const lastClassOverride = lastMatch ? lastMatch.classOverride : classOverride;
 
-    const classes = classNames({
-      'container wr-content': !loaded ? !lastClassOverride : !classOverride,
+    const classes = classNames('wr-content', {
+      container: !loaded ? !lastClassOverride : !classOverride,
       loading: !loaded
     });
 

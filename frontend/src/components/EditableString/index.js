@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-class EditableString extends Component {
+class EditableString extends PureComponent {
   static propTypes = {
     string: PropTypes.string,
     contentType: PropTypes.string,
@@ -12,7 +12,7 @@ class EditableString extends Component {
   static defaultProps = {
     string: '',
     className: '',
-    showIcon: true
+    showIcon: false
   }
 
   render() {

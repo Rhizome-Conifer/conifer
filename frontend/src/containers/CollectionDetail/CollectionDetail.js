@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
+import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
+import { truncate } from 'helpers/utils';
 import { load as loadColl } from 'redux/modules/collection';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
-import { getOrderedRecordings } from 'redux/selectors';
+import { getOrderedBookmarks, getOrderedRecordings } from 'redux/selectors';
 
-import { CollectionDetailUI } from 'components/siteComponents';
+import CollectionDetailUI from 'components/CollectionDetailUI';
 
 
 class CollectionDetail extends Component {
@@ -28,9 +30,13 @@ class CollectionDetail extends Component {
   }
 
   render() {
-    return (
-      <CollectionDetailUI {...this.props} />
-    );
+    const { collection, params: { user, coll } } = this.props;
+
+    return [
+      <BreadcrumbsItem key="a" to={`/${user}`}>{ user }</BreadcrumbsItem>,
+      <BreadcrumbsItem key="b" to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>,
+      <CollectionDetailUI key="c" {...this.props} />
+    ];
   }
 }
 
@@ -58,7 +64,8 @@ const mapStateToProps = (state) => {
     auth: state.get('auth'),
     collection: state.get('collection'),
     browsers: state.get('remoteBrowsers'),
-    recordings: getOrderedRecordings(state)
+    recordings: getOrderedRecordings(state),
+    bookmarks: getOrderedBookmarks(state)
   };
 };
 

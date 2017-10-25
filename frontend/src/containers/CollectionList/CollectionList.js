@@ -6,7 +6,7 @@ import { isLoaded as areCollsLoaded,
          createCollection } from 'redux/modules/collections';
 import { sortCollsByCreatedAt } from 'redux/selectors';
 
-import { CollectionListUI } from 'components/siteComponents';
+import CollectionListUI from 'components/CollectionListUI';
 
 
 const preloadCollections = [

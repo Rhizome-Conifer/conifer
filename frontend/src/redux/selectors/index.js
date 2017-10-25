@@ -46,7 +46,7 @@ export const getActiveCollection = createSelector(
 export const getOrderedRecordings = createSelector(
   [getRecordings, userOrderBy],
   (recordings, order) => {
-    return recordings.sortBy(o => o.get(order));
+    return recordings.sortBy(o => o.get(order)).toOrderedSet();
   }
 );
 
