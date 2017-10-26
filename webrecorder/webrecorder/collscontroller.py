@@ -206,14 +206,13 @@ class CollsController(BaseController):
         result['coll'] = coll_name
         result['bookmarks'] = []
 
-        result['rec_title'] = ''
         result['coll_title'] = quote(result['collection']['title'])
 
         for rec in result['collection']['recordings']:
             rec['pages'] = self.manager.list_pages(user, coll_name, rec['id'])
 
             if len(rec['pages']) > 0:
-                result['bookmarks'].append(rec['pages'])
+                result['bookmarks'].extend(rec['pages'])
 
         if not result['collection'].get('desc'):
             result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])

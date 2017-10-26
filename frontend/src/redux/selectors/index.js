@@ -57,7 +57,7 @@ export const getOrderedBookmarks = createSelector(
   (bookmarks, order) => {
     //console.log('running', 'getOrderedBookmarks', bookmarks === lastBookmarks, is(bookmarks, lastBookmarks));
     //lastBookmarks = bookmarks;
-    return bookmarks.flatten(true).sortBy(o => o.get(order));
+    return bookmarks.sortBy(o => o.get(order));
   }
 );
 
@@ -145,7 +145,7 @@ export const getActiveRemoteBrowser = createSelector(
 export const getBookmarkCount = createSelector(
   [getBookmarks],
   (bookmarks) => {
-    return bookmarks.flatten(true).size;
+    return bookmarks.size;
   }
 );
 
