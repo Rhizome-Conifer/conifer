@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-// TODO: import directly for bundle size
-import { AutoSizer, Column, Table } from 'react-virtualized';
+import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
+import Column from 'react-virtualized/dist/commonjs/Table/Column';
+import Table from 'react-virtualized/dist/commonjs/Table';
 
 import { getStorage, inStorage, setStorage } from 'helpers/utils';
 import SessionCollapsible from 'components/SessionCollapsible';
