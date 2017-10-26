@@ -121,6 +121,9 @@ class BaseWebSockHandler(object):
             self.pubsub = self.manager.browser_redis.pubsub()
             self.pubsub.subscribe(recv_from + reqid)
 
+            if not hasattr(self.pubsub, 'connection'):
+                self.pubsub = None
+
     def run(self):
         self._init_ws(request.environ)
 

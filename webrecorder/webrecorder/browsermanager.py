@@ -56,6 +56,16 @@ class BrowserManager(object):
         container_data['ip'] = remote_addr
         return container_data
 
+    def update_local_browser(self, wb_url, kwargs):
+        data = self.prepare_container_data('', wb_url, kwargs)
+
+        self.browser_redis.hmset('ip:127.0.0.1', data)
+
+    def request_new_browser(self, browser_id, wb_url, kwargs):
+        data = self.prepare_container_data(browser_id, wb_url, kwargs)
+
+        return self.request_prepared_browser(browser_id, container_data)
+
     def browser_sesh_id(self, reqid):
         return 'reqid_' + reqid
 
@@ -69,7 +79,7 @@ class BrowserManager(object):
 
         kwargs['upstream_url'] = upstream_url
 
-    def request_new_browser(self, browser_id, wb_url, kwargs):
+    def prepare_container_data(self, browser_id, wb_url, kwargs):
         self.fill_upstream_url(kwargs, wb_url.timestamp)
 
         container_data = {'upstream_url': kwargs['upstream_url'],
@@ -80,9 +90,13 @@ class BrowserManager(object):
                           'url': wb_url.url,
                           'type': kwargs['type'],
                           'browser': browser_id,
-                          'browser_can_write': kwargs['browser_can_write'],
+                          'browser_can_write': kwargs.get('browser_can_write', '0'),
                           'remote_ip': kwargs.get('remote_ip', ''),
                          }
+
+        return container_data
+
+    def request_prepared_browser(self, browser_id, container_data):
 
         try:
             req_url = self.browser_req_url.format(browser=browser_id)

@@ -462,6 +462,7 @@ class ContentController(BaseController, RewriterApp):
         wb_url = self._context_massage(wb_url)
 
         wb_url_obj = WbUrl(wb_url)
+
         is_top_frame = (wb_url_obj.mod == self.frame_mod or wb_url_obj.mod.startswith('$br:'))
 
         if type == 'record' and is_top_frame:
@@ -492,6 +493,11 @@ class ContentController(BaseController, RewriterApp):
                       ip=remote_ip,
                       is_embed=is_embed,
                       is_display=is_display)
+
+        # top-frame replay but through a proxy, redirect to original
+        if is_top_frame and 'wsgiprox.proxy_host' in request.environ:
+            self.manager.browser_mgr.update_local_browser(wb_url_obj, kwargs)
+            return redirect(wb_url_obj.url)
 
         try:
             self.check_if_content(wb_url_obj, request.environ, is_top_frame)
