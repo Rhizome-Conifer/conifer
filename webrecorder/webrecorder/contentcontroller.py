@@ -246,6 +246,33 @@ class ContentController(BaseController, RewriterApp):
 
                 redirect(url + '/_set_session?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
 
+        # OPTIONS
+        @self.app.route('/_set_session', method='OPTIONS')
+        def set_sesh_options():
+            expected_origin = request.environ['wsgi.url_scheme'] + '://' + self.content_host + '/'
+            origin = request.environ.get('HTTP_ORIGIN')
+            # ensure origin is the content host origin
+            if origin != expected_origin:
+                return ''
+
+            host = request.environ.get('HTTP_HOST')
+            # ensure host is the app host
+            if host != self.app_host:
+                return ''
+
+            response.headers['Access-Control-Allow-Origin'] = origin
+
+            methods = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
+            if methods:
+                response.headers['Access-Control-Allow-Methods'] = methods
+
+            headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
+            if headers:
+                response.headers['Access-Control-Allow-Headers'] = headers
+
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            return ''
+
         @self.app.route(['/_clear_session'])
         def clear_sesh():
             sesh = self.get_session()
