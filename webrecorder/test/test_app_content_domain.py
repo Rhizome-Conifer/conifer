@@ -108,3 +108,34 @@ class TestAppContentDomain(FullStackTests):
         assert res.status_code == 302
         assert res.headers['Location'] == 'http://app-host/{user}/temp/'.format(user=self.anon_user)
 
+    def test_options_allow_content_domain_set_session(self):
+        res = self.testapp.options('/_set_session?path=/{user}/temp/http://httpbin.org/'.format(user=self.anon_user),
+                                   headers={'Host': 'app-host',
+                                            'Origin': 'http://content-host/',
+                                            'Access-Control-Request-Headers': 'x-pywb-requested-with',
+                                            'Access-Control-Request-Method': 'GET'})
+
+        assert res.headers['Access-Control-Allow-Origin'] == 'http://content-host/'
+        assert res.headers['Access-Control-Allow-Methods'] == 'GET'
+        assert res.headers['Access-Control-Allow-Headers'] == 'x-pywb-requested-with'
+        assert res.headers['Access-Control-Allow-Credentials'] == 'true'
+
+    def test_options_dont_allow_wrong_host(self):
+        res = self.testapp.options('/_set_session?path=/{user}/temp/http://httpbin.org/'.format(user=self.anon_user),
+                                   headers={'Host': 'content-host',
+                                            'Origin': 'http://content-host/',
+                                            'Access-Control-Request-Headers': 'x-pywb-requested-with',
+                                            'Access-Control-Request-Method': 'GET'})
+
+        assert 'Access-Control-Allow-Origin' not in res.headers
+
+    def test_options_dont_allow_wrong_origin(self):
+        res = self.testapp.options('/_set_session?path=/{user}/temp/http://httpbin.org/'.format(user=self.anon_user),
+                                   headers={'Host': 'app-host',
+                                            'Origin': 'http://wrong-host/',
+                                            'Access-Control-Request-Headers': 'x-pywb-requested-with',
+                                            'Access-Control-Request-Method': 'GET'})
+
+        assert 'Access-Control-Allow-Origin' not in res.headers
+
+
