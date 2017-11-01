@@ -148,6 +148,7 @@ class AppController(BaseController):
         jinja_env = jinja_env_wrapper.jinja_env
 
         jinja_env.globals['metadata'] = config.get('metadata', {})
+        jinja_env.globals['static_path'] = 'static'
 
         def get_coll(context):
             coll = context.get('coll_orig', '')
