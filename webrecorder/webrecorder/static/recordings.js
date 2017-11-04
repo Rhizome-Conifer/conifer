@@ -1606,6 +1606,7 @@ $(function() {
             updatePage(state, true);
         } else if (state.wb_type == "replace-url") {
             updatePage(state, false);
+            saveHistory(state);
         } else if (state.wb_type == "cookie") {
             setDomainCookie(state);
         } else if (state.wb_type == "snapshot") {
@@ -1667,6 +1668,26 @@ $(function() {
         $.ajax({
             url: "/_skipreq?url=" + encodeURIComponent(state.url),
         });
+    }
+
+    function saveHistory(message) {
+        if (!message.change_type) {
+            return;
+        }
+
+        var event = [message.state, message.title, message.url];
+        window.wr_states = window.wr_states || [];
+
+        if (message.change_type == "popState") {
+            window.wr_states.pop();
+        } else if (message.change_type == "pushState") {
+            window.wr_states.push(event);
+
+            var obj = {"base": window.wbinfo.url, "states": window.wr_states}
+            console.log(JSON.stringify(obj));
+        }
+
+        //console.log(message.change_type + ": " +  JSON.stringify(event));
     }
 
     function updatePage(state, doAdd) {
