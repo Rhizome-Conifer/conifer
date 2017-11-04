@@ -141,6 +141,24 @@ class ContentController(BaseController, RewriterApp):
 
             return {'success': domain}
 
+        # UPDATE REMOTE BROWSER CONFIG
+        @self.app.get('/api/v1/update_remote_browser/<reqid>')
+        def update_remote_browser(reqid):
+            user, coll = self.get_user_coll(api=True)
+
+            timestamp = request.query.getunicode('timestamp')
+            type_ = request.query.getunicode('type')
+
+            # if switching mode, need to have write access
+            # for timestamp, only read access
+            if type_:
+                self.manager.assert_can_write(user, coll)
+            else:
+                self.manager.assert_can_read(user, coll)
+
+            return self.manager.browser_mgr.update_remote_browser(reqid,
+                                                                  type_=type_,
+                                                                  timestamp=timestamp)
         # PROXY
         @self.app.route('/_proxy/<url:path>', method='ANY')
         def do_proxy(url):

@@ -130,21 +130,43 @@ class BrowserManager(object):
 
         return data
 
-    def switch_upstream(self, rec, type_, reqid):
+    def update_remote_browser(self, reqid, timestamp=None, url=None,
+                              type_=None,
+                              coll=None, rec=None):
+
         ip = self.browser_redis.hget('req:' + reqid, 'ip')
         if not ip:
-            return
+            return {'error_message': 'No Container Found'}
 
         container_data = self.browser_redis.hgetall('ip:' + ip)
+
         if not container_data:
-            return
+            return {'error_message': 'Invalid Container'}
 
-        if not container_data.get('browser_can_write'):
-            print('Not a writable browser')
-            return
+        if timestamp:
+            container_data['request_ts'] = timestamp
 
-        container_data['rec'] = rec
-        container_data['type'] = type_
+        if url:
+            container_data['url'] = url
+
+        is_writable = container_data.get('browser_can_write')
+        try:
+            if type_:
+                assert(is_writable)
+                container_data['type'] = type_
+
+            if coll:
+                assert(is_writable)
+                container_data['coll'] = coll
+
+            if rec:
+                assert(is_writable)
+                container_data['rec'] = rec
+        except:
+            return {'error_message': 'Not a writable browser'}
+
         self.fill_upstream_url(container_data, container_data.get('request_ts'))
 
         self.browser_redis.hmset('ip:' + ip, container_data)
+
+        return {}

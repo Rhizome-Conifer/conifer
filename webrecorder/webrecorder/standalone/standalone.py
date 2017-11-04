@@ -94,7 +94,7 @@ class StandaloneRunner(FullStackRunner):
             os.environ['WR_TEMPLATE_PKG'] = 'wrtemp'
 
     @classmethod
-    def main(cls, args=None):
+    def main(cls, args=None, embed=False):
         parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
 
         parser.add_argument('--no-browser', action='store_true',
@@ -116,5 +116,8 @@ class StandaloneRunner(FullStackRunner):
         r = parser.parse_args(args=args)
 
         main = cls(r)
+
+        if embed:
+            return main
 
         main.app_serv.ge.join()

@@ -224,7 +224,9 @@ class BaseWebSockHandler(object):
                 return
 
             self.rec = msg['rec']
-            self.manager.browser_mgr.switch_upstream(msg['rec'], msg['type'], self.reqid)
+            self.manager.browser_mgr.update_remote_browser(self.reqid,
+                                                           rec=msg['rec'],
+                                                           type_=msg['type'])
 
         # send to remote browser cmds
         if to_browser:
