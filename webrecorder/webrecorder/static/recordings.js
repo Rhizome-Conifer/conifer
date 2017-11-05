@@ -1604,6 +1604,9 @@ $(function() {
 
         if (state.wb_type == "load") {
             updatePage(state, true);
+            if (window.wr_history  && state.ts) {
+                window.wr_history.base_timestamp = state.ts;
+            }
         } else if (state.wb_type == "replace-url") {
             updatePage(state, false);
             saveHistory(state);
@@ -1676,15 +1679,33 @@ $(function() {
         }
 
         var event = [message.state, message.title, message.url];
-        window.wr_states = window.wr_states || [];
 
         if (message.change_type == "popState") {
-            window.wr_states.pop();
-        } else if (message.change_type == "pushState") {
-            window.wr_states.push(event);
+            window.wr_history.states.pop();
+        } else if (message.change_type == "pushState" || message.change_type == "replaceState") {
+            if (message.change_type == "replaceState") {
+                if (message.url == window.wr_history.base_url) {
+                    return;
+                }
 
-            var obj = {"base": window.wbinfo.url, "states": window.wr_states}
-            console.log(JSON.stringify(obj));
+                if (window.wr_history.states.length == 0) {
+                    return;
+                }
+                window.wr_history.states[window.wr_history.states.length - 1] = event;
+            } else {
+                window.wr_history.states.push(event);
+            }
+            window.wr_history.final_url = message.url;
+
+            var data = JSON.stringify(window.wr_history);
+
+            $.ajax({
+                type: "PUT",
+                url: "/_history/" + user + "/" + coll + "/" + rec,
+                dataType: "json",
+                data: data,
+                success: function() { console.log("Uploaded: " + data); }
+            });
         }
 
         //console.log(message.change_type + ": " +  JSON.stringify(event));
@@ -1794,6 +1815,16 @@ $(function() {
     }
 
     window.addEventListener("message", handleReplayEvent);
+
+
+    // save history
+    if (window.curr_mode && window.wbinfo) {
+        window.wr_history = {
+                             "base_url": window.wbinfo.url,
+                             "base_timestamp": window.wbinfo.timestamp,
+                             "states": []
+                            };
+    }
 
     // Only used for non-html pages
     $("#replay_iframe").load(function(e) {

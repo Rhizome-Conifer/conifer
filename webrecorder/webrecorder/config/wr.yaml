@@ -60,6 +60,7 @@ url_templates:
     patch: '{record_host}/record/patch/resource/postreq?param.user={user}&param.coll={coll}&filter=!status:[45][\d][\d]&param.recorder.rec={rec}&param.rec=*&param.ip={ip}'
 
     snapshot: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=resource'
+    history: '{record_host}/record/live/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}&put_record=metadata'
 
     replay: '{replay_host}/replay/resource/postreq?param.user={user}&param.coll={coll}&param.rec={rec}'
     replay-coll: '{replay_host}/replay-coll/resource/postreq?param.user={user}&param.coll={coll}&param.rec=*'

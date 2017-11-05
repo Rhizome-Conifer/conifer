@@ -1,5 +1,6 @@
 import re
 import os
+import json
 from six.moves.urllib.parse import quote, unquote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
@@ -13,6 +14,10 @@ from pywb.apps.rewriterapp import RewriterApp, UpstreamException
 from webrecorder.basecontroller import BaseController
 from webrecorder.load.wamloader import WAMLoader
 from webrecorder.utils import get_bool
+
+import requests
+from io import BytesIO
+from warcio.timeutils import timestamp_to_iso_date
 
 
 # ============================================================================
@@ -120,6 +125,10 @@ class ContentController(BaseController, RewriterApp):
                     items[coll] = self.manager.list_coll_pages(user, coll)
 
             return {'data': items, 'keys': keys}
+
+        @self.app.put('/_history/<user>/<coll>/<rec>')
+        def add_history(user, coll, rec):
+            return self.add_history(user, coll, rec)
 
         # COOKIES
         @self.app.get(['/<user>/<coll>/$add_cookie'], method='POST')
@@ -809,4 +818,41 @@ class ContentController(BaseController, RewriterApp):
             return data
 
         return browser_embed(inject_data)
+
+    def add_history(self, user, coll, rec):
+        hist_data = request.body.read()
+
+        hist_json = json.loads(hist_data.decode('utf-8'))
+
+        kwargs = dict(user=user,
+                      coll=quote(coll),
+                      rec=quote(rec, safe='/*'),
+                      type='history')
+
+        params = {'url': hist_json['final_url']}
+
+        upstream_url = self.manager.content_app.get_upstream_url('', kwargs, params)
+
+        headers = {'Content-Type': 'application/json; charset=utf-8',
+                   'WARC-Refers-To-Target-URI': hist_json['base_url'],
+                   'WARC-Refers-To-Date': timestamp_to_iso_date(hist_json['base_timestamp']),
+                   'WARC-Profile': 'history',
+                  }
+
+        r = requests.put(upstream_url,
+                         data=BytesIO(hist_data),
+                         headers=headers,
+                        )
+
+        try:
+            r.raise_for_status()
+            res = r.json()
+
+            assert(res['success'] == 'true')
+            return {}
+
+        except Exception as e:
+            print(e)
+            return {'error_message': 'history save failed'}
+
 
