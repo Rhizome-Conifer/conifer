@@ -1,6 +1,9 @@
 version: '2'
 
 services:
+    tor:
+        build: ./tor
+
     app:
         build: ./webrecorder
         command: uwsgi /code/apps/frontend.ini
@@ -43,6 +46,9 @@ services:
 
         env_file:
             - ./wr.env
+
+        environment:
+            - TOR=tor
 
         depends_on:
             - redis

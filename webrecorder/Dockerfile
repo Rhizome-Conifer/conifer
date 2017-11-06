@@ -7,6 +7,8 @@ USER root
 
 RUN pip install git+https://github.com/FedericoCeratto/bottle-cork.git@94d4017a4d1b0d20328e9283e341bd674df3a18a#egg=bottle-cork
 
+RUN pip install git+https://github.com/Anorov/PySocks
+
 RUN pip install -r requirements.txt
 
 USER archivist
