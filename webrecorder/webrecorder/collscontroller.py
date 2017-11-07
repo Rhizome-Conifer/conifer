@@ -58,7 +58,7 @@ class CollsController(BaseController):
         def get_collection(coll):
             user = self.get_user(api=True)
 
-            return self.get_collection_info(user, coll)
+            return self.get_collection_info_for_view(user, coll)
 
         @self.app.delete('/api/v1/collections/<coll>')
         def delete_collection(coll):
@@ -227,7 +227,7 @@ class CollsController(BaseController):
 
         for rec in result['collection']['recordings']:
            rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
-           result['bookmarks'].append(rec['pages'])
+           result['bookmarks'].extend(rec['pages'])
 
         if not result['collection'].get('desc'):
             result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])

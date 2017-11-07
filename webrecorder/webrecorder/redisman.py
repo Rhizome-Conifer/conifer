@@ -1089,6 +1089,11 @@ class RecManagerMixin(object):
 
         pagelist = [json.loads(x) for x in pagelist]
 
+        # add page ids
+        for page in pagelist:
+            bk_attrs = (page['url'] + page['timestamp']).encode('utf-8')
+            page['id'] = hashlib.md5(bk_attrs).hexdigest()[:10]
+
         if not self.can_admin_coll(user, coll):
             pagelist = [page for page in pagelist if page.get('hidden') != '1']
 
