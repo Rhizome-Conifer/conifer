@@ -201,7 +201,10 @@ recorder_name: 'recorder'
 # Rewrite
 use_js_obj_proxy: true
 
-framed_replay: inverse
+enable_memento: true
+
+framed_replay: true
 
 query_html: time_info.html
+
 

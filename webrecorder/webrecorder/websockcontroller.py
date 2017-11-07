@@ -121,6 +121,9 @@ class BaseWebSockHandler(object):
             self.pubsub = self.manager.browser_redis.pubsub()
             self.pubsub.subscribe(recv_from + reqid)
 
+            if not hasattr(self.pubsub, 'connection'):
+                self.pubsub = None
+
     def run(self):
         self._init_ws(request.environ)
 
@@ -221,7 +224,9 @@ class BaseWebSockHandler(object):
                 return
 
             self.rec = msg['rec']
-            self.manager.browser_mgr.switch_upstream(msg['rec'], msg['type'], self.reqid)
+            self.manager.browser_mgr.update_remote_browser(self.reqid,
+                                                           rec=msg['rec'],
+                                                           type_=msg['type'])
 
         # send to remote browser cmds
         if to_browser:
