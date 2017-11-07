@@ -70,8 +70,8 @@ export function auth(state = initialState, action = {}) {
   }
 }
 
-export function isLoaded(globalState) {
-  return globalState.get('auth') && globalState.getIn(['auth', 'loaded']);
+export function isLoaded({ app }) {
+  return app.get('auth') && app.getIn(['auth', 'loaded']);
 }
 
 export function load() {

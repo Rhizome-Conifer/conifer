@@ -5,8 +5,8 @@ import { checkUser, sendSignup } from 'redux/modules/userSignup';
 import { UserSignup } from 'components/siteComponents';
 
 
-const mapStateToProps = (state) => {
-  const userSignup = state.get('userSignup');
+const mapStateToProps = ({ app }) => {
+  const userSignup = app.get('userSignup');
 
   return {
     available: userSignup.get('available'),

@@ -5,9 +5,9 @@ import { resetPassword } from 'redux/modules/passwordReset';
 import { PasswordReset } from 'components/siteComponents';
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    errors: state.getIn(['passwordReset', 'errors'])
+    errors: app.getIn(['passwordReset', 'errors'])
   };
 };
 

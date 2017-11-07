@@ -103,7 +103,7 @@ const initialData = [
     promise: ({ params, store: { dispatch, getState } }) => {
       // load collection
       const state = getState();
-      const collection = state.get('collection');
+      const collection = state.app.get('collection');
       const { user, coll } = params;
 
       if(!isLoaded(state) || (collection.get('id') === coll &&
@@ -116,10 +116,10 @@ const initialData = [
   },
   {
     promise: ({ store: { dispatch, getState } }) => {
-      const state = getState();
+      const { app } = getState();
 
       // TODO: determine if we need to test for stale archives
-      if (!state.getIn(['controls', 'archives']).size) {
+      if (!app.getIn(['controls', 'archives']).size) {
         return dispatch(getArchives());
       }
 
@@ -128,14 +128,14 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    activeBrowser: state.getIn(['remoteBrowsers', 'activeBrowser']),
-    auth: state.get('auth'),
-    collection: state.get('collection'),
-    reqId: state.getIn(['remoteBrowsers', 'reqId']),
-    timestamp: state.getIn(['controls', 'timestamp']),
-    url: state.getIn(['controls', 'url'])
+    activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    auth: app.get('auth'),
+    collection: app.get('collection'),
+    reqId: app.getIn(['remoteBrowsers', 'reqId']),
+    timestamp: app.getIn(['controls', 'timestamp']),
+    url: app.getIn(['controls', 'url'])
   };
 };
 

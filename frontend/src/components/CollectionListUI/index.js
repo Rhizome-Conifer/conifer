@@ -4,13 +4,11 @@ import { fromJS } from 'immutable';
 import { Link } from 'react-router';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
 import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
-import Toggle from 'react-toggle';
 
 import SizeFormat from 'components/SizeFormat';
 
 import { NewCollection } from 'components/siteComponents';
 
-import 'shared/scss/toggle.scss';
 import './style.scss';
 
 

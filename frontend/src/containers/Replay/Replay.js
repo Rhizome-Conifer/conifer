@@ -146,7 +146,7 @@ const initialData = [
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
-      const collection = state.get('collection');
+      const collection = state.app.get('collection');
       const { user, coll } = params;
 
       if(!isLoaded(state) || (collection.get('id') === coll &&
@@ -159,10 +159,10 @@ const initialData = [
   },
   {
     promise: ({ store: { dispatch, getState } }) => {
-      const state = getState();
+      const { app } = getState();
 
       // TODO: determine if we need to test for stale archives
-      if (!state.getIn(['controls', 'archives']).size) {
+      if (!app.getIn(['controls', 'archives']).size) {
         return dispatch(getArchives());
       }
 
@@ -171,17 +171,17 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = (state, props) => {
+const mapStateToProps = ({ app }) => {
   return {
-    activeBrowser: state.getIn(['remoteBrowsers', 'activeBrowser']),
-    auth: state.get('auth'),
-    bookmarks: getOrderedBookmarks(state),
-    collection: state.get('collection'),
-    recording: getRecording(state),
-    recordingIndex: getActiveRecording(state),
-    reqId: state.getIn(['remoteBrowsers', 'reqId']),
-    timestamp: state.getIn(['controls', 'timestamp']),
-    url: state.getIn(['controls', 'url'])
+    activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    auth: app.get('auth'),
+    bookmarks: getOrderedBookmarks(app),
+    collection: app.get('collection'),
+    recording: getRecording(app),
+    recordingIndex: getActiveRecording(app),
+    reqId: app.getIn(['remoteBrowsers', 'reqId']),
+    timestamp: app.getIn(['controls', 'timestamp']),
+    url: app.getIn(['controls', 'url'])
   };
 };
 

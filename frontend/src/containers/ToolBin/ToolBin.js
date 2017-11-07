@@ -6,12 +6,12 @@ import { getBookmarkCount } from 'redux/selectors';
 import { ToolBinUI } from 'components/controls';
 
 
-const mapStateToProps = (state, context) => {
+const mapStateToProps = ({ app }) => {
   return {
-    activeBrowser: state.getIn(['remoteBrowsers', 'activeBrowser']),
-    open: state.getIn(['toolBin', 'open']),
-    collSize: state.getIn(['collection', 'size']),
-    bookmarkCount: getBookmarkCount(state)
+    activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    open: app.getIn(['toolBin', 'open']),
+    collSize: app.getIn(['collection', 'size']),
+    bookmarkCount: getBookmarkCount(app)
   };
 };
 

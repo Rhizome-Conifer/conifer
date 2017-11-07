@@ -83,10 +83,9 @@ export function deleteUser(user) {
   };
 }
 
-export function isLoaded(globalState) {
-  return globalState &&
-         globalState.get('user') &&
-         globalState.getIn(['user', 'loaded']);
+export function isLoaded({ app }) {
+  return app.get('user') &&
+         app.getIn(['user', 'loaded']);
 }
 
 export function load(username) {

@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
+import { createSearchAction } from 'redux-search';
 
 import { truncate } from 'helpers/utils';
 import { load as loadColl } from 'redux/modules/collection';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
-import { getOrderedBookmarks, getOrderedRecordings } from 'redux/selectors';
+import { getOrderedBookmarks, getOrderedRecordings, bookmarkSearchResults } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/CollectionDetailUI';
 
@@ -59,17 +60,30 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (outerState) => {
+  const { app } = outerState;
+  const { bookmarkFeed, searchText } = bookmarkSearchResults(outerState);
+  const isIndexing = !bookmarkFeed.size && app.getIn(['collection', 'bookmarks']).size && !searchText;
+
   return {
-    auth: state.get('auth'),
-    collection: state.get('collection'),
-    browsers: state.get('remoteBrowsers'),
-    recordings: getOrderedRecordings(state),
-    bookmarks: getOrderedBookmarks(state)
+    auth: app.get('auth'),
+    collection: app.get('collection'),
+    browsers: app.get('remoteBrowsers'),
+    recordings: getOrderedRecordings(app),
+    bookmarks: isIndexing ? getOrderedBookmarks(app) : bookmarkFeed,
+    searchText
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    searchBookmarks: createSearchAction('bookmarks'),
+    dispatch
   };
 };
 
 export default asyncConnect(
   initialData,
-  mapStateToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(CollectionDetail);

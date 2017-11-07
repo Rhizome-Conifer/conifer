@@ -27,9 +27,9 @@ class PatchWidget extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    stats: getRemoteArchiveStats(state)
+    stats: getRemoteArchiveStats(app)
   };
 };
 

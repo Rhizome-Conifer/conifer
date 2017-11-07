@@ -7,13 +7,13 @@ import { getActiveCollection } from 'redux/selectors';
 import CollectionDropdownUI from 'components/CollectionDropdownUI';
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    activeCollection: getActiveCollection(state),
-    collections: state.getIn(['user', 'collections']),
-    creatingCollection: state.getIn(['collections', 'creatingCollection']),
-    newCollection: state.getIn(['collections', 'newCollection']),
-    user: state.getIn(['auth', 'user'])
+    activeCollection: getActiveCollection(app),
+    collections: app.getIn(['user', 'collections']),
+    creatingCollection: app.getIn(['collections', 'creatingCollection']),
+    newCollection: app.getIn(['collections', 'newCollection']),
+    user: app.getIn(['auth', 'user'])
   };
 };
 

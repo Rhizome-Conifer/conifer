@@ -22,8 +22,8 @@ import {
 export default (store) => {
   const requireLogin = (nextState, replace, cb) => {
     function checkAuth() {
-      const state = store.getState();
-      if (!state.getIn(['auth', 'user', 'username'])) {
+      const { app } = store.getState();
+      if (!app.getIn(['auth', 'user', 'username'])) {
         // oops, not logged in, so can't be here!
         replace('/');
       }
@@ -104,7 +104,6 @@ export default (store) => {
     {
       path: ':user/:coll/:ts/**',
       name: 'replay',
-      mode: 'replay',
       footer: false,
       classOverride: true,
       component: Replay

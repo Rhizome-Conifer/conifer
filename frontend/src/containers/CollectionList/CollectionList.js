@@ -13,7 +13,7 @@ const preloadCollections = [
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
-      const collections = state.get('collections');
+      const collections = state.app.get('collections');
       const { user } = params;
 
       if(!areCollsLoaded(state) || (collections.get('user') === user &&
@@ -26,12 +26,12 @@ const preloadCollections = [
   }
 ];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    auth: state.get('auth'),
-    collections: state.get('collections'),
-    orderedCollections: sortCollsByCreatedAt(state),
-    user: state.get('user')
+    auth: app.get('auth'),
+    collections: app.get('collections'),
+    orderedCollections: sortCollsByCreatedAt(app),
+    user: app.get('user')
   };
 };
 

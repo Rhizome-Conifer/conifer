@@ -102,7 +102,7 @@ const initialData = [
     // set url and ts in store
     promise: ({ params: { extractMode, archiveId, collId, ts, splat }, store: { dispatch, getState } }) => {
       dispatch(getArchives()).then(() => {
-        const state = getState();
+        const state = getState().app;
         const archives = state.getIn(['controls', 'archives']);
 
         const promises = [
@@ -124,7 +124,7 @@ const initialData = [
   },
   {
     promise: ({ params, store: { dispatch, getState } }) => {
-      const state = getState();
+      const state = getState().app;
       const collection = state.get('collection');
       const { user, coll } = params;
 
@@ -138,7 +138,7 @@ const initialData = [
   },
   {
     promise: ({ store: { dispatch, getState } }) => {
-      const state = getState();
+      const state = getState().app;
 
       // TODO: determine if we need to test for stale archives
       if (!state.getIn(['controls', 'archives']).size) {
@@ -156,16 +156,16 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    activeBrowser: state.getIn(['remoteBrowsers', 'activeBrowser']),
-    activeCollection: getActiveCollection(state),
-    auth: state.get('auth'),
-    collection: state.get('collection'),
-    extractable: state.getIn(['controls', 'extractable']),
-    reqId: state.getIn(['remoteBrowsers', 'reqId']),
-    timestamp: state.getIn(['controls', 'timestamp']),
-    url: state.getIn(['controls', 'url'])
+    activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    activeCollection: getActiveCollection(app),
+    auth: app.get('auth'),
+    collection: app.get('collection'),
+    extractable: app.getIn(['controls', 'extractable']),
+    reqId: app.getIn(['remoteBrowsers', 'reqId']),
+    timestamp: app.getIn(['controls', 'timestamp']),
+    url: app.getIn(['controls', 'url'])
   };
 };
 

@@ -69,7 +69,8 @@ class Home extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (outerState) => {
+  const state = outerState.app;
   return {
     auth: state.get('auth'),
     user: state.get('user')

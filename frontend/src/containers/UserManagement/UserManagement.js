@@ -8,7 +8,8 @@ import { load as loadUser } from 'redux/modules/user';
 import { UserManagementUI } from 'components/siteComponents';
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (outerState) => {
+  const state = outerState.app;
   return {
     auth: state.get('auth')
   };

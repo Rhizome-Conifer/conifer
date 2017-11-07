@@ -27,13 +27,16 @@ export default function collection(state = initialState, action = {}) {
         user
       } = action.result;
 
+      const bks = {};
+      bookmarks.forEach((bookmark) => { bks[bookmark.id] = bookmark; });
+
       return state.merge({
         loading: false,
         loaded: true,
         accessed: action.accessed,
         error: null,
 
-        bookmarks,
+        bookmarks: bks,
         created_at,
         desc,
         download_url,
@@ -60,9 +63,9 @@ export default function collection(state = initialState, action = {}) {
   }
 }
 
-export function isLoaded(globalState) {
-  return globalState.get('collection') &&
-         globalState.getIn(['collection', 'loaded']);
+export function isLoaded({ app }) {
+  return app.get('collection') &&
+         app.getIn(['collection', 'loaded']);
 }
 
 export function load(username, coll) {

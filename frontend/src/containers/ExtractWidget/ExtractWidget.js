@@ -114,17 +114,17 @@ class ExtractWidget extends Component {
   }
 }
 
-const mapStateToProps = (state, props) => {
-  const controls = state.get('controls');
+const mapStateToProps = ({ app }, props) => {
+  const controls = app.get('controls');
 
   return {
     archivesLoading: controls.get('archivesLodaing'),
     archives: controls.get('archives'),
     extractable: controls.get('extractable'),
-    stats: getRemoteArchiveStats(state),
-    timestamp: state.getIn(['controls', 'timestamp']),
+    stats: getRemoteArchiveStats(app),
+    timestamp: app.getIn(['controls', 'timestamp']),
     // use collection provided to widget, or fallback to collection active in global state
-    toCollection: props.toCollection ? props.toCollection : getActiveCollection(state).title
+    toCollection: props.toCollection ? props.toCollection : getActiveCollection(app).title
   };
 };
 

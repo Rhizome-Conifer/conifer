@@ -57,7 +57,7 @@ const loadCollection = [
   {
     promise: ({ params, store: { dispatch, getState } }) => {
       const state = getState();
-      const collection = state.get('collection');
+      const collection = state.app.get('collection');
       const { user, coll } = params;
 
       if(!isLoaded(state) || (collection.get('id') === coll &&
@@ -70,12 +70,12 @@ const loadCollection = [
   }
 ];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    auth: state.get('auth'),
-    collection: state.get('collection'),
-    extractable: state.getIn(['controls', 'extractable']),
-    remoteBrowserSelected: state.getIn(['remoteBrowsers', 'activeBrowser'])
+    auth: app.get('auth'),
+    collection: app.get('collection'),
+    extractable: app.getIn(['controls', 'extractable']),
+    remoteBrowserSelected: app.getIn(['remoteBrowsers', 'activeBrowser'])
   };
 };
 

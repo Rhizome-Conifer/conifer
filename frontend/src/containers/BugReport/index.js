@@ -26,9 +26,9 @@ class BugReport extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    showModal: state.getIn(['bugReport', 'showModal'])
+    showModal: app.getIn(['bugReport', 'showModal'])
   };
 };
 

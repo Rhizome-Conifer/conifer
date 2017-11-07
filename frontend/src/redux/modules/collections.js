@@ -55,9 +55,9 @@ export default function collections(state = initialState, action = {}) {
   }
 }
 
-export function isLoaded(globalState) {
-  return globalState.get('collections') &&
-         globalState.getIn(['collections', 'loaded']);
+export function isLoaded({ app }) {
+  return app.get('collections') &&
+         app.getIn(['collections', 'loaded']);
 }
 
 export function createCollection(user, title, makePublic = false) {

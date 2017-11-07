@@ -20,8 +20,8 @@ class RemoteBrowserSelect extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  const remoteBrowsers = state.get('remoteBrowsers');
+const mapStateToProps = ({ app }) => {
+  const remoteBrowsers = app.get('remoteBrowsers');
   return {
     accessed: remoteBrowsers.get('accessed'),
     activeBrowser: remoteBrowsers.get('activeBrowser'),
@@ -29,8 +29,8 @@ const mapStateToProps = (state) => {
     loaded: remoteBrowsers.get('loaded'),
     loading: remoteBrowsers.get('loading'),
     selectedBrowser: remoteBrowsers.get('selectedBrowser'),
-    timestamp: state.getIn(['controls', 'timestamp']),
-    url: state.getIn(['controls', 'url'])
+    timestamp: app.getIn(['controls', 'timestamp']),
+    url: app.getIn(['controls', 'url'])
   };
 };
 

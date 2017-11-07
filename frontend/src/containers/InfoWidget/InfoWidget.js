@@ -6,10 +6,10 @@ import { getRemoteArchiveStats } from 'redux/selectors';
 import { InfoWidgetUI } from 'components/controls';
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    collection: state.get('collection'),
-    stats: getRemoteArchiveStats(state)
+    collection: app.get('collection'),
+    stats: getRemoteArchiveStats(app)
   };
 };
 

@@ -17,16 +17,16 @@ const preloadData = [
       const state = getState();
 
       if(isAuthLoaded(state) && !isUserLoaded(state))
-        return dispatch(loadUser(state.getIn(['auth', 'user', 'username'])));
+        return dispatch(loadUser(state.app.getIn(['auth', 'user', 'username'])));
 
       return undefined;
     }
   }
 ];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    user: state.get('user')
+    user: app.get('user')
   };
 };
 

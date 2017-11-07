@@ -6,9 +6,9 @@ import { toggleToolBin } from 'redux/modules/toolBin';
 import { RecordingToolsUI } from 'components/controls';
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    toolsOpen: state.getIn(['toolBin', 'open'])
+    toolsOpen: app.getIn(['toolBin', 'open'])
   };
 };
 

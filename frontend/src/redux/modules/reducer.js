@@ -1,10 +1,8 @@
-import Immutable from 'immutable';
-//import { combineReducers } from 'redux';
-import { combineReducers } from 'redux-immutable';
-//import { routerReducer } from 'react-router-redux';
-//import { reducer as reduxAsyncConnect } from 'redux-connect';
-import { setToImmutableStateFunc, setToMutableStateFunc,
-         immutableReducer as immutableReduxAsyncConnect } from 'redux-connect';
+import { combineReducers } from 'redux';
+import { combineReducers as combineImmutableReduers } from 'redux-immutable';
+import { Map } from 'immutable';
+import { reducer as reduxAsyncConnect } from 'redux-connect';
+import { reducer as searchReducer } from 'redux-search';
 
 import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
 import routerReducer from './routerReducer';
@@ -15,28 +13,20 @@ import collections from './collections';
 import controls from './controls';
 import infoStats from './infoStats';
 import passwordReset from './passwordReset';
-//import recordings from './recordings';
 import remoteBrowsers from './remoteBrowsers';
 import sizeCounter from './sizeCounter';
 import toolBin from './toolBin';
 import user from './user';
 import userSignup from './userSignup';
 
-
-// Set the mutability/immutability functions for reduxAsyncConnect
-setToImmutableStateFunc(mutableState => Immutable.fromJS(mutableState));
-setToMutableStateFunc(immutableState => immutableState.toJS());
-
-const appReducer = combineReducers({
+const makeAppReducer = () => combineImmutableReduers({
   routing: routerReducer,
-  reduxAsyncConnect: immutableReduxAsyncConnect,
   auth,
   bugReport,
   collection,
   collections,
   controls,
   passwordReset,
-  // recordings,
   remoteBrowsers,
   sizeCounter,
   infoStats,
@@ -45,21 +35,26 @@ const appReducer = combineReducers({
   userSignup
 });
 
+const appReducer = combineReducers({
+  search: searchReducer,
+  reduxAsyncConnect,
+  app: makeAppReducer()
+});
+
 export default (state, action) => {
   // wipe state after logout, or partially after login
   switch(action.type) {
     case LOGOUT_SUCCESS: {
-      const { auth, routing, reduxAsyncConnect } = state;
-      const stateMod = Immutable.Map({ auth, routing, reduxAsyncConnect });
+      const { reduxAsyncConnect, app: { auth, routing } } = state;
+      const stateMod = { reduxAsyncConnect, app: Map({ auth, routing }) };
       return appReducer(stateMod, action);
     }
-    case LOGIN_SUCCESS: {
-      // delete any login errors if they exist
-      const { auth, routing, reduxAsyncConnect } = state;
-      // auth.set('loginError', null);
-      const stateMod = Immutable.Map({ routing, auth, reduxAsyncConnect });
-      return appReducer(stateMod, action);
-    }
+    // case LOGIN_SUCCESS: {
+    //   // delete any login errors if they exist
+
+    //   const stateMod = state.setIn(['auth', ])
+    //   return appReducer(stateMod, action);
+    // }
     default:
       return appReducer(state, action);
   }

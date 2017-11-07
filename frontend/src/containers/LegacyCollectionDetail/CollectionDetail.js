@@ -90,7 +90,7 @@ class LegacyCollectionDetail extends Component {
 const loadCollection = [
   {
     promise: ({ params, store: { dispatch, getState } }) => {
-      const state = getState();
+      const state = getState().app;
       const collection = state.get('collection');
       const collId = collection.get('id');
       const { user, coll } = params;
@@ -111,11 +111,11 @@ const loadCollection = [
   }
 ];
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    auth: state.get('auth'),
-    collection: state.get('collection'),
-    browsers: state.getIn(['remoteBrowsers', 'browsers'])
+    auth: app.get('auth'),
+    collection: app.get('collection'),
+    browsers: app.getIn(['remoteBrowsers', 'browsers'])
   };
 };
 

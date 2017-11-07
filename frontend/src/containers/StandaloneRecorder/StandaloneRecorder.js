@@ -6,7 +6,8 @@ import { getActiveCollection } from 'redux/selectors';
 import { StandaloneRecorderUI } from 'components/controls';
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (outerState) => {
+  const state = outerState.app;
   const controls = state.get('controls');
   const user = state.get('user');
 

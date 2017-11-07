@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 import { RemoteBrowserUI } from 'components/controls';
 
 
-const mapStateToProps = (state) => {
-  const remoteBrowsers = state.get('remoteBrowsers');
+const mapStateToProps = ({ app }) => {
+  const remoteBrowsers = app.get('remoteBrowsers');
   return {
     inactiveTime: remoteBrowsers.get('inactiveTime'),
     reqId: remoteBrowsers.get('reqId'),

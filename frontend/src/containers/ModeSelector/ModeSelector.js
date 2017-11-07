@@ -6,9 +6,9 @@ import { getActiveRemoteBrowser } from 'redux/selectors';
 import { ModeSelector } from 'components/controls';
 
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    remoteBrowserSelected: getActiveRemoteBrowser(state)
+    remoteBrowserSelected: getActiveRemoteBrowser(app)
   };
 };
 

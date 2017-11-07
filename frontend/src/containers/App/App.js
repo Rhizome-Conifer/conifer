@@ -165,12 +165,10 @@ const initalData = [
   }
 ];
 
-const mapStateToProps = (state) => {
-  const auth = state.get('auth');
-  const loaded = state.getIn(['reduxAsyncConnect', 'loaded']);
+const mapStateToProps = ({ reduxAsyncConnect, app }) => {
   return {
-    auth,
-    loaded
+    auth: app.get('auth'),
+    loaded: reduxAsyncConnect.loaded
   };
 };
 

@@ -24,10 +24,13 @@ class CollectionDetailUI extends Component {
   static propTypes = {
     bookmarks: PropTypes.object,
     collection: PropTypes.object,
+    dispatch: PropTypes.func,
     browsers: PropTypes.object,
     auth: PropTypes.object,
     params: PropTypes.object,
-    recordings: PropTypes.object
+    recordings: PropTypes.object,
+    searchText: PropTypes.string,
+    searchBookmarks: PropTypes.func
   };
 
   constructor(props) {
@@ -103,12 +106,24 @@ class CollectionDetailUI extends Component {
     });
   }
 
+  search = (evt) => {
+    const { dispatch, searchBookmarks } = this.props;
+    console.log('searching', evt.target.value);
+
+    // if in group mode, switch to flat display
+    if(this.state.groupDisplay) {
+      this.onToggle();
+    }
+
+    dispatch(searchBookmarks(evt.target.value));
+  }
+
   toggleExpandAllSessions = () => {
     this.setState({ expandAll: !this.state.expandAll });
   }
 
   render() {
-    const { bookmarks, browsers, collection, recordings } = this.props;
+    const { bookmarks, browsers, collection, recordings, searchText } = this.props;
     const { groupDisplay, expandAll, selectedBookmark, selectedBookmarkIdx,
             selectedSession, selectedGroupedBookmark, selectedGroupedBookmarkIdx } = this.state;
 
@@ -183,7 +198,9 @@ class CollectionDetailUI extends Component {
             <CollectionManagement
               groupDisplay={groupDisplay}
               onToggle={this.onToggle}
-              toggleExpandAllSessions={this.toggleExpandAllSessions} />
+              toggleExpandAllSessions={this.toggleExpandAllSessions}
+              search={this.search}
+              searchText={searchText} />
           </div>
           <div className="wr-coll-detail-table">
             {

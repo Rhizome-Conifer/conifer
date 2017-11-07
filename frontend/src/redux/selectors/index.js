@@ -1,12 +1,13 @@
 import { createSelector } from 'reselect';
-import { is, forEach } from 'immutable';
+import { is, List } from 'immutable';
+import { getSearchSelectors } from 'redux-search';
 
 import { rts, truncate } from 'helpers/utils';
 
 
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
 const getArchives = state => state.getIn(['controls', 'archives']);
-const getBookmarks = state => state.getIn(['collection', 'bookmarks']);
+const getBookmarks = (state) => { return state.app ? state.app.getIn(['collection', 'bookmarks']) : state.getIn(['collection', 'bookmarks']); };
 const getCollections = state => state.getIn(['collections', 'collections']);
 const getRecordings = state => state.getIn(['collection', 'recordings']);
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
@@ -16,7 +17,7 @@ const getTimestamp = state => state.getIn(['controls', 'timestamp']);
 const getUrl = state => state.getIn(['controls', 'url']);
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const selectedCollection = state => state.getIn(['user', 'activeCollection']);
-const userOrderBy = state => state.get('userOrderBy') || 'timestamp';
+const userOrderBy = (state) => { return state.app ? state.app.get('userOrderBy') || 'timestamp' : state.get('userOrderBy') || 'timestamp'; };
 
 const sortFn = (a, b, by = null) => {
   if (by) {
@@ -29,6 +30,26 @@ const sortFn = (a, b, by = null) => {
   return 0;
 };
 
+// redux-search
+const { text, result } = getSearchSelectors({
+  resourceName: 'bookmarks',
+  resourceSelector: (resourceName, state) => {
+    const items = state.app.getIn(['collection', resourceName]);
+    return items;
+  }
+});
+
+export const bookmarkSearchResults = createSelector(
+  [result, getBookmarks, userOrderBy, text],
+  (bookmarkIds, bookmarkObjs, order, searchText) => {
+    const bookmarks = List(bookmarkIds.map(id => bookmarkObjs.get(id)));
+
+    return {
+      bookmarkFeed: bookmarks.sortBy(o => o.get(order)),
+      searchText
+    };
+  }
+);
 
 export const getActiveCollection = createSelector(
   [getUserCollections, selectedCollection],
@@ -57,7 +78,7 @@ export const getOrderedBookmarks = createSelector(
   (bookmarks, order) => {
     //console.log('running', 'getOrderedBookmarks', bookmarks === lastBookmarks, is(bookmarks, lastBookmarks));
     //lastBookmarks = bookmarks;
-    return bookmarks.sortBy(o => o.get(order));
+    return bookmarks.toList().sortBy(o => o.get(order));
   }
 );
 

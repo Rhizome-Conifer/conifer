@@ -43,16 +43,16 @@ class ShareWidget extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = ({ app }) => {
   return {
-    activeBrowser: state.getIn(['remoteBrowsers', 'activeBrowser']),
-    collection: state.get('collection'),
-    timestamp: state.getIn(['controls', 'timestamp']),
-    url: state.getIn(['controls', 'url'])
+    activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    collection: app.get('collection'),
+    timestamp: app.getIn(['controls', 'timestamp']),
+    url: app.getIn(['controls', 'url'])
   };
 };
 
-const mapDispatchToProps = (dispatch, props) => {
+const mapDispatchToProps = (dispatch) => {
   return {
     setCollPublic: (collId, user) => dispatch(setPublic(collId, user))
   };

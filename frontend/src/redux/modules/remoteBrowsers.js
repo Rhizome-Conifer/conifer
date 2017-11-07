@@ -69,10 +69,10 @@ export function createRemoteBrowser(br, user, coll, rec, mode, urlFrag) {
   };
 }
 
-export function isLoaded(globalState) {
-  return globalState.get('remoteBrowsers') &&
-         globalState.getIn(['remoteBrowsers', 'loaded']) &&
-         Date.now() - globalState.getIn(['remoteBrowsers', 'accessed']) < 15 * 60 * 1000;
+export function isLoaded({ app }) {
+  return app.get('remoteBrowsers') &&
+         app.getIn(['remoteBrowsers', 'loaded']) &&
+         Date.now() - app.getIn(['remoteBrowsers', 'accessed']) < 15 * 60 * 1000;
 }
 
 export function load() {
