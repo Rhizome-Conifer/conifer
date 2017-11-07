@@ -674,7 +674,7 @@ class ContentController(BaseController, RewriterApp):
     def process_query_cdx(self, cdx, wb_url, kwargs):
         rec = kwargs.get('rec')
         if not rec or rec == '*':
-            rec = cdx['source'].rsplit(':', 2)[-2]
+            rec = cdx['source'].split(':', 1)[0]
 
         cdx['rec'] = rec
 
@@ -802,6 +802,7 @@ class ContentController(BaseController, RewriterApp):
             self._raise_error(400, inject_data['error_message'])
 
         inject_data.update(self.get_top_frame_params(wb_url, kwargs))
+        inject_data['wb_url'] = wb_url
 
         @self.jinja2_view('browser_embed.html')
         def browser_embed(data):

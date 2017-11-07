@@ -64,13 +64,16 @@ class BrowserManager(object):
     def request_new_browser(self, browser_id, wb_url, kwargs):
         data = self.prepare_container_data(browser_id, wb_url, kwargs)
 
-        return self.request_prepared_browser(browser_id, container_data)
+        return self.request_prepared_browser(browser_id, wb_url, data)
 
     def browser_sesh_id(self, reqid):
         return 'reqid_' + reqid
 
     def fill_upstream_url(self, kwargs, timestamp):
         params = {'closest': timestamp or 'now'}
+
+        if 'url' not in kwargs:
+            kwargs['url'] = '{url}'
 
         upstream_url = self.content_app.get_upstream_url('', kwargs, params)
 
@@ -96,8 +99,7 @@ class BrowserManager(object):
 
         return container_data
 
-    def request_prepared_browser(self, browser_id, container_data):
-
+    def request_prepared_browser(self, browser_id, wb_url, container_data):
         try:
             req_url = self.browser_req_url.format(browser=browser_id)
             r = requests.post(req_url, data=container_data)
@@ -116,8 +118,6 @@ class BrowserManager(object):
 
         # get canonical browser id
         browser_id = res.get('id')
-
-        kwargs['browser'] = browser_id
 
         # browser page insert
         data = {'browser': browser_id,

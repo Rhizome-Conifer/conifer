@@ -58,7 +58,7 @@ class CollsController(BaseController):
         def get_collection(coll):
             user = self.get_user(api=True)
 
-            return self.get_collection_info_for_view(user, coll)
+            return self.get_collection_info(user, coll)
 
         @self.app.delete('/api/v1/collections/<coll>')
         def delete_collection(coll):
@@ -210,9 +210,21 @@ class CollsController(BaseController):
 
     def get_collection_info_for_view(self, user, coll, rec_list=None):
         self.redir_host()
-        result = self.get_collection_info(user, coll)
-        if result.get('error_message'):
+        result = self.get_collection_info(user, coll, rec_list)
+        if not result or result.get('error_message'):
             self._raise_error(404, 'Collection not found')
+
+        return result
+
+    def get_collection_info(self, user, coll, rec_list=None):
+        try:
+            collection = self.manager.get_collection(user, coll)
+            assert(collection)
+        except:
+            response.status = 404
+            return {'error_message': 'Collection not found', 'id': coll}
+
+        result = {'collection': collection}
 
         if self.manager.get_curr_user() == user:
             result['collections'] = self.manager.get_collections(self.manager.get_curr_user())
@@ -236,15 +248,6 @@ class CollsController(BaseController):
         result['rec_list'] = json.dumps(rec_list)
 
         return result
-
-    def get_collection_info(self, user, coll):
-        try:
-            collection = self.manager.get_collection(user, coll)
-            assert(collection)
-            return {'collection': collection}
-        except:
-            response.status = 404
-            return {'error_message': 'Collection not found', 'id': coll}
 
     def _ensure_coll_exists(self, user, coll):
         if not self.manager.has_collection(user, coll):

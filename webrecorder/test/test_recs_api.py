@@ -96,7 +96,7 @@ class TestWebRecRecAPI(FullStackTests):
     def test_page_list_1(self):
         res = self._anon_get('/api/v1/recordings/my-rec/pages?user={user}&coll=temp')
 
-        assert res.json == {'pages': [{'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'}]}
+        assert res.json == {'pages': [{'id': 'cf6e50ec2c', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'}]}
 
     def test_page_add_2(self):
         cdx_key = 'r:{user}:temp:my-rec:cdxj'.format(user=self.anon_user)
@@ -110,8 +110,8 @@ class TestWebRecRecAPI(FullStackTests):
     def test_page_list_2(self):
         res = self._anon_get('/api/v1/recordings/my-rec/pages?user={user}&coll=temp')
         assert len(res.json['pages']) == 2
-        assert {'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
-        assert {'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
+        assert {'id': 'cf6e50ec2c', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
+        assert {'id': 'ce9820d103', 'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
 
     def test_page_delete(self):
         params = {'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
@@ -120,7 +120,7 @@ class TestWebRecRecAPI(FullStackTests):
 
         res = self._anon_get('/api/v1/recordings/my-rec/pages?user={user}&coll=temp')
         assert len(res.json['pages']) == 1
-        assert {'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
+        assert {'id': 'cf6e50ec2c', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
 
     def test_collide_wb_url_format(self):
         res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'title': '2016'})

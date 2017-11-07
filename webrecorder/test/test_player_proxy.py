@@ -88,6 +88,15 @@ class TestPlayer(BaseTestClass):
         assert res.headers['Memento-Datetime'] == 'Sun, 01 Jan 2017 00:00:00 GMT'
 
     # switch timestamp
+    def test_switch_date_0(self):
+        params = {'user': 'local',
+                  'coll': 'collection',
+                  'timestamp': '2018'
+                 }
+        res = self.session.get(self.app_host + '/api/v1/update_remote_browser/@INIT', params=params)
+        assert res.json() == {}
+
+    # switch timestamp multiple times
     def test_switch_date(self):
         params = {'user': 'local',
                   'coll': 'collection',
