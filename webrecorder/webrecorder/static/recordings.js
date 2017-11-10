@@ -1604,9 +1604,7 @@ $(function() {
 
         if (state.wb_type == "load") {
             updatePage(state, true);
-            if (window.wr_history  && state.ts) {
-                window.wr_history.base_timestamp = state.ts;
-            }
+            saveHistory(state);
         } else if (state.wb_type == "replace-url") {
             updatePage(state, false);
             saveHistory(state);
@@ -1674,6 +1672,17 @@ $(function() {
     }
 
     function saveHistory(message) {
+        if (window.curr_mode != "record" &&
+            window.curr_mode != "patch" &&
+            window.curr_mode != "extract") {
+            return;
+        }
+
+        if (message.wb_type == "load") {
+            window.wr_history.base_timestamp = message.ts;
+            window.wr_history.base_url = message.url;
+        }
+
         if (!message.change_type) {
             return;
         }
