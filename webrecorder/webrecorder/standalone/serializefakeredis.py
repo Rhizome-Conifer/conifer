@@ -10,29 +10,36 @@ from fakeredis import DATABASES, _StrKeyDict, _ZSet, _Hash
 class FakeRedisSerializer(object):
     VERSION = '1'
 
-    def __init__(self, filename):
+    def __init__(self, filename, inputs):
         self.filename = filename
+        self.inputs = inputs
         self.update_needed = True
 
-    def _get_file_info(self):
-        res = os.stat(self.filename)
-        return res.st_size, res.st_mtime
+    def _get_file_check(self):
+        check = {}
+
+        for input_file in self.inputs:
+            input_file = os.path.abspath(input_file)
+            res = os.stat(input_file)
+            check[input_file] = {'file_size': res.st_size, 'file_mod': res.st_mtime}
+
+        return check
+
 
     def save_db(self):
         if not self.update_needed:
             logging.debug('Redis DB Loaded from Cache, No Save Needed')
             return
 
-        all_dbs = []
+        all_dbs = {}
         for db in DATABASES:
             all_dbs[db] = self.save_redis_dict(DATABASES[db])
 
-        file_size, file_mod = self._get_file_info()
+        check = self._get_file_check()
 
         root = {'all_dbs':  all_dbs,
                 'version': self.VERSION,
-                'file_size': file_size,
-                'file_mod': file_mod}
+                'file_check': check}
 
         with open(self.filename, 'wt') as fh:
             fh.write(json.dumps(root))
@@ -50,10 +57,9 @@ class FakeRedisSerializer(object):
 
             assert(root['version'] == self.VERSION)
 
-            file_size, file_mod = self._get_file_info()
+            check = self._get_file_check()
 
-            assert(root['file_size'] == file_size)
-            assert(root['file_mod'] == file_mod)
+            assert(root['file_check'] == check)
 
             DATABASES.clear()
             for db, obj in root['all_dbs'].items():

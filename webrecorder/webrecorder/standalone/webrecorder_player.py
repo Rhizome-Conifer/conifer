@@ -11,6 +11,8 @@ from webrecorder.admin import create_user
 from webrecorder.standalone.serializefakeredis import FakeRedisSerializer
 
 from gevent.threadpool import ThreadPool
+
+import traceback
 import redis
 import fakeredis
 import logging
@@ -31,7 +33,6 @@ class WebrecPlayerRunner(StandaloneRunner):
             webbrowser.open_new(os.environ['APP_HOST'] + '/')
 
     def close(self):
-        self.save_cache()
         super(WebrecPlayerRunner, self).close()
 
     def _patch_redis(self, cache_dir):
@@ -47,7 +48,8 @@ class WebrecPlayerRunner(StandaloneRunner):
 
         name = os.path.basename(self.inputs[0]).replace('.warc.gz', '-cache.json.gz')
         cache_db = os.path.join(cache_dir, name)
-        self.serializer = FakeRedisSerializer(cache_db)
+
+        self.serializer = FakeRedisSerializer(cache_db, self.inputs)
 
     def admin_init(self):
         if self.load_cache():
@@ -79,6 +81,9 @@ class WebrecPlayerRunner(StandaloneRunner):
                 if manager.redis.exists('c:local:collection:cdxj'):
                     self.serializer.save_db()
         except Exception as e:
+            if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+                traceback.print_exc()
+
             logging.debug('Error Closing, Not Saved: ' + str(e))
 
     def safe_auto_load_warcs(self):
@@ -86,7 +91,6 @@ class WebrecPlayerRunner(StandaloneRunner):
             self.auto_load_warcs()
         except:
             print('Initial Load Failed!')
-            import traceback
             traceback.print_exc()
 
     def auto_load_warcs(self):
@@ -116,6 +120,8 @@ class WebrecPlayerRunner(StandaloneRunner):
         browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
         browser_redis.hmset('ip:127.0.0.1', local_info)
         browser_redis.hset('req:@INIT', 'ip', '127.0.0.1')
+
+        self.save_cache();
 
     def init_env(self):
         super(WebrecPlayerRunner, self).init_env()

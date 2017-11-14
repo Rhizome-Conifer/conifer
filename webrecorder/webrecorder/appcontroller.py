@@ -454,8 +454,7 @@ class AppController(BaseController):
         # if upload already finished, redirect to known coll
         if not upload_status or upload_status.get('done'):
             if user and coll:
-                self.redirect('/api/v1/collections/{coll}/start?user={user}'.format(user=user, coll=coll))
-                #self.redirect('/' + user + '/' + coll)
+                self.redirect('/' + user + '/' + coll)
 
         resp['upload_status'] = upload_status
         return resp
