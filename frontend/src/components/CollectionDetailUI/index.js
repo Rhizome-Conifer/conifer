@@ -5,7 +5,9 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 
+import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage } from 'helpers/utils';
+
 import SessionCollapsible from 'components/SessionCollapsible';
 import DurationFormat from 'components/DurationFormat';
 import SizeFormat from 'components/SizeFormat';
@@ -43,7 +45,9 @@ class CollectionDetailUI extends Component {
       selectedBookmark: null,
       selectedBookmarkIdx: null,
       selectedGroupedBookmark: null,
-      selectedGroupedBookmarkIdx: null
+      selectedGroupedBookmarkIdx: null,
+      bookmarks: props.bookmarks,
+      sortBy: null,
     };
 
     this.state = this.initialState;
@@ -116,6 +120,19 @@ class CollectionDetailUI extends Component {
     }
 
     dispatch(searchBookmarks(evt.target.value));
+  }
+
+  sort = ({ sortBy, sortDirection }) => {
+    const { collection, dispatch } = this.props;
+    const prevSort = collection.getIn(['sortBy', 'sort']);
+    const prevDir = collection.getIn(['sortBy', 'dir']);
+    console.log(sortBy, sortDirection);
+
+    if (prevSort !== sortBy) {
+      dispatch(setSort({ sort: sortBy, dir: sortDirection }));
+    } else {
+      dispatch(setSort({ sort: sortBy, dir: prevDir === 'ASC' ? 'DESC' : 'ASC' }));
+    }
   }
 
   toggleExpandAllSessions = () => {
@@ -233,7 +250,10 @@ class CollectionDetailUI extends Component {
                         rowHeight={50}
                         rowGetter={({ index }) => bookmarks.get(index)}
                         rowClassName={({ index }) => { return index === selectedBookmarkIdx ? 'selected' : ''; }}
-                        onRowClick={this.onSelectRow}>
+                        onRowClick={this.onSelectRow}
+                        sort={this.sort}
+                        sortBy={collection.getIn(['sortBy', 'sort'])}
+                        sortDirection={collection.getIn(['sortBy', 'dir'])}>
                         <Column
                           width={20}
                           dataKey="fav"
@@ -263,6 +283,7 @@ class CollectionDetailUI extends Component {
                           width={100}
                           label="labels"
                           dataKey="labels"
+                          disableSort
                           cellRenderer={TagRenderer} />
                         <Column
                           width={100}

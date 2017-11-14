@@ -124,7 +124,7 @@ const initialData = [
   },
   {
     // set url and ts in store
-    promise: ({ params: { ts, splat }, store: { dispatch } }) => {
+    promise: ({ location: { hash, search }, params: { ts, splat }, store: { dispatch } }) => {
       let timestamp = ts;
       let rb = null;
 
@@ -134,8 +134,9 @@ const initialData = [
         rb = parts[1];
       }
 
+      const compositeUrl = `${splat}${search}${hash}`;
       const promises = [
-        dispatch(updateUrl(splat)),
+        dispatch(updateUrl(compositeUrl)),
         dispatch(updateTimestamp(timestamp)),
         dispatch(setBrowser(rb))
       ];

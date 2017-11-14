@@ -29,7 +29,7 @@ class IFrame extends Component {
   constructor(props) {
     super(props);
 
-    this.initialReq = false;
+    this.initialReq = true;
     this.socket = null;
 
     this.contentFrame = null;
@@ -37,7 +37,7 @@ class IFrame extends Component {
   }
 
   componentDidMount() {
-    const { appPrefix, contentPrefix, dispatch, params } = this.props;
+    const { appPrefix, contentPrefix, dispatch, params, url } = this.props;
     const { currMode } = this.context;
 
     window.addEventListener('message', this.handleReplayEvent);
@@ -47,7 +47,7 @@ class IFrame extends Component {
       outer_prefix: '',
       content_prefix: contentPrefix,
       coll: params.coll,
-      url: params.splat,
+      url,
       capture_url: '',
       reqTimestamp: params.ts,
       timestamp: params.ts,
@@ -61,7 +61,7 @@ class IFrame extends Component {
     };
 
     this.contentFrame = new ContentFrame({
-      url: params.splat + window.location.hash,
+      url,
       prefix: appPrefix,
       content_prefix: contentPrefix,
       request_ts: params.ts,
@@ -72,11 +72,11 @@ class IFrame extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { params: { splat, ts } } = this.props;
+    const { url, timestamp } = this.props;
 
-    if (nextProps.params.splat !== splat ||
-        nextProps.params.ts !== ts) {
-      this.contentFrame.load_url(nextProps.params.splat, nextProps.params.ts);
+    if (nextProps.url !== url ||
+        nextProps.timestamp !== timestamp) {
+      this.contentFrame.load_url(nextProps.url, nextProps.timestamp);
     }
   }
 

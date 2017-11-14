@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { is, List } from 'immutable';
+import { is, List, Map } from 'immutable';
 import { getSearchSelectors } from 'redux-search';
 
 import { rts, truncate } from 'helpers/utils';
@@ -7,7 +7,7 @@ import { rts, truncate } from 'helpers/utils';
 
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
 const getArchives = state => state.getIn(['controls', 'archives']);
-const getBookmarks = (state) => { return state.app ? state.app.getIn(['collection', 'bookmarks']) : state.getIn(['collection', 'bookmarks']); };
+const getBookmarks = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['collection', 'bookmarks']); };
 const getCollections = state => state.getIn(['collections', 'collections']);
 const getRecordings = state => state.getIn(['collection', 'recordings']);
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
@@ -17,7 +17,8 @@ const getTimestamp = state => state.getIn(['controls', 'timestamp']);
 const getUrl = state => state.getIn(['controls', 'url']);
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const selectedCollection = state => state.getIn(['user', 'activeCollection']);
-const userOrderBy = (state) => { return state.app ? state.app.get('userOrderBy') || 'timestamp' : state.get('userOrderBy') || 'timestamp'; };
+const userSortBy = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['collection', 'sortBy']); };
+
 
 const sortFn = (a, b, by = null) => {
   if (by) {
@@ -40,12 +41,21 @@ const { text, result } = getSearchSelectors({
 });
 
 export const bookmarkSearchResults = createSelector(
-  [result, getBookmarks, userOrderBy, text],
-  (bookmarkIds, bookmarkObjs, order, searchText) => {
+  [result, getBookmarks, userSortBy, text],
+  (bookmarkIds, bookmarkObjs, sortBy, searchText) => {
     const bookmarks = List(bookmarkIds.map(id => bookmarkObjs.get(id)));
+    const sort = sortBy.get('sort');
+    const dir = sortBy.get('dir');
+    const bookmarkFeed = bookmarks.sortBy(o => o.get(sort));
 
+    if (dir === 'DESC') {
+      return {
+        bookmarkFeed: bookmarkFeed.reverse(),
+        searchText
+      };
+    }
     return {
-      bookmarkFeed: bookmarks.sortBy(o => o.get(order)),
+      bookmarkFeed,
       searchText
     };
   }
@@ -65,20 +75,30 @@ export const getActiveCollection = createSelector(
 );
 
 export const getOrderedRecordings = createSelector(
-  [getRecordings, userOrderBy],
-  (recordings, order) => {
-    return recordings.sortBy(o => o.get(order)).toOrderedSet();
+  [getRecordings],
+  (recordings) => {
+    const sortedRecordings = recordings.sortBy(o => o.get('created_at')).toOrderedSet();
+
+    return sortedRecordings;
   }
 );
 
 
 //let lastBookmarks = null;
 export const getOrderedBookmarks = createSelector(
-  getBookmarks, userOrderBy,
-  (bookmarks, order) => {
+  getBookmarks, userSortBy,
+  (bookmarks, sortBy) => {
     //console.log('running', 'getOrderedBookmarks', bookmarks === lastBookmarks, is(bookmarks, lastBookmarks));
     //lastBookmarks = bookmarks;
-    return bookmarks.toList().sortBy(o => o.get(order));
+    const sort = sortBy.get('sort');
+    const dir = sortBy.get('dir');
+
+    const sortedBookmarks = bookmarks.toList().sortBy(o => o.get(sort));
+
+    if (dir === 'DESC') {
+      return sortedBookmarks.reverse();
+    }
+    return sortedBookmarks;
   }
 );
 

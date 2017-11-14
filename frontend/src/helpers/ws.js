@@ -8,7 +8,7 @@ import { getRemoteBrowser, remoteBrowserMod, stripProtocol } from 'helpers/utils
 
 
 class WebSocketHandler {
-  constructor(params, currMode, dispatch, remoteBrowser = false, reqId = null) {
+  constructor(params, currMode, dispatch, remoteBrowser = false, reqId = null, host = '') {
     const { user, coll, rec, splat, ts, br } = params;
 
     this.startMsg = undefined;
@@ -21,6 +21,7 @@ class WebSocketHandler {
     this.dispatch = dispatch;
     this.lastPopUrl = undefined;
     this.params = params;
+    this.host = host;
 
     this.isProxy = false;
     this.isRemoteBrowser = remoteBrowser;
@@ -40,7 +41,7 @@ class WebSocketHandler {
   initWS = () => {
     console.log('init ws', this.reqUrl);
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    let url = `${wsProtocol}${stripProtocol(__DEVELOPMENT__ ? config.devApi : config.prodApi)}/${this.wsEndpoint}?user=${this.user}&coll=${this.coll}`;
+    let url = `${wsProtocol}${this.host ? this.host : stripProtocol(__DEVELOPMENT__ ? config.devApi : config.prodApi)}/${this.wsEndpoint}?user=${this.user}&coll=${this.coll}`;
 
     if(this.rec && this.rec !== '*') {
       url += `&rec=${this.rec}`;

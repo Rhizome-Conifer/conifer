@@ -5,14 +5,17 @@ const COLL_LOAD = 'wr/coll/LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/LOAD_FAIL';
 
+const COLL_SET_SORT = 'wr/coll/COLL_SET_SORT';
 const COLL_SET_PUBLIC = 'wr/coll/SET_PUBLIC';
 const COLL_SET_PUBLIC_SUCCESS = 'wr/coll/SET_PUBLIC_SUCCESS';
 const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
 
+export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
   loading: false,
   loaded: false,
   error: null,
+  sortBy: defaultSort
 });
 
 
@@ -56,6 +59,12 @@ export default function collection(state = initialState, action = {}) {
       });
     case COLL_SET_PUBLIC_SUCCESS:
       return state.set('isPublic', action.result.is_public);
+
+    case COLL_SET_SORT:
+      return state.merge({
+        sortBy: action.sortBy
+      });
+
     case COLL_SET_PUBLIC:
     case COLL_SET_PUBLIC_FAIL:
     default:
@@ -84,5 +93,12 @@ export function setPublic(coll, user, makePublic = true) {
         'public': makePublic
       },
     }, 'form')
+  };
+}
+
+export function setSort(sortBy) {
+  return {
+    type: COLL_SET_SORT,
+    sortBy
   };
 }
