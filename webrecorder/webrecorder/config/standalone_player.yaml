@@ -12,6 +12,8 @@ init_upload_coll: 'collection'
 
 cdxj_key_templ: 'c:{user}:{coll}:cdxj'
 
+max_detect_pages: 0
+
 upload_coll:
     id: 'collection'
     title: 'Collection'
