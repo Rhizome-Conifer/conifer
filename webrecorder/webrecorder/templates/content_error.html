@@ -98,7 +98,7 @@
             <div class="content-error-info">
                 <h1>Resource not Found</h1>
 
-                {% if (type == 'replay' or type == 'replay-coll') and can_write() and not browser %}
+                {% if (type == 'replay' or type == 'replay-coll') and can_write() and not browser and metadata.type != 'player' %}
                     <a href="{{ '//' + app_host if app_host else '' }}/_new/{{ coll }}/Patch/patch/{{ url }}" target="_top" class="record-missing-link"><button id="autoscroll" type="button" class="btn btn-default btn-xs" data-toggle="button" aria-pressed="false" autocomplete="off">Try to patch</button></a>
                     <button id="bug-report" type="button" class="btn btn-default btn-xs" data-toggle="button" aria-pressed="false" autocomplete="off">Still missing? Report a bug.</button>
                 {% endif %}
