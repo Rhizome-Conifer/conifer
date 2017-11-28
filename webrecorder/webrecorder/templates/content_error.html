@@ -103,7 +103,7 @@
                     <button id="bug-report" type="button" class="btn btn-default btn-xs" data-toggle="button" aria-pressed="false" autocomplete="off">Still missing? Report a bug.</button>
                 {% endif %}
 
-                <p>The url <b>{{ url|trunc_url }}</b> was not found in the archive.</p>
+                <p>The url <b>{{ url|trunc_url_expand }}</b> was not found in the archive.</p>
             </div>
         </div>
     {% elif status == 402 %}
