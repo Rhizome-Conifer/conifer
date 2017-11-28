@@ -101,7 +101,7 @@ var EventHandlers = (function() {
 
         var bin = getStorage("__wr_toolBin");
 
-        if (bin) {
+        if (bin && window.curr_user !== '') {
             var toolsOpen = JSON.parse(bin);
             $(".wr-tools").toggleClass("open", toolsOpen);
             $(document.body).toggleClass("wr-toolbin-open", toolsOpen);
