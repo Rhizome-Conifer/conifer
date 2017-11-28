@@ -182,6 +182,12 @@ input.homepage-title {
     min-width: 160px !important;
 }
 
+.landing-info {
+  padding: 60px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 60px
+}
+
 .panel-body ul {
     margin-top: .5em;
 }
