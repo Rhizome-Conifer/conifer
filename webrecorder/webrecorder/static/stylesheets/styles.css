@@ -773,6 +773,15 @@ input.upload-choice {
     text-align: left;
 }
 
+.truncate-expand {
+    color: #429EEC;
+    cursor: pointer;
+}
+.truncate-expand.open {
+    color: #000;
+    cursor: inherit;
+}
+
 /* End recorder */
 
 

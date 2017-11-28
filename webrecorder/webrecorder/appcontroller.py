@@ -296,6 +296,12 @@ class AppController(BaseController):
                     return True
             return False
 
+        def trunc_url_expand(value):
+            """ Truncate querystrings, appending an ellipses, expand on click
+            """
+            trunc_value = '?<span class="truncate-expand" aria-role="button" title="Click to expand" onclick="this.innerHTML=\''+value.split('?')[-1]+'\'; this.classList.add(\'open\');">...</span>'
+            return re.sub(r'(\?.*)', trunc_value, value)
+
         def trunc_url(value):
             """ Truncate querystrings, appending an ellipses
             """
@@ -332,6 +338,7 @@ class AppController(BaseController):
         jinja_env.globals['is_tagged'] = is_tagged
         jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
         jinja_env.filters['trunc_url'] = trunc_url
+        jinja_env.filters['trunc_url_expand'] = trunc_url_expand
         jinja_env.filters['urldecode'] = urldecode
 
         return jinja_env_wrapper
