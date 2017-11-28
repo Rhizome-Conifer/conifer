@@ -240,15 +240,10 @@ class AppController(BaseController):
             user = context.get('user')
             coll = context.get('coll')
             host = self.app_host + ('' if self.app_host.endswith('/') else '/')
-            ts = ''
+            ts = context.get('timestamp', '')
 
             if br != '':
                 br = '$br:'+br
-
-            if context.get('curr_mode', '') in ('record'):
-                ts = context.get('timestamp', '')
-            else:
-                ts = context.get('ts', '')
 
             return 'https://{host}{user}/{coll}/{ts}{browser}/{url}'.format(
                 host=host,
@@ -266,15 +261,10 @@ class AppController(BaseController):
             br = context.get('browser', '')
             user = context.get('user')
             coll = context.get('coll')
-            ts = ''
+            ts = context.get('timestamp', '')
 
             if br != '':
                 br = '$br:'+br
-
-            if context.get('curr_mode', '') in ('record'):
-                ts = context.get('timestamp', '')
-            else:
-                ts = context.get('ts', '')
 
             return 'https://{host}_embed/{user}/{coll}/{ts}{browser}/{url}'.format(
                 host=host,
