@@ -48,7 +48,7 @@
                 <li role="separator" class="divider"></li>
                 {% for collection in collections | sort(attribute='title') %}
                 <li>
-                    <a href="#" class="collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>
+                    <a href="#" class="collection-select" data-collection-id="{{ collection.id }}">{{ collection.title|e }}</a>
                 </li>
                 {% endfor %}
             </ul>

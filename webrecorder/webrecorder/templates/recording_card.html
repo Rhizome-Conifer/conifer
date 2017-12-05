@@ -16,7 +16,7 @@
             {% if can_admin() %}
                 {% include 'editable_recording_title.html' %}
             {% endif %}
-            <span class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title }}</span>
+            <span class="editable-title recording-title" data-editing-id="{{ editing_id }}">{{ recording.title|e }}</span>
 
             <div class="recording-details">
                 <div class="recording-stats text-left right-buffer-sm">

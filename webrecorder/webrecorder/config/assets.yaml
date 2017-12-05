@@ -72,7 +72,6 @@ bundles:
             - automate.js
             - containerized_ui.js
             - external/bootstrap-switch.js
-            - shareWidget.js
             - extract_ui.js
 
     frame-css:
@@ -142,7 +141,6 @@ bundles:
             - automate.js
             - containerized_ui.js
             - external/bootstrap-switch.js
-            - shareWidget.js
             - extract_ui.js
 
     browser-css:

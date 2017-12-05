@@ -6,7 +6,7 @@
                 Confirm Delete Collection?
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete the collection <b>{{ collection.title }}</b> {{ get_path(user, coll) }}?</p>
+                <p>Are you sure you want to delete the collection <b>{{ collection.title|e }}</b> {{ get_path(user, coll) }}?</p>
                 <p>If you confirm, all recordings will be permanently deleted.</p>
                 <p>Be sure to download the collection first if you would like to keep any data.</p>
             </div>
