@@ -18,9 +18,17 @@ import atexit
 
 # ============================================================================
 class StandaloneRunner(FullStackRunner):
-    def __init__(self, warcs_dir='', redis_db='', loglevel=None,
-                 app_port=8090, rec_port=0, warc_port=0):
+    def __init__(self, argres):
+        self.argres = argres
 
+        warcs_dir = self._get_prop('warcs_dir')
+        cache_dir = self._get_prop('cache_dir')
+
+        app_port = self._get_prop('port', 8090)
+        rec_port = self._get_prop('rec_port', -1)
+        warc_port = self._get_prop('warc_port', 0)
+
+        loglevel = self._get_prop('loglevel')
         if isinstance(loglevel, str):
             try:
                 loglevel = getattr(logging, loglevel.upper())
@@ -39,16 +47,10 @@ class StandaloneRunner(FullStackRunner):
         else:
             self.app_dir = os.getcwd()
 
-        if redis_db:
-            try:
-                os.makedirs(os.path.dirname(redis_db))
-            except OSError:
-                pass
-
         self.warcs_dir = warcs_dir
         self.init_env()
 
-        self._patch_redis(redis_db)
+        self._patch_redis(cache_dir)
 
         self.admin_init()
 
@@ -60,7 +62,16 @@ class StandaloneRunner(FullStackRunner):
                                                warc_port=warc_port)
         atexit.register(self.close)
 
-    def _patch_redis(self, redis_db):
+    def close(self):
+        super(StandaloneRunner, self).close()
+
+    def _get_prop(self, prop, default=''):
+        try:
+            return getattr(self.argres, prop)
+        except:
+            return default
+
+    def _patch_redis(self, cache_dir):
         import fakeredis
         redis.StrictRedis = fakeredis.FakeStrictRedis
 
@@ -78,7 +89,6 @@ class StandaloneRunner(FullStackRunner):
             parts = line.split('=')
             if len(parts) == 2:
                 os.environ[parts[0]] = os.path.expandvars(parts[1])
-
 
         os.environ['RECORD_ROOT'] = self.warcs_dir
 
@@ -121,3 +131,4 @@ class StandaloneRunner(FullStackRunner):
             return main
 
         main.app_serv.ge.join()
+

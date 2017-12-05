@@ -6,6 +6,8 @@ from webrecorder.standalone.webrecorder_player import webrecorder_player
 
 import os
 import requests
+import gzip
+import json
 
 from tempfile import NamedTemporaryFile
 
@@ -15,23 +17,29 @@ from warcio.statusandheaders import StatusAndHeaders
 
 
 # ============================================================================
-class TestPlayer(BaseTestClass):
+class BaseTestPlayer(BaseTestClass):
     @classmethod
     def setup_class(cls):
-        super(TestPlayer, cls).setup_class()
+        super(BaseTestPlayer, cls).setup_class()
         cls.session = requests.session()
 
         cls.warc_path = cls.create_temp_warc()
 
-        cls.player = webrecorder_player(['--no-browser', cls.warc_path], embed=True)
+        cls.player = webrecorder_player(cls.get_player_cmd(), embed=True)
         cls.app_host = 'http://localhost:' + str(cls.player.app_serv.port)
         cls.proxies = {'http': cls.app_host, 'https': cls.app_host}
+
+    @classmethod
+    def get_player_cmd(cls):
+        return ['--no-browser', cls.warc_path]
 
     @classmethod
     def teardown_class(cls):
         os.remove(cls.warc_path)
 
-        super(TestPlayer, cls).teardown_class()
+        cls.player.app_serv.stop()
+
+        super(BaseTestPlayer, cls).teardown_class()
 
     @classmethod
     def create_temp_warc(cls):
@@ -67,6 +75,9 @@ class TestPlayer(BaseTestClass):
 
         writer.write_record(rec)
 
+
+# ============================================================================
+class TestPlayer(BaseTestPlayer):
     # non-proxy replay, Timestamp specified explicitly
     def test_rewrite_replay_latest(self):
         res = self.session.get(self.app_host + '/local/collection/mp_/http://example.com/')
@@ -126,5 +137,37 @@ class TestPlayer(BaseTestClass):
         assert res.text == 'Example Domain'
         assert res.url == 'http://example.com/'
         assert res.headers['Memento-Datetime'] == 'Wed, 01 Jan 2014 00:00:00 GMT'
+
+
+# ============================================================================
+class TestCacheingPlayer(BaseTestPlayer):
+    @classmethod
+    def setup_class(cls):
+        super(TestCacheingPlayer, cls).setup_class()
+
+        name = os.path.basename(cls.warc_path).replace('.warc.gz', '-cache.json.gz')
+        path = os.path.join(os.path.dirname(cls.warc_path),
+                            '_warc_cache',
+                            name)
+
+        cls.cache_path = path
+
+    @classmethod
+    def teardown_class(cls):
+        os.remove(cls.cache_path)
+        super(TestCacheingPlayer, cls).teardown_class()
+
+    @classmethod
+    def get_player_cmd(cls):
+        return ['--no-browser', cls.warc_path, '--cache-dir', '_warc_cache']
+
+    def test_cache_create(self):
+        assert os.path.isfile(self.cache_path)
+
+        with gzip.open(self.cache_path, 'rt') as fh:
+            cache = json.loads(fh.read())
+
+        assert cache['version'] == '1'
+
 
 
