@@ -101,7 +101,7 @@ var EventHandlers = (function() {
 
         var bin = getStorage("__wr_toolBin");
 
-        if (bin) {
+        if (bin && window.curr_user !== '') {
             var toolsOpen = JSON.parse(bin);
             $(".wr-tools").toggleClass("open", toolsOpen);
             $(document.body).toggleClass("wr-toolbin-open", toolsOpen);
@@ -814,12 +814,16 @@ var ShareWidget = (function () {
 
         var shareVal = shareUrl.val();
         // replace timestamp if present
-        shareVal = shareVal.replace(/\/\d+\//, '/'+rec.ts+'/');
+        if (rec.ts) {
+            shareVal = shareVal.replace(/\/\d+\//, '/'+rec.ts+'/');
+        }
         shareVal = shareVal.replace(/\/http.+/, '/' + rec.url)
         shareUrl.val(shareVal);
 
         var embedVal = shareEmbed.val();
-        embedVal = embedVal.replace(/\/\d+\//, '/'+rec.ts+'/');
+        if (rec.ts) {
+            embedVal = embedVal.replace(/\/\d+\//, '/'+rec.ts+'/');
+        }
         embedVal = embedVal.replace(/\/http[^"]*/, '/' + rec.url);
         shareEmbed.val(embedVal);
 

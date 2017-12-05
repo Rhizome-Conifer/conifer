@@ -240,15 +240,10 @@ class AppController(BaseController):
             user = context.get('user')
             coll = context.get('coll')
             host = self.app_host + ('' if self.app_host.endswith('/') else '/')
-            ts = ''
+            ts = context.get('timestamp', '')
 
             if br != '':
                 br = '$br:'+br
-
-            if context.get('curr_mode', '') in ('record'):
-                ts = context.get('timestamp', '')
-            else:
-                ts = context.get('ts', '')
 
             return 'https://{host}{user}/{coll}/{ts}{browser}/{url}'.format(
                 host=host,
@@ -266,15 +261,10 @@ class AppController(BaseController):
             br = context.get('browser', '')
             user = context.get('user')
             coll = context.get('coll')
-            ts = ''
+            ts = context.get('timestamp', '')
 
             if br != '':
                 br = '$br:'+br
-
-            if context.get('curr_mode', '') in ('record'):
-                ts = context.get('timestamp', '')
-            else:
-                ts = context.get('ts', '')
 
             return 'https://{host}_embed/{user}/{coll}/{ts}{browser}/{url}'.format(
                 host=host,
@@ -305,6 +295,12 @@ class AppController(BaseController):
                 if tag in tags and bookmark_id in tags[tag]:
                     return True
             return False
+
+        def trunc_url_expand(value):
+            """ Truncate querystrings, appending an ellipses, expand on click
+            """
+            trunc_value = '?<span class="truncate-expand" aria-role="button" title="Click to expand" onclick="this.innerHTML=\''+value.split('?')[-1]+'\'; this.classList.add(\'open\');">...</span>'
+            return re.sub(r'(\?.*)', trunc_value, value)
 
         def trunc_url(value):
             """ Truncate querystrings, appending an ellipses
@@ -342,6 +338,7 @@ class AppController(BaseController):
         jinja_env.globals['is_tagged'] = is_tagged
         jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
         jinja_env.filters['trunc_url'] = trunc_url
+        jinja_env.filters['trunc_url_expand'] = trunc_url_expand
         jinja_env.filters['urldecode'] = urldecode
 
         return jinja_env_wrapper

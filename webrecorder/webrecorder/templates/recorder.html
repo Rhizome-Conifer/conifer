@@ -38,10 +38,10 @@
                                 {% if not can_admin() and rec.br and has_browsers %}
                                     <img src="/api/browsers/browsers/{{ rec.br }}/icon">
                                 {% endif %}
-                                <div class="url" href="/{{ user }}/{{ coll }}/{{ rec.ts }}{% if rec.br %}$br:{{ rec.br }}{% endif %}/{{ rec.url }}">
+                                <div class="url">
                                     {{ rec.url|trunc_url }}
                                 </div>
-                                <span class="replay-date hidden-xs" data-date="{{ rec.ts }}"/>
+                                <span class="replay-date hidden-xs" data-date="{{ rec.ts }}"></span>
                             </li>
                         {% endfor %}
                     </ul>
