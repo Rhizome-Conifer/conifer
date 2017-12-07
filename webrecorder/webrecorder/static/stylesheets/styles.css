@@ -187,6 +187,22 @@ input.homepage-title {
   border-bottom: 1px solid #eee;
   margin-bottom: 60px
 }
+.landing-info ul {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 1.8rem;
+}
+.landing-info ul li {
+  margin: 2.5rem 0;
+  padding-left: 0;
+  text-indent: -0.8rem;
+}
+.landing-info ul li::before {
+  content: "• ";
+  color: #ccc;
+  position: relative;
+  left: -10px;
+}
 
 .panel-body ul {
     margin-top: .5em;
