@@ -8,6 +8,9 @@ bundles:
         contents:
             - external/jquery.min.js
             - external/bootstrap/js/bootstrap.min.js
+            - external/bootflat/js/icheck.min.js
+            - external/bootflat/js/jquery.fs.selecter.min.js
+            - external/bootflat/js/jquery.fs.stepper.min.js
             - utils.js
 
     base-css:
@@ -16,6 +19,7 @@ bundles:
         contents:
             - external/bootstrap/css/bootstrap.min.css
             - external/bootstrap/css/bootstrap-theme.min.css
+            - external/bootflat/css/bootflat.min.css
             - stylesheets/styles.css
 
     main-js:
