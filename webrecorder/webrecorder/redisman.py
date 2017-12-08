@@ -1,5 +1,4 @@
 import six
-import html
 import time
 import redis
 import re
@@ -1517,7 +1516,7 @@ class Base(object):
             rec = quote(rec)
             info['rec_title'], info['size'] = self.redis.hmget(rec_key, ['title', 'size'])
             if info.get('rec_title'):
-                info['rec_title'] = quote(html.escape(info['rec_title']), safe='/ ')
+                info['rec_title'] = quote(info['rec_title'], safe='/ ')
             else:
                 info['rec_title'] = rec
             info['rec_id'] = rec
@@ -1527,14 +1526,14 @@ class Base(object):
         # collection
         coll = quote(coll)
         info['coll_id'] = coll
-        info['coll_title'] = html.escape(self.redis.hget(coll_key, 'title'))
+        info['coll_title'] = self.redis.hget(coll_key, 'title')
 
         if info.get('coll_title'):
-            info['coll_title'] = quote(html.escape(info['coll_title']), safe='/ ')
+            info['coll_title'] = quote(info['coll_title'], safe='/ ')
         else:
-            info['coll_title'] = html.escape(coll)
+            info['coll_title'] = coll
 
-        info['coll_desc'] = html.escape(self.redis.hget(coll_key, 'desc'))
+        info['coll_desc'] = quote(self.redis.hget(coll_key, 'desc'))
 
         try:
             info['size'] = int(info['size'])
