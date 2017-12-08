@@ -18,7 +18,6 @@ bundles:
         filters: cssrewrite
         contents:
             - external/bootstrap/css/bootstrap.min.css
-            - external/bootstrap/css/bootstrap-theme.min.css
             - external/bootflat/css/bootflat.min.css
             - stylesheets/styles.css
 
