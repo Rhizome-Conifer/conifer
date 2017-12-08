@@ -1,5 +1,9 @@
 <html>
     <head>
+        {% assets "fonts-css" %}
+        <link href="{{ ASSET_URL }}" rel="stylesheet" />
+        {% endassets %}
+
         {% assets "base-css" %}
         <link href="{{ ASSET_URL }}" rel="stylesheet" />
         {% endassets %}

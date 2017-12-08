@@ -21,6 +21,13 @@ bundles:
             - external/bootflat/css/bootflat.min.css
             - stylesheets/styles.css
 
+    fonts-css:
+        output: bundle/fonts.css
+        filters: cssrewrite
+        contents:
+            - fonts/fonts.css
+
+
     main-js:
         output: bundle/main.js
         contents:
@@ -39,6 +46,7 @@ bundles:
     main-css:
         output: bundle/main.css
         contents:
+            - fonts-css
             - base-css
             - external/jquery.selectBoxIt.css
             - stylesheets/footer.css
