@@ -3,6 +3,7 @@
 
 from .testutils import FullStackTests
 
+import gevent
 import glob
 import os
 
@@ -18,11 +19,10 @@ from pywb.indexer.cdxindexer import write_cdx_index
 from re import sub
 from six.moves.urllib.parse import urlsplit, quote
 
-from webrecorder.session import Session
-
 from webrecorder.rec.tempchecker import TempChecker
 from webrecorder.rec.worker import Worker
-import gevent
+from webrecorder.redisman import init_manager_for_cli
+from webrecorder.session import Session
 
 
 # ============================================================================
@@ -57,6 +57,8 @@ class TestTempContent(FullStackTests):
 
         cls.seshmock = patch('webrecorder.session.RedisSessionMiddleware.make_id', make_id)
         cls.seshmock.start()
+
+        cls.manager = init_manager_for_cli()
 
         cls.dyn_stats = []
 
@@ -312,6 +314,44 @@ class TestTempContent(FullStackTests):
         warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='test--ok')
         assert self.redis.hlen(warc_key) == 1
 
+    def test_anon_html_format_record(self):
+        test_url = 'http://httpbin.org/get?boof=mar'
+        res = self.testapp.get(
+            '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('<em>My</em> test recording'), url=test_url)
+        )
+        assert res.status_code == 302
+        assert res.location.endswith('/temp/emmyem-test-recording/record/mp_/{0}'.format(test_url))
+        res = res.follow()
+
+        res.charset = 'utf-8'
+
+        assert '"boof": "mar"' in res.text
+
+        assert self.testapp.cookies['__test_sesh'] != ''
+
+        # Add as page
+        page = {'title': 'HTML formatting test', 'url': test_url, 'ts': '2016010203000000'}
+        res = self.testapp.post(
+            '/api/v1/recordings/{rec}/pages?user={user}&coll=temp'.format(rec='emmyem-test-recording', user=self.anon_user),
+            params=page
+        )
+
+        assert res.json == {}
+
+        user = self.anon_user
+
+        all_recs = ['my-recording', 'my-recording-2', 'my-rec2', 'вэбрекордэр',
+                    'test--ok', 'emmyem-test-recording']
+
+        self._assert_rec_keys(user, 'temp', all_recs)
+
+        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='test--ok')
+        assert self.redis.hlen(warc_key) == 1
+
+        info = self.manager.get_content_inject_info(self.anon_user, 'temp', 'emmyem-test-recording')
+        assert info['rec_id'] == 'emmyem-test-recording'
+        assert info['rec_title'] == '%3Cem%3EMy%3C/em%3E test recording'
+
     def test_anon_new_add_to_recording(self):
         res = self._get_anon('/temp/my-rec2/$add')
         res.charset = 'utf-8'
@@ -407,7 +447,7 @@ class TestTempContent(FullStackTests):
         write_cdx_index(cdxout, warcin, 'temp.warc.gz', include_all=True, cdxj=True)
 
         cdx = [CDXObject(cdx) for cdx in cdxout.getvalue().rstrip().split(b'\n')]
-        assert len(cdx) == 10
+        assert len(cdx) == 12
 
         # response
         cdx[0]['url'] = 'http://httpbin.org/get?food=bar'
@@ -425,12 +465,16 @@ class TestTempContent(FullStackTests):
         cdx[3]['url'] = 'http://httpbin.org/get?bood=far'
         cdx[3]['mime'] = '-'
 
+        # request
+        cdx[4]['url'] = 'http://httpbin.org/get?boof=mar'
+        cdx[4]['mime'] = '-'
+
     def test_rename_rec(self):
         res = self.testapp.post('/api/v1/recordings/my-rec2/rename/My%20Recording?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'title': 'My Recording 3', 'rec_id': 'my-recording-3', 'coll_id': 'temp'}
 
-        all_recs = ['my-recording', 'my-recording-2', 'вэбрекордэр', 'my-recording-3', 'test--ok']
+        all_recs = ['my-recording', 'my-recording-2', 'вэбрекордэр', 'my-recording-3', 'test--ok', 'emmyem-test-recording']
 
         # ensure keys up-to-date
         self._assert_rec_keys(self.anon_user, 'temp', all_recs)
@@ -459,7 +503,7 @@ class TestTempContent(FullStackTests):
     def test_anon_delete_recs(self):
         res = self.testapp.get('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
         recs = res.json['collection']['recordings']
-        assert set([rec['id'] for rec in recs]) == set(['my-recording', 'my-recording-2', 'my-recording-3', 'вэбрекордэр', 'test--ok'])
+        assert set([rec['id'] for rec in recs]) == set(['my-recording', 'my-recording-2', 'my-recording-3', 'вэбрекордэр', 'test--ok', 'emmyem-test-recording'])
 
         res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user))
 
@@ -476,6 +520,10 @@ class TestTempContent(FullStackTests):
         res = self.testapp.delete('/api/v1/recordings/test--ok?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'test--ok'}
+
+        res = self.testapp.delete('/api/v1/recordings/emmyem-test-recording?user={user}&coll=temp'.format(user=self.anon_user))
+
+        assert res.json == {'deleted_id': 'emmyem-test-recording'}
 
         user = self.anon_user
 
