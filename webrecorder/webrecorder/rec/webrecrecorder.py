@@ -659,7 +659,12 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         size = int(size or 0)
         max_size = int(max_size or 0)
-        length = int(resp.length or resp.rec_headers.get_header('Content-Length') or 0)
+
+        length = resp.length or resp.rec_headers.get_header('Content-Length')
+        if length is None:
+            self.ensure_digest(resp, block=True, payload=True)
+            resp.length = resp.payload_length
+            length = resp.length
 
         if size + length > max_size:
             print('New Record for {0} exceeds max size, not recording!'.format(params['url']))

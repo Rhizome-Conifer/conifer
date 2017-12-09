@@ -41,6 +41,14 @@ class TestRecordLimits(FullStackTests):
         time.sleep(0.0)
         assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 1
 
+    def test_dont_record_2_chunked(self):
+        warc_file, warc_size, user_key, curr_size = self._get_info()
+
+        self.redis.hset(user_key, 'max_size', curr_size + 100)
+        res = self.testapp.get('/{user}/temp/rec/record/mp_/http://httpbin.org/stream-bytes/1300'.format(user=self.anon_user))
+
+        time.sleep(0.0)
+        assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 1
 
     def test_dont_record_will_exceed(self):
         warc_file, warc_size, user_key, curr_size = self._get_info()
