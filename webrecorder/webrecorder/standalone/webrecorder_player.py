@@ -8,8 +8,14 @@ from webrecorder.uploadcontroller import InplaceLoader
 from webrecorder.redisman import init_manager_for_cli
 from webrecorder.admin import create_user
 
+from webrecorder.standalone.serializefakeredis import FakeRedisSerializer
+
 from gevent.threadpool import ThreadPool
+
+import traceback
 import redis
+import fakeredis
+import logging
 
 
 # ============================================================================
@@ -18,30 +24,77 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     def __init__(self, argres):
         self.inputs = argres.inputs
+        self.serializer = None
 
-        super(WebrecPlayerRunner, self).__init__(app_port=argres.port,
-                                                 rec_port=-1,
-                                                 loglevel=argres.loglevel)
+        super(WebrecPlayerRunner, self).__init__(argres)
 
         if not argres.no_browser:
             import webbrowser
             webbrowser.open_new(os.environ['APP_HOST'] + '/')
 
+    def close(self):
+        super(WebrecPlayerRunner, self).close()
+
+    def _patch_redis(self, cache_dir):
+        redis.StrictRedis = fakeredis.FakeStrictRedis
+        if not cache_dir:
+            return
+
+        cache_dir = os.path.join(os.path.dirname(self.inputs[0]), cache_dir)
+        try:
+            os.makedirs(cache_dir)
+        except OSError:
+            pass
+
+        name = os.path.basename(self.inputs[0]).replace('.warc.gz', '-cache.json.gz')
+        cache_db = os.path.join(cache_dir, name)
+
+        self.serializer = FakeRedisSerializer(cache_db, self.inputs)
+
     def admin_init(self):
+        if self.load_cache():
+            return
+
         pool = ThreadPool(maxsize=1)
         pool.spawn(self.safe_auto_load_warcs)
+
+    def load_cache(self):
+        if not self.serializer:
+            logging.debug('No Serializer, indexing')
+            return False
+
+        if self.serializer.load_db():
+            logging.debug('Index Loaded from Cache, Skipping')
+            return True
+        else:
+            logging.debug('Index Not Loaded from cache, reindexing')
+            return False
+
+    def save_cache(self):
+        if not self.serializer:
+            return
+
+        try:
+            manager = init_manager_for_cli()
+            upload_status = manager.get_upload_status('local', '@INIT')
+            if not upload_status or upload_status.get('done'):
+                if manager.redis.exists('c:local:collection:cdxj'):
+                    self.serializer.save_db()
+        except Exception as e:
+            if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+                traceback.print_exc()
+
+            logging.debug('Error Closing, Not Saved: ' + str(e))
 
     def safe_auto_load_warcs(self):
         try:
             self.auto_load_warcs()
         except:
             print('Initial Load Failed!')
-            import traceback
             traceback.print_exc()
 
     def auto_load_warcs(self):
         manager = init_manager_for_cli()
-
         create_user(manager,
                     email='test@localhost',
                     username='local',
@@ -64,11 +117,11 @@ class WebrecPlayerRunner(StandaloneRunner):
                         browser='',
                         reqid='@INIT')
 
-        #manager.browser_mgr.fill_upstream_url(local_info, None)
-
         browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
         browser_redis.hmset('ip:127.0.0.1', local_info)
         browser_redis.hset('req:@INIT', 'ip', '127.0.0.1')
+
+        self.save_cache();
 
     def init_env(self):
         super(WebrecPlayerRunner, self).init_env()
@@ -93,6 +146,7 @@ class WebrecPlayerRunner(StandaloneRunner):
         parser.add_argument('inputs', nargs='+',
                             help='web archive (.warc.gz, .warc, .arc.gz, .arc or .har files)')
 
+        parser.add_argument('--cache-dir')
 
 
 # ============================================================================

@@ -35,7 +35,7 @@
                     </div>
 
                     {% if not is_anon() and collections %}
-                    <div class="row">   
+                    <div class="row">
                         <div class="col-md-12 top-buffer">
                             <input id="upload-new" name="select-coll" type="radio" class="upload-choice" {{ 'checked' if not collection else ''}}><label for="upload-new">Automatically create new collection</label>
                         </div>
@@ -51,7 +51,7 @@
                             <ul class="dropdown-menu">
                                 {% for collection in collections | sort(attribute='title') %}
                                 <li>
-                                    <a href="#" class="upload-collection-select" data-collection-id="{{ collection.id }}">{{ collection.title }}</a>
+                                    <a href="#" class="upload-collection-select" data-collection-id="{{ collection.id }}">{{ collection.title|e }}</a>
                                 </li>
                                 {% endfor %}
                             </ul>

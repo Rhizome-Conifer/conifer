@@ -1,3 +1,25 @@
+/* bootflat overriedes */
+.dropdown-menu {
+    background-color: #FFF;
+}
+
+.navbar-default {
+    background: #f8f8f8;
+}
+
+.footer {
+    background: inherit;
+}
+
+body {
+    font-family: 'HKGrotesk';
+}
+
+h1 {
+    font-family: 'InknutAntiqua';
+}
+
+
 /*
  * Header top bar
  *
@@ -793,6 +815,15 @@ input.upload-choice {
 }
 .containerized .extract-selector li {
     text-align: left;
+}
+
+.truncate-expand {
+    color: #429EEC;
+    cursor: pointer;
+}
+.truncate-expand.open {
+    color: #000;
+    cursor: inherit;
 }
 
 /* End recorder */

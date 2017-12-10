@@ -7,7 +7,7 @@
             </div>
             <div class="modal-body">
                 <p>Are you sure you want to delete this recording?</p>
-                <p>{{ get_path(user, coll, rec) }} <b>{{ recording.title }}</b></p>
+                <p>{{ get_path(user, coll, rec) }} <b>{{ recording.title|e }}</b></p>
                 <p>If you confirm, all archived data will be permanently deleted.</p>
                 <p>Be sure to download the recording first if you would like to keep any data.</p>
             </div>

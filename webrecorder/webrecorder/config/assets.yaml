@@ -8,6 +8,9 @@ bundles:
         contents:
             - external/jquery.min.js
             - external/bootstrap/js/bootstrap.min.js
+            - external/bootflat/js/icheck.min.js
+            - external/bootflat/js/jquery.fs.selecter.min.js
+            - external/bootflat/js/jquery.fs.stepper.min.js
             - utils.js
 
     base-css:
@@ -15,8 +18,15 @@ bundles:
         filters: cssrewrite
         contents:
             - external/bootstrap/css/bootstrap.min.css
-            - external/bootstrap/css/bootstrap-theme.min.css
+            - external/bootflat/css/bootflat.min.css
             - stylesheets/styles.css
+
+    fonts-css:
+        output: bundle/fonts.css
+        filters: cssrewrite
+        contents:
+            - fonts/fonts.css
+
 
     main-js:
         output: bundle/main.js
@@ -36,6 +46,7 @@ bundles:
     main-css:
         output: bundle/main.css
         contents:
+            - fonts-css
             - base-css
             - external/jquery.selectBoxIt.css
             - stylesheets/footer.css
@@ -72,7 +83,6 @@ bundles:
             - automate.js
             - containerized_ui.js
             - external/bootstrap-switch.js
-            - shareWidget.js
             - extract_ui.js
 
     frame-css:
@@ -142,7 +152,6 @@ bundles:
             - automate.js
             - containerized_ui.js
             - external/bootstrap-switch.js
-            - shareWidget.js
             - extract_ui.js
 
     browser-css:

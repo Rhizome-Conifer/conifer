@@ -42,6 +42,8 @@ class UploadController(BaseController):
 
         self.upload_collection = config['upload_coll']
 
+        self.max_detect_pages = config['max_detect_pages']
+
     def init_routes(self):
         @self.app.put('/_upload')
         def upload_file():
@@ -350,7 +352,8 @@ class UploadController(BaseController):
         for member in self.manager.redis.zrange(key, 0, -1):
             cdxj = CDXObject(member.encode('utf-8'))
 
-            if len(pages) < 500 and self.is_page(cdxj):
+            if ((not self.max_detect_pages or len(pages) < self.max_detect_pages)
+                and self.is_page(cdxj)):
                 pages.append(dict(url=cdxj['url'],
                                   title=cdxj['url'],
                                   timestamp=cdxj['timestamp']))
