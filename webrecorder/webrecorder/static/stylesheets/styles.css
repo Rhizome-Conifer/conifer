@@ -41,6 +41,10 @@ a.btn-primary  {
   border-color: #0000ee;
 }
 
+.badge {
+    font-family: sans-serif;
+}
+
 
 /*
  * Header top bar
