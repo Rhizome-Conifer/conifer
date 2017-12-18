@@ -1709,12 +1709,12 @@ div.filter-label {
     width: 60vw;
 }
 
-.start-recording-homepage .dropdown-menu, #move-modal .dropdown-menu {
+.collection-dropdown .dropdown-menu, #move-modal .dropdown-menu {
     width: 300px;
     max-height: 400px;
     overflow-y: auto;
 }
-.start-recording-homepage .dropdown-menu li a, #move-modal .dropdown-menu li a {
+.collection-dropdown .dropdown-menu li a, #move-modal .dropdown-menu li a {
     white-space: inherit;
 }
 
