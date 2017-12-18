@@ -32,6 +32,7 @@ footer {
 .project-info a {
     margin-right: 10px;
 }
+
 .project-info a svg {
     width: 16px;
     height: 16px;
@@ -49,15 +50,18 @@ footer {
 .project-info a svg.contact {
   margin-right: 5px;
 }
+.project-info a svg.contact path {
+  fill: #0000ee;
+}
 .project-info a:hover svg.contact path{
-    fill: #23527c;
+    fill: #0000ee;
 }
 
 .project-info a:hover svg path {
-    fill: #337ab7;
+    fill: #0000ee;
 }
 .project-info a:hover svg circle {
-    stroke: #337ab7;
+    stroke: #0000ee;
 }
 .project-info a.divider:before {
     content:'';

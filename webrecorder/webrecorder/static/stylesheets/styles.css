@@ -19,6 +19,24 @@ h1 {
     font-family: 'InknutAntiqua';
 }
 
+a, a:visited, a:hover, a:active {
+    color: #0000ee;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.btn-primary, .btn-primary.active, .btn-primary.disabled, .btn-primary:active, .btn-primary[disabled] {
+  background-color: #0000ee;
+  border-color: #0000ee;
+}
+
+.btn-primary:focus, .btn-primary:hover, .open .dropdown-toggle.btn-primary {
+  color: #0000ee;
+  background-color: #fff;
+  border-color: #0000ee;
+}
+
 
 /*
  * Header top bar
@@ -39,14 +57,14 @@ h1 {
 }
 
 .header-webrecorder {
-    background-color: #373944;
+    background-color: #0000ee;
 }
 
 .header-webrecorder a,
 .header-webrecorder a:visited,
 .navbar-user-links>ul>li>a,
 .navbar-user-links>ul>li>a:visited {
-    color: #429EEC;
+    color: #fff;
 }
 
 .header-webrecorder a:focus,
@@ -54,8 +72,8 @@ h1 {
 .navbar-user-links>ul>li>a:focus,
 .navbar-user-links>ul>li>a:hover {
     text-decoration: underline;
-    background-color: #373944;
-    color: #74B9F3;
+    background-color: #0000ee;
+    color: #fff;;
 }
 
 .header-webrecorder a:active,
@@ -96,6 +114,10 @@ h1 {
 .wr-breadcrumb>li>a.branding {
     text-decoration: none;
 }
+.wr-breadcrumb>li>a.branding:hover {
+    text-decoration: none;
+    color: #fff;
+}
 
 .wr-breadcrumb>li>span {
     color: #fff;
@@ -104,14 +126,14 @@ h1 {
 
 .wr-breadcrumb>li>a:focus,
 .wr-breadcrumb>li>a:hover {
-    text-decoration: underline;
-    color: #74B9F3;
+  color: #fff;
+  text-decoration: underline;
 }
 
 .wr-breadcrumb>li>a:active,
 .wr-breadcrumb>li>a:hover {
-    text-decoration: underline;
-    color: #74B9F3;
+  color: #fff;
+  text-decoration: underline;
 }
 
 .wr-breadcrumb>li>span,
@@ -383,7 +405,7 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
     content: '';
     border: solid 1px;
     border-width: 0 0 0 2px;
-    border-color: #429EEC;
+    border-color: #eee;
     position: absolute;
     height: calc(100% - 8px);
     top: 4px;
