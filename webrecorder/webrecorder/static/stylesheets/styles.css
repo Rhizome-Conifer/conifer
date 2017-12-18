@@ -45,6 +45,19 @@ a.btn-primary  {
     font-family: sans-serif;
 }
 
+.alert-info {
+    color: #333;
+    background-color: #eee;
+    border-color: #333;
+}
+
+.panel-info>.panel-heading {
+  color: #000;
+  background-color: #FFF900;
+  border-color: #eee;
+}
+
+
 
 /*
  * Header top bar
