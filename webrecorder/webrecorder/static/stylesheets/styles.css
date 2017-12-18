@@ -1709,6 +1709,15 @@ div.filter-label {
     width: 60vw;
 }
 
+.start-recording-homepage .dropdown-menu {
+    width: 300px;
+    max-height: 400px;
+    overflow: auto;
+}
+.start-recording-homepage .dropdown-menu li a {
+    white-space: inherit;
+}
+
 /**
  * This is a bit of a hack to fit absolute postion dropdowns within the grid system
  * for the homepage.
@@ -1737,6 +1746,9 @@ div.filter-label {
 }
 
 @media (max-width: 767px) {
+    .start-recording-homepage .dropdown-menu {
+        left: -75px;
+    }
     .start-recording-homepage .input-group {
         padding: 0 10px;
     }
@@ -1839,6 +1851,10 @@ div.filter-label {
 .linklist > .dropdown-menu {
     width: 100%;
     overflow-x: hidden;
+}
+
+.dropdown-menu li a {
+    color: #000;
 }
 
 .linklist > .dropdown-menu li {
