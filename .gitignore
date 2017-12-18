@@ -54,3 +54,5 @@ git_hash.py
 _full_version
 _webarchives.yaml
 proxy-certs/
+
+*.DS_Store

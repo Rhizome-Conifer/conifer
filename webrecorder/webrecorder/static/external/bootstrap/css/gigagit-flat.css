@@ -1,0 +1,14 @@
+/*
+    Package:        Gigagit.com Flat Skin
+    Package URI:    http://www.gigagit.com/item/flat-light-bootstrap-skin
+    Version:        v1.0
+    Author:         Harpreet Singh Rayat
+    Author URI:     http://www.gigagit.com
+    Description:    Light Flat Bootstrap Skin
+*/
+a:focus {
+  outline: none;
+}
+.label {
+  border-radius: 0px;
+}
