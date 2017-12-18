@@ -27,8 +27,12 @@ a:hover {
 }
 
 .btn-primary, .btn-primary.active, .btn-primary.disabled, .btn-primary:active, .btn-primary[disabled] {
+  color: #fff;
   background-color: #0000ee;
   border-color: #0000ee;
+}
+a.btn-primary  {
+  color: #fff;
 }
 
 .btn-primary:focus, .btn-primary:hover, .open .dropdown-toggle.btn-primary {
