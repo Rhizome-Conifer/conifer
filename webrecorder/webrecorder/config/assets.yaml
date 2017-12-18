@@ -88,6 +88,7 @@ bundles:
     frame-css:
         output: bundle/frame.css
         contents:
+            - fonts-css
             - base-css
             - external/bootstrap-switch.css
             - pkg://pywb/static/scroll-webkit.css
