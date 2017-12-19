@@ -457,7 +457,7 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
 /* end faq */
 
 /*
- * Archive Page
+ * Archive Page (Collections Listings Page)
  *
  */
 
@@ -907,8 +907,11 @@ input.upload-choice {
     min-height: 400px;
 }
 
-h1 {
+.collection-info-title {
+    font-family: 'HKGrotesk', sans-serif;
     position: relative;
+    font-size: 21px;
+    /* font-weight: 300; */
 }
 h1 button.edit-title {
     position: absolute;
