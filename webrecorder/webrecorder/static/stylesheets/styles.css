@@ -136,7 +136,7 @@ a.btn-primary  {
     text-decoration: none;
 }
 .wr-breadcrumb>li>a.branding:hover {
-    text-decoration: none;
+    text-decoration: underline;
     color: #fff;
 }
 
