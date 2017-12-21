@@ -57,6 +57,22 @@ a.btn-primary  {
   border-color: #eee;
 }
 
+.temp-move-coll {
+    display: flex;
+    display: -ms-flexbox;
+    align-items: flex-start;
+    -ms-flex-align: start;
+}
+.temp-move-coll input {
+    margin-right: 10px;
+}
+.temp-move-coll label {
+    width: 100%;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.1;
+}
+
 
 
 /*
