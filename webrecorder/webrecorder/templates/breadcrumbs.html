@@ -2,7 +2,7 @@
 <ol class="breadcrumb navbar-left wr-breadcrumb">
     <li>
         {% if not is_home %}
-        <a target="_parent" class="branding" title="Return to {{ metadata.product | default('Webrecorder')}}" href="/">
+        <a target="_parent" class="branding" title="{{ metadata.product | default('Webrecorder')}} Main" href="/">
             {{ metadata.product }}
         </a>
         {% else %}
@@ -37,4 +37,3 @@
     <li style="display: none"><span class="recording-filter-list" data-recordings-in-content-panel="$all"></span></li>
     {% endif %}
 </ol>
-

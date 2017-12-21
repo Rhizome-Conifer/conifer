@@ -1,3 +1,80 @@
+/* bootflat overriedes */
+.dropdown-menu {
+    background-color: #FFF;
+}
+
+.navbar-default {
+    background: #f8f8f8;
+}
+
+.footer {
+    background: inherit;
+}
+
+body {
+    font-family: 'HKGrotesk';
+}
+
+h1 {
+    font-family: 'InknutAntiqua';
+}
+
+a, a:visited, a:hover, a:active {
+    color: #0000ee;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.btn-primary, .btn-primary.active, .btn-primary.disabled, .btn-primary:active, .btn-primary[disabled] {
+  color: #fff;
+  background-color: #0000ee;
+  border-color: #0000ee;
+}
+a.btn-primary  {
+  color: #fff;
+}
+
+.btn-primary:focus, .btn-primary:hover, .open .dropdown-toggle.btn-primary {
+  color: #0000ee;
+  background-color: #fff;
+  border-color: #0000ee;
+}
+
+.badge {
+    font-family: sans-serif;
+}
+
+.alert-info {
+    color: #333;
+    background-color: #eee;
+    border-color: #333;
+}
+
+.panel-info>.panel-heading {
+  color: #000;
+  background-color: #FFF900;
+  border-color: #eee;
+}
+
+.temp-move-coll {
+    display: flex;
+    display: -ms-flexbox;
+    align-items: flex-start;
+    -ms-flex-align: start;
+}
+.temp-move-coll input {
+    margin-right: 10px;
+}
+.temp-move-coll label {
+    width: 100%;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.1;
+}
+
+
+
 /*
  * Header top bar
  *
@@ -17,14 +94,14 @@
 }
 
 .header-webrecorder {
-    background-color: #373944;
+    background-color: #0000ee;
 }
 
 .header-webrecorder a,
 .header-webrecorder a:visited,
 .navbar-user-links>ul>li>a,
 .navbar-user-links>ul>li>a:visited {
-    color: #429EEC;
+    color: #fff;
 }
 
 .header-webrecorder a:focus,
@@ -32,8 +109,8 @@
 .navbar-user-links>ul>li>a:focus,
 .navbar-user-links>ul>li>a:hover {
     text-decoration: underline;
-    background-color: #373944;
-    color: #74B9F3;
+    background-color: #0000ee;
+    color: #fff;;
 }
 
 .header-webrecorder a:active,
@@ -74,6 +151,10 @@
 .wr-breadcrumb>li>a.branding {
     text-decoration: none;
 }
+.wr-breadcrumb>li>a.branding:hover {
+    text-decoration: underline;
+    color: #fff;
+}
 
 .wr-breadcrumb>li>span {
     color: #fff;
@@ -82,14 +163,14 @@
 
 .wr-breadcrumb>li>a:focus,
 .wr-breadcrumb>li>a:hover {
-    text-decoration: underline;
-    color: #74B9F3;
+  color: #fff;
+  text-decoration: underline;
 }
 
 .wr-breadcrumb>li>a:active,
 .wr-breadcrumb>li>a:hover {
-    text-decoration: underline;
-    color: #74B9F3;
+  color: #fff;
+  text-decoration: underline;
 }
 
 .wr-breadcrumb>li>span,
@@ -180,6 +261,28 @@
 
 input.homepage-title {
     min-width: 160px !important;
+}
+
+.landing-info {
+  padding: 60px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 60px
+}
+.landing-info ul {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 1.8rem;
+}
+.landing-info ul li {
+  margin: 2.5rem 0;
+  padding-left: 0;
+  text-indent: -0.8rem;
+}
+.landing-info ul li::before {
+  content: "• ";
+  color: #ccc;
+  position: relative;
+  left: -10px;
 }
 
 .panel-body ul {
@@ -339,7 +442,7 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
     content: '';
     border: solid 1px;
     border-width: 0 0 0 2px;
-    border-color: #429EEC;
+    border-color: #eee;
     position: absolute;
     height: calc(100% - 8px);
     top: 4px;
@@ -370,7 +473,7 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
 /* end faq */
 
 /*
- * Archive Page
+ * Archive Page (Collections Listings Page)
  *
  */
 
@@ -820,8 +923,11 @@ input.upload-choice {
     min-height: 400px;
 }
 
-h1 {
+.collection-info-title {
+    font-family: 'HKGrotesk', sans-serif;
     position: relative;
+    font-size: 21px;
+    /* font-weight: 300; */
 }
 h1 button.edit-title {
     position: absolute;
@@ -1635,6 +1741,15 @@ div.filter-label {
     width: 60vw;
 }
 
+.collection-dropdown .dropdown-menu, #move-modal .dropdown-menu {
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.collection-dropdown .dropdown-menu li a, #move-modal .dropdown-menu li a {
+    white-space: inherit;
+}
+
 /**
  * This is a bit of a hack to fit absolute postion dropdowns within the grid system
  * for the homepage.
@@ -1663,6 +1778,9 @@ div.filter-label {
 }
 
 @media (max-width: 767px) {
+    .start-recording-homepage .dropdown-menu {
+        left: -75px;
+    }
     .start-recording-homepage .input-group {
         padding: 0 10px;
     }
@@ -1765,6 +1883,10 @@ div.filter-label {
 .linklist > .dropdown-menu {
     width: 100%;
     overflow-x: hidden;
+}
+
+.dropdown-menu li a {
+    color: #000;
 }
 
 .linklist > .dropdown-menu li {

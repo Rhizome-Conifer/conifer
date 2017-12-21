@@ -1,5 +1,9 @@
 <html>
     <head>
+        {% assets "fonts-css" %}
+        <link href="{{ ASSET_URL }}" rel="stylesheet" />
+        {% endassets %}
+
         {% assets "base-css" %}
         <link href="{{ ASSET_URL }}" rel="stylesheet" />
         {% endassets %}
@@ -30,6 +34,7 @@
                 margin-top: 0;
                 font-size: 36;
                 font-weight: 300;
+                font-family: 'HKGrotesk', sans-serif;
             }
             .content-error.sm h1 {
                 font-size: 16px;
