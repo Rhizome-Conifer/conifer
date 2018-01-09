@@ -94,9 +94,13 @@ export class App extends Component { // eslint-disable-line
     const classOverride = match.classOverride;
     const lastClassOverride = lastMatch ? lastMatch.classOverride : classOverride;
 
-    const classes = classNames('wr-content', {
+    const containerClasses = classNames('wr-content', {
       container: !loaded ? !lastClassOverride : !classOverride,
       loading: !loaded
+    });
+
+    const navbarClasses = classNames('navbar navbar-default navbar-static-top', {
+      'no-shadow': ['replay', 'record', 'extract', 'patch'].includes(match.name)
     });
 
     console.log('rendering app');
@@ -110,7 +114,7 @@ export class App extends Component { // eslint-disable-line
         <div className="wr-app">
           <Helmet {...config.app.head} />
           <header>
-            <div className="navbar navbar-default navbar-static-top">
+            <div className={navbarClasses}>
               <nav className="container-fluid header-webrecorder">
                 {
                   !error ?
@@ -137,7 +141,7 @@ export class App extends Component { // eslint-disable-line
                   </div>
                 </div>
               </div> :
-              <section className={classes}>
+              <section className={containerClasses}>
                 {this.props.children}
               </section>
           }

@@ -17,6 +17,8 @@ section {
 }
 
 .navbar {
+    transition: box-shadow 300ms ease-in-out;
+
     min-height: .2rem;
     margin-bottom: .1rem;
     -webkit-box-shadow: inset 0 .1rem 0 rgba(255,255,255,.15),0 .3rem .6rem rgba(0,0,0,0.3);
