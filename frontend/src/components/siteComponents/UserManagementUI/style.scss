@@ -33,12 +33,10 @@
 
     &:before {
         content: '(';
-        color: $link;
         padding-right: .1rem;
     }
     &:after {
         content: ')';
-        color: $link;
         padding-left: .1rem;
     }
 }

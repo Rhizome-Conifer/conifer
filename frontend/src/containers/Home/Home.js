@@ -33,11 +33,11 @@ class Home extends Component {
 
     return (
       <div>
-        <div className="row top-buffer">
-          <h1 className="text-center"><strong>Webrecorder</strong></h1>
+        <div className="row top-buffer main-logo">
+          <h1>Webrecorder</h1>
         </div>
         <div className="row tagline">
-          <h4 className="text-center">Create high-fidelity, interactive recordings of any web site you browse</h4>
+          <h4 className="text-center">Collect & Revisit the Web</h4>
         </div>
         {
           /* anon only

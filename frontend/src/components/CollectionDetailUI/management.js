@@ -2,10 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
 
+import Searchbox from 'components/Searchbox';
+
+import 'shared/scss/toggle.scss';
+
 
 function CollectionManagement(props, context) {
   const { canAdmin } = context;
-  const { groupDisplay, onToggle, toggleExpandAllSessions, search, searchText } = props;
+  const { expandAll, groupDisplay, onToggle, toggleExpandAllSessions,
+          search, searchText } = props;
 
   return (
     <nav>
@@ -31,17 +36,15 @@ function CollectionManagement(props, context) {
       </div>
       {
         groupDisplay &&
-          <button className="open-all" onClick={toggleExpandAllSessions}>Open All Sessions</button>
+          <button className="open-all" onClick={toggleExpandAllSessions}>{expandAll ? 'Close' : 'Open'} All Sessions</button>
       }
-      <span className="search-box">
-        <input type="text" onChange={search} value={searchText} name="filter" />
-        <span className="glyphicon glyphicon-search" />
-      </span>
+      <Searchbox search={search} searchText={searchText} />
     </nav>
   );
 }
 
 CollectionManagement.propTypes = {
+  expandAll: PropTypes.bool,
   groupDisplay: PropTypes.bool,
   onToggle: PropTypes.func,
   toggleExpandAllSessions: PropTypes.func,

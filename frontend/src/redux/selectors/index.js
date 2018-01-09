@@ -2,6 +2,7 @@ import { createSelector } from 'reselect';
 import { is, List, Map } from 'immutable';
 import { getSearchSelectors } from 'redux-search';
 
+import { untitledEntry } from 'config';
 import { rts, truncate } from 'helpers/utils';
 
 
@@ -13,8 +14,8 @@ const getRecordings = state => state.getIn(['collection', 'recordings']);
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
 const getSize = state => state.getIn(['infoStats', 'size']);
 const getStats = state => state.getIn(['infoStats', 'stats']);
-const getTimestamp = state => state.getIn(['controls', 'timestamp']);
-const getUrl = state => state.getIn(['controls', 'url']);
+const getTimestamp = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['controls', 'timestamp']); };
+const getUrl = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['controls', 'url']); };
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const selectedCollection = state => state.getIn(['user', 'activeCollection']);
 const userSortBy = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['collection', 'sortBy']); };
@@ -39,6 +40,19 @@ const { text, result } = getSearchSelectors({
     return items;
   }
 });
+
+export const timestampOrderedBookmarkSearchResults = createSelector(
+  [result, getBookmarks, text],
+  (bookmarkIds, bookmarkObjs, searchText) => {
+    const bookmarks = List(bookmarkIds.map(id => bookmarkObjs.get(id)));
+    const bookmarkFeed = bookmarks.sortBy(o => o.get('timestamp')).reverse();
+
+    return {
+      bookmarkFeed,
+      searchText
+    };
+  }
+);
 
 export const bookmarkSearchResults = createSelector(
   [result, getBookmarks, userSortBy, text],
@@ -74,25 +88,30 @@ export const getActiveCollection = createSelector(
   }
 );
 
+
 export const getOrderedRecordings = createSelector(
   [getRecordings],
   (recordings) => {
-    const sortedRecordings = recordings.sortBy(o => o.get('created_at')).toOrderedSet();
+    const sortedRecordings = recordings.sortBy(o => o.get('created_at'));
 
     return sortedRecordings;
   }
 );
 
 
-//let lastBookmarks = null;
+export const timestampOrderedBookmarks = createSelector(
+  [getBookmarks],
+  (bookmarks) => {
+    return bookmarks.toList().sortBy(b => b.get('timestamp')).reverse();
+  }
+);
+
+
 export const getOrderedBookmarks = createSelector(
   getBookmarks, userSortBy,
   (bookmarks, sortBy) => {
-    //console.log('running', 'getOrderedBookmarks', bookmarks === lastBookmarks, is(bookmarks, lastBookmarks));
-    //lastBookmarks = bookmarks;
     const sort = sortBy.get('sort');
     const dir = sortBy.get('dir');
-
     const sortedBookmarks = bookmarks.toList().sortBy(o => o.get(sort));
 
     if (dir === 'DESC') {
@@ -124,53 +143,72 @@ export const getRecording = createSelector(
   }
 );
 
+const bkmSearch = (bookmarks, ts, url) => {
+  if (!ts) {
+    const idx = bookmarks.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });
+    return idx === -1 ? 0 : idx;
+  }
+
+  const item = { url, ts: parseInt(ts, 10) };
+  let minIdx = 0;
+  let maxIdx = bookmarks.size - 1;
+  let curIdx;
+  let curUrl;
+  let curEle;
+
+  while (minIdx <= maxIdx) {
+    curIdx = ((minIdx + maxIdx) / 2) | 0;
+    curUrl = bookmarks.get(curIdx).get('url');
+    curEle = parseInt(bookmarks.get(curIdx).get('timestamp'), 10);
+
+    if (curEle > item.ts) {
+      minIdx = curIdx + 1;
+    } else if (curEle < item.ts) {
+      maxIdx = curIdx - 1;
+    } else if (curEle === item.ts && (item.url !== curUrl && rts(item.url) !== rts(curUrl))) {
+      /**
+       * If multiple recordings are within a timestamp, or if the url
+       * for the timestamp doesn't match exactly, iterate over other
+       * options. If no exact match is found, resolve to first ts match.
+       */
+      let tempUrl;
+      const origIdx = curIdx;
+      while (curEle === item.ts && curIdx < bookmarks.size - 1) {
+        tempUrl = bookmarks.get(++curIdx).get('url');
+        curEle = parseInt(bookmarks.get(curIdx).get('ts'), 10);
+        if (tempUrl === item.url) {
+          return curIdx;
+        }
+      }
+      return origIdx;
+    } else {
+      return curIdx;
+    }
+  }
+  return -1;
+};
 
 export const getActiveRecording = createSelector(
   [getOrderedBookmarks, getTimestamp, getUrl],
   (bookmarks, ts, url) => {
-    if (!ts) {
-      const idx = bookmarks.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });
-      return idx === -1 ? 0 : idx;
-    }
+    return bkmSearch(bookmarks, ts, url);
+  }
+);
 
-    const item = { url, ts: parseInt(ts, 10) };
-    let minIdx = 0;
-    let maxIdx = bookmarks.size - 1;
-    let curIdx;
-    let curUrl;
-    let curEle;
+export const getActiveBookmark = createSelector(
+  [timestampOrderedBookmarkSearchResults, getTimestamp, getUrl],
+  (bookmarkSearch, ts, url) => {
+    const bookmarks = bookmarkSearch.bookmarkFeed;
+    return bkmSearch(bookmarks, ts, url);
+  }
+);
 
-    while (minIdx <= maxIdx) {
-      curIdx = ((minIdx + maxIdx) / 2) | 0;
-      curUrl = bookmarks.get(curIdx).get('url');
-      curEle = parseInt(bookmarks.get(curIdx).get('timestamp'), 10);
 
-      if (curEle < item.ts) {
-        minIdx = curIdx + 1;
-      } else if (curEle > item.ts) {
-        maxIdx = curIdx - 1;
-      } else if (curEle === item.ts && (item.url !== curUrl && rts(item.url) !== rts(curUrl))) {
-        /**
-         * If multiple recordings are within a timestamp, or if the url
-         * for the timestamp doesn't match exactly, iterate over other
-         * options. If no exact match is found, resolve to first ts match.
-         */
-        let tempUrl;
-        const origIdx = curIdx;
-        while (curEle === item.ts && curIdx < bookmarks.size - 1) {
-          tempUrl = bookmarks.get(++curIdx).get('url');
-          curEle = parseInt(bookmarks.get(curIdx).get('ts'), 10);
-          if (tempUrl === item.url) {
-            return curIdx;
-          }
-        }
-        return origIdx;
-      } else {
-        return curIdx;
-      }
-    }
-
-    return 0;
+export const getBookmarkTitle = createSelector(
+  [timestampOrderedBookmarks, getTimestamp, getUrl],
+  (bookmarks, ts, url) => {
+    const idx = bkmSearch(bookmarks, ts, url);
+    return idx === -1 ? untitledEntry : bookmarks.getIn([idx, 'title']);
   }
 );
 

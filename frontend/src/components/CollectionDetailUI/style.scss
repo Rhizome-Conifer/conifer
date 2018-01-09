@@ -4,213 +4,319 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    margin: 0 2.5rem;
+    margin: 2rem 2.5rem 0 2.5rem;
+    height: 100%;
 
     & > header {
         margin-bottom: 4rem;
 
         h1 {
-            font-family: serif;
+            font-family: $serif;
+            margin-top: 0;
         }
 
         hr {
-            border-top: solid .3rem yellow;
+            border-top: solid .3rem $yellow;
+        }
+
+        .coll-desc {
+            font-family: $sans;
         }
     }
 
-    .wr-coll-container {
+    .grid-wrapper {
+        position: relative;
         flex-grow: 1;
 
-        display: grid;
-        grid-template-rows: 4rem 100%;
-        grid-column-gap: 1.5rem;
-        grid-template-columns: 20rem auto;
-        grid-template-areas:
-            "sidebar utilities"
-            "sidebar table";
+        .wr-coll-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
 
-        .wr-coll-sidebar-container {
-            word-break: break-all;
-            grid-area: sidebar;
             display: grid;
+            grid-template-rows: 4rem 1fr;
+            grid-column-gap: 1.5rem;
+            grid-template-columns: 20rem 1fr;
+            grid-template-areas:
+                "sidebar utilities"
+                "sidebar table";
 
-            & > .wr-coll-sidebar:not(:first-of-type) {
-                border: solid .4rem rgb(179, 238, 101);
-                border-width: .4rem 0 0 0;
-                margin: 2.5rem 0;
-            }
-        }
-
-        .wr-coll-utilities {
-            grid-area: utilities;
-
-            nav {
-                display: flex;
-                justify-content: flex-start;
-                align-items: center;
-
-                & > * {
-                    margin-right: 2.5rem;
+            font-family: $sans;
 
 
-                    &.glyphicon {
-                        font-size: 1.8rem;
+            .wr-coll-sidebar-container {
+                grid-area: sidebar;
+                position: relative;
+
+                &:before, &:after {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    width: calc(100% - 1.5rem);
+                    height: 3rem;
+                    z-index: 20;
+                    pointer-events: none;
+                }
+
+                &:before {
+                    top: 0;
+                    background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
+                }
+
+                &:after {
+                    bottom: 0;
+                    background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
+                }
+
+                .wr-coll-sidebar {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    border-right: 1px solid $slate;
+                    padding-right: 1.5rem;
+                    width: 100%;
+                    overflow: auto;
+
+                    // top buffer for fade
+                    padding-top: 2rem;
+
+                    h4 {
+                        margin: .7rem 0;
+                    }
+
+                    .recording-time-info {
+                        display: inline-block;
+                    }
+
+                    .recording-session-count {
+                      color: black;
+                      width: 100%;
+                      border-top: solid 4px $brightGreen;
+                      border-bottom: solid 1px $brightGreen;
+                      padding: 1rem 0 1rem 0;
+                      margin: 0 0 1.2rem 0;
+                    }
+                      &:after {
+                        content :"";
+                        clear: both;
+                      }
+
+                    .recording-session {
+                        transition: color 175ms ease-in-out;
+                        display: block;
+                        background: transparent;
+                        border: none;
+                        text-align: left;
+                        font-weight: 600;
+                        outline: none;
+
+                        &:disabled {
+                            font-style: italic;
+                            font-weight: 400;
+                            opacity: 0.6;
+                        }
+
+                        &:not(:disabled):hover {
+                            color: $blue;
+                        }
                     }
                 }
 
-                .toggle-label {
+                & > .wr-coll-sidebar:not(:first-of-type) {
+                    border: solid .4rem $brightGreen;
+                    border-width: .4rem 0 0 0;
+                    margin: 2.5rem 0;
+                }
+            }
+
+            .wr-coll-utilities {
+                grid-area: utilities;
+
+                nav {
                     display: flex;
+                    justify-content: flex-start;
                     align-items: center;
 
-                    & > span:first-of-type {
-                        vertical-align: top;
-                        font-weight: bold;
-                        padding-right: 1rem;
-                        cursor: pointer;
-                    }
-                }
+                    & > * {
+                        margin-right: 2.5rem;
 
-                .open-all {
-                    transition: border-color 125ms ease-in-out;
-                    border: solid .2rem #ccc;
-                    background: inherit;
-                    border-radius: .3rem;
-                    padding: .5rem;
 
-                    &:hover {
-                        border-color: $collTrigger;
-                    }
-                }
-
-                .search-box {
-                    position: relative;
-                    margin: 0 0 0 auto;
-                    width: 20%;
-                    max-width: 22.5rem;
-                    min-width: 10rem;
-
-                    input {
-                        border-width: 0 0 .1rem 0;
-                        border-color: #8F9294;
-                        width: 100%;
-
-                        &:focus {
-                            outline-width: 0;
+                        &.glyphicon {
+                            font-size: 1.8rem;
                         }
                     }
 
-                    .glyphicon {
-                        position: absolute;
-                        right: 0;
-                        color: #8F9294;
+                    .toggle-label {
+                        display: flex;
+                        align-items: center;
+
+                        & > span:first-of-type {
+                            vertical-align: top;
+                            font-weight: bold;
+                            padding-right: 1rem;
+                            cursor: pointer;
+                        }
+                    }
+
+                    .react-toggle--checked {
+                      & .react-toggle-track{
+                        background-color: $brightGreen;
+                      }
+                      & .react-toggle-thumb {
+                        border-color: $brightGreen;
+
+                      }
+                    }
+
+                    .open-all {
+                        transition: border-color 125ms ease-in-out;
+                        border: solid .2rem #ccc;
+                        background: inherit;
+                        border-radius: .3rem;
+                        padding: .5rem;
+
+                        &:hover {
+                            border-color: $collTrigger;
+                        }
+                    }
+
+                    .search-box {
+                        margin: 0 0 0 auto;
+                        width: 20%;
+                        max-width: 22.5rem;
+                        min-width: 10rem;
                     }
                 }
             }
-        }
 
-        .wr-coll-detail-table {
-            grid-area: table;
-            position: relative;
+            .wr-coll-detail-table {
+                grid-area: table;
+                position: relative;
 
-            .ReactVirtualized__Table__row {
-                transition: background 150ms ease-in-out;
-                border: solid 0 #CCCFD5;
-                border-width: 0 0 .1rem 0;
-
-                &.selected {
-                    background-color: rgb(54, 54, 54);
-                    color: #FFF;
-
-                    a:link { color: #FFF; }
-                    a:visited{ color: #FFF; }
+                .ReactVirtualized__Table__headerColumn {
+                    display: flex;
+                    align-items: center;
                 }
 
-                &:not(.selected):hover {
-                    background: rgb(197, 197, 197);
+                .ReactVirtualized__Table__row {
+                    transition: background 150ms ease-in-out;
+                    border: solid 0 #CCCFD5;
+                    border-width: 0 0 .1rem 0;
+                    cursor: context-menu;
+
+                    a { color: $blue; }
+
+                    &.selected {
+                        background-color: rgb(54, 54, 54);
+                        color: #FFF;
+
+                        a:link { color: #FFF; }
+                        a:visited{ color: #FFF; }
+                    }
+
+                    &:not(.selected):hover {
+                        background: #eee;
+                    }
+
+                    .ReactVirtualized__Table__rowColumn {
+                        a {
+                            display: inline-block;
+                            padding: 1rem;
+                        }
+                    }
                 }
-            }
 
-            .wr-coll-session-container {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                width: 100%;
-                overflow: auto;
+                .wr-coll-session-container {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    width: 100%;
+                    overflow: auto;
 
-                table {
-                    tr {
-                        transition: background 150ms ease-in-out;
-                        border: solid 0 #CCCFD5;
-                        border-width: 0 0 .1rem 0;
+                    table {
+                        tr {
+                            transition: background 150ms ease-in-out;
+                            border: solid 0 #CCCFD5;
+                            border-width: 0 0 .1rem 0;
+                            cursor: context-menu;
 
-                        &.selected {
-                            background-color: rgb(54, 54, 54);
-                            color: #FFF;
+                            a { color: $blue }
 
-                            a:link { color: #FFF; }
-                            a:visited{ color: #FFF; }
-                        }
+                            &.selected {
+                                background-color: rgb(54, 54, 54);
+                                color: #FFF;
 
-                        &:not(.selected):hover {
-                            background: rgb(197, 197, 197);
-                        }
+                                a:link { color: #FFF; }
+                                a:visited{ color: #FFF; }
+                            }
 
-                        td {
-                            text-align: center;
+                            &:not(.selected):hover {
+                                background: rgb(197, 197, 197);
+                            }
 
-                            &:nth-child(-n+2) {
-                                width: 2rem;
+                            td {
+                                text-align: left;
+
+                                &.timestamp {
+                                    width: 20rem;
+                                }
                             }
                         }
-
                     }
                 }
             }
-        }
 
-        .wr-coll-session {
-            header {
-                display: flex;
-                justify-content: flext-start;
-                align-items: center;
-                padding: 1rem 0;
+            .wr-coll-session {
+                header {
+                    display: flex;
+                    justify-content: flext-start;
+                    align-items: center;
+                    padding: 1rem 0;
 
-                &.collapsible {
-                    cursor: pointer;
+                    &.collapsible {
+                        cursor: pointer;
 
-                    &:hover {
-                        color: $collTrigger;
+                        &:hover {
+                            color: $collTrigger;
+                        }
                     }
-                }
 
-                h2 {
-                    transition: color 200ms ease-in-out;
-                    font-size: 1.4rem;
-                    margin: 0;
-                }
+                    .badge {
+                        background-color: #0039e5;
+                        font-family: sans-serif;
+                        margin-left: .5rem;
+                    }
 
-                .session-ts {
-                    margin-left: auto;
-                    margin-right: 1.5rem;
-                }
-
-
-                .glyphicon-triangle-right {
-                    transition: transform 250ms ease-in-out;
-                    transform-origin: center center;
-                    margin-right: .5rem;
-                    color: $collTrigger;
-                }
-            }
-
-            .Collapsible__trigger {
-                &.is-open header.collapsible {
                     h2 {
-                        color: $collTrigger;
+                        transition: color 200ms ease-in-out;
+                        font-size: 1.4rem;
+                        margin: 0;
                     }
+
+                    .session-ts {
+                        margin-left: auto;
+                        margin-right: 1.5rem;
+                    }
+
 
                     .glyphicon-triangle-right {
-                        transform: rotateZ(90deg);
+                        transition: transform 250ms ease-in-out;
+                        transform-origin: center center;
+                        margin-right: .5rem;
+                        color: $collTrigger;
+                    }
+                }
+
+                .Collapsible__trigger {
+                    &.is-open header.collapsible {
+                        h2 {
+                            color: $collTrigger;
+                        }
+
+                        .glyphicon-triangle-right {
+                            transform: rotateZ(90deg);
+                        }
                     }
                 }
             }

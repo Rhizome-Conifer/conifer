@@ -2,11 +2,19 @@
 /* fonts */
 $font-size-base: 1.4rem;
 $font-family-sans-serif: "Helvetica Neue", Helvetica, sans-serif;
+$serif: "InknutAntiqua";
+$sans: "HKGrotesk";
 
 /* colors */
-$white: #FFF;
+$collTrigger: rgb(0, 57, 229);
+$blue: #0232F5;
+$brightGreen: #A1F249;
+$buttonHover: #ececec;
+
 $header: #373944;
 $link: #429EEC;
 $linkHover: #74B9F3;
-
-$collTrigger: rgb(0, 57, 229);
+$sidebarBg: #FFF;
+$slate: #8F9294;
+$white: #FFF;
+$yellow: #FFF900;

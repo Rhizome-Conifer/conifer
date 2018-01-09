@@ -1,5 +1,11 @@
 @import 'src/vars';
 
+.main-logo h1 {
+    font-family: $serif;
+    text-align: center;
+    font-size: 5.2rem;
+}
+
 .tutorial {
     text-align: center;
     z-index: 99;

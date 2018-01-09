@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import ReactMarkdown from 'react-markdown';
 
 import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage } from 'helpers/utils';
@@ -15,9 +15,9 @@ import TimeFormat from 'components/TimeFormat';
 
 import 'react-virtualized/styles.css';
 
+import { RecordingSession } from './sidebar';
 import CollectionManagement from './management';
-import { BrowserRenderer, LinkRenderer, TagRenderer,
-         TimestampRenderer } from './columns';
+import { BrowserRenderer, LinkRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
 
@@ -25,9 +25,9 @@ import './style.scss';
 class CollectionDetailUI extends Component {
   static propTypes = {
     bookmarks: PropTypes.object,
+    browsers: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
-    browsers: PropTypes.object,
     auth: PropTypes.object,
     params: PropTypes.object,
     recordings: PropTypes.object,
@@ -35,19 +35,22 @@ class CollectionDetailUI extends Component {
     searchBookmarks: PropTypes.func
   };
 
+  static contextTypes = {
+    canAdmin: PropTypes.bool,
+  }
+
   constructor(props) {
     super(props);
 
     this.initialState = {
-      groupDisplay: true,
+      groupDisplay: false,
       expandAll: false,
       selectedSession: null,
       selectedBookmark: null,
       selectedBookmarkIdx: null,
       selectedGroupedBookmark: null,
       selectedGroupedBookmarkIdx: null,
-      bookmarks: props.bookmarks,
-      sortBy: null,
+      selectedRec: null
     };
 
     this.state = this.initialState;
@@ -63,9 +66,16 @@ class CollectionDetailUI extends Component {
     }
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    // detect whether this was a state change to expand recording session view
+    if(!prevState.gourpedDisplay && this.state.groupDisplay && this.state.scrollToRec) {
+      this.openAndScroll(this.state.scrollToRec);
+    }
+  }
+
   onToggle = (e) => {
     let bool;
-    if (typeof e.target.checked !== 'undefined') {
+    if (e && typeof e.target.checked !== 'undefined') {
       bool = e.target.checked;
     } else {
       bool = !this.state.groupDisplay;
@@ -78,41 +88,81 @@ class CollectionDetailUI extends Component {
   }
 
   onSelectRow = ({ index, rowData }) => {
-    this.setState({
-      selectedBookmarkIdx: index,
-      selectedBookmark: rowData,
-      selectedSession: null
-    });
+    if (this.state.selectedBookmarkIdx === index) {
+      // clear selection
+      this.setState({
+        selectedBookmarkIdx: null,
+        selectedBookmark: null,
+      });
+    } else {
+      this.setState({
+        selectedBookmarkIdx: index,
+        selectedBookmark: rowData,
+        selectedSession: null
+      });
+    }
   }
 
   onSelectGroupedRow = ({ rec, index }) => {
-    this.setState({
-      selectedSession: rec,
-      selectedGroupedBookmark: rec.getIn(['pages', index]),
-      selectedGroupedBookmarkIdx: index
-    });
+    if (this.state.selectedGroupedBookmarkIdx === index) {
+      this.setState({
+        selectedSession: rec,
+        selectedGroupedBookmark: null,
+        selectedGroupedBookmarkIdx: null
+      });
+    } else {
+      this.setState({
+        selectedSession: rec,
+        selectedGroupedBookmark: rec.getIn(['pages', index]),
+        selectedGroupedBookmarkIdx: index
+      });
+    }
   }
 
   onExpandSession = (sesh) => {
-    this.setState({
-      selectedBookmark: null,
-      selectedGroupedBookmark: null,
-      selectedGroupedBookmarkIdx: null,
-      selectedSession: sesh
-    });
+    if (!this.state.expandAll) {
+      this.setState({
+        selectedBookmark: null,
+        selectedGroupedBookmark: null,
+        selectedGroupedBookmarkIdx: null,
+        selectedSession: sesh
+      });
+    }
   }
 
   onCollapseSession = () => {
+    if (this.state.selectedSession) {
+      this.setState({
+        selectedSession: null,
+        selectedGroupedBookmark: null,
+        selectedGroupedBookmarkIdx: null,
+        selectedRec: null
+      });
+    }
+  }
+
+  openAndScroll = (sesh) => {
+    const index = this.props.recordings.findIndex(o => o.get('id') === sesh.get('id'));
+    const top = this.sessionContainer.querySelectorAll('.wr-coll-session')[index].offsetTop;
+    this.sessionContainer.scrollTop = top;
+
     this.setState({
-      selectedSession: null,
-      selectedGroupedBookmark: null,
-      selectedGroupedBookmarkIdx: null
+      selectedSession: sesh,
+      selectedRec: sesh.get('id'),
+      scrollToRec: null
     });
+  }
+
+  selectRecording = (sesh) => {
+    if (!this.state.groupDisplay) {
+      this.setState({ groupDisplay: true, scrollToRec: sesh });
+    } else {
+      this.openAndScroll(sesh);
+    }
   }
 
   search = (evt) => {
     const { dispatch, searchBookmarks } = this.props;
-    console.log('searching', evt.target.value);
 
     // if in group mode, switch to flat display
     if(this.state.groupDisplay) {
@@ -126,7 +176,6 @@ class CollectionDetailUI extends Component {
     const { collection, dispatch } = this.props;
     const prevSort = collection.getIn(['sortBy', 'sort']);
     const prevDir = collection.getIn(['sortBy', 'dir']);
-    console.log(sortBy, sortDirection);
 
     if (prevSort !== sortBy) {
       dispatch(setSort({ sort: sortBy, dir: sortDirection }));
@@ -140,162 +189,167 @@ class CollectionDetailUI extends Component {
   }
 
   render() {
+    const { canAdmin } = this.context;
     const { bookmarks, browsers, collection, recordings, searchText } = this.props;
     const { groupDisplay, expandAll, selectedBookmark, selectedBookmarkIdx,
-            selectedSession, selectedGroupedBookmark, selectedGroupedBookmarkIdx } = this.state;
+            selectedSession, selectedGroupedBookmark, selectedGroupedBookmarkIdx,
+            selectedRec } = this.state;
 
     return (
       <div className="wr-coll-detail">
         <header>
           <h1>{collection.get('title')}</h1>
           <hr />
-          <p>{collection.get('desc')}</p>
+          <ReactMarkdown className="coll-desc" source={collection.get('desc')} />
         </header>
 
-        <div className="wr-coll-container">
-          <aside className="wr-coll-sidebar-container">
-            <div className="wr-coll-sidebar">
-              {
-                // selected flat bookmark
-                selectedBookmark &&
-                  <div>
-                    Bookmark { selectedBookmarkIdx } selected.<br />
+        <div className="grid-wrapper">
+          <div className="wr-coll-container">
+            <aside className="wr-coll-sidebar-container">
+              <div className="wr-coll-sidebar">
+                {
+                  // selected flat bookmark
+                  selectedBookmark &&
                     <div>
+                      <h4>Bookmark #{ selectedBookmarkIdx + 1 } of {collection.get('bookmarks').size } selected.</h4>
+                      <div>
+                        <h5>{selectedBookmark.get('title')}</h5>
+                        <TimeFormat dt={selectedBookmark.get('timestamp')} />
+                      </div>
+                    </div>
+                }
+                {
+                  // selected session
+                  selectedSession && !selectedGroupedBookmark && !expandAll &&
+                    <div>
+                      <h4>{selectedSession.get('title')}</h4>
+                      <div>
+                        {`${selectedSession.get('pages').size} bookmark${selectedSession.get('pages').size === 1 ? '' : 's'}`}
+                        &nbsp;&ndash;&nbsp;<SizeFormat bytes={selectedSession.get('size')} />
+                      </div>
+                      <TimeFormat epoch={selectedSession.get('updated_at')} />
+                      <div>Dur. <DurationFormat duration={parseInt(selectedSession.get('updated_at'), 10) - parseInt(selectedSession.get('created_at'), 10)} /></div>
+                    </div>
+                }
+                {
+                  // selected grouped bookmark
+                  selectedGroupedBookmark &&
+                    <div>
+                      <h4>Bookmark #{ selectedGroupedBookmarkIdx + 1} of {selectedSession.size} selected.</h4>
+                      <div>
+                        <h5>{selectedGroupedBookmark.get('title')}</h5>
+                        <TimeFormat dt={selectedGroupedBookmark.get('timestamp')} />
+                      </div>
+                    </div>
+                }
+                {
+                  // collection info
+                  !selectedBookmark && (!selectedSession || (expandAll && !selectedGroupedBookmark)) &&
+                    <div>
+                      <div className="recording-session-count">{recordings.size} Recording{ recordings.size === 1 ? '' : 's'}:</div>
                       {
-                        selectedBookmark.entrySeq().map((k) => {
-                          return <div key={k[0]}>{ k[0] }: { k[1] }</div>;
+                        recordings.map((rec) => {
+                          return (
+                            <RecordingSession
+                              key={rec.get('id')}
+                              rec={rec}
+                              select={this.selectRecording} />
+                          );
                         })
                       }
                     </div>
-                  </div>
-              }
+                }
+              </div>
+            </aside>
+            <div className="wr-coll-utilities">
+              <CollectionManagement
+                expandAll={expandAll}
+                groupDisplay={groupDisplay}
+                onToggle={this.onToggle}
+                toggleExpandAllSessions={this.toggleExpandAllSessions}
+                search={this.search}
+                searchText={searchText} />
+            </div>
+            <div className="wr-coll-detail-table">
               {
-                // selected session
-                selectedSession && !selectedGroupedBookmark && !expandAll &&
-                  <div>
-                    <b>{selectedSession.get('title')}</b>
-                    <div>
-                      {`${selectedSession.get('pages').size} bookmark${selectedSession.get('pages').size === 1 ? '' : 's'}`}
-                      <SizeFormat bytes={selectedSession.get('size')} />
-                    </div>
-                    <TimeFormat epoch={selectedSession.get('updated_at')} />
-                    <DurationFormat duration={parseInt(selectedSession.get('updated_at'), 10) - parseInt(selectedSession.get('created_at'), 10)} />
-                  </div>
-              }
-              {
-                // selected grouped bookmark
-                selectedGroupedBookmark &&
-                  <div>
-                    Bookmark { selectedGroupedBookmarkIdx } selected.<br />
-                    <div>
-                      {
-                        selectedGroupedBookmark.entrySeq().map((k) => {
-                          return <div key={k[0]}>{ k[0] }: { k[1] }</div>;
-                        })
-                      }
-                    </div>
-                  </div>
-              }
-              {
-                // collection info
-                !selectedBookmark && (!selectedSession || (expandAll && !selectedGroupedBookmark)) &&
-                  <div>
-                    <b>{recordings.size} Recording{ recordings.size === 1 ? '' : 's'}:</b>
+                groupDisplay ?
+                  <div className="wr-coll-session-container" ref={(obj) => { this.sessionContainer = obj; }}>
                     {
-                      recordings.map(rec => <div key={rec.get('id')}>{ rec.get('title')}</div>)
+                      recordings.map((rec) => {
+                        return (
+                          <SessionCollapsible
+                            key={rec.get('id')}
+                            hasActiveBookmark={selectedSession === rec && selectedGroupedBookmarkIdx !== null}
+                            collection={collection}
+                            browsers={browsers}
+                            expand={expandAll || rec.get('id') === selectedRec}
+                            onExpand={this.onExpandSession}
+                            onCollapse={this.onCollapseSession}
+                            recording={rec}
+                            onSelectRow={this.onSelectGroupedRow}
+                            selectedGroupedBookmarkIdx={selectedGroupedBookmarkIdx} />
+                        );
+                      })
                     }
-                  </div>
+                  </div> :
+                  <AutoSizer>
+                    {
+                      ({ height, width }) => (
+                        <Table
+                          width={width}
+                          height={height}
+                          rowCount={bookmarks.size}
+                          headerHeight={40}
+                          rowHeight={50}
+                          rowGetter={({ index }) => bookmarks.get(index)}
+                          rowClassName={({ index }) => { return index === selectedBookmarkIdx ? 'selected' : ''; }}
+                          onRowClick={this.onSelectRow}
+                          sort={this.sort}
+                          sortBy={collection.getIn(['sortBy', 'sort'])}
+                          sortDirection={collection.getIn(['sortBy', 'dir'])}>
+                          {
+                            canAdmin &&
+                              <Column
+                                width={20}
+                                dataKey="fav"
+                                cellRenderer={() => <span className="glyphicon glyphicon-star" />} />
+                          }
+                          {
+                            canAdmin &&
+                              <Column
+                                width={20}
+                                dataKey="bookmark"
+                                cellRenderer={() => <span className="glyphicon glyphicon-bookmark" />} />
+                          }
+                          <Column
+                            width={200}
+                            label="timestamp"
+                            dataKey="timestamp"
+                            cellRenderer={TimestampRenderer} />
+                          <Column
+                            width={200}
+                            label="bookmark"
+                            dataKey="title"
+                            flexGrow={1}
+                            columnData={{ collection }}
+                            cellRenderer={LinkRenderer} />
+                          <Column
+                            width={200}
+                            label="url"
+                            dataKey="url"
+                            flexGrow={1} />
+                          <Column
+                            width={100}
+                            label="remote browser"
+                            dataKey="browser"
+                            columnData={{ browsers }}
+                            cellRenderer={BrowserRenderer} />
+                        </Table>
+                      )
+                    }
+                  </AutoSizer>
               }
             </div>
-            <div className="wr-coll-sidebar">
-              Notes
-            </div>
-          </aside>
-          <div className="wr-coll-utilities">
-            <CollectionManagement
-              groupDisplay={groupDisplay}
-              onToggle={this.onToggle}
-              toggleExpandAllSessions={this.toggleExpandAllSessions}
-              search={this.search}
-              searchText={searchText} />
-          </div>
-          <div className="wr-coll-detail-table">
-            {
-              groupDisplay ?
-                <div className="wr-coll-session-container">
-                  {
-                    recordings.map(rec =>
-                      <SessionCollapsible
-                        key={rec.get('id')}
-                        hasActiveBookmark={selectedSession === rec && selectedGroupedBookmarkIdx !== null}
-                        collection={collection}
-                        browsers={browsers}
-                        expandAll={expandAll}
-                        onExpand={this.onExpandSession}
-                        onCollapse={this.onCollapseSession}
-                        recording={rec}
-                        onSelectRow={this.onSelectGroupedRow}
-                        selectedGroupedBookmarkIdx={selectedGroupedBookmarkIdx} />
-                    )
-                  }
-                </div> :
-                <AutoSizer>
-                  {
-                    ({ height, width }) => (
-                      <Table
-                        width={width}
-                        height={height}
-                        rowCount={bookmarks.size}
-                        headerHeight={40}
-                        rowHeight={50}
-                        rowGetter={({ index }) => bookmarks.get(index)}
-                        rowClassName={({ index }) => { return index === selectedBookmarkIdx ? 'selected' : ''; }}
-                        onRowClick={this.onSelectRow}
-                        sort={this.sort}
-                        sortBy={collection.getIn(['sortBy', 'sort'])}
-                        sortDirection={collection.getIn(['sortBy', 'dir'])}>
-                        <Column
-                          width={20}
-                          dataKey="fav"
-                          cellRenderer={() => <span className="glyphicon glyphicon-star" />} />
-                        <Column
-                          width={20}
-                          dataKey="bookmark"
-                          cellRenderer={() => <span className="glyphicon glyphicon-bookmark" />} />
-                        <Column
-                          width={200}
-                          label="timestamp"
-                          dataKey="timestamp"
-                          cellRenderer={TimestampRenderer} />
-                        <Column
-                          width={200}
-                          label="bookmark"
-                          dataKey="title"
-                          flexGrow={1}
-                          columnData={{ collection }}
-                          cellRenderer={LinkRenderer} />
-                        <Column
-                          width={200}
-                          label="url"
-                          dataKey="url"
-                          flexGrow={1} />
-                        <Column
-                          width={100}
-                          label="labels"
-                          dataKey="labels"
-                          disableSort
-                          cellRenderer={TagRenderer} />
-                        <Column
-                          width={100}
-                          label="remote browser"
-                          dataKey="browser"
-                          columnData={{ browsers }}
-                          cellRenderer={BrowserRenderer} />
-                      </Table>
-                    )
-                  }
-                </AutoSizer>
-            }
           </div>
         </div>
       </div>

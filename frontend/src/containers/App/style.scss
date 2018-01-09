@@ -31,14 +31,14 @@ section {
 }
 
 .header-webrecorder {
-    background-color: #373944;
+    background-color: #0000ee;
 }
 
 .header-webrecorder a,
 .header-webrecorder a:visited,
 .navbar-user-links>ul>li>a,
 .navbar-user-links>ul>li>a:visited {
-    color: #429EEC;
+    color: #FFF;
 }
 
 .header-webrecorder a:focus,
@@ -46,14 +46,14 @@ section {
 .navbar-user-links>ul>li>a:focus,
 .navbar-user-links>ul>li>a:hover {
     text-decoration: underline;
-    background-color: #373944;
-    color: #74B9F3;
+    background-color: inherit;
+    color: #FFF;
 }
 
 .header-webrecorder a:active,
 .navbar-user-links>ul>li>a:active {
     outline: 0;
-    color: #74B9F3;
+    color: #FFF;
 }
 
 .navbar-user-links {

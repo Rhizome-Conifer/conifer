@@ -14,6 +14,7 @@ import { UserManagement } from 'containers';
 import config from 'config';
 import { BreadcrumbsUI, Footer } from 'components/siteComponents';
 
+import 'shared/fonts/fonts.scss';
 import './style.scss';
 
 
