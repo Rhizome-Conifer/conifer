@@ -108,23 +108,25 @@ class CollectionListUI extends Component {
             <Row>
               <ul className="list-group collection-list">
                 {
-                  orderedCollections.map(coll =>
-                    <li className="left-buffer list-group-item" key={coll.get('id')}>
-                      <Row>
-                        <Col xs={9}>
-                          <Link to={`${userParam}/${coll.get('id')}`} className="collection-title">{coll.get('title')}</Link>
-                        </Col>
-                        <Col xs={2}>
-                          <SizeFormat bytes={coll.get('size')} />
-                        </Col>
-                        <Col xs={1}>
-                          { coll.get('r:@public') === '1' &&
-                            <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
-                          }
-                        </Col>
-                      </Row>
-                    </li>
-                  )
+                  orderedCollections.map((coll) => {
+                    return (
+                      <li className="left-buffer list-group-item" key={coll.get('id')}>
+                        <Row>
+                          <Col xs={9}>
+                            <Link to={`${userParam}/${coll.get('id')}`} className="collection-title">{coll.get('title')}</Link>
+                          </Col>
+                          <Col xs={2}>
+                            <SizeFormat bytes={coll.get('size')} />
+                          </Col>
+                          <Col xs={1}>
+                            { coll.get('r:@public') === '1' &&
+                              <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
+                            }
+                          </Col>
+                        </Row>
+                      </li>
+                    );
+                  })
                 }
               </ul>
             </Row>

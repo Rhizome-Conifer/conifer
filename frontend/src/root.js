@@ -13,12 +13,15 @@ function Root(props) {
       key={module.hot && new Date()}
       history={history}
       routes={routes}
-      render={renderProps =>
-        <ReduxAsyncConnect
-          {...renderProps}
-          helpers={{ client }}
-          filter={item => !item.deferred}
-          render={applyRouterMiddleware(useScroll())} />
+      render={(renderProps) => {
+        return (
+          <ReduxAsyncConnect
+            {...renderProps}
+            helpers={{ client }}
+            filter={item => !item.deferred}
+            render={applyRouterMiddleware(useScroll())} />
+        );
+      }
       } />
   );
 }

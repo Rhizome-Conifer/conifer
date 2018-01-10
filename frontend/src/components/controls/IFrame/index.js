@@ -18,6 +18,7 @@ class IFrame extends Component {
     contentPrefix: PropTypes.string,
     dispatch: PropTypes.func,
     params: PropTypes.object,
+    passEvents: PropTypes.bool,
     timestamp: PropTypes.string,
     url: PropTypes.string
   };
@@ -214,8 +215,10 @@ class IFrame extends Component {
   }
 
   render() {
+    const { passEvents } = this.props;
+
     return (
-      <iframe className="wb_iframe" ref={(obj) => { this.iframe = obj; }} />
+      <iframe className="wb_iframe" style={passEvents ? { pointerEvents: 'none' } : {}} ref={(obj) => { this.iframe = obj; }} />
     );
   }
 }

@@ -83,9 +83,9 @@ class RemoteBrowserSelect extends Component {
     const activeBrowserEle = browsers ? browsers.find(b => b.get('id') === instanceContext) : null;
 
     const btn = activeBrowserEle ?
-      <span className="btn-content">
+      (<span className="btn-content">
         <img src={`/api/browsers/browsers/${activeBrowserEle.get('id')}/icon`} alt="Browser Icon" />{ ` ${activeBrowserEle.get('name')} v${activeBrowserEle.get('version')}` }
-      </span> :
+      </span>) :
       <span className="btn-content">(native) <span className="hidden-sm hidden-xs">Current</span></span>;
 
     return (

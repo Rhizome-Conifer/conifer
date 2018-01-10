@@ -1,6 +1,5 @@
 #wb_iframe_container, .wb_iframe {
-    width: 100%;
-    height: 100%;
+    flex-grow: 1;
     padding: 0;
     overflow: scroll !important;
     border: none;

@@ -90,14 +90,17 @@ class BookmarkList extends Component {
 
           <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
             {
-              bookmarks.map((page, idx) =>
-                <BookmarkListItem
-                  key={`${page.get('timestamp')}${page.url}${idx}`}
-                  page={page}
-                  params={params}
-                  ts={timestamp}
-                  url={url}
-                  closeList={this.close} />
+              bookmarks.map((page, idx) => {
+                return (
+                  <BookmarkListItem
+                    key={`${page.get('timestamp')}${page.url}${idx}`}
+                    page={page}
+                    params={params}
+                    ts={timestamp}
+                    url={url}
+                    closeList={this.close} />
+                );
+              }
               )
             }
           </ul>
