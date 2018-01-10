@@ -14,6 +14,7 @@ import controls from './controls';
 import infoStats from './infoStats';
 import passwordReset from './passwordReset';
 import remoteBrowsers from './remoteBrowsers';
+import sidebar from './sidebar';
 import sizeCounter from './sizeCounter';
 import toolBin from './toolBin';
 import user from './user';
@@ -28,6 +29,7 @@ const makeAppReducer = () => combineImmutableReduers({
   controls,
   passwordReset,
   remoteBrowsers,
+  sidebar,
   sizeCounter,
   infoStats,
   toolBin,

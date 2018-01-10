@@ -8,17 +8,17 @@ import { rts, truncate } from 'helpers/utils';
 
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
 const getArchives = state => state.getIn(['controls', 'archives']);
-const getBookmarks = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['collection', 'bookmarks']); };
+const getBookmarks = state => (state.app ? state.app : state).getIn(['collection', 'bookmarks']);
 const getCollections = state => state.getIn(['collections', 'collections']);
 const getRecordings = state => state.getIn(['collection', 'recordings']);
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
 const getSize = state => state.getIn(['infoStats', 'size']);
 const getStats = state => state.getIn(['infoStats', 'stats']);
-const getTimestamp = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['controls', 'timestamp']); };
-const getUrl = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['controls', 'url']); };
+const getTimestamp = state => (state.app ? state.app : state).getIn(['controls', 'timestamp']);
+const getUrl = state => (state.app ? state.app : state).getIn(['controls', 'url']);
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const selectedCollection = state => state.getIn(['user', 'activeCollection']);
-const userSortBy = (state) => { const stateObj = state.app ? state.app : state; return stateObj.getIn(['collection', 'sortBy']); };
+const userSortBy = state => (state.app ? state.app : state).getIn(['collection', 'sortBy']);
 
 
 const sortFn = (a, b, by = null) => {

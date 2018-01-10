@@ -8,6 +8,35 @@ export function addTrailingSlash(url) {
   return url;
 }
 
+export function buildDate(dt, epoch, gmt) {
+  let displayTime;
+
+  if(dt) {
+    let DTString = String(dt);
+
+    if(DTString.length < 14)
+      DTString += '10000101000000'.substr(DTString.length);
+
+    const datestr = (DTString.substring(0, 4) + '-' +
+                     DTString.substring(4, 6) + '-' +
+                     DTString.substring(6, 8) + 'T' +
+                     DTString.substring(8, 10) + ':' +
+                     DTString.substring(10, 12) + ':' +
+                     DTString.substring(12, 14) + '-00:00');
+
+    const date = new Date(datestr);
+    if(gmt) {
+      displayTime = date.toGMTString();
+    } else {
+      displayTime = date.toLocaleString();
+    }
+  } else if(epoch) {
+    displayTime = new Date(epoch * 1000).toLocaleString();
+  }
+
+  return displayTime;
+}
+
 export function capitalize(str) {
   if (!str) {
     return str;
@@ -51,6 +80,11 @@ export function getRemoteBrowser(tsFragment) {
 }
 
 export function remoteBrowserMod(rb, ts, sep) {
+  // no remote browsers on player
+  if (__PLAYER__) {
+    return ts;
+  }
+
   let base = ts || '';
   if (rb) {
     base += `$br:${rb}`;
@@ -67,6 +101,7 @@ export function remoteBrowserMod(rb, ts, sep) {
  * @return {string}     url without trailing slash
  */
 export function rts(val) {
+  if (!val) return val;
   return val.replace(/\/$/, '');
 }
 

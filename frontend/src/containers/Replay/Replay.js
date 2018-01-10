@@ -9,11 +9,11 @@ import config from 'config';
 
 import { getOrderedBookmarks, getActiveRecording, getRecording } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { getArchives, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
 import { createRemoteBrowser, load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
-import { RemoteBrowser } from 'containers';
+import { RemoteBrowser, Sidebar } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -31,6 +31,7 @@ class Replay extends Component {
     recordingIndex: PropTypes.number,
     reqId: PropTypes.string,
     params: PropTypes.object,
+    sidebarResize: PropTypes.bool,
     timestamp: PropTypes.string,
     url: PropTypes.string
   };
@@ -65,17 +66,17 @@ class Replay extends Component {
 
   render() {
     const { activeBrowser, bookmarks, collection, dispatch, params, recording,
-            recordingIndex, reqId, timestamp, url } = this.props;
+            recordingIndex, reqId, sidebarResize, timestamp, url } = this.props;
     const { product } = this.context;
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
 
-    const shareUrl = `${config.host}${params.user}/${params.coll}/${tsMod}/${params.splat}`;
+    const shareUrl = `${config.host}${params.user}/${params.coll}/${tsMod}/${url}`;
     const appPrefix = `${config.appHost}/${params.user}/${params.coll}/`;
     const contentPrefix = `${config.contentHost}/${params.user}/${params.coll}/`;
 
     return (
-      <div>
+      <React.Fragment>
         <Helmet>
           <meta property="og:url" content={shareUrl} />
           <meta property="og:type" content="website" />
@@ -92,26 +93,29 @@ class Replay extends Component {
           params={params}
           timestamp={timestamp}
           url={url} />
-
-        {
-          activeBrowser ?
-            <RemoteBrowser
-              dispatch={dispatch}
-              params={params}
-              rb={activeBrowser}
-              rec={recording ? recording.get('id') : null}
-              reqId={reqId}
-              timestamp={timestamp}
-              url={url} /> :
-            <IFrame
-              appPrefix={appPrefix}
-              contentPrefix={contentPrefix}
-              dispatch={dispatch}
-              params={params}
-              timestamp={timestamp}
-              url={url} />
-        }
-      </div>
+        <div className="iframe-container">
+          <Sidebar />
+          {
+            activeBrowser ?
+              <RemoteBrowser
+                dispatch={dispatch}
+                params={params}
+                rb={activeBrowser}
+                rec={recording ? recording.get('id') : null}
+                reqId={reqId}
+                timestamp={timestamp}
+                url={url} /> :
+              <IFrame
+                appPrefix={appPrefix}
+                contentPrefix={contentPrefix}
+                dispatch={dispatch}
+                params={params}
+                passEvents={sidebarResize}
+                timestamp={timestamp}
+                url={url} />
+          }
+        </div>
+      </React.Fragment>
     );
   }
 }
@@ -136,8 +140,7 @@ const initialData = [
 
       const compositeUrl = `${splat}${search}${hash}`;
       const promises = [
-        dispatch(updateUrl(compositeUrl)),
-        dispatch(updateTimestamp(timestamp)),
+        dispatch(updateUrlAndTimestamp(compositeUrl, timestamp)),
         dispatch(setBrowser(rb))
       ];
 
@@ -181,6 +184,7 @@ const mapStateToProps = ({ app }) => {
     recording: getRecording(app),
     recordingIndex: getActiveRecording(app),
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
+    sidebarResize: app.getIn(['sidebar', 'resizing']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

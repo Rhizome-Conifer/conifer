@@ -30,6 +30,11 @@
     }
 }
 
+.iframe-container {
+    flex-grow: 1;
+    display: flex;
+}
+
 @media (max-width: 500px) {
     .wr-controls {
         &:not(.public) {

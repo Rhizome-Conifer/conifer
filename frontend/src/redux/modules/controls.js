@@ -1,5 +1,6 @@
 import config from 'config';
 import { fromJS } from 'immutable';
+import { rts } from 'helpers/utils';
 
 const CTRLS_SET_MODE = 'wr/ctrls/SET_MODE';
 const CTRLS_SET_EXTRACTABLE = 'wr/ctrls/SET_EXTRACTABLE';
@@ -7,6 +8,7 @@ const CTRLS_SET_ALL_SOURCES = 'wr/ctrls/SET_ALL_SOURCES';
 const CTRLS_SET_SOURCES = 'wr/ctrls/SET_SOURCES';
 const CTRLS_SET_URL = 'wr/ctrls/CTRLS_SET_URL';
 const CTRLS_SET_TS = 'wr/ctrls/CTRLS_SET_TS';
+const CTRLS_SET_URL_TS = 'wr/ctrls/CTRLS_SET_URL_TS';
 
 const CTRLS_GET_ARCHIVES = 'wr/ctrls/ARCHIVES';
 const CTRLS_GET_ARCHIVES_SUCCESS = 'wr/ctrls/ARCHIVES_SUCCESS';
@@ -52,7 +54,12 @@ export default function controls(state = initialState, action = {}) {
       return state.set('url', action.url);
     case CTRLS_SET_TS:
       return state.set('timestamp', action.ts);
-
+    case CTRLS_SET_URL_TS:
+      return state.merge({
+        url: action.url,
+        timestamp: action.ts,
+        title: action.title
+      });
     default:
       return state;
   }
@@ -98,6 +105,15 @@ export function updateUrl(url) {
   return {
     type: CTRLS_SET_URL,
     url
+  };
+}
+
+export function updateUrlAndTimestamp(url, ts, title) {
+  return {
+    type: CTRLS_SET_URL_TS,
+    url,
+    ts,
+    title
   };
 }
 
