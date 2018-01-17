@@ -184,10 +184,7 @@ class ShareWidgetUI extends Component {
                           <span className="glyphicon glyphicon-globe" aria-hidden="true" />
                           <span className="left-buffer-sm hidden-xs">Collection Public?</span>
                           <Toggle
-                            icons={{
-                              unchecked: 'NO',
-                              checked: 'YES'
-                            }}
+                            icons={false}
                             defaultChecked={isPublic}
                             onChange={this.setPublic} />
                         </div>
