@@ -377,13 +377,13 @@ class ContentController(BaseController, RewriterApp):
 
         return mode, new_url
 
-    def do_create_new_and_redir(self, coll, rec, wb_url, mode):
+    def do_create_new_and_redir(self, coll_name, rec_name, wb_url, mode):
         if mode == 'record':
             result = self.check_remote_archive(wb_url, mode)
             if result:
                 mode, wb_url = result
 
-        rec_title = rec
+        rec_title = rec_name
 
         user = self.manager.get_curr_user()
 
@@ -394,17 +394,25 @@ class ContentController(BaseController, RewriterApp):
                 return
 
             user = self.manager.get_anon_user(True)
-            coll = 'temp'
+            coll_name = 'temp'
             coll_title = 'Temporary Collection'
 
         else:
             coll_title = coll
-            coll = self.sanitize_title(coll_title)
+            coll_name = self.sanitize_title(coll_title)
 
-        if not self.manager.has_collection(user, coll):
-            self.manager.create_collection(user, coll, coll_title)
+        try:
+            coll = self.manager.collection_by_name(user, coll_name)
+            if not coll:
+                coll, coll_name, _ = self.manager.create_collection(user, coll_name, coll_title)
 
-        rec = self._create_new_rec(user, coll, rec_title, mode)
+            rec, rec_name = self._create_new_rec(user, coll, rec_title, mode)
+
+            print('COLL', coll, coll_name)
+            print('REC', rec, rec_name)
+        except:
+            import traceback
+            traceback.print_exc()
 
         if mode.startswith('extract:'):
             patch_rec = self._create_new_rec(user, coll,
@@ -412,8 +420,8 @@ class ContentController(BaseController, RewriterApp):
                                              'patch')
 
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
-                                                             coll=coll,
-                                                             rec=rec,
+                                                             coll=coll_name,
+                                                             rec=rec_name,
                                                              mode=mode,
                                                              url=wb_url)
         return self.redirect(new_url)
@@ -429,14 +437,12 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
-    def _create_new_rec(self, user, coll, title, mode, no_dupe=False):
-        rec = self.sanitize_title(title)
+    def _create_new_rec(self, user, coll, title, mode):
+        rec_name = self.sanitize_title(title)
         rec_type = 'patch' if mode == 'patch' else None
-        result = self.manager.create_recording(user, coll, rec, title,
-                                               rec_type=rec_type,
-                                               no_dupe=no_dupe)
-        rec = result['id']
-        return rec
+        rec, rec_name, _ = self.manager.create_recording(user, coll, rec_name, title,
+                                                         rec_type=rec_type)
+        return rec, rec_name
 
     def patch_of_name(self, name, is_id=False):
         if not is_id:
@@ -444,7 +450,7 @@ class ContentController(BaseController, RewriterApp):
         else:
             return 'patch-of-' + name
 
-    def handle_routing(self, wb_url, user, coll, rec, type,
+    def handle_routing(self, wb_url, user, coll_name, rec_name, type,
                        is_embed=False,
                        is_display=False,
                        sources='',
@@ -453,7 +459,7 @@ class ContentController(BaseController, RewriterApp):
 
         wb_url = self.add_query(wb_url)
         if user == '_new' and redir_route:
-            return self.do_create_new_and_redir(coll, rec, wb_url, redir_route)
+            return self.do_create_new_and_redir(coll_name, rec_name, wb_url, redir_route)
 
         sesh = self.get_session()
 
@@ -464,10 +470,16 @@ class ContentController(BaseController, RewriterApp):
         frontend_cache_header = None
         patch_rec = ''
 
+
+        rec = ''
+        coll = self.manager.colls_map.name_to_id(user, coll_name)
+        if coll:
+            rec = self.manager.recs_map.name_to_id(coll, rec_name)
+
         if type in self.MODIFY_MODES:
             if not self.manager.has_recording(user, coll, rec):
-                self._redir_if_sanitized(self.sanitize_title(rec),
-                                         rec,
+                self._redir_if_sanitized(self.sanitize_title(rec_name),
+                                         rec_name,
                                          wb_url)
 
                 # don't auto create recording for inner frame w/o accessing outer frame

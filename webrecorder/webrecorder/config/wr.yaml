@@ -145,42 +145,42 @@ full_warc_prefix: 'local+http://nginx:6090'
 
 
 # Redis Keys
-cdxj_key_templ: 'r:{user}:{coll}:{rec}:cdxj'
+cdxj_key_templ: 'r:{rec}:cdxj'
 
-coll_cdxj_key_templ: 'c:{user}:{coll}:cdxj'
+coll_cdxj_key_templ: 'c:{coll}:cdxj'
 coll_cdxj_ttl: 1800
 
-open_rec_key_templ: 'r:{user}:{coll}:{rec}:open'
+open_rec_key_templ: 'r:{rec}:open'
 
-page_key_templ: 'r:{user}:{coll}:{rec}:page'
+page_key_templ: 'r:{rec}:page'
 
 info_key_templ:
-    rec: 'r:{user}:{coll}:{rec}:info'
-    coll: 'c:{user}:{coll}:info'
+    rec: 'r:{rec}:info'
+    coll: 'c:{coll}:info'
     user: 'u:{user}:info'
 
-coll_list_key_templ: 'u:{user}:colls'
-rec_list_key_templ: 'c:{user}:{coll}:recs'
+coll_map_key_templ: 'u:{user}:colls'
+rec_map_key_templ: 'c:{coll}:recs'
 
 upload_key_templ: 'u:{user}:upl:{upid}'
 
 tags_key: 'z:tags'
-user_tag_templ: 'r:{user}:{coll}:{rec}:tag:{tag}'
+user_tag_templ: 'r:{rec}:tag:{tag}'
 
-ra_key: 'r:{user}:{coll}:{rec}:ra'
+ra_key: 'r:{rec}:ra'
 
 user_usage_key: 'h:user-usage'
 temp_usage_key: 'h:temp-usage'
 
 rate_limit_key: 'ipr:{ip}:{H}'
 
-cookie_key_templ: 'r:{user}:{coll}:{rec}:{id}:cookie:'
+cookie_key_templ: 'r:{rec}:{id}:cookie:'
 
-dyn_stats_key_templ: 'r:{user}:{coll}:{rec}:{id}:stats:'
-dyn_ref_templ: 'r:{user}:{coll}:{rec}:{id}:ref:'
+dyn_stats_key_templ: 'r:{rec}:{id}:stats:'
+dyn_ref_templ: 'r:{rec}:{id}:ref:'
 dyn_stats_secs: 330
 
-warc_key_templ: 'r:{user}:{coll}:{rec}:warc'
+warc_key_templ: 'r:{rec}:warc'
 
 commit_wait_templ: 'w:{filename}'
 commit_wait_secs: 30
@@ -190,9 +190,9 @@ upload_status_expire: 120
 skip_key_templ: 'us:{user}:s:{url}'
 
 del_templ:
-    rec: 'r:{user}:{coll}:{rec}:*'
-    coll: '*:{user}:{coll}:*'
-    user: '*:{user}:*'
+    rec: 'r:{rec}:*'
+    coll: 'c:{coll}:*'
+    user: 'u:{user}:*'
 
 storage_key_templ: 'st:{name}'
 

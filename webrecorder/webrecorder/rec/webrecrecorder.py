@@ -46,7 +46,7 @@ class WebRecRecorder(object):
 
         self.info_keys = config['info_key_templ']
 
-        self.coll_list_key_templ = config['coll_list_key_templ']
+        self.rec_list_key_templ = config['rec_list_key_templ']
         self.rec_list_key_templ = config['rec_list_key_templ']
 
         self.warc_key_templ = config['warc_key_templ']
@@ -247,8 +247,8 @@ class WebRecRecorder(object):
         else:
             info_key = self.info_keys['coll'].format(user=from_user, coll=from_coll)
 
-            to_coll_list_key = self.coll_list_key_templ.format(user=to_user)
-            from_coll_list_key = self.coll_list_key_templ.format(user=from_user)
+            to_rec_list_key = self.rec_list_key_templ.format(user=to_user)
+            from_rec_list_key = self.rec_list_key_templ.format(user=from_user)
 
             to_id = to_coll
 
@@ -274,8 +274,8 @@ class WebRecRecorder(object):
 
             # if collection or user names different, update list
             if to_rec == '*' and (to_user_key != from_user_key or to_coll != from_coll):
-                pi.srem(from_coll_list_key, from_coll)
-                pi.sadd(to_coll_list_key, to_coll)
+                pi.srem(from_rec_list_key, from_coll)
+                pi.sadd(to_rec_list_key, to_coll)
 
             # change coll size if moving rec and different colls
             if to_rec != '*' and to_coll_key != from_coll_key:
@@ -423,8 +423,8 @@ class WebRecRecorder(object):
 
         with redis_pipeline(self.redis) as pi:
             if type == 'coll':
-                coll_list_key = self.coll_list_key_templ.format(user=user)
-                pi.srem(coll_list_key, coll)
+                rec_list_key = self.rec_list_key_templ.format(user=user)
+                pi.srem(rec_list_key, coll)
 
             elif type == 'rec':
                 rec_list_key = self.rec_list_key_templ.format(user=user, coll=coll)

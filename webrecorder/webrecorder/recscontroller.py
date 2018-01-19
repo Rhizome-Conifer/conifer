@@ -38,7 +38,7 @@ class RecsController(BaseController):
         @self.app.delete('/api/v1/recordings/<rec>')
         def delete_recording(rec):
             user, coll = self.get_user_coll(api=True)
-            self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec)
 
             self.manager.delete_recording(user, coll, rec)
 
@@ -47,7 +47,7 @@ class RecsController(BaseController):
         @self.app.post('/api/v1/recordings/<rec>/rename/<new_rec_title:path>')
         def rename_recording(rec, new_rec_title):
             user, coll = self.get_user_coll(api=True)
-            self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec)
 
             new_rec = self.sanitize_title(new_rec_title)
 
@@ -77,7 +77,7 @@ class RecsController(BaseController):
         def move_recording(rec_title, new_coll_title):
             user, coll = self.get_user_coll(api=True)
             rec = self.sanitize_title(rec_title)
-            self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec)
 
             new_coll = self.sanitize_title(new_coll_title)
 
@@ -104,7 +104,7 @@ class RecsController(BaseController):
         @self.app.post('/api/v1/recordings/<rec>/pages')
         def add_page(rec):
             user, coll = self.get_user_coll(api=True)
-            self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec)
 
             page_data = dict(request.forms.decode())
 
@@ -114,7 +114,7 @@ class RecsController(BaseController):
         @self.app.post('/api/v1/recordings/<rec>/page')
         def modify_page(rec):
             user, coll = self.get_user_coll(api=True)
-            self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec)
 
             page_data = dict(request.forms.decode())
 
@@ -124,7 +124,7 @@ class RecsController(BaseController):
         @self.app.get('/api/v1/recordings/<rec>/pages')
         def list_pages(rec):
             user, coll = self.get_user_coll(api=True)
-            self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec)
 
             pages = self.manager.list_pages(user, coll, rec)
             return {'pages': pages}
@@ -135,7 +135,7 @@ class RecsController(BaseController):
             user, coll = self.get_user_coll(api=True)
 
             # check recording exists and user has write permissions
-            self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec)
             self.manager.assert_can_write(user, coll)
 
             page_data = request.json
@@ -154,7 +154,7 @@ class RecsController(BaseController):
         @self.app.delete('/api/v1/recordings/<rec>/pages')
         def delete_page(rec):
             user, coll = self.get_user_coll(api=True)
-            self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec)
 
             url = request.forms.getunicode('url')
             ts = request.forms.getunicode('timestamp')
@@ -231,8 +231,12 @@ class RecsController(BaseController):
 
         return result
 
-    def _ensure_rec_exists(self, user, coll, rec):
+    def _ensure_rec_exists(self, user, coll, rec_name):
+        print('REC ID', coll, rec_name)
+        rec = self.manager.recs_map.name_to_id(coll, rec_name)
         if not self.manager.has_recording(user, coll, rec):
             self._raise_error(404, 'Recording not found', api=True,
                               id=rec)
+
+        return rec
 

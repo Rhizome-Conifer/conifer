@@ -14,7 +14,7 @@ from datetime import datetime
 from bottle import template, request, HTTPError
 
 from webrecorder.webreccork import ValidationException
-from webrecorder.redisutils import RedisTable
+from webrecorder.redisutils import RedisTable, RedisIdMapper
 from webrecorder.webreccork import WebRecCork
 from webrecorder.session import Session
 
@@ -455,7 +455,7 @@ class LoginManagerMixin(object):
                 return {'error_message': 'No Such Collection'}
 
         elif user != new_user or coll != new_coll:
-            new_coll_info = self.create_collection(new_user, new_coll, title)
+            id_, new_coll_info = self.create_collection(new_user, new_coll, title)
             title = new_coll_info['title']
             new_coll = new_coll_info['id']
 
@@ -550,8 +550,9 @@ class AccessManagerMixin(object):
 
     def _check_write_access(self, user, coll):
         # anon access
-        if self.is_anon(user) and coll == 'temp':
-            return True
+        if self.is_anon(user):
+            if self.is_coll_owner(user, coll):
+                return True
 
         sesh = self.get_session()
 
@@ -570,8 +571,9 @@ class AccessManagerMixin(object):
             return 'public'
 
         # anon access
-        if self.is_anon(user) and coll == 'temp':
-            return True
+        if self.is_anon(user):
+            if self.is_coll_owner(user, coll):
+                return True
 
         sesh = self.get_session()
 
@@ -584,6 +586,11 @@ class AccessManagerMixin(object):
             return self.redis.hget(key, self.READ_PREFIX + sesh.curr_user) != None
 
         return False
+
+    def is_coll_owner(self, user, coll):
+        key = self.coll_info_key.format(user=user, coll=coll)
+        res = self.redis.hget(key, 'owner')
+        return res == user
 
     def is_public(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)
@@ -618,7 +625,7 @@ class AccessManagerMixin(object):
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
-    def can_admin_coll(self, user, coll):
+    def can_admin_coll(self, user, coll=None):
         sesh = self.get_session()
         if sesh.is_restricted:
             return False
@@ -680,6 +687,7 @@ class AccessManagerMixin(object):
         raise HTTPError(404, 'No Such User')
 
     def assert_can_read(self, user, coll):
+        print(user, coll)
         if not self.can_read_coll(user, coll):
             raise HTTPError(404, 'No Read Access')
             #raise ValidationException('No Read Access')
@@ -749,7 +757,9 @@ class RecManagerMixin(object):
     def __init__(self, config):
         super(RecManagerMixin, self).__init__(config)
         self.rec_info_key = config['info_key_templ']['rec']
-        self.rec_list_key = config['rec_list_key_templ']
+
+        self.rec_map_key = config['rec_map_key_templ']
+        self.recs_map = RedisIdMapper(self.redis, 'recs', self.rec_map_key)
 
         self.open_rec_key = config['open_rec_key_templ']
         self.open_rec_ttl = int(config['open_rec_ttl'])
@@ -768,23 +778,23 @@ class RecManagerMixin(object):
 
         key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
 
-        return self._fill_recording(user, coll, self.redis.hgetall(key))
+        return self._fill_recording(user, coll, rec, self.redis.hgetall(key))
 
     def get_recording_title(self, user, coll, rec):
         self.assert_can_read(user, coll)
         key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
         return self.redis.hget(key, 'title')
 
-    def _fill_recording(self, user, coll, data):
+    def _fill_recording(self, user, coll, rec, data):
         result = self._format_info(data)
 
         if not result:
             return result
 
-        rec = result.get('id')
+        #TODO; check
         # an edge case where rec data is partially filled
         # considered not a valid recording, so skip
-        if not rec:
+        if not result.get('title'):
             return None
 
         path = self.download_paths['rec']
@@ -811,36 +821,18 @@ class RecManagerMixin(object):
         key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
 
         # ensure id is valid
-        return self.redis.hget(key, 'id') != None
+        return self.redis.hget(key, 'title') != None
 
     def is_recording_open(self, user, coll, rec):
         key = self.open_rec_key.format(user=user, coll=coll, rec=rec)
         return self.redis.expire(key, self.open_rec_ttl)
 
-    def create_recording(self, user, coll, rec, rec_title, coll_title='',
+    def create_recording(self, user, coll, rec_name, rec_title,
                          no_dupe=False, rec_type=None, ra_list=None):
 
         self.assert_can_write(user, coll)
 
-        orig_rec = rec
-        orig_rec_title = rec_title
-        count = 1
-
-        rec_list_key = self.rec_list_key.format(user=user, coll=coll)
-
-        while True:
-            key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
-
-            if self.redis.hsetnx(key, 'id', rec) == 1:
-                break
-
-            # don't create a duplicate, just use the specified recording
-            if no_dupe:
-                return self.get_recording(user, coll, rec)
-
-            count += 1
-            rec_title = orig_rec_title + ' ' + str(count)
-            rec = orig_rec + '-' + str(count)
+        rec, rec_name, rec_title = self.recs_map.create_new(coll, rec_name, rec_title)
 
         now = int(time.time())
 
@@ -850,6 +842,7 @@ class RecManagerMixin(object):
                                         rec=rec)
 
         open_key = self.open_rec_key.format(user=user, coll=coll, rec=rec)
+        key = self.rec_info_key.format(rec=rec)
 
         with redis_pipeline(self.redis) as pi:
             pi.hset(key, 'title', rec_title)
@@ -858,7 +851,6 @@ class RecManagerMixin(object):
             pi.hsetnx(key, 'size', '0')
             if rec_type:
                 pi.hset(key, 'rec_type', rec_type)
-            pi.sadd(rec_list_key, rec)
             if ra_list:
                 pi.sadd(ra_key, *ra_list)
 
@@ -868,7 +860,7 @@ class RecManagerMixin(object):
             coll_title = coll_title or coll
             self.create_collection(user, coll, coll_title)
 
-        return self.get_recording(user, coll, rec)
+        return rec, rec_name, self.get_recording(user, coll, rec)
 
     def set_recording_timestamps(self, user, coll, rec,
                                  created_at, updated_at):
@@ -894,8 +886,8 @@ class RecManagerMixin(object):
 
         key_pattern = key_templ.format(user=user, coll=coll, rec='*')
 
-        rec_list_key = self.rec_list_key.format(user=user, coll=coll)
-        recs = self.redis.smembers(rec_list_key)
+        rec_map_key = self.rec_map_key.format(user=user, coll=coll)
+        recs = self.redis.hvals(rec_map_key)
 
         return [key_pattern.replace('*', rec) for rec in recs]
 
@@ -903,14 +895,14 @@ class RecManagerMixin(object):
         keys = self._get_rec_keys(user, coll, self.rec_info_key)
 
         pi = self.redis.pipeline(transaction=False)
-        for key in keys:
-            pi.hgetall(key)
+        for rec in keys:
+            pi.hgetall(rec)
 
         all_recs = pi.execute()
 
         all_rec_list = []
-        for rec in all_recs:
-            recording = self._fill_recording(user, coll, rec)
+        for rec, data in zip(keys, all_recs):
+            recording = self._fill_recording(user, coll, rec, data)
             if recording:
                 all_rec_list.append(recording)
 
@@ -1190,7 +1182,9 @@ class CollManagerMixin(object):
         super(CollManagerMixin, self).__init__(config)
 
         self.coll_info_key = config['info_key_templ']['coll']
-        self.coll_list_key = config['coll_list_key_templ']
+
+        self.coll_map_key = config['coll_map_key_templ']
+        self.colls_map = RedisIdMapper(self.redis, 'colls', self.coll_map_key)
 
         self.coll_cdxj_key = config['coll_cdxj_key_templ']
         self.coll_cdxj_ttl = int(config['coll_cdxj_ttl'])
@@ -1205,7 +1199,7 @@ class CollManagerMixin(object):
             self.assert_can_read(user, coll)
 
         key = self.coll_info_key.format(user=user, coll=coll)
-        return self._fill_collection(user, self.redis.hgetall(key), True)
+        return self._fill_collection(user, coll, self.redis.hgetall(key), True)
 
     def get_collection_size(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)
@@ -1217,18 +1211,14 @@ class CollManagerMixin(object):
 
         return size
 
-    def _fill_collection(self, user, data, include_recs=False):
+    def _fill_collection(self, user, coll, data, include_recs=False):
         result = self._format_info(data)
         if not result:
             return result
 
-        coll = result.get('id')
-        if not coll:
+        # TODO: check
+        if not result.get('title'):
             return None
-            #if include_recs:
-            #    result['title'] = ''
-            #    result['recordings'] = []
-            #return result
 
         path = self.download_paths['coll']
         path = path.format(host=self.get_host(),
@@ -1244,7 +1234,7 @@ class CollManagerMixin(object):
 
     def _has_collection_no_access_check(self, user, coll):
         key = self.coll_info_key.format(user=user, coll=coll)
-        return self.redis.hget(key, 'id') != None
+        return self.redis.hget(key, 'title') != None
 
     def has_collection_is_public(self, user, coll):
         res = self._check_read_access_public(user, coll)
@@ -1256,57 +1246,54 @@ class CollManagerMixin(object):
 
         return res
 
+    def collection_by_name(self, user, coll_name):
+        coll = self.colls_map.name_to_id(user, coll_name)
+        if not coll:
+            return None
+
+        if self.has_collection(user, coll):
+            return coll
+
     def has_collection(self, user, coll):
         if not self.can_read_coll(user, coll):
             return False
 
         return self._has_collection_no_access_check(user, coll)
 
-    def create_collection(self, user, coll, coll_title, desc='', public=False):
-        orig_coll = coll
-        orig_coll_title = coll_title
-        count = 1
+    def create_collection(self, user, coll_name, coll_title, desc='', public=False):
+        self.assert_can_admin(user, None)
 
-        coll_list_key = self.coll_list_key.format(user=user)
+        coll, coll_name, coll_title = self.colls_map.create_new(user, coll_name, coll_title)
 
-        while True:
-            self.assert_can_admin(user, coll)
-
-            key = self.coll_info_key.format(user=user, coll=coll)
-
-            if self.redis.hsetnx(key, 'id', coll) == 1:
-                break
-
-            count += 1
-            coll_title = orig_coll_title + ' ' + str(count)
-            coll = orig_coll + '-' + str(count)
+        key = self.coll_info_key.format(coll=coll)
 
         now = int(time.time())
 
         with redis_pipeline(self.redis) as pi:
+            #pi.hset(key, 'id',  coll_name)
+            pi.hset(key, 'owner', user)
             pi.hset(key, 'title', coll_title)
             pi.hset(key, 'created_at', now)
             pi.hset(key, 'desc', desc)
             if public:
                 pi.hset(key, self.READ_PREFIX + self.PUBLIC, 1)
             pi.hsetnx(key, 'size', '0')
-            pi.sadd(coll_list_key, coll)
 
-        return self.get_collection(user, coll)
+        return coll, coll_name, self.get_collection(user, coll)
 
     def _get_coll_keys(self, user):
         key_pattern = self.coll_info_key.format(user=user, coll='*')
 
-        coll_list_key = self.coll_list_key.format(user=user)
-        colls = self.redis.smembers(coll_list_key)
+        coll_map_key = self.coll_map_key.format(user=user)
+        colls = self.redis.hvals(coll_map_key)
 
         return [key_pattern.replace('*', coll) for coll in colls]
 
     def num_collections(self, user):
         # if owner, just check num collections
         if self.is_owner(user):
-            coll_list_key = self.coll_list_key.format(user=user)
-            num_colls = self.redis.scard(coll_list_key)
+            coll_map_key = self.coll_map_key.format(user=user)
+            num_colls = self.redis.hlen(coll_map_key)
             return num_colls
 
         keys = self._get_coll_keys(user)
@@ -1322,14 +1309,14 @@ class CollManagerMixin(object):
         keys = self._get_coll_keys(user)
 
         pi = self.redis.pipeline(transaction=False)
-        for key in keys:
-            pi.hgetall(key)
+        for coll in keys:
+            pi.hgetall(coll)
 
         all_colls = pi.execute()
 
         all_coll_list = []
-        for coll in all_colls:
-            collection = self._fill_collection(user, coll,
+        for coll, data in zip(keys, all_colls):
+            collection = self._fill_collection(user, coll, data,
                                                include_recs=include_recs)
             if collection:
                 all_coll_list.append(collection)

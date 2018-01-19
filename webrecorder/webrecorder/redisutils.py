@@ -83,3 +83,38 @@ class RedisHashTable(object):
         return bool(self.thedict)
 
 
+# ============================================================================
+class RedisIdMapper(object):
+    def __init__(self, redis, typename, name_key):
+        self.redis = redis
+        self.typename = typename
+        self.counter = 'n:{typename}:count'.format(typename=typename)
+
+        self.name_key = name_key
+
+    def create_new(self, param, name, title):
+        id_ = self.redis.incr(self.counter)
+
+        dupe_count = 1
+        orig_title = title
+        orig_name = name
+
+        name_map = self.name_key.format(param)
+
+        while True:
+            if self.redis.hsetnx(name_map, name, id_) == 1:
+                break
+
+            dupe_count += 1
+            name = orig_name + '-' + str(dupe_count)
+            title = orig_title + ' ' + str(dupe_count)
+
+        return id_, name, title
+
+    def name_to_id(self, param, name):
+        name_map = self.name_key.format(param)
+        print(name_map, name)
+
+        return self.redis.hget(name_map, name)
+
+

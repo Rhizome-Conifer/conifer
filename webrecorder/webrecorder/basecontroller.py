@@ -69,16 +69,17 @@ class BaseController(object):
     def get_user_coll(self, api=False, redir_check=True):
         user = self.get_user(api=api, redir_check=redir_check)
 
-        coll = request.query.getunicode('coll')
-        if not coll:
+        coll_name = request.query.getunicode('coll')
+        if not coll_name:
             self._raise_error(400, 'Collection must be specified',
                               api=api)
 
         if self.manager.is_anon(user):
-            if coll != 'temp':
+            if coll_name != 'temp':
                 self._raise_error(404, 'No such collection', api=api)
 
-        elif not self.manager.has_collection(user, coll):
+        coll = self.manager.collection_by_name(user, coll_name)
+        if not coll:
             self._raise_error(404, 'No such collection', api=api)
 
         return user, coll
