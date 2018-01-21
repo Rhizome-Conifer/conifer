@@ -35,6 +35,7 @@ class IFrame extends Component {
 
     this.contentFrame = null;
     this.frameContainer = null;
+    this.internalUpdate = false;
   }
 
   componentDidMount() {
@@ -75,10 +76,20 @@ class IFrame extends Component {
   componentWillReceiveProps(nextProps) {
     const { url, timestamp } = this.props;
 
-    if (nextProps.url !== url ||
-        nextProps.timestamp !== timestamp) {
-      this.contentFrame.load_url(nextProps.url, nextProps.timestamp);
+    if (nextProps.url !== url || nextProps.timestamp !== timestamp) {
+      if (!this.internalUpdate) {
+        this.contentFrame.load_url(nextProps.url, nextProps.timestamp);
+      }
+      this.internalUpdate = false;
     }
+  }
+
+  shouldComponentUpdate(nextProps) {
+    if (nextProps.passEvents !== this.props.passEvents) {
+      return true;
+    }
+
+    return false;
   }
 
   componentWillUnmount() {
@@ -108,6 +119,7 @@ class IFrame extends Component {
     console.log('setUrl called', this.props.url, rawUrl);
 
     if (this.props.url !== rawUrl) {
+      this.internalUpdate = true;
       this.props.dispatch(updateUrl(rawUrl));
     }
 
@@ -162,9 +174,9 @@ class IFrame extends Component {
     const { currMode } = this.context;
     const { timestamp } = this.props;
 
-    if (state && state.ts && currMode !== 'record' && currMode.indexOf('extract') === -1 && state.ts !== timestamp) {
-      this.props.dispatch(updateTimestamp(state.ts));
-    }
+    // if (state && state.ts && currMode !== 'record' && currMode.indexOf('extract') === -1 && state.ts !== timestamp) {
+    //   this.props.dispatch(updateTimestamp(state.ts));
+    // }
 
     if (state.is_error) {
       this.setUrl(state.url);
@@ -176,6 +188,7 @@ class IFrame extends Component {
         attributes.timestamp = state.ts;
 
         if (state.ts !== timestamp) {
+          this.internalUpdate = true;
           this.props.dispatch(updateTimestamp(state.ts));
         }
 
@@ -198,6 +211,7 @@ class IFrame extends Component {
     } else if (['replay', 'replay-coll'].includes(currMode)) {
       if (!this.initialReq) {
         if (state.ts !== timestamp) {
+          this.internalUpdate = true;
           this.props.dispatch(updateTimestamp(state.ts));
         }
 

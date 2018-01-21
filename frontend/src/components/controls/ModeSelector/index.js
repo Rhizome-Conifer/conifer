@@ -35,7 +35,7 @@ class ModeSelector extends PureComponent {
     evt.preventDefault();
     const { params: { coll, rec, user } } = this.props;
 
-    if (this.context.currMode === 'replay') {
+    if (this.context.currMode.indexOf('replay') !== -1) {
       this.context.router.push(`/${user}/${coll}`);
     } else {
       this.context.router.push(`/${user}/${coll}/${rec}`);

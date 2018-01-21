@@ -35,11 +35,11 @@ const bypassUrls = [
 // TODO: use nginx
 app.use(express.static(path.join(__dirname, '..', 'static')));
 
-if (__DEVELOPMENT__) {
+// proxy api and other urls on localhost
+if (__DEVELOPMENT__ || baseUrl.indexOf('localhost') !== -1) {
   app.use('/shared', express.static(path.join(__dirname, 'shared')));
 
-  // Proxy client API requets to server for now to avoid
-  // CORS during port 3000 development
+  // Proxy client API requets to server for now to avoid CORS
   app.use(bypassUrls, proxy({ target: baseUrl, logLevel: 'debug' }));
 }
 

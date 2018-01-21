@@ -29,7 +29,7 @@ class BookmarkList extends Component {
   }
 
   componentDidMount() {
-    this.liHeight = Math.ceil(this.bookmarkList.querySelector('li').getBoundingClientRect().height);
+    this.liHeight = 0; //Math.ceil(this.bookmarkList.querySelector('li').getBoundingClientRect().height);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -88,6 +88,7 @@ class BookmarkList extends Component {
         <div className={listClasses} title="Bookmark list">
           <input type="text" onClick={this.toggle} onChange={this.handleInput} onKeyPress={this.handleSubmit} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
 
+          {/*
           <ul ref={(obj) => { this.bookmarkList = obj; }} className="dropdown-menu">
             {
               bookmarks.map((page, idx) => {
@@ -103,7 +104,8 @@ class BookmarkList extends Component {
               }
               )
             }
-          </ul>
+          </ul>*/
+          }
 
           <div className="wr-replay-info">
             <InfoWidget />

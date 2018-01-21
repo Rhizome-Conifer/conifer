@@ -16,6 +16,8 @@ var assetsPath = path.resolve(projectRootPath, './static/dist');
 // https://github.com/halt-hammerzeit/webpack-isomorphic-tools
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
+var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+
 
 module.exports = {
   devtool: 'source-map',
@@ -149,6 +151,8 @@ module.exports = {
 
     // ignore dev config
     new webpack.IgnorePlugin(/\.\/dev/, /\/config$/),
+
+    new HardSourceWebpackPlugin(),
 
     // optimizations
     new webpack.optimize.UglifyJsPlugin({

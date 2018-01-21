@@ -12,6 +12,7 @@ var port = (+process.env.PORT + 1) || 3001;
 // https://github.com/halt-hammerzeit/webpack-isomorphic-tools
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
+var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 var babelrc = fs.readFileSync('./.babelrc');
 var babelrcObject = {};
@@ -65,7 +66,13 @@ var webpackConfig = module.exports = {
       {
         test: /\.(js|jsx)?$/,
         exclude: /node_modules/,
-        use: ['babel-loader?' + JSON.stringify(babelLoaderQuery), 'eslint-loader']
+        use: ['babel-loader?' + JSON.stringify(babelLoaderQuery),
+        {
+          loader: 'eslint-loader',
+          options: {
+            quiet: true
+          }
+        }]
       },
       {
         test: /\.scss$/,
@@ -152,6 +159,7 @@ var webpackConfig = module.exports = {
     // hot reload
     new webpack.HotModuleReplacementPlugin(),
     new webpack.IgnorePlugin(/webpack-stats\.json$/),
+    new HardSourceWebpackPlugin(),
     new webpack.DefinePlugin({
       __CLIENT__: true,
       __SERVER__: false,
