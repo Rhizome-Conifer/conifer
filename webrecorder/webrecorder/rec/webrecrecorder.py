@@ -46,8 +46,8 @@ class WebRecRecorder(object):
 
         self.info_keys = config['info_key_templ']
 
-        self.rec_list_key_templ = config['rec_list_key_templ']
-        self.rec_list_key_templ = config['rec_list_key_templ']
+        self.rec_map_key_templ = config['rec_map_key_templ']
+        self.rec_map_key_templ = config['rec_map_key_templ']
 
         self.warc_key_templ = config['warc_key_templ']
 
@@ -76,9 +76,6 @@ class WebRecRecorder(object):
         self.app = Bottle()
 
         self.app.mount('/record', self.recorder)
-
-        self.app.delete('/delete', callback=self.delete)
-        self.app.get('/rename', callback=self.rename)
 
         debug(True)
 
@@ -238,8 +235,8 @@ class WebRecRecorder(object):
             to_coll_key = self.info_keys['coll'].format(user=to_user, coll=to_coll)
             from_coll_key = self.info_keys['coll'].format(user=from_user, coll=from_coll)
 
-            to_rec_list_key = self.rec_list_key_templ.format(user=to_user, coll=to_coll)
-            from_rec_list_key = self.rec_list_key_templ.format(user=from_user, coll=from_coll)
+            to_rec_map_key = self.rec_map_key_templ.format(user=to_user, coll=to_coll)
+            from_rec_map_key = self.rec_map_key_templ.format(user=from_user, coll=from_coll)
 
             info_key = self.info_keys['rec'].format(user=from_user, coll=from_coll, rec=from_rec)
 
@@ -247,8 +244,8 @@ class WebRecRecorder(object):
         else:
             info_key = self.info_keys['coll'].format(user=from_user, coll=from_coll)
 
-            to_rec_list_key = self.rec_list_key_templ.format(user=to_user)
-            from_rec_list_key = self.rec_list_key_templ.format(user=from_user)
+            to_rec_map_key = self.rec_map_key_templ.format(user=to_user)
+            from_rec_map_key = self.rec_map_key_templ.format(user=from_user)
 
             to_id = to_coll
 
@@ -274,8 +271,8 @@ class WebRecRecorder(object):
 
             # if collection or user names different, update list
             if to_rec == '*' and (to_user_key != from_user_key or to_coll != from_coll):
-                pi.srem(from_rec_list_key, from_coll)
-                pi.sadd(to_rec_list_key, to_coll)
+                pi.srem(from_rec_map_key, from_coll)
+                pi.sadd(to_rec_map_key, to_coll)
 
             # change coll size if moving rec and different colls
             if to_rec != '*' and to_coll_key != from_coll_key:
@@ -284,8 +281,8 @@ class WebRecRecorder(object):
 
             # update coll list
             if to_rec != '*':
-                pi.srem(from_rec_list_key, from_rec)
-                pi.sadd(to_rec_list_key, to_rec)
+                pi.srem(from_rec_map_key, from_rec)
+                pi.sadd(to_rec_map_key, to_rec)
 
             # check if usage stats need updating
             if (from_user.startswith(self.temp_prefix) and not
@@ -423,12 +420,12 @@ class WebRecRecorder(object):
 
         with redis_pipeline(self.redis) as pi:
             if type == 'coll':
-                rec_list_key = self.rec_list_key_templ.format(user=user)
-                pi.srem(rec_list_key, coll)
+                rec_map_key = self.rec_map_key_templ.format(user=user)
+                pi.srem(rec_map_key, coll)
 
             elif type == 'rec':
-                rec_list_key = self.rec_list_key_templ.format(user=user, coll=coll)
-                pi.srem(rec_list_key, rec)
+                rec_map_key = self.rec_map_key_templ.format(user=user, coll=coll)
+                pi.srem(rec_map_key, rec)
 
             if length > 0:
                 user_key = self.info_keys['user'].format(user=user)
@@ -440,35 +437,6 @@ class WebRecRecorder(object):
 
             for key in keys_to_del:
                 pi.delete(key)
-
-    def handle_delete_local(self, data):
-        data = json.loads(data)
-
-        delete_list = data.get('delete_list', [])
-
-        for filename in delete_list:
-            if os.path.isfile(filename):
-                try:
-                    self.recorder.writer.close_file(filename)
-                    print('Deleting ' + filename)
-                    os.remove(filename)
-                except Exception as e:
-                    print(e)
-
-        delete_user = data.get('delete_user')
-        if not delete_user:
-            return
-
-        user_path = self.warc_path_templ.format(user=delete_user)
-        user_path += '*.*'
-
-        for filename in glob.glob(user_path):
-            try:
-                print('Deleting Local WARC: ' + filename)
-                os.remove(filename)
-
-            except Exception as e:
-                print(e)
 
 
 # ============================================================================

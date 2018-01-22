@@ -20,7 +20,7 @@ from webrecorder.session import Session
 
 from cork import AAAException
 
-from six.moves.urllib.parse import quote
+from six.moves.urllib.parse import quote, urlsplit
 from six.moves import range
 
 from pywb.utils.canonicalize import calc_search_range
@@ -245,19 +245,21 @@ class LoginManagerMixin(object):
         self.redis.hset(key, 'desc', desc)
 
     def delete_user(self, user):
-        if not self.is_anon(user) and not self.is_superuser():
-            self.assert_user_is_owner(user)
+        coll_map_key = self.coll_map_key.format(user=user)
+        colls = self.redis.hvals(coll_map_key)
 
-        # Check for mailing list & removal endpoint
-        if self.mailing_list and self.remove_on_delete:
-            self.remove_from_mailing_list(self.get_user_email(user))
+        for coll in colls:
+            self.delete_collection(user, coll)
 
-        res = self._send_delete('user', user)
-        if res and not self.is_anon(user):
-            # delete from cork!
+        if not self.is_anon(user):
+            if not self.is_superuser():
+                self.assert_user_is_owner(user)
+
+            # Check for mailing list & removal endpoint
+            if self.mailing_list and self.remove_on_delete:
+                self.remove_from_mailing_list(self.get_user_email(user))
+
             self.cork.user(user).delete()
-
-        return res
 
     def get_size_allotment(self, user):
         user_key = self.user_key.format(user=user)
@@ -442,7 +444,31 @@ class LoginManagerMixin(object):
         key = self.user_skip_key.format(user=user, url=url)
         r = self.redis.setex(key, self.skip_key_secs, 1)
 
-    def rename(self, user, coll, new_coll, rec='*', new_rec='*',
+    def rename_recording(self, user,
+                         from_coll, from_rec_name,
+                         to_coll, to_rec_name, to_rec_title=None, rec=None):
+        if not rec:
+            rec = self.recs_map.name_to_id(from_coll, from_rec_name)
+
+        if not from_coll or not rec:
+            return None
+
+        to_rec_title = to_rec_title or to_rec_name
+
+        res = self.recs_map.rename(rec, from_coll, to_coll,
+                                   from_rec_name, to_rec_name, to_rec_title)
+
+        if from_coll != to_coll:
+            try:
+                size = int(self.redis.hget(self.rec_info_key.format(rec=rec), 'size'))
+                self.redis.hincrby(self.coll_info_key.format(coll=from_coll), 'size', -size)
+                self.redis.hincrby(self.coll_info_key.format(coll=to_coll), 'size', size)
+            except Exception as e:
+                print('Failed Size Update: ' + str(e))
+
+        return res
+
+    def rename_old(self, user, coll, new_coll, rec='*', new_rec='*',
                new_user='', title='', is_move=False):
 
         if not new_user:
@@ -687,7 +713,6 @@ class AccessManagerMixin(object):
         raise HTTPError(404, 'No Such User')
 
     def assert_can_read(self, user, coll):
-        print(user, coll)
         if not self.can_read_coll(user, coll):
             raise HTTPError(404, 'No Read Access')
             #raise ValidationException('No Read Access')
@@ -759,10 +784,14 @@ class RecManagerMixin(object):
         self.rec_info_key = config['info_key_templ']['rec']
 
         self.rec_map_key = config['rec_map_key_templ']
-        self.recs_map = RedisIdMapper(self.redis, 'recs', self.rec_map_key)
+        self.recs_map = RedisIdMapper(self.redis, 'recs', self.rec_map_key, 'coll')
 
         self.open_rec_key = config['open_rec_key_templ']
         self.open_rec_ttl = int(config['open_rec_ttl'])
+
+        self.warc_key_templ = config['warc_key_templ']
+        self.del_templ = config['del_templ']
+        self.del_q = 'q:del:{target}'
 
         self.page_key = config['page_key_templ']
         self.cdxj_key = config['cdxj_key_templ']
@@ -772,6 +801,14 @@ class RecManagerMixin(object):
         self.dyn_stats_key_templ = config['dyn_stats_key_templ']
         self.dyn_stats_secs = config['dyn_stats_secs']
         self.dyn_ref_templ = config['dyn_ref_templ']
+
+    def get_coll_rec_ids(self, user, coll_name, rec_name):
+        rec = ''
+        coll = self.colls_map.name_to_id(user, coll_name) or ''
+        if coll and rec_name != '*':
+            rec = self.recs_map.name_to_id(coll, rec_name)
+
+        return coll, rec
 
     def get_recording(self, user, coll, rec):
         self.assert_can_read(user, coll)
@@ -886,29 +923,79 @@ class RecManagerMixin(object):
 
         key_pattern = key_templ.format(user=user, coll=coll, rec='*')
 
-        rec_map_key = self.rec_map_key.format(user=user, coll=coll)
+        rec_map_key = self.rec_map_key.format(coll=coll)
         recs = self.redis.hvals(rec_map_key)
 
         return [key_pattern.replace('*', rec) for rec in recs]
 
     def get_recordings(self, user, coll):
-        keys = self._get_rec_keys(user, coll, self.rec_info_key)
+        self.assert_can_read(user, coll)
+
+        rec_map_key = self.rec_map_key.format(coll=coll)
+        rec_map = self.redis.hgetall(rec_map_key)
+
+        rec_infos = self.rec_info_key.format(rec='*')
 
         pi = self.redis.pipeline(transaction=False)
-        for rec in keys:
+
+        for name, rec in rec_map.items():
+            rec = rec_infos.replace('*', rec)
             pi.hgetall(rec)
 
         all_recs = pi.execute()
 
         all_rec_list = []
-        for rec, data in zip(keys, all_recs):
+        for (name, rec), data in zip(rec_map.items(), all_recs):
             recording = self._fill_recording(user, coll, rec, data)
             if recording:
+                recording['id'] = name
+                recording['uid'] = rec
                 all_rec_list.append(recording)
 
         return all_rec_list
 
-    def delete_recording(self, user, coll, rec):
+    def delete_recording(self, user, coll, rec, many=False):
+        if not many:
+            self.assert_can_admin(user, coll)
+
+        # queue warcs for deletion
+        warc_key = self.warc_key_templ.format(rec=rec)
+
+        for n, v in self.redis.hgetall(warc_key).items():
+            parts = urlsplit(v)
+            if parts.scheme == 'http':
+                del_q = self.del_q.format(target=parts.netloc)
+            elif parts.scheme:
+                del_q = self.del_q.format(target=parts.scheme)
+            else:
+                del_q = self.del_q.format(target='nginx')
+
+            self.redis.rpush(del_q, v)
+
+        del_rec_keys = self.del_templ['rec'].format(rec=rec)
+
+        try:
+            size = int(self.redis.hget(self.rec_info_key.format(rec=rec), 'size'))
+        except Exception as e:
+            size = 0
+            print('Failed Size Get: ' + str(e))
+
+        if size:
+            self.redis.hincrby(self.coll_info_key.format(coll=coll), 'size', -size)
+            self.redis.hincrby(self.user_key.format(user=user), 'size', -size)
+
+        deleted = False
+
+        for key in self.redis.scan_iter(del_rec_keys, count=100):
+            self.redis.delete(key)
+            deleted = True
+
+        if not many:
+            self.sync_coll_index(user, coll, exists=True, do_async=True)
+
+        return deleted
+
+    def delete_recording_old(self, user, coll, rec):
         self.assert_can_admin(user, coll)
 
         res = self._send_delete('rec', user, coll, rec)
@@ -926,11 +1013,11 @@ class RecManagerMixin(object):
         pi.sadd(ra_key, source_id)
 
     def _res_url_templ(self, base_url, params, url):
-        rec = params['rec_orig']
+        rec = params['rec']
         if not rec or rec == '*':
-            rec = '<all>'
+            rec = '0'
         return base_url.format(user=params['user'],
-                               coll=params['coll_orig'],
+                               coll=params['coll'],
                                rec=rec,
                                id=params['id']) + url
 
@@ -963,8 +1050,8 @@ class RecManagerMixin(object):
 
     def get_dyn_stats(self, user, coll, rec, sesh_id, url):
         params = {'user': user,
-                  'coll_orig': coll,
-                  'rec_orig': rec,
+                  'coll': coll,
+                  'rec': rec,
                   'id': sesh_id}
 
         dyn_stats_key = self._res_url_templ(self.dyn_stats_key_templ,
@@ -1184,7 +1271,7 @@ class CollManagerMixin(object):
         self.coll_info_key = config['info_key_templ']['coll']
 
         self.coll_map_key = config['coll_map_key_templ']
-        self.colls_map = RedisIdMapper(self.redis, 'colls', self.coll_map_key)
+        self.colls_map = RedisIdMapper(self.redis, 'colls', self.coll_map_key, 'user')
 
         self.coll_cdxj_key = config['coll_cdxj_key_templ']
         self.coll_cdxj_ttl = int(config['coll_cdxj_ttl'])
@@ -1331,13 +1418,33 @@ class CollManagerMixin(object):
 
         return all_colls
 
-    def delete_collection(self, user, coll):
-        if self.is_anon(user):
-            return self.delete_user(user)
+    def delete_collection(self, user, coll, rec, many=False):
+        if not many:
+            self.assert_can_admin(user, coll)
 
-        self.assert_can_admin(user, coll)
+        recs = self._get_rec_keys(user, coll, '*')
 
-        return self._send_delete('coll', user, coll)
+        for rec in recs:
+            self.delete_recording(user, coll, rec, many=True)
+
+        try:
+            size = int(self.redis.hget(self.coll_info_key.format(coll=coll), 'size'))
+        except Exception as e:
+            size = 0
+            print('Failed Size Get: ' + str(e))
+
+        if size:
+            self.redis.hincrby(self.user_key.format(user=user), 'size', -size)
+
+        deleted = False
+
+        del_coll_keys = self.del_templ['coll'].format(coll=coll)
+
+        for key in self.redis.scan_iter(del_coll_keys, count=100):
+            self.redis.delete(key)
+            deleted = True
+
+        return deleted
 
     def set_coll_prop(self, user, coll, prop_name, prop_value):
         self.assert_can_admin(user, coll)
@@ -1492,7 +1599,7 @@ class Base(object):
         self.download_paths = config['download_paths']
         self.INT_KEYS = ('size', 'created_at', 'updated_at')
 
-    def get_content_inject_info(self, user, coll, rec):
+    def get_content_inject_info(self, user, coll, coll_name, rec, rec_name):
         info = {}
 
         coll_key = self.coll_info_key.format(user=user, coll=coll)
@@ -1500,25 +1607,25 @@ class Base(object):
         # recording
         if rec != '*' and rec:
             rec_key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
-            rec = quote(rec)
+            rec_name = quote(rec_name)
             info['rec_title'], info['size'] = self.redis.hmget(rec_key, ['title', 'size'])
             if info.get('rec_title'):
                 info['rec_title'] = quote(info['rec_title'], safe='/ ')
             else:
-                info['rec_title'] = rec
-            info['rec_id'] = rec
+                info['rec_title'] = rec_name
+            info['rec_id'] = rec_name
         else:
             info['size'] = self.redis.hget(coll_key, 'size')
 
         # collection
-        coll = quote(coll)
-        info['coll_id'] = coll
+        coll_name = quote(coll_name)
+        info['coll_id'] = coll_name
         info['coll_title'] = self.redis.hget(coll_key, 'title')
 
         if info.get('coll_title'):
             info['coll_title'] = quote(info['coll_title'], safe='/ ')
         else:
-            info['coll_title'] = coll
+            info['coll_title'] = coll_name
 
         info['coll_desc'] = quote(self.redis.hget(coll_key, 'desc'))
 

@@ -54,11 +54,11 @@ class CollsController(BaseController):
 
             return {'collections': coll_list}
 
-        @self.app.get('/api/v1/collections/<coll>')
-        def get_collection(coll):
+        @self.app.get('/api/v1/collections/<coll_name>')
+        def get_collection(coll_name):
             user = self.get_user(api=True)
 
-            return self.get_collection_info(user, coll)
+            return self.get_collection_info(user, coll_name)
 
         @self.app.delete('/api/v1/collections/<coll>')
         def delete_collection(coll):
@@ -197,27 +197,29 @@ class CollsController(BaseController):
                 self.redirect(self.get_path(user, coll))
 
         # Collection view (all recordings)
-        @self.app.get(['/<user>/<coll>', '/<user>/<coll>/'])
+        @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])
         @self.jinja2_view('collection_info.html')
-        def coll_info(user, coll):
-            return self.get_collection_info_for_view(user, coll)
+        def coll_info(user, coll_name):
+            return self.get_collection_info_for_view(user, coll_name)
 
-        @self.app.get(['/<user>/<coll>/<rec_list:re:([\w,-]+)>', '/<user>/<coll>/<rec_list:re:([\w,-]+)>/'])
+        @self.app.get(['/<user>/<coll_name>/<rec_list:re:([\w,-]+)>', '/<user>/<coll_name>/<rec_list:re:([\w,-]+)>/'])
         @self.jinja2_view('collection_info.html')
-        def coll_info(user, coll, rec_list):
+        def coll_info(user, coll_name, rec_list):
             rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
-            return self.get_collection_info_for_view(user, coll, rec_list)
+            return self.get_collection_info_for_view(user, coll_name, rec_list)
 
-    def get_collection_info_for_view(self, user, coll, rec_list=None):
+    def get_collection_info_for_view(self, user, coll_name, rec_list=None):
         self.redir_host()
-        result = self.get_collection_info(user, coll, rec_list)
+        result = self.get_collection_info(user, coll_name, rec_list)
         if not result or result.get('error_message'):
             self._raise_error(404, 'Collection not found')
 
         return result
 
-    def get_collection_info(self, user, coll, rec_list=None):
+    def get_collection_info(self, user, coll_name, rec_list=None):
         try:
+            coll = self.manager.collection_by_name(user, coll_name)
+            assert(coll)
             collection = self.manager.get_collection(user, coll)
             assert(collection)
         except:
@@ -232,13 +234,14 @@ class CollsController(BaseController):
         result['size_remaining'] = self.manager.get_size_remaining(user)
         result['user'] = self.get_view_user(user)
         result['coll'] = coll
+        result['coll_name'] = coll_name
         result['bookmarks'] = []
 
         result['rec_title'] = ''
         result['coll_title'] = quote(result['collection']['title'])
 
         for rec in result['collection']['recordings']:
-           rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
+           rec['pages'] = self.manager.list_pages(user, coll, rec.pop('uid'))
            result['bookmarks'].extend(rec['pages'])
 
         if not result['collection'].get('desc'):

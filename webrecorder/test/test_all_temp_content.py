@@ -20,6 +20,7 @@ from re import sub
 from six.moves.urllib.parse import urlsplit, quote
 
 from webrecorder.rec.tempchecker import TempChecker
+from webrecorder.rec.storagecommitter import StorageCommitter
 from webrecorder.rec.worker import Worker
 from webrecorder.redisman import init_manager_for_cli
 from webrecorder.session import Session
@@ -37,6 +38,8 @@ class TestTempContent(FullStackTests):
         'c:{coll}:recs',
         'u:{user}:info',
         'u:{user}:colls',
+        'n:colls:count',
+        'n:recs:count',
         'h:roles',
         'h:defaults',
         'h:temp-usage',
@@ -62,13 +65,19 @@ class TestTempContent(FullStackTests):
 
         cls.dyn_stats = []
 
+        cls.temp_coll = None
+
         cls.worker = Worker(TempChecker)
         gevent.spawn(cls.worker.run)
+
+        cls.worker2 = Worker(StorageCommitter)
+        gevent.spawn(cls.worker2.run)
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
         cls.seshmock.stop()
         cls.worker.stop()
+        cls.worker2.stop()
 
         super(TestTempContent, cls).teardown_class(*args, **kwargs)
 
@@ -76,32 +85,65 @@ class TestTempContent(FullStackTests):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]
         return keylist
 
-    def _assert_rec_keys(self, user, coll_name, rec_list, url='', replay_coll=True):
+    @classmethod
+    def _init_temp_coll(cls):
+        cls.temp_coll = cls.redis.hget('u:{user}:colls'.format(user=cls.anon_user), 'temp')
+
+    def _assert_rec_keys(self, user, coll_name, rec_list, url='', replay_coll=True, del_q=False,
+                         check_stats=False):
         exp_keys = []
 
-        #self.redis.hget('u:colls', coll_name)
+        coll = self.temp_coll
+        rec_map = 'c:{coll}:recs'.format(coll=coll)
 
-        for rec in rec_list:
+        for rec_name in rec_list:
+            rec = self.redis.hget(rec_map, rec_name)
             exp_keys.extend(self._get_redis_keys(self.REDIS_KEYS, user, coll, rec))
 
         if replay_coll:
             exp_keys.append('c:{coll}:cdxj'.format(user=user, coll=coll))
 
+        if del_q:
+            exp_keys.append('q:del:nginx')
+
+        if check_stats:
+            self._check_dyn_stats(exp_keys)
+
         if url:
-            self._add_dyn_stat(user, coll, rec_list[-1], url)
+            self._add_dyn_stat(user, coll, rec, url)
         exp_keys.extend(self.dyn_stats)
 
         res_keys = self.redis.keys()
 
         assert set(exp_keys) == set(res_keys)
 
+    def _get_coll_rec_id(self, user, coll_name, rec_name):
+        coll = self.temp_coll
+        rec_map = 'c:{coll}:recs'.format(coll=coll)
+        rec = self.redis.hget(rec_map, rec_name) or '0'
+        return coll, rec
+
     def _add_dyn_stat(self, user, coll, rec, url):
         self.dyn_stats.append(self.PAGE_STATS.format(user=user, coll=coll,
-                                                      rec=rec, url=url))
+                                                     rec=rec, url=url))
 
-    def _assert_size_all_eq(self, user, coll, rec):
-        r_info = 'r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec)
-        c_info = 'c:{user}:{coll}:info'.format(user=user, coll=coll)
+    def _check_dyn_stats(self, exp_keys):
+        new_stats = []
+        for stat in self.dyn_stats:
+            prefix = ':'.join(stat.split(':', 2)[0:2])
+            if prefix == 'r:0' or any(key.startswith(prefix) for key in exp_keys):
+                new_stats.append(stat)
+
+        self.dyn_stats = new_stats
+        print(new_stats)
+
+    def _assert_size_all_eq(self, user, coll_name, rec_name):
+        coll = self.temp_coll
+        rec_map = 'c:{coll}:recs'.format(coll=self.temp_coll)
+        rec = self.redis.hget(rec_map, rec_name) or '0'
+
+        r_info = 'r:{rec}:info'.format(user=user, coll=coll, rec=rec)
+        c_info = 'c:{coll}:info'.format(user=user, coll=coll)
         u_info = 'u:{user}:info'.format(user=user)
 
         size = self.redis.hget(r_info, 'size')
@@ -110,6 +152,11 @@ class TestTempContent(FullStackTests):
         assert size == self.redis.hget(u_info, 'size')
 
         assert self.redis.hget(r_info, 'updated_at') is not None
+
+    def _get_warc_key_len(self, user, coll, rec):
+        coll, rec = self._get_coll_rec_id(user, coll, rec)
+        warc_key = 'r:{rec}:warc'.format(rec=rec)
+        return self.redis.hlen(warc_key)
 
     def _get_anon(self, url, status=None):
         return self.testapp.get('/' + self.anon_user + url, status=status)
@@ -131,6 +178,8 @@ class TestTempContent(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
 
         assert self.testapp.cookies['__test_sesh'] != ''
+
+        self._init_temp_coll()
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
@@ -160,11 +209,13 @@ class TestTempContent(FullStackTests):
         res = self._get_anon('/temp/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
-        self._add_dyn_stat(self.anon_user, 'temp', '<all>', 'http://httpbin.org/get?food=bar')
+        coll, rec = self._get_coll_rec_id(self.anon_user, 'temp', None)
+        self._add_dyn_stat(self.anon_user, coll, rec, 'http://httpbin.org/get?food=bar')
+
         self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
         assert '"food": "bar"' in res.text, res.text
 
-        assert int(self.redis.ttl('c:{user}:temp:cdxj'.format(user=self.anon_user)) > 0)
+        assert int(self.redis.ttl('c:{coll}:cdxj'.format(coll=coll)) > 0)
 
     def test_anon_record_sanitize_redir(self):
         res = self.testapp.get('/_new/temp/My%20Rec2/record/http://httpbin.org/get?bood=far')
@@ -209,8 +260,7 @@ class TestTempContent(FullStackTests):
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == 2
 
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-rec2')
-        assert self.redis.hlen(warc_key) == 1
+        assert self._get_warc_key_len(user, 'temp', 'my-rec2') == 1
 
     def test_anon_record_3(self):
         res = self.testapp.get('/$record/temp/my-recording/mp_/http://httpbin.org/get?good=far')
@@ -234,8 +284,7 @@ class TestTempContent(FullStackTests):
 
         self._assert_rec_keys(user, 'temp', ['my-recording', 'my-rec2', 'my-recording-2'])
 
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-recording-2')
-        assert self.redis.hlen(warc_key) == 1
+        assert self._get_warc_key_len(user, 'temp', 'my-recording-2') == 1
 
     def test_anon_unicode_record_1(self):
         test_url = 'http://httpbin.org/get?bood=far'
@@ -269,8 +318,7 @@ class TestTempContent(FullStackTests):
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == len(all_recs)
 
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='вэбрекордэр')
-        assert self.redis.hlen(warc_key) == 1
+        assert self._get_warc_key_len(user, 'temp', 'вэбрекордэр') == 1
 
         # test non-protocol url replay routing
         res = self._get_anon(
@@ -313,8 +361,7 @@ class TestTempContent(FullStackTests):
 
         self._assert_rec_keys(user, 'temp', all_recs)
 
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='test--ok')
-        assert self.redis.hlen(warc_key) == 1
+        assert self._get_warc_key_len(user, 'temp', 'test--ok') == 1
 
     def test_anon_html_format_record(self):
         test_url = 'http://httpbin.org/get?boof=mar'
@@ -347,10 +394,8 @@ class TestTempContent(FullStackTests):
 
         self._assert_rec_keys(user, 'temp', all_recs)
 
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='test--ok')
-        assert self.redis.hlen(warc_key) == 1
-
-        info = self.manager.get_content_inject_info(self.anon_user, 'temp', 'emmyem-test-recording')
+        coll, rec = self._get_coll_rec_id(user, 'temp', 'emmyem-test-recording')
+        info = self.manager.get_content_inject_info(self.anon_user, coll, 'temp', rec, 'emmyem-test-recording')
         assert info['rec_id'] == 'emmyem-test-recording'
         assert info['rec_title'] == '%3Cem%3EMy%3C/em%3E test recording'
 
@@ -383,7 +428,7 @@ class TestTempContent(FullStackTests):
         assert 'my-recording' in res.text
         assert 'Temporary Collection' in res.text
 
-        assert 'http://httpbin.org/get?food=bar' in res.text
+        assert 'http://httpbin.org/get?food=bar' in res.text, res.text
         assert 'http://httpbin.org/get?bood=far' in res.text
 
     def test_anon_rec_info(self):
@@ -487,8 +532,10 @@ class TestTempContent(FullStackTests):
 
         assert '"bood": "far"' in res.text, res.text
 
+        coll, rec = self._get_coll_rec_id(self.anon_user, 'temp', 'my-recording-3')
+
         # update dyn stats
-        self._add_dyn_stat(self.anon_user, 'temp', 'my-recording-3', 'http://httpbin.org/get?bood=far')
+        self._add_dyn_stat(self.anon_user, 'temp', rec, 'http://httpbin.org/get?bood=far')
         self._assert_rec_keys(self.anon_user, 'temp', all_recs)
 
         # coll replay
@@ -498,7 +545,7 @@ class TestTempContent(FullStackTests):
         assert '"bood": "far"' in res.text, res.text
 
         # update dyn stats
-        self._add_dyn_stat(self.anon_user, 'temp', '<all>', 'http://httpbin.org/get?bood=far')
+        self._add_dyn_stat(self.anon_user, 'temp', '0', 'http://httpbin.org/get?bood=far')
         self._assert_rec_keys(self.anon_user, 'temp', all_recs)
 
 
@@ -535,8 +582,7 @@ class TestTempContent(FullStackTests):
 
         self._assert_size_all_eq(user, 'temp', 'my-recording-3')
 
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='my-recording-3')
-        assert self.redis.hlen(warc_key) == 1
+        assert self._get_warc_key_len(user, 'temp', 'my-recording-3') == 1
 
         def assert_one_warc():
             anon_dir = os.path.join(self.warcs_dir, user)
@@ -544,11 +590,7 @@ class TestTempContent(FullStackTests):
 
         self.sleep_try(0.1, 10.0, assert_one_warc)
 
-        self.dyn_stats = [stat for stat in self.dyn_stats
-                           if ('my-recording:' not in stat and
-                               'вэбрекордэр:' not in stat)]
-
-        self._assert_rec_keys(user, 'temp', ['my-recording-3'])
+        self._assert_rec_keys(user, 'temp', ['my-recording-3'], del_q=True, check_stats=True)
 
         res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user), status=404)
 

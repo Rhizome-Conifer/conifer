@@ -76,15 +76,15 @@ class ContentController(BaseController, RewriterApp):
         # REDIRECTS
         @self.app.route('/record/<wb_url:path>', method='ANY')
         def redir_new_temp_rec(wb_url):
-            coll = 'temp'
-            rec = self.DEF_REC_NAME
+            coll_name = 'temp'
+            rec_name = self.DEF_REC_NAME
             wb_url = self.add_query(wb_url)
-            return self.do_create_new_and_redir(coll, rec, wb_url, 'record')
+            return self.do_create_new_and_redir(coll_name, rec_name, wb_url, 'record')
 
-        @self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
-        def redir_new_record(coll, rec, wb_url):
+        @self.app.route('/$record/<coll_name>/<rec_name>/<wb_url:path>', method='ANY')
+        def redir_new_record(coll_name, rec_name, wb_url):
             wb_url = self.add_query(wb_url)
-            return self.do_create_new_and_redir(coll, rec, wb_url, 'record')
+            return self.do_create_new_and_redir(coll_name, rec_name, wb_url, 'record')
 
         # TAGS
         @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
@@ -308,13 +308,11 @@ class ContentController(BaseController, RewriterApp):
 
         try:
             kwargs = info
-            kwargs['coll_orig'] = kwargs['coll']
             kwargs['coll'] = quote(kwargs['coll'])
-            kwargs['rec_orig'] = kwargs['rec']
-            kwargs['rec'] = quote(kwargs['rec'], '/*')
+            kwargs['rec'] = kwargs['rec']
 
             if kwargs['type'] == 'replay-coll':
-                self.manager.sync_coll_index(kwargs['user'], kwargs['coll_orig'], exists=False,
+                self.manager.sync_coll_index(kwargs['user'], kwargs['coll'], exists=False,
                                              do_async=False)
 
             url = self.add_query(url)
@@ -401,23 +399,16 @@ class ContentController(BaseController, RewriterApp):
             coll_title = coll
             coll_name = self.sanitize_title(coll_title)
 
-        try:
-            coll = self.manager.collection_by_name(user, coll_name)
-            if not coll:
-                coll, coll_name, _ = self.manager.create_collection(user, coll_name, coll_title)
+        coll = self.manager.collection_by_name(user, coll_name)
+        if not coll:
+            coll, coll_name, _ = self.manager.create_collection(user, coll_name, coll_title)
 
-            rec, rec_name = self._create_new_rec(user, coll, rec_title, mode)
-
-            print('COLL', coll, coll_name)
-            print('REC', rec, rec_name)
-        except:
-            import traceback
-            traceback.print_exc()
+        rec, rec_name = self._create_new_rec(user, coll, rec_title, mode)
 
         if mode.startswith('extract:'):
-            patch_rec = self._create_new_rec(user, coll,
-                                             self.patch_of_name(rec_title),
-                                             'patch')
+            patch_rec, _ = self._create_new_rec(user, coll,
+                                                self.patch_of_name(rec_title),
+                                                'patch')
 
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
                                                              coll=coll_name,
@@ -470,11 +461,7 @@ class ContentController(BaseController, RewriterApp):
         frontend_cache_header = None
         patch_rec = ''
 
-
-        rec = ''
-        coll = self.manager.colls_map.name_to_id(user, coll_name)
-        if coll:
-            rec = self.manager.recs_map.name_to_id(coll, rec_name)
+        coll, rec = self.manager.get_coll_rec_ids(user, coll_name, rec_name)
 
         if type in self.MODIFY_MODES:
             if not self.manager.has_recording(user, coll, rec):
@@ -500,7 +487,8 @@ class ContentController(BaseController, RewriterApp):
                 raise HTTPError(402, 'Rate Limit')
 
             if inv_sources and inv_sources != '*':
-                patch_rec = self.patch_of_name(rec, True)
+                patch_rec_name = self.patch_of_name(rec, True)
+                patch_rec = self.manager.recs_map.name_to_id(coll, patch_rec_name)
 
         if type == 'replay-coll':
             res = self.manager.has_collection_is_public(user, coll)
@@ -542,11 +530,11 @@ class ContentController(BaseController, RewriterApp):
                                          do_async=False)
 
         kwargs = dict(user=user,
-                      coll_orig=coll,
                       id=sesh.get_id(),
-                      rec_orig=rec,
-                      coll=quote(coll),
-                      rec=quote(rec, safe='/*'),
+                      coll=coll,
+                      rec=rec,
+                      coll_name=quote(coll_name),
+                      rec_name=quote(rec_name, safe='/*'),
                       type=type,
                       sources=sources,
                       inv_sources=inv_sources,
@@ -695,7 +683,7 @@ class ContentController(BaseController, RewriterApp):
         cdx['rec'] = rec
 
     def get_query_params(self, wb_url, kwargs):
-        collection = self.manager.get_collection(kwargs['user'], kwargs['coll_orig'])
+        collection = self.manager.get_collection(kwargs['user'], kwargs['coll'])
         kwargs['rec_titles'] = dict((rec['id'], rec['title']) for rec in collection['recordings'])
 
         kwargs['user'] = self.get_view_user(kwargs['user'])
@@ -731,21 +719,27 @@ class ContentController(BaseController, RewriterApp):
         #self.get_session().update_expires()
 
         info = self.manager.get_content_inject_info(kwargs['user'],
-                                                    kwargs['coll_orig'],
-                                                    kwargs['rec_orig'])
+                                                    kwargs['coll'], kwargs['coll_name'],
+                                                    kwargs['rec'], kwargs['rec_name'])
 
         return {'info': info,
                 'curr_mode': type,
+
                 'user': self.get_view_user(kwargs['user']),
+
                 'coll': kwargs['coll'],
-                'coll_orig': kwargs['coll_orig'],
-                'rec': kwargs['rec'],
-                'rec_orig': kwargs['rec_orig'],
+                'coll_name': kwargs['coll_name'],
                 'coll_title': info.get('coll_title', ''),
+
+                'rec': kwargs['rec'],
+                'rec_name': kwargs['rec_name'],
                 'rec_title': info.get('rec_title', ''),
+
                 'is_embed': kwargs.get('is_embed'),
                 'is_display': kwargs.get('is_display'),
+
                 'top_prefix': top_prefix,
+
                 'sources': kwargs.get('sources'),
                 'inv_sources': kwargs.get('inv_sources'),
                }
@@ -784,7 +778,7 @@ class ContentController(BaseController, RewriterApp):
 
             if not skip and source not in ('live', 'replay'):
                 ra_rec = unquote(resp_headers.get('Recorder-Rec', ''))
-                ra_rec = ra_rec or kwargs['rec_orig']
+                ra_rec = ra_rec or kwargs['rec']
 
         url = cdx.get('url')
         referrer = request.environ.get('HTTP_REFERER')

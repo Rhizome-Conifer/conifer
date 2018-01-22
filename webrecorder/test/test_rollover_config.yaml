@@ -10,6 +10,7 @@ session.key: __test_sesh
 
 session.key_template: test_key
 
-dyn_stats_key_templ: 'r:{user}:{coll}:{rec}:<sesh_id>:stats:'
-dyn_ref_templ: 'r:{user}:{coll}:{rec}:<sesh_id>:ref:'
+dyn_stats_key_templ: 'r:{rec}:<sesh_id>:stats:'
+dyn_ref_templ: 'r:{rec}:<sesh_id>:ref:'
+
 

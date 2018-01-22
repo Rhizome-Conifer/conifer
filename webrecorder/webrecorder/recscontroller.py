@@ -29,55 +29,66 @@ class RecsController(BaseController):
 
             return {'recordings': rec_list}
 
-        @self.app.get('/api/v1/recordings/<rec>')
-        def get_recording(rec):
+        @self.app.get('/api/v1/recordings/<rec_name>')
+        def get_recording(rec_name):
             user, coll = self.get_user_coll(api=True)
+            rec = self._ensure_rec_exists(user, coll, rec_name)
 
-            return self.get_rec_info(user, coll, rec)
+            rec_info = self.get_rec_info(user, coll, rec, rec_name)
+            if rec_info.get('recording'):
+                rec_info['recording']['id'] = rec_name
 
-        @self.app.delete('/api/v1/recordings/<rec>')
-        def delete_recording(rec):
+            return rec_info
+
+        @self.app.delete('/api/v1/recordings/<rec_name>')
+        def delete_recording(rec_name):
             user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec_name)
 
-            self.manager.delete_recording(user, coll, rec)
+            if self.manager.delete_recording(user, coll, rec):
+                return {'deleted_id': rec_name}
+            else:
+                return {}
 
-            return {'deleted_id': rec}
-
-        @self.app.post('/api/v1/recordings/<rec>/rename/<new_rec_title:path>')
-        def rename_recording(rec, new_rec_title):
+        @self.app.post('/api/v1/recordings/<rec_name>/rename/<new_rec_title:path>')
+        def rename_recording(rec_name, new_rec_title):
             user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec)
+            rec = self._ensure_rec_exists(user, coll, rec_name)
 
-            new_rec = self.sanitize_title(new_rec_title)
+            new_rec_name = self.sanitize_title(new_rec_title)
 
-            if not new_rec:
+            if not new_rec_name:
                 err_msg = 'invalid recording title ' + new_rec_title
                 return {'error_message': err_msg}
 
-            if rec == new_rec:
-                self.manager.set_rec_prop(user, coll, rec, 'title', new_rec_title)
-                return {'rec_id': rec, 'coll_id': coll, 'title': new_rec_title}
+            #if rec_name == new_rec_name:
+            #    self.manager.set_rec_prop(user, coll, rec, 'title', new_rec_title)
+            #    return {'rec_id': rec, 'coll_id': coll, 'title': new_rec_title}
 
-            #if self.manager.has_recording(user, coll, new_rec):
-            #    err_msg = 'rec "{0}" already exists'.format(new_rec)
-            #    return {'error_message': err_msg}
+            res = self.manager.rename_recording(user=user,
+                                                from_coll=coll,
+                                                from_rec_name=rec_name,
+                                                to_coll=coll,
+                                                to_rec_name=new_rec_name,
+                                                to_rec_title=new_rec_title,
+                                                rec=rec)
 
-            res = self.manager.rename(user=user,
-                                      coll=coll,
-                                      new_coll=coll,
-                                      rec=rec,
-                                      new_rec=new_rec,
-                                      title=new_rec_title)
+            if not res:
+                return {'error_message': 'not found'}
 
-            return res
+            coll_name = request.query.getunicode('coll')
+
+            return {'coll_id': coll_name,
+                    'rec_id': res[1],
+                    'title': res[2]
+                   }
 
 
         @self.app.post('/api/v1/recordings/<rec_title>/move/<new_coll_title>')
         def move_recording(rec_title, new_coll_title):
             user, coll = self.get_user_coll(api=True)
-            rec = self.sanitize_title(rec_title)
-            rec = self._ensure_rec_exists(user, coll, rec)
+            rec_name = self.sanitize_title(rec_title)
+            rec = self._ensure_rec_exists(user, coll, rec_name)
 
             new_coll = self.sanitize_title(new_coll_title)
 
@@ -201,18 +212,21 @@ class RecsController(BaseController):
                 self.flash_message('There was an error deleting {0}'.format(rec))
                 self.redirect(self.get_path(user, coll, rec))
 
-    def get_rec_info(self, user, coll, rec):
+    def get_rec_info(self, user, coll, rec, rec_name):
         recording = self.manager.get_recording(user, coll, rec)
 
         if not recording:
             response.status = 404
-            return {'error_message': 'Recording not found', 'id': rec}
+            return {'error_message': 'Recording not found', 'id': rec_name}
 
         return {'recording': recording}
 
-    def get_rec_info_for_new(self, user, coll, rec, action):
+    def get_rec_info_for_new(self, user, coll_name, rec_name, action):
         result = {'curr_mode': 'new', 'action': action}
         result['user'] = self.get_view_user(user)
+
+        coll, rec = self.manager.get_coll_rec_ids(user, coll_name, rec_name)
+
         result['coll'] = coll
         result['rec'] = rec
 
@@ -232,11 +246,10 @@ class RecsController(BaseController):
         return result
 
     def _ensure_rec_exists(self, user, coll, rec_name):
-        print('REC ID', coll, rec_name)
         rec = self.manager.recs_map.name_to_id(coll, rec_name)
         if not self.manager.has_recording(user, coll, rec):
             self._raise_error(404, 'Recording not found', api=True,
-                              id=rec)
+                              id=rec_name)
 
         return rec
 

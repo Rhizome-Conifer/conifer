@@ -85,21 +85,35 @@ class RedisHashTable(object):
 
 # ============================================================================
 class RedisIdMapper(object):
-    def __init__(self, redis, typename, name_key):
+    def __init__(self, redis, typename, name_key, param):
         self.redis = redis
         self.typename = typename
         self.counter = 'n:{typename}:count'.format(typename=typename)
 
         self.name_key = name_key
+        self.param_name = param
 
     def create_new(self, param, name, title):
         id_ = self.redis.incr(self.counter)
 
+        return self._set_name_no_dupe(param, name, title, id_)
+
+    def rename(self, id_, from_param, to_param,
+               from_name, to_name, to_title):
+
+        res = self._set_name_no_dupe(to_param, to_name, to_title, id_)
+
+        name_map = self.name_key.format_map({self.param_name: from_param})
+        self.redis.hdel(name_map, from_name)
+
+        return res
+
+    def _set_name_no_dupe(self, param, name, title, id_):
         dupe_count = 1
         orig_title = title
         orig_name = name
 
-        name_map = self.name_key.format(param)
+        name_map = self.name_key.format_map({self.param_name: param})
 
         while True:
             if self.redis.hsetnx(name_map, name, id_) == 1:
@@ -112,9 +126,7 @@ class RedisIdMapper(object):
         return id_, name, title
 
     def name_to_id(self, param, name):
-        name_map = self.name_key.format(param)
-        print(name_map, name)
+        name_map = self.name_key.format_map({self.param_name: param})
 
         return self.redis.hget(name_map, name)
-
 

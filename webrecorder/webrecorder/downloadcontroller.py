@@ -38,7 +38,11 @@ class DownloadController(BaseController):
         def logged_in_download_coll_warc(user, coll):
             self.redir_host()
 
-            return self.handle_download(user, coll, '*')
+            try:
+                return self.handle_download(user, coll, '*')
+            except:
+                import traceback
+                traceback.print_exc()
 
     def create_warcinfo(self, creator, title, metadata, source, filename):
         for name, value in iteritems(source):
@@ -67,8 +71,8 @@ class DownloadController(BaseController):
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
         metadata = {}
         metadata['pages'] = self.manager.list_pages(user,
-                                                    collection['id'],
-                                                    recording['id'])
+                                                    collection['uid'],
+                                                    recording['uid'])
         metadata['type'] = 'recording'
         if recording.get('rec_type'):
             metadata['rec_type'] = recording['rec_type']
@@ -76,17 +80,22 @@ class DownloadController(BaseController):
         title = quote(collection['title']) + '/' + quote(recording['title'])
         return self.create_warcinfo(user, title, metadata, recording, filename)
 
-    def handle_download(self, user, coll, rec):
+    def handle_download(self, user, coll_name, rec):
+        coll = self.manager.collection_by_name(user, coll_name)
+
         self.manager.assert_can_write(user, coll)
 
-        collection = self.manager.get_collection(user, coll, rec)
+        collection = self.manager.get_collection(user, coll)
+
         if not collection:
             self._raise_error(404, 'Collection not found',
                               id=coll)
 
+        collection['uid'] = coll
+
         now = timestamp_now()
 
-        name = collection['id']
+        name = coll_name
         if rec != '*':
             rec_list = rec.split(',')
             if len(rec_list) == 1:
@@ -122,7 +131,7 @@ class DownloadController(BaseController):
             for recording, warcinfo, _ in infos:
                 yield warcinfo
 
-                for warc_path in self._iter_all_warcs(user, coll, recording['id']):
+                for warc_path in self._iter_all_warcs(user, coll, recording['uid']):
                     try:
                         fh = loader.load(warc_path)
                     except:

@@ -134,7 +134,47 @@ class StorageCommitter(object):
         except:
             pass
 
+    def process_deletes(self, q_name):
+        del_q = 'q:del:{name}'.format(name=q_name)
+        print('PROCESSING DELETES', del_q)
+
+        while True:
+            filename = self.redis.lpop(del_q)
+            if not filename:
+                break
+
+            if os.path.isfile(filename):
+                try:
+                    self.redis.publish('close_file', filename)
+                    #self.recorder.writer.close_file(filename)
+                    print('Deleting: ' + filename)
+                    os.remove(filename)
+                except Exception as e:
+                    print(e)
+
+        return
+
+        delete_user = data.get('delete_user')
+        if not delete_user:
+            return
+
+        user_path = self.warc_path_templ.format(user=delete_user)
+        user_path += '*.*'
+
+        for filename in glob.glob(user_path):
+            try:
+                print('Deleting Local WARC: ' + filename)
+                os.remove(filename)
+
+            except Exception as e:
+                print(e)
+
+
+
     def __call__(self):
+        self.process_deletes('s3')
+        self.process_deletes('nginx')
+
         for cdxj_key in self.redis.scan_iter(self.cdxj_key):
             self.process_cdxj_key(cdxj_key)
 

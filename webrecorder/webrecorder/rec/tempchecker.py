@@ -48,12 +48,6 @@ class TempChecker(object):
                                             rec='*',
                                             type='user')
 
-        #message = {'type': 'user',
-        #           'user': temp,
-        #           'coll': 'temp',
-        #           'rec': '*'}
-
-        #self.sesh_redis.publish('delete', json.dumps(message))
         try:
             requests.delete(delete_url)
         except:

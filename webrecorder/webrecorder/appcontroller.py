@@ -151,10 +151,7 @@ class AppController(BaseController):
         jinja_env.globals['static_path'] = 'static'
 
         def get_coll(context):
-            coll = context.get('coll_orig', '')
-            if not coll:
-                coll = context.get('coll', '')
-            return coll
+            return context.get('coll', '')
 
         def get_user(context):
             u = context.get('user', '')
@@ -200,7 +197,9 @@ class AppController(BaseController):
 
         @contextfunction
         def is_owner(context):
-            return self.manager.is_owner(get_user(context))
+            res = self.manager.is_owner(get_user(context))
+            print(res)
+            return res
 
         @contextfunction
         def can_write(context):
