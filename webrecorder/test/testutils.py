@@ -2,11 +2,13 @@ from gevent.monkey import patch_all; patch_all()
 
 from pywb.warcserver.test.testutils import FakeRedisTests, BaseTestClass
 from pywb.warcserver.test.testutils import TempDirTests, to_path
+from pywb.utils.loaders import load_overlay_config
 
 import webtest
 import os
 import itertools
 import time
+import gevent
 
 from warcio.bufferedreaders import ChunkedDataReader
 from io import BytesIO
@@ -16,11 +18,16 @@ from webrecorder.appcontroller import AppController
 
 from webrecorder.fullstackrunner import FullStackRunner
 
+from webrecorder.rec.tempchecker import TempChecker
+from webrecorder.rec.storagecommitter import StorageCommitter
+from webrecorder.rec.worker import Worker
+
 
 # ============================================================================
 class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     @classmethod
-    def setup_class(cls, extra_config_file='test_no_invites_config.yaml', init_anon=True,
+    def setup_class(cls, extra_config_file='test_no_invites_config.yaml',
+                    init_anon=True,
                     **kwargs):
         super(BaseWRTests, cls).setup_class()
 
@@ -46,6 +53,22 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.set_nx_env('REQUIRE_INVITES', 'true')
         cls.set_nx_env('EMAIL_SENDER', 'test@localhost')
         cls.set_nx_env('EMAIL_SMTP_URL', 'smtp://webrectest@mail.localhost:test@localhost:25')
+
+        def load_wr_config():
+            config = load_overlay_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
+            config['dyn_stats_key_templ'] = {
+                 'rec': 'r:{rec}:<sesh_id>:stats:',
+                 'coll': 'c:{coll}:<sesh_id>:stats:'
+            }
+
+            config['dyn_ref_templ'] = {
+                 'rec': 'r:{rec}:<sesh_id>:ref:',
+                 'coll': 'c:{coll}:<sesh_id>:ref:',
+            }
+            return config
+
+        import webrecorder.appcontroller
+        webrecorder.appcontroller.load_wr_config = load_wr_config
 
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'], decode_responses=True)
 
@@ -119,8 +142,31 @@ class FullStackTests(BaseWRTests):
         return warcin
 
     @classmethod
+    def setup_class(cls, *args, **kwargs):
+        super(FullStackTests, cls).setup_class(*args, **kwargs)
+
+        storage_worker = kwargs.get('storage_worker')
+        temp_worker = kwargs.get('temp_worker')
+
+        cls.storage_worker = Worker(StorageCommitter) if storage_worker else None
+        if cls.storage_worker:
+            gevent.spawn(cls.storage_worker.run)
+
+        cls.temp_worker = Worker(TempChecker) if temp_worker else None
+        if cls.temp_worker:
+            gevent.spawn(cls.temp_worker.run)
+
+    @classmethod
     def teardown_class(cls, *args, **kwargs):
+        if cls.temp_worker:
+            cls.temp_worker.stop()
+
+        if cls.storage_worker:
+            cls.storage_worker.stop()
+
         cls.runner.close()
         super(FullStackTests, cls).teardown_class(*args, **kwargs)
+
+
 
 

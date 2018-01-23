@@ -3,6 +3,8 @@ from functools import wraps
 from six.moves.urllib.parse import quote
 from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
 
+from webrecorder.models import User
+
 import re
 import os
 
@@ -83,6 +85,25 @@ class BaseController(object):
             self._raise_error(404, 'No such collection', api=api)
 
         return user, coll
+
+    def load_user_coll(self, api=False, redir_check=True):
+        user = self.get_user(api=api, redir_check=redir_check)
+
+        coll_name = request.query.getunicode('coll')
+        if not coll_name:
+            self._raise_error(400, 'Collection must be specified',
+                              api=api)
+
+        if self.manager.is_anon(user):
+            if coll_name != 'temp':
+                self._raise_error(404, 'No such collection', api=api)
+
+        user = User(my_id=user, redis=self.manager.redis)
+        collection = user.get_collection_by_name(coll_name)
+        if not collection:
+            self._raise_error(404, 'No such collection', api=api)
+
+        return user, collection
 
     def _raise_error(self, code, message, api=False, **kwargs):
         result = {'error_message': message}

@@ -176,8 +176,14 @@ rate_limit_key: 'ipr:{ip}:{H}'
 
 cookie_key_templ: 'r:{rec}:{id}:cookie:'
 
-dyn_stats_key_templ: 'r:{rec}:{id}:stats:'
-dyn_ref_templ: 'r:{rec}:{id}:ref:'
+dyn_stats_key_templ:
+    'rec': 'r:{rec}:{id}:stats:'
+    'coll': 'c:{coll}:{id}:stats:'
+
+dyn_ref_templ:
+    'rec': 'r:{rec}:{id}:ref:'
+    'coll': 'c:{coll}:{id}:ref:'
+
 dyn_stats_secs: 330
 
 warc_key_templ: 'r:{rec}:warc'

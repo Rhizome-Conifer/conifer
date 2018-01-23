@@ -3,6 +3,7 @@ import redis
 import base64
 
 from warcio.timeutils import sec_to_timestamp, timestamp_now
+from webrecorder.models import User, Collection, Recording
 
 
 # ============================================================================
@@ -33,7 +34,6 @@ class StorageCommitter(object):
         self.storage_class_map = {}
 
         self.storage_key_templ = config['storage_key_templ']
-        self.info_key_templ = config['info_key_templ']
 
         self.temp_prefix = config['temp_prefix']
 
@@ -61,7 +61,7 @@ class StorageCommitter(object):
     def is_temp(self, user):
         return user.startswith(self.temp_prefix)
 
-    def commit_file(self, user, coll, rec, dirname, filename, obj_type,
+    def commit_file(self, user, collection, dirname, filename, obj_type,
                     update_key, curr_value, update_prop=None):
 
         if self.is_temp(user):
@@ -73,21 +73,21 @@ class StorageCommitter(object):
 
         full_filename = os.path.join(dirname, filename)
 
-        storage = self.get_storage(user, coll, rec)
+        storage = self.get_storage(user, collection)
         if not storage:
             return True
 
         commit_wait = self.commit_wait_templ.format(filename=full_filename)
 
         if self.redis.get(commit_wait) != b'1':
-            if not storage.upload_file(user, coll, rec, filename, full_filename, obj_type):
+            if not storage.upload_file(user.name, filename, full_filename, obj_type):
                 return False
 
             self.redis.setex(commit_wait, self.commit_wait_secs, 1)
 
         # already uploaded, see if it is accessible
         # if so, finalize and delete original
-        remote_url = storage.get_valid_remote_url(user, coll, rec, filename, obj_type)
+        remote_url = storage.get_valid_remote_url(user, filename, obj_type)
         if not remote_url:
             print('Not yet available: {0}'.format(full_filename))
             return False
@@ -136,7 +136,6 @@ class StorageCommitter(object):
 
     def process_deletes(self, q_name):
         del_q = 'q:del:{name}'.format(name=q_name)
-        print('PROCESSING DELETES', del_q)
 
         while True:
             filename = self.redis.lpop(del_q)
@@ -185,7 +184,14 @@ class StorageCommitter(object):
         if self.redis.exists(base_key + ':open'):
             return
 
-        _, user, coll, rec = base_key.split(':', 3)
+        #_, user, coll, rec = base_key.split(':', 3)
+        _, rec = base_key.split(':', 1)
+
+        recording = Recording(my_id=rec,
+                              redis=self.redis)
+
+        collection = recording.get_owner_collection()
+        user = collection.get_prop('owner')
 
         user_dir = os.path.join(self.record_root_dir, user)
 
@@ -203,13 +209,13 @@ class StorageCommitter(object):
 
         cdxj_filename = self.write_cdxj(warc_key, user_dir, cdxj_key, timestamp)
 
-        all_done = self.commit_file(user, coll, rec, user_dir,
+        all_done = self.commit_file(user, collection, user_dir,
                                     cdxj_filename, 'indexes', warc_key,
                                     cdxj_filename, self.info_index_key)
 
         for warc_filename in warcs.keys():
             value = warcs[warc_filename]
-            done = self.commit_file(user, coll, rec, user_dir,
+            done = self.commit_file(user, collection, user_dir,
                                     warc_filename, 'warcs', warc_key,
                                     value)
 
@@ -230,13 +236,11 @@ class StorageCommitter(object):
 
         return False
 
-    def get_storage(self, user, coll, rec):
+    def get_storage(self, user, collection):
         if self.is_temp(user):
             return None
 
-        info_key = self.info_key_templ['coll'].format(user=user, coll=coll)
-
-        storage_type = self.redis.hget(info_key, 'storage_type')
+        storage_type = collection.get_prop('storage_type')
 
         config = None
 

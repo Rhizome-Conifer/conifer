@@ -4,6 +4,8 @@ import json
 import glob
 import requests
 
+from webrecorder.models import User
+
 
 # ============================================================================
 class TempChecker(object):
@@ -12,7 +14,7 @@ class TempChecker(object):
 
         self.redis_base_url = os.environ['REDIS_BASE_URL']
 
-        self.data_redis = redis.StrictRedis.from_url(self.redis_base_url)
+        self.data_redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
 
         # beaker always uses db 0, so using db 0
         #self.redis_base_url = self.redis_base_url.rsplit('/', 1)[0] + '/0'
@@ -32,26 +34,30 @@ class TempChecker(object):
     def _delete_if_expired(self, temp):
         sesh = self.sesh_redis.get('t:' + temp)
         if sesh:
-            sesh = sesh.decode('utf-8')
             if self.sesh_redis.get(self.sesh_key_template.format(sesh)):
                 #print('Skipping active temp ' + temp)
                 return False
 
             self.sesh_redis.delete('t:' + temp)
 
-        record_host = os.environ['RECORD_HOST']
+        #record_host = os.environ['RECORD_HOST']
         print('Deleting ' + temp)
 
-        delete_url = self.delete_url.format(record_host=record_host,
-                                            user=temp,
-                                            coll='temp',
-                                            rec='*',
-                                            type='user')
+        user = User(my_id=temp,
+                    redis=self.data_redis)
 
-        try:
-            requests.delete(delete_url)
-        except:
-            print('Deleted Failed: ' + delete_url)
+        user.delete_me()
+
+        #delete_url = self.delete_url.format(record_host=record_host,
+        #                                    user=temp,
+        #                                    coll='temp',
+        #                                    rec='*',
+        #                                    type='user')
+
+        #try:
+        #    requests.delete(delete_url)
+        #except:
+        #    print('Deleted Failed: ' + delete_url)
 
         return True
 
@@ -84,7 +90,6 @@ class TempChecker(object):
         #print('Temp Key Check')
 
         for redis_key in self.data_redis.scan_iter(match=temp_match):
-            redis_key = redis_key.decode('utf-8')
             temp_user = redis_key.rsplit(':', 2)[1]
 
             if temp_user not in temps_removed:

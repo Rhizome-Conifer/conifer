@@ -36,10 +36,8 @@ class S3Storage(object):
         s3_url += self.bucket_name + '/' + remote_path
         return s3_url
 
-    def get_valid_remote_url(self, user, coll, rec, filename, obj_type):
+    def get_valid_remote_url(self, user, filename, obj_type):
         remote_path = self.remote_path_templ.format(user=user,
-                                                    coll=coll,
-                                                    rec=rec,
                                                     obj_type=obj_type,
                                                     filename=filename)
 
@@ -49,10 +47,8 @@ class S3Storage(object):
         else:
             return None
 
-    def upload_file(self, user, coll, rec, filename, full_filename, obj_type):
+    def upload_file(self, user, filename, full_filename, obj_type):
         remote_path = self.remote_path_templ.format(user=user,
-                                                    coll=coll,
-                                                    rec=rec,
                                                     obj_type=obj_type,
                                                     filename=filename)
 

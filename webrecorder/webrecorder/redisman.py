@@ -798,9 +798,11 @@ class RecManagerMixin(object):
         self.tags_key = config['tags_key']
 
         self.ra_key = config['ra_key']
+
         self.dyn_stats_key_templ = config['dyn_stats_key_templ']
-        self.dyn_stats_secs = config['dyn_stats_secs']
         self.dyn_ref_templ = config['dyn_ref_templ']
+
+        self.dyn_stats_secs = config['dyn_stats_secs']
 
     def get_coll_rec_ids(self, user, coll_name, rec_name):
         rec = ''
@@ -1012,12 +1014,14 @@ class RecManagerMixin(object):
 
         pi.sadd(ra_key, source_id)
 
-    def _res_url_templ(self, base_url, params, url):
+    def _res_url_templ(self, base_templ, params, url):
         rec = params['rec']
         if not rec or rec == '*':
-            rec = '0'
-        return base_url.format(user=params['user'],
-                               coll=params['coll'],
+            base_url = base_templ['coll']
+        else:
+            base_url = base_templ['rec']
+
+        return base_url.format(coll=params['coll'],
                                rec=rec,
                                id=params['id']) + url
 
@@ -1276,6 +1280,7 @@ class CollManagerMixin(object):
         self.coll_cdxj_key = config['coll_cdxj_key_templ']
         self.coll_cdxj_ttl = int(config['coll_cdxj_ttl'])
         self.info_index_key = config['info_index_key']
+
         self.record_root_dir = os.environ['RECORD_ROOT']
 
         self.upload_key = config['upload_key_templ']

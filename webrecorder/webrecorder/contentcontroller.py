@@ -14,6 +14,8 @@ from webrecorder.basecontroller import BaseController
 from webrecorder.load.wamloader import WAMLoader
 from webrecorder.utils import get_bool
 
+from webrecorder.models import User, Collection, Recording
+
 
 # ============================================================================
 class ContentController(BaseController, RewriterApp):
@@ -399,20 +401,21 @@ class ContentController(BaseController, RewriterApp):
             coll_title = coll
             coll_name = self.sanitize_title(coll_title)
 
-        coll = self.manager.collection_by_name(user, coll_name)
-        if not coll:
-            coll, coll_name, _ = self.manager.create_collection(user, coll_name, coll_title)
+        the_user = User(my_id=user, redis=self.manager.redis)
+        collection = the_user.get_collection_by_name(coll_name)
+        if not collection:
+            collection = the_user.create_collection(coll_name, title=coll_title)
 
-        rec, rec_name = self._create_new_rec(user, coll, rec_title, mode)
+        recording = self._create_new_rec(collection, rec_title, mode)
 
         if mode.startswith('extract:'):
-            patch_rec, _ = self._create_new_rec(user, coll,
-                                                self.patch_of_name(rec_title),
-                                                'patch')
+            patch_recording = self._create_new_rec(collection,
+                                                   self.patch_of_name(rec_title),
+                                                   'patch')
 
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
-                                                             coll=coll_name,
-                                                             rec=rec_name,
+                                                             coll=collection.name,
+                                                             rec=recording.name,
                                                              mode=mode,
                                                              url=wb_url)
         return self.redirect(new_url)
@@ -428,12 +431,10 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
-    def _create_new_rec(self, user, coll, title, mode):
+    def _create_new_rec(self, collection, title, mode):
         rec_name = self.sanitize_title(title)
         rec_type = 'patch' if mode == 'patch' else None
-        rec, rec_name, _ = self.manager.create_recording(user, coll, rec_name, title,
-                                                         rec_type=rec_type)
-        return rec, rec_name
+        return collection.create_recording(rec_name, title=title, rec_type=rec_type)
 
     def patch_of_name(self, name, is_id=False):
         if not is_id:
@@ -461,7 +462,16 @@ class ContentController(BaseController, RewriterApp):
         frontend_cache_header = None
         patch_rec = ''
 
-        coll, rec = self.manager.get_coll_rec_ids(user, coll_name, rec_name)
+        #coll, rec = self.manager.get_coll_rec_ids(user, coll_name, rec_name)
+        the_user = User(my_id=user, redis=self.manager.redis)
+        coll = None
+        rec = None
+        collection = the_user.get_collection_by_name(coll_name)
+        if collection:
+            coll = collection.my_id
+            recording = collection.get_recording_by_name(rec_name)
+            if recording:
+                rec = recording.my_id
 
         if type in self.MODIFY_MODES:
             if not self.manager.has_recording(user, coll, rec):

@@ -2,6 +2,7 @@ from bottle import request, response
 from six.moves.urllib.parse import quote
 
 from webrecorder.basecontroller import BaseController
+from webrecorder.models import User, Collection, Recording
 
 
 # ============================================================================
@@ -9,51 +10,45 @@ class RecsController(BaseController):
     def init_routes(self):
         @self.app.post('/api/v1/recordings')
         def create_recording():
-            user, coll = self.get_user_coll(api=True)
+            user, collection = self.load_user_coll(api=True)
 
             title = request.forms.getunicode('title')
 
-            coll_title = request.forms.getunicode('coll_title')
+            rec_title = self.sanitize_title(title)
 
-            rec = self.sanitize_title(title)
+            recording = collection.create_recording(rec_title)
 
-            recording = self.manager.create_recording(user, coll, rec, title, coll_title)
-
-            return {'recording': recording}
+            return {'recording': recording.serialize()}
 
         @self.app.get('/api/v1/recordings')
         def get_recordings():
-            user, coll = self.get_user_coll(api=True)
+            user, collection = self.load_user_coll(api=True)
 
-            rec_list = self.manager.get_recordings(user, coll)
+            recs = collection.get_recordings()
 
-            return {'recordings': rec_list}
+            return {'recordings': [rec.serialize() for rec in recs]}
 
         @self.app.get('/api/v1/recordings/<rec_name>')
         def get_recording(rec_name):
-            user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec_name)
+            user, collection, recording = self.load_recording(rec_name)
 
-            rec_info = self.get_rec_info(user, coll, rec, rec_name)
-            if rec_info.get('recording'):
-                rec_info['recording']['id'] = rec_name
-
-            return rec_info
+            if recording:
+                return {'recording': recording.serialize()}
+            else:
+                return {'error_message': 'Recording not found', 'id': rec_name}
 
         @self.app.delete('/api/v1/recordings/<rec_name>')
         def delete_recording(rec_name):
-            user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec_name)
+            user, collection, recording = self.load_recording(rec_name)
 
-            if self.manager.delete_recording(user, coll, rec):
+            if collection.remove_recording(recording, user, delete=True):
                 return {'deleted_id': rec_name}
-            else:
-                return {}
+
+            return {}
 
         @self.app.post('/api/v1/recordings/<rec_name>/rename/<new_rec_title:path>')
         def rename_recording(rec_name, new_rec_title):
-            user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec_name)
+            user, collection, recording = self.load_recording(rec_name)
 
             new_rec_name = self.sanitize_title(new_rec_title)
 
@@ -61,28 +56,15 @@ class RecsController(BaseController):
                 err_msg = 'invalid recording title ' + new_rec_title
                 return {'error_message': err_msg}
 
-            #if rec_name == new_rec_name:
-            #    self.manager.set_rec_prop(user, coll, rec, 'title', new_rec_title)
-            #    return {'rec_id': rec, 'coll_id': coll, 'title': new_rec_title}
+            new_rec_name = collection.rename(recording, new_rec_name)
 
-            res = self.manager.rename_recording(user=user,
-                                                from_coll=coll,
-                                                from_rec_name=rec_name,
-                                                to_coll=coll,
-                                                to_rec_name=new_rec_name,
-                                                to_rec_title=new_rec_title,
-                                                rec=rec)
-
-            if not res:
+            if not new_rec_name:
                 return {'error_message': 'not found'}
 
-            coll_name = request.query.getunicode('coll')
-
-            return {'coll_id': coll_name,
-                    'rec_id': res[1],
-                    'title': res[2]
+            return {'coll_id': collection.name,
+                    'rec_id': recording.name,
+                    'title': new_rec_title,
                    }
-
 
         @self.app.post('/api/v1/recordings/<rec_title>/move/<new_coll_title>')
         def move_recording(rec_title, new_coll_title):
@@ -244,6 +226,19 @@ class RecsController(BaseController):
             result['rec_title'] = recording['title']
 
         return result
+
+    def load_recording(self, rec_name):
+        user, collection = self.load_user_coll(api=True)
+        if not user or not collection:
+            self._raise_error(404, 'Recording not found', api=True,
+                              id=rec_name)
+
+        recording = collection.get_recording_by_name(rec_name)
+        if not recording:
+            self._raise_error(404, 'Recording not found', api=True,
+                              id=rec_name)
+
+        return user, collection, recording
 
     def _ensure_rec_exists(self, user, coll, rec_name):
         rec = self.manager.recs_map.name_to_id(coll, rec_name)
