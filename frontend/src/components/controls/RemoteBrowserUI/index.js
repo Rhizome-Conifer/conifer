@@ -8,7 +8,7 @@ import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 import CBrowser from 'shared/js/browser_controller';
 
 
-class RemoteBrowser extends Component {
+class RemoteBrowserUI extends Component {
 
   static contextTypes = {
     currMode: PropTypes.string
@@ -245,4 +245,4 @@ class RemoteBrowser extends Component {
   }
 }
 
-export default RemoteBrowser;
+export default RemoteBrowserUI;

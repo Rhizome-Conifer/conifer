@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import './style.scss';
@@ -76,7 +76,7 @@ function FAQ() {
 
           <h4 className="q">There has to be some tiny print, right?</h4>
           <p className="a">
-            <Link to="policies">Yes!</Link>
+            <Link to="/_policies">Yes!</Link>
           </p>
 
           <h4 className="q">Who created Webrecorder?</h4>

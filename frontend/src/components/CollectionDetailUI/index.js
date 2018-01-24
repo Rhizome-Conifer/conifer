@@ -24,12 +24,11 @@ import './style.scss';
 
 class CollectionDetailUI extends Component {
   static propTypes = {
+    auth: PropTypes.object,
     bookmarks: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
-    auth: PropTypes.object,
-    params: PropTypes.object,
     recordings: PropTypes.object,
     searchText: PropTypes.string,
     searchBookmarks: PropTypes.func

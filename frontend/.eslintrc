@@ -53,7 +53,8 @@
     "new-cap": 0,
     "quote-props": 1,
     "quotes": 1,
-    "no-underscore-dangle": 0
+    "no-underscore-dangle": 0,
+    "react/jsx-first-prop-new-line": 1
   },
   "plugins": [
     "react", "import"

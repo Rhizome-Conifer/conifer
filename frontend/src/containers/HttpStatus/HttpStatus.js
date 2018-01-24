@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import SetStatus from 'components/SetStatus';
+
 
 class HttpStatus extends Component { // eslint-disable-line
   static defaultProps = {
@@ -13,9 +15,12 @@ class HttpStatus extends Component { // eslint-disable-line
 
   render() {
     const { status } = this.props;
+    console.log('rendering 404');
 
     return (
-      <p>Oops, Error { status }</p>
+      <SetStatus code={404}>
+        <p>Oops, Error { status }</p>
+      </SetStatus>
     );
   }
 }

@@ -5,10 +5,10 @@ import compression from 'compression';
 import http from 'http';
 import proxy from 'http-proxy-middleware';
 import path from 'path';
+import { parse as parseUrl } from 'url';
 import PrettyError from 'pretty-error';
-import createHistory from 'react-router/lib/createMemoryHistory';
-import { match } from 'react-router';
-import { syncHistoryWithStore } from 'react-router-redux';
+import StaticRouter from 'react-router/StaticRouter';
+
 import { ReduxAsyncConnect, loadOnServer } from 'redux-connect';
 import { Provider } from 'react-redux';
 
@@ -57,25 +57,9 @@ app.use((req, res) => {
     webpackIsomorphicTools.refresh();
   }
   const client = new ApiClient(req);
-  const memoryHistory = createHistory(req.originalUrl);
-  const store = createStore(memoryHistory, client);
-
-  const createSelectLocationState = () => {
-    let prevRoutingState;
-    let prevRoutingStateJS;
-    return (state) => {
-      const routingState = state.app.get('routing'); // or state.routing
-      if (typeof prevRoutingState === 'undefined' || prevRoutingState !== routingState) {
-        prevRoutingState = routingState;
-        prevRoutingStateJS = routingState.toJS();
-      }
-      return prevRoutingStateJS;
-    };
-  };
-
-  const history = syncHistoryWithStore(memoryHistory, store, {
-    selectLocationState: createSelectLocationState()
-  });
+  const store = createStore(client);
+  const url = req.originalUrl || req.url;
+  const location = parseUrl(url);
 
   function hydrateOnClient() {
     res.send(`<!doctype html>\n
@@ -87,31 +71,29 @@ app.use((req, res) => {
     return;
   }
 
-  match({ history, routes: baseRoute(store), location: req.originalUrl }, (error, redirectLocation, renderProps) => {
-    if (redirectLocation) {
-      res.redirect(redirectLocation.pathname + redirectLocation.search);
-    } else if (error) {
-      console.error('ROUTER ERROR:', pretty.render(error));
-      res.status(500);
-      hydrateOnClient();
-    } else if (renderProps) {
-      loadOnServer({ ...renderProps, store }).then(() => {
-        const component = (
-          <Provider store={store} key="provider">
-            <ReduxAsyncConnect {...renderProps} />
-          </Provider>
-        );
+  loadOnServer({ store, location, routes: baseRoute }).then(() => {
+    const context = {};
 
-        res.status(200);
+    const component = (
+      <Provider store={store} key="provider">
+        <StaticRouter location={location} context={context}>
+          <ReduxAsyncConnect routes={baseRoute} />
+        </StaticRouter>
+      </Provider>
+    );
 
-        global.navigator = { userAgent: req.headers['user-agent'] };
+    const outputHtml = ReactDOM.renderToString(
+      <BaseHtml
+        assets={webpackIsomorphicTools.assets()}
+        component={component}
+        store={store} />
+    );
 
-        res.send(`<!doctype html>\n
-          ${ReactDOM.renderToString(<BaseHtml assets={webpackIsomorphicTools.assets()} component={component} store={store} />)}`); // eslint-disable-line max-len
-      });
-    } else {
-      res.status(404).send('Not found');
-    }
+    res.status(context.status ? context.status : 200);
+
+    global.navigator = { userAgent: req.headers['user-agent'] };
+
+    res.send(`<!doctype html>\n ${outputHtml}`);
   });
 });
 

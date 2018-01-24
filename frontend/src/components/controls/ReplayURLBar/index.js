@@ -41,10 +41,12 @@ class ReplayURLBar extends Component {
         <form className="form-group-recorder-url">
           <div className="input-group containerized">
             <div className="input-group-btn rb-dropdown">
+              {/*
               <ReplayArrowButton
                 page={recordingIndex - 1 >= 0 ? bookmarks.get(recordingIndex - 1) : null}
                 params={params}
                 direction="left" />
+              */}
               <ReplayPageDisplay
                 index={recordingIndex}
                 total={bookmarks.size} />
@@ -58,12 +60,14 @@ class ReplayURLBar extends Component {
 
             <BookmarkList {...this.props} />
 
+            {/*
             <div className="input-group-btn hidden-xs">
               <ReplayArrowButton
                 page={recordingIndex + 1 < bookmarks.size ? bookmarks.get(recordingIndex + 1) : null}
                 params={params}
                 direction="right" />
             </div>
+           */}
           </div>
         </form>
       </div>

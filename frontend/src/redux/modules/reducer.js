@@ -5,7 +5,6 @@ import { reducer as reduxAsyncConnect } from 'redux-connect';
 import { reducer as searchReducer } from 'redux-search';
 
 import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
-import routerReducer from './routerReducer';
 
 import bugReport from './bugReport';
 import collection from './collection';
@@ -21,7 +20,6 @@ import user from './user';
 import userSignup from './userSignup';
 
 const makeAppReducer = () => combineImmutableReduers({
-  routing: routerReducer,
   auth,
   bugReport,
   collection,
@@ -47,8 +45,8 @@ export default (state, action) => {
   // wipe state after logout, or partially after login
   switch(action.type) {
     case LOGOUT_SUCCESS: {
-      const { reduxAsyncConnect, app: { auth, routing } } = state;
-      const stateMod = { reduxAsyncConnect, app: Map({ auth, routing }) };
+      const { reduxAsyncConnect, app: { auth } } = state;
+      const stateMod = { reduxAsyncConnect, routing, app: Map({ auth }) };
       return appReducer(stateMod, action);
     }
     // case LOGIN_SUCCESS: {

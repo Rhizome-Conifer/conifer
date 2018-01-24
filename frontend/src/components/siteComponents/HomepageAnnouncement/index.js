@@ -1,12 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 import './style.scss';
 
 const logo = require('./logo.png');
 
 
-function HomagepageAnnouncement() {
+function HomepageAnnouncement() {
   return (
     <div className="row">
       <div id="news-alert" className="alert alert-info col-xs-8 col-xs-push-2 col-sm-6 col-sm-push-3" role="alert">
@@ -25,4 +25,4 @@ function HomagepageAnnouncement() {
   );
 }
 
-export default HomagepageAnnouncement;
+export default HomepageAnnouncement;

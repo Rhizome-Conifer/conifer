@@ -28,9 +28,10 @@ class Replay extends Component {
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     bookmarks: PropTypes.object,
+    recording: PropTypes.object,
     recordingIndex: PropTypes.number,
     reqId: PropTypes.string,
-    params: PropTypes.object,
+    match: PropTypes.object,
     sidebarResize: PropTypes.bool,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -51,7 +52,7 @@ class Replay extends Component {
   }
 
   getChildContext() {
-    const { auth, params } = this.props;
+    const { auth, match: { params } } = this.props;
 
     return {
       currMode: this.mode,
@@ -65,7 +66,7 @@ class Replay extends Component {
   }
 
   render() {
-    const { activeBrowser, bookmarks, collection, dispatch, params, recording,
+    const { activeBrowser, bookmarks, collection, dispatch, match: { params }, recording,
             recordingIndex, reqId, sidebarResize, timestamp, url } = this.props;
     const { product } = this.context;
 
@@ -128,7 +129,7 @@ const initialData = [
   },
   {
     // set url and ts in store
-    promise: ({ location: { hash, search }, params: { ts, splat }, store: { dispatch } }) => {
+    promise: ({ location: { hash, search }, match: { params: { ts, splat } }, store: { dispatch } }) => {
       let timestamp = ts;
       let rb = null;
 
@@ -148,7 +149,7 @@ const initialData = [
     }
   },
   {
-    promise: ({ params, store: { dispatch, getState } }) => {
+    promise: ({ match: { params }, store: { dispatch, getState } }) => {
       const state = getState();
       const collection = state.app.get('collection');
       const { user, coll } = params;

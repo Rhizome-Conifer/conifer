@@ -1,34 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { applyRouterMiddleware, Router } from 'react-router';
+import BrowserRouter from 'react-router-dom/BrowserRouter';
 import { ReduxAsyncConnect } from 'redux-connect';
-import { useScroll } from 'react-router-scroll';
 
 
 function Root(props) {
-  const { client, history, routes } = props;
+  const { client, routes } = props;
 
   return (
-    <Router
-      key={module.hot && new Date()}
-      history={history}
-      routes={routes}
-      render={(renderProps) => {
-        return (
-          <ReduxAsyncConnect
-            {...renderProps}
-            helpers={{ client }}
-            filter={item => !item.deferred}
-            render={applyRouterMiddleware(useScroll())} />
-        );
-      }
-      } />
+    <BrowserRouter>
+      <ReduxAsyncConnect routes={routes} helpers={{ client }} />
+    </BrowserRouter>
   );
 }
 
 Root.propTypes = {
   client: PropTypes.object.isRequired,
-  history: PropTypes.object.isRequired,
   routes: PropTypes.oneOfType([
     PropTypes.array,
     PropTypes.object,

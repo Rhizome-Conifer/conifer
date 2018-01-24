@@ -11,7 +11,7 @@ import CollectionListUI from 'components/CollectionListUI';
 
 const preloadCollections = [
   {
-    promise: ({ params, store: { dispatch, getState } }) => {
+    promise: ({ match: { params }, store: { dispatch, getState } }) => {
       const state = getState();
       const collections = state.app.get('collections');
       const { user } = params;

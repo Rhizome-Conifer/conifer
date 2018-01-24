@@ -22,7 +22,7 @@ $collapsedWidth: 3rem;
         top: 0;
         background: transparent;
         border: 0;
-        z-index: 20;
+        z-index: 5;
         width: $collapsedWidth;
 
         &:focus {
@@ -41,7 +41,7 @@ $collapsedWidth: 3rem;
         bottom: 0;
         right: -$buffer;
         padding: 0 $buffer;
-        z-index: 10;
+        z-index: 5;
 
         &:after {
             content: '';

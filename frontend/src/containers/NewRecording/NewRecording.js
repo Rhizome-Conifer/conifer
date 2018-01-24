@@ -40,16 +40,18 @@ class NewRecording extends Component {
   render() {
     const { collection, extractable, params: { user, coll } } = this.props;
 
-    return [
-      <BreadcrumbsItem to={`/${user}`}>{ user }</BreadcrumbsItem>,
-      <BreadcrumbsItem to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>,
-      <BreadcrumbsItem to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>,
-      <BreadcrumbsItem to={`/${user}/${coll}/$new`}>Create a new recording</BreadcrumbsItem>,
+    return (
+      <React.Fragment>
+        <BreadcrumbsItem to={`/${user}`}>{ user }</BreadcrumbsItem>,
+        <BreadcrumbsItem to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>,
+        <BreadcrumbsItem to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>,
+        <BreadcrumbsItem to={`/${user}/${coll}/$new`}>Create a new recording</BreadcrumbsItem>,
 
-      <NewRecordingUI
-        collection={collection}
-        extractable={extractable} />
-    ];
+        <NewRecordingUI
+          collection={collection}
+          extractable={extractable} />
+      </React.Fragment>
+    );
   }
 }
 

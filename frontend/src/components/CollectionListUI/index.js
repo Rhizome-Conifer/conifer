@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
 import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
@@ -22,7 +22,7 @@ class CollectionListUI extends Component {
     collections: PropTypes.object,
     createNewCollection: PropTypes.func,
     orderedCollections: PropTypes.object,
-    params: PropTypes.object,
+    match: PropTypes.object,
     user: PropTypes.object
   };
 
@@ -41,19 +41,19 @@ class CollectionListUI extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { collections, params: { user } } = this.props;
+    const { collections, history, match: { params: { user } } } = this.props;
     const creatingCollection = collections.get('creatingCollection');
     const newCollection = nextProps.collections.get('newCollection');
 
     // if incoming prop has a newCollection object and we are currently creating
     // a collection, reroute to new collection
     if (newCollection && creatingCollection) {
-      this.context.router.push(`/${user}/${newCollection}/`);
+      history.push(`/${user}/${newCollection}/`);
     }
   }
 
   createCollection = (collTitle, isPublic) => {
-    const { createNewCollection, params: { user } } = this.props;
+    const { createNewCollection, match: { params: { user } } } = this.props;
 
     createNewCollection(user, collTitle, isPublic);
   }
@@ -67,7 +67,7 @@ class CollectionListUI extends Component {
   }
 
   render() {
-    const { auth, collections, orderedCollections, params, user } = this.props;
+    const { auth, collections, orderedCollections, match: { params }, user } = this.props;
     const { showModal } = this.state;
     const userParam = params.user;
 
@@ -137,6 +137,7 @@ class CollectionListUI extends Component {
           visible={showModal}
           createCollection={this.createCollection}
           creatingCollection={collections.get('creatingCollection')} />
+
       </div>
     );
   }

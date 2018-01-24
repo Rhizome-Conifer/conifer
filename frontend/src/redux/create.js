@@ -1,16 +1,12 @@
 import { createStore as _createStore, applyMiddleware, compose } from 'redux';
-import { routerMiddleware } from 'react-router-redux';
 import { reduxSearch } from 'redux-search';
 import { fromJS } from 'immutable';
 
 import createMiddleware from './middleware/clientMiddleware';
 
 
-export default function createStore(history, client, data) {
-  // Sync dispatched route actions to the history
-  const reduxRouterMiddleware = routerMiddleware(history);
-
-  const middleware = [createMiddleware(client), reduxRouterMiddleware];
+export default function createStore(client, data) {
+  const middleware = [createMiddleware(client)];
 
   const searchConfig = reduxSearch({
     resourceIndexes: {
@@ -55,7 +51,7 @@ export default function createStore(history, client, data) {
   if (data) {
     finalData = Object.assign(data, { app: fromJS(data.app) });
   }
-  const store = finalCreateStore(reducer, data);
+  const store = finalCreateStore(reducer, finalData);
 
   if (__DEVELOPMENT__ && module.hot) {
     module.hot.accept('./modules/reducer', () => {

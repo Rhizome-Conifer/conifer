@@ -4,6 +4,9 @@ import Helmet from 'react-helmet';
 import classNames from 'classnames';
 import { asyncConnect } from 'redux-connect';
 import { BreadcrumbsProvider, BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
+import matchPath from 'react-router-dom/matchPath';
+import renderRoutes from 'react-router-config/renderRoutes';
+
 
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
@@ -21,14 +24,11 @@ import './style.scss';
 // named export for tests
 export class App extends Component { // eslint-disable-line
 
-  static contextTypes = {
-    router: PropTypes.object
-  }
-
   static propTypes = {
-    children: PropTypes.node.isRequired,
     auth: PropTypes.object,
-    loaded: PropTypes.bool
+    loaded: PropTypes.bool,
+    route: PropTypes.object,
+    location: PropTypes.object,
   }
 
   static childContextTypes = {
@@ -61,23 +61,32 @@ export class App extends Component { // eslint-disable-line
   }
 
   componentWillMount() {
-    const { routes } = this.context.router;
-    const currMatch = routes[routes.length - 1];
-
     // set initial route
-    this.setState({ lastMatch: currMatch });
+    this.setState({ match: this.getActiveRoute(this.props.location.pathname) });
   }
 
   componentWillReceiveProps(nextProps) {
-    const { routes } = this.context.router;
-    const currMatch = routes[routes.length - 1];
+    if (this.props.loaded && !nextProps.loaded) {
+      this.setState({ lastMatch: this.state.match });
+    }
 
     if (!this.props.loaded && nextProps.loaded) {
-      if (!this.state.lastMatch || this.state.lastMatch.path !== currMatch.path) {
-        // set last matched route for classOverride check
-        this.setState({ lastMatch: currMatch });
+      const match = this.getActiveRoute(nextProps.location.pathname);
+
+      if (this.state.match.path !== match.path) {
+        this.setState({ match });
       }
     }
+  }
+
+  getActiveRoute = (url) => {
+    const { route: { routes } } = this.props;
+
+    const match = routes.find((route) => {
+      return matchPath(url, route);
+    });
+
+    return match;
   }
 
   componentDidCatch(error, info) {
@@ -85,11 +94,9 @@ export class App extends Component { // eslint-disable-line
   }
 
   render() {
-    const { routes } = this.context.router;
     const { loaded } = this.props;
-    const { error, info, lastMatch } = this.state;
+    const { error, info, lastMatch, match } = this.state;
 
-    const match = routes[routes.length - 1];
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
     const classOverride = match.classOverride;
     const lastClassOverride = lastMatch ? lastMatch.classOverride : classOverride;
@@ -142,7 +149,7 @@ export class App extends Component { // eslint-disable-line
                 </div>
               </div> :
               <section className={containerClasses}>
-                {this.props.children}
+                {renderRoutes(this.props.route.routes)}
               </section>
           }
           {
@@ -170,10 +177,10 @@ const initalData = [
   }
 ];
 
-const mapStateToProps = ({ reduxAsyncConnect, app }) => {
+const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
   return {
     auth: app.get('auth'),
-    loaded: reduxAsyncConnect.loaded
+    loaded
   };
 };
 

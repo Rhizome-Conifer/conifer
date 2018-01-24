@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 import Modal from 'components/Modal';
 
@@ -10,9 +10,9 @@ import './style.scss';
 
 class UserManagementUI extends Component {
 
-  static contextTypes = {
-    router: PropTypes.object
-  }
+  // static contextTypes = {
+  //   router: PropTypes.object
+  // }
 
   static propTypes = {
     auth: PropTypes.shape({
@@ -45,7 +45,7 @@ class UserManagementUI extends Component {
     if(this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
       if(!nextProps.auth.get('loginError')) {
         this.closeLogin();
-        setTimeout(() => this.context.router.replace('/'), 500);
+        //setTimeout(() => this.context.router.replace('/'), 500);
       } else {
         this.setState({ formError: true });
       }

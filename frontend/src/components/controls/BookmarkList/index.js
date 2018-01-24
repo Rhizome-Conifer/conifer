@@ -111,7 +111,9 @@ class BookmarkList extends Component {
             <InfoWidget />
             <span className="replay-date main-replay-date hidden-xs" onClick={this.toggle}>
               <TimeFormat dt={timestamp} />
+              {/*
               <span className="glyphicon glyphicon-triangle-bottom" />
+              */}
             </span>
           </div>
         </div>

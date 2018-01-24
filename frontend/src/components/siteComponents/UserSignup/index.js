@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Alert, Button, Checkbox, ControlLabel, Form,
          HelpBlock, FormControl, FormGroup } from 'react-bootstrap';

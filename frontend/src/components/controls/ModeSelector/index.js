@@ -36,16 +36,16 @@ class ModeSelector extends PureComponent {
     const { params: { coll, rec, user } } = this.props;
 
     if (this.context.currMode.indexOf('replay') !== -1) {
-      this.context.router.push(`/${user}/${coll}`);
+      this.context.router.history.push(`/${user}/${coll}`);
     } else {
-      this.context.router.push(`/${user}/${coll}/${rec}`);
+      this.context.router.history.push(`/${user}/${coll}/${rec}`);
     }
   }
 
   onReplay = () => {
     const { params: { coll, user }, ts, url } = this.props;
 
-    this.context.router.push(`/${user}/${coll}/${ts}/${url}`);
+    this.context.router.history.push(`/${user}/${coll}/${ts}/${url}`);
   }
 
   onPatch = () => {

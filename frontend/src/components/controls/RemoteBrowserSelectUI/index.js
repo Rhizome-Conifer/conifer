@@ -9,7 +9,7 @@ import { RemoteBrowserOption } from 'components/controls';
 import 'shared/scss/dropdown.scss';
 
 
-class RemoteBrowserSelect extends Component {
+class RemoteBrowserSelectUI extends Component {
 
   static propTypes = {
     accessed: PropTypes.number,
@@ -61,9 +61,9 @@ class RemoteBrowserSelect extends Component {
       const { user, coll, rec } = params;
 
       if (currMode.indexOf('replay') !== -1) {
-        this.context.router.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
+        this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
       } else if (['patch', 'record'].includes(currMode)) {
-        this.context.router.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id)}/${url}`);
+        this.context.router.history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id)}/${url}`);
       } else if (['extract', 'extract_only'].includes(currMode)) {
         // TODO: extract route
       }
@@ -118,4 +118,4 @@ class RemoteBrowserSelect extends Component {
   }
 }
 
-export default RemoteBrowserSelect;
+export default RemoteBrowserSelectUI;

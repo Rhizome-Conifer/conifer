@@ -14,6 +14,12 @@ import CollectionDetailUI from 'components/CollectionDetailUI';
 
 class CollectionDetail extends Component {
 
+  static propTypes = {
+    auth: PropTypes.object,
+    collection: PropTypes.object,
+    match: PropTypes.object
+  };
+
     // TODO move to HOC
   static childContextTypes = {
     canAdmin: PropTypes.bool,
@@ -21,7 +27,7 @@ class CollectionDetail extends Component {
   };
 
   getChildContext() {
-    const { auth, params: { user } } = this.props;
+    const { auth, match: { params: { user } } } = this.props;
     const username = auth.getIn(['user', 'username']);
 
     return {
@@ -31,7 +37,7 @@ class CollectionDetail extends Component {
   }
 
   render() {
-    const { collection, params: { user, coll } } = this.props;
+    const { collection, match: { params: { user, coll } } } = this.props;
 
     return [
       <BreadcrumbsItem key="a" to={`/${user}`}>{ user }</BreadcrumbsItem>,
@@ -44,7 +50,7 @@ class CollectionDetail extends Component {
 
 const initialData = [
   {
-    promise: ({ params, store: { dispatch } }) => {
+    promise: ({ match: { params }, store: { dispatch } }) => {
       const { user, coll } = params;
 
       return dispatch(loadColl(user, coll));

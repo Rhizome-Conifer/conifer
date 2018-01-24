@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { load as loadColl } from 'redux/modules/collection';
