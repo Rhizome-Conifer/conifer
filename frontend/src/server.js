@@ -27,16 +27,15 @@ const pretty = new PrettyError();
 const server = new http.Server(app);
 const bypassUrls = [
   '/api',
-  '/_(reportissues|set_session|clear_session)',
+  '/_(reportissues|set_session|clear_session|client_ws|message)',
   '/_new*',
-  '/_message'
 ];
 
 // TODO: use nginx
 app.use(express.static(path.join(__dirname, '..', 'static')));
 
 // proxy api and other urls on localhost
-if (__DEVELOPMENT__ || baseUrl.indexOf('localhost') !== -1) {
+if (__DEVELOPMENT__ || baseUrl.indexOf('localhost') !== -1 || config.apiProxy) {
   app.use('/shared', express.static(path.join(__dirname, 'shared')));
 
   // Proxy client API requets to server for now to avoid CORS

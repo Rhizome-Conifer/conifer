@@ -46,11 +46,11 @@ class ReplayURLBar extends Component {
                 page={recordingIndex - 1 >= 0 ? bookmarks.get(recordingIndex - 1) : null}
                 params={params}
                 direction="left" />
-              */}
+
               <ReplayPageDisplay
                 index={recordingIndex}
                 total={bookmarks.size} />
-              {
+              */
                 canAdmin &&
                   <RemoteBrowserSelect
                     active

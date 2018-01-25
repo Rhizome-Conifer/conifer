@@ -22,11 +22,12 @@ function Footer() {
             </a>
             <a href="mailto:support@webrecorder.io" className="divider"><MailIcon />Contact</a>
             <Link to="/_faq" className="divider">About</Link>
+            <a href="https://webrecorder.github.io" target="_blank" className="divider">Blog</a>
             <Link to="/_policies" className="divider">Terms & Policies</Link>
           </div>
           <div className="col-xs-6 col-xs-offset-3 col-sm-2 col-sm-offset-2 footer-label">
             <div>A Project By</div>
-            <a to="https://rhizome.org" target="_blank">
+            <a href="https://rhizome.org" target="_blank">
               <img className="rhizome-logo" src={logo} alt="rhizome.org logo" />
             </a>
           </div>

@@ -43,6 +43,7 @@ module.exports = Object.assign({
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,
+  apiProxy: false,
   product: 'Webrecorder',
   defaultRecordingTitle: 'Recording Session',
   storageKey: 'wrLocalData',

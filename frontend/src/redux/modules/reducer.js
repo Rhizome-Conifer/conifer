@@ -46,7 +46,7 @@ export default (state, action) => {
   switch(action.type) {
     case LOGOUT_SUCCESS: {
       const { reduxAsyncConnect, app: { auth } } = state;
-      const stateMod = { reduxAsyncConnect, routing, app: Map({ auth }) };
+      const stateMod = { reduxAsyncConnect, app: Map({ auth }) };
       return appReducer(stateMod, action);
     }
     // case LOGIN_SUCCESS: {
