@@ -36,7 +36,7 @@ class ApiController(BaseController):
             self.manager.cork.logout(success_redirect='/')
 
         @self.app.get('/api/v1/load_auth')
-        def loadAuth():
+        def load_auth():
             sesh = self.get_session()
 
             if sesh:
@@ -65,6 +65,7 @@ class ApiController(BaseController):
 
         @self.app.post('/api/v1/updatepassword')
         def update_password():
+            # check user is logged in and is an archivist or higher
             self.manager.cork.require(role='archivist', fail_redirect='/_login')
 
             curr_password = self.post_get('currPass')
