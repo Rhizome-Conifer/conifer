@@ -5,7 +5,8 @@ import os
 from webrecorder.redisman import init_manager_for_cli
 from pywb.utils.loaders import load as load_test
 
-from webrecorder.models import User
+from webrecorder.models import User, Collection, Recording
+from webrecorder.models.base import BaseAccess
 
 from mock import patch
 
@@ -38,6 +39,9 @@ class TestCDXJCache(FullStackTests):
         cls.m = init_manager_for_cli()
         cls.m.redis.set('n:recs:count', 499)
         cls.m.redis.set('n:colls:count', 99)
+
+        Recording.OPEN_REC_TTL = 3
+        Collection.COLL_CDXJ_TTL = 2
 
     @classmethod
     def teardown_class(cls):
@@ -109,20 +113,22 @@ class TestCDXJCache(FullStackTests):
         assert len(self.redis.zrange(COLL_CDXJ, 0, -1)) == 2
         self.sleep_try(1.0, 1.0, self.assert_exists(COLL_CDXJ, False))
 
-    @patch('webrecorder.redisman.load', slow_load)
+    @patch('webrecorder.models.collection.load', slow_load)
     def test_sync_avoid_double_load(self):
         self.assert_exists(COLL_CDXJ, False)()
         self.assert_exists(REC_CDXJ, False)()
 
-        coll = User(redis=self.redis, my_id=self.anon_user).get_collection_by_name('temp').my_id
+        collection = User(redis=self.redis, my_id=self.anon_user, access=BaseAccess()).get_collection_by_name('temp')
 
-        self.m.sync_coll_index(self.anon_user, coll, exists=False, do_async=True)
+        coll = collection.my_id
+
+        collection.sync_coll_index(exists=False, do_async=True)
 
         time.sleep(0.1)
 
         self.assert_exists(REC_CDXJ_T, True)()
 
-        self.m.sync_coll_index(self.anon_user, coll, exists=True, do_async=True)
+        collection.sync_coll_index(exists=True, do_async=True)
 
         time.sleep(0.1)
 

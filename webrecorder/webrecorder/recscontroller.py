@@ -10,19 +10,19 @@ class RecsController(BaseController):
     def init_routes(self):
         @self.app.post('/api/v1/recordings')
         def create_recording():
-            user, collection = self.load_user_coll(api=True)
+            user, collection = self.load_user_coll()
 
             title = request.forms.getunicode('title')
 
-            rec_title = self.sanitize_title(title)
+            rec_name = self.sanitize_title(title)
 
-            recording = collection.create_recording(rec_title)
+            recording = collection.create_recording(rec_name, title=title)
 
             return {'recording': recording.serialize()}
 
         @self.app.get('/api/v1/recordings')
         def get_recordings():
-            user, collection = self.load_user_coll(api=True)
+            user, collection = self.load_user_coll()
 
             recs = collection.get_recordings()
 
@@ -68,58 +68,52 @@ class RecsController(BaseController):
 
         @self.app.post('/api/v1/recordings/<rec_title>/move/<new_coll_title>')
         def move_recording(rec_title, new_coll_title):
-            user, coll = self.get_user_coll(api=True)
+            user, collection, recording = self.load_recording(rec_title)
+
             rec_name = self.sanitize_title(rec_title)
-            rec = self._ensure_rec_exists(user, coll, rec_name)
 
-            new_coll = self.sanitize_title(new_coll_title)
+            new_coll_name = self.sanitize_title(new_coll_title)
 
-            rec_title = self.manager.get_recording_title(user, coll, rec)
+            new_collection = user.get_collection_by_name(new_coll_name)
+            if not new_collection:
+                return {'error_message': 'No Collection: ' + new_coll_name}
 
-            res = self.manager.rename(user=user,
-                                      coll=coll,
-                                      new_coll=new_coll,
-                                      rec=rec,
-                                      new_rec=rec,
-                                      title=rec_title,
-                                      is_move=True)
+            user.access.assert_can_admin_coll(new_collection)
 
-            if 'coll_id' in res:
+            new_rec_name = collection.move(recording, new_collection)
+
+            if new_rec_name:
                 msg = 'Recording <b>{0}</b> moved to collection <a href="{1}"><b>{2}</b></a>'
-                msg = msg.format(rec_title, self.get_path(user, new_coll), new_coll_title)
+                msg = msg.format(rec_title, self.get_path(user, collection), new_coll_title)
                 self.flash_message(msg, 'success')
             else:
                 self.flash_message('Error moving {0}: {1}'.format(rec_title, res.get('error_message')))
 
-
             return res
 
-        @self.app.post('/api/v1/recordings/<rec>/pages')
-        def add_page(rec):
-            user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec)
+        @self.app.post('/api/v1/recordings/<rec_name>/pages')
+        def add_page(rec_name):
+            user, collection, recording = self.load_recording(rec_name)
 
             page_data = dict(request.forms.decode())
 
-            res = self.manager.add_page(user, coll, rec, page_data)
+            res = recording.add_page(page_data)
             return res
 
-        @self.app.post('/api/v1/recordings/<rec>/page')
-        def modify_page(rec):
-            user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec)
+        @self.app.post('/api/v1/recordings/<rec_name>/page')
+        def modify_page(rec_name):
+            user, collection, recording = self.load_recording(rec_name)
 
             page_data = dict(request.forms.decode())
 
-            res = self.manager.modify_page(user, coll, rec, page_data)
+            res = recording.modify_page(page_data)
             return {'page-data': page_data, 'recording-id': rec}
 
-        @self.app.get('/api/v1/recordings/<rec>/pages')
-        def list_pages(rec):
-            user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec)
+        @self.app.get('/api/v1/recordings/<rec_name>/pages')
+        def list_pages(rec_name):
+            user, collection, recording = self.load_recording(rec_name)
 
-            pages = self.manager.list_pages(user, coll, rec)
+            pages = recording.list_pages()
             return {'pages': pages}
 
         @self.app.post('/api/v1/recordings/<rec>/tag')
@@ -138,97 +132,61 @@ class RecsController(BaseController):
             if pg_id:
                 self.manager.tag_page(tags, user, coll, rec, pg_id)
 
-        @self.app.get('/api/v1/recordings/<rec>/num_pages')
-        def get_num_pages(rec):
-            user, coll = self.get_user_coll(api=True)
+        @self.app.get('/api/v1/recordings/<rec_name>/num_pages')
+        def get_num_pages(rec_name):
+            user, collection, recording = self.load_recording(rec_name)
 
-            return {'count': self.manager.count_pages(user, coll, rec) }
+            return {'count': recording.count_pages() }
 
-        @self.app.delete('/api/v1/recordings/<rec>/pages')
-        def delete_page(rec):
-            user, coll = self.get_user_coll(api=True)
-            rec = self._ensure_rec_exists(user, coll, rec)
+        @self.app.delete('/api/v1/recordings/<rec_name>/pages')
+        def delete_page(rec_name):
+            user, collection, recording = self.load_recording(rec_name)
 
             url = request.forms.getunicode('url')
             ts = request.forms.getunicode('timestamp')
 
-            return self.manager.delete_page(user, coll, rec, url, ts)
+            return recording.delete_page(url, ts)
 
         # LOGGED-IN NEW REC
-        @self.app.get(['/<user>/<coll>/$new', '/<user>/<coll>/$new/'])
+        @self.app.get(['/<user>/<coll_name>/$new', '/<user>/<coll_name>/$new/'])
         @self.jinja2_view('new_recording.html')
-        def new_recording(user, coll):
+        def new_recording(user, coll_name):
 
-            return self.get_rec_info_for_new(user, coll, None, 'new_recording')
+            return self.get_rec_info_for_new(user, coll_name, None, 'new_recording')
 
         # LOGGED-IN ADD TO REC
-        @self.app.get(['/<user>/<coll>/<rec>/$add', '/<user>/<coll>/<rec>/$add/'])
-        @self.jinja2_view('add_to_recording.html')
-        def add_to_recording(user, coll, rec):
-
-            return self.get_rec_info_for_new(user, coll, rec, 'add_to_recording')
-
-        # LOGGED-IN REC VIEW
-        #@self.app.get(['/<user>/<coll>/<rec>', '/<user>/<coll>/<rec>/'])
-        #@self.jinja2_view('recording_info.html')
-        #def rec_info(user, coll, rec):
-
-        #    return self.get_rec_info_for_view(user, coll, rec)
-
         # DELETE REC
-        @self.app.post('/_delete_rec/<rec>')
-        def delete_rec_post(rec):
+        @self.app.post('/_delete_rec/<rec_name>')
+        def delete_rec_post(rec_name):
             self.validate_csrf()
-            user, coll = self.get_user_coll(api=False)
-
+            user, collection, recording = self.load_recording(rec_name, api=False)
             success = False
             try:
-                success = self.manager.delete_recording(user, coll, rec)
+                success = collection.delete_recording(recording)
             except Exception as e:
                 print(e)
 
             if success:
-                self.flash_message('Recording {0} has been deleted!'.format(rec), 'success')
-                self.redirect(self.get_path(user, coll))
+                self.flash_message('Recording {0} has been deleted!'.format(rec_name), 'success')
+                self.redirect(self.get_path(user, collection.name))
             else:
-                self.flash_message('There was an error deleting {0}'.format(rec))
-                self.redirect(self.get_path(user, coll, rec))
-
-    def get_rec_info(self, user, coll, rec, rec_name):
-        recording = self.manager.get_recording(user, coll, rec)
-
-        if not recording:
-            response.status = 404
-            return {'error_message': 'Recording not found', 'id': rec_name}
-
-        return {'recording': recording}
+                self.flash_message('There was an error deleting {0}'.format(rec_name))
+                self.redirect(self.get_path(user, collection.name, rec_name))
 
     def get_rec_info_for_new(self, user, coll_name, rec_name, action):
         result = {'curr_mode': 'new', 'action': action}
-        result['user'] = self.get_view_user(user)
+        result['user'] = user
 
-        coll, rec = self.manager.get_coll_rec_ids(user, coll_name, rec_name)
+        user, collection = self.load_user_coll(user=user, coll_name=coll_name)
 
-        result['coll'] = coll
-        result['rec'] = rec
+        result['coll'] = coll_name
 
-        collection = self.manager.get_collection(user, coll)
-        if not collection:
-            self._raise_error(404, 'Collection not found')
-
-        result['coll_title'] = quote(collection['title'])
-
-        if rec:
-            recording = self.manager.get_recording(user, coll, rec)
-            if not recording:
-                self._raise_error(404, 'Recording not found')
-
-            result['rec_title'] = recording['title']
+        result['coll_title'] = quote(collection.get_prop('title'))
 
         return result
 
-    def load_recording(self, rec_name):
-        user, collection = self.load_user_coll(api=True)
+    def load_recording(self, rec_name, user=None, coll_name=None):
+        user, collection = self.load_user_coll(user=user, coll_name=coll_name)
         if not user or not collection:
             self._raise_error(404, 'Recording not found', api=True,
                               id=rec_name)
@@ -239,12 +197,3 @@ class RecsController(BaseController):
                               id=rec_name)
 
         return user, collection, recording
-
-    def _ensure_rec_exists(self, user, coll, rec_name):
-        rec = self.manager.recs_map.name_to_id(coll, rec_name)
-        if not self.manager.has_recording(user, coll, rec):
-            self._raise_error(404, 'Recording not found', api=True,
-                              id=rec_name)
-
-        return rec
-

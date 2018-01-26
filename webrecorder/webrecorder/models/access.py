@@ -1,0 +1,144 @@
+from bottle import template, request, HTTPError
+
+from webrecorder.models.user import User, SessionUser
+from webrecorder.models.collection import Collection
+from webrecorder.models.recording import Recording
+from webrecorder.models.base import BaseAccess
+
+
+# ============================================================================
+class SessionAccessCache(object):
+    READ_PREFIX = 'r:'
+    WRITE_PREFIX = 'w:'
+    PUBLIC = '@public'
+
+    def __init__(self, session, redis):
+        self.sesh = session
+        self.redis = redis
+
+        self._session_user = None
+
+    @property
+    def session_user(self):
+        return self.init_session_user()
+
+    def init_session_user(self, persist=False):
+        if not self._session_user:
+            self._session_user = SessionUser(sesh=self.sesh,
+                                             redis=self.redis,
+                                             persist=persist)
+
+        return self._session_user
+
+    def get_user(self, user):
+        return User(my_id=user,
+                    redis=self.redis,
+                    access=self)
+
+    def get_user_coll(self, user, coll_name):
+        user = self.get_user(user)
+        collection = user.get_collection_by_name(coll_name)
+        return user, collection
+
+    def get_user_coll_rec(self, user, coll_name, rec_name):
+        user, collection = self.get_user_coll(user, coll_name)
+        if collection:
+            recording = collection.get_recording_by_name(rec_name)
+        else:
+            recording = None
+
+        return user, collection, recording
+
+    def is_anon(self, user):
+        if not user:
+            return False
+
+        return self.sesh.is_anon(user.my_id)
+
+    def is_logged_in_user(self, user):
+        if self.sesh.is_restricted:
+            return False
+
+        return self.session_user == user
+
+    def is_superuser(self):
+        """Test if logged in user has 100 level `admin` privledges.
+           Named `superuser` to prevent confusion with `can_admin`
+        """
+        return self.sesh.curr_role == 'admin'
+
+    def _is_coll_owner(self, collection):
+        return self.session_user.is_owner(collection.get_owner())
+
+    def check_write_access(self, collection):
+        if not collection:
+            return False
+
+        if self._is_coll_owner(collection):
+            return True
+
+        return collection.get_prop(self.WRITE_PREFIX + self.session_user.my_id) != None
+
+    def check_read_access_public(self, collection):
+        if not collection:
+            return False
+
+        if self.is_public(collection):
+            return 'public'
+
+        # if superuser, can read
+        if self.is_superuser():
+            return True
+
+        if self._is_coll_owner(collection):
+            return True
+
+        if self.is_anon():
+            return False
+
+        return collection.get_prop(self.READ_PREFIX + self.session_user.my_id) != None
+
+    def is_public(self, collection):
+        return collection.get_prop(self.READ_PREFIX + self.PUBLIC) == '1'
+
+    def set_public(self, collection, is_public):
+        if not self.is_superuser() and not self.can_admin_coll(collection):
+            return False
+
+        collection.set_prop(self.READ_PREFIX + self.PUBLIC, 1 if is_public else 0)
+        return True
+
+    def can_read_coll(self, collection):
+        return bool(self.check_read_access_public(collection))
+
+    def assert_can_read_coll(self, collection):
+        if not self.can_read_coll(collection):
+            raise HTTPError(404, 'No Admin Access')
+
+    def can_write_coll(self, collection):
+        return self.check_write_access(collection)
+
+    def assert_can_write_coll(self, collection):
+        if not self.can_write_coll(collection):
+            raise HTTPError(404, 'No Admin Access')
+
+    # for now, equivalent to is_owner(), but a different
+    # permission, and may change
+    def can_admin_coll(self, collection):
+        if self.sesh.is_restricted or not collection:
+            return False
+
+        return self._is_coll_owner(collection)
+
+    def assert_can_admin_coll(self, collection):
+        if not self.can_admin_coll(collection):
+            raise HTTPError(404, 'No Admin Access')
+
+    def is_curr_user(self, user):
+        return self.session_user == user
+
+    def assert_is_curr_user(self, user):
+        if not self.is_curr_user(user):
+            raise HTTPError(404, 'Only Valid for Current User')
+
+

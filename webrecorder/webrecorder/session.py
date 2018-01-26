@@ -183,9 +183,10 @@ class Session(object):
 
 # ============================================================================
 class RedisSessionMiddleware(CookieGuard):
-    def __init__(self, app, cork, redis, session_opts):
+    def __init__(self, app, cork, redis, session_opts, access_cls=None, access_redis=None):
         super(RedisSessionMiddleware, self).__init__(app, session_opts['session.key'])
         self.redis = redis
+        self.access_redis = access_redis
         self.cork = cork
 
         self.auto_login_user = os.environ.get('AUTO_LOGIN_USER')
@@ -196,6 +197,8 @@ class RedisSessionMiddleware(CookieGuard):
         self.long_sessions_key = session_opts['session.long_sessions_key']
 
         self.durations = session_opts['session.durations']
+
+        self.access_cls = access_cls
 
     def init_session(self, environ):
         data = None
@@ -262,6 +265,9 @@ class RedisSessionMiddleware(CookieGuard):
 
         environ['webrec.template_params'] = session.template_params
         environ['webrec.session'] = session
+        if self.access_cls:
+            environ['webrec.access'] = self.access_cls(session=session,
+                                                       redis=self.access_redis)
 
     def prepare_response(self, environ, headers):
         if 'wsgiprox.proxy_host' in environ:

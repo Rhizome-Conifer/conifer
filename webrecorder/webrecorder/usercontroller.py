@@ -161,7 +161,8 @@ class UserController(BaseController):
 
         @self.app.get('/api/v1/anon_user')
         def get_anon_user():
-            return {'anon_user': self.manager.get_anon_user(True)}
+            sesh_user = self.access.init_session_user(persist=True)
+            return {'anon_user': sesh_user.my_id}
 
         @self.app.get(['/api/v1/user_roles'])
         def api_get_user_roles():
@@ -345,8 +346,8 @@ class UserController(BaseController):
                 self._raise_error(404, 'No such user')
 
             # if not admin, check ownership
-            if not self.manager.is_anon(username) and not self.manager.is_superuser():
-                self.manager.assert_user_is_owner(username)
+            if not self.access.is_anon(username) and not self.access.is_superuser():
+                self.access.assert_is_curr_user(username)
 
             user = users[username]
             try:
@@ -427,10 +428,13 @@ class UserController(BaseController):
         def user_info(user):
             self.redir_host()
 
-            if self.manager.is_anon(user):
-                self.redirect('/' + user + '/temp')
+            user = self.access.get_user(user)
 
-            self.manager.assert_user_exists(user)
+            if self.access.is_anon(user):
+                self.redirect('/' + user.my_id + '/temp')
+
+            if not self.manager.is_valid_user(user):
+                raise HTTPError(404, 'No Such User')
 
             result = {
                 'user': user,

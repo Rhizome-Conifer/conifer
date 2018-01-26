@@ -108,12 +108,6 @@ class TestTempContent(FullStackTests):
 
         assert set(exp_keys) == set(res_keys)
 
-    def _get_coll_rec_id(self, user, coll_name, rec_name):
-        coll = self.temp_coll
-        rec_map = 'c:{coll}:recs'.format(coll=coll)
-        rec = self.redis.hget(rec_map, rec_name) or '0'
-        return coll, rec
-
     def _add_dyn_stat(self, user, coll, rec, url):
         if not rec or rec == '*' or rec == '0':
             stats = self.PAGE_STATS['coll']
@@ -149,7 +143,7 @@ class TestTempContent(FullStackTests):
         assert self.redis.hget(r_info, 'updated_at') is not None
 
     def _get_warc_key_len(self, user, coll, rec):
-        coll, rec = self._get_coll_rec_id(user, coll, rec)
+        coll, rec = self.get_coll_rec(user, coll, rec)
         warc_key = 'r:{rec}:warc'.format(rec=rec)
         return self.redis.hlen(warc_key)
 
@@ -202,7 +196,7 @@ class TestTempContent(FullStackTests):
         res = self._get_anon('/temp/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
-        coll, rec = self._get_coll_rec_id(self.anon_user, 'temp', None)
+        coll, rec = self.get_coll_rec(self.anon_user, 'temp', None)
         self._add_dyn_stat(self.anon_user, coll, rec, 'http://httpbin.org/get?food=bar')
 
         self._assert_rec_keys(self.anon_user, 'temp', ['my-recording'])
@@ -227,7 +221,7 @@ class TestTempContent(FullStackTests):
         res.charset = 'utf-8'
 
         assert '"record"' in res.text
-        assert '"rec_id": "my-rec2"' in res.text
+        assert '"rec_id": "my-rec2"' in res.text, res.text
         assert '"rec_title": "My Rec2"' in res.text
         assert '"coll_id": "temp"' in res.text
         assert '"coll_title": "Temporary Collection"' in res.text
@@ -387,18 +381,10 @@ class TestTempContent(FullStackTests):
 
         self._assert_rec_keys(user, 'temp', all_recs)
 
-        coll, rec = self._get_coll_rec_id(user, 'temp', 'emmyem-test-recording')
+        coll, rec = self.get_coll_rec(user, 'temp', 'emmyem-test-recording')
         info = self.manager.get_content_inject_info(self.anon_user, coll, 'temp', rec, 'emmyem-test-recording')
         assert info['rec_id'] == 'emmyem-test-recording'
         assert info['rec_title'] == '%3Cem%3EMy%3C/em%3E test recording'
-
-    def test_anon_new_add_to_recording(self):
-        res = self._get_anon('/temp/my-rec2/$add')
-        res.charset = 'utf-8'
-
-        assert '<iframe' not in res.text
-
-        assert 'My Rec2' in res.text
 
     def test_anon_new_recording(self):
         res = self._get_anon('/temp/$new')
@@ -525,7 +511,7 @@ class TestTempContent(FullStackTests):
 
         assert '"bood": "far"' in res.text, res.text
 
-        coll, rec = self._get_coll_rec_id(self.anon_user, 'temp', 'my-recording-3')
+        coll, rec = self.get_coll_rec(self.anon_user, 'temp', 'my-recording-3')
 
         # update dyn stats
         self._add_dyn_stat(self.anon_user, coll, rec, 'http://httpbin.org/get?bood=far')

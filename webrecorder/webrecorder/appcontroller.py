@@ -33,8 +33,11 @@ from webrecorder.browsermanager import BrowserManager
 
 from webrecorder.webreccork import WebRecCork
 
-from webrecorder.redisman import RedisDataManager
+#from webrecorder.redisman import RedisDataManager
+from webrecorder.manager import RedisDataManager
 from webrecorder.session import Session, RedisSessionMiddleware
+
+from webrecorder.models.access import SessionAccessCache
 
 from webrecorder.basecontroller import BaseController
 
@@ -77,6 +80,7 @@ class AppController(BaseController):
 
         self.redis = redis.StrictRedis.from_url(redis_url, decode_responses=True)
         self.browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'], decode_responses=True)
+
         self.session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
 
         # Auto Upload on Init Id
@@ -120,7 +124,9 @@ class AppController(BaseController):
         final_app = RedisSessionMiddleware(bottle_app,
                                            self.cork,
                                            self.session_redis,
-                                           config)
+                                           config,
+                                           access_cls=SessionAccessCache,
+                                           access_redis=self.redis)
 
         final_app = WSGIProxMiddleware(final_app, '/_proxy/',
                                        proxy_host='webrecorder.proxy',
@@ -153,11 +159,17 @@ class AppController(BaseController):
         def get_coll(context):
             return context.get('coll', '')
 
+        def get_user_coll(context):
+            coll = context.get('coll', '')
+            coll_name = context.get('coll_name', '')
+            user = get_user(context)
+            return get_user(context).get_collection_by_id(coll, coll_name)
+
         def get_user(context):
             u = context.get('user', '')
             if not u:
                 u = context.get('curr_user', '')
-            return u
+            return self.access.get_user(u)
 
         def get_browsers():
             return self.browser_mgr.get_browsers()
@@ -188,35 +200,31 @@ class AppController(BaseController):
         def can_tag():
             return self.manager.can_tag()
 
-        def is_public(user, coll):
-            return self.manager.is_public(user, coll)
+        @contextfunction
+        def is_public(context):
+            return self.access.is_public(get_user_coll(context))
 
         @contextfunction
         def can_admin(context):
-            return self.manager.can_admin_coll(get_user(context), get_coll(context))
+            return self.access.can_admin_coll(get_user_coll(context))
 
         @contextfunction
         def is_owner(context):
-            res = self.manager.is_owner(get_user(context))
-            print(res)
+            res = self.access.is_curr_user(get_user(context))
             return res
 
         @contextfunction
         def can_write(context):
-            res = self.manager.can_write_coll(get_user(context), get_coll(context))
+            res = self.access.can_write_coll(get_user_coll(context))
             return res
 
         @contextfunction
         def can_read(context):
-            return self.manager.can_read_coll(get_user(context), get_coll(context))
-
-        @contextfunction
-        def is_extractable(context):
-            return self.manager.is_extractable(get_user(context), get_coll(context))
+            res = self.access.can_read_coll(get_user_coll(context))
 
         @contextfunction
         def is_anon(context):
-            return self.manager.is_anon(get_user(context))
+            return self.access.is_anon(get_user(context))
 
         def get_announce_list():
             announce_list = os.environ.get('ANNOUNCE_MAILING_LIST', False)
@@ -276,14 +284,14 @@ class AppController(BaseController):
 
         @contextfunction
         def get_recs_for_coll(context):
-            user = context.get('user')
-            coll = get_coll(context)
+            collection = get_user_coll(context)
+
             return [{'ts': r['timestamp'], 'url': r['url'], 'br': r.get('browser', '')}
-                    for r in self.manager.list_coll_pages(user, coll)]
+                    for r in collection.list_coll_pages()]
 
         @contextfunction
         def is_out_of_space(context):
-            return self.manager.is_out_of_space(context.get('curr_user', ''))
+            return self.access.session_user.is_out_of_space()
 
         @contextfunction
         def is_tagged(context, bookmark_id):
@@ -332,7 +340,7 @@ class AppController(BaseController):
         jinja_env.globals['get_archives'] = get_archives
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
-        jinja_env.globals['is_extractable'] = is_extractable
+        #jinja_env.globals['is_extractable'] = is_extractable
         jinja_env.globals['get_tags'] = get_tags
         jinja_env.globals['is_tagged'] = is_tagged
         jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection

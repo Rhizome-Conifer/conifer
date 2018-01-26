@@ -3,7 +3,6 @@ from functools import wraps
 from six.moves.urllib.parse import quote
 from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
 
-from webrecorder.models import User
 
 import re
 import os
@@ -20,6 +19,7 @@ class BaseController(object):
         self.app_host = os.environ['APP_HOST']
         self.content_host = os.environ['CONTENT_HOST']
         self.cache_template = config.get('cache_template')
+
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
 
         self.init_routes()
@@ -49,56 +49,38 @@ class BaseController(object):
         if not sesh_csrf or csrf != sesh_csrf:
             self._raise_error(403, 'Invalid CSRF Token')
 
-    def get_user(self, api=False, redir_check=True):
+    def get_user(self, api=True, redir_check=True, user=None):
         if redir_check:
             self.redir_host()
-        user = request.query.getunicode('user')
+
+        if not user:
+            user = request.query.getunicode('user')
+
         if not user:
             self._raise_error(400, 'User must be specified',
                               api=api)
 
-        if user == '$temp':
-            return self.manager.get_anon_user(True)
+        user = self.access.get_user(user)
 
-        if self.manager.is_anon(user):
-            return user
-
-        if not self.manager.has_user(user):
+        if not user or not self.manager.is_valid_user(user):
             self._raise_error(404, 'No such user', api=api)
 
         return user
 
-    def get_user_coll(self, api=False, redir_check=True):
-        user = self.get_user(api=api, redir_check=redir_check)
+    def load_user_coll(self, api=True, redir_check=True, user=None, coll_name=None):
+        user = self.get_user(api=api, redir_check=redir_check, user=user)
 
-        coll_name = request.query.getunicode('coll')
+        if not coll_name:
+            coll_name = request.query.getunicode('coll')
+
         if not coll_name:
             self._raise_error(400, 'Collection must be specified',
                               api=api)
 
-        if self.manager.is_anon(user):
+        if self.access.is_anon(user):
             if coll_name != 'temp':
                 self._raise_error(404, 'No such collection', api=api)
 
-        coll = self.manager.collection_by_name(user, coll_name)
-        if not coll:
-            self._raise_error(404, 'No such collection', api=api)
-
-        return user, coll
-
-    def load_user_coll(self, api=False, redir_check=True):
-        user = self.get_user(api=api, redir_check=redir_check)
-
-        coll_name = request.query.getunicode('coll')
-        if not coll_name:
-            self._raise_error(400, 'Collection must be specified',
-                              api=api)
-
-        if self.manager.is_anon(user):
-            if coll_name != 'temp':
-                self._raise_error(404, 'No such collection', api=api)
-
-        user = User(my_id=user, redis=self.manager.redis)
         collection = user.get_collection_by_name(coll_name)
         if not collection:
             self._raise_error(404, 'No such collection', api=api)
@@ -213,4 +195,10 @@ class BaseController(object):
             classes.append('cbrowser')
 
         return ' '.join(classes).strip()
+
+    @property
+    def access(self):
+        return request['webrec.access']
+
+
 

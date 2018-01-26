@@ -57,7 +57,7 @@
                 {% endif %}
 
                 {% if curr_mode == 'record' or curr_mode == 'patch' %}
-                    {{ sharing_widget(get_share_url(), get_embed_url(), coll_title, owner=can_admin(), is_public=is_public(user, coll_orig), anon=is_anon(), bsSize='xs') }}
+                    {{ sharing_widget(get_share_url(), get_embed_url(), coll_title, owner=can_admin(), is_public=is_public(), anon=is_anon(), bsSize='xs') }}
                 {% endif %}
             </div>
         {% endif %}

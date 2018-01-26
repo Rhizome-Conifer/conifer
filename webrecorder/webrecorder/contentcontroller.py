@@ -14,8 +14,6 @@ from webrecorder.basecontroller import BaseController
 from webrecorder.load.wamloader import WAMLoader
 from webrecorder.utils import get_bool
 
-from webrecorder.models import User, Collection, Recording
-
 
 # ============================================================================
 class ContentController(BaseController, RewriterApp):
@@ -385,15 +383,14 @@ class ContentController(BaseController, RewriterApp):
 
         rec_title = rec_name
 
-        user = self.manager.get_curr_user()
+        user = self.access.init_session_user()
 
-        if not user:
+        if user.is_anon():
             if self.anon_disabled:
                 self.flash_message('Sorry, anonymous recording is not available.')
                 self.redirect('/')
                 return
 
-            user = self.manager.get_anon_user(True)
             coll_name = 'temp'
             coll_title = 'Temporary Collection'
 
@@ -401,10 +398,9 @@ class ContentController(BaseController, RewriterApp):
             coll_title = coll
             coll_name = self.sanitize_title(coll_title)
 
-        the_user = User(my_id=user, redis=self.manager.redis)
-        collection = the_user.get_collection_by_name(coll_name)
+        collection = user.get_collection_by_name(coll_name)
         if not collection:
-            collection = the_user.create_collection(coll_name, title=coll_title)
+            collection = user.create_collection(coll_name, title=coll_title)
 
         recording = self._create_new_rec(collection, rec_title, mode)
 
@@ -413,7 +409,7 @@ class ContentController(BaseController, RewriterApp):
                                                    self.patch_of_name(rec_title),
                                                    'patch')
 
-        new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
+        new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user.my_id,
                                                              coll=collection.name,
                                                              rec=recording.name,
                                                              mode=mode,
@@ -460,21 +456,15 @@ class ContentController(BaseController, RewriterApp):
 
         remote_ip = None
         frontend_cache_header = None
-        patch_rec = ''
+        patch_recording = None
 
-        #coll, rec = self.manager.get_coll_rec_ids(user, coll_name, rec_name)
-        the_user = User(my_id=user, redis=self.manager.redis)
-        coll = None
-        rec = None
-        collection = the_user.get_collection_by_name(coll_name)
-        if collection:
-            coll = collection.my_id
-            recording = collection.get_recording_by_name(rec_name)
-            if recording:
-                rec = recording.my_id
+        the_user, collection, recording = self.access.get_user_coll_rec(user, coll_name, rec_name)
+
+        coll = collection.my_id if collection else None
+        rec = recording.my_id if recording else None
 
         if type in self.MODIFY_MODES:
-            if not self.manager.has_recording(user, coll, rec):
+            if not recording:
                 self._redir_if_sanitized(self.sanitize_title(rec_name),
                                          rec_name,
                                          wb_url)
@@ -482,38 +472,39 @@ class ContentController(BaseController, RewriterApp):
                 # don't auto create recording for inner frame w/o accessing outer frame
                 raise HTTPError(404, 'No Such Recording')
 
-            elif not self.manager.is_recording_open(user, coll, rec):
+            elif not recording.is_open():
                 # force creation of new recording as this one is closed
                 raise HTTPError(404, 'Recording not open')
 
-            self.manager.assert_can_write(user, coll)
+            collection.access.assert_can_write_coll(collection)
 
-            if self.manager.is_out_of_space(user):
+            if the_user.is_out_of_space():
                 raise HTTPError(402, 'Out of Space')
 
             remote_ip = self._get_remote_ip()
 
-            if self.manager.is_rate_limited(user, remote_ip):
-                raise HTTPError(402, 'Rate Limit')
+            #TODO
+            #if the_user.is_rate_limited(user.my_id, remote_ip):
+            #    raise HTTPError(402, 'Rate Limit')
 
             if inv_sources and inv_sources != '*':
                 patch_rec_name = self.patch_of_name(rec, True)
-                patch_rec = self.manager.recs_map.name_to_id(coll, patch_rec_name)
+                patch_recording = collection.get_recording_by_name(patch_rec_name)
 
         if type == 'replay-coll':
-            res = self.manager.has_collection_is_public(user, coll)
-            if not res:
-                self._redir_if_sanitized(self.sanitize_title(coll),
-                                         coll,
+            if not collection:
+                self._redir_if_sanitized(self.sanitize_title(coll_name),
+                                         coll_name,
                                          wb_url)
+
 
                 raise HTTPError(404, 'No Such Collection')
 
-            if res != 'public':
+            if self.access.check_read_access_public(collection) != 'public':
                 frontend_cache_header = ('Cache-Control', 'private')
 
         elif type == 'replay':
-            if not self.manager.has_recording(user, coll, rec):
+            if not recording:
                 raise HTTPError(404, 'No Such Recording')
 
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'], safe='/:')
@@ -529,15 +520,14 @@ class ContentController(BaseController, RewriterApp):
             if result:
                 mode, wb_url = result
                 new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
-                                                                     coll=coll,
-                                                                     rec=rec,
+                                                                     coll=coll_name,
+                                                                     rec=rec_name,
                                                                      mode=mode,
                                                                      url=wb_url)
                 return self.redirect(new_url)
 
         elif type == 'replay-coll' and not is_top_frame:
-            self.manager.sync_coll_index(user, coll, exists=False,
-                                         do_async=False)
+            collection.sync_coll_index(exists=False, do_async=False)
 
         kwargs = dict(user=user,
                       id=sesh.get_id(),
@@ -545,10 +535,16 @@ class ContentController(BaseController, RewriterApp):
                       rec=rec,
                       coll_name=quote(coll_name),
                       rec_name=quote(rec_name, safe='/*'),
+
+                      the_user=the_user,
+                      collection=collection,
+                      recording=recording,
+                      patch_recording=patch_recording,
+
                       type=type,
                       sources=sources,
                       inv_sources=inv_sources,
-                      patch_rec=patch_rec,
+                      patch_rec=patch_recording.my_id if patch_recording else None,
                       ip=remote_ip,
                       is_embed=is_embed,
                       is_display=is_display)
@@ -728,9 +724,9 @@ class ContentController(BaseController, RewriterApp):
         # disable until can guarantee cookie is not changed!
         #self.get_session().update_expires()
 
-        info = self.manager.get_content_inject_info(kwargs['user'],
-                                                    kwargs['coll'], kwargs['coll_name'],
-                                                    kwargs['rec'], kwargs['rec_name'])
+        info = self.get_content_inject_info(kwargs['the_user'],
+                                            kwargs['collection'],
+                                            kwargs['recording'])
 
         return {'info': info,
                 'curr_mode': type,
@@ -781,6 +777,7 @@ class ContentController(BaseController, RewriterApp):
             source = orig_source
 
         ra_rec = None
+        ra_recording = None
 
         # set source in recording-key
         if type_ in self.MODIFY_MODES:
@@ -789,6 +786,14 @@ class ContentController(BaseController, RewriterApp):
             if not skip and source not in ('live', 'replay'):
                 ra_rec = unquote(resp_headers.get('Recorder-Rec', ''))
                 ra_rec = ra_rec or kwargs['rec']
+
+                recording = kwargs.get('recording')
+                patch_recording = kwargs.get('patch_recording')
+
+                if recording and ra_rec == recording.my_id:
+                    ra_recording = recording
+                elif patch_recording and ra_rec == patch_recording.my_id:
+                    ra_recording = patch_recording
 
         url = cdx.get('url')
         referrer = request.environ.get('HTTP_REFERER')
@@ -799,7 +804,7 @@ class ContentController(BaseController, RewriterApp):
             request.environ.get('HTTP_HOST') in referrer):
             referrer = url
 
-        self.manager.update_dyn_stats(url, kwargs, referrer, source, ra_rec)
+        self.manager.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser
@@ -829,4 +834,28 @@ class ContentController(BaseController, RewriterApp):
             return data
 
         return browser_embed(inject_data)
+
+    def get_content_inject_info(self, user, collection, recording):
+        info = {}
+
+        # recording
+        if recording:
+            info['rec_id'] = recording.name
+            info['rec_title'] = quote(recording.get_prop('title', ''), safe='/ ')
+            info['size'] = recording.size
+
+        else:
+            info['size'] = collection.size
+
+        # collection
+        info['coll_id'] = collection.name
+        info['coll_title'] = quote(collection.get_prop('title', collection.name), safe='/ ')
+
+        info['coll_desc'] = quote(collection.get_prop('desc', ''))
+
+        info['size_remaining'] = user.get_size_remaining()
+
+        return info
+
+
 

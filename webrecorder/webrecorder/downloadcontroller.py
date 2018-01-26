@@ -45,7 +45,7 @@ class DownloadController(BaseController):
                 traceback.print_exc()
 
     def create_warcinfo(self, creator, title, metadata, source, filename):
-        for name, value in iteritems(source):
+        for name, value in iteritems(source.serialize()):
             if name in self.COPY_FIELDS:
                 metadata[name] = value
 
@@ -65,43 +65,41 @@ class DownloadController(BaseController):
         metadata = {}
         metadata['type'] = 'collection'
 
-        title = quote(collection['title'])
+        title = quote(collection.get_prop('title'))
         return self.create_warcinfo(user, title, metadata, collection, filename)
 
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
         metadata = {}
-        metadata['pages'] = self.manager.list_pages(user,
-                                                    collection['uid'],
-                                                    recording['uid'])
+        metadata['pages'] = recording.list_pages()
         metadata['type'] = 'recording'
-        if recording.get('rec_type'):
-            metadata['rec_type'] = recording['rec_type']
+        rec_type = recording.get_prop('rec_type')
+        if rec_type:
+            metadata['rec_type'] = rec_type
 
-        title = quote(collection['title']) + '/' + quote(recording['title'])
+        title = quote(collection.get_prop('title')) + '/' + quote(recording.get_prop('title'))
         return self.create_warcinfo(user, title, metadata, recording, filename)
 
-    def handle_download(self, user, coll_name, rec):
-        coll = self.manager.collection_by_name(user, coll_name)
-
-        self.manager.assert_can_write(user, coll)
-
-        collection = self.manager.get_collection(user, coll)
+    def handle_download(self, user, coll_name, recs):
+        user, collection = self.access.get_user_coll(user, coll_name)
 
         if not collection:
             self._raise_error(404, 'Collection not found',
-                              id=coll)
+                              id=coll_name)
 
-        collection['uid'] = coll
+        self.access.assert_can_write_coll(collection)
+
+        #collection['uid'] = coll
+        collection.load()
 
         now = timestamp_now()
 
         name = coll_name
-        if rec != '*':
-            rec_list = rec.split(',')
+        if recs != '*':
+            rec_list = recs.split(',')
             if len(rec_list) == 1:
-                name = rec
+                name = recs
             else:
-                name += '-' + rec
+                name += '-' + recs
         else:
             rec_list = None
 
@@ -112,8 +110,8 @@ class DownloadController(BaseController):
         coll_info = self.create_coll_warcinfo(user, collection, filename)
 
         def iter_infos():
-            for recording in collection['recordings']:
-                if rec_list and recording['id'] not in rec_list:
+            for recording in collection.get_recordings(load=True):
+                if rec_list and recording.name not in rec_list:
                     continue
 
                 warcinfo = self.create_rec_warcinfo(user,
@@ -122,7 +120,7 @@ class DownloadController(BaseController):
                                                     filename)
 
                 size = len(warcinfo)
-                size += recording['size']
+                size += recording.size
                 yield recording, warcinfo, size
 
         def read_all(infos):
@@ -131,7 +129,7 @@ class DownloadController(BaseController):
             for recording, warcinfo, _ in infos:
                 yield warcinfo
 
-                for warc_path in self._iter_all_warcs(user, coll, recording['uid']):
+                for n, warc_path in recording.iter_all_files():
                     try:
                         fh = loader.load(warc_path)
                     except:
@@ -158,15 +156,3 @@ class DownloadController(BaseController):
             response.headers['Transfer-Encoding'] = 'chunked'
 
             return read_all(iter_infos())
-
-    def _iter_all_warcs(self, user, coll, rec):
-        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
-        allwarcs = self.manager.redis.hgetall(warc_key)
-
-        for n, v in iteritems(allwarcs):
-            if n == self.index_file_key:
-                continue
-
-            yield v
-
-

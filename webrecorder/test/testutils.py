@@ -18,6 +18,9 @@ from webrecorder.appcontroller import AppController
 
 from webrecorder.fullstackrunner import FullStackRunner
 
+from webrecorder.models import User, Collection, Recording
+from webrecorder.models.base import BaseAccess
+
 from webrecorder.rec.tempchecker import TempChecker
 from webrecorder.rec.storagecommitter import StorageCommitter
 from webrecorder.rec.worker import Worker
@@ -103,6 +106,15 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     def get_curr_dir(cls):
         return os.path.dirname(os.path.realpath(__file__))
 
+    @classmethod
+    def get_coll_rec(cls, user, coll_name, rec_name):
+        user = User(my_id=user, redis=cls.redis, access=BaseAccess())
+        collection = user.get_collection_by_name(coll_name)
+        recording = collection.get_recording_by_name(rec_name) if collection else None
+
+        coll = collection.my_id if collection else None
+        rec = recording.my_id if recording else None
+        return coll, rec
 
     @classmethod
     def sleep_try(cls, sleep_interval, max_time, test_func):

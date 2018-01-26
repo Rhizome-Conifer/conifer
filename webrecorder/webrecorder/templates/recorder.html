@@ -102,7 +102,7 @@
 
 
     {% if not is_new and metadata.type != 'player' and not is_patch and not is_record %}
-        {{ sharing_widget(get_share_url(), get_embed_url(), coll_title, owner=can_admin(), is_public=is_public(user, coll_orig), anon=is_anon()) }}
+        {{ sharing_widget(get_share_url(), get_embed_url(), coll_title, owner=can_admin(), is_public=is_public(), anon=is_anon()) }}
     {% endif %}
 </div>
 

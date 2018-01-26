@@ -3,7 +3,8 @@ import redis
 import base64
 
 from warcio.timeutils import sec_to_timestamp, timestamp_now
-from webrecorder.models import User, Collection, Recording
+from webrecorder.models.recording import Recording
+from webrecorder.models.base import BaseAccess
 
 
 # ============================================================================
@@ -58,13 +59,10 @@ class StorageCommitter(object):
 
         return profile
 
-    def is_temp(self, user):
-        return user.startswith(self.temp_prefix)
-
     def commit_file(self, user, collection, dirname, filename, obj_type,
                     update_key, curr_value, update_prop=None):
 
-        if self.is_temp(user):
+        if user.is_anon():
             return True
 
         # not a local filename
@@ -188,12 +186,13 @@ class StorageCommitter(object):
         _, rec = base_key.split(':', 1)
 
         recording = Recording(my_id=rec,
-                              redis=self.redis)
+                              redis=self.redis,
+                              access=BaseAccess())
 
-        collection = recording.get_owner_collection()
-        user = collection.get_prop('owner')
+        collection = recording.get_owner()
+        user = collection.get_owner()
 
-        user_dir = os.path.join(self.record_root_dir, user)
+        user_dir = os.path.join(self.record_root_dir, user.my_id)
 
         warc_key = base_key + ':warc'
         warcs = self.redis.hgetall(warc_key)

@@ -5,6 +5,7 @@ import glob
 import requests
 
 from webrecorder.models import User
+from webrecorder.models.base import BaseAccess
 
 
 # ============================================================================
@@ -44,7 +45,8 @@ class TempChecker(object):
         print('Deleting ' + temp)
 
         user = User(my_id=temp,
-                    redis=self.data_redis)
+                    redis=self.data_redis,
+                    access=BaseAccess())
 
         user.delete_me()
 

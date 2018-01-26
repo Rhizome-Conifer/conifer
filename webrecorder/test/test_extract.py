@@ -74,12 +74,12 @@ class TestExtractContent(FullStackTests):
         assert recs['patch-of-extract-test']['rec_type'] == 'patch'
 
         # Extract Test 2
-        assert recs['extract-test-2']['title'] == 'Extract Test 2'
+        assert recs['extract-test-2']['title'] == 'Extract Test'
         assert recs['extract-test-2']['ra_sources'] == ['ia']
 
         # empty patch
         assert recs['patch-of-extract-test-2']['size'] == 0
-        assert recs['patch-of-extract-test-2']['title'] == 'Patch of Extract Test 2'
+        assert recs['patch-of-extract-test-2']['title'] == 'Patch of Extract Test'
         assert recs['patch-of-extract-test-2']['rec_type'] == 'patch'
 
         # Extract Only Test
