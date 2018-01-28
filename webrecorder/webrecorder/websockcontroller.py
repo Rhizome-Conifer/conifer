@@ -10,8 +10,9 @@ from webrecorder.basecontroller import BaseController
 
 # ============================================================================
 class WebsockController(BaseController):
-    def __init__(self, app, jinja_env, manager, config):
-        super(WebsockController, self).__init__(app, jinja_env, manager, config)
+    def __init__(self, *args, **kwargs):
+        super(WebsockController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
         self.status_update_secs = float(config['status_update_secs'])
 
     def init_routes(self):

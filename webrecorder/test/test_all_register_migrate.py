@@ -3,10 +3,9 @@ from .testutils import FullStackTests
 from mock import patch
 from itertools import count
 
-from webrecorder.admin import init_manager_for_cli, create_user
-
 from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
 
+from webrecorder.models.usermanager import CLIUserManager
 
 import re
 import os
@@ -18,7 +17,7 @@ all_closed = False
 class TestRegisterMigrate(FullStackTests):
     @classmethod
     def setup_class(cls):
-        super(TestRegisterMigrate, cls).setup_class(extra_config_file='test_no_invites_config.yaml')
+        super(TestRegisterMigrate, cls).setup_class(extra_config_file='test_no_invites_config.yaml', storage_worker=True)
         cls.val_reg = ''
 
     def _move_rec(self, url):
@@ -37,7 +36,7 @@ class TestRegisterMigrate(FullStackTests):
             def assert_move():
                 assert all_closed == True
 
-            self.sleep_try(0.1, 5.0, assert_move)
+            #self.sleep_try(0.1, 5.0, assert_move)
 
         return res
 
@@ -58,8 +57,9 @@ class TestRegisterMigrate(FullStackTests):
         assert res.json == {}
 
         user = self.anon_user
+        coll, rec = self.get_coll_rec(user, 'temp', 'abc')
 
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='abc')
+        warc_key = 'r:{rec}:warc'.format(rec=rec)
         assert self.redis.hlen(warc_key) == 1
 
         anon_dir = os.path.join(self.warcs_dir, user)
@@ -104,22 +104,24 @@ class TestRegisterMigrate(FullStackTests):
         assert res.headers['Location'] == 'http://localhost:80/'
 
         user_info = self.redis.hgetall('u:someuser:info')
-        user_info = self.appcont.manager._format_info(user_info)
+        #user_info = self.appcont.manager._format_info(user_info)
         assert user_info['max_size'] == '1000000000'
-        assert user_info['max_coll'] == '10'
         assert user_info['created_at'] != None
 
-        assert self.redis.exists('c:someuser:test-migrate:info')
-        coll_info = self.redis.hgetall('c:someuser:test-migrate:info')
-        coll_info = self.appcont.manager._format_info(coll_info)
+        coll, rec = self.get_coll_rec('someuser', 'test-migrate', None)
+        key_prefix = 'c:{coll}'.format(coll=coll)
 
-        assert coll_info['id'] == 'test-migrate'
+        assert self.redis.exists(key_prefix + ':info')
+        coll_info = self.redis.hgetall(key_prefix + ':info')
+        #coll_info = self.appcont.manager._format_info(coll_info)
+
+        assert coll_info['owner'] == 'someuser'
         assert coll_info['title'] == 'Test Migrate'
         assert coll_info['created_at'] != None
 
         assert user_info['size'] == coll_info['size']
 
-        allwarcs = self.redis.hgetall('c:someuser:test-migrate:warc')
+        allwarcs = self.redis.hgetall(key_prefix + ':warc')
         for n, v in allwarcs.items():
             assert v.decode('utf-8').endswith('/someuser/test-migrate/abc/' + n.decode('utf-8'))
 
@@ -131,7 +133,9 @@ class TestRegisterMigrate(FullStackTests):
 
         self.sleep_try(0.1, 10.0, assert_one_dir)
 
-        assert self.redis.smembers('u:someuser:colls') == {'test-migrate'}
+        #assert self.redis.hgetall('u:someuser:colls') == {'test-migrate'}
+        coll, rec = self.get_coll_rec('someuser', 'test-migrate', None)
+        assert coll != None
 
     def test_logged_in_user_info(self):
         res = self.testapp.get('/someuser')
@@ -207,7 +211,7 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/new-coll-2')
 
         assert 'Created collection' in res.text
-        assert 'New Coll 2' in res.text
+        assert 'New Coll' in res.text
 
         # ensure csrf token present
         m = re.search('name="csrf" value="([^\"]+)"', res.text)
@@ -228,9 +232,9 @@ class TestRegisterMigrate(FullStackTests):
 
         res = self.testapp.post('/api/v1/collections/other-coll/rename/New Coll?user=someuser')
 
-        assert res.json == {'title': 'New Coll 3', 'coll_id': 'new-coll-3', 'rec_id': '*'}
+        assert res.json == {'coll_id': 'new-coll-3'}
 
-        assert self.redis.smembers('u:someuser:colls') == {'new-coll-3', 'new-coll', 'test-migrate', 'new-coll-2'}
+        assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-migrate', 'new-coll-2'}
 
     def test_logged_in_user_info_2(self):
         res = self.testapp.get('/someuser')
@@ -251,8 +255,11 @@ class TestRegisterMigrate(FullStackTests):
 
         # allow recording to be written
         def assert_written():
-            assert self.redis.exists('r:someuser:new-coll:move-test:cdxj')
-            assert self.redis.exists('r:someuser:new-coll:move-test:warc')
+            coll, rec = self.get_coll_rec('someuser', 'new-coll', 'move-test')
+            assert coll
+            assert rec
+            assert self.redis.exists('r:{0}:cdxj'.format(rec))
+            assert self.redis.exists('r:{0}:warc'.format(rec))
 
         self.sleep_try(0.1, 5.0, assert_written)
 
@@ -269,16 +276,21 @@ class TestRegisterMigrate(FullStackTests):
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''new-coll-")
 
+    def get_rec_names(self, user, coll_name):
+        coll, rec = self.get_coll_rec(user, coll_name, None)
+
+        return set(self.redis.hkeys('c:{coll}:recs'.format(coll=coll)))
+
     def test_logged_in_move_rec(self):
-        assert self.redis.smembers('c:someuser:new-coll:recs') == {'move-test'}
-        assert self.redis.smembers('c:someuser:new-coll-2:recs') == set()
+        assert self.get_rec_names('someuser', 'new-coll') == {'move-test'}
+        assert self.get_rec_names('someuser', 'new-coll-2') == set()
 
         res = self._move_rec('/api/v1/recordings/Move Test/move/new-coll-2?user=someuser&coll=new-coll')
 
-        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test', 'title': 'Move Test'}
+        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test'}
 
-        assert self.redis.smembers('c:someuser:new-coll:recs') == set()
-        assert self.redis.smembers('c:someuser:new-coll-2:recs') == {'move-test'}
+        assert self.get_rec_names('someuser', 'new-coll') == set()
+        assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test'}
 
         # rec replay
         res = self.testapp.get('/someuser/new-coll-2/move-test/replay/mp_/http://example.com/')
@@ -301,12 +313,16 @@ class TestRegisterMigrate(FullStackTests):
         res.charset = 'utf-8'
         assert '"rec": "test"' in res.text
 
-        assert self.redis.exists('r:someuser:new-coll:move-test:open')
+        coll, rec = self.get_coll_rec('someuser', 'new-coll', 'move-test')
+
+        assert self.redis.exists('r:{0}:open'.format(rec))
 
         # allow recording to be written
         def assert_written():
-            assert self.redis.exists('r:someuser:new-coll:move-test:cdxj')
-            assert self.redis.exists('r:someuser:new-coll:move-test:warc')
+            assert coll
+            assert rec
+            assert self.redis.exists('r:{0}:cdxj'.format(rec))
+            assert self.redis.exists('r:{0}:warc'.format(rec))
 
         self.sleep_try(0.1, 5.0, assert_written)
 
@@ -316,21 +332,24 @@ class TestRegisterMigrate(FullStackTests):
         assert '"rec": "test"' in res.text
 
     def test_logged_in_move_rec_dupe(self):
-        assert self.redis.smembers('c:someuser:new-coll:recs') == {'move-test'}
-        assert self.redis.smembers('c:someuser:new-coll-2:recs') == {'move-test'}
+        assert self.get_rec_names('someuser', 'new-coll') == {'move-test'}
+        assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test'}
 
         res = self._move_rec('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
-        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test-2', 'title': 'Move Test 2'}
+        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test-2'}
 
-        assert self.redis.smembers('c:someuser:new-coll:recs') == set()
-        assert self.redis.smembers('c:someuser:new-coll-2:recs') == {'move-test', 'move-test-2'}
+        assert self.get_rec_names('someuser', 'new-coll') == set()
+        assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test', 'move-test-2'}
 
         # rec replay
         res = self.testapp.get('/someuser/new-coll-2/move-test-2/replay/mp_/http://httpbin.org/get?rec=test')
         res.charset = 'utf-8'
 
         assert '"rec": "test"' in res.text
+
+        #coll, rec = self.get_coll_rec('someuser', 'new-coll')
+        #assert self.redis.exists('c:{coll}:cdxj'.format(coll=coll))
 
         # coll replay
         res = self.testapp.get('/someuser/new-coll-2/mp_/http://httpbin.org/get?rec=test')
@@ -377,7 +396,7 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/new-coll/move-test/patch/mp_/http://example.com/', status=404)
         assert 'No such page' in res.text
 
-    def test_error_logged_in_replay_coll_1(self):
+    def test_error_logged_out_replay_coll_1(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
         assert 'No such page' in res.text
 
@@ -393,8 +412,9 @@ class TestRegisterMigrate(FullStackTests):
     def test_rename_rec(self):
         res = self.testapp.post('/api/v1/recordings/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
 
-        assert res.json == {'title': 'FOOD BAR', 'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
-        assert self.redis.smembers('c:someuser:test-migrate:recs') == {'food-bar'}
+        assert res.json == {'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
+
+        assert self.get_rec_names('someuser', 'test-migrate') == {'food-bar'}
 
         # rec replay
         res = self.testapp.get('/someuser/test-migrate/food-bar/replay/mp_/http://httpbin.org/get?food=bar')
@@ -411,9 +431,9 @@ class TestRegisterMigrate(FullStackTests):
     def test_rename_coll(self):
         res = self.testapp.post('/api/v1/collections/test-migrate/rename/Test Coll?user=someuser')
 
-        assert res.json == {'title': 'Test Coll', 'coll_id': 'test-coll', 'rec_id': '*'}
+        assert res.json == {'coll_id': 'test-coll'}
 
-        assert self.redis.smembers('u:someuser:colls') == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
+        assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
 
         # rec replay
         res = self.testapp.get('/someuser/test-coll/food-bar/replay/mp_/http://httpbin.org/get?food=bar')
@@ -443,13 +463,13 @@ class TestRegisterMigrate(FullStackTests):
         params = {'csrf': csrf_token}
         res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
 
-        assert self.redis.smembers('u:someuser:colls') == {'new-coll-3', 'new-coll', 'new-coll-2'}
+        assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'new-coll-2'}
 
         assert res.headers['Location'] == 'http://localhost:80/someuser'
 
     def test_create_another_user(self):
-        m = init_manager_for_cli()
-        create_user(m, email='test2@example.com',
+        m = CLIUserManager()
+        m.create_user( email='test2@example.com',
                        username='testauto',
                        passwd='Test12345',
                        role='archivist',

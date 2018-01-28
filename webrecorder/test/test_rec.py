@@ -47,7 +47,7 @@ class TestWebRecRecorder(FullStackTests):
 
         # Rec must be open
         #self.redis.hset('r:{user}:{coll}:{rec}:info'.format(user=user, coll=coll, rec=rec), 'id', rec)
-        self.redis.setex('r:{user}:{coll}:{rec}:open'.format(user=user, coll=coll, rec=rec), 30, 1)
+        self.redis.setex('r:{rec}:open'.format(user=user, coll=coll, rec=rec), 30, 1)
         self.redis.hset('u:{user}:info'.format(user=user), 'size', 0)
         self.redis.hset('u:{user}:info'.format(user=user), 'max_size', 10000)
 
@@ -68,23 +68,23 @@ class TestWebRecRecorder(FullStackTests):
         keys = self.redis.keys()
 
         assert set(keys) == set([
-            'r:USER:COLL:REC:warc',
-            'r:USER:COLL:REC:cdxj',
-            'r:USER:COLL:REC:info',
-            'r:USER:COLL:REC:open',
-            'c:USER:COLL:info',
+            'r:REC:warc',
+            'r:REC:cdxj',
+            'r:REC:info',
+            'r:REC:open',
+            'c:COLL:info',
             'u:USER:info'
         ])
 
         resp.charset = 'utf-8'
         assert '"foo": "bar"' in resp.text
 
-        size = self.redis.hget('r:USER:COLL:REC:info', 'size')
+        size = self.redis.hget('r:REC:info', 'size')
         assert size is not None
-        assert size == self.redis.hget('c:USER:COLL:info', 'size')
+        assert size == self.redis.hget('c:COLL:info', 'size')
         assert size == self.redis.hget('u:USER:info', 'size')
 
-        assert self.redis.hget('r:USER:COLL:REC:info', 'updated_at') is not None
+        assert self.redis.hget('r:REC:info', 'updated_at') is not None
 
     def test_multi_user_rec_2(self):
         resp = self._test_warc_write('http://httpbin.org/get?boo=far', user='USER', coll='COLL', rec='REC2')
@@ -92,15 +92,15 @@ class TestWebRecRecorder(FullStackTests):
         keys = self.redis.keys()
 
         assert set(keys) == set([
-            'r:USER:COLL:REC:warc',
-            'r:USER:COLL:REC2:warc',
-            'r:USER:COLL:REC:cdxj',
-            'r:USER:COLL:REC2:cdxj',
-            'r:USER:COLL:REC:info',
-            'r:USER:COLL:REC:open',
-            'r:USER:COLL:REC2:info',
-            'r:USER:COLL:REC2:open',
-            'c:USER:COLL:info',
+            'r:REC:warc',
+            'r:REC2:warc',
+            'r:REC:cdxj',
+            'r:REC2:cdxj',
+            'r:REC:info',
+            'r:REC:open',
+            'r:REC2:info',
+            'r:REC2:open',
+            'c:COLL:info',
             'u:USER:info'
         ])
 

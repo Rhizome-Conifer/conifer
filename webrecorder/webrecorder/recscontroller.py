@@ -63,14 +63,12 @@ class RecsController(BaseController):
 
             return {'coll_id': collection.name,
                     'rec_id': recording.name,
-                    'title': new_rec_title,
                    }
 
         @self.app.post('/api/v1/recordings/<rec_title>/move/<new_coll_title>')
         def move_recording(rec_title, new_coll_title):
-            user, collection, recording = self.load_recording(rec_title)
-
             rec_name = self.sanitize_title(rec_title)
+            user, collection, recording = self.load_recording(rec_name)
 
             new_coll_name = self.sanitize_title(new_coll_title)
 
@@ -84,12 +82,14 @@ class RecsController(BaseController):
 
             if new_rec_name:
                 msg = 'Recording <b>{0}</b> moved to collection <a href="{1}"><b>{2}</b></a>'
-                msg = msg.format(rec_title, self.get_path(user, collection), new_coll_title)
+                msg = msg.format(rec_title, self.get_path(user.name, new_coll_name), new_coll_title)
                 self.flash_message(msg, 'success')
+                return {'coll_id': new_coll_name, 'rec_id': new_rec_name}
             else:
-                self.flash_message('Error moving {0}: {1}'.format(rec_title, res.get('error_message')))
+                msg = 'Error Moving'
+                self.flash_message(msg, 'error')
+                return {'error_message': msg}
 
-            return res
 
         @self.app.post('/api/v1/recordings/<rec_name>/pages')
         def add_page(rec_name):
@@ -168,10 +168,10 @@ class RecsController(BaseController):
 
             if success:
                 self.flash_message('Recording {0} has been deleted!'.format(rec_name), 'success')
-                self.redirect(self.get_path(user, collection.name))
+                self.redirect(self.get_path(user.name, collection.name))
             else:
                 self.flash_message('There was an error deleting {0}'.format(rec_name))
-                self.redirect(self.get_path(user, collection.name, rec_name))
+                self.redirect(self.get_path(user.name, collection.name, rec_name))
 
     def get_rec_info_for_new(self, user, coll_name, rec_name, action):
         result = {'curr_mode': 'new', 'action': action}

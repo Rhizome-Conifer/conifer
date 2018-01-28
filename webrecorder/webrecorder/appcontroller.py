@@ -38,6 +38,7 @@ from webrecorder.manager import RedisDataManager
 from webrecorder.session import Session, RedisSessionMiddleware
 
 from webrecorder.models.access import SessionAccessCache
+from webrecorder.models.usermanager import UserManager
 
 from webrecorder.basecontroller import BaseController
 
@@ -91,17 +92,23 @@ class AppController(BaseController):
         # Init Jinja
         jinja_env = self.init_jinja_env(config)
 
+        # Init Cork
+        self.cork = WebRecCork.create_cork(self.redis, config)
+
+        # User Manager
+        user_manager = UserManager(redis=self.redis,
+                                   cork=self.cork,
+                                   config=config)
+
         # Init Content Loader/Rewriter
         self.content_app = ContentController(app=bottle_app,
                                         jinja_env=jinja_env,
+                                        user_manager=user_manager,
                                         config=config,
                                         redis=self.redis)
 
         # Init Browser Mgr
         self.browser_mgr = BrowserManager(config, self.browser_redis, self.content_app)
-
-        # Init Cork
-        self.cork = WebRecCork.create_cork(self.redis, config)
 
         # Init Manager
         manager = RedisDataManager(self.redis, self.cork, self.content_app,
@@ -115,6 +122,7 @@ class AppController(BaseController):
             x = controller_type(app=bottle_app,
                                 jinja_env=jinja_env,
                                 manager=manager,
+                                user_manager=user_manager,
                                 config=config)
 
         # Set Error Handler
@@ -132,7 +140,7 @@ class AppController(BaseController):
                                        proxy_host='webrecorder.proxy',
                                        proxy_options=self._get_proxy_options())
 
-        super(AppController, self).__init__(final_app, jinja_env, manager, config)
+        super(AppController, self).__init__(final_app, jinja_env, manager, user_manager, config)
 
     def _get_proxy_options(self):
         opts = {'ca_name': 'Webrecorder HTTPS Proxy CA'}
@@ -187,8 +195,7 @@ class AppController(BaseController):
             return self.content_host
 
         def get_num_collections():
-            curr_user = self.manager.get_curr_user()
-            count = self.manager.num_collections(curr_user) if curr_user else 0
+            count = self.access.session_user.num_collections()
             return count
 
         def get_archives():
@@ -368,12 +375,10 @@ class AppController(BaseController):
             if self.init_upload_id:
                 return self.handle_player_load(resp)
 
-            curr_user = self.manager.get_curr_user()
+            if not self.access.session_user.is_anon():
+                coll_list = self.access.session_user.get_collections()
 
-            if curr_user:
-                coll_list = self.manager.get_collections(curr_user)
-
-                resp['collections'] = coll_list
+                resp['collections'] = [coll.serialize() for coll in coll_list]
                 resp['coll_title'] = ''
                 resp['rec_title'] = ''
 
@@ -420,6 +425,8 @@ class AppController(BaseController):
             return res
 
         def err_handler(out):
+            print(out)
+
             if (isinstance(out.exception, dict) and
                 hasattr(out, 'json_err')):
                 return json_error(out.exception)

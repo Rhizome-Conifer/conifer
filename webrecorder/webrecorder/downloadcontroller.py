@@ -18,8 +18,9 @@ import json
 class DownloadController(BaseController):
     COPY_FIELDS = ['title', 'desc', 'size', 'updated_at', 'created_at']
 
-    def __init__(self, app, jinja_env, manager, config):
-        super(DownloadController, self).__init__(app, jinja_env, manager, config)
+    def __init__(self, *args, **kwargs):
+        super(DownloadController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
         self.paths = config['url_templates']
         self.download_filename = config['download_paths']['filename']
         self.warc_key_templ = config['warc_key_templ']
@@ -38,11 +39,7 @@ class DownloadController(BaseController):
         def logged_in_download_coll_warc(user, coll):
             self.redir_host()
 
-            try:
-                return self.handle_download(user, coll, '*')
-            except:
-                import traceback
-                traceback.print_exc()
+            return self.handle_download(user, coll, '*')
 
     def create_warcinfo(self, creator, title, metadata, source, filename):
         for name, value in iteritems(source.serialize()):

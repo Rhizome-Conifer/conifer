@@ -52,10 +52,16 @@ class WebRecCork(Cork):
         :param registration_code: registration code
         :type registration_code: str.
         """
+        print(self._store.redis.hgetall('h:register'))
+        print('CODE', registration_code)
+        print(self._store.redis.keys())
+
         try:
             data = self._store.pending_registrations.pop(registration_code)
         except KeyError:
             raise AuthException("Invalid registration code.")
+
+        print('DATA', data)
 
         username = data['username']
         if username in self._store.users:
@@ -72,10 +78,6 @@ class WebRecCork(Cork):
         }
         self._store.save_users()
         return username, data['desc']
-
-    def _save_session(self):
-        self._beaker_session['anon'] = None
-        self._beaker_session.save()
 
     @staticmethod
     def create_cork(redis, config):

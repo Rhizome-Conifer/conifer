@@ -18,8 +18,9 @@ from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema
 
 # ============================================================================
 class UserController(BaseController):
-    def __init__(self, app, jinja_env, manager, config):
-        super(UserController, self).__init__(app, jinja_env, manager, config)
+    def __init__(self, *args, **kwargs):
+        super(UserController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
         self.default_user_desc = config['user_desc']
         self.user_usage_key = config['user_usage_key']
         self.temp_usage_key = config['temp_usage_key']
@@ -433,13 +434,13 @@ class UserController(BaseController):
             if self.access.is_anon(user):
                 self.redirect('/' + user.my_id + '/temp')
 
-            if not self.manager.is_valid_user(user):
+            if not self.user_manager.is_valid_user(user):
                 raise HTTPError(404, 'No Such User')
 
             result = {
-                'user': user,
-                'user_info': self.manager.get_user_info(user),
-                'collections': self.manager.get_collections(user),
+                'user': user.name,
+                'user_info': user.serialize(),
+                'collections': [coll.serialize() for coll in user.get_collections()],
             }
 
             if not result['user_info'].get('desc'):
@@ -448,14 +449,16 @@ class UserController(BaseController):
             return result
 
         # User Account Settings
-        @self.app.get('/<user>/_settings')
+        @self.app.get('/<username>/_settings')
         @self.jinja2_view('account.html')
-        def account_settings(user):
-            self.manager.assert_user_is_owner(user)
+        def account_settings(username):
+            user = self.access.get_user(username)
 
-            return {'user': user,
-                    'user_info': self.manager.get_user_info(user),
-                    'num_coll': self.manager.num_collections(user),
+            self.access.assert_is_curr_user(user)
+
+            return {'user': username,
+                    'user_info': user.serialize(),
+                    'num_coll': user.num_collections(),
                    }
 
         # Delete User Account

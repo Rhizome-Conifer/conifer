@@ -7,7 +7,7 @@ from webrecorder.models.base import BaseAccess
 
 
 # ============================================================================
-class SessionAccessCache(object):
+class SessionAccessCache(BaseAccess):
     READ_PREFIX = 'r:'
     WRITE_PREFIX = 'w:'
     PUBLIC = '@public'
@@ -20,12 +20,13 @@ class SessionAccessCache(object):
 
     @property
     def session_user(self):
-        return self.init_session_user()
+        return self.init_session_user(persist=False)
 
-    def init_session_user(self, persist=False):
+    def init_session_user(self, persist=True):
         if not self._session_user:
             self._session_user = SessionUser(sesh=self.sesh,
                                              redis=self.redis,
+                                             access=self,
                                              persist=persist)
 
         return self._session_user
@@ -49,9 +50,9 @@ class SessionAccessCache(object):
 
         return user, collection, recording
 
-    def is_anon(self, user):
+    def is_anon(self, user=None):
         if not user:
-            return False
+            user = self.session_user
 
         return self.sesh.is_anon(user.my_id)
 
@@ -68,6 +69,8 @@ class SessionAccessCache(object):
         return self.sesh.curr_role == 'admin'
 
     def _is_coll_owner(self, collection):
+        print(self.session_user.name)
+        print(collection.get_owner().name)
         return self.session_user.is_owner(collection.get_owner())
 
     def check_write_access(self, collection):
@@ -93,6 +96,8 @@ class SessionAccessCache(object):
         if self._is_coll_owner(collection):
             return True
 
+        print('NOT OWner')
+
         if self.is_anon():
             return False
 
@@ -103,6 +108,7 @@ class SessionAccessCache(object):
 
     def set_public(self, collection, is_public):
         if not self.is_superuser() and not self.can_admin_coll(collection):
+            assert False
             return False
 
         collection.set_prop(self.READ_PREFIX + self.PUBLIC, 1 if is_public else 0)
@@ -113,14 +119,16 @@ class SessionAccessCache(object):
 
     def assert_can_read_coll(self, collection):
         if not self.can_read_coll(collection):
-            raise HTTPError(404, 'No Admin Access')
+            raise HTTPError(404, 'No Read Access')
 
     def can_write_coll(self, collection):
         return self.check_write_access(collection)
 
     def assert_can_write_coll(self, collection):
         if not self.can_write_coll(collection):
-            raise HTTPError(404, 'No Admin Access')
+            print(collection)
+            print(self.session_user)
+            raise HTTPError(404, 'No Write Access')
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
@@ -140,5 +148,9 @@ class SessionAccessCache(object):
     def assert_is_curr_user(self, user):
         if not self.is_curr_user(user):
             raise HTTPError(404, 'Only Valid for Current User')
+
+    def assert_is_logged_in(self):
+        if self.session_user.is_anon():
+            raise HTTPError(404, 'Not Logged In')
 
 

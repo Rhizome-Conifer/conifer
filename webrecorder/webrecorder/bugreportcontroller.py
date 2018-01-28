@@ -10,11 +10,11 @@ import json
 
 # ============================================================================
 class BugReportController(BaseController):
-    def __init__(self, app, jinja_env, manager, config):
-        super(BugReportController, self).__init__(app, jinja_env, manager, config)
+    def __init__(self, *args, **kwargs):
+        super(BugReportController, self).__init__(*args, **kwargs)
 
-        self.redis_issue_handler = RedisIssueHandler(manager.redis,
-                                                     manager.cork,
+        self.redis_issue_handler = RedisIssueHandler(self.manager.redis,
+                                                     self.manager.cork,
                                                      self.get_email_view())
 
         # if GitHub settings provided, use the GitHub Issue Importer

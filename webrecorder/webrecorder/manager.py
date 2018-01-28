@@ -1,4 +1,5 @@
-from webrecorder.models import SessionUser, User, Collection, Recording
+from webrecorder.models import User, Collection, Recording
+
 from bottle import template, request, HTTPError
 
 from webrecorder.models.base import BaseAccess
@@ -15,7 +16,6 @@ class RedisDataManager(object):
         self.config = config
 
         self.content_app = content_app
-
         if self.content_app:
             self.content_app.manager = self
 
@@ -40,11 +40,9 @@ class RedisDataManager(object):
 
         self.dyn_stats_secs = config['dyn_stats_secs']
 
-    def is_valid_user(self, user):
-        if user.is_anon():
-            return True
-
-        return self.cork.user(user.my_id) is not None
+        User.init_props(config)
+        Collection.init_props(config)
+        Recording.init_props(config)
 
     def get_host(self):
         return request.urlparts.scheme + '://' + request.urlparts.netloc

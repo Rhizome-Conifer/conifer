@@ -1,17 +1,9 @@
 from .testutils import FullStackTests
 
-import webrecorder.redisman
-import gevent
-from webrecorder.redisman import init_manager_for_cli
-
-from webrecorder.admin import create_user
 import os
-
 import webtest
 
-from webrecorder.rec.tempchecker import TempChecker
-from webrecorder.rec.worker import Worker
-import gevent
+from webrecorder.models.usermanager import CLIUserManager
 
 
 # ============================================================================
@@ -19,23 +11,18 @@ class TestUpload(FullStackTests):
     @classmethod
     def setup_class(cls, **kwargs):
         os.environ['AUTO_LOGIN_USER'] = 'test'
-        super(TestUpload, cls).setup_class(**kwargs)
+        super(TestUpload, cls).setup_class(temp_worker=True)
 
-        cls.manager = init_manager_for_cli()
+        cls.manager = CLIUserManager()
 
         cls.warc = None
 
-        cls.worker = Worker(TempChecker)
-        gevent.spawn(cls.worker.run)
-
     def teardown_class(cls, *args, **kwargs):
-        cls.worker.stop()
-
         super(TestUpload, cls).teardown_class(*args, **kwargs)
         del os.environ['AUTO_LOGIN_USER']
 
     def test_create_user_def_coll(self):
-        create_user(self.manager, 'test@example.com', 'test', 'TestTest123', 'archivist', 'Test')
+        self.manager.create_user('test@example.com', 'test', 'TestTest123', 'archivist', 'Test')
         res = self.testapp.get('/test/default-collection')
         res.charset = 'utf-8'
         assert '"test"' in res.text
@@ -73,7 +60,7 @@ class TestUpload(FullStackTests):
         res = self.testapp.get('/_upload/' + upload_id + '?user=test')
 
         assert res.json['coll'] == 'default-collection-2'
-        assert res.json['coll_title'] == 'Default Collection 2'
+        assert res.json['coll_title'] == 'Default Collection'
         assert res.json['filename'] == 'example.warc.gz'
         assert res.json['files'] == 1
         assert res.json['total_size'] >= 3000

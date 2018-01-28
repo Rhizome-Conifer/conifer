@@ -1,12 +1,11 @@
 from .testutils import FullStackTests
 
-from webrecorder.redisman import init_manager_for_cli
-
+from webrecorder.models.usermanager import CLIUserManager
 
 class TestAdminAPI(FullStackTests):
 
     def test_cli_manager(self):
-        m = init_manager_for_cli()
+        m = CLIUserManager()
 
         assert type(m.redis.keys('*')) is list
 

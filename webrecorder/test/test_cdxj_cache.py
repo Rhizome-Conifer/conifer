@@ -2,7 +2,6 @@ from .testutils import FullStackTests
 import time
 import os
 
-from webrecorder.redisman import init_manager_for_cli
 from pywb.utils.loaders import load as load_test
 
 from webrecorder.models import User, Collection, Recording
@@ -36,12 +35,8 @@ class TestCDXJCache(FullStackTests):
         super(TestCDXJCache, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
                                               storage_worker=True)
 
-        cls.m = init_manager_for_cli()
-        cls.m.redis.set('n:recs:count', 499)
-        cls.m.redis.set('n:colls:count', 99)
-
-        Recording.OPEN_REC_TTL = 3
-        Collection.COLL_CDXJ_TTL = 2
+        cls.redis.set('n:recs:count', 499)
+        cls.redis.set('n:colls:count', 99)
 
     @classmethod
     def teardown_class(cls):

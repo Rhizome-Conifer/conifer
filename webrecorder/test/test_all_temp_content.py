@@ -18,7 +18,6 @@ from pywb.indexer.cdxindexer import write_cdx_index
 from re import sub
 from six.moves.urllib.parse import urlsplit, quote
 
-from webrecorder.redisman import init_manager_for_cli
 from webrecorder.session import Session
 
 
@@ -37,7 +36,6 @@ class TestTempContent(FullStackTests):
         'n:colls:count',
         'n:recs:count',
         'h:roles',
-        'h:defaults',
         'h:temp-usage',
     ]
 
@@ -60,7 +58,7 @@ class TestTempContent(FullStackTests):
         cls.seshmock = patch('webrecorder.session.RedisSessionMiddleware.make_id', make_id)
         cls.seshmock.start()
 
-        cls.manager = init_manager_for_cli()
+        #cls.manager = init_manager_for_cli()
 
         cls.dyn_stats = []
 
@@ -382,9 +380,9 @@ class TestTempContent(FullStackTests):
         self._assert_rec_keys(user, 'temp', all_recs)
 
         coll, rec = self.get_coll_rec(user, 'temp', 'emmyem-test-recording')
-        info = self.manager.get_content_inject_info(self.anon_user, coll, 'temp', rec, 'emmyem-test-recording')
-        assert info['rec_id'] == 'emmyem-test-recording'
-        assert info['rec_title'] == '%3Cem%3EMy%3C/em%3E test recording'
+        #info = self.manager.get_content_inject_info(self.anon_user, coll, 'temp', rec, 'emmyem-test-recording')
+        #assert info['rec_id'] == 'emmyem-test-recording'
+        #assert info['rec_title'] == '%3Cem%3EMy%3C/em%3E test recording'
 
     def test_anon_new_recording(self):
         res = self._get_anon('/temp/$new')
@@ -498,7 +496,7 @@ class TestTempContent(FullStackTests):
     def test_rename_rec(self):
         res = self.testapp.post('/api/v1/recordings/my-rec2/rename/My%20Recording?user={user}&coll=temp'.format(user=self.anon_user))
 
-        assert res.json == {'title': 'My Recording', 'rec_id': 'my-recording-3', 'coll_id': 'temp'}
+        assert res.json == {'rec_id': 'my-recording-3', 'coll_id': 'temp'}
 
         all_recs = ['my-recording', 'my-recording-2', 'вэбрекордэр', 'my-recording-3', 'test--ok', 'emmyem-test-recording']
 
@@ -635,7 +633,7 @@ class TestTempContent(FullStackTests):
         sesh_redis.flushdb()
 
         def assert_empty_keys():
-            assert set(self.redis.keys()) == set(['h:roles', 'h:defaults', 'h:temp-usage', 'n:colls:count', 'n:recs:count', 'q:del:nginx'])
+            assert set(self.redis.keys()) == set(['h:roles', 'h:temp-usage', 'n:colls:count', 'n:recs:count', 'q:del:nginx'])
             assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
 
         self.sleep_try(0.1, 10.0, assert_empty_keys)

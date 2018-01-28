@@ -27,7 +27,12 @@ class Collection(RedisNamedContainer):
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
     COLL_CDXJ_TTL = 1800
 
-    INFO_INDEX_KEY = '@index_file'
+    INDEX_FILE_KEY = '@index_file'
+
+    @classmethod
+    def init_props(cls, config):
+        cls.COLL_CDXJ_TTL = config['coll_cdxj_ttl']
+        cls.INDEX_FILE_KEY = config['info_index_key']
 
     def create_recording(self, rec_name, **kwargs):
         self.access.assert_can_admin_coll(self)
@@ -56,6 +61,10 @@ class Collection(RedisNamedContainer):
                      'size': 0,
                      'desc': desc,
                     }
+
+        if public:
+            #TODO: standardize prop?
+            self.data['r:@public'] = '1'
 
         with redis_pipeline(self.redis) as pi:
             self.commit(pi)
@@ -123,13 +132,19 @@ class Collection(RedisNamedContainer):
 
         return sorted(pagelist, key=lambda x: x['timestamp'])
 
-
-
     def serialize(self):
         data = super(Collection, self).serialize()
         recordings = self.get_recordings(load=True)
         data['recordings'] = [recording.serialize() for recording in recordings]
         return data
+
+    def rename(self, obj, new_name, new_cont=None):
+        res = super(Collection, self).rename(obj, new_name, new_cont)
+        if res and new_cont and new_cont != self:
+            self.sync_coll_index(exists=True, do_async=True)
+            new_cont.sync_coll_index(exists=True, do_async=True)
+
+        return res
 
     def remove_recording(self, recording, user, delete=False, many=False):
         self.access.assert_can_admin_coll(self)
@@ -191,7 +206,7 @@ class Collection(RedisNamedContainer):
         lock_key = None
         try:
             rec_warc_key = cdxj_key.rsplit(':', 1)[0] + ':warc'
-            cdxj_filename = self.redis.hget(rec_warc_key, self.INFO_INDEX_KEY)
+            cdxj_filename = self.redis.hget(rec_warc_key, self.INDEX_FILE_KEY)
             if not cdxj_filename:
                 logging.debug('No index for ' + rec_warc_key)
                 return

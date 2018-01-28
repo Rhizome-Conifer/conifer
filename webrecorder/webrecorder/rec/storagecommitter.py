@@ -1,6 +1,7 @@
 import os
 import redis
 import base64
+import json
 
 from warcio.timeutils import sec_to_timestamp, timestamp_now
 from webrecorder.models.recording import Recording
@@ -9,6 +10,9 @@ from webrecorder.models.base import BaseAccess
 
 # ============================================================================
 class StorageCommitter(object):
+    DEL_Q = 'q:del:{name}'
+    MOVE_Q = 'q:mov:{name}'
+
     def __init__(self, config):
         super(StorageCommitter, self).__init__()
 
@@ -17,6 +21,9 @@ class StorageCommitter(object):
         self.redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
 
         self.record_root_dir = os.environ['RECORD_ROOT']
+
+        self.warc_path_templ = config['warc_path_templ']
+        self.warc_path_templ = self.record_root_dir + self.warc_path_templ
 
         self.warc_key_templ = config['warc_key_templ']
 
@@ -132,8 +139,36 @@ class StorageCommitter(object):
         except:
             pass
 
+    def process_moves(self, q_name):
+        move_q = self.MOVE_Q.format(name=q_name)
+
+        while True:
+            data = self.redis.lpop(move_q)
+            if not data:
+                break
+
+            move = json.loads(data)
+            print('MOVE', move)
+
+            try:
+                move_from = move['from']
+                if os.path.isfile(move_from):
+                    self.redis.publish('close_file', move_from)
+
+                    move_to = os.path.join(self.warc_path_templ.format(user=move['to_user']),
+                                           move['name'])
+
+                    if move_from != move_to:
+                        os.renames(move_from, move_to)
+                        self.redis.hset(move['hkey'], move['name'], self.full_warc_prefix + move_to)
+
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                print(e)
+
     def process_deletes(self, q_name):
-        del_q = 'q:del:{name}'.format(name=q_name)
+        del_q = self.DEL_Q.format(name=q_name)
 
         while True:
             filename = self.redis.lpop(del_q)
@@ -148,7 +183,6 @@ class StorageCommitter(object):
                     os.remove(filename)
                 except Exception as e:
                     print(e)
-
         return
 
         delete_user = data.get('delete_user')
@@ -171,6 +205,8 @@ class StorageCommitter(object):
     def __call__(self):
         self.process_deletes('s3')
         self.process_deletes('nginx')
+
+        self.process_moves('local')
 
         for cdxj_key in self.redis.scan_iter(self.cdxj_key):
             self.process_cdxj_key(cdxj_key)

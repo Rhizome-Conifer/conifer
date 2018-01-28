@@ -1,6 +1,7 @@
 import time
 import json
 import hashlib
+import os
 
 from six.moves.urllib.parse import urlsplit
 
@@ -29,10 +30,18 @@ class Recording(RedisUniqueComponent):
     WARC_KEY = 'r:{rec}:warc'
 
     DEL_Q = 'q:del:{target}'
+    MOVE_Q = 'q:mov:{target}'
 
     OPEN_REC_TTL = 5400
 
     INDEX_FILE_KEY = '@index_file'
+
+    @classmethod
+    def init_props(cls, config):
+        cls.OPEN_REC_TTL = int(config['open_rec_ttl'])
+        cls.INDEX_FILE_KEY = config['info_index_key']
+
+        cls.WARC_PATH_PREFIX = config['warc_path_templ']
 
     def init_new(self, title, rec_type=None, ra_list=None):
         rec = self.create_new_id()
@@ -106,6 +115,18 @@ class Recording(RedisUniqueComponent):
 
                 pi.rpush(self.DEL_Q.format(target=target), v)
 
+    def move_warcs(self, to_user):
+        move = {}
+        move['hkey'] = self.WARC_KEY.format(rec=self.my_id)
+        move['to_user'] = to_user.name
+
+        with redis_pipeline(self.redis) as pi:
+            for n, v in self.iter_all_files(skip_index=False):
+                move['from'] = v
+                move['name'] = n
+
+                pi.rpush(self.MOVE_Q.format(target='local'), json.dumps(move))
+
     def _get_pagedata(self, pagedata):
         key = self.PAGE_KEY.format(rec=self.my_id)
 
@@ -164,7 +185,7 @@ class Recording(RedisUniqueComponent):
         return {}
 
     def _has_page(self, user, coll, url, ts):
-        self.assert_can_read_coll(user, coll)
+        self.access.assert_can_read_coll(self.get_owner())
 
         all_page_keys = self._get_rec_keys(user, coll, self.page_key)
 
@@ -175,7 +196,7 @@ class Recording(RedisUniqueComponent):
                 return True
 
     def import_pages(self, pagelist):
-        #self.assert_can_admin(user, coll)
+        self.access.assert_can_admin_coll(self.get_owner())
 
         pagemap = {}
 
@@ -189,7 +210,7 @@ class Recording(RedisUniqueComponent):
         return {}
 
     def modify_page(self, new_pagedata):
-        self.access.assert_can_admin_coll(self)
+        self.access.assert_can_admin_coll(self.get_owner())
 
         key = self.PAGE_KEY.format(rec=self.my_id)
 

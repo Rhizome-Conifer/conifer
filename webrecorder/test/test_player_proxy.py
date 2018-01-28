@@ -1,4 +1,4 @@
-from .testutils import TempDirTests, BaseTestClass, FakeRedisTests
+from .testutils import TempDirTests, BaseTestClass, FakeStrictRedis
 
 from io import BytesIO
 
@@ -38,6 +38,8 @@ class BaseTestPlayer(BaseTestClass):
         os.remove(cls.warc_path)
 
         cls.player.app_serv.stop()
+
+        FakeStrictRedis().flushall()
 
         super(BaseTestPlayer, cls).teardown_class()
 

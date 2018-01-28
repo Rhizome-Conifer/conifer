@@ -14,7 +14,7 @@ from datetime import datetime
 from bottle import template, request, HTTPError
 
 from webrecorder.webreccork import ValidationException
-from webrecorder.redisutils import RedisTable, RedisIdMapper
+from webrecorder.redisutils import RedisTable
 from webrecorder.webreccork import WebRecCork
 from webrecorder.session import Session
 

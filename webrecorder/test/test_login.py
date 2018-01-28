@@ -30,7 +30,7 @@ class TestLogin(BaseWRTests):
         cls.invite_key = re.search('invite=([^"]+)', text).group(1)
 
     def test_send_invite(self):
-        m = self.appcont.manager
+        m = self.appcont.user_manager
 
         email_template = 'webrecorder/templates/emailinvite.html'
 
@@ -138,7 +138,6 @@ class TestLogin(BaseWRTests):
 
         assert res.headers['Location'] == 'http://localhost:80/'
 
-
     def test_register_post_fail_dupe(self):
         params = {'password': 'Password1',
                   'confirmpassword': 'Password1',
@@ -179,10 +178,9 @@ class TestLogin(BaseWRTests):
         assert res.headers['Location'] == 'http://localhost:80/'
 
         res = self.redis.hgetall('u:someuser:info')
-        res = self.appcont.manager._format_info(res)
+        #res = self.appcont.manager._format_info(res)
         assert res['size'] == 0
         assert res['max_size'] == '1000000000'
-        assert res['max_coll'] == '10'
         assert res['created_at'] != None
 
     def test_logout(self):

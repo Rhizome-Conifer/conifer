@@ -10,8 +10,9 @@ from webrecorder.webreccork import ValidationException
 
 # ============================================================================
 class CollsController(BaseController):
-    def __init__(self, app, jinja_env, manager, config):
-        super(CollsController, self).__init__(app, jinja_env, manager, config)
+    def __init__(self, *args, **kwargs):
+        super(CollsController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
         self.default_coll_desc = config['coll_desc']
 
     def init_routes(self):
@@ -64,25 +65,18 @@ class CollsController(BaseController):
         def delete_collection(coll):
             user, collection = self.load_user_coll()
 
-            if user.delete_collection(collection):
+            if user.remove_collection(collection, delete=True):
                 return {'deleted_id': coll_name}
 
-        @self.app.post('/api/v1/collections/<coll>/rename/<new_coll_title>')
-        def rename_collection(coll, new_coll_title):
-            user, collection = self.load_user_coll()
+        @self.app.post('/api/v1/collections/<coll_name>/rename/<new_coll_title>')
+        def rename_collection(coll_name, new_coll_title):
+            user, collection = self.load_user_coll(coll_name=coll_name)
 
-            new_coll = self.sanitize_title(new_coll_title)
-
-            #if coll.name == new_coll:
-            #    return {'rec_id': '*', 'coll_id': new_coll, 'title': new_coll_title}
-
-            #if self.manager.has_collection(user, new_coll):
-            #    err_msg = 'collection "{0}" already exists'.format(new_coll)
-            #    return {'error_message': err_msg}
+            new_coll_name = self.sanitize_title(new_coll_title)
 
             new_coll_name = user.rename(collection, new_coll_name)
 
-            return new_coll_name
+            return {'coll_id': new_coll_name}
 
         @self.app.get('/api/v1/collections/<coll_name>/is_public')
         def is_public(coll_name):
@@ -127,7 +121,7 @@ class CollsController(BaseController):
         @self.app.get('/_create')
         @self.jinja2_view('create_collection.html')
         def create_coll_view():
-            self.manager.assert_logged_in()
+            self.access.assert_is_logged_in()
             return {}
 
         @self.app.post('/_create')
@@ -139,20 +133,20 @@ class CollsController(BaseController):
 
             is_public = self.post_get('public') == 'on'
 
-            coll = self.sanitize_title(title)
-
-            user = self.manager.get_curr_user()
+            coll_name = self.sanitize_title(title)
 
             try:
-                if not coll:
+                if not coll_name:
                     raise ValidationException('Invalid Collection Name')
 
-                #self.manager.add_collection(user, coll_name, title, access)
-                collection = self.manager.create_collection(user, coll, title,
-                                                            desc='', public=is_public)
-                self.flash_message('Created collection <b>{0}</b>!'.format(collection['title']), 'success')
+                user = self.access.session_user
+                collection = user.create_collection(coll_name, title=title, desc='', public=is_public)
+
+                self.flash_message('Created collection <b>{0}</b>!'.format(title), 'success')
                 redir_to = self.get_redir_back('/_create')
             except Exception as ve:
+                import traceback
+                traceback.print_exc()
                 self.flash_message(str(ve))
                 redir_to = '/_create'
 
@@ -161,19 +155,19 @@ class CollsController(BaseController):
         @self.app.post(['/_delete_coll'])
         def delete_collection_post():
             self.validate_csrf()
-            user, coll = self.get_user_coll(api=False)
+            user, collection = self.load_user_coll()
 
             success = False
             try:
-                success = self.manager.delete_collection(user, coll)
+                success = user.remove_collection(collection, delete=True)
             except Exception as e:
                 print(e)
 
             if success:
-                self.flash_message('Collection {0} has been deleted!'.format(coll), 'success')
+                self.flash_message('Collection {0} has been deleted!'.format(collection.name), 'success')
 
                 # if anon user/temp collection, delete user and redirect to homepage
-                if self.manager.is_anon(user):
+                if self.access.is_anon(user):
                     self.get_session().delete()
 
                     if self.content_host:
@@ -181,11 +175,11 @@ class CollsController(BaseController):
                     else:
                         self.redirect('/')
                 else:
-                    self.redirect(self.get_path(user))
+                    self.redirect(self.get_path(user.name))
 
             else:
-                self.flash_message('There was an error deleting {0}'.format(coll))
-                self.redirect(self.get_path(user, coll))
+                self.flash_message('There was an error deleting {0}'.format(collection.name))
+                self.redirect(self.get_path(user.name, collection.name))
 
         # Collection view (all recordings)
         @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])

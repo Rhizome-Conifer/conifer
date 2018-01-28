@@ -176,4 +176,3 @@ class TestWebRecRecAPI(FullStackTests):
         res = res.json
 
         assert res['rec_id'] == 'test--special-chars-'
-        assert res['title'] == test_title

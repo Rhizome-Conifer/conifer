@@ -23,8 +23,8 @@ class ContentController(BaseController, RewriterApp):
 
     MODIFY_MODES = ('record', 'patch', 'extract')
 
-    def __init__(self, app, jinja_env, config, redis):
-        BaseController.__init__(self, app, jinja_env, None, config)
+    def __init__(self, app, jinja_env, user_manager, config, redis):
+        BaseController.__init__(self, app, jinja_env, None, user_manager, config)
 
         config['csp-header'] = self.get_csp_header()
 
@@ -148,17 +148,19 @@ class ContentController(BaseController, RewriterApp):
         # UPDATE REMOTE BROWSER CONFIG
         @self.app.get('/api/v1/update_remote_browser/<reqid>')
         def update_remote_browser(reqid):
-            user, coll = self.get_user_coll(api=True)
+            user, collection = self.load_user_coll(api=True)
 
             timestamp = request.query.getunicode('timestamp')
             type_ = request.query.getunicode('type')
 
+            print('UPDATE', collection)
+
             # if switching mode, need to have write access
             # for timestamp, only read access
             if type_:
-                self.manager.assert_can_write(user, coll)
+                self.access.assert_can_write_coll(collection)
             else:
-                self.manager.assert_can_read(user, coll)
+                self.access.assert_can_read_coll(collection)
 
             return self.manager.browser_mgr.update_remote_browser(reqid,
                                                                   type_=type_,
@@ -308,12 +310,15 @@ class ContentController(BaseController, RewriterApp):
 
         try:
             kwargs = info
-            kwargs['coll'] = quote(kwargs['coll'])
-            kwargs['rec'] = kwargs['rec']
+            user = self.access.get_user(info['user'])
+            collection = user.get_collection_by_id(info['coll'], info.get('coll_name', ''))
+            recording = None
 
             if kwargs['type'] == 'replay-coll':
-                self.manager.sync_coll_index(kwargs['user'], kwargs['coll'], exists=False,
-                                             do_async=False)
+                collection.sync_coll_index(exists=False,  do_async=False)
+
+            elif collection:
+                recording = collection.get_recording_by_id(info['rec'], info.get('rec_name', ''))
 
             url = self.add_query(url)
 
@@ -325,7 +330,7 @@ class ContentController(BaseController, RewriterApp):
             remote_ip = info.get('remote_ip')
 
             if remote_ip and info['type'] in self.MODIFY_MODES:
-                if self.manager.is_rate_limited(info['user'], remote_ip):
+                if user.is_rate_limited(remote_ip):
                     raise HTTPError(402, 'Rate Limit')
 
             resp = self.render_content(wb_url, kwargs, request.environ)
@@ -337,6 +342,9 @@ class ContentController(BaseController, RewriterApp):
             return resp
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
+
             @self.jinja2_view('content_error.html')
             def handle_error(status_code, err_body, environ):
                 response.status = status_code
@@ -395,7 +403,7 @@ class ContentController(BaseController, RewriterApp):
             coll_title = 'Temporary Collection'
 
         else:
-            coll_title = coll
+            coll_title = coll_name
             coll_name = self.sanitize_title(coll_title)
 
         collection = user.get_collection_by_name(coll_name)
@@ -483,9 +491,8 @@ class ContentController(BaseController, RewriterApp):
 
             remote_ip = self._get_remote_ip()
 
-            #TODO
-            #if the_user.is_rate_limited(user.my_id, remote_ip):
-            #    raise HTTPError(402, 'Rate Limit')
+            if the_user.is_rate_limited(remote_ip):
+                raise HTTPError(402, 'Rate Limit')
 
             if inv_sources and inv_sources != '*':
                 patch_rec_name = self.patch_of_name(rec, True)
@@ -500,7 +507,11 @@ class ContentController(BaseController, RewriterApp):
 
                 raise HTTPError(404, 'No Such Collection')
 
-            if self.access.check_read_access_public(collection) != 'public':
+            access = self.access.check_read_access_public(collection)
+            if not access:
+                raise HTTPError(404, 'No Such Collection')
+
+            if access != 'public':
                 frontend_cache_header = ('Cache-Control', 'private')
 
         elif type == 'replay':

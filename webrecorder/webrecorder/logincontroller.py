@@ -6,6 +6,7 @@ from os.path import expandvars
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.basecontroller import BaseController
+
 from six.moves.urllib.parse import quote
 
 
@@ -159,7 +160,7 @@ class LoginController(BaseController):
             email = ''
 
             try:
-                email = self.manager.is_valid_invite(invitecode)
+                email = self.user_manager.is_valid_invite(invitecode)
             except ValidationException as ve:
                 self.flash_message(str(ve))
 
@@ -173,7 +174,7 @@ class LoginController(BaseController):
             email = self.post_get('email')
             name = self.post_get('name')
             desc = self.post_get('desc')
-            if self.manager.save_invite(email, name, desc):
+            if self.user_manager.save_invite(email, name, desc):
                 self.flash_message('Thank you for your interest! We will send you an invite to try webrecorder.io soon!', 'success')
                 self.redirect('/')
             else:
@@ -213,7 +214,7 @@ class LoginController(BaseController):
 
             if self.invites_enabled:
                 try:
-                    val_email = self.manager.is_valid_invite(invitecode)
+                    val_email = self.user_manager.is_valid_invite(invitecode)
                     if val_email != email:
                         raise ValidationException('Sorry, this invite can only be used with email: {0}'.format(val_email))
                 except ValidationException as ve:
@@ -224,8 +225,8 @@ class LoginController(BaseController):
                 redir_to += '?invite=' + invitecode
 
             try:
-                self.manager.validate_user(username, email)
-                self.manager.validate_password(password, confirm_password)
+                self.user_manager.validate_user(username, email)
+                self.user_manager.validate_password(password, confirm_password)
 
                 #TODO: set default host?
                 host = self.get_host()
@@ -251,12 +252,12 @@ class LoginController(BaseController):
 
                 # add to announce list if user opted in
                 if opt_in_mailer and self.announce_list:
-                    self.manager.add_to_mailing_list(username, email, name,
-                                                     list_endpoint=self.announce_list)
+                    self.user_manager.add_to_mailing_list(username, email, name,
+                                                          list_endpoint=self.announce_list)
 
                 redir_to = '/'
                 if self.invites_enabled:
-                    self.manager.delete_invite(email)
+                    self.user_manager.delete_invite(email)
 
             except ValidationException as ve:
                 self.flash_message(str(ve))
@@ -285,7 +286,7 @@ class LoginController(BaseController):
                 self.redirect(REGISTER_PATH)
 
             try:
-                username, first_coll = self.manager.create_user(reg)
+                username, first_coll = self.user_manager.create_user(reg)
 
                 #self.flash_message('<b>{0}</b>, welcome to your new archive home page! \
     #Click the <b>Create New Collection</b> button to create your first collection. Happy Archiving!'.format(username), 'success')
@@ -293,7 +294,7 @@ class LoginController(BaseController):
 
                 msg = '<b>{0}</b>, you are now logged in!'
 
-                if first_coll == 'Default Collection':
+                if first_coll.name == 'default-collection':
                     msg += ' The <b>{1}</b> collection has been created for you, and you can begin recording by entering a url below!'
                 else:
                     msg += ' The <b>{1}</b> collection has been permanently saved for you, and you can continue recording by entering a url below!'
@@ -379,9 +380,9 @@ class LoginController(BaseController):
             confirm_password = self.post_get('confirmpassword')
 
             try:
-                self.manager.validate_password(password, confirm_password)
+                self.user_manager.validate_password(password, confirm_password)
 
-                self.manager.cork.reset_password(resetcode, password)
+                self.user_manager.cork.reset_password(resetcode, password)
 
                 self.flash_message('Your password has been successfully reset! \
     You can now <b>login</b> with your new password!', 'success')
@@ -409,13 +410,13 @@ class LoginController(BaseController):
             confirm_password = self.post_get('confirmpassword')
 
             try:
-                self.manager.update_password(curr_password, password, confirm_password)
+                self.user_manager.update_password(curr_password, password, confirm_password)
                 self.flash_message('Password Updated', 'success')
             except ValidationException as ve:
                 self.flash_message(str(ve))
 
-            user = self.manager.get_curr_user()
-            self.redirect(self.get_path(user) + SETTINGS)
+            username = self.access.session_user.name
+            self.redirect(self.get_path(username) + SETTINGS)
 
     def redirect_home_if_logged_in(self):
         sesh = self.get_session()

@@ -32,15 +32,16 @@ EMPTY_DIGEST = '3I42H3S6NNFQ2MSVX7XZKYAYSCX5QBYJ'
 
 # ============================================================================
 class UploadController(BaseController):
-    def __init__(self, app, jinja_env, manager, config):
-        super(UploadController, self).__init__(app, jinja_env, manager, config)
+    def __init__(self, *args, **kwargs):
+        super(UploadController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
         self.upload_path = config['url_templates']['upload']
         self.cdxj_key = config['cdxj_key_templ']
         self.upload_key = config['upload_key_templ']
         self.upload_exp = int(config['upload_status_expire'])
         self.record_host = os.environ['RECORD_HOST']
 
-        self.upload_collection = config['upload_coll']
+        self.upload_coll_info = config['upload_coll']
 
         self.max_detect_pages = config['max_detect_pages']
 
@@ -53,7 +54,7 @@ class UploadController(BaseController):
         def get_upload_status(upload_id):
             user = self.get_user(api=True)
 
-            props = self.manager.get_upload_status(user, upload_id)
+            props = self.get_upload_status(user, upload_id)
 
             if not props:
                 return {'error_message': 'upload expired'}
@@ -72,29 +73,23 @@ class UploadController(BaseController):
         if not expected_size:
             return {'error_message': 'No File Specified'}
 
-        curr_user = self.manager.get_curr_user()
-
-        if not curr_user:
-            #user = self.manager.get_anon_user()
-            #force_coll = 'temp'
-            #is_anon = True
-
+        if self.access.session_user.is_anon():
             return {'error_message': 'Sorry, uploads only available for logged-in users'}
 
-        user = curr_user
+        user = self.access.session_user
         force_coll = request.query.getunicode('force-coll', '')
         is_anon = False
 
-        size_rem = self.manager.get_size_remaining(user)
+        size_rem = user.get_size_remaining()
 
         logger.debug('User Size Rem: ' + str(size_rem))
 
         if size_rem < expected_size:
             return {'error_message': 'Sorry, not enough space to upload this file'}
 
-        if force_coll and not self.manager.has_collection(user, force_coll):
+        if force_coll and not user.has_collection(force_coll):
             if is_anon:
-                self.manager.create_collection(user, force_coll, 'Temporary Collection')
+                user.create_collection(force_coll, 'Temporary Collection')
 
             else:
                 status = 'Collection {0} not found'.format(force_coll)
@@ -118,16 +113,7 @@ class UploadController(BaseController):
         if total_size != expected_size:
             return {'error_message': 'size mismatch: expected {0}, got {1}'.format(expected_size, total_size)}
 
-        upload_id = self._get_upload_id()
-
-        upload_key = self.upload_key.format(user=user, upid=upload_id)
-
-        with redis_pipeline(self.manager.redis) as pi:
-            pi.hset(upload_key, 'size', 0)
-            pi.hset(upload_key, 'total_size', total_size * 2)
-            pi.hset(upload_key, 'filename', filename)
-            pi.hset(upload_key, 'total_files', 1)
-            pi.hset(upload_key, 'files', 1)
+        upload_id, upload_key = self._init_upload_status(user, total_size, 1, filename=filename)
 
         return self.handle_upload(temp_file, upload_id, upload_key, infos, filename,
                                   user, force_coll, total_size)
@@ -153,9 +139,9 @@ class UploadController(BaseController):
             #stream.close()
             return {'error_message': 'No Archive Data Found'}
 
-        with redis_pipeline(self.manager.redis) as pi:
-            pi.hset(upload_key, 'coll', first_coll['id'])
-            pi.hset(upload_key, 'coll_title', first_coll['title'])
+        with redis_pipeline(self.user_manager.redis) as pi:
+            pi.hset(upload_key, 'coll', first_coll.name)
+            pi.hset(upload_key, 'coll_title', first_coll.get_prop('title'))
             pi.hset(upload_key, 'filename', filename)
             pi.expire(upload_key, self.upload_exp)
 
@@ -168,17 +154,36 @@ class UploadController(BaseController):
                            total_size)
 
         return {'upload_id': upload_id,
-                'user': user
+                'user': user.name
                }
 
     def _get_upload_id(self):
         return base64.b32encode(os.urandom(5)).decode('utf-8')
 
+    def _init_upload_status(self, user, total_size, num_files, filename=None, expire=None):
+        upload_id = self._get_upload_id()
+
+        upload_key = self.upload_key.format(user=user.name, upid=upload_id)
+
+        with redis_pipeline(self.user_manager.redis) as pi:
+            pi.hset(upload_key, 'size', 0)
+            pi.hset(upload_key, 'total_size', total_size * 2)
+            pi.hset(upload_key, 'total_files', num_files)
+            pi.hset(upload_key, 'files', num_files)
+
+            if filename:
+                pi.hset(upload_key, 'filename', filename)
+
+            if expire:
+                pi.expire(upload_key, expire)
+
+        return upload_id, upload_key
+
     def launch_upload(self, func, *args):
         gevent.spawn(func, *args)
 
     def get_wam_loader(self):
-        return self.manager.content_app.wam_loader if self.manager.content_app else None
+        return self.user_manager.content_app.wam_loader if self.user_manager.content_app else None
 
     def run_upload(self, upload_key, filename, stream, user, rec_infos, total_size):
         try:
@@ -194,7 +199,7 @@ class UploadController(BaseController):
                     self.do_upload(upload_key,
                                    filename,
                                    stream,
-                                   user,
+                                   user.name,
                                    info['coll'],
                                    info['rec'],
                                    info['offset'],
@@ -205,10 +210,10 @@ class UploadController(BaseController):
 
                 pages = info.get('pages')
                 if pages is None:
-                    pages = self.detect_pages(user, info['coll'], info['rec'])
+                    pages = self.detect_pages(info['coll'], info['rec'])
 
                 if pages:
-                    self.manager.import_pages(user, info['coll'], info['rec'], pages)
+                    info['recording'].import_pages(pages)
 
                 diff = info['offset'] - last_end
                 last_end = info['offset'] + info['length']
@@ -228,12 +233,12 @@ class UploadController(BaseController):
                 diff = total_size - last_end
                 self._add_split_padding(diff, upload_key)
 
-            with redis_pipeline(self.manager.redis) as pi:
+            with redis_pipeline(self.user_manager.redis) as pi:
                 pi.hincrby(upload_key, 'files', -1)
                 pi.hset(upload_key, 'done', 1)
 
     def _add_split_padding(self, diff, upload_key):
-        self.manager.redis.hincrby(upload_key, 'size', diff * 2)
+        self.user_manager.redis.hincrby(upload_key, 'size', diff * 2)
 
     def _har2warc_temp_file(self):
         return SpooledTemporaryFile(max_size=BLOCK_SIZE)
@@ -262,10 +267,10 @@ class UploadController(BaseController):
         out.seek(0)
         return out, size
 
-    def is_public(self, collection):
-        return collection.get('public', False)
+    def is_public(self, info):
+        return info.get('public', False)
 
-    def process_upload(self, user, force_coll, infos, stream, filename, total_size, num_recs):
+    def process_upload(self, user, force_coll_name, infos, stream, filename, total_size, num_recs):
         stream.seek(0)
 
         count = 0
@@ -275,8 +280,8 @@ class UploadController(BaseController):
         collection = None
         recording = None
 
-        if force_coll:
-            collection = self.manager.get_collection(user, force_coll)
+        if force_coll_name:
+            collection = user.get_collection(force_coll_name)
 
         rec_infos = []
 
@@ -284,56 +289,38 @@ class UploadController(BaseController):
             type = info.get('type')
 
             if type == 'collection':
-                if not force_coll:
-                    collection = self._get_existing_coll(user, info, filename)
-
                 if not collection:
-                    collection = info
-                    if not collection.get('id'):
-                        collection['id'] = self.sanitize_title(collection['title'])
-                    actual_collection = self.manager.create_collection(user,
-                                                   collection['id'],
-                                                   collection['title'],
-                                                   collection.get('desc', ''),
-                                                   self.is_public(collection))
-
-                    collection['id'] = actual_collection['id']
-                    collection['title'] = actual_collection['title']
+                    collection = self.make_collection(user, filename, info)
 
             elif type == 'recording':
                 if not collection:
-                    collection = self.default_collection(user, filename)
+                    collection = self.make_collection(user, filename, self.upload_coll_info)
 
-                recording = info
-                recording['id'] = self.sanitize_title(recording['title'])
-                actual_recording = self.manager.create_recording(user,
-                                              collection['id'],
-                                              recording['id'],
-                                              recording['title'],
-                                              collection['title'],
-                                              rec_type=recording.get('rec_type'),
-                                              ra_list=recording.get('ra'))
+                info['id'] = self.sanitize_title(info['title'])
 
-                recording['id'] = actual_recording['id']
-                recording['title'] = actual_recording['title']
+                recording = collection.create_recording(info['id'],
+                                                        title=info['title'],
+                                                        rec_type=info.get('rec_type'),
+                                                        ra_list=info.get('ra'))
+
+                info['id'] = recording.my_id
 
                 count += 1
                 #yield collection, recording
 
                 logger.debug('Processing Upload Rec {0} of {1}'.format(count, num_recs))
 
-                rec_infos.append({'coll': collection['id'],
-                                  'rec': recording['id'],
-                                  'offset': recording['offset'],
-                                  'length': recording['length'],
-                                  'pages': recording.get('pages', None),
+                rec_infos.append({'coll': collection.my_id,
+                                  'rec': recording.my_id,
+                                  'offset': info['offset'],
+                                  'length': info['length'],
+                                  'pages': info.get('pages', None),
+                                  'collection': collection,
+                                  'recording': recording,
                                  })
 
-                self.manager.set_recording_timestamps(user,
-                                                      collection['id'],
-                                                      recording['id'],
-                                                      recording.get('created_at'),
-                                                      recording.get('updated_at'))
+                recording.set_prop('created_at', info.get('created_at'))
+                recording.set_prop('updated_at', info.get('updated_at'))
 
             if not first_coll:
                 first_coll = collection
@@ -343,13 +330,13 @@ class UploadController(BaseController):
     def _get_existing_coll(self, user, info, filename):
         return None
 
-    def detect_pages(self, user, coll, rec):
-        key = self.cdxj_key.format(user=user, coll=coll, rec=rec)
+    def detect_pages(self, coll, rec):
+        key = self.cdxj_key.format(coll=coll, rec=rec)
 
         pages = []
 
-        #for member, score in self.manager.redis.zscan_iter(key):
-        for member in self.manager.redis.zrange(key, 0, -1):
+        #for member, score in self.user_manager.redis.zscan_iter(key):
+        for member in self.user_manager.redis.zrange(key, 0, -1):
             cdxj = CDXObject(member.encode('utf-8'))
 
             if ((not self.max_detect_pages or len(pages) < self.max_detect_pages)
@@ -402,22 +389,18 @@ class UploadController(BaseController):
                          headers=headers,
                          data=stream)
 
-    def default_collection(self, user, filename):
-        collection = self.upload_collection
+    def make_collection(self, user, filename, info):
+        desc = info.get('desc', '').format(filename=filename)
+        public = self.is_public(info)
 
-        desc = collection.get('desc', '').format(filename=filename)
-        public = collection.get('public', False)
+        info['id'] = self.sanitize_title(info['title'])
+        collection = user.create_collection(info['id'],
+                                       title=info['title'],
+                                       desc=desc,
+                                       public=public)
 
-        collection['id'] = self.sanitize_title(collection['title'])
-        actual_collection = self.manager.create_collection(user,
-                                       collection['id'],
-                                       collection['title'],
-                                       desc,
-                                       public)
-
-        collection['id'] = actual_collection['id']
-        collection['title'] = actual_collection['title']
-        collection['type'] = 'collection'
+        info['id'] = collection.name
+        info['type'] = 'collection'
 
         return collection
 
@@ -519,13 +502,52 @@ class UploadController(BaseController):
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
         return warcinfo if valid else None
 
+    def get_upload_status(self, user, upload_id):
+        upload_key = self.upload_key.format(user=user.name, upid=upload_id)
+
+        props = self.user_manager.redis.hgetall(upload_key)
+        if not props:
+            return {}
+
+        props['user'] = user.name
+        props['upload_id'] = upload_id
+
+        total_size = props.get('total_size')
+        if not total_size:
+            return props
+
+        self.user_manager.redis.expire(upload_key, self.upload_exp)
+        props['total_size'] = int(total_size)
+        props['size'] = int(props.get('size', 0))
+        props['files'] = int(props['files'])
+        props['total_files'] = int(props['total_files'])
+
+        if props.get('files') == 0:
+            props['size'] = props['total_size']
+
+        return props
+
 
 # ============================================================================
 class InplaceLoader(UploadController):
-    def __init__(self, manager, indexer, upload_id):
-        super(InplaceLoader, self).__init__(None, None, manager, manager.config)
+    def __init__(self, user, manager, user_manager, indexer, upload_id, create_coll=True):
+        super(InplaceLoader, self).__init__(app=None,
+                                            jinja_env=None,
+                                            manager=manager,
+                                            user_manager=user_manager,
+                                            config=user_manager.config)
         self.indexer = indexer
         self.upload_id = upload_id
+        self.user_manager = user_manager
+
+        if not create_coll:
+            self.the_collection = None
+            return
+
+        self.the_collection = user.create_collection(self.upload_coll_info['id'],
+                                                     title=self.upload_coll_info['title'],
+                                                     desc=self.upload_coll_info['desc'],
+                                                     public=self.upload_coll_info['public'])
 
     def _get_upload_id(self):
         return self.upload_id
@@ -533,7 +555,7 @@ class InplaceLoader(UploadController):
     def init_routes(self):
         pass
 
-    def is_public(self, collection):
+    def is_public(self, info):
         return True
 
     def multifile_upload(self, user, files):
@@ -542,16 +564,9 @@ class InplaceLoader(UploadController):
         for filename in files:
             total_size += os.path.getsize(filename)
 
-        upload_id = self._get_upload_id()
-
-        upload_key = self.upload_key.format(user=user, upid=upload_id)
-
-        with redis_pipeline(self.manager.redis) as pi:
-            pi.hset(upload_key, 'size', 0)
-            pi.hset(upload_key, 'total_size', total_size * 2)
-            pi.hset(upload_key, 'total_files', len(files))
-            pi.hset(upload_key, 'files', len(files))
-            pi.expire(upload_key, 120)
+        upload_id, upload_key = self._init_upload_status(user, total_size,
+                                                         num_files=len(files),
+                                                         expire=self.upload_exp)
 
         gevent.sleep(0)
 
@@ -562,9 +577,9 @@ class InplaceLoader(UploadController):
                 size = os.path.getsize(filename)
                 fh = open(filename, 'rb')
 
-                self.manager.redis.hset(upload_key, 'filename', filename)
+                self.user_manager.redis.hset(upload_key, 'filename', filename)
 
-                stream = SizeTrackingReader(fh, size, self.manager.redis, upload_key)
+                stream = SizeTrackingReader(fh, size, self.user_manager.redis, upload_key)
 
                 if filename.endswith('.har'):
                     stream, expected_size = self.har2warc(filename, stream)
@@ -585,8 +600,8 @@ class InplaceLoader(UploadController):
                 if fh:
                     rem = size - fh.tell()
                     if rem > 0:
-                        self.manager.redis.hincrby(upload_key, 'size', rem)
-                    self.manager.redis.hincrby(upload_key, 'files', -1)
+                        self.user_manager.redis.hincrby(upload_key, 'size', rem)
+                    self.user_manager.redis.hincrby(upload_key, 'files', -1)
                     fh.close()
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
@@ -605,7 +620,7 @@ class InplaceLoader(UploadController):
         self.indexer.add_urls_to_index(stream, params, filename, length)
 
     def _add_split_padding(self, diff, upload_key):
-        self.manager.redis.hincrby(upload_key, 'size', diff)
+        self.user_manager.redis.hincrby(upload_key, 'size', diff)
 
     def _har2warc_temp_file(self):
         return NamedTemporaryFile(suffix='.warc.gz', delete=False)
@@ -616,14 +631,16 @@ class InplaceLoader(UploadController):
     def get_wam_loader(self):
         return self.indexer.wam_loader
 
-    def _get_existing_coll(self, user, info, filename):
+    def make_collection(self, user, filename, info):
         if info.get('title') == 'Temporary Collection':
             info['title'] = 'Collection'
             if not info.get('desc'):
-                info['desc'] = self.upload_collection.get('desc', '').format(filename=filename)
-        else:
-        # for now, force player collections to have id 'collection' for predictable paths
-            info['id'] = 'collection'
+                info['desc'] = self.upload_coll_info.get('desc', '').format(filename=filename)
 
-        return None
+        self.the_collection.set_prop('title', info['title'])
+        self.the_collection.set_prop('desc', info['desc'])
+        # for now, force player collections to have id 'collection' for predictable paths
+        #    info['id'] = 'collection'
+
+        return self.the_collection
 

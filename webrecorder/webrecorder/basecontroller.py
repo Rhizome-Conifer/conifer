@@ -10,10 +10,11 @@ import os
 
 # ============================================================================
 class BaseController(object):
-    def __init__(self, app, jinja_env, manager, config):
+    def __init__(self, app, jinja_env, manager, user_manager, config):
         self.app = app
         self.jinja_env = jinja_env
         self.manager = manager
+        self.user_manager = user_manager
         self.config = config
 
         self.app_host = os.environ['APP_HOST']
@@ -62,7 +63,7 @@ class BaseController(object):
 
         user = self.access.get_user(user)
 
-        if not user or not self.manager.is_valid_user(user):
+        if not user or not self.user_manager.is_valid_user(user):
             self._raise_error(404, 'No such user', api=api)
 
         return user
@@ -103,17 +104,14 @@ class BaseController(object):
         return request.environ['webrec.session']
 
     def fill_anon_info(self, resp):
-        sesh = self.get_session()
-
         resp['anon_disabled'] = self.anon_disabled
 
-        if sesh.is_anon():
-            anon_user = sesh.anon_user
-            anon_coll = self.manager.get_collection(anon_user, 'temp')
+        if self.access.session_user.is_anon():
+            anon_coll = self.access.session_user.get_collection_by_name('temp')
             if anon_coll:
-                resp['anon_user'] = anon_user
-                resp['anon_size'] = anon_coll['size']
-                resp['anon_recordings'] = len(anon_coll['recordings'])
+                resp['anon_user'] = self.access.session_user.name
+                resp['anon_size'] = anon_coll.size
+                resp['anon_recordings'] = [rec.serialize() for rec in anon_coll.get_recordings()]
                 return True
 
         return False

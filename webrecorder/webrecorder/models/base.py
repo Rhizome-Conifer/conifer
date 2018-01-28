@@ -152,7 +152,7 @@ class RedisNamedContainer(RedisUniqueComponent):
 
         obj.name = new_name
         new_cont = new_cont or self
-        return new_cont.add_object(obj)
+        return new_cont.add_object(obj, owner=True)
 
     def move(self, obj, new_container):
         return self.rename(obj, obj.name, new_container)

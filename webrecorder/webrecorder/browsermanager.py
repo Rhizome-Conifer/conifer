@@ -44,7 +44,11 @@ class BrowserManager(object):
     def init_cont_browser_sesh(self):
         remote_addr = request.environ['REMOTE_ADDR']
 
+        print(self.browser_redis.keys())
+
         container_data = self.browser_redis.hgetall('ip:' + remote_addr)
+
+        print('DATA', container_data)
 
         if not container_data or 'user' not in container_data:
             print('Data not found for remote ' + remote_addr)
@@ -87,8 +91,10 @@ class BrowserManager(object):
 
         container_data = {'upstream_url': kwargs['upstream_url'],
                           'user': kwargs['user'],
-                          'coll': kwargs['coll_orig'],
-                          'rec': kwargs['rec_orig'],
+                          'coll': kwargs['coll'],
+                          'rec': kwargs['rec'],
+                          'coll_name': kwargs['coll_name'],
+                          'rec_name': kwargs['rec_name'],
                           'request_ts': wb_url.timestamp,
                           'url': wb_url.url,
                           'type': kwargs['type'],
