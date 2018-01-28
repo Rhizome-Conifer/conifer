@@ -13,8 +13,8 @@ class BugReportController(BaseController):
     def __init__(self, *args, **kwargs):
         super(BugReportController, self).__init__(*args, **kwargs)
 
-        self.redis_issue_handler = RedisIssueHandler(self.manager.redis,
-                                                     self.manager.cork,
+        self.redis_issue_handler = RedisIssueHandler(self.user_manager.redis,
+                                                     self.user_manager.cork,
                                                      self.get_email_view())
 
         # if GitHub settings provided, use the GitHub Issue Importer
@@ -44,11 +44,11 @@ class BugReportController(BaseController):
 
         now = str(datetime.utcnow())
 
-        user = self.manager.get_curr_user()
-        report['user'] = user
+        user = self.access.session_user
+        report['user'] = user.name
         report['time'] = now
         report['ua'] = ua
-        report['user_email'] = self.manager.get_user_email(user)
+        report['user_email'] = self.user_manager.get_user_email(user.name)
         if not report.get('email'):
             report['email'] = report['user_email']
 

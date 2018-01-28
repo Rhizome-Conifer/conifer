@@ -89,7 +89,9 @@ class Collection(RedisNamedContainer):
 
     def get_recordings(self, load=True):
         recordings = self.get_objects(Recording)
+        print(recordings)
         for recording in recordings:
+            print(recording.data)
             recording.owner = self
             if load:
                 recording.load()

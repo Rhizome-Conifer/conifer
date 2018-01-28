@@ -49,6 +49,15 @@ class UserManager(object):
         self.remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
                                  in ('true', '1', 'yes'))
 
+        # custom cork auth decorators
+        self.admin_view = self.cork.make_auth_decorator(role='admin',
+                                                        fixed_role=True,
+                                                        fail_redirect='/_login')
+        self.auth_view = self.cork.make_auth_decorator(role='archivist',
+                                                       fail_redirect='/_login')
+        self.beta_user = self.cork.make_auth_decorator(role='beta-archivist',
+                                                       fail_redirect='/_login')
+
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
         all_users = RedisTable(self.redis, 'h:users')

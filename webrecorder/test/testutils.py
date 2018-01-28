@@ -14,7 +14,7 @@ from warcio.bufferedreaders import ChunkedDataReader
 from io import BytesIO
 
 from fakeredis import FakeStrictRedis
-from webrecorder.appcontroller import AppController
+from webrecorder.maincontroller import MainController
 
 from webrecorder.fullstackrunner import FullStackRunner
 
@@ -70,8 +70,8 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
             }
             return config
 
-        import webrecorder.appcontroller
-        webrecorder.appcontroller.load_wr_config = load_wr_config
+        import webrecorder.maincontroller
+        webrecorder.maincontroller.load_wr_config = load_wr_config
 
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'], decode_responses=True)
 
@@ -80,8 +80,8 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         if kwargs.get('no_app'):
             return
 
-        cls.appcont = AppController()
-        cls.testapp = webtest.TestApp(cls.appcont.app)
+        cls.maincont = MainController()
+        cls.testapp = webtest.TestApp(cls.maincont.app)
 
         if init_anon:
             res = cls.testapp.get('/api/v1/anon_user')

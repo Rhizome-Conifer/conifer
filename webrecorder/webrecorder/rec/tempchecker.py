@@ -15,11 +15,13 @@ class TempChecker(object):
 
         self.redis_base_url = os.environ['REDIS_BASE_URL']
 
-        self.data_redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
+        self.data_redis = redis.StrictRedis.from_url(self.redis_base_url,
+                                                     decode_responses=True)
 
         # beaker always uses db 0, so using db 0
         #self.redis_base_url = self.redis_base_url.rsplit('/', 1)[0] + '/0'
-        self.sesh_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
+        self.sesh_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'],
+                                                     decode_responses=True)
 
         self.temp_prefix = config['temp_prefix']
         self.record_root_dir = os.environ['RECORD_ROOT']

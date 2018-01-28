@@ -1,25 +1,25 @@
+import re
+import os
+
 from bottle import request, HTTPError, redirect as bottle_redirect
 from functools import wraps
 from six.moves.urllib.parse import quote
+
 from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
-
-
-import re
-import os
 
 
 # ============================================================================
 class BaseController(object):
-    def __init__(self, app, jinja_env, manager, user_manager, config):
-        self.app = app
-        self.jinja_env = jinja_env
-        self.manager = manager
-        self.user_manager = user_manager
-        self.config = config
+    def __init__(self, *args, **kwargs):
+        self.app = kwargs['app']
+        self.jinja_env = kwargs['jinja_env']
+        self.user_manager = kwargs['user_manager']
+        self.config = kwargs['config']
+        self.redis = kwargs['redis']
 
         self.app_host = os.environ['APP_HOST']
         self.content_host = os.environ['CONTENT_HOST']
-        self.cache_template = config.get('cache_template')
+        self.cache_template = self.config.get('cache_template')
 
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
 
@@ -146,7 +146,7 @@ class BaseController(object):
         return res
 
     def get_host(self):
-        return self.manager.get_host()
+        return request.urlparts.scheme + '://' + request.urlparts.netloc
 
     def redirect(self, url):
         if url.startswith('/'):

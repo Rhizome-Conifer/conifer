@@ -6,9 +6,9 @@ default_coll: ''
 
 default_max_size: 10000000000000
 
-init_upload_id: '@INIT'
-init_upload_user: 'local'
-init_upload_coll: 'collection'
+init_import_id: '@INIT'
+init_import_user: 'local'
+init_import_coll: 'collection'
 
 cdxj_key_templ: 'c:{coll}:cdxj'
 

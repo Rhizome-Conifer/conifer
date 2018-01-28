@@ -116,22 +116,6 @@ class RecsController(BaseController):
             pages = recording.list_pages()
             return {'pages': pages}
 
-        @self.app.post('/api/v1/recordings/<rec>/tag')
-        @self.manager.beta_user()
-        def tag_page(rec):
-            user, coll = self.get_user_coll(api=True)
-
-            # check recording exists and user has write permissions
-            rec = self._ensure_rec_exists(user, coll, rec)
-            self.manager.assert_can_write(user, coll)
-
-            page_data = request.json
-            tags = page_data.get('tags', [])
-            pg_id = page_data.get('id', None)
-
-            if pg_id:
-                self.manager.tag_page(tags, user, coll, rec, pg_id)
-
         @self.app.get('/api/v1/recordings/<rec_name>/num_pages')
         def get_num_pages(rec_name):
             user, collection, recording = self.load_recording(rec_name)

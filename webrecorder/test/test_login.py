@@ -30,7 +30,7 @@ class TestLogin(BaseWRTests):
         cls.invite_key = re.search('invite=([^"]+)', text).group(1)
 
     def test_send_invite(self):
-        m = self.appcont.user_manager
+        m = self.maincont.user_manager
 
         email_template = 'webrecorder/templates/emailinvite.html'
 

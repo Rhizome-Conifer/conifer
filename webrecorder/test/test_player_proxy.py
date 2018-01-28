@@ -80,6 +80,16 @@ class BaseTestPlayer(BaseTestClass):
 
 # ============================================================================
 class TestPlayer(BaseTestPlayer):
+    def test_proxy_home_redirect_to_coll(self):
+        res = self.session.get(self.app_host + '/', allow_redirects=True)
+
+        # one redirect
+        assert len(res.history) == 1
+
+        # final url collection
+        assert res.status_code == 200
+        assert res.url.endswith('/local/collection')
+
     # non-proxy replay, Timestamp specified explicitly
     def test_rewrite_replay_latest(self):
         res = self.session.get(self.app_host + '/local/collection/mp_/http://example.com/')

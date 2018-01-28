@@ -23,10 +23,7 @@ class SnapshotController(BaseController):
             return self.snapshot_cont()
 
     def snapshot(self):
-        user, coll = self.get_user_coll(api=True)
-
-        if not self.manager.has_collection(user, coll):
-            return {'error_message' 'collection not found'}
+        user, collection = self.load_user_coll()
 
         html_text = request.body.read().decode('utf-8')
 
@@ -53,7 +50,7 @@ class SnapshotController(BaseController):
 
         html_text = html_unrewriter.unrewrite(html_text, host=host)
 
-        return self.write_snapshot(user, coll, url, title, html_text, referrer, user_agent)
+        return self.write_snapshot(user, collection, url, title, html_text, referrer, user_agent)
 
     def snapshot_cont(self):
         info = self.manager.browser_mgr.init_cont_browser_sesh()
@@ -84,22 +81,24 @@ class SnapshotController(BaseController):
         if origin:
             response.headers['Access-Control-Allow-Origin'] = origin
 
-        return self.write_snapshot(user, coll, url,
+        #TODO
+        return self.write_snapshot(user, collection, url,
                                    title, html_text, referrer,
                                    user_agent, browser)
 
-    def write_snapshot(self, user, coll, url, title, html_text, referrer,
+    def write_snapshot(self, user, collection, url, title, html_text, referrer,
                        user_agent, browser=None):
 
         snap_title = 'Static Snapshots'
 
-        snap_rec = self.sanitize_title(snap_title)
+        snap_rec_name = self.sanitize_title(snap_title)
 
-        if not self.manager.has_recording(user, coll, snap_rec):
-            recording = self.manager.create_recording(user, coll, snap_rec, snap_title)
+        recording = collection.get_recording_by_name(snap_rec_name)
+        if not recording:
+            recording = collection.create_recording(snap_rec_name, title=snap_title)
 
-        kwargs = dict(user=user,
-                      coll=quote(coll),
+        kwargs = dict(user=user.name,
+                      coll=collection.my_id,
                       rec=quote(snap_rec, safe='/*'),
                       type='snapshot')
 
@@ -147,7 +146,7 @@ class SnapshotController(BaseController):
         if browser:
             page_data['browser'] = browser
 
-        res = self.manager.add_page(user, coll, snap_rec, page_data)
+        res = recording.add_page(page_data)
 
         return {'snapshot': page_data}
 

@@ -4,10 +4,9 @@ import os
 
 from webrecorder.standalone.standalone import StandaloneRunner
 from webrecorder.rec.webrecrecorder import WebRecRecorder
-from webrecorder.uploadcontroller import InplaceLoader
 
+from webrecorder.models.importer import InplaceImporter, ImportStatusChecker
 from webrecorder.models.usermanager import CLIUserManager
-from webrecorder.manager import RedisDataManager
 
 from webrecorder.standalone.serializefakeredis import FakeRedisSerializer
 
@@ -80,9 +79,9 @@ class WebrecPlayerRunner(StandaloneRunner):
 
             user = user_manager.get_user('local')
 
-            uploader = InplaceLoader(user, None, user_manager, None, '@INIT', create_coll=False)
+            status_checker = ImportStatusChecker(user_manager.redis)
 
-            upload_status = uploader.get_upload_status(user, '@INIT')
+            upload_status = status_checker.get_upload_status(user, '@INIT')
 
             collection = user.get_collection_by_name('collection')
 
@@ -90,8 +89,8 @@ class WebrecPlayerRunner(StandaloneRunner):
                 if collection and user_manager.redis.exists('c:{coll}:cdxj'.format(coll=collection.my_id)):
                     self.serializer.save_db()
         except Exception as e:
-            #if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
-            traceback.print_exc()
+            if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+                traceback.print_exc()
 
             logging.debug('Error Closing, Not Saved: ' + str(e))
 
@@ -113,11 +112,10 @@ class WebrecPlayerRunner(StandaloneRunner):
 
         indexer = WebRecRecorder.make_wr_indexer(manager.config)
 
-        all_manager = RedisDataManager(manager.redis,
-                                       manager.cork, None, None, None,
-                                       manager.config)
-
-        uploader = InplaceLoader(user, all_manager, manager, indexer, '@INIT')
+        uploader = InplaceImporter(manager.redis,
+                                   manager.config,
+                                   user,
+                                   indexer, '@INIT', create_coll=True)
 
         files = list(self.get_archive_files(self.inputs))
 

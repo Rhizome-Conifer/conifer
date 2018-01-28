@@ -35,13 +35,13 @@ SETTINGS = '/_settings'
 # ============================================================================
 class LoginController(BaseController):
     def __init__(self, *args, **kwargs):
-        config = kwargs.get('config')
+        super(LoginController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
+        self.cork = kwargs['cork']
 
         self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
         invites = expandvars(config.get('invites_enabled', 'true')).lower()
         self.invites_enabled = invites in ('true', '1', 'yes')
-
-        super(LoginController, self).__init__(*args, **kwargs)
 
     def init_routes(self):
         # Login/Logout
@@ -80,7 +80,7 @@ class LoginController(BaseController):
             # if a collection is being moved, auth user
             # and then check for available space
             # if not enough space, don't continue with login
-            if move_info and (self.manager.cork.
+            if move_info and (self.cork.
                               is_authenticate(username, password)):
 
                 if not self.manager.has_space_for_new_coll(username,
@@ -90,7 +90,7 @@ class LoginController(BaseController):
                     self.redirect('/')
                     return
 
-            if not self.manager.cork.login(username, password):
+            if not self.cork.login(username, password):
                 self.flash_message('Invalid Login. Please Try Again')
                 redir_to = LOGIN_PATH
                 self.redirect(redir_to)
@@ -110,7 +110,7 @@ class LoginController(BaseController):
             remember_me = (self.post_get('remember_me') == '1')
             sesh.logged_in(remember_me)
 
-            temp_prefix = self.manager.temp_prefix
+            temp_prefix = self.user_manager.temp_prefix
 
             redir_to = request.headers.get('Referer')
             host = self.get_host()
@@ -138,7 +138,7 @@ class LoginController(BaseController):
                 url += path
                 redir_to = url
 
-            self.manager.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
+            self.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
 
 
         # Register/Invite/Confirm
@@ -200,7 +200,7 @@ class LoginController(BaseController):
             if decoy_name:
                 return self.redirect(redir_to)
 
-            if username.startswith(self.manager.temp_prefix):
+            if username.startswith(self.user_manager.temp_prefix):
                 self.flash_message('Sorry, this is not a valid username')
                 self.redirect(redir_to)
                 return
@@ -238,7 +238,7 @@ class LoginController(BaseController):
 
                 desc = json.dumps(desc)
 
-                self.manager.cork.register(username, password, email, role='archivist',
+                self.cork.register(username, password, email, role='archivist',
                               max_level=50,
                               subject='webrecorder.io Account Creation',
                               email_template='webrecorder/templates/emailconfirm.html',
@@ -335,7 +335,7 @@ class LoginController(BaseController):
             host = self.get_host()
 
             try:
-                self.manager.cork.send_password_reset_email(username=username,
+                self.cork.send_password_reset_email(username=username,
                                           email_addr=email,
                                           subject='webrecorder.io password reset confirmation',
                                           email_template='webrecorder/templates/emailreset.html',
@@ -403,7 +403,7 @@ class LoginController(BaseController):
         # Update Password
         @self.app.post(UPDATE_PASS_PATH)
         def update_password():
-            self.manager.cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+            self.cork.require(role='archivist', fail_redirect=LOGIN_PATH)
 
             curr_password = self.post_get('curr_password')
             password = self.post_get('password')

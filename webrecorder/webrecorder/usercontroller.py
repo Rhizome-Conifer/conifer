@@ -21,6 +21,9 @@ class UserController(BaseController):
     def __init__(self, *args, **kwargs):
         super(UserController, self).__init__(*args, **kwargs)
         config = kwargs['config']
+
+        self.cork = kwargs['cork']
+
         self.default_user_desc = config['user_desc']
         self.user_usage_key = config['user_usage_key']
         self.temp_usage_key = config['temp_usage_key']
@@ -30,31 +33,31 @@ class UserController(BaseController):
     def init_routes(self):
 
         @self.app.route(['/api/v1/settings'], ['GET', 'PUT'])
-        @self.manager.admin_view()
+        @self.user_manager.admin_view()
         def internal_settings():
             settings = {}
-            config = self.manager.redis.hgetall('h:defaults')
-            tags = list(self.manager.redis.zscan_iter(self.tags_key))
+            config = self.redis.hgetall('h:defaults')
+            tags = list(self.redis.zscan_iter(self.tags_key))
 
             if request.method == 'PUT':
                 data = json.loads(request.forms.json)
                 config.update(data['settings'])
                 # commit to redis
-                self.manager.redis.hmset('h:defaults', config)
+                self.redis.hmset('h:defaults', config)
 
                 incoming_tags = [t for t in data['tags']]
                 existing_tags = [t for t, s in tags]
                 # add tags
                 for tag in incoming_tags:
                     if tag not in existing_tags:
-                        self.manager.redis.zadd(self.tags_key, 0, self.sanitize_tag(tag))
+                        self.redis.zadd(self.tags_key, 0, self.sanitize_tag(tag))
 
                 # remove tags
                 for tag in existing_tags:
                     if tag not in incoming_tags:
-                        self.manager.redis.zrem(self.tags_key, self.sanitize_tag(tag))
+                        self.redis.zrem(self.tags_key, self.sanitize_tag(tag))
 
-                tags = list(self.manager.redis.zscan_iter(self.tags_key))
+                tags = list(self.redis.zscan_iter(self.tags_key))
 
             # descending order
             tags.reverse()
@@ -65,12 +68,12 @@ class UserController(BaseController):
             return settings
 
         @self.app.get(['/api/v1/dashboard', '/api/v1/dashboard/'])
-        @self.manager.admin_view()
+        @self.user_manager.admin_view()
         def api_dashboard():
             cache_key = self.cache_template.format('dashboard')
             expiry = 5 * 60  # 5 min
 
-            cache = self.manager.redis.get(cache_key)
+            cache = self.redis.get(cache_key)
 
             if cache:
                 return json.loads(cache)
@@ -83,8 +86,8 @@ class UserController(BaseController):
                 data['username'] = user
                 results.append(data)
 
-            temp = self.manager.redis.hgetall(self.temp_usage_key)
-            user = self.manager.redis.hgetall(self.user_usage_key)
+            temp = self.redis.hgetall(self.temp_usage_key)
+            user = self.redis.hgetall(self.user_usage_key)
             temp = [(k, int(v)) for k, v in temp.items()]
             user = [(k, int(v)) for k, v in user.items()]
 
@@ -101,14 +104,14 @@ class UserController(BaseController):
                 'user_usage': sorted(user, key=itemgetter(0)),
             }
 
-            self.manager.redis.setex(cache_key,
+            self.redis.setex(cache_key,
                                      expiry,
                                      json.dumps(data, cls=CustomJSONEncoder))
 
             return data
 
         @self.app.get(['/api/v1/users', '/api/v1/users/'])
-        @self.manager.admin_view()
+        @self.user_manager.admin_view()
         def api_users():
             """Full admin API resource of all users.
                Containing user info and public collections
@@ -167,18 +170,18 @@ class UserController(BaseController):
 
         @self.app.get(['/api/v1/user_roles'])
         def api_get_user_roles():
-            return {"roles": [x for x in self.manager.cork._store.roles]}
+            return {"roles": [x for x in self.cork._store.roles]}
 
         @self.app.get('/api/v1/temp-users')
-        @self.manager.admin_view()
+        @self.user_manager.admin_view()
         def temp_users():
             """ Resource returning active temp users
             """
-            temp_users_keys = self.manager.redis.keys('u:{0}*:info'.format(self.temp_user_key))
+            temp_users_keys = self.redis.keys('u:{0}*:info'.format(self.temp_user_key))
             temp_users = []
 
             if len(temp_users_keys):
-                with self.manager.redis.pipeline() as pi:
+                with self.redis.pipeline() as pi:
                     for user in temp_users_keys:
                         pi.hgetall(user)
                     temp_users = pi.execute()
@@ -222,10 +225,10 @@ class UserController(BaseController):
             return {}
 
         @self.app.post(['/api/v1/users', '/api/v1/users/'])
-        @self.manager.admin_view()
+        @self.user_manager.admin_view()
         def api_create_user():
             """API enpoint to create a user with schema validation"""
-            available_roles = [x for x in self.manager.cork._store.roles]
+            available_roles = [x for x in self.cork._store.roles]
             users = self.manager.get_users()
             emails = [u[1]['email_addr'] for u in users.items()]
             data = request.json
@@ -245,22 +248,22 @@ class UserController(BaseController):
                 return {'errors': err}
 
             # create user
-            self.manager.cork._store.users[data['username']] = {
+            self.cork._store.users[data['username']] = {
                 'role': data['role'],
-                'hash': self.manager.cork._hash(data['username'],
+                'hash': self.cork._hash(data['username'],
                                                 data['password']).decode('ascii'),
                 'email_addr': data['email'],
                 'desc': '{{"name":"{name}"}}'.format(name=data.get('name', '')),
                 'creation_date': str(datetime.utcnow()),
                 'last_login': str(datetime.utcnow()),
             }
-            self.manager.cork._store.save_users()
+            self.cork._store.save_users()
 
             # add user account defaults
             key = self.manager.user_key.format(user=data['username'])
             now = int(time.time())
 
-            max_size, max_coll = self.manager.redis.hmget('h:defaults',
+            max_size, max_coll = self.redis.hmget('h:defaults',
                                                           ['max_size', 'max_coll'])
             if not max_size:
                 max_size = self.manager.default_max_size
@@ -268,7 +271,7 @@ class UserController(BaseController):
             if not max_coll:
                 max_coll = self.manager.default_max_coll
 
-            with redis.utils.pipeline(self.manager.redis) as pi:
+            with redis.utils.pipeline(self.redis) as pi:
                 pi.hset(key, 'max_size', max_size)
                 pi.hset(key, 'max_coll', max_coll)
                 pi.hset(key, 'created_at', now)
@@ -294,7 +297,7 @@ class UserController(BaseController):
                 )
 
         @self.app.get(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
-        @self.manager.admin_view()
+        @self.user_manager.admin_view()
         def api_get_user(username):
             """API enpoint to return user info"""
             users = self.manager.get_users()
@@ -331,7 +334,7 @@ class UserController(BaseController):
             return {'user': user_data}
 
         @self.app.put(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
-        @self.manager.auth_view()
+        @self.user_manager.auth_view()
         def api_update_user(username):
             """API enpoint to update user info
 
@@ -341,7 +344,7 @@ class UserController(BaseController):
                   patch once availabile.
             """
             users = self.manager.get_users()
-            available_roles = [x for x in self.manager.cork._store.roles]
+            available_roles = [x for x in self.cork._store.roles]
 
             if username not in users:
                 self._raise_error(404, 'No such user')
@@ -380,7 +383,7 @@ class UserController(BaseController):
                 # convert GB to bytes
                 max_size = int(max_size * 1000000000)
 
-                with redis.utils.pipeline(self.manager.redis) as pi:
+                with redis.utils.pipeline(self.redis) as pi:
                     pi.hset(key, 'max_size', max_size)
 
             if 'role' in data and self.manager.is_superuser():
@@ -416,7 +419,7 @@ class UserController(BaseController):
             return {'user': user_data}
 
         @self.app.delete(['/api/v1/users/<user>', '/api/v1/users/<user>/'])
-        @self.manager.admin_view()
+        @self.user_manager.admin_view()
         def api_delete_user(user):
             """API enpoint to delete a user"""
             if user not in self.manager.get_users():
@@ -470,7 +473,7 @@ class UserController(BaseController):
 
                 redir_to = '/'
                 request.environ['webrec.delete_all_cookies'] = 'all'
-                self.manager.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
+                self.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
             else:
                 self.flash_message('There was an error deleting {0}'.format(coll))
                 self.redirect(self.get_path(user))

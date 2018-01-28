@@ -1,51 +1,15 @@
-from webrecorder.models import User, Collection, Recording
-
-from bottle import template, request, HTTPError
-
-from webrecorder.models.base import BaseAccess
-from six.moves.urllib.parse import quote, urlsplit
-
 from webrecorder.utils import redis_pipeline
 
-
 # ============================================================================
-class RedisDataManager(object):
-    def __init__(self, redis, cork, content_app, browser_redis, browser_mgr, config):
+class DynStats(object):
+    def __init__(self, redis, config):
         self.redis = redis
-        self.cork = cork
         self.config = config
-
-        self.content_app = content_app
-        if self.content_app:
-            self.content_app.manager = self
-
-        self.browser_redis = browser_redis
-        self.browser_mgr = browser_mgr
-
-        # custom cork auth decorators
-        self.admin_view = self.cork.make_auth_decorator(role='admin',
-                                                        fixed_role=True,
-                                                        fail_redirect='/_login')
-        self.auth_view = self.cork.make_auth_decorator(role='archivist',
-                                                       fail_redirect='/_login')
-        self.beta_user = self.cork.make_auth_decorator(role='beta-archivist',
-                                                       fail_redirect='/_login')
-
-
-        self.default_max_anon_size = int(config['default_max_anon_size'])
-        self.temp_prefix = config['temp_prefix']
 
         self.dyn_stats_key_templ = config['dyn_stats_key_templ']
         self.dyn_ref_templ = config['dyn_ref_templ']
 
         self.dyn_stats_secs = config['dyn_stats_secs']
-
-        User.init_props(config)
-        Collection.init_props(config)
-        Recording.init_props(config)
-
-    def get_host(self):
-        return request.urlparts.scheme + '://' + request.urlparts.netloc
 
     def _res_url_templ(self, base_templ, params, url):
         rec = params['rec']
@@ -98,4 +62,3 @@ class RedisDataManager(object):
             self.redis.expire(dyn_stats_key, self.dyn_stats_secs)
 
         return stats
-

@@ -20,6 +20,7 @@ class BrowserManager(object):
             gevent.spawn(self.browser_load_loop)
 
         self.content_app = content_app
+        self.content_app.browser_mgr = self
 
         self.proxy_host = config['proxy_host']
 

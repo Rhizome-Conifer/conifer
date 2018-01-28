@@ -14,6 +14,8 @@ from webrecorder.basecontroller import BaseController
 from webrecorder.load.wamloader import WAMLoader
 from webrecorder.utils import get_bool
 
+from webrecorder.models.dynstats import DynStats
+
 
 # ============================================================================
 class ContentController(BaseController, RewriterApp):
@@ -23,21 +25,26 @@ class ContentController(BaseController, RewriterApp):
 
     MODIFY_MODES = ('record', 'patch', 'extract')
 
-    def __init__(self, app, jinja_env, user_manager, config, redis):
-        BaseController.__init__(self, app, jinja_env, None, user_manager, config)
+    def __init__(self, *args, **kwargs):
+        BaseController.__init__(self, *args, **kwargs)
+
+        config = kwargs['config']
 
         config['csp-header'] = self.get_csp_header()
 
+        # inited later
+        self.browser_mgr = None
+
         RewriterApp.__init__(self,
                              framed_replay=True,
-                             jinja_env=jinja_env,
+                             jinja_env=kwargs['jinja_env'],
                              config=config)
 
         self.paths = config['url_templates']
 
         self.cookie_key_templ = config['cookie_key_templ']
 
-        self.cookie_tracker = CookieTracker(redis)
+        self.cookie_tracker = CookieTracker(self.redis)
 
         self.record_host = os.environ['RECORD_HOST']
         self.live_host = os.environ['WARCSERVER_HOST']
@@ -47,6 +54,8 @@ class ContentController(BaseController, RewriterApp):
 
         self.wam_loader = WAMLoader()
         self._init_client_archive_info()
+
+        self.dyn_stats = DynStats(self.redis, config)
 
     def _init_client_archive_info(self):
         self.client_archives = {}
@@ -153,8 +162,6 @@ class ContentController(BaseController, RewriterApp):
             timestamp = request.query.getunicode('timestamp')
             type_ = request.query.getunicode('type')
 
-            print('UPDATE', collection)
-
             # if switching mode, need to have write access
             # for timestamp, only read access
             if type_:
@@ -162,9 +169,9 @@ class ContentController(BaseController, RewriterApp):
             else:
                 self.access.assert_can_read_coll(collection)
 
-            return self.manager.browser_mgr.update_remote_browser(reqid,
-                                                                  type_=type_,
-                                                                  timestamp=timestamp)
+            return self.browser_mgr.update_remote_browser(reqid,
+                                                          type_=type_,
+                                                          timestamp=timestamp)
         # PROXY
         @self.app.route('/_proxy/<url:path>', method='ANY')
         def do_proxy(url):
@@ -304,7 +311,7 @@ class ContentController(BaseController, RewriterApp):
             return self.redir_host(None, request.query.getunicode('path', '/'))
 
     def do_proxy(self, url):
-        info = self.manager.browser_mgr.init_cont_browser_sesh()
+        info = self.browser_mgr.init_cont_browser_sesh()
         if not info:
             return {'error_message': 'conn not from valid containerized browser'}
 
@@ -562,7 +569,7 @@ class ContentController(BaseController, RewriterApp):
 
         # top-frame replay but through a proxy, redirect to original
         if is_top_frame and 'wsgiprox.proxy_host' in request.environ:
-            self.manager.browser_mgr.update_local_browser(wb_url_obj, kwargs)
+            self.browser_mgr.update_local_browser(wb_url_obj, kwargs)
             return redirect(wb_url_obj.url)
 
         try:
@@ -815,7 +822,7 @@ class ContentController(BaseController, RewriterApp):
             request.environ.get('HTTP_HOST') in referrer):
             referrer = url
 
-        self.manager.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
+        self.dyn_stats.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser
@@ -833,7 +840,7 @@ class ContentController(BaseController, RewriterApp):
         kwargs['remote_ip'] = self._get_remote_ip()
 
         # container redis info
-        inject_data = self.manager.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)
+        inject_data = self.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)
         if 'error_message' in inject_data:
             self._raise_error(400, inject_data['error_message'])
 

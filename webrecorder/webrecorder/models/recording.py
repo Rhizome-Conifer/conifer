@@ -66,7 +66,6 @@ class Recording(RedisUniqueComponent):
                 ra_key = self.RA_KEY.format(rec=self.my_id)
                 pi.sadd(ra_key, *ra_list)
 
-            #TODO
             pi.setex(open_rec_key, self.OPEN_REC_TTL, 1)
 
         return rec
