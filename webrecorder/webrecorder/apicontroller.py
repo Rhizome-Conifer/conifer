@@ -29,7 +29,12 @@ class ApiController(BaseController):
             remember_me = (data.get('remember_me') in ('1', 'on'))
             sesh.logged_in(remember_me)
 
-            return {'username': sesh.curr_user, 'role': sesh.curr_role}
+            return {
+                'username': sesh.curr_user,
+                'role': sesh.curr_role,
+                'coll_count': self.manager.num_collections(username),
+                'anon': False
+            }
 
         @self.app.get('/api/v1/logout')
         def logout():

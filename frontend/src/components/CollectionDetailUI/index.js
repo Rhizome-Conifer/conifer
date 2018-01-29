@@ -306,20 +306,6 @@ class CollectionDetailUI extends Component {
                           sort={this.sort}
                           sortBy={collection.getIn(['sortBy', 'sort'])}
                           sortDirection={collection.getIn(['sortBy', 'dir'])}>
-                          {
-                            canAdmin &&
-                              <Column
-                                width={20}
-                                dataKey="fav"
-                                cellRenderer={() => <span className="glyphicon glyphicon-star" />} />
-                          }
-                          {
-                            canAdmin &&
-                              <Column
-                                width={20}
-                                dataKey="bookmark"
-                                cellRenderer={() => <span className="glyphicon glyphicon-bookmark" />} />
-                          }
                           <Column
                             width={200}
                             label="timestamp"
@@ -338,7 +324,7 @@ class CollectionDetailUI extends Component {
                             dataKey="url"
                             flexGrow={1} />
                           <Column
-                            width={100}
+                            width={150}
                             label="remote browser"
                             dataKey="browser"
                             columnData={{ browsers }}

@@ -7,11 +7,11 @@
 .wr-header-btn {
     border: none;
     background: transparent;
-    color: $link;
+    color: $white;
     padding: 0;
 
     &:hover {
-        color: $linkHover;
+        text-decoration: underline;
     }
 }
 
