@@ -45,20 +45,33 @@ class BrowserManager(object):
     def init_cont_browser_sesh(self):
         remote_addr = request.environ['REMOTE_ADDR']
 
-        print(self.browser_redis.keys())
-
         container_data = self.browser_redis.hgetall('ip:' + remote_addr)
-
-        print('DATA', container_data)
 
         if not container_data or 'user' not in container_data:
             print('Data not found for remote ' + remote_addr)
             return
 
-        sesh = request.environ['webrec.session']
-        sesh.set_restricted_user(container_data['user'])
+        username = container_data.get('user')
+
+        sesh = self.get_session()
+        sesh.set_restricted_user(username)
         sesh.set_id(self.browser_sesh_id(container_data['reqid']))
+
         container_data['ip'] = remote_addr
+
+        the_user = self.access.get_user(username)
+
+        collection = the_user.get_collection_by_id(container_data['coll'],
+                                                   container_data.get('coll_name', ''))
+        recording = None
+
+        if collection:
+            recording = collection.get_recording_by_id(container_data.get('rec'),
+                                                       container_data.get('rec_name'))
+
+        container_data['the_user'] = the_user
+        container_data['collection'] = collection
+        container_data['recording'] = recording
         return container_data
 
     def update_local_browser(self, wb_url, kwargs):
@@ -177,3 +190,10 @@ class BrowserManager(object):
         self.browser_redis.hmset('ip:' + ip, container_data)
 
         return {}
+
+    def get_session(self):
+        return request.environ['webrec.session']
+
+    @property
+    def access(self):
+        return request.environ['webrec.access']

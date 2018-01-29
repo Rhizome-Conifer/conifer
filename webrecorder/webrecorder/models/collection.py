@@ -73,12 +73,13 @@ class Collection(RedisNamedContainer):
 
     def get_recording_by_name(self, rec_name):
         rec = self.name_to_id(rec_name)
-        if not rec:
-            return None
 
         return self.get_recording_by_id(rec, rec_name)
 
     def get_recording_by_id(self, rec, rec_name):
+        if not rec or rec == '*':
+            return None
+
         recording = Recording(my_id=rec,
                               name=rec_name,
                               redis=self.redis,
@@ -87,11 +88,12 @@ class Collection(RedisNamedContainer):
         recording.owner = self
         return recording
 
+    def num_recordings(self):
+        return self.num_objects()
+
     def get_recordings(self, load=True):
         recordings = self.get_objects(Recording)
-        print(recordings)
         for recording in recordings:
-            print(recording.data)
             recording.owner = self
             if load:
                 recording.load()
@@ -108,6 +110,18 @@ class Collection(RedisNamedContainer):
         recs = self.redis.hvals(comp_map)
 
         return [key_pattern.replace('*', rec) for rec in recs]
+
+    def count_pages(self):
+        self.access.assert_can_read_coll(self)
+
+        all_page_keys = self._get_rec_keys(self.PAGE_KEY)
+
+        count = 0
+
+        for key in all_page_keys:
+            count += self.redis.hlen(key)
+
+        return count
 
     def list_coll_pages(self):
         all_page_keys = self._get_rec_keys(self.PAGE_KEY)

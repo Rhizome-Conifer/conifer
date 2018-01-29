@@ -53,8 +53,6 @@ class AppController(BaseController):
         status_checker = ImportStatusChecker(self.redis)
 
         upload_status = status_checker.get_upload_status(user, self.init_import_id)
-        print('STATUS', upload_status)
-        print(self.redis.hgetall('r:1:info'))
 
         # if upload already finished, redirect to known coll
         if not upload_status or upload_status.get('done'):

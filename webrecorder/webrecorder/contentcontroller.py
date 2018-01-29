@@ -42,8 +42,6 @@ class ContentController(BaseController, RewriterApp):
 
         self.paths = config['url_templates']
 
-        self.cookie_key_templ = config['cookie_key_templ']
-
         self.cookie_tracker = CookieTracker(self.redis)
 
         self.record_host = os.environ['RECORD_HOST']
@@ -135,13 +133,12 @@ class ContentController(BaseController, RewriterApp):
             return {'data': items, 'keys': keys}
 
         # COOKIES
-        @self.app.get(['/<user>/<coll>/$add_cookie'], method='POST')
-        def add_cookie(user, coll):
-            if not self.manager.has_collection(user, coll):
-                self._raise_error(404, 'Collection not found',
-                                  api=True, id=coll)
+        @self.app.get(['/<user>/<coll_name>/$add_cookie'], method='POST')
+        def add_cookie(user, coll_name):
+            user, collection = self.load_user_coll()
 
-            rec = request.query.getunicode('rec', '*')
+            rec_name = request.query.getunicode('rec', '*')
+            recording = collection.get_collection_by_name(rec_name)
 
             name = request.forms.getunicode('name')
             value = request.forms.getunicode('value')
@@ -150,7 +147,7 @@ class ContentController(BaseController, RewriterApp):
             if not domain:
                 return {'error_message': 'no domain'}
 
-            self.add_cookie(user, coll, rec, name, value, domain)
+            self.add_cookie(user, collection, recording, name, value, domain)
 
             return {'success': domain}
 
@@ -317,15 +314,12 @@ class ContentController(BaseController, RewriterApp):
 
         try:
             kwargs = info
-            user = self.access.get_user(info['user'])
-            collection = user.get_collection_by_id(info['coll'], info.get('coll_name', ''))
-            recording = None
+            user = info['the_user']
+            collection = info['collection']
+            recording = info['recording']
 
             if kwargs['type'] == 'replay-coll':
                 collection.sync_coll_index(exists=False,  do_async=False)
-
-            elif collection:
-                recording = collection.get_recording_by_id(info['rec'], info.get('rec_name', ''))
 
             url = self.add_query(url)
 
@@ -660,18 +654,18 @@ class ContentController(BaseController, RewriterApp):
         return url
 
     def get_cookie_key(self, kwargs):
-        sesh = self.get_session()
-        id = sesh.get_id()
-        kwargs['id'] = id
-        if kwargs.get('rec') == '*':
-            kwargs['rec'] = '<all>'
+        sesh_id = self.get_session().get_id()
+        return self.dyn_stats.get_cookie_key(kwargs['the_user'],
+                                             kwargs['collection'],
+                                             kwargs['recording'],
+                                             sesh_id=sesh_id)
 
-        return self.cookie_key_templ.format(**kwargs)
-
-    def add_cookie(self, user, coll, rec, name, value, domain):
-        key = self.get_cookie_key(dict(user=user,
-                                       coll=coll,
-                                       rec=rec))
+    def add_cookie(self, user, collection, recording, name, value, domain):
+        sesh_id = self.get_session().get_id()
+        key = self.dyn_stats.get_cookie_key(user,
+                                            collection,
+                                            recording,
+                                            sesh_id=sesh_id)
 
         self.cookie_tracker.add_cookie(key, domain, name, value)
 

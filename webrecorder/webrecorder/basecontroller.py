@@ -111,7 +111,7 @@ class BaseController(object):
             if anon_coll:
                 resp['anon_user'] = self.access.session_user.name
                 resp['anon_size'] = anon_coll.size
-                resp['anon_recordings'] = [rec.serialize() for rec in anon_coll.get_recordings()]
+                resp['anon_recordings'] = anon_coll.num_recordings()
                 return True
 
         return False
@@ -196,7 +196,7 @@ class BaseController(object):
 
     @property
     def access(self):
-        return request['webrec.access']
+        return request.environ['webrec.access']
 
 
 

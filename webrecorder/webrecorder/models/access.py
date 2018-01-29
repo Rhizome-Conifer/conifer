@@ -69,8 +69,6 @@ class SessionAccessCache(BaseAccess):
         return self.sesh.curr_role == 'admin'
 
     def _is_coll_owner(self, collection):
-        print(self.session_user.name)
-        print(collection.get_owner().name)
         return self.session_user.is_owner(collection.get_owner())
 
     def check_write_access(self, collection):
@@ -95,8 +93,6 @@ class SessionAccessCache(BaseAccess):
 
         if self._is_coll_owner(collection):
             return True
-
-        print('NOT OWner')
 
         if self.is_anon():
             return False
@@ -126,8 +122,6 @@ class SessionAccessCache(BaseAccess):
 
     def assert_can_write_coll(self, collection):
         if not self.can_write_coll(collection):
-            print(collection)
-            print(self.session_user)
             raise HTTPError(404, 'No Write Access')
 
     # for now, equivalent to is_owner(), but a different

@@ -157,9 +157,11 @@ class RedisNamedContainer(RedisUniqueComponent):
     def move(self, obj, new_container):
         return self.rename(obj, obj.name, new_container)
 
+    def num_objects(self):
+        return int(self.redis.hlen(self.get_comp_map()))
+
     def get_objects(self, cls):
         all_objs = self.redis.hgetall(self.get_comp_map())
-        print(all_objs)
         obj_list = [cls(my_id=val,
                         name=name,
                         redis=self.redis,

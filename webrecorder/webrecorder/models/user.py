@@ -22,6 +22,9 @@ class User(RedisNamedContainer):
 
     RATE_LIMIT_KEY = 'ipr:{ip}:{H}'
 
+    URL_SKIP_KEY = 'us:{user}:s:{url}'
+    SKIP_KEY_SECS = 330
+
     @classmethod
     def init_props(cls, config):
         cls.MAX_USER_SIZE = int(config['default_max_size'])
@@ -33,6 +36,9 @@ class User(RedisNamedContainer):
         cls.rate_limit_restricted_hours = int(os.environ.get('RATE_LIMIT_RESTRICTED_HOURS', cls.rate_limit_hours))
 
         cls.rate_restricted_ips = os.environ.get('RATE_LIMIT_RESTRICTED_IPS', '').split(',')
+
+        cls.URL_SKIP_KEY = config['skip_key_templ']
+        cls.SKIP_KEY_SECS = int(config['skip_key_secs'])
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -76,12 +82,13 @@ class User(RedisNamedContainer):
 
     def get_collection_by_name(self, coll_name):
         coll = self.name_to_id(coll_name)
-        if not coll:
-            return None
 
         return self.get_collection_by_id(coll, coll_name)
 
     def get_collection_by_id(self, coll, coll_name):
+        if not coll:
+            return None
+
         collection = Collection(my_id=coll,
                                 name=coll_name,
                                 redis=self.redis,
@@ -103,7 +110,7 @@ class User(RedisNamedContainer):
         return collections
 
     def num_collections(self):
-        return self.redis.hlen(self.get_comp_map())
+        return self.num_objects()
 
     def move(self, collection, new_name, new_user):
         if not self.rename(collection, new_name, new_user):
@@ -155,6 +162,10 @@ class User(RedisNamedContainer):
         self.access.assert_is_curr_user(self)
 
         return self.get_size_remaining() <= 0
+
+    def mark_skip_url(self, url):
+        key = self.URL_SKIP_KEY.format(user=self.my_id,  url=url)
+        r = self.redis.setex(key, self.SKIP_KEY_SECS, 1)
 
     def is_anon(self):
         return self.name.startswith('temp-')

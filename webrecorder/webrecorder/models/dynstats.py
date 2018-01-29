@@ -8,10 +8,11 @@ class DynStats(object):
 
         self.dyn_stats_key_templ = config['dyn_stats_key_templ']
         self.dyn_ref_templ = config['dyn_ref_templ']
+        self.dyn_cookie_templ = config['dyn_cookie_templ']
 
         self.dyn_stats_secs = config['dyn_stats_secs']
 
-    def _res_url_templ(self, base_templ, params, url):
+    def _res_url_templ(self, base_templ, params, url=''):
         rec = params['rec']
         if not rec or rec == '*':
             base_url = base_templ['coll']
@@ -48,17 +49,34 @@ class DynStats(object):
             if ra_recording:
                 ra_recording.track_remote_archive(pi, source)
 
-    def get_dyn_stats(self, user, coll, rec, sesh_id, url):
-        params = {'user': user,
-                  'coll': coll,
-                  'rec': rec,
+    def get_dyn_stats(self, user, collection, recording, sesh_id, stats_urls):
+        params = {'user': user.name,
+                  'coll': collection.my_id,
+                  'rec': recording.my_id if recording else 0,
                   'id': sesh_id}
 
-        dyn_stats_key = self._res_url_templ(self.dyn_stats_key_templ,
-                                             params, url)
+        sum_stats = {}
 
-        stats = self.redis.hgetall(dyn_stats_key)
-        if stats:
+        for url in stats_urls:
+            dyn_stats_key = self._res_url_templ(self.dyn_stats_key_templ,
+                                                params, url)
+
+            stats = self.redis.hgetall(dyn_stats_key)
+            if not stats:
+                continue
+
             self.redis.expire(dyn_stats_key, self.dyn_stats_secs)
 
-        return stats
+            for stat, value in stats.items():
+                sum_stats[stat] = int(value) + int(sum_stats.get(stat, 0))
+
+
+        return sum_stats
+
+    def get_cookie_key(self, user, collection, recording, sesh_id):
+        params = {'user': user.name,
+                  'coll': collection.my_id,
+                  'rec': recording.my_id if recording else 0,
+                  'id': sesh_id}
+
+        return self._res_url_templ(self.dyn_cookie_templ, params)

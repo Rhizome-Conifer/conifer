@@ -174,7 +174,9 @@ temp_usage_key: 'h:temp-usage'
 
 rate_limit_key: 'ipr:{ip}:{H}'
 
-cookie_key_templ: 'r:{rec}:{id}:cookie:'
+dyn_cookie_templ:
+    'rec': 'r:{rec}:{id}:cookie:'
+    'coll': 'c:{coll}:{id}:cookie:'
 
 dyn_stats_key_templ:
     'rec': 'r:{rec}:{id}:stats:'

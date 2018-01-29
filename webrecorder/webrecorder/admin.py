@@ -8,7 +8,6 @@ import time
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 from datetime import datetime
-from getpass import getpass
 from six import iteritems
 from string import ascii_lowercase as alpha
 
@@ -46,11 +45,11 @@ def main(args=None):
     elif r.invite:
         do_invite(m, r.invite)
     elif r.create_user is not None:
-        create_user(m, *r.create_user)
+        m.create_user(*r.create_user)
     elif r.modify_user:
-        modify_user(m)
+        m.modify_user()
     elif r.delete_user:
-        delete_user(m)
+        m.delete_user()
     else:
         print('All systems go! See --help for usage')
 
