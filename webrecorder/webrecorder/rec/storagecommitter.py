@@ -272,7 +272,7 @@ class StorageCommitter(object):
         return False
 
     def get_storage(self, user, collection):
-        if self.is_temp(user):
+        if user.is_anon():
             return None
 
         storage_type = collection.get_prop('storage_type')

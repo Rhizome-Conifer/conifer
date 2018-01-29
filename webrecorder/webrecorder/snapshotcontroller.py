@@ -13,6 +13,11 @@ from warcio.timeutils import timestamp_to_datetime, datetime_to_iso_date
 
 # ============================================================================
 class SnapshotController(BaseController):
+    def __init__(self, *args, **kwargs):
+        super(SnapshotController, self).__init__(*args, **kwargs)
+        self.browser_mgr = kwargs['browser_mgr']
+        self.content_app = kwargs['content_app']
+
     def init_routes(self):
         @self.app.route('/_snapshot', method='PUT')
         def snapshot():
@@ -53,12 +58,12 @@ class SnapshotController(BaseController):
         return self.write_snapshot(user, collection, url, title, html_text, referrer, user_agent)
 
     def snapshot_cont(self):
-        info = self.manager.browser_mgr.init_cont_browser_sesh()
+        info = self.browser_mgr.init_cont_browser_sesh()
         if not info:
             return {'error_message': 'conn not from valid containerized browser'}
 
-        user = info['user']
-        coll = info['coll']
+        user = info['the_user']
+        collection = info['collection']
 
         browser = info['browser']
 
@@ -104,7 +109,7 @@ class SnapshotController(BaseController):
 
         params = {'url': url}
 
-        upstream_url = self.manager.content_app.get_upstream_url('', kwargs, params)
+        upstream_url = self.content_app.get_upstream_url('', kwargs, params)
 
         headers = {'Content-Type': 'text/html; charset=utf-8',
                    'WARC-User-Agent': user_agent,

@@ -180,9 +180,6 @@ class BaseController(object):
     def sanitize_title(self, title):
         return sanitize_title(title)
 
-    def get_view_user(self, user):
-        return user
-
     def get_body_class(self, context, action):
         classes = []
 

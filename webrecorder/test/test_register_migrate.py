@@ -164,7 +164,7 @@ class TestRegisterMigrate(FullStackTests):
 
         assert 'Test Migrate' in res.text
 
-        assert '/someuser/test-migrate/' in res.text
+        assert '/someuser/test-migrate/' in res.text, res.text
         assert '/http://httpbin.org/get?food=bar' in res.text
 
     def test_logged_in_rec_info(self):

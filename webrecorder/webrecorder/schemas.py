@@ -5,11 +5,12 @@ from datetime import datetime
 from marshmallow import (Schema, fields, validate, ValidationError,
                          validates_schema)
 
-from webrecorder.redisman import RedisDataManager as RDM
-
+#from webrecorder.redisman import RedisDataManager as RDM
+from webrecorder.models.usermanager import UserManager as UM
+from webrecorder.models.access import SessionAccessCache as SAC
 
 # key indicating whether a collection is public
-public_key = RDM.READ_PREFIX + RDM.PUBLIC
+public_key = SAC.READ_PREFIX + SAC.PUBLIC
 
 
 class BaseSchema(Schema):
@@ -62,12 +63,12 @@ class NewUserSchema(UserSchema):
         if 'password' not in data:
             raise ValidationError('`password` is a required field.')
 
-        if not RDM.PASS_RX.match(data['password']):
+        if not UM.PASS_RX.match(data['password']):
             raise ValidationError('Passwords must be at least 8 characters '
                                   'long with lowercase, uppercase, and either '
                                   'digits or symbols.')
 
-        if not RDM.USER_RX.match(data['username']) or data['username'] in RDM.RESTRICTED_NAMES:
+        if not UM.USER_RX.match(data['username']) or data['username'] in UM.RESTRICTED_NAMES:
             raise ValidationError('Invalid username..')
 
 

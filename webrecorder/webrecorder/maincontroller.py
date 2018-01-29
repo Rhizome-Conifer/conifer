@@ -188,12 +188,6 @@ class MainController(BaseController):
         def get_browsers():
             return self.browser_mgr.get_browsers()
 
-        def get_tags():
-            return self.manager.get_available_tags()
-
-        def get_tags_in_collection(user, coll):
-            return self.manager.get_tags_in_collection(user, coll)
-
         def get_app_host():
             return self.app_host
 
@@ -206,12 +200,6 @@ class MainController(BaseController):
 
         def get_archives():
             return self.content_app.client_archives
-
-        def is_beta():
-            return self.manager.is_beta()
-
-        def can_tag():
-            return self.manager.can_tag()
 
         @contextfunction
         def is_public(context):
@@ -306,16 +294,6 @@ class MainController(BaseController):
         def is_out_of_space(context):
             return self.access.session_user.is_out_of_space()
 
-        @contextfunction
-        def is_tagged(context, bookmark_id):
-            available = context.get('available_tags', [])
-            tags = context.get('tags', [])
-
-            for tag in available:
-                if tag in tags and bookmark_id in tags[tag]:
-                    return True
-            return False
-
         def trunc_url_expand(value):
             """ Truncate querystrings, appending an ellipses, expand on click
             """
@@ -336,10 +314,10 @@ class MainController(BaseController):
         jinja_env.globals['can_admin'] = can_admin
         jinja_env.globals['can_write'] = can_write
         jinja_env.globals['can_read'] = can_read
-        jinja_env.globals['can_tag'] = can_tag
+        #jinja_env.globals['can_tag'] = can_tag
         jinja_env.globals['is_owner'] = is_owner
         jinja_env.globals['is_anon'] = is_anon
-        jinja_env.globals['is_beta'] = is_beta
+        #jinja_env.globals['is_beta'] = is_beta
         jinja_env.globals['is_public'] = is_public
         jinja_env.globals['get_announce_list'] = get_announce_list
         jinja_env.globals['get_path'] = get_path
@@ -354,9 +332,9 @@ class MainController(BaseController):
         jinja_env.globals['is_out_of_space'] = is_out_of_space
         jinja_env.globals['get_browsers'] = get_browsers
         #jinja_env.globals['is_extractable'] = is_extractable
-        jinja_env.globals['get_tags'] = get_tags
-        jinja_env.globals['is_tagged'] = is_tagged
-        jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
+        #jinja_env.globals['get_tags'] = get_tags
+        #jinja_env.globals['is_tagged'] = is_tagged
+        #jinja_env.globals['get_tags_in_collection'] = get_tags_in_collection
         jinja_env.filters['trunc_url'] = trunc_url
         jinja_env.filters['trunc_url_expand'] = trunc_url_expand
         jinja_env.filters['urldecode'] = urldecode

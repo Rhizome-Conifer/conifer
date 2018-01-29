@@ -33,7 +33,7 @@
     </li>
     {% elif curr_mode == 'new' %}
     <li><span>Create a new recording</span></li>
-    {% elif not rec and not url %}
+    {% elif not rec_name and not url %}
     <li style="display: none"><span class="recording-filter-list" data-recordings-in-content-panel="$all"></span></li>
     {% endif %}
 </ol>

@@ -22,7 +22,6 @@ class Session(object):
         self._sesh = sesh
         self.key = key
 
-        self.curr_user = None
         self.curr_role = None
 
         self.should_delete = False
@@ -46,7 +45,6 @@ class Session(object):
             if self._anon:
                 self.curr_role = 'anon'
             else:
-                self.curr_user = self._sesh.get('username')
                 if self.curr_user:
                     self.curr_role = cork.user(self.curr_user).role
 
@@ -55,7 +53,6 @@ class Session(object):
 
         except Exception as e:
             print(e)
-            self.curr_user = None
             self.curr_role = None
             self.delete()
 
@@ -111,11 +108,11 @@ class Session(object):
             self['anon'] = self.anon_user
 
     def is_anon(self, user=None):
-        if self.curr_user:
-            return False
-
         anon = self._sesh.get('anon')
         if not anon:
+            return False
+
+        if self._sesh.get('username'):
             return False
 
         if user:
@@ -123,13 +120,24 @@ class Session(object):
 
         return True
 
-    def logged_in(self, extend_long=False):
+    @property
+    def curr_user(self):
+        if 'anon' in self._sesh:
+            return None
+
+        return self._sesh.get('username')
+
+    def log_in(self, username, extend_long=False):
         if extend_long:
             self.dura_type = 'long'
             self._sesh['is_long'] = True
 
+        self._sesh.pop('anon', '')
+        self._sesh['username'] = username
+
         self.should_renew = True
         self.should_save = True
+
         self.environ['webrec.delete_all_cookies'] = 'non_sesh'
 
     def set_restricted_user(self, user):
@@ -142,7 +150,6 @@ class Session(object):
             self.curr_role = 'anon'
         else:
             self._sesh['username'] = user
-            self.curr_user = user
             self.curr_role = 'archivist'
 
         self.should_save = False

@@ -168,6 +168,11 @@ class UserController(BaseController):
             sesh_user = self.access.init_session_user(persist=True)
             return {'anon_user': sesh_user.my_id}
 
+        @self.app.get('/api/v1/curr_user')
+        def get_curr_user():
+            sesh_user = self.access.session_user
+            return {'curr_user': sesh_user.my_id}
+
         @self.app.get(['/api/v1/user_roles'])
         def api_get_user_roles():
             return {"roles": [x for x in self.cork._store.roles]}

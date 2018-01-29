@@ -83,7 +83,7 @@ class LoginController(BaseController):
             if move_info and (self.cork.
                               is_authenticate(username, password)):
 
-                if not self.manager.has_space_for_new_coll(username,
+                if not self.user_manager.has_space_for_new_collection(username,
                                                            move_info['from_user'],
                                                            'temp'):
                     self.flash_message('Sorry, not enough space to import this Temporary Collection into your account.')
@@ -95,20 +95,17 @@ class LoginController(BaseController):
                 redir_to = LOGIN_PATH
                 self.redirect(redir_to)
 
-            sesh = self.get_session()
-            sesh.curr_user = username
-
             if move_info:
-                try:
-                    new_title = self.manager.move_temp_coll(username, move_info)
-                    if new_title:
-                        self.flash_message('Collection <b>{0}</b> created!'.format(new_title), 'success')
-                except:
-                    import traceback
-                    traceback.print_exc()
+                user = self.user_manager.get_user(username)
+                the_collection = self.user_manager.move_temp_coll(user, move_info)
+                if the_collection:
+                    self.flash_message('Collection <b>{0}</b> created!'.format(move_info['to_title']), 'success')
 
             remember_me = (self.post_get('remember_me') == '1')
-            sesh.logged_in(remember_me)
+            sesh = self.get_session()
+
+            # mark as logged-in
+            sesh.log_in(username, remember_me)
 
             temp_prefix = self.user_manager.temp_prefix
 

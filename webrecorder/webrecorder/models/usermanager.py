@@ -261,11 +261,7 @@ class UserManager(object):
 
         move_info = init_info.get('move_info')
         if move_info:
-            from_user = self.get_user(move_info['from_user'])
-            temp_coll = from_user.get_collection_by_name('temp')
-            from_user.move(temp_coll, move_info['to_coll'], user)
-            temp_coll.set_prop('title', move_info['to_title'])
-            first_coll = temp_coll
+            first_coll = self.move_temp_coll(user, move_info)
 
         elif self.default_coll:
             first_coll = user.create_collection(self.default_coll['id'],
@@ -298,13 +294,24 @@ class UserManager(object):
 
         return user, first_coll
 
-        # Move Temp collection to be permanent
-        #move_info = init_info.get('move_info')
-        #if move_info:
-        #    self.move_temp_coll(user, move_info)
+    def has_space_for_new_collection(self, to_username, from_username, coll_name):
+        to_user = self.get_user(to_username)
+        if not self.is_valid_user(to_user):
+            return False
 
-        #    first_coll = init_info.get('to_title')
-        # Check for mailing list management
+        from_user = self.get_user(from_username)
+        collection = from_user.get_collection_by_name(coll_name)
+        if not collection:
+            return False
+
+        return (collection.size <= to_user.get_size_remaining())
+
+    def move_temp_coll(self, user, move_info):
+        from_user = self.get_user(move_info['from_user'])
+        temp_coll = from_user.get_collection_by_name('temp')
+        from_user.move(temp_coll, move_info['to_coll'], user)
+        temp_coll.set_prop('title', move_info['to_title'])
+        return temp_coll
 
     def is_valid_user(self, user):
         if user.is_anon():

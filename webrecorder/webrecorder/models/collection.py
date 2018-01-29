@@ -261,7 +261,6 @@ class Collection(RedisNamedContainer):
 
         finally:
             if lock_key:
-                print('DELETE ' + lock_key)
                 self.redis.delete(lock_key)
 
 

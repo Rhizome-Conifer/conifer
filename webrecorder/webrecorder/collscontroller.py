@@ -205,9 +205,11 @@ class CollsController(BaseController):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
 
         result = {'collection': collection.serialize()}
+
         result['user'] = user.my_id
         result['size_remaining'] = user.get_size_remaining()
         result['coll'] = collection.name
+        result['coll_name'] = collection.name
         result['coll_title'] = quote(result['collection']['title'])
         #if not result['collection'].get('desc'):
         #    result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])

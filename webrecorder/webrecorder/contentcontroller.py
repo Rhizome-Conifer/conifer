@@ -93,42 +93,19 @@ class ContentController(BaseController, RewriterApp):
             wb_url = self.add_query(wb_url)
             return self.do_create_new_and_redir(coll_name, rec_name, wb_url, 'record')
 
-        # TAGS
-        @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
-        @self.jinja2_view('paging_display.html')
-        def tag_display(tags=None):
-            if not self.manager.is_beta():
-                raise HTTPError(404)
-
-            tags = tags.split(',') if tags else self.manager.get_available_tags()
-            items = {}
-            keys = []
-
-            active_tags = self.manager.get_available_tags()
-
-            for tag in tags:
-                if tag in active_tags:
-                    keys.append(tag)
-                    items[tag] = self.manager.get_pages_for_tag(tag)
-
-            return {'data': items, 'keys': keys}
-
         # COLLECTIONS
         @self.app.get(['/_display/<user>', '/_display/<user>/<collections:re:([\w,-]+)>'])
         @self.jinja2_view('paging_display.html')
         def collection_display(user, collections=None):
-            if not self.manager.is_beta():
-                raise HTTPError(404)
+            user = self.access.get_user(user)
 
-            user_collections = [c['id'] for c in self.manager.get_collections(user)]
-            colls = collections.split(',') if collections else user_collections
             items = {}
             keys = []
 
-            for coll in colls:
-                if coll in user_collections:
-                    keys.append(coll)
-                    items[coll] = self.manager.list_coll_pages(user, coll)
+            for collection in user.get_collections():
+                if not filter_colls or collection.name in filter_colls:
+                    keys.append(collection.name)
+                    items[collection.name] = collection.list_coll_pages()
 
             return {'data': items, 'keys': keys}
 
@@ -587,9 +564,9 @@ class ContentController(BaseController, RewriterApp):
                 return {'url': url,
                         'status': status_code,
                         'error': err_info.get('error'),
-                        'user': self.get_view_user(user),
-                        'coll': coll,
-                        'rec': rec,
+                        'user': user,
+                        'coll': coll_name,
+                        'rec': rec_name,
                         'type': type,
                         'app_host': self.app_host,
                        }
@@ -700,14 +677,6 @@ class ContentController(BaseController, RewriterApp):
 
         cdx['rec'] = rec
 
-    def get_query_params(self, wb_url, kwargs):
-        collection = self.manager.get_collection(kwargs['user'], kwargs['coll'])
-        kwargs['rec_titles'] = dict((rec['id'], rec['title']) for rec in collection['recordings'])
-
-        kwargs['user'] = self.get_view_user(kwargs['user'])
-        kwargs['coll_title'] = collection.get('title', '')
-        return kwargs
-
     def get_host_prefix(self, environ):
         if self.content_host and 'wsgiprox.proxy_host' not in environ:
             return environ['wsgi.url_scheme'] + '://' + self.content_host
@@ -743,7 +712,7 @@ class ContentController(BaseController, RewriterApp):
         return {'info': info,
                 'curr_mode': type,
 
-                'user': self.get_view_user(kwargs['user']),
+                'user': kwargs['user'],
 
                 'coll': kwargs['coll'],
                 'coll_name': kwargs['coll_name'],
@@ -829,7 +798,7 @@ class ContentController(BaseController, RewriterApp):
         #handle cbrowsers
         browser_id = wb_url.mod.split(':', 1)[1]
 
-        kwargs['browser_can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
+        kwargs['browser_can_write'] = '1' if self.access.can_write_coll(kwargs['collection']) else '0'
 
         kwargs['remote_ip'] = self._get_remote_ip()
 
