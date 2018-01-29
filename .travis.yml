@@ -5,6 +5,7 @@ matrix:
       python: "3.5"
       sudo: false
     - os: osx
+      osx_image: xcode6.4
       language: generic
       sudo: required
 
