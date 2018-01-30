@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-import Collapsible from 'shared/js/Collapsible';
+import Collapsible from 'react-collapsible';
 import PageList from 'components/PageList';
 import SizeFormat from 'components/SizeFormat';
 import TimeFormat from 'components/TimeFormat';

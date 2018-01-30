@@ -15,7 +15,7 @@ import { Provider } from 'react-redux';
 import ApiClient from './helpers/ApiClient';
 import config from './config';
 import createStore from './redux/create';
-import baseRoute from './routes';
+import baseRoute from './baseRoute';
 import BaseHtml from './helpers/BaseHtml';
 
 import './base.scss';

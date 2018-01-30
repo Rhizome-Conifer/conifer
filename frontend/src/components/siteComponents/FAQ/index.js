@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import './style.scss';
 
@@ -8,7 +7,6 @@ import './style.scss';
 function FAQ() {
   return (
     <div className="container faq">
-      <BreadcrumbsItem to="_faq">About</BreadcrumbsItem>
       <div className="row heading">
         <aside className="col-sm-3 hidden-xs">
           <img src={require('shared/images/logo.png')} alt="Webrecorder logo" />

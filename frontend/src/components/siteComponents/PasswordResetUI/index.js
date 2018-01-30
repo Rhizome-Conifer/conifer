@@ -4,7 +4,7 @@ import { Button, ControlLabel, Form,
          FormControl, FormGroup } from 'react-bootstrap';
 
 
-class ResetPassword extends Component {
+class ResetPasswordUI extends Component {
   static propTypes = {
     cb: PropTypes.func,
     errors: PropTypes.object
@@ -73,4 +73,4 @@ class ResetPassword extends Component {
   }
 }
 
-export default ResetPassword;
+export default ResetPasswordUI;

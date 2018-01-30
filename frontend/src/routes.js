@@ -1,8 +1,6 @@
-import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
-
 import { FAQ, TermsAndPolicies } from 'components/siteComponents';
+import { collDetailBookmark, collList } from 'components/siteComponents/BreadcrumbsUI/breadcrumbs';
 import {
-  Application,
   CollectionDetail,
   CollectionList,
   Extract,
@@ -16,28 +14,10 @@ import {
   Replay,
   UserSignup,
   UserSettings
-} from 'containers';
+} from './containers';
 
 
-// const requireLogin = (nextState, replace, cb) => {
-//   function checkAuth() {
-//     const { app } = store.getState();
-//     if (!app.getIn(['auth', 'user', 'username'])) {
-//       // oops, not logged in, so can't be here!
-//       replace('/');
-//     }
-//     cb();
-//   }
-
-//   if (!isAuthLoaded(store.getState())) {
-//     store.dispatch(loadAuth()).then(checkAuth);
-//   } else {
-//     checkAuth();
-//   }
-// };
-
-const userPath = '/:user([^\^_/]+)';
-
+const userPath = '/:user([^_][A-Za-z0-9]+)';
 const userRoutes = [
   /* collection */
   {
@@ -45,24 +25,25 @@ const userRoutes = [
     component: CollectionList,
     exact: true,
     name: 'collection',
-    breadcrumb: true,
-    footer: true
+    footer: true,
+    breadcrumb: collList
   },
   { /* TODO: add auth check */
     path: `${userPath}/_settings`,
     component: UserSettings,
     exact: true,
     name: 'settings',
-    footer: true
+    footer: true,
+    breadcrumb: 'Settings'
   },
   {
     path: `${userPath}/:coll`,
     component: CollectionDetail,
     exact: true,
     name: 'collectionDetail',
-    breadcrumb: true,
     footer: false,
-    classOverride: true
+    classOverride: true,
+    breadcrumb: collDetailBookmark
   }
 ];
 
@@ -74,7 +55,8 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: NewRecording,
-    exact: true
+    exact: true,
+    breadcrumb: 'New Recording'
   },
   {
     // record with remote browser id
@@ -83,7 +65,8 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Record,
-    exact: true
+    exact: true,
+    breadcrumb: false
   },
   {
     path: `${userPath}/:coll/:rec/record/:splat(.*)`,
@@ -91,7 +74,8 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Record,
-    exact: true
+    exact: true,
+    breadcrumb: false
   },
   {
     path: `${userPath}/:coll/:rec/patch/:ts/:splat(.*)`,
@@ -99,7 +83,8 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Patch,
-    exact: true
+    exact: true,
+    breadcrumb: false
   },
   {
     path: `${userPath}/:coll/:rec/:extractMode::archiveId(::collId)/:ts/:splat(.*)`,
@@ -107,7 +92,8 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Extract,
-    exact: true
+    exact: true,
+    breadcrumb: false
   },
   {
     path: `${userPath}/:coll/:ts/:splat(.*)`,
@@ -115,7 +101,8 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Replay,
-    exact: true
+    exact: true,
+    breadcrumb: false
   }
 ];
 
@@ -125,45 +112,51 @@ const infoRoutes = [
     name: 'FAQ',
     footer: true,
     component: FAQ,
-    exact: true
+    exact: true,
+    breadcrumb: false
   },
   {
     path: '/_policies',
     name: 'Terms & Policies',
     footer: true,
     component: TermsAndPolicies,
-    exact: true
+    exact: true,
+    breadcrumb: false
   }
 ];
 
-const routes = [
+export default [
   /* core */
   {
     path: '/',
     component: Home,
     footer: true,
-    exact: true
+    exact: true,
+    breadcrumb: 'Webrecorder',
   },
   {
     path: '/_register',
     name: 'registration',
     footer: true,
     component: UserSignup,
-    exact: true
+    exact: true,
+    breadcrumb: false
   },
   {
     path: '/_forgot',
     name: 'Password Reset',
     footer: true,
     component: PasswordReset,
-    exact: true
+    exact: true,
+    breadcrumb: false
   },
   {
     path: '/_logout',
     name: 'logout',
     footer: false,
     component: Logout,
-    exact: true
+    exact: true,
+    breadcrumb: false
   },
 
   ...infoRoutes,
@@ -171,17 +164,11 @@ const routes = [
   ...userRoutes,
 
   {
-    path: '*',
+    path: '/(.*)',
     name: 'notfound',
     footer: true,
     component: HttpStatus,
-    exact: true
-  }
-];
-
-export default [
-  {
-    component: Application,
-    routes
+    exact: true,
+    breadcrumb: false
   }
 ];

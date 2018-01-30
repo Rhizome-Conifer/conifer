@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Alert, ControlLabel, FormControl, FormGroup,
          HelpBlock, Panel, ProgressBar } from 'react-bootstrap';
-import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { passwordPassRegex } from 'helpers/utils';
 
@@ -118,8 +117,6 @@ class UserSettingsUI extends Component {
 
     return (
       <div className="row top-buffer col-xs-10 col-xs-push-1">
-        <BreadcrumbsItem to={`/${username}/_settings`}>{`${username} settings`}</BreadcrumbsItem>
-
         <Panel header={userInfo}>
           <span>Space Used: </span>
           <SizeFormat bytes={usedSpace} />

@@ -1,12 +1,10 @@
 import React from 'react';
-import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import './style.scss';
 
 function TermsAndPolicies() {
   return (
     <div className="container">
-      <BreadcrumbsItem to="_policies">Terms and Policies</BreadcrumbsItem>
       <div className="row">
         <div className="col-md-12">
           <h1>Terms and Policies</h1>

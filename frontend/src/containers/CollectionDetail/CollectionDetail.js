@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
-import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 import { createSearchAction } from 'redux-search';
 
 import { truncate } from 'helpers/utils';
@@ -39,11 +38,9 @@ class CollectionDetail extends Component {
   render() {
     const { collection, match: { params: { user, coll } } } = this.props;
 
-    return [
-      <BreadcrumbsItem key="a" to={`/${user}`}>{ user }</BreadcrumbsItem>,
-      <BreadcrumbsItem key="b" to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>,
+    return (
       <CollectionDetailUI key="c" {...this.props} />
-    ];
+    );
   }
 }
 

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
-import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import SizeFormat from 'components/SizeFormat';
 
@@ -77,7 +76,6 @@ class CollectionListUI extends Component {
 
     return (
       <div>
-        <BreadcrumbsItem to={`/${params.user}`}>{ params.user }</BreadcrumbsItem>
         <Row className="collection-description page-archive">
           <Col xs={12}>
             <h2>{ userParam } Archive</h2>

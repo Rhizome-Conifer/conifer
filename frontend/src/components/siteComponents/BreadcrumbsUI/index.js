@@ -1,22 +1,29 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import { Breadcrumbs } from 'react-breadcrumbs-dynamic';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
+import { withBreadcrumbs } from 'react-router-breadcrumbs-hoc';
+import routes from 'routes';
 
 import './style.scss';
 
 
-class BreadcrumbsUI extends Component {
-
-  render() {
-    return (
-      <Breadcrumbs
-        containerProps={{ style: { display: 'inline-block', margin: '1px 0' } }}
-        container="div"
-        item={Link}
-        finalProps={{ style: { color: '#fff' } }}
-        separator={<span style={{ color: '#ccc' }}> / </span>} />
-    );
-  }
+function BreadcrumbsUI({ url, breadcrumbs }) {
+  return (
+    <ol className="wr-breadcrumb">
+      {
+        breadcrumbs.map(({ breadcrumb, path, match }) => (
+          <li key={path}>
+            {
+              match.url === url ?
+                <span>{breadcrumb}</span> :
+                <NavLink to={match.url}>
+                  {breadcrumb}
+                </NavLink>
+            }
+          </li>
+        ))
+      }
+    </ol>
+  );
 }
 
-export default BreadcrumbsUI;
+export default withBreadcrumbs(routes)(BreadcrumbsUI);

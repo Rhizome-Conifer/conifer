@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 import { Link } from 'react-router-dom';
-import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { load as loadColl } from 'redux/modules/collection';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
@@ -48,9 +47,6 @@ class LegacyCollectionDetail extends Component {
 
     return (
       <div>
-        <BreadcrumbsItem to={`/${user}`}>{ user }</BreadcrumbsItem>
-        <BreadcrumbsItem to={`/${user}/${coll}`}>{ truncate(collection.get('title'), 60) }</BreadcrumbsItem>
-
         <CollectionMetadata
           title={collection.get('title')}
           desc={collection.get('desc')}

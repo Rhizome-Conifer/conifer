@@ -6,10 +6,12 @@
     padding-left: .5rem;
     margin: .1rem;
     border: none;
+    display: inline-block;
 
     li {
+        display: inline;
 
-        &:before {
+        &:not(:first-child):before {
             content: '/';
             color: #CCC;
             padding:0 1rem;
@@ -28,7 +30,6 @@
 
         a:focus, a:hover, a:active {
             text-decoration: underline;
-            color: $linkHover;
         }
 
         a.branding {

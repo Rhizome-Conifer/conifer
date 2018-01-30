@@ -3,10 +3,8 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import classNames from 'classnames';
 import { asyncConnect } from 'redux-connect';
-import { BreadcrumbsProvider, BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 import matchPath from 'react-router-dom/matchPath';
 import renderRoutes from 'react-router-config/renderRoutes';
-
 
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
@@ -15,7 +13,8 @@ import { load as loadUser } from 'redux/modules/user';
 import { UserManagement } from 'containers';
 
 import config from 'config';
-import { BreadcrumbsUI, Footer } from 'components/siteComponents';
+import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
+import { Footer } from 'components/siteComponents';
 
 import 'shared/fonts/fonts.scss';
 import './style.scss';
@@ -94,7 +93,7 @@ export class App extends Component { // eslint-disable-line
   }
 
   render() {
-    const { loaded } = this.props;
+    const { loaded, location: { pathname } } = this.props;
     const { error, info, lastMatch, match } = this.state;
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
@@ -117,47 +116,40 @@ export class App extends Component { // eslint-disable-line
     }
 
     return (
-      <BreadcrumbsProvider>
-        <div className="wr-app">
-          <Helmet {...config.app.head} />
-          <header>
-            <div className={navbarClasses}>
-              <nav className="container-fluid header-webrecorder">
-                {
-                  !error ?
-                    <BreadcrumbsUI /> :
-                    <a href="/">Webrecorder</a>
-                }
-                <UserManagement />
-                <BreadcrumbsItem to="/">Webrecorder</BreadcrumbsItem>
-              </nav>
-            </div>
-          </header>
-          {
-            error ?
-              <div>
-                <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
-                  <div className="panel panel-danger">
-                    <div className="panel-heading">
-                      <span className="glyphicon glyphicon-exclamation-sign" aria-hidden="true" />
-                      <strong className="left-buffer">Oop!</strong>
-                    </div>
-                    <div className="panel-body">
-                      <p>It borked!</p>
-                    </div>
+      <div className="wr-app">
+        <Helmet {...config.app.head} />
+        <header>
+          <div className={navbarClasses}>
+            <nav className="container-fluid header-webrecorder">
+              <BreadcrumbsUI url={pathname} />
+              <UserManagement />
+            </nav>
+          </div>
+        </header>
+        {
+          error ?
+            <div>
+              <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
+                <div className="panel panel-danger">
+                  <div className="panel-heading">
+                    <span className="glyphicon glyphicon-exclamation-sign" aria-hidden="true" />
+                    <strong className="left-buffer">Oop!</strong>
+                  </div>
+                  <div className="panel-body">
+                    <p>It borked!</p>
                   </div>
                 </div>
-              </div> :
-              <section className={containerClasses}>
-                {renderRoutes(this.props.route.routes)}
-              </section>
-          }
-          {
-            hasFooter &&
-              <Footer />
-          }
-        </div>
-      </BreadcrumbsProvider>
+              </div>
+            </div> :
+            <section className={containerClasses}>
+              {renderRoutes(this.props.route.routes)}
+            </section>
+        }
+        {
+          hasFooter &&
+            <Footer />
+        }
+      </div>
     );
   }
 }

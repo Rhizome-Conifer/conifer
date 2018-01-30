@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { resetPassword } from 'redux/modules/passwordReset';
-import { PasswordReset } from 'components/siteComponents';
+import { PasswordResetUI } from 'components/siteComponents';
 
 
 const mapStateToProps = ({ app }) => {
@@ -20,4 +20,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(PasswordReset);
+)(PasswordResetUI);

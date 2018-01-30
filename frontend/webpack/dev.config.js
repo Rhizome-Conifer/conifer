@@ -13,6 +13,7 @@ var port = (+process.env.PORT + 1) || 3001;
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
 var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+var CircularDependencyPlugin = require('circular-dependency-plugin');
 
 var babelrc = fs.readFileSync('./.babelrc');
 var babelrcObject = {};
@@ -167,6 +168,14 @@ var webpackConfig = module.exports = {
       __DEVTOOLS__: true,
       __PLAYER__: false
     }),
+    // new CircularDependencyPlugin({
+    //   // exclude detection of files based on a RegExp
+    //   exclude: /node_modules/,
+    //   // add errors to webpack instead of warnings
+    //   failOnError: false,
+    //   // set the current working directory for displaying module paths
+    //   cwd: process.cwd(),
+    // }),
     webpackIsomorphicToolsPlugin.development()
   ]
 };

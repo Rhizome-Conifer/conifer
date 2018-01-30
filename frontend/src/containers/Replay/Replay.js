@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
-import { BreadcrumbsItem } from 'react-breadcrumbs-dynamic';
 
 import { remoteBrowserMod, truncate } from 'helpers/utils';
 import config from 'config';
@@ -85,9 +84,6 @@ class Replay extends Component {
           <meta name="og:description" content={collection.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
         </Helmet>
 
-        <BreadcrumbsItem to={`/${params.user}`}>{ params.user }</BreadcrumbsItem>
-        <BreadcrumbsItem to={`/${params.user}/${params.coll}`}>{ truncate(collection.get('title'))}</BreadcrumbsItem>
-
         <ReplayUI
           bookmarks={bookmarks}
           recordingIndex={recordingIndex}
@@ -139,7 +135,8 @@ const initialData = [
         rb = parts[1];
       }
 
-      const compositeUrl = `${splat}${search}${hash}`;
+      const compositeUrl = `${splat}${search || ''}${hash || ''}`;
+      console.log(splat, search, hash, timestamp);
       const promises = [
         dispatch(updateUrlAndTimestamp(compositeUrl, timestamp)),
         dispatch(setBrowser(rb))

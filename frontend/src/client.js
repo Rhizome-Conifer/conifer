@@ -6,7 +6,7 @@ import { Provider } from 'react-redux';
 
 import createStore from './redux/create';
 import ApiClient from './helpers/ApiClient';
-import baseRoute from './routes';
+import baseRoute from './baseRoute';
 import Root from './root';
 
 import './base.scss';
@@ -36,8 +36,8 @@ const renderApp = (renderProps) => {
 renderApp({ routes: baseRoute, client });
 
 if (module.hot) {
-  module.hot.accept('./routes', () => {
-    const nextRoutes = require('./routes');
+  module.hot.accept('./baseRoute', () => {
+    const nextRoutes = require('./baseRoute');
 
     renderApp({ routes: nextRoutes, client });
   });

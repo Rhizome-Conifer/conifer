@@ -1,5 +1,5 @@
-export Application from './App/App';
 export CollectionDropdown from './CollectionDropdown/CollectionDropdown';
+export CollectionDetail from './CollectionDetail/CollectionDetail';
 export CollectionList from './CollectionList/CollectionList';
 export Extract from './Extract/Extract';
 export ExtractWidget from './ExtractWidget/ExtractWidget';
@@ -8,7 +8,6 @@ export HttpStatus from './HttpStatus/HttpStatus';
 export InfoWidget from './InfoWidget/InfoWidget';
 export Logout from './Logout/Logout';
 export ModeSelector from './ModeSelector/ModeSelector';
-export CollectionDetail from './CollectionDetail/CollectionDetail';
 export NewRecording from './NewRecording/NewRecording';
 // export LegacyCollectionDetail from './LegacyCollectionDetail/CollectionDetail';
 export PasswordReset from './PasswordReset/PasswordReset';
