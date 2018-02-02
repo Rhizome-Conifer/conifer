@@ -10,12 +10,12 @@ function BreadcrumbsUI({ url, breadcrumbs }) {
   return (
     <ol className="wr-breadcrumb">
       {
-        breadcrumbs.map(({ breadcrumb, path, match }) => (
+        breadcrumbs.map(({ breadcrumb, path, match, getLocation }) => (
           <li key={path}>
             {
               match.url === url ?
                 <span>{breadcrumb}</span> :
-                <NavLink to={match.url}>
+                <NavLink to={getLocation ? getLocation(match.params) : match.url}>
                   {breadcrumb}
                 </NavLink>
             }

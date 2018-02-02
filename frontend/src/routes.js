@@ -1,5 +1,9 @@
 import { FAQ, TermsAndPolicies } from 'components/siteComponents';
-import { collDetailBookmark, collList } from 'components/siteComponents/BreadcrumbsUI/breadcrumbs';
+import {
+  collDetailBookmark,
+  collList,
+  recBookmark
+} from 'components/siteComponents/BreadcrumbsUI/breadcrumbs';
 import {
   CollectionDetail,
   CollectionList,
@@ -66,7 +70,8 @@ const controllerRoutes = [
     classOverride: true,
     component: Record,
     exact: true,
-    breadcrumb: false
+    breadcrumb: recBookmark,
+    getLocation: ({ user, coll, rec }) => `/${user}/${coll}?filter=${rec}`
   },
   {
     path: `${userPath}/:coll/:rec/record/:splat(.*)`,
@@ -75,7 +80,8 @@ const controllerRoutes = [
     classOverride: true,
     component: Record,
     exact: true,
-    breadcrumb: false
+    breadcrumb: recBookmark,
+    getLocation: ({ user, coll, rec }) => `/${user}/${coll}?filter=${rec}`
   },
   {
     path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)/:splat(.*)`,
@@ -83,8 +89,7 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Patch,
-    exact: true,
-    breadcrumb: false
+    exact: true
   },
   {
     path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
@@ -92,8 +97,7 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Patch,
-    exact: true,
-    breadcrumb: false
+    exact: true
   },
   {
     path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?/:splat(.*)`,
@@ -101,8 +105,7 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Extract,
-    exact: true,
-    breadcrumb: false
+    exact: true
   },
   {
     path: `${userPath}/:coll/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
@@ -110,8 +113,7 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Replay,
-    exact: true,
-    breadcrumb: false
+    exact: true
   },
   {
     path: `${userPath}/:coll/:ts([0-9]+)?/:splat(.*)`,
@@ -119,8 +121,7 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Replay,
-    exact: true,
-    breadcrumb: false
+    exact: true
   }
 ];
 
@@ -130,16 +131,14 @@ const infoRoutes = [
     name: 'FAQ',
     footer: true,
     component: FAQ,
-    exact: true,
-    breadcrumb: false
+    exact: true
   },
   {
     path: '/_policies',
     name: 'Terms & Policies',
     footer: true,
     component: TermsAndPolicies,
-    exact: true,
-    breadcrumb: false
+    exact: true
   }
 ];
 
@@ -157,24 +156,21 @@ export default [
     name: 'registration',
     footer: true,
     component: UserSignup,
-    exact: true,
-    breadcrumb: false
+    exact: true
   },
   {
     path: '/_forgot',
     name: 'Password Reset',
     footer: true,
     component: PasswordReset,
-    exact: true,
-    breadcrumb: false
+    exact: true
   },
   {
     path: '/_logout',
     name: 'logout',
     footer: false,
     component: Logout,
-    exact: true,
-    breadcrumb: false
+    exact: true
   },
 
   ...infoRoutes,
@@ -186,7 +182,6 @@ export default [
     name: 'notfound',
     footer: true,
     component: HttpStatus,
-    exact: true,
-    breadcrumb: false
+    exact: true
   }
 ];

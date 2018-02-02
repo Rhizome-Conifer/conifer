@@ -5619,8 +5619,8 @@ react-redux@^5.0.5:
     prop-types "^15.5.10"
 
 "react-router-breadcrumbs-hoc@github:m4rk3r/react-router-breadcrumbs-hoc#dist":
-  version "1.1.1"
-  resolved "https://codeload.github.com/m4rk3r/react-router-breadcrumbs-hoc/tar.gz/63b2c40849756265747db964e7901ff8a685caf0"
+  version "1.1.3"
+  resolved "https://codeload.github.com/m4rk3r/react-router-breadcrumbs-hoc/tar.gz/5d0ac4a2a168cd16f5eb75d8bdc5987cac228947"
 
 react-router-config@^1.0.0-beta.4:
   version "1.0.0-beta.4"

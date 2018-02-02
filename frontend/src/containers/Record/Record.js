@@ -7,6 +7,7 @@ import { getRemoteBrowser } from 'helpers/utils';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { loadRecording } from 'redux/modules/recordings';
 import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
@@ -103,6 +104,12 @@ const initialData = [
       ];
 
       return Promise.all(promises);
+    }
+  },
+  {
+    // load recording info
+    promise: ({ match: { params: { user, coll, rec } }, store: { dispatch } }) => {
+      return dispatch(loadRecording(user, coll, rec));
     }
   },
   {
