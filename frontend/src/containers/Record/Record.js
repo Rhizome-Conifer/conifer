@@ -23,7 +23,7 @@ class Record extends Component {
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
-    params: PropTypes.object,
+    match: PropTypes.object,
     reqId: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -42,46 +42,48 @@ class Record extends Component {
   }
 
   getChildContext() {
-    const { auth, params } = this.props;
+    const { auth, match: { params: { user } } } = this.props;
 
     return {
       currMode: 'record',
-      canAdmin: auth.getIn(['user', 'username']) === params.user
+      canAdmin: auth.getIn(['user', 'username']) === user
     };
   }
 
   render() {
-    const { activeBrowser, dispatch, params, reqId, timestamp, url } = this.props;
+    const { activeBrowser, dispatch, match: { params }, reqId, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/record/`;
     const contentPrefix = `${config.contentHost}/${user}/${coll}/${rec}/record/`;
 
     return (
-      <div>
+      <React.Fragment>
         <ReplayUI
           params={params}
           url={url} />
 
-        {
-          activeBrowser ?
-            <RemoteBrowser
-              dispatch={dispatch}
-              mode={this.mode}
-              params={params}
-              rb={activeBrowser}
-              rec={rec}
-              recId={reqId}
-              url={url} /> :
-            <IFrame
-              appPrefix={appPrefix}
-              contentPrefix={contentPrefix}
-              dispatch={dispatch}
-              params={params}
-              timestamp={timestamp}
-              url={url} />
-        }
-      </div>
+        <div className="iframe-container">
+          {
+            activeBrowser ?
+              <RemoteBrowser
+                dispatch={dispatch}
+                mode={this.mode}
+                params={params}
+                rb={activeBrowser}
+                rec={rec}
+                recId={reqId}
+                url={url} /> :
+              <IFrame
+                appPrefix={appPrefix}
+                contentPrefix={contentPrefix}
+                dispatch={dispatch}
+                params={params}
+                timestamp={timestamp}
+                url={url} />
+          }
+        </div>
+      </React.Fragment>
     );
   }
 }
@@ -94,8 +96,7 @@ const initialData = [
   },
   {
     // set url and remote browser
-    promise: ({ params: { br, splat }, store: { dispatch } }) => {
-      console.log('br', br);
+    promise: ({ match: { params: { br, splat } }, store: { dispatch } }) => {
       const promises = [
         dispatch(updateUrl(splat)),
         dispatch(setBrowser(br || null))
@@ -105,7 +106,7 @@ const initialData = [
     }
   },
   {
-    promise: ({ params, store: { dispatch, getState } }) => {
+    promise: ({ match: { params }, store: { dispatch, getState } }) => {
       const state = getState();
       const collection = state.app.get('collection');
       const { user, coll } = params;

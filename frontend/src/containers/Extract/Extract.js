@@ -21,11 +21,12 @@ class Extract extends Component {
 
   static propTypes = {
     activeBrowser: PropTypes.string,
+    activeCollection: PropTypes.object,
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     extractable: PropTypes.object,
-    params: PropTypes.object,
+    match: PropTypes.object,
     reqId: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -41,11 +42,11 @@ class Extract extends Component {
   constructor(props) {
     super(props);
 
-    this.mode = props.params.extractMode;
+    this.mode = props.match.params.extractMode;
   }
 
   getChildContext() {
-    const { auth, params: { extractMode, user } } = this.props;
+    const { auth, match: { params: { extractMode, user } } } = this.props;
 
     return {
       currMode: extractMode,
@@ -59,7 +60,7 @@ class Extract extends Component {
   }
 
   render() {
-    const { activeBrowser, activeCollection, dispatch, extractable, params,
+    const { activeBrowser, activeCollection, dispatch, extractable, match: { params },
             reqId, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
@@ -69,30 +70,33 @@ class Extract extends Component {
     const contentPrefix = `${config.contentHost}/${user}/${coll}/${rec}/${extractFrag}/`;
 
     return (
-      <div>
+      <React.Fragment>
         <ReplayUI
           activeCollection={activeCollection}
           params={params}
           url={url} />
 
-        {
-          activeBrowser ?
-            <RemoteBrowser
-              dispatch={dispatch}
-              mode={this.mode}
-              params={params}
-              rb={activeBrowser}
-              rec={rec}
-              recId={reqId} /> :
-            <IFrame
-              appPrefix={appPrefix}
-              contentPrefix={contentPrefix}
-              dispatch={dispatch}
-              params={params}
-              timestamp={timestamp}
-              url={url} />
-        }
-      </div>
+        <div className="iframe-container">
+          {
+            activeBrowser ?
+              <RemoteBrowser
+                dispatch={dispatch}
+                mode={this.mode}
+                params={params}
+                rb={activeBrowser}
+                rec={rec}
+                recId={reqId}
+                url={url} /> :
+              <IFrame
+                appPrefix={appPrefix}
+                contentPrefix={contentPrefix}
+                dispatch={dispatch}
+                params={params}
+                timestamp={timestamp}
+                url={url} />
+          }
+        </div>
+      </React.Fragment>
     );
   }
 }
@@ -100,7 +104,7 @@ class Extract extends Component {
 const initialData = [
   {
     // set url and ts in store
-    promise: ({ params: { extractMode, archiveId, collId, ts, splat }, store: { dispatch, getState } }) => {
+    promise: ({ match: { params: { extractMode, archiveId, collId, ts, splat } }, store: { dispatch, getState } }) => {
       dispatch(getArchives()).then(() => {
         const state = getState().app;
         const archives = state.getIn(['controls', 'archives']);
@@ -112,7 +116,7 @@ const initialData = [
             allSources: extractMode === 'extract',
             archive: archives.get(archiveId),
             id: archiveId,
-            targetColl: collId,
+            targetColl: collId ? collId.replace(':', '') : null,
             targetUrl: splat,
             timestamp: ts
           }))
@@ -123,9 +127,9 @@ const initialData = [
     }
   },
   {
-    promise: ({ params, store: { dispatch, getState } }) => {
-      const state = getState().app;
-      const collection = state.get('collection');
+    promise: ({ match: { params }, store: { dispatch, getState } }) => {
+      const state = getState();
+      const collection = state.app.get('collection');
       const { user, coll } = params;
 
       if(!isLoaded(state) || (collection.get('id') === coll &&
@@ -150,7 +154,7 @@ const initialData = [
   },
   {
     // set active collection
-    promise: ({ params: { coll }, store: { dispatch }}) => {
+    promise: ({ match: { params: { coll } }, store: { dispatch }}) => {
       return dispatch(selectCollection(coll));
     }
   }

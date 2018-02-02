@@ -188,6 +188,7 @@ class RemoteBrowserUI extends Component {
     this.socket = new WebSocketHandler(params, currMode, dispatch, true, reqId);
 
     // connect to rb
+    // TODO: Make sure this is being destroyed properly
     this.cb = new CBrowser(reqId, '#browser', this.pywbParams);
     window.cb = this.cb;
   }

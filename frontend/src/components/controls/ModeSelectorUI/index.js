@@ -11,7 +11,7 @@ import { PatchIcon, SnapshotIcon } from 'components/icons';
 
 import './style.scss';
 
-class ModeSelector extends PureComponent {
+class ModeSelectorUI extends PureComponent {
 
   static contextTypes = {
     currMode: PropTypes.string,
@@ -38,14 +38,15 @@ class ModeSelector extends PureComponent {
     if (this.context.currMode.indexOf('replay') !== -1) {
       this.context.router.history.push(`/${user}/${coll}`);
     } else {
-      this.context.router.history.push(`/${user}/${coll}/${rec}`);
+      this.context.router.history.push(`/${user}/${coll}/?filter=${rec}`);
     }
   }
 
   onReplay = () => {
-    const { params: { coll, user }, ts, url } = this.props;
+    const { params: { coll, user }, remoteBrowserSelected, ts, url } = this.props;
 
-    this.context.router.history.push(`/${user}/${coll}/${ts}/${url}`);
+    const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
+    this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(rbId, ts, '/')}${url}`);
   }
 
   onPatch = () => {
@@ -53,16 +54,18 @@ class ModeSelector extends PureComponent {
 
     const { params: { coll }, remoteBrowserSelected, ts, url } = this.props;
 
-    window.location = `/_new/${coll}/Patch/patch/${remoteBrowserMod(remoteBrowserSelected, ts, '/')}/${url}`;
+    const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
+    window.location = `/_new/${coll}/Patch/patch/${remoteBrowserMod(rbId, ts, '/')}${url}`;
   }
 
   onRecord = () => {
     if (this.context.currMode === 'record') return;
 
-    const { params: { coll, rec }, remoteBrowserSelected, ts, url } = this.props;
-    const recording = rec && !rec.startswith('patch') ? rec : encodeURIComponent(config.defaultRecordingTitle);
+    const { params: { coll, rec }, remoteBrowserSelected, url } = this.props;
+    const recording = rec && !rec.startsWith('patch') ? rec : encodeURIComponent(config.defaultRecordingTitle);
+    const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
 
-    window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(remoteBrowserSelected, ts, '/')}/${url}`;
+    window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(rbId, '/')}${url}`;
   }
 
   onStaticCopy = () => {
@@ -186,4 +189,4 @@ class ModeSelector extends PureComponent {
   }
 }
 
-export default ModeSelector;
+export default ModeSelectorUI;

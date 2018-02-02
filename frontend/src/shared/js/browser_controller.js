@@ -140,6 +140,10 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function destroy_clipboard() {
+        if (!init_params.clipboard || !document.querySelector('init_params.clipboard')) {
+            return;
+        }
+
         for (var i = 0; i < clipEvents.length; i++) {
             document.querySelector(init_params.clipboard).removeEventListener(clipEvents[i], clipHandler);
         }
@@ -158,8 +162,14 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function getHeaderHeight() {
-        var hh = document.querySelector('header').getBoundingClientRect().height;
-        hh += document.querySelector('.wr-controls').getBoundingClientRect().height;
+        const header = document.querySelector('header');
+        let hh = 0;
+
+        if (header) {
+            let hh = header.getBoundingClientRect().height;
+            hh += document.querySelector('.wr-controls').getBoundingClientRect().height;
+        }
+
         return hh;
     }
 

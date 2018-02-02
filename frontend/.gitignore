@@ -13,3 +13,4 @@ build
 .DS_Store
 npm-debug.log
 webpack-assets.json
+mocks

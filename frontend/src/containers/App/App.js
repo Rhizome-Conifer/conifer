@@ -78,6 +78,13 @@ export class App extends Component { // eslint-disable-line
     }
   }
 
+  componentDidUpdate(prevProps) {
+    // restore scroll postion
+    if (window && this.props.location !== prevProps.location) {
+      window.scrollTo(0, 0);
+    }
+  }
+
   getActiveRoute = (url) => {
     const { route: { routes } } = this.props;
 

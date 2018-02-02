@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
-import { RemoteBrowserSelect } from 'containers';
+import { InfoWidget, RemoteBrowserSelect } from 'containers';
 
-import { BookmarkList, ReplayArrowButton, ReplayPageDisplay } from 'components/controls';
+import TimeFormat from 'components/TimeFormat';
 
 import './style.scss';
 
@@ -27,30 +26,49 @@ class ReplayURLBar extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { showList: false };
+    this.state = { url: props.url };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.url !== this.props.url) {
+      this.setState({ url: nextProps.url });
+    }
+  }
+
+  // TODO: update iframe src not page url
+  changeUrl = () => {
+    const { params: { user, coll } } = this.props;
+    const { url } = this.state;
+
+    this.context.router.push(`/${user}/${coll}/${url}`);
+  }
+
+  handleInput = (evt) => {
+    evt.preventDefault();
+    this.setState({ url: evt.target.value });
+  }
+
+  handleSubmit = (evt) => {
+    const { params: { user, coll } } = this.props;
+    const { url } = this.state;
+
+    if (evt.key === 'Enter') {
+      evt.preventDefault();
+      this.context.router.history.push(`/${user}/${coll}/${url}`);
+    }
   }
 
   render() {
-    const { bookmarks, recordingIndex, params, timestamp, url } = this.props;
     const { canAdmin } = this.context;
+    const { params, timestamp } = this.props;
+    const { url } = this.state;
 
-
-    /* TODO: fabric-ify these */
     return (
       <div className="main-bar">
         <form className="form-group-recorder-url">
           <div className="input-group containerized">
             <div className="input-group-btn rb-dropdown">
-              {/*
-              <ReplayArrowButton
-                page={recordingIndex - 1 >= 0 ? bookmarks.get(recordingIndex - 1) : null}
-                params={params}
-                direction="left" />
-
-              <ReplayPageDisplay
-                index={recordingIndex}
-                total={bookmarks.size} />
-              */
+              {
                 canAdmin &&
                   <RemoteBrowserSelect
                     active
@@ -58,16 +76,16 @@ class ReplayURLBar extends Component {
               }
             </div>
 
-            <BookmarkList {...this.props} />
-
-            {/*
-            <div className="input-group-btn hidden-xs">
-              <ReplayArrowButton
-                page={recordingIndex + 1 < bookmarks.size ? bookmarks.get(recordingIndex + 1) : null}
-                params={params}
-                direction="right" />
+            <div className="bookmark-list">
+              <input type="text" onChange={this.handleInput} onKeyPress={this.handleSubmit} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
+              <div className="wr-replay-info">
+                <InfoWidget />
+                <span className="replay-date main-replay-date hidden-xs">
+                  <TimeFormat dt={timestamp} />
+                </span>
+              </div>
             </div>
-           */}
+
           </div>
         </form>
       </div>

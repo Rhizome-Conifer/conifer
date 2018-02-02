@@ -27,8 +27,9 @@ const pretty = new PrettyError();
 const server = new http.Server(app);
 const bypassUrls = [
   '/api',
-  '/_(reportissues|set_session|clear_session|client_ws|message)',
+  '/_(reportissues|set_session|clear_session|client_ws|websockify|message)',
   '/_new*',
+  '/websockify'
 ];
 
 // TODO: use nginx

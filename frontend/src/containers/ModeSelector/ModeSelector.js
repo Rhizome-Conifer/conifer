@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { getActiveRemoteBrowser } from 'redux/selectors';
 
-import { ModeSelector } from 'components/controls';
+import { ModeSelectorUI } from 'components/controls';
 
 
 const mapStateToProps = ({ app }) => {
@@ -14,4 +14,4 @@ const mapStateToProps = ({ app }) => {
 
 export default connect(
   mapStateToProps
-)(ModeSelector);
+)(ModeSelectorUI);

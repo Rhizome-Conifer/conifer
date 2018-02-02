@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 
 import SizeFormat from 'components/SizeFormat';
 
+import './style.scss';
+
+
 function SizeCounterUI(props) {
   const { bytes, classes } = props;
 

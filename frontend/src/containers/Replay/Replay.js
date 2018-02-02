@@ -6,9 +6,9 @@ import { asyncConnect } from 'redux-connect';
 import { remoteBrowserMod, truncate } from 'helpers/utils';
 import config from 'config';
 
-import { getOrderedBookmarks, getActiveRecording, getRecording } from 'redux/selectors';
+import { getRecording } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, updateUrlAndTimestamp } from 'redux/modules/controls';
+import { getArchives, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
 import { createRemoteBrowser, load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
@@ -26,9 +26,7 @@ class Replay extends Component {
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
-    bookmarks: PropTypes.object,
     recording: PropTypes.object,
-    recordingIndex: PropTypes.number,
     reqId: PropTypes.string,
     match: PropTypes.object,
     sidebarResize: PropTypes.bool,
@@ -51,11 +49,11 @@ class Replay extends Component {
   }
 
   getChildContext() {
-    const { auth, match: { params } } = this.props;
+    const { auth, match: { params: { user } } } = this.props;
 
     return {
       currMode: this.mode,
-      canAdmin: auth.getIn(['user', 'username']) === params.user
+      canAdmin: auth.getIn(['user', 'username']) === user
     };
   }
 
@@ -65,8 +63,8 @@ class Replay extends Component {
   }
 
   render() {
-    const { activeBrowser, bookmarks, collection, dispatch, match: { params }, recording,
-            recordingIndex, reqId, sidebarResize, timestamp, url } = this.props;
+    const { activeBrowser, collection, dispatch, match: { params }, recording,
+            reqId, sidebarResize, timestamp, url } = this.props;
     const { product } = this.context;
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
@@ -85,8 +83,6 @@ class Replay extends Component {
         </Helmet>
 
         <ReplayUI
-          bookmarks={bookmarks}
-          recordingIndex={recordingIndex}
           params={params}
           timestamp={timestamp}
           url={url} />
@@ -125,21 +121,11 @@ const initialData = [
   },
   {
     // set url and ts in store
-    promise: ({ location: { hash, search }, match: { params: { ts, splat } }, store: { dispatch } }) => {
-      let timestamp = ts;
-      let rb = null;
-
-      if (ts.indexOf('$br:') !== -1) {
-        const parts = ts.split('$br:');
-        timestamp = parts[0];
-        rb = parts[1];
-      }
-
+    promise: ({ location: { hash, search }, match: { params: { br, ts, splat } }, store: { dispatch } }) => {
       const compositeUrl = `${splat}${search || ''}${hash || ''}`;
-      console.log(splat, search, hash, timestamp);
       const promises = [
-        dispatch(updateUrlAndTimestamp(compositeUrl, timestamp)),
-        dispatch(setBrowser(rb))
+        ts ? dispatch(updateUrlAndTimestamp(compositeUrl, ts)) : dispatch(updateUrl(compositeUrl)),
+        dispatch(setBrowser(br || null))
       ];
 
       return Promise.all(promises);
@@ -177,10 +163,8 @@ const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     auth: app.get('auth'),
-    bookmarks: getOrderedBookmarks(app),
     collection: app.get('collection'),
     recording: getRecording(app),
-    recordingIndex: getActiveRecording(app),
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
     sidebarResize: app.getIn(['sidebar', 'resizing']),
     timestamp: app.getIn(['controls', 'timestamp']),

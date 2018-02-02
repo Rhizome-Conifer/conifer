@@ -7,6 +7,7 @@ import config from 'config';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
+import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -22,7 +23,7 @@ class Patch extends Component {
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
-    params: PropTypes.object,
+    match: PropTypes.object,
     reqId: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -41,11 +42,11 @@ class Patch extends Component {
   }
 
   getChildContext() {
-    const { auth, params } = this.props;
+    const { auth, match: { params: { user } } } = this.props;
 
     return {
       currMode: 'patch',
-      canAdmin: auth.getIn(['user', 'username']) === params.user
+      canAdmin: auth.getIn(['user', 'username']) === user
     };
   }
 
@@ -55,52 +56,62 @@ class Patch extends Component {
   }
 
   render() {
-    const { activeBrowser, dispatch, params, reqId, timestamp, url } = this.props;
+    const { activeBrowser, dispatch, match: { params }, reqId, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/patch/`;
     const contentPrefix = `${config.contentHost}/${user}/${coll}/${rec}/patch/`;
 
     return (
-      <div>
-        <ReplayUI params={params} />
-
-        {
-          activeBrowser ?
-            <RemoteBrowser
-              dispatch={dispatch}
-              mode={this.mode}
-              params={params}
-              rb={activeBrowser}
-              rec={rec}
-              recId={reqId} /> :
-            <IFrame
-              appPrefix={appPrefix}
-              contentPrefix={contentPrefix}
-              dispatch={dispatch}
-              params={params}
-              timestamp={timestamp}
-              url={url} />
-        }
-      </div>
+      <React.Fragment>
+        <ReplayUI
+          params={params}
+          url={url} />
+        <div className="iframe-container">
+          {
+            activeBrowser ?
+              <RemoteBrowser
+                dispatch={dispatch}
+                mode={this.mode}
+                params={params}
+                rb={activeBrowser}
+                rec={rec}
+                recId={reqId}
+                url={url} /> :
+              <IFrame
+                appPrefix={appPrefix}
+                contentPrefix={contentPrefix}
+                dispatch={dispatch}
+                params={params}
+                timestamp={timestamp}
+                url={url} />
+          }
+        </div>
+      </React.Fragment>
     );
   }
 }
 
 const initialData = [
   {
+    promise: ({ store: { dispatch } }) => {
+      return dispatch(loadBrowsers());
+    }
+  },
+  {
     // set url and ts in store
-    promise: ({ params: { ts, splat }, store: { dispatch } }) => {
+    promise: ({ match: { params: { br, ts, splat } }, store: { dispatch } }) => {
       const promises = [
         dispatch(updateUrl(splat)),
-        dispatch(updateTimestamp(ts))
+        dispatch(updateTimestamp(ts)),
+        dispatch(setBrowser(br || null))
       ];
 
       return Promise.all(promises);
     }
   },
   {
-    promise: ({ params, store: { dispatch, getState } }) => {
+    promise: ({ match: { params }, store: { dispatch, getState } }) => {
       // load collection
       const state = getState();
       const collection = state.app.get('collection');

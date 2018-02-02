@@ -17,7 +17,7 @@ import {
 } from './containers';
 
 
-const userPath = '/:user([^_][A-Za-z0-9]+)';
+const userPath = '/:user([A-Za-z0-9-]+)';
 const userRoutes = [
   /* collection */
   {
@@ -61,7 +61,7 @@ const controllerRoutes = [
   {
     // record with remote browser id
     path: `${userPath}/:coll/:rec/record/$br::br/:splat(.*)`,
-    name: 'record',
+    name: 'rb record',
     footer: false,
     classOverride: true,
     component: Record,
@@ -78,7 +78,7 @@ const controllerRoutes = [
     breadcrumb: false
   },
   {
-    path: `${userPath}/:coll/:rec/patch/:ts/:splat(.*)`,
+    path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)/:splat(.*)`,
     name: 'patch',
     footer: false,
     classOverride: true,
@@ -87,7 +87,16 @@ const controllerRoutes = [
     breadcrumb: false
   },
   {
-    path: `${userPath}/:coll/:rec/:extractMode::archiveId(::collId)/:ts/:splat(.*)`,
+    path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    name: 'rb patch',
+    footer: false,
+    classOverride: true,
+    component: Patch,
+    exact: true,
+    breadcrumb: false
+  },
+  {
+    path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?/:splat(.*)`,
     name: 'extract',
     footer: false,
     classOverride: true,
@@ -96,7 +105,16 @@ const controllerRoutes = [
     breadcrumb: false
   },
   {
-    path: `${userPath}/:coll/:ts/:splat(.*)`,
+    path: `${userPath}/:coll/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    name: 'rb replay',
+    footer: false,
+    classOverride: true,
+    component: Replay,
+    exact: true,
+    breadcrumb: false
+  },
+  {
+    path: `${userPath}/:coll/:ts([0-9]+)?/:splat(.*)`,
     name: 'replay',
     footer: false,
     classOverride: true,
@@ -160,8 +178,8 @@ export default [
   },
 
   ...infoRoutes,
-  ...controllerRoutes,
   ...userRoutes,
+  ...controllerRoutes,
 
   {
     path: '/(.*)',
