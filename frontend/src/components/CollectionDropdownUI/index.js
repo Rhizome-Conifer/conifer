@@ -46,7 +46,10 @@ class CollectionDropdownUI extends Component {
   }
 
   collectionChoice = (id) => {
-    this.props.setCollection(id);
+    // filter out new modal option
+    if (id) {
+      this.props.setCollection(id);
+    }
   }
 
   createCollection = (collTitle, isPublic) => {
@@ -73,9 +76,9 @@ class CollectionDropdownUI extends Component {
       <div className="wr-collection-menu">
         {
           user && user.get('username') && !user.get('anon') &&
-            <div>
-              <label className="left-buffer" htmlFor="collection">Add to collection:&emsp;</label>
-              <DropdownButton title={buttonTitle} id="wr-collecton-dropdown" onSelect={this.collectionChoice}>
+            <React.Fragment>
+              <label className="left-buffer" htmlFor="wr-collection-dropdown">Add to collection:&emsp;</label>
+              <DropdownButton title={buttonTitle} id="wr-collection-dropdown" onSelect={this.collectionChoice}>
                 <MenuItem onClick={this.toggle}>+ Create new collection</MenuItem>
                 <MenuItem divider />
                 {
@@ -95,7 +98,7 @@ class CollectionDropdownUI extends Component {
                   })
                 }
               </DropdownButton>
-            </div>
+            </React.Fragment>
         }
         <NewCollection
           close={this.close}

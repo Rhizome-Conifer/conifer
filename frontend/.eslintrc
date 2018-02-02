@@ -18,6 +18,7 @@
     "import/no-named-as-default": 2,
     "comma-dangle": 0,
     "comma-spacing": 1,
+    "consistent-return": 1,
     "indent": [2, 2, {"SwitchCase": 1}],
     "no-console": 0,
     "no-alert": 0,

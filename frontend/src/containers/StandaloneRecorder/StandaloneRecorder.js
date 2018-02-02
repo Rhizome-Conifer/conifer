@@ -6,16 +6,12 @@ import { getActiveCollection } from 'redux/selectors';
 import { StandaloneRecorderUI } from 'components/controls';
 
 
-const mapStateToProps = (outerState) => {
-  const state = outerState.app;
-  const controls = state.get('controls');
-  const user = state.get('user');
-
+const mapStateToProps = ({ app }) => {
   return {
-    activeCollection: getActiveCollection(state),
-    extractable: controls.get('extractable'),
-    selectedBrowser: state.getIn(['remoteBrowsers', 'selectedBrowser']),
-    username: user.get('username')
+    activeCollection: getActiveCollection(app),
+    extractable: app.getIn(['controls', 'extractable']),
+    selectedBrowser: app.getIn(['remoteBrowsers', 'selectedBrowser']),
+    username: app.getIn(['user', 'username'])
   };
 };
 

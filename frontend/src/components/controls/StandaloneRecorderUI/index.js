@@ -41,6 +41,10 @@ class StandaloneRecorderUI extends Component {
     const { recordingTitle, url } = this.state;
     const cleanRecordingTitle = encodeURIComponent(recordingTitle.trim());
 
+    if (!url) {
+      return false;
+    }
+
     let cleanUrl = addTrailingSlash(fixMalformedUrls(url));
 
     if (!selectedBrowser && (isSafari() || isMS())) {

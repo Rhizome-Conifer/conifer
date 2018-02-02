@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
 
+import { defaultCollectionTitle } from 'config';
+
 import Modal from 'components/Modal';
 
 
@@ -17,7 +19,10 @@ class NewCollection extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { collTitle: 'New Collecton', isPublic: false };
+    this.state = {
+      collTitle: defaultCollectionTitle,
+      isPublic: false
+    };
   }
 
   submit = (evt) => {
