@@ -100,11 +100,12 @@ class SnapshotController(BaseController):
 
         recording = collection.get_recording_by_name(snap_rec_name)
         if not recording:
-            recording = collection.create_recording(snap_rec_name, title=snap_title)
+            recording = collection.create_recording(snap_rec_name,
+                                                    title=snap_rec_name)
 
         kwargs = dict(user=user.name,
                       coll=collection.my_id,
-                      rec=quote(snap_rec, safe='/*'),
+                      rec=quote(snap_rec_name, safe='/*'),
                       type='snapshot')
 
         params = {'url': url}

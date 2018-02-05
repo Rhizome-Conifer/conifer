@@ -480,7 +480,7 @@ class UserController(BaseController):
                 request.environ['webrec.delete_all_cookies'] = 'all'
                 self.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
             else:
-                self.flash_message('There was an error deleting {0}'.format(coll))
+                self.flash_message('There was an error deleting {0}'.format(user))
                 self.redirect(self.get_path(user))
 
         # Expiry Message

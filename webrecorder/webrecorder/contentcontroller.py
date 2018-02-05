@@ -93,22 +93,6 @@ class ContentController(BaseController, RewriterApp):
             wb_url = self.add_query(wb_url)
             return self.do_create_new_and_redir(coll_name, rec_name, wb_url, 'record')
 
-        # COLLECTIONS
-        @self.app.get(['/_display/<user>', '/_display/<user>/<collections:re:([\w,-]+)>'])
-        @self.jinja2_view('paging_display.html')
-        def collection_display(user, collections=None):
-            user = self.access.get_user(user)
-
-            items = {}
-            keys = []
-
-            for collection in user.get_collections():
-                if not filter_colls or collection.name in filter_colls:
-                    keys.append(collection.name)
-                    items[collection.name] = collection.list_coll_pages()
-
-            return {'data': items, 'keys': keys}
-
         # COOKIES
         @self.app.get(['/<user>/<coll_name>/$add_cookie'], method='POST')
         def add_cookie(user, coll_name):

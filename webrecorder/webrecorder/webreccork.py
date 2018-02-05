@@ -1,4 +1,4 @@
-from cork import Cork, AAAException
+from cork import Cork, AAAException, AuthException
 from datetime import datetime
 import os
 

@@ -195,5 +195,3 @@ class BaseController(object):
     def access(self):
         return request.environ['webrec.access']
 
-
-

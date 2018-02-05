@@ -1,7 +1,4 @@
-import json
-import requests
-
-from bottle import request, response
+from bottle import request
 from six.moves.urllib.parse import quote
 
 from webrecorder.basecontroller import BaseController
@@ -62,8 +59,8 @@ class CollsController(BaseController):
             return self.get_collection_info(coll_name)
 
         @self.app.delete('/api/v1/collections/<coll_name>')
-        def delete_collection(coll):
-            user, collection = self.load_user_coll()
+        def delete_collection(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
 
             if user.remove_collection(collection, delete=True):
                 return {'deleted_id': coll_name}
@@ -140,7 +137,7 @@ class CollsController(BaseController):
                     raise ValidationException('Invalid Collection Name')
 
                 user = self.access.session_user
-                collection = user.create_collection(coll_name, title=title, desc='', public=is_public)
+                user.create_collection(coll_name, title=title, desc='', public=is_public)
 
                 self.flash_message('Created collection <b>{0}</b>!'.format(title), 'success')
                 redir_to = self.get_redir_back('/_create')

@@ -77,6 +77,7 @@ class BugReportController(BaseController):
 
         return error_email
 
+
 # ============================================================================
 class RedisIssueHandler(object):
     def __init__(self, redis, cork, email_view):

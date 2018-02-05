@@ -107,7 +107,7 @@ class RecsController(BaseController):
             page_data = dict(request.forms.decode())
 
             res = recording.modify_page(page_data)
-            return {'page-data': page_data, 'recording-id': rec}
+            return {'page-data': page_data, 'recording-id': rec_name}
 
         @self.app.get('/api/v1/recordings/<rec_name>/pages')
         def list_pages(rec_name):
