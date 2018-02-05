@@ -6,6 +6,7 @@ from functools import wraps
 from six.moves.urllib.parse import quote
 
 from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
+from webrecorder.models import User
 
 
 # ============================================================================
@@ -69,14 +70,14 @@ class BaseController(object):
         return user
 
     def load_user_coll(self, api=True, redir_check=True, user=None, coll_name=None):
-        user = self.get_user(api=api, redir_check=redir_check, user=user)
+        if not isinstance(user, User):
+            user = self.get_user(api=api, redir_check=redir_check, user=user)
 
         if not coll_name:
             coll_name = request.query.getunicode('coll')
 
         if not coll_name:
-            self._raise_error(400, 'Collection must be specified',
-                              api=api)
+            self._raise_error(400, 'Collection must be specified', api=api)
 
         if self.access.is_anon(user):
             if coll_name != 'temp':
