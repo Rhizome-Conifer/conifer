@@ -80,7 +80,7 @@ const mapStateToProps = (outerState) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    searchBookmarks: createSearchAction('bookmarks'),
+    searchBookmarks: createSearchAction('collection.bookmarks'),
     dispatch
   };
 };

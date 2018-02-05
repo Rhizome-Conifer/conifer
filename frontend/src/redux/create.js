@@ -10,7 +10,7 @@ export default function createStore(client, data) {
 
   const searchConfig = reduxSearch({
     resourceIndexes: {
-      bookmarks: ({ resources, indexDocument, state }) => {
+      'collection.bookmarks': ({ resources, indexDocument, state }) => {
         resources.forEach((bk) => {
           const id = bk.get('id');
           indexDocument(id, bk.get('title') || '');
@@ -19,7 +19,7 @@ export default function createStore(client, data) {
       }
     },
     resourceSelector: (resourceName, state) => {
-      return state.app.getIn(['collection', resourceName]);
+      return state.app.getIn(resourceName.split('.'));
     }
   });
 

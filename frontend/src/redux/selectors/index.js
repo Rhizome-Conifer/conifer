@@ -34,10 +34,9 @@ const sortFn = (a, b, by = null) => {
 
 // redux-search
 const { text, result } = getSearchSelectors({
-  resourceName: 'bookmarks',
+  resourceName: 'collection.bookmarks',
   resourceSelector: (resourceName, state) => {
-    const items = state.app.getIn(['collection', resourceName]);
-    return items;
+    return state.app.getIn(resourceName.split('.'));
   }
 });
 
