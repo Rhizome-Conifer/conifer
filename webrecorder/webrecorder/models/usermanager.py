@@ -1,8 +1,10 @@
 import os
 import re
 import base64
+import hashlib
 import json
 import redis
+import requests
 
 from datetime import datetime
 
@@ -437,8 +439,8 @@ class CLIUserManager(UserManager):
 
         mod_role = input('change role? currently {0} (y/n) '.format(users[username]['role']))
         if mod_role.strip().lower() == 'y':
-            new_role = choose_role(m)
-            mselfcork._store.users[username]['role'] = new_role
+            new_role = self.choose_role()
+            self.cork._store.users[username]['role'] = new_role
             has_modified = True
             print('assigned {0} with the new role: {1}'.format(username, new_role))
 
@@ -500,11 +502,12 @@ class CLIUserManager(UserManager):
             self.remove_from_mailing_list(users[username]['email_addr'])
 
         # delete user data and remove from redis
-        res = m._send_delete('user', username)
+        # TODO: add tests
+        u = self.get_user(username)
+        u.delete_me()
 
-        if res:
-            # delete user from cork
-            self.cork.user(username).delete()
+        # delete user from cork
+        self.cork.user(username).delete()
 
 
 

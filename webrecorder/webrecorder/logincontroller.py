@@ -1,7 +1,7 @@
 import os
 import json
 
-from bottle import request
+from bottle import request, HTTPError
 from os.path import expandvars
 
 from webrecorder.webreccork import ValidationException
@@ -44,6 +44,80 @@ class LoginController(BaseController):
         self.invites_enabled = invites in ('true', '1', 'yes')
 
     def init_routes(self):
+
+        @self.app.get('/api/v1/load_auth')
+        def load_auth():
+            sesh = self.user_manager.get_session()
+
+            if sesh:
+                # current user
+                u = self.user_manager.get_user(sesh.curr_user)
+
+                return {
+                    'username': sesh.curr_user,
+                    'role': sesh.curr_role,
+                    'anon': u.is_anon(),
+                    'coll_count': u.num_collections(),
+                }
+
+            return {'username': None, 'role': None, 'anon': None}
+
+        @self.app.post('/api/v1/login')
+        def login():
+            """Authenticate users"""
+            data = request.json
+            username = data.get('username', '')
+            password = data.get('password', '')
+
+            if not self.user_manager.cork.login(username, password):
+                return HTTPError(status=401)
+
+            sesh = self.user_manager.get_session()
+            sesh.curr_user = username
+            sesh.curr_role = self.user_manager.cork.user(sesh.curr_user).role
+            u = self.user_manager.get_user(sesh.curr_user)
+
+            remember_me = (data.get('remember_me') in ('1', 'on'))
+            sesh.logged_in(remember_me)
+
+            return {
+                'username': sesh.curr_user,
+                'role': sesh.curr_role,
+                'coll_count': u.num_collections(),
+                'anon': u.is_anon()
+            }
+
+        @self.app.get('/api/v1/logout')
+        @self.user_manager.auth_view()
+        def logout():
+            self.user_manager.cork.logout(success_redirect='/')
+
+        @self.app.get('/api/v1/username_check')
+        def test_username():
+            """async precheck username availability on signup form"""
+            username = request.query.username
+
+            if (self.user_manager.is_valid_user(username) or
+                username in self.user_manager.RESTRICTED_NAMES):
+
+                return {'available': False}
+
+            return {'available': True}
+
+        @self.app.post('/api/v1/updatepassword')
+        @self.user_manager.auth_view()
+        def update_password():
+            curr_password = self.post_get('currPass')
+            password = self.post_get('newPass')
+            confirm_password = self.post_get('newPass2')
+
+            try:
+                self.user_manager.update_password(curr_password, password,
+                                                  confirm_password)
+                return {}
+            except ValidationException as ve:
+                return self._raise_error(403, str(ve), api=True)
+
         # Login/Logout
         # ============================================================================
         @self.app.get(LOGIN_PATH)
