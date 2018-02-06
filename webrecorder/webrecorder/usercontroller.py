@@ -373,57 +373,40 @@ class UserController(BaseController):
         def api_get_user(username):
             """API enpoint to return user info"""
 
-            # check permissings
-            if not self.manager.is_superuser():
-                self.manager.assert_user_is_owner(username)
+            user = self.user_manager.get_user(username)
 
-            api = True
-            include_recs = True
+            if not self.user_manager.is_valid_user(user):
+                self._raise_error(404, 'No such user', api=True)
+
+            # check permissions
+            if not self.access.is_superuser():
+                self.access.assert_is_curr_user(user)
+
             include_colls = True
-
-            if request.query.api:
-                api = request.query.api == 'true'
-
-            if request.query.include_recs:
-                include_recs = request.query.include_recs == 'true'
 
             if request.query.include_colls:
                 include_colls = request.query.include_colls == 'true'
 
-            users = self.manager.get_users()
-
-            if username not in users:
-                self._raise_error(404, 'No such user')
-
-            user = users[username]
-            user['username'] = username
+            user_obj = user.serialize()
+            user_obj['username'] = username
 
             # assemble space usage
-            total = self.manager.get_size_allotment(username)
-            used = self.manager.get_size_usage(username)
-            user['space_utilization'] = {
+            total = user.get_size_allotment()
+            avail = user.get_size_remaining()
+            user_obj['space_utilization'] = {
                 'total': total,
-                'used': used,
-                'available': total - used,
+                'used': total - avail,
+                'available': avail,
             }
 
-            user_data, err = UserSchema(exclude=('username',)).load(user)
+            user_data, err = UserSchema().load(user_obj)
 
             if include_colls:
-                colls = self.manager.get_collections(username,
-                                                     include_recs=include_recs,
-                                                     api=api)
-
-                if include_recs:
-                    for coll in colls:
-                        for rec in coll['recordings']:
-                            rec['pages'] = self.manager.list_pages(username,
-                                                                   coll['id'],
-                                                                   rec['id'])
+                colls = user.get_collections()
 
                 # colls is a list so will always be `many` even if one collection
-                collections, err = CollectionSchema().load(colls, many=True)
-                user_data['collections'] = collections
+                # collections, err = CollectionSchema().load(colls, many=True)
+                user_data['collections'] = [coll.serialize() for coll in colls]
 
             return {'user': user_data}
 

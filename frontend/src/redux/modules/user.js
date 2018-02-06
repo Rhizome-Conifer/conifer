@@ -93,7 +93,7 @@ export function load(username) {
     types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
     accessed: Date.now(),
     username,
-    promise: client => client.get(`${config.apiPath}/users/${username}?api=false&include_recs=false&include_colls=true`)
+    promise: client => client.get(`${config.apiPath}/users/${username}?include_colls=true`)
   };
 }
 
