@@ -217,15 +217,12 @@ class CollsController(BaseController):
 
         result['bookmarks'] = []
 
-        # TODO: add bookmarks
-        # for rec in result['collection']['recordings']:
-        #     rec['pages'] = self.manager.list_pages(user, coll_name, rec['id'])
+        for rec in collection.get_recordings():
+            if rec.count_pages() > 0:
+                result['bookmarks'].extend(rec.list_pages())
 
-        #     if len(rec['pages']) > 0:
-        #         result['bookmarks'].extend(rec['pages'])
-
-        # if not result['collection'].get('desc'):
-        #     result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])
+        if not result['collection'].get('desc'):
+            result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])
 
         # rec_list = rec_list or []
         # result['rec_list'] = [rec.serialize() for rec in rec_list]
