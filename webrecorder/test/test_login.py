@@ -310,7 +310,7 @@ class TestLogin(BaseWRTests):
                   'confirmpassword': 'NewPassword1!'}
 
         self.testapp.post('/_updatepassword', params=params)
-        res = self.testapp.get('/someuser/_settings')
+        res = self.testapp.get('/_settings')
         assert 'Incorrect Current Password' in res.text
 
     def test_update_password_success(self):
@@ -320,7 +320,7 @@ class TestLogin(BaseWRTests):
                   'confirmpassword': 'Password4!'}
 
         self.testapp.post('/_updatepassword', params=params)
-        res = self.testapp.get('/someuser/_settings')
+        res = self.testapp.get('/_settings')
         assert 'Password Updated' in res.text
 
     def test_login_2(self):

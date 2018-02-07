@@ -537,9 +537,6 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
         assert 'No such page' in res.text
 
-    def test_different_user_settings_error(self):
-        res = self.testapp.get('/someuser/_settings', status=404)
-
     def test_logout_3(self):
         res = self.testapp.get('/_logout')
         assert res.headers['Location'] == 'http://localhost:80/'
@@ -555,7 +552,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_delete_user_wrong_user(self):
-        res = self.testapp.get('/someuser/_settings')
+        res = self.testapp.get('/_settings')
 
         csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
 
@@ -572,7 +569,7 @@ class TestRegisterMigrate(FullStackTests):
 
 
     def test_delete_user(self):
-        res = self.testapp.get('/someuser/_settings')
+        res = self.testapp.get('/_settings')
 
         csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
 
@@ -603,3 +600,8 @@ class TestRegisterMigrate(FullStackTests):
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
         assert res.headers['Location'] == 'http://localhost:80/_login'
+
+    def test_user_settings_error(self):
+        res = self.testapp.get('/_settings', status=404)
+
+

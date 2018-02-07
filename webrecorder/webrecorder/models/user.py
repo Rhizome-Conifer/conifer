@@ -209,7 +209,6 @@ class User(RedisNamedContainer):
 
         return (total >= limit_max)
 
-
 # ============================================================================
 class SessionUser(User):
     def __init__(self, **kwargs):

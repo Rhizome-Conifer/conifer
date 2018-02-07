@@ -221,12 +221,13 @@ class UserController(BaseController):
 
             return {'users': temp_users}
 
-        @self.app.post('/api/v1/users/<user>/desc')
-        def update_desc(user):
+        @self.app.post('/api/v1/users/<username>/desc')
+        def update_desc(username):
             """legacy, eventually move to the patch endpoint"""
             desc = request.body.read().decode('utf-8')
+            user = self.get_user(user=username)
 
-            self.manager.set_user_desc(user, desc)
+            user['description'] = desc
             return {}
 
         @self.app.post(['/api/v1/userreg', '/api/v1/userreg/'])
@@ -370,10 +371,7 @@ class UserController(BaseController):
         def api_get_user(username):
             """API enpoint to return user info"""
 
-            try:
-                user = self.user_manager.all_users[username]
-            except:
-                self._raise_error(404, 'No such user', api=True)
+            user = self.get_user(user=username)
 
             # check permissions
             if not self.access.is_superuser():
@@ -492,25 +490,21 @@ class UserController(BaseController):
 
             return {'user': user_data}
 
-        @self.app.delete(['/api/v1/users/<user>', '/api/v1/users/<user>/'])
+        @self.app.delete(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
         @self.user_manager.auth_view()
-        def api_delete_user(user):
+        def api_delete_user(username):
             """API enpoint to delete a user"""
-            if not self.manager.is_superuser():
-                self.manager.assert_user_is_owner(user)
+            if self.user_manager.delete_user(username):
+                return {'deleted_user': username}
+            else:
+                return {'error_message': 'Could not delete user: ' + username}
 
-            self.manager.assert_user_exists(user)
-            self.manager.delete_user(user)
-
-        @self.app.get(['/<user>', '/<user>/'])
+        @self.app.get(['/<username>', '/<username>/'])
         @self.jinja2_view('user.html')
-        def user_info(user):
+        def user_info(username):
             self.redir_host()
 
-            try:
-                user = self.user_manager.all_users[user]
-            except:
-                raise HTTPError(404, 'No Such User')
+            user = self.get_user(user=username)
 
             if self.access.is_anon(user):
                 self.redirect('/' + user.my_id + '/temp')
@@ -521,37 +515,37 @@ class UserController(BaseController):
                 'collections': [coll.serialize() for coll in user.get_collections()],
             }
 
-            if not result['user_info'].get('desc'):
-                result['user_info']['desc'] = self.default_user_desc.format(user)
+            if not result['user_info'].get('description'):
+                result['user_info']['description'] = self.default_user_desc.format(user)
 
             return result
 
         # User Account Settings
-        @self.app.get('/<username>/_settings')
+        @self.app.get('/_settings')
         @self.jinja2_view('account.html')
-        def account_settings(username):
-            user = self.user_manager.all_users.get_user(username)
+        def account_settings():
+            self.access.assert_is_logged_in()
 
-            self.access.assert_is_curr_user(user)
+            user = self.access.session_user
 
-            return {'user': username,
+            return {'user': user.name,
                     'user_info': user.serialize(),
                     'num_coll': user.num_collections(),
                    }
 
         # Delete User Account
-        @self.app.post('/<user>/$delete')
-        def delete_user(user):
+        @self.app.post('/<username>/$delete')
+        def delete_user(username):
             self.validate_csrf()
-            if self.user_manager.delete_user(user):
-                self.flash_message('The user {0} has been permanently deleted!'.format(user), 'success')
+            if self.user_manager.delete_user(username):
+                self.flash_message('The user {0} has been permanently deleted!'.format(username), 'success')
 
                 redir_to = '/'
                 request.environ['webrec.delete_all_cookies'] = 'all'
                 self.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
             else:
-                self.flash_message('There was an error deleting {0}'.format(user))
-                self.redirect(self.get_path(user))
+                self.flash_message('There was an error deleting {0}'.format(username))
+                self.redirect(self.get_path(username))
 
         # Expiry Message
         @self.app.route('/_expire')
@@ -563,10 +557,6 @@ class UserController(BaseController):
         @self.app.get('/_skipreq')
         def skip_req():
             url = request.query.getunicode('url')
-            user = self.manager.get_curr_user()
-            if not user:
-                user = self.manager.get_anon_user()
-
-            self.manager.skip_post_req(user, url)
+            self.access.session_user.mark_skip_url(url)
             return {}
 
