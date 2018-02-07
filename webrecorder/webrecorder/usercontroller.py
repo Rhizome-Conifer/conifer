@@ -81,13 +81,7 @@ class UserController(BaseController):
             if cache:
                 return json.loads(cache)
 
-            users = self.manager.get_users().items()
-            results = []
-
-            # add username and get collections
-            for user, data in users:
-                data['username'] = user
-                results.append(data)
+            users = self.user_manager.all_users
 
             temp = self.redis.hgetall(self.temp_usage_key)
             user = self.redis.hgetall(self.user_usage_key)
@@ -95,21 +89,21 @@ class UserController(BaseController):
             user = [(k, int(v)) for k, v in user.items()]
 
             all_collections = []
-            for res in results:
+            for _user in users:
+                u = self.user_manager.all_users[_user]
                 all_collections.extend(
-                    self.manager.get_collections(user=res['username'], api=True)
+                    [c.serialize() for c in u.get_collections()]
                 )
 
             data = {
-                'users': UserSchema().load(results, many=True).data,
+                'user_count': len(users),
                 'collections': all_collections,
                 'temp_usage': sorted(temp, key=itemgetter(0)),
                 'user_usage': sorted(user, key=itemgetter(0)),
             }
 
-            self.redis.setex(cache_key,
-                                     expiry,
-                                     json.dumps(data, cls=CustomJSONEncoder))
+            self.redis.setex(cache_key, expiry,
+                             json.dumps(data, cls=CustomJSONEncoder))
 
             return data
 
@@ -142,23 +136,26 @@ class UserController(BaseController):
                 raise HTTPError(400, 'Bad Request')
 
             sort_by = filters[sort_key] if sorting is not None else None
-            users = sorted(self.manager.get_users().items(),
+            users = sorted(self.user_manager.all_users,
                            key=sort_by,
                            reverse=reverse)
 
             results = []
 
             # add username
-            for user, data in users:
-                data['username'] = user
+            for _user in users:
+                user = self.user_manager.all_users[_user]
+                data = user.serialize()
+                data['username'] = _user
                 # add space usage
-                total = self.manager.get_size_allotment(user)
-                used = self.manager.get_size_usage(user)
+                total = user.get_size_allotment()
+                avail = user.get_size_remaining()
                 data['space_utilization'] = {
                     'total': total,
-                    'used': used,
-                    'available': total - used,
+                    'used': total - avail,
+                    'available': avail,
                 }
+
                 results.append(data)
 
             return {
@@ -176,7 +173,7 @@ class UserController(BaseController):
             sesh_user = self.access.session_user
             return {'curr_user': sesh_user.my_id}
 
-        @self.app.get(['/api/v1/user_roles'])
+        @self.app.get(['/api/v1/user_roles', '/api/v1/user_roles/'])
         def api_get_user_roles():
             return {"roles": [x for x in self.cork._store.roles]}
 
