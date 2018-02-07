@@ -465,7 +465,7 @@ class ContentController(BaseController, RewriterApp):
         frontend_cache_header = None
         patch_recording = None
 
-        the_user, collection, recording = self.access.get_user_coll_rec(user, coll_name, rec_name)
+        the_user, collection, recording = self.user_manager.get_user_coll_rec(user, coll_name, rec_name)
 
         coll = collection.my_id if collection else None
         rec = recording.my_id if recording else None

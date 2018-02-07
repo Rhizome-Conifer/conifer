@@ -460,12 +460,20 @@ class TestRegisterMigrate(FullStackTests):
 
         csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
 
+        user_dir = os.path.join(self.warcs_dir, 'someuser')
+        assert len(os.listdir(user_dir)) == 3
+
         params = {'csrf': csrf_token}
         res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
 
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'new-coll-2'}
 
         assert res.headers['Location'] == 'http://localhost:80/someuser'
+
+        def assert_delete_warcs():
+            assert len(os.listdir(user_dir)) == 2
+
+        self.sleep_try(0.1, 5.0, assert_delete_warcs)
 
     def test_create_another_user(self):
         m = CLIUserManager()
@@ -529,4 +537,69 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
         assert 'No such page' in res.text
 
+    def test_different_user_settings_error(self):
+        res = self.testapp.get('/someuser/_settings', status=404)
 
+    def test_logout_3(self):
+        res = self.testapp.get('/_logout')
+        assert res.headers['Location'] == 'http://localhost:80/'
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+    def test_login_3(self):
+        params = {'username': 'someuser',
+                  'password': 'Password1'}
+
+        res = self.testapp.post('/_login', params=params)
+
+        assert res.headers['Location'] == 'http://localhost:80/someuser'
+        assert self.testapp.cookies.get('__test_sesh', '') != ''
+
+    def test_delete_user_wrong_user(self):
+        res = self.testapp.get('/someuser/_settings')
+
+        csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
+
+        # wrong user!
+        params = {'csrf': csrf_token}
+        res = self.testapp.post('/testauto/$delete', params=params)
+        assert res.headers['Location'] == 'http://localhost:80/testauto'
+
+    def test_delete_user_wrong_csrf(self):
+        # right user, invalid csrf
+        params = {'csrf': 'xyz'}
+        res = self.testapp.post('/someuser/$delete', params=params, status=403)
+        assert res.status_code == 403
+
+
+    def test_delete_user(self):
+        res = self.testapp.get('/someuser/_settings')
+
+        csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
+
+        user_dir = os.path.join(self.warcs_dir, 'someuser')
+
+        assert len(os.listdir(user_dir)) == 2
+
+        params = {'csrf': csrf_token}
+        res = self.testapp.post('/someuser/$delete', params=params)
+
+        assert res.headers['Location'] == 'http://localhost:80/'
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+        assert not self.redis.exists('u:someuser:info')
+        assert set(self.redis.hkeys('u:someuser:colls')) == set()
+        assert self.redis.sismember('s:users', 'someuser') == False
+
+        def assert_delete():
+            assert len(os.listdir(user_dir)) == 0
+
+        self.sleep_try(0.1, 5.0, assert_delete)
+
+    def test_login_4_no_such_user(self):
+        params = {'username': 'someuser',
+                  'password': 'Password1'}
+
+        res = self.testapp.post('/_login', params=params)
+
+        assert self.testapp.cookies.get('__test_sesh', '') != ''
+        assert res.headers['Location'] == 'http://localhost:80/_login'

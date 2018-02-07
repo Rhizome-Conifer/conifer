@@ -62,9 +62,9 @@ class BaseController(object):
             self._raise_error(400, 'User must be specified',
                               api=api)
 
-        user = self.access.get_user(user)
-
-        if not user or not self.user_manager.is_valid_user(user):
+        try:
+            user = self.user_manager.all_users[user]
+        except Exception as e:
             self._raise_error(404, 'No such user', api=api)
 
         return user

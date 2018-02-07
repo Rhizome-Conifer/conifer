@@ -51,7 +51,7 @@ class LoginController(BaseController):
 
             if sesh:
                 # current user
-                u = self.user_manager.all_users.get_user(sesh.curr_user)
+                u = self.user_manager.all_users[sesh.curr_user]
 
                 return {
                     'username': sesh.curr_user,
@@ -73,9 +73,9 @@ class LoginController(BaseController):
                 return HTTPError(status=401)
 
             sesh = self.user_manager.get_session()
+            u = self.user_manager.all_users[sesh.curr_user]
             sesh.curr_user = username
-            sesh.curr_role = self.user_manager.cork.user(sesh.curr_user).role
-            u = self.user_manager.all_users.get_user(sesh.curr_user)
+            sesh.curr_role = u['role']
 
             remember_me = (data.get('remember_me') in ('1', 'on'))
             sesh.logged_in(remember_me)
@@ -97,12 +97,12 @@ class LoginController(BaseController):
             """async precheck username availability on signup form"""
             username = request.query.username
 
-            if (self.user_manager.is_valid_user(username) or
-                username in self.user_manager.RESTRICTED_NAMES):
-
+            try:
+                assert username not in self.user_manager.RESTRICTED_NAMES
+                user = self.user_manager.all_users[username]
+                return {'available': True}
+            except:
                 return {'available': False}
-
-            return {'available': True}
 
         @self.app.post('/api/v1/updatepassword')
         @self.user_manager.auth_view()
@@ -170,7 +170,7 @@ class LoginController(BaseController):
                 self.redirect(redir_to)
 
             if move_info:
-                user = self.user_manager.all_users.get_user(username)
+                user = self.user_manager.all_users[username]
                 the_collection = self.user_manager.move_temp_coll(user, move_info)
                 if the_collection:
                     self.flash_message('Collection <b>{0}</b> created!'.format(move_info['to_title']), 'success')

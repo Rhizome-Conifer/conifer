@@ -77,6 +77,15 @@ class RedisUniqueComponent(object):
         self.data[attr] = value
         self.redis.hset(self.info_key, attr, value)
 
+    def __getitem__(self, name):
+        return self.get_prop(name)
+
+    def __setitem__(self, name, value):
+        self.set_prop(name, value)
+
+    def get(self, name, default_val=''):
+        return self.get_prop(name, default_val)
+
     def delete_object(self):
         deleted = False
 

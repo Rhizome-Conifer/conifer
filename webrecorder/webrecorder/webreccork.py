@@ -121,9 +121,13 @@ class WebRecCork(Cork):
 class RedisCorkBackend(object):
     def __init__(self, redis):
         self.redis = redis
-        self.users = UserTable(self.redis, 's:users', BaseAccess())
+        self.access = BaseAccess()
+        self.users = UserTable(self.redis, self.get_access)
         self.roles = RedisTable(self.redis, 'h:roles')
         self.pending_registrations = RedisTable(self.redis, 'h:register')
+
+    def get_access(self):
+        return self.access
 
     def save_users(self): pass
     def save_roles(self): pass

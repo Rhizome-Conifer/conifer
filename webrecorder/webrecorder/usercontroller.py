@@ -373,9 +373,9 @@ class UserController(BaseController):
         def api_get_user(username):
             """API enpoint to return user info"""
 
-            user = self.user_manager.get_user(username)
-
-            if not self.user_manager.is_valid_user(user):
+            try:
+                user = self.user_manager.all_users[username]
+            except:
                 self._raise_error(404, 'No such user', api=True)
 
             # check permissions
@@ -510,13 +510,13 @@ class UserController(BaseController):
         def user_info(user):
             self.redir_host()
 
-            user = self.access.get_user(user)
+            try:
+                user = self.user_manager.all_users[user]
+            except:
+                raise HTTPError(404, 'No Such User')
 
             if self.access.is_anon(user):
                 self.redirect('/' + user.my_id + '/temp')
-
-            if not self.user_manager.is_valid_user(user):
-                raise HTTPError(404, 'No Such User')
 
             result = {
                 'user': user.name,
@@ -533,7 +533,7 @@ class UserController(BaseController):
         @self.app.get('/<username>/_settings')
         @self.jinja2_view('account.html')
         def account_settings(username):
-            user = self.access.get_user(username)
+            user = self.user_manager.all_users.get_user(username)
 
             self.access.assert_is_curr_user(user)
 
@@ -546,7 +546,7 @@ class UserController(BaseController):
         @self.app.post('/<user>/$delete')
         def delete_user(user):
             self.validate_csrf()
-            if self.manager.delete_user(user):
+            if self.user_manager.delete_user(user):
                 self.flash_message('The user {0} has been permanently deleted!'.format(user), 'success')
 
                 redir_to = '/'

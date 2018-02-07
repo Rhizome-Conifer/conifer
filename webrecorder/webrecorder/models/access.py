@@ -1,8 +1,6 @@
 from bottle import template, request, HTTPError
 
-from webrecorder.models.user import User, SessionUser
-from webrecorder.models.collection import Collection
-from webrecorder.models.recording import Recording
+from webrecorder.models.user import SessionUser
 from webrecorder.models.base import BaseAccess
 
 
@@ -30,25 +28,6 @@ class SessionAccessCache(BaseAccess):
                                              persist=persist)
 
         return self._session_user
-
-    def get_user(self, user):
-        return User(my_id=user,
-                    redis=self.redis,
-                    access=self)
-
-    def get_user_coll(self, user, coll_name):
-        user = self.get_user(user)
-        collection = user.get_collection_by_name(coll_name)
-        return user, collection
-
-    def get_user_coll_rec(self, user, coll_name, rec_name):
-        user, collection = self.get_user_coll(user, coll_name)
-        if collection:
-            recording = collection.get_recording_by_name(rec_name)
-        else:
-            recording = None
-
-        return user, collection, recording
 
     def is_anon(self, user=None):
         if not user:

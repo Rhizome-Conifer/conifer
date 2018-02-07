@@ -8,7 +8,7 @@ import os
 
 # ============================================================================
 class BrowserManager(object):
-    def __init__(self, config, browser_redis, content_app):
+    def __init__(self, config, browser_redis, content_app, user_manager):
         self.browser_redis = browser_redis
 
         self.browser_req_url = config['browser_req_url']
@@ -18,6 +18,8 @@ class BrowserManager(object):
         if not os.environ.get('NO_REMOTE_BROWSERS'):
             self.load_all_browsers()
             gevent.spawn(self.browser_load_loop)
+
+        self.user_manager = user_manager
 
         self.content_app = content_app
         self.content_app.browser_mgr = self
@@ -59,7 +61,7 @@ class BrowserManager(object):
 
         container_data['ip'] = remote_addr
 
-        the_user = self.access.get_user(username)
+        the_user = self.user_manager.all_users[username]
 
         collection = the_user.get_collection_by_id(container_data['coll'],
                                                    container_data.get('coll_name', ''))
@@ -193,7 +195,3 @@ class BrowserManager(object):
 
     def get_session(self):
         return request.environ['webrec.session']
-
-    @property
-    def access(self):
-        return request.environ['webrec.access']

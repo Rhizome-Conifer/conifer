@@ -48,7 +48,7 @@ class AppController(BaseController):
     def handle_player_load(self, resp):
         """ Initial warc load for player
         """
-        user = self.access.get_user(self.init_import_username)
+        user = self.user_manager.all_users[self.init_import_username]
 
         status_checker = ImportStatusChecker(self.redis)
 

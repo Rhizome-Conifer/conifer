@@ -62,7 +62,7 @@ class UserManager(object):
         self.beta_user = self.cork.make_auth_decorator(role='beta-archivist',
                                                        fail_redirect='/_login')
 
-        self.all_users = UserTable(self.redis, 's:users', BaseAccess())
+        self.all_users = UserTable(self.redis, self._get_access)
 
         self.invites = RedisTable(self.redis, 'h:invites')
 
@@ -85,7 +85,7 @@ class UserManager(object):
             return ''
 
     def validate_user(self, user, email):
-        if self._has_user(user):
+        if user in self.all_users:
             msg = 'User <b>{0}</b> already exists! Please choose a different username'
             msg = msg.format(user)
             raise ValidationException(msg)
@@ -111,12 +111,25 @@ class UserManager(object):
 
         return True
 
-    @property
-    def access(self):
+    def _get_access(self):
         return request['webrec.access']
 
+    def get_user_coll(self, username, coll_name):
+        user = self.all_users[username]
+        collection = user.get_collection_by_name(coll_name)
+        return user, collection
+
+    def get_user_coll_rec(self, username, coll_name, rec_name):
+        user, collection = self.get_user_coll(username, coll_name)
+        if collection:
+            recording = collection.get_recording_by_name(rec_name)
+        else:
+            recording = None
+
+        return user, collection, recording
+
     def update_password(self, curr_password, password, confirm):
-        username = self.access.session_user.name
+        username = self._get_access().session_user.name
         if not self.cork.verify_password(username, curr_password):
             raise ValidationException('Incorrect Current Password')
 
@@ -286,9 +299,23 @@ class UserManager(object):
 
         return user, first_coll
 
+    def delete_user(self, username):
+        user = self.all_users[username]
+        if self._get_access().session_user != user:
+            if not self._get_access().is_superuser():
+                return False
+
+        if self.mailing_list and self.remove_on_delete:
+            self.remove_from_mailing_list(user['email_addr'])
+
+        # remove user and from all users table
+        del self.all_users[username]
+        return True
+
     def has_space_for_new_collection(self, to_username, from_username, coll_name):
-        to_user = self.all_users[to_username]
-        if not self.is_valid_user(to_user):
+        try:
+            to_user = self.all_users[to_username]
+        except:
             return False
 
         from_user = self.all_users[from_username]
@@ -305,21 +332,13 @@ class UserManager(object):
         temp_coll.set_prop('title', move_info['to_title'])
         return temp_coll
 
-    def is_valid_user(self, user):
-        if user.is_anon():
-            return True
-
-        return self._has_user(user.name)
-
-    def _has_user(self, username):
-        return username in self.all_users
-        #return self.cork.user(username) is not None
-
 
 # ============================================================================
 class CLIUserManager(UserManager):
     def __init__(self):
         config = load_wr_config()
+
+        self.base_access = BaseAccess()
 
         # Init Redis
         redis_url = os.environ['REDIS_BASE_URL']
@@ -470,9 +489,6 @@ class CLIUserManager(UserManager):
 
     def delete_user(self):
         """Remove a user from the system"""
-        remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
-                            in ('true', '1', 'yes'))
-
         username = input('username to delete: ')
         confirmation = input('** all data for the username `{0}` will be wiped! **\n'
                              'please type the username again to confirm: '.format(username))
@@ -487,17 +503,9 @@ class CLIUserManager(UserManager):
 
         print('removing {0}..'.format(username))
 
-        # email subscription set up?
-        if remove_on_delete:
-            self.remove_from_mailing_list(users[username]['email_addr'])
+        super(CLIUserManager, self).delete_user(username)
 
-        # delete user data and remove from redis
-        # TODO: add tests
-        del self.all_users[username]
+    def _get_access(self):
+        return self.base_access
 
-        #u = self.get_user(username)
-        #u.delete_me()
-
-        # delete user from cork
-        #self.cork.user(username).delete()
 

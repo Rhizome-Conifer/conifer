@@ -104,7 +104,7 @@ class MainController(BaseController):
                                         redis=self.redis)
 
         # Init Browser Mgr
-        browser_mgr = BrowserManager(config, browser_redis, content_app)
+        browser_mgr = BrowserManager(config, browser_redis, content_app, user_manager)
 
         User.init_props(config)
         Collection.init_props(config)
@@ -183,7 +183,7 @@ class MainController(BaseController):
             u = context.get('user', '')
             if not u:
                 u = context.get('curr_user', '')
-            return self.access.get_user(u)
+            return self.user_manager.all_users.get_user(u)
 
         def get_browsers():
             return self.browser_mgr.get_browsers()

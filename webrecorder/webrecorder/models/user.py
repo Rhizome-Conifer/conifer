@@ -179,7 +179,7 @@ class User(RedisNamedContainer):
         return self.name.startswith('temp-')
 
     def __eq__(self, obj):
-        if obj and (self.my_id == obj.my_id) and type(obj) in (SessionUser, User):
+        if obj and (self.my_id == obj.my_id) and isinstance(obj, User):
             return True
         else:
             return False
@@ -263,29 +263,27 @@ class SessionUser(User):
 
 
 # ============================================================================
-Collection.OWNER_CLS = User
-
-
-# ============================================================================
 class UserTable(object):
-    def __init__(self, redis, users_key, access):
+    USERS_KEY = 's:users'
+
+    def __init__(self, redis, access_func, users_key=''):
         self.redis = redis
-        self.iteritems = self.items
-        self.users_key = users_key
-        self.access = access
+        self.access_func = access_func
+        self.users_key = users_key or self.USERS_KEY
 
     def get_user(self, name):
-        return LoginUser(my_id=name,
-                         redis=self.redis,
-                         access=self.access)
+        return User(my_id=name,
+                    redis=self.redis,
+                    access=self.access_func())
 
     def __contains__(self, name):
         return self.redis.sismember(self.users_key, name)
 
-    def __setitem__(self, name, values):
-        if isinstance(values, dict):
+    def __setitem__(self, name, obj):
+        if isinstance(obj, dict):
             user = self.get_user(name)
-            user.data.update(values)
+            user.access.assert_is_curr_user(user)
+            user.data.update(obj)
 
             with redis_pipeline(self.redis) as pi:
                 user.commit(pi)
@@ -301,7 +299,12 @@ class UserTable(object):
         self.redis.srem(self.users_key, name)
 
     def __getitem__(self, name):
-        return self.get_user(name)
+        user = self.get_user(name)
+        if not self.redis.sismember(self.users_key, name):
+            if not user.is_anon():
+                raise Exception('No Such User: ' + name)
+
+        return user
 
     def __iter__(self):
         keys = self.redis.smembers(self.users_key)
@@ -315,15 +318,10 @@ class UserTable(object):
             user = self.get_user(key)
             yield user.name, user
 
+    iteritems = items
+
 
 # ============================================================================
-class LoginUser(User):
-    def __getitem__(self, name):
-        return self.get_prop(name)
+Collection.OWNER_CLS = User
 
-    def __setitem__(self, name, value):
-        self.set_prop(name, value)
-
-    def get(self, name, default_val=''):
-        return self.get_prop(name, default_val)
 
