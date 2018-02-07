@@ -51,7 +51,7 @@ class LoginController(BaseController):
 
             if sesh:
                 # current user
-                u = self.user_manager.get_user(sesh.curr_user)
+                u = self.user_manager.all_users.get_user(sesh.curr_user)
 
                 return {
                     'username': sesh.curr_user,
@@ -75,7 +75,7 @@ class LoginController(BaseController):
             sesh = self.user_manager.get_session()
             sesh.curr_user = username
             sesh.curr_role = self.user_manager.cork.user(sesh.curr_user).role
-            u = self.user_manager.get_user(sesh.curr_user)
+            u = self.user_manager.all_users.get_user(sesh.curr_user)
 
             remember_me = (data.get('remember_me') in ('1', 'on'))
             sesh.logged_in(remember_me)
@@ -170,7 +170,7 @@ class LoginController(BaseController):
                 self.redirect(redir_to)
 
             if move_info:
-                user = self.user_manager.get_user(username)
+                user = self.user_manager.all_users.get_user(username)
                 the_collection = self.user_manager.move_temp_coll(user, move_info)
                 if the_collection:
                     self.flash_message('Collection <b>{0}</b> created!'.format(move_info['to_title']), 'success')
@@ -331,9 +331,11 @@ class LoginController(BaseController):
                     self.user_manager.delete_invite(email)
 
             except ValidationException as ve:
+                print(ve)
                 self.flash_message(str(ve))
 
             except Exception as ex:
+                print(ex)
                 self.flash_message('Registration failed: ' + str(ex))
 
             self.redirect(redir_to)
@@ -415,6 +417,8 @@ class LoginController(BaseController):
                 self.flash_message('A password reset e-mail has been sent to your e-mail!', 'success')
                 redir_to = '/'
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 self.flash_message(str(e))
                 redir_to = FORGOT_PATH
 

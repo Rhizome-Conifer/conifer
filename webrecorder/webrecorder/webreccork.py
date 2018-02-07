@@ -3,6 +3,8 @@ from datetime import datetime
 import os
 
 from webrecorder.redisutils import RedisTable
+from webrecorder.models.user import UserTable
+from webrecorder.models.base import BaseAccess
 
 
 # ============================================================================
@@ -119,7 +121,7 @@ class WebRecCork(Cork):
 class RedisCorkBackend(object):
     def __init__(self, redis):
         self.redis = redis
-        self.users = RedisTable(self.redis, 'h:users')
+        self.users = UserTable(self.redis, 's:users', BaseAccess())
         self.roles = RedisTable(self.redis, 'h:roles')
         self.pending_registrations = RedisTable(self.redis, 'h:register')
 

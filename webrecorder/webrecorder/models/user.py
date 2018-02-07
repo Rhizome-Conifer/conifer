@@ -4,7 +4,7 @@ import datetime
 
 from webrecorder.utils import redis_pipeline
 
-from webrecorder.models.base import RedisNamedContainer, BaseAccess
+from webrecorder.models.base import RedisNamedContainer
 
 from webrecorder.models.collection import Collection
 
@@ -226,7 +226,6 @@ class SessionUser(User):
             user = self.sesh.anon_user
             self.sesh_type = 'transient'
 
-        #kwargs['access'] = BaseAccess()
         kwargs['my_id'] = user
 
         super(SessionUser, self).__init__(**kwargs)
@@ -265,4 +264,63 @@ class SessionUser(User):
 
 # ============================================================================
 Collection.OWNER_CLS = User
+
+
+# ============================================================================
+class UserTable(object):
+    def __init__(self, redis, users_key, access):
+        self.redis = redis
+        self.iteritems = self.items
+        self.users_key = users_key
+        self.access = access
+
+    def get_user(self, name):
+        return LoginUser(my_id=name,
+                         redis=self.redis,
+                         access=self.access)
+
+    def __contains__(self, name):
+        return self.redis.sismember(self.users_key, name)
+
+    def __setitem__(self, name, values):
+        if isinstance(values, dict):
+            user = self.get_user(name)
+            user.data.update(values)
+
+            with redis_pipeline(self.redis) as pi:
+                user.commit(pi)
+                pi.sadd(self.users_key, name)
+
+        elif not isinstance(values, User):
+            raise Exception('invalid values')
+
+    def __delitem__(self, name):
+        user = self.get_user(name)
+        user.delete_me()
+
+        self.redis.srem(self.users_key, name)
+
+    def __getitem__(self, name):
+        return self.get_user(name)
+
+    def __iter__(self):
+        keys = self.redis.smembers(self.users_key)
+        return iter(keys)
+
+    def items(self):
+        for key in self:
+            user = self.get_user(key)
+            yield user.name, user
+
+
+# ============================================================================
+class LoginUser(User):
+    def __getitem__(self, name):
+        return self.get_prop(name)
+
+    def __setitem__(self, name, value):
+        self.set_prop(name, value)
+
+    def get(self, name, default_val=''):
+        return self.get_prop(name, default_val)
 

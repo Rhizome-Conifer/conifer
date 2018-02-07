@@ -77,7 +77,7 @@ class WebrecPlayerRunner(StandaloneRunner):
         try:
             user_manager = CLIUserManager()
 
-            user = user_manager.get_user('local')
+            user = user_manager.all_users.get_user('local')
 
             status_checker = ImportStatusChecker(user_manager.redis)
 

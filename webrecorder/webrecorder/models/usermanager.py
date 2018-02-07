@@ -17,7 +17,7 @@ from cork import AAAException
 from webrecorder.webreccork import ValidationException
 
 from webrecorder.models.base import BaseAccess
-from webrecorder.models.user import User
+from webrecorder.models.user import User, UserTable
 
 from webrecorder.utils import load_wr_config
 from webrecorder.webreccork import WebRecCork
@@ -62,10 +62,14 @@ class UserManager(object):
         self.beta_user = self.cork.make_auth_decorator(role='beta-archivist',
                                                        fail_redirect='/_login')
 
+        self.all_users = UserTable(self.redis, 's:users', BaseAccess())
+
+        self.invites = RedisTable(self.redis, 'h:invites')
+
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
-        all_users = RedisTable(self.redis, 'h:users')
-        for n, userdata in all_users.items():
+
+        for n, userdata in self.all_users.items():
             if userdata['email_addr'] == email:
                 return True
 
@@ -74,8 +78,7 @@ class UserManager(object):
     def get_user_email(self, user):
         if not user:
             return ''
-        all_users = self.get_users()
-        userdata = all_users[user]
+        userdata = self.all_users[user]
         if userdata:
             return userdata.get('email_addr', '')
         else:
@@ -130,8 +133,7 @@ class UserManager(object):
             key.split(':', 1)
             email, hash_ = key.split(':', 1)
 
-            table = RedisTable(self.redis, 'h:invites')
-            entry = table[email]
+            entry = self.invites[email]
 
             if entry and entry.get('hash_') == hash_:
                 return email
@@ -143,25 +145,23 @@ class UserManager(object):
         raise ValidationException(msg)
 
     def delete_invite(self, email):
-        table = RedisTable(self.redis, 'h:invites')
         try:
             archive_invites = RedisTable(self.redis, 'h:arc_invites')
-            archive_invites[email] = table[email]
+            archive_invites[email] = self.invites[email]
         except:
             pass
-        del table[email]
+
+        del self.invites[email]
 
     def save_invite(self, email, name, desc=''):
         if not email or not name:
             return False
 
-        table = RedisTable(self.redis, 'h:invites')
-        table[email] = {'name': name, 'email': email, 'desc': desc}
+        self.invites[email] = {'name': name, 'email': email, 'desc': desc}
         return True
 
     def send_invite(self, email, email_template, host):
-        table = RedisTable(self.redis, 'h:invites')
-        entry = table[email]
+        entry = self.invites[email]
         if not entry:
             print('No Such Email In Invite List')
             return False
@@ -243,22 +243,12 @@ class UserManager(object):
     def get_session(self):
         return request.environ['webrec.session']
 
-    def get_users(self):
-        return RedisTable(self.redis, 'h:users')
-
-    def get_user(self, username, access=BaseAccess()):
-        user = User(my_id=username,
-                    redis=self.redis,
-                    access=access)
-
-        return user
-
     def create_new_user(self, username, init_info=None):
         init_info = init_info or {}
 
-        user = self.get_user(username)
-
+        user = self.all_users.get_user(username)
         user.create_new()
+
         first_coll = None
 
         move_info = init_info.get('move_info')
@@ -297,11 +287,11 @@ class UserManager(object):
         return user, first_coll
 
     def has_space_for_new_collection(self, to_username, from_username, coll_name):
-        to_user = self.get_user(to_username)
+        to_user = self.all_users[to_username]
         if not self.is_valid_user(to_user):
             return False
 
-        from_user = self.get_user(from_username)
+        from_user = self.all_users[from_username]
         collection = from_user.get_collection_by_name(coll_name)
         if not collection:
             return False
@@ -309,7 +299,7 @@ class UserManager(object):
         return (collection.size <= to_user.get_size_remaining())
 
     def move_temp_coll(self, user, move_info):
-        from_user = self.get_user(move_info['from_user'])
+        from_user = self.all_users[move_info['from_user']]
         temp_coll = from_user.get_collection_by_name('temp')
         from_user.move(temp_coll, move_info['to_coll'], user)
         temp_coll.set_prop('title', move_info['to_title'])
@@ -322,7 +312,8 @@ class UserManager(object):
         return self._has_user(user.name)
 
     def _has_user(self, username):
-        return self.cork.user(username) is not None
+        return username in self.all_users
+        #return self.cork.user(username) is not None
 
 
 # ============================================================================
@@ -347,8 +338,6 @@ class CLIUserManager(UserManager):
         """Create a new user with command line arguments or series of prompts,
            preforming basic validation
         """
-        users = self.get_users()
-
         if not email:
             print('let\'s create a new user..')
             email = input('email: ').strip()
@@ -358,7 +347,7 @@ class CLIUserManager(UserManager):
             print('valid email required!')
             return
 
-        if email in [data['email_addr'] for u, data in users.items()]:
+        if email in [data['email_addr'] for u, data in self.all_users.items()]:
             print('A user already exists with {0} email!'.format(email))
             return
 
@@ -373,7 +362,7 @@ class CLIUserManager(UserManager):
             print('Invalid username..')
             return
 
-        if username in users:
+        if username in self.all_users:
             print('Username already exists..')
             return
 
@@ -398,7 +387,8 @@ class CLIUserManager(UserManager):
                                   role=role))
 
         # add user to cork
-        self.cork._store.users[username] = {
+        #self.cork._store.users[username] = {
+        self.all_users[username] = {
             'role': role,
             'hash': self.cork._hash(username, passwd).decode('ascii'),
             'email_addr': email,
@@ -406,7 +396,7 @@ class CLIUserManager(UserManager):
             'creation_date': str(datetime.utcnow()),
             'last_login': str(datetime.utcnow()),
         }
-        self.cork._store.save_users()
+        #self.cork._store.save_users()
 
         user, first_coll = self.create_new_user(username, {'email': email,
                                                            'name': name})
@@ -428,23 +418,23 @@ class CLIUserManager(UserManager):
 
     def modify_user(self):
         """Modify an existing users. available modifications: role, email"""
-        users = self.get_users()
-
         username = input('username to modify: ')
         has_modified = False
 
-        if username not in users:
+        if username not in self.all_users:
             print('{0} doesn\'t exist'.format(username))
             return
 
-        mod_role = input('change role? currently {0} (y/n) '.format(users[username]['role']))
+        user = self.all_users[username]
+
+        mod_role = input('change role? currently {0} (y/n) '.format(user['role']))
         if mod_role.strip().lower() == 'y':
             new_role = self.choose_role()
-            self.cork._store.users[username]['role'] = new_role
+            user['role'] = new_role
             has_modified = True
             print('assigned {0} with the new role: {1}'.format(username, new_role))
 
-        mod_email = input('update email? currently {0} (y/n) '.format(users[username]['email_addr']))
+        mod_email = input('update email? currently {0} (y/n) '.format(user['email_addr']))
         if mod_email.strip().lower() == 'y':
             new_email = input('new email: ')
 
@@ -452,7 +442,7 @@ class CLIUserManager(UserManager):
                 print('valid email required!')
                 return
 
-            if new_email in [data['email_addr'] for u, data in users.items()]:
+            if new_email in [data['email_addr'] for u, data in self.all_users.items()]:
                 print('A user already exists with {0} email!'.format(new_email))
                 return
 
@@ -460,26 +450,26 @@ class CLIUserManager(UserManager):
             # so if add & remove are turned on, remove the old and add the
             # new address.
             if self.mailing_list and self.remove_on_delete:
-                self.remove_from_mailing_list(users[username]['email_addr'])
-                name = json.loads(self.get_users()[username].get('desc', '{}')).get('name', '')
+                self.remove_from_mailing_list(user['email_addr'])
+                #name = json.loads(self.get_users()[username].get('desc', '{}')).get('name', '')
+                name = user['name']
                 self.add_to_mailing_list(username, new_email, name)
 
+            user['email_addr'] = new_email
             print('assigned {0} with the new email: {1}'.format(username, new_email))
-            self.cork._store.users[username]['email_addr'] = new_email
             has_modified = True
 
         #
         # additional modifications can be added here
         #
 
-        if has_modified:
-            self.cork._store.save_users()
+        #if has_modified:
+        #    self.cork._store.save_users()
 
         print('All done!')
 
     def delete_user(self):
         """Remove a user from the system"""
-        users = self.get_users()
         remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
                             in ('true', '1', 'yes'))
 
@@ -491,7 +481,7 @@ class CLIUserManager(UserManager):
             print('Username confirmation didn\'t match! Aborting..')
             return
 
-        if username not in users:
+        if username not in self.all_users:
             print('The username {0} doesn\'t exist..'.format(username))
             return
 
@@ -503,12 +493,11 @@ class CLIUserManager(UserManager):
 
         # delete user data and remove from redis
         # TODO: add tests
-        u = self.get_user(username)
-        u.delete_me()
+        del self.all_users[username]
+
+        #u = self.get_user(username)
+        #u.delete_me()
 
         # delete user from cork
-        self.cork.user(username).delete()
-
-
-
+        #self.cork.user(username).delete()
 
