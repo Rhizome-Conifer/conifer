@@ -307,6 +307,9 @@ class UserTable(object):
         keys = self.redis.smembers(self.users_key)
         return iter(keys)
 
+    def __len__(self):
+        return self.redis.scard(self.users_key)
+
     def items(self):
         for key in self:
             user = self.get_user(key)
