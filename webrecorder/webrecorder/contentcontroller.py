@@ -437,7 +437,7 @@ class ContentController(BaseController, RewriterApp):
     def _create_new_rec(self, collection, title, mode):
         rec_name = self.sanitize_title(title)
         rec_type = 'patch' if mode == 'patch' else None
-        return collection.create_recording(rec_name, title=title, rec_type=rec_type)
+        return collection.create_recording(rec_name, desc=title, rec_type=rec_type)
 
     def patch_of_name(self, name, is_id=False):
         if not is_id:
@@ -843,7 +843,7 @@ class ContentController(BaseController, RewriterApp):
         # recording
         if recording:
             info['rec_id'] = recording.name
-            info['rec_title'] = quote(recording.get_prop('title', ''), safe='/ ')
+            info['rec_title'] = quote(recording.get_title(), safe='/ ')
             info['size'] = recording.size
 
         else:

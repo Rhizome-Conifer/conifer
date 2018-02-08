@@ -4,6 +4,8 @@ from six.moves.urllib.parse import quote
 from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
 
+from webrecorder.models.base import DupeNameException
+
 
 # ============================================================================
 class CollsController(BaseController):
@@ -39,6 +41,10 @@ class CollsController(BaseController):
 
                 self.flash_message('Created collection <b>{0}</b>!'.format(collection.get_prop('title')), 'success')
                 resp = {'collection': collection.serialize()}
+
+            except DupeNameException as de:
+                resp = {'error_message': 'duplicate name: ' + coll_name}
+
             except Exception as ve:
                 print(ve)
                 self.flash_message(str(ve))
@@ -73,7 +79,10 @@ class CollsController(BaseController):
 
             new_coll_name = self.sanitize_title(new_coll_title)
 
-            new_coll_name = user.rename(collection, new_coll_name)
+            try:
+                new_coll_name = user.rename(collection, new_coll_name)
+            except DupeNameException as de:
+                return {'error_message': 'duplicate name: ' + new_coll_name}
 
             return {'coll_id': new_coll_name}
 
@@ -145,6 +154,10 @@ class CollsController(BaseController):
 
                 self.flash_message('Created collection <b>{0}</b>!'.format(title), 'success')
                 redir_to = self.get_redir_back('/_create')
+
+            except DupeNameException as de:
+                self._raise_error(400, 'Duplicate Name: ' + coll_name)
+
             except Exception as ve:
                 import traceback
                 traceback.print_exc()

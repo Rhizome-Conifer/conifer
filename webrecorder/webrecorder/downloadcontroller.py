@@ -41,7 +41,7 @@ class DownloadController(BaseController):
 
             return self.handle_download(user, coll, '*')
 
-    def create_warcinfo(self, creator, title, metadata, source, filename):
+    def create_warcinfo(self, creator, name, metadata, source, filename):
         for name, value in iteritems(source.serialize()):
             if name in self.COPY_FIELDS:
                 metadata[name] = value
@@ -50,7 +50,7 @@ class DownloadController(BaseController):
                 ('software', 'Webrecorder Platform v' + __version__),
                 ('format', 'WARC File Format 1.0'),
                 ('creator', creator),
-                ('isPartOf', title),
+                ('isPartOf', name),
                 ('json-metadata', json.dumps(metadata)),
                ])
 
@@ -62,8 +62,8 @@ class DownloadController(BaseController):
         metadata = {}
         metadata['type'] = 'collection'
 
-        title = quote(collection.get_prop('title'))
-        return self.create_warcinfo(user, title, metadata, collection, filename)
+        name = quote(collection.name)
+        return self.create_warcinfo(user, name, metadata, collection, filename)
 
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
         metadata = {}
@@ -73,8 +73,10 @@ class DownloadController(BaseController):
         if rec_type:
             metadata['rec_type'] = rec_type
 
-        title = quote(collection.get_prop('title')) + '/' + quote(recording.get_prop('title'))
-        return self.create_warcinfo(user, title, metadata, recording, filename)
+        metadata['rec_desc'] = recording.get_prop('desc')
+
+        name = quote(collection.name) + '/' + quote(recording.name)
+        return self.create_warcinfo(user, name, metadata, recording, filename)
 
     def handle_download(self, user, coll_name, recs):
         user, collection = self.user_manager.get_user_coll(user, coll_name)

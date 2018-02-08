@@ -67,23 +67,23 @@ class TestExtractContent(FullStackTests):
         recs = {obj['id']: obj for obj in recs}
 
         # Extract Test
-        assert recs['extract-test']['title'] == 'Extract Test'
+        assert recs['extract-test']['desc'] == 'Extract Test'
         assert recs['extract-test']['ra_sources'] == ['ia']
 
         # empty patch
         assert recs['patch-of-extract-test']['size'] == 0
-        assert recs['patch-of-extract-test']['title'] == 'Patch of Extract Test'
+        assert recs['patch-of-extract-test']['desc'] == 'Patch of Extract Test'
         assert recs['patch-of-extract-test']['rec_type'] == 'patch'
 
         # Extract Test 2
-        assert recs['extract-test-2']['title'] == 'Extract Test'
+        assert recs['extract-test-2']['desc'] == 'Extract Test'
         assert recs['extract-test-2']['ra_sources'] == ['ia']
 
         # empty patch
         assert recs['patch-of-extract-test-2']['size'] == 0
-        assert recs['patch-of-extract-test-2']['title'] == 'Patch of Extract Test'
+        assert recs['patch-of-extract-test-2']['desc'] == 'Patch of Extract Test'
         assert recs['patch-of-extract-test-2']['rec_type'] == 'patch'
 
         # Extract Only Test
-        assert recs['extract-only-test']['title'] == 'Extract Only Test'
+        assert recs['extract-only-test']['desc'] == 'Extract Only Test'
         assert recs['extract-only-test']['ra_sources'] == ['ia']

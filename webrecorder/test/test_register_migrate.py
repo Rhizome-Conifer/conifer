@@ -199,8 +199,15 @@ class TestRegisterMigrate(FullStackTests):
         m = re.search('name="csrf" value="([^\"]+)"', res.text)
         assert m
 
-    def test_logged_in_create_coll_dupe_name(self):
+    def test_logged_in_create_coll_dupe_name_error(self):
         params = {'title': 'New Coll',
+                  'public': 'on'
+                 }
+
+        res = self.testapp.post('/_create', params=params, status=400)
+
+    def test_logged_in_create_coll_new_name(self):
+        params = {'title': 'New Coll 2',
                   'public': 'on'
                  }
 
@@ -232,6 +239,10 @@ class TestRegisterMigrate(FullStackTests):
 
         res = self.testapp.post('/api/v1/collections/other-coll/rename/New Coll?user=someuser')
 
+        assert res.json == {'error_message': 'duplicate name: new-coll'}
+
+        res = self.testapp.post('/api/v1/collections/other-coll/rename/New Coll 3?user=someuser')
+
         assert res.json == {'coll_id': 'new-coll-3'}
 
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-migrate', 'new-coll-2'}
@@ -245,7 +256,7 @@ class TestRegisterMigrate(FullStackTests):
         assert 'New Coll' in res.text
 
     def test_logged_in_record_1(self):
-        res = self.testapp.get('/_new/new-coll/Move Test/record/mp_/http://example.com/')
+        res = self.testapp.get('/_new/new-coll/move-test/record/mp_/http://example.com/')
         assert res.status_code == 302
         assert res.headers['Location'].endswith('/someuser/new-coll/move-test/record/mp_/http://example.com/')
         res = res.follow()
@@ -285,7 +296,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.get_rec_names('someuser', 'new-coll') == {'move-test'}
         assert self.get_rec_names('someuser', 'new-coll-2') == set()
 
-        res = self._move_rec('/api/v1/recordings/Move Test/move/new-coll-2?user=someuser&coll=new-coll')
+        res = self._move_rec('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
         assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test'}
 
@@ -409,7 +420,7 @@ class TestRegisterMigrate(FullStackTests):
         assert res.headers['Location'] == 'http://localhost:80/someuser'
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
-    def test_rename_rec(self):
+    def _test_rename_rec(self):
         res = self.testapp.post('/api/v1/recordings/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
 
         assert res.json == {'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
@@ -436,7 +447,7 @@ class TestRegisterMigrate(FullStackTests):
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
 
         # rec replay
-        res = self.testapp.get('/someuser/test-coll/food-bar/replay/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/someuser/test-coll/abc/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text

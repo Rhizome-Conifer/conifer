@@ -65,15 +65,15 @@ class User(RedisNamedContainer):
         self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
         return self.my_id
 
-    def create_collection(self, coll_name, **kwargs):
+    def create_collection(self, coll_name, allow_dupe=False, **kwargs):
+        coll_name = self.reserve_obj_name(coll_name, allow_dupe=allow_dupe)
+
         collection = Collection(redis=self.redis,
                                 access=self.access)
 
         coll = collection.init_new(**kwargs)
-        collection.name = coll_name
-        collection.owner = self
 
-        self.add_object(collection, owner=True)
+        self.add_object(coll_name, collection, owner=True)
 
         return collection
 

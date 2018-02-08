@@ -1,3 +1,5 @@
+class DupeNameException(Exception):
+    pass
 
 
 # ============================================================================
@@ -127,25 +129,37 @@ class RedisNamedContainer(RedisUniqueComponent):
         self.incr_size(-obj.size)
         return res
 
-    def add_object(self, obj, owner=False):
+    def reserve_obj_name(self, name, allow_dupe=False):
         dupe_count = 1
-        name = obj.name
+        orig_name = name
 
         comp_map = self.get_comp_map()
 
         while True:
-            if self.redis.hsetnx(comp_map, name, obj.my_id) == 1:
+            if self.redis.hsetnx(comp_map, name, 0) == 1:
                 break
+
+            if not allow_dupe:
+                raise DupeNameException(name)
 
             dupe_count += 1
             dupe_str = str(dupe_count)
-            name = obj.name + '-' + dupe_str
+            name = orig_name + '-' + dupe_str
+
+        return name
+
+    def add_object(self, name, obj, owner=False):
+        comp_map = self.get_comp_map()
+
+        self.redis.hset(comp_map, name, obj.my_id)
 
         self.incr_size(obj.size)
+
         obj.name = name
+
         if owner:
-            obj.set_prop('owner', self.my_id)
-        return name
+            obj.owner = self
+            obj['owner'] = self.my_id
 
     def get_comp_map(self):
         return self.COMP_KEY.format_map({self.MY_TYPE: self.my_id})
@@ -155,16 +169,18 @@ class RedisNamedContainer(RedisUniqueComponent):
 
         return self.redis.hget(comp_map, obj_name)
 
-    def rename(self, obj, new_name, new_cont=None):
+    def rename(self, obj, new_name, new_cont=None, allow_dupe=False):
+        new_cont = new_cont or self
+        new_name = new_cont.reserve_obj_name(new_name, allow_dupe=allow_dupe)
+
         if not self.remove_object(obj):
             return None
 
-        obj.name = new_name
-        new_cont = new_cont or self
-        return new_cont.add_object(obj, owner=True)
+        new_cont.add_object(new_name, obj, owner=True)
+        return new_name
 
-    def move(self, obj, new_container):
-        return self.rename(obj, obj.name, new_container)
+    def move(self, obj, new_container, allow_dupe=False):
+        return self.rename(obj, obj.name, new_container, allow_dupe=allow_dupe)
 
     def num_objects(self):
         return int(self.redis.hlen(self.get_comp_map()))

@@ -4,6 +4,7 @@ import logging
 import json
 
 from pywb.utils.loaders import load
+from warcio.timeutils import timestamp20_now
 
 from webrecorder.utils import redis_pipeline
 
@@ -34,19 +35,24 @@ class Collection(RedisNamedContainer):
         cls.COLL_CDXJ_TTL = config['coll_cdxj_ttl']
         cls.INDEX_FILE_KEY = config['info_index_key']
 
-    def create_recording(self, rec_name, **kwargs):
+    def create_recording(self, rec_name='', **kwargs):
         self.access.assert_can_admin_coll(self)
+
+        if not rec_name:
+            rec_name = self._new_rec_name()
+
+        rec_name = self.reserve_obj_name(rec_name, allow_dupe=True)
 
         recording = Recording(redis=self.redis,
                               access=self.access)
 
         rec = recording.init_new(**kwargs)
-        recording.name = rec_name
-        recording.owner = self
-
-        self.add_object(recording, owner=True)
+        self.add_object(rec_name, recording, owner=True)
 
         return recording
+
+    def _new_rec_name(self):
+        return 'rec-' + timestamp20_now()
 
     def init_new(self, title, desc='', public=False):
         coll = self.create_new_id()
@@ -154,8 +160,8 @@ class Collection(RedisNamedContainer):
         data['recordings'] = [recording.serialize() for recording in recordings]
         return data
 
-    def rename(self, obj, new_name, new_cont=None):
-        res = super(Collection, self).rename(obj, new_name, new_cont)
+    def rename(self, obj, new_name, new_cont=None, allow_dupe=False):
+        res = super(Collection, self).rename(obj, new_name, new_cont, allow_dupe=allow_dupe)
         if res and new_cont and new_cont != self:
             self.sync_coll_index(exists=True, do_async=True)
             new_cont.sync_coll_index(exists=True, do_async=True)

@@ -9,6 +9,7 @@ import os
 import itertools
 import time
 import gevent
+import re
 
 from warcio.bufferedreaders import ChunkedDataReader
 from io import BytesIO
@@ -117,6 +118,13 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         return coll, rec
 
     @classmethod
+    def get_coll_rec_obj(cls, coll_name, rec_name):
+        user = User(my_id=cls.anon_user, redis=cls.redis, access=BaseAccess())
+        collection = user.get_collection_by_name(coll_name)
+        recording = collection.get_recording_by_name(rec_name) if collection else None
+        return collection, recording
+
+    @classmethod
     def sleep_try(cls, sleep_interval, max_time, test_func):
         max_count = float(max_time) / sleep_interval
         for counter in itertools.count():
@@ -134,6 +142,48 @@ class FullStackTests(BaseWRTests):
     runner_env_params = {'TEMP_SLEEP_CHECK': '1',
                          'APP_HOST': '',
                          'CONTENT_HOST': ''}
+
+    rec_ids = []
+
+    @classmethod
+    def add_rec_id(cls, id_):
+        cls.rec_ids.append(id_)
+
+    def get_new(self, url, *args, **kwargs):
+        res = self.testapp.get(url, *args, **kwargs)
+        assert res.status_code == 302
+        rec_id = res.location.split('/', 7)[5]
+        print(rec_id)
+        self.add_rec_id(rec_id)
+        return res
+
+    @classmethod
+    def _anon_post(self, url, *args, **kwargs):
+        return self.testapp.post(self._format_url(url), *args, **kwargs)
+
+    @classmethod
+    def _anon_delete(self, url, *args, **kwargs):
+        return self.testapp.delete(self._format_url(url), *args, **kwargs)
+
+    @classmethod
+    def _anon_get(self, url, *args, **kwargs):
+        return self.testapp.get(self._format_url(url), *args, **kwargs)
+
+    @classmethod
+    def _list_get(self, index):
+        try:
+            return self.rec_ids[index]
+        except:
+            return ''
+
+    @classmethod
+    def _format_url(self, url):
+        return url.format(user=self.anon_user,
+                          rec_id_0=self._list_get(0),
+                          rec_id_1=self._list_get(1),
+                          rec_id_2=self._list_get(2),
+                          rec_id_3=self._list_get(3)
+                         )
 
     @classmethod
     def custom_init(cls, kwargs):

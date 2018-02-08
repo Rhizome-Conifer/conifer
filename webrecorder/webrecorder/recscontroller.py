@@ -12,11 +12,12 @@ class RecsController(BaseController):
         def create_recording():
             user, collection = self.load_user_coll()
 
-            title = request.forms.getunicode('title')
+            rec_title = request.forms.getunicode('title', '')
+            rec_title = self.sanitize_title(rec_title)
 
-            rec_name = self.sanitize_title(title)
+            desc = request.forms.getunicode('desc', '')
 
-            recording = collection.create_recording(rec_name, title=title)
+            recording = collection.create_recording(rec_title, desc=desc)
 
             return {'recording': recording.serialize()}
 
@@ -37,6 +38,16 @@ class RecsController(BaseController):
             else:
                 return {'error_message': 'Recording not found', 'id': rec_name}
 
+        @self.app.post('/api/v1/recordings/<rec_name>/update_desc')
+        def update_rec_desc(rec_name):
+            user, collection, recording = self.load_recording(rec_name)
+
+            desc = request.forms.getunicode('desc', '')
+
+            recording['desc'] = desc
+
+            return {'recording': recording.serialize()}
+
         @self.app.delete('/api/v1/recordings/<rec_name>')
         def delete_recording(rec_name):
             user, collection, recording = self.load_recording(rec_name)
@@ -46,31 +57,9 @@ class RecsController(BaseController):
 
             return {}
 
-        @self.app.post('/api/v1/recordings/<rec_name>/rename/<new_rec_title:path>')
-        def rename_recording(rec_name, new_rec_title):
+        @self.app.post('/api/v1/recordings/<rec_name>/move/<new_coll_name>')
+        def move_recording(rec_name, new_coll_name):
             user, collection, recording = self.load_recording(rec_name)
-
-            new_rec_name = self.sanitize_title(new_rec_title)
-
-            if not new_rec_name:
-                err_msg = 'invalid recording title ' + new_rec_title
-                return {'error_message': err_msg}
-
-            new_rec_name = collection.rename(recording, new_rec_name)
-
-            if not new_rec_name:
-                return {'error_message': 'not found'}
-
-            return {'coll_id': collection.name,
-                    'rec_id': recording.name,
-                   }
-
-        @self.app.post('/api/v1/recordings/<rec_title>/move/<new_coll_title>')
-        def move_recording(rec_title, new_coll_title):
-            rec_name = self.sanitize_title(rec_title)
-            user, collection, recording = self.load_recording(rec_name)
-
-            new_coll_name = self.sanitize_title(new_coll_title)
 
             new_collection = user.get_collection_by_name(new_coll_name)
             if not new_collection:
@@ -78,11 +67,11 @@ class RecsController(BaseController):
 
             user.access.assert_can_admin_coll(new_collection)
 
-            new_rec_name = collection.move(recording, new_collection)
+            new_rec_name = collection.move(recording, new_collection, allow_dupe=True)
 
             if new_rec_name:
                 msg = 'Recording <b>{0}</b> moved to collection <a href="{1}"><b>{2}</b></a>'
-                msg = msg.format(rec_title, self.get_path(user.name, new_coll_name), new_coll_title)
+                msg = msg.format(rec_name, self.get_path(user.name, new_coll_name), new_coll_name)
                 self.flash_message(msg, 'success')
                 return {'coll_id': new_coll_name, 'rec_id': new_rec_name}
             else:

@@ -2,6 +2,7 @@ import time
 import json
 import hashlib
 import os
+from datetime import datetime
 
 from six.moves.urllib.parse import urlsplit
 
@@ -43,14 +44,14 @@ class Recording(RedisUniqueComponent):
 
         cls.WARC_PATH_PREFIX = config['warc_path_templ']
 
-    def init_new(self, title, rec_type=None, ra_list=None):
+    def init_new(self, desc='', rec_type=None, ra_list=None):
         rec = self.create_new_id()
 
         open_rec_key = self.OPEN_REC_KEY.format(rec=rec)
 
         now = int(time.time())
 
-        self.data = {'title': title,
+        self.data = {'desc': desc,
                      'created_at': now,
                      'updated_at': now,
                      'size': 0,
@@ -83,7 +84,17 @@ class Recording(RedisUniqueComponent):
         # add any remote archive sources
         ra_key = self.RA_KEY.format(rec=self.my_id)
         data['ra_sources'] = list(self.redis.smembers(ra_key))
+        data['title'] = self.get_title()
         return data
+
+    def get_title(self):
+        created_at = self.get_prop('created_at')
+        if created_at:
+            created_at = datetime.utcfromtimestamp(float(created_at)).isoformat().replace('T', ' ')
+        else:
+            created_at = '<unknown>'
+
+        return 'Recording on ' + created_at
 
     def delete_me(self):
         self.delete_warcs()
