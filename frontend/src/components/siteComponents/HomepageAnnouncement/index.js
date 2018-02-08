@@ -17,7 +17,7 @@ function HomepageAnnouncement() {
         <div className="wr-alert-info">
           <h5><strong>New!</strong> Browse your archives offline with Webrecorder Desktop Player App</h5>
           <p>
-            <Link to="https://github.com/webrecorder/webrecorderplayer-electron/releases/latest" target="_blank">Download the desktop app&nbsp;&raquo;</Link>
+            <a href="https://github.com/webrecorder/webrecorderplayer-electron/releases/latest" target="_blank">Download the desktop app&nbsp;&raquo;</a>
           </p>
         </div>
       </div>

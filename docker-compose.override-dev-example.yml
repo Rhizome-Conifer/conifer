@@ -19,5 +19,5 @@ services:
         - 3000:3000
         - 3001:3001
 
-    command: bash -c "cd code; npm run docker-dev"
+    command: bash -c "cd /code; npm run docker-dev"
     tty: true

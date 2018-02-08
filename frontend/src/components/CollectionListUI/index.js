@@ -111,7 +111,7 @@ class CollectionListUI extends Component {
                       <li className="left-buffer list-group-item" key={coll.get('id')}>
                         <Row>
                           <Col xs={9}>
-                            <Link to={`${userParam}/${coll.get('id')}`} className="collection-title">{coll.get('title')}</Link>
+                            <Link to={`/${userParam}/${coll.get('id')}`} className="collection-title">{coll.get('title')}</Link>
                           </Col>
                           <Col xs={2}>
                             <SizeFormat bytes={coll.get('size')} />

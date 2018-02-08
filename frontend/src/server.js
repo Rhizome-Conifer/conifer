@@ -40,7 +40,11 @@ if (__DEVELOPMENT__ || baseUrl.indexOf('localhost') !== -1 || config.apiProxy) {
   app.use('/shared', express.static(path.join(__dirname, 'shared')));
 
   // Proxy client API requets to server for now to avoid CORS
-  app.use(bypassUrls, proxy({ target: baseUrl, logLevel: 'debug' }));
+  app.use(bypassUrls, proxy({
+    target: baseUrl,
+    logLevel: 'debug',
+    changeOrigin: true
+  }));
 }
 
 app.use(compression());
