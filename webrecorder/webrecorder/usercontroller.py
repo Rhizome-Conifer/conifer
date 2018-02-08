@@ -144,7 +144,7 @@ class UserController(BaseController):
 
             # add username
             for _user in users:
-                user = self.get_user(username=_user)
+                user = self.get_user(user=_user)
                 data = user.serialize()
                 data['username'] = _user
                 # add space usage
