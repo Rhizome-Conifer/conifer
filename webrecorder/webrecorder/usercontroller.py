@@ -89,8 +89,8 @@ class UserController(BaseController):
             user = [(k, int(v)) for k, v in user.items()]
 
             all_collections = []
-            for _user in users:
-                u = self.user_manager.all_users[_user]
+            for username in users:
+                u = self.get_user(user=username)
                 all_collections.extend(
                     [c.serialize() for c in u.get_collections()]
                 )
@@ -144,7 +144,7 @@ class UserController(BaseController):
 
             # add username
             for _user in users:
-                user = self.user_manager.all_users[_user]
+                user = self.get_user(username=_user)
                 data = user.serialize()
                 data['username'] = _user
                 # add space usage

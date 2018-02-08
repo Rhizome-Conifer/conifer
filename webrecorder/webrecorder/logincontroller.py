@@ -51,7 +51,7 @@ class LoginController(BaseController):
 
             if sesh:
                 # current user
-                u = self.user_manager.all_users[sesh.curr_user]
+                u = self.get_user(username=sesh.curr_user)
 
                 return {
                     'username': sesh.curr_user,
@@ -73,7 +73,7 @@ class LoginController(BaseController):
                 return HTTPError(status=401)
 
             sesh = self.user_manager.get_session()
-            u = self.user_manager.all_users[sesh.curr_user]
+            u = self.get_user(username=sesh.curr_user)
             sesh.curr_user = username
             sesh.curr_role = u['role']
 
@@ -170,7 +170,7 @@ class LoginController(BaseController):
                 self.redirect(redir_to)
 
             if move_info:
-                user = self.user_manager.all_users[username]
+                user = self.get_user(username=username)
                 the_collection = self.user_manager.move_temp_coll(user, move_info)
                 if the_collection:
                     self.flash_message('Collection <b>{0}</b> created!'.format(move_info['to_title']), 'success')
