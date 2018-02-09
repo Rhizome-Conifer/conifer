@@ -15,14 +15,7 @@ class UserManagementUI extends Component {
   }
 
   static propTypes = {
-    auth: PropTypes.shape({
-      username: PropTypes.string,
-      role: PropTypes.string,
-      anon: PropTypes.bool,
-      coll_count: PropTypes.number,
-      loggingIn: PropTypes.bool,
-      loggingOut: PropTypes.bool
-    }),
+    auth: PropTypes.object,
     loginFn: PropTypes.func.isRequired,
   }
 
@@ -93,9 +86,15 @@ class UserManagementUI extends Component {
             </li>
 
             <li className="navbar-text navbar-right">
-              <Link to={`/${username}/_settings`} >
-                <span className="glyphicon glyphicon-user right-buffer-sm" />{ username }
-              </Link>
+              {
+                auth.getIn(['user', 'anon']) ?
+                  <span>
+                    <span className="glyphicon glyphicon-user right-buffer-sm" />{ username }
+                  </span> :
+                  <Link to={`/${username}/_settings`} >
+                    <span className="glyphicon glyphicon-user right-buffer-sm" />{ username }
+                  </Link>
+              }
             </li>
 
             <li className="navbar-text navbar-right">
