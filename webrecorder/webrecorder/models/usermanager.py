@@ -7,19 +7,21 @@ import redis
 import requests
 
 from datetime import datetime
+from collections import OrderedDict
+from os.path import expandvars
 
 from getpass import getpass
 from string import ascii_lowercase as alpha
 
 from bottle import template, request
-from cork import AAAException
+#from cork import AAAException
 
 from webrecorder.webreccork import ValidationException
 
 from webrecorder.models.base import BaseAccess
 from webrecorder.models.user import User, UserTable
 
-from webrecorder.utils import load_wr_config
+from webrecorder.utils import load_wr_config, sanitize_title
 from webrecorder.webreccork import WebRecCork
 from webrecorder.redisutils import RedisTable
 
@@ -53,6 +55,10 @@ class UserManager(object):
         self.remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
                                  in ('true', '1', 'yes'))
 
+        self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
+        invites = expandvars(config.get('invites_enabled', 'true')).lower()
+        self.invites_enabled = invites in ('true', '1', 'yes')
+
         # custom cork auth decorators
         self.admin_view = self.cork.make_auth_decorator(role='admin',
                                                         fixed_role=True,
@@ -66,11 +72,135 @@ class UserManager(object):
 
         self.invites = RedisTable(self.redis, 'h:invites')
 
+    def register_user(self, input_data, host):
+        msg = OrderedDict()
+        redir_extra = ''
+
+        username = input_data.get('username', '')
+        name = input_data.get('name', '')
+        email = input_data.get('email', '')
+
+        if 'full_name' in input_data:
+            msg['invalid'] = 'Invalid signup'
+
+        if 'username' not in input_data:
+            msg['username'] = 'Missing Username'
+
+        elif username.startswith(self.temp_prefix):
+            msg['username'] = 'Sorry, this is not a valid username'
+
+        if 'email' not in input_data:
+            msg['email'] = 'Missing Email'
+
+        if self.invites_enabled:
+            try:
+                val_email = self.is_valid_invite(input_data['invite'])
+                if val_email != email:
+                    raise ValidationException('Sorry, this invite can only be used with email: {0}'.format(val_email))
+            except ValidationException as ve:
+                msg['invite'] = str(ve)
+
+            else:
+                redir_extra = '?invite=' + input_data.get('invite', '')
+
+        try:
+            self.validate_user(username, email)
+            self.validate_password(input_data['password'], input_data['confirmpassword'])
+
+        except ValidationException as ve:
+            msg['validation'] = str(ve)
+
+        try:
+            move_info = self.get_move_temp_info(input_data)
+        except ValidationException as ve:
+            msg['move_info'] = str(ve)
+
+        if msg:
+            return msg, redir_extra
+
+
+        try:
+            desc = {'name': input_data.get('name', '')}
+
+            if move_info:
+                desc['move_info'] = move_info
+
+            desc = json.dumps(desc)
+
+            self.cork.register(username, input_data['password'], email, role='archivist',
+                          max_level=50,
+                          subject='webrecorder.io Account Creation',
+                          email_template='webrecorder/templates/emailconfirm.html',
+                          description=desc,
+                          host=host)
+
+            # add to announce list if user opted in
+            if input_data.get('announce_mailer') == '1' and self.announce_list:
+                self.add_to_mailing_list(username, email, name,
+                                         list_endpoint=self.announce_list)
+
+            if self.invites_enabled:
+                self.delete_invite(email)
+
+        except ValidationException as ve:
+            msg['validation'] = str(ve)
+
+        except Exception as ex:
+            import traceback
+            traceback.print_exc()
+            msg['other_error'] = 'Registration failed: ' + str(ex)
+
+        if not msg:
+            msg['success'] = ('A confirmation e-mail has been sent to <b>{0}</b>. ' +
+                              'Please check your e-mail to complete the registration!').format(username)
+
+        return msg, redir_extra
+
+    def get_move_temp_info(self, input_data):
+        move_info = None
+        move_temp = input_data.get('move-temp')
+
+        if move_temp == '1':
+            to_coll_title = input_data.get('to-coll', '')
+            to_coll = sanitize_title(to_coll_title)
+
+            if not to_coll:
+                raise ValidationException('Invalid new collection name, please pick a different name')
+
+            sesh = self.get_session()
+
+            if sesh.is_anon() and to_coll:
+                move_info = {'from_user': sesh.anon_user,
+                             'to_coll': to_coll,
+                             'to_title': to_coll_title,
+                            }
+
+        return move_info
+
+    def validate_registration(self, reg_code, cookie):
+        cookie_validate = 'valreg=' + reg_code
+
+        if cookie_validate not in cookie:
+            return {'error': 'invalid'}
+
+        try:
+            user, first_coll = self.create_user(reg_code)
+
+            return {'registered': user.name,
+                    'first_coll_name': first_coll.name}
+
+        except ValidationException:
+            return {'error': 'already_registered'}
+
+        except Exception as e:
+            print(e)
+            return {'error': 'invalid'}
+
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
 
-        for n, userdata in self.all_users.items():
-            if userdata['email_addr'] == email:
+        for n, user_data in self.all_users.items():
+            if user_data['email_addr'] == email:
                 return True
 
         return False
@@ -78,9 +208,9 @@ class UserManager(object):
     def get_user_email(self, user):
         if not user:
             return ''
-        userdata = self.all_users[user]
-        if userdata:
-            return userdata.get('email_addr', '')
+        user_data = self.all_users[user]
+        if user_data:
+            return user_data.get('email_addr', '')
         else:
             return ''
 
@@ -283,7 +413,7 @@ class UserManager(object):
     def create_user(self, reg):
         try:
             user, init_info = self.cork.validate_registration(reg)
-        except AAAException as a:
+        except Exception as a:
             raise ValidationException(a)
 
         if init_info:

@@ -18,6 +18,7 @@ from pywb.rewrite.templateview import JinjaEnv
 from webrecorder.utils import load_wr_config, init_logging
 
 from webrecorder.apiutils import CustomJSONEncoder
+from webrecorder.admincontroller import AdminController
 from webrecorder.contentcontroller import ContentController
 from webrecorder.snapshotcontroller import SnapshotController
 from webrecorder.websockcontroller import WebsockController
@@ -52,6 +53,7 @@ class MainController(BaseController):
                        AppController,
                        LoginController,
                        UserController,
+                       AdminController,
                        BugReportController,
                        SnapshotController,
                        WebsockController,

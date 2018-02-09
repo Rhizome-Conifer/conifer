@@ -45,6 +45,12 @@ class AppController(BaseController):
         def policies():
             return {}
 
+        # Expiry Message
+        @self.app.route('/_expire')
+        def expire():
+            self.flash_message('Sorry, the anonymous collection has expired due to inactivity')
+            self.redirect('/')
+
     def handle_player_load(self, resp):
         """ Initial warc load for player
         """

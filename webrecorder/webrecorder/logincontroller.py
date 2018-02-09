@@ -87,11 +87,6 @@ class LoginController(BaseController):
                 'anon': u.is_anon()
             }
 
-        @self.app.get('/api/v1/logout')
-        @self.user_manager.auth_view()
-        def logout():
-            self.user_manager.cork.logout(success_redirect='/')
-
         @self.app.get('/api/v1/username_check')
         def test_username():
             """async precheck username availability on signup form"""
@@ -145,7 +140,7 @@ class LoginController(BaseController):
             password = self.post_get('password')
 
             try:
-                move_info = self.get_move_temp_info()
+                move_info = self.user_manager.get_move_temp_info(request.forms)
             except ValidationException as ve:
                 self.flash_message('Login Failed: ' + str(ve))
                 self.redirect('/')
@@ -257,88 +252,20 @@ class LoginController(BaseController):
         def register_post():
             self.redirect_home_if_logged_in()
 
-            email = self.post_get('email')
-            username = self.post_get('username')
-            password = self.post_get('password')
-            name = self.post_get('name')
-            decoy_name = self.post_get('full_name')
-            confirm_password = self.post_get('confirmpassword')
-            invitecode = self.post_get('invite')
-            opt_in_mailer = self.post_get('announce_mailer') == '1'
-
             redir_to = REGISTER_PATH
 
-            if decoy_name:
-                return self.redirect(redir_to)
+            data = dict(request.forms)
 
-            if username.startswith(self.user_manager.temp_prefix):
-                self.flash_message('Sorry, this is not a valid username')
-                self.redirect(redir_to)
-                return
+            msg, redir_extra = self.user_manager.register_user(data, self.get_host())
 
-            try:
-                move_info = self.get_move_temp_info()
-            except ValidationException as ve:
-                self.flash_message('Registration Failed: ' + str(ve))
+            if 'success' in msg:
+                self.flash_message(msg['success'])
                 self.redirect('/')
-                return
 
-            if self.invites_enabled:
-                try:
-                    val_email = self.user_manager.is_valid_invite(invitecode)
-                    if val_email != email:
-                        raise ValidationException('Sorry, this invite can only be used with email: {0}'.format(val_email))
-                except ValidationException as ve:
-                    self.flash_message(str(ve))
-                    self.redirect(redir_to)
-                    return
-
-                redir_to += '?invite=' + invitecode
-
-            try:
-                self.user_manager.validate_user(username, email)
-                self.user_manager.validate_password(password, confirm_password)
-
-                #TODO: set default host?
-                host = self.get_host()
-
-                desc = {'name': name}
-
-                if move_info:
-                    desc['move_info'] = move_info
-
-                desc = json.dumps(desc)
-
-                self.cork.register(username, password, email, role='archivist',
-                              max_level=50,
-                              subject='webrecorder.io Account Creation',
-                              email_template='webrecorder/templates/emailconfirm.html',
-                              description=desc,
-                              host=host)
-
-                self.flash_message(
-                    ('A confirmation e-mail has been sent to <b>{0}</b>. '
-                     'Please check your e-mail to complete the registration!').format(username),
-                    'warning')
-
-                # add to announce list if user opted in
-                if opt_in_mailer and self.announce_list:
-                    self.user_manager.add_to_mailing_list(username, email, name,
-                                                          list_endpoint=self.announce_list)
-
-                redir_to = '/'
-                if self.invites_enabled:
-                    self.user_manager.delete_invite(email)
-
-            except ValidationException as ve:
-                print(ve)
-                self.flash_message(str(ve))
-
-            except Exception as ex:
-                print(ex)
-                self.flash_message('Registration failed: ' + str(ex))
-
-            self.redirect(redir_to)
+            else:
+                redir_to += redir_extra
+                self.flash_message(list(msg.values())[0], 'warning')
+                self.redirect(redir_to)
 
         @self.app.get(VAL_REG_PATH)
         @self.jinja2_view('val_reg.html')
@@ -352,43 +279,31 @@ class LoginController(BaseController):
 
             reg = self.post_get('reg', '')
 
-            val = request.environ.get('webrec.request_cookie', '')
-            cookie_validate = 'valreg=' + reg
-            if cookie_validate not in val:
-                self.flash_message('Registration Not Accepted')
-                self.redirect(REGISTER_PATH)
+            cookie = request.environ.get('webrec.request_cookie', '')
 
-            try:
-                username, first_coll = self.user_manager.create_user(reg)
+            result = self.user_manager.validate_registration(reg, cookie)
 
-                #self.flash_message('<b>{0}</b>, welcome to your new archive home page! \
-    #Click the <b>Create New Collection</b> button to create your first collection. Happy Archiving!'.format(username), 'success')
-                #redir_to = '/' + username
-
+            if 'registered' in result:
                 msg = '<b>{0}</b>, you are now logged in!'
-
-                if first_coll.name == 'default-collection':
+                if result.get('first_coll_name') == 'default-collection':
                     msg += ' The <b>{1}</b> collection has been created for you, and you can begin recording by entering a url below!'
                 else:
                     msg += ' The <b>{1}</b> collection has been permanently saved for you, and you can continue recording by entering a url below!'
 
-                self.flash_message(msg.format(username, first_coll), 'success')
-                redir_to = '/'
+                self.flash_message(msg.format(result['registered'], result.get('first_coll_name')), 'success')
+                self.redirect('/')
 
-            except ValidationException:
+            if result['error'] == 'invalid':
+                self.flash_message('Registration Not Accepted', 'error')
+                self.redirect(REGISTER_PATH)
+
+            elif result['error'] == 'already_registered':
                 self.flash_message('The user <b>{0}</b> is already registered. \
     If this is you, please login or click forgot password, \
     or register a new account.'.format(username))
-                redir_to = LOGIN_PATH
+                self.redirect(LOGIN_PATH)
 
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                self.flash_message('Sorry, this is not a valid registration code. Please try again.')
-                redir_to = REGISTER_PATH
-
-            self.redirect(redir_to)
-
+            self.redirect(REGISTER_PATH)
 
         # Forgot Password
         # ============================================================================
@@ -499,26 +414,5 @@ class LoginController(BaseController):
         if sesh.curr_user:
             self.flash_message('You are already logged in as <b>{0}</b>'.format(sesh.curr_user))
             self.redirect('/')
-
-    def get_move_temp_info(self):
-        move_info = None
-        move_temp = self.post_get('move-temp')
-
-        if move_temp == '1':
-            to_coll_title = self.post_get('to-coll')
-            to_coll = self.sanitize_title(to_coll_title)
-
-            if not to_coll:
-                raise ValidationException('Invalid new collection name, please pick a different name')
-
-            sesh = self.get_session()
-
-            if sesh.is_anon() and to_coll:
-                move_info = {'from_user': sesh.anon_user,
-                             'to_coll': to_coll,
-                             'to_title': to_coll_title,
-                            }
-
-        return move_info
 
 

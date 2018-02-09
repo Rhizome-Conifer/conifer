@@ -42,6 +42,8 @@ class RecsController(BaseController):
         def update_rec_desc(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
+            user.access.assert_can_write_coll(collection)
+
             desc = request.forms.getunicode('desc', '')
 
             recording['desc'] = desc
