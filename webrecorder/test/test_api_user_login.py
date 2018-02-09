@@ -211,8 +211,59 @@ class TestApiUserLogin(FullStackTests):
 
         assert res.json == {}
 
+    def test_api_user_info(self):
+        res = self.testapp.get('/api/v1/users/someuser')
 
+        user = res.json['user']
 
+        assert user['created'] != ''
+        assert user['email'] == 'test@example.com'
+        assert user['last_login'] != ''
+        assert user['name'] == ''
+        assert user['role'] == 'archivist'
+        assert user['username'] == 'someuser'
+        assert user['space_utilization'] == {'available': 1000000000.0,
+                                             'total': 1000000000.0,
+                                             'used': 0.0}
 
+        assert user['collections'][0]['title'] == 'Default Collection'
+        assert user['collections'][0]['owner'] == 'someuser'
+        assert user['collections'][0]['id'] == 'default-collection'
+        assert user['collections'][0]['desc'] == 'Default Collection'
+        assert user['collections'][0]['size'] == 0
+
+    def test_update_user_desc(self):
+        res = self.testapp.post('/api/v1/users/someuser/desc', params='New Description')
+
+        assert res.json == {}
+
+    def test_api_user_info_2(self):
+        res = self.testapp.get('/api/v1/users/someuser?include_colls=false')
+
+        user = res.json['user']
+
+        assert user['username'] == 'someuser'
+        assert user['description'] == 'New Description'
+
+        # collections not included
+        assert 'collections' not in user
+
+    def test_delete_no_such_user(self):
+        res = self.testapp.delete('/api/v1/users/someuser2')
+
+        assert res.json == {'error_message': 'Could not delete user: someuser2'}
+
+    def test_delete_user(self):
+        res = self.testapp.delete('/api/v1/users/someuser')
+
+        assert res.json == {'deleted_user': 'someuser'}
+
+    def test_load_auth_not_logged_in_2(self):
+        res = self.testapp.get('/api/v1/load_auth')
+
+        assert res.json['role'] == None
+        assert res.json['username'].startswith('temp-')
+        assert res.json['anon'] == True
+        assert res.json['coll_count'] == 0
 
 

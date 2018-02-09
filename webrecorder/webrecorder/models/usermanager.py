@@ -485,6 +485,9 @@ class UserManager(object):
 
         # remove user and from all users table
         del self.all_users[username]
+
+        self.get_session().delete()
+
         return True
 
     def has_space_for_new_collection(self, to_username, from_username, coll_name):

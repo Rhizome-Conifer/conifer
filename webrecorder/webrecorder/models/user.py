@@ -178,6 +178,25 @@ class User(RedisNamedContainer):
     def is_anon(self):
         return self.name.startswith('temp-')
 
+    def serialize(self, compute_size_allotment=False, include_colls=False):
+        data = super(User, self).serialize()
+
+        # assemble space usage
+        if compute_size_allotment:
+            total = self.get_size_allotment()
+            avail = self.get_size_remaining()
+            data['space_utilization'] = {
+                'total': total,
+                'used': total - avail,
+                'available': avail,
+            }
+
+        if include_colls:
+            colls = self.get_collections()
+            data['collections'] = [coll.serialize() for coll in colls]
+
+        return data
+
     def __eq__(self, obj):
         if obj and (self.my_id == obj.my_id) and isinstance(obj, User):
             return True

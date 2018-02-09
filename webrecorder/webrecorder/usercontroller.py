@@ -139,32 +139,18 @@ class UserController(BaseController):
             if request.query.include_colls:
                 include_colls = request.query.include_colls == 'true'
 
-            user_obj = user.serialize()
+            user_obj = user.serialize(compute_size_allotment=True,
+                                      include_colls=include_colls)
+
             user_obj['username'] = username
 
-            # assemble space usage
-            total = user.get_size_allotment()
-            avail = user.get_size_remaining()
-            user_obj['space_utilization'] = {
-                'total': total,
-                'used': total - avail,
-                'available': avail,
-            }
-
             user_data, err = UserSchema().load(user_obj)
-
-            if include_colls:
-                colls = user.get_collections()
-
-                # colls is a list so will always be `many` even if one collection
-                # collections, err = CollectionSchema().load(colls, many=True)
-                user_data['collections'] = [coll.serialize() for coll in colls]
 
             return {'user': user_data}
 
         @self.app.put(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
         @self.user_manager.auth_view()
-        def api_update_user(username):
+        def api_update_user(username):  #pragma: no cover
             """API enpoint to update user info
 
                See `UserUpdateSchema` for available fields.
@@ -172,17 +158,12 @@ class UserController(BaseController):
                ** bottle 0.12.9 doesn't support `PATCH` methods.. update to
                   patch once availabile.
             """
-            users = self.manager.get_users()
-            available_roles = [x for x in self.cork._store.roles]
-
-            if username not in users:
-                self._raise_error(404, 'No such user')
+            user = self.get_user(username)
 
             # if not admin, check ownership
-            if not self.access.is_anon(username) and not self.access.is_superuser():
+            if not user.is_anon() and not self.access.is_superuser():
                 self.access.assert_is_curr_user(username)
 
-            user = users[username]
             try:
                 json_data = json.loads(request.forms.json)
             except Exception as e:
@@ -251,9 +232,12 @@ class UserController(BaseController):
         @self.user_manager.auth_view()
         def api_delete_user(username):
             """API enpoint to delete a user"""
-            if self.user_manager.delete_user(username):
+            # TODO? add validation
+            #self.validate_csrf()
+            try:
+                assert(self.user_manager.delete_user(username))
                 return {'deleted_user': username}
-            else:
+            except:
                 return {'error_message': 'Could not delete user: ' + username}
 
 

@@ -29,6 +29,8 @@ class UserSchema(BaseSchema):
     last_login = fields.DateTime()
     role = fields.String(default='archivist')
 
+    description = fields.String(required=False)
+
     space_utilization = fields.Nested('SpaceUtilization')
     collections = fields.Nested('CollectionSchema', many=True)
 
@@ -89,6 +91,8 @@ class CollectionSchema(BaseSchema):
     created = fields.Number(load_from='created_at')
     description = fields.String(load_from='desc')
     download_url = fields.Url()
+    owner = fields.String(required=False)
+    desc = fields.String(required=False)
     size = fields.Number()
     public = fields.Boolean(load_from=public_key, missing=False)
 
