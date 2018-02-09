@@ -225,6 +225,7 @@ class SessionUser(User):
             user = self.sesh.anon_user
             self.sesh_type = 'transient'
 
+        self.curr_role = self.sesh.curr_role
         kwargs['my_id'] = user
 
         super(SessionUser, self).__init__(**kwargs)

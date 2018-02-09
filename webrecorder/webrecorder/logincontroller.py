@@ -47,20 +47,14 @@ class LoginController(BaseController):
 
         @self.app.get('/api/v1/load_auth')
         def load_auth():
-            sesh = self.user_manager.get_session()
+            u = self.access.session_user
 
-            if sesh:
-                # current user
-                u = self.get_user(user=sesh.curr_user)
-
-                return {
-                    'username': sesh.curr_user,
-                    'role': sesh.curr_role,
-                    'anon': u.is_anon(),
-                    'coll_count': u.num_collections(),
-                }
-
-            return {'username': None, 'role': None, 'anon': None}
+            return {
+                'username': u.name,
+                'role': u.curr_role,
+                'anon': u.is_anon(),
+                'coll_count': u.num_collections(),
+            }
 
         @self.app.post('/api/v1/login')
         def login():
@@ -72,13 +66,13 @@ class LoginController(BaseController):
             if not self.user_manager.cork.login(username, password):
                 return HTTPError(status=401)
 
-            sesh = self.user_manager.get_session()
-            u = self.get_user(user=sesh.curr_user)
-            sesh.curr_user = username
-            sesh.curr_role = u['role']
+            sesh = self.get_session()
+            u = self.get_user(user=username)
 
             remember_me = (data.get('remember_me') in ('1', 'on'))
-            sesh.logged_in(remember_me)
+            sesh.log_in(username, remember_me)
+
+            # TODO: add move collections
 
             return {
                 'username': sesh.curr_user,
@@ -92,12 +86,14 @@ class LoginController(BaseController):
             """async precheck username availability on signup form"""
             username = request.query.username
 
-            try:
-                assert username not in self.user_manager.RESTRICTED_NAMES
-                user = self.user_manager.all_users[username]
-                return {'available': True}
-            except:
+            if username in self.user_manager.RESTRICTED_NAMES:
                 return {'available': False}
+
+            try:
+                self.user_manager.all_users[username]
+                return {'available': False}
+            except:
+                return {'available': True}
 
         @self.app.post('/api/v1/updatepassword')
         @self.user_manager.auth_view()

@@ -12,6 +12,8 @@ import StaticRouter from 'react-router/StaticRouter';
 import { ReduxAsyncConnect, loadOnServer } from 'redux-connect';
 import { Provider } from 'react-redux';
 
+import { stripProtocol } from 'helpers/utils';
+
 import ApiClient from './helpers/ApiClient';
 import config from './config';
 import createStore from './redux/create';
@@ -43,7 +45,9 @@ if (__DEVELOPMENT__ || baseUrl.indexOf('localhost') !== -1 || config.apiProxy) {
   app.use(bypassUrls, proxy({
     target: baseUrl,
     logLevel: 'debug',
-    changeOrigin: true
+    ws: true,
+    changeOrigin: true,
+    headers: { 'X-Forwarded-Host': stripProtocol(config.appHost) }
   }));
 }
 
