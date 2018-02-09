@@ -76,6 +76,12 @@ class TestApiUserLogin(FullStackTests):
         res = self.testapp.post('/api/v1/userval', headers=headers, params=params)
         assert res.json == {'error': 'invalid'}
 
+    def test_check_username_avail(self):
+        # still available until registration validated
+        res = self.testapp.get('/api/v1/username_check?username=someuser')
+
+        assert res.json == {'available': True}
+
     def test_api_val_reg_success(self):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
@@ -100,7 +106,7 @@ class TestApiUserLogin(FullStackTests):
         res = self.testapp.post('/api/v1/userval', headers=headers, params=params)
         assert res.json == {'error': 'already_registered'}
 
-    def test_logout(self):
+    def test_api_logout(self):
         res = self.testapp.get('/api/v1/logout')
 
         assert res.headers['Location'] == 'http://localhost:80/'
@@ -141,5 +147,72 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post('/api/v1/userval', headers=headers, params=params)
         assert res.json == {'error': 'already_registered'}
+
+    def test_login_fail_bad_password(self):
+        params = {'username': 'someuser',
+                  'password': 'Password2'}
+
+        res = self.testapp.post_json('/api/v1/login', params=params, status=401)
+
+        assert res.json == {'error': 'Invalid Login. Please Try Again'}
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+    def test_login_fail_wrong_user(self):
+        params = {'username': 'someuser2',
+                  'password': 'Password2'}
+
+        res = self.testapp.post_json('/api/v1/login', params=params, status=401)
+
+        assert res.json == {'error': 'Invalid Login. Please Try Again'}
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+    def test_load_auth_not_logged_in(self):
+        res = self.testapp.get('/api/v1/load_auth')
+
+        assert res.json['role'] == None
+        assert res.json['username'].startswith('temp-')
+        assert res.json['anon'] == True
+        assert res.json['coll_count'] == 0
+
+    def test_login(self):
+        params = {'username': 'someuser',
+                  'password': 'Password1'}
+
+        res = self.testapp.post_json('/api/v1/login', params=params)
+
+        assert res.json == {'role': 'archivist',
+                            'username': 'someuser',
+                            'coll_count': 1,
+                            'anon': False}
+
+        assert self.testapp.cookies.get('__test_sesh', '') != ''
+
+    def test_load_auth_logged_in(self):
+        res = self.testapp.get('/api/v1/load_auth')
+
+        assert res.json == {'role': 'archivist',
+                            'username': 'someuser',
+                            'coll_count': 1,
+                            'anon': False}
+
+    def test_check_username_not_avail(self):
+        res = self.testapp.get('/api/v1/username_check?username=someuser')
+
+        assert res.json == {'available': False}
+
+    def test_update_password(self):
+        params = {'currPass': 'Password1',
+                  'newPass': 'Password2',
+                  'newPass2': 'Password2'
+                 }
+
+        # TODO: should be working with post_json?
+        res = self.testapp.post('/api/v1/updatepassword', params=params)
+
+        assert res.json == {}
+
+
+
+
 
 

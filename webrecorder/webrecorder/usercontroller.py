@@ -5,7 +5,7 @@ import redis
 import os
 import re
 
-from bottle import request, HTTPError
+from bottle import request, response
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema,
@@ -23,7 +23,37 @@ class UserController(BaseController):
 
         self.default_user_desc = config['user_desc']
 
+    # utility
+    def load_auth(self):
+        u = self.access.session_user
+
+        return {
+            'username': u.name,
+            'role': u.curr_role,
+            'anon': u.is_anon(),
+            'coll_count': u.num_collections(),
+        }
+
     def init_routes(self):
+        # MISC CHECKS
+        @self.app.get('/api/v1/load_auth')
+        def load_auth():
+            return self.load_auth()
+
+        @self.app.get('/api/v1/username_check')
+        def test_username():
+            """async precheck username availability on signup form"""
+            username = request.query.username
+
+            if username in self.user_manager.RESTRICTED_NAMES:
+                return {'available': False}
+
+            try:
+                self.user_manager.all_users[username]
+                return {'available': False}
+            except:
+                return {'available': True}
+
         @self.app.get('/api/v1/anon_user')
         def get_anon_user():
             sesh_user = self.access.init_session_user(persist=True)
@@ -34,6 +64,8 @@ class UserController(BaseController):
             sesh_user = self.access.session_user
             return {'curr_user': sesh_user.my_id}
 
+
+        # REGISTRATION
         @self.app.post(['/api/v1/userreg', '/api/v1/userreg/'])
         def api_register_user():
             data = request.json
@@ -54,11 +86,43 @@ class UserController(BaseController):
             result = self.user_manager.validate_registration(reg, cookie)
             return result
 
+
+        # LOGIN
+        @self.app.post('/api/v1/login')
+        def login():
+            """Authenticate users"""
+            result = self.user_manager.login_user(request.json)
+
+            if 'success' in result:
+                return self.load_auth()
+
+            #self._raise_error(401, result.get('error', ''), api=True)
+            response.status = 401
+            return result
+
         @self.app.get('/api/v1/logout')
         @self.user_manager.auth_view()
         def logout():
             self.user_manager.cork.logout(success_redirect='/')
 
+
+        # PASSWORD
+        @self.app.post('/api/v1/updatepassword')
+        @self.user_manager.auth_view()
+        def update_password():
+            curr_password = self.post_get('currPass')
+            password = self.post_get('newPass')
+            confirm_password = self.post_get('newPass2')
+
+            try:
+                self.user_manager.update_password(curr_password, password,
+                                                  confirm_password)
+                return {}
+            except ValidationException as ve:
+                return self._raise_error(403, str(ve), api=True)
+
+
+        # USER INFO
         @self.app.get(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
         @self.user_manager.auth_view()
         def api_get_user(username):
@@ -192,6 +256,9 @@ class UserController(BaseController):
             else:
                 return {'error_message': 'Could not delete user: ' + username}
 
+
+        # OLD VIEWS BELOW
+        # ====================================================================
         @self.app.get(['/<username>', '/<username>/'])
         @self.jinja2_view('user.html')
         def user_info(username):

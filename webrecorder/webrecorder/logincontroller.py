@@ -44,71 +44,6 @@ class LoginController(BaseController):
         self.invites_enabled = invites in ('true', '1', 'yes')
 
     def init_routes(self):
-
-        @self.app.get('/api/v1/load_auth')
-        def load_auth():
-            u = self.access.session_user
-
-            return {
-                'username': u.name,
-                'role': u.curr_role,
-                'anon': u.is_anon(),
-                'coll_count': u.num_collections(),
-            }
-
-        @self.app.post('/api/v1/login')
-        def login():
-            """Authenticate users"""
-            data = request.json
-            username = data.get('username', '')
-            password = data.get('password', '')
-
-            if not self.user_manager.cork.login(username, password):
-                return HTTPError(status=401)
-
-            sesh = self.get_session()
-            u = self.get_user(user=username)
-
-            remember_me = (data.get('remember_me') in ('1', 'on'))
-            sesh.log_in(username, remember_me)
-
-            # TODO: add move collections
-
-            return {
-                'username': sesh.curr_user,
-                'role': sesh.curr_role,
-                'coll_count': u.num_collections(),
-                'anon': u.is_anon()
-            }
-
-        @self.app.get('/api/v1/username_check')
-        def test_username():
-            """async precheck username availability on signup form"""
-            username = request.query.username
-
-            if username in self.user_manager.RESTRICTED_NAMES:
-                return {'available': False}
-
-            try:
-                self.user_manager.all_users[username]
-                return {'available': False}
-            except:
-                return {'available': True}
-
-        @self.app.post('/api/v1/updatepassword')
-        @self.user_manager.auth_view()
-        def update_password():
-            curr_password = self.post_get('currPass')
-            password = self.post_get('newPass')
-            confirm_password = self.post_get('newPass2')
-
-            try:
-                self.user_manager.update_password(curr_password, password,
-                                                  confirm_password)
-                return {}
-            except ValidationException as ve:
-                return self._raise_error(403, str(ve), api=True)
-
         # Login/Logout
         # ============================================================================
         @self.app.get(LOGIN_PATH)
@@ -131,46 +66,14 @@ class LoginController(BaseController):
         def login_post():
             self.redirect_home_if_logged_in()
 
-            """Authenticate users"""
-            username = self.post_get('username')
-            password = self.post_get('password')
+            result = self.user_manager.login_user(request.forms)
 
-            try:
-                move_info = self.user_manager.get_move_temp_info(request.forms)
-            except ValidationException as ve:
-                self.flash_message('Login Failed: ' + str(ve))
-                self.redirect('/')
-                return
+            if 'success' not in result:
+                self.flash_message(result['error'])
+                self.redirect(LOGIN_PATH)
 
-            # if a collection is being moved, auth user
-            # and then check for available space
-            # if not enough space, don't continue with login
-            if move_info and (self.cork.
-                              is_authenticate(username, password)):
-
-                if not self.user_manager.has_space_for_new_collection(username,
-                                                           move_info['from_user'],
-                                                           'temp'):
-                    self.flash_message('Sorry, not enough space to import this Temporary Collection into your account.')
-                    self.redirect('/')
-                    return
-
-            if not self.cork.login(username, password):
-                self.flash_message('Invalid Login. Please Try Again')
-                redir_to = LOGIN_PATH
-                self.redirect(redir_to)
-
-            if move_info:
-                user = self.get_user(user=username)
-                the_collection = self.user_manager.move_temp_coll(user, move_info)
-                if the_collection:
-                    self.flash_message('Collection <b>{0}</b> created!'.format(move_info['to_title']), 'success')
-
-            remember_me = (self.post_get('remember_me') == '1')
-            sesh = self.get_session()
-
-            # mark as logged-in
-            sesh.log_in(username, remember_me)
+            if result.get('message'):
+                self.flash_message(result['message'], 'success')
 
             temp_prefix = self.user_manager.temp_prefix
 
@@ -179,6 +82,8 @@ class LoginController(BaseController):
 
             if redir_to and redir_to.startswith(host):
                 redir_to = redir_to[len(host):]
+
+            username = self.post_get('username')
 
             if not redir_to or redir_to.startswith(('/' + temp_prefix,
                                                     '/_')):

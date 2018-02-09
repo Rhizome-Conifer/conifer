@@ -196,6 +196,51 @@ class UserManager(object):
             print(e)
             return {'error': 'invalid'}
 
+    def login_user(self, input_data):
+        """Authenticate users"""
+        username = input_data.get('username')
+        password = input_data.get('password')
+
+        try:
+            move_info = self.get_move_temp_info(input_data)
+        except ValidationException as ve:
+            return {'error': str(ve)}
+
+        # if a collection is being moved, auth user
+        # and then check for available space
+        # if not enough space, don't continue with login
+        if move_info and (self.cork.
+                          is_authenticate(username, password)):
+
+            if not self.has_space_for_new_collection(username,
+                                                     move_info['from_user'],
+                                                    'temp'):
+                return {'error': 'Sorry, not enough space to import this Temporary Collection into your account.'}
+
+        if not self.cork.login(username, password):
+            return {'error': 'Invalid Login. Please Try Again'}
+
+        msg = None
+
+        if move_info:
+            user = self.all_users[username]
+            the_collection = self.move_temp_coll(user, move_info)
+            if the_collection:
+                msg = 'Collection <b>{0}</b> created!'.format(move_info['to_title'])
+
+        sesh = self.get_session()
+
+        remember_me = (input_data.get('remember_me') == '1')
+
+        # log in session!
+        sesh.log_in(username, remember_me)
+
+        # update role
+        u = self._get_access().session_user
+        u.curr_role = u['role']
+
+        return {'success': '1', 'message': msg}
+
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
 

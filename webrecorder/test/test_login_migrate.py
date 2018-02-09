@@ -49,7 +49,7 @@ class TestLoginMigrate(FullStackTests):
 
         res = self.testapp.post('/_login', params=params)
 
-        assert res.headers['Location'] == 'http://localhost:80/'
+        assert res.headers['Location'] == 'http://localhost:80/_login'
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
         res = self.testapp.get('/api/v1/curr_user')
