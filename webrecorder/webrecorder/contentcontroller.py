@@ -97,20 +97,25 @@ class ContentController(BaseController, RewriterApp):
 
             wb_url = WbUrl(request.query.wb_url)
 
+            coll_obj = user.get_collection_by_name(coll)
+            rec_obj = coll_obj.get_recording_by_name(rec)
+
             # build kwargs
-            kwargs = dict(user=user,
+            kwargs = dict(user=user['id'],
                           rec_orig=rec,
                           coll_orig=coll,
                           coll=quote(coll),
+                          coll_name=coll_obj['title'],
                           rec=quote(rec, safe='/*'),
+                          rec_name=rec_obj.get_title(),
                           type=mode,
                           remote_ip=self._get_remote_ip(),
                           ip=self._get_remote_ip(),
-                          browser_can_write='1' if self.manager.can_write_coll(user, coll) else '0')
+                          browser_can_write='1' if self.access.can_write_coll(coll_obj) else '0')
 
-            data = self.manager.browser_mgr.request_new_browser(browser_id,
-                                                                wb_url,
-                                                                kwargs)
+            data = self.browser_mgr.request_new_browser(browser_id,
+                                                        wb_url,
+                                                        kwargs)
 
             if 'error_message' in data:
                 self._raise_error(400, data['error_message'])
