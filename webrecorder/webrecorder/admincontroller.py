@@ -149,17 +149,8 @@ class AdminController(BaseController):
             # add username
             for _user in users:
                 user = self.get_user(user=_user)
-                data = user.serialize()
+                data = user.serialize(compute_size_allotment=True)
                 data['username'] = _user
-                # add space usage
-                total = user.get_size_allotment()
-                avail = user.get_size_remaining()
-                data['space_utilization'] = {
-                    'total': total,
-                    'used': total - avail,
-                    'available': avail,
-                }
-
                 results.append(data)
 
             return {

@@ -1,15 +1,12 @@
 
 import json
-import time
 import redis
-import os
-import re
 
+from datetime import datetime, timedelta
 from bottle import request, response
 
 from webrecorder.basecontroller import BaseController
-from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema,
-                                 UserSchema, UserUpdateSchema)
+from webrecorder.schemas import (CollectionSchema, UserSchema, UserUpdateSchema)
 from webrecorder.webreccork import ValidationException
 
 
@@ -121,6 +118,36 @@ class UserController(BaseController):
             except ValidationException as ve:
                 return self._raise_error(403, str(ve), api=True)
 
+        @self.app.get(['/api/v1/temp-users/<username>', '/api/v1/temp-users/<username>/'])
+        def api_get_temp_user(username):
+            temp_users = self.user_manager.redis.keys(
+                'u:{}*:info'.format(self.user_manager.temp_prefix))
+
+            user_key = 'u:{}:info'.format(username)
+            user_coll_key = 'u:{}:colls'.format(username)
+            user_rec_key = 'c:{}:recs'
+
+            if user_key not in temp_users:
+                return self._raise_error(404, 'Temp user not found.', api=True)
+
+            user = self.user_manager.redis.hgetall(user_key)
+            user['username'] = username
+            total = int(user['max_size'])
+            used = int(user.get('size', 0))
+            creation = datetime.fromtimestamp(int(user['created_at']))
+            temp_ttl = self.config['session.durations']['short']['total']
+            removal = (creation + timedelta(seconds=temp_ttl)) - datetime.now()
+            user['ttl'] = removal.total_seconds()
+            user['space_utilization'] = {
+                'total': total,
+                'used': used,
+                'available': total - used,
+            }
+            coll = self.user_manager.redis.hgetall(user_coll_key).get('temp', None)
+            if coll:
+                user['rec_count'] = len(self.user_manager.redis.hgetall(user_rec_key.format(coll)))
+
+            return user
 
         # USER INFO
         @self.app.get(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
@@ -159,6 +186,7 @@ class UserController(BaseController):
                   patch once availabile.
             """
             user = self.get_user(username)
+            available_roles = [x for x in self.cork._store.roles]
 
             # if not admin, check ownership
             if not user.is_anon() and not self.access.is_superuser():
