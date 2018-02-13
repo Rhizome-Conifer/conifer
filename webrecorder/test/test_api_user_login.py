@@ -200,6 +200,17 @@ class TestApiUserLogin(FullStackTests):
 
         assert res.json == {'available': False}
 
+    def test_update_password_fail(self):
+        params = {'currPass': 'Password1',
+                  'newPass': 'Password2',
+                  'newPass2': 'Password3'
+                 }
+
+        # TODO: should be working with post_json?
+        res = self.testapp.post('/api/v1/updatepassword', params=params, status=403)
+
+        assert res.json['error_message'] == 'Passwords do not match!'
+
     def test_update_password(self):
         params = {'currPass': 'Password1',
                   'newPass': 'Password2',

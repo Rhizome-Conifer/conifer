@@ -195,7 +195,15 @@ class User(RedisNamedContainer):
             colls = self.get_collections()
             data['collections'] = [coll.serialize() for coll in colls]
 
+        data['username'] = self.name
+        if self.is_anon():
+            data['ttl'] = self.access.get_anon_ttl()
+            collection = self.get_collection_by_name('temp')
+            if collection:
+                data['rec_count'] = collection.num_recordings()
+
         return data
+        #return UserSchema().load(data)
 
     def __eq__(self, obj):
         if obj and (self.my_id == obj.my_id) and isinstance(obj, User):
@@ -244,13 +252,21 @@ class SessionUser(User):
             user = self.sesh.anon_user
             self.sesh_type = 'transient'
 
-        self.curr_role = self.sesh.curr_role
         kwargs['my_id'] = user
 
         super(SessionUser, self).__init__(**kwargs)
 
         if kwargs.get('persist'):
             self._persist_anon_user()
+
+    @property
+    def curr_role(self):
+        if self.sesh_type == 'anon':
+            return 'anon'
+        elif self.sesh_type == 'transient':
+            return None
+        else:
+            return self['role']
 
     def num_collections(self):
         if self.sesh_type == 'logged-in':
@@ -271,7 +287,7 @@ class SessionUser(User):
         self._init_new(max_size=max_size)
 
         self.sesh.set_anon()
-        self.sesh_type == 'anon'
+        self.sesh_type = 'anon'
         return True
 
     def is_anon(self):

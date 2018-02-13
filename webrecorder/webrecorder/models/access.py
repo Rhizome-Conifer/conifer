@@ -29,6 +29,16 @@ class SessionAccessCache(BaseAccess):
 
         return self._session_user
 
+    def get_anon_ttl(self):
+        return self.sesh.ttl
+
+    def log_in(self, username, remember_me):
+        # log in session!
+        self.sesh.log_in(username, remember_me)
+
+        # force session user reinit
+        self._session_user = None
+
     def is_anon(self, user=None):
         if not user:
             user = self.session_user

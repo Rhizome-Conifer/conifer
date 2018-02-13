@@ -88,9 +88,14 @@ class TestRegisterMigrate(FullStackTests):
                  }
 
         with patch('cork.Mailer.send_email', self.mock_send_reg_email):
-            res = self.testapp.post('/_register', params=params)
+            #res = self.testapp.post('/_register', params=params)
+            res = self.testapp.post_json('/api/v1/userreg', params=params)
 
-        assert res.headers['Location'] == 'http://localhost:80/'
+        #assert res.headers['Location'] == 'http://localhost:80/'
+        assert res.json == {
+          'success': 'A confirmation e-mail has been sent to <b>someuser</b>. Please '
+                     'check your e-mail to complete the registration!'}
+
 
     def test_val_user_reg_page(self):
         res = self.testapp.get('/_valreg/' + self.val_reg)

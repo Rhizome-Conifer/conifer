@@ -72,8 +72,9 @@ class LoginController(BaseController):
                 self.flash_message(result['error'])
                 self.redirect(LOGIN_PATH)
 
-            if result.get('message'):
-                self.flash_message(result['message'], 'success')
+            if 'new_coll_name' in result:
+                msg = 'Collection <b>{0}</b> created!'.format(result['new_coll_name'])
+                self.flash_message(msg, 'success')
 
             temp_prefix = self.user_manager.temp_prefix
 

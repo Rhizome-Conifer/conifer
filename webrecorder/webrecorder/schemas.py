@@ -5,16 +5,11 @@ from datetime import datetime
 from marshmallow import (Schema, fields, validate, ValidationError,
                          validates_schema)
 
-#from webrecorder.redisman import RedisDataManager as RDM
-from webrecorder.models.usermanager import UserManager as UM
-from webrecorder.models.access import SessionAccessCache as SAC
 
-# key indicating whether a collection is public
-public_key = SAC.READ_PREFIX + SAC.PUBLIC
-
+# TODO: move to better place?
+public_key = 'r:@public'
 
 class BaseSchema(Schema):
-
     class Meta:
         ordered = True
 

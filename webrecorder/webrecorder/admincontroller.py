@@ -17,6 +17,7 @@ from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema
                                  UserSchema, UserUpdateSchema)
 from webrecorder.webreccork import ValidationException
 
+#TODO: fix these
 
 # ============================================================================
 class AdminController(BaseController):
@@ -273,5 +274,65 @@ class AdminController(BaseController):
                     data['email'],
                     data.get('name', ''),
                 )
+
+        @self.app.put(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
+        @self.user_manager.admin_view()
+        def api_update_user(username):  #pragma: no cover
+            """API enpoint to update user info
+
+               See `UserUpdateSchema` for available fields.
+
+               ** bottle 0.12.9 doesn't support `PATCH` methods.. update to
+                  patch once availabile.
+            """
+            user = self.get_user(username)
+            available_roles = [x for x in self.cork._store.roles]
+
+            # if not admin, check ownership
+            if not user.is_anon() and not self.access.is_superuser():
+                self.access.assert_is_curr_user(username)
+
+            try:
+                json_data = json.loads(request.forms.json)
+            except Exception as e:
+                print(e)
+                return {'errors': 'bad json data'}
+
+            if len(json_data.keys()) == 0:
+                return {'errors': 'empty payload'}
+
+            data, err = UserUpdateSchema(only=json_data.keys()).load(json_data)
+
+            if 'role' in data and data['role'] not in available_roles:
+                err.update({'role': 'Not a valid choice.'})
+
+            if len(err):
+                return {'errors': err}
+
+            if 'name' in data:
+                user['desc'] = '{{"name":"{name}"}}'.format(name=data.get('name', ''))
+
+            #
+            # restricted resources
+            #
+            if 'max_size' in data and self.manager.is_superuser():
+                key = self.manager.user_key.format(user=username)
+                max_size = float(data['max_size'])
+                # convert GB to bytes
+                max_size = int(max_size * 1000000000)
+
+                with redis.utils.pipeline(self.redis) as pi:
+                    pi.hset(key, 'max_size', max_size)
+
+            if 'role' in data and self.manager.is_superuser():
+                user['role'] = data['role']
+
+            user_data = user.serialize(compute_size_allotment=True,
+                                      include_colls=include_colls)
+
+
+            return user_data
+
+
 
 

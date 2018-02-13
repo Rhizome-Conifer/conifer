@@ -18,7 +18,7 @@ from bottle import template, request
 
 from webrecorder.webreccork import ValidationException
 
-from webrecorder.models.base import BaseAccess
+from webrecorder.models.base import BaseAccess, DupeNameException
 from webrecorder.models.user import User, UserTable
 
 from webrecorder.utils import load_wr_config, sanitize_title
@@ -157,25 +157,25 @@ class UserManager(object):
         return msg, redir_extra
 
     def get_move_temp_info(self, input_data):
-        move_info = None
         move_temp = input_data.get('move-temp')
 
-        if move_temp == '1':
-            to_coll_title = input_data.get('to-coll', '')
-            to_coll = sanitize_title(to_coll_title)
+        if move_temp != '1':
+            return None
 
-            if not to_coll:
-                raise ValidationException('Invalid new collection name, please pick a different name')
+        to_coll_title = input_data.get('to-coll', '')
+        to_coll = sanitize_title(to_coll_title)
 
-            sesh = self.get_session()
+        if not to_coll:
+            raise ValidationException('Invalid new collection name, please pick a different name')
 
-            if sesh.is_anon() and to_coll:
-                move_info = {'from_user': sesh.anon_user,
-                             'to_coll': to_coll,
-                             'to_title': to_coll_title,
-                            }
 
-        return move_info
+        if not self.access.session_user.is_anon():
+            raise ValidationException('Import from non-temporary user attempted')
+
+        return {'from_user': self.access.session_user.name,
+                'to_coll': to_coll,
+                'to_title': to_coll_title,
+               }
 
     def validate_registration(self, reg_code, cookie):
         cookie_validate = 'valreg=' + reg_code
@@ -220,26 +220,21 @@ class UserManager(object):
         if not self.cork.login(username, password):
             return {'error': 'Invalid Login. Please Try Again'}
 
-        msg = None
+        new_collection = None
 
-        if move_info:
-            user = self.all_users[username]
-            the_collection = self.move_temp_coll(user, move_info)
-            if the_collection:
-                msg = 'Collection <b>{0}</b> created!'.format(move_info['to_title'])
-
-        sesh = self.get_session()
+        try:
+            if move_info:
+                user = self.all_users[username]
+                new_collection = self.move_temp_coll(user, move_info)
+        except DupeNameException as de:
+            return {'error': 'Collection "{0}" already exists'.format(move_info['to_title'])}
 
         remember_me = (input_data.get('remember_me') == '1')
 
-        # log in session!
-        sesh.log_in(username, remember_me)
+        # login session and access system
+        self.access.log_in(username, remember_me)
 
-        # update role
-        u = self._get_access().session_user
-        u.curr_role = u['role']
-
-        return {'success': '1', 'message': msg}
+        return {'success': '1', 'new_coll_name': new_collection.name if new_collection else None}
 
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?
@@ -289,6 +284,10 @@ class UserManager(object):
     def _get_access(self):
         return request['webrec.access']
 
+    @property
+    def access(self):
+        return request['webrec.access']
+
     def get_user_coll(self, username, coll_name):
         user = self.all_users[username]
         collection = user.get_collection_by_name(coll_name)
@@ -303,8 +302,15 @@ class UserManager(object):
 
         return user, collection, recording
 
+    def get_valid_anon_user(self, username):
+        user = self.all_users.get_user(username)
+        if user.is_anon():
+            return user
+        else:
+            return None
+
     def update_password(self, curr_password, password, confirm):
-        username = self._get_access().session_user.name
+        username = self.access.session_user.name
         if not self.cork.verify_password(username, curr_password):
             raise ValidationException('Incorrect Current Password')
 
@@ -476,8 +482,8 @@ class UserManager(object):
 
     def delete_user(self, username):
         user = self.all_users[username]
-        if self._get_access().session_user != user:
-            if not self._get_access().is_superuser():
+        if self.access.session_user != user:
+            if not self.access.is_superuser():
                 return False
 
         if self.mailing_list and self.remove_on_delete:

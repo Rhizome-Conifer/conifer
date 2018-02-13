@@ -30,6 +30,8 @@ class Collection(RedisNamedContainer):
 
     INDEX_FILE_KEY = '@index_file'
 
+    PUBLIC_FLAG = 'r:@public'
+
     @classmethod
     def init_props(cls, config):
         cls.COLL_CDXJ_TTL = config['coll_cdxj_ttl']
@@ -70,7 +72,7 @@ class Collection(RedisNamedContainer):
 
         if public:
             #TODO: standardize prop?
-            self.data['r:@public'] = '1'
+            self.data[self.PUBLIC_FLAG] = '1'
 
         with redis_pipeline(self.redis) as pi:
             self.commit(pi)

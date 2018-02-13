@@ -2,11 +2,11 @@
 import json
 import redis
 
-from datetime import datetime, timedelta
 from bottle import request, response
 
 from webrecorder.basecontroller import BaseController
-from webrecorder.schemas import (CollectionSchema, UserSchema, UserUpdateSchema)
+from webrecorder.schemas import UserSchema
+
 from webrecorder.webreccork import ValidationException
 
 
@@ -91,7 +91,11 @@ class UserController(BaseController):
             result = self.user_manager.login_user(request.json)
 
             if 'success' in result:
-                return self.load_auth()
+                data = self.load_auth()
+                if result.get('new_coll_name'):
+                    data['new_coll_name'] = result['new_coll_name']
+
+                return data
 
             #self._raise_error(401, result.get('error', ''), api=True)
             response.status = 401
@@ -113,43 +117,24 @@ class UserController(BaseController):
 
             try:
                 self.user_manager.update_password(curr_password, password,
-                                                  confirm_password)
+                                                     confirm_password)
                 return {}
             except ValidationException as ve:
                 return self._raise_error(403, str(ve), api=True)
 
+        # USER INFO
         @self.app.get(['/api/v1/temp-users/<username>', '/api/v1/temp-users/<username>/'])
         def api_get_temp_user(username):
-            temp_users = self.user_manager.redis.keys(
-                'u:{}*:info'.format(self.user_manager.temp_prefix))
+            anon_user = self.user_manager.get_valid_anon_user(username)
 
-            user_key = 'u:{}:info'.format(username)
-            user_coll_key = 'u:{}:colls'.format(username)
-            user_rec_key = 'c:{}:recs'
-
-            if user_key not in temp_users:
+            if not anon_user:
                 return self._raise_error(404, 'Temp user not found.', api=True)
 
-            user = self.user_manager.redis.hgetall(user_key)
-            user['username'] = username
-            total = int(user['max_size'])
-            used = int(user.get('size', 0))
-            creation = datetime.fromtimestamp(int(user['created_at']))
-            temp_ttl = self.config['session.durations']['short']['total']
-            removal = (creation + timedelta(seconds=temp_ttl)) - datetime.now()
-            user['ttl'] = removal.total_seconds()
-            user['space_utilization'] = {
-                'total': total,
-                'used': used,
-                'available': total - used,
-            }
-            coll = self.user_manager.redis.hgetall(user_coll_key).get('temp', None)
-            if coll:
-                user['rec_count'] = len(self.user_manager.redis.hgetall(user_rec_key.format(coll)))
+            data = anon_user.serialize(compute_size_allotment=True)
 
-            return user
+            return data
 
-        # USER INFO
+
         @self.app.get(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
         @self.user_manager.auth_view()
         def api_get_user(username):
@@ -166,94 +151,10 @@ class UserController(BaseController):
             if request.query.include_colls:
                 include_colls = request.query.include_colls == 'true'
 
-            user_obj = user.serialize(compute_size_allotment=True,
-                                      include_colls=include_colls)
+            user_data = user.serialize(compute_size_allotment=True,
+                                       include_colls=include_colls)
 
-            user_obj['username'] = username
-
-            user_data, err = UserSchema().load(user_obj)
-
-            return {'user': user_data}
-
-        @self.app.put(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
-        @self.user_manager.auth_view()
-        def api_update_user(username):  #pragma: no cover
-            """API enpoint to update user info
-
-               See `UserUpdateSchema` for available fields.
-
-               ** bottle 0.12.9 doesn't support `PATCH` methods.. update to
-                  patch once availabile.
-            """
-            user = self.get_user(username)
-            available_roles = [x for x in self.cork._store.roles]
-
-            # if not admin, check ownership
-            if not user.is_anon() and not self.access.is_superuser():
-                self.access.assert_is_curr_user(username)
-
-            try:
-                json_data = json.loads(request.forms.json)
-            except Exception as e:
-                print(e)
-                return {'errors': 'bad json data'}
-
-            if len(json_data.keys()) == 0:
-                return {'errors': 'empty payload'}
-
-            data, err = UserUpdateSchema(only=json_data.keys()).load(json_data)
-
-            if 'role' in data and data['role'] not in available_roles:
-                err.update({'role': 'Not a valid choice.'})
-
-            if len(err):
-                return {'errors': err}
-
-            if 'name' in data:
-                user['desc'] = '{{"name":"{name}"}}'.format(name=data.get('name', ''))
-
-            #
-            # restricted resources
-            #
-            if 'max_size' in data and self.manager.is_superuser():
-                key = self.manager.user_key.format(user=username)
-                max_size = float(data['max_size'])
-                # convert GB to bytes
-                max_size = int(max_size * 1000000000)
-
-                with redis.utils.pipeline(self.redis) as pi:
-                    pi.hset(key, 'max_size', max_size)
-
-            if 'role' in data and self.manager.is_superuser():
-                # set new role or default to base role
-                user['role'] = data['role']
-
-            #
-            # return updated user data
-            #
-            total = self.manager.get_size_allotment(username)
-            used = self.manager.get_size_usage(username)
-            user['space_utilization'] = {
-                'total': total,
-                'used': used,
-                'available': total - used,
-            }
-
-            user_data, err = UserSchema(exclude=('username',)).load(user)
-            colls = self.manager.get_collections(username,
-                                                 include_recs=True,
-                                                 api=True)
-
-            for coll in colls:
-                for rec in coll['recordings']:
-                    rec['pages'] = self.manager.list_pages(username,
-                                                           coll['id'],
-                                                           rec['id'])
-
-            # colls is a list so will always be `many` even if one collection
-            collections, err = CollectionSchema().load(colls, many=True)
-            user_data['collections'] = collections
-
+            user_data = UserSchema().load(user_data)
             return {'user': user_data}
 
         @self.app.delete(['/api/v1/users/<username>', '/api/v1/users/<username>/'])

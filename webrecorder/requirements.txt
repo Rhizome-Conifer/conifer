@@ -4,7 +4,7 @@ boto
 youtube_dl
 itsdangerous
 requests>=2.9.1
-marshmallow
+marshmallow>=3.0.0b7
 werkzeug
 gevent-websocket
 har2warc
