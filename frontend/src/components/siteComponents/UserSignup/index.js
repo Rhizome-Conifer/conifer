@@ -6,12 +6,18 @@ import { Alert, Button, Checkbox, ControlLabel, Form,
          HelpBlock, FormControl, FormGroup } from 'react-bootstrap';
 
 import config from 'config';
+
 import { passwordPassRegex } from 'helpers/utils';
+import { TempUsage } from 'containers';
 
 import './style.scss';
 
 
 class UserSignup extends Component {
+  static contextTypes = {
+    metadata: PropTypes.object
+  };
+
   static propTypes = {
     available: PropTypes.bool,
     cb: PropTypes.func,
@@ -21,17 +27,17 @@ class UserSignup extends Component {
     errors: PropTypes.array,
     success: PropTypes.bool,
     userCheck: PropTypes.bool,
+    user: PropTypes.object,
     validUsername: PropTypes.bool
   };
-
-  static contextTypes = {
-    metadata: PropTypes.object
-  }
 
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      moveTemp: false,
+      toColl: ''
+    };
   }
 
   save = (evt) => {
@@ -140,10 +146,11 @@ class UserSignup extends Component {
   render() {
     const { metadata } = this.context;
     const { available, checkedUsername, errors, result,
-            success, userCheck } = this.props;
-    const { email, name, password, password2, username } = this.state;
+            success, user, userCheck } = this.props;
+    const { email, moveTemp, name, password, password2,
+            toColl, username } = this.state;
 
-    const classes = classNames('col-sm-6 col-md-4 col-md-offset-2 wr-signup', {
+    const classes = classNames('col-sm-6 col-md-6 col-md-offset-3 wr-signup', {
       success
     });
 
@@ -171,7 +178,7 @@ class UserSignup extends Component {
               }
             </Alert>
         }
-        <div className="col-sm-8 col-md-6 col-md-offset-2">
+        <div className="col-sm-8 col-md-6 col-md-offset-3">
           <h2>{ metadata.product } Account Sign-Up</h2>
           <h4>Create your own web archive as you browse!</h4>
           <br />
@@ -266,6 +273,14 @@ class UserSignup extends Component {
                 Update me on new features.
               </Checkbox>
             </FormGroup>
+
+            {
+              user.get('anon') && user.get('coll_count') > 0 &&
+              <TempUsage
+                handleInput={this.handleChange}
+                moveTemp={moveTemp}
+                toColl={toColl} />
+            }
 
             <Button bsStyle="primary" bsSize="large" type="submit" block disabled={success}>Register</Button>
 

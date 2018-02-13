@@ -15,7 +15,6 @@ class Logout extends Component {
   }
 
   componentWillMount() {
-    console.log('running logout');
     this.props.logout();
     this.context.router.history.replace('/');
   }

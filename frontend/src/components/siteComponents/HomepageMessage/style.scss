@@ -1,0 +1,13 @@
+@import 'src/vars';
+
+.wr-hp-message .panel-body button {
+    border: none;
+    background: none;
+    padding: 0;
+    color: $link;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Collapse } from 'react-bootstrap';
 
+import { showModal } from 'redux/modules/userLogin';
+
 import { HomepageAnnouncement, HomepageMessage } from 'components/siteComponents';
 import { StandaloneRecorder } from 'containers';
 
@@ -15,7 +17,9 @@ class Home extends Component {
     auth: PropTypes.object,
     user: PropTypes.object,
     collections: PropTypes.array,
-  }
+    showModalCB: PropTypes.func,
+    tempUser: PropTypes.object
+  };
 
   constructor(props) {
     super(props);
@@ -26,10 +30,8 @@ class Home extends Component {
   }
 
   render() {
-    const { auth } = this.props;
+    const { auth, showModalCB, tempUser } = this.props;
     const { introVideoOpen } = this.state;
-
-    // const loaded = auth.get('loaded');
 
     return (
       <div>
@@ -40,10 +42,11 @@ class Home extends Component {
           <h4 className="text-center">Collect & Revisit the Web</h4>
         </div>
         {
-          /* anon only
-          loaded && auth.user.username && user.data &&
-            <HomepageMessage auth={auth} collsCount={collections ? collections.length : 0} />
-          */
+          auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0 && tempUser &&
+            <HomepageMessage
+              auth={auth}
+              showModal={showModalCB}
+              tempUser={tempUser} />
         }
         <div className="row top-buffer-lg bottom-buffer-lg">
           <StandaloneRecorder />
@@ -156,10 +159,18 @@ const mapStateToProps = (outerState) => {
   const state = outerState.app;
   return {
     auth: state.get('auth'),
-    user: state.get('user')
+    user: state.get('user'),
+    tempUser: state.getIn(['tempUser', 'user'])
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    showModalCB: b => dispatch(showModal(b))
   };
 };
 
 export default connect(
-  mapStateToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(Home);

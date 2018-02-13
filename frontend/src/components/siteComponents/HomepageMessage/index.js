@@ -2,24 +2,32 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
+import TempUserTimer from 'components/TempUserTimer';
+
+import './style.scss';
+
+
 function HomepageMessage(props) {
-  const { auth, collsCount } = props;
+  const { auth, showModal, tempUser } = props;
+  const username = auth.getIn(['user', 'username']);
+  const showModalCB = () => showModal(true);
+  const recCount = tempUser.get('rec_count');
 
   return (
-    <div className="row">
+    <div className="row wr-hp-message">
       <div className="col-md-6 col-md-offset-3">
         <div className="panel panel-info">
           <div className="panel-heading">
-            You are logged-in as <b><Link to={auth.user.username}>{ auth.user.username }</Link></b>
+            You have a <b><Link to={`/${username}/temp`}>Temporary Collection</Link></b> with {recCount} recording{recCount === 1 ? '' : 's'}, expiring in <b><TempUserTimer ttl={tempUser.get('ttl')} accessed={tempUser.get('accessed')} /></b>
           </div>
           <div className="panel-body">
             <div className="top-buffer-md">
               <ul>
                 <li>
-                  Browse: There are <Link to={auth.user.username}><b>{ collsCount } Collections</b></Link> in your archive.
+                  <Link to="/_register"><strong>Sign Up</strong></Link> or <button onClick={showModalCB}>Login</button> to keep your collection and give it a permanent address.
                 </li>
                 <li>
-                  Record: Enter a url, choose a collection (or create a new one), then click <b>Record</b> to begin.
+                  Continue recording by entering another URL below and clicking <b>Record</b>
                 </li>
               </ul>
             </div>
@@ -32,7 +40,8 @@ function HomepageMessage(props) {
 
 HomepageMessage.propTypes = {
   auth: PropTypes.object,
-  collsCount: PropTypes.number
+  showModal: PropTypes.func,
+  tempUser: PropTypes.object
 };
 
 export default HomepageMessage;

@@ -9,6 +9,7 @@ import renderRoutes from 'react-router-config/renderRoutes';
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
 import { load as loadUser } from 'redux/modules/user';
+import { load as loadTemp } from 'redux/modules/tempUser';
 
 import { UserManagement } from 'containers';
 
@@ -143,7 +144,7 @@ export class App extends Component { // eslint-disable-line
                     <strong className="left-buffer">Oop!</strong>
                   </div>
                   <div className="panel-body">
-                    <p>It borked!</p>
+                    <p>Oops, the page encountered an error.</p>
                   </div>
                 </div>
               </div>
@@ -165,9 +166,14 @@ export class App extends Component { // eslint-disable-line
 const initalData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
-      if(!isAuthLoaded(getState())) {
+      const state = getState();
+
+      if(!isAuthLoaded(state)) {
         return dispatch(loadAuth()).then(
-          (auth) => { return auth.username ? dispatch(loadUser(auth.username)) : undefined; }
+          (auth) => {
+            if (auth.anon && auth.coll_count === 0) return undefined;
+            return auth.anon ? dispatch(loadTemp(auth.username)) : dispatch(loadUser(auth.username));
+          }
         );
       }
 

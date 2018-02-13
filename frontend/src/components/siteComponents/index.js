@@ -4,6 +4,7 @@ export FAQ from './FAQ';
 export Footer from './Footer';
 export NewCollection from './NewCollection';
 export PasswordResetUI from './PasswordResetUI';
+export TempUsageUI from './TempUsageUI';
 export TermsAndPolicies from './TermsAndPolicies';
 export UserManagementUI from './UserManagementUI';
 export UserSettingsUI from './UserSettingsUI';

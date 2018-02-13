@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { login } from 'redux/modules/auth';
+import { showModal } from 'redux/modules/userLogin';
 
 import { UserManagementUI } from 'components/siteComponents';
 
@@ -9,13 +10,15 @@ import { UserManagementUI } from 'components/siteComponents';
 const mapStateToProps = (outerState) => {
   const state = outerState.app;
   return {
-    auth: state.get('auth')
+    auth: state.get('auth'),
+    open: state.getIn(['userLogin', 'open'])
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    loginFn: data => dispatch(login(data))
+    loginFn: data => dispatch(login(data)),
+    showModal: b => dispatch(showModal(b))
   };
 };
 

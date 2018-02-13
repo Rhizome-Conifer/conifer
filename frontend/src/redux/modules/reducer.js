@@ -16,8 +16,10 @@ import recordings from './recordings';
 import remoteBrowsers from './remoteBrowsers';
 import sidebar from './sidebar';
 import sizeCounter from './sizeCounter';
+import tempUser from './tempUser';
 import toolBin from './toolBin';
 import user from './user';
+import userLogin from './userLogin';
 import userSignup from './userSignup';
 
 
@@ -33,8 +35,10 @@ const makeAppReducer = () => combineImmutableReduers({
   remoteBrowsers,
   sidebar,
   sizeCounter,
+  tempUser,
   toolBin,
   user,
+  userLogin,
   userSignup
 });
 

@@ -6,22 +6,25 @@ import { Alert, Button, Col, Form, FormGroup,
 
 import config from 'config';
 
+import { TempUsage } from 'containers';
+
 
 class LoginForm extends Component {
-
   static propTypes = {
+    auth: PropTypes.object,
     cb: PropTypes.func,
-    formError: PropTypes.bool
-  }
-
-  static defaultProps = {
-    formError: false
-  }
+    error: PropTypes.bool
+  };
 
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      moveTemp: false,
+      toColl: '',
+      username: '',
+      password: ''
+    };
   }
 
   save = (evt) => {
@@ -38,11 +41,19 @@ class LoginForm extends Component {
   }
 
   handleChange = (evt) => {
-    this.setState({ [evt.target.name]: evt.target.value });
+    if(evt.target.type === 'checkbox') {
+      if(evt.target.name in this.state)
+        this.setState({ [evt.target.name]: !this.state[evt.target.name] });
+      else
+        this.setState({ [evt.target.name]: true });
+    } else {
+      this.setState({ [evt.target.name]: evt.target.value });
+    }
   }
 
   render() {
-    const { error } = this.props;
+    const { auth, error } = this.props;
+    const { moveTemp, password, toColl, username } = this.state;
 
     return (
       <Row className="wr-login-form">
@@ -57,13 +68,13 @@ class LoginForm extends Component {
             <FormGroup
               key="username">
               <label htmlFor="username" className="sr-only">Username</label>
-              <FormControl onChange={this.handleChange} type="text" id="username" name="username" className="form-control" placeholder="username" required data-error="This is not a valid username. If you forgot your username, please use the 'Forgot password or username' link to reset it." autoFocus />
+              <FormControl onChange={this.handleChange} value={username} type="text" id="username" name="username" className="form-control" placeholder="username" required data-error="This is not a valid username. If you forgot your username, please use the 'Forgot password or username' link to reset it." autoFocus />
               <div className="help-block with-errors" />
             </FormGroup>
 
             <FormGroup key="password">
               <label htmlFor="inputPassword" className="sr-only">Password</label>
-              <FormControl onChange={this.handleChange} type="password" id="password" name="password" className="form-control" placeholder="Password" required />
+              <FormControl onChange={this.handleChange} value={password} type="password" id="password" name="password" className="form-control" placeholder="Password" required />
             </FormGroup>
 
             <FormGroup key="remember">
@@ -71,7 +82,11 @@ class LoginForm extends Component {
               <label htmlFor="remember_me">Stay Logged-In</label>
             </FormGroup>
             {
-              // include 'move_temp_form.html'
+              auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0 &&
+                <TempUsage
+                  handleInput={this.handleChange}
+                  moveTemp={moveTemp}
+                  toColl={toColl} />
             }
             <Button bsSize="lg" bsStyle="primary" type="submit" block>Login</Button>
           </Form>
