@@ -420,9 +420,12 @@ class TestRegisterMigrate(FullStackTests):
         params = {'username': 'someuser',
                   'password': 'Password1'}
 
-        res = self.testapp.post('/_login', params=params)
+        res = self.testapp.post_json('/api/v1/login', params=params)
+        assert res.json == {'anon': False,
+                            'coll_count': 4,
+                            'role': 'archivist',
+                            'username': 'someuser'}
 
-        assert res.headers['Location'] == 'http://localhost:80/someuser'
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def _test_rename_rec(self):
@@ -522,9 +525,13 @@ class TestRegisterMigrate(FullStackTests):
         params = {'username': 'testauto',
                   'password': 'Test12345'}
 
-        res = self.testapp.post('/_login', params=params)
+        res = self.testapp.post_json('/api/v1/login', params=params)
 
-        assert res.headers['Location'] == 'http://localhost:80/testauto'
+        assert res.json == {'anon': False,
+                            'coll_count': 1,
+                            'role': 'archivist',
+                            'username': 'testauto'}
+
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_different_user_default_coll(self):
@@ -562,9 +569,13 @@ class TestRegisterMigrate(FullStackTests):
         params = {'username': 'someuser',
                   'password': 'Password1'}
 
-        res = self.testapp.post('/_login', params=params)
+        res = self.testapp.post_json('/api/v1/login', params=params)
 
-        assert res.headers['Location'] == 'http://localhost:80/someuser'
+        assert res.json == {'anon': False,
+                            'coll_count': 3,
+                            'role': 'archivist',
+                            'username': 'someuser'}
+
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_delete_user_wrong_user(self):
@@ -612,10 +623,10 @@ class TestRegisterMigrate(FullStackTests):
         params = {'username': 'someuser',
                   'password': 'Password1'}
 
-        res = self.testapp.post('/_login', params=params)
+        res = self.testapp.post_json('/api/v1/login', params=params, status=401)
+        assert res.json == {"error": "Invalid Login. Please Try Again"}
 
-        assert self.testapp.cookies.get('__test_sesh', '') != ''
-        assert res.headers['Location'] == 'http://localhost:80/_login'
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_user_settings_error(self):
         res = self.testapp.get('/_settings', status=404)
