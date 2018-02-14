@@ -229,7 +229,6 @@ class UserManager(object):
         except DupeNameException as de:
             return {'error': 'Collection "{0}" already exists'.format(move_info['to_title'])}
 
-        print('remember me', input_data.get('remember_me'))
         remember_me = (input_data.get('remember_me') == '1')
 
         # login session and access system

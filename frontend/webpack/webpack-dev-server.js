@@ -6,8 +6,9 @@ var webpackConfig = require('./dev.config');
 var compiler = webpack(webpackConfig);
 
 const frontendHost = process.env.FRONTEND_HOST ? process.env.FRONTEND_HOST : process.env.APP_HOST;
-var host = frontendHost.split(':', 1) ? frontendHost.split(':', 1)[0] : '0.0.0.0';
-var port = (Number(frontendHost.split(':', 1)[1]) + 1) || 8096;
+const host = frontendHost.includes(':') ? frontendHost.split(':', 1)[0] : '0.0.0.0';
+const port = frontendHost.includes(':') ? (Number(frontendHost.split(':', 1)[1]) + 1) : 8096;
+
 var serverOptions = {
   contentBase: 'http://' + host + ':' + port,
   quiet: true,
