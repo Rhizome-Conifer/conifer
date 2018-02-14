@@ -26,10 +26,10 @@ services:
         build:
             context: ./frontend
 
-        command: bash -c "cd /code; npm run build; npm run docker-prod"
+        env_file:
+            - ./wr.env
 
-        environment:
-            NODE_ENV: production
+        command: sh run.sh
 
         depends_on:
             - app
@@ -41,6 +41,7 @@ services:
         ports:
             - 8080:8080
             - 8095:8095
+            - 8096:8096 # for HMR on dev
 
     recorder:
         build: ./webrecorder

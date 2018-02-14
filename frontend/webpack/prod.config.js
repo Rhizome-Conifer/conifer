@@ -137,11 +137,15 @@ module.exports = {
       filename: '[name]-[chunkhash].css',
       allChunks: true
     }),
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: '"production"'
-      },
 
+    new webpack.EnvironmentPlugin([
+      'NODE_ENV',
+      'APP_HOST',
+      'CONTENT_HOST',
+      'FRONTEND_HOST'
+    ]),
+
+    new webpack.DefinePlugin({
       __CLIENT__: true,
       __SERVER__: false,
       __DEVELOPMENT__: false,

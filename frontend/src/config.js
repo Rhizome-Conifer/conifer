@@ -8,8 +8,7 @@ require('babel-polyfill');
  * example contents:
  *
  * module.exports = {
- *   devApi: 'http://localhost:8089',
- *   prodApi: 'http://localhost:8080',
+ *   apiEndpoint: 'http://localhost:8089',
  *   appHost: 'http://localhost:3000',
  *   contentHost: 'http://localhost:8089',
  *   defaultRecordingTitle: "Session"
@@ -24,26 +23,17 @@ try {
   localSettings = {};
 }
 
-const environment = {
-  development: {
-    isProduction: false
-  },
-  production: {
-    isProduction: true
-  }
-}[process.env.NODE_ENV || 'development'];
+const frontendHost = process.env.FRONTEND_HOST ? process.env.FRONTEND_HOST : process.env.APP_HOST;
 
 module.exports = Object.assign({
-  host: process.env.HOST || '0.0.0.0',
-  port: process.env.PORT,
-  devApi: '',
-  prodApi: '',
-  appHost: '',
-  contentHost: '',
+  apiProxy: true,
+  port: frontendHost.split(':').length ? frontendHost.split(':')[1] : 8089,
+  apiEndpoint: `http://${frontendHost}`,
+  appHost: `http://${frontendHost}`,
+  contentHost: `http://${process.env.CONTENT_HOST}`,
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,
-  apiProxy: false,
   product: 'Webrecorder',
   defaultRecordingTitle: 'Recording Session',
   defaultCollectionTitle: 'New Collection',
@@ -73,4 +63,4 @@ module.exports = Object.assign({
     }
   },
 
-}, environment, localSettings);
+}, {}, localSettings);

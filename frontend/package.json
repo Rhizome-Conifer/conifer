@@ -108,12 +108,11 @@
     "stats": "NODE_ENV=\"production\" webpack --config ./webpack/prod.config.js --json --profile > stats.json",
     "build": "better-npm-run build",
     "test": "jest --watch --env=jsdom",
-    "prod": "concurrently --kill-others \"npm run start-prod\"",
-    "start-prod": "better-npm-run start-prod",
-    "dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-dev\"",
+    "dev": "concurrently --kill-others \"npm run watch-client-local\" \"npm run start-dev\"",
     "docker-dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-docker-dev\"",
     "docker-prod": "concurrently --kill-others \"npm run start-docker-prod\"",
     "watch-client": "better-npm-run watch-client",
+    "watch-client-local": "better-npm-run watch-client-local",
     "start-dev": "better-npm-run start-dev",
     "start-docker-dev": "better-npm-run start-docker-dev",
     "start-docker-prod": "better-npm-run start-docker-prod"
@@ -125,52 +124,46 @@
         "NODE_ENV": "production"
       }
     },
-    "start-prod": {
-      "command": "node ./bin/server.js",
-      "env": {
-        "NODE_PATH": "./src",
-        "NODE_ENV": "production",
-        "PORT": 8095,
-        "INTERNAL_HOST": "localhost",
-        "INTERNAL_PORT": "8089"
-      }
-    },
     "start-dev": {
       "command": "node ./bin/server.js",
       "env": {
         "NODE_PATH": "./src",
         "NODE_ENV": "development",
-        "PORT": 3000,
+        "FRONTEND_HOST": "localhost:8095",
+        "APP_HOST": "localhost:8089",
+        "CONTENT_HOST": "localhost:8089",
         "INTERNAL_HOST": "localhost",
-        "INTERNAL_PORT": "8089"
+        "INTERNAL_PORT": 8089
       }
     },
     "start-docker-dev": {
       "command": "node ./bin/server.js",
       "env": {
-        "NODE_PATH": "./src",
-        "NODE_ENV": "development",
-        "PORT": 3000,
-        "INTERNAL_HOST": "nginx",
-        "INTERNAL_PORT": "80"
+        "NODE_PATH": "./src"
       }
     },
     "start-docker-prod": {
       "command": "node ./bin/server.js",
       "env": {
+        "NODE_PATH": "./src"
+      }
+    },
+    "watch-client-local": {
+      "command": "node webpack/webpack-dev-server.js",
+      "env": {
+        "NODE_ENV": "development",
+        "UV_THREADPOOL_SIZE": 100,
         "NODE_PATH": "./src",
-        "NODE_ENV": "production",
-        "PORT": 8095,
-        "INTERNAL_HOST": "nginx",
-        "INTERNAL_PORT": "80"
+        "FRONTEND_HOST": "localhost:8095",
+        "APP_HOST": "localhost:8089",
+        "CONTENT_HOST": "localhost:8089"
       }
     },
     "watch-client": {
       "command": "node webpack/webpack-dev-server.js",
       "env": {
         "UV_THREADPOOL_SIZE": 100,
-        "NODE_PATH": "./src",
-        "PORT": 3000
+        "NODE_PATH": "./src"
       }
     }
   },

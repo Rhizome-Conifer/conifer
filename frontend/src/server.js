@@ -111,7 +111,7 @@ if (config.port) {
       console.error(err);
     }
     console.info('----\n==> ✅  %s is running, talking to API server on %s.', config.app.title, config.internalApiPort);
-    console.info('==> 💻  Open http://%s:%s in a browser to view the app.', config.host, config.port);
+    console.info('==> 💻  Open http://%s:%s in a browser to view the app.', config.appHost);
   });
 } else {
   console.error('==>     ERROR: No PORT environment variable has been specified');
