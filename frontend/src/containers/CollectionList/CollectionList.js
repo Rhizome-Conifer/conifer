@@ -30,7 +30,7 @@ const mapStateToProps = ({ app }) => {
   return {
     auth: app.get('auth'),
     collections: app.get('collections'),
-    orderedCollections: sortCollsByCreatedAt(app),
+    orderedCollections: app.getIn(['collections', 'loaded']) ? sortCollsByCreatedAt(app) : null,
     user: app.get('user')
   };
 };

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 import { createSearchAction } from 'redux-search';
+import { Map } from 'immutable';
 
 import { truncate } from 'helpers/utils';
 import { load as loadColl } from 'redux/modules/collection';
@@ -65,14 +66,15 @@ const initialData = [
 
 const mapStateToProps = (outerState) => {
   const { app } = outerState;
-  const { bookmarkFeed, searchText } = bookmarkSearchResults(outerState);
-  const isIndexing = !bookmarkFeed.size && app.getIn(['collection', 'bookmarks']).size && !searchText;
+  const isLoaded = app.getIn(['collection', 'loaded']);
+  const { bookmarkFeed, searchText } = isLoaded ? bookmarkSearchResults(outerState) : { bookmarkFeed: Map(), searchText: '' };
+  const isIndexing = isLoaded && !bookmarkFeed.size && app.getIn(['collection', 'bookmarks']).size && !searchText;
 
   return {
     auth: app.get('auth'),
     collection: app.get('collection'),
     browsers: app.get('remoteBrowsers'),
-    recordings: getOrderedRecordings(app),
+    recordings: isLoaded ? getOrderedRecordings(app) : null,
     bookmarks: isIndexing ? getOrderedBookmarks(app) : bookmarkFeed,
     searchText
   };

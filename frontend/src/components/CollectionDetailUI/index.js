@@ -194,6 +194,11 @@ class CollectionDetailUI extends Component {
             selectedSession, selectedGroupedBookmark, selectedGroupedBookmarkIdx,
             selectedRec } = this.state;
 
+    // don't render until loaded
+    if (!collection.get('loaded')) {
+      return null;
+    }
+
     return (
       <div className="wr-coll-detail">
         <header>

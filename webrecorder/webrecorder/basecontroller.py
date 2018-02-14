@@ -33,6 +33,8 @@ class BaseController(object):
         if not host:
             host = self.app_host
 
+        print(host, request.environ.get('HTTP_HOST'))
+        return
         if not host or request.environ.get('HTTP_HOST') == host:
             return
 

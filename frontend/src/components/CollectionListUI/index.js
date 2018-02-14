@@ -102,7 +102,7 @@ class CollectionListUI extends Component {
         </Row>
 
         {
-          collections &&
+          collections && collections.get('loaded') &&
             <Row>
               <ul className="list-group collection-list">
                 {

@@ -69,9 +69,13 @@ class Replay extends Component {
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
 
-    const shareUrl = `${config.host}${params.user}/${params.coll}/${tsMod}/${url}`;
+    const shareUrl = `${config.appHost}${params.user}/${params.coll}/${tsMod}/${url}`;
     const appPrefix = `${config.appHost}/${params.user}/${params.coll}/`;
     const contentPrefix = `${config.contentHost}/${params.user}/${params.coll}/`;
+
+    if (!collection.get('loaded')) {
+      return null;
+    }
 
     return (
       <React.Fragment>
@@ -164,7 +168,7 @@ const mapStateToProps = ({ app }) => {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     auth: app.get('auth'),
     collection: app.get('collection'),
-    recording: getRecording(app),
+    recording: app.getIn(['recordings', 'loaded']) ? getRecording(app) : null,
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
     sidebarResize: app.getIn(['sidebar', 'resizing']),
     timestamp: app.getIn(['controls', 'timestamp']),

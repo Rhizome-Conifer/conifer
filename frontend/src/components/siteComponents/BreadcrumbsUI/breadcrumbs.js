@@ -5,7 +5,7 @@ import { defaultRecordingTitle } from 'config';
 
 export const collList = ({ match }) => match.params.user;
 
-const collDetail = ({ collection }) => collection.get('title');
+const collDetail = ({ collection }) => { return collection.get('loaded') ? collection.get('title') : ''; };
 export const collDetailBookmark = connect(
   ({ app }) => {
     return {
