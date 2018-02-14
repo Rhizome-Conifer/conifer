@@ -30,7 +30,13 @@ class LoginForm extends Component {
   save = (evt) => {
     evt.preventDefault();
 
-    this.props.cb(this.state);
+    const stateData = this.state;
+
+    if (stateData.hasOwnProperty('remember_me')) {
+      stateData.remember_me = String(Number(stateData.remember_me));
+    }
+
+    this.props.cb(stateData);
   }
 
   validateUsername = () => {

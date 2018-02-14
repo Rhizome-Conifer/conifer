@@ -8,8 +8,8 @@ var webpack = require('webpack');
 var assetsPath = path.resolve(__dirname, '../static/dist');
 
 const frontendHost = process.env.FRONTEND_HOST ? process.env.FRONTEND_HOST : process.env.APP_HOST;
-const host = frontendHost.includes(':') ? frontendHost.split(':', 1)[0] : '0.0.0.0';
-const port = frontendHost.includes(':') ? (Number(frontendHost.split(':', 1)[1]) + 1) : 8096;
+const host = frontendHost.includes(':') ? frontendHost.split(':', 2)[0] : '0.0.0.0';
+const port = frontendHost.includes(':') ? (Number(frontendHost.split(':', 2)[1]) + 1) : 8096;
 
 // https://github.com/halt-hammerzeit/webpack-isomorphic-tools
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');

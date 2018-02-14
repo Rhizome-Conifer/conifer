@@ -56,7 +56,8 @@
     "quotes": 1,
     "no-underscore-dangle": 0,
     "react/jsx-first-prop-new-line": 1,
-    "jsx-a11y/href-no-hash": 1
+    "jsx-a11y/href-no-hash": 1,
+    "no-prototype-builtins": 1
   },
   "plugins": [
     "react", "import"

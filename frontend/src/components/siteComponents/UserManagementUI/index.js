@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 import Modal from 'components/Modal';
 
-import LoginForm from './forms';
+import LoginForm from './loginForm';
 import './style.scss';
 
 class UserManagementUI extends Component {
