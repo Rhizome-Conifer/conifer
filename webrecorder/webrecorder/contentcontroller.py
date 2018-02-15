@@ -135,6 +135,21 @@ class ContentController(BaseController, RewriterApp):
             wb_url = self.add_query(wb_url)
             return self.do_create_new_and_redir(coll_name, rec_name, wb_url, 'record')
 
+        # API NEW
+        @self.app.post('/api/v1/new')
+        def api_create_new():
+            url = request.json.get('url')
+            coll = request.json.get('coll')
+            mode = request.json.get('mode')
+
+            is_content = request.json.get('is_content')
+            ts = request.json.get('ts')
+            browser = request.json.get('browser')
+
+            wb_url = self.construct_wburl(url, ts, browser, is_content)
+
+            return {'url': self.do_create_new(coll, '', wb_url, mode)}
+
         # COOKIES
         @self.app.get(['/<user>/<coll_name>/$add_cookie'], method='POST')
         def add_cookie(user, coll_name):
@@ -388,6 +403,10 @@ class ContentController(BaseController, RewriterApp):
         return mode, new_url
 
     def do_create_new_and_redir(self, coll_name, rec_name, wb_url, mode):
+        new_url = self.do_create_new(coll_name, rec_name, wb_url, mode)
+        return self.redirect(new_url)
+
+    def do_create_new(self, coll_name, rec_name, wb_url, mode):
         if mode == 'record':
             result = self.check_remote_archive(wb_url, mode)
             if result:
@@ -426,7 +445,7 @@ class ContentController(BaseController, RewriterApp):
                                                              rec=recording.name,
                                                              mode=mode,
                                                              url=wb_url)
-        return self.redirect(new_url)
+        return new_url
 
     def is_content_request(self):
         if not self.content_host:
@@ -440,7 +459,7 @@ class ContentController(BaseController, RewriterApp):
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
     def _create_new_rec(self, collection, title, mode):
-        rec_name = self.sanitize_title(title)
+        rec_name = self.sanitize_title(title) if title else ''
         rec_type = 'patch' if mode == 'patch' else None
         return collection.create_recording(rec_name, desc=title, rec_type=rec_type)
 
@@ -863,6 +882,19 @@ class ContentController(BaseController, RewriterApp):
         info['size_remaining'] = user.get_size_remaining()
 
         return info
+
+    def construct_wburl(self, url, ts, browser, is_content):
+        prefix = ts or ''
+
+        if browser:
+            prefix += '$br:' + browser
+        elif is_content:
+            prefix += 'mp_'
+
+        if prefix:
+            return prefix + '/' + url
+        else:
+            return url
 
 
 
