@@ -10,7 +10,8 @@ function formatUrl(path) {
     return `http://${config.internalApiHost}:${config.internalApiPort}${adjustedPath}`;
   }
   // client side use external network
-  return `${config.apiEndpoint}${adjustedPath}`;
+  //return `${config.apiEndpoint}${adjustedPath}`;
+  return `${adjustedPath}`;
 }
 
 export default class ApiClient {
