@@ -138,17 +138,28 @@ class ContentController(BaseController, RewriterApp):
         # API NEW
         @self.app.post('/api/v1/new')
         def api_create_new():
+            self.redir_host()
+
             url = request.json.get('url')
             coll = request.json.get('coll')
             mode = request.json.get('mode')
 
-            is_content = request.json.get('is_content')
-            ts = request.json.get('ts')
             browser = request.json.get('browser')
+            is_content = request.json.get('is_content') and not browser
+            ts = request.json.get('ts')
 
             wb_url = self.construct_wburl(url, ts, browser, is_content)
 
-            return {'url': self.do_create_new(coll, '', wb_url, mode)}
+            host = self.content_host if is_content else self.app_host
+            if not host:
+                host = self.get_host()
+
+            print(host)
+
+            full_url = request.environ['wsgi.url_scheme'] + '://' + host
+            full_url += self.do_create_new(coll, '', wb_url, mode)
+
+            return {'url': full_url}
 
         # COOKIES
         @self.app.get(['/<user>/<coll_name>/$add_cookie'], method='POST')
