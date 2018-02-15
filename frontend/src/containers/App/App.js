@@ -53,9 +53,9 @@ export class App extends Component { // eslint-disable-line
     return {
       isAnon: auth.getIn(['user', 'anon']),
       metadata: {
-        product: 'Webrecorder',
+        product: config.product,
         type: 'hosted',
-        host: 'http://localhost:3000/'
+        host: config.appHost
       }
     };
   }

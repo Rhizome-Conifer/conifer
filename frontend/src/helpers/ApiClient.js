@@ -9,8 +9,7 @@ function formatUrl(path) {
     // on the server use internal network
     return `http://${config.internalApiHost}:${config.internalApiPort}${adjustedPath}`;
   }
-  // client side use external network
-  //return `${config.apiEndpoint}${adjustedPath}`;
+  // client side use current host
   return `${adjustedPath}`;
 }
 

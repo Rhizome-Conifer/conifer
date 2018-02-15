@@ -39,8 +39,6 @@ services:
             - /code/node_modules
 
         ports:
-            - 8080:8080
-            - 8095:8095
             - 8096:8096 # for HMR on dev
 
     recorder:
@@ -84,7 +82,7 @@ services:
             - ./webrecorder/:/code/
 
         ports:
-            - "8089:80"
+            - 8089:80
 
     shepherd:
         image: oldwebtoday/shepherd
@@ -121,7 +119,7 @@ services:
             - ./wr.env
 
         ports:
-            - "6379:6379"
+            - 6379:6379
 
         volumes:
             - ./data:/data

@@ -129,8 +129,7 @@
       "env": {
         "NODE_PATH": "./src",
         "NODE_ENV": "development",
-        "FRONTEND_HOST": "localhost:8095",
-        "APP_HOST": "localhost:8089",
+        "FRONTEND_PORT": 8095,
         "CONTENT_HOST": "localhost:8089",
         "INTERNAL_HOST": "localhost",
         "INTERNAL_PORT": 8089
@@ -154,8 +153,7 @@
         "NODE_ENV": "development",
         "UV_THREADPOOL_SIZE": 100,
         "NODE_PATH": "./src",
-        "FRONTEND_HOST": "localhost:8095",
-        "APP_HOST": "localhost:8089",
+        "FRONTEND_PORT": 8095,
         "CONTENT_HOST": "localhost:8089"
       }
     },

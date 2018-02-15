@@ -41,7 +41,7 @@ class WebSocketHandler {
   initWS = () => {
     console.log('init ws', this.reqUrl);
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    let url = `${wsProtocol}${this.host ? this.host : stripProtocol(config.apiEndpoint)}/${this.wsEndpoint}?user=${this.user}&coll=${this.coll}`;
+    let url = `${wsProtocol}${this.host ? this.host : ''}/${this.wsEndpoint}?user=${this.user}&coll=${this.coll}`;
 
     if(this.rec && this.rec !== '*') {
       url += `&rec=${this.rec}`;

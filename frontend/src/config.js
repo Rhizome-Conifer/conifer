@@ -8,7 +8,6 @@ require('babel-polyfill');
  * example contents:
  *
  * module.exports = {
- *   apiEndpoint: 'http://localhost:8089',
  *   appHost: 'http://localhost:3000',
  *   contentHost: 'http://localhost:8089',
  *   defaultRecordingTitle: "Session"
@@ -23,13 +22,13 @@ try {
   localSettings = {};
 }
 
-const frontendHost = process.env.FRONTEND_HOST ? process.env.FRONTEND_HOST : process.env.APP_HOST;
+// custom app domain or localhost default port mapping
+const appHost = process.env.APP_HOST ? process.env.APP_HOST : `localhost:8089`;
 
 module.exports = Object.assign({
-  apiProxy: true,
-  port: frontendHost.split(':').length ? frontendHost.split(':')[1] : 8089,
-  apiEndpoint: `http://${frontendHost}`,
-  appHost: `http://${frontendHost}`,
+  apiProxy: false,
+  port: process.env.FRONTEND_PORT || 8095,
+  appHost: `http://${appHost}`,
   contentHost: `http://${process.env.CONTENT_HOST}`,
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,

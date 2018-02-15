@@ -141,8 +141,8 @@ module.exports = {
     new webpack.EnvironmentPlugin([
       'NODE_ENV',
       'APP_HOST',
-      'CONTENT_HOST',
-      'FRONTEND_HOST'
+      'FRONTEND_PORT',
+      'CONTENT_HOST'
     ]),
 
     new webpack.DefinePlugin({

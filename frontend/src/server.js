@@ -38,7 +38,7 @@ const bypassUrls = [
 app.use(express.static(path.join(__dirname, '..', 'static')));
 
 // proxy api and other urls on localhost
-if (__DEVELOPMENT__ || baseUrl.indexOf('localhost') !== -1 || config.apiProxy) {
+if (config.apiProxy) {
   app.use('/shared', express.static(path.join(__dirname, 'shared')));
 
   // Proxy client API requets to server for now to avoid CORS
@@ -46,7 +46,6 @@ if (__DEVELOPMENT__ || baseUrl.indexOf('localhost') !== -1 || config.apiProxy) {
     target: baseUrl,
     logLevel: 'debug',
     ws: true,
-    changeOrigin: true,
     headers: { 'X-Forwarded-Host': stripProtocol(config.appHost) }
   }));
 }
@@ -111,7 +110,7 @@ if (config.port) {
       console.error(err);
     }
     console.info('----\n==> ✅  %s is running, talking to API server on %s.', config.app.title, config.internalApiPort);
-    console.info('==> 💻  Open http://%s:%s in a browser to view the app.', config.appHost);
+    console.info('==> 💻  Open %s in a browser to view the app.', config.appHost);
   });
 } else {
   console.error('==>     ERROR: No PORT environment variable has been specified');
