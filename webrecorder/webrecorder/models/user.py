@@ -142,7 +142,7 @@ class User(RedisNamedContainer):
     def get_size_allotment(self):
         max_size = self.redis.hmget(self.info_key, 'max_size')
 
-        if max_size:
+        if max_size and max_size[0]:
             return int(max_size[0])
 
         return self.MAX_USER_SIZE
