@@ -60,10 +60,10 @@ class RemoteBrowserSelectUI extends Component {
     if (active) {
       const { user, coll, rec } = params;
 
-      if (currMode.indexOf('replay') !== -1) {
+      if (currMode.includes('replay')) {
         this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
       } else if (['patch', 'record'].includes(currMode)) {
-        this.context.router.history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id)}/${url}`);
+        this.context.router.history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id, '', '/')}${url}`);
       } else if (['extract', 'extract_only'].includes(currMode)) {
         // TODO: extract route
       }

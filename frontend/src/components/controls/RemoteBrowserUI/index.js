@@ -125,8 +125,13 @@ class RemoteBrowserUI extends Component {
   }
 
   componentWillUnmount() {
-    this.cb.close();
-    this.socket.close();
+    if (this.cb) {
+      this.cb.close();
+    }
+
+    if (this.socket) {
+      this.socket.close();
+    }
   }
 
   onCountdown = (seconds, countdownText) => {

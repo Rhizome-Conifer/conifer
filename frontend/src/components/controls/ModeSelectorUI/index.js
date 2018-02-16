@@ -65,7 +65,7 @@ class ModeSelectorUI extends PureComponent {
     const recording = rec && !rec.startsWith('patch') ? rec : encodeURIComponent(config.defaultRecordingTitle);
     const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
 
-    window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(rbId, '/')}${url}`;
+    window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(rbId, '', '/')}${url}`;
   }
 
   onStaticCopy = () => {

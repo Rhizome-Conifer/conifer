@@ -50,9 +50,9 @@ class NewRecordingUI extends Component {
 
     if (extractable) {
       const extractMode = `${extractable.get('allSources') ? 'extract' : 'extract_only'}:${extractable.get('id')}`;
-      window.location = `/_new/${collId}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(remoteBrowserSelected, extractable.get('timestamp'))}/${extractable.get('targetUrl')}`;
+      window.location = `/_new/${collId}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(remoteBrowserSelected, extractable.get('timestamp'), '/')}${extractable.get('targetUrl')}`;
     } else {
-      window.location = `/_new/${collId}/${cleanRecordingTitle}/record/${remoteBrowserMod(remoteBrowserSelected, null, '/')}${cleanUrl}`;
+      window.location = `/_new/${collId}/${cleanRecordingTitle}/record/${remoteBrowserMod(remoteBrowserSelected, '', '/')}${cleanUrl}`;
     }
   }
 

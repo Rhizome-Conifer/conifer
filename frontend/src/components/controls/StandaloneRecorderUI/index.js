@@ -53,9 +53,9 @@ class StandaloneRecorderUI extends Component {
 
     if (extractable) {
       const extractMode = `${extractable.get('allSources') ? 'extract' : 'extract_only'}:${extractable.get('id')}${extractable.get('targetColl') ? `:${extractable.get('targetColl')}` : ''}`;
-      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(selectedBrowser, extractable.get('timestamp'))}/${extractable.get('targetUrl')}`;
+      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(selectedBrowser, extractable.get('timestamp'), '/')}${extractable.get('targetUrl')}`;
     } else {
-      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/record/${remoteBrowserMod(selectedBrowser)}/${cleanUrl}`;
+      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/record/${remoteBrowserMod(selectedBrowser, '', '/')}${cleanUrl}`;
     }
   }
 
