@@ -130,14 +130,3 @@ class TestCreateNewSameDomain(FullStackTests):
         res = self.testapp.get(res.json['url'], status=200)
         assert '"food": "bar"' in res.text, res.text
 
-    def test_api_new_content_with_prefix(self):
-        params = {'coll': 'temp',
-                  'url':  'http://httpbin.org/get?food=bar',
-                  'mode': 'record',
-                  'is_content': True,
-                  'prefix': '_',
-                 }
-
-        res = self.testapp.post_json('/api/v1/new', params=params)
-        assert res.json['url'].startswith('http://localhost:80/_/{0}/temp/rec-'.format(self.anon_user))
-

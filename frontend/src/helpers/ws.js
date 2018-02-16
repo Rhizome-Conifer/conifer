@@ -21,7 +21,7 @@ class WebSocketHandler {
     this.dispatch = dispatch;
     this.lastPopUrl = undefined;
     this.params = params;
-    this.host = host;
+    this.host = host || window.location.host;
 
     this.isProxy = false;
     this.isRemoteBrowser = remoteBrowser;

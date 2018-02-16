@@ -25,11 +25,15 @@ try {
 // custom app domain or localhost default port mapping
 const appHost = process.env.APP_HOST ? process.env.APP_HOST : `localhost:8089`;
 
+// custom content domain or localhost default port mapping
+const contentHost = process.env.CONTENT_HOST ? process.env.CONTENT_HOST : `localhost:8092`;
+
+
 module.exports = Object.assign({
   apiProxy: false,
   port: process.env.FRONTEND_PORT || 8095,
   appHost: `http://${appHost}`,
-  contentHost: `http://${process.env.CONTENT_HOST}`,
+  contentHost: `http://${contentHost}`,
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,

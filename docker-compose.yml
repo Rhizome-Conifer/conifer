@@ -83,6 +83,7 @@ services:
 
         ports:
             - 8089:80
+            - 8092:81
 
     shepherd:
         image: oldwebtoday/shepherd

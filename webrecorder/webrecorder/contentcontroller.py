@@ -143,7 +143,6 @@ class ContentController(BaseController, RewriterApp):
             url = request.json.get('url')
             coll = request.json.get('coll')
             mode = request.json.get('mode')
-            prefix = request.json.get('prefix')
 
             browser = request.json.get('browser')
             is_content = request.json.get('is_content') and not browser
@@ -156,9 +155,6 @@ class ContentController(BaseController, RewriterApp):
                 host = request.urlparts.netloc
 
             full_url = request.environ['wsgi.url_scheme'] + '://' + host
-            if prefix:
-                full_url += '/' + prefix
-
             full_url += self.do_create_new(coll, '', wb_url, mode)
 
             return {'url': full_url}

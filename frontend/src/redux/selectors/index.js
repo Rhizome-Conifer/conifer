@@ -223,7 +223,7 @@ export const getActiveRemoteBrowser = createSelector(
 export const getBookmarkCount = createSelector(
   [getBookmarks],
   (bookmarks) => {
-    return bookmarks.size;
+    return (bookmarks ? bookmarks.size : 0);
   }
 );
 
