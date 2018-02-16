@@ -3,7 +3,7 @@ version: '2'
 services:
     app:
         build: ./webrecorder
-        command: uwsgi /code/apps/frontend.ini
+        command: uwsgi /code/apps/apiapp.ini
 
         env_file:
             - ./wr.env
