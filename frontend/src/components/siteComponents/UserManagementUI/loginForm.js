@@ -13,7 +13,8 @@ class LoginForm extends Component {
   static propTypes = {
     auth: PropTypes.object,
     cb: PropTypes.func,
-    error: PropTypes.bool
+    error: PropTypes.bool,
+    closeLogin: PropTypes.func
   };
 
   constructor(props) {
@@ -58,7 +59,7 @@ class LoginForm extends Component {
   }
 
   render() {
-    const { auth, error } = this.props;
+    const { auth, closeLogin, error } = this.props;
     const { moveTemp, password, toColl, username } = this.state;
 
     return (
@@ -96,7 +97,7 @@ class LoginForm extends Component {
             }
             <Button bsSize="lg" bsStyle="primary" type="submit" block>Login</Button>
           </Form>
-          <p><Link to="/_forgot" target="_top">Forgot password or username?</Link></p>
+          <p><Link to="/_forgot" onClick={closeLogin}>Forgot password or username?</Link></p>
         </Col>
       </Row>
     );

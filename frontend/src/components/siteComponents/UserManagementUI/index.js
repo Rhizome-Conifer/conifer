@@ -66,7 +66,7 @@ class UserManagementUI extends Component {
     const { formError } = this.state;
 
     const collCount = auth.getIn(['user', 'coll_count']);
-    const form = <LoginForm auth={auth} cb={this.save} error={formError} />;
+    const form = <LoginForm auth={auth} cb={this.save} error={formError} closeLogin={this.closeLogin} />;
     const username = auth.getIn(['user', 'username']);
     const isAnon = auth.getIn(['user', 'anon']);
 

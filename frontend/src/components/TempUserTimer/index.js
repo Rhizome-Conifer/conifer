@@ -25,10 +25,21 @@ class TempUserTimer extends Component {
 
   componentDidMount() {
     this.timer = setInterval(this.tick, 1000);
+
+    // sync timer on tab focus
+    window.addEventListener('focus', this.syncTimer);
   }
 
   componentWillUnmount() {
     clearInterval(this.timer);
+    window.removeEventListener('focus', this.syncTimer);
+  }
+
+  syncTimer = () => {
+    const { ttl, accessed } = this.props;
+    this.setState({
+      ttl: parseInt(ttl, 10) - parseInt((Date.now() - accessed) / 1000, 10)
+    });
   }
 
   tick = () => {
@@ -36,10 +47,14 @@ class TempUserTimer extends Component {
     const min = Math.max(0, Math.floor(ttl / 60));
     const sec = ttl % 60;
 
+    if (ttl < 0) {
+      clearInterval(this.timer);
+    }
+
     this.setState({
       min: String(min).padStart(2, '0'),
       sec: String(sec).padStart(2, '0'),
-      ttl: ttl - 1
+      ttl: Math.max(0, ttl - 1)
     });
   }
 
