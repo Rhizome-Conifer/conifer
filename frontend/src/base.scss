@@ -150,3 +150,15 @@ body {
 .no-shadow {
   box-shadow: none;
 }
+
+.button-link {
+    border: none;
+    background: none;
+    padding: 0;
+    color: $link;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

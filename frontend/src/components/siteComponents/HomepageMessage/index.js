@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 
 import TempUserTimer from 'components/TempUserTimer';
 
-import './style.scss';
-
 
 function HomepageMessage(props) {
   const { auth, showModal, tempUser } = props;
@@ -24,7 +22,7 @@ function HomepageMessage(props) {
             <div className="top-buffer-md">
               <ul>
                 <li>
-                  <Link to="/_register"><strong>Sign Up</strong></Link> or <button onClick={showModalCB}>Login</button> to keep your collection and give it a permanent address.
+                  <Link to="/_register"><strong>Sign Up</strong></Link> or <button className="button-link" onClick={showModalCB}>Login</button> to keep your collection and give it a permanent address.
                 </li>
                 <li>
                   Continue recording by entering another URL below and clicking <b>Record</b>

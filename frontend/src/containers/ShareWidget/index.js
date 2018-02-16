@@ -4,8 +4,10 @@ import { connect } from 'react-redux';
 
 import { remoteBrowserMod } from 'helpers/utils';
 import { setPublic } from 'redux/modules/collection';
+import { showModal } from 'redux/modules/userLogin';
 
 import { ShareWidgetUI } from 'components/controls';
+
 
 class ShareWidget extends Component {
 
@@ -24,7 +26,7 @@ class ShareWidget extends Component {
 
   render() {
     const { activeBrowser, metadata: { host } } = this.context;
-    const { collection, params: { user, coll }, timestamp, url } = this.props;
+    const { collection, params: { user, coll }, showLoginModal, timestamp, url } = this.props;
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
 
@@ -38,7 +40,8 @@ class ShareWidget extends Component {
         setPublic={this.props.setCollPublic}
         collection={collection}
         shareUrl={shareUrl}
-        embedUrl={embedUrl} />
+        embedUrl={embedUrl}
+        showLoginModal={showLoginModal} />
     );
   }
 }
@@ -54,7 +57,8 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    setCollPublic: (collId, user) => dispatch(setPublic(collId, user))
+    setCollPublic: (collId, user) => dispatch(setPublic(collId, user)),
+    showLoginModal: () => dispatch(showModal(true))
   };
 };
 

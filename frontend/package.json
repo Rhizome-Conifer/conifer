@@ -130,7 +130,7 @@
         "NODE_PATH": "./src",
         "NODE_ENV": "development",
         "FRONTEND_PORT": 8095,
-        "CONTENT_HOST": "localhost:8089",
+        "CONTENT_HOST": "localhost:8092",
         "INTERNAL_HOST": "localhost",
         "INTERNAL_PORT": 8089
       }
@@ -154,7 +154,7 @@
         "UV_THREADPOOL_SIZE": 100,
         "NODE_PATH": "./src",
         "FRONTEND_PORT": 8095,
-        "CONTENT_HOST": "localhost:8089"
+        "CONTENT_HOST": "localhost:8092"
       }
     },
     "watch-client": {

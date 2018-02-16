@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { fromJS } from 'immutable';
 import Toggle from 'react-toggle';
+import { fromJS } from 'immutable';
+import { Link } from 'react-router-dom';
 
 import OutsideClick from 'components/OutsideClick';
 import { ShareIcon } from 'components/icons';
@@ -24,7 +25,8 @@ class ShareWidgetUI extends Component {
     embedUrl: PropTypes.string,
     isPublic: PropTypes.bool,
     setPublic: PropTypes.func,
-    shareUrl: PropTypes.string
+    shareUrl: PropTypes.string,
+    showLoginModal: PropTypes.func,
   };
 
   static defaultProps = fromJS({
@@ -146,7 +148,7 @@ class ShareWidgetUI extends Component {
 
   render() {
     const { canAdmin, isAnon } = this.context;
-    const { bsSize, collection, embedUrl, isPublic, shareUrl } = this.props;
+    const { bsSize, collection, embedUrl, isPublic, shareUrl, showLoginModal } = this.props;
     const { open, sizeSet, widgetHeight } = this.state;
 
     const shareClasses = classNames('share-container', { open });
@@ -174,7 +176,7 @@ class ShareWidgetUI extends Component {
                   {
                     isAnon ?
                       <p className="make-public-desc">
-                        This is a temporary collection. To preserve and share, <a href="/_register" target="_parent">Sign Up</a> or <a className="login-link" href="/_login_modal">Login</a>.
+                        This is a temporary collection. To preserve and share, <Link to="/_register">Sign Up</Link> or <button className="button-link" onClick={showLoginModal}>Login</button>.
                       </p> :
                       <div>
                         <p className="make-public-desc">
