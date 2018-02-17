@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import config from 'config';
 
-import { remoteBrowserMod } from 'helpers/utils';
+import { apiFetch, remoteBrowserMod } from 'helpers/utils';
 
 import OutsideClick from 'components/OutsideClick';
 import { PatchIcon, SnapshotIcon } from 'components/icons';
@@ -55,7 +55,24 @@ class ModeSelectorUI extends PureComponent {
     const { params: { coll }, remoteBrowserSelected, ts, url } = this.props;
 
     const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
-    window.location = `/_new/${coll}/Patch/patch/${remoteBrowserMod(rbId, ts, '/')}${url}`;
+    // window.location = `/_new/${coll}/Patch/patch/${remoteBrowserMod(rbId, ts, '/')}${url}`;
+    // data to create new recording
+    const data = {
+      url,
+      coll,
+      ts,
+      mode: 'patch'
+    };
+
+    // add remote browser
+    if (rbId) {
+      data.browser = rbId;
+    }
+    // generate recording url
+    apiFetch('/new', data, { method: 'POST' })
+      .then(res => res.json())
+      .then(({ url }) => this.context.router.history.push(url.replace(config.appHost, '')))
+      .catch(err => console.log('error', err));
   }
 
   onRecord = () => {
@@ -65,7 +82,23 @@ class ModeSelectorUI extends PureComponent {
     const recording = rec && !rec.startsWith('patch') ? rec : encodeURIComponent(config.defaultRecordingTitle);
     const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
 
-    window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(rbId, '', '/')}${url}`;
+    //window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(rbId, '', '/')}${url}`;
+
+    const data = {
+      url,
+      coll,
+      mode: 'record'
+    };
+
+    // add remote browser
+    if (rbId) {
+      data.browser = rbId;
+    }
+    // generate recording url
+    apiFetch('/new', data, { method: 'POST' })
+      .then(res => res.json())
+      .then(({ url }) => this.context.router.history.push(url.replace(config.appHost, '')))
+      .catch(err => console.log('error', err));
   }
 
   onStaticCopy = () => {

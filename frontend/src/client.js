@@ -23,7 +23,7 @@ const store = createStore(client, window.__data);
 
 const renderApp = (renderProps) => {
   ReactDOM.hydrate(
-    <AppContainer>
+    <AppContainer warnings={false}>
       <Provider store={store} key="provider">
         <Root {...{ store, ...renderProps }} />
       </Provider>

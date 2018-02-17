@@ -113,6 +113,16 @@ export function setTitle(msg, url, title) {
   document.title = `${title} (${msg})`;
 }
 
+export function apiFetch(path, data, opts = {}) {
+  const options = Object.assign({
+    credentials: 'same-origin',
+    body: JSON.stringify(data),
+    headers: new Headers({ 'Content-Type': 'application/json' })
+  }, opts);
+
+  return fetch(`${config.apiPath}${path}`, options);
+}
+
 /**
  * Remove http/https from the beginning of a url
  * @param  {string} val url to modify

@@ -11,11 +11,13 @@ export default function createStore(client, data) {
   const searchConfig = reduxSearch({
     resourceIndexes: {
       'collection.bookmarks': ({ resources, indexDocument, state }) => {
-        resources.forEach((bk) => {
-          const id = bk.get('id');
-          indexDocument(id, bk.get('title') || '');
-          indexDocument(id, bk.get('url') || '');
-        });
+        if (resources) {
+          resources.forEach((bk) => {
+            const id = bk.get('id');
+            indexDocument(id, bk.get('title') || '');
+            indexDocument(id, bk.get('url') || '');
+          });
+        }
       }
     },
     resourceSelector: (resourceName, state) => {

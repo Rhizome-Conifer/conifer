@@ -62,6 +62,7 @@ class Record extends Component {
       <React.Fragment>
         <ReplayUI
           params={params}
+          timestamp={timestamp}
           url={url} />
 
         <div className="iframe-container">

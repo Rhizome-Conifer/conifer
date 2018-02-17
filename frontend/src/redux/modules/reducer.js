@@ -49,19 +49,17 @@ const appReducer = combineReducers({
 });
 
 export default (state, action) => {
-  // wipe state after logout, or partially after login
+  // wipe app state after login & logout
   switch(action.type) {
     case LOGOUT_SUCCESS: {
-      const { reduxAsyncConnect, app: { auth } } = state;
-      const stateMod = { reduxAsyncConnect, app: Map({ auth }) };
-      return appReducer(stateMod, action);
+      state.app = undefined;
+      return appReducer(state, action);
     }
-    // case LOGIN_SUCCESS: {
-    //   // delete any login errors if they exist
-
-    //   const stateMod = state.setIn(['auth', ])
-    //   return appReducer(stateMod, action);
-    // }
+    case LOGIN_SUCCESS: {
+      // delete any login errors if they exist
+      state.app = undefined;
+      return appReducer(state, action);
+    }
     default:
       return appReducer(state, action);
   }

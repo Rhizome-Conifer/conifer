@@ -17,7 +17,7 @@ class NewRecording extends Component {
     auth: PropTypes.object,
     collection: PropTypes.object,
     extractable: PropTypes.object,
-    params: PropTypes.object
+    match: PropTypes.object
   };
 
   // TODO move to HOC
@@ -28,7 +28,7 @@ class NewRecording extends Component {
   };
 
   getChildContext() {
-    const { auth, params } = this.props;
+    const { auth, match: { params } } = this.props;
 
     return {
       currMode: 'new',
@@ -37,7 +37,7 @@ class NewRecording extends Component {
   }
 
   render() {
-    const { collection, extractable, params: { user, coll } } = this.props;
+    const { collection, extractable, match: { params: { user, coll } } } = this.props;
 
     return (
       <NewRecordingUI
@@ -49,7 +49,7 @@ class NewRecording extends Component {
 
 const loadCollection = [
   {
-    promise: ({ params, store: { dispatch, getState } }) => {
+    promise: ({ match: { params }, store: { dispatch, getState } }) => {
       const state = getState();
       const collection = state.app.get('collection');
       const { user, coll } = params;

@@ -168,7 +168,7 @@ const mapStateToProps = ({ app }) => {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     auth: app.get('auth'),
     collection: app.get('collection'),
-    recording: app.getIn(['recordings', 'loaded']) ? getRecording(app) : null,
+    recording: app.getIn(['collection', 'loaded']) ? getRecording(app) : null,
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
     sidebarResize: app.getIn(['sidebar', 'resizing']),
     timestamp: app.getIn(['controls', 'timestamp']),

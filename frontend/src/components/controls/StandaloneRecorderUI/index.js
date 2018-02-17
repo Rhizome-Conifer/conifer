@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { Button, InputGroup, FormGroup, FormControl } from 'react-bootstrap';
 
 import config from 'config';
-import { addTrailingSlash, fixMalformedUrls, isMS, isSafari,
+import { addTrailingSlash, apiFetch, fixMalformedUrls,
          remoteBrowserMod } from 'helpers/utils';
 
 import { CollectionDropdown, ExtractWidget,
@@ -14,12 +14,17 @@ import './style.scss';
 
 
 class StandaloneRecorderUI extends Component {
+
+  static contextTypes = {
+    router: PropTypes.object
+  };
+
   static propTypes = {
     activeCollection: PropTypes.object,
     extractable: PropTypes.object,
     selectedBrowser: PropTypes.string,
     username: PropTypes.string
-  }
+  };
 
   constructor(props) {
     super(props);
@@ -39,24 +44,36 @@ class StandaloneRecorderUI extends Component {
     evt.preventDefault();
     const { activeCollection, extractable, selectedBrowser } = this.props;
     const { recordingTitle, url } = this.state;
-    const cleanRecordingTitle = encodeURIComponent(recordingTitle.trim());
+    //const cleanRecordingTitle = encodeURIComponent(recordingTitle.trim());
 
     if (!url) {
       return false;
     }
 
-    let cleanUrl = addTrailingSlash(fixMalformedUrls(url));
+    const cleanUrl = addTrailingSlash(fixMalformedUrls(url));
 
-    if (!selectedBrowser && (isSafari() || isMS())) {
-      cleanUrl = `mp_${cleanUrl}`;
+    // data to create new recording
+    const data = {
+      url: cleanUrl,
+      coll: activeCollection.id,
+    };
+
+    // add remote browser
+    if (selectedBrowser) {
+      data.browser = selectedBrowser;
     }
 
     if (extractable) {
-      const extractMode = `${extractable.get('allSources') ? 'extract' : 'extract_only'}:${extractable.get('id')}${extractable.get('targetColl') ? `:${extractable.get('targetColl')}` : ''}`;
-      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/${extractMode}/${remoteBrowserMod(selectedBrowser, extractable.get('timestamp'), '/')}${extractable.get('targetUrl')}`;
+      data.mode = extractable.get('allSources') ? 'extract' : 'extract_only';
     } else {
-      window.location = `/_new/${activeCollection.id}/${cleanRecordingTitle}/record/${remoteBrowserMod(selectedBrowser, '', '/')}${cleanUrl}`;
+      data.mode = 'record';
     }
+
+    // generate recording url
+    apiFetch('/new', data, { method: 'POST' })
+      .then(res => res.json())
+      .then(({ url }) => this.context.router.history.push(url.replace(config.appHost, '')))
+      .catch(err => console.log('error', err));
   }
 
   render() {
@@ -97,10 +114,12 @@ class StandaloneRecorderUI extends Component {
         </InputGroup>
         <FormGroup className="col-md-10 col-md-offset-2 top-buffer form-inline">
 
+          {/*
           <label htmlFor="recording-name">New Recording Name:&emsp;</label>
           <InputGroup>
             <FormControl id="recording-name" name="recordingTitle" onChange={this.handleInput} type="text" bsSize="sm" className="homepage-title" value={recordingTitle} required disabled={isOutOfSpace} />
           </InputGroup>
+         */}
 
           <CollectionDropdown />
 
