@@ -101,7 +101,7 @@
     "whatwg-fetch": "1.0.0"
   },
   "engines": {
-    "node": ">=6.9 <=8.2.1"
+    "node": ">=6.9 <=8.9.1"
   },
   "scripts": {
     "analyze": "NODE_ENV=\"production\" webpack --config ./webpack/prod.config.js --json | webpack-bundle-size-analyzer",
