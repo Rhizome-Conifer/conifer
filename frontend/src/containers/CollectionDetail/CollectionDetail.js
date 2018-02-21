@@ -4,8 +4,8 @@ import { asyncConnect } from 'redux-connect';
 import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
-import { truncate } from 'helpers/utils';
 import { load as loadColl } from 'redux/modules/collection';
+import { load as loadLists } from 'redux/modules/lists';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { getOrderedBookmarks, getOrderedRecordings, bookmarkSearchResults } from 'redux/selectors';
 
@@ -32,15 +32,13 @@ class CollectionDetail extends Component {
 
     return {
       canAdmin: username === user,
-      canWrite: username === user //&& !auth.anon
+      canWrite: username === user && !auth.anon
     };
   }
 
   render() {
-    const { collection, match: { params: { user, coll } } } = this.props;
-
     return (
-      <CollectionDetailUI key="c" {...this.props} />
+      <CollectionDetailUI {...this.props} />
     );
   }
 }
@@ -55,6 +53,11 @@ const initialData = [
     }
   },
   {
+    promise: ({ store: { dispatch } }) => {
+      return dispatch(loadLists());
+    }
+  },
+  {
     promise: ({ store: { dispatch, getState } }) => {
       if(!isRBLoaded(getState()))
         return dispatch(loadRB());
@@ -64,7 +67,7 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = (outerState) => {
+const mapStateToProps = (outerState, { match: { params: { list } } }) => {
   const { app } = outerState;
   const isLoaded = app.getIn(['collection', 'loaded']);
   const { bookmarkFeed, searchText } = isLoaded ? bookmarkSearchResults(outerState) : { bookmarkFeed: Map(), searchText: '' };
@@ -76,7 +79,8 @@ const mapStateToProps = (outerState) => {
     browsers: app.get('remoteBrowsers'),
     recordings: isLoaded ? getOrderedRecordings(app) : null,
     bookmarks: isIndexing ? getOrderedBookmarks(app) : bookmarkFeed,
-    searchText
+    searchText,
+    list: app.getIn(['lists', 'lists', list])
   };
 };
 

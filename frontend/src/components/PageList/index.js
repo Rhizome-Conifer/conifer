@@ -8,16 +8,16 @@ class PageList extends Component {
   static propTypes = {
     browsers: PropTypes.object,
     coll: PropTypes.object,
-    hasActiveBookmark: PropTypes.bool,
+    hasActivePage: PropTypes.bool,
     onSelectRow: PropTypes.func,
     rec: PropTypes.object,
     pages: PropTypes.object,
-    selectedGroupedBookmarkIdx: PropTypes.number
+    selectedGroupedPageIdx: PropTypes.number
   };
 
   render() {
-    const { browsers, coll, hasActiveBookmark, onSelectRow, pages,
-            rec, selectedGroupedBookmarkIdx } = this.props;
+    const { browsers, coll, hasActivePage, onSelectRow, pages,
+            rec, selectedGroupedPageIdx } = this.props;
 
     return (
       <table className="table table-noborder table-hover table-bookmarks">
@@ -36,7 +36,7 @@ class PageList extends Component {
                   onSelectRow={onSelectRow}
                   page={page}
                   rec={rec}
-                  selected={hasActiveBookmark && idx === selectedGroupedBookmarkIdx} />
+                  selected={hasActivePage && idx === selectedGroupedPageIdx} />
               );
             })
           }

@@ -37,7 +37,7 @@
             display: grid;
             grid-template-rows: 4rem 1fr;
             grid-column-gap: 1.5rem;
-            grid-template-columns: 20rem 1fr;
+            grid-template-columns: max-content 1fr;
             grid-template-areas:
                 "sidebar utilities"
                 "sidebar table";
@@ -69,11 +69,14 @@
                     background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
                 }
 
-                .wr-coll-sidebar {
+                .wr-coll-sidebar-stretch {
+                    display: flex;
+                    flex-direction: column;
+
                     position: absolute;
                     top: 0;
                     bottom: 0;
-                    border-right: 1px solid $slate;
+                    //border-right: 1px solid $slate;
                     padding-right: 1.5rem;
                     width: 100%;
                     overflow: auto;
@@ -81,53 +84,13 @@
                     // top buffer for fade
                     padding-top: 2rem;
 
-                    h4 {
-                        margin: .7rem 0;
-                    }
-
-                    .recording-time-info {
-                        display: inline-block;
-                    }
-
-                    .recording-session-count {
-                      color: black;
-                      width: 100%;
-                      border-top: solid 4px $brightGreen;
-                      border-bottom: solid 1px $brightGreen;
-                      padding: 1rem 0 1rem 0;
-                      margin: 0 0 1.2rem 0;
-                    }
-                      &:after {
-                        content :"";
-                        clear: both;
-                      }
-
-                    .recording-session {
-                        transition: color 175ms ease-in-out;
-                        display: block;
-                        background: transparent;
-                        border: none;
-                        text-align: left;
-                        font-weight: 600;
-                        outline: none;
-
-                        &:disabled {
-                            font-style: italic;
-                            font-weight: 400;
-                            opacity: 0.6;
-                        }
-
-                        &:not(:disabled):hover {
-                            color: $blue;
-                        }
-                    }
                 }
 
-                & > .wr-coll-sidebar:not(:first-of-type) {
-                    border: solid .4rem $brightGreen;
-                    border-width: .4rem 0 0 0;
-                    margin: 2.5rem 0;
-                }
+                // & > .wr-coll-sidebar:not(:first-of-type) {
+                //     border: solid .4rem $brightGreen;
+                //     border-width: .4rem 0 0 0;
+                //     margin: 2.5rem 0;
+                // }
             }
 
             .wr-coll-utilities {
@@ -208,7 +171,7 @@
                     a { color: $blue; }
 
                     &.selected {
-                        background-color: rgb(54, 54, 54);
+                        background-color: $dark-gray;
                         color: #FFF;
 
                         a:link { color: #FFF; }
@@ -244,7 +207,7 @@
                             a { color: $blue }
 
                             &.selected {
-                                background-color: rgb(54, 54, 54);
+                                background-color: $dark-gray;
                                 color: #FFF;
 
                                 a:link { color: #FFF; }
@@ -312,10 +275,6 @@
                     &.is-open header.collapsible {
                         h2 {
                             color: $collTrigger;
-                        }
-
-                        .glyphicon-triangle-right {
-                            transform: rotateZ(90deg);
                         }
                     }
                 }

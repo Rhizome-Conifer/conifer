@@ -46,7 +46,7 @@ export default function createStore(client, data) {
     )(_createStore);
   }
   // eslint-disable-next-line global-require
-  const reducer = require('./modules/reducer');
+  const reducer = require('./reducer');
 
 
   let finalData;
@@ -56,9 +56,9 @@ export default function createStore(client, data) {
   const store = finalCreateStore(reducer, finalData);
 
   if (__DEVELOPMENT__ && module.hot) {
-    module.hot.accept('./modules/reducer', () => {
+    module.hot.accept('./reducer', () => {
       // eslint-disable-next-line global-require
-      store.replaceReducer(require('./modules/reducer'));
+      store.replaceReducer(require('./reducer'));
     });
   }
 

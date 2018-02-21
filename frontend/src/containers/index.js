@@ -6,6 +6,7 @@ export ExtractWidget from './ExtractWidget/ExtractWidget';
 export Home from './Home/Home';
 export HttpStatus from './HttpStatus/HttpStatus';
 export InfoWidget from './InfoWidget/InfoWidget';
+export Lists from './Lists/Lists';
 export Logout from './Logout/Logout';
 export ModeSelector from './ModeSelector/ModeSelector';
 export NewRecording from './NewRecording/NewRecording';

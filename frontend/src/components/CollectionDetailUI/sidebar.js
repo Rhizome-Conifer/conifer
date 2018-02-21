@@ -1,24 +1,32 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { Lists } from 'containers';
 
-export function RecordingSession(props) {
-  const { rec } = props;
+import Resizable from 'components/Resizable';
 
-  const onSelect = () => {
-    props.select(rec);
+
+class CollectionSidebar extends Component {
+  static propTypes = {
+    collection: PropTypes.object,
+    list: PropTypes.object
   };
 
-  if (!rec.get('pages').size) {
-    return <button className="recording-session" disabled>{rec.get('title')}</button>
-  }
+  render() {
+    const { list } = this.props;
 
-  return (
-    <button className="recording-session" onClick={onSelect}>{rec.get('title')}</button>
-  );
+    return (
+      <Resizable classes="wr-coll-sidebar-container">
+        <div className="wr-coll-sidebar-stretch">
+          <Lists list={list} />
+
+          <div className="wr-coll-sidebar">
+            meta info sidebar
+          </div>
+        </div>
+      </Resizable>
+    );
+  }
 }
 
-RecordingSession.propTypes = {
-  rec: PropTypes.object,
-  select: PropTypes.func
-};
+export default CollectionSidebar;

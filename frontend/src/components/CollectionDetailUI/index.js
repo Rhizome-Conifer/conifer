@@ -3,20 +3,17 @@ import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
-import ReactMarkdown from 'react-markdown';
 
 import { setSort } from 'redux/modules/collection';
-import { getStorage, inStorage, setStorage } from 'helpers/utils';
+import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
 import SessionCollapsible from 'components/SessionCollapsible';
-import DurationFormat from 'components/DurationFormat';
-import SizeFormat from 'components/SizeFormat';
-import TimeFormat from 'components/TimeFormat';
 
 import 'react-virtualized/styles.css';
 
-import { RecordingSession } from './sidebar';
 import CollectionManagement from './management';
+import CollectionSidebar from './sidebar';
+import CollDetailHeader from './header';
 import { BrowserRenderer, LinkRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
@@ -29,6 +26,7 @@ class CollectionDetailUI extends Component {
     browsers: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
+    list: PropTypes.object,
     recordings: PropTypes.object,
     searchText: PropTypes.string,
     searchBookmarks: PropTypes.func
@@ -45,10 +43,8 @@ class CollectionDetailUI extends Component {
       groupDisplay: false,
       expandAll: false,
       selectedSession: null,
-      selectedBookmark: null,
-      selectedBookmarkIdx: null,
-      selectedGroupedBookmark: null,
-      selectedGroupedBookmarkIdx: null,
+      selectedPageIdx: null,
+      selectedGroupedPageIdx: null,
       selectedRec: null
     };
 
@@ -86,34 +82,51 @@ class CollectionDetailUI extends Component {
     }));
   }
 
-  onSelectRow = ({ index, rowData }) => {
-    if (this.state.selectedBookmarkIdx === index) {
+  onSelectRow = ({ event, index, rowData }) => {
+    const { selectedPageIdx } = this.state;
+
+    if (selectedPageIdx === index) {
       // clear selection
       this.setState({
-        selectedBookmarkIdx: null,
-        selectedBookmark: null,
+        selectedPageIdx: null
       });
     } else {
+      let selectedIndex = index;
+      if (event.shiftKey && selectedPageIdx !== null && selectedPageIdx !== index) {
+        let start;
+        let end;
+
+        // if selection is already a range, compute within that
+        if (typeof selectedPageIdx !== 'number') {
+          const arrMin = Math.min.apply(null, selectedPageIdx);
+          const arrMax = Math.max.apply(null, selectedPageIdx);
+          start = Math.min(arrMin, index);
+          end = Math.max(arrMax, index);
+        } else {
+          start = Math.min(selectedPageIdx, index);
+          end = Math.max(selectedPageIdx, index);
+        }
+
+        selectedIndex = range(start, end);
+      }
+
       this.setState({
-        selectedBookmarkIdx: index,
-        selectedBookmark: rowData,
+        selectedPageIdx: selectedIndex,
         selectedSession: null
       });
     }
   }
 
   onSelectGroupedRow = ({ rec, index }) => {
-    if (this.state.selectedGroupedBookmarkIdx === index) {
+    if (this.state.selectedGroupedPageIdx === index) {
       this.setState({
         selectedSession: rec,
-        selectedGroupedBookmark: null,
-        selectedGroupedBookmarkIdx: null
+        selectedGroupedPageIdx: null
       });
     } else {
       this.setState({
         selectedSession: rec,
-        selectedGroupedBookmark: rec.getIn(['pages', index]),
-        selectedGroupedBookmarkIdx: index
+        selectedGroupedPageIdx: index
       });
     }
   }
@@ -121,9 +134,7 @@ class CollectionDetailUI extends Component {
   onExpandSession = (sesh) => {
     if (!this.state.expandAll) {
       this.setState({
-        selectedBookmark: null,
-        selectedGroupedBookmark: null,
-        selectedGroupedBookmarkIdx: null,
+        selectedGroupedPageIdx: null,
         selectedSession: sesh
       });
     }
@@ -133,8 +144,7 @@ class CollectionDetailUI extends Component {
     if (this.state.selectedSession) {
       this.setState({
         selectedSession: null,
-        selectedGroupedBookmark: null,
-        selectedGroupedBookmarkIdx: null,
+        selectedGroupedPageIdx: null,
         selectedRec: null
       });
     }
@@ -176,6 +186,9 @@ class CollectionDetailUI extends Component {
     const prevSort = collection.getIn(['sortBy', 'sort']);
     const prevDir = collection.getIn(['sortBy', 'dir']);
 
+    // clear selected pages
+    this.setState({ selectedPageIdx: null });
+
     if (prevSort !== sortBy) {
       dispatch(setSort({ sort: sortBy, dir: sortDirection }));
     } else {
@@ -187,12 +200,20 @@ class CollectionDetailUI extends Component {
     this.setState({ expandAll: !this.state.expandAll });
   }
 
+  testRowHighlight = ({ index }) => {
+    const { selectedPageIdx } = this.state;
+
+    if (!!selectedPageIdx && typeof selectedPageIdx === 'object') {
+      return selectedPageIdx.includes(index) ? 'selected' : '';
+    }
+    return index === selectedPageIdx ? 'selected' : '';
+  }
+
   render() {
     const { canAdmin } = this.context;
-    const { bookmarks, browsers, collection, recordings, searchText } = this.props;
-    const { groupDisplay, expandAll, selectedBookmark, selectedBookmarkIdx,
-            selectedSession, selectedGroupedBookmark, selectedGroupedBookmarkIdx,
-            selectedRec } = this.state;
+    const { bookmarks, browsers, collection, list, recordings, searchText } = this.props;
+    const { groupDisplay, expandAll, selectedSession,
+            selectedGroupedPageIdx, selectedRec } = this.state;
 
     // don't render until loaded
     if (!collection.get('loaded')) {
@@ -201,70 +222,13 @@ class CollectionDetailUI extends Component {
 
     return (
       <div className="wr-coll-detail">
-        <header>
-          <h1>{collection.get('title')}</h1>
-          <hr />
-          <ReactMarkdown className="coll-desc" source={collection.get('desc')} />
-        </header>
+        <CollDetailHeader collection={collection} list={list} />
 
         <div className="grid-wrapper">
           <div className="wr-coll-container">
-            <aside className="wr-coll-sidebar-container">
-              <div className="wr-coll-sidebar">
-                {
-                  // selected flat bookmark
-                  selectedBookmark &&
-                    <div>
-                      <h4>Bookmark #{ selectedBookmarkIdx + 1 } of {collection.get('bookmarks').size } selected.</h4>
-                      <div>
-                        <h5>{selectedBookmark.get('title')}</h5>
-                        <TimeFormat dt={selectedBookmark.get('timestamp')} />
-                      </div>
-                    </div>
-                }
-                {
-                  // selected session
-                  selectedSession && !selectedGroupedBookmark && !expandAll &&
-                    <div>
-                      <h4>{selectedSession.get('title')}</h4>
-                      <div>
-                        {`${selectedSession.get('pages').size} bookmark${selectedSession.get('pages').size === 1 ? '' : 's'}`}
-                        &nbsp;&ndash;&nbsp;<SizeFormat bytes={selectedSession.get('size')} />
-                      </div>
-                      <TimeFormat epoch={selectedSession.get('updated_at')} />
-                      <div>Dur. <DurationFormat duration={parseInt(selectedSession.get('updated_at'), 10) - parseInt(selectedSession.get('created_at'), 10)} /></div>
-                    </div>
-                }
-                {
-                  // selected grouped bookmark
-                  selectedGroupedBookmark &&
-                    <div>
-                      <h4>Bookmark #{ selectedGroupedBookmarkIdx + 1} of {selectedSession.size} selected.</h4>
-                      <div>
-                        <h5>{selectedGroupedBookmark.get('title')}</h5>
-                        <TimeFormat dt={selectedGroupedBookmark.get('timestamp')} />
-                      </div>
-                    </div>
-                }
-                {
-                  // collection info
-                  !selectedBookmark && (!selectedSession || (expandAll && !selectedGroupedBookmark)) &&
-                    <div>
-                      <div className="recording-session-count">{recordings.size} Recording{ recordings.size === 1 ? '' : 's'}:</div>
-                      {
-                        recordings.map((rec) => {
-                          return (
-                            <RecordingSession
-                              key={rec.get('id')}
-                              rec={rec}
-                              select={this.selectRecording} />
-                          );
-                        })
-                      }
-                    </div>
-                }
-              </div>
-            </aside>
+
+            <CollectionSidebar collection={collection} list={list} />
+
             <div className="wr-coll-utilities">
               <CollectionManagement
                 expandAll={expandAll}
@@ -274,6 +238,7 @@ class CollectionDetailUI extends Component {
                 search={this.search}
                 searchText={searchText} />
             </div>
+
             <div className="wr-coll-detail-table">
               {
                 groupDisplay ?
@@ -283,7 +248,7 @@ class CollectionDetailUI extends Component {
                         return (
                           <SessionCollapsible
                             key={rec.get('id')}
-                            hasActiveBookmark={selectedSession === rec && selectedGroupedBookmarkIdx !== null}
+                            hasActivePage={selectedSession === rec && selectedGroupedPageIdx !== null}
                             collection={collection}
                             browsers={browsers}
                             expand={expandAll || rec.get('id') === selectedRec}
@@ -291,7 +256,7 @@ class CollectionDetailUI extends Component {
                             onCollapse={this.onCollapseSession}
                             recording={rec}
                             onSelectRow={this.onSelectGroupedRow}
-                            selectedGroupedBookmarkIdx={selectedGroupedBookmarkIdx} />
+                            selectedGroupedPageIdx={selectedGroupedPageIdx} />
                         );
                       })
                     }
@@ -306,7 +271,7 @@ class CollectionDetailUI extends Component {
                           headerHeight={40}
                           rowHeight={50}
                           rowGetter={({ index }) => bookmarks.get(index)}
-                          rowClassName={({ index }) => { return index === selectedBookmarkIdx ? 'selected' : ''; }}
+                          rowClassName={this.testRowHighlight}
                           onRowClick={this.onSelectRow}
                           sort={this.sort}
                           sortBy={collection.getIn(['sortBy', 'sort'])}

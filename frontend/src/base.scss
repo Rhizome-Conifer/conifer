@@ -162,3 +162,15 @@ body {
         text-decoration: underline;
     }
 }
+
+.Collapsible__trigger {
+    .glyphicon-triangle-right {
+        transition: transform 300ms ease-in-out;
+    }
+
+    &.is-open {
+        .glyphicon-triangle-right {
+            transform: rotateZ(90deg);
+        }
+    }
+}

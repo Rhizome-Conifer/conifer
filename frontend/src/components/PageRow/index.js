@@ -41,8 +41,6 @@ class PageRow extends Component {
         onClick={this.selectRow}
         onTransitionEnd={e => e.stopPropagation()}
         role="button">
-        <td className="bookmark-hidden-switch"><span className="glyphicon glyphicon-star" /></td>
-        <td className="bookmark-edit-title"><span className="glyphicon glyphicon-bookmark" /></td>
         <td className="timestamp"><TimeFormat dt={ts} /></td>
         <td className="bookmark-title">
           <Link to={`/${coll.get('user')}/${coll.get('id')}/${remoteBrowserMod(browser, ts)}/${url}`}>
@@ -52,7 +50,6 @@ class PageRow extends Component {
           </Link>
         </td>
         <td className="bookmark-url">{url}</td>
-        <td>#page</td>
         <td className="rec-browser" >
           {
             browserObj &&

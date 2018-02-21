@@ -18,7 +18,8 @@ const mapStateToProps = (outerState) => {
     activeBookmark: getActiveBookmark(outerState),
     bookmarks: isIndexing ? getOrderedBookmarks(app) : bookmarkFeed,
     collection: app.get('collection'),
-    searchText
+    searchText,
+    resizing: app.getIn(['sidebar', 'resizing'])
   };
 };
 
