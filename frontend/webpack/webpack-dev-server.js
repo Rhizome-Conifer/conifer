@@ -5,7 +5,7 @@ var webpack = require('webpack');
 var webpackConfig = require('./dev.config');
 var compiler = webpack(webpackConfig);
 
-const host = '127.0.0.1';
+const host = process.env.APP_HOST || '127.0.0.1';
 const port = (Number(process.env.FRONTEND_PORT) + 1) || 8096;
 
 var serverOptions = {

@@ -80,6 +80,7 @@ services:
         volumes:
             - ./data:/data
             - ./webrecorder/:/code/
+            - ./frontend/:/frontend/
 
         ports:
             - 8089:80

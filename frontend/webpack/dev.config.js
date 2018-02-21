@@ -7,7 +7,7 @@ var path = require('path');
 var webpack = require('webpack');
 var assetsPath = path.resolve(__dirname, '../static/dist');
 
-const host = '127.0.0.1';
+const host = process.env.APP_HOST || '127.0.0.1';
 const port = (Number(process.env.PORT) + 1) || 8096;
 
 // https://github.com/halt-hammerzeit/webpack-isomorphic-tools
