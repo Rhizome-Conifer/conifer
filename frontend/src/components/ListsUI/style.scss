@@ -47,14 +47,78 @@
         margin-top: 1.5rem;
 
         ul {
-            list-style-image: url('list.svg');
+            list-style-type: none;
+            padding: 0;
 
-            li.selected {
-                background-color: $dark-gray;
+            li {
+                position: relative;
+                padding-left: 2.5rem;
 
-                a:visited, a:link, a:hover {
-                    color: #FFF;
+                svg {
+                    margin: 0 1rem 0 .5rem;
                 }
+
+                .wrapper {
+                    padding: .2rem 0 .2rem 0;
+                }
+
+                &.selected {
+                    .wrapper {
+                        background-color: $dark-gray;
+                    }
+
+                    &:before {
+                        content: '';
+                        position: absolute;
+                        left: .2rem;
+                        top: 12.5%;
+                        width: 1.4rem;
+                        height: 1.4rem;
+                        background: url('../../shared/images/active_bookmark_ico.svg');
+                        background-size: cover;
+                    }
+
+                    svg {
+                        fill: #FFF;
+                    }
+
+                    a:visited, a:link, a:hover {
+                        color: #FFF;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.lists-edit-modal {
+    width: 30vw;
+    max-width: 45rem;
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+
+        li {
+            display: flex;
+
+            &:first-child {
+                margin-bottom: 1rem;
+            }
+
+            &:not(:first-child) {
+                margin: 1rem 0;
+            }
+
+            input {
+                flex-grow: 1;
+            }
+
+            button {
+                width: 3rem;
+                margin: 0 .5rem;
             }
         }
     }

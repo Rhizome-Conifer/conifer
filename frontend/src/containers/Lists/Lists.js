@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { load as loadLists } from 'redux/modules/lists';
+import { load as loadLists, edit, remove } from 'redux/modules/lists';
 
 import ListsUI from 'components/ListsUI';
 
@@ -16,7 +16,9 @@ class Lists extends Component {
     lists: PropTypes.object,
     list: PropTypes.object,
     listId: PropTypes.string,
-    getLists: PropTypes.func
+    getLists: PropTypes.func,
+    editList: PropTypes.func,
+    removeList: PropTypes.func
   };
 
   componentWillMount() {
@@ -44,7 +46,9 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getLists: () => dispatch(loadLists())
+    getLists: () => dispatch(loadLists()),
+    editList: (id, title) => dispatch(edit(id, title)),
+    removeList: id => dispatch(remove(id))
   };
 };
 

@@ -5,7 +5,7 @@ import { defaultRecordingTitle } from 'config';
 
 export const collList = ({ match }) => match.params.user;
 
-const collDetail = ({ collection }) => { return collection.get('loaded') ? collection.get('title') : ''; };
+const collDetail = ({ collection }) => { return collection.get('loaded') ? collection.get('title') : null };
 export const collDetailBreadcrumb = connect(
   ({ app }) => {
     return {
@@ -14,7 +14,7 @@ export const collDetailBreadcrumb = connect(
   })(collDetail);
 
 
-const listDetail = ({ list }) => { return list ? list.get('name') : ''; };
+const listDetail = ({ list }) => { return list ? list.get('title') : null; };
 export const listDetailBreadcrumb = connect(
   ({ app }, { match: { params: { list } } }) => {
     return {

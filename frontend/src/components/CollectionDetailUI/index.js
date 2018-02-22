@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import { Link } from 'react-router-dom';
 
 import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
 import SessionCollapsible from 'components/SessionCollapsible';
+import { CloseIcon } from 'components/icons';
 
 import 'react-virtualized/styles.css';
 
@@ -234,12 +237,22 @@ class CollectionDetailUI extends Component {
                 expandAll={expandAll}
                 groupDisplay={groupDisplay}
                 onToggle={this.onToggle}
+                listActive={Boolean(list)}
                 toggleExpandAllSessions={this.toggleExpandAllSessions}
                 search={this.search}
                 searchText={searchText} />
             </div>
 
-            <div className="wr-coll-detail-table">
+            <div className="lists-modifier">
+              {
+                list &&
+                  <header className="lists-header">
+                    <span>Pages in Selected List</span>
+                    <Link to={`/${collection.get('user')}/${collection.get('id')}`}>Back to Collection Index <CloseIcon /></Link>
+                  </header>
+              }
+            </div>
+            <div className={classNames('wr-coll-detail-table', { 'with-lists': list })}>
               {
                 groupDisplay ?
                   <div className="wr-coll-session-container" ref={(obj) => { this.sessionContainer = obj; }}>
@@ -265,7 +278,10 @@ class CollectionDetailUI extends Component {
                     {
                       ({ height, width }) => (
                         <Table
-                          width={width}
+                          width={
+                            /* factor border width */
+                            list ? width - 8 : width
+                          }
                           height={height}
                           rowCount={bookmarks.size}
                           headerHeight={40}

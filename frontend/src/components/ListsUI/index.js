@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Collapsible from 'react-collapsible';
 
+import Modal from 'components/Modal';
+
 import ListItem from './ListItem';
+import EditItem from './EditItem';
 
 import './style.scss';
 
@@ -24,13 +27,21 @@ class ListsUI extends Component {
     getLists: PropTypes.func
   };
 
-  editLists = (evt) => {
-    evt.stopPropagation();
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      editModal: false
+    };
   }
+
+  openEditModal = (evt) => { evt.stopPropagation(); this.setState({ editModal: true }); }
+  closeEditModal = () => { console.log('close'); this.setState({ editModal: false }); }
 
   render() {
     const { canAdmin } = this.context;
     const { collection, list, lists, listId } = this.props;
+    const { editModal } = this.state;
 
     const listItems = lists.entrySeq();
 
@@ -47,43 +58,66 @@ class ListsUI extends Component {
         </div>
         {
           canAdmin &&
-            <button onClick={this.editLists} className="button-link list-edit">EDIT</button>
+            <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
         }
       </header>
     );
 
     return (
-      <div className="wr-coll-sidebar">
-        <header>Collection Navigator <span role="button" className="sidebar-minimize" onClick={this.minimize}>-</span></header>
+      <React.Fragment>
+        <div className="wr-coll-sidebar">
+          <header>Collection Navigator <span role="button" className="sidebar-minimize" onClick={this.minimize}>-</span></header>
 
-        {
-          list &&
-            <Link to={`/${collection.get('user')}/${collection.get('id')}`} className="button-link">See All Resouces in Collection</Link>
-        }
+          {
+            list &&
+              <Link to={`/${collection.get('user')}/${collection.get('id')}`} className="button-link">See All Resouces in Collection</Link>
+          }
 
-        <div className="lists-body">
-          <Collapsible
-            lazyRender
-            open
-            easing="ease-out"
-            trigger={collapsibleHeader}>
-            <ul>
-              {
-                listItems.map(listObj => (
-                  <ListItem
-                    key={listObj[0]}
-                    selected={list && listObj[0] === list.get('id')}
-                    id={listObj[0]}
-                    list={listObj[1]}
-                    collection={collection} />
-                ))
-              }
-            </ul>
-          </Collapsible>
+          <div className="lists-body">
+            <Collapsible
+              lazyRender
+              open
+              easing="ease-out"
+              trigger={collapsibleHeader}>
+              <ul>
+                {
+                  listItems.map(listObj => (
+                    <ListItem
+                      key={listObj[0]}
+                      selected={list && listObj[0] === list.get('id')}
+                      id={listObj[0]}
+                      list={listObj[1]}
+                      collection={collection} />
+                  ))
+                }
+              </ul>
+            </Collapsible>
 
-          <button>+ new list</button>
+            <button onClick={this.openEditModal}>+ new list</button>
+          </div>
         </div>
-      </div>
+
+        <Modal
+          visible={editModal}
+          closeCb={this.closeEditModal}
+          footer={<button onClick={this.closeEditModal}>Done</button>}
+          dialogClassName="lists-edit-modal">
+          <ul>
+            <li>
+              <button className="borderless">x</button>
+              <input className="borderless-input" placeholder="Create new list" />
+              <button className="borderless">✓</button>
+            </li>
+            {
+              listItems.map(listObj => (
+                <EditItem
+                  key={listObj[0]}
+                  list={listObj[1]} />
+              ))
+            }
+          </ul>
+        </Modal>
+      </React.Fragment>
     );
   }
 }

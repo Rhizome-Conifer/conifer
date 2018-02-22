@@ -56,9 +56,10 @@ $collapsedWidth: 3rem;
         font-size: 1.2rem;
     }
 
-    &.expanded {
-        .sidebar-handle {
-            cursor: ew-resize;
+    // disable resizable cursor when collapsed
+    &:not(.expanded) {
+        .resizable-handle {
+            cursor: initial;
         }
     }
 }

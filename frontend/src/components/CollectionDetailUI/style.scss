@@ -8,7 +8,7 @@
     height: 100%;
 
     & > header {
-        margin-bottom: 4rem;
+        margin-bottom: 2rem;
 
         h1 {
             font-family: $serif;
@@ -35,11 +35,12 @@
             width: 100%;
 
             display: grid;
-            grid-template-rows: 4rem 1fr;
+            grid-template-rows: 4rem max-content 1fr;
             grid-column-gap: 1.5rem;
             grid-template-columns: max-content 1fr;
             grid-template-areas:
                 "sidebar utilities"
+                "sidebar lists-modifier"
                 "sidebar table";
 
             font-family: $sans;
@@ -153,9 +154,34 @@
                 }
             }
 
+            .lists-modifier {
+                grid-area: lists-modifier;
+
+                .lists-header {
+                    display: flex;
+                    justify-content: space-between;
+                    width: 100%;
+
+                    background-color: $listsBlue;
+                    font-size: 1.4rem;
+                    padding: 1.5rem 1rem;
+
+                    svg {
+                        width: 1rem;
+                        height: 1rem;
+                        margin-left: .2rem;
+                    }
+                }
+            }
+
             .wr-coll-detail-table {
                 grid-area: table;
                 position: relative;
+
+                &.with-lists {
+                    border: solid 0 $listsBlue;
+                    border-width: 0 .4rem;
+                }
 
                 .ReactVirtualized__Table__headerColumn {
                     display: flex;

@@ -9,8 +9,8 @@ import 'shared/scss/toggle.scss';
 
 function CollectionManagement(props, context) {
   const { canAdmin } = context;
-  const { expandAll, groupDisplay, onToggle, toggleExpandAllSessions,
-          search, searchText } = props;
+  const { expandAll, groupDisplay, listActive, onToggle,
+          toggleExpandAllSessions, search, searchText } = props;
 
   return (
     <nav>
@@ -27,13 +27,18 @@ function CollectionManagement(props, context) {
         <span className="glyphicon glyphicon-th-list" />
         */
       }
-      <div className="toggle-label">
-        <span onClick={onToggle}>Group by session</span>
-        <Toggle
-          checked={groupDisplay}
-          onChange={onToggle}
-          icons={false} />
-      </div>
+
+      {
+        !listActive &&
+          <div className="toggle-label">
+            <span onClick={onToggle}>Group by session</span>
+            <Toggle
+              checked={groupDisplay}
+              onChange={onToggle}
+              icons={false} />
+          </div>
+      }
+
       {
         groupDisplay &&
           <button className="open-all" onClick={toggleExpandAllSessions}>{expandAll ? 'Close' : 'Open'} All Sessions</button>
@@ -46,6 +51,7 @@ function CollectionManagement(props, context) {
 CollectionManagement.propTypes = {
   expandAll: PropTypes.bool,
   groupDisplay: PropTypes.bool,
+  listActive: PropTypes.bool,
   onToggle: PropTypes.func,
   toggleExpandAllSessions: PropTypes.func,
   search: PropTypes.func,
