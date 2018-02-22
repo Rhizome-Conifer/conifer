@@ -38,6 +38,11 @@ class Resizable extends Component {
         console.log('Error retrieving width', e);
       }
     }
+
+    // get container position in dom, offset mouseX to width mapping
+    this.containerOffset = this.container.getBoundingClientRect().left;
+    this.minWidth = window.innerWidth * 0.1;
+    this.maxWidth = window.innerWidth * 0.75;
   }
 
   componentWillUnmount() {
@@ -45,10 +50,6 @@ class Resizable extends Component {
   }
 
   _startResize = (evt) => {
-    this.setState({
-      xPos: evt.clientX
-    });
-
     if (this.props.resizeState) {
       this.props.resizeState(true);
     }
@@ -61,7 +62,7 @@ class Resizable extends Component {
     requestAnimationFrame(() => {
       const curX = evt.clientX;
       if (curX !== this.state.width) {
-        const width = Math.max(window.innerWidth * 0.1, Math.min(window.innerWidth * 0.75, curX));
+        const width = Math.max(this.minWidth, Math.min(this.maxWidth, (curX - this.containerOffset)));
         this.setState({ width });
       }
     });
@@ -76,7 +77,6 @@ class Resizable extends Component {
     }
 
     setStorage((storageKey || 'userSidebarWidth'), this.state.width);
-    this.setState({ xPos: null });
   }
 
   render() {
@@ -85,6 +85,7 @@ class Resizable extends Component {
 
     return (
       <aside
+        ref={(obj) => { this.container = obj; }}
         className={classes}
         style={{ width: overrideWidth || width }}>
         {this.props.children}
