@@ -29,6 +29,9 @@ from webrecorder.rec.worker import Worker
 
 # ============================================================================
 class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
+    ISO_DT_RX = re.compile(r'\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d')
+
+
     @classmethod
     def setup_class(cls, extra_config_file='test_no_invites_config.yaml',
                     init_anon=True,

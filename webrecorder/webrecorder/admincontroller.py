@@ -13,8 +13,6 @@ from re import sub
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.basecontroller import BaseController
-from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema,
-                                 UserSchema, UserUpdateSchema)
 from webrecorder.webreccork import ValidationException
 
 #TODO: fix these

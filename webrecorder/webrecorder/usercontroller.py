@@ -5,7 +5,6 @@ import redis
 from bottle import request, response
 
 from webrecorder.basecontroller import BaseController
-from webrecorder.schemas import UserSchema
 
 from webrecorder.webreccork import ValidationException
 
@@ -15,8 +14,6 @@ class UserController(BaseController):
     def __init__(self, *args, **kwargs):
         super(UserController, self).__init__(*args, **kwargs)
         config = kwargs['config']
-
-        self.cork = kwargs['cork']
 
         self.default_user_desc = config['user_desc']
 
@@ -104,8 +101,8 @@ class UserController(BaseController):
         @self.app.get('/api/v1/logout')
         @self.user_manager.auth_view()
         def logout():
-            self.user_manager.cork.logout(success_redirect='/')
-
+            self.user_manager.logout()
+            self.redirect('/')
 
         # PASSWORD
         @self.app.post('/api/v1/updatepassword')
@@ -154,7 +151,6 @@ class UserController(BaseController):
             user_data = user.serialize(compute_size_allotment=True,
                                        include_colls=include_colls)
 
-            user_data = UserSchema().load(user_data)
             return {'user': user_data}
 
         @self.app.delete(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
@@ -222,9 +218,9 @@ class UserController(BaseController):
             if self.user_manager.delete_user(username):
                 self.flash_message('The user {0} has been permanently deleted!'.format(username), 'success')
 
-                redir_to = '/'
                 request.environ['webrec.delete_all_cookies'] = 'all'
-                self.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
+                self.user_manager.logout()
+                self.redirect('/')
             else:
                 self.flash_message('There was an error deleting {0}'.format(username))
                 self.redirect(self.get_path(username))

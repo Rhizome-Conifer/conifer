@@ -1,6 +1,7 @@
-import time
 import os
 import datetime
+import json
+import time
 
 from webrecorder.utils import redis_pipeline
 
@@ -49,17 +50,13 @@ class User(RedisNamedContainer):
         if not max_size:
             max_size = self.MAX_USER_SIZE
 
-        self._init_new(max_size)
+        self.init_new(max_size)
 
-    def _init_new(self, max_size):
-        now = int(time.time())
-
+    def init_new(self, max_size):
         self.data = {'max_size': max_size,
-                     'created_at': now,
                      'size': 0}
 
-        with redis_pipeline(self.redis) as pi:
-            self.commit(pi)
+        self._init_new()
 
     def create_new_id(self):
         self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
@@ -196,14 +193,25 @@ class User(RedisNamedContainer):
             data['collections'] = [coll.serialize() for coll in colls]
 
         data['username'] = self.name
+
         if self.is_anon():
             data['ttl'] = self.access.get_anon_ttl()
             collection = self.get_collection_by_name('temp')
             if collection:
                 data['rec_count'] = collection.num_recordings()
 
+        else:
+            data['email'] = data.pop('email_addr')
+            desc_data = json.loads(data.pop('desc', '{}'))
+            data['name'] = desc_data.get('name', '')
+            last_login = data.get('last_login')
+            if last_login:
+                data['last_login'] = self.to_iso_date(last_login)
+
         return data
-        #return UserSchema().load(data)
+
+    def update_last_login(self):
+        self.set_prop('last_login', int(time.time()))
 
     def __eq__(self, obj):
         if obj and (self.my_id == obj.my_id) and isinstance(obj, User):
@@ -284,7 +292,7 @@ class SessionUser(User):
 
         max_size = self.redis.hget('h:defaults', 'max_anon_size') or self.MAX_ANON_SIZE
 
-        self._init_new(max_size=max_size)
+        self.init_new(max_size=max_size)
 
         self.sesh.set_anon()
         self.sesh_type = 'anon'

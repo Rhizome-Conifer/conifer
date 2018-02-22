@@ -106,7 +106,8 @@ class LoginController(BaseController):
                 url += path
                 redir_to = url
 
-            self.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
+            self.user_manager.logout()
+            self.redirect(redir_to)
 
 
         # Register/Invite/Confirm

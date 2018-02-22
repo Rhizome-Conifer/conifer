@@ -1,3 +1,8 @@
+import time
+from datetime import datetime
+
+
+# ============================================================================
 class DupeNameException(Exception):
     pass
 
@@ -55,15 +60,32 @@ class RedisUniqueComponent(object):
         self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
         return self.my_id
 
+    def _init_new(self, pi=None):
+        now = int(time.time())
+
+        self.data['created_at'] = now
+        self.data['updated_at'] = now
+
+        self.commit(pi)
+
     def commit(self, pi=None):
         pi = pi or self.redis
         pi.hmset(self.info_key, self.data)
 
-    def serialize(self):
+    def serialize(self, include_duration=False):
         if not self.loaded:
             self.load()
 
         self.data['id'] = self.name
+
+        created_at = self.data.get('created_at', 0)
+        updated_at = self.data.get('updated_at', 0)
+
+        if include_duration:
+            self.data['duration'] = updated_at - created_at
+
+        self.data['created_at'] = self.to_iso_date(created_at)
+        self.data['updated_at'] = self.to_iso_date(updated_at)
         return self.data
 
     def get_prop(self, attr, default_val=None, force_type=None):
@@ -78,6 +100,10 @@ class RedisUniqueComponent(object):
     def set_prop(self, attr, value):
         self.data[attr] = value
         self.redis.hset(self.info_key, attr, value)
+
+        # auto-update updated_at
+        if attr != 'updated_at':
+            self.set_prop('updated_at', int(time.time()))
 
     def __getitem__(self, name):
         return self.get_prop(name)
@@ -115,6 +141,19 @@ class RedisUniqueComponent(object):
 
     def __eq__(self, obj):
         return obj and (self.my_id == obj.my_id) and type(self) == type(obj)
+
+    @classmethod
+    def to_iso_date(cls, dt, no_T=False):
+        try:
+            dt = float(dt)
+        except:
+            return dt
+
+        #return datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S.%f')
+        dt = datetime.fromtimestamp(dt).isoformat()
+        if no_T:
+            dt = dt.replace('T', ' ')
+        return dt
 
 
 # ============================================================================

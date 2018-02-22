@@ -209,22 +209,21 @@ class UserManager(object):
         # if a collection is being moved, auth user
         # and then check for available space
         # if not enough space, don't continue with login
-        if move_info and (self.cork.
-                          is_authenticate(username, password)):
+        if not self.cork.is_authenticate(username, password):
+            return {'error': 'Invalid Login. Please Try Again'}
 
+
+        if move_info:
             if not self.has_space_for_new_collection(username,
                                                      move_info['from_user'],
                                                     'temp'):
                 return {'error': 'Sorry, not enough space to import this Temporary Collection into your account.'}
 
-        if not self.cork.login(username, password):
-            return {'error': 'Invalid Login. Please Try Again'}
-
+        user = self.all_users[username]
         new_collection = None
 
         try:
             if move_info:
-                user = self.all_users[username]
                 new_collection = self.move_temp_coll(user, move_info)
         except DupeNameException as de:
             return {'error': 'Collection "{0}" already exists'.format(move_info['to_title'])}
@@ -234,7 +233,14 @@ class UserManager(object):
         # login session and access system
         self.access.log_in(username, remember_me)
 
+        user.update_last_login()
+
         return {'success': '1', 'new_coll_name': new_collection.name if new_collection else None}
+
+    def logout(self):
+        sesh = self.get_session()
+        sesh.delete()
+        return
 
     def has_user_email(self, email):
         #TODO: implement a email table, if needed?

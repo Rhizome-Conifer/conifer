@@ -1,8 +1,6 @@
-import time
 import json
 import hashlib
 import os
-from datetime import datetime
 
 from six.moves.urllib.parse import urlsplit
 
@@ -49,11 +47,7 @@ class Recording(RedisUniqueComponent):
 
         open_rec_key = self.OPEN_REC_KEY.format(rec=rec)
 
-        now = int(time.time())
-
         self.data = {'desc': desc,
-                     'created_at': now,
-                     'updated_at': now,
                      'size': 0,
                     }
 
@@ -61,7 +55,7 @@ class Recording(RedisUniqueComponent):
             self.data['rec_type'] = rec_type
 
         with redis_pipeline(self.redis) as pi:
-            self.commit(pi)
+            self._init_new(pi)
 
             if ra_list:
                 ra_key = self.RA_KEY.format(rec=self.my_id)
@@ -76,7 +70,7 @@ class Recording(RedisUniqueComponent):
         return self.redis.expire(open_rec_key, self.OPEN_REC_TTL)
 
     def serialize(self):
-        data = super(Recording, self).serialize()
+        data = super(Recording, self).serialize(include_duration=True)
 
         # add pages
         data['pages'] = self.list_pages()
@@ -88,9 +82,10 @@ class Recording(RedisUniqueComponent):
         return data
 
     def get_title(self):
+        #TODO: remove title altogether?
         created_at = self.get_prop('created_at')
         if created_at:
-            created_at = datetime.utcfromtimestamp(float(created_at)).isoformat().replace('T', ' ')
+            created_at = self.to_iso_date(created_at)
         else:
             created_at = '<unknown>'
 

@@ -1,4 +1,3 @@
-import time
 import gevent
 import logging
 import json
@@ -61,11 +60,7 @@ class Collection(RedisNamedContainer):
 
         key = self.INFO_KEY.format(coll=coll)
 
-        now = int(time.time())
-
         self.data = {'title': title,
-                     'created_at': now,
-                     'updated_at': now,
                      'size': 0,
                      'desc': desc,
                     }
@@ -74,8 +69,7 @@ class Collection(RedisNamedContainer):
             #TODO: standardize prop?
             self.data[self.PUBLIC_FLAG] = '1'
 
-        with redis_pipeline(self.redis) as pi:
-            self.commit(pi)
+        self._init_new()
 
         return coll
 

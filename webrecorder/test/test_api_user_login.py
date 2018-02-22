@@ -227,7 +227,7 @@ class TestApiUserLogin(FullStackTests):
 
         user = res.json['user']
 
-        assert user['created'] != ''
+        assert user['created_at'] != ''
         assert user['email'] == 'test@example.com'
         assert user['last_login'] != ''
         assert user['name'] == ''
@@ -242,6 +242,10 @@ class TestApiUserLogin(FullStackTests):
         assert user['collections'][0]['id'] == 'default-collection'
         assert user['collections'][0]['desc'] == 'Default Collection'
         assert user['collections'][0]['size'] == 0
+
+        assert self.ISO_DT_RX.match(user['created_at'])
+        assert self.ISO_DT_RX.match(user['updated_at'])
+        assert self.ISO_DT_RX.match(user['last_login'])
 
     def test_update_user_desc(self):
         res = self.testapp.post('/api/v1/users/someuser/desc', params='New Description')

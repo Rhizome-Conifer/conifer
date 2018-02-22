@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 import os
 
 from .testutils import FullStackTests
@@ -57,7 +58,9 @@ class TestWebRecRecAPI(FullStackTests):
         assert rec['desc'] == 'My Rec Description'
         #assert rec['download_url'] == 'http://localhost:80/{user}/temp/my-rec/$download'.format(user=self.anon_user)
         assert rec['created_at'] == rec['updated_at']
-        assert rec['created_at'] <= int(time.time())
+        assert rec['created_at'] <= datetime.fromtimestamp(time.time()).isoformat()
+        assert self.ISO_DT_RX.match(rec['created_at'])
+        assert self.ISO_DT_RX.match(rec['updated_at'])
 
     def test_create_another_anon_rec(self):
         res = self._anon_post('/api/v1/recordings?user={user}&coll=temp', params={'desc': '2 Another! Recording!'})

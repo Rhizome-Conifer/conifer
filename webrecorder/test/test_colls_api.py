@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 import os
 
 from .testutils import BaseWRTests
@@ -36,7 +37,11 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert rec['title'] == 'Temp'
         #assert rec['download_url'] == 'http://localhost:80/{user}/temp/$download'.format(user=self.anon_user)
         #assert rec['created_at'] == rec['updated_at']
-        assert rec['created_at'] <= int(time.time())
+        assert rec['created_at'] <= datetime.fromtimestamp(time.time()).isoformat()
+
+        assert self.ISO_DT_RX.match(rec['created_at'])
+        assert self.ISO_DT_RX.match(rec['updated_at'])
+
         assert rec['recordings'] == []
 
 
