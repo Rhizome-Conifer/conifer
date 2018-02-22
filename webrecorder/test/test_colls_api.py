@@ -74,4 +74,8 @@ class TestWebRecCollsAPI(BaseWRTests):
         res = self.testapp.post('/api/v1/collections?user=temp$123', params={'title': 'Example'}, status=404)
         assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Example'}}
 
+    def test_delete_coll(self):
+        res = self.testapp.delete('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
+
+        assert res.json == {'deleted_id': 'temp'}
 

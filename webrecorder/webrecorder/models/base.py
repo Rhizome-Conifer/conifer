@@ -158,6 +158,8 @@ class RedisUniqueComponent(object):
 
 # ============================================================================
 class RedisNamedContainer(RedisUniqueComponent):
+    COMP_KEY = ''
+
     def remove_object(self, obj):
         if not obj:
             return 0
@@ -235,6 +237,63 @@ class RedisNamedContainer(RedisUniqueComponent):
 
     def is_owner(self, owner):
         return self == owner
+
+
+# ============================================================================
+class RedisOrderedListMixin(object):
+    ORDERED_LIST_KEY = ''
+
+    @property
+    def _ordered_list_key(self):
+        return self.ORDERED_LIST_KEY.format_map({self.MY_TYPE: self.my_id})
+
+    def add_ordered_object(self, obj):
+        self.insert_ordered_object(obj, None)
+
+    def get_ordered_objects(self, cls):
+        #all_objs = self.redis.lrange(self._ordered_list_key, 0, -1)
+        all_objs = self.redis.zrange(self._ordered_list_key, 0, -1)
+
+        obj_list = [cls(my_id=val,
+                        redis=self.redis,
+                        access=self.access) for val in all_objs]
+
+        return obj_list
+
+    def insert_ordered_object(self, obj, before_obj):
+        key = self._ordered_list_key
+
+        new_score = None
+        before_score = None
+
+        if before_obj:
+            before_score = self.redis.zscore(key, before_obj.my_id)
+
+        if before_score is not None:
+            res = self.redis.zrevrangebyscore(key, '(' + str(before_score), 0, start=0, num=1, withscores=True)
+            # insert before before_obj, possibly at the beginning
+            after_score = res[0][1] if res else 0
+            new_score = (before_score + after_score) / 2.0
+
+        # insert at the end
+        if new_score is None:
+            res = self.redis.zrevrange(key, 0, 1, withscores=True)
+            if len(res) == 0:
+                new_score = 1024
+
+            elif len(res) == 1:
+                new_score = res[0][1] * 2.0
+
+            elif len(res) == 2:
+                new_score = res[0][1] * 2.0 - res[1][1]
+
+        self.redis.zadd(key, new_score, obj.my_id)
+
+    def contains_id(self, obj_id):
+        return self.redis.zscore(self._ordered_list_key, obj_id) is not None
+
+    def remove_ordered_object(self, obj):
+        return self.redis.zrem(self._ordered_list_key, obj.my_id)
 
 
 # ============================================================================

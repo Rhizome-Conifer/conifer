@@ -7,12 +7,13 @@ from warcio.timeutils import timestamp20_now
 
 from webrecorder.utils import redis_pipeline
 
-from webrecorder.models.base import RedisNamedContainer
+from webrecorder.models.base import RedisNamedContainer, RedisOrderedListMixin
 from webrecorder.models.recording import Recording
+from webrecorder.models.list_bookmarks import BookmarkList
 
 
 # ============================================================================
-class Collection(RedisNamedContainer):
+class Collection(RedisOrderedListMixin, RedisNamedContainer):
     MY_TYPE = 'coll'
     INFO_KEY = 'c:{coll}:info'
     ALL_KEYS = 'c:{coll}:*'
@@ -21,8 +22,7 @@ class Collection(RedisNamedContainer):
 
     COMP_KEY = 'c:{coll}:recs'
 
-    PAGE_KEY = 'r:{rec}:page'
-    CDXJ_KEY = 'r:{rec}:cdxj'
+    ORDERED_LIST_KEY = 'c:{coll}:lists'
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
     COLL_CDXJ_TTL = 1800
@@ -51,6 +51,47 @@ class Collection(RedisNamedContainer):
         self.add_object(rec_name, recording, owner=True)
 
         return recording
+
+    def create_bookmark_list(self, title):
+        self.access.assert_can_write_coll(self)
+
+        bookmark_list = BookmarkList(redis=self.redis,
+                                     access=self.access)
+
+        bookmark_list.init_new(collection=self, title=title)
+
+        self.add_ordered_object(bookmark_list)
+
+        return bookmark_list
+
+    def get_lists(self):
+        #TODO: privacy settings
+        self.access.assert_can_read_coll(self)
+
+        return self.get_ordered_objects(BookmarkList)
+
+    def get_list(self, blist_id):
+        if not self.contains_id(blist_id):
+            return None
+
+        bookmark_list = BookmarkList(my_id=blist_id,
+                                     redis=self.redis,
+                                     access=self.access)
+
+        bookmark_list.owner = self
+
+        return bookmark_list
+
+    def move_list_before(self, blist, before_blist):
+        self.insert_ordered_object(blist, before_blist)
+
+    def remove_list(self, blist):
+        if not self.remove_ordered_object(blist):
+            return False
+
+        blist.delete_me()
+
+        return True
 
     def _new_rec_name(self):
         return 'rec-' + timestamp20_now()
@@ -116,7 +157,7 @@ class Collection(RedisNamedContainer):
     def count_pages(self):
         self.access.assert_can_read_coll(self)
 
-        all_page_keys = self._get_rec_keys(self.PAGE_KEY)
+        all_page_keys = self._get_rec_keys(Recording.PAGE_KEY)
 
         count = 0
 
@@ -126,7 +167,7 @@ class Collection(RedisNamedContainer):
         return count
 
     def list_coll_pages(self):
-        all_page_keys = self._get_rec_keys(self.PAGE_KEY)
+        all_page_keys = self._get_rec_keys(Recording.PAGE_KEY)
 
         pagelist = []
 
@@ -195,6 +236,9 @@ class Collection(RedisNamedContainer):
         for recording in self.get_recordings(load=False):
             recording.delete_me()
 
+        for blist in self.get_lists():
+            blist.delete_me()
+
         return self.delete_object()
 
     def sync_coll_index(self, exists=False, do_async=False):
@@ -203,7 +247,7 @@ class Collection(RedisNamedContainer):
             self.redis.expire(coll_cdxj_key, self.COLL_CDXJ_TTL)
             return
 
-        cdxj_keys = self._get_rec_keys(self.CDXJ_KEY)
+        cdxj_keys = self._get_rec_keys(Recording.CDXJ_KEY)
         if not cdxj_keys:
             return
 
@@ -268,4 +312,5 @@ class Collection(RedisNamedContainer):
 
 # ============================================================================
 Recording.OWNER_CLS = Collection
+BookmarkList.OWNER_CLS = Collection
 

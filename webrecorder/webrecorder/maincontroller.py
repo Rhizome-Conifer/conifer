@@ -24,6 +24,7 @@ from webrecorder.snapshotcontroller import SnapshotController
 from webrecorder.websockcontroller import WebsockController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
+from webrecorder.listscontroller import ListsController
 from webrecorder.logincontroller import LoginController
 from webrecorder.bugreportcontroller import BugReportController
 from webrecorder.usercontroller import UserController
@@ -58,7 +59,8 @@ class MainController(BaseController):
                        SnapshotController,
                        WebsockController,
                        RecsController,
-                       CollsController
+                       CollsController,
+                       ListsController,
                       ]
 
 
