@@ -247,7 +247,7 @@ class CollectionDetailUI extends Component {
               {
                 list &&
                   <header className="lists-header">
-                    <span>Pages in Selected List</span>
+                    <span>Bookmarks in Selected List</span>
                     <Link to={`/${collection.get('user')}/${collection.get('id')}`}>Back to Collection Index <CloseIcon /></Link>
                   </header>
               }
