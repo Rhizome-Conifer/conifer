@@ -18,7 +18,7 @@ class ListsController(BaseController):
         def add_list():
             user, collection = self.load_user_coll()
 
-            blist = collection.create_bookmark_list(request.json['title'])
+            blist = collection.create_bookmark_list(request.json)
 
             return {'list': blist.serialize()}
 
@@ -32,8 +32,7 @@ class ListsController(BaseController):
         def update_list(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
-            new_title = request.json.get('title')
-            blist['title'] = new_title
+            blist.update(request.json)
 
             return {'list': blist.serialize()}
 

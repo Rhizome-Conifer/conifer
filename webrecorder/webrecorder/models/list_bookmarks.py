@@ -11,21 +11,23 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
     COUNTER_KEY = 'c:{coll}:n:list_count'
 
-    def init_new(self, collection, title):
+    def init_new(self, collection, props):
         self.owner = collection
 
-        blist = self._create_new_id()
+        list_id = self._create_new_id()
 
-        key = self.INFO_KEY.format(blist=blist)
+        key = self.INFO_KEY.format(blist=list_id)
 
-        self.data = {'title': title,
+        self.data = {'title': props['title'],
+                     'desc': props.get('desc', ''),
+                     'public': props.get('public', '0'),
                      'owner': self.owner.my_id,
                     }
 
-        self.name = str(blist)
+        self.name = str(list_id)
         self._init_new()
 
-        return blist
+        return list_id
 
     def _create_new_id(self):
         counter_key = self.COUNTER_KEY.format(coll=self.owner.my_id)
@@ -84,6 +86,14 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
         return data
 
+    def update(self, props):
+        props = props or {}
+        AVAIL_PROPS = ['title', 'desc', 'public']
+
+        for prop in AVAIL_PROPS:
+            if prop in props:
+                self.set_prop(prop, props[prop])
+
     def delete_me(self):
         for bookmark in self.get_bookmarks():
             bookmark.delete_me()
@@ -136,4 +146,8 @@ class Bookmark(RedisUniqueComponent):
 
     def delete_me(self):
         return self.delete_object()
+
+
+# ============================================================================
+Bookmark.OWNER_CLS = BookmarkList
 

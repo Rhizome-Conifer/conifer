@@ -38,7 +38,9 @@ class TestListsAPI(FullStackTests):
         self.redis.set('c:{coll}:n:bookmark_count'.format(coll=_coll), 100)
 
     def test_create_list(self):
-        params = {'title': 'New List'}
+        params = {'title': 'New List',
+                  'desc': 'List Description Goes Here!'
+                 }
 
         res = self.testapp.post_json(self._format('/api/v1/lists?user={user}&coll=temp'), params=params)
 
@@ -50,6 +52,8 @@ class TestListsAPI(FullStackTests):
         assert blist['title'] == 'New List'
         assert blist['owner'] == self.coll
         assert blist['id'] == '1001'
+        assert blist['desc'] == 'List Description Goes Here!'
+        assert blist['public'] == '0'
 
         assert self.redis.get('c:{coll}:n:list_count'.format(coll=self.coll)) == '1001'
 
@@ -209,6 +213,9 @@ class TestListsAPI(FullStackTests):
 
         assert self.redis.get('c:{coll}:n:bookmark_count'.format(coll=self.coll)) == '101'
 
+    def test_get_bookmark_error_list_missing(self):
+        res = self.testapp.get(self._format('/api/v1/bookmark/101?user={user}&coll=temp'), status=400)
+
     def test_get_bookmark(self):
         res = self.testapp.get(self._format('/api/v1/bookmark/101?user={user}&coll=temp&list=1002'))
 
@@ -242,7 +249,7 @@ class TestListsAPI(FullStackTests):
 
         assert ['101', '103', '104', '105', '106'] == [b['id'] for b in bookmarks]
 
-    def test_reoder_bookmarks(self):
+    def test_reorder_bookmarks(self):
         params = {'order': ['103', '104', '105', '106', '101']}
         res = self.testapp.post_json(self._format('/api/v1/list/1002/bookmarks/reorder?user={user}&coll=temp'), params=params)
 
@@ -252,6 +259,12 @@ class TestListsAPI(FullStackTests):
         res = self.testapp.get(self._format('/api/v1/list/1002/bookmarks?user={user}&coll=temp'))
         bookmarks = res.json['bookmarks']
         assert ['103', '104', '105', '106', '101'] == [b['id'] for b in bookmarks]
+
+    def test_reorder_bookmarks_invalid(self):
+        params = {'order': ['103', '104', '105', '106', '103', '101']}
+        res = self.testapp.post_json(self._format('/api/v1/list/1002/bookmarks/reorder?user={user}&coll=temp'), params=params)
+
+        assert res.json == {'error': 'invalid order'}
 
     def test_delete_bookmark_not_existent(self):
         res = self.testapp.delete(self._format('/api/v1/bookmark/106?user={user}&coll=temp&list=1003'), status=404)

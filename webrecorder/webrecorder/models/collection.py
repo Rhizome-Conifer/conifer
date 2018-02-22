@@ -52,13 +52,15 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         return recording
 
-    def create_bookmark_list(self, title, before_blist=None):
+    def create_bookmark_list(self, props):
         self.access.assert_can_write_coll(self)
 
         bookmark_list = BookmarkList(redis=self.redis,
                                      access=self.access)
 
-        bookmark_list.init_new(collection=self, title=title)
+        bookmark_list.init_new(self, props)
+
+        before_blist = self.get_list(props.get('before_id'))
 
         self.insert_ordered_object(bookmark_list, before_blist)
 
