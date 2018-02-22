@@ -41,10 +41,6 @@ class User(RedisNamedContainer):
         cls.URL_SKIP_KEY = config['skip_key_templ']
         cls.SKIP_KEY_SECS = int(config['skip_key_secs'])
 
-    def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
-        self.name = self.my_id
-
     def create_new(self):
         max_size = self.redis.hget('h:defaults', 'max_size')
         if not max_size:
@@ -58,7 +54,7 @@ class User(RedisNamedContainer):
 
         self._init_new()
 
-    def create_new_id(self):
+    def _create_new_id(self):
         self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
         return self.my_id
 

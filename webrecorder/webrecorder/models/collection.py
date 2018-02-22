@@ -52,7 +52,7 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         return recording
 
-    def create_bookmark_list(self, title):
+    def create_bookmark_list(self, title, before_blist=None):
         self.access.assert_can_write_coll(self)
 
         bookmark_list = BookmarkList(redis=self.redis,
@@ -60,15 +60,17 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         bookmark_list.init_new(collection=self, title=title)
 
-        self.add_ordered_object(bookmark_list)
+        self.insert_ordered_object(bookmark_list, before_blist)
 
         return bookmark_list
 
-    def get_lists(self):
+    def get_lists(self, load=True):
         #TODO: privacy settings
         self.access.assert_can_read_coll(self)
 
-        return self.get_ordered_objects(BookmarkList)
+        lists = self.get_ordered_objects(BookmarkList, load=load)
+
+        return lists
 
     def get_list(self, blist_id):
         if not self.contains_id(blist_id):
@@ -93,11 +95,14 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         return True
 
+    def num_lists(self):
+        return self.num_ordered_objects()
+
     def _new_rec_name(self):
         return 'rec-' + timestamp20_now()
 
     def init_new(self, title, desc='', public=False):
-        coll = self.create_new_id()
+        coll = self._create_new_id()
 
         key = self.INFO_KEY.format(coll=coll)
 
@@ -193,8 +198,13 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
     def serialize(self):
         data = super(Collection, self).serialize()
+
         recordings = self.get_recordings(load=True)
         data['recordings'] = [recording.serialize() for recording in recordings]
+
+        lists = self.get_lists(load=True)
+        data['lists'] = [blist.serialize(include_bookmarks=False) for blist in lists]
+
         return data
 
     def rename(self, obj, new_name, new_cont=None, allow_dupe=False):
@@ -236,7 +246,7 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         for recording in self.get_recordings(load=False):
             recording.delete_me()
 
-        for blist in self.get_lists():
+        for blist in self.get_lists(load=False):
             blist.delete_me()
 
         return self.delete_object()

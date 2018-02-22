@@ -43,7 +43,7 @@ class Recording(RedisUniqueComponent):
         cls.WARC_PATH_PREFIX = config['warc_path_templ']
 
     def init_new(self, desc='', rec_type=None, ra_list=None):
-        rec = self.create_new_id()
+        rec = self._create_new_id()
 
         open_rec_key = self.OPEN_REC_KEY.format(rec=rec)
 

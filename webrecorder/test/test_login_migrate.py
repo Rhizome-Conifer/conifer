@@ -52,9 +52,12 @@ class TestLoginMigrate(FullStackTests):
 
     def test_create_user_def_coll(self):
         self.user_manager.create_user('test@example.com', 'test', 'TestTest123', 'archivist', 'Test')
-        res = self.testapp.get('/test/default-collection')
-        res.charset = 'utf-8'
-        assert '"test"' in res.text
+
+        # user exists
+        res = self.testapp.get('/test')
+
+        # default collection not public
+        res = self.testapp.get('/test/default-collection', status=404)
 
     def test_api_test_non_temp_user(self):
         res = self.testapp.get('/api/v1/temp-users/test', status=404)
@@ -103,8 +106,6 @@ class TestLoginMigrate(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/login', params=params)
 
-        print(self.redis.hgetall('u:test:colls'))
-
         assert res.json == {'anon': False,
                             'coll_count': 2,
                             'role': 'archivist',
@@ -116,6 +117,12 @@ class TestLoginMigrate(FullStackTests):
 
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json == {'curr_user': 'test'}
+
+    def test_default_collection_exists(self):
+        # default collection exists
+        res = self.testapp.get('/test/default-collection')
+        res.charset = 'utf-8'
+        assert '"test"' in res.text
 
     def test_login_replay(self):
         res = self.testapp.get('/test/test-migrate/mp_/http://httpbin.org/get?food=bar')

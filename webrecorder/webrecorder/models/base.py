@@ -22,7 +22,7 @@ class RedisUniqueComponent(object):
     def __init__(self, **kwargs):
         self.redis = kwargs['redis']
         self.my_id = kwargs.get('my_id', '')
-        self.name = kwargs.get('name', '')
+        self.name = kwargs.get('name', self.my_id)
         self.access = kwargs['access']
         self.owner = None
 
@@ -55,7 +55,7 @@ class RedisUniqueComponent(object):
             if key in self.data:
                 self.data[key] = int(self.data[key])
 
-    def create_new_id(self):
+    def _create_new_id(self):
         self.my_id = self.redis.incr(self.COUNTER_KEY)
         self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
         return self.my_id
@@ -243,20 +243,26 @@ class RedisNamedContainer(RedisUniqueComponent):
 class RedisOrderedListMixin(object):
     ORDERED_LIST_KEY = ''
 
+    SCORE_UNIT = 1024
+
     @property
     def _ordered_list_key(self):
         return self.ORDERED_LIST_KEY.format_map({self.MY_TYPE: self.my_id})
 
-    def add_ordered_object(self, obj):
-        self.insert_ordered_object(obj, None)
-
-    def get_ordered_objects(self, cls):
-        #all_objs = self.redis.lrange(self._ordered_list_key, 0, -1)
+    def get_ordered_objects(self, cls, load=True):
         all_objs = self.redis.zrange(self._ordered_list_key, 0, -1)
 
-        obj_list = [cls(my_id=val,
-                        redis=self.redis,
-                        access=self.access) for val in all_objs]
+        obj_list = []
+        for val in all_objs:
+            obj = cls(my_id=val,
+                      redis=self.redis,
+                      access=self.access)
+
+            obj.owner = self
+            if load:
+                obj.load()
+
+            obj_list.append(obj)
 
         return obj_list
 
@@ -279,7 +285,7 @@ class RedisOrderedListMixin(object):
         if new_score is None:
             res = self.redis.zrevrange(key, 0, 1, withscores=True)
             if len(res) == 0:
-                new_score = 1024
+                new_score = self.SCORE_UNIT
 
             elif len(res) == 1:
                 new_score = res[0][1] * 2.0
@@ -292,8 +298,37 @@ class RedisOrderedListMixin(object):
     def contains_id(self, obj_id):
         return self.redis.zscore(self._ordered_list_key, obj_id) is not None
 
+    def num_ordered_objects(self):
+        return self.redis.zcard(self._ordered_list_key)
+
     def remove_ordered_object(self, obj):
         return self.redis.zrem(self._ordered_list_key, obj.my_id)
+
+    def reorder_objects(self, new_order):
+        key = self._ordered_list_key
+
+        all_objs = self.redis.zrange(key, 0, -1)
+
+        new_order_set = set(new_order)
+
+        # new_order list contains dupes, invalid order
+        if len(new_order_set) != len(new_order):
+            return False
+
+        # new order set doesn't match current set, invalid order
+        if set(all_objs) != new_order_set:
+            return False
+
+        add_list = []
+        score_count = self.SCORE_UNIT
+        for obj in new_order:
+            add_list.append(score_count)
+            add_list.append(obj)
+            score_count += self.SCORE_UNIT
+
+        # TODO: add xx=True if supported in redis-py
+        self.redis.zadd(key, *add_list)
+        return True
 
 
 # ============================================================================
