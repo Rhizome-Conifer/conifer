@@ -26,8 +26,19 @@ export default class ApiClient {
           request.query(params);
         }
 
-        if (__SERVER__ && req.get('cookie')) {
-          request.set('cookie', req.get('cookie'));
+        if (__SERVER__) {
+          if (req.get('cookie')) {
+            request.set('cookie', req.get('cookie'));
+          }
+
+          /*
+            in order to pass `redir_host` check in wr app we need to set
+            the Host header explicitly, otherwise internal network host
+            is set and request is redirected
+          */
+          if (process.env.APP_HOST) {
+            request.set({ 'Host': process.env.APP_HOST });
+          }
         }
 
         if (data) {
