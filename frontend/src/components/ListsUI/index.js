@@ -93,30 +93,36 @@ class ListsUI extends Component {
               </ul>
             </Collapsible>
 
-            <button onClick={this.openEditModal}>+ new list</button>
+            {
+              canAdmin &&
+                <button onClick={this.openEditModal}>+ new list</button>
+            }
           </div>
         </div>
 
-        <Modal
-          visible={editModal}
-          closeCb={this.closeEditModal}
-          footer={<button onClick={this.closeEditModal}>Done</button>}
-          dialogClassName="lists-edit-modal">
-          <ul>
-            <li>
-              <button className="borderless">x</button>
-              <input className="borderless-input" placeholder="Create new list" />
-              <button className="borderless">✓</button>
-            </li>
-            {
-              listItems.map(listObj => (
-                <EditItem
-                  key={listObj[0]}
-                  list={listObj[1]} />
-              ))
-            }
-          </ul>
-        </Modal>
+        {
+          canAdmin &&
+            <Modal
+              visible={editModal}
+              closeCb={this.closeEditModal}
+              footer={<button onClick={this.closeEditModal}>Done</button>}
+              dialogClassName="lists-edit-modal">
+              <ul>
+                <li>
+                  <button className="borderless">x</button>
+                  <input className="borderless-input" placeholder="Create new list" />
+                  <button className="borderless">✓</button>
+                </li>
+                {
+                  listItems.map(listObj => (
+                    <EditItem
+                      key={listObj[0]}
+                      list={listObj[1]} />
+                  ))
+                }
+              </ul>
+            </Modal>
+        }
       </React.Fragment>
     );
   }
