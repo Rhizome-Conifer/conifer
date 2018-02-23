@@ -95,7 +95,7 @@ class CollectionDetailUI extends Component {
       });
     } else {
       let selectedIndex = index;
-      if (event.shiftKey && selectedPageIdx !== null && selectedPageIdx !== index) {
+      if (event.shiftKey && selectedPageIdx !== null) {
         let start;
         let end;
 
@@ -111,6 +111,17 @@ class CollectionDetailUI extends Component {
         }
 
         selectedIndex = range(start, end);
+      } else if (event.metaKey && selectedPageIdx !== null) {
+        if (typeof selectedPageIdx === "object") {
+          selectedIndex = selectedPageIdx;
+          if (selectedIndex.includes(index)) {
+            selectedIndex.splice(selectedIndex.indexOf(index), 1);
+          } else {
+            selectedIndex.push(index);
+          }
+        } else {
+          selectedIndex = [selectedPageIdx, index];
+        }
       }
 
       this.setState({
@@ -254,7 +265,7 @@ class CollectionDetailUI extends Component {
             </div>
             <div className={classNames('wr-coll-detail-table', { 'with-lists': list })}>
               {
-                groupDisplay ?
+                !list && groupDisplay ?
                   <div className="wr-coll-session-container" ref={(obj) => { this.sessionContainer = obj; }}>
                     {
                       recordings.map((rec) => {
