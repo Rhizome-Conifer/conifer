@@ -16,6 +16,7 @@ import {
   PasswordReset,
   Patch,
   Record,
+  RegisterAccount,
   Replay,
   UserSignup,
   UserSettings
@@ -33,13 +34,20 @@ const userRoutes = [
     footer: true,
     breadcrumb: collList
   },
-  { /* TODO: add auth check */
+  {
     path: `${userPath}/_settings`,
     component: UserSettings,
     exact: true,
     name: 'settings',
     footer: true,
     breadcrumb: 'Settings'
+  },
+  {
+    path: '/_valreg/:registration',
+    component: RegisterAccount,
+    exact: true,
+    name: 'Account Registration',
+    footer: true
   },
   {
     path: `${userPath}/:coll`,

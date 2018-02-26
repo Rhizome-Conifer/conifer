@@ -17,6 +17,7 @@ export RecordingTools from './RecordingTools/RecordingTools';
 export RemoteBrowserSelect from './RemoteBrowserSelect/RemoteBrowserSelect';
 export Record from './Record/Record';
 export RemoteBrowser from './RemoteBrowser/RemoteBrowser';
+export RegisterAccount from './RegisterAccount/RegisterAccount';
 export Replay from './Replay/Replay';
 export Sidebar from './Sidebar/Sidebar';
 export SizeCounter from './SizeCounter/SizeCounter';
