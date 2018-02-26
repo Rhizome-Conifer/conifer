@@ -89,11 +89,13 @@ export function isLoaded({ app }) {
          app.getIn(['collection', 'loaded']);
 }
 
-export function load(username, coll) {
+export function load(user, coll) {
   return {
     types: [COLL_LOAD, COLL_LOAD_SUCCESS, COLL_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${apiPath}/collections/${coll}?user=${username}`)
+    promise: client => client.get(`${apiPath}/collections/${coll}`, {
+      params: { user }
+    })
   };
 }
 
@@ -109,7 +111,8 @@ export function loadLists(user, coll, withBookmarks = false) {
 export function setPublic(coll, user, makePublic = true) {
   return {
     types: [COLL_SET_PUBLIC, COLL_SET_PUBLIC_SUCCESS, COLL_SET_PUBLIC_FAIL],
-    promise: client => client.post(`${apiPath}/collections/${coll}/public?user=${user}`, {
+    promise: client => client.post(`${apiPath}/collections/${coll}/public`, {
+      params: { user },
       data: {
         'public': makePublic
       },

@@ -2,6 +2,7 @@ import { fromJS, Map } from 'immutable';
 
 import { apiPath } from 'config';
 
+
 const LIST_CREATE = 'wr/list/LIST_CREATE';
 const LIST_CREATE_SUCCESS = 'wr/list/LIST_CREATE_SUCCESS';
 const LIST_CREATE_FAIL = 'wr/list/LIST_CREATE_FAIL';
@@ -28,6 +29,7 @@ const initialState = fromJS({
   error: null,
   list: Map()
 });
+
 
 export default function list(state = initialState, action = {}) {
   switch (action.type) {
@@ -76,6 +78,7 @@ export function create(user, coll, title) {
   };
 }
 
+
 export function addTo(user, coll, listId, data) {
   return {
     types: [LIST_CREATE, LIST_CREATE_SUCCESS, LIST_CREATE_FAIL],
@@ -85,6 +88,7 @@ export function addTo(user, coll, listId, data) {
     })
   };
 }
+
 
 export function load(user, coll, id) {
   console.log('load', user, coll, id);
@@ -101,6 +105,7 @@ export function edit(user, coll, id, data) {
   return {
     types: [LIST_EDIT, LIST_EDIT_SUCCESS, LIST_EDIT_FAIL],
     promise: client => client.post(`${apiPath}/list/${id}`, {
+      params: { user, coll },
       data
     })
   };

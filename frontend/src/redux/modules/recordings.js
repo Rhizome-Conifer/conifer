@@ -56,16 +56,20 @@ export default function recordings(state = initialState, action = {}) {
   }
 }
 
-export function collRecordings(username, coll) {
+export function collRecordings(user, coll) {
   return {
     types: [RECS_LOAD, RECS_LOAD_SUCCESS, RECS_LOAD_FAIL],
-    promise: client => client.get(`${config.apiPath}/recordings?user=${username}&coll=${coll}`)
+    promise: client => client.get(`${config.apiPath}/recordings`, {
+      params: { user, coll }
+    })
   };
 }
 
-export function loadRecording(username, coll, rec) {
+export function loadRecording(user, coll, rec) {
   return {
     types: [REC_LOAD, REC_LOAD_SUCCESS, REC_LOAD_FAIL],
-    promise: client => client.get(`${config.apiPath}/recordings/${rec}?user=${username}&coll=${coll}`)
+    promise: client => client.get(`${config.apiPath}/recordings/${rec}`, {
+      params: { user, coll }
+    })
   };
 }
