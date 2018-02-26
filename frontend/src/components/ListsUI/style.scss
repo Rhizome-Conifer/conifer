@@ -61,6 +61,15 @@
                 .wrapper {
                     transition: background-color 300ms ease-in-out;
                     padding: .2rem 0 .2rem 0;
+
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+
+                    a {
+                        display: block;
+                        width: 100%;
+                    }
                 }
 
                 &.targeted {

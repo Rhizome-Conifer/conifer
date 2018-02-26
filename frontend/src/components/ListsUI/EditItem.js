@@ -4,13 +4,14 @@ import PropTypes from 'prop-types';
 import { Overlay, Tooltip } from 'react-bootstrap';
 
 import OutsideClick from 'components/OutsideClick';
-import { PencilIcon, TrashIcon } from 'components/icons';
+import { CheckIcon, PencilIcon, TrashIcon } from 'components/icons';
 
 
 class EditItem extends Component {
   static propTypes = {
     list: PropTypes.object,
-    editList: PropTypes.func,
+    edited: PropTypes.bool,
+    editListCallback: PropTypes.func,
     deleteListCallback: PropTypes.func,
     editSuccess: PropTypes.bool
   };
@@ -32,6 +33,12 @@ class EditItem extends Component {
     });
   }
 
+  submitCheck = (evt) => {
+    if (evt.key === 'Enter') {
+      this.editListItem();
+    }
+  }
+
   confirmDelete = () => {
     if (this.state.confirmDelete) {
       this.setState({ confirmDelete: false });
@@ -44,10 +51,10 @@ class EditItem extends Component {
 
   editListItem = () => {
     const { title } = this.state;
-    const { list, editList } = this.props;
+    const { list, editListCallback } = this.props;
 
     if (title && title !== list.get('title')) {
-      editList(list.get('id'), title);
+      editListCallback(list.get('id'), { title });
     }
   }
 
@@ -60,6 +67,8 @@ class EditItem extends Component {
 
   render() {
     const { confirmDelete, hasChanges, title } = this.state;
+    const { edited } = this.props;
+
     return (
       <li>
         <OutsideClick handleClick={this.outsideClickCheck} inlineBlock>
@@ -68,8 +77,12 @@ class EditItem extends Component {
         <Overlay container={this} placement="bottom" target={this.target} show={confirmDelete}>
           <Tooltip placement="bottom" id="confirm-remove">Confirm Delete</Tooltip>
         </Overlay>
-        <input name="title" className="borderless-input" onChange={this.handleInput} value={title} />
-        <button className="borderless" onClick={this.editListItem} disabled={!hasChanges}><PencilIcon /></button>
+        <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
+        {
+          edited ?
+            <button className="borderless"><CheckIcon success /></button> :
+            <button className="borderless" onClick={this.editListItem} disabled={!hasChanges}><PencilIcon /></button>
+        }
       </li>
     );
   }

@@ -24,6 +24,7 @@ class ListsUI extends Component {
     collection: PropTypes.object,
     createList: PropTypes.func,
     deleteList: PropTypes.func,
+    editList: PropTypes.func,
     getLists: PropTypes.func,
     loaded: PropTypes.bool,
     loading: PropTypes.bool,
@@ -38,18 +39,23 @@ class ListsUI extends Component {
       editModal: false,
       title: '',
       isCreating: false,
-      created: false
+      created: false,
+      isEditing: false,
+      edited: false
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    const { isCreating, created } = this.state;
+    const { isCreating, created, isEditing, edited } = this.state;
 
     if (isCreating && !created && this.props.lists !== nextProps.lists) {
-      this.setState({ isCreating: false, created: true });
+      this.setState({ title: '', isCreating: false, created: true });
+      setTimeout(() => { this.setState({ created: false, isCreating: false }); }, 3000);
+    }
 
-      // clear
-      setTimeout(() => { this.setState({ title: '', created: false, isCreating: false }); }, 3000);
+    if (isEditing && !edited && this.props.lists !== nextProps.lists) {
+      this.setState({ isEditing: false, edited: true });
+      setTimeout(() => { this.setState({ edited: false, isEditing: false, editId: null }); }, 5000);
     }
   }
 
@@ -57,6 +63,12 @@ class ListsUI extends Component {
     this.setState({
       [evt.target.name]: evt.target.value
     });
+  }
+
+  submitCheck = (evt) => {
+    if (evt.key === 'Enter') {
+      this.createList();
+    }
   }
 
   createList = () => {
@@ -69,19 +81,25 @@ class ListsUI extends Component {
     }
   }
 
-  sendDeleteList = (list_id) => {
+  sendDeleteList = (listId) => {
     const { collection } = this.props;
-    this.props.deleteList(collection.get('user'), collection.get('id'), list_id);
+    this.props.deleteList(collection.get('user'), collection.get('id'), listId);
+  }
+
+  sendEditList = (listId, data) => {
+    const { collection } = this.props;
+    this.setState({ edited: false, isEditing: true, editId: listId });
+    this.props.editList(collection.get('user'), collection.get('id'), listId, data);
   }
 
   clearInput = () => this.setState({ title: '' })
   openEditModal = (evt) => { evt.stopPropagation(); this.setState({ editModal: true }); }
-  closeEditModal = () => { console.log('close'); this.setState({ editModal: false }); }
+  closeEditModal = () => { this.setState({ editModal: false }); }
 
   render() {
     const { canAdmin } = this.context;
     const { activeList, collection, list, lists } = this.props;
-    const { created, editModal, isCreating, title } = this.state;
+    const { created, editModal, isCreating, title, edited, editId } = this.state;
 
     // wait until collection is loaded
     if (!collection.get('loaded')) {
@@ -148,7 +166,7 @@ class ListsUI extends Component {
               <ul>
                 <li>
                   <button className="borderless" onClick={this.clearInput} disabled={!title.length}><XIcon /></button>
-                  <input name="title" className="borderless-input" onChange={this.handleInput} value={title} placeholder="Create new list" />
+                  <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" />
                   {
                     created ?
                       <button className="borderless"><CheckIcon success /></button> :
@@ -160,6 +178,8 @@ class ListsUI extends Component {
                     <EditItem
                       key={listObj.get('id')}
                       list={listObj}
+                      edited={edited && listObj.get('id') === editId}
+                      editListCallback={this.sendEditList}
                       deleteListCallback={this.sendDeleteList} />
                   ))
                 }

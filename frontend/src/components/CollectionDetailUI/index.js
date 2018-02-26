@@ -286,7 +286,7 @@ class CollectionDetailUI extends Component {
     return (
       <div className="wr-coll-detail">
         <CollDetailHeader
-          activeList={params.list}
+          activeList={Boolean(params.list)}
           collection={collection}
           list={list} />
 
@@ -348,7 +348,7 @@ class CollectionDetailUI extends Component {
                             params.list ? width - 8 : width
                           }
                           height={height}
-                          rowCount={objects.size}
+                          rowCount={objects ? objects.size : 0}
                           headerHeight={40}
                           rowHeight={50}
                           rowGetter={({ index }) => objects.get(index)}
@@ -391,6 +391,7 @@ class CollectionDetailUI extends Component {
         </div>
 
         {
+          /* add to list modal */
           canAdmin &&
             <Modal
               visible={addToListModal}
@@ -399,7 +400,7 @@ class CollectionDetailUI extends Component {
               header={<h4>Add to ...</h4>}
               footer={
                 <React.Fragment>
-                  <button>Create new list</button>
+                  <button disabled style={{ marginRight: 5 }}>Create new list</button>
                   <button onClick={this.addToList}>Save</button>
                 </React.Fragment>
               }>

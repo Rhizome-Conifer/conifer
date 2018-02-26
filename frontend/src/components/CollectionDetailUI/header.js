@@ -9,12 +9,13 @@ function CollDetailHeader({ activeList, collection, list }) {
     <header>
       <h1>{collection.get('title')}{activeList ? ` > ${list.get('title')}` : null }</h1>
       <hr />
-      <ReactMarkdown className="coll-desc" source={collection.get('desc')} />
+      <ReactMarkdown className="coll-desc" source={activeList ? list.get('desc') : collection.get('desc')} />
     </header>
   );
 }
 
 CollDetailHeader.propTypes = {
+  activeList: PropTypes.bool,
   collection: PropTypes.object,
   list: PropTypes.object
 };
