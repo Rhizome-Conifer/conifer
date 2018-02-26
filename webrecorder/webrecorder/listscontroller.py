@@ -10,9 +10,16 @@ class ListsController(BaseController):
         def get_lists():
             user, collection = self.load_user_coll()
 
+            with_bookmarks = True
+            if request.query.include_bookmarks:
+                with_bookmarks = request.query.include_bookmarks == 'true'
+
             lists = collection.get_lists()
 
-            return {'lists': [blist.serialize() for blist in lists]}
+            return {
+                'lists': [blist.serialize(include_bookmarks=with_bookmarks)
+                          for blist in lists]
+            }
 
         @self.app.post('/api/v1/lists')
         def add_list():

@@ -117,7 +117,7 @@ class Bookmark(RedisUniqueComponent):
         key = self.INFO_KEY.format(book=bid)
 
         self.data = {'url': props['url'],
-                     'ts': props['ts'],
+                     'timestamp': props['timestamp'],
                      'title': props['title'],
                      'state': '0',
                      'owner': self.owner.my_id,
@@ -138,7 +138,7 @@ class Bookmark(RedisUniqueComponent):
 
     def update(self, props):
         props = props or {}
-        AVAIL_PROPS = ['title', 'url', 'ts', 'browser']
+        AVAIL_PROPS = ['title', 'url', 'timestamp', 'browser']
 
         for prop in AVAIL_PROPS:
             if prop in props:
