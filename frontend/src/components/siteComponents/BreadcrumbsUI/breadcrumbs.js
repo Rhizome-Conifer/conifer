@@ -18,7 +18,7 @@ const listDetail = ({ list }) => { return list ? list.get('title') : null; };
 export const listDetailBreadcrumb = connect(
   ({ app }, { match: { params: { list } } }) => {
     return {
-      list: list && app.getIn(['lists', 'loaded']) ? app.getIn(['lists', 'lists', list]) : null
+      list: list && app.getIn(['list', 'loaded']) ? app.getIn(['list', 'list']) : null
     };
   })(listDetail);
 

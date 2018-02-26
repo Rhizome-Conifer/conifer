@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Collapsible from 'react-collapsible';
 
 import Modal from 'components/Modal';
+import { CheckIcon, PlusIcon, XIcon } from 'components/icons';
 
 import ListItem from './ListItem';
 import EditItem from './EditItem';
@@ -18,32 +19,69 @@ class ListsUI extends Component {
   };
 
   static propTypes = {
+    activeList: PropTypes.string,
+    addToList: PropTypes.func,
     collection: PropTypes.object,
+    createList: PropTypes.func,
+    deleteList: PropTypes.func,
+    getLists: PropTypes.func,
     loaded: PropTypes.bool,
     loading: PropTypes.bool,
     lists: PropTypes.object,
-    list: PropTypes.object,
-    listId: PropTypes.string,
-    getLists: PropTypes.func
+    list: PropTypes.object
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      editModal: false
+      editModal: false,
+      title: '',
+      isCreating: false,
+      created: false
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { isCreating, created } = this.state;
+
+    if (isCreating && !created && this.props.lists !== nextProps.lists) {
+      this.setState({ isCreating: false, created: true });
+
+      // clear
+      setTimeout(() => { this.setState({ title: '', created: false, isCreating: false }); }, 3000);
+    }
+  }
+
+  handleInput = (evt) => {
+    this.setState({
+      [evt.target.name]: evt.target.value
+    });
+  }
+
+  createList = () => {
+    const { collection, createList } = this.props;
+    const { title } = this.state;
+
+    if (title) {
+      this.setState({ created: false, isCreating: true });
+      createList(collection.get('user'), collection.get('id'), title);
+    }
+  }
+
+  sendDeleteList = (list_id) => {
+    const { collection } = this.props;
+    this.props.deleteList(collection.get('user'), collection.get('id'), list_id);
+  }
+
+  clearInput = () => this.setState({ title: '' })
   openEditModal = (evt) => { evt.stopPropagation(); this.setState({ editModal: true }); }
   closeEditModal = () => { console.log('close'); this.setState({ editModal: false }); }
 
   render() {
     const { canAdmin } = this.context;
-    const { collection, list, lists, listId } = this.props;
-    const { editModal } = this.state;
-
-    const listItems = lists.entrySeq();
+    const { activeList, collection, list, lists } = this.props;
+    const { created, editModal, isCreating, title } = this.state;
 
     // wait until collection is loaded
     if (!collection.get('loaded')) {
@@ -69,8 +107,8 @@ class ListsUI extends Component {
           <header>Collection Navigator <span role="button" className="sidebar-minimize" onClick={this.minimize}>-</span></header>
 
           {
-            list &&
-              <Link to={`/${collection.get('user')}/${collection.get('id')}`} className="button-link">See All Resouces in Collection</Link>
+            activeList &&
+              <Link to={`/${collection.get('user')}/${collection.get('id')}`} className="button-link">See All Resources in Collection</Link>
           }
 
           <div className="lists-body">
@@ -81,13 +119,13 @@ class ListsUI extends Component {
               trigger={collapsibleHeader}>
               <ul>
                 {
-                  listItems.map(listObj => (
+                  lists.map(listObj => (
                     <ListItem
-                      key={listObj[0]}
-                      selected={list && listObj[0] === list.get('id')}
-                      id={listObj[0]}
-                      list={listObj[1]}
-                      collection={collection} />
+                      key={listObj.get('id')}
+                      selected={list && listObj.get('id') === activeList}
+                      list={listObj}
+                      collection={collection}
+                      addToList={this.props.addToList} />
                   ))
                 }
               </ul>
@@ -109,15 +147,20 @@ class ListsUI extends Component {
               dialogClassName="lists-edit-modal">
               <ul>
                 <li>
-                  <button className="borderless">x</button>
-                  <input className="borderless-input" placeholder="Create new list" />
-                  <button className="borderless">✓</button>
+                  <button className="borderless" onClick={this.clearInput} disabled={!title.length}><XIcon /></button>
+                  <input name="title" className="borderless-input" onChange={this.handleInput} value={title} placeholder="Create new list" />
+                  {
+                    created ?
+                      <button className="borderless"><CheckIcon success /></button> :
+                      <button className="borderless" onClick={this.createList} disabled={!title.length || isCreating}><PlusIcon /></button>
+                  }
                 </li>
                 {
-                  listItems.map(listObj => (
+                  lists.map(listObj => (
                     <EditItem
-                      key={listObj[0]}
-                      list={listObj[1]} />
+                      key={listObj.get('id')}
+                      list={listObj}
+                      deleteListCallback={this.sendDeleteList} />
                   ))
                 }
               </ul>

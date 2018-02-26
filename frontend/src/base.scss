@@ -189,6 +189,10 @@ body {
   }
 }
 
+.check-mark.success {
+  fill: green;
+}
+
 /* collasible trigger animation */
 .Collapsible__trigger {
     .glyphicon-triangle-right {

@@ -1,5 +1,27 @@
 @import 'src/vars';
 
+.add-to-lists-modal {
+    width: 30vw;
+    max-width: 45rem;
+
+    h4 {
+        margin: 0;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+
+        li {
+            label {
+                margin-left: 1rem;
+            }
+        }
+    }
+}
+
 .wr-coll-detail {
     flex-grow: 1;
     display: flex;

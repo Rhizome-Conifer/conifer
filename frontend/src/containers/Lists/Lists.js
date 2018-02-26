@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { load as loadLists, edit, remove } from 'redux/modules/lists';
+import { addTo, create, deleteList, edit, load as loadList } from 'redux/modules/list';
+import { loadLists } from 'redux/modules/collection';
 
 import ListsUI from 'components/ListsUI';
 
@@ -10,12 +11,12 @@ import ListsUI from 'components/ListsUI';
 class Lists extends Component {
 
   static propTypes = {
+    activeList: PropTypes.string,
     collection: PropTypes.object,
     loaded: PropTypes.bool,
     loading: PropTypes.bool,
     lists: PropTypes.object,
     list: PropTypes.object,
-    listId: PropTypes.string,
     getLists: PropTypes.func,
     editList: PropTypes.func,
     removeList: PropTypes.func
@@ -24,9 +25,9 @@ class Lists extends Component {
   componentWillMount() {
     const { getLists, loaded, loading } = this.props;
 
-    if (!loaded && !loading) {
-      getLists();
-    }
+    // if (!loaded && !loading) {
+    //   getLists();
+    // }
   }
 
   render() {
@@ -40,15 +41,26 @@ const mapStateToProps = ({ app }) => {
     collection: app.get('collection'),
     loaded: app.getIn(['lists', 'loaded']),
     loading: app.getIn(['lists', 'loading']),
-    lists: app.getIn(['lists', 'lists'])
+    lists: app.getIn(['collection', 'lists']),
+    list: app.getIn(['list', 'list']),
+    isCreating: app.getIn(['list', 'creating']),
+    created: app.getIn(['list', 'created'])
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    getLists: () => dispatch(loadLists()),
-    editList: (id, title) => dispatch(edit(id, title)),
-    removeList: id => dispatch(remove(id))
+    createList: (user, coll, title) => {
+      return dispatch(create(user, coll, title))
+              .then(() => dispatch(loadLists(user, coll)));
+    },
+    getLists: (user, coll) => dispatch(loadLists(user, coll)),
+    addToList: (user, coll, listId, data) => dispatch(addTo(user, coll, listId, data)),
+    editList: (user, coll, id, title) => dispatch(edit(id, title)),
+    deleteList: (user, coll, id) => {
+      return dispatch(deleteList(user, coll, id))
+               .then(() => dispatch(loadLists(user, coll)));
+    }
   };
 };
 

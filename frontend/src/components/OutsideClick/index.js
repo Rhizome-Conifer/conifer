@@ -16,13 +16,13 @@ class OutsideClick extends Component {
   };
 
   componentDidMount() {
-    window.wrAppContainer.addEventListener('mousedown', this.checkClick);
-    window.wrAppContainer.addEventListener('keyup', this.checkKey);
+    document.addEventListener('mousedown', this.checkClick);
+    document.addEventListener('keyup', this.checkKey);
   }
 
   componentWillUnmount() {
-    window.wrAppContainer.removeEventListener('mousedown', this.checkClick);
-    window.wrAppContainer.removeEventListener('keyup', this.checkKey);
+    document.removeEventListener('mousedown', this.checkClick);
+    document.removeEventListener('keyup', this.checkKey);
   }
 
   checkKey = (evt) => {

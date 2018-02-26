@@ -9,16 +9,16 @@ import Resizable from 'components/Resizable';
 class CollectionSidebar extends Component {
   static propTypes = {
     collection: PropTypes.object,
-    list: PropTypes.object
+    activeList: PropTypes.string
   };
 
   render() {
-    const { list } = this.props;
+    const { activeList } = this.props;
 
     return (
       <Resizable classes="wr-coll-sidebar-container">
         <div className="wr-coll-sidebar-stretch">
-          <Lists list={list} />
+          <Lists activeList={activeList} />
 
           <div className="wr-coll-sidebar">
             meta info sidebar

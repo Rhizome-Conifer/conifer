@@ -11,7 +11,7 @@ import collection from './modules/collection';
 import collections from './modules/collections';
 import controls from './modules/controls';
 import infoStats from './modules/infoStats';
-import lists from './modules/lists';
+import list from './modules/list';
 import passwordReset from './modules/passwordReset';
 import recordings from './modules/recordings';
 import remoteBrowsers from './modules/remoteBrowsers';
@@ -31,7 +31,7 @@ const makeAppReducer = () => combineImmutableReduers({
   collections,
   controls,
   infoStats,
-  lists,
+  list,
   passwordReset,
   recordings,
   remoteBrowsers,

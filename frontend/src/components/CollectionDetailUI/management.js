@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
 
@@ -9,8 +9,8 @@ import 'shared/scss/toggle.scss';
 
 function CollectionManagement(props, context) {
   const { canAdmin } = context;
-  const { expandAll, groupDisplay, listActive, onToggle,
-          toggleExpandAllSessions, search, searchText } = props;
+  const { expandAll, groupDisplay, activeList, onToggle, openAddToList,
+          toggleExpandAllSessions, search, searchText, selectedPages } = props;
 
   return (
     <nav>
@@ -23,13 +23,7 @@ function CollectionManagement(props, context) {
           <span className="glyphicon glyphicon-upload" />
       }
       {
-        /* not implemented yet
-        <span className="glyphicon glyphicon-th-list" />
-        */
-      }
-
-      {
-        !listActive &&
+        !activeList &&
           <div className="toggle-label">
             <span onClick={onToggle}>Group by session</span>
             <Toggle
@@ -38,7 +32,10 @@ function CollectionManagement(props, context) {
               icons={false} />
           </div>
       }
-
+      {
+        selectedPages &&
+          <button className="open-all" onClick={openAddToList}>Add selection to lists</button>
+      }
       {
         groupDisplay &&
           <button className="open-all" onClick={toggleExpandAllSessions}>{expandAll ? 'Close' : 'Open'} All Sessions</button>
@@ -51,15 +48,19 @@ function CollectionManagement(props, context) {
 CollectionManagement.propTypes = {
   expandAll: PropTypes.bool,
   groupDisplay: PropTypes.bool,
-  listActive: PropTypes.bool,
+  activeList: PropTypes.bool,
   onToggle: PropTypes.func,
+  openAddToList: PropTypes.func,
   toggleExpandAllSessions: PropTypes.func,
   search: PropTypes.func,
-  searchText: PropTypes.string
+  searchText: PropTypes.string,
+  selectedPages: PropTypes.bool
 };
 
 CollectionManagement.contextTypes = {
   canAdmin: PropTypes.bool
 };
 
-export default CollectionManagement;
+export {
+  CollectionManagement
+};

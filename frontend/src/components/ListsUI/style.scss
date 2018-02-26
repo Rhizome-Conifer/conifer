@@ -59,7 +59,14 @@
                 }
 
                 .wrapper {
+                    transition: background-color 300ms ease-in-out;
                     padding: .2rem 0 .2rem 0;
+                }
+
+                &.targeted {
+                    .wrapper {
+                        background-color: $light-gray;
+                    }
                 }
 
                 &.selected {
@@ -103,6 +110,7 @@
 
         li {
             display: flex;
+            position: relative;
 
             &:first-child {
                 margin-bottom: 1rem;
@@ -117,7 +125,15 @@
             }
 
             button {
-                width: 3rem;
+                &.remove-list {
+                    transition: fill 125ms ease-in-out;
+
+                    &:hover {
+                        fill: red;
+                    }
+                }
+
+                //width: 3rem;
                 margin: 0 .5rem;
             }
         }

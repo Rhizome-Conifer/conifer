@@ -20,7 +20,7 @@ styleLoaders:
 # It depends on value of NODE_ENV environment variable
 # This param can also be set in webpack config:
 #   entry: 'bootstrap-loader/extractStyles'
-extractStyles: false
+# extractStyles: false
 # env:
 #   development:
 #     extractStyles: false
@@ -83,7 +83,7 @@ styles:
 
   # Components w/ JavaScript
   modals: true
-  tooltip: false
+  tooltip: true
   popovers: false
   carousel: false
 

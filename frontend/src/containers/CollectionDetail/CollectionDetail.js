@@ -5,7 +5,7 @@ import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
 import { load as loadColl } from 'redux/modules/collection';
-import { load as loadLists } from 'redux/modules/lists';
+import { addTo, load as loadList } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { getOrderedBookmarks, getOrderedRecordings, bookmarkSearchResults } from 'redux/selectors';
 
@@ -53,14 +53,19 @@ const initialData = [
     }
   },
   {
-    promise: ({ store: { dispatch } }) => {
-      return dispatch(loadLists());
+    promise: ({ match: { params: { user, coll, list } }, store: { dispatch } }) => {
+      if (list) {
+        return dispatch(loadList(user, coll, list));
+      }
+
+      return undefined;
     }
   },
   {
     promise: ({ store: { dispatch, getState } }) => {
-      if(!isRBLoaded(getState()))
+      if(!isRBLoaded(getState())) {
         return dispatch(loadRB());
+      }
 
       return undefined;
     }
@@ -80,13 +85,23 @@ const mapStateToProps = (outerState, { match: { params: { list } } }) => {
     recordings: isLoaded ? getOrderedRecordings(app) : null,
     bookmarks: isIndexing ? getOrderedBookmarks(app) : bookmarkFeed,
     searchText,
-    list: app.getIn(['lists', 'lists', list])
+    list: app.getIn(['list', 'list'])
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
   return {
     searchBookmarks: createSearchAction('collection.bookmarks'),
+    addItemsToLists: (pages, lists) => {
+      const bookmarkPromises = [];
+      for (const list of lists) {
+        for (const page of pages) {
+          bookmarkPromises.push(dispatch(addTo(user, coll, list, page)));
+        }
+      }
+
+      return Promise.all(bookmarkPromises);
+    },
     dispatch
   };
 };

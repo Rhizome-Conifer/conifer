@@ -10,13 +10,15 @@ import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
 import SessionCollapsible from 'components/SessionCollapsible';
+import Modal from 'components/Modal';
 import { CloseIcon } from 'components/icons';
 
 import 'react-virtualized/styles.css';
 
-import CollectionManagement from './management';
 import CollectionSidebar from './sidebar';
 import CollDetailHeader from './header';
+import DnDRow from './rows';
+import { CollectionManagement } from './management';
 import { BrowserRenderer, LinkRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
@@ -24,6 +26,7 @@ import './style.scss';
 
 class CollectionDetailUI extends Component {
   static propTypes = {
+    addItemsToLists: PropTypes.func,
     auth: PropTypes.object,
     bookmarks: PropTypes.object,
     browsers: PropTypes.object,
@@ -48,7 +51,9 @@ class CollectionDetailUI extends Component {
       selectedSession: null,
       selectedPageIdx: null,
       selectedGroupedPageIdx: null,
-      selectedRec: null
+      selectedRec: null,
+      addToListModal: false,
+      checkedLists: {}
     };
 
     this.state = this.initialState;
@@ -164,6 +169,31 @@ class CollectionDetailUI extends Component {
     }
   }
 
+  addToList = () => {
+    const { checkedLists, selectedPageIdx } = this.state;
+    const { bookmarks } = this.props;
+
+    if (!checkedLists || Object.entries(checkedLists).length === 0 || !selectedPageIdx) {
+      return;
+    }
+
+    const selectedLists = Object.entries(checkedLists).filter(l => l[1]);
+    const lists = selectedLists.map(obj => obj[0]);
+
+    const pages = [];
+
+    if (typeof selectedPageIdx === "object") {
+      for(const pgIdx of selectedPageIdx) {
+        pages.push(bookmarks.get(pgIdx));
+      }
+    } else {
+      pages.push(bookmarks.get(selectedPageIdx));
+    }
+
+    this.props.addItemsToLists(pages, lists);
+    this.closeAddToList();
+  }
+
   openAndScroll = (sesh) => {
     const index = this.props.recordings.findIndex(o => o.get('id') === sesh.get('id'));
     const top = this.sessionContainer.querySelectorAll('.wr-coll-session')[index].offsetTop;
@@ -223,10 +253,21 @@ class CollectionDetailUI extends Component {
     return index === selectedPageIdx ? 'selected' : '';
   }
 
+  listCheckbox = (evt) => {
+    const { checkedLists } = this.state;
+
+    checkedLists[evt.target.name] = evt.target.checked;
+
+    this.setState({ checkedLists });
+  }
+
+  openAddToList = () => this.setState({ addToListModal: true })
+  closeAddToList = () => this.setState({ addToListModal: false })
+
   render() {
     const { canAdmin } = this.context;
-    const { bookmarks, browsers, collection, list, recordings, searchText } = this.props;
-    const { groupDisplay, expandAll, selectedSession,
+    const { bookmarks, browsers, collection, list, recordings, searchText, match: { params } } = this.props;
+    const { addToListModal, checkedLists, groupDisplay, expandAll, selectedSession, selectedPageIdx,
             selectedGroupedPageIdx, selectedRec } = this.state;
 
     // don't render until loaded
@@ -234,38 +275,51 @@ class CollectionDetailUI extends Component {
       return null;
     }
 
+    const objectLabel = params.list ? 'Bookmark' : 'Page';
+    const objects = params.list ? list.get('bookmarks') : bookmarks;
+
+    // add react-dnd integration
+    const customRowRenderer = (props) => {
+      return <DnDRow {...props} />;
+    };
+
     return (
       <div className="wr-coll-detail">
-        <CollDetailHeader collection={collection} list={list} />
+        <CollDetailHeader
+          activeList={params.list}
+          collection={collection}
+          list={list} />
 
         <div className="grid-wrapper">
           <div className="wr-coll-container">
 
-            <CollectionSidebar collection={collection} list={list} />
+            <CollectionSidebar collection={collection} activeList={params.list} />
 
             <div className="wr-coll-utilities">
               <CollectionManagement
                 expandAll={expandAll}
                 groupDisplay={groupDisplay}
                 onToggle={this.onToggle}
-                listActive={Boolean(list)}
+                activeList={Boolean(params.list)}
                 toggleExpandAllSessions={this.toggleExpandAllSessions}
                 search={this.search}
-                searchText={searchText} />
+                searchText={searchText}
+                selectedPages={selectedPageIdx !== null}
+                openAddToList={this.openAddToList} />
             </div>
 
             <div className="lists-modifier">
               {
-                list &&
+                params.list &&
                   <header className="lists-header">
                     <span>Bookmarks in Selected List</span>
                     <Link to={`/${collection.get('user')}/${collection.get('id')}`}>Back to Collection Index <CloseIcon /></Link>
                   </header>
               }
             </div>
-            <div className={classNames('wr-coll-detail-table', { 'with-lists': list })}>
+            <div className={classNames('wr-coll-detail-table', { 'with-lists': params.list })}>
               {
-                !list && groupDisplay ?
+                !params.list && groupDisplay ?
                   <div className="wr-coll-session-container" ref={(obj) => { this.sessionContainer = obj; }}>
                     {
                       recordings.map((rec) => {
@@ -291,15 +345,16 @@ class CollectionDetailUI extends Component {
                         <Table
                           width={
                             /* factor border width */
-                            list ? width - 8 : width
+                            params.list ? width - 8 : width
                           }
                           height={height}
-                          rowCount={bookmarks.size}
+                          rowCount={objects.size}
                           headerHeight={40}
                           rowHeight={50}
-                          rowGetter={({ index }) => bookmarks.get(index)}
+                          rowGetter={({ index }) => objects.get(index)}
                           rowClassName={this.testRowHighlight}
                           onRowClick={this.onSelectRow}
+                          rowRenderer={customRowRenderer}
                           sort={this.sort}
                           sortBy={collection.getIn(['sortBy', 'sort'])}
                           sortDirection={collection.getIn(['sortBy', 'dir'])}>
@@ -310,7 +365,7 @@ class CollectionDetailUI extends Component {
                             cellRenderer={TimestampRenderer} />
                           <Column
                             width={200}
-                            label="bookmark"
+                            label={objectLabel}
                             dataKey="title"
                             flexGrow={1}
                             columnData={{ collection }}
@@ -334,6 +389,35 @@ class CollectionDetailUI extends Component {
             </div>
           </div>
         </div>
+
+        {
+          canAdmin &&
+            <Modal
+              visible={addToListModal}
+              closeCb={this.closeAddToList}
+              dialogClassName="add-to-lists-modal"
+              header={<h4>Add to ...</h4>}
+              footer={
+                <React.Fragment>
+                  <button>Create new list</button>
+                  <button onClick={this.addToList}>Save</button>
+                </React.Fragment>
+              }>
+              <ul>
+                {
+                  collection.get('lists').map((listObj) => {
+                    const id = listObj.get('id');
+                    return (
+                      <li key={id}>
+                        <input type="checkbox" onChange={this.listCheckbox} name={id} id={`add-to-list-${id}`} checked={checkedLists[id] || false} />
+                        <label htmlFor={`add-to-list-${id}`}>{listObj.get('title')}</label>
+                      </li>
+                    );
+                  })
+                }
+              </ul>
+            </Modal>
+        }
       </div>
     );
   }
