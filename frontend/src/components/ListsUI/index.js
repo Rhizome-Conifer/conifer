@@ -15,7 +15,8 @@ import './style.scss';
 class ListsUI extends Component {
 
   static contextTypes = {
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
@@ -97,7 +98,7 @@ class ListsUI extends Component {
   closeEditModal = () => { this.setState({ editModal: false }); }
 
   render() {
-    const { canAdmin } = this.context;
+    const { canAdmin, isAnon } = this.context;
     const { activeList, collection, list, lists } = this.props;
     const { created, editModal, isCreating, title, edited, editId } = this.state;
 
@@ -113,7 +114,7 @@ class ListsUI extends Component {
           <h4>Lists</h4>
         </div>
         {
-          canAdmin &&
+          !isAnon && canAdmin &&
             <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
         }
       </header>
@@ -150,7 +151,7 @@ class ListsUI extends Component {
             </Collapsible>
 
             {
-              canAdmin &&
+              !isAnon && canAdmin &&
                 <button onClick={this.openEditModal}>+ new list</button>
             }
           </div>

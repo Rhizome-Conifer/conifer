@@ -1,5 +1,5 @@
 import React from 'react';
-import { defaultTableRowRenderer} from 'react-virtualized';
+import defaultRowRenderer from 'react-virtualized/dist/commonjs/Table/defaultRowRenderer';
 import { DragSource } from 'react-dnd';
 import { draggableTypes } from 'config';
 
@@ -17,9 +17,18 @@ function collect(connect, monitor) {
   };
 }
 
-function DnDRow(props) {
-  const { isDragging, connectDragSource, ...passThrough } = props;
-  return props.connectDragSource(defaultTableRowRenderer(passThrough));
+function DefaultRow(props) {
+  return defaultRowRenderer(props);
 }
 
-export default DragSource(draggableTypes.PAGE_ITEM, pageSource, collect)(DnDRow);
+function DnDRowBuilder(props) {
+  const { isDragging, connectDragSource, ...passThrough } = props;
+  return props.connectDragSource(defaultRowRenderer(passThrough));
+}
+
+const DnDRow = DragSource(draggableTypes.PAGE_ITEM, pageSource, collect)(DnDRowBuilder);
+
+export {
+  DefaultRow,
+  DnDRow
+};

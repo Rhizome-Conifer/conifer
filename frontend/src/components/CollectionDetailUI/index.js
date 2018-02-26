@@ -17,7 +17,7 @@ import 'react-virtualized/styles.css';
 
 import CollectionSidebar from './sidebar';
 import CollDetailHeader from './header';
-import DnDRow from './rows';
+import { DefaultRow, DnDRow } from './rows';
 import { CollectionManagement } from './management';
 import { BrowserRenderer, LinkRenderer, TimestampRenderer } from './columns';
 
@@ -40,6 +40,7 @@ class CollectionDetailUI extends Component {
 
   static contextTypes = {
     canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   }
 
   constructor(props) {
@@ -265,7 +266,7 @@ class CollectionDetailUI extends Component {
   closeAddToList = () => this.setState({ addToListModal: false })
 
   render() {
-    const { canAdmin } = this.context;
+    const { canAdmin, isAnon } = this.context;
     const { bookmarks, browsers, collection, list, recordings, searchText, match: { params } } = this.props;
     const { addToListModal, checkedLists, groupDisplay, expandAll, selectedSession, selectedPageIdx,
             selectedGroupedPageIdx, selectedRec } = this.state;
@@ -280,6 +281,9 @@ class CollectionDetailUI extends Component {
 
     // add react-dnd integration
     const customRowRenderer = (props) => {
+      if (isAnon) {
+        return <DefaultRow {...props} />;
+      }
       return <DnDRow {...props} />;
     };
 
@@ -350,7 +354,7 @@ class CollectionDetailUI extends Component {
                           height={height}
                           rowCount={objects ? objects.size : 0}
                           headerHeight={40}
-                          rowHeight={50}
+                          rowHeight={40}
                           rowGetter={({ index }) => objects.get(index)}
                           rowClassName={this.testRowHighlight}
                           onRowClick={this.onSelectRow}

@@ -8,7 +8,7 @@ import 'shared/scss/toggle.scss';
 
 
 function CollectionManagement(props, context) {
-  const { canAdmin } = context;
+  const { canAdmin, isAnon } = context;
   const { expandAll, groupDisplay, activeList, onToggle, openAddToList,
           toggleExpandAllSessions, search, searchText, selectedPages } = props;
 
@@ -33,7 +33,7 @@ function CollectionManagement(props, context) {
           </div>
       }
       {
-        selectedPages &&
+        !isAnon && canAdmin && selectedPages &&
           <button className="open-all" onClick={openAddToList}>Add selection to lists</button>
       }
       {
@@ -58,7 +58,8 @@ CollectionManagement.propTypes = {
 };
 
 CollectionManagement.contextTypes = {
-  canAdmin: PropTypes.bool
+  canAdmin: PropTypes.bool,
+  isAnon: PropTypes.bool
 };
 
 export {
