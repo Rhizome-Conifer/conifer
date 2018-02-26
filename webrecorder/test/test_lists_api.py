@@ -1,6 +1,8 @@
 from .testutils import BaseWRTests, FullStackTests
 import time
 
+from webrecorder.models.list_bookmarks import BookmarkList, Bookmark
+
 
 # ============================================================================
 class TestListsAPI(FullStackTests):
@@ -34,8 +36,8 @@ class TestListsAPI(FullStackTests):
 
         TestListsAPI.coll = _coll
 
-        self.redis.set('c:{coll}:n:list_count'.format(coll=_coll), 1000)
-        self.redis.set('c:{coll}:n:bookmark_count'.format(coll=_coll), 100)
+        self.redis.set(BookmarkList.COUNTER_KEY, 1000)
+        self.redis.set(Bookmark.COUNTER_KEY, 100)
 
     def test_create_list(self):
         params = {'title': 'New List',
@@ -55,7 +57,7 @@ class TestListsAPI(FullStackTests):
         assert blist['desc'] == 'List Description Goes Here!'
         assert blist['public'] == '0'
 
-        assert self.redis.get('c:{coll}:n:list_count'.format(coll=self.coll)) == '1001'
+        assert self.redis.get(BookmarkList.COUNTER_KEY) == '1001'
 
     def test_create_list_again(self):
         params = {'title': 'New List'}
@@ -211,7 +213,7 @@ class TestListsAPI(FullStackTests):
         assert bookmark['timestamp'] == '20181226000800'
         assert bookmark['browser'] == 'chrome:60'
 
-        assert self.redis.get('c:{coll}:n:bookmark_count'.format(coll=self.coll)) == '101'
+        assert self.redis.get(Bookmark.COUNTER_KEY) == '101'
 
     def test_get_bookmark_error_list_missing(self):
         res = self.testapp.get(self._format('/api/v1/bookmark/101?user={user}&coll=temp'), status=400)

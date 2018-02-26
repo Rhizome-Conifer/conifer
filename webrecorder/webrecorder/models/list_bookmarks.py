@@ -9,7 +9,7 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
     ORDERED_LIST_KEY = 'l:{blist}:bookmarks'
 
-    COUNTER_KEY = 'c:{coll}:n:list_count'
+    COUNTER_KEY = 'n:lists:count'
 
     def init_new(self, collection, props):
         self.owner = collection
@@ -28,12 +28,6 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
         self._init_new()
 
         return list_id
-
-    def _create_new_id(self):
-        counter_key = self.COUNTER_KEY.format(coll=self.owner.my_id)
-        self.my_id = self.redis.incr(counter_key)
-        self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
-        return self.my_id
 
     def create_bookmark(self, props):
         bookmark = Bookmark(redis=self.redis,
@@ -107,7 +101,7 @@ class Bookmark(RedisUniqueComponent):
     INFO_KEY = 'b:{book}:info'
     ALL_KEYS = 'b:{book}:*'
 
-    COUNTER_KEY = 'c:{coll}:n:bookmark_count'
+    COUNTER_KEY = 'n:bookmarks:count'
 
     def init_new(self, bookmark_list, props):
         self.owner = bookmark_list
@@ -129,12 +123,6 @@ class Bookmark(RedisUniqueComponent):
 
         self.name = str(bid)
         self._init_new()
-
-    def _create_new_id(self):
-        counter_key = self.COUNTER_KEY.format(coll=self.owner.get_owner().my_id)
-        self.my_id = self.redis.incr(counter_key)
-        self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
-        return self.my_id
 
     def update(self, props):
         props = props or {}
