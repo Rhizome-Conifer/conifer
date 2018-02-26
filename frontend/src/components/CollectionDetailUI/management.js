@@ -40,7 +40,10 @@ function CollectionManagement(props, context) {
         groupDisplay &&
           <button className="open-all" onClick={toggleExpandAllSessions}>{expandAll ? 'Close' : 'Open'} All Sessions</button>
       }
-      <Searchbox search={search} searchText={searchText} />
+      {
+        !activeList &&
+          <Searchbox search={search} searchText={searchText} />
+      }
     </nav>
   );
 }

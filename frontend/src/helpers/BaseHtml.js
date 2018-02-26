@@ -21,6 +21,7 @@ export default class BaseHtml extends Component {
     return (
       <html lang="en-US">
         <head>
+          <meta charSet="utf-8" />
           {head.base.toComponent()}
           {head.title.toComponent()}
           {head.meta.toComponent()}
