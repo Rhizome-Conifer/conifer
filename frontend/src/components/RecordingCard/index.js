@@ -30,7 +30,7 @@ function RecordingCard(props) {
               </small>
             </div>
             <div className="recording-time-info top-buffer-sm text-left right-buffer-sm">
-              <TimeFormat epoch={rec.get('updated_at')} />
+              <TimeFormat iso={rec.get('updated_at')} />
             </div>
 
             <div className="recording-time-info text-left right-buffer-sm">

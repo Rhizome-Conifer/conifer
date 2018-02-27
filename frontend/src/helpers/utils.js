@@ -8,6 +8,17 @@ export function addTrailingSlash(url) {
   return url;
 }
 
+export function isoToDisplay(dateTime, gmt = false) {
+  let displayTime;
+  const date = new Date(dateTime);
+  if(gmt) {
+    displayTime = date.toGMTString();
+  } else {
+    displayTime = date.toLocaleString();
+  }
+  return displayTime;
+}
+
 export function buildDate(dt, epoch, gmt) {
   let displayTime;
 

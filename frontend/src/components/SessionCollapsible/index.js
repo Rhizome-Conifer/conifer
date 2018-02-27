@@ -36,7 +36,7 @@ class SessionCollapsible extends PureComponent {
         { pageCount > 0 && <span className="glyphicon glyphicon-triangle-right" />}
         <h2>{recording.get('title')}</h2>
         <span className="badge">{ recording.get('pages').size }</span>
-        <TimeFormat classes="session-ts" epoch={recording.get('updated_at')} />
+        <TimeFormat classes="session-ts" iso={recording.get('updated_at')} />
         <SizeFormat bytes={recording.get('size')} />
       </header>
     );
