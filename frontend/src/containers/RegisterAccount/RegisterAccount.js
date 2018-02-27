@@ -50,8 +50,8 @@ class RegisterAccount extends Component {
         {
           error ?
             <React.Fragment>
-              <h2>Error validating Registration</h2>
-              <p>Please try the link again, or contact <a href="mailto:support@webrecorder.io">support@webrecorder.io</a> if the problem persists.</p>
+              <h2>Error Validating Registration</h2>
+              <p>Please try the link again or contact <a href="mailto:support@webrecorder.io">support@webrecorder.io</a> if the problem persists.</p>
             </React.Fragment> :
             <h2>Validating Registration...</h2>
         }
