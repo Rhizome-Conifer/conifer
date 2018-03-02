@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getBookmarkCount } from 'redux/selectors';
+import { getPageCount } from 'redux/selectors';
 
 import { ToolBinUI } from 'components/controls';
 
@@ -11,7 +11,7 @@ const mapStateToProps = ({ app }) => {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     open: app.getIn(['toolBin', 'open']),
     collSize: app.getIn(['collection', 'size']),
-    bookmarkCount: getBookmarkCount(app)
+    pageCount: getPageCount(app)
   };
 };
 

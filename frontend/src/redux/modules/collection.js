@@ -43,7 +43,7 @@ export default function collection(state = initialState, action = {}) {
         accessed: action.accessed,
         error: null,
 
-        bookmarks: bks,
+        pages: bks,
         created_at,
         desc,
         download_url,

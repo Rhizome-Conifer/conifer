@@ -10,7 +10,7 @@ export default function createStore(client, data) {
 
   const searchConfig = reduxSearch({
     resourceIndexes: {
-      'collection.bookmarks': ({ resources, indexDocument, state }) => {
+      'collection.pages': ({ resources, indexDocument, state }) => {
         if (resources) {
           resources.forEach((bk) => {
             const id = bk.get('id');

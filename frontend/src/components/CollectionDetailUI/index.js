@@ -28,14 +28,14 @@ class CollectionDetailUI extends Component {
   static propTypes = {
     addItemsToLists: PropTypes.func,
     auth: PropTypes.object,
-    bookmarks: PropTypes.object,
+    pages: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     list: PropTypes.object,
     recordings: PropTypes.object,
     searchText: PropTypes.string,
-    searchBookmarks: PropTypes.func
+    searchPages: PropTypes.func
   };
 
   static contextTypes = {
@@ -172,7 +172,7 @@ class CollectionDetailUI extends Component {
 
   addToList = () => {
     const { checkedLists, selectedPageIdx } = this.state;
-    const { bookmarks } = this.props;
+    const { pages } = this.props;
 
     if (!checkedLists || Object.entries(checkedLists).length === 0 || !selectedPageIdx) {
       return;
@@ -181,17 +181,17 @@ class CollectionDetailUI extends Component {
     const selectedLists = Object.entries(checkedLists).filter(l => l[1]);
     const lists = selectedLists.map(obj => obj[0]);
 
-    const pages = [];
+    const pagesToAdd = [];
 
     if (typeof selectedPageIdx === "object") {
       for(const pgIdx of selectedPageIdx) {
-        pages.push(bookmarks.get(pgIdx));
+        pagesToAdd.push(pages.get(pgIdx));
       }
     } else {
-      pages.push(bookmarks.get(selectedPageIdx));
+      pagesToAdd.push(pages.get(selectedPageIdx));
     }
 
-    this.props.addItemsToLists(pages, lists);
+    this.props.addItemsToLists(pagesToAdd, lists);
     this.closeAddToList();
   }
 
@@ -216,14 +216,14 @@ class CollectionDetailUI extends Component {
   }
 
   search = (evt) => {
-    const { dispatch, searchBookmarks } = this.props;
+    const { dispatch, searchPages } = this.props;
 
     // if in group mode, switch to flat display
     if(this.state.groupDisplay) {
       this.onToggle();
     }
 
-    dispatch(searchBookmarks(evt.target.value));
+    dispatch(searchPages(evt.target.value));
   }
 
   sort = ({ sortBy, sortDirection }) => {
@@ -267,7 +267,7 @@ class CollectionDetailUI extends Component {
 
   render() {
     const { canAdmin, isAnon } = this.context;
-    const { bookmarks, browsers, collection, list, recordings, searchText, match: { params } } = this.props;
+    const { pages, browsers, collection, list, recordings, searchText, match: { params } } = this.props;
     const { addToListModal, checkedLists, groupDisplay, expandAll, selectedSession, selectedPageIdx,
             selectedGroupedPageIdx, selectedRec } = this.state;
 
@@ -277,7 +277,7 @@ class CollectionDetailUI extends Component {
     }
 
     const objectLabel = params.list ? 'Bookmark' : 'Page';
-    const objects = params.list ? list.get('bookmarks') : bookmarks;
+    const objects = params.list ? list.get('bookmarks') : pages;
 
     // add react-dnd integration
     const customRowRenderer = (props) => {

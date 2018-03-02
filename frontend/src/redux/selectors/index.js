@@ -8,7 +8,7 @@ import { rts, truncate } from 'helpers/utils';
 
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
 const getArchives = state => state.getIn(['controls', 'archives']);
-const getBookmarks = state => (state.app ? state.app : state).getIn(['collection', 'bookmarks']);
+const getPages = state => (state.app ? state.app : state).getIn(['collection', 'pages']);
 const getCollections = state => state.getIn(['collections', 'collections']);
 const getRecordings = state => state.getIn(['collection', 'recordings']);
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
@@ -34,41 +34,41 @@ const sortFn = (a, b, by = null) => {
 
 // redux-search
 const { text, result } = getSearchSelectors({
-  resourceName: 'collection.bookmarks',
+  resourceName: 'collection.pages',
   resourceSelector: (resourceName, state) => {
     return state.app.getIn(resourceName.split('.'));
   }
 });
 
-export const timestampOrderedBookmarkSearchResults = createSelector(
-  [result, getBookmarks, text],
-  (bookmarkIds, bookmarkObjs, searchText) => {
-    const bookmarks = List(bookmarkIds.map(id => bookmarkObjs.get(id)));
-    const bookmarkFeed = bookmarks.sortBy(o => o.get('timestamp')).reverse();
+export const tsOrderedPageSearchResults = createSelector(
+  [result, getPages, text],
+  (pageIds, pageObjs, searchText) => {
+    const pages = List(pageIds.map(id => pageObjs.get(id)));
+    const pageFeed = pages.sortBy(o => o.get('timestamp')).reverse();
 
     return {
-      bookmarkFeed,
+      pageFeed,
       searchText
     };
   }
 );
 
-export const bookmarkSearchResults = createSelector(
-  [result, getBookmarks, userSortBy, text],
-  (bookmarkIds, bookmarkObjs, sortBy, searchText) => {
-    const bookmarks = List(bookmarkIds.map(id => bookmarkObjs.get(id)));
+export const pageSearchResults = createSelector(
+  [result, getPages, userSortBy, text],
+  (pageIds, pageObjs, sortBy, searchText) => {
+    const pages = List(pageIds.map(id => pageObjs.get(id)));
     const sort = sortBy.get('sort');
     const dir = sortBy.get('dir');
-    const bookmarkFeed = bookmarks.sortBy(o => o.get(sort));
+    const pageFeed = pages.sortBy(o => o.get(sort));
 
     if (dir === 'DESC') {
       return {
-        bookmarkFeed: bookmarkFeed.reverse(),
+        pageFeed: pageFeed.reverse(),
         searchText
       };
     }
     return {
-      bookmarkFeed,
+      pageFeed,
       searchText
     };
   }
@@ -98,25 +98,25 @@ export const getOrderedRecordings = createSelector(
 );
 
 
-export const timestampOrderedBookmarks = createSelector(
-  [getBookmarks],
-  (bookmarks) => {
-    return bookmarks.toList().sortBy(b => b.get('timestamp')).reverse();
+export const timestampOrderedPages = createSelector(
+  [getPages],
+  (pages) => {
+    return pages.toList().sortBy(b => b.get('timestamp')).reverse();
   }
 );
 
 
-export const getOrderedBookmarks = createSelector(
-  getBookmarks, userSortBy,
-  (bookmarks, sortBy) => {
+export const getOrderedPages = createSelector(
+  getPages, userSortBy,
+  (pages, sortBy) => {
     const sort = sortBy.get('sort');
     const dir = sortBy.get('dir');
-    const sortedBookmarks = bookmarks.toList().sortBy(o => o.get(sort));
+    const sortedPages = pages.toList().sortBy(o => o.get(sort));
 
     if (dir === 'DESC') {
-      return sortedBookmarks.reverse();
+      return sortedPages.reverse();
     }
-    return sortedBookmarks;
+    return sortedPages;
   }
 );
 
@@ -142,23 +142,23 @@ export const getRecording = createSelector(
   }
 );
 
-const bkmSearch = (bookmarks, ts, url) => {
+const pgSearch = (pages, ts, url) => {
   if (!ts) {
-    const idx = bookmarks.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });
+    const idx = pages.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });
     return idx === -1 ? 0 : idx;
   }
 
   const item = { url, ts: parseInt(ts, 10) };
   let minIdx = 0;
-  let maxIdx = bookmarks.size - 1;
+  let maxIdx = pages.size - 1;
   let curIdx;
   let curUrl;
   let curEle;
 
   while (minIdx <= maxIdx) {
     curIdx = ((minIdx + maxIdx) / 2) | 0;
-    curUrl = bookmarks.get(curIdx).get('url');
-    curEle = parseInt(bookmarks.get(curIdx).get('timestamp'), 10);
+    curUrl = pages.get(curIdx).get('url');
+    curEle = parseInt(pages.get(curIdx).get('timestamp'), 10);
 
     if (curEle > item.ts) {
       minIdx = curIdx + 1;
@@ -172,9 +172,9 @@ const bkmSearch = (bookmarks, ts, url) => {
        */
       let tempUrl;
       const origIdx = curIdx;
-      while (curEle === item.ts && curIdx < bookmarks.size - 1) {
-        tempUrl = bookmarks.get(++curIdx).get('url');
-        curEle = parseInt(bookmarks.get(curIdx).get('ts'), 10);
+      while (curEle === item.ts && curIdx < pages.size - 1) {
+        tempUrl = pages.get(++curIdx).get('url');
+        curEle = parseInt(pages.get(curIdx).get('ts'), 10);
         if (tempUrl === item.url) {
           return curIdx;
         }
@@ -188,26 +188,17 @@ const bkmSearch = (bookmarks, ts, url) => {
 };
 
 export const getActiveRecording = createSelector(
-  [getOrderedBookmarks, getTimestamp, getUrl],
-  (bookmarks, ts, url) => {
-    return bkmSearch(bookmarks, ts, url);
+  [getOrderedPages, getTimestamp, getUrl],
+  (pages, ts, url) => {
+    return pgSearch(pages, ts, url);
   }
 );
 
-export const getActiveBookmark = createSelector(
-  [timestampOrderedBookmarkSearchResults, getTimestamp, getUrl],
-  (bookmarkSearch, ts, url) => {
-    const bookmarks = bookmarkSearch.bookmarkFeed;
-    return bkmSearch(bookmarks, ts, url);
-  }
-);
-
-
-export const getBookmarkTitle = createSelector(
-  [timestampOrderedBookmarks, getTimestamp, getUrl],
-  (bookmarks, ts, url) => {
-    const idx = bkmSearch(bookmarks, ts, url);
-    return idx === -1 ? untitledEntry : bookmarks.getIn([idx, 'title']);
+export const getActivePage = createSelector(
+  [tsOrderedPageSearchResults, getTimestamp, getUrl],
+  (pageSearch, ts, url) => {
+    const pages = pageSearch.pageFeed;
+    return pgSearch(pages, ts, url);
   }
 );
 
@@ -220,10 +211,10 @@ export const getActiveRemoteBrowser = createSelector(
 );
 
 
-export const getBookmarkCount = createSelector(
-  [getBookmarks],
-  (bookmarks) => {
-    return (bookmarks ? bookmarks.size : 0);
+export const getPageCount = createSelector(
+  [getPages],
+  (pages) => {
+    return (pages ? pages.size : 0);
   }
 );
 

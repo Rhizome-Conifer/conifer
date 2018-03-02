@@ -14,10 +14,10 @@ import './style.scss';
 class SidebarUI extends Component {
 
   static propTypes = {
-    activeBookmark: PropTypes.number,
-    bookmarks: PropTypes.object,
+    activePage: PropTypes.number,
+    pages: PropTypes.object,
     dispatch: PropTypes.func,
-    searchBookmarks: PropTypes.func,
+    searchPages: PropTypes.func,
     searchText: PropTypes.string,
     sidebarResize: PropTypes.func,
     resizing: PropTypes.bool

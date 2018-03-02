@@ -6,7 +6,7 @@ import { SizeCounter } from 'containers';
 
 
 function ToolBinUI(props, context) {
-  const { activeBrowser, bookmarkCount, collSize, open } = props;
+  const { activeBrowser, pageCount, collSize, open } = props;
   const { currMode } = context;
   const classes = classNames('container-fluid wr-tools', { open });
   const isReplay = currMode.indexOf('replay') !== -1;
@@ -17,7 +17,7 @@ function ToolBinUI(props, context) {
         isReplay &&
           <div>
             <strong>collection info:</strong>
-            <span className="left-buffer bookmark-count">{`${bookmarkCount} bookmark${bookmarkCount === 1 ? '' : 's'}`}</span>
+            <span className="left-buffer bookmark-count">{`${pageCount} page${pageCount === 1 ? '' : 's'}`}</span>
             <span className="size-counter size-counter-active">
               <SizeCounter
                 bytes={collSize}
@@ -47,7 +47,7 @@ ToolBinUI.propTypes = {
   activeBrowser: PropTypes.string,
   open: PropTypes.bool,
   collSize: PropTypes.number,
-  bookmarkCount: PropTypes.number
+  pageCount: PropTypes.number
 };
 
 ToolBinUI.contextTypes = {

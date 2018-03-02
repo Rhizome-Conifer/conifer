@@ -3,20 +3,20 @@ import { connect } from 'react-redux';
 import { createSearchAction } from 'redux-search';
 
 import { toggleSidebarResize } from 'redux/modules/sidebar';
-import { getActiveBookmark, getOrderedBookmarks,
-         timestampOrderedBookmarkSearchResults } from 'redux/selectors';
+import { getActivePage, getOrderedPages,
+         tsOrderedPageSearchResults } from 'redux/selectors';
 
 import { SidebarUI } from 'components/controls';
 
 
 const mapStateToProps = (outerState) => {
   const { app } = outerState;
-  const { bookmarkFeed, searchText } = timestampOrderedBookmarkSearchResults(outerState);
-  const isIndexing = !bookmarkFeed.size && app.getIn(['collection', 'bookmarks']).size && !searchText;
+  const { pageFeed, searchText } = tsOrderedPageSearchResults(outerState);
+  const isIndexing = !pageFeed.size && app.getIn(['collection', 'pages']).size && !searchText;
 
   return {
-    activeBookmark: getActiveBookmark(outerState),
-    bookmarks: isIndexing ? getOrderedBookmarks(app) : bookmarkFeed,
+    activePage: getActivePage(outerState),
+    pages: isIndexing ? getOrderedPages(app) : pageFeed,
     collection: app.get('collection'),
     searchText,
     resizing: app.getIn(['sidebar', 'resizing'])
@@ -25,7 +25,7 @@ const mapStateToProps = (outerState) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    searchBookmarks: createSearchAction('bookmarks'),
+    searchPages: createSearchAction('collection.pages'),
     sidebarResize: bool => dispatch(toggleSidebarResize(bool)),
     dispatch
   };

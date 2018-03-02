@@ -7,7 +7,7 @@ import { Map } from 'immutable';
 import { load as loadColl } from 'redux/modules/collection';
 import { addTo, load as loadList } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
-import { getOrderedBookmarks, getOrderedRecordings, bookmarkSearchResults } from 'redux/selectors';
+import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/CollectionDetailUI';
 
@@ -75,15 +75,15 @@ const initialData = [
 const mapStateToProps = (outerState, { match: { params: { list } } }) => {
   const { app } = outerState;
   const isLoaded = app.getIn(['collection', 'loaded']);
-  const { bookmarkFeed, searchText } = isLoaded ? bookmarkSearchResults(outerState) : { bookmarkFeed: Map(), searchText: '' };
-  const isIndexing = isLoaded && !bookmarkFeed.size && app.getIn(['collection', 'bookmarks']).size && !searchText;
+  const { pageFeed, searchText } = isLoaded ? pageSearchResults(outerState) : { pageFeed: Map(), searchText: '' };
+  const isIndexing = isLoaded && !pageFeed.size && app.getIn(['collection', 'pages']).size && !searchText;
 
   return {
     auth: app.get('auth'),
     collection: app.get('collection'),
     browsers: app.get('remoteBrowsers'),
     recordings: isLoaded ? getOrderedRecordings(app) : null,
-    bookmarks: isIndexing ? getOrderedBookmarks(app) : bookmarkFeed,
+    pages: isIndexing ? getOrderedPages(app) : pageFeed,
     searchText,
     list: app.getIn(['list', 'list'])
   };
@@ -91,7 +91,7 @@ const mapStateToProps = (outerState, { match: { params: { list } } }) => {
 
 const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
   return {
-    searchBookmarks: createSearchAction('collection.bookmarks'),
+    searchPages: createSearchAction('collection.pages'),
     addItemsToLists: (pages, lists) => {
       const bookmarkPromises = [];
       for (const list of lists) {
