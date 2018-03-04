@@ -19,6 +19,10 @@ const LIST_EDIT = 'wr/list/LIST_EDIT';
 const LIST_EDIT_SUCCESS = 'wr/list/LIST_EDIT_SUCCESS';
 const LIST_EDIT_FAIL = 'wr/list/LIST_EDIT_FAIL';
 
+const LIST_REORDER = 'wr/list/LIST_REORDER';
+const LIST_REORDER_SUCCESS = 'wr/list/LIST_REORDER_SUCCESS';
+const LIST_REORDER_FAIL = 'wr/list/LIST_REORDER_FAIL';
+
 const LIST_REMOVE = 'wr/list/LIST_REMOVE';
 const LIST_REMOVE_SUCCESS = 'wr/list/LIST_REMOVE_SUCCESS';
 const LIST_REMOVE_FAIL = 'wr/list/LIST_REMOVE_FAIL';
@@ -36,6 +40,15 @@ export default function list(state = initialState, action = {}) {
     case LIST_CREATE:
     case LIST_CREATE_SUCCESS:
     case LIST_CREATE_FAIL:
+    case LIST_EDIT:
+    case LIST_EDIT_SUCCESS:
+    case LIST_EDIT_FAIL:
+    case LIST_REORDER:
+    case LIST_REORDER_SUCCESS:
+    case LIST_REORDER_FAIL:
+    case LIST_REMOVE:
+    case LIST_REMOVE_SUCCESS:
+    case LIST_REMOVE_FAIL:
       return state;
 
     case LIST_ADD:
@@ -56,12 +69,6 @@ export default function list(state = initialState, action = {}) {
       });
     case LIST_LOAD_FAIL:
       return state.set('error', true);
-    case LIST_EDIT:
-    case LIST_EDIT_SUCCESS:
-    case LIST_EDIT_FAIL:
-    case LIST_REMOVE:
-    case LIST_REMOVE_SUCCESS:
-    case LIST_REMOVE_FAIL:
     default:
       return state;
   }
@@ -107,6 +114,18 @@ export function edit(user, coll, id, data) {
     promise: client => client.post(`${apiPath}/list/${id}`, {
       params: { user, coll },
       data
+    })
+  };
+}
+
+export function saveSort(user, coll, id, order) {
+  return {
+    types: [LIST_REORDER, LIST_REORDER_SUCCESS, LIST_REORDER_FAIL],
+    promise: client => client.post(`${apiPath}/list/${id}/bookmarks/reorder`, {
+      params: { user, coll },
+      data: {
+        order
+      }
     })
   };
 }

@@ -11,7 +11,7 @@ import ListsUI from 'components/ListsUI';
 class Lists extends Component {
 
   static propTypes = {
-    activeList: PropTypes.string,
+    activeListId: PropTypes.string,
     collection: PropTypes.object,
     loaded: PropTypes.bool,
     loading: PropTypes.bool,

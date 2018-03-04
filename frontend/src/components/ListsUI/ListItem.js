@@ -11,7 +11,7 @@ import { BrowserIcon } from 'components/icons';
 
 const listTarget = {
   drop(props, monitor) {
-    const item = monitor.getItem();
+    const { item } = monitor.getItem();
 
     props.addToList(
       props.collection.get('user'),

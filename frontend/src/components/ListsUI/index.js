@@ -20,7 +20,7 @@ class ListsUI extends Component {
   };
 
   static propTypes = {
-    activeList: PropTypes.string,
+    activeListId: PropTypes.string,
     addToList: PropTypes.func,
     collection: PropTypes.object,
     createList: PropTypes.func,
@@ -99,7 +99,7 @@ class ListsUI extends Component {
 
   render() {
     const { canAdmin, isAnon } = this.context;
-    const { activeList, collection, list, lists } = this.props;
+    const { activeListId, collection, list, lists } = this.props;
     const { created, editModal, isCreating, title, edited, editId } = this.state;
 
     // wait until collection is loaded
@@ -126,7 +126,7 @@ class ListsUI extends Component {
           <header>Collection Navigator <span role="button" className="sidebar-minimize" onClick={this.minimize}>-</span></header>
 
           {
-            activeList &&
+            activeListId &&
               <Link to={`/${collection.get('user')}/${collection.get('id')}`} className="button-link">See All Resources in Collection</Link>
           }
 
@@ -141,7 +141,7 @@ class ListsUI extends Component {
                   lists.map(listObj => (
                     <ListItem
                       key={listObj.get('id')}
-                      selected={list && listObj.get('id') === activeList}
+                      selected={list && listObj.get('id') === activeListId}
                       list={listObj}
                       collection={collection}
                       addToList={this.props.addToList} />

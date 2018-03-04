@@ -17,7 +17,7 @@ import 'react-virtualized/styles.css';
 
 import CollectionSidebar from './sidebar';
 import CollDetailHeader from './header';
-import { DefaultRow, DnDRow } from './rows';
+import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
 import { CollectionManagement } from './management';
 import { BrowserRenderer, LinkRenderer, TimestampRenderer } from './columns';
 
@@ -26,7 +26,7 @@ import './style.scss';
 
 class CollectionDetailUI extends Component {
   static propTypes = {
-    addItemsToLists: PropTypes.func,
+    addPagesToLists: PropTypes.func,
     auth: PropTypes.object,
     pages: PropTypes.object,
     browsers: PropTypes.object,
@@ -34,6 +34,7 @@ class CollectionDetailUI extends Component {
     dispatch: PropTypes.func,
     list: PropTypes.object,
     recordings: PropTypes.object,
+    saveBookmarkSort: PropTypes.func,
     searchText: PropTypes.string,
     searchPages: PropTypes.func
   };
@@ -54,7 +55,8 @@ class CollectionDetailUI extends Component {
       selectedGroupedPageIdx: null,
       selectedRec: null,
       addToListModal: false,
-      checkedLists: {}
+      checkedLists: {},
+      listBookmarks: props.list.get('bookmarks')
     };
 
     this.state = this.initialState;
@@ -67,6 +69,12 @@ class CollectionDetailUI extends Component {
       } catch (e) {
         console.log('Wrong `groupDisplay` storage value');
       }
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.list !== this.props.list) {
+      this.setState({ listBookmarks: nextProps.list.get('bookmarks') });
     }
   }
 
@@ -191,7 +199,7 @@ class CollectionDetailUI extends Component {
       pagesToAdd.push(pages.get(selectedPageIdx));
     }
 
-    this.props.addItemsToLists(pagesToAdd, lists);
+    this.props.addPagesToLists(pagesToAdd, lists);
     this.closeAddToList();
   }
 
@@ -262,27 +270,60 @@ class CollectionDetailUI extends Component {
     this.setState({ checkedLists });
   }
 
+  sortBookmark = (origIndex, hoverIndex) => {
+    const { listBookmarks } = this.state;
+    const o = listBookmarks.get(origIndex);
+    const sorted = listBookmarks.splice(origIndex, 1)
+                                .splice(hoverIndex, 0, o);
+
+    this.setState({ listBookmarks: sorted });
+  }
+
+  saveSort = () => {
+    const { list, saveBookmarkSort } = this.props;
+    const order = this.state.listBookmarks.map(o => o.get('id')).toArray();
+    saveBookmarkSort(list.get('id'), order);
+  }
+
   openAddToList = () => this.setState({ addToListModal: true })
   closeAddToList = () => this.setState({ addToListModal: false })
 
   render() {
     const { canAdmin, isAnon } = this.context;
     const { pages, browsers, collection, list, recordings, searchText, match: { params } } = this.props;
-    const { addToListModal, checkedLists, groupDisplay, expandAll, selectedSession, selectedPageIdx,
-            selectedGroupedPageIdx, selectedRec } = this.state;
+    const {
+      addToListModal,
+      checkedLists,
+      groupDisplay,
+      expandAll,
+      listBookmarks,
+      selectedSession,
+      selectedPageIdx,
+      selectedGroupedPageIdx,
+      selectedRec
+    } = this.state;
 
     // don't render until loaded
     if (!collection.get('loaded')) {
       return null;
     }
 
-    const objectLabel = params.list ? 'Bookmark' : 'Page';
-    const objects = params.list ? list.get('bookmarks') : pages;
+    const activeList = Boolean(params.list);
+    const objectLabel = activeList ? 'Bookmark' : 'Page';
+    const objects = activeList ? listBookmarks : pages;
 
     // add react-dnd integration
     const customRowRenderer = (props) => {
       if (isAnon) {
         return <DefaultRow {...props} />;
+      } else if (activeList) {
+        return (
+          <DnDSortableRow
+            id={props.rowData.get('id')}
+            save={this.saveSort}
+            sort={this.sortBookmark}
+            {...props} />
+        );
       }
       return <DnDRow {...props} />;
     };
@@ -290,21 +331,21 @@ class CollectionDetailUI extends Component {
     return (
       <div className="wr-coll-detail">
         <CollDetailHeader
-          activeList={Boolean(params.list)}
+          activeList={activeList}
           collection={collection}
           list={list} />
 
         <div className="grid-wrapper">
           <div className="wr-coll-container">
 
-            <CollectionSidebar collection={collection} activeList={params.list} />
+            <CollectionSidebar collection={collection} activeListId={params.list} />
 
             <div className="wr-coll-utilities">
               <CollectionManagement
                 expandAll={expandAll}
                 groupDisplay={groupDisplay}
                 onToggle={this.onToggle}
-                activeList={Boolean(params.list)}
+                activeList={activeList}
                 toggleExpandAllSessions={this.toggleExpandAllSessions}
                 search={this.search}
                 searchText={searchText}
@@ -314,16 +355,16 @@ class CollectionDetailUI extends Component {
 
             <div className="lists-modifier">
               {
-                params.list &&
+                activeList &&
                   <header className="lists-header">
                     <span>Bookmarks in Selected List</span>
                     <Link to={`/${collection.get('user')}/${collection.get('id')}`}>Back to Collection Index <CloseIcon /></Link>
                   </header>
               }
             </div>
-            <div className={classNames('wr-coll-detail-table', { 'with-lists': params.list })}>
+            <div className={classNames('wr-coll-detail-table', { 'with-lists': activeList })}>
               {
-                !params.list && groupDisplay ?
+                !activeList && groupDisplay ?
                   <div className="wr-coll-session-container" ref={(obj) => { this.sessionContainer = obj; }}>
                     {
                       recordings.map((rec) => {
@@ -349,7 +390,7 @@ class CollectionDetailUI extends Component {
                         <Table
                           width={
                             /* factor border width */
-                            params.list ? width - 8 : width
+                            activeList ? width - 8 : width
                           }
                           height={height}
                           rowCount={objects ? objects.size : 0}
@@ -359,9 +400,9 @@ class CollectionDetailUI extends Component {
                           rowClassName={this.testRowHighlight}
                           onRowClick={this.onSelectRow}
                           rowRenderer={customRowRenderer}
-                          sort={this.sort}
-                          sortBy={collection.getIn(['sortBy', 'sort'])}
-                          sortDirection={collection.getIn(['sortBy', 'dir'])}>
+                          sort={activeList ? null : this.sort}
+                          sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
+                          sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
                           <Column
                             width={200}
                             label="timestamp"
