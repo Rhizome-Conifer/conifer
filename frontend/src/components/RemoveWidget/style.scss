@@ -1,0 +1,16 @@
+
+.wr-remove-widget {
+    button {
+        transition: fill 300ms ease-in-out;
+
+        &.remove-widget-icon {
+            transition: fill 125ms ease-in-out;
+
+            &:hover {
+                fill: red;
+            }
+        }
+
+        margin: 0 .5rem;
+    }
+}

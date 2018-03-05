@@ -19,7 +19,7 @@ import CollectionSidebar from './sidebar';
 import CollDetailHeader from './header';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
 import { CollectionManagement } from './management';
-import { BrowserRenderer, LinkRenderer, TimestampRenderer } from './columns';
+import { BrowserRenderer, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
 
@@ -34,6 +34,7 @@ class CollectionDetailUI extends Component {
     dispatch: PropTypes.func,
     list: PropTypes.object,
     recordings: PropTypes.object,
+    removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func,
     searchText: PropTypes.string,
     searchPages: PropTypes.func
@@ -403,6 +404,18 @@ class CollectionDetailUI extends Component {
                           sort={activeList ? null : this.sort}
                           sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
                           sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                          {
+                            activeList && canAdmin &&
+                              <Column
+                                width={40}
+                                dataKey="remove"
+                                style={{ textAlign: 'center' }}
+                                columnData={{
+                                  listId: params.list,
+                                  removeCallback: this.props.removeBookmark
+                                }}
+                                cellRenderer={RemoveRenderer} />
+                          }
                           <Column
                             width={200}
                             label="timestamp"

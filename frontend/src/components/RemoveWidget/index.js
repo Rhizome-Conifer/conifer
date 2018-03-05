@@ -5,6 +5,8 @@ import { Overlay, Tooltip } from 'react-bootstrap';
 import OutsideClick from 'components/OutsideClick';
 import { TrashIcon } from 'components/icons';
 
+import './style.scss';
+
 
 class RemoveWidget extends Component {
   static propTypes = {
@@ -26,7 +28,9 @@ class RemoveWidget extends Component {
     };
   }
 
-  removeClick = () => {
+  removeClick = (evt) => {
+    evt.stopPropagation();
+
     if (!this.props.withConfirmation || this.state.confirmRemove) {
       this.setState({ confirmRemove: false });
       this.props.callback();
@@ -46,10 +50,11 @@ class RemoveWidget extends Component {
     const { message } = this.props;
 
     return (
-      <div style={{ position: 'relative' }}>
+      <div className="wr-remove-widget" style={{ position: 'relative' }}>
         <OutsideClick handleClick={this.outsideClickCheck} inlineBlock>
-          <button ref={(obj) => { this.target = obj; }} className="borderless remove-list" onClick={this.removeClick}><TrashIcon /></button>
+          <button ref={(obj) => { this.target = obj; }} className="borderless remove-widget-icon" onClick={this.removeClick}><TrashIcon /></button>
         </OutsideClick>
+        {/* todo: add portal option for tooltip */}
         <Overlay container={this} placement="bottom" target={this.target} show={this.state.confirmRemove}>
           <Tooltip placement="bottom" id="confirm-remove">{ message }</Tooltip>
         </Overlay>

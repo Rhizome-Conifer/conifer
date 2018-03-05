@@ -27,6 +27,11 @@ const LIST_REMOVE = 'wr/list/LIST_REMOVE';
 const LIST_REMOVE_SUCCESS = 'wr/list/LIST_REMOVE_SUCCESS';
 const LIST_REMOVE_FAIL = 'wr/list/LIST_REMOVE_FAIL';
 
+const BOOKMARK_REMOVE = 'wr/list/BOOKMARK_REMOVE';
+const BOOKMARK_REMOVE_SUCCESS = 'wr/list/BOOKMARK_REMOVE_SUCCESS';
+const BOOKMARK_REMOVE_FAIL = 'wr/list/BOOKMARK_REMOVE_FAIL';
+
+
 const initialState = fromJS({
   loading: false,
   loaded: false,
@@ -117,6 +122,17 @@ export function edit(user, coll, id, data) {
     })
   };
 }
+
+
+export function removeBookmark(user, coll, listId, bookmarkId) {
+  return {
+    types: [BOOKMARK_REMOVE, BOOKMARK_REMOVE_SUCCESS, BOOKMARK_REMOVE_FAIL],
+    promise: client => client.del(`${apiPath}/bookmark/${bookmarkId}`, {
+      params: { user, coll, list: listId }
+    })
+  };
+}
+
 
 export function saveSort(user, coll, id, order) {
   return {

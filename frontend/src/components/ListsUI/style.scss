@@ -132,19 +132,6 @@
             input {
                 flex-grow: 1;
             }
-
-            button {
-                &.remove-list {
-                    transition: fill 125ms ease-in-out;
-
-                    &:hover {
-                        fill: red;
-                    }
-                }
-
-                //width: 3rem;
-                margin: 0 .5rem;
-            }
         }
     }
 }

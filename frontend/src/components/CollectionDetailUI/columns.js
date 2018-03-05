@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { untitledEntry } from 'config';
 
 import EditableString from 'components/EditableString';
+import RemoveWidget from 'components/RemoveWidget';
 import TimeFormat from 'components/TimeFormat';
 import { capitalize, remoteBrowserMod } from 'helpers/utils';
 
@@ -39,6 +40,13 @@ export function LinkRenderer({ cellData, rowData, columnData: { collection } }) 
     </Link>
   );
 }
+
+
+export function RemoveRenderer({ rowData, columnData: { listId, removeCallback } }) {
+  const removeClick = () => removeCallback(listId, rowData.get('id'));
+  return <RemoveWidget callback={removeClick} withConfirmation={false} />;
+}
+
 
 export function TimestampRenderer({ cellData }) {
   return <TimeFormat dt={cellData} />;

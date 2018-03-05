@@ -5,7 +5,7 @@ import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
 import { load as loadColl } from 'redux/modules/collection';
-import { addTo, load as loadList, saveSort } from 'redux/modules/list';
+import { addTo, load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
 
@@ -104,6 +104,10 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
     },
     saveBookmarkSort: (list, ids) => {
       dispatch(saveSort(user, coll, list, ids));
+    },
+    removeBookmark: (list, id) => {
+      dispatch(removeBookmark(user, coll, list, id))
+        .then(() => dispatch(loadList(user, coll, list)));
     },
     dispatch
   };
