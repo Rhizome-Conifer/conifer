@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { Overlay, Tooltip } from 'react-bootstrap';
 
-import OutsideClick from 'components/OutsideClick';
-import { CheckIcon, PencilIcon, TrashIcon } from 'components/icons';
+import RemoveWidget from 'components/RemoveWidget';
+import { CheckIcon, PencilIcon } from 'components/icons';
 
 
 class EditItem extends Component {
@@ -20,7 +18,6 @@ class EditItem extends Component {
     super(props);
 
     this.state = {
-      confirmDelete: false,
       title: this.props.list.get('title'),
       hasChanges: false
     };
@@ -40,13 +37,7 @@ class EditItem extends Component {
   }
 
   confirmDelete = () => {
-    if (this.state.confirmDelete) {
-      this.setState({ confirmDelete: false });
-      console.log('deleting', this.props.list.get('id'));
-      this.props.deleteListCallback(this.props.list.get('id'));
-    }
-
-    this.setState({ confirmDelete: true });
+    this.props.deleteListCallback(this.props.list.get('id'));
   }
 
   editListItem = () => {
@@ -58,25 +49,13 @@ class EditItem extends Component {
     }
   }
 
-  outsideClickCheck = (evt) => {
-    // if delete prompt is up, cancel it
-    if (this.state.confirmDelete) {
-      this.setState({ confirmDelete: false });
-    }
-  }
-
   render() {
-    const { confirmDelete, hasChanges, title } = this.state;
+    const { hasChanges, title } = this.state;
     const { edited } = this.props;
 
     return (
       <li>
-        <OutsideClick handleClick={this.outsideClickCheck} inlineBlock>
-          <button ref={(obj) => { this.target = obj; }} className="borderless remove-list" onClick={this.confirmDelete}><TrashIcon /></button>
-        </OutsideClick>
-        <Overlay container={this} placement="bottom" target={this.target} show={confirmDelete}>
-          <Tooltip placement="bottom" id="confirm-remove">Confirm Delete</Tooltip>
-        </Overlay>
+        <RemoveWidget callback={this.confirmDelete} />
         <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
         {
           edited ?
