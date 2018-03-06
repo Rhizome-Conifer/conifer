@@ -17,7 +17,9 @@ class UploadUI extends Component {
 
   static propTypes = {
     activeCollection: PropTypes.string,
-    classes: PropTypes.string
+    classes: PropTypes.string,
+    fromCollection: PropTypes.string,
+    setColl: PropTypes.func
   };
 
   static defaultProps = {
@@ -26,6 +28,10 @@ class UploadUI extends Component {
 
   constructor(props) {
     super(props);
+
+    if (props.fromCollection) {
+      this.props.setColl(props.fromCollection);
+    }
 
     this.xhr = null;
     this.interval = null;
@@ -37,7 +43,7 @@ class UploadUI extends Component {
       status: null,
       isIndexing: false,
       progress: 0,
-      targetColl: 'auto'
+      targetColl: props.fromCollection ? 'chosen' : 'auto'
     };
     this.state = this.initialState;
   }

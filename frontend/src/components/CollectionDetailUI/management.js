@@ -24,7 +24,7 @@ function CollectionManagement(props, context) {
       }
       {
         canAdmin &&
-          <Upload classes="borderless">
+          <Upload fromCollection={collection.get('id')} classes="borderless">
             <span className="glyphicon glyphicon-upload" />
           </Upload>
       }
