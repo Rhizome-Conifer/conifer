@@ -24,6 +24,7 @@ export SizeCounter from './SizeCounter/SizeCounter';
 export StandaloneRecorder from './StandaloneRecorder/StandaloneRecorder';
 export TempUsage from './TempUsage/TempUsage';
 export ToolBin from './ToolBin/ToolBin';
+export Upload from './Upload/Upload';
 export UserSignup from './UserSignup/UserSignup';
 export UserManagement from './UserManagement/UserManagement';
 export UserSettings from './UserSettings/UserSettings';

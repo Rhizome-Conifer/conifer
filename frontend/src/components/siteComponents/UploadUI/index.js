@@ -1,0 +1,231 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import { Button, Radio } from 'react-bootstrap';
+
+import { CollectionDropdown } from 'containers';
+import Modal from 'components/Modal';
+
+import './style.scss';
+
+
+class UploadUI extends Component {
+  static contextTypes = {
+    metadata: PropTypes.object,
+    router: PropTypes.object
+  };
+
+  static propTypes = {
+    activeCollection: PropTypes.string,
+    classes: PropTypes.string
+  };
+
+  static defaultProps = {
+    classes: 'btn btn-sm btn-primary'
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.xhr = null;
+    this.interval = null;
+    this.initialState = {
+      open: false,
+      file: '',
+      canCancel: true,
+      isUploading: false,
+      status: null,
+      isIndexing: false,
+      progress: 0,
+      targetColl: 'auto'
+    };
+    this.state = this.initialState;
+  }
+
+  triggerFile = () => {
+    this.fileField.click();
+  }
+
+  filePicker = (evt) => {
+    this.setState({ file: evt.target.files[0] });
+  }
+
+  handleInput = (evt) => {
+    this.setState({
+      [evt.target.name]: evt.target.value
+    });
+  }
+
+  submitUpload = () => {
+    const { targetColl, file } = this.state;
+    const { activeCollection } = this.props;
+
+    if (!file) {
+      return false;
+    }
+
+    this.xhr = new XMLHttpRequest();
+    const target = targetColl === 'chosen' ? activeCollection : '';
+    const url = `/_upload?force-coll=${target}&filename=${file.name}`;
+
+    this.xhr.upload.addEventListener('progress', this.uploadProgress);
+    this.xhr.addEventListener('load', this.uploadSuccess);
+    this.xhr.addEventListener('loadend', this.uploadComplete);
+
+    this.xhr.open('PUT', url, true);
+
+
+    this.setState({
+      isUploading: true,
+      status: 'Uploading...'
+    });
+
+    this.xhr.send(file);
+
+    return this.xhr;
+  }
+
+  uploadProgress = (evt) => {
+    const progress = Math.round((50.0 * event.loaded) / event.total);
+
+    if (evt.loaded >= evt.total) {
+      this.setState({ canCancel: false, progress });
+    } else {
+      this.setState({ progress });
+    }
+  }
+
+  uploadSuccess = evt => this.setState({ progress: 50 })
+
+  indexResponse = (data) => {
+    const stateUpdate = {};
+
+    if (data.filename && data.filename !== this.state.file) {
+      stateUpdate.file = data.filename;
+    }
+
+    if (data.total_files > 1) {
+      stateUpdate.status = `Indexing ${data.total_files - data.files} of ${data.total_files}`;
+    }
+
+    if (data.size && data.total_size) {
+      stateUpdate.progress = 50 + Math.round((50 * data.size) / data.total_size);
+    }
+
+    if (data.size >= data.total_size) {
+      clearInterval(this.interval);
+      this.indexingComplete(data.user, data.coll);
+    }
+  }
+
+  indexingComplete = (user, coll) => {
+    this.close();
+    this.context.router.history.push(`/${user}/${coll}/`);
+  }
+
+  indexing = (data) => {
+    this.setState({ canCancel: false, status: 'Indexing...' });
+
+    const url = `/_upload/${data.upload_id}?user=${data.user}`;
+
+    this.interval = setInterval(() => {
+      fetch(url)
+        .then(res => res.json())
+        .then(this.indexResponse);
+    }, 75);
+  }
+
+  uploadComplete = (evt) => {
+    if (!this.xhr) {
+      return;
+    }
+
+    const data = JSON.parse(this.xhr.responseText);
+
+    if (data && data.upload_id) {
+      return this.indexing(data);
+    }
+
+    this.setState({
+      canCancel: true,
+      status: data.error_message || 'Error Encountered'
+    });
+  }
+
+  open = () => this.setState({ open: true })
+  close = () => {
+    if (this.state.isUploading && this.xhr && this.state.canCancel) {
+      this.xhr.abort();
+    }
+
+    this.setState(this.initialState);
+  }
+
+  render() {
+    const { classes } = this.props;
+    const { file, isUploading, progress, status, targetColl } = this.state;
+
+    const modalHeader = (
+      <h4>Upload Web Archive to { this.context.metadata.product }</h4>
+    );
+
+    const modalFooter = (
+      <React.Fragment>
+        <Button onClick={this.close} disabled={this.canCancel}>Cancel</Button>
+        <Button onClick={this.submitUpload} disabled={isUploading} bsStyle="success">Upload</Button>
+      </React.Fragment>
+    );
+
+    return (
+      <React.Fragment>
+        <button className={classes} onClick={this.open}>
+          { this.props.children || 'Upload'}
+        </button>
+        <Modal
+          closeCb={this.close}
+          visible={this.state.open}
+          header={modalHeader}
+          footer={modalFooter}
+          dialogClassName={classNames({ 'wr-uploading': isUploading })}>
+          <label htmlFor="upload-file">WARC/ARC file to upload: </label>
+
+          <div className="input-group">
+            <input type="text" id="upload-file" value={file && file.name} name="upload-file-text" className="form-control" placeholder="Click Pick File to select a web archive file" required readOnly style={{ backgroundColor: 'white' }} />
+            <span className="input-group-btn">
+              <button type="button" className="btn btn-default" onClick={this.triggerFile}>
+                <span className="glyphicon glyphicon-file glyphicon-button" />Pick File...
+              </button>
+            </span>
+            <input type="file" onChange={this.filePicker} ref={(obj) => { this.fileField = obj; }} name="uploadFile" style={{ display: "none" }} accept=".gz,.warc,.arc,.har" />
+          </div>
+
+          <div className="wr-radio-target">
+            <input type="radio" name="targetColl" id="target-auto" value="auto" checked={targetColl === 'auto'} onChange={this.handleInput} />
+            <label htmlFor="target-auto">Automatically create new collection.</label>
+          </div>
+
+          <div className="wr-radio-target">
+            <input type="radio" name="targetColl" id="target-chosen" value="chosen" checked={targetColl === 'chosen'} onChange={this.handleInput} />
+            <label htmlFor="target-chosen">Add to existing collection:&emsp;</label>
+            <CollectionDropdown
+              canCreateCollection={false}
+              label="" />
+          </div>
+
+          {
+            isUploading &&
+              <React.Fragment>
+                <div className="wr-progress-bar">
+                  <div className="progress" style={{ width: `${progress || 0}%` }} />
+                  <div className="progress-readout">{ `${progress || 0}%` }</div>
+                </div>
+                { status && <p dangerouslySetInnerHTML={{ __html: status }} /> }
+              </React.Fragment>
+          }
+        </Modal>
+      </React.Fragment>
+    );
+  }
+}
+
+export default UploadUI;

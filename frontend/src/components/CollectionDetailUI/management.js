@@ -1,26 +1,32 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
+import { Link } from 'react-router-dom';
 
 import Searchbox from 'components/Searchbox';
+import { Upload } from 'containers';
 
 import 'shared/scss/toggle.scss';
 
 
 function CollectionManagement(props, context) {
   const { canAdmin, isAnon } = context;
-  const { expandAll, groupDisplay, activeList, onToggle, openAddToList,
+  const { collection, expandAll, groupDisplay, activeList, onToggle, openAddToList,
           toggleExpandAllSessions, search, searchText, selectedPages } = props;
 
   return (
     <nav>
       {
         canAdmin &&
-          <span className="glyphicon glyphicon-download" />
+          <a href={`/${collection.get('user')}/${collection.get('id')}/$download`}>
+            <span className="glyphicon glyphicon-download" />
+          </a>
       }
       {
         canAdmin &&
-          <span className="glyphicon glyphicon-upload" />
+          <Upload classes="borderless">
+            <span className="glyphicon glyphicon-upload" />
+          </Upload>
       }
       {
         !activeList &&
@@ -49,6 +55,7 @@ function CollectionManagement(props, context) {
 }
 
 CollectionManagement.propTypes = {
+  collection: PropTypes.object,
   expandAll: PropTypes.bool,
   groupDisplay: PropTypes.bool,
   activeList: PropTypes.bool,

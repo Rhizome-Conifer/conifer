@@ -7,7 +7,7 @@
     }
 
     .dropdown-menu {
-        height: 40rem;
+        max-height: 40rem;
         overflow: auto;
 
         li.make-wrap a {

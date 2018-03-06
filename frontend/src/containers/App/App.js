@@ -34,7 +34,6 @@ export class App extends Component { // eslint-disable-line
   }
 
   static childContextTypes = {
-    product: PropTypes.string,
     isAnon: PropTypes.bool,
     metadata: PropTypes.shape({
       product: PropTypes.string,

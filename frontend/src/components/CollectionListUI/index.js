@@ -6,6 +6,7 @@ import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
 
 import SizeFormat from 'components/SizeFormat';
 
+import { Upload } from 'containers';
 import { NewCollection } from 'components/siteComponents';
 
 import './style.scss';
@@ -86,9 +87,14 @@ class CollectionListUI extends Component {
           <Col xs={6} className="wr-coll-meta">
             {
               canAdmin &&
-                <Button onClick={this.toggle} bsStyle="primary" bsSize="small">
-                  <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
-                </Button>
+                <React.Fragment>
+                  <Button onClick={this.toggle} bsStyle="primary" bsSize="small">
+                    <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
+                  </Button>
+                  <Upload>
+                    <span className="glyphicon glyphicon-upload" /> Upload
+                  </Upload>
+                </React.Fragment>
             }
           </Col>
           {

@@ -11,9 +11,11 @@ import './style.scss';
 class CollectionDropdownUI extends Component {
   static propTypes = {
     activeCollection: PropTypes.object,
+    canCreateCollection: PropTypes.bool,
     collections: PropTypes.object,
     creatingCollection: PropTypes.bool,
     createNewCollection: PropTypes.func,
+    label: PropTypes.string,
     loadUser: PropTypes.func,
     newCollection: PropTypes.string,
     setCollection: PropTypes.func,
@@ -22,6 +24,8 @@ class CollectionDropdownUI extends Component {
 
   static defaultProps = {
     collections: List(),
+    canCreateCollection: true,
+    label: 'Add to collection:&emsp;'
   };
 
   constructor(props) {
@@ -67,7 +71,8 @@ class CollectionDropdownUI extends Component {
   }
 
   render() {
-    const { activeCollection, collections, creatingCollection, user } = this.props;
+    const { activeCollection, canCreateCollection, collections,
+            creatingCollection, label, user } = this.props;
     const { showModal } = this.state;
 
     const buttonTitle = activeCollection.title ? activeCollection.title : 'Choose a collection';
@@ -77,10 +82,18 @@ class CollectionDropdownUI extends Component {
         {
           user && user.get('username') && !user.get('anon') &&
             <React.Fragment>
-              <label className="left-buffer" htmlFor="wr-collection-dropdown">Add to collection:&emsp;</label>
+              {
+                label &&
+                  <label className="left-buffer" htmlFor="wr-collection-dropdown" dangerouslySetInnerHTML={{ __html: label }} />
+              }
               <DropdownButton title={buttonTitle} id="wr-collection-dropdown" onSelect={this.collectionChoice}>
-                <MenuItem onClick={this.toggle}>+ Create new collection</MenuItem>
-                <MenuItem divider />
+                {
+                  canCreateCollection &&
+                    <React.Fragment>
+                      <MenuItem onClick={this.toggle}>+ Create new collection</MenuItem>
+                      <MenuItem divider />
+                    </React.Fragment>
+                }
                 {
                   collections.map((coll) => {
                     const id = coll.get('id');

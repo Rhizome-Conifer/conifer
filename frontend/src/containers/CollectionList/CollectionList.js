@@ -16,12 +16,12 @@ const preloadCollections = [
       const collections = state.app.get('collections');
       const { user } = params;
 
-      if(!areCollsLoaded(state) || (collections.get('user') === user &&
-         Date.now() - collections.get('accessed') > 15 * 60 * 1000)) {
-        return dispatch(loadCollections(user));
-      }
+      // if(!areCollsLoaded(state) || (collections.get('user') === user &&
+      //    Date.now() - collections.get('accessed') > 15 * 60 * 1000)) {
+      return dispatch(loadCollections(user));
+      // }
 
-      return undefined;
+      // return undefined;
     }
   }
 ];
