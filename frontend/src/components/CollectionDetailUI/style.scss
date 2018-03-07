@@ -22,6 +22,17 @@
     }
 }
 
+.wr-delete-modal {
+    label {
+        display: block;
+        margin-top: 2.5rem;
+    }
+
+    input {
+        width: 100%;
+    }
+}
+
 .wr-coll-detail {
     flex-grow: 1;
     display: flex;

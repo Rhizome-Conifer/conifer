@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import Collapsible from 'react-collapsible';
+import { Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 import Modal from 'components/Modal';
 import { CheckIcon, PlusIcon, XIcon } from 'components/icons';
@@ -162,7 +163,7 @@ class ListsUI extends Component {
             <Modal
               visible={editModal}
               closeCb={this.closeEditModal}
-              footer={<button onClick={this.closeEditModal}>Done</button>}
+              footer={<Button onClick={this.closeEditModal} bsStyle="success">Done</Button>}
               dialogClassName="lists-edit-modal">
               <ul>
                 <li>

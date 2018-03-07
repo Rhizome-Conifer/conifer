@@ -4,7 +4,7 @@ import { asyncConnect } from 'redux-connect';
 import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
-import { load as loadColl } from 'redux/modules/collection';
+import { deleteCollection, load as loadColl } from 'redux/modules/collection';
 import { addTo, load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
@@ -72,7 +72,7 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = (outerState, { match: { params: { list } } }) => {
+const mapStateToProps = (outerState, { match: { params: { coll, list, user } } }) => {
   const { app } = outerState;
   const isLoaded = app.getIn(['collection', 'loaded']);
   const { pageFeed, searchText } = isLoaded ? pageSearchResults(outerState) : { pageFeed: Map(), searchText: '' };
@@ -89,9 +89,8 @@ const mapStateToProps = (outerState, { match: { params: { list } } }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
+const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll } } }) => {
   return {
-    searchPages: createSearchAction('collection.pages'),
     addPagesToLists: (pages, lists) => {
       const bookmarkPromises = [];
       for (const list of lists) {
@@ -102,13 +101,22 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
 
       return Promise.all(bookmarkPromises);
     },
-    saveBookmarkSort: (list, ids) => {
-      dispatch(saveSort(user, coll, list, ids));
+    deleteColl: () => {
+      dispatch(deleteCollection(user, coll))
+        .then((res) => {
+          if (res.hasOwnProperty('deleted_id')) {
+            history.push(`/${user}`);
+          }
+        });
     },
     removeBookmark: (list, id) => {
       dispatch(removeBookmark(user, coll, list, id))
         .then(() => dispatch(loadList(user, coll, list)));
     },
+    saveBookmarkSort: (list, ids) => {
+      dispatch(saveSort(user, coll, list, ids));
+    },
+    searchPages: createSearchAction('collection.pages'),
     dispatch
   };
 };

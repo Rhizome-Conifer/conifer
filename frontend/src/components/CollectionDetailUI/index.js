@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import { Button, ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { setSort } from 'redux/modules/collection';
@@ -28,11 +29,12 @@ class CollectionDetailUI extends Component {
   static propTypes = {
     addPagesToLists: PropTypes.func,
     auth: PropTypes.object,
-    pages: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
+    deleteColl: PropTypes.func,
     dispatch: PropTypes.func,
     list: PropTypes.object,
+    pages: PropTypes.object,
     recordings: PropTypes.object,
     removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func,
@@ -49,15 +51,17 @@ class CollectionDetailUI extends Component {
     super(props);
 
     this.initialState = {
-      groupDisplay: false,
+      addToListModal: false,
+      checkedLists: {},
+      confirmDelete: '',
+      deleteModal: false,
       expandAll: false,
+      groupDisplay: false,
+      listBookmarks: props.list.get('bookmarks'),
       selectedSession: null,
       selectedPageIdx: null,
       selectedGroupedPageIdx: null,
-      selectedRec: null,
-      addToListModal: false,
-      checkedLists: {},
-      listBookmarks: props.list.get('bookmarks')
+      selectedRec: null
     };
 
     this.state = this.initialState;
@@ -95,9 +99,7 @@ class CollectionDetailUI extends Component {
     }
 
     setStorage('groupDisplay', bool);
-    this.setState(Object.assign(this.initialState, {
-      groupDisplay: bool,
-    }));
+    this.setState({ ...this.initialState, groupDisplay: bool });
   }
 
   onSelectRow = ({ event, index, rowData }) => {
@@ -286,6 +288,33 @@ class CollectionDetailUI extends Component {
     saveBookmarkSort(list.get('id'), order);
   }
 
+  deleteCollection = () => {
+    const { collection } = this.props;
+    const { confirmDelete } = this.state;
+
+    if (collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
+      this.props.deleteColl();
+    }
+  }
+
+  validateConfirmDelete = (evt) => {
+    const { collection } = this.props;
+    const { confirmDelete } = this.state;
+
+    if (!confirmDelete) {
+      return null;
+    }
+
+    if (confirmDelete && !collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
+      return 'error';
+    }
+
+    return 'success';
+  }
+
+  handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
+  openDeleteModal = () => this.setState({ deleteModal: true })
+  closeDeleteModal = () => this.setState({ deleteModal: false, confirmDelete: '' })
   openAddToList = () => this.setState({ addToListModal: true })
   closeAddToList = () => this.setState({ addToListModal: false })
 
@@ -343,16 +372,17 @@ class CollectionDetailUI extends Component {
 
             <div className="wr-coll-utilities">
               <CollectionManagement
+                activeList={activeList}
                 collection={collection}
                 expandAll={expandAll}
                 groupDisplay={groupDisplay}
+                onDelete={this.openDeleteModal}
                 onToggle={this.onToggle}
-                activeList={activeList}
-                toggleExpandAllSessions={this.toggleExpandAllSessions}
+                openAddToList={this.openAddToList}
                 search={this.search}
                 searchText={searchText}
                 selectedPages={selectedPageIdx !== null}
-                openAddToList={this.openAddToList} />
+                toggleExpandAllSessions={this.toggleExpandAllSessions} />
             </div>
 
             <div className="lists-modifier">
@@ -452,31 +482,64 @@ class CollectionDetailUI extends Component {
         {
           /* add to list modal */
           canAdmin &&
-            <Modal
-              visible={addToListModal}
-              closeCb={this.closeAddToList}
-              dialogClassName="add-to-lists-modal"
-              header={<h4>Add to ...</h4>}
-              footer={
-                <React.Fragment>
-                  <button disabled style={{ marginRight: 5 }}>Create new list</button>
-                  <button onClick={this.addToList}>Save</button>
-                </React.Fragment>
-              }>
-              <ul>
-                {
-                  collection.get('lists').map((listObj) => {
-                    const id = listObj.get('id');
-                    return (
-                      <li key={id}>
-                        <input type="checkbox" onChange={this.listCheckbox} name={id} id={`add-to-list-${id}`} checked={checkedLists[id] || false} />
-                        <label htmlFor={`add-to-list-${id}`}>{listObj.get('title')}</label>
-                      </li>
-                    );
-                  })
-                }
-              </ul>
-            </Modal>
+            <React.Fragment>
+              <Modal
+                visible={addToListModal}
+                closeCb={this.closeAddToList}
+                dialogClassName="add-to-lists-modal"
+                header={<h4>Add to ...</h4>}
+                footer={
+                  <React.Fragment>
+                    <Button disabled style={{ marginRight: 5 }}>Create new list</Button>
+                    <Button onClick={this.addToList} bsStyle="success">Save</Button>
+                  </React.Fragment>
+                }>
+                <ul>
+                  {
+                    collection.get('lists').map((listObj) => {
+                      const id = listObj.get('id');
+                      return (
+                        <li key={id}>
+                          <input type="checkbox" onChange={this.listCheckbox} name={id} id={`add-to-list-${id}`} checked={checkedLists[id] || false} />
+                          <label htmlFor={`add-to-list-${id}`}>{listObj.get('title')}</label>
+                        </li>
+                      );
+                    })
+                  }
+                </ul>
+              </Modal>
+              <Modal
+                visible={this.state.deleteModal}
+                closeCb={this.closeDeleteModal}
+                dialogClassName="wr-delete-modal"
+                header={<h4>Confirm Delete Collection</h4>}
+                footer={
+                  <React.Fragment>
+                    <Button onClick={this.closeDeleteModal} style={{ marginRight: 5 }}>Cancel</Button>
+                    <Button onClick={this.deleteCollection} disabled={this.validateConfirmDelete() !== 'success'} bsStyle="danger">Confirm Delete</Button>
+                  </React.Fragment>
+                }>
+                <p>
+                  Are you sure you want to delete the collection <b>{collection.get('title')}</b> {`/${params.user}/${params.coll}/`}?
+                </p>
+                <p>
+                  If you confirm, <b>all recordings will be permanently deleted</b>.
+                </p>
+                <p>
+                  Be sure to download the collection first if you would like to keep any data.
+                </p>
+                <FormGroup validationState={this.validateConfirmDelete()}>
+                  <ControlLabel>Type the collection title to confirm:</ControlLabel>
+                  <FormControl
+                    id="confirm-delete"
+                    type="text"
+                    name="confirmDelete"
+                    placeholder={collection.get('title')}
+                    value={this.state.confirmDelete}
+                    onChange={this.handleChange} />
+                </FormGroup>
+              </Modal>
+            </React.Fragment>
         }
       </div>
     );

@@ -1,17 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
-import { Link } from 'react-router-dom';
 
 import Searchbox from 'components/Searchbox';
 import { Upload } from 'containers';
+import { TrashIcon } from 'components/icons';
 
 import 'shared/scss/toggle.scss';
 
 
 function CollectionManagement(props, context) {
   const { canAdmin, isAnon } = context;
-  const { collection, expandAll, groupDisplay, activeList, onToggle, openAddToList,
+  const { collection, expandAll, groupDisplay, activeList, onToggle, onDelete, openAddToList,
           toggleExpandAllSessions, search, searchText, selectedPages } = props;
 
   return (
@@ -27,6 +27,12 @@ function CollectionManagement(props, context) {
           <Upload fromCollection={collection.get('id')} classes="borderless">
             <span className="glyphicon glyphicon-upload" />
           </Upload>
+      }
+      {
+        canAdmin &&
+          <button className="borderless" onClick={onDelete}>
+            <TrashIcon />
+          </button>
       }
       {
         !activeList &&
@@ -59,6 +65,7 @@ CollectionManagement.propTypes = {
   expandAll: PropTypes.bool,
   groupDisplay: PropTypes.bool,
   activeList: PropTypes.bool,
+  onDelete: PropTypes.func,
   onToggle: PropTypes.func,
   openAddToList: PropTypes.func,
   toggleExpandAllSessions: PropTypes.func,

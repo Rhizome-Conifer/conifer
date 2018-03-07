@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button, Radio } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import { CollectionDropdown } from 'containers';
 import Modal from 'components/Modal';

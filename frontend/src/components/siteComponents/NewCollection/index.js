@@ -32,6 +32,10 @@ class NewCollection extends Component {
     this.props.createCollection(collTitle, isPublic);
   }
 
+  focusInput = (evt) => {
+    this.input.setSelectionRange(0, this.state.collTitle.length);
+  }
+
   handleInput = (evt) => {
     this.setState({ collTitle: evt.target.value });
   }
@@ -52,7 +56,7 @@ class NewCollection extends Component {
         <form onSubmit={this.submit} id="create-coll" className="form-horizontal">
           <span className="form-group col-md-5">
             <label htmlFor="collection">Collection Name:</label>
-            <input type="text" id="title" name="title" className="form-control" onChange={this.handleInput} value={collTitle} required />
+            <input type="text" ref={(obj) => { this.input = obj; }} id="title" name="title" className="form-control" onFocus={this.focusInput} onChange={this.handleInput} value={collTitle} required />
           </span>
 
           <span className="col-md-6 col-md-offset-1">

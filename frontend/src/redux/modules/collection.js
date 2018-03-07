@@ -5,6 +5,10 @@ const COLL_LOAD = 'wr/coll/COLL_LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
 
+const COLL_DELETE = 'wr/coll/COLL_DELETE';
+const COLL_DELETE_SUCCESS = 'wr/coll/COLL_DELETE_SUCCESS';
+const COLL_DELETE_FAIL = 'wr/coll/COLL_DELETE_FAIL';
+
 const LISTS_LOAD = 'wr/coll/LISTS_LOAD';
 const LISTS_LOAD_SUCCESS = 'wr/coll/LISTS_LOAD_SUCCESS';
 const LISTS_LOAD_FAIL = 'wr/coll/LISTS_LOAD_FAIL';
@@ -117,6 +121,15 @@ export function setPublic(coll, user, makePublic = true) {
         'public': makePublic
       },
     }, 'form')
+  };
+}
+
+export function deleteCollection(user, coll) {
+  return {
+    types: [COLL_DELETE, COLL_DELETE_SUCCESS, COLL_DELETE_FAIL],
+    promise: client => client.del(`${apiPath}/collections/${coll}`, {
+      params: { user }
+    })
   };
 }
 
