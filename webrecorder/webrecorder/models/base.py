@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 
 
@@ -61,7 +60,7 @@ class RedisUniqueComponent(object):
         return self.my_id
 
     def _init_new(self, pi=None):
-        now = int(time.time())
+        now = int(datetime.utcnow().timestamp())
 
         self.data['created_at'] = now
         self.data['updated_at'] = now
@@ -103,7 +102,8 @@ class RedisUniqueComponent(object):
 
         # auto-update updated_at
         if attr != 'updated_at':
-            self.set_prop('updated_at', int(time.time()))
+            now = int(datetime.utcnow().timestamp())
+            self.set_prop('updated_at', now)
 
     def __getitem__(self, name):
         return self.get_prop(name)

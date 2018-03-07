@@ -15,7 +15,6 @@ import traceback
 import json
 import requests
 import atexit
-import calendar
 
 import base64
 import os
@@ -416,14 +415,19 @@ class BaseImporter(ImportStatusChecker):
         return warcinfo if valid else None
 
     def set_date_prop(self, obj, info, ts_prop, iso_prop):
+
+        # first check the iso_prop field
         value = info.get(iso_prop)
         if value:
+            # convert back to seconds
             dt = iso_date_to_datetime(value)
-            value = calendar.timegm(dt.utctimetuple())
+            value = dt.timestamp()
         else:
+            # use seconds field, if set
             value = info.get(ts_prop)
 
         if value is not None:
+            value = int(value)
             obj.set_prop(ts_prop, value)
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):

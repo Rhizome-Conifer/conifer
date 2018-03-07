@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 import os
 
@@ -58,7 +57,7 @@ class TestWebRecRecAPI(FullStackTests):
         assert rec['desc'] == 'My Rec Description'
         #assert rec['download_url'] == 'http://localhost:80/{user}/temp/my-rec/$download'.format(user=self.anon_user)
         assert rec['created_at'] == rec['updated_at']
-        assert rec['created_at'] <= datetime.fromtimestamp(time.time()).isoformat()
+        assert rec['created_at'] <= datetime.utcnow().isoformat()
         assert self.ISO_DT_RX.match(rec['created_at'])
         assert self.ISO_DT_RX.match(rec['updated_at'])
 

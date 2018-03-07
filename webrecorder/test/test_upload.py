@@ -101,6 +101,14 @@ class TestUpload(FullStackTests):
         assert metadata[1]['title'].startswith('Recording on ')
         assert metadata[1]['desc'] == 'rec-sesh'
 
+        assert metadata[0]['created_at_date'] <= metadata[0]['updated_at_date']
+
+        TestUpload.created_at_0 = metadata[0]['created_at_date']
+        TestUpload.created_at_1 = metadata[1]['created_at_date']
+
+        TestUpload.updated_at_0 = metadata[0]['updated_at_date']
+        TestUpload.updated_at_1 = metadata[1]['updated_at_date']
+
     def test_logged_in_upload_coll(self):
         res = self.testapp.put('/_upload?filename=example.warc.gz', params=self.warc.getvalue())
         res.charset = 'utf-8'
@@ -137,6 +145,12 @@ class TestUpload(FullStackTests):
         assert 'This is your first collection' in collection['desc']
         assert collection['id'] == 'default-collection-2'
         assert collection['title'] == 'Default Collection'
+
+        assert collection['created_at'] == TestUpload.created_at_0
+        assert collection['recordings'][0]['created_at'] == TestUpload.created_at_1
+
+        assert collection['updated_at'] == TestUpload.updated_at_0
+        assert collection['recordings'][0]['updated_at'] == TestUpload.updated_at_1
 
     def test_upload_3_x_warc(self):
         with open(self.test_upload_warc, 'rb') as fh:

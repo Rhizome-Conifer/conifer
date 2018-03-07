@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 import os
 
@@ -37,7 +36,7 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert coll['title'] == 'Temp'
         #assert coll['download_url'] == 'http://localhost:80/{user}/temp/$download'.format(user=self.anon_user)
         #assert coll['created_at'] == coll['updated_at']
-        assert coll['created_at'] <= datetime.fromtimestamp(time.time()).isoformat()
+        assert coll['created_at'] <= datetime.utcnow().isoformat()
 
         assert self.ISO_DT_RX.match(coll['created_at'])
         assert self.ISO_DT_RX.match(coll['updated_at'])
