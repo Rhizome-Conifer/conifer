@@ -20,17 +20,17 @@ import './style.scss';
 class SidebarBookmarkList extends Component {
 
   static propTypes = {
-    activeBookmark: PropTypes.number,
-    bookmarks: PropTypes.object,
+    activePage: PropTypes.number,
+    pages: PropTypes.object,
     dispatch: PropTypes.func,
-    searchBookmarks: PropTypes.func,
+    searchPages: PropTypes.func,
     searchText: PropTypes.string
   }
 
   shouldComponentUpdate(nextProps) {
-    if (nextProps.bookmarks.equals(this.props.bookmarks) &&
+    if (nextProps.pages.equals(this.props.pages) &&
         nextProps.searchText === this.props.searchText &&
-        nextProps.activeBookmark === this.props.activeBookmark) {
+        nextProps.activePage === this.props.activePage) {
       return false;
     }
 
@@ -38,9 +38,9 @@ class SidebarBookmarkList extends Component {
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
-    const { bookmarks } = this.props;
-    const bookmark = bookmarks.get(scrollToRow);
-    this.props.dispatch(updateUrlAndTimestamp(bookmark.get('url'), bookmark.get('timestamp'), bookmark.get('title') || untitledEntry));
+    const { pages } = this.props;
+    const page = pages.get(scrollToRow);
+    this.props.dispatch(updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry));
   }
 
   onSelectRow = ({ index, rowData }) => {
@@ -48,19 +48,19 @@ class SidebarBookmarkList extends Component {
   }
 
   search = (evt) => {
-    const { dispatch, searchBookmarks } = this.props;
+    const { dispatch, searchPages } = this.props;
 
-    dispatch(searchBookmarks(evt.target.value));
+    dispatch(searchPages(evt.target.value));
   }
 
   render() {
-    const { activeBookmark, bookmarks, searchText } = this.props;
+    const { activePage, pages, searchText } = this.props;
 
     return (
       <div className="bookmarks-list">
         <header>
           <Collection />
-          <span dangerouslySetInnerHTML={{ __html: ` Collection Bookmarks (${activeBookmark + 1} <em>of</em> ${bookmarks.size})` }} />
+          <span dangerouslySetInnerHTML={{ __html: ` Collection Bookmarks (${activePage + 1} <em>of</em> ${pages.size})` }} />
         </header>
         <Searchbox
           search={this.search}
@@ -71,10 +71,10 @@ class SidebarBookmarkList extends Component {
             {
               ({ height, width }) => (
                 <ArrowKeyStepper
-                  rowCount={bookmarks.size}
+                  rowCount={pages.size}
                   columnCount={1}
                   mode="cells"
-                  scrollToRow={activeBookmark}
+                  scrollToRow={activePage}
                   onScrollToChange={this.onKeyNavigate}>
                   {
                     ({ onSectionRendered, scrollToRow }) => {
@@ -82,21 +82,21 @@ class SidebarBookmarkList extends Component {
                         <Table
                           width={width}
                           height={height}
-                          rowCount={bookmarks.size}
+                          rowCount={pages.size}
                           rowHeight={50}
-                          rowGetter={({ index }) => bookmarks.get(index)}
-                          rowClassName={({ index }) => { return index === activeBookmark ? 'selected' : ''; }}
+                          rowGetter={({ index }) => pages.get(index)}
+                          rowClassName={({ index }) => { return index === activePage ? 'selected' : ''; }}
                           onRowClick={this.onSelectRow}
                           onRowsRendered={({ startIndex, stopIndex }) => {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
                           }}
-                          scrollToIndex={activeBookmark}>
+                          scrollToIndex={activePage}>
                           <Column
                             label="collection bookmarks"
                             dataKey="title"
                             flexGrow={1}
                             width={200}
-                            columnData={{ count: bookmarks.size, activeBookmark }}
+                            columnData={{ count: pages.size, activePage }}
                             cellRenderer={BookmarkRenderer} />
                         </Table>
                       );

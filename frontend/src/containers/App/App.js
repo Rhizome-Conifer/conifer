@@ -5,6 +5,8 @@ import classNames from 'classnames';
 import { asyncConnect } from 'redux-connect';
 import matchPath from 'react-router-dom/matchPath';
 import renderRoutes from 'react-router-config/renderRoutes';
+import { DragDropContext } from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
 
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
@@ -32,7 +34,6 @@ export class App extends Component { // eslint-disable-line
   }
 
   static childContextTypes = {
-    product: PropTypes.string,
     isAnon: PropTypes.bool,
     metadata: PropTypes.shape({
       product: PropTypes.string,
@@ -189,7 +190,9 @@ const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
   };
 };
 
+const DnDApp = DragDropContext(HTML5Backend)(App);
+
 export default asyncConnect(
   initalData,
   mapStateToProps
-)(App);
+)(DnDApp);

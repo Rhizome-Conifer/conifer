@@ -8,6 +8,17 @@ export function addTrailingSlash(url) {
   return url;
 }
 
+export function isoToDisplay(dateTime, gmt = false) {
+  let displayTime;
+  const date = new Date(dateTime);
+  if(gmt) {
+    displayTime = date.toGMTString();
+  } else {
+    displayTime = date.toLocaleString();
+  }
+  return displayTime;
+}
+
 export function buildDate(dt, epoch, gmt) {
   let displayTime;
 
@@ -177,4 +188,8 @@ export function inStorage(key, device = window.localStorage) {
     console.log(`Failed checking ${device} for key ${key}`);
     return false;
   }
+}
+
+export function range(start, end) {
+  return Array((end - start) + 1).fill().map((_, idx) => start + idx);
 }

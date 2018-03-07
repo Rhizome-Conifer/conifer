@@ -162,3 +162,64 @@ body {
         text-decoration: underline;
     }
 }
+
+.borderless {
+    transition: opacity 300ms ease-in-out;
+    border: none;
+    background: none;
+
+    &:focus {
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+    }
+}
+
+.borderless-input {
+  transition: border 300ms ease-in-out;
+  border: none;
+  background: none;
+  border-bottom: solid 1px rgba(0,0,0,0);
+
+  &:focus {
+    border-bottom: solid 1px rgba(0,0,0,.4);
+    outline: none;
+  }
+}
+
+.check-mark.success {
+  fill: green;
+}
+
+/* collasible trigger animation */
+.Collapsible__trigger {
+    .glyphicon-triangle-right {
+        transition: transform 300ms ease-in-out;
+    }
+
+    &.is-open {
+        .glyphicon-triangle-right {
+            transform: rotateZ(90deg);
+        }
+    }
+}
+
+/* modal overrides */
+.modal {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.modal-dialog {
+  margin: 0 0 15rem 0;
+}
+.modal-content {
+  border-radius: 0;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+}
+.modal-backdrop {
+  opacity: 0.35;
+}

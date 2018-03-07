@@ -4,23 +4,24 @@ import { Map } from 'immutable';
 import { reducer as reduxAsyncConnect } from 'redux-connect';
 import { reducer as searchReducer } from 'redux-search';
 
-import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './auth';
+import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './modules/auth';
 
-import bugReport from './bugReport';
-import collection from './collection';
-import collections from './collections';
-import controls from './controls';
-import infoStats from './infoStats';
-import passwordReset from './passwordReset';
-import recordings from './recordings';
-import remoteBrowsers from './remoteBrowsers';
-import sidebar from './sidebar';
-import sizeCounter from './sizeCounter';
-import tempUser from './tempUser';
-import toolBin from './toolBin';
-import user from './user';
-import userLogin from './userLogin';
-import userSignup from './userSignup';
+import bugReport from './modules/bugReport';
+import collection from './modules/collection';
+import collections from './modules/collections';
+import controls from './modules/controls';
+import infoStats from './modules/infoStats';
+import list from './modules/list';
+import passwordReset from './modules/passwordReset';
+import recordings from './modules/recordings';
+import remoteBrowsers from './modules/remoteBrowsers';
+import sidebar from './modules/sidebar';
+import sizeCounter from './modules/sizeCounter';
+import tempUser from './modules/tempUser';
+import toolBin from './modules/toolBin';
+import user from './modules/user';
+import userLogin from './modules/userLogin';
+import userSignup from './modules/userSignup';
 
 
 const makeAppReducer = () => combineImmutableReduers({
@@ -30,6 +31,7 @@ const makeAppReducer = () => combineImmutableReduers({
   collections,
   controls,
   infoStats,
+  list,
   passwordReset,
   recordings,
   remoteBrowsers,
@@ -56,7 +58,6 @@ export default (state, action) => {
       return appReducer(state, action);
     }
     case LOGIN_SUCCESS: {
-      // delete any login errors if they exist
       state.app = undefined;
       return appReducer(state, action);
     }

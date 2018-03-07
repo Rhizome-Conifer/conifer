@@ -4,10 +4,10 @@ import { asyncConnect } from 'redux-connect';
 import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
-import { truncate } from 'helpers/utils';
-import { load as loadColl } from 'redux/modules/collection';
+import { deleteCollection, load as loadColl } from 'redux/modules/collection';
+import { addTo, load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
-import { getOrderedBookmarks, getOrderedRecordings, bookmarkSearchResults } from 'redux/selectors';
+import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/CollectionDetailUI';
 
@@ -32,15 +32,13 @@ class CollectionDetail extends Component {
 
     return {
       canAdmin: username === user,
-      canWrite: username === user //&& !auth.anon
+      canWrite: username === user && !auth.anon
     };
   }
 
   render() {
-    const { collection, match: { params: { user, coll } } } = this.props;
-
     return (
-      <CollectionDetailUI key="c" {...this.props} />
+      <CollectionDetailUI {...this.props} />
     );
   }
 }
@@ -55,34 +53,70 @@ const initialData = [
     }
   },
   {
+    promise: ({ match: { params: { user, coll, list } }, store: { dispatch } }) => {
+      if (list) {
+        return dispatch(loadList(user, coll, list));
+      }
+
+      return undefined;
+    }
+  },
+  {
     promise: ({ store: { dispatch, getState } }) => {
-      if(!isRBLoaded(getState()))
+      if(!isRBLoaded(getState())) {
         return dispatch(loadRB());
+      }
 
       return undefined;
     }
   }
 ];
 
-const mapStateToProps = (outerState) => {
+const mapStateToProps = (outerState, { match: { params: { coll, list, user } } }) => {
   const { app } = outerState;
   const isLoaded = app.getIn(['collection', 'loaded']);
-  const { bookmarkFeed, searchText } = isLoaded ? bookmarkSearchResults(outerState) : { bookmarkFeed: Map(), searchText: '' };
-  const isIndexing = isLoaded && !bookmarkFeed.size && app.getIn(['collection', 'bookmarks']).size && !searchText;
+  const { pageFeed, searchText } = isLoaded ? pageSearchResults(outerState) : { pageFeed: Map(), searchText: '' };
+  const isIndexing = isLoaded && !pageFeed.size && app.getIn(['collection', 'pages']).size && !searchText;
 
   return {
     auth: app.get('auth'),
     collection: app.get('collection'),
     browsers: app.get('remoteBrowsers'),
     recordings: isLoaded ? getOrderedRecordings(app) : null,
-    bookmarks: isIndexing ? getOrderedBookmarks(app) : bookmarkFeed,
-    searchText
+    pages: isIndexing ? getOrderedPages(app) : pageFeed,
+    searchText,
+    list: app.getIn(['list', 'list'])
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll } } }) => {
   return {
-    searchBookmarks: createSearchAction('collection.bookmarks'),
+    addPagesToLists: (pages, lists) => {
+      const bookmarkPromises = [];
+      for (const list of lists) {
+        for (const page of pages) {
+          bookmarkPromises.push(dispatch(addTo(user, coll, list, page)));
+        }
+      }
+
+      return Promise.all(bookmarkPromises);
+    },
+    deleteColl: () => {
+      dispatch(deleteCollection(user, coll))
+        .then((res) => {
+          if (res.hasOwnProperty('deleted_id')) {
+            history.push(`/${user}`);
+          }
+        });
+    },
+    removeBookmark: (list, id) => {
+      dispatch(removeBookmark(user, coll, list, id))
+        .then(() => dispatch(loadList(user, coll, list)));
+    },
+    saveBookmarkSort: (list, ids) => {
+      dispatch(saveSort(user, coll, list, ids));
+    },
+    searchPages: createSearchAction('collection.pages'),
     dispatch
   };
 };

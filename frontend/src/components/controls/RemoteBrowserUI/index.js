@@ -36,17 +36,13 @@ class RemoteBrowserUI extends Component {
     };
 
     this.pywbParams = {
-      static_prefix: '/static/browsers/',
-      api_prefix: '/api/browsers'
+      static_prefix: '/static/',
+      api_prefix: '/api/browsers',
+      clipboard: '#clipboard',
+      fill_window: false,
+      on_countdown: this.onCountdown,
+      on_event: this.onEvent
     };
-
-    this.pywbParams.clipboard = '#clipboard';
-    this.pywbParams.fill_window = false;
-    this.pywbParams.static_prefix = '/shared/';
-
-    // event callbacks
-    this.pywbParams.on_countdown = this.onCountdown;
-    this.pywbParams.on_event = this.onEvent;
 
     /* TODO:
     $("#report-modal").on("shown.bs.modal", function () {

@@ -61,11 +61,11 @@ export default function remoteBrowsers(state = initialState, action = {}) {
 }
 
 export function createRemoteBrowser(br, user, coll, rec, mode, urlFrag) {
-  const args = `br=${br}&user=${user}&coll=${coll}&rec=${rec}&mode=${mode}&wb_url=${urlFrag}`;
-
   return {
     types: [RB_CREATE_BROWSER, RB_CREATE_BROWSER_SUCCESS, RB_CREATE_BROWSER_FAILURE],
-    promise: client => client.get(`${config.apiPath}/create_remote_browser?${args}`)
+    promise: client => client.get(`${config.apiPath}/create_remote_browser`, {
+      params: { br, user, coll, rec, mode, wb_url: urlFrag }
+    })
   };
 }
 

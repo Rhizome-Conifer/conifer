@@ -1,7 +1,8 @@
 import { FAQ, TermsAndPolicies } from 'components/siteComponents';
 import {
-  collDetailBookmark,
+  collDetailBreadcrumb,
   collList,
+  listDetailBreadcrumb,
   recBookmark
 } from 'components/siteComponents/BreadcrumbsUI/breadcrumbs';
 import {
@@ -15,6 +16,7 @@ import {
   PasswordReset,
   Patch,
   Record,
+  RegisterAccount,
   Replay,
   UserSignup,
   UserSettings
@@ -32,7 +34,7 @@ const userRoutes = [
     footer: true,
     breadcrumb: collList
   },
-  { /* TODO: add auth check */
+  {
     path: `${userPath}/_settings`,
     component: UserSettings,
     exact: true,
@@ -41,13 +43,29 @@ const userRoutes = [
     breadcrumb: 'Settings'
   },
   {
+    path: '/_valreg/:registration',
+    component: RegisterAccount,
+    exact: true,
+    name: 'Account Registration',
+    footer: true
+  },
+  {
     path: `${userPath}/:coll`,
     component: CollectionDetail,
     exact: true,
     name: 'collectionDetail',
     footer: false,
     classOverride: true,
-    breadcrumb: collDetailBookmark
+    breadcrumb: collDetailBreadcrumb
+  },
+  {
+    path: `${userPath}/:coll/list/:list`,
+    component: CollectionDetail,
+    exact: true,
+    name: 'collectionDetailList',
+    footer: false,
+    classOverride: true,
+    breadcrumb: listDetailBreadcrumb
   }
 ];
 

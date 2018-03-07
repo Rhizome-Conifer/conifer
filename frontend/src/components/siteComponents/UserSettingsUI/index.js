@@ -72,13 +72,8 @@ class UserSettingsUI extends Component {
     this.setState({ [evt.target.name]: evt.target.value });
   }
 
-  toggleDelete = (evt) => {
-    this.setState({ showModal: !this.state.showModal });
-  }
-
-  closeDeleteModal = (evt) => {
-    this.setState({ showModal: false });
-  }
+  toggleDelete = evt => this.setState({ showModal: !this.state.showModal })
+  closeDeleteModal = evt => this.setState({ showModal: false })
 
   render() {
     const { user } = this.props;
@@ -205,7 +200,8 @@ class UserSettingsUI extends Component {
           header="Confirm Delete Account?"
           body={confirmDeleteBody}
           footer={confirmDeleteFooter}
-          visible={showModal} />
+          visible={showModal}
+          closeCb={this.closeDeleteModal} />
       </div>
     );
   }

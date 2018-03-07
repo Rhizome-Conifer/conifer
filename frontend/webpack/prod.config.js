@@ -17,6 +17,7 @@ var assetsPath = path.resolve(projectRootPath, './static/dist');
 var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
 var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 
 module.exports = {
@@ -130,6 +131,7 @@ module.exports = {
     extensions: ['.json', '.js']
   },
   plugins: [
+    new CopyWebpackPlugin([{from: 'src/shared/novnc', to: 'novnc/'}]),
     new CleanPlugin([assetsPath], { root: projectRootPath }),
 
     // css files from the extract-text-plugin loader

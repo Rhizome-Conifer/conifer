@@ -36,23 +36,29 @@ class UserSignup extends Component {
 
     this.state = {
       moveTemp: false,
-      toColl: ''
+      toColl: '',
+      username: '',
+      name: '',
+      email: '',
+      announce_mailer: false,
+      password: '',
+      confirmpassword: ''
     };
   }
 
   save = (evt) => {
     evt.preventDefault();
     const { announce_mailer, username, name, full_name,
-            email, password, password2 } = this.state;
+            email, password, confirmpassword } = this.state;
 
-    if(!password || !password2) {
+    if(!password || !confirmpassword) {
       this.setState({ missingPw: true });
     }
 
     if(username && this.validateUsername() === 'success' &&
-       password && password2 && this.validatePassword() === null && email) {
+       password && confirmpassword && this.validatePassword() === null && email) {
       // core fields to send to server
-      let data = { username, email, password, password2 };
+      let data = { username, email, password, confirmpassword };
 
       if(announce_mailer)
         data = { ...data, announce_mailer };
@@ -132,12 +138,12 @@ class UserSignup extends Component {
   }
 
   validatePassword = () => {
-    const { password, password2, missingPw } = this.state;
+    const { password, confirmpassword, missingPw } = this.state;
 
     if(password && !passwordPassRegex(password))
       return 'warning';
 
-    if((password && password2 && password !== password2) || missingPw)
+    if((password && confirmpassword && password !== confirmpassword) || missingPw)
       return 'error';
 
     return null;
@@ -147,7 +153,7 @@ class UserSignup extends Component {
     const { metadata } = this.context;
     const { available, checkedUsername, errors, result,
             success, user, userCheck } = this.props;
-    const { email, moveTemp, name, password, password2,
+    const { email, moveTemp, name, password, confirmpassword,
             toColl, username } = this.state;
 
     const classes = classNames('col-sm-6 col-md-6 col-md-offset-3 wr-signup', {
@@ -255,13 +261,13 @@ class UserSignup extends Component {
               <ControlLabel srOnly>Password</ControlLabel>
               <FormControl
                 type="password"
-                name="password2"
+                name="confirmpassword"
                 placeholder="Confirm Password"
-                value={password2}
+                value={confirmpassword}
                 onChange={this.handleChange}
                 onBlur={this.validatePassword} />
               {
-                password && password2 && password !== password2 &&
+                password && confirmpassword && password !== confirmpassword &&
                   <HelpBlock>Password confirmation does not match</HelpBlock>
               }
             </FormGroup>

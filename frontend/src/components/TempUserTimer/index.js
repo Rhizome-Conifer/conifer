@@ -14,7 +14,7 @@ class TempUserTimer extends Component {
     // ttl minus accessed offset
     const ttl = parseInt(props.ttl, 10) - parseInt((Date.now() - props.accessed) / 1000, 10);
     const min = Math.max(0, Math.floor(ttl / 60));
-    const sec = ttl % 60;
+    const sec = Math.max(0, ttl % 60);
 
     this.state = {
       min: String(min).padStart(2, '0'),
@@ -45,7 +45,7 @@ class TempUserTimer extends Component {
   tick = () => {
     const { ttl } = this.state;
     const min = Math.max(0, Math.floor(ttl / 60));
-    const sec = ttl % 60;
+    const sec = Math.max(0, ttl % 60);
 
     if (ttl < 0) {
       clearInterval(this.timer);

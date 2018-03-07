@@ -1,54 +1,66 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
-import ReactMarkdown from 'react-markdown';
+import { Button, ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 import { setSort } from 'redux/modules/collection';
-import { getStorage, inStorage, setStorage } from 'helpers/utils';
+import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
 import SessionCollapsible from 'components/SessionCollapsible';
-import DurationFormat from 'components/DurationFormat';
-import SizeFormat from 'components/SizeFormat';
-import TimeFormat from 'components/TimeFormat';
+import Modal from 'components/Modal';
+import { CloseIcon } from 'components/icons';
 
 import 'react-virtualized/styles.css';
 
-import { RecordingSession } from './sidebar';
-import CollectionManagement from './management';
-import { BrowserRenderer, LinkRenderer, TimestampRenderer } from './columns';
+import CollectionSidebar from './sidebar';
+import CollDetailHeader from './header';
+import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
+import { CollectionManagement } from './management';
+import { BrowserRenderer, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
 
 
 class CollectionDetailUI extends Component {
   static propTypes = {
+    addPagesToLists: PropTypes.func,
     auth: PropTypes.object,
-    bookmarks: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
+    deleteColl: PropTypes.func,
     dispatch: PropTypes.func,
+    list: PropTypes.object,
+    pages: PropTypes.object,
     recordings: PropTypes.object,
+    removeBookmark: PropTypes.func,
+    saveBookmarkSort: PropTypes.func,
     searchText: PropTypes.string,
-    searchBookmarks: PropTypes.func
+    searchPages: PropTypes.func
   };
 
   static contextTypes = {
     canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   }
 
   constructor(props) {
     super(props);
 
     this.initialState = {
-      groupDisplay: false,
+      addToListModal: false,
+      checkedLists: {},
+      confirmDelete: '',
+      deleteModal: false,
       expandAll: false,
+      groupDisplay: false,
+      listBookmarks: props.list.get('bookmarks'),
       selectedSession: null,
-      selectedBookmark: null,
-      selectedBookmarkIdx: null,
-      selectedGroupedBookmark: null,
-      selectedGroupedBookmarkIdx: null,
+      selectedPageIdx: null,
+      selectedGroupedPageIdx: null,
       selectedRec: null
     };
 
@@ -62,6 +74,12 @@ class CollectionDetailUI extends Component {
       } catch (e) {
         console.log('Wrong `groupDisplay` storage value');
       }
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.list !== this.props.list) {
+      this.setState({ listBookmarks: nextProps.list.get('bookmarks') });
     }
   }
 
@@ -81,39 +99,65 @@ class CollectionDetailUI extends Component {
     }
 
     setStorage('groupDisplay', bool);
-    this.setState(Object.assign(this.initialState, {
-      groupDisplay: bool,
-    }));
+    this.setState({ ...this.initialState, groupDisplay: bool });
   }
 
-  onSelectRow = ({ index, rowData }) => {
-    if (this.state.selectedBookmarkIdx === index) {
+  onSelectRow = ({ event, index, rowData }) => {
+    const { selectedPageIdx } = this.state;
+
+    if (selectedPageIdx === index) {
       // clear selection
       this.setState({
-        selectedBookmarkIdx: null,
-        selectedBookmark: null,
+        selectedPageIdx: null
       });
     } else {
+      let selectedIndex = index;
+      if (event.shiftKey && selectedPageIdx !== null) {
+        let start;
+        let end;
+
+        // if selection is already a range, compute within that
+        if (typeof selectedPageIdx !== 'number') {
+          const arrMin = Math.min.apply(null, selectedPageIdx);
+          const arrMax = Math.max.apply(null, selectedPageIdx);
+          start = Math.min(arrMin, index);
+          end = Math.max(arrMax, index);
+        } else {
+          start = Math.min(selectedPageIdx, index);
+          end = Math.max(selectedPageIdx, index);
+        }
+
+        selectedIndex = range(start, end);
+      } else if (event.metaKey && selectedPageIdx !== null) {
+        if (typeof selectedPageIdx === "object") {
+          selectedIndex = selectedPageIdx;
+          if (selectedIndex.includes(index)) {
+            selectedIndex.splice(selectedIndex.indexOf(index), 1);
+          } else {
+            selectedIndex.push(index);
+          }
+        } else {
+          selectedIndex = [selectedPageIdx, index];
+        }
+      }
+
       this.setState({
-        selectedBookmarkIdx: index,
-        selectedBookmark: rowData,
+        selectedPageIdx: selectedIndex,
         selectedSession: null
       });
     }
   }
 
   onSelectGroupedRow = ({ rec, index }) => {
-    if (this.state.selectedGroupedBookmarkIdx === index) {
+    if (this.state.selectedGroupedPageIdx === index) {
       this.setState({
         selectedSession: rec,
-        selectedGroupedBookmark: null,
-        selectedGroupedBookmarkIdx: null
+        selectedGroupedPageIdx: null
       });
     } else {
       this.setState({
         selectedSession: rec,
-        selectedGroupedBookmark: rec.getIn(['pages', index]),
-        selectedGroupedBookmarkIdx: index
+        selectedGroupedPageIdx: index
       });
     }
   }
@@ -121,9 +165,7 @@ class CollectionDetailUI extends Component {
   onExpandSession = (sesh) => {
     if (!this.state.expandAll) {
       this.setState({
-        selectedBookmark: null,
-        selectedGroupedBookmark: null,
-        selectedGroupedBookmarkIdx: null,
+        selectedGroupedPageIdx: null,
         selectedSession: sesh
       });
     }
@@ -133,11 +175,35 @@ class CollectionDetailUI extends Component {
     if (this.state.selectedSession) {
       this.setState({
         selectedSession: null,
-        selectedGroupedBookmark: null,
-        selectedGroupedBookmarkIdx: null,
+        selectedGroupedPageIdx: null,
         selectedRec: null
       });
     }
+  }
+
+  addToList = () => {
+    const { checkedLists, selectedPageIdx } = this.state;
+    const { pages } = this.props;
+
+    if (!checkedLists || Object.entries(checkedLists).length === 0 || !selectedPageIdx) {
+      return;
+    }
+
+    const selectedLists = Object.entries(checkedLists).filter(l => l[1]);
+    const lists = selectedLists.map(obj => obj[0]);
+
+    const pagesToAdd = [];
+
+    if (typeof selectedPageIdx === "object") {
+      for(const pgIdx of selectedPageIdx) {
+        pagesToAdd.push(pages.get(pgIdx));
+      }
+    } else {
+      pagesToAdd.push(pages.get(selectedPageIdx));
+    }
+
+    this.props.addPagesToLists(pagesToAdd, lists);
+    this.closeAddToList();
   }
 
   openAndScroll = (sesh) => {
@@ -161,20 +227,23 @@ class CollectionDetailUI extends Component {
   }
 
   search = (evt) => {
-    const { dispatch, searchBookmarks } = this.props;
+    const { dispatch, searchPages } = this.props;
 
     // if in group mode, switch to flat display
     if(this.state.groupDisplay) {
       this.onToggle();
     }
 
-    dispatch(searchBookmarks(evt.target.value));
+    dispatch(searchPages(evt.target.value));
   }
 
   sort = ({ sortBy, sortDirection }) => {
     const { collection, dispatch } = this.props;
     const prevSort = collection.getIn(['sortBy', 'sort']);
     const prevDir = collection.getIn(['sortBy', 'dir']);
+
+    // clear selected pages
+    this.setState({ selectedPageIdx: null });
 
     if (prevSort !== sortBy) {
       dispatch(setSort({ sort: sortBy, dir: sortDirection }));
@@ -187,103 +256,154 @@ class CollectionDetailUI extends Component {
     this.setState({ expandAll: !this.state.expandAll });
   }
 
+  testRowHighlight = ({ index }) => {
+    const { selectedPageIdx } = this.state;
+
+    if (!!selectedPageIdx && typeof selectedPageIdx === 'object') {
+      return selectedPageIdx.includes(index) ? 'selected' : '';
+    }
+    return index === selectedPageIdx ? 'selected' : '';
+  }
+
+  listCheckbox = (evt) => {
+    const { checkedLists } = this.state;
+
+    checkedLists[evt.target.name] = evt.target.checked;
+
+    this.setState({ checkedLists });
+  }
+
+  sortBookmark = (origIndex, hoverIndex) => {
+    const { listBookmarks } = this.state;
+    const o = listBookmarks.get(origIndex);
+    const sorted = listBookmarks.splice(origIndex, 1)
+                                .splice(hoverIndex, 0, o);
+
+    this.setState({ listBookmarks: sorted });
+  }
+
+  saveSort = () => {
+    const { list, saveBookmarkSort } = this.props;
+    const order = this.state.listBookmarks.map(o => o.get('id')).toArray();
+    saveBookmarkSort(list.get('id'), order);
+  }
+
+  deleteCollection = () => {
+    const { collection } = this.props;
+    const { confirmDelete } = this.state;
+
+    if (collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
+      this.props.deleteColl();
+    }
+  }
+
+  validateConfirmDelete = (evt) => {
+    const { collection } = this.props;
+    const { confirmDelete } = this.state;
+
+    if (!confirmDelete) {
+      return null;
+    }
+
+    if (confirmDelete && !collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
+      return 'error';
+    }
+
+    return 'success';
+  }
+
+  handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
+  openDeleteModal = () => this.setState({ deleteModal: true })
+  closeDeleteModal = () => this.setState({ deleteModal: false, confirmDelete: '' })
+  openAddToList = () => this.setState({ addToListModal: true })
+  closeAddToList = () => this.setState({ addToListModal: false })
+
   render() {
-    const { canAdmin } = this.context;
-    const { bookmarks, browsers, collection, recordings, searchText } = this.props;
-    const { groupDisplay, expandAll, selectedBookmark, selectedBookmarkIdx,
-            selectedSession, selectedGroupedBookmark, selectedGroupedBookmarkIdx,
-            selectedRec } = this.state;
+    const { canAdmin, isAnon } = this.context;
+    const { pages, browsers, collection, list, recordings, searchText, match: { params } } = this.props;
+    const {
+      addToListModal,
+      checkedLists,
+      groupDisplay,
+      expandAll,
+      listBookmarks,
+      selectedSession,
+      selectedPageIdx,
+      selectedGroupedPageIdx,
+      selectedRec
+    } = this.state;
 
     // don't render until loaded
     if (!collection.get('loaded')) {
       return null;
     }
 
+    const activeList = Boolean(params.list);
+    const objectLabel = activeList ? 'Bookmark' : 'Page';
+    const objects = activeList ? listBookmarks : pages;
+
+    // add react-dnd integration
+    const customRowRenderer = (props) => {
+      if (isAnon) {
+        return <DefaultRow {...props} />;
+      } else if (activeList) {
+        return (
+          <DnDSortableRow
+            id={props.rowData.get('id')}
+            save={this.saveSort}
+            sort={this.sortBookmark}
+            {...props} />
+        );
+      }
+      return <DnDRow {...props} />;
+    };
+
     return (
       <div className="wr-coll-detail">
-        <header>
-          <h1>{collection.get('title')}</h1>
-          <hr />
-          <ReactMarkdown className="coll-desc" source={collection.get('desc')} />
-        </header>
+        <CollDetailHeader
+          activeList={activeList}
+          collection={collection}
+          list={list} />
 
         <div className="grid-wrapper">
           <div className="wr-coll-container">
-            <aside className="wr-coll-sidebar-container">
-              <div className="wr-coll-sidebar">
-                {
-                  // selected flat bookmark
-                  selectedBookmark &&
-                    <div>
-                      <h4>Bookmark #{ selectedBookmarkIdx + 1 } of {collection.get('bookmarks').size } selected.</h4>
-                      <div>
-                        <h5>{selectedBookmark.get('title')}</h5>
-                        <TimeFormat dt={selectedBookmark.get('timestamp')} />
-                      </div>
-                    </div>
-                }
-                {
-                  // selected session
-                  selectedSession && !selectedGroupedBookmark && !expandAll &&
-                    <div>
-                      <h4>{selectedSession.get('title')}</h4>
-                      <div>
-                        {`${selectedSession.get('pages').size} bookmark${selectedSession.get('pages').size === 1 ? '' : 's'}`}
-                        &nbsp;&ndash;&nbsp;<SizeFormat bytes={selectedSession.get('size')} />
-                      </div>
-                      <TimeFormat epoch={selectedSession.get('updated_at')} />
-                      <div>Dur. <DurationFormat duration={parseInt(selectedSession.get('updated_at'), 10) - parseInt(selectedSession.get('created_at'), 10)} /></div>
-                    </div>
-                }
-                {
-                  // selected grouped bookmark
-                  selectedGroupedBookmark &&
-                    <div>
-                      <h4>Bookmark #{ selectedGroupedBookmarkIdx + 1} of {selectedSession.size} selected.</h4>
-                      <div>
-                        <h5>{selectedGroupedBookmark.get('title')}</h5>
-                        <TimeFormat dt={selectedGroupedBookmark.get('timestamp')} />
-                      </div>
-                    </div>
-                }
-                {
-                  // collection info
-                  !selectedBookmark && (!selectedSession || (expandAll && !selectedGroupedBookmark)) &&
-                    <div>
-                      <div className="recording-session-count">{recordings.size} Recording{ recordings.size === 1 ? '' : 's'}:</div>
-                      {
-                        recordings.map((rec) => {
-                          return (
-                            <RecordingSession
-                              key={rec.get('id')}
-                              rec={rec}
-                              select={this.selectRecording} />
-                          );
-                        })
-                      }
-                    </div>
-                }
-              </div>
-            </aside>
+
+            <CollectionSidebar collection={collection} activeListId={params.list} />
+
             <div className="wr-coll-utilities">
               <CollectionManagement
+                activeList={activeList}
+                collection={collection}
                 expandAll={expandAll}
                 groupDisplay={groupDisplay}
+                onDelete={this.openDeleteModal}
                 onToggle={this.onToggle}
-                toggleExpandAllSessions={this.toggleExpandAllSessions}
+                openAddToList={this.openAddToList}
                 search={this.search}
-                searchText={searchText} />
+                searchText={searchText}
+                selectedPages={selectedPageIdx !== null}
+                toggleExpandAllSessions={this.toggleExpandAllSessions} />
             </div>
-            <div className="wr-coll-detail-table">
+
+            <div className="lists-modifier">
               {
-                groupDisplay ?
+                activeList &&
+                  <header className="lists-header">
+                    <span>Bookmarks in Selected List</span>
+                    <Link to={`/${collection.get('user')}/${collection.get('id')}`}>Back to Collection Index <CloseIcon /></Link>
+                  </header>
+              }
+            </div>
+            <div className={classNames('wr-coll-detail-table', { 'with-lists': activeList })}>
+              {
+                !activeList && groupDisplay ?
                   <div className="wr-coll-session-container" ref={(obj) => { this.sessionContainer = obj; }}>
                     {
                       recordings.map((rec) => {
                         return (
                           <SessionCollapsible
                             key={rec.get('id')}
-                            hasActiveBookmark={selectedSession === rec && selectedGroupedBookmarkIdx !== null}
+                            hasActivePage={selectedSession === rec && selectedGroupedPageIdx !== null}
                             collection={collection}
                             browsers={browsers}
                             expand={expandAll || rec.get('id') === selectedRec}
@@ -291,7 +411,7 @@ class CollectionDetailUI extends Component {
                             onCollapse={this.onCollapseSession}
                             recording={rec}
                             onSelectRow={this.onSelectGroupedRow}
-                            selectedGroupedBookmarkIdx={selectedGroupedBookmarkIdx} />
+                            selectedGroupedPageIdx={selectedGroupedPageIdx} />
                         );
                       })
                     }
@@ -300,17 +420,33 @@ class CollectionDetailUI extends Component {
                     {
                       ({ height, width }) => (
                         <Table
-                          width={width}
+                          width={
+                            /* factor border width */
+                            activeList ? width - 8 : width
+                          }
                           height={height}
-                          rowCount={bookmarks.size}
+                          rowCount={objects ? objects.size : 0}
                           headerHeight={40}
-                          rowHeight={50}
-                          rowGetter={({ index }) => bookmarks.get(index)}
-                          rowClassName={({ index }) => { return index === selectedBookmarkIdx ? 'selected' : ''; }}
+                          rowHeight={40}
+                          rowGetter={({ index }) => objects.get(index)}
+                          rowClassName={this.testRowHighlight}
                           onRowClick={this.onSelectRow}
-                          sort={this.sort}
-                          sortBy={collection.getIn(['sortBy', 'sort'])}
-                          sortDirection={collection.getIn(['sortBy', 'dir'])}>
+                          rowRenderer={customRowRenderer}
+                          sort={activeList ? null : this.sort}
+                          sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
+                          sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                          {
+                            activeList && canAdmin &&
+                              <Column
+                                width={40}
+                                dataKey="remove"
+                                style={{ textAlign: 'center' }}
+                                columnData={{
+                                  listId: params.list,
+                                  removeCallback: this.props.removeBookmark
+                                }}
+                                cellRenderer={RemoveRenderer} />
+                          }
                           <Column
                             width={200}
                             label="timestamp"
@@ -318,7 +454,7 @@ class CollectionDetailUI extends Component {
                             cellRenderer={TimestampRenderer} />
                           <Column
                             width={200}
-                            label="bookmark"
+                            label={objectLabel}
                             dataKey="title"
                             flexGrow={1}
                             columnData={{ collection }}
@@ -342,6 +478,69 @@ class CollectionDetailUI extends Component {
             </div>
           </div>
         </div>
+
+        {
+          /* add to list modal */
+          canAdmin &&
+            <React.Fragment>
+              <Modal
+                visible={addToListModal}
+                closeCb={this.closeAddToList}
+                dialogClassName="add-to-lists-modal"
+                header={<h4>Add to ...</h4>}
+                footer={
+                  <React.Fragment>
+                    <Button disabled style={{ marginRight: 5 }}>Create new list</Button>
+                    <Button onClick={this.addToList} bsStyle="success">Save</Button>
+                  </React.Fragment>
+                }>
+                <ul>
+                  {
+                    collection.get('lists').map((listObj) => {
+                      const id = listObj.get('id');
+                      return (
+                        <li key={id}>
+                          <input type="checkbox" onChange={this.listCheckbox} name={id} id={`add-to-list-${id}`} checked={checkedLists[id] || false} />
+                          <label htmlFor={`add-to-list-${id}`}>{listObj.get('title')}</label>
+                        </li>
+                      );
+                    })
+                  }
+                </ul>
+              </Modal>
+              <Modal
+                visible={this.state.deleteModal}
+                closeCb={this.closeDeleteModal}
+                dialogClassName="wr-delete-modal"
+                header={<h4>Confirm Delete Collection</h4>}
+                footer={
+                  <React.Fragment>
+                    <Button onClick={this.closeDeleteModal} style={{ marginRight: 5 }}>Cancel</Button>
+                    <Button onClick={this.deleteCollection} disabled={this.validateConfirmDelete() !== 'success'} bsStyle="danger">Confirm Delete</Button>
+                  </React.Fragment>
+                }>
+                <p>
+                  Are you sure you want to delete the collection <b>{collection.get('title')}</b> {`/${params.user}/${params.coll}/`}?
+                </p>
+                <p>
+                  If you confirm, <b>all recordings will be permanently deleted</b>.
+                </p>
+                <p>
+                  Be sure to download the collection first if you would like to keep any data.
+                </p>
+                <FormGroup validationState={this.validateConfirmDelete()}>
+                  <ControlLabel>Type the collection title to confirm:</ControlLabel>
+                  <FormControl
+                    id="confirm-delete"
+                    type="text"
+                    name="confirmDelete"
+                    placeholder={collection.get('title')}
+                    value={this.state.confirmDelete}
+                    onChange={this.handleChange} />
+                </FormGroup>
+              </Modal>
+            </React.Fragment>
+        }
       </div>
     );
   }

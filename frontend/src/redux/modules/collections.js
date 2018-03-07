@@ -63,7 +63,8 @@ export function isLoaded({ app }) {
 export function createCollection(user, title, makePublic = false) {
   return {
     types: [CREATE_COLL, CREATE_COLL_SUCCESS, CREATE_COLL_FAIL],
-    promise: client => client.post(`${config.apiPath}/collections?user=${user}`, {
+    promise: client => client.post(`${config.apiPath}/collections`, {
+      params: { user },
       data: {
         title,
         'public': makePublic ? 'on' : 'no'
@@ -72,10 +73,12 @@ export function createCollection(user, title, makePublic = false) {
   };
 }
 
-export function load(username) {
+export function load(user) {
   return {
     types: [COLLS_LOAD, COLLS_LOAD_SUCCESS, COLLS_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${config.apiPath}/collections?user=${username}`)
+    promise: client => client.get(`${config.apiPath}/collections`, {
+      params: { user }
+    })
   };
 }

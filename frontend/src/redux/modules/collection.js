@@ -1,9 +1,17 @@
-import config from 'config';
+import { apiPath } from 'config';
 import { fromJS } from 'immutable';
 
-const COLL_LOAD = 'wr/coll/LOAD';
-const COLL_LOAD_SUCCESS = 'wr/coll/LOAD_SUCCESS';
-const COLL_LOAD_FAIL = 'wr/coll/LOAD_FAIL';
+const COLL_LOAD = 'wr/coll/COLL_LOAD';
+const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
+const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
+
+const COLL_DELETE = 'wr/coll/COLL_DELETE';
+const COLL_DELETE_SUCCESS = 'wr/coll/COLL_DELETE_SUCCESS';
+const COLL_DELETE_FAIL = 'wr/coll/COLL_DELETE_FAIL';
+
+const LISTS_LOAD = 'wr/coll/LISTS_LOAD';
+const LISTS_LOAD_SUCCESS = 'wr/coll/LISTS_LOAD_SUCCESS';
+const LISTS_LOAD_FAIL = 'wr/coll/LISTS_LOAD_FAIL';
 
 const COLL_SET_SORT = 'wr/coll/COLL_SET_SORT';
 const COLL_SET_PUBLIC = 'wr/coll/SET_PUBLIC';
@@ -26,7 +34,7 @@ export default function collection(state = initialState, action = {}) {
     case COLL_LOAD_SUCCESS: {
       const {
         bookmarks,
-        collection: { created_at, desc, download_url, id, recordings, size, title },
+        collection: { created_at, desc, download_url, id, lists, recordings, size, title },
         user
       } = action.result;
 
@@ -39,12 +47,13 @@ export default function collection(state = initialState, action = {}) {
         accessed: action.accessed,
         error: null,
 
-        bookmarks: bks,
+        pages: bks,
         created_at,
         desc,
         download_url,
         id,
         isPublic: action.result.collection['r:@public'],
+        lists,
         recordings,
         size,
         title,
@@ -65,6 +74,13 @@ export default function collection(state = initialState, action = {}) {
         sortBy: action.sortBy
       });
 
+    case LISTS_LOAD_SUCCESS:
+      return state.merge({
+        lists: action.result.lists
+      });
+
+    case LISTS_LOAD_FAIL:
+    case LISTS_LOAD:
     case COLL_SET_PUBLIC:
     case COLL_SET_PUBLIC_FAIL:
     default:
@@ -77,22 +93,43 @@ export function isLoaded({ app }) {
          app.getIn(['collection', 'loaded']);
 }
 
-export function load(username, coll) {
+export function load(user, coll) {
   return {
     types: [COLL_LOAD, COLL_LOAD_SUCCESS, COLL_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${config.apiPath}/collections/${coll}?user=${username}`)
+    promise: client => client.get(`${apiPath}/collections/${coll}`, {
+      params: { user }
+    })
+  };
+}
+
+export function loadLists(user, coll, withBookmarks = false) {
+  return {
+    types: [LISTS_LOAD, LISTS_LOAD_SUCCESS, LISTS_LOAD_FAIL],
+    promise: client => client.get(`${apiPath}/lists`, {
+      params: { user, coll, include_bookmarks: withBookmarks }
+    })
   };
 }
 
 export function setPublic(coll, user, makePublic = true) {
   return {
     types: [COLL_SET_PUBLIC, COLL_SET_PUBLIC_SUCCESS, COLL_SET_PUBLIC_FAIL],
-    promise: client => client.post(`${config.apiPath}/collections/${coll}/public?user=${user}`, {
+    promise: client => client.post(`${apiPath}/collections/${coll}/public`, {
+      params: { user },
       data: {
         'public': makePublic
       },
     }, 'form')
+  };
+}
+
+export function deleteCollection(user, coll) {
+  return {
+    types: [COLL_DELETE, COLL_DELETE_SUCCESS, COLL_DELETE_FAIL],
+    promise: client => client.del(`${apiPath}/collections/${coll}`, {
+      params: { user }
+    })
   };
 }
 

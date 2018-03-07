@@ -1,20 +1,21 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { buildDate } from 'helpers/utils';
+import { buildDate, isoToDisplay } from 'helpers/utils';
 
 
 class TimeFormat extends Component {
   static propTypes = {
     classes: PropTypes.string,
     dt: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+    iso: PropTypes.string,
     epoch: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
     gmt: PropTypes.bool
   };
 
   static defaultProps = {
     dt: false,
-    gmt: false,
+    gmt: false
   };
 
   constructor(props) {
@@ -24,8 +25,13 @@ class TimeFormat extends Component {
   }
 
   componentDidMount() {
-    const { dt, epoch, gmt } = this.props;
-    this.setState({ displayTime: buildDate(dt, epoch, gmt) });
+    const { dt, epoch, gmt, iso } = this.props;
+
+    if (iso) {
+      this.setState({ displayTime: isoToDisplay(iso, gmt) });
+    } else {
+      this.setState({ displayTime: buildDate(dt, epoch, gmt) });
+    }
   }
 
   componentWillReceiveProps(nextProps) {

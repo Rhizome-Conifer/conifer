@@ -14,12 +14,12 @@ class SessionCollapsible extends PureComponent {
     collection: PropTypes.object,
     browsers: PropTypes.object,
     expand: PropTypes.bool,
-    hasActiveBookmark: PropTypes.bool,
+    hasActivePage: PropTypes.bool,
     onCollapse: PropTypes.func,
     onExpand: PropTypes.func,
     onSelectRow: PropTypes.func,
     recording: PropTypes.object,
-    selectedGroupedBookmarkIdx: PropTypes.number
+    selectedGroupedPageIdx: PropTypes.number
   };
 
   expandCallback = () => {
@@ -27,8 +27,8 @@ class SessionCollapsible extends PureComponent {
   }
 
   render() {
-    const { collection, browsers, expand, hasActiveBookmark, onCollapse,
-            onSelectRow, recording, selectedGroupedBookmarkIdx } = this.props;
+    const { collection, browsers, expand, hasActivePage, onCollapse,
+            onSelectRow, recording, selectedGroupedPageIdx } = this.props;
     const pageCount = recording.get('pages').size;
 
     const header = (
@@ -36,7 +36,7 @@ class SessionCollapsible extends PureComponent {
         { pageCount > 0 && <span className="glyphicon glyphicon-triangle-right" />}
         <h2>{recording.get('title')}</h2>
         <span className="badge">{ recording.get('pages').size }</span>
-        <TimeFormat classes="session-ts" epoch={recording.get('updated_at')} />
+        <TimeFormat classes="session-ts" iso={recording.get('updated_at')} />
         <SizeFormat bytes={recording.get('size')} />
       </header>
     );
@@ -54,11 +54,11 @@ class SessionCollapsible extends PureComponent {
           <PageList
             browsers={browsers}
             coll={collection}
-            hasActiveBookmark={hasActiveBookmark}
+            hasActivePage={hasActivePage}
             rec={recording}
             pages={recording.get('pages')}
             onSelectRow={onSelectRow}
-            selectedGroupedBookmarkIdx={selectedGroupedBookmarkIdx} />
+            selectedGroupedPageIdx={selectedGroupedPageIdx} />
         </Collapsible>
       </div>
     );

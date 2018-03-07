@@ -17,6 +17,7 @@ const initialState = fromJS({
   userCheck: false
 });
 
+
 export default function userSignup(state = initialState, action = {}) {
   switch (action.type) {
     case SIGNUP:
@@ -58,7 +59,9 @@ export function checkUser(username) {
   return {
     types: [USERNAME_CHECK, USERNAME_CHECK_SUCCESS, USERNAME_CHECK_ERROR],
     username,
-    promise: client => client.get(`${config.apiPath}/username_check?username=${username}`)
+    promise: client => client.get(`${config.apiPath}/username_check?`, {
+      params: { username }
+    })
   };
 }
 

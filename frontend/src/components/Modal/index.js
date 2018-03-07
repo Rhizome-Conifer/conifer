@@ -11,14 +11,19 @@ class Modal extends Component {
     body: PropTypes.element,
     footer: PropTypes.element,
     visible: PropTypes.bool,
-    closeCb: PropTypes.func
+    closeCb: PropTypes.func,
+    dialogClassName: PropTypes.string
   }
 
   render() {
-    const { body, children, closeCb, footer, header, visible } = this.props;
+    const { body, children, dialogClassName, closeCb, footer,
+            header, visible } = this.props;
 
     return (
-      <BSModal show={visible} onHide={closeCb}>
+      <BSModal
+        show={visible}
+        onHide={closeCb}
+        dialogClassName={dialogClassName}>
         { header &&
           <BSModal.Header closeButton>
             {

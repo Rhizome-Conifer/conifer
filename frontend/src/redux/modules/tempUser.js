@@ -7,13 +7,13 @@ const TEMP_LOAD_SUCCESS = 'wr/tempUser/TEMP_LOAD_SUCCESS';
 const TEMP_LOAD_FAIL = 'wr/tempUser/TEMP_LOAD_FAIL';
 
 const initialState = fromJS({
-  loadinging: false,
+  loading: false,
   loaded: false,
   error: null,
   user: null,
 });
 
-export default function bugReport(state = initialState, action = {}) {
+export default function tempUser(state = initialState, action = {}) {
   switch (action.type) {
     case TEMP_LOAD:
       return state.merge({

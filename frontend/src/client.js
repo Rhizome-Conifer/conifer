@@ -39,6 +39,9 @@ if (module.hot) {
   module.hot.accept('./baseRoute', () => {
     const nextRoutes = require('./baseRoute');
 
+    // Hacky solution to get around HTML5Backend reinit bug
+    // https://github.com/react-dnd/react-dnd/issues/894#issuecomment-367463855
+    window.__isReactDndBackendSetUp = false;
     renderApp({ routes: nextRoutes, client });
   });
 }
