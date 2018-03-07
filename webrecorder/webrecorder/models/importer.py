@@ -6,6 +6,8 @@ from warcio.limitreader import LimitReader
 
 from har2warc.har2warc import HarParser
 from warcio.warcwriter import BufferWARCWriter, WARCWriter
+from warcio.timeutils import iso_date_to_datetime
+
 
 from pywb.warcserver.index.cdxobject import CDXObject
 
@@ -13,6 +15,7 @@ import traceback
 import json
 import requests
 import atexit
+import calendar
 
 import base64
 import os
@@ -226,7 +229,7 @@ class BaseImporter(ImportStatusChecker):
         recording = None
 
         if force_coll_name:
-            collection = user.get_collection(force_coll_name)
+            collection = user.get_collection_by_name(force_coll_name)
 
         rec_infos = []
 
@@ -243,7 +246,7 @@ class BaseImporter(ImportStatusChecker):
 
                 info['id'] = sanitize_title(info.get('title', ''))
 
-                desc = info.get('desc') or info.get('title', '')
+                desc = info.get('desc', '')
 
                 recording = collection.create_recording(info['id'],
                                                         desc=desc,
@@ -266,13 +269,8 @@ class BaseImporter(ImportStatusChecker):
                                   'recording': recording,
                                  })
 
-                created_at = info.get('created_at')
-                if created_at:
-                    recording.set_prop('created_at', created_at)
-
-                updated_at = info.get('updated_at')
-                if updated_at:
-                    recording.set_prop('updated_at', updated_at)
+                self.set_date_prop(recording, info, 'created_at', 'created_at_date')
+                self.set_date_prop(recording, info, 'updated_at', 'updated_at_date')
 
             if not first_coll:
                 first_coll = collection
@@ -417,6 +415,17 @@ class BaseImporter(ImportStatusChecker):
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
         return warcinfo if valid else None
 
+    def set_date_prop(self, obj, info, ts_prop, iso_prop):
+        value = info.get(iso_prop)
+        if value:
+            dt = iso_date_to_datetime(value)
+            value = calendar.timegm(dt.utctimetuple())
+        else:
+            value = info.get(ts_prop)
+
+        if value is not None:
+            obj.set_prop(ts_prop, value)
+
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         raise NotImplemented()
 
@@ -530,6 +539,9 @@ class UploadImporter(BaseImporter):
 
         info['id'] = collection.name
         info['type'] = 'collection'
+
+        self.set_date_prop(collection, info, 'created_at', 'created_at_date')
+        self.set_date_prop(collection, info, 'updated_at', 'updated_at_date')
 
         return collection
 

@@ -16,7 +16,8 @@ import json
 
 # ============================================================================
 class DownloadController(BaseController):
-    COPY_FIELDS = ['title', 'desc', 'size', 'updated_at', 'created_at']
+    COPY_FIELDS = ('title', 'desc', 'size', 'updated_at', 'created_at')
+    APPEND_DATE = ('updated_at', 'created_at')
 
     def __init__(self, *args, **kwargs):
         super(DownloadController, self).__init__(*args, **kwargs)
@@ -44,6 +45,8 @@ class DownloadController(BaseController):
     def create_warcinfo(self, creator, name, metadata, source, filename):
         for name, value in iteritems(source.serialize()):
             if name in self.COPY_FIELDS:
+                if name in self.APPEND_DATE:
+                    name += '_date'
                 metadata[name] = value
 
         info = OrderedDict([
@@ -72,8 +75,6 @@ class DownloadController(BaseController):
         rec_type = recording.get_prop('rec_type')
         if rec_type:
             metadata['rec_type'] = rec_type
-
-        metadata['rec_desc'] = recording.get_prop('desc')
 
         name = quote(collection.name) + '/' + quote(recording.name)
         return self.create_warcinfo(user, name, metadata, recording, filename)

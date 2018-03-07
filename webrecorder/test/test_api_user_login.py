@@ -240,7 +240,7 @@ class TestApiUserLogin(FullStackTests):
         assert user['collections'][0]['title'] == 'Default Collection'
         assert user['collections'][0]['owner'] == 'someuser'
         assert user['collections'][0]['id'] == 'default-collection'
-        assert user['collections'][0]['desc'] == 'Default Collection'
+        assert 'This is your first collection' in user['collections'][0]['desc']
         assert user['collections'][0]['size'] == 0
 
         assert self.ISO_DT_RX.match(user['created_at'])

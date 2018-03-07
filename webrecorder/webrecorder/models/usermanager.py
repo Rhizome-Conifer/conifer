@@ -458,7 +458,7 @@ class UserManager(object):
         elif self.default_coll:
             first_coll = user.create_collection(self.default_coll['id'],
                                    title=self.default_coll['title'],
-                                   desc=self.default_coll['title'].format(username),
+                                   desc=self.default_coll['desc'].format(username),
                                    public=False)
 
         # email subscription set up?
