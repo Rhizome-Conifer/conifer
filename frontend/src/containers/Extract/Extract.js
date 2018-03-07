@@ -5,10 +5,11 @@ import { asyncConnect } from 'redux-connect';
 import config from 'config';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, setExtractable, updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { getArchives, setExtractable, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
-import { selectCollection } from 'redux/modules/user';
+import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 import { getActiveCollection } from 'redux/selectors';
+import { selectCollection } from 'redux/modules/user';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -74,6 +75,7 @@ class Extract extends Component {
         <ReplayUI
           activeCollection={activeCollection}
           params={params}
+          timestamp={timestamp}
           url={url} />
 
         <div className="iframe-container">
@@ -103,15 +105,21 @@ class Extract extends Component {
 
 const initialData = [
   {
+    promise: ({ store: { dispatch } }) => {
+      return dispatch(loadBrowsers());
+    }
+  },
+  {
     // set url and ts in store
-    promise: ({ match: { params: { extractMode, archiveId, collId, ts, splat } }, store: { dispatch, getState } }) => {
+    promise: ({ location: { hash, search }, match: { params: { archiveId, br, collId, extractMode, splat, ts } }, store: { dispatch, getState } }) => {
       dispatch(getArchives()).then(() => {
         const state = getState().app;
         const archives = state.getIn(['controls', 'archives']);
+        const compositeUrl = `${splat}${search || ''}${hash || ''}`;
 
         const promises = [
-          dispatch(updateUrl(splat)),
-          dispatch(updateTimestamp(ts)),
+          dispatch(updateUrlAndTimestamp(compositeUrl, ts)),
+          dispatch(setBrowser(br || null)),
           dispatch(setExtractable({
             allSources: extractMode === 'extract',
             archive: archives.get(archiveId),

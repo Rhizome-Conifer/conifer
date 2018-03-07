@@ -118,6 +118,14 @@ const controllerRoutes = [
     exact: true
   },
   {
+    path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    name: 'rb extract',
+    footer: false,
+    classOverride: true,
+    component: Extract,
+    exact: true
+  },
+  {
     path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?/:splat(.*)`,
     name: 'extract',
     footer: false,

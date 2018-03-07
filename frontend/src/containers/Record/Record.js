@@ -6,7 +6,7 @@ import config from 'config';
 import { getRemoteBrowser } from 'helpers/utils';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { getArchives, updateUrl } from 'redux/modules/controls';
 import { loadRecording } from 'redux/modules/recordings';
 import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
@@ -61,8 +61,8 @@ class Record extends Component {
     return (
       <React.Fragment>
         <ReplayUI
+          activeBrowser={activeBrowser}
           params={params}
-          timestamp={timestamp}
           url={url} />
 
         <div className="iframe-container">
@@ -98,9 +98,10 @@ const initialData = [
   },
   {
     // set url and remote browser
-    promise: ({ match: { params: { br, splat } }, store: { dispatch } }) => {
+    promise: ({ location: { hash, search }, match: { params: { br, splat } }, store: { dispatch } }) => {
+      const compositeUrl = `${splat}${search || ''}${hash || ''}`;
       const promises = [
-        dispatch(updateUrl(splat)),
+        dispatch(updateUrl(compositeUrl)),
         dispatch(setBrowser(br || null))
       ];
 
@@ -144,8 +145,8 @@ const initialData = [
 const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
-    collection: app.get('collection'),
     auth: app.get('auth'),
+    collection: app.get('collection'),
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])

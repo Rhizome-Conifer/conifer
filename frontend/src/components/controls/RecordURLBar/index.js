@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 
 import { ExtractWidget, PatchWidget, RemoteBrowserSelect } from 'containers';
 
+import { remoteBrowserMod } from 'helpers/utils';
+
 import './style.scss';
 
 
@@ -15,20 +17,22 @@ class RecordURLBar extends Component {
   };
 
   static propTypes = {
+    activeBrowser: PropTypes.string,
     activeCollection: PropTypes.object,
     params: PropTypes.object,
+    timestamp: PropTypes.string,
     url: PropTypes.string
   };
 
   constructor(props) {
     super(props);
 
-    this.state = { urlInput: props.url || '' };
+    this.state = { url: props.url || '' };
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.url !== this.props.url) {
-      this.setState({ urlInput: nextProps.url });
+      this.setState({ url: nextProps.url });
     }
   }
 
@@ -38,21 +42,39 @@ class RecordURLBar extends Component {
     });
   }
 
-  changeURL = (evt, url) => {
-    // TODO: implement
-    console.log(url);
+  handleSubmit = (evt) => {
+    const { currMode } = this.context;
+    const { activeBrowser, params: { archiveId, coll, collId, extractMode, rec, user }, timestamp } = this.props;
+    const { url } = this.state;
+
+    if (evt.key === 'Enter') {
+      evt.preventDefault();
+
+      switch(currMode) {
+        case 'record':
+          this.context.router.history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(activeBrowser, null, '/')}${url}`);
+          break;
+        case 'patch':
+          this.context.router.history.push(`/${user}/${coll}/${rec}/patch/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
+          break;
+        case 'extract':
+          this.context.router.history.push(`/${user}/${coll}/${rec}/${extractMode}:${archiveId}${collId ? `:${collId}` : ''}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
+          break;
+        default:
+          break;
+      }
+    }
   }
 
   render() {
     const { currMode, canAdmin } = this.context;
     const { activeCollection, params } = this.props;
-    const { urlInput } = this.state;
+    const { url } = this.state;
 
     const isNew = currMode === 'new';
     const isExtract = currMode.indexOf('extract') !== -1;
     const isPatch = currMode === 'patch';
 
-    /* TODO: fabric-ify these */
     return (
       <div className="main-bar">
         <form className={classNames('form-group-recorder-url', { 'start-recording': isNew, 'content-form': !isNew, 'remote-archive': isPatch || isExtract })}>
@@ -67,7 +89,7 @@ class RecordURLBar extends Component {
             </div>
             {
               /* {% if not browser %}autofocus{% endif %} */
-              <input type="text" onChange={this.handleChange} className="url-input-recorder form-control" name="url" value={urlInput} autoFocus required />
+              <input type="text" onChange={this.handleChange} onKeyPress={this.handleSubmit} className="url-input-recorder form-control" name="url" value={url} autoFocus required />
             }
             {
               isExtract &&

@@ -39,8 +39,6 @@ app.use(express.static(path.join(__dirname, '..', 'static')));
 
 // proxy api and other urls on localhost
 if (config.apiProxy) {
-  app.use('/shared', express.static(path.join(__dirname, 'shared')));
-
   // Proxy client API requets to server for now to avoid CORS
   app.use(bypassUrls, proxy({
     target: baseUrl,

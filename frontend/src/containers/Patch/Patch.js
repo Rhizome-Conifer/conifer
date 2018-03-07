@@ -5,7 +5,7 @@ import { asyncConnect } from 'redux-connect';
 import config from 'config';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { getArchives, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
 import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
@@ -66,6 +66,7 @@ class Patch extends Component {
       <React.Fragment>
         <ReplayUI
           params={params}
+          timestamp={timestamp}
           url={url} />
         <div className="iframe-container">
           {
@@ -100,10 +101,10 @@ const initialData = [
   },
   {
     // set url and ts in store
-    promise: ({ match: { params: { br, ts, splat } }, store: { dispatch } }) => {
+    promise: ({ location: { hash, search }, match: { params: { br, ts, splat } }, store: { dispatch } }) => {
+      const compositeUrl = `${splat}${search || ''}${hash || ''}`;
       const promises = [
-        dispatch(updateUrl(splat)),
-        dispatch(updateTimestamp(ts)),
+        dispatch(updateUrlAndTimestamp(compositeUrl, ts)),
         dispatch(setBrowser(br || null))
       ];
 

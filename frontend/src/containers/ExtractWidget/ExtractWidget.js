@@ -33,8 +33,13 @@ class ExtractWidget extends Component {
     active: false
   };
 
+  componentWillMount() {
+    if (!this.props.active && this.props.extractable) {
+      this.props.setExtractWidget(null);
+    }
+  }
+
   componentDidMount() {
-    console.log('extract widget mounting');
     const { archives, archivesLoading } = this.props;
 
     if(!archivesLoading && archives.size === 0)
@@ -42,13 +47,9 @@ class ExtractWidget extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(nextProps.url !== this.props.url) {
+    if(!this.props.active && nextProps.url !== this.props.url) {
       this.parseURL(nextProps.url);
     }
-  }
-
-  componentWillUnmount() {
-    this.props.setExtractWidget(null);
   }
 
   parseURL = (url) => {

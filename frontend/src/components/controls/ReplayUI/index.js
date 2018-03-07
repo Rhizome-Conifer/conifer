@@ -11,6 +11,7 @@ import './style.scss';
 
 class ReplayUI extends Component {
   static propTypes = {
+    activeBrowser: PropTypes.string,
     params: PropTypes.object,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -22,18 +23,14 @@ class ReplayUI extends Component {
 
   render() {
     const { currMode } = this.context;
-    const { params, timestamp, url } = this.props;
+    const { params } = this.props;
 
     const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
 
     return (
       <div>
         <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
-          <ModeSelector
-            params={params}
-            ts={timestamp}
-            url={url} />
-
+          <ModeSelector params={params} />
           {
             isWrite &&
               <SizeCounter bytes={0} />

@@ -19,9 +19,9 @@ class ModeSelectorUI extends PureComponent {
   };
 
   static propTypes = {
+    activeBrowser: PropTypes.string,
     params: PropTypes.object,
-    remoteBrowserSelected: PropTypes.object,
-    ts: PropTypes.string,
+    timestamp: PropTypes.string,
     url: PropTypes.string
   };
 
@@ -43,30 +43,27 @@ class ModeSelectorUI extends PureComponent {
   }
 
   onReplay = () => {
-    const { params: { coll, user }, remoteBrowserSelected, ts, url } = this.props;
+    const { activeBrowser, params: { coll, user }, timestamp, url } = this.props;
 
-    const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
-    this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(rbId, ts, '/')}${url}`);
+    this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
   }
 
   onPatch = () => {
     if (this.context.currMode === 'record') return;
 
-    const { params: { coll }, remoteBrowserSelected, ts, url } = this.props;
+    const { activeBrowser, params: { coll }, timestamp, url } = this.props;
 
-    const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
-    // window.location = `/_new/${coll}/Patch/patch/${remoteBrowserMod(rbId, ts, '/')}${url}`;
     // data to create new recording
     const data = {
       url,
       coll,
-      ts,
+      ts: timestamp,
       mode: 'patch'
     };
 
     // add remote browser
-    if (rbId) {
-      data.browser = rbId;
+    if (activeBrowser) {
+      data.browser = activeBrowser;
     }
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
@@ -78,11 +75,8 @@ class ModeSelectorUI extends PureComponent {
   onRecord = () => {
     if (this.context.currMode === 'record') return;
 
-    const { params: { coll, rec }, remoteBrowserSelected, url } = this.props;
+    const { activeBrowser, params: { coll, rec }, url } = this.props;
     const recording = rec && !rec.startsWith('patch') ? rec : encodeURIComponent(config.defaultRecordingTitle);
-    const rbId = remoteBrowserSelected ? remoteBrowserSelected.get('id') : null;
-
-    //window.location = `/_new/${coll}/${recording}/record/${remoteBrowserMod(rbId, '', '/')}${url}`;
 
     const data = {
       url,
@@ -91,8 +85,8 @@ class ModeSelectorUI extends PureComponent {
     };
 
     // add remote browser
-    if (rbId) {
-      data.browser = rbId;
+    if (activeBrowser) {
+      data.browser = activeBrowser;
     }
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })

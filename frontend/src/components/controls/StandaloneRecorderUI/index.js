@@ -64,7 +64,10 @@ class StandaloneRecorderUI extends Component {
     }
 
     if (extractable) {
-      data.mode = extractable.get('allSources') ? 'extract' : 'extract_only';
+      const mode = extractable.get('allSources') ? 'extract' : 'extract_only';
+      data.url = extractable.get('targetUrl');
+      data.mode = `${mode}:${extractable.get('id')}`;
+      data.ts = extractable.get('timestamp');
     } else {
       data.mode = 'record';
     }
