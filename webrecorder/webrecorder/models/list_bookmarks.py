@@ -20,7 +20,7 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
         self.data = {'title': props['title'],
                      'desc': props.get('desc', ''),
-                     'public': props.get('public', '0'),
+                     'public': '1' if props.get('public') else '0',
                      'owner': self.owner.my_id,
                     }
 
@@ -30,6 +30,8 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
         return list_id
 
     def create_bookmark(self, props):
+        self.access.assert_can_write_coll(self.get_owner())
+
         bookmark = Bookmark(redis=self.redis,
                             access=self.access)
 
@@ -42,12 +44,18 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
         return bookmark
 
     def get_bookmarks(self, load=True):
+        self.access.assert_can_read_coll(self.get_owner())
+
         return self.get_ordered_objects(Bookmark, load=load)
 
     def num_bookmarks(self):
+        self.access.assert_can_read_coll(self.get_owner())
+
         return self.num_ordered_objects()
 
     def get_bookmark(self, bid):
+        self.access.assert_can_read_coll(self.get_owner())
+
         if bid is None or not self.contains_id(bid):
             return None
 
@@ -60,9 +68,13 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
         return bookmark
 
     def move_bookmark_before(self, bookmark, before_bookmark):
+        self.access.assert_can_write_coll(self.get_owner())
+
         self.insert_ordered_object(bookmark, before_bookmark)
 
     def remove_bookmark(self, bookmark):
+        self.access.assert_can_write_coll(self.get_owner())
+
         if not self.remove_ordered_object(bookmark):
             return False
 
@@ -72,6 +84,7 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
     def serialize(self, include_bookmarks=True):
         data = super(BookmarkList, self).serialize()
+
         if include_bookmarks:
             bookmarks = self.get_bookmarks(load=True)
             data['bookmarks'] = [bookmark.serialize() for bookmark in bookmarks]
@@ -81,6 +94,8 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
         return data
 
     def update(self, props):
+        self.access.assert_can_write_coll(self.get_owner())
+
         props = props or {}
         AVAIL_PROPS = ['title', 'desc', 'public']
 
@@ -89,6 +104,8 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
                 self.set_prop(prop, props[prop])
 
     def delete_me(self):
+        self.access.assert_can_write_coll(self.get_owner())
+
         for bookmark in self.get_bookmarks():
             bookmark.delete_me()
 
@@ -125,6 +142,8 @@ class Bookmark(RedisUniqueComponent):
         self._init_new()
 
     def update(self, props):
+        self.access.assert_can_write_coll(self.owner.get_owner())
+
         props = props or {}
         AVAIL_PROPS = ['title', 'url', 'timestamp', 'browser']
 
@@ -133,6 +152,8 @@ class Bookmark(RedisUniqueComponent):
                 self.set_prop(prop, props[prop])
 
     def delete_me(self):
+        self.access.assert_can_write_coll(self.owner.get_owner())
+
         return self.delete_object()
 
 

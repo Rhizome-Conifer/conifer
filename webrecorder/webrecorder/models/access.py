@@ -136,4 +136,24 @@ class SessionAccessCache(BaseAccess):
         if self.session_user.is_anon():
             raise HTTPError(404, 'Not Logged In')
 
+    def can_read_list(self, blist):
+        if not blist:
+            return False
 
+        coll = blist.get_owner()
+
+        if self._is_coll_owner(coll):
+            return True
+
+        if self.is_public(coll):
+            if self.is_list_public(blist):
+                return True
+
+        return False
+
+    def assert_can_read_list(self, blist):
+        if not self.can_read_list(blist):
+            raise HTTPError(404, 'No List Access')
+
+    def is_list_public(self, blist):
+        return blist.get_prop('public') == '1'

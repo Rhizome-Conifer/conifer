@@ -33,6 +33,8 @@ class ListsController(BaseController):
         def get_list(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
+            self.access.assert_can_read_list(blist)
+
             return {'list': blist.serialize()}
 
         @self.app.post('/api/v1/list/<list_id>')

@@ -67,10 +67,12 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         return bookmark_list
 
     def get_lists(self, load=True):
-        #TODO: privacy settings
         self.access.assert_can_read_coll(self)
 
         lists = self.get_ordered_objects(BookmarkList, load=load)
+
+        if not self.access.can_write_coll(self):
+            lists = [blist for blist in lists if self.access.can_read_list(blist)]
 
         return lists
 
@@ -84,12 +86,19 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         bookmark_list.owner = self
 
+        if not self.access.can_read_list(bookmark_list):
+            return None
+
         return bookmark_list
 
     def move_list_before(self, blist, before_blist):
+        self.access.assert_can_write_coll(self)
+
         self.insert_ordered_object(blist, before_blist)
 
     def remove_list(self, blist):
+        self.access.assert_can_write_coll(self)
+
         if not self.remove_ordered_object(blist):
             return False
 
@@ -98,7 +107,10 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         return True
 
     def num_lists(self):
-        return self.num_ordered_objects()
+        if self.access.assert_can_write_coll(self):
+            return self.num_ordered_objects()
+        else:
+            return len(list(self.get_lists()))
 
     def _new_rec_name(self):
         return 'rec-' + timestamp20_now()
