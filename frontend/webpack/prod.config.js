@@ -131,7 +131,10 @@ module.exports = {
     extensions: ['.json', '.js']
   },
   plugins: [
-    new CopyWebpackPlugin([{from: 'src/shared/novnc', to: 'novnc/'}]),
+    new CopyWebpackPlugin([
+      {from: 'src/shared/novnc', to: 'novnc/'},
+      'src/shared/images/favicon.png'
+    ]),
     new CleanPlugin([assetsPath], { root: projectRootPath }),
 
     // css files from the extract-text-plugin loader
