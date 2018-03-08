@@ -1,0 +1,39 @@
+@import 'src/vars';
+
+.wr-breadcrumb {
+    background-color: transparent;
+    padding: 0 !important;
+    padding-left: .5rem;
+    margin: .1rem;
+    border: none;
+    display: inline-block;
+
+    li {
+        display: inline;
+
+        &:not(:first-child):before {
+            content: '/';
+            color: #CCC;
+            padding:0 1rem;
+        }
+
+        a, span {
+            max-width: 10rem !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        span {
+            color: $white;
+        }
+
+        a:focus, a:hover, a:active {
+            text-decoration: underline;
+        }
+
+        a.branding {
+            text-decoration: none;
+        }
+    }
+}

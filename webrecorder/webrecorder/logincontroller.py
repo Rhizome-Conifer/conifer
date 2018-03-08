@@ -1,11 +1,12 @@
 import os
 import json
 
-from bottle import request
+from bottle import request, HTTPError
 from os.path import expandvars
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.basecontroller import BaseController
+
 from six.moves.urllib.parse import quote
 
 
@@ -34,13 +35,13 @@ SETTINGS = '/_settings'
 # ============================================================================
 class LoginController(BaseController):
     def __init__(self, *args, **kwargs):
-        config = kwargs.get('config')
+        super(LoginController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
+        self.cork = kwargs['cork']
 
         self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
         invites = expandvars(config.get('invites_enabled', 'true')).lower()
         self.invites_enabled = invites in ('true', '1', 'yes')
-
-        super(LoginController, self).__init__(*args, **kwargs)
 
     def init_routes(self):
         # Login/Logout
@@ -65,57 +66,25 @@ class LoginController(BaseController):
         def login_post():
             self.redirect_home_if_logged_in()
 
-            """Authenticate users"""
-            username = self.post_get('username')
-            password = self.post_get('password')
+            result = self.user_manager.login_user(request.forms)
 
-            try:
-                move_info = self.get_move_temp_info()
-            except ValidationException as ve:
-                self.flash_message('Login Failed: ' + str(ve))
-                self.redirect('/')
-                return
+            if 'success' not in result:
+                self.flash_message(result['error'])
+                self.redirect(LOGIN_PATH)
 
-            # if a collection is being moved, auth user
-            # and then check for available space
-            # if not enough space, don't continue with login
-            if move_info and (self.manager.cork.
-                              is_authenticate(username, password)):
+            if 'new_coll_name' in result:
+                msg = 'Collection <b>{0}</b> created!'.format(result['new_coll_name'])
+                self.flash_message(msg, 'success')
 
-                if not self.manager.has_space_for_new_coll(username,
-                                                           move_info['from_user'],
-                                                           'temp'):
-                    self.flash_message('Sorry, not enough space to import this Temporary Collection into your account.')
-                    self.redirect('/')
-                    return
-
-            if not self.manager.cork.login(username, password):
-                self.flash_message('Invalid Login. Please Try Again')
-                redir_to = LOGIN_PATH
-                self.redirect(redir_to)
-
-            sesh = self.get_session()
-            sesh.curr_user = username
-
-            if move_info:
-                try:
-                    new_title = self.manager.move_temp_coll(username, move_info)
-                    if new_title:
-                        self.flash_message('Collection <b>{0}</b> created!'.format(new_title), 'success')
-                except:
-                    import traceback
-                    traceback.print_exc()
-
-            remember_me = (self.post_get('remember_me') == '1')
-            sesh.logged_in(remember_me)
-
-            temp_prefix = self.manager.temp_prefix
+            temp_prefix = self.user_manager.temp_prefix
 
             redir_to = request.headers.get('Referer')
             host = self.get_host()
 
             if redir_to and redir_to.startswith(host):
                 redir_to = redir_to[len(host):]
+
+            username = self.post_get('username')
 
             if not redir_to or redir_to.startswith(('/' + temp_prefix,
                                                     '/_')):
@@ -137,7 +106,8 @@ class LoginController(BaseController):
                 url += path
                 redir_to = url
 
-            self.manager.cork.logout(success_redirect=redir_to, fail_redirect=redir_to)
+            self.user_manager.logout()
+            self.redirect(redir_to)
 
 
         # Register/Invite/Confirm
@@ -159,7 +129,7 @@ class LoginController(BaseController):
             email = ''
 
             try:
-                email = self.manager.is_valid_invite(invitecode)
+                email = self.user_manager.is_valid_invite(invitecode)
             except ValidationException as ve:
                 self.flash_message(str(ve))
 
@@ -173,7 +143,7 @@ class LoginController(BaseController):
             email = self.post_get('email')
             name = self.post_get('name')
             desc = self.post_get('desc')
-            if self.manager.save_invite(email, name, desc):
+            if self.user_manager.save_invite(email, name, desc):
                 self.flash_message('Thank you for your interest! We will send you an invite to try webrecorder.io soon!', 'success')
                 self.redirect('/')
             else:
@@ -185,86 +155,20 @@ class LoginController(BaseController):
         def register_post():
             self.redirect_home_if_logged_in()
 
-            email = self.post_get('email')
-            username = self.post_get('username')
-            password = self.post_get('password')
-            name = self.post_get('name')
-            decoy_name = self.post_get('full_name')
-            confirm_password = self.post_get('confirmpassword')
-            invitecode = self.post_get('invite')
-            opt_in_mailer = self.post_get('announce_mailer') == '1'
-
             redir_to = REGISTER_PATH
 
-            if decoy_name:
-                return self.redirect(redir_to)
+            data = dict(request.forms)
 
-            if username.startswith(self.manager.temp_prefix):
-                self.flash_message('Sorry, this is not a valid username')
-                self.redirect(redir_to)
-                return
+            msg, redir_extra = self.user_manager.register_user(data, self.get_host())
 
-            try:
-                move_info = self.get_move_temp_info()
-            except ValidationException as ve:
-                self.flash_message('Registration Failed: ' + str(ve))
+            if 'success' in msg:
+                self.flash_message(msg['success'])
                 self.redirect('/')
-                return
 
-            if self.invites_enabled:
-                try:
-                    val_email = self.manager.is_valid_invite(invitecode)
-                    if val_email != email:
-                        raise ValidationException('Sorry, this invite can only be used with email: {0}'.format(val_email))
-                except ValidationException as ve:
-                    self.flash_message(str(ve))
-                    self.redirect(redir_to)
-                    return
-
-                redir_to += '?invite=' + invitecode
-
-            try:
-                self.manager.validate_user(username, email)
-                self.manager.validate_password(password, confirm_password)
-
-                #TODO: set default host?
-                host = self.get_host()
-
-                desc = {'name': name}
-
-                if move_info:
-                    desc['move_info'] = move_info
-
-                desc = json.dumps(desc)
-
-                self.manager.cork.register(username, password, email, role='archivist',
-                              max_level=50,
-                              subject='webrecorder.io Account Creation',
-                              email_template='webrecorder/templates/emailconfirm.html',
-                              description=desc,
-                              host=host)
-
-                self.flash_message(
-                    ('A confirmation e-mail has been sent to <b>{0}</b>. '
-                     'Please check your e-mail to complete the registration!').format(username),
-                    'warning')
-
-                # add to announce list if user opted in
-                if opt_in_mailer and self.announce_list:
-                    self.manager.add_to_mailing_list(username, email, name,
-                                                     list_endpoint=self.announce_list)
-
-                redir_to = '/'
-                if self.invites_enabled:
-                    self.manager.delete_invite(email)
-
-            except ValidationException as ve:
-                self.flash_message(str(ve))
-
-            except Exception as ex:
-                self.flash_message('Registration failed: ' + str(ex))
-
-            self.redirect(redir_to)
+            else:
+                redir_to += redir_extra
+                self.flash_message(list(msg.values())[0], 'warning')
+                self.redirect(redir_to)
 
         @self.app.get(VAL_REG_PATH)
         @self.jinja2_view('val_reg.html')
@@ -278,43 +182,31 @@ class LoginController(BaseController):
 
             reg = self.post_get('reg', '')
 
-            val = request.environ.get('webrec.request_cookie', '')
-            cookie_validate = 'valreg=' + reg
-            if cookie_validate not in val:
-                self.flash_message('Registration Not Accepted')
-                self.redirect(REGISTER_PATH)
+            cookie = request.environ.get('webrec.request_cookie', '')
 
-            try:
-                username, first_coll = self.manager.create_user(reg)
+            result = self.user_manager.validate_registration(reg, cookie)
 
-                #self.flash_message('<b>{0}</b>, welcome to your new archive home page! \
-    #Click the <b>Create New Collection</b> button to create your first collection. Happy Archiving!'.format(username), 'success')
-                #redir_to = '/' + username
-
+            if 'registered' in result:
                 msg = '<b>{0}</b>, you are now logged in!'
-
-                if first_coll == 'Default Collection':
+                if result.get('first_coll_name') == 'default-collection':
                     msg += ' The <b>{1}</b> collection has been created for you, and you can begin recording by entering a url below!'
                 else:
                     msg += ' The <b>{1}</b> collection has been permanently saved for you, and you can continue recording by entering a url below!'
 
-                self.flash_message(msg.format(username, first_coll), 'success')
-                redir_to = '/'
+                self.flash_message(msg.format(result['registered'], result.get('first_coll_name')), 'success')
+                self.redirect('/')
 
-            except ValidationException:
+            if result['error'] == 'invalid':
+                self.flash_message('Registration Not Accepted', 'error')
+                self.redirect(REGISTER_PATH)
+
+            elif result['error'] == 'already_registered':
                 self.flash_message('The user <b>{0}</b> is already registered. \
     If this is you, please login or click forgot password, \
     or register a new account.'.format(username))
-                redir_to = LOGIN_PATH
+                self.redirect(LOGIN_PATH)
 
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                self.flash_message('Sorry, this is not a valid registration code. Please try again.')
-                redir_to = REGISTER_PATH
-
-            self.redirect(redir_to)
-
+            self.redirect(REGISTER_PATH)
 
         # Forgot Password
         # ============================================================================
@@ -334,7 +226,7 @@ class LoginController(BaseController):
             host = self.get_host()
 
             try:
-                self.manager.cork.send_password_reset_email(username=username,
+                self.cork.send_password_reset_email(username=username,
                                           email_addr=email,
                                           subject='webrecorder.io password reset confirmation',
                                           email_template='webrecorder/templates/emailreset.html',
@@ -343,6 +235,8 @@ class LoginController(BaseController):
                 self.flash_message('A password reset e-mail has been sent to your e-mail!', 'success')
                 redir_to = '/'
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 self.flash_message(str(e))
                 redir_to = FORGOT_PATH
 
@@ -379,9 +273,9 @@ class LoginController(BaseController):
             confirm_password = self.post_get('confirmpassword')
 
             try:
-                self.manager.validate_password(password, confirm_password)
+                self.user_manager.validate_password(password, confirm_password)
 
-                self.manager.cork.reset_password(resetcode, password)
+                self.user_manager.cork.reset_password(resetcode, password)
 
                 self.flash_message('Your password has been successfully reset! \
     You can now <b>login</b> with your new password!', 'success')
@@ -402,20 +296,20 @@ class LoginController(BaseController):
         # Update Password
         @self.app.post(UPDATE_PASS_PATH)
         def update_password():
-            self.manager.cork.require(role='archivist', fail_redirect=LOGIN_PATH)
+            self.cork.require(role='archivist', fail_redirect=LOGIN_PATH)
 
             curr_password = self.post_get('curr_password')
             password = self.post_get('password')
             confirm_password = self.post_get('confirmpassword')
 
             try:
-                self.manager.update_password(curr_password, password, confirm_password)
+                self.user_manager.update_password(curr_password, password, confirm_password)
                 self.flash_message('Password Updated', 'success')
             except ValidationException as ve:
                 self.flash_message(str(ve))
 
-            user = self.manager.get_curr_user()
-            self.redirect(self.get_path(user) + SETTINGS)
+            username = self.access.session_user.name
+            self.redirect(self.get_path(username) + SETTINGS)
 
     def redirect_home_if_logged_in(self):
         sesh = self.get_session()
@@ -423,26 +317,5 @@ class LoginController(BaseController):
         if sesh.curr_user:
             self.flash_message('You are already logged in as <b>{0}</b>'.format(sesh.curr_user))
             self.redirect('/')
-
-    def get_move_temp_info(self):
-        move_info = None
-        move_temp = self.post_get('move-temp')
-
-        if move_temp == '1':
-            to_coll_title = self.post_get('to-coll')
-            to_coll = self.sanitize_title(to_coll_title)
-
-            if not to_coll:
-                raise ValidationException('Invalid new collection name, please pick a different name')
-
-            sesh = self.get_session()
-
-            if sesh.is_anon() and to_coll:
-                move_info = {'from_user': sesh.anon_user,
-                             'to_coll': to_coll,
-                             'to_title': to_coll_title,
-                            }
-
-        return move_info
 
 

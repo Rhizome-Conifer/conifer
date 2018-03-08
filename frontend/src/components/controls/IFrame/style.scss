@@ -1,0 +1,9 @@
+#wb_iframe_container, .wb_iframe {
+    flex-grow: 1;
+    padding: 0;
+    overflow: scroll !important;
+    border: none;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}

@@ -1,0 +1,46 @@
+@import 'src/vars';
+
+#remember_me {
+    margin-right: 1rem;
+}
+
+.wr-header-btn {
+    border: none;
+    background: transparent;
+    color: $white;
+    padding: 0;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.wr-login-form {
+    margin: 2rem 4rem 2rem 4rem;
+
+    p {
+        margin-top: 2rem;
+    }
+}
+.navbar-right:not(&:last-child) {
+    margin-right: 1rem;
+}
+
+.navbar-right > span {
+    color: #FFF;
+}
+
+.num-collection {
+    color: #FFF;
+    font-feature-settings: 'tnum';
+    margin-left: .5rem;
+
+    &:before {
+        content: '(';
+        padding-right: .1rem;
+    }
+    &:after {
+        content: ')';
+        padding-left: .1rem;
+    }
+}

@@ -38,10 +38,10 @@ class WRWarcServer(object):
         rec_url = redis_base + config['cdxj_key_templ']
         coll_url = redis_base + config['coll_cdxj_key_templ']
         warc_url = redis_base + config['warc_key_templ']
-        rec_list_key = config['rec_list_key_templ']
+        rec_map_key = config['rec_map_key_templ']
 
         redis_resolver = RedisResolver(redis_url=warc_url,
-                                       member_key_templ=rec_list_key)
+                                       member_key_templ=rec_map_key)
         redis = redis_resolver.redis
         warc_resolvers = [redis_resolver]
 

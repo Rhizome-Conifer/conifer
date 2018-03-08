@@ -130,8 +130,3 @@ class SizeTrackingReader(CacheingLimitReader):
 
     def seekable(self):
         return False
-
-
-
-
-

@@ -1,18 +1,20 @@
 from .testutils import FullStackTests
 
-from webrecorder.redisman import init_manager_for_cli
-
+from webrecorder.models.usermanager import CLIUserManager
 
 class TestAdminAPI(FullStackTests):
-
     def test_cli_manager(self):
-        m = init_manager_for_cli()
+        m = CLIUserManager()
 
         assert type(m.redis.keys('*')) is list
 
     def test_admin_no_auth(self):
         res = self.testapp.get('/api/v1/users')
         # no permissions, redirect to _login
+        assert res.headers['Location'].endswith('_login')
+
+    def test_dashboard_no_auth(self):
+        res = self.testapp.get('/api/v1/dashboard')
         assert res.headers['Location'].endswith('_login')
 
     def test_client_archives(self):
@@ -24,4 +26,5 @@ class TestAdminAPI(FullStackTests):
             assert 'name' in value
             assert 'about' in value
             assert 'prefix' in value
+
 

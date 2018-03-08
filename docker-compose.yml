@@ -3,7 +3,7 @@ version: '2'
 services:
     app:
         build: ./webrecorder
-        command: uwsgi /code/apps/frontend.ini
+        command: uwsgi /code/apps/apiapp.ini
 
         env_file:
             - ./wr.env
@@ -21,6 +21,25 @@ services:
         networks:
             - default
             - browsers
+
+    frontend:
+        build:
+            context: ./frontend
+
+        env_file:
+            - ./wr.env
+
+        command: sh run.sh
+
+        depends_on:
+            - app
+
+        volumes:
+            - ./frontend/:/code/
+            - /code/node_modules
+
+        ports:
+            - 8096:8096 # for HMR on dev
 
     recorder:
         build: ./webrecorder
@@ -56,13 +75,16 @@ services:
         image: webrecorder/nginx
         depends_on:
             - app
+            - frontend
 
         volumes:
             - ./data:/data
             - ./webrecorder/:/code/
+            - ./frontend/:/frontend/
 
         ports:
-            - "8089:80"
+            - 8089:80
+            - 8092:81
 
     shepherd:
         image: oldwebtoday/shepherd
@@ -99,8 +121,8 @@ services:
             - ./wr.env
 
         ports:
-            - "6379:6379"
-  
+            - 6379:6379
+
         volumes:
             - ./data:/data
 

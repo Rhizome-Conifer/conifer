@@ -12,7 +12,7 @@
 
     {% if user and not is_anon() %}
     <li>
-        {% if coll %}
+        {% if coll_name %}
         <a target="_parent" href="/{{ user }}" title="Return to archive: {{ user }}" class="archive-breadcrumb">{{ user }}</a>
         {% else %}
         <span>{{ user }}</span>
@@ -20,20 +20,20 @@
     </li>
     {% endif %}
 
-    {% if coll %}
+    {% if coll_name %}
     <li>
-        <a target="_parent" id="coll-breadcrumb-link" href="{{ get_path(user, coll) }}" data-collection-id="{{ coll }}" data-value-encoded="{{ coll_title }}" data-target-decoded="" class="collection-breadcrumb"></a>
+        <a target="_parent" id="coll-breadcrumb-link" href="{{ get_path(user, coll_name) }}" data-collection-id="{{ coll_name }}" data-value-encoded="{{ coll_title }}" data-target-decoded="" class="collection-breadcrumb"></a>
         <span style="display: none" id="coll-breadcrumb-text" data-value-encoded="{{ coll_title }}" data-target-decoded=""></span>
     </li>
     {% endif %}
 
-    {% if rec and rec != '*' %}
+    {% if rec_name and rec_name != '*' %}
     <li>
-        <a target="_parent" id="rec-breadcrumb-link" href="{{ get_path(user, coll, rec) }}" data-recording-id="{{ rec }}" data-value-encoded="{{ rec_title }}" data-target-decoded="" class="recording-breadcrumb"></a>
+        <a target="_parent" id="rec-breadcrumb-link" href="{{ get_path(user, coll_name, rec_name) }}" data-recording-id="{{ rec_name }}" data-value-encoded="{{ rec_title }}" data-target-decoded="" class="recording-breadcrumb"></a>
     </li>
     {% elif curr_mode == 'new' %}
     <li><span>Create a new recording</span></li>
-    {% elif not rec and not url %}
+    {% elif not rec_name and not url %}
     <li style="display: none"><span class="recording-filter-list" data-recordings-in-content-panel="$all"></span></li>
     {% endif %}
 </ol>

@@ -6,13 +6,20 @@ import gevent
 import gevent.queue
 
 from webrecorder.basecontroller import BaseController
+from webrecorder.models.dynstats import DynStats
 
 
 # ============================================================================
 class WebsockController(BaseController):
-    def __init__(self, app, jinja_env, manager, config):
-        super(WebsockController, self).__init__(app, jinja_env, manager, config)
+    def __init__(self, *args, **kwargs):
+        super(WebsockController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
         self.status_update_secs = float(config['status_update_secs'])
+
+        self.browser_mgr = kwargs['browser_mgr']
+        self.content_app = kwargs['content_app']
+
+        self.dyn_stats = DynStats(self.redis, config)
 
     def init_routes(self):
         @self.app.get('/_client_ws')
@@ -32,17 +39,15 @@ class WebsockController(BaseController):
                 return
 
     def client_ws(self):
-        user, coll = self.get_user_coll(api=True)
-        rec = request.query.getunicode('rec', '*')
+        user, collection = self.load_user_coll()
+        rec_name = request.query.getunicode('rec')
+        recording = collection.get_recording_by_name(rec_name)
 
         reqid = request.query.get('reqid')
         if reqid:
-            sesh_id = self.manager.browser_mgr.browser_sesh_id(reqid)
+            sesh_id = self.browser_mgr.browser_sesh_id(reqid)
         else:
             sesh_id = self.get_session().get_id()
-
-        if not user:
-            user = self.manager.get_anon_user()
 
         type_ = request.query.get('type')
 
@@ -53,21 +58,25 @@ class WebsockController(BaseController):
         else:
             stats_urls = []
 
-        WebSockHandler('to', reqid, self.manager,
+        WebSockHandler('to', reqid, self,
                        'to_cbr_ps:', 'from_cbr_ps:',
-                       user, coll, rec, sesh_id=sesh_id,
+                       user, collection, recording, sesh_id=sesh_id,
                        type=type_,
                        stats_urls=stats_urls,
                        status_update_secs=self.status_update_secs).run()
 
     def client_ws_cont(self):
-        info = self.manager.browser_mgr.init_cont_browser_sesh()
+        info = self.browser_mgr.init_cont_browser_sesh()
         if not info:
             return {'error_message': 'conn not from valid containerized browser'}
 
         user = info['user']
         coll = info['coll']
         rec = info['rec']
+
+        user = self.user_manager.all_users.get_user(user)
+        collection = user.get_collection_by_id(coll)
+        recording = collection.get_recording_by_id(rec)
 
         reqid = info['reqid']
         sesh_id = self.get_session().get_id()
@@ -81,29 +90,34 @@ class WebsockController(BaseController):
         else:
             cls = WebSockHandler
 
-        cls('from', reqid, self.manager,
+        cls('from', reqid, self,
             'from_cbr_ps:', 'to_cbr_ps:',
-            user, coll, rec, type=type_,
+            user, collection, recording, type=type_,
             sesh_id=sesh_id,
             browser=browser).run()
 
 
 # ============================================================================
 class BaseWebSockHandler(object):
-    def __init__(self, name, reqid, manager, send_to, recv_from,
-                       user, coll, rec, sesh_id=None, type=None,
+    def __init__(self, name, reqid, websock_controller, send_to, recv_from,
+                       user, collection, recording, sesh_id=None, type=None,
                        stats_urls=None, browser=None, status_update_secs=0):
 
         self.user = user
-        self.coll = coll
-        self.rec = rec
+        self.collection = collection
+        self.recording = recording
         self.browser = browser
         self.type_ = type
 
+        self.browser_mgr = websock_controller.browser_mgr
+        self.browser_redis = self.browser_mgr.browser_redis
+        self.content_app = websock_controller.content_app
+        self.access = websock_controller.access
+
+        self.dyn_stats = websock_controller.dyn_stats
+
         self.sesh_id = sesh_id
         self.stats_urls = stats_urls or []
-
-        self.manager = manager
 
         self.updater = None
         if status_update_secs:
@@ -118,7 +132,7 @@ class BaseWebSockHandler(object):
         if reqid:
             self.channel = send_to + reqid
 
-            self.pubsub = self.manager.browser_redis.pubsub()
+            self.pubsub = self.browser_redis.pubsub()
             self.pubsub.subscribe(recv_from + reqid)
 
             if not hasattr(self.pubsub, 'connection'):
@@ -166,7 +180,7 @@ class BaseWebSockHandler(object):
                     self._send_ws(ps_msg['data'])
 
     def _publish(self, channel, msg):
-        self.manager.browser_redis.publish(channel, json.dumps(msg))
+        self.browser_redis.publish(channel, json.dumps(msg))
 
     def handle_client_msg(self, msg):
         if not msg:
@@ -190,24 +204,23 @@ class BaseWebSockHandler(object):
             return msg
 
         if msg['ws_type'] == 'skipreq':
-            url = msg['url']
-            self.manager.skip_post_req(self.user, url)
+            self.user.mark_skip_url(msg['url'])
 
         elif msg['ws_type'] == 'addcookie':
-            self.manager.content_app.add_cookie(self.user, self.coll, self.rec,
-                            msg['name'], msg['value'], msg['domain'])
+            self.content_app.add_cookie(self.user, self.collection, self.recording,
+                                        msg['name'], msg['value'], msg['domain'])
 
         elif msg['ws_type'] == 'page':
             if self.type_ != 'live':
-                if self.manager.has_recording(self.user, self.coll, self.rec):
+                if self.recording:
                     page_local_store = msg['page']
 
                     check_dupes = (self.type_ == 'patch')
 
-                    res = self.manager.add_page(self.user, self.coll, self.rec,
-                                                page_local_store, check_dupes)
+                    self.recording.add_page(page_local_store, check_dupes)
+
                 else:
-                    print('Invalid Rec for Page Data', self.user, self.coll, self.rec)
+                    print('Invalid Rec for Page Data')
 
             if from_browser and msg.get('visible'):
                 msg['ws_type'] = 'remote_url'
@@ -219,14 +232,15 @@ class BaseWebSockHandler(object):
             self.stats_urls = [msg['url']]
 
         elif msg['ws_type'] == 'switch':
-            if not self.manager.can_write_coll(self.user, self.coll):
+            #TODO: check this
+            if not self.access.can_write_coll(self.collection):
                 print('No Write Access')
                 return
 
             self.rec = msg['rec']
-            self.manager.browser_mgr.update_remote_browser(self.reqid,
-                                                           rec=msg['rec'],
-                                                           type_=msg['type'])
+            self.browser_mgr.update_remote_browser(self.reqid,
+                                                   rec=msg['rec'],
+                                                   type_=msg['type'])
 
         # send to remote browser cmds
         if to_browser:
@@ -238,36 +252,40 @@ class BaseWebSockHandler(object):
                 self._publish(from_browser, msg)
 
     def get_status(self):
-        size = self.manager.get_size(self.user, self.coll, self.rec)
+        if self.recording:
+            obj = self.recording
+        else:
+            obj = self.collection
+
+        size = obj.size
+
         if size is not None:
             # if extracting, also add the size from patch recording, if any
-            if self.type_ == 'extract':
-                patch_size = self.manager.get_size(self.user, self.coll, 'patch-of-' + self.rec)
-                if patch_size is not None:
-                    size += patch_size
+            if self.recording and self.type_ == 'extract':
+                patch_recording = self.collection.get_recording_by_name('patch-of-' + self.recording.name)
+                if patch_recording:
+                    patch_size = patch_recording.size
+                    if patch_size is not None:
+                        size += patch_size
 
             result = {'ws_type': 'status'}
             result['size'] = size
-            result['numPages'] = self.manager.count_pages(self.user, self.coll, self.rec)
+
+            result['numPages'] = obj.count_pages()
 
             if self.stats_urls:
-                result['stats'] = self.get_dyn_stats()
+                result['stats'] = self.dyn_stats.get_dyn_stats(
+                                    self.user,
+                                    self.collection,
+                                    self.recording,
+                                    self.sesh_id,
+                                    self.stats_urls)
 
         else:
             result = {'ws_type': 'error',
                       'error_message': 'not found'}
 
         return json.dumps(result)
-
-    def get_dyn_stats(self):
-        sum_stats = {}
-        for url in self.stats_urls:
-            stats = self.manager.get_dyn_stats(self.user, self.coll, self.rec,
-                                                self.sesh_id, url)
-            for stat, value in stats.items():
-                sum_stats[stat] = int(value) + int(sum_stats.get(stat, 0))
-
-        return sum_stats
 
 
 # ============================================================================

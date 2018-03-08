@@ -1,0 +1,22 @@
+{
+  "presets": [
+    "react",
+    "env",
+    "stage-0"
+  ],
+
+  "plugins": [
+    "transform-runtime",
+    "add-module-exports",
+    "transform-decorators-legacy",
+    "react-hot-loader/babel"
+  ],
+
+  "env": {
+    "development": {
+      "plugins": [
+        "typecheck"
+      ]
+    }
+  }
+}

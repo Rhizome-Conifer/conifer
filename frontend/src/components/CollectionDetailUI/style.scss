@@ -1,0 +1,343 @@
+@import 'src/vars';
+
+.add-to-lists-modal {
+    width: 30vw;
+    max-width: 45rem;
+
+    h4 {
+        margin: 0;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+
+        li {
+            label {
+                margin-left: 1rem;
+            }
+        }
+    }
+}
+
+.wr-delete-modal {
+    label {
+        display: block;
+        margin-top: 2.5rem;
+    }
+
+    input {
+        width: 100%;
+    }
+}
+
+.wr-coll-detail {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 2rem 2.5rem 0 2.5rem;
+    height: 100%;
+
+    & > header {
+        margin-bottom: 2rem;
+
+        h1 {
+            font-family: $serif;
+            margin-top: 0;
+        }
+
+        hr {
+            border-top: solid .3rem $yellow;
+        }
+
+        .coll-desc {
+            font-family: $sans;
+        }
+    }
+
+    .grid-wrapper {
+        position: relative;
+        flex-grow: 1;
+
+        .wr-coll-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+
+            display: grid;
+            grid-template-rows: 4rem max-content 1fr;
+            grid-column-gap: 1.5rem;
+            grid-template-columns: max-content 1fr;
+            grid-template-areas:
+                "sidebar utilities"
+                "sidebar lists-modifier"
+                "sidebar table";
+
+            font-family: $sans;
+
+
+            .wr-coll-sidebar-container {
+                grid-area: sidebar;
+                position: relative;
+
+                &:before, &:after {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    width: calc(100% - 1.5rem);
+                    height: 3rem;
+                    z-index: 20;
+                    pointer-events: none;
+                }
+
+                &:before {
+                    top: 0;
+                    background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
+                }
+
+                &:after {
+                    bottom: 0;
+                    background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
+                }
+
+                .wr-coll-sidebar-stretch {
+                    display: flex;
+                    flex-direction: column;
+
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    //border-right: 1px solid $slate;
+                    padding-right: 1.5rem;
+                    width: 100%;
+                    overflow: auto;
+
+                    // top buffer for fade
+                    padding-top: 2rem;
+
+                }
+
+                // & > .wr-coll-sidebar:not(:first-of-type) {
+                //     border: solid .4rem $brightGreen;
+                //     border-width: .4rem 0 0 0;
+                //     margin: 2.5rem 0;
+                // }
+            }
+
+            .wr-coll-utilities {
+                grid-area: utilities;
+
+                nav {
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+
+                    & > * {
+                        margin-right: 2.5rem;
+
+
+                        &.glyphicon {
+                            font-size: 1.8rem;
+                        }
+                    }
+
+                    .toggle-label {
+                        display: flex;
+                        align-items: center;
+
+                        & > span:first-of-type {
+                            vertical-align: top;
+                            font-weight: bold;
+                            padding-right: 1rem;
+                            cursor: pointer;
+                        }
+                    }
+
+                    .react-toggle--checked {
+                      & .react-toggle-track{
+                        background-color: $brightGreen;
+                      }
+                      & .react-toggle-thumb {
+                        border-color: $brightGreen;
+
+                      }
+                    }
+
+                    .open-all {
+                        transition: border-color 125ms ease-in-out;
+                        border: solid .2rem #ccc;
+                        background: inherit;
+                        border-radius: .3rem;
+                        padding: .5rem;
+
+                        &:hover {
+                            border-color: $collTrigger;
+                        }
+                    }
+
+                    .search-box {
+                        margin: 0 0 0 auto;
+                        width: 20%;
+                        max-width: 22.5rem;
+                        min-width: 10rem;
+                    }
+                }
+            }
+
+            .lists-modifier {
+                grid-area: lists-modifier;
+
+                .lists-header {
+                    display: flex;
+                    justify-content: space-between;
+                    width: 100%;
+
+                    background-color: $listsBlue;
+                    font-size: 1.4rem;
+                    padding: 1.5rem 1rem;
+
+                    svg {
+                        width: 1rem;
+                        height: 1rem;
+                        margin-left: .2rem;
+                    }
+                }
+            }
+
+            .wr-coll-detail-table {
+                grid-area: table;
+                position: relative;
+
+                &.with-lists {
+                    border: solid 0 $listsBlue;
+                    border-width: 0 .4rem;
+                }
+
+                .ReactVirtualized__Table__headerColumn {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .ReactVirtualized__Table__row {
+                    transition: background 150ms ease-in-out;
+                    border: solid 0 #CCCFD5;
+                    border-width: 0 0 .1rem 0;
+                    cursor: context-menu;
+
+                    a { color: $blue; }
+
+                    &.selected {
+                        background-color: $dark-gray;
+                        color: #FFF;
+
+                        a:link { color: #FFF; }
+                        a:visited{ color: #FFF; }
+                    }
+
+                    &:not(.selected):hover {
+                        background: #eee;
+                    }
+
+                    .ReactVirtualized__Table__rowColumn {
+                        a {
+                            display: inline-block;
+                            padding: 1rem;
+                        }
+                    }
+                }
+
+                .wr-coll-session-container {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    width: 100%;
+                    overflow: auto;
+
+                    table {
+                        tr {
+                            transition: background 150ms ease-in-out;
+                            border: solid 0 #CCCFD5;
+                            border-width: 0 0 .1rem 0;
+                            cursor: context-menu;
+
+                            a { color: $blue }
+
+                            &.selected {
+                                background-color: $dark-gray;
+                                color: #FFF;
+
+                                a:link { color: #FFF; }
+                                a:visited{ color: #FFF; }
+                            }
+
+                            &:not(.selected):hover {
+                                background: rgb(197, 197, 197);
+                            }
+
+                            td {
+                                text-align: left;
+
+                                &.timestamp {
+                                    width: 20rem;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            .wr-coll-session {
+                header {
+                    display: flex;
+                    justify-content: flext-start;
+                    align-items: center;
+                    padding: 1rem 0;
+
+                    &.collapsible {
+                        cursor: pointer;
+
+                        &:hover {
+                            color: $collTrigger;
+                        }
+                    }
+
+                    .badge {
+                        background-color: #0039e5;
+                        font-family: sans-serif;
+                        margin-left: .5rem;
+                    }
+
+                    h2 {
+                        transition: color 200ms ease-in-out;
+                        font-size: 1.4rem;
+                        margin: 0;
+                    }
+
+                    .session-ts {
+                        margin-left: auto;
+                        margin-right: 1.5rem;
+                    }
+
+
+                    .glyphicon-triangle-right {
+                        transition: transform 250ms ease-in-out;
+                        transform-origin: center center;
+                        margin-right: .5rem;
+                        color: $collTrigger;
+                    }
+                }
+
+                .Collapsible__trigger {
+                    &.is-open header.collapsible {
+                        h2 {
+                            color: $collTrigger;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

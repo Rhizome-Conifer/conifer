@@ -29,7 +29,9 @@ class TestPatchContent(FullStackTests):
 
         user = self.anon_user
 
-        warc_key = 'r:{user}:{coll}:{rec}:warc'.format(user=user, coll='temp', rec='new-patch')
+        coll, rec = self.get_coll_rec(self.anon_user, 'temp', 'new-patch')
+
+        warc_key = 'r:{rec}:warc'.format(rec=rec)
         assert self.redis.hlen(warc_key) == 1
 
         anon_dir = os.path.join(self.warcs_dir, user)
@@ -47,7 +49,8 @@ class TestPatchContent(FullStackTests):
 
         assert 'Reserved Domain Names' in res.text, res.text
 
-        assert self.redis.smembers('r:{user}:{coll}:{rec}:ra'.format(user=self.anon_user, coll='temp', rec='new-patch-2')) == {'ia'}
+        coll, rec = self.get_coll_rec(self.anon_user, 'temp', 'new-patch-2')
+        assert self.redis.smembers('r:{rec}:ra'.format(rec=rec)) == {'ia'}
 
         assert self.testapp.cookies['__test_sesh'] != ''
 

@@ -1,0 +1,31 @@
+
+.wr-coll-meta {
+    margin: 1.5rem 0;
+
+    button + button {
+        margin-left: .5rem;
+    }
+}
+
+.collection-title {
+    font-size: 2rem;
+}
+
+.collection-list {
+
+    li {
+        margin: 0;
+
+        &:hover {
+            text-decoration: underline;
+            background-color: #eee;
+            cursor: pointer;
+        }
+
+        a {
+            display: block;
+            position: relative;
+            padding: .8rem;
+        }
+    }
+}

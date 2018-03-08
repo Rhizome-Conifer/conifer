@@ -13,6 +13,11 @@ from warcio.timeutils import timestamp_to_datetime, datetime_to_iso_date
 
 # ============================================================================
 class SnapshotController(BaseController):
+    def __init__(self, *args, **kwargs):
+        super(SnapshotController, self).__init__(*args, **kwargs)
+        self.browser_mgr = kwargs['browser_mgr']
+        self.content_app = kwargs['content_app']
+
     def init_routes(self):
         @self.app.route('/_snapshot', method='PUT')
         def snapshot():
@@ -23,10 +28,7 @@ class SnapshotController(BaseController):
             return self.snapshot_cont()
 
     def snapshot(self):
-        user, coll = self.get_user_coll(api=True)
-
-        if not self.manager.has_collection(user, coll):
-            return {'error_message' 'collection not found'}
+        user, collection = self.load_user_coll()
 
         html_text = request.body.read().decode('utf-8')
 
@@ -53,15 +55,15 @@ class SnapshotController(BaseController):
 
         html_text = html_unrewriter.unrewrite(html_text, host=host)
 
-        return self.write_snapshot(user, coll, url, title, html_text, referrer, user_agent)
+        return self.write_snapshot(user, collection, url, title, html_text, referrer, user_agent)
 
     def snapshot_cont(self):
-        info = self.manager.browser_mgr.init_cont_browser_sesh()
+        info = self.browser_mgr.init_cont_browser_sesh()
         if not info:
             return {'error_message': 'conn not from valid containerized browser'}
 
-        user = info['user']
-        coll = info['coll']
+        user = info['the_user']
+        collection = info['collection']
 
         browser = info['browser']
 
@@ -84,28 +86,31 @@ class SnapshotController(BaseController):
         if origin:
             response.headers['Access-Control-Allow-Origin'] = origin
 
-        return self.write_snapshot(user, coll, url,
+        #TODO
+        return self.write_snapshot(user, collection, url,
                                    title, html_text, referrer,
                                    user_agent, browser)
 
-    def write_snapshot(self, user, coll, url, title, html_text, referrer,
+    def write_snapshot(self, user, collection, url, title, html_text, referrer,
                        user_agent, browser=None):
 
         snap_title = 'Static Snapshots'
 
-        snap_rec = self.sanitize_title(snap_title)
+        snap_rec_name = self.sanitize_title(snap_title)
 
-        if not self.manager.has_recording(user, coll, snap_rec):
-            recording = self.manager.create_recording(user, coll, snap_rec, snap_title)
+        recording = collection.get_recording_by_name(snap_rec_name)
+        if not recording:
+            recording = collection.create_recording(snap_rec_name,
+                                                    title=snap_rec_name)
 
-        kwargs = dict(user=user,
-                      coll=quote(coll),
-                      rec=quote(snap_rec, safe='/*'),
+        kwargs = dict(user=user.name,
+                      coll=collection.my_id,
+                      rec=quote(snap_rec_name, safe='/*'),
                       type='snapshot')
 
         params = {'url': url}
 
-        upstream_url = self.manager.content_app.get_upstream_url('', kwargs, params)
+        upstream_url = self.content_app.get_upstream_url('', kwargs, params)
 
         headers = {'Content-Type': 'text/html; charset=utf-8',
                    'WARC-User-Agent': user_agent,
@@ -147,7 +152,7 @@ class SnapshotController(BaseController):
         if browser:
             page_data['browser'] = browser
 
-        res = self.manager.add_page(user, coll, snap_rec, page_data)
+        res = recording.add_page(page_data)
 
         return {'snapshot': page_data}
 

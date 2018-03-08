@@ -1,0 +1,112 @@
+.faq {
+
+    .heading {
+        display: flex;
+        align-items: center;
+        margin: 5rem 0;
+
+        aside  {
+            text-align: right;
+        }
+
+        img {
+            width: 100%;
+            max-width: 15.6rem;
+            display: inline-block;
+        }
+    }
+
+    aside {
+        padding-right: 7%;
+
+        img {
+            &.rhizome-logo {
+                width: 75%;
+            }
+
+            &.mellon-logo {
+                width: 85%;
+            }
+
+            &.knight-fnd {
+                width: 65%;
+            }
+        }
+
+        a {
+            display: inline-block;
+        }
+
+        a:link, a:visited {
+            color: #CCC;
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: #337ab7;
+        }
+    }
+
+    h2 {
+        font-weight: 300;
+        margin: 0;
+        line-height: 1.25;
+    }
+
+    .credit {
+        color: #CCC;
+        text-align: right;
+        margin-bottom: 2.5rem;
+        font-size: 1.2rem;
+
+        & > span {
+            display: inline-block;
+            padding: 1rem 0;
+        }
+    }
+
+    h4:not(:first-of-type) {
+        margin-top: 2.5rem;
+    }
+
+}
+
+.a {
+    position: relative;
+    padding-left: 1rem;
+
+    &:before {
+        content: '';
+        border: solid .1rem;
+        border-width: 0 0 0 .2rem;
+        border-color: #429EEC;
+        position: absolute;
+        height: calc(100% - .8rem);
+        top: .4rem;
+        left: 0;
+    }
+}
+
+.support-logos {
+    margin: 5.6rem 0;
+
+    & > a {
+        margin-right: 5.6rem;
+
+        img {
+            width: 20rem;
+        }
+    }
+}
+
+
+@media (max-width: 544px) {
+    .faq {
+        .heading {
+            margin: 2.5rem 0;
+        }
+        h2 {
+            font-size: 2rem;
+        }
+    }
+}

@@ -1,0 +1,81 @@
+.rb-dropdown, .extract-selector, .patch-selector  {
+    .container {
+        width: 60vw;
+    }
+
+    #cnt-button {
+        border-width: .1rem 0 .1rem .1rem;
+    }
+
+    .rb-dropdown .dropdown-toggle {
+        background-image: none;
+        background-color: #F8F8F8;
+    }
+
+    .rb-dropdown .open > .dropdown-toggle, .rb-dropdown .dropdown-toggle:active,
+    .rb-dropdown .dropdown-toggle.active, .rb-dropdown .dropdown-toggle:hover {
+        background-color: #F7F7F7;
+    }
+
+    .dropdown-header {
+        padding: .5rem 0;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+
+        li {
+            list-style-type: none;
+        }
+    }
+
+    h6 {
+        margin: 0;
+        font-size: 1.6rem;
+        color: #353535;
+        font-weight: bold;
+    }
+
+    .row {
+        padding: 1rem 0;
+        margin: 0 -1.5rem 0 -1.5rem;
+
+        &:first-child {
+            padding: .5rem 0;
+        }
+    }
+
+    .btn img {
+        margin-right: .5rem;
+    }
+}
+
+.record-action button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left-width: 0;
+}
+
+@media (min-width: 544px) and (max-width: 767px) {
+    .start-recording-homepage .containerized .container {
+        width: 544px;
+    }
+}
+@media (min-width: 768) and (max-width: 99.1rem) {
+    .start-recording-homepage .containerized .container {
+        width: 768px;
+    }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+    .start-recording-homepage .containerized .container {
+        /* grid width * column fraction + grid gutter * 2 */
+        width: calc(992px * 0.6 + 60px);
+    }
+}
+@media (min-width: 1200px) {
+    .start-recording-homepage .containerized .container {
+        /* grid width * column fraction + grid gutter * 2 */
+        width: calc(1200px * 0.6 + 60px);
+    }
+}

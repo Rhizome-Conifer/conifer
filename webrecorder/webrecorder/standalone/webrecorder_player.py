@@ -4,9 +4,9 @@ import os
 
 from webrecorder.standalone.standalone import StandaloneRunner
 from webrecorder.rec.webrecrecorder import WebRecRecorder
-from webrecorder.uploadcontroller import InplaceLoader
-from webrecorder.redisman import init_manager_for_cli
-from webrecorder.admin import create_user
+
+from webrecorder.models.importer import InplaceImporter, ImportStatusChecker
+from webrecorder.models.usermanager import CLIUserManager
 
 from webrecorder.standalone.serializefakeredis import FakeRedisSerializer
 
@@ -75,10 +75,18 @@ class WebrecPlayerRunner(StandaloneRunner):
             return
 
         try:
-            manager = init_manager_for_cli()
-            upload_status = manager.get_upload_status('local', '@INIT')
+            user_manager = CLIUserManager()
+
+            user = user_manager.all_users['local']
+
+            status_checker = ImportStatusChecker(user_manager.redis)
+
+            upload_status = status_checker.get_upload_status(user, '@INIT')
+
+            collection = user.get_collection_by_name('collection')
+
             if not upload_status or upload_status.get('done'):
-                if manager.redis.exists('c:local:collection:cdxj'):
+                if collection and user_manager.redis.exists('c:{coll}:cdxj'.format(coll=collection.my_id)):
                     self.serializer.save_db()
         except Exception as e:
             if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
@@ -94,8 +102,8 @@ class WebrecPlayerRunner(StandaloneRunner):
             traceback.print_exc()
 
     def auto_load_warcs(self):
-        manager = init_manager_for_cli()
-        create_user(manager,
+        manager = CLIUserManager()
+        user, _ = manager.create_user(
                     email='test@localhost',
                     username='local',
                     passwd='LocalUser1',
@@ -104,15 +112,18 @@ class WebrecPlayerRunner(StandaloneRunner):
 
         indexer = WebRecRecorder.make_wr_indexer(manager.config)
 
-        uploader = InplaceLoader(manager, indexer, '@INIT')
+        uploader = InplaceImporter(manager.redis,
+                                   manager.config,
+                                   user,
+                                   indexer, '@INIT', create_coll=True)
 
         files = list(self.get_archive_files(self.inputs))
 
-        uploader.multifile_upload('local', files)
+        uploader.multifile_upload(user, files)
 
-        local_info=dict(user='local',
-                        coll='collection',
-                        rec='*',
+        local_info=dict(user=user.name,
+                        coll=uploader.the_collection.my_id,
+                        rec='0',
                         type='replay-coll',
                         browser='',
                         reqid='@INIT')

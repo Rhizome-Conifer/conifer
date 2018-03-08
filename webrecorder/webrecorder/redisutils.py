@@ -82,4 +82,3 @@ class RedisHashTable(object):
     def __nonzero__(self):
         return bool(self.thedict)
 
-

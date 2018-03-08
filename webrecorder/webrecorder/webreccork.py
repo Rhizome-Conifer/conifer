@@ -1,8 +1,10 @@
-from cork import Cork, AAAException
+from cork import Cork, AAAException, AuthException
 from datetime import datetime
 import os
 
 from webrecorder.redisutils import RedisTable
+from webrecorder.models.user import UserTable
+from webrecorder.models.base import BaseAccess
 
 
 # ============================================================================
@@ -52,6 +54,7 @@ class WebRecCork(Cork):
         :param registration_code: registration code
         :type registration_code: str.
         """
+
         try:
             data = self._store.pending_registrations.pop(registration_code)
         except KeyError:
@@ -72,10 +75,6 @@ class WebRecCork(Cork):
         }
         self._store.save_users()
         return username, data['desc']
-
-    def _save_session(self):
-        self._beaker_session['anon'] = None
-        self._beaker_session.save()
 
     @staticmethod
     def create_cork(redis, config):
@@ -122,9 +121,13 @@ class WebRecCork(Cork):
 class RedisCorkBackend(object):
     def __init__(self, redis):
         self.redis = redis
-        self.users = RedisTable(self.redis, 'h:users')
+        self.access = BaseAccess()
+        self.users = UserTable(self.redis, self.get_access)
         self.roles = RedisTable(self.redis, 'h:roles')
         self.pending_registrations = RedisTable(self.redis, 'h:register')
+
+    def get_access(self):
+        return self.access
 
     def save_users(self): pass
     def save_roles(self): pass

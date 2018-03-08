@@ -1,0 +1,8 @@
+.wr-signup {
+    opacity: 1;
+    transition: opacity .5s ease-in-out;
+
+    &.success {
+        opacity: 0.5;
+    }
+}
