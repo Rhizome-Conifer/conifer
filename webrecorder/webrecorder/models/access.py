@@ -57,6 +57,10 @@ class SessionAccessCache(BaseAccess):
         """
         return self.sesh.curr_role == 'admin'
 
+    def assert_is_superuser(self):
+        if not self.is_superuser():
+            raise HTTPError(404, 'No Access')
+
     def _is_coll_owner(self, collection):
         return self.session_user.is_owner(collection.get_owner())
 
@@ -129,7 +133,7 @@ class SessionAccessCache(BaseAccess):
         return self.session_user == user
 
     def assert_is_curr_user(self, user):
-        if not self.is_curr_user(user):
+        if not self.is_curr_user(user) and not self.is_superuser():
             raise HTTPError(404, 'Only Valid for Current User')
 
     def assert_is_logged_in(self):

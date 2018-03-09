@@ -353,3 +353,6 @@ class BaseAccess(object):
 
     def assert_is_curr_user(self, user):
         return True
+
+    def assert_is_superuser(self):
+        return True

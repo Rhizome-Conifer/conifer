@@ -184,8 +184,8 @@ class UserController(BaseController):
                 'collections': [coll.serialize() for coll in user.get_collections()],
             }
 
-            if not result['user_info'].get('description'):
-                result['user_info']['description'] = self.default_user_desc.format(user)
+            if not result['user_info'].get('desc'):
+                result['user_info']['desc'] = self.default_user_desc.format(user)
 
             return result
 
@@ -195,7 +195,7 @@ class UserController(BaseController):
             desc = request.body.read().decode('utf-8')
             user = self.get_user(user=username)
 
-            user['description'] = desc
+            user['desc'] = desc
             return {}
 
         # User Account Settings

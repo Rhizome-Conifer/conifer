@@ -69,7 +69,7 @@ class WebRecCork(Cork):
             'role': data['role'],
             'hash': data['hash'],
             'email_addr': data['email_addr'],
-            'desc': data['desc'],
+            'reg_data': data['desc'],
             'creation_date': data['creation_date'],
             'last_login': str(datetime.utcnow())
         }
