@@ -43,11 +43,12 @@ class CollectionListUI extends Component {
   componentWillReceiveProps(nextProps) {
     const { collections, history, match: { params: { user } } } = this.props;
     const creatingCollection = collections.get('creatingCollection');
+    const prevNewCollection = collections.get('newCollection');
     const newCollection = nextProps.collections.get('newCollection');
 
     // if incoming prop has a newCollection object and we are currently creating
     // a collection, reroute to new collection
-    if (newCollection && creatingCollection) {
+    if (creatingCollection && newCollection && prevNewCollection !== newCollection) {
       history.push(`/${user}/${newCollection}/`);
     }
   }
@@ -140,7 +141,8 @@ class CollectionListUI extends Component {
           close={this.close}
           visible={showModal}
           createCollection={this.createCollection}
-          creatingCollection={collections.get('creatingCollection')} />
+          creatingCollection={collections.get('creatingCollection')}
+          error={collections.get('error')} />
 
       </div>
     );

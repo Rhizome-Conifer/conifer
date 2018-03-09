@@ -13,10 +13,11 @@ class CollectionDropdownUI extends Component {
     activeCollection: PropTypes.object,
     canCreateCollection: PropTypes.bool,
     collections: PropTypes.object,
+    collectionError: PropTypes.string,
     creatingCollection: PropTypes.bool,
     createNewCollection: PropTypes.func,
     label: PropTypes.string,
-    loadUser: PropTypes.func,
+    loadUserCollections: PropTypes.func,
     newCollection: PropTypes.string,
     setCollection: PropTypes.func,
     user: PropTypes.object
@@ -35,17 +36,14 @@ class CollectionDropdownUI extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { creatingCollection, loadUser, user } = this.props;
+    const { creatingCollection, loadUserCollections, user } = this.props;
     const { newCollection } = nextProps;
 
     // if incoming prop has a newCollection object and we are currently creating
     // a collection, close the modal and select the new collection
-    if (newCollection && creatingCollection) {
-      loadUser(user.get('username'))
-        .then(this.close)
-        .then(
-          () => this.collectionChoice(newCollection)
-        );
+    if (creatingCollection && this.props.newCollection !== newCollection) {
+      this.collectionChoice(newCollection);
+      this.close();
     }
   }
 
@@ -72,7 +70,7 @@ class CollectionDropdownUI extends Component {
 
   render() {
     const { activeCollection, canCreateCollection, collections,
-            creatingCollection, label, user } = this.props;
+            collectionError, creatingCollection, label, user } = this.props;
     const { showModal } = this.state;
 
     const buttonTitle = activeCollection.title ? activeCollection.title : 'Choose a collection';
@@ -117,7 +115,8 @@ class CollectionDropdownUI extends Component {
           close={this.close}
           visible={showModal}
           createCollection={this.createCollection}
-          creatingCollection={creatingCollection} />
+          creatingCollection={creatingCollection}
+          error={collectionError} />
       </div>
     );
   }

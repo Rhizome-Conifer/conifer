@@ -4,9 +4,11 @@ import { asyncConnect } from 'redux-connect';
 import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
+import { incrementCollCount } from 'redux/modules/auth';
 import { deleteCollection, load as loadColl } from 'redux/modules/collection';
 import { addTo, load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
+import { deleteUserCollection } from 'redux/modules/user';
 import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/CollectionDetailUI';
@@ -105,9 +107,11 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
       dispatch(deleteCollection(user, coll))
         .then((res) => {
           if (res.hasOwnProperty('deleted_id')) {
+            dispatch(incrementCollCount(-1));
+            dispatch(deleteUserCollection(res.deleted_id));
             history.push(`/${user}`);
           }
-        });
+        }, () => {});
     },
     removeBookmark: (list, id) => {
       dispatch(removeBookmark(user, coll, list, id))

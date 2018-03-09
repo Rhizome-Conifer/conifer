@@ -1,9 +1,10 @@
 import React from 'react';
 import { asyncConnect } from 'redux-connect';
 
-import { isLoaded as areCollsLoaded,
-         load as loadCollections,
+import { incrementCollCount } from 'redux/modules/auth';
+import { isLoaded as areCollsLoaded, load as loadCollections,
          createCollection } from 'redux/modules/collections';
+import { addUserCollection } from 'redux/modules/user';
 import { sortCollsByCreatedAt } from 'redux/selectors';
 
 import CollectionListUI from 'components/CollectionListUI';
@@ -16,8 +17,7 @@ const preloadCollections = [
       const collections = state.app.get('collections');
       const { user } = params;
 
-      // if(!areCollsLoaded(state) || (collections.get('user') === user &&
-      //    Date.now() - collections.get('accessed') > 15 * 60 * 1000)) {
+      // if (!areCollsLoaded(state) || collections.get('user') !== user) {
       return dispatch(loadCollections(user));
       // }
 
@@ -37,7 +37,15 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    createNewCollection: (user, collTitle, makePublic) => dispatch(createCollection(user, collTitle, makePublic))
+    createNewCollection: (user, collTitle, makePublic) => {
+      dispatch(createCollection(user, collTitle, makePublic))
+        .then((res) => {
+          if (res.hasOwnProperty('collection')) {
+            dispatch(incrementCollCount(1));
+            dispatch(addUserCollection(res.collection));
+          }
+        }, () => {})
+    }
   };
 };
 

@@ -90,7 +90,8 @@ export default function collection(state = initialState, action = {}) {
 
 export function isLoaded({ app }) {
   return app.get('collection') &&
-         app.getIn(['collection', 'loaded']);
+         app.getIn(['collection', 'loaded']) &&
+         Date.now() - app.getIn(['collection', 'accessed']) < 15 * 60 * 1000;
 }
 
 export function load(user, coll) {

@@ -118,8 +118,7 @@ const initialData = [
       const collection = state.app.get('collection');
       const { user, coll } = params;
 
-      if(!isLoaded(state) || (collection.get('id') === coll &&
-         Date.now() - collection.get('accessed') > 15 * 60 * 1000)) {
+      if (!isLoaded(state) || collection.get('id') !== coll) {
         return dispatch(loadColl(user, coll));
       }
 

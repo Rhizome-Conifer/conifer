@@ -19,7 +19,7 @@ const pageSource = {
   endDrag(props, monitor) {
     const { idx, initialIdx } = monitor.getItem();
 
-    if (!monitor.didDrop()) {
+    if (!monitor.didDrop() && props.sort) {
       props.sort(idx, initialIdx);
     }
   }

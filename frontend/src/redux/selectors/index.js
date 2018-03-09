@@ -81,6 +81,9 @@ export const getActiveCollection = createSelector(
       return { title: null, id: null };
 
     const selected = collections.find(coll => coll.get('id') === activeCollection);
+    if (!selected)
+      return { title: null, id: null };
+
     const title = selected.get('title');
     const id = selected.get('id');
     return { title: truncate(title, 40), id };

@@ -11,10 +11,16 @@ const USER_DELETE_TOKEN_FAIL = 'wr/user/DELETE_TOKEN_FAIL';
 const USER_LOAD = 'wr/user/LOAD';
 const USER_LOAD_SUCCESS = 'wr/user/LOAD_SUCCESS';
 const USER_LOAD_FAIL = 'wr/user/LOAD_FAIL';
+const USER_LOAD_COLLECTIONS = 'wr/user/USER_LOAD_COLLECTIONS';
+const USER_LOAD_COLLECTIONS_SUCCESS = 'wr/user/USER_LOAD_COLLECTIONS_SUCCESS';
+const USER_LOAD_COLLECTIONS_FAIL = 'wr/user/USER_LOAD_COLLECTIONS_FAIL';
 const USER_PASS = 'wr/user/PASS';
 const USER_PASS_SUCCESS = 'wr/user/PASS_SUCCESS';
 const USER_PASS_FAIL = 'wr/user/PASS_FAIL';
+
+const ADD_NEW_COLLECTION = 'wr/user/ADD_NEW_COLLECTION';
 const SELECT_COLLECTION = 'wr/user/SELECT_COLLECTION';
+const COLLECTION_DELETION = 'wr/user/COLLECTION_DELETION';
 
 const initialState = fromJS({
   loading: false,
@@ -55,8 +61,21 @@ export default function user(state = initialState, action = {}) {
         loaded: false,
         error: action.error
       });
+    case USER_LOAD_COLLECTIONS_SUCCESS:
+      return state.merge({
+        collections: action.result.collections
+      });
+    case ADD_NEW_COLLECTION:
+      return state.merge({
+        collections: state.get('collections').push(fromJS(action.coll))
+      });
     case SELECT_COLLECTION:
       return state.set('activeCollection', action.id);
+    case COLLECTION_DELETION: {
+      const collections = state.get('collections');
+      const idx = collections.findIndex(c => c.get('id') === action.id);
+      return state.set('collections', collections.delete(idx));
+    }
     case USER_PASS_SUCCESS:
       return state.merge({
         passUpdate: true,
@@ -93,13 +112,42 @@ export function load(username) {
   return {
     types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${config.apiPath}/users/${username}?include_colls=true`)
+    promise: client => client.get(`${config.apiPath}/users/${username}`, {
+      params: { include_colls: true }
+    })
+  };
+}
+
+export function loadCollections(user) {
+  return {
+    types: [USER_LOAD_COLLECTIONS, USER_LOAD_COLLECTIONS_SUCCESS, USER_LOAD_COLLECTIONS_FAIL],
+    promise: client => client.get(`${config.apiPath}/collections`, {
+      params: {
+        user,
+        include_recordings: false,
+        include_lists: false
+      }
+    })
+  };
+}
+
+export function addUserCollection(coll) {
+  return {
+    type: ADD_NEW_COLLECTION,
+    coll
   };
 }
 
 export function selectCollection(id) {
   return {
     type: SELECT_COLLECTION,
+    id
+  };
+}
+
+export function deleteUserCollection(id) {
+  return {
+    type: COLLECTION_DELETION,
     id
   };
 }

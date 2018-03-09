@@ -10,12 +10,14 @@ const LOGIN_FAIL = 'wr/auth/LOGIN_FAIL';
 const LOGOUT = 'wr/auth/LOGOUT';
 export const LOGOUT_SUCCESS = 'wr/auth/LOGOUT_SUCCESS';
 const LOGOUT_FAIL = 'wr/auth/LOGOUT_FAIL';
+const INCR_COLL_COUNT = 'wr/auth/INCR_COLL_COUNT';
 
 
 const defaultUser = fromJS({
   username: null,
   role: null,
-  anon: null
+  anon: null,
+  coll_count: 0
 });
 
 const initialState = fromJS({
@@ -65,6 +67,9 @@ export function auth(state = initialState, action = {}) {
         loggingOut: false,
         logoutError: action.error
       });
+    case INCR_COLL_COUNT:
+      console.log('incr coll count', state.getIn(['user', 'coll_count']), action.incr);
+      return state.setIn(['user', 'coll_count'], state.getIn(['user', 'coll_count']) + action.incr);
     default:
       return state;
   }
@@ -89,6 +94,13 @@ export function login(postData) {
         ...postData
       }
     })
+  };
+}
+
+export function incrementCollCount(incr) {
+  return {
+    type: INCR_COLL_COUNT,
+    incr: incr || 0
   };
 }
 

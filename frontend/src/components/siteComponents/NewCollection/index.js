@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
+import { Alert, ControlLabel, FormGroup, FormControl } from 'react-bootstrap';
+
 
 import { defaultCollectionTitle } from 'config';
 
@@ -10,9 +12,10 @@ import Modal from 'components/Modal';
 class NewCollection extends Component {
   static propTypes = {
     close: PropTypes.func,
-    showModal: PropTypes.bool,
     createCollection: PropTypes.func,
     creatingCollection: PropTypes.bool,
+    error: PropTypes.string,
+    showModal: PropTypes.bool,
     visible: PropTypes.bool
   };
 
@@ -44,8 +47,12 @@ class NewCollection extends Component {
     this.setState({ isPublic: !this.state.isPublic });
   }
 
+  titleValidation = () => {
+    return this.props.error ? 'error' : null;
+  }
+
   render() {
-    const { close, creatingCollection, visible } = this.props;
+    const { close, creatingCollection, error, visible } = this.props;
     const { collTitle, isPublic } = this.state;
 
     return (
@@ -54,10 +61,16 @@ class NewCollection extends Component {
         header="Create New Collection"
         visible={visible}>
         <form onSubmit={this.submit} id="create-coll" className="form-horizontal">
-          <span className="form-group col-md-5">
-            <label htmlFor="collection">Collection Name:</label>
-            <input type="text" ref={(obj) => { this.input = obj; }} id="title" name="title" className="form-control" onFocus={this.focusInput} onChange={this.handleInput} value={collTitle} required />
-          </span>
+          {
+            error &&
+              <Alert bsStyle="danger">
+                { error }
+              </Alert>
+          }
+          <FormGroup bsClass="form-group col-md-5" validationState={this.titleValidation()}>
+            <ControlLabel htmlFor="collection">Collection Name:</ControlLabel>
+            <FormControl type="text" inputRef={(obj) => { this.input = obj; }} id="title" name="title" onFocus={this.focusInput} onChange={this.handleInput} value={collTitle} />
+          </FormGroup>
 
           <span className="col-md-6 col-md-offset-1">
             <div><label htmlFor="public-switch"><span className="glyphicon glyphicon-globe" style={{ marginRight: '4px' }} />Make public (visible to all)?</label></div>
@@ -67,7 +80,7 @@ class NewCollection extends Component {
               onChange={this.togglePublic} />
           </span>
 
-          <button className="btn btn-lg btn-primary btn-block" type="submit" disabled={creatingCollection}>Create</button>
+          <button className="btn btn-lg btn-primary btn-block" type="submit" disabled={creatingCollection && !error}>Create</button>
         </form>
       </Modal>
     );
