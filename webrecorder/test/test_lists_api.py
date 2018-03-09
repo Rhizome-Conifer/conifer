@@ -323,6 +323,26 @@ class TestListsAPI(FullStackTests):
         assert lists[1]['id'] == '1003'
         assert lists[1]['num_bookmarks'] == 2
 
+    # Record, then Replay Via List
+    # ========================================================================
+    def test_record_1(self):
+        res = self.testapp.get('/_new/temp/rec/record/mp_/http://example.com/')
+        assert res.status_code == 302
+        res = res.follow()
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text
+
+    def test_replay_1(self):
+        res = self.testapp.get('/{user}/temp/list/1002/mp_/http://example.com/'.format(user=self.anon_user), status=200)
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text
+
+        assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
+
+    # Delete Collection
+    # ========================================================================
     def test_delete_coll(self):
         res = self.testapp.delete('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
 
