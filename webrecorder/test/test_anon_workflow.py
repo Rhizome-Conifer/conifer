@@ -35,8 +35,18 @@ class TestTempContent(FullStackTests):
         'u:{user}:colls',
         'n:colls:count',
         'n:recs:count',
+        'h:defaults',
         'h:roles',
         'h:temp-usage',
+    ]
+
+    POST_DEL_KEYS = [
+        'n:colls:count',
+        'n:recs:count',
+        'h:defaults',
+        'h:roles',
+        'h:temp-usage',
+        'q:del:nginx'
     ]
 
     PAGE_STATS = {'rec': 'r:{rec}:<sesh_id>:stats:{url}',
@@ -637,7 +647,7 @@ class TestTempContent(FullStackTests):
         sesh_redis.flushdb()
 
         def assert_empty_keys():
-            assert set(self.redis.keys()) == set(['h:roles', 'h:temp-usage', 'n:colls:count', 'n:recs:count', 'q:del:nginx'])
+            assert set(self.redis.keys()) == set(self.POST_DEL_KEYS)
             assert glob.glob(os.path.join(self.warcs_dir, 'temp$*')) == []
 
         self.sleep_try(0.1, 10.0, assert_empty_keys)

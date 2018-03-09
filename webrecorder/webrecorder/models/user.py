@@ -198,8 +198,9 @@ class User(RedisNamedContainer):
 
         else:
             data['email'] = data.pop('email_addr')
-            desc_data = json.loads(data.pop('desc', '{}'))
-            data['name'] = desc_data.get('name', '')
+            #desc_data = json.loads(data.pop('desc', '{}'))
+            #data['name'] = desc_data.get('name', '')
+            data['name'] = data.pop('name', '')
             last_login = data.get('last_login')
             if last_login:
                 data['last_login'] = self.to_iso_date(last_login)

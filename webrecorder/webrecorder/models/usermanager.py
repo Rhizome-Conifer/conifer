@@ -59,6 +59,12 @@ class UserManager(object):
         invites = expandvars(config.get('invites_enabled', 'true')).lower()
         self.invites_enabled = invites in ('true', '1', 'yes')
 
+        try:
+            self.redis.hsetnx('h:defaults', 'max_size', int(config['default_max_size']))
+            self.redis.hsetnx('h:defaults', 'max_anon_size', int(config['default_max_anon_size']))
+        except Exception as e:
+            print('WARNING: Unable to init defaults: ' + str(e))
+
         # custom cork auth decorators
         self.admin_view = self.cork.make_auth_decorator(role='admin',
                                                         fixed_role=True,
@@ -184,7 +190,7 @@ class UserManager(object):
             return {'error': 'invalid'}
 
         try:
-            user, first_coll = self.create_user(reg_code)
+            user, first_coll = self.create_user_from_reg(reg_code)
 
             return {'registered': user.name,
                     'first_coll_name': first_coll.name}
@@ -292,7 +298,10 @@ class UserManager(object):
 
     @property
     def access(self):
-        return request['webrec.access']
+        return self._get_access()
+
+    def get_roles(self):
+        return [x for x in self.cork._store.roles]
 
     def get_user_coll(self, username, coll_name):
         user = self.all_users[username]
@@ -357,7 +366,7 @@ class UserManager(object):
         if not email or not name:
             return False
 
-        self.invites[email] = {'name': name, 'email': email, 'desc': desc}
+        self.invites[email] = {'name': name, 'email': email, 'reg_data': desc}
         return True
 
     def send_invite(self, email, email_template, host):
@@ -467,7 +476,61 @@ class UserManager(object):
 
         return user, first_coll
 
-    def create_user(self, reg):
+    def create_user_as_admin(self, email, username, passwd, passwd2, role, name):
+        """Create a new user with command line arguments or series of prompts,
+           preforming basic validation
+        """
+        self.access.assert_is_superuser()
+
+        errs = []
+
+        # EMAIL
+        # validate email
+        if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', email):
+            errs.append('valid email required!')
+
+        if email in [data['email_addr'] for u, data in self.all_users.items()]:
+            errs.append('A user already exists with {0} email!'.format(email))
+
+        # USERNAME
+        # validate username
+        if not username:
+            errs.append('please specify a username!')
+
+        if not self.USER_RX.match(username) or username in self.RESTRICTED_NAMES:
+            errs.append('Invalid username..')
+
+        if username in self.all_users:
+            errs.append('Username already exists.')
+
+        # ROLE
+        if role not in self.get_roles():
+            errs.append('Not a valid role.')
+
+        # PASSWD
+        if passwd != passwd2 or not self.PASS_RX.match(passwd):
+            errs.append('Passwords must match and be at least 8 characters long '
+                        'with lowercase, uppercase, and either digits or symbols.')
+
+        if errs:
+            return errs, None
+
+        # add user to cork
+        #self.cork._store.users[username] = {
+        self.all_users[username] = {
+            'role': role,
+            'hash': self.cork._hash(username, passwd).decode('ascii'),
+            'email_addr': email,
+            #'desc': '{{"name":"{name}"}}'.format(name=name),
+            'name': name,
+            'creation_date': str(datetime.utcnow()),
+            'last_login': str(datetime.utcnow()),
+        }
+        #self.cork._store.save_users()
+
+        return None, self.create_new_user(username, {'email': email,
+                                                     'name': name})
+    def create_user_from_reg(self, reg):
         try:
             user, init_info = self.cork.validate_registration(reg)
         except Exception as a:
@@ -485,6 +548,41 @@ class UserManager(object):
             sesh.curr_user = user.name
 
         return user, first_coll
+
+    def update_user_as_admin(self, user, data):
+        """ Update any property on specified user
+        For admin-only
+        """
+        self.access.assert_is_curr_user(user)
+
+        errs = []
+
+        if not data:
+            errs.append('Nothing To Update')
+
+        if 'role' in data and data['role'] not in self.get_roles():
+            errs.append('Not a valid role.')
+
+        if 'max_size' in data and not isinstance(data['max_size'], int):
+            errs.append('max_size must be an int')
+
+        if errs:
+            return errs
+
+        if 'name' in data:
+            #user['desc'] = '{{"name":"{name}"}}'.format(name=data.get('name', ''))
+            user['name'] = data.get('name', '')
+
+        if 'desc' in data:
+            user['desc'] = data['desc']
+
+        if 'max_size' in data:
+            user['max_size'] = data['max_size']
+
+        if 'role' in data:
+            user['role'] = data['role']
+
+        return None
 
     def delete_user(self, username):
         user = self.all_users[username]
@@ -547,71 +645,44 @@ class CLIUserManager(UserManager):
         """Create a new user with command line arguments or series of prompts,
            preforming basic validation
         """
+
+        # EMAIL
         if not email:
             print('let\'s create a new user..')
             email = input('email: ').strip()
 
-        # validate email
-        if not re.match(r'[\w.-/+]+@[\w.-]+.\w+', email):
-            print('valid email required!')
-            return
-
-        if email in [data['email_addr'] for u, data in self.all_users.items()]:
-            print('A user already exists with {0} email!'.format(email))
-            return
-
-        username = username or input('username: ').strip()
-
-        # validate username
+        # USERNAME
         if not username:
-            print('please enter a username!')
-            return
+            username = input('username: ').strip()
 
-        if not self.USER_RX.match(username) or username in self.RESTRICTED_NAMES:
-            print('Invalid username..')
-            return
+        # NAME
+        if not name:
+            name = input('name (optional): ').strip()
 
-        if username in self.all_users:
-            print('Username already exists..')
-            return
+        # ROLE
+        if role not in self.get_roles():
+            role = self.choose_role()
 
-        name = name if name is not None else input('name (optional): ').strip()
-
-        role = role if role in [r[0] for r in self.cork.list_roles()] else self.choose_role()
-
-        if passwd is not None:
-            passwd2 = passwd
-        else:
+        # PASSWD
+        if not passwd:
             passwd = getpass('password: ')
             passwd2 = getpass('repeat password: ')
+        else:
+            passwd2 = passwd
 
-        if passwd != passwd2 or not self.PASS_RX.match(passwd):
-            print('Passwords must match and be at least 8 characters long '
-                         'with lowercase, uppercase, and either digits or symbols.')
+        errs, res = self.create_user_as_admin(email, username, passwd, passwd2, role, name)
+
+        if errs:
+            for err in errs:
+                print(err)
             return
 
-        print('Creating user {username} with the email {email} and the role: '
-              '\'{role}\''.format(username=username,
-                                  email=email,
-                                  role=role))
+        print('Created user {username} with the email {email} and the role: '
+          '\'{role}\''.format(username=username,
+                              email=email,
+                              role=role))
 
-        # add user to cork
-        #self.cork._store.users[username] = {
-        self.all_users[username] = {
-            'role': role,
-            'hash': self.cork._hash(username, passwd).decode('ascii'),
-            'email_addr': email,
-            'desc': '{{"name":"{name}"}}'.format(name=name),
-            'creation_date': str(datetime.utcnow()),
-            'last_login': str(datetime.utcnow()),
-        }
-        #self.cork._store.save_users()
-
-        user, first_coll = self.create_new_user(username, {'email': email,
-                                                           'name': name})
-
-        print('All done!')
-        return user, first_coll
+        return res
 
     def choose_role(self):
         """Flexible choice prompt for as many roles as the system has"""

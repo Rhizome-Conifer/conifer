@@ -258,7 +258,7 @@ class TestApiUserLogin(FullStackTests):
         user = res.json['user']
 
         assert user['username'] == 'someuser'
-        assert user['description'] == 'New Description'
+        assert user['desc'] == 'New Description'
 
         # collections not included
         assert 'collections' not in user
