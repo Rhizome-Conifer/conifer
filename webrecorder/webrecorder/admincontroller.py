@@ -8,11 +8,10 @@ import re
 from operator import itemgetter
 
 from bottle import request, HTTPError
-from datetime import datetime, timedelta
+from datetime import datetime
 from re import sub
 
 from webrecorder.basecontroller import BaseController
-from webrecorder.webreccork import ValidationException
 
 
 # ============================================================================
@@ -20,8 +19,6 @@ class AdminController(BaseController):
     def __init__(self, *args, **kwargs):
         super(AdminController, self).__init__(*args, **kwargs)
         config = kwargs['config']
-
-        self.cork = kwargs['cork']
 
         self.default_user_desc = config['user_desc']
         self.user_usage_key = config['user_usage_key']
@@ -31,25 +28,38 @@ class AdminController(BaseController):
         self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
 
     def init_routes(self):
-        @self.app.route(['/api/v1/settings'], ['GET', 'PUT'])
+        @self.app.get('/api/v1/defaults')
         @self.user_manager.admin_view()
-        def internal_settings():
-            settings = {}
-            config = self.redis.hgetall('h:defaults')
+        def get_defaults():
+            data = self.redis.hgetall('h:defaults')
+            data['max_size'] = int(data['max_size'])
+            data['max_anon_size'] = int(data['max_anon_size'])
+            return {'defaults': data}
 
-            if request.method == 'PUT':
-                data = json.loads(request.forms.json)
-                config.update(data['settings'])
-                # commit to redis
-                self.redis.hmset('h:defaults', config)
+        @self.app.put('/api/v1/defaults')
+        def update_defaults():
+            data = request.json
+            if 'max_size' in data:
+                try:
+                    self.redis.hset('h:defaults', 'max_size', int(data['max_size']))
+                except Exception as e:
+                    return {'error': 'error setting max_size'}
 
-            settings['defaults'] = config
-            return settings
+            if 'max_anon_size' in data:
+                try:
+                    self.redis.hset('h:defaults', 'max_anon_size', int(data['max_anon_size']))
+                except Exception as e:
+                    return {'error': 'error setting max_anon_size'}
+
+            data = self.redis.hgetall('h:defaults')
+            data['max_size'] = int(data['max_size'])
+            data['max_anon_size'] = int(data['max_anon_size'])
+            return {'defaults': data}
 
         @self.app.get(['/api/v1/user_roles', '/api/v1/user_roles/'])
         @self.user_manager.admin_view()
         def api_get_user_roles():
-            return {"roles": [x for x in self.cork._store.roles]}
+            return {"roles": self.user_manager.get_roles()}
 
         @self.app.get(['/api/v1/dashboard', '/api/v1/dashboard/'])
         @self.user_manager.admin_view()
@@ -161,7 +171,8 @@ class AdminController(BaseController):
             if errs:
                 return {'errors': errs}
 
-            return {'user': res[0].name, 'first_coll': res[1].name if res[1] else ''}
+            user, first_coll = res
+            return {'user': user.name, 'first_coll': first_coll.name if first_coll else ''}
 
         @self.app.put(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
         @self.user_manager.admin_view()

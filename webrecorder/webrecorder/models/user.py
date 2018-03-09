@@ -190,8 +190,6 @@ class User(RedisNamedContainer):
 
         data['username'] = self.name
 
-        print(data)
-
         if self.is_anon():
             data['ttl'] = self.access.get_anon_ttl()
             collection = self.get_collection_by_name('temp')

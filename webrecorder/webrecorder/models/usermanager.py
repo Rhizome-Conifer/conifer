@@ -59,6 +59,12 @@ class UserManager(object):
         invites = expandvars(config.get('invites_enabled', 'true')).lower()
         self.invites_enabled = invites in ('true', '1', 'yes')
 
+        try:
+            self.redis.hsetnx('h:defaults', 'max_size', int(config['default_max_size']))
+            self.redis.hsetnx('h:defaults', 'max_anon_size', int(config['default_max_anon_size']))
+        except Exception as e:
+            print('WARNING: Unable to init defaults: ' + str(e))
+
         # custom cork auth decorators
         self.admin_view = self.cork.make_auth_decorator(role='admin',
                                                         fixed_role=True,
