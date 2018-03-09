@@ -270,7 +270,15 @@ class ContentController(BaseController, RewriterApp):
                                        inv_sources='*',
                                        redir_route='extract')
 
-        # Replay
+        # REPLAY
+        # Replay List
+        @self.app.route('/<user>/<coll>/list/<list_id>/<wb_url:path>', method='ANY')
+        def do_replay_rec(user, coll, list_id, wb_url):
+            request.path_shift(4)
+
+            return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
+
+        # Replay Recording
         @self.app.route('/<user>/<coll>/<rec>/replay/<wb_url:path>', method='ANY')
         def do_replay_rec(user, coll, rec, wb_url):
             request.path_shift(4)
