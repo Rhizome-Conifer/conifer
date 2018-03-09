@@ -186,7 +186,9 @@ class User(RedisNamedContainer):
 
         if include_colls:
             colls = self.get_collections()
-            data['collections'] = [coll.serialize() for coll in colls]
+            data['collections'] = [coll.serialize(
+                                    include_recordings=False,
+                                    include_lists=False) for coll in colls]
 
         data['username'] = self.name
 

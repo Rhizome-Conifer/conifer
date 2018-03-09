@@ -210,14 +210,16 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         return sorted(pagelist, key=lambda x: x['timestamp'])
 
-    def serialize(self):
+    def serialize(self, include_recordings=True, include_lists=True):
         data = super(Collection, self).serialize()
 
-        recordings = self.get_recordings(load=True)
-        data['recordings'] = [recording.serialize() for recording in recordings]
+        if include_recordings:
+            recordings = self.get_recordings(load=True)
+            data['recordings'] = [recording.serialize() for recording in recordings]
 
-        lists = self.get_lists(load=True)
-        data['lists'] = [blist.serialize(include_bookmarks=False) for blist in lists]
+        if include_lists:
+            lists = self.get_lists(load=True)
+            data['lists'] = [blist.serialize(include_bookmarks=False) for blist in lists]
 
         return data
 

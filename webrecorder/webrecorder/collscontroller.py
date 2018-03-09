@@ -56,9 +56,16 @@ class CollsController(BaseController):
         def get_collections():
             user = self.get_user(api=True, redir_check=False)
 
+            kwargs = {}
+            if request.query.include_recordings:
+                kwargs['include_recordings'] = request.query.include_lists == 'true'
+
+            if request.query.include_lists:
+                kwargs['include_lists'] = request.query.include_lists == 'true'
+
             collections = user.get_collections()
 
-            return {'collections': [coll.serialize() for coll in collections]}
+            return {'collections': [coll.serialize(**kwargs) for coll in collections]}
 
         @self.app.get('/api/v1/collections/<coll_name>')
         def get_collection(coll_name):
