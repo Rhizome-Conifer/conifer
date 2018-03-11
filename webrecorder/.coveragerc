@@ -1,5 +1,6 @@
 [run]
 concurrency = gevent
+source = codecov
 branch = true
 omit =
     */test/*

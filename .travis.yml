@@ -33,7 +33,7 @@ before_install: |
 install:
   - cd webrecorder
   - python setup.py install
-  - pip install coverage pytest-cov coveralls
+  - pip install coverage pytest-cov codecov
   - pip install pyinstaller
 
 script:
@@ -45,5 +45,5 @@ script:
 
 
 after_success:
-  - coveralls
+  - codecov
 
