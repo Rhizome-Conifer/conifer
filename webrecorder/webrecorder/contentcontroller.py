@@ -32,8 +32,7 @@ class ContentController(BaseController, RewriterApp):
 
         config['csp-header'] = self.get_csp_header()
 
-        # inited later
-        self.browser_mgr = None
+        self.browser_mgr = kwargs['browser_mgr']
 
         RewriterApp.__init__(self,
                              framed_replay=True,
@@ -89,33 +88,84 @@ class ContentController(BaseController, RewriterApp):
             if sesh.is_new() and self.is_content_request():
                 return {'error': 'Invalid request'}
 
-            browser_id = request.query.br
-            coll = request.query.coll
-            rec = request.query.rec
-            mode = request.query.mode
+            browser_id = request.query['br']
+
             user = self.get_user(redir_check=False)
 
-            wb_url = WbUrl(request.query.wb_url)
+            coll_name = request.query['coll']
+            rec_name = request.query['rec']
 
-            coll_obj = user.get_collection_by_name(coll)
-            rec_obj = coll_obj.get_recording_by_name(rec)
+            mode = request.query['mode']
+
+            url = request.query['url']
+            timestamp = request.query.get('timestamp', '')
+
+            sources = ''
+            inv_sources = ''
+            patch_rec = ''
+
+            collection = user.get_collection_by_name(coll_name)
+
+            if not collection:
+                return {'error': 'Invalid Collection Specified'}
+
+            if mode == 'extract':
+                # Extract from All, Patch from None
+                sources = '*'
+                inv_sources = '*'
+            elif mode.startswith('extract:'):
+                # Extract from One, Patch from all but one
+                sources = mode.split(':', 1)[1]
+                inv_sources = sources
+                # load patch recording also
+                patch_recording = collection.get_recording_by_name('patch-of-' + rec_name)
+                if patch_recording:
+                    patch_rec = patch_recording.my_id
+
+                mode = 'extract'
+            elif mode.startswith('extract_only:'):
+                # Extract from one only, no patching
+                sources = mode.split(':', 1)[1]
+                inv_sources = '*'
+                mode = 'extract'
+
+            if mode not in self.MODIFY_MODES and mode not in ('replay', 'replay-coll'):
+                return {'error': 'Invalid Mode Specified'}
+
+            if rec_name and rec_name != '*':
+                recording = collection.get_recording_by_name(rec_name)
+                if not recording:
+                    return {'error': 'Invalid Recording Specified'}
+                rec = recording.my_id
+            else:
+                rec = '*'
+
+            sources = request.query.get('sources', '*')
+            inv_sources = request.query.get('inv_sources', '*')
 
             # build kwargs
-            kwargs = dict(user=user['id'],
-                          rec_orig=rec,
-                          coll_orig=coll,
-                          coll=quote(coll),
-                          coll_name=coll_obj['title'],
-                          rec=quote(rec, safe='/*'),
-                          rec_name=rec_obj.get_title(),
+            kwargs = dict(user=user.name,
+                          id=sesh.get_id(),
+                          coll=collection.my_id,
+                          rec=rec,
+                          coll_name=quote(coll_name),
+                          rec_name=quote(rec_name, safe='/*'),
+
                           type=mode,
+                          sources=sources,
+                          inv_sources=inv_sources,
+                          patch_rec=patch_rec,
+
                           remote_ip=self._get_remote_ip(),
                           ip=self._get_remote_ip(),
-                          browser_can_write='1' if self.access.can_write_coll(coll_obj) else '0')
 
-            data = self.browser_mgr.request_new_browser(browser_id,
-                                                        wb_url,
-                                                        kwargs)
+                          browser=browser_id,
+                          url=url,
+                          request_ts=timestamp,
+
+                          browser_can_write='1' if self.access.can_write_coll(collection) else '0')
+
+            data = self.browser_mgr.request_new_browser(kwargs)
 
             if 'error_message' in data:
                 self._raise_error(400, data['error_message'])
@@ -602,7 +652,9 @@ class ContentController(BaseController, RewriterApp):
 
         # top-frame replay but through a proxy, redirect to original
         if is_top_frame and 'wsgiprox.proxy_host' in request.environ:
-            self.browser_mgr.update_local_browser(wb_url_obj, kwargs)
+            kwargs['url'] = wb_url_obj.url
+            kwargs['request_ts'] = wb_url_obj.timestamp
+            self.browser_mgr.update_local_browser(kwargs)
             return redirect(wb_url_obj.url)
 
         try:
@@ -718,10 +770,10 @@ class ContentController(BaseController, RewriterApp):
     def get_base_url(self, wb_url, kwargs):
         # for proxy mode, 'upstream_url' already provided
         # just use that
-        base_url = kwargs.get('upstream_url')
-        if base_url:
-            base_url = base_url.format(**kwargs)
-            return base_url
+        #base_url = kwargs.get('upstream_url')
+        #if base_url:
+        #    base_url = base_url.format(**kwargs)
+        #    return base_url
 
         type = kwargs['type']
 
@@ -864,8 +916,12 @@ class ContentController(BaseController, RewriterApp):
 
         kwargs['remote_ip'] = self._get_remote_ip()
 
+        kwargs['url'] = wb_url.url
+        kwargs['timestamp'] = wb_url.timestamp
+        kwargs['browser'] = browser_id
+
         # container redis info
-        inject_data = self.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)
+        inject_data = self.browser_mgr.request_new_browser(kwargs)
         if 'error_message' in inject_data:
             self._raise_error(400, inject_data['error_message'])
 

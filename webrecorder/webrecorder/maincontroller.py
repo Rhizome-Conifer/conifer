@@ -100,15 +100,16 @@ class MainController(BaseController):
                                    cork=cork,
                                    config=config)
 
+        # Init Browser Mgr
+        browser_mgr = BrowserManager(config, browser_redis, user_manager)
+
         # Init Content Loader/Rewriter
         content_app = ContentController(app=bottle_app,
                                         jinja_env=jinja_env,
                                         user_manager=user_manager,
                                         config=config,
+                                        browser_mgr=browser_mgr,
                                         redis=self.redis)
-
-        # Init Browser Mgr
-        browser_mgr = BrowserManager(config, browser_redis, content_app, user_manager)
 
         User.init_props(config)
         Collection.init_props(config)

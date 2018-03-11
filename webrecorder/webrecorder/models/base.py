@@ -38,7 +38,7 @@ class RedisUniqueComponent(object):
 
     @property
     def size(self):
-        return self.get_prop('size', force_type=int, default_val=0)
+        return self.get_prop('size', force_type=int, default_val=0, force_update=True)
 
     def incr_size(self, size):
         val = self.redis.hincrby(self.info_key, 'size', size)
@@ -87,9 +87,9 @@ class RedisUniqueComponent(object):
         self.data['updated_at'] = self.to_iso_date(updated_at)
         return self.data
 
-    def get_prop(self, attr, default_val=None, force_type=None):
+    def get_prop(self, attr, default_val=None, force_type=None, force_update=False):
         if not self.loaded:
-            if attr not in self.data:
+            if force_update or attr not in self.data:
                 self.data[attr] = self.redis.hget(self.info_key, attr) or default_val
                 if force_type:
                     self.data[attr] = force_type(self.data[attr])

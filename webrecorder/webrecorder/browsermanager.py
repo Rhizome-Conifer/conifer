@@ -8,7 +8,7 @@ import os
 
 # ============================================================================
 class BrowserManager(object):
-    def __init__(self, config, browser_redis, content_app, user_manager):
+    def __init__(self, config, browser_redis, user_manager):
         self.browser_redis = browser_redis
 
         self.browser_req_url = config['browser_req_url']
@@ -20,11 +20,6 @@ class BrowserManager(object):
             gevent.spawn(self.browser_load_loop)
 
         self.user_manager = user_manager
-
-        self.content_app = content_app
-        self.content_app.browser_mgr = self
-
-        self.proxy_host = config['proxy_host']
 
         self.inactive_time = os.environ.get('INACTIVE_TIME', 60)
 
@@ -76,61 +71,27 @@ class BrowserManager(object):
         container_data['recording'] = recording
         return container_data
 
-    def update_local_browser(self, wb_url, kwargs):
-        data = self.prepare_container_data('', wb_url, kwargs)
-
+    def update_local_browser(self, data):
         self.browser_redis.hmset('ip:127.0.0.1', data)
-
-    def request_new_browser(self, browser_id, wb_url, kwargs):
-        data = self.prepare_container_data(browser_id, wb_url, kwargs)
-
-        return self.request_prepared_browser(browser_id, wb_url, data)
 
     def browser_sesh_id(self, reqid):
         return 'reqid_' + reqid
 
-    def fill_upstream_url(self, kwargs, timestamp):
-        params = {'closest': timestamp or 'now'}
+    def _api_new_browser(self, req_url, container_data):
+        r = requests.post(req_url, data=container_data)
+        return r.json()
 
-        if 'url' not in kwargs:
-            kwargs['url'] = '{url}'
-
-        upstream_url = self.content_app.get_upstream_url('', kwargs, params)
-
-        # adding separate to avoid encoding { and }
-        upstream_url += '&url={url}'
-
-        kwargs['upstream_url'] = upstream_url
-
-    def prepare_container_data(self, browser_id, wb_url, kwargs):
-        self.fill_upstream_url(kwargs, wb_url.timestamp)
-
-        container_data = {'upstream_url': kwargs['upstream_url'],
-                          'user': kwargs['user'],
-                          'coll': kwargs['coll'],
-                          'rec': kwargs['rec'],
-                          'coll_name': kwargs['coll_name'],
-                          'rec_name': kwargs['rec_name'],
-                          'request_ts': wb_url.timestamp,
-                          'url': wb_url.url,
-                          'type': kwargs['type'],
-                          'browser': browser_id,
-                          'browser_can_write': kwargs.get('browser_can_write', '0'),
-                          'remote_ip': kwargs.get('remote_ip', ''),
-                         }
-
-        return container_data
-
-    def request_prepared_browser(self, browser_id, wb_url, container_data):
+    def request_new_browser(self, container_data):
+        browser_id = container_data['browser']
         try:
             req_url = self.browser_req_url.format(browser=browser_id)
-            r = requests.post(req_url, data=container_data)
-            res = r.json()
+            res = self._api_new_browser(req_url, container_data)
 
         except Exception as e:
             print(e)
             msg = 'Browser <b>{0}</b> could not be requested'.format(browser_id)
             return {'error_message': msg}
+
 
         reqid = res.get('reqid')
 
@@ -144,8 +105,8 @@ class BrowserManager(object):
         # browser page insert
         data = {'browser': browser_id,
                 'browser_data': self.browsers.get(browser_id),
-                'url': wb_url.url,
-                'ts': wb_url.timestamp,
+                'url': container_data['url'],
+                'ts': container_data['request_ts'],
                 'reqid': reqid,
                 'inactive_time': self.inactive_time,
                }
@@ -186,8 +147,6 @@ class BrowserManager(object):
                 container_data['rec'] = rec
         except:
             return {'error_message': 'Not a writable browser'}
-
-        self.fill_upstream_url(container_data, container_data.get('request_ts'))
 
         self.browser_redis.hmset('ip:' + ip, container_data)
 

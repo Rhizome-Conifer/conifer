@@ -58,7 +58,6 @@ class RemoteBrowserUI extends Component {
   componentDidMount() {
     const { dispatch, params, rb, rec, timestamp, url } = this.props;
     const { currMode } = this.context;
-    const urlFrag = timestamp ? `${timestamp}/${url}` : url;
 
     if (!window.location.port) {
       this.pywbParams.proxy_ws = '_websockify?port=';
@@ -70,7 +69,7 @@ class RemoteBrowserUI extends Component {
 
     // generate remote browser
     if (!reqFromStorage) {
-      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, urlFrag));
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, timestamp, url));
     } else {
       this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
     }
@@ -102,10 +101,9 @@ class RemoteBrowserUI extends Component {
 
       // write to storage for later reuse
       setStorage('reqId', data, window.sessionStorage);
-    } else if(nextProps.rb !== rb) {
+    } else if (nextProps.rb !== rb) {
       // remote browser change request, load from storage or create a new one
       const reqFromStorage = this.getReqFromStorage(nextProps.rb);
-      const urlFrag = timestamp ? `${timestamp}/${url}` : url;
 
       // close current connections
       this.cb.close();
@@ -113,7 +111,7 @@ class RemoteBrowserUI extends Component {
 
       // generate remote browser
       if (!reqFromStorage) {
-        dispatch(createRemoteBrowser(nextProps.rb, params.user, params.coll, rec, currMode, urlFrag));
+        dispatch(createRemoteBrowser(nextProps.rb, params.user, params.coll, rec, currMode, timestamp, url));
       } else {
         this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
       }
@@ -157,8 +155,7 @@ class RemoteBrowserUI extends Component {
       this.recreateBrowser();
     } else if (type === 'error') {
       deleteStorage('reqId', window.sessionStorage);
-      const urlFrag = timestamp ? `${timestamp}/${url}` : url;
-      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, urlFrag));
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, timestamp, url));
     }
   }
 
