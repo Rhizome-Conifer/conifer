@@ -88,17 +88,19 @@ class ContentController(BaseController, RewriterApp):
             if sesh.is_new() and self.is_content_request():
                 return {'error': 'Invalid request'}
 
-            browser_id = request.query['br']
+            browser_id = request.query['browser']
 
             user = self.get_user(redir_check=False)
 
-            coll_name = request.query['coll']
-            rec_name = request.query['rec']
+            data = request.query
 
-            mode = request.query['mode']
+            coll_name = data.get('coll', '')
+            rec_name = data.get('rec', '')
 
-            url = request.query['url']
-            timestamp = request.query.get('timestamp', '')
+            mode = data.get('mode', '')
+
+            url = data.get('url', '')
+            timestamp = data.get('timestamp', '')
 
             sources = ''
             inv_sources = ''
@@ -118,7 +120,7 @@ class ContentController(BaseController, RewriterApp):
                 sources = mode.split(':', 1)[1]
                 inv_sources = sources
                 # load patch recording also
-                patch_recording = collection.get_recording_by_name('patch-of-' + rec_name)
+                patch_recording = collection.get_recording_by_name(self.patch_of_name(rec_name, True))
                 if patch_recording:
                     patch_rec = patch_recording.my_id
 
@@ -129,19 +131,22 @@ class ContentController(BaseController, RewriterApp):
                 inv_sources = '*'
                 mode = 'extract'
 
-            if mode not in self.MODIFY_MODES and mode not in ('replay', 'replay-coll'):
-                return {'error': 'Invalid Mode Specified'}
+            if mode in self.MODIFY_MODES:
+                recording = None
+                if rec_name and rec_name != '*':
+                    recording = collection.get_recording_by_name(rec_name)
 
-            if rec_name and rec_name != '*':
-                recording = collection.get_recording_by_name(rec_name)
                 if not recording:
                     return {'error': 'Invalid Recording Specified'}
-                rec = recording.my_id
-            else:
-                rec = '*'
 
-            sources = request.query.get('sources', '*')
-            inv_sources = request.query.get('inv_sources', '*')
+                rec = recording.my_id
+            elif mode in ('replay', 'replay-coll'):
+                rec = '*'
+            else:
+                return {'error': 'Invalid Mode Specified'}
+
+
+            browser_can_write = '1' if self.access.can_write_coll(collection) else '0'
 
             # build kwargs
             kwargs = dict(user=user.name,
@@ -163,7 +168,7 @@ class ContentController(BaseController, RewriterApp):
                           url=url,
                           request_ts=timestamp,
 
-                          browser_can_write='1' if self.access.can_write_coll(collection) else '0')
+                          browser_can_write=browser_can_write)
 
             data = self.browser_mgr.request_new_browser(kwargs)
 
@@ -196,18 +201,24 @@ class ContentController(BaseController, RewriterApp):
 
             browser = request.json.get('browser')
             is_content = request.json.get('is_content') and not browser
-            ts = request.json.get('ts')
+            timestamp = request.json.get('timestamp')
 
-            wb_url = self.construct_wburl(url, ts, browser, is_content)
+            wb_url = self.construct_wburl(url, timestamp, browser, is_content)
 
             host = self.content_host if is_content else self.app_host
             if not host:
                 host = request.urlparts.netloc
 
             full_url = request.environ['wsgi.url_scheme'] + '://' + host
-            full_url += self.do_create_new(coll, '', wb_url, mode)
 
-            return {'url': full_url}
+            url, rec_name, patch_rec_name = self.do_create_new(coll, '', wb_url, mode)
+
+            full_url += url
+
+            return {'url': full_url,
+                    'rec_name': rec_name,
+                    'patch_rec_name': patch_rec_name
+                   }
 
         # COOKIES
         @self.app.get(['/<user>/<coll_name>/$add_cookie'], method='POST')
@@ -470,7 +481,7 @@ class ContentController(BaseController, RewriterApp):
         return mode, new_url
 
     def do_create_new_and_redir(self, coll_name, rec_name, wb_url, mode):
-        new_url = self.do_create_new(coll_name, rec_name, wb_url, mode)
+        new_url, _, _2 = self.do_create_new(coll_name, rec_name, wb_url, mode)
         return self.redirect(new_url)
 
     def do_create_new(self, coll_name, rec_name, wb_url, mode):
@@ -504,15 +515,19 @@ class ContentController(BaseController, RewriterApp):
 
         if mode.startswith('extract:'):
             patch_recording = self._create_new_rec(collection,
-                                                   self.patch_of_name(rec_title),
+                                                   self.patch_of_name(recording.name, True),
                                                    'patch')
+
+            patch_rec_name = patch_recording.name
+        else:
+            patch_rec_name = ''
 
         new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user.my_id,
                                                              coll=collection.name,
                                                              rec=recording.name,
                                                              mode=mode,
                                                              url=wb_url)
-        return new_url
+        return new_url, recording.name, patch_rec_name
 
     def is_content_request(self):
         if not self.content_host:

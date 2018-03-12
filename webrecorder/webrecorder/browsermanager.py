@@ -106,7 +106,7 @@ class BrowserManager(object):
         data = {'browser': browser_id,
                 'browser_data': self.browsers.get(browser_id),
                 'url': container_data['url'],
-                'ts': container_data['request_ts'],
+                'timestamp': container_data['request_ts'],
                 'reqid': reqid,
                 'inactive_time': self.inactive_time,
                }
