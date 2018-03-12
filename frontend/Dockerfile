@@ -19,6 +19,8 @@ ENV CI_BUILD_ID=$CI_BUILD_ID CI_BUILD_REF=$CI_BUILD_REF CI_REGISTRY_IMAGE=$CI_RE
 
 ADD package.json yarn.lock $APP/
 
+ADD src $APP/
+
 WORKDIR $APP
 
 RUN npm install --global yarn

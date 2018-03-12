@@ -45,5 +45,6 @@ script:
 
 
 after_success:
+  - cd $TRAVIS_BUILD_DIR/webrecorder
   - codecov
 

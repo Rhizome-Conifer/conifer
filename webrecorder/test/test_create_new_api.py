@@ -43,6 +43,8 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
 
         assert res.json['url'].startswith('http://app-host/{0}/temp/rec-'.format(self.anon_user))
         assert res.json['url'].endswith('/record/http://httpbin.org/get?food=bar')
+        assert res.json['rec_name'] != ''
+        assert res.json['patch_rec_name'] == ''
 
     def test_api_new_content(self):
         params = {'coll': 'temp',
@@ -68,7 +70,7 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         params = {'coll': 'temp',
                   'url':  'http://httpbin.org/get?food=bar',
                   'mode': 'extract:ab',
-                  'ts': '19960201',
+                  'timestamp': '19960201',
                   'browser': 'chrome:53',
                   'is_content': True,
                  }
@@ -76,17 +78,21 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         res = self.testapp.post_json('/api/v1/new', params=params, headers={'Host': 'app-host'})
         assert res.json['url'].startswith('http://app-host/{0}/temp/rec-'.format(self.anon_user))
         assert res.json['url'].endswith('/extract:ab/19960201$br:chrome:53/http://httpbin.org/get?food=bar')
+        assert res.json['rec_name'] != ''
+        assert res.json['patch_rec_name'] != ''
 
     def test_api_new_patch_ts(self):
         params = {'coll': 'temp',
                   'url':  'http://httpbin.org/get?food=bar',
                   'mode': 'patch',
-                  'ts': '2001',
+                  'timestamp': '2001',
                  }
 
         res = self.testapp.post_json('/api/v1/new', params=params, headers={'Host': 'app-host'})
         assert res.json['url'].startswith('http://app-host/{0}/temp/rec-'.format(self.anon_user))
         assert res.json['url'].endswith('/patch/2001/http://httpbin.org/get?food=bar')
+        assert res.json['rec_name'] != ''
+        assert res.json['patch_rec_name'] == ''
 
     def test_api_temp_user_recs_created(self):
         res = self.testapp.get('/api/v1/temp-users/' + self.anon_user, headers={'Host': 'app-host'})

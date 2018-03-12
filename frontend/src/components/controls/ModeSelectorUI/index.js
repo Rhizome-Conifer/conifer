@@ -57,7 +57,7 @@ class ModeSelectorUI extends PureComponent {
     const data = {
       url,
       coll,
-      ts: timestamp,
+      timestamp,
       mode: 'patch'
     };
 

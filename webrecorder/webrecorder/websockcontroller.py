@@ -73,10 +73,12 @@ class WebsockController(BaseController):
         user = info['user']
         coll = info['coll']
         rec = info['rec']
+        rec_name = info['rec_name']
+        coll_name = info['coll_name']
 
         user = self.user_manager.all_users.get_user(user)
-        collection = user.get_collection_by_id(coll)
-        recording = collection.get_recording_by_id(rec)
+        collection = user.get_collection_by_id(coll, coll_name)
+        recording = collection.get_recording_by_id(rec, rec_name)
 
         reqid = info['reqid']
         sesh_id = self.get_session().get_id()
