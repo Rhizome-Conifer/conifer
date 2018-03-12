@@ -102,7 +102,7 @@ class UserController(BaseController):
         @self.user_manager.auth_view()
         def logout():
             self.user_manager.logout()
-            self.redirect('/')
+            return {'message': 'Sucessefully logged out'}
 
         # PASSWORD
         @self.app.post('/api/v1/updatepassword')
