@@ -70,7 +70,6 @@ const userRoutes = [
 ];
 
 const controllerRoutes = [
-  /* TODO: add permissions check */
   {
     path: `${userPath}/:coll/$new`,
     name: 'new recording',
@@ -131,6 +130,14 @@ const controllerRoutes = [
     footer: false,
     classOverride: true,
     component: Extract,
+    exact: true
+  },
+  {
+    path: `${userPath}/:coll/list/:listId([0-9]+)/:ts([0-9]+)?/:splat(.*)`,
+    name: 'list replay',
+    footer: false,
+    classOverride: true,
+    component: Replay,
     exact: true
   },
   {

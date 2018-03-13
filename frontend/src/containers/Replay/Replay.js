@@ -8,9 +8,9 @@ import config from 'config';
 
 import { getRecording } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
+import { getArchives, setListId, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
-import { createRemoteBrowser, load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
+import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser, Sidebar } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -26,9 +26,9 @@ class Replay extends Component {
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
+    match: PropTypes.object,
     recording: PropTypes.object,
     reqId: PropTypes.string,
-    match: PropTypes.object,
     sidebarResize: PropTypes.bool,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -64,14 +64,23 @@ class Replay extends Component {
 
   render() {
     const { activeBrowser, collection, dispatch, match: { params }, recording,
-            reqId, sidebarResize, timestamp, url } = this.props;
+            reqId, timestamp, url } = this.props;
     const { product } = this.context;
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
+    const listId = params.listId;
 
-    const shareUrl = `${config.appHost}${params.user}/${params.coll}/${tsMod}/${url}`;
-    const appPrefix = `${config.appHost}/${params.user}/${params.coll}/`;
-    const contentPrefix = `${config.contentHost}/${params.user}/${params.coll}/`;
+    const shareUrl = listId ?
+      `${config.appHost}${params.user}/${params.coll}/list/${listId}/${tsMod}/${url}` :
+      `${config.appHost}${params.user}/${params.coll}/${tsMod}/${url}`;
+
+    const appPrefix = listId ?
+      `${config.appHost}/${params.user}/${params.coll}/list/${listId}` :
+      `${config.appHost}/${params.user}/${params.coll}/`;
+
+    const contentPrefix = listId ?
+      `${config.contentHost}/${params.user}/${params.coll}/list/${listId}/` :
+      `${config.contentHost}/${params.user}/${params.coll}/`;
 
     if (!collection.get('loaded')) {
       return null;
@@ -91,7 +100,10 @@ class Replay extends Component {
           timestamp={timestamp}
           url={url} />
         <div className="iframe-container">
-          <Sidebar />
+          {
+            !listId &&
+              <Sidebar />
+          }
           {
             activeBrowser ?
               <RemoteBrowser
@@ -107,7 +119,7 @@ class Replay extends Component {
                 contentPrefix={contentPrefix}
                 dispatch={dispatch}
                 params={params}
-                passEvents={sidebarResize}
+                passEvents={this.props.sidebarResize}
                 timestamp={timestamp}
                 url={url} />
           }
@@ -125,11 +137,12 @@ const initialData = [
   },
   {
     // set url and ts in store
-    promise: ({ location: { hash, search }, match: { params: { br, ts, splat } }, store: { dispatch } }) => {
+    promise: ({ location: { hash, search }, match: { params: { br, listId, ts, splat } }, store: { dispatch } }) => {
       const compositeUrl = `${splat}${search || ''}${hash || ''}`;
       const promises = [
         ts ? dispatch(updateUrlAndTimestamp(compositeUrl, ts)) : dispatch(updateUrl(compositeUrl)),
-        dispatch(setBrowser(br || null))
+        dispatch(setBrowser(br || null)),
+        dispatch(setListId(listId || null))
       ];
 
       return Promise.all(promises);

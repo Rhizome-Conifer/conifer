@@ -29,10 +29,13 @@ export function BrowserRenderer({ cellData, columnData: { browsers } }) {
   return null;
 }
 
-export function LinkRenderer({ cellData, rowData, columnData: { collection } }) {
+export function LinkRenderer({ cellData, rowData, columnData: { collection, listId } }) {
+  const linkTo = listId ?
+    `/${collection.get('user')}/${collection.get('id')}/list/${listId}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}` :
+    `/${collection.get('user')}/${collection.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}`;
   return (
     <Link
-      to={`/${collection.get('user')}/${collection.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}`}
+      to={linkTo}
       title={rowData.get('title')}>
       <EditableString
         string={cellData || untitledEntry}

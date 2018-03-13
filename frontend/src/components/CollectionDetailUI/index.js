@@ -457,7 +457,10 @@ class CollectionDetailUI extends Component {
                             label={objectLabel}
                             dataKey="title"
                             flexGrow={1}
-                            columnData={{ collection }}
+                            columnData={{
+                              collection,
+                              listId: params.list
+                            }}
                             cellRenderer={LinkRenderer} />
                           <Column
                             width={200}
