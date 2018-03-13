@@ -1,3 +1,4 @@
+@import 'src/vars';
 
 // .remote-archive .extract-selector {
 //     display: table-cell;
@@ -38,7 +39,7 @@
     }
 
     .archive-toggle {
-        transition: border-color .25s ease-in-out;
+        transition: border-color $quickShift ease-in-out;
         white-space: initial;
         border: solid .1rem;
         border-radius: .3rem;
@@ -47,7 +48,7 @@
         margin-top: 1.5rem;
 
         .checkbox-block {
-            transition: background-color .25s ease-in-out;
+            transition: background-color $quickShift ease-in-out;
             width: 7.5rem;
 
             display: flex;
@@ -201,7 +202,7 @@
 }
 
 .containerized .extract-selector .dropdown-menu {
-    transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+    transition: opacity $midShift ease-in-out, transform $midShift ease-in-out;
     transform: scale(0.98, 0.98);
 
     top: -9999px;

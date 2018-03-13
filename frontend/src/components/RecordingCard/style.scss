@@ -1,3 +1,5 @@
+@import 'src/vars';
+
 .card {
     padding: .4rem 0 .4rem 1rem;
     cursor: pointer;
@@ -17,7 +19,7 @@
 }
 
 #clear-all-widget {
-    transition: opacity .125s ease-in-out;
+    transition: opacity $quickShift ease-in-out;
     opacity: 1;
 }
 .clear-all-btn.disabled {
@@ -94,7 +96,7 @@
 }
 .recording-fn-row a:link,
 .recording-fn-row a:visited {
-    transition: color .125s ease-in-out;
+    transition: color $quickShift ease-in-out;
     color: rgb(163,163,163);
 }
 .recording-fn-row a:hover {

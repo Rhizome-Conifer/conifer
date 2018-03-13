@@ -1,3 +1,5 @@
+@import 'src/vars';
+
 .wr-uploading {
     cursor: 'wait';
 }
@@ -24,7 +26,7 @@
     background: rgb(245, 245, 245);
 
     .progress {
-        transition: width .3s ease-in-out;
+        transition: width $slowShift ease-in-out;
         position: absolute;
         left: 0;
         height: 5rem;

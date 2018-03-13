@@ -1,3 +1,5 @@
+@import 'src/vars';
+
 .mode-selector {
     display: flex;
     justify-content: center;
@@ -58,7 +60,7 @@
     .wr-mode-message {
 
         & > span {
-            transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+            transition: opacity $midShift ease-in-out, transform $midShift ease-in-out;
             transition-delay: .045s;
 
             &:first-of-type {

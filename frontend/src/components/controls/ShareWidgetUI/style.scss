@@ -1,3 +1,5 @@
+@import 'src/vars';
+
 #share-widget .dropdown-menu {
     padding: 1rem;
 }
@@ -26,7 +28,7 @@
         border-radius: 0;
 
         .glyphicon-remove-circle {
-            transition: color .2s ease-in-out;
+            transition: color $midShift ease-in-out;
             position: absolute;
             right: 0;
             top: 0;
@@ -53,7 +55,7 @@
     }
 
     .shareables {
-        transition: height .22s ease-out;
+        transition: height $midShift ease-out;
         overflow: hidden;
 
         &.disabled {

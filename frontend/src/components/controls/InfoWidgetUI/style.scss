@@ -1,5 +1,7 @@
+@import 'src/vars';
+
 .wr-info-widget {
-    transition: opacity .25s ease-in-out;
+    transition: opacity $midShift ease-in-out;
     opacity: 0;
 
     &.visible {
@@ -7,7 +9,7 @@
     }
 
     & > .dropdown-menu {
-        transition: opacity .2s ease-in-out, transform .2s ease-in-out;
+        transition: opacity $midShift ease-in-out, transform $midShift ease-in-out;
         transform: scale(0.98, 0.98);
 
         top: -9999px;
@@ -31,7 +33,7 @@
     }
 
     .glyphicon-info-sign {
-        transition: color .2s ease-in-out;
+        transition: color $midShift ease-in-out;
         vertical-align: text-top;
 
         &:hover {
@@ -82,7 +84,7 @@
     }
 
     .glyphicon-remove-circle {
-        transition: color .2s ease-in-out;
+        transition: color $midShift ease-in-out;
         position: absolute;
         right: 0;
         top: 0;

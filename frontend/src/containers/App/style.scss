@@ -1,6 +1,8 @@
+@import 'src/vars';
+
 section {
     opacity: 1;
-    transition: opacity .3s ease-in-out;
+    transition: opacity $slowShift ease-in-out;
 
     &.loading {
         opacity: 0.45;
@@ -17,7 +19,7 @@ section {
 }
 
 .navbar {
-    transition: box-shadow 300ms ease-in-out;
+    transition: box-shadow $slowShift ease-in-out;
 
     min-height: .2rem;
     margin-bottom: .1rem;

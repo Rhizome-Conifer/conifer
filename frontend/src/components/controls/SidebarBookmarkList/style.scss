@@ -67,7 +67,7 @@
 
         .bookmark-title {
             h2 {
-                transition: color 125ms ease-in-out;
+                transition: color $quickShift ease-in-out;
                 font-size: 1.5rem;
                 font-weight: 400;
                 margin: 0;

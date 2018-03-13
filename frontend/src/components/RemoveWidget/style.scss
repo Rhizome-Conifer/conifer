@@ -1,10 +1,11 @@
+@import 'src/vars';
 
 .wr-remove-widget {
     button {
-        transition: fill 300ms ease-in-out;
+        transition: fill $midShift ease-in-out;
 
         &.remove-widget-icon {
-            transition: fill 125ms ease-in-out;
+            transition: fill $slowShift ease-in-out;
 
             &:hover {
                 fill: red;

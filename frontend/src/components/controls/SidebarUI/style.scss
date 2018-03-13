@@ -12,11 +12,11 @@ $collapsedWidth: 3rem;
     font-family: $sans;
 
     &.animate {
-        transition: width .4s ease-in-out;
+        transition: width 400ms ease-in-out;
     }
 
     .sidebar-toggle {
-        transition: background-color 175ms ease-in-out;
+        transition: background-color $quickShift ease-in-out;
         position: absolute;
         right: .1rem;
         top: 0;

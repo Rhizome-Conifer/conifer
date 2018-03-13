@@ -59,7 +59,7 @@
                 }
 
                 .wrapper {
-                    transition: background-color 300ms ease-in-out;
+                    transition: background-color $slowShift ease-in-out;
                     padding: .2rem 0 .2rem 0;
 
                     display: flex;

@@ -167,7 +167,7 @@
                     }
 
                     .open-all {
-                        transition: border-color 125ms ease-in-out;
+                        transition: border-color $tableRowFade ease-in-out;
                         border: solid .2rem #ccc;
                         background: inherit;
                         border-radius: .3rem;
@@ -222,7 +222,7 @@
                 }
 
                 .ReactVirtualized__Table__row {
-                    transition: background 150ms ease-in-out;
+                    transition: background $tableRowFade ease-in-out;
                     border: solid 0 #CCCFD5;
                     border-width: 0 0 .1rem 0;
                     cursor: context-menu;
@@ -258,7 +258,7 @@
 
                     table {
                         tr {
-                            transition: background 150ms ease-in-out;
+                            transition: background $tableRowFade ease-in-out;
                             border: solid 0 #CCCFD5;
                             border-width: 0 0 .1rem 0;
                             cursor: context-menu;
@@ -311,7 +311,7 @@
                     }
 
                     h2 {
-                        transition: color 200ms ease-in-out;
+                        transition: color $quickShift ease-in-out;
                         font-size: 1.4rem;
                         margin: 0;
                     }
@@ -323,7 +323,7 @@
 
 
                     .glyphicon-triangle-right {
-                        transition: transform 250ms ease-in-out;
+                        transition: transform $midShift ease-in-out;
                         transform-origin: center center;
                         margin-right: .5rem;
                         color: $collTrigger;

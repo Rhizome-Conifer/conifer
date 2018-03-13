@@ -164,7 +164,7 @@ body {
 }
 
 .borderless {
-    transition: opacity 300ms ease-in-out;
+    transition: opacity $slowShift ease-in-out;
     border: none;
     background: none;
 
@@ -178,7 +178,7 @@ body {
 }
 
 .borderless-input {
-  transition: border 300ms ease-in-out;
+  transition: border $slowShift ease-in-out;
   border: none;
   background: none;
   border-bottom: solid 1px rgba(0,0,0,0);
@@ -190,13 +190,13 @@ body {
 }
 
 .check-mark.success {
-  fill: green;
+  fill: $success-color;
 }
 
 /* collasible trigger animation */
 .Collapsible__trigger {
     .glyphicon-triangle-right {
-        transition: transform 300ms ease-in-out;
+        transition: transform $slowShift ease-in-out;
     }
 
     &.is-open {

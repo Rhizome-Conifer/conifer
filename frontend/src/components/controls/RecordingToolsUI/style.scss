@@ -1,3 +1,5 @@
+@import 'src/vars';
+
 #wr-tw {
     display: inline-block;
     width: 7.6rem;
@@ -10,7 +12,7 @@
 }
 
 .wr-tools {
-    transition: margin-top .3s ease-in-out;
+    transition: margin-top $slowShift ease-in-out;
     margin-top: -4rem;
     height: 4rem;
     background: #F3F3F3;

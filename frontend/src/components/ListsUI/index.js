@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Collapsible from 'react-collapsible';
+import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
@@ -159,6 +160,7 @@ class ListsUI extends Component {
         </div>
 
         {
+          /* lists edit modal */
           canAdmin &&
             <Modal
               visible={editModal}
@@ -168,11 +170,11 @@ class ListsUI extends Component {
               <ul>
                 <li>
                   <button className="borderless" onClick={this.clearInput} disabled={!title.length}><XIcon /></button>
-                  <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" />
+                  <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
                   {
                     created ?
                       <button className="borderless"><CheckIcon success /></button> :
-                      <button className="borderless" onClick={this.createList} disabled={!title.length || isCreating}><PlusIcon /></button>
+                      <button className={classNames('borderless', { 'wr-add-list': title.length })} onClick={this.createList} disabled={!title.length || isCreating}><PlusIcon /></button>
                   }
                 </li>
                 {
