@@ -18,21 +18,17 @@ function CollectionManagement(props, context) {
     <nav>
       {
         canAdmin &&
-          <a href={`/${collection.get('user')}/${collection.get('id')}/$download`}>
-            <span className="glyphicon glyphicon-download" />
-          </a>
-      }
-      {
-        canAdmin &&
-          <Upload fromCollection={collection.get('id')} classes="borderless">
-            <span className="glyphicon glyphicon-upload" />
-          </Upload>
-      }
-      {
-        canAdmin &&
-          <button className="borderless" onClick={onDelete}>
-            <TrashIcon />
-          </button>
+          <React.Fragment>
+            <a href={`/${collection.get('user')}/${collection.get('id')}/$download`}>
+              <span className="glyphicon glyphicon-download" />
+            </a>
+            <Upload fromCollection={collection.get('id')} classes="borderless">
+              <span className="glyphicon glyphicon-upload" />
+            </Upload>
+            <button className="borderless" onClick={onDelete}>
+              <TrashIcon />
+            </button>
+          </React.Fragment>
       }
       {
         !activeList &&

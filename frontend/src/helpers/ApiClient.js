@@ -51,8 +51,10 @@ export default class ApiClient {
           request.send(data);
         }
         // eslint-disable-next-line no-confusing-arrow
-        request.end((err, { body } = {}) => {
-          return err || body.hasOwnProperty('error_message') ?
+        request.end((err, res) => {
+          const { body } = res;
+
+          return err || !body || body.hasOwnProperty('error_message') ?
             reject(body || err) :
             resolve(body);
         });
