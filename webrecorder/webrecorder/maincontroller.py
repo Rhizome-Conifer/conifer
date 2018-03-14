@@ -1,4 +1,4 @@
-from bottle import debug, request, response, static_file, redirect
+from bottle import debug, request, response, static_file, redirect, BaseRequest
 
 import logging
 import json
@@ -31,6 +31,7 @@ from webrecorder.usercontroller import UserController
 from webrecorder.downloadcontroller import DownloadController
 from webrecorder.uploadcontroller import UploadController
 from webrecorder.appcontroller import AppController
+from webrecorder.autocontroller import AutoController
 
 from webrecorder.browsermanager import BrowserManager
 
@@ -65,6 +66,7 @@ class MainController(BaseController):
                        RecsController,
                        CollsController,
                        ListsController,
+                       AutoController,
                       ]
 
 
@@ -79,6 +81,8 @@ class MainController(BaseController):
             # only launch if running in place, not from installed package
             if '.egg' not in __file__:
                 spawn_once(default_build, worker=1, force_build=False)
+
+        BaseRequest.MEMFILE_MAX = 500000 # 500kb
 
         bottle_app = APIBottle()
         self.bottle_app = bottle_app

@@ -122,7 +122,7 @@ class BrowserManager(object):
                               type_=None,
                               coll=None, rec=None):
 
-        ip = self.browser_redis.hget('req:' + reqid, 'ip')
+        ip = self.get_ip_for_reqid(reqid)
         if not ip:
             return {'error_message': 'No Container Found'}
 
@@ -156,6 +156,10 @@ class BrowserManager(object):
         self.browser_redis.hmset('ip:' + ip, container_data)
 
         return {}
+
+    def get_ip_for_reqid(self, reqid):
+        ip = self.browser_redis.hget('req:' + reqid, 'ip')
+        return ip
 
     def get_session(self):
         return request.environ['webrec.session']

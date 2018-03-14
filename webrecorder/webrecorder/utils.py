@@ -11,10 +11,10 @@ import base64
 
 
 # ============================================================================
-def init_logging():
+def init_logging(debug=False):
     logging.basicConfig(format='%(asctime)s: [%(levelname)s]: %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
-                        level=logging.WARNING)
+                        level=logging.WARNING if not debug else logging.DEBUG)
 
     # set boto log to error
     boto_log = logging.getLogger('boto')

@@ -60,6 +60,7 @@ class WRAPISpec(object):
         'list': 'List Id',
         'list_id': 'List Id',
         'bid': 'Bookmark Id',
+        'autoid': 'Automation Id',
 
         'title': 'Title',
         'desc': 'Description',

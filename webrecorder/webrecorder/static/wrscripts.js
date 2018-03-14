@@ -213,7 +213,9 @@
             }
 
             function sendDone() {
-                sendMessage({wb_type: "autoscroll_resp", on: false});
+                sendMessage({"wb_type": "autoscroll_resp",
+                             "on": false,
+                             "url": window.location.href});
             }
 
             if (message.wb_type == "autoscroll") {

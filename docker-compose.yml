@@ -103,9 +103,9 @@ services:
             - 8092:81
 
     shepherd:
-        image: oldwebtoday/shepherd
+        image: oldwebtoday/shepherd:v2
 
-        command: uwsgi uwsgi.ini --mount /api/browsers=/shepherd/main.py
+        #command: uwsgi uwsgi.ini --mount /api/browsers=/shepherd/main.py
 
         env_file:
             - ./wr.env

@@ -16,6 +16,7 @@ from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisU
 from webrecorder.models.recording import Recording
 from webrecorder.models.pages import PagesMixin
 from webrecorder.models.datshare import DatShare
+from webrecorder.models.auto import Auto
 from webrecorder.models.list_bookmarks import BookmarkList
 from webrecorder.rec.storage import get_storage as get_global_storage
 
@@ -51,6 +52,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
     LISTS_KEY = 'c:{coll}:lists'
     LIST_NAMES_KEY = 'c:{coll}:ln'
     LIST_REDIR_KEY = 'c:{coll}:lr'
+
+    AUTO_KEY = 'c:{coll}:autos'
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
 
@@ -122,6 +125,46 @@ class Collection(PagesMixin, RedisUniqueComponent):
             return new_recording.name
 
         return None
+
+    def create_auto(self, props=None):
+        self.access.assert_can_admin_coll(self)
+
+        auto = Auto(redis=self.redis,
+                    access=self.access)
+
+        aid = auto.init_new(self, props)
+
+        self.redis.sadd(self.AUTO_KEY.format(coll=self.my_id), aid)
+
+        return aid
+
+    def get_auto(self, aid):
+        if not self.access.can_admin_coll(self):
+            return None
+
+        auto = Auto(my_id=aid,
+                    redis=self.redis,
+                    access=self.access)
+
+        if auto['owner'] != self.my_id:
+            return None
+
+        auto.owner = self
+
+        return auto
+
+    def get_autos(self):
+        return [self.get_auto(aid) for aid in self.redis.smembers(self.AUTO_KEY.format(coll=self.my_id))]
+
+    def remove_auto(self, auto):
+        self.access.assert_can_admin_coll(self)
+
+        count = self.redis.srem(self.AUTO_KEY.format(coll=self.my_id))
+
+        if not count:
+            return False
+
+        return auto.delete_me()
 
     def create_bookmark_list(self, props):
         """Create list of bookmarks.
@@ -560,6 +603,10 @@ class Collection(PagesMixin, RedisUniqueComponent):
         for blist in self.get_lists(load=False):
             blist.delete_me()
 
+        for auto in self.get_autos():
+            if auto:
+                auto.delete_me()
+
         if storage:
             if not storage.delete_collection(self):
                 errs['error_delete_coll'] = 'not_found'
@@ -767,4 +814,4 @@ class Collection(PagesMixin, RedisUniqueComponent):
 # ============================================================================
 Recording.OWNER_CLS = Collection
 BookmarkList.OWNER_CLS = Collection
-
+Auto.OWNER_CLS = Collection
