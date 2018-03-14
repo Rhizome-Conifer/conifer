@@ -89,6 +89,17 @@ class ListsController(BaseController):
 
             return {'bookmark': bookmark.serialize()}
 
+        @self.app.post('/api/v1/list/<list_id>/bulk_bookmarks')
+        def create_bookmarks(list_id):
+            user, collection, blist = self.load_user_coll_list(list_id)
+
+            bookmark_list = request.json
+
+            for bookmark_data in bookmark_list:
+                bookmark = blist.create_bookmark(bookmark_data)
+
+            return {'list': blist.serialize()}
+
         @self.app.get('/api/v1/list/<list_id>/bookmarks')
         def get_bookmarks(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)

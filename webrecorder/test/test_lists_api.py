@@ -310,6 +310,18 @@ class TestListsAPI(FullStackTests):
         assert res.json['lists'][0]['bookmarks'][1]['id'] == '104'
         assert res.json['lists'][0]['bookmarks'][1]['title'] == 'A New Title?'
 
+    def test_bulk_add_bookmarks(self):
+        bookmarks = [{'url': 'http://example.com/', 'title': 'Yet Another Example'},
+                     {'url': 'http://httpbin.org/', 'title': 'HttpBin.org'},
+                     {'url': 'http://test.example.com/foo', 'title': 'Just an example'}]
+
+        list_id = '1003'
+        res = self.testapp.post_json(self._format('/api/v1/list/%s/bulk_bookmarks?user={user}&coll=temp' % list_id),
+                                     params=bookmarks)
+
+
+        assert res.json['list']
+
     def test_coll_info_with_lists(self):
         res = self.testapp.get(self._format('/api/v1/collections/temp?user={user}'))
 
@@ -321,7 +333,7 @@ class TestListsAPI(FullStackTests):
         assert lists[0]['num_bookmarks'] == 4
 
         assert lists[1]['id'] == '1003'
-        assert lists[1]['num_bookmarks'] == 2
+        assert lists[1]['num_bookmarks'] == 5
 
     # Record, then Replay Via List
     # ========================================================================
