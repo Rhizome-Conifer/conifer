@@ -2,7 +2,6 @@
 
 /* TODO: clean this up */
 .share-container .dropdown-menu,
-.bookmark-list > .dropdown-menu,
 .start-recording-homepage .containerized .dropdown-menu,
 .patch-selector .dropdown-menu {
     transition: opacity $slowShift ease-in-out, transform $slowShift ease-in-out;
@@ -14,13 +13,11 @@
     display: block;
     border-radius: 0;
 }
-.bookmark-list > .dropdown-menu,
 .containerized > .dropdown-menu {
     max-height: 33vh;
     overflow: auto;
 }
 
-.bookmark-list.open > .dropdown-menu,
 .start-recording-homepage .containerized .open > .dropdown-menu,
 .patch-selector.open > .dropdown-menu {
     opacity: 1;
@@ -29,7 +26,6 @@
     left: 0;
 }
 
-.bookmark-list > .dropdown-menu,
 .containerized > .dropdown-menu,
 .share-container .dropdown-menu,
 .wr-mode-selector .dropdown-menu {
@@ -60,8 +56,4 @@
     border-bottom-color: rgba(0,0,0,.15);
     border-width: 1.3rem;
     margin-left: -1.3rem;
-}
-
-.bookmark-list li img {
-    margin-right: .5rem;
 }

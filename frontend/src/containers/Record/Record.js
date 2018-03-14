@@ -8,7 +8,7 @@ import { getRemoteBrowser } from 'helpers/utils';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl } from 'redux/modules/controls';
 import { loadRecording } from 'redux/modules/recordings';
-import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -92,8 +92,12 @@ class Record extends Component {
 
 const initialData = [
   {
-    promise: ({ store: { dispatch } }) => {
-      return dispatch(loadBrowsers());
+    promise: ({ store: { dispatch, getState } }) => {
+      if (!isRBLoaded(getState())) {
+        return dispatch(loadBrowsers());
+      }
+
+      return undefined;
     }
   },
   {

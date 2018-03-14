@@ -35,32 +35,24 @@ const BOOKMARK_REMOVE_FAIL = 'wr/list/BOOKMARK_REMOVE_FAIL';
 const initialState = fromJS({
   loading: false,
   loaded: false,
-  error: null,
-  list: Map()
+  error: null
 });
 
 
 export default function list(state = initialState, action = {}) {
   switch (action.type) {
-    case LIST_CREATE:
-    case LIST_CREATE_SUCCESS:
-    case LIST_CREATE_FAIL:
-    case LIST_EDIT:
-    case LIST_EDIT_SUCCESS:
-    case LIST_EDIT_FAIL:
-    case LIST_REORDER:
     case LIST_REORDER_SUCCESS:
-    case LIST_REORDER_FAIL:
-    case LIST_REMOVE:
-    case LIST_REMOVE_SUCCESS:
-    case LIST_REMOVE_FAIL:
-      return state;
+      return state.set(
+        'bookmarks',
+        state.get('bookmarks').sort((a, b) => {
+          const aidx = action.order.indexOf(a.get('id'));
+          const bidx = action.order.indexOf(b.get('id'));
 
-    case LIST_ADD:
-    case LIST_ADD_SUCCESS:
-    case LIST_ADD_FAIL:
-      return state;
-
+          if (aidx < bidx) return -1;
+          if (aidx > bidx) return 1;
+          return 0;
+        })
+      );
     case LIST_LOAD:
       return state.merge({
         loading: true,
@@ -70,13 +62,20 @@ export default function list(state = initialState, action = {}) {
       return state.merge({
         loading: false,
         loaded: true,
-        list: action.result.list
+        ...action.result.list
       });
     case LIST_LOAD_FAIL:
       return state.set('error', true);
     default:
       return state;
   }
+}
+
+
+export function listLoaded(id, { app }) {
+  // TODO: add accessed check
+  return app.getIn(['list', 'loaded']) &&
+         id === app.getIn(['list', 'id']);
 }
 
 
@@ -137,6 +136,7 @@ export function removeBookmark(user, coll, listId, bookmarkId) {
 export function saveSort(user, coll, id, order) {
   return {
     types: [LIST_REORDER, LIST_REORDER_SUCCESS, LIST_REORDER_FAIL],
+    order,
     promise: client => client.post(`${apiPath}/list/${id}/bookmarks/reorder`, {
       params: { user, coll },
       data: {

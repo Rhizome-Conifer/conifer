@@ -8,8 +8,9 @@ import { rts, truncate } from 'helpers/utils';
 
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
 const getArchives = state => state.getIn(['controls', 'archives']);
-const getPages = state => (state.app ? state.app : state).getIn(['collection', 'pages']);
 const getCollections = state => state.getIn(['collections', 'collections']);
+const getListBookmarks = state => (state.app ? state.app : state).getIn(['list', 'bookmarks']);
+const getPages = state => (state.app ? state.app : state).getIn(['collection', 'pages']);
 const getRecordings = state => state.getIn(['collection', 'recordings']);
 const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
 const getSize = state => state.getIn(['infoStats', 'size']);
@@ -145,29 +146,29 @@ export const getRecording = createSelector(
   }
 );
 
-const pgSearch = (pages, ts, url) => {
-  if (!ts) {
-    const idx = pages.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });
+const sortedSearch = (sortedPages, timestamp, url) => {
+  if (!timestamp) {
+    const idx = sortedPages.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });
     return idx === -1 ? 0 : idx;
   }
 
-  const item = { url, ts: parseInt(ts, 10) };
+  const ts = parseInt(timestamp, 10);
   let minIdx = 0;
-  let maxIdx = pages.size - 1;
+  let maxIdx = sortedPages.size - 1;
   let curIdx;
   let curUrl;
   let curEle;
 
   while (minIdx <= maxIdx) {
     curIdx = ((minIdx + maxIdx) / 2) | 0;
-    curUrl = pages.get(curIdx).get('url');
-    curEle = parseInt(pages.get(curIdx).get('timestamp'), 10);
+    curUrl = sortedPages.get(curIdx).get('url');
+    curEle = parseInt(sortedPages.get(curIdx).get('timestamp'), 10);
 
-    if (curEle > item.ts) {
+    if (curEle > ts) {
       minIdx = curIdx + 1;
-    } else if (curEle < item.ts) {
+    } else if (curEle < ts) {
       maxIdx = curIdx - 1;
-    } else if (curEle === item.ts && (item.url !== curUrl && rts(item.url) !== rts(curUrl))) {
+    } else if (curEle === ts && (url !== curUrl && rts(url) !== rts(curUrl))) {
       /**
        * If multiple recordings are within a timestamp, or if the url
        * for the timestamp doesn't match exactly, iterate over other
@@ -175,10 +176,10 @@ const pgSearch = (pages, ts, url) => {
        */
       let tempUrl;
       const origIdx = curIdx;
-      while (curEle === item.ts && curIdx < pages.size - 1) {
-        tempUrl = pages.get(++curIdx).get('url');
-        curEle = parseInt(pages.get(curIdx).get('ts'), 10);
-        if (tempUrl === item.url) {
+      while (curEle === ts && curIdx < sortedPages.size - 1) {
+        tempUrl = sortedPages.get(++curIdx).get('url');
+        curEle = parseInt(sortedPages.get(curIdx).get('ts'), 10);
+        if (tempUrl === url) {
           return curIdx;
         }
       }
@@ -193,7 +194,7 @@ const pgSearch = (pages, ts, url) => {
 export const getActiveRecording = createSelector(
   [getOrderedPages, getTimestamp, getUrl],
   (pages, ts, url) => {
-    return pgSearch(pages, ts, url);
+    return sortedSearch(pages, ts, url);
   }
 );
 
@@ -201,10 +202,19 @@ export const getActivePage = createSelector(
   [tsOrderedPageSearchResults, getTimestamp, getUrl],
   (pageSearch, ts, url) => {
     const pages = pageSearch.pageFeed;
-    return pgSearch(pages, ts, url);
+    return sortedSearch(pages, ts, url);
   }
 );
 
+export const getActiveBookmark = createSelector(
+  [getListBookmarks, getTimestamp, getUrl],
+  (bookmarks, ts, url) => {
+    const rtsUrl = rts(url);
+
+    return bookmarks.findIndex(o => o.get('timestamp') === ts &&
+                                    rts(o.get('url')) === rtsUrl);
+  }
+);
 
 export const getActiveRemoteBrowser = createSelector(
   [getActiveRemoteBrowserId, getRemoteBrowsers],

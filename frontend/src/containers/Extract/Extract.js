@@ -7,7 +7,7 @@ import config from 'config';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, setExtractable, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
-import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 import { getActiveCollection } from 'redux/selectors';
 import { selectCollection } from 'redux/modules/user';
 
@@ -105,8 +105,12 @@ class Extract extends Component {
 
 const initialData = [
   {
-    promise: ({ store: { dispatch } }) => {
-      return dispatch(loadBrowsers());
+    promise: ({ store: { dispatch, getState } }) => {
+      if (!isRBLoaded(getState())) {
+        return dispatch(loadBrowsers());
+      }
+
+      return undefined;
     }
   },
   {

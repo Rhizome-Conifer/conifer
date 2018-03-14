@@ -18,7 +18,7 @@ const GET_ARCHIVES_FAIL = 'wr/ctrls/ARCHIVES_FAIL';
 
 const initialState = fromJS({
   mode: null,
-  listId: null,
+  activeListId: null,
   extractable: null,
   archivesLoading: false,
   archivesAccessed: null,

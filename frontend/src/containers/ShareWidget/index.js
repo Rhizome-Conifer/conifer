@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
+import { appHost } from 'config';
 import { remoteBrowserMod } from 'helpers/utils';
 import { setPublic } from 'redux/modules/collection';
 import { showModal } from 'redux/modules/userLogin';
@@ -11,12 +12,9 @@ import { ShareWidgetUI } from 'components/controls';
 
 class ShareWidget extends Component {
 
-  static contextTypes = {
-    metadata: PropTypes.object
-  }
-
   static propTypes = {
     activeBrowser: PropTypes.string,
+    activeListId: PropTypes.string,
     collection: PropTypes.object,
     params: PropTypes.object,
     setCollPublic: PropTypes.func,
@@ -25,13 +23,13 @@ class ShareWidget extends Component {
   }
 
   render() {
-    const { activeBrowser, metadata: { host } } = this.context;
-    const { collection, params: { user, coll }, showLoginModal, timestamp, url } = this.props;
+    const { activeBrowser, activeListId, collection, params: { user, coll }, showLoginModal, timestamp, url } = this.props;
 
-    const tsMod = remoteBrowserMod(activeBrowser, timestamp);
+    const tsMod = remoteBrowserMod(activeBrowser, timestamp, '/');
+    const activeList = activeListId ? `list/${activeListId}/` : '';
 
-    const shareUrl = `${host}${user}/${coll}/${tsMod}/${url}`;
-    const embedUrl = `${host}_embed/${user}/${coll}/${tsMod}/${url}`;
+    const shareUrl = `${appHost}/${user}/${coll}/${activeList}${tsMod}${url}`;
+    const embedUrl = `${appHost}/_embed/${user}/${coll}/${activeList}${tsMod}${url}`;
     const isPublic = collection.get('isPublic') === '1';
 
     return (
@@ -49,6 +47,7 @@ class ShareWidget extends Component {
 const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    activeListId: app.getIn(['controls', 'activeListId']),
     collection: app.get('collection'),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])

@@ -60,6 +60,12 @@ export default function remoteBrowsers(state = initialState, action = {}) {
   }
 }
 
+export function isLoaded({ app }) {
+  return app.get('remoteBrowsers') &&
+         app.getIn(['remoteBrowsers', 'loaded']) &&
+         Date.now() - app.getIn(['remoteBrowsers', 'accessed']) < 15 * 60 * 1000;
+}
+
 export function createRemoteBrowser(browser, user, coll, rec, mode, timestamp, url) {
   return {
     types: [RB_CREATE_BROWSER, RB_CREATE_BROWSER_SUCCESS, RB_CREATE_BROWSER_FAILURE],
@@ -67,12 +73,6 @@ export function createRemoteBrowser(browser, user, coll, rec, mode, timestamp, u
       params: { browser, user, coll, rec, mode, timestamp, url }
     })
   };
-}
-
-export function isLoaded({ app }) {
-  return app.get('remoteBrowsers') &&
-         app.getIn(['remoteBrowsers', 'loaded']) &&
-         Date.now() - app.getIn(['remoteBrowsers', 'accessed']) < 15 * 60 * 1000;
 }
 
 export function load() {

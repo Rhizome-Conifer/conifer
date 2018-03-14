@@ -76,7 +76,7 @@ class ReplayURLBar extends Component {
               }
             </div>
 
-            <div className="bookmark-list">
+            <div className="wr-app-url">
               <input type="text" onChange={this.handleInput} onKeyPress={this.handleSubmit} className="form-control dropdown-toggle" name="url" aria-haspopup="true" value={url} autoComplete="off" />
               <div className="wr-replay-info">
                 <InfoWidget />

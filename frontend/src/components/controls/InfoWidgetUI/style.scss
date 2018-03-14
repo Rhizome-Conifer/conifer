@@ -6,6 +6,10 @@
 
     &.visible {
         opacity: 1;
+
+        .dropdown-toggle {
+            cursor: pointer;
+        }
     }
 
     & > .dropdown-menu {
@@ -30,6 +34,7 @@
     .dropdown-toggle {
         border: none;
         background: inherit;
+        cursor: initial;
     }
 
     .glyphicon-info-sign {

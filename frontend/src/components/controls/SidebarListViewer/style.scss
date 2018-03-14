@@ -1,6 +1,6 @@
 @import 'src/vars';
 
-.bookmarks-list {
+.bookmark-list {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -39,7 +39,6 @@
         text-transform: uppercase;
         font-weight: 400;
         font-size: 1.2rem;
-        margin-bottom: 1.5rem;
         white-space: nowrap;
         overflow: hidden;
 
@@ -49,6 +48,10 @@
 
         .glyphicon {
             color: rgb(125, 125, 125);
+        }
+
+        hr {
+            margin: 0;
         }
     }
 
@@ -67,7 +70,7 @@
 
         .bookmark-title {
             h2 {
-                transition: color $quickShift ease-in-out;
+                transition: color 125ms ease-in-out;
                 font-size: 1.5rem;
                 font-weight: 400;
                 margin: 0;

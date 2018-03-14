@@ -6,7 +6,7 @@ import { inStorage, getStorage, setStorage } from 'helpers/utils';
 
 import Resizable from 'components/Resizable';
 import { SidebarToggle } from 'components/icons';
-import { SidebarBookmarkList } from 'components/controls';
+import { SidebarPageViewer } from 'components/controls';
 
 import './style.scss';
 
@@ -14,11 +14,6 @@ import './style.scss';
 class SidebarUI extends Component {
 
   static propTypes = {
-    activePage: PropTypes.number,
-    pages: PropTypes.object,
-    dispatch: PropTypes.func,
-    searchPages: PropTypes.func,
-    searchText: PropTypes.string,
     sidebarResize: PropTypes.func,
     resizing: PropTypes.bool
   }
@@ -77,8 +72,7 @@ class SidebarUI extends Component {
           <SidebarToggle flip={!expanded} />
         </button>
         {
-          expanded &&
-            <SidebarBookmarkList {...this.props} />
+          expanded && this.props.children
         }
       </Resizable>
     );

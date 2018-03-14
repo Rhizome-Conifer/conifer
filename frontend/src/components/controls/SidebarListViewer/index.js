@@ -9,28 +9,23 @@ import { untitledEntry } from 'config';
 
 import { updateUrlAndTimestamp } from 'redux/modules/controls';
 
-import { Collection } from 'components/icons';
-import Searchbox from 'components/Searchbox';
-
 import { BookmarkRenderer } from './renderers';
 
 import './style.scss';
 
 
-class SidebarBookmarkList extends Component {
+class SidebarListViewer extends Component {
 
   static propTypes = {
-    activePage: PropTypes.number,
-    pages: PropTypes.object,
+    activeBookmark: PropTypes.number,
+    bookmarks: PropTypes.object,
+    list: PropTypes.object,
     dispatch: PropTypes.func,
-    searchPages: PropTypes.func,
-    searchText: PropTypes.string
   }
 
   shouldComponentUpdate(nextProps) {
-    if (nextProps.pages.equals(this.props.pages) &&
-        nextProps.searchText === this.props.searchText &&
-        nextProps.activePage === this.props.activePage) {
+    if (nextProps.list.equals(this.props.list) &&
+        nextProps.activeBookmark === this.props.activeBookmark) {
       return false;
     }
 
@@ -38,8 +33,8 @@ class SidebarBookmarkList extends Component {
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
-    const { pages } = this.props;
-    const page = pages.get(scrollToRow);
+    const { bookmarks } = this.props;
+    const page = bookmarks.get(scrollToRow);
     this.props.dispatch(updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry));
   }
 
@@ -47,34 +42,28 @@ class SidebarBookmarkList extends Component {
     this.props.dispatch(updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry));
   }
 
-  search = (evt) => {
-    const { dispatch, searchPages } = this.props;
-
-    dispatch(searchPages(evt.target.value));
-  }
-
   render() {
-    const { activePage, pages, searchText } = this.props;
+    const { activeBookmark, bookmarks, list } = this.props;
 
     return (
-      <div className="bookmarks-list">
+      <div className="bookmark-list">
         <header>
-          <Collection />
-          <span dangerouslySetInnerHTML={{ __html: ` Collection Bookmarks (${activePage + 1} <em>of</em> ${pages.size})` }} />
+          <h4>{list.get('title')}</h4>
+          <hr />
+          {
+            list.get('desc') &&
+              <p>{list.get('desc')}</p>
+          }
         </header>
-        <Searchbox
-          search={this.search}
-          searchText={searchText}
-          placeholder="search for pages in index" />
         <div className="bookmarks">
           <AutoSizer>
             {
               ({ height, width }) => (
                 <ArrowKeyStepper
-                  rowCount={pages.size}
+                  rowCount={bookmarks.size}
                   columnCount={1}
                   mode="cells"
-                  scrollToRow={activePage}
+                  scrollToRow={activeBookmark}
                   onScrollToChange={this.onKeyNavigate}>
                   {
                     ({ onSectionRendered, scrollToRow }) => {
@@ -82,21 +71,20 @@ class SidebarBookmarkList extends Component {
                         <Table
                           width={width}
                           height={height}
-                          rowCount={pages.size}
+                          rowCount={bookmarks.size}
                           rowHeight={50}
-                          rowGetter={({ index }) => pages.get(index)}
-                          rowClassName={({ index }) => { return index === activePage ? 'selected' : ''; }}
+                          rowGetter={({ index }) => bookmarks.get(index)}
+                          rowClassName={({ index }) => { return index === activeBookmark ? 'selected' : ''; }}
                           onRowClick={this.onSelectRow}
                           onRowsRendered={({ startIndex, stopIndex }) => {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
                           }}
-                          scrollToIndex={activePage}>
+                          scrollToIndex={activeBookmark}>
                           <Column
-                            label="collection bookmarks"
+                            label="list bookmarks"
                             dataKey="title"
                             flexGrow={1}
                             width={200}
-                            columnData={{ count: pages.size, activePage }}
                             cellRenderer={BookmarkRenderer} />
                         </Table>
                       );
@@ -112,4 +100,4 @@ class SidebarBookmarkList extends Component {
   }
 }
 
-export default SidebarBookmarkList;
+export default SidebarListViewer;

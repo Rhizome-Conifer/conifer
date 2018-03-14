@@ -10,9 +10,10 @@ import { getRecording } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, setListId, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
-import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
+import { listLoaded, load as loadList } from 'redux/modules/list';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 
-import { RemoteBrowser, Sidebar } from 'containers';
+import { RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -75,7 +76,7 @@ class Replay extends Component {
       `${config.appHost}${params.user}/${params.coll}/${tsMod}/${url}`;
 
     const appPrefix = listId ?
-      `${config.appHost}/${params.user}/${params.coll}/list/${listId}` :
+      `${config.appHost}/${params.user}/${params.coll}/list/${listId}/` :
       `${config.appHost}/${params.user}/${params.coll}/`;
 
     const contentPrefix = listId ?
@@ -100,10 +101,13 @@ class Replay extends Component {
           timestamp={timestamp}
           url={url} />
         <div className="iframe-container">
-          {
-            !listId &&
-              <Sidebar />
-          }
+          <Sidebar>
+            {
+              listId ?
+                <SidebarListViewer /> :
+                <SidebarPageViewer />
+            }
+          </Sidebar>
           {
             activeBrowser ?
               <RemoteBrowser
@@ -131,8 +135,12 @@ class Replay extends Component {
 
 const initialData = [
   {
-    promise: ({ store: { dispatch } }) => {
-      return dispatch(loadBrowsers());
+    promise: ({ store: { dispatch, getState } }) => {
+      if (!isRBLoaded(getState())) {
+        return dispatch(loadBrowsers());
+      }
+
+      return undefined;
     }
   },
   {
@@ -146,6 +154,16 @@ const initialData = [
       ];
 
       return Promise.all(promises);
+    }
+  },
+  {
+    // check for list playback, load list
+    promise: ({ match: { params: { user, coll, listId } }, store: { dispatch, getState } }) => {
+      if (listId && !listLoaded(listId, getState())) {
+        return dispatch(loadList(user, coll, listId));
+      }
+
+      return undefined;
     }
   },
   {

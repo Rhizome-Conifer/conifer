@@ -20,6 +20,8 @@ export RemoteBrowser from './RemoteBrowser/RemoteBrowser';
 export RegisterAccount from './RegisterAccount/RegisterAccount';
 export Replay from './Replay/Replay';
 export Sidebar from './Sidebar/Sidebar';
+export SidebarListViewer from './SidebarListViewer/SidebarListViewer';
+export SidebarPageViewer from './SidebarPageViewer/SidebarPageViewer';
 export SizeCounter from './SizeCounter/SizeCounter';
 export StandaloneRecorder from './StandaloneRecorder/StandaloneRecorder';
 export TempUsage from './TempUsage/TempUsage';

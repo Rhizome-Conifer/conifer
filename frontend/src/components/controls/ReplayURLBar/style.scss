@@ -22,25 +22,10 @@
    }
 }
 
-.bookmark-list {
+.wr-app-url {
     position: relative;
 
-    &:hover {
-        input {
-            background: #F8F8F8;
-        }
-
-        .wr-replay-info {
-            background: linear-gradient(90deg, rgba(255,255,255,0), #F8F8F8 15%, #F8F8F8);
-        }
-
-        .main-replay-date > span {
-            color: #429EEC;
-        }
-    }
-
     .replay-date > span {
-        transition: color $quickShift ease-in-out;
         margin-left: .5rem;
     }
 

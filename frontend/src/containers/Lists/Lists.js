@@ -42,7 +42,7 @@ const mapStateToProps = ({ app }) => {
     loaded: app.getIn(['lists', 'loaded']),
     loading: app.getIn(['lists', 'loading']),
     lists: app.getIn(['collection', 'lists']),
-    list: app.getIn(['list', 'list']),
+    list: app.get('list'),
     isCreating: app.getIn(['list', 'creating']),
     created: app.getIn(['list', 'created'])
   };

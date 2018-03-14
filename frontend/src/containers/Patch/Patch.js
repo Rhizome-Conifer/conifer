@@ -7,7 +7,7 @@ import config from 'config';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
-import { load as loadBrowsers, setBrowser } from 'redux/modules/remoteBrowsers';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -95,8 +95,12 @@ class Patch extends Component {
 
 const initialData = [
   {
-    promise: ({ store: { dispatch } }) => {
-      return dispatch(loadBrowsers());
+    promise: ({ store: { dispatch, getState } }) => {
+      if (!isRBLoaded(getState())) {
+        return dispatch(loadBrowsers());
+      }
+
+      return undefined;
     }
   },
   {

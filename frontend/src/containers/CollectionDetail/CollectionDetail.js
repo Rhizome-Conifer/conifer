@@ -87,7 +87,7 @@ const mapStateToProps = (outerState, { match: { params: { coll, list, user } } }
     recordings: isLoaded ? getOrderedRecordings(app) : null,
     pages: isIndexing ? getOrderedPages(app) : pageFeed,
     searchText,
-    list: app.getIn(['list', 'list'])
+    list: app.get('list')
   };
 };
 
