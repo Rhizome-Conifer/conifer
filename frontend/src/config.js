@@ -32,8 +32,8 @@ const contentHost = process.env.CONTENT_HOST ? process.env.CONTENT_HOST : `local
 module.exports = Object.assign({
   apiProxy: false,
   port: process.env.FRONTEND_PORT || 8095,
-  appHost: `http://${appHost}`,
-  contentHost: `http://${contentHost}`,
+  appHost: `https://${appHost}`,
+  contentHost: `https://${contentHost}`,
   apiPath: '/api/v1',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,

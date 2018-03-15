@@ -1,5 +1,6 @@
 import Raven from 'raven-js';
 import createRavenMiddleware from 'raven-for-redux';
+import config from 'config';
 import { createStore as _createStore, applyMiddleware, compose } from 'redux';
 import { reduxSearch } from 'redux-search';
 import { fromJS } from 'immutable';
@@ -8,7 +9,11 @@ import createMiddleware from './middleware/clientMiddleware';
 
 
 export default function createStore(client, data) {
-  const middleware = [createMiddleware(client), createRavenMiddleware(Raven)];
+  const middleware = [createMiddleware(client)];
+
+  if (config.ravenConfig) {
+    middleware.push(createRavenMiddleware(Raven));
+  }
 
   const searchConfig = reduxSearch({
     resourceIndexes: {
