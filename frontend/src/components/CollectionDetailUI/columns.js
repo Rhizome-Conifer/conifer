@@ -31,7 +31,7 @@ export function BrowserRenderer({ cellData, columnData: { browsers } }) {
 
 export function LinkRenderer({ cellData, rowData, columnData: { collection, listId } }) {
   const linkTo = listId ?
-    `/${collection.get('user')}/${collection.get('id')}/list/${listId}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}` :
+    `/${collection.get('user')}/${collection.get('id')}/list/${listId}-${rowData.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}` :
     `/${collection.get('user')}/${collection.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}`;
   return (
     <Link

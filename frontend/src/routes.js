@@ -65,7 +65,10 @@ const userRoutes = [
     name: 'collectionDetailList',
     footer: false,
     classOverride: true,
-    breadcrumb: listDetailBreadcrumb
+    breadcrumb: listDetailBreadcrumb,
+    getLocation: ({ user, coll, list }) => {
+      return `/${user}/${coll}/list/${list.split('-')[0]}`;
+    }
   }
 ];
 
@@ -133,8 +136,16 @@ const controllerRoutes = [
     exact: true
   },
   {
-    path: `${userPath}/:coll/list/:listId([0-9]+)/:ts([0-9]+)?/:splat(.*)`,
+    path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?/:splat(.*)`,
     name: 'list replay',
+    footer: false,
+    classOverride: true,
+    component: Replay,
+    exact: true
+  },
+  {
+    path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    name: 'list rb replay',
     footer: false,
     classOverride: true,
     component: Replay,
