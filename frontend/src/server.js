@@ -3,16 +3,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/server';
 import compression from 'compression';
 import http from 'http';
-import proxy from 'http-proxy-middleware';
 import path from 'path';
-import { parse as parseUrl } from 'url';
-import PrettyError from 'pretty-error';
 import StaticRouter from 'react-router/StaticRouter';
+import { parse as parseUrl } from 'url';
 
 import { ReduxAsyncConnect, loadOnServer } from 'redux-connect';
 import { Provider } from 'react-redux';
-
-import { stripProtocol } from 'helpers/utils';
 
 import ApiClient from './helpers/ApiClient';
 import config from './config';
@@ -23,30 +19,11 @@ import BaseHtml from './helpers/BaseHtml';
 import './base.scss';
 
 
-const baseUrl = `http://${config.internalApiHost}:${config.internalApiPort}`;
 const app = new express();
-const pretty = new PrettyError();
 const server = new http.Server(app);
-const bypassUrls = [
-  '/api',
-  '/_(reportissues|set_session|clear_session|client_ws|websockify|message)',
-  '/_new*',
-  '/websockify'
-];
 
 // TODO: use nginx
 app.use(express.static(path.join(__dirname, '..', 'static')));
-
-// proxy api and other urls on localhost
-if (config.apiProxy) {
-  // Proxy client API requets to server for now to avoid CORS
-  app.use(bypassUrls, proxy({
-    target: baseUrl,
-    logLevel: 'debug',
-    ws: true,
-    headers: { 'X-Forwarded-Host': stripProtocol(config.appHost) }
-  }));
-}
 
 app.use(compression());
 

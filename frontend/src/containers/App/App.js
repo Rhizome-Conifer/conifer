@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import Helmet from 'react-helmet';
 import classNames from 'classnames';
-import { asyncConnect } from 'redux-connect';
-import matchPath from 'react-router-dom/matchPath';
-import renderRoutes from 'react-router-config/renderRoutes';
-import { DragDropContext } from 'react-dnd';
+import Helmet from 'react-helmet';
 import HTML5Backend from 'react-dnd-html5-backend';
+import matchPath from 'react-router-dom/matchPath';
+import PropTypes from 'prop-types';
+import Raven from 'raven-js';
+import renderRoutes from 'react-router-config/renderRoutes';
+import { Button } from 'react-bootstrap';
+import { asyncConnect } from 'redux-connect';
+import { DragDropContext } from 'react-dnd';
 
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
@@ -99,6 +101,9 @@ export class App extends Component { // eslint-disable-line
 
   componentDidCatch(error, info) {
     this.setState({ error, info });
+    if (config.ravenConfig) {
+      Raven.captureException(error, { extra: info });
+    }
   }
 
   render() {
@@ -146,6 +151,10 @@ export class App extends Component { // eslint-disable-line
                   </div>
                   <div className="panel-body">
                     <p>Oops, the page encountered an error.</p>
+                    {
+                      config.ravenConfig &&
+                        <Button onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>Submit a bug report</Button>
+                    }
                   </div>
                 </div>
               </div>

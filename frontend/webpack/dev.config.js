@@ -15,6 +15,7 @@ var WebpackIsomorphicToolsPlugin = require('webpack-isomorphic-tools/plugin');
 var webpackIsomorphicToolsPlugin = new WebpackIsomorphicToolsPlugin(require('./webpack-isomorphic-tools'));
 var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 var CircularDependencyPlugin = require('circular-dependency-plugin');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 var babelrc = fs.readFileSync('./.babelrc');
 var babelrcObject = {};
@@ -158,6 +159,10 @@ var webpackConfig = module.exports = {
     extensions: ['.json', '.js']
   },
   plugins: [
+    new CopyWebpackPlugin([
+      {from: 'src/shared/novnc', to: 'novnc/'},
+      'src/shared/images/favicon.png'
+    ]),
     // hot reload
     new webpack.HotModuleReplacementPlugin(),
     new webpack.IgnorePlugin(/webpack-stats\.json$/),

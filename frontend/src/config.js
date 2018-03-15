@@ -44,6 +44,7 @@ module.exports = Object.assign({
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),
   untitledEntry: 'Untitled Document',
+  ravenConfig: null,
   draggableTypes: {
     PAGE_ITEM: 'pageItem'
   },

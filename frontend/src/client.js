@@ -1,8 +1,11 @@
 import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Raven from 'raven-js';
 import { AppContainer } from 'react-hot-loader';
 import { Provider } from 'react-redux';
+
+import config from 'config';
 
 import createStore from './redux/create';
 import ApiClient from './helpers/ApiClient';
@@ -20,6 +23,10 @@ window.wrAppContainer = dest;
 // eslint-disable-next-line no-underscore-dangle
 const store = createStore(client, window.__data);
 
+// error reporting
+if (config.ravenConfig) {
+  Raven.config(config.ravenConfig).install();
+}
 
 const renderApp = (renderProps) => {
   ReactDOM.hydrate(
