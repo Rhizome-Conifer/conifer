@@ -10,6 +10,7 @@ const SET_SOURCES = 'wr/ctrls/SET_SOURCES';
 const SET_URL = 'wr/ctrls/SET_URL';
 const SET_TS = 'wr/ctrls/SET_TS';
 const SET_URL_TS = 'wr/ctrls/SET_URL_TS';
+const SET_BK_ID = 'wr/ctrls/SET_BK_ID';
 
 const GET_ARCHIVES = 'wr/ctrls/ARCHIVES';
 const GET_ARCHIVES_SUCCESS = 'wr/ctrls/ARCHIVES_SUCCESS';
@@ -19,6 +20,7 @@ const GET_ARCHIVES_FAIL = 'wr/ctrls/ARCHIVES_FAIL';
 const initialState = fromJS({
   mode: null,
   activeListId: null,
+  activeBookmarkId: null,
   extractable: null,
   archivesLoading: false,
   archivesAccessed: null,
@@ -43,7 +45,8 @@ export default function controls(state = initialState, action = {}) {
         archivesLoading: false,
         error: action.error
       });
-
+    case SET_BK_ID:
+      return state.set('activeBookmarkId', action.id);
     case SET_MODE:
       return state.set('mode', action.mode);
     case SET_EXTRACTABLE:
@@ -69,6 +72,7 @@ export default function controls(state = initialState, action = {}) {
   }
 }
 
+
 export function getArchives() {
   return {
     types: [GET_ARCHIVES, GET_ARCHIVES_SUCCESS, GET_ARCHIVES_FAIL],
@@ -77,12 +81,14 @@ export function getArchives() {
   };
 }
 
+
 export function setExtractable(extractable) {
   return {
     type: SET_EXTRACTABLE,
     extractable
   };
 }
+
 
 export function setMode(mode) {
   return {
@@ -91,12 +97,22 @@ export function setMode(mode) {
   };
 }
 
+
 export function setListId(id) {
   return {
     type: ACTIVE_LIST_ID,
     id
   };
 }
+
+
+export function setBookmarkId(id) {
+  return {
+    type: SET_BK_ID,
+    id
+  };
+}
+
 
 export function setAllSourcesOption(useAllSourcesBool) {
   return {
@@ -105,6 +121,7 @@ export function setAllSourcesOption(useAllSourcesBool) {
   };
 }
 
+
 export function setActiveSources(sources) {
   return {
     type: SET_SOURCES,
@@ -112,12 +129,14 @@ export function setActiveSources(sources) {
   };
 }
 
+
 export function updateUrl(url) {
   return {
     type: SET_URL,
     url
   };
 }
+
 
 export function updateUrlAndTimestamp(url, ts, title) {
   return {
@@ -128,10 +147,10 @@ export function updateUrlAndTimestamp(url, ts, title) {
   };
 }
 
+
 export function updateTimestamp(ts) {
   return {
     type: SET_TS,
     ts
   };
 }
-

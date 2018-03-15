@@ -15,10 +15,14 @@ import './style.scss';
 
 
 class SidebarListViewer extends Component {
+  static contextTypes = {
+    router: PropTypes.object,
+  }
 
   static propTypes = {
     activeBookmark: PropTypes.number,
     bookmarks: PropTypes.object,
+    collection: PropTypes.object,
     list: PropTypes.object,
     dispatch: PropTypes.func,
   }
@@ -39,11 +43,12 @@ class SidebarListViewer extends Component {
   }
 
   onSelectRow = ({ index, rowData }) => {
-    this.props.dispatch(updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry));
+    const { collection, list } = this.props;
+    this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${rowData.get('id')}/${rowData.get('timestamp')}/${rowData.get('url')}`);
   }
 
   render() {
-    const { activeBookmark, bookmarks, list } = this.props;
+    const { activeBookmark, bookmarks, collection, list } = this.props;
 
     return (
       <div className="bookmark-list">

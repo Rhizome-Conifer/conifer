@@ -14,8 +14,8 @@ import './style.scss';
 
 class IFrame extends Component {
   static propTypes = {
-    appPrefix: PropTypes.string,
-    contentPrefix: PropTypes.string,
+    appPrefix: PropTypes.func,
+    contentPrefix: PropTypes.func,
     dispatch: PropTypes.func,
     params: PropTypes.object,
     passEvents: PropTypes.bool,
@@ -64,8 +64,8 @@ class IFrame extends Component {
 
     this.contentFrame = new ContentFrame({
       url,
-      prefix: appPrefix,
-      content_prefix: contentPrefix,
+      prefix: appPrefix(),
+      content_prefix: contentPrefix(),
       request_ts: params.ts,
       iframe: this.iframe
     });
@@ -74,10 +74,12 @@ class IFrame extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { url, timestamp } = this.props;
+    const { appPrefix, contentPrefix, url, timestamp } = this.props;
 
     if (nextProps.url !== url || nextProps.timestamp !== timestamp) {
       if (!this.internalUpdate) {
+        this.contentFrame.app_prefix = appPrefix();
+        this.contentFrame.content_prefix = contentPrefix();
         this.contentFrame.load_url(nextProps.url, nextProps.timestamp);
       }
       this.internalUpdate = false;

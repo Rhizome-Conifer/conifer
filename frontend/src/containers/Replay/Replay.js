@@ -8,7 +8,7 @@ import config from 'config';
 
 import { getRecording } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, setListId, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
+import { getArchives, setBookmarkId, setListId, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
 import { listLoaded, load as loadList } from 'redux/modules/list';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
@@ -63,6 +63,20 @@ class Replay extends Component {
     this.props.dispatch(resetStats());
   }
 
+  getAppPrefix = () => {
+    const { match: { params: { user, coll, listId, bookmarkId } } } = this.props;
+    return listId ?
+      `${config.appHost}/${user}/${coll}/list/${listId}-${bookmarkId}/` :
+      `${config.appHost}/${user}/${coll}/`;
+  }
+
+  getContentPrefix = () => {
+    const { match: { params: { user, coll, listId, bookmarkId } } } = this.props;
+    return listId ?
+      `${config.contentHost}/${user}/${coll}/list/${listId}-${bookmarkId}/` :
+      `${config.contentHost}/${user}/${coll}/`;
+  }
+
   render() {
     const { activeBrowser, collection, dispatch, match: { params }, recording,
             reqId, timestamp, url } = this.props;
@@ -70,18 +84,11 @@ class Replay extends Component {
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
     const listId = params.listId;
+    const bkId = params.bookmarkId;
 
     const shareUrl = listId ?
-      `${config.appHost}${params.user}/${params.coll}/list/${listId}/${tsMod}/${url}` :
+      `${config.appHost}${params.user}/${params.coll}/list/${listId}-${bkId}/${tsMod}/${url}` :
       `${config.appHost}${params.user}/${params.coll}/${tsMod}/${url}`;
-
-    const appPrefix = listId ?
-      `${config.appHost}/${params.user}/${params.coll}/list/${listId}/` :
-      `${config.appHost}/${params.user}/${params.coll}/`;
-
-    const contentPrefix = listId ?
-      `${config.contentHost}/${params.user}/${params.coll}/list/${listId}/` :
-      `${config.contentHost}/${params.user}/${params.coll}/`;
 
     if (!collection.get('loaded')) {
       return null;
@@ -119,8 +126,8 @@ class Replay extends Component {
                 timestamp={timestamp}
                 url={url} /> :
               <IFrame
-                appPrefix={appPrefix}
-                contentPrefix={contentPrefix}
+                appPrefix={this.getAppPrefix}
+                contentPrefix={this.getContentPrefix}
                 dispatch={dispatch}
                 params={params}
                 passEvents={this.props.sidebarResize}
@@ -144,13 +151,14 @@ const initialData = [
     }
   },
   {
-    // set url and ts in store
-    promise: ({ location: { hash, search }, match: { params: { br, listId, ts, splat } }, store: { dispatch } }) => {
+    // set url, ts, list and bookmark id in store
+    promise: ({ location: { hash, search }, match: { params: { bookmarkId, br, listId, ts, splat } }, store: { dispatch } }) => {
       const compositeUrl = `${splat}${search || ''}${hash || ''}`;
       const promises = [
         ts ? dispatch(updateUrlAndTimestamp(compositeUrl, ts)) : dispatch(updateUrl(compositeUrl)),
         dispatch(setBrowser(br || null)),
-        dispatch(setListId(listId || null))
+        dispatch(setListId(listId || null)),
+        dispatch(setBookmarkId(bookmarkId || null))
       ];
 
       return Promise.all(promises);

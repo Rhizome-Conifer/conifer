@@ -219,7 +219,7 @@ export default [
 
   ...infoRoutes,
   ...userRoutes,
-  ...controllerRoutes,
+  ...controllerRoutes.map(o => ({ ...o, noShadow: true })),
 
   {
     path: '/(.*)',

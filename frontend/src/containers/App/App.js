@@ -120,10 +120,8 @@ export class App extends Component { // eslint-disable-line
     });
 
     const navbarClasses = classNames('navbar navbar-default navbar-static-top', {
-      'no-shadow': ['replay', 'record', 'extract', 'patch'].includes(match.name)
+      'no-shadow': typeof match.noShadow !== 'undefined' ? match.noShadow : false
     });
-
-    console.log('rendering app');
 
     if (error || info) {
       console.log('ERROR', error, info);
