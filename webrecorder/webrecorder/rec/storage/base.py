@@ -10,7 +10,8 @@ class BaseStorage(object):
 
         self.target_url_templ = config['storage_path_templ']
 
-    def upload_file(self, user, filename, full_filename, obj_type):
+    def upload_file(self, user, collection, recording,
+                    filename, full_filename, obj_type):
         target_url = self.target_url_templ.format(user=user,
                                                   obj_type=obj_type,
                                                   filename=filename,
@@ -22,7 +23,7 @@ class BaseStorage(object):
 
         return False
 
-    def get_upload_url(self, user, filename, obj_type):
+    def get_upload_url(self, filename):
         target_url = self.cache[filename]
 
         if not target_url or not self.is_valid_url(target_url):

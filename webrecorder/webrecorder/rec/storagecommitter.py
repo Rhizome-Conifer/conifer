@@ -39,7 +39,7 @@ class StorageCommitter(object):
 
         self.full_warc_prefix = config['full_warc_prefix']
 
-        self.cdxj_key = config['cdxj_key_templ'].format(user='*', coll='*', rec='*')
+        self.all_cdxj_templ = config['cdxj_key_templ'].format(rec='*')
 
         self.temp_prefix = config['temp_prefix']
 
@@ -58,7 +58,8 @@ class StorageCommitter(object):
 
         print('Storage Committer Root: ' + self.record_root_dir)
 
-    def commit_file(self, user, collection, dirname, filename, obj_type,
+    def commit_file(self, user, collection, recording,
+                    dirname, filename, obj_type,
                     update_key, curr_value, update_prop=None):
 
         if user.is_anon():
@@ -76,15 +77,16 @@ class StorageCommitter(object):
 
         commit_wait = self.commit_wait_templ.format(filename=full_filename)
 
-        if self.redis.get(commit_wait) != b'1':
-            if not storage.upload_file(user.name, filename, full_filename, obj_type):
+        if self.redis.get(commit_wait) != '1':
+            if not storage.upload_file(user, collection, recording,
+                                       filename, full_filename, obj_type):
                 return False
 
             self.redis.setex(commit_wait, self.commit_wait_secs, 1)
 
         # already uploaded, see if it is accessible
         # if so, finalize and delete original
-        remote_url = storage.get_upload_url(user, filename, obj_type)
+        remote_url = storage.get_upload_url(filename)
         if not remote_url:
             print('Not yet available: {0}'.format(full_filename))
             return False
@@ -202,7 +204,7 @@ class StorageCommitter(object):
 
         self.process_moves('local')
 
-        for cdxj_key in self.redis.scan_iter(self.cdxj_key):
+        for cdxj_key in self.redis.scan_iter(self.all_cdxj_templ):
             self.process_cdxj_key(cdxj_key)
 
         self.redis.publish('close_idle', '')
@@ -239,7 +241,7 @@ class StorageCommitter(object):
         cdxj_filename = self.write_cdxj(warc_key, user_dir, cdxj_key, timestamp)
         cdxj_basename = os.path.basename(cdxj_filename)
 
-        all_done = self.commit_file(user, collection, user_dir,
+        all_done = self.commit_file(user, collection, recording, user_dir,
                                     cdxj_basename, 'indexes', warc_key,
                                     cdxj_filename, self.info_index_key)
 
@@ -249,7 +251,7 @@ class StorageCommitter(object):
                 continue
 
             value = warcs[warc_filename]
-            done = self.commit_file(user, collection, user_dir,
+            done = self.commit_file(user, collection, recording, user_dir,
                                     warc_filename, 'warcs', warc_key,
                                     value)
 

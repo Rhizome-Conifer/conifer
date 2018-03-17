@@ -174,6 +174,9 @@ class WebRecRecorder(object):
                 elif item['channel'] == b'close_rec':
                     self.recorder.writer.close_key(item['data'].decode('utf-8'))
 
+                elif item['channel'] == b'close_file':
+                    self.recorder.writer.close_file(item['data'].decode('utf-8'))
+
             except:
                 traceback.print_exc()
 
