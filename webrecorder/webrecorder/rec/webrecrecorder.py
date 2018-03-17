@@ -17,6 +17,8 @@ from webrecorder.utils import SizeTrackingReader, redis_pipeline
 
 from webrecorder.load.wamloader import WAMLoader
 
+from webrecorder.rec.storage.local import LocalFileStorage
+
 import redis
 import time
 import json
@@ -67,6 +69,8 @@ class WebRecRecorder(object):
 
         self.redis_base_url = os.environ['REDIS_BASE_URL']
         self.redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
+
+        self.local_storage = LocalFileStorage(self.config)
 
     def init_app(self, storage_committer):
         self.storage_committer = storage_committer
@@ -151,7 +155,9 @@ class WebRecRecorder(object):
 
         self.pubsub.subscribe('close_rec')
         self.pubsub.subscribe('close_idle')
-        self.pubsub.subscribe('close_file')
+
+        self.pubsub.subscribe('handle_move')
+        self.pubsub.subscribe('handle_delete')
 
         print('Waiting for messages')
 
@@ -166,11 +172,44 @@ class WebRecRecorder(object):
                 elif item['channel'] == 'close_rec':
                     self.recorder.writer.close_key(item['data'])
 
-                elif item['channel'] == 'close_file':
-                    self.recorder.writer.close_file(item['data'])
+                elif item['channel'] == 'handle_move':
+                    self.handle_move(item['data'])
+
+                elif item['channel'] == 'handle_delete':
+                    self.handle_delete(item['data'])
 
             except:
                 traceback.print_exc()
+
+    def handle_move(self, data):
+        move = json.loads(data)
+
+        try:
+            move_from = self.strip_prefix(move['from'])
+            move_to = os.path.join(self.warc_path_templ.format(user=move['to_user']), move['name'])
+
+            self.recorder.writer.close_file(move_from)
+
+            if move_from != move_to and os.path.isfile(move_from):
+                os.renames(move_from, move_to)
+                self.redis.hset(move['hkey'], move['name'], self.full_warc_prefix + move_to)
+
+        except Exception as e:
+            traceback.print_exc()
+
+    def handle_delete(self, uri):
+        # determine if local file
+        filename = self.strip_prefix(uri)
+
+        self.recorder.writer.close_file(filename)
+
+        self.local_storage.delete_file(filename)
+
+    def strip_prefix(self, uri):
+        if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):
+            return uri[len(self.full_warc_prefix):]
+
+        return uri
 
     def queue_message(self, channel, message):
         res = self.redis.publish(channel, json.dumps(message))

@@ -159,6 +159,7 @@ class TestLoginMigrate(FullStackTests):
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
 
         result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
+        storage_dir = storage_dir.replace(os.path.sep, '/')
         for key in result:
             assert storage_dir in result[key]
 

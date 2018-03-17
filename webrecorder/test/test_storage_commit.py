@@ -6,7 +6,6 @@ import os
 import boto3
 import pytest
 import base64
-import logging
 
 REC_CDXJ = 'r:500:cdxj'
 
@@ -76,6 +75,7 @@ class TestLocalStorageCommit(TestStorageCommit):
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
 
         result = self.redis.hgetall('r:{rec}:warc'.format(rec=REC_CDXJ))
+        storage_dir = storage_dir.replace(os.path.sep, '/')
         for key in result:
             assert storage_dir in result[key]
 
@@ -119,9 +119,6 @@ class TestS3Storage(TestStorageCommit):
 
         os.environ['DEFAULT_STORAGE'] = 's3'
         os.environ['S3_ROOT'] = root
-
-        logging.getLogger('boto3').setLevel(logging.WARNING)
-        logging.getLogger('s3transfer').setLevel(logging.WARNING)
 
         super(TestS3Storage, cls).setup_class()
 

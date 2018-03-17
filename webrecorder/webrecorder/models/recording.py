@@ -29,7 +29,6 @@ class Recording(RedisUniqueComponent):
     WARC_KEY = 'r:{rec}:warc'
 
     DEL_Q = 'q:del:{target}'
-    MOVE_Q = 'q:mov:{target}'
 
     OPEN_REC_TTL = 5400
 
@@ -92,7 +91,8 @@ class Recording(RedisUniqueComponent):
         return 'Recording on ' + created_at
 
     def delete_me(self):
-        self.delete_warcs()
+        if not self.delete_warcs():
+            return False
 
         return self.delete_object()
 
@@ -108,6 +108,7 @@ class Recording(RedisUniqueComponent):
             yield n, v
 
     def delete_warcs(self):
+        fail = False
         with redis_pipeline(self.redis) as pi:
             for n, v in self.iter_all_files(skip_index=False):
                 parts = urlsplit(v)
@@ -120,19 +121,30 @@ class Recording(RedisUniqueComponent):
                 else:
                     target = 'local'
 
-                pi.rpush(self.DEL_Q.format(target=target), v)
+                if target == 'local':
+                    if self.redis.publish('handle_delete', v) == 0:
+                        fail = True
+                else:
+                    pi.rpush(self.DEL_Q.format(target=target), v)
+
+        return not fail
 
     def move_warcs(self, to_user):
         move = {}
         move['hkey'] = self.WARC_KEY.format(rec=self.my_id)
         move['to_user'] = to_user.name
+        fail = False
 
         with redis_pipeline(self.redis) as pi:
             for n, v in self.iter_all_files(skip_index=False):
                 move['from'] = v
                 move['name'] = n
 
-                pi.rpush(self.MOVE_Q.format(target='local'), json.dumps(move))
+                if self.redis.publish('handle_move', json.dumps(move)) == 0:
+                    fail = True
+                #pi.rpush(self.MOVE_Q.format(target='local'), json.dumps(move))
+
+        return not fail
 
     def _get_pagedata(self, pagedata):
         key = self.PAGE_KEY.format(rec=self.my_id)

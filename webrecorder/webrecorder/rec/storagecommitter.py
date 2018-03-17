@@ -16,7 +16,6 @@ from webrecorder.rec.storage.local import LocalFileStorage
 # ============================================================================
 class StorageCommitter(object):
     DEL_Q = 'q:del:{name}'
-    MOVE_Q = 'q:mov:{name}'
 
     def __init__(self, config):
         super(StorageCommitter, self).__init__()
@@ -78,12 +77,12 @@ class StorageCommitter(object):
 
         commit_wait = self.commit_wait_templ.format(filename=full_filename)
 
-        if self.redis.get(commit_wait) != '1':
+        if self.redis.set(commit_wait, 1, ex=self.commit_wait_secs, nx=True):
             if not storage.upload_file(user, collection, recording,
                                        filename, full_filename, obj_type):
-                return False
 
-            self.redis.setex(commit_wait, self.commit_wait_secs, 1)
+                self.redis.delete(commit_wait)
+                return False
 
         # already uploaded, see if it is accessible
         # if so, finalize and delete original
@@ -136,42 +135,12 @@ class StorageCommitter(object):
         except:
             pass
 
-    def process_moves(self, storage_type):
-        move_q = self.MOVE_Q.format(name=storage_type)
-
-        while True:
-            data = self.redis.lpop(move_q)
-            if not data:
-                break
-
-            move = json.loads(data)
-
-            try:
-                move_from = self.strip_prefix(move['from'])
-                if os.path.isfile(move_from):
-                    self.redis.publish('close_file', move_from)
-                    time.sleep(0.1)
-
-                    move_to = os.path.join(self.warc_path_templ.format(user=move['to_user']),
-                                           move['name'])
-
-                    if move_from != move_to:
-                        os.renames(move_from, move_to)
-                        self.redis.hset(move['hkey'], move['name'], self.full_warc_prefix + move_to)
-
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                print(e)
-
     def process_deletes(self, storage_type):
         del_q = self.DEL_Q.format(name=storage_type)
 
         storage = self.storage_map.get(storage_type)
         if not storage:
             return
-
-        is_local = (storage_type == 'local')
 
         while True:
             uri = self.redis.lpop(del_q)
@@ -180,31 +149,14 @@ class StorageCommitter(object):
 
             try:
                 print('Deleting: ' + uri)
-                # determine if local file
-                uri = self.strip_prefix(uri)
-
-                # special case for 'local', ensure file is closed
-                if is_local:
-                    self.redis.publish('close_file', uri)
-                    time.sleep(0.1)
-
                 # do the deletion
                 storage.delete_file(uri)
             except Exception as e:
                 import traceback
                 traceback.print_exc()
 
-    def strip_prefix(self, uri):
-        if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):
-            return uri[len(self.full_warc_prefix):]
-
-        return uri
-
     def __call__(self):
         self.process_deletes('s3')
-        self.process_deletes('local')
-
-        self.process_moves('local')
 
         for cdxj_key in self.redis.scan_iter(self.all_cdxj_templ):
             self.process_cdxj_key(cdxj_key)
