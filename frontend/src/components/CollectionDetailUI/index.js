@@ -31,14 +31,17 @@ class CollectionDetailUI extends Component {
     auth: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
+    collSaveSuccess: PropTypes.bool,
     deleteColl: PropTypes.func,
     deleteRec: PropTypes.func,
     dispatch: PropTypes.func,
     list: PropTypes.object,
+    listSaveSuccess: PropTypes.bool,
     pages: PropTypes.object,
     recordings: PropTypes.object,
     removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func,
+    saveDescription: PropTypes.func,
     searchText: PropTypes.string,
     searchPages: PropTypes.func
   };
@@ -373,7 +376,9 @@ class CollectionDetailUI extends Component {
         <CollDetailHeader
           activeList={activeList}
           collection={collection}
-          list={list} />
+          list={list}
+          saveDescription={this.props.saveDescription}
+          saveSuccess={activeList ? this.props.listSaveSuccess : this.props.collSaveSuccess} />
 
         <div className="grid-wrapper">
           <div className="wr-coll-container">

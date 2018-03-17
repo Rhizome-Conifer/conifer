@@ -43,6 +43,7 @@ module.exports = Object.assign({
   product: 'Webrecorder',
   defaultRecordingTitle: 'Recording Session',
   defaultCollectionTitle: 'New Collection',
+  defaultCollDesc: '*This collection doesn\'t yet have a description.*',
   storageKey: 'wrLocalData',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),

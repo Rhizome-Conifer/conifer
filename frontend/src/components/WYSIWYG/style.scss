@@ -1,0 +1,62 @@
+@import 'src/vars';
+
+.wr-editor {
+    width: 59rem;
+    position: relative;
+
+    & > div {
+        border: none;
+    }
+
+    .wr-editor-instance {
+        &.read-only {
+            border: none;
+
+            .public-DraftEditor-content {
+                min-height: 5rem;
+            }
+        }
+    }
+
+    .markdown-button {
+        &.active {
+            background: #d8d8d8;
+        }
+
+        & > span {
+            background-image: url('../../shared/images/markdown-mark.svg');
+            background-size: 2.2rem;
+            background-repeat: no-repeat;
+        }
+    }
+
+    .markdown-editor {
+        position: absolute;
+        top: 6rem;
+        left: 1rem;
+        width: calc(100% - 2rem);
+        height: calc(100% - 10.5rem);
+        border: none;
+        resize: none;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .public-DraftEditor-content {
+        min-height: 12.5rem;
+        font-family: $sans;
+        font-size: 1.4rem;
+    }
+
+    .editor-button-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1rem;
+
+        & > button:last-of-type {
+            margin-left: .5rem;
+        }
+    }
+}

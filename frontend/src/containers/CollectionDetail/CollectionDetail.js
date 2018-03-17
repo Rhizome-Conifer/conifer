@@ -5,8 +5,10 @@ import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
 import { incrementCollCount } from 'redux/modules/auth';
-import { deleteCollection, load as loadColl } from 'redux/modules/collection';
-import { addTo, load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
+import { deleteCollection, load as loadColl, resetSaveState as resetCollSaveState,
+         saveDescription as saveCollDesc } from 'redux/modules/collection';
+import { addTo, load as loadList, removeBookmark, saveDescription as saveListDesc,
+         resetSaveState as resetListSaveState, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { deleteUserCollection } from 'redux/modules/user';
 import { deleteRecording } from 'redux/modules/recordings'
@@ -89,7 +91,9 @@ const mapStateToProps = (outerState) => {
     recordings: isLoaded ? getOrderedRecordings(app) : null,
     pages: isIndexing ? getOrderedPages(app) : pageFeed,
     searchText,
-    list: app.get('list')
+    list: app.get('list'),
+    collSaveSuccess: app.getIn(['collection', 'descSave']),
+    listSaveSuccess: app.getIn(['list', 'descSave'])
   };
 };
 
@@ -129,6 +133,10 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
     },
     saveBookmarkSort: (list, ids) => {
       dispatch(saveSort(user, coll, list, ids));
+    },
+    saveDescription: (user, coll, desc, listId = null) => {
+      dispatch(listId ? saveListDesc(user, coll, listId, desc) : saveCollDesc(user, coll, desc))
+        .then(() => setTimeout(() => dispatch(listId ? resetListSaveState() : resetCollSaveState()), 3000), () => {});
     },
     searchPages: createSearchAction('collection.pages'),
     dispatch

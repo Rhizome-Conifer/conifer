@@ -5,6 +5,11 @@ const COLL_LOAD = 'wr/coll/COLL_LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
 
+const COLL_DESC = 'wr/coll/COLL_DESC';
+const COLL_DESC_SUCCESS = 'wr/coll/COLL_DESC_SUCCESS';
+const COLL_DESC_FAIL = 'wr/coll/COLL_DESC_FAIL';
+const RESET_SAVE_STATE = 'wr/coll/RESET_SAVE_STATE';
+
 const COLL_DELETE = 'wr/coll/COLL_DELETE';
 const COLL_DELETE_SUCCESS = 'wr/coll/COLL_DELETE_SUCCESS';
 const COLL_DELETE_FAIL = 'wr/coll/COLL_DELETE_FAIL';
@@ -20,6 +25,7 @@ const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
 
 export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
+  descSave: false,
   loading: false,
   loaded: false,
   error: null,
@@ -79,6 +85,11 @@ export default function collection(state = initialState, action = {}) {
         lists: action.result.lists
       });
 
+    case COLL_DESC_SUCCESS:
+      return state.set('descSave', true);
+    case RESET_SAVE_STATE:
+      return state.set('descSave', false);
+
     case LISTS_LOAD_FAIL:
     case LISTS_LOAD:
     case COLL_SET_PUBLIC:
@@ -88,11 +99,18 @@ export default function collection(state = initialState, action = {}) {
   }
 }
 
+
 export function isLoaded({ app }) {
   return app.get('collection') &&
          app.getIn(['collection', 'loaded']) &&
          Date.now() - app.getIn(['collection', 'accessed']) < 15 * 60 * 1000;
 }
+
+
+export function resetSaveState() {
+  return { type: RESET_SAVE_STATE };
+}
+
 
 export function load(user, coll) {
   return {
@@ -104,6 +122,7 @@ export function load(user, coll) {
   };
 }
 
+
 export function loadLists(user, coll, withBookmarks = false) {
   return {
     types: [LISTS_LOAD, LISTS_LOAD_SUCCESS, LISTS_LOAD_FAIL],
@@ -112,6 +131,18 @@ export function loadLists(user, coll, withBookmarks = false) {
     })
   };
 }
+
+
+export function saveDescription(user, coll, desc) {
+  return {
+    types: [COLL_DESC, COLL_DESC_SUCCESS, COLL_DESC_FAIL],
+    promise: client => client.post(`${apiPath}/collections/${coll}/desc`, {
+      params: { user, coll },
+      data: desc
+    }, 'form')
+  };
+}
+
 
 export function setPublic(coll, user, makePublic = true) {
   return {
@@ -125,6 +156,7 @@ export function setPublic(coll, user, makePublic = true) {
   };
 }
 
+
 export function deleteCollection(user, coll) {
   return {
     types: [COLL_DELETE, COLL_DELETE_SUCCESS, COLL_DELETE_FAIL],
@@ -133,6 +165,7 @@ export function deleteCollection(user, coll) {
     })
   };
 }
+
 
 export function setSort(sortBy) {
   return {

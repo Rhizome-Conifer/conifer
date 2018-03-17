@@ -50,10 +50,26 @@
 
         hr {
             border-top: solid .3rem $yellow;
+            margin-bottom: 0;
         }
 
-        .coll-desc {
-            font-family: $sans;
+        .desc-container {
+            position: relative;
+            padding-top: 2.5rem;
+
+            .desc-edit-button {
+                transition: opacity $midShift ease-in-out;
+                position: absolute;
+                top: .7rem;
+                left: .7rem;
+                opacity: 0;
+            }
+
+            &:hover {
+                .desc-edit-button {
+                    opacity: 1;
+                }
+            }
         }
     }
 

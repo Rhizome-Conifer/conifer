@@ -10,13 +10,5 @@
     "add-module-exports",
     "transform-decorators-legacy",
     "react-hot-loader/babel"
-  ],
-
-  "env": {
-    "development": {
-      "plugins": [
-        "typecheck"
-      ]
-    }
-  }
+  ]
 }
