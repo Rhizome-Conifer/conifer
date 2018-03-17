@@ -201,9 +201,16 @@ class WebRecRecorder(object):
         # determine if local file
         filename = self.strip_prefix(uri)
 
-        self.recorder.writer.close_file(filename)
+        closed = self.recorder.writer.close_file(filename)
 
-        self.local_storage.delete_file(filename)
+        if self.local_storage.delete_file(filename):
+            # attempt to remove the dir, if empty
+            dir_name = os.path.dirname(filename)
+            try:
+                os.rmdir(dir_name)
+                print('Removed dir ' + dir_name)
+            except:
+                pass
 
     def strip_prefix(self, uri):
         if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):

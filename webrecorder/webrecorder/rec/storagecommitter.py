@@ -75,6 +75,9 @@ class StorageCommitter(object):
         if not storage:
             return True
 
+        if not os.path.isfile(full_filename):
+            return False
+
         commit_wait = self.commit_wait_templ.format(filename=full_filename)
 
         if self.redis.set(commit_wait, 1, ex=self.commit_wait_secs, nx=True):
@@ -94,10 +97,9 @@ class StorageCommitter(object):
         update_prop = update_prop or filename
         self.redis.hset(update_key, update_prop, remote_url)
 
-        print('Committed to: ' + remote_url)
-
-        if not self.delete_source(full_filename):
-            return False
+        print('Committed {0} -> {1}'.format(full_filename, remote_url))
+        if self.redis.publish('handle_delete', full_filename) < 1:
+            print('No Delete Listener!')
 
         return True
 
@@ -126,14 +128,6 @@ class StorageCommitter(object):
         self.redis.hset(warc_key, self.info_index_key, full_url)
 
         return cdxj_filename
-
-    def remove_if_empty(self, user_dir):
-        # attempt to remove the dir, if empty
-        try:
-            os.rmdir(user_dir)
-            print('Removed dir ' + user_dir)
-        except:
-            pass
 
     def process_deletes(self, storage_type):
         del_q = self.DEL_Q.format(name=storage_type)
@@ -214,17 +208,6 @@ class StorageCommitter(object):
         if all_done:
             print('Deleting Redis Key: ' + cdxj_key)
             self.redis.delete(cdxj_key)
-            self.remove_if_empty(user_dir)
-
-    def delete_source(self, full_filename):
-        print('Commit Verified, Deleting: {0}'.format(full_filename))
-        try:
-            os.remove(full_filename)
-            return True
-        except Exception as e:
-            print(e)
-
-        return False
 
     def get_storage(self, user, collection):
         if user.is_anon():
