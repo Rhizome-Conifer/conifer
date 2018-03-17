@@ -68,7 +68,7 @@ class TestLoginMigrate(FullStackTests):
         params = {'username': 'test',
                   'password': 'TestTest123',
 
-                  'move-temp': '1'
+                  'moveTemp': '1'
                  }
 
         res = self.testapp.post_json('/api/v1/login', params=params, status=401)
@@ -84,8 +84,8 @@ class TestLoginMigrate(FullStackTests):
         params = {'username': 'test',
                   'password': 'TestTest123',
 
-                  'to-coll': 'default-collection',
-                  'move-temp': '1'
+                  'toColl': 'default-collection',
+                  'moveTemp': True,
                  }
 
         res = self.testapp.post_json('/api/v1/login', params=params, status=401)
@@ -101,8 +101,8 @@ class TestLoginMigrate(FullStackTests):
         params = {'username': 'test',
                   'password': 'TestTest123',
 
-                  'to-coll': 'Test Migrate',
-                  'move-temp': '1'
+                  'toColl': 'Test Migrate',
+                  'moveTemp': True,
                  }
 
         res = self.testapp.post_json('/api/v1/login', params=params)
@@ -144,7 +144,7 @@ class TestLoginMigrate(FullStackTests):
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
 
         def assert_one_dir():
-            assert not os.path.isdir(user_dir)
+            assert not os.path.isdir(user_dir) or len(os.listdir(user_dir)) == 0
 
         self.sleep_try(0.1, 10.0, assert_one_dir)
 

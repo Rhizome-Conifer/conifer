@@ -73,7 +73,7 @@ class TestRegisterMigrate(FullStackTests):
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
-        assert '"to-coll"' in res.text
+        assert '"toColl"' in res.text
 
     @classmethod
     def mock_send_reg_email(cls, sender, title, text):
@@ -85,8 +85,8 @@ class TestRegisterMigrate(FullStackTests):
                   'password': 'Password1',
                   'confirmpassword': 'Password1',
 
-                  'to-coll': 'Test Migrate',
-                  'move-temp': '1',
+                  'toColl': 'Test Migrate',
+                  'moveTemp': '1',
                  }
 
         with patch('cork.Mailer.send_email', self.mock_send_reg_email):
