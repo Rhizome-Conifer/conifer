@@ -614,12 +614,8 @@ class TestRegisterMigrate(FullStackTests):
 
         user_dir = os.path.join(self.warcs_dir, 'someuser')
 
-        assert len(os.listdir(user_dir)) == 2
-
         st_warcs_dir = os.path.join(self.storage_today, 'warcs')
         st_index_dir = os.path.join(self.storage_today, 'indexes')
-        assert len(os.listdir(st_warcs_dir)) == 0
-        assert len(os.listdir(st_index_dir)) == 0
 
         params = {'csrf': csrf_token}
         res = self.testapp.post('/someuser/$delete', params=params)
@@ -632,7 +628,9 @@ class TestRegisterMigrate(FullStackTests):
         assert self.redis.sismember('s:users', 'someuser') == False
 
         def assert_delete():
-            assert not os.path.isdir(user_dir) or len(os.listdir(user_dir)) == 0
+            assert len(os.listdir(user_dir)) == 0
+            assert len(os.listdir(st_warcs_dir)) == 0
+            assert len(os.listdir(st_index_dir)) == 0
 
         self.sleep_try(0.3, 10.0, assert_delete)
 

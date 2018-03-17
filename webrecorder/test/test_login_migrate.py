@@ -138,13 +138,15 @@ class TestLoginMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json == {'curr_user': 'test'}
 
-    def test_no_warcs_in_user_dir(self):
+    def test_no_warcs_only_cdxj_in_user_dir(self):
         user_dir = os.path.join(self.warcs_dir, 'test')
 
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
 
         def assert_one_dir():
-            assert not os.path.isdir(user_dir) or len(os.listdir(user_dir)) == 0
+            user_data = os.listdir(user_dir)
+            assert len(user_data) == 1
+            assert user_data[0].endswith('.cdxj')
 
         self.sleep_try(0.1, 10.0, assert_one_dir)
 
@@ -174,6 +176,30 @@ class TestLoginMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json['curr_user'] != self.anon_user and res.json['curr_user'].startswith('temp-')
 
+    def test_login_2(self):
+        params = {'username': 'test',
+                  'password': 'TestTest123'}
+
+        res = self.testapp.post_json('/api/v1/login', params=params)
+        assert res.json['username'] == 'test'
+        assert 'new_coll_name' not in res.json['username']
+
+    def test_delete_user(self):
+        user_dir = os.path.join(self.warcs_dir, 'test')
+        st_warcs_dir = os.path.join(self.storage_today, 'warcs')
+        st_index_dir = os.path.join(self.storage_today, 'indexes')
+
+        res = self.testapp.delete('/api/v1/users/test')
+
+        assert res.json == {'deleted_user': 'test'}
+
+        def assert_delete():
+            #assert not os.path.isdir(user_dir) or
+            assert len(os.listdir(user_dir)) == 0
+            assert len(os.listdir(st_warcs_dir)) == 0
+            assert len(os.listdir(st_index_dir)) == 0
+
+        self.sleep_try(0.3, 10.0, assert_delete)
 
 
 
