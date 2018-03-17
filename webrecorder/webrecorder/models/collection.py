@@ -316,7 +316,9 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
                         self.redis.zadd(output_key, 0, cdxj_line)
 
                     break
-                except:
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
                     logging.error('Could not load: ' + cdxj_filename)
                     attempts += 1
 

@@ -69,7 +69,7 @@ class StorageCommitter(object):
 
     def commit_file(self, user, collection, recording,
                     filename, full_filename, obj_type,
-                    update_key, update_prop=None):
+                    update_key, update_prop=None, direct_delete=False):
 
         if user.is_anon():
             return False
@@ -109,18 +109,35 @@ class StorageCommitter(object):
         update_prop = update_prop or filename
         self.redis.hset(update_key, update_prop, remote_url)
 
-        if self.redis.publish('handle_delete', full_filename) < 1:
-            print('No Delete Listener!')
+        # if direct delete, call os.remove directly
+        # used for CDXJ files which are not owned by a writer
+        if direct_delete:
+            try:
+                os.remove(full_filename)
+            except Exception as e:
+                print(e)
+                return True
+        else:
+        # for WARCs, send handle_delete to ensure writer can close the file
+             if self.redis.publish('handle_delete', full_filename) < 1:
+                print('No Delete Listener!')
 
         return True
 
-    def write_cdxj(self, dirname, warc_key, cdxj_key, timestamp):
+    def write_cdxj(self, user, warc_key, cdxj_key, info_key):
         full_filename = self.redis.hget(warc_key, self.info_index_key)
         if full_filename:
             cdxj_filename = os.path.basename(self.strip_prefix(full_filename))
             return cdxj_filename, full_filename
 
+        dirname = os.path.join(self.record_root_dir, user.name)
+
         randstr = base64.b32encode(os.urandom(5)).decode('utf-8')
+
+        try:
+            timestamp = sec_to_timestamp(int(self.redis.hget(info_key, 'updated_at')))
+        except:
+            timestamp = timestamp_now()
 
         cdxj_filename = self.index_name_templ.format(timestamp=timestamp,
                                                      random=randstr)
@@ -134,6 +151,7 @@ class StorageCommitter(object):
         with open(full_filename, 'wt') as out:
             for cdxj in cdxj_list:
                 out.write(cdxj + '\n')
+            out.flush()
 
         full_url = self.full_warc_prefix + full_filename.replace(os.path.sep, '/')
         self.redis.hset(warc_key, self.info_index_key, full_url)
@@ -210,32 +228,28 @@ class StorageCommitter(object):
 
         self.redis.publish('close_rec', info_key)
 
-        try:
-            timestamp = sec_to_timestamp(int(self.redis.hget(info_key, 'updated_at')))
-        except:
-            timestamp = timestamp_now()
+        cdxj_filename, full_cdxj_filename = self.write_cdxj(user, warc_key, cdxj_key, info_key)
 
-        user_dir = os.path.join(self.record_root_dir, user.name)
+        all_done = True
 
-        cdxj_filename, full_cdxj_filename = self.write_cdxj(user_dir, warc_key, cdxj_key, timestamp)
+        if not user.is_anon():
+            all_done = self.commit_file(user, collection, recording,
+                                        cdxj_filename, full_cdxj_filename, 'indexes',
+                                        warc_key, self.info_index_key, direct_delete=True)
 
-        all_done = self.commit_file(user, collection, recording,
-                                    cdxj_filename, full_cdxj_filename, 'indexes',
-                                    warc_key, self.info_index_key)
+            for warc_filename in warcs.keys():
+                # skip index, not a warc
+                if warc_filename == self.info_index_key:
+                    continue
 
-        for warc_filename in warcs.keys():
-            # skip index, not a warc
-            if warc_filename == self.info_index_key:
-                continue
+                warc_full_filename = warcs[warc_filename]
+                done = self.commit_file(user, collection, recording,
+                                        warc_filename, warc_full_filename, 'warcs',
+                                        warc_key)
 
-            warc_full_filename = warcs[warc_filename]
-            done = self.commit_file(user, collection, recording,
-                                    warc_filename, warc_full_filename, 'warcs',
-                                    warc_key)
+                all_done = all_done and done
 
-            all_done = all_done and done
-
-        if all_done or user.is_anon():
+        if all_done:
             print('Deleting Redis Key: ' + cdxj_key)
             self.redis.delete(cdxj_key)
 

@@ -12,11 +12,11 @@ from mock import patch
 load_counter = 0
 
 # ============================================================================
-def slow_load(self, *args, **kwargs):
+def slow_load(filename):
     time.sleep(0.4)
     global load_counter
     load_counter += 1
-    return load_test(*args, **kwargs)
+    return load_test(filename)
 
 
 # ============================================================================
@@ -113,9 +113,9 @@ class TestCDXJCache(FullStackTests):
         self.assert_exists(COLL_CDXJ, False)()
         self.assert_exists(REC_CDXJ, False)()
 
-        collection = User(redis=self.redis, my_id=self.anon_user, access=BaseAccess()).get_collection_by_name('temp')
-
-        coll = collection.my_id
+        collection = User(redis=self.redis,
+                          my_id=self.anon_user,
+                          access=BaseAccess()).get_collection_by_name('temp')
 
         collection.sync_coll_index(exists=False, do_async=True)
 
