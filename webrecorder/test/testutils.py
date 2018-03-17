@@ -39,9 +39,11 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         super(BaseWRTests, cls).setup_class()
 
         cls.warcs_dir = to_path(cls.root_dir + '/warcs/')
+        cls.storage_dir = to_path(cls.root_dir + '/storage/')
 
         os.makedirs(cls.warcs_dir)
         os.environ['RECORD_ROOT'] = cls.warcs_dir
+        os.environ['STORAGE_ROOT'] = cls.storage_dir
 
         os.environ['WR_CONFIG'] = 'pkg://webrecorder/config/wr.yaml'
         if extra_config_file:

@@ -4,13 +4,15 @@ import os
 import webtest
 
 from webrecorder.models.usermanager import CLIUserManager
+from webrecorder.utils import today_str
 
 
 # ============================================================================
 class TestLoginMigrate(FullStackTests):
     @classmethod
     def setup_class(cls, **kwargs):
-        super(TestLoginMigrate, cls).setup_class(storage_worker=True)
+        super(TestLoginMigrate, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
+                                                 storage_worker=True)
 
         cls.user_manager = CLIUserManager()
 
@@ -137,10 +139,28 @@ class TestLoginMigrate(FullStackTests):
     def test_warcs_in_user_dir(self):
         user_dir = os.path.join(self.warcs_dir, 'test')
 
+        coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
+
         def assert_one_dir():
             assert len(os.listdir(user_dir)) == 1
 
         self.sleep_try(0.1, 10.0, assert_one_dir)
+
+    def test_warcs_in_storage(self):
+        storage_dir = os.path.join(self.storage_dir, today_str())
+
+        def assert_one_dir():
+            assert set(os.listdir(storage_dir)) == {'warcs', 'indexes'}
+            assert len(os.listdir(os.path.join(storage_dir, 'warcs'))) == 1
+            assert len(os.listdir(os.path.join(storage_dir, 'indexes'))) == 1
+
+        self.sleep_try(0.1, 10.0, assert_one_dir)
+
+        coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
+
+        result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
+        for key in result:
+            assert storage_dir in result[key]
 
     def test_logout_1(self):
         res = self.testapp.get('/_logout')

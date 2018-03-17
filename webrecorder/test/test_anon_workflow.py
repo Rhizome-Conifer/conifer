@@ -46,7 +46,7 @@ class TestTempContent(FullStackTests):
         'h:defaults',
         'h:roles',
         'h:temp-usage',
-        'q:del:nginx'
+        'q:del:local'
     ]
 
     PAGE_STATS = {'rec': 'r:{rec}:<sesh_id>:stats:{url}',
@@ -103,7 +103,7 @@ class TestTempContent(FullStackTests):
             exp_keys.append('c:{coll}:cdxj'.format(user=user, coll=coll))
 
         if del_q:
-            exp_keys.append('q:del:nginx')
+            exp_keys.append('q:del:local')
 
         if check_stats:
             self._check_dyn_stats(exp_keys)

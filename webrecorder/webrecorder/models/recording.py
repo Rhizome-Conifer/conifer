@@ -115,8 +115,10 @@ class Recording(RedisUniqueComponent):
                     target = parts.netloc
                 elif parts.scheme:
                     target = parts.scheme
+                    if '+' in target:
+                        target = target.split('+', 1)[0]
                 else:
-                    target = 'nginx'
+                    target = 'local'
 
                 pi.rpush(self.DEL_Q.format(target=target), v)
 

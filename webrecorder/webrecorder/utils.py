@@ -5,6 +5,7 @@ from contextlib import contextmanager
 import re
 import gevent
 import logging
+import datetime
 
 
 # ============================================================================
@@ -65,6 +66,11 @@ def get_bool(string):
         return False
 
     return string.lower() not in ('0', 'false', 'f', 'off')
+
+
+# ============================================================================
+def today_str():
+    return datetime.datetime.utcnow().date().isoformat()
 
 
 # ============================================================================

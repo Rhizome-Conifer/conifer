@@ -4,8 +4,12 @@ import base64
 import json
 
 from warcio.timeutils import sec_to_timestamp, timestamp_now
+
 from webrecorder.models.recording import Recording
 from webrecorder.models.base import BaseAccess
+
+from webrecorder.rec.storage.s3 import S3Storage
+from webrecorder.rec.storage.local import LocalFileStorage
 
 
 # ============================================================================
@@ -37,34 +41,22 @@ class StorageCommitter(object):
 
         self.cdxj_key = config['cdxj_key_templ'].format(user='*', coll='*', rec='*')
 
-        self.default_storage_profile = self.create_default_profile(config)
-
-        self.storage_class_map = {}
+        self.temp_prefix = config['temp_prefix']
 
         self.storage_key_templ = config['storage_key_templ']
 
-        self.temp_prefix = config['temp_prefix']
+        # set storage dir to be next to record dir, if not set
+        if 'STORAGE_ROOT' not in os.environ:
+            os.environ['STORAGE_ROOT'] = os.path.abspath(os.path.join(self.record_root_dir, '..', 'storage'))
 
-        self._init_storage()
+        self.storage_map = {}
+        self.storage_map['local'] = LocalFileStorage(config)
+
+        self.default_store = os.environ.get('DEFAULT_STORAGE', 'local')
+        if self.default_store == 's3':
+            self.storage_map['s3'] = S3Storage(config)
 
         print('Storage Committer Root: ' + self.record_root_dir)
-
-    def _init_storage(self):
-        from webrecorder.rec.s3 import S3Storage
-        self.add_storage_class('s3', S3Storage)
-
-    def create_default_profile(self, config):
-        storage_type = os.environ.get('DEFAULT_STORAGE', 'local')
-
-        profile = {'type': storage_type}
-
-        if storage_type == 's3':
-            s3_root = os.environ.get('S3_ROOT')
-            s3_root += config['storage_path_templ']
-
-            profile['remote_url_templ'] = s3_root
-
-        return profile
 
     def commit_file(self, user, collection, dirname, filename, obj_type,
                     update_key, curr_value, update_prop=None):
@@ -92,7 +84,7 @@ class StorageCommitter(object):
 
         # already uploaded, see if it is accessible
         # if so, finalize and delete original
-        remote_url = storage.get_valid_remote_url(user, filename, obj_type)
+        remote_url = storage.get_upload_url(user, filename, obj_type)
         if not remote_url:
             print('Not yet available: {0}'.format(full_filename))
             return False
@@ -100,7 +92,9 @@ class StorageCommitter(object):
         update_prop = update_prop or filename
         self.redis.hset(update_key, update_prop, remote_url)
 
-        if not self.delete_committed(full_filename):
+        print('Committed to: ' + remote_url)
+
+        if not self.delete_source(full_filename):
             return False
 
         return True
@@ -139,8 +133,8 @@ class StorageCommitter(object):
         except:
             pass
 
-    def process_moves(self, q_name):
-        move_q = self.MOVE_Q.format(name=q_name)
+    def process_moves(self, storage_type):
+        move_q = self.MOVE_Q.format(name=storage_type)
 
         while True:
             data = self.redis.lpop(move_q)
@@ -148,10 +142,9 @@ class StorageCommitter(object):
                 break
 
             move = json.loads(data)
-            print('MOVE', move)
 
             try:
-                move_from = move['from']
+                move_from = self.strip_prefix(move['from'])
                 if os.path.isfile(move_from):
                     self.redis.publish('close_file', move_from)
 
@@ -167,44 +160,45 @@ class StorageCommitter(object):
                 traceback.print_exc()
                 print(e)
 
-    def process_deletes(self, q_name):
-        del_q = self.DEL_Q.format(name=q_name)
+    def process_deletes(self, storage_type):
+        del_q = self.DEL_Q.format(name=storage_type)
 
-        while True:
-            filename = self.redis.lpop(del_q)
-            if not filename:
-                break
-
-            if os.path.isfile(filename):
-                try:
-                    self.redis.publish('close_file', filename)
-                    #self.recorder.writer.close_file(filename)
-                    print('Deleting: ' + filename)
-                    os.remove(filename)
-                except Exception as e:
-                    print(e)
-        return
-
-        delete_user = data.get('delete_user')
-        if not delete_user:
+        storage = self.storage_map.get(storage_type)
+        if not storage:
             return
 
-        user_path = self.warc_path_templ.format(user=delete_user)
-        user_path += '*.*'
+        while True:
+            uri = self.redis.lpop(del_q)
+            if not uri:
+                break
 
-        for filename in glob.glob(user_path):
             try:
-                print('Deleting Local WARC: ' + filename)
-                os.remove(filename)
-
+                print('Deleting: ' + uri)
+                self.do_delete(uri, storage_type, storage)
             except Exception as e:
-                print(e)
+                import traceback
+                traceback.print_exc()
 
+    def strip_prefix(self, uri):
+        if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):
+            return uri[len(self.full_warc_prefix):]
 
+        return uri
+
+    def do_delete(self, uri, storage_type, storage):
+        # determine if local file
+        uri = self.strip_prefix(uri)
+
+        # special case for 'local', ensure file is closed
+        if storage_type == 'local':
+            self.redis.publish('close_file', uri)
+
+        # do the deletion
+        storage.delete_file(uri)
 
     def __call__(self):
         self.process_deletes('s3')
-        self.process_deletes('nginx')
+        self.process_deletes('local')
 
         self.process_moves('local')
 
@@ -243,12 +237,17 @@ class StorageCommitter(object):
             timestamp = timestamp_now()
 
         cdxj_filename = self.write_cdxj(warc_key, user_dir, cdxj_key, timestamp)
+        cdxj_basename = os.path.basename(cdxj_filename)
 
         all_done = self.commit_file(user, collection, user_dir,
-                                    cdxj_filename, 'indexes', warc_key,
+                                    cdxj_basename, 'indexes', warc_key,
                                     cdxj_filename, self.info_index_key)
 
         for warc_filename in warcs.keys():
+            # skip index, not a warc
+            if warc_filename == self.info_index_key:
+                continue
+
             value = warcs[warc_filename]
             done = self.commit_file(user, collection, user_dir,
                                     warc_filename, 'warcs', warc_key,
@@ -261,7 +260,7 @@ class StorageCommitter(object):
             self.redis.delete(cdxj_key)
             self.remove_if_empty(user_dir)
 
-    def delete_committed(self, full_filename):
+    def delete_source(self, full_filename):
         print('Commit Verified, Deleting: {0}'.format(full_filename))
         try:
             os.remove(full_filename)
@@ -277,27 +276,15 @@ class StorageCommitter(object):
 
         storage_type = collection.get_prop('storage_type')
 
-        config = None
+        storage = None
 
-        # attempt to find storage profile by name
         if storage_type:
-            config = self.redis.hgetall(self.storage_key_templ.format(name=storage_type))
+            storage = self.storage_map.get(storage_type)
 
-        # default storage profile
-        if not config:
-            config = self.default_storage_profile
+        if not storage:
+            storage = self.storage_map[self.default_store]
 
-        # storage profile class stored in profile 'type'
-        storage_class = self.storage_class_map.get(config['type'])
-
-        # keeping local storage only
-        if not storage_class:
-            return None
-
-        return storage_class(config)
-
-    def add_storage_class(self, type_, cls):
-        self.storage_class_map[type_] = cls
+        return storage
 
 
 # =============================================================================

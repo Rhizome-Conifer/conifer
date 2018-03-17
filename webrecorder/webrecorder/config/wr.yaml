@@ -134,14 +134,16 @@ upload_coll:
 
 warc_path_templ: '{user}/'
 
-storage_path_templ: 'accounts/{user}/{obj_type}/{filename}'
+storage_path_templ: '{today}/{obj_type}/{filename}'
 
 warc_name_templ: 'rec-{timestamp}-{hostname}-{random}.warc.gz'
 index_name_templ: 'index-{timestamp}-{random}.cdxj'
 
 info_index_key: '@index_file'
 
-full_warc_prefix: 'local+http://nginx:6090'
+full_warc_prefix: 'http://nginx:6090'
+
+local_store_prefix: 'local+http://nginx:6090'
 
 
 # Redis Keys
