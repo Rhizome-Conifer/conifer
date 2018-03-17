@@ -151,6 +151,7 @@ class WebRecRecorder(object):
 
         self.pubsub.subscribe('close_rec')
         self.pubsub.subscribe('close_idle')
+        self.pubsub.subscribe('close_file')
 
         print('Waiting for messages')
 
