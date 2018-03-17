@@ -66,7 +66,7 @@ class WebRecRecorder(object):
         self.config = config
 
         self.redis_base_url = os.environ['REDIS_BASE_URL']
-        self.redis = redis.StrictRedis.from_url(self.redis_base_url)
+        self.redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
 
     def init_app(self, storage_committer):
         self.storage_committer = storage_committer
@@ -130,13 +130,6 @@ class WebRecRecorder(object):
         info_key = res_template(self.info_keys['rec'], params)
         return TempWriteBuffer(self.redis, info_key, name, params['url'])
 
-    def get_profile(self, scheme, profile):
-        res = self.redis.hgetall('st:' + profile)
-        if not res:
-            return dict()
-
-        return dict((n.decode('utf-8'), v.decode('utf-8')) for n, v in res.items())
-
     def _iter_all_warcs(self, user, coll, rec):
         warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
 
@@ -144,15 +137,13 @@ class WebRecRecorder(object):
 
         if rec == '*':
             for key in self.redis.scan_iter(warc_key):
-                key = key.decode('utf-8')
                 allwarcs[key] = self.redis.hgetall(key)
         else:
             allwarcs[warc_key] = self.redis.hgetall(warc_key)
 
         for key, warc_map in iteritems(allwarcs):
             for n, v in iteritems(warc_map):
-                n = n.decode('utf-8')
-                yield key, n, v.decode('utf-8')
+                yield key, n, v
 
     # Messaging ===============
     def msg_listen_loop(self):
@@ -168,14 +159,14 @@ class WebRecRecorder(object):
                 if item['type'] != 'message':
                     continue
 
-                elif item['channel'] == b'close_idle':
+                elif item['channel'] == 'close_idle':
                     self.recorder.writer.close_idle_files()
 
-                elif item['channel'] == b'close_rec':
-                    self.recorder.writer.close_key(item['data'].decode('utf-8'))
+                elif item['channel'] == 'close_rec':
+                    self.recorder.writer.close_key(item['data'])
 
-                elif item['channel'] == b'close_file':
-                    self.recorder.writer.close_file(item['data'].decode('utf-8'))
+                elif item['channel'] == 'close_file':
+                    self.recorder.writer.close_file(item['data'])
 
             except:
                 traceback.print_exc()
@@ -392,7 +383,7 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         skip_key = res_template(self.skip_key_template, params)
 
-        if self.redis.get(skip_key) == b'1':
+        if self.redis.get(skip_key) == '1':
             print('SKIPPING REQ', params.get('url'))
             return False
 

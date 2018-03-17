@@ -2,6 +2,7 @@ import os
 import redis
 import base64
 import json
+import time
 
 from warcio.timeutils import sec_to_timestamp, timestamp_now
 
@@ -149,6 +150,7 @@ class StorageCommitter(object):
                 move_from = self.strip_prefix(move['from'])
                 if os.path.isfile(move_from):
                     self.redis.publish('close_file', move_from)
+                    time.sleep(0.1)
 
                     move_to = os.path.join(self.warc_path_templ.format(user=move['to_user']),
                                            move['name'])
@@ -169,6 +171,8 @@ class StorageCommitter(object):
         if not storage:
             return
 
+        is_local = (storage_type == 'local')
+
         while True:
             uri = self.redis.lpop(del_q)
             if not uri:
@@ -176,7 +180,16 @@ class StorageCommitter(object):
 
             try:
                 print('Deleting: ' + uri)
-                self.do_delete(uri, storage_type, storage)
+                # determine if local file
+                uri = self.strip_prefix(uri)
+
+                # special case for 'local', ensure file is closed
+                if is_local:
+                    self.redis.publish('close_file', uri)
+                    time.sleep(0.1)
+
+                # do the deletion
+                storage.delete_file(uri)
             except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -186,17 +199,6 @@ class StorageCommitter(object):
             return uri[len(self.full_warc_prefix):]
 
         return uri
-
-    def do_delete(self, uri, storage_type, storage):
-        # determine if local file
-        uri = self.strip_prefix(uri)
-
-        # special case for 'local', ensure file is closed
-        if storage_type == 'local':
-            self.redis.publish('close_file', uri)
-
-        # do the deletion
-        storage.delete_file(uri)
 
     def __call__(self):
         self.process_deletes('s3')

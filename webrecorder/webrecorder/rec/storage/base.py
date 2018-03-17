@@ -24,7 +24,7 @@ class BaseStorage(object):
         return False
 
     def get_upload_url(self, filename):
-        target_url = self.cache[filename]
+        target_url = self.cache.get(filename)
 
         if not target_url or not self.is_valid_url(target_url):
             return None
