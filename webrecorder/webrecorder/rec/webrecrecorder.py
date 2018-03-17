@@ -72,7 +72,11 @@ class WebRecRecorder(object):
 
         self.local_storage = LocalFileStorage(self.config)
 
-    def init_app(self, storage_committer):
+        self.msg_ge = None
+        self.pubsub = None
+        self.writer = None
+
+    def init_app(self, storage_committer=None):
         self.storage_committer = storage_committer
 
         self.init_recorder()
@@ -82,6 +86,19 @@ class WebRecRecorder(object):
         self.app.mount('/record', self.recorder)
 
         debug(True)
+
+    def close(self):
+        try:
+            if self.pubsub:
+                self.pubsub.close()
+        except Exception as e:
+            print(e)
+
+        try:
+            if self.writer:
+                self.writer.close()
+        except Exception as e:
+            print(e)
 
     def init_indexer(self):
         return WebRecRedisIndexer(
@@ -156,45 +173,32 @@ class WebRecRecorder(object):
         self.pubsub.subscribe('close_rec')
         self.pubsub.subscribe('close_idle')
 
-        self.pubsub.subscribe('handle_move')
         self.pubsub.subscribe('handle_delete')
 
         print('Waiting for messages')
 
-        for item in self.pubsub.listen():
-            try:
-                if item['type'] != 'message':
-                    continue
-
-                elif item['channel'] == 'close_idle':
-                    self.recorder.writer.close_idle_files()
-
-                elif item['channel'] == 'close_rec':
-                    self.recorder.writer.close_key(item['data'])
-
-                elif item['channel'] == 'handle_move':
-                    self.handle_move(item['data'])
-
-                elif item['channel'] == 'handle_delete':
-                    self.handle_delete(item['data'])
-
-            except:
-                traceback.print_exc()
-
-    def handle_move(self, data):
-        move = json.loads(data)
-
         try:
-            move_from = self.strip_prefix(move['from'])
-            move_to = os.path.join(self.warc_path_templ.format(user=move['to_user']), move['name'])
+            for item in self.pubsub.listen():
+                self.handle_message(item)
 
-            self.recorder.writer.close_file(move_from)
+        except:
+            print('Message Loop Done')
 
-            if move_from != move_to and os.path.isfile(move_from):
-                os.renames(move_from, move_to)
-                self.redis.hset(move['hkey'], move['name'], self.full_warc_prefix + move_to)
+    def handle_message(self, item):
+        try:
+            if item['type'] != 'message':
+                return
 
-        except Exception as e:
+            elif item['channel'] == 'close_idle':
+                self.recorder.writer.close_idle_files()
+
+            elif item['channel'] == 'close_rec':
+                self.recorder.writer.close_key(item['data'])
+
+            elif item['channel'] == 'handle_delete':
+                self.handle_delete(item['data'])
+
+        except:
             traceback.print_exc()
 
     def handle_delete(self, uri):
@@ -203,14 +207,7 @@ class WebRecRecorder(object):
 
         closed = self.recorder.writer.close_file(filename)
 
-        if self.local_storage.delete_file(filename):
-            # attempt to remove the dir, if empty
-            dir_name = os.path.dirname(filename)
-            try:
-                os.rmdir(dir_name)
-                print('Removed dir ' + dir_name)
-            except:
-                pass
+        self.local_storage.delete_file(filename)
 
     def strip_prefix(self, uri):
         if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):

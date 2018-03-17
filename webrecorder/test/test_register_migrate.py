@@ -9,9 +9,11 @@ from webrecorder.models.usermanager import CLIUserManager
 
 import re
 import os
+import time
 
 
 all_closed = False
+
 
 # ============================================================================
 class TestRegisterMigrate(FullStackTests):
@@ -126,28 +128,29 @@ class TestRegisterMigrate(FullStackTests):
 
         assert user_info['size'] == coll_info['size']
 
-        allwarcs = self.redis.hgetall(key_prefix + ':warc')
-        for n, v in allwarcs.items():
-            assert v.decode('utf-8').endswith('/someuser/test-migrate/abc/' + n.decode('utf-8'))
-
     def test_renamed_temp_to_perm(self):
-        user_dir = os.path.join(self.warcs_dir, 'someuser')
-
         def assert_one_dir():
-            assert len(os.listdir(user_dir)) == 1
+            assert set(os.listdir(self.storage_today)) == {'warcs', 'indexes'}
+            assert len(os.listdir(os.path.join(self.storage_today, 'warcs'))) == 1
+            assert len(os.listdir(os.path.join(self.storage_today, 'indexes'))) == 1
 
-        self.sleep_try(0.1, 10.0, assert_one_dir)
+        self.sleep_try(0.2, 20.0, assert_one_dir)
 
-        #assert self.redis.hgetall('u:someuser:colls') == {'test-migrate'}
-        coll, rec = self.get_coll_rec('someuser', 'test-migrate', None)
+        coll, rec = self.get_coll_rec('someuser', 'test-migrate', 'abc')
         assert coll != None
+
+        result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
+        storage_dir = self.storage_today.replace(os.path.sep, '/')
+        for key in result:
+            assert storage_dir in result[key]
 
     def test_logged_in_user_info(self):
         res = self.testapp.get('/someuser')
         assert '"/someuser/test-migrate"' in res.text
         assert 'Test Migrate' in res.text
 
-    def test_logged_in_replay_1(self):
+    # no rec replay after commit
+    def _test_logged_in_rec_replay_1(self):
         res = self.testapp.get('/someuser/test-migrate/abc/replay/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
@@ -155,7 +158,7 @@ class TestRegisterMigrate(FullStackTests):
         assert 'Cache-Control' not in res.headers
         assert '"food": "bar"' in res.text, res.text
 
-    def test_logged_in_replay_coll_1(self):
+    def test_logged_in_replay_1(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
@@ -455,10 +458,10 @@ class TestRegisterMigrate(FullStackTests):
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
 
         # rec replay
-        res = self.testapp.get('/someuser/test-coll/abc/replay/mp_/http://httpbin.org/get?food=bar')
-        res.charset = 'utf-8'
+        #res = self.testapp.get('/someuser/test-coll/abc/replay/mp_/http://httpbin.org/get?food=bar')
+        #res.charset = 'utf-8'
 
-        assert '"food": "bar"' in res.text, res.text
+        #assert '"food": "bar"' in res.text, res.text
 
         # coll replay
         res = self.testapp.get('/someuser/test-coll/mp_/http://httpbin.org/get?food=bar')
@@ -480,7 +483,14 @@ class TestRegisterMigrate(FullStackTests):
         csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
 
         user_dir = os.path.join(self.warcs_dir, 'someuser')
-        assert len(os.listdir(user_dir)) == 3
+
+        st_warcs_dir = os.path.join(self.storage_today, 'warcs')
+        st_index_dir = os.path.join(self.storage_today, 'indexes')
+
+        assert len(os.listdir(user_dir)) >= 2
+
+        assert len(os.listdir(st_warcs_dir)) == 1
+        assert len(os.listdir(st_index_dir)) == 1
 
         params = {'csrf': csrf_token}
         res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
@@ -491,8 +501,10 @@ class TestRegisterMigrate(FullStackTests):
 
         def assert_delete_warcs():
             assert len(os.listdir(user_dir)) == 2
+            assert len(os.listdir(st_warcs_dir)) == 0
+            assert len(os.listdir(st_index_dir)) == 0
 
-        self.sleep_try(0.1, 5.0, assert_delete_warcs)
+        self.sleep_try(0.1, 10.0, assert_delete_warcs)
 
     def test_create_another_user(self):
         m = CLIUserManager()
@@ -604,6 +616,11 @@ class TestRegisterMigrate(FullStackTests):
 
         assert len(os.listdir(user_dir)) == 2
 
+        st_warcs_dir = os.path.join(self.storage_today, 'warcs')
+        st_index_dir = os.path.join(self.storage_today, 'indexes')
+        assert len(os.listdir(st_warcs_dir)) == 0
+        assert len(os.listdir(st_index_dir)) == 0
+
         params = {'csrf': csrf_token}
         res = self.testapp.post('/someuser/$delete', params=params)
 
@@ -615,9 +632,9 @@ class TestRegisterMigrate(FullStackTests):
         assert self.redis.sismember('s:users', 'someuser') == False
 
         def assert_delete():
-            assert len(os.listdir(user_dir)) == 0
+            assert not os.path.isdir(user_dir) or len(os.listdir(user_dir)) == 0
 
-        self.sleep_try(0.1, 5.0, assert_delete)
+        self.sleep_try(0.3, 10.0, assert_delete)
 
     def test_login_4_no_such_user(self):
         params = {'username': 'someuser',

@@ -29,6 +29,7 @@ class Recording(RedisUniqueComponent):
     WARC_KEY = 'r:{rec}:warc'
 
     DEL_Q = 'q:del:{target}'
+    MOVE_Q = 'q:move:{target}'
 
     OPEN_REC_TTL = 5400
 
@@ -130,21 +131,11 @@ class Recording(RedisUniqueComponent):
         return not fail
 
     def move_warcs(self, to_user):
-        move = {}
-        move['hkey'] = self.WARC_KEY.format(rec=self.my_id)
-        move['to_user'] = to_user.name
-        fail = False
+        data = {'rec': self.my_id,
+                'user': to_user.name
+               }
 
-        with redis_pipeline(self.redis) as pi:
-            for n, v in self.iter_all_files(skip_index=False):
-                move['from'] = v
-                move['name'] = n
-
-                if self.redis.publish('handle_move', json.dumps(move)) == 0:
-                    fail = True
-                #pi.rpush(self.MOVE_Q.format(target='local'), json.dumps(move))
-
-        return not fail
+        self.redis.rpush(self.MOVE_Q.format(target='local'), json.dumps(data))
 
     def _get_pagedata(self, pagedata):
         key = self.PAGE_KEY.format(rec=self.my_id)

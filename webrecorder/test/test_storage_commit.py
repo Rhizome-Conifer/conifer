@@ -17,7 +17,7 @@ class BaseStorageCommit(FullStackTests):
     def setup_class(cls):
         os.environ['AUTO_LOGIN_USER'] = 'test'
         super(BaseStorageCommit, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
-                                                  storage_worker=True, temp_worker=True)
+                                                  storage_worker=True)
 
         cls.redis.set('n:recs:count', 499)
         cls.redis.set('n:colls:count', 99)
@@ -58,11 +58,11 @@ class BaseStorageCommit(FullStackTests):
 
         self.sleep_try(0.5, 10.0, self.assert_in_store)
 
-        def assert_user_dir_removed():
-            # user dir removed
-            assert not os.path.isdir(user_dir)
+        def assert_user_dir_empty():
+            # user dir removed or empty
+            assert not os.path.isdir(user_dir) or len(os.listdir(user_dir)) == 0
 
-        self.sleep_try(0.5, 10.0, assert_user_dir_removed)
+        self.sleep_try(0.1, 10.0, assert_user_dir_empty)
 
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
 
@@ -107,7 +107,9 @@ class TestLocalStorageCommit(BaseStorageCommit):
     def assert_deleted(self):
         storage_dir = os.path.join(self.storage_dir, today_str())
 
-        assert os.listdir(storage_dir) == []
+        assert set(os.listdir(storage_dir)) == {'warcs', 'indexes'}
+        assert len(os.listdir(os.path.join(storage_dir, 'warcs'))) == 0
+        assert len(os.listdir(os.path.join(storage_dir, 'indexes'))) == 0
 
     def assert_warc_key(self, key):
         storage_dir = os.environ['STORAGE_ROOT'].replace(os.path.sep, '/')
@@ -118,7 +120,6 @@ class TestLocalStorageCommit(BaseStorageCommit):
 class TestS3Storage(BaseStorageCommit):
     @classmethod
     def setup_class(cls):
-
         # create a random root key within storage-test path
         cls.random = base64.b32encode(os.urandom(5)).decode('utf-8')
         root = 's3://webrecorder-builds/storage-test/' + cls.random + '/'

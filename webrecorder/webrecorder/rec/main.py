@@ -25,11 +25,11 @@ def init():
         @postfork
         def listen_loop():
             if uwsgi.mule_id() == 0:
-                gevent.spawn(wr.msg_listen_loop)
+                wr.msg_ge = gevent.spawn(wr.msg_listen_loop)
     else:
-        gevent.spawn(wr.msg_listen_loop)
+        wr.msg_ge = gevent.spawn(wr.msg_listen_loop)
 
-    wr.init_app(None)
+    wr.init_app()
     wr.app.wr = wr
 
     return wr.app

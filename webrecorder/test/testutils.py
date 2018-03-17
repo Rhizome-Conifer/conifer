@@ -26,6 +26,8 @@ from webrecorder.rec.tempchecker import TempChecker
 from webrecorder.rec.storagecommitter import StorageCommitter
 from webrecorder.rec.worker import Worker
 
+from webrecorder.utils import today_str
+
 
 # ============================================================================
 class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
@@ -39,11 +41,13 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         super(BaseWRTests, cls).setup_class()
 
         cls.warcs_dir = to_path(cls.root_dir + '/warcs/')
-        cls.storage_dir = to_path(cls.root_dir + '/storage/')
+        cls.storage_dir = os.path.join(to_path(cls.root_dir + '/storage/'))
 
         os.makedirs(cls.warcs_dir)
         os.environ['RECORD_ROOT'] = cls.warcs_dir
         os.environ['STORAGE_ROOT'] = cls.storage_dir
+
+        cls.storage_today = os.path.join(cls.storage_dir, today_str())
 
         os.environ['WR_CONFIG'] = 'pkg://webrecorder/config/wr.yaml'
         if extra_config_file:

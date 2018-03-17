@@ -149,6 +149,8 @@ class TestCDXJCache(FullStackTests):
         def assert_deleted():
             assert len(os.listdir(user_dir)) == 0
 
+            assert not os.path.isdir(self.storage_today)
+
         self.sleep_try(0.1, 10.0, assert_deleted)
 
 

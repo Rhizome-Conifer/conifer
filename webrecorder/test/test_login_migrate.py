@@ -2,9 +2,9 @@ from .testutils import FullStackTests
 
 import os
 import webtest
+import time
 
 from webrecorder.models.usermanager import CLIUserManager
-from webrecorder.utils import today_str
 
 
 # ============================================================================
@@ -64,7 +64,6 @@ class TestLoginMigrate(FullStackTests):
     def test_api_test_non_temp_user(self):
         res = self.testapp.get('/api/v1/temp-users/test', status=404)
 
-
     def test_login_fail_no_migrate_name(self):
         params = {'username': 'test',
                   'password': 'TestTest123',
@@ -120,6 +119,9 @@ class TestLoginMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json == {'curr_user': 'test'}
 
+        #time.sleep(1.0)
+        #assert False
+
     def test_default_collection_exists(self):
         # default collection exists
         res = self.testapp.get('/test/default-collection')
@@ -136,32 +138,30 @@ class TestLoginMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json == {'curr_user': 'test'}
 
-    def test_warcs_in_user_dir(self):
+    def test_no_warcs_in_user_dir(self):
         user_dir = os.path.join(self.warcs_dir, 'test')
 
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
 
         def assert_one_dir():
-            assert len(os.listdir(user_dir)) == 1
+            assert not os.path.isdir(user_dir)
 
         self.sleep_try(0.1, 10.0, assert_one_dir)
 
     def test_warcs_in_storage(self):
-        storage_dir = os.path.join(self.storage_dir, today_str())
-
         def assert_one_dir():
-            assert set(os.listdir(storage_dir)) == {'warcs', 'indexes'}
-            assert len(os.listdir(os.path.join(storage_dir, 'warcs'))) == 1
-            assert len(os.listdir(os.path.join(storage_dir, 'indexes'))) == 1
+            assert set(os.listdir(self.storage_today)) == {'warcs', 'indexes'}
+            assert len(os.listdir(os.path.join(self.storage_today, 'warcs'))) == 1
+            assert len(os.listdir(os.path.join(self.storage_today, 'indexes'))) == 1
 
-        self.sleep_try(0.1, 10.0, assert_one_dir)
+        self.sleep_try(0.2, 20.0, assert_one_dir)
 
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
 
         result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
-        storage_dir = storage_dir.replace(os.path.sep, '/')
+        self.storage_today = self.storage_today.replace(os.path.sep, '/')
         for key in result:
-            assert storage_dir in result[key]
+            assert self.storage_today in result[key]
 
     def test_logout_1(self):
         res = self.testapp.get('/_logout')
