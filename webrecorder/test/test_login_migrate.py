@@ -119,9 +119,6 @@ class TestLoginMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json == {'curr_user': 'test'}
 
-        #time.sleep(1.0)
-        #assert False
-
     def test_default_collection_exists(self):
         # default collection exists
         res = self.testapp.get('/test/default-collection')
@@ -138,23 +135,17 @@ class TestLoginMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json == {'curr_user': 'test'}
 
-    def test_no_warcs_only_cdxj_in_user_dir(self):
+    def test_warcs_in_storage(self):
         user_dir = os.path.join(self.warcs_dir, 'test')
 
-        coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
-
-        def assert_one_dir():
-            user_data = os.listdir(user_dir)
-            assert len(user_data) == 1
-            assert user_data[0].endswith('.cdxj')
-
-        self.sleep_try(0.1, 10.0, assert_one_dir)
-
-    def test_warcs_in_storage(self):
         def assert_one_dir():
             assert set(os.listdir(self.storage_today)) == {'warcs', 'indexes'}
             assert len(os.listdir(os.path.join(self.storage_today, 'warcs'))) == 1
             assert len(os.listdir(os.path.join(self.storage_today, 'indexes'))) == 1
+
+            # no data in user_dir
+            user_data = os.listdir(user_dir)
+            assert len(user_data) == 0
 
         self.sleep_try(0.2, 20.0, assert_one_dir)
 
