@@ -4,6 +4,7 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import classNames from 'classnames';
 import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
@@ -25,11 +26,34 @@ class SidebarListViewer extends Component {
     collection: PropTypes.object,
     list: PropTypes.object,
     dispatch: PropTypes.func,
+    timestamp: PropTypes.string,
+    url: PropTypes.string
   }
 
-  shouldComponentUpdate(nextProps) {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      navigated: false
+    };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { activeBookmark, bookmarks, timestamp, url } = this.props;
+
+    // change in iframe source, active bookmark with no bookmark id change
+    if ((url !== nextProps.url || timestamp !== nextProps.timestamp) && activeBookmark > -1 && activeBookmark === nextProps.activeBookmark) {
+      const bkObj = bookmarks.get(activeBookmark);
+      if (bkObj.get('url') !== nextProps.url || bkObj.get('timestamp') !== nextProps.timestamp) {
+        this.setState({ navigated: true });
+      }
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
     if (nextProps.list.equals(this.props.list) &&
-        nextProps.activeBookmark === this.props.activeBookmark) {
+        nextProps.activeBookmark === this.props.activeBookmark &&
+        nextState.navigated === this.state.navigated) {
       return false;
     }
 
@@ -40,18 +64,35 @@ class SidebarListViewer extends Component {
     const { bookmarks, collection, list } = this.props;
     const page = bookmarks.get(scrollToRow);
 
-    // this.props.dispatch(batchActions([
-    //   updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
-    //   setBookmarkId(page.get('id'))
-    // ]));
+    // TODO: race condition when keying quickly, old iframe change updates and makes current deselected
+    this.setState({ navigated: false });
+    this.props.dispatch(batchActions([
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
+      setBookmarkId(page.get('id'))
+    ]));
 
-    // use router to add history changes
-    this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${page.get('id')}/${page.get('timestamp')}/${page.get('url')}`);
+    // TODO: should we use router to add history changes?
+    // this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${page.get('id')}/${page.get('timestamp')}/${page.get('url')}`);
   }
 
   onSelectRow = ({ index, rowData }) => {
     const { collection, list } = this.props;
+    this.setState({ navigated: false });
     this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${rowData.get('id')}/${rowData.get('timestamp')}/${rowData.get('url')}`);
+  }
+
+  rowClass = ({ index }) => {
+    const { activeBookmark } = this.props;
+    const { navigated } = this.state;
+
+    if (index !== activeBookmark) {
+      return '';
+    }
+
+    return classNames({
+      selected: !navigated,
+      'last-selected': navigated
+    });
   }
 
   render() {
@@ -86,10 +127,10 @@ class SidebarListViewer extends Component {
                           rowCount={bookmarks.size}
                           rowHeight={50}
                           rowGetter={({ index }) => bookmarks.get(index)}
-                          rowClassName={({ index }) => { return index === activeBookmark ? 'selected' : ''; }}
+                          rowClassName={this.rowClass}
                           onRowClick={this.onSelectRow}
                           onRowsRendered={({ startIndex, stopIndex }) => {
-                            onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
+                            onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex });
                           }}
                           scrollToIndex={activeBookmark}>
                           <Column

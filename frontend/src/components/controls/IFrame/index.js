@@ -124,8 +124,6 @@ class IFrame extends Component {
     const { currMode } = this.context;
     const rawUrl = decodeURI(url);
 
-    console.log('setUrl called', this.props.url, rawUrl);
-
     if (this.props.url !== rawUrl) {
       this.internalUpdate = true;
       this.props.dispatch(updateUrl(rawUrl));

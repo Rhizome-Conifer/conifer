@@ -97,6 +97,19 @@
             }
         }
 
+        &.last-selected {
+            &:before {
+                content: '';
+                position: absolute;
+                left: .9rem;
+                top: .9rem;
+                width: 1.4rem;
+                height: 1.4rem;
+                background: url('../../../shared/images/last_active_bookmark_ico.svg');
+                background-size: cover;
+            }
+        }
+
         &:not(.selected):hover {
             color: $blue;
         }
