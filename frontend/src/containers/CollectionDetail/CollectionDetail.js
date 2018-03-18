@@ -74,8 +74,8 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = (outerState, { match: { params: { coll, list, user } } }) => {
-  const { app } = outerState;
+const mapStateToProps = (outerState) => {
+  const { app, reduxAsyncConnect } = outerState;
   const isLoaded = app.getIn(['collection', 'loaded']);
   const { pageFeed, searchText } = isLoaded ? pageSearchResults(outerState) : { pageFeed: Map(), searchText: '' };
   const isIndexing = isLoaded && !pageFeed.size && app.getIn(['collection', 'pages']).size && !searchText;
@@ -84,6 +84,7 @@ const mapStateToProps = (outerState, { match: { params: { coll, list, user } } }
     auth: app.get('auth'),
     collection: app.get('collection'),
     browsers: app.get('remoteBrowsers'),
+    loaded: reduxAsyncConnect.loaded,
     recordings: isLoaded ? getOrderedRecordings(app) : null,
     pages: isIndexing ? getOrderedPages(app) : pageFeed,
     searchText,

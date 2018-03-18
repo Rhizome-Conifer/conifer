@@ -4,13 +4,13 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
 
-import { updateUrlAndTimestamp } from 'redux/modules/controls';
+import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
 
 import { BookmarkRenderer } from './renderers';
-
 import './style.scss';
 
 
@@ -37,9 +37,16 @@ class SidebarListViewer extends Component {
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
-    const { bookmarks } = this.props;
+    const { bookmarks, collection, list } = this.props;
     const page = bookmarks.get(scrollToRow);
-    this.props.dispatch(updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry));
+
+    // this.props.dispatch(batchActions([
+    //   updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
+    //   setBookmarkId(page.get('id'))
+    // ]));
+
+    // use router to add history changes
+    this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${page.get('id')}/${page.get('timestamp')}/${page.get('url')}`);
   }
 
   onSelectRow = ({ index, rowData }) => {

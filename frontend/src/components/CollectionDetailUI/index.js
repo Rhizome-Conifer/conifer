@@ -83,6 +83,15 @@ class CollectionDetailUI extends Component {
     }
   }
 
+  shouldComponentUpdate(nextProps) {
+    // don't rerender for loading changes
+    if (this.props.loaded !== nextProps.loaded) {
+      return false;
+    }
+
+    return true;
+  }
+
   componentDidUpdate(prevProps, prevState) {
     // detect whether this was a state change to expand recording session view
     if(!prevState.gourpedDisplay && this.state.groupDisplay && this.state.scrollToRec) {

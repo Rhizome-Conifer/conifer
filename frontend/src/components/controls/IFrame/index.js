@@ -14,8 +14,9 @@ import './style.scss';
 
 class IFrame extends Component {
   static propTypes = {
-    appPrefix: PropTypes.func,
-    contentPrefix: PropTypes.func,
+    activeBookmarkId: PropTypes.string,
+    appPrefix: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
+    contentPrefix: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
     dispatch: PropTypes.func,
     params: PropTypes.object,
     passEvents: PropTypes.bool,
@@ -64,8 +65,8 @@ class IFrame extends Component {
 
     this.contentFrame = new ContentFrame({
       url,
-      prefix: appPrefix(),
-      content_prefix: contentPrefix(),
+      prefix: typeof appPrefix !== 'string' ? appPrefix() : appPrefix,
+      content_prefix: typeof contentPrefix !== 'string' ? contentPrefix() : contentPrefix,
       request_ts: params.ts,
       iframe: this.iframe
     });
@@ -74,12 +75,16 @@ class IFrame extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { appPrefix, contentPrefix, url, timestamp } = this.props;
+    const { activeBookmarkId, appPrefix, contentPrefix, url, timestamp } = this.props;
 
-    if (nextProps.url !== url || nextProps.timestamp !== timestamp) {
+    if (nextProps.url !== url || nextProps.timestamp !== timestamp ||
+        nextProps.activeBookmarkId !== activeBookmarkId) {
+      // check whether this is an update from the content frame or user action
       if (!this.internalUpdate) {
-        this.contentFrame.app_prefix = appPrefix();
-        this.contentFrame.content_prefix = contentPrefix();
+        if (this.context.currMode.includes('replay')) {
+          this.contentFrame.app_prefix = typeof appPrefix !== 'string' ? appPrefix() : appPrefix;
+          this.contentFrame.content_prefix = typeof contentPrefix !== 'string' ? contentPrefix() : contentPrefix;
+        }
         this.contentFrame.load_url(nextProps.url, nextProps.timestamp);
       }
       this.internalUpdate = false;
@@ -87,6 +92,7 @@ class IFrame extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
+    // only rerender when pointer events change occurs (for resizing)
     if (nextProps.passEvents !== this.props.passEvents) {
       return true;
     }

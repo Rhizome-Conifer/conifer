@@ -4,6 +4,8 @@ import config from 'config';
 import { createStore as _createStore, applyMiddleware, compose } from 'redux';
 import { reduxSearch } from 'redux-search';
 import { fromJS } from 'immutable';
+import { enableBatching } from 'redux-batched-actions';
+
 
 import createMiddleware from './middleware/clientMiddleware';
 
@@ -60,7 +62,7 @@ export default function createStore(client, data) {
   if (data) {
     finalData = Object.assign(data, { app: fromJS(data.app) });
   }
-  const store = finalCreateStore(reducer, finalData);
+  const store = finalCreateStore(enableBatching(reducer), finalData);
 
   if (__DEVELOPMENT__ && module.hot) {
     module.hot.accept('./reducer', () => {

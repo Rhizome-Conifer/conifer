@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
+import { batchActions } from 'redux-batched-actions';
 
 import { remoteBrowserMod, truncate } from 'helpers/utils';
 import config from 'config';
@@ -44,7 +45,6 @@ class Replay extends Component {
   constructor(props) {
     super(props);
 
-
     // TODO: unify replay and replay-coll
     this.mode = 'replay-coll';
   }
@@ -58,27 +58,36 @@ class Replay extends Component {
     };
   }
 
+  shouldComponentUpdate(nextProps) {
+    // don't rerender for loading changes
+    if (this.props.loaded !== nextProps.loaded) {
+      return false;
+    }
+
+    return true;
+  }
+
   componentWillUnmount() {
     // clear info stats
     this.props.dispatch(resetStats());
   }
 
   getAppPrefix = () => {
-    const { match: { params: { user, coll, listId, bookmarkId } } } = this.props;
+    const { activeBookmarkId, match: { params: { user, coll, listId } } } = this.props;
     return listId ?
-      `${config.appHost}/${user}/${coll}/list/${listId}-${bookmarkId}/` :
+      `${config.appHost}/${user}/${coll}/list/${listId}-${activeBookmarkId}/` :
       `${config.appHost}/${user}/${coll}/`;
   }
 
   getContentPrefix = () => {
-    const { match: { params: { user, coll, listId, bookmarkId } } } = this.props;
+    const { activeBookmarkId, match: { params: { user, coll, listId } } } = this.props;
     return listId ?
-      `${config.contentHost}/${user}/${coll}/list/${listId}-${bookmarkId}/` :
+      `${config.contentHost}/${user}/${coll}/list/${listId}-${activeBookmarkId}/` :
       `${config.contentHost}/${user}/${coll}/`;
   }
 
   render() {
-    const { activeBrowser, collection, dispatch, match: { params }, recording,
+    const { activeBookmarkId, activeBrowser, collection, dispatch, match: { params }, recording,
             reqId, timestamp, url } = this.props;
     const { product } = this.context;
 
@@ -126,6 +135,7 @@ class Replay extends Component {
                 timestamp={timestamp}
                 url={url} /> :
               <IFrame
+                activeBookmarkId={activeBookmarkId}
                 appPrefix={this.getAppPrefix}
                 contentPrefix={this.getContentPrefix}
                 dispatch={dispatch}
@@ -154,14 +164,13 @@ const initialData = [
     // set url, ts, list and bookmark id in store
     promise: ({ location: { hash, search }, match: { params: { bookmarkId, br, listId, ts, splat } }, store: { dispatch } }) => {
       const compositeUrl = `${splat}${search || ''}${hash || ''}`;
-      const promises = [
-        ts ? dispatch(updateUrlAndTimestamp(compositeUrl, ts)) : dispatch(updateUrl(compositeUrl)),
-        dispatch(setBrowser(br || null)),
-        dispatch(setListId(listId || null)),
-        dispatch(setBookmarkId(bookmarkId || null))
-      ];
 
-      return Promise.all(promises);
+      return dispatch(batchActions([
+        ts ? updateUrlAndTimestamp(compositeUrl, ts) : updateUrl(compositeUrl),
+        setBrowser(br || null),
+        setListId(listId || null),
+        setBookmarkId(bookmarkId || null)
+      ]));
     }
   },
   {
@@ -201,11 +210,13 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = ({ app }) => {
+const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    activeBookmarkId: app.getIn(['controls', 'activeBookmarkId']),
     auth: app.get('auth'),
     collection: app.get('collection'),
+    loaded,
     recording: app.getIn(['collection', 'loaded']) ? getRecording(app) : null,
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
     sidebarResize: app.getIn(['sidebar', 'resizing']),

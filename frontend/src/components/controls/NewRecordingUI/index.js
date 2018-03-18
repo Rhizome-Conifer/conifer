@@ -55,7 +55,10 @@ class NewRecordingUI extends Component {
     }
 
     if (extractable) {
-      data.mode = extractable.get('allSources') ? 'extract' : 'extract_only';
+      const mode = extractable.get('allSources') ? 'extract' : 'extract_only';
+      data.url = extractable.get('targetUrl');
+      data.mode = `${mode}:${extractable.get('id')}`;
+      data.timestamp = extractable.get('timestamp');
     } else {
       data.mode = 'record';
     }

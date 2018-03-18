@@ -166,7 +166,7 @@ var webpackConfig = module.exports = {
     // hot reload
     new webpack.HotModuleReplacementPlugin(),
     new webpack.IgnorePlugin(/webpack-stats\.json$/),
-    new HardSourceWebpackPlugin(),
+    //new HardSourceWebpackPlugin(),
     new webpack.EnvironmentPlugin([
       'NODE_ENV',
       'APP_HOST',

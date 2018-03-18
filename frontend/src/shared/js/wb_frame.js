@@ -1,8 +1,8 @@
 /* eslint-disable */
 /*
-Copyright(c) 2013-2014 Ilya Kreymer. Released under the GNU General Public License.
+Copyright(c) 2013-2018 Rhizome and Ilya Kreymer. Released under the GNU General Public License.
 
-This file is part of pywb, https://github.com/ikreymer/pywb
+This file is part of pywb, https://github.com/webrecorder/pywb
 
     pywb is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,19 +38,19 @@ export default function ContentFrame(content_info) {
 
         this.extract_prefix();
 
-        if (content_info.iframe_class) {
-            this.iframe.className += " " + content_info.iframe_class;
-        }
-
-        this.iframe.src = this.make_url(content_info.url + window.location.hash, content_info.request_ts, true);
+        this.load_url(content_info.url, content_info.request_ts);
     }
 
     this.extract_prefix = function() {
-        if (content_info.prefix) {
+        this.app_prefix = content_info.app_prefix || content_info.prefix;
+        this.content_prefix = content_info.content_prefix || content_info.prefix;
+
+        if (this.app_prefix && this.content_prefix) {
             return;
         }
 
         var inx = window.location.href.indexOf(content_info.url);
+
         if (inx < 0) {
             inx = window.location.href.indexOf("/http") + 1;
             if (inx <= 0) {
@@ -61,7 +61,10 @@ export default function ContentFrame(content_info) {
             }
         }
 
-        content_info.prefix = window.location.href.substr(0, inx);
+        this.prefix = window.location.href.substr(0, inx);
+
+        this.app_prefix = this.app_prefix || this.prefix;
+        this.content_prefix = this.content_prefix || this.prefix;
     }
 
 
@@ -70,10 +73,10 @@ export default function ContentFrame(content_info) {
 
         if (content_url) {
             mod = "mp_";
-            prefix = content_info.content_prefix || content_info.prefix;
+            prefix = this.content_prefix;
         } else {
             mod = "";
-            prefix = content_info.prefix;
+            prefix = this.app_prefix;
         }
 
         if (ts || mod) {
@@ -127,7 +130,7 @@ export default function ContentFrame(content_info) {
     }
 
     this.load_url = function(newUrl, newTs) {
-        this.iframe.src = this.make_url(newUrl + window.location.hash, newTs, true);
+        this.iframe.src = this.make_url(newUrl, newTs, true);
     }
 
     this.inner_hash_changed = function(state) {
@@ -149,12 +152,12 @@ export default function ContentFrame(content_info) {
         }
     }
 
-    this.close = function () {
+    this.close = function() {
         window.removeEventListener("hashchange", this.outer_hash_changed);
         window.removeEventListener("message", this.handle_event);
     }
 
-    // bound event callbacks
+    // bind event callbacks
     this.outer_hash_changed = this.outer_hash_changed.bind(this);
     this.handle_event = this.handle_event.bind(this);
 
