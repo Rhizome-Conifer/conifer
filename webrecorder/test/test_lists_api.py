@@ -311,8 +311,8 @@ class TestListsAPI(FullStackTests):
         assert res.json['lists'][0]['bookmarks'][1]['title'] == 'A New Title?'
 
     def test_bulk_add_bookmarks(self):
-        bookmarks = [{'url': 'http://example.com/', 'title': 'Yet Another Example'},
-                     {'url': 'http://httpbin.org/', 'title': 'HttpBin.org'},
+        bookmarks = [{'url': 'http://example.com/', 'title': 'Yet Another Example', 'timestamp': '20161226000000'},
+                     {'url': 'http://httpbin.org/', 'title': 'HttpBin.org', 'timestamp': '201801020300000'},
                      {'url': 'http://test.example.com/foo', 'title': 'Just an example'}]
 
         list_id = '1003'

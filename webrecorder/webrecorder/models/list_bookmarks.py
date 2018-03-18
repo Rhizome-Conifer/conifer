@@ -128,7 +128,7 @@ class Bookmark(RedisUniqueComponent):
         key = self.INFO_KEY.format(book=bid)
 
         self.data = {'url': props['url'],
-                     'timestamp': props['timestamp'],
+                     'timestamp': props.get('timestamp', ''),
                      'title': props['title'],
                      'state': '0',
                      'owner': self.owner.my_id,
