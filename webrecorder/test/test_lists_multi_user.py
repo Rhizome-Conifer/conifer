@@ -73,9 +73,7 @@ class TestListsAPIAccess(FullStackTests):
         self.pub_list_priv_coll = self._create_list('test', coll_name, 'Public List', public=True)
 
     def test_logout_login_user_2(self):
-        res = self.testapp.get('/api/v1/logout')
-
-        assert res.headers['Location'] == 'http://localhost:80/'
+        res = self.testapp.get('/api/v1/logout', status=200)
 
         params = {'username': 'another',
                   'password': 'TestTest456',
@@ -102,6 +100,16 @@ class TestListsAPIAccess(FullStackTests):
 
         assert len(self.redis.keys('l:*:info')) == 4
         assert len(self.redis.keys('b:*:info')) == 4
+
+    def test_no_lists_user_info(self):
+        # wrong user
+        res = self.testapp.get('/api/v1/users/test', status=404)
+
+        res = self.testapp.get('/api/v1/users/another')
+
+        assert len(res.json['user']['collections']) == 2
+        for coll in res.json['user']['collections']:
+            assert 'lists' not in coll
 
     def test_public_list_private_coll_error_logged_in(self):
         res = self.testapp.get('/api/v1/lists?user=test&coll=some-coll', status=404)

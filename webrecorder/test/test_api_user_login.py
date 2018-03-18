@@ -8,6 +8,22 @@ import re
 class TestApiUserLogin(FullStackTests):
     val_reg = ''
 
+    def test_api_temp_user_info(self):
+        res = self.testapp.get('/api/v1/temp-users/{user}'.format(user=self.anon_user))
+
+        user = res.json
+
+        assert user['username'] == self.anon_user
+        assert user['id'] == self.anon_user
+        assert user['space_utilization'] == {'available': 1000000000.0,
+                                             'total': 1000000000.0,
+                                             'used': 0.0}
+
+        assert self.ISO_DT_RX.match(user['created_at'])
+        assert self.ISO_DT_RX.match(user['updated_at'])
+
+        assert set(user.keys()) == {'id', 'username', 'created_at', 'updated_at', 'space_utilization', 'ttl', 'max_size', 'size'}
+
     def test_api_register_fail_mismatch_password(self):
         # mismatch password
         params = {'email': 'test@example.com',
@@ -107,9 +123,9 @@ class TestApiUserLogin(FullStackTests):
         assert res.json == {'error': 'already_registered'}
 
     def test_api_logout(self):
-        res = self.testapp.get('/api/v1/logout')
+        res = self.testapp.get('/api/v1/logout', status=200)
+        assert res.json['message']
 
-        assert res.headers['Location'] == 'http://localhost:80/'
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_api_register_fail_dupe_user(self):
@@ -221,6 +237,12 @@ class TestApiUserLogin(FullStackTests):
         res = self.testapp.post('/api/v1/updatepassword', params=params)
 
         assert res.json == {}
+
+    def test_api_temp_user_info_not_temp(self):
+        res = self.testapp.get('/api/v1/temp-users/someuser', status=404)
+
+        # TODO: should be 404 if not same user? check access
+        res = self.testapp.get('/api/v1/temp-users/{user}'.format(user=self.anon_user), status=200)
 
     def test_api_user_info(self):
         res = self.testapp.get('/api/v1/users/someuser')

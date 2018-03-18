@@ -310,6 +310,18 @@ class TestListsAPI(FullStackTests):
         assert res.json['lists'][0]['bookmarks'][1]['id'] == '104'
         assert res.json['lists'][0]['bookmarks'][1]['title'] == 'A New Title?'
 
+    def test_bulk_add_bookmarks(self):
+        bookmarks = [{'url': 'http://example.com/', 'title': 'Yet Another Example', 'timestamp': '20161226000000'},
+                     {'url': 'http://httpbin.org/', 'title': 'HttpBin.org', 'timestamp': '201801020300000'},
+                     {'url': 'http://test.example.com/foo', 'title': 'Just an example'}]
+
+        list_id = '1003'
+        res = self.testapp.post_json(self._format('/api/v1/list/%s/bulk_bookmarks?user={user}&coll=temp' % list_id),
+                                     params=bookmarks)
+
+
+        assert res.json['list']
+
     def test_coll_info_with_lists(self):
         res = self.testapp.get(self._format('/api/v1/collections/temp?user={user}'))
 
@@ -321,7 +333,7 @@ class TestListsAPI(FullStackTests):
         assert lists[0]['num_bookmarks'] == 4
 
         assert lists[1]['id'] == '1003'
-        assert lists[1]['num_bookmarks'] == 2
+        assert lists[1]['num_bookmarks'] == 5
 
     # Record, then Replay Via List
     # ========================================================================
@@ -340,6 +352,43 @@ class TestListsAPI(FullStackTests):
         assert 'Example Domain' in res.text
 
         assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
+
+    # Collection and User Info
+    # ========================================================================
+    def test_colls_info(self):
+        res = self.testapp.get(self._format('/api/v1/collections?user={user}'))
+
+        assert len(res.json['collections']) == 1
+        assert res.json['collections'][0]['id'] == 'temp'
+
+        for coll in res.json['collections']:
+            assert coll['lists']
+            assert coll['recordings']
+
+        res = self.testapp.get(self._format('/api/v1/collections?user={user}&include_lists=false&include_recordings=false'))
+
+        for coll in res.json['collections']:
+            assert 'lists' not in coll
+            assert 'recordings' not in coll
+
+        res = self.testapp.get(self._format('/api/v1/collections?user={user}&include_lists=0&include_recordings=1'))
+
+        for coll in res.json['collections']:
+            assert 'lists' not in coll
+            assert 'recordings' in coll
+
+    def test_user_info(self):
+        res = self.testapp.get(self._format('/api/v1/users/{user}?include_colls=true'))
+
+        user = res.json['user']
+
+        assert len(user['collections']) == 1
+        assert user['collections'][0]['id'] == 'temp'
+
+        for coll in user['collections']:
+            assert 'lists' not in coll
+            assert 'recordings' not in coll
+
 
     # Delete Collection
     # ========================================================================
