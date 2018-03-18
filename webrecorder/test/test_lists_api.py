@@ -341,6 +341,43 @@ class TestListsAPI(FullStackTests):
 
         assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
 
+    # Collection and User Info
+    # ========================================================================
+    def test_colls_info(self):
+        res = self.testapp.get(self._format('/api/v1/collections?user={user}'))
+
+        assert len(res.json['collections']) == 1
+        assert res.json['collections'][0]['id'] == 'temp'
+
+        for coll in res.json['collections']:
+            assert coll['lists']
+            assert coll['recordings']
+
+        res = self.testapp.get(self._format('/api/v1/collections?user={user}&include_lists=false&include_recordings=false'))
+
+        for coll in res.json['collections']:
+            assert 'lists' not in coll
+            assert 'recordings' not in coll
+
+        res = self.testapp.get(self._format('/api/v1/collections?user={user}&include_lists=0&include_recordings=1'))
+
+        for coll in res.json['collections']:
+            assert 'lists' not in coll
+            assert 'recordings' in coll
+
+    def test_user_info(self):
+        res = self.testapp.get(self._format('/api/v1/users/{user}?include_colls=true'))
+
+        user = res.json['user']
+
+        assert len(user['collections']) == 1
+        assert user['collections'][0]['id'] == 'temp'
+
+        for coll in user['collections']:
+            assert 'lists' not in coll
+            assert 'recordings' not in coll
+
+
     # Delete Collection
     # ========================================================================
     def test_delete_coll(self):

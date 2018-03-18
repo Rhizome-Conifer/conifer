@@ -171,7 +171,11 @@ class User(RedisNamedContainer):
     def is_anon(self):
         return self.name.startswith('temp-')
 
-    def serialize(self, compute_size_allotment=False, include_colls=False):
+    def serialize(self, compute_size_allotment=False,
+                  include_colls=False,
+                  include_recordings=False,
+                  include_lists=False):
+
         data = super(User, self).serialize()
 
         # assemble space usage
@@ -187,8 +191,8 @@ class User(RedisNamedContainer):
         if include_colls:
             colls = self.get_collections()
             data['collections'] = [coll.serialize(
-                                    include_recordings=False,
-                                    include_lists=False) for coll in colls]
+                                    include_recordings=include_recordings,
+                                    include_lists=include_lists) for coll in colls]
 
         data['username'] = self.name
 

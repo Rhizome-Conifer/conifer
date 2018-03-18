@@ -133,7 +133,6 @@ class UserController(BaseController):
 
 
         @self.app.get(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
-        @self.user_manager.auth_view()
         def api_get_user(username):
             """API enpoint to return user info"""
 

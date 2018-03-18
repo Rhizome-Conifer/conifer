@@ -5,6 +5,7 @@ from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
 
 from webrecorder.models.base import DupeNameException
+from webrecorder.utils import get_bool
 
 
 # ============================================================================
@@ -56,12 +57,9 @@ class CollsController(BaseController):
         def get_collections():
             user = self.get_user(api=True, redir_check=False)
 
-            kwargs = {}
-            if request.query.include_recordings:
-                kwargs['include_recordings'] = request.query.include_lists == 'true'
-
-            if request.query.include_lists:
-                kwargs['include_lists'] = request.query.include_lists == 'true'
+            kwargs = {'include_recordings': get_bool(request.query.get('include_recordings', 'true')),
+                      'include_lists': get_bool(request.query.get('include_lists', 'true'))
+                     }
 
             collections = user.get_collections()
 
