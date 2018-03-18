@@ -7,6 +7,8 @@ import boto3
 import pytest
 import base64
 
+from urllib.parse import urlsplit
+
 REC_CDXJ = 'r:500:cdxj'
 REC_WARC = 'r:500:warc'
 
@@ -122,14 +124,22 @@ class TestS3Storage(BaseStorageCommit):
     def setup_class(cls):
         # create a random root key within storage-test path
         cls.random = base64.b32encode(os.urandom(5)).decode('utf-8')
-        root = 's3://webrecorder-builds/storage-test/' + cls.random + '/'
+
+        root = os.environ.get('WR_TEST_S3_ROOT', 's3://webrecorder-builds/storage-test/')
+        root += cls.random + '/'
+
+        parts = urlsplit(root)
+
+        cls.bucket = parts.netloc
+        cls.root_path = parts.path
+
 
         # attempt to write empty object to s3, if no write access, then skip all the tests
         try:
             cls.s3 = boto3.client('s3')
-            cls.s3.put_object(Bucket='webrecorder-builds', Key=root + 'empty')
+            cls.s3.put_object(Bucket=cls.bucket, Key=root + 'empty')
         except:
-            pytest.skip('Skipping S3 Stroage Tests, No S3 Write Access')
+            pytest.skip('Skipping S3 Storage Tests, No S3 Write Access')
 
         os.environ['DEFAULT_STORAGE'] = 's3'
         os.environ['S3_ROOT'] = root
@@ -140,7 +150,7 @@ class TestS3Storage(BaseStorageCommit):
     def teardown_class(cls):
         # Delete temp object
         try:
-            cls.s3.delete_object(Bucket='webrecorder-builds', Key=root + 'empty')
+            cls.s3.delete_object(Bucket=cls.bucket, Key=root + 'empty')
         except:
             pass
 
@@ -149,8 +159,8 @@ class TestS3Storage(BaseStorageCommit):
         super(TestS3Storage, cls).teardown_class()
 
     def _list_keys(self):
-        return [obj['Key'] for obj in self.s3.list_objects(Bucket='webrecorder-builds',
-                                                           Prefix='storage-test/' + self.random).get('Contents', []) if obj['Size'] > 0]
+        return [obj['Key'] for obj in self.s3.list_objects(Bucket=self.bucket,
+                                                           Prefix=self.root_path[1:]).get('Contents', []) if obj['Size'] > 0]
 
     def assert_in_store(self):
         today = today_str()

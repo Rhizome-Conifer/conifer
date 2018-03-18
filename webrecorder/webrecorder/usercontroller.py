@@ -85,8 +85,6 @@ class UserController(BaseController):
         @self.app.post('/api/v1/login')
         def login():
             """Authenticate users"""
-            print(request.json)
-
             result = self.user_manager.login_user(request.json)
 
             if 'success' in result:
