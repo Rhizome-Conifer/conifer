@@ -171,7 +171,8 @@ var webpackConfig = module.exports = {
       'NODE_ENV',
       'APP_HOST',
       'FRONTEND_PORT',
-      'CONTENT_HOST'
+      'CONTENT_HOST',
+      'SCHEME'
     ]),
     new webpack.DefinePlugin({
       __CLIENT__: true,
