@@ -53,9 +53,6 @@ var webpackConfig = module.exports = {
       './config/polyfills',
       'bootstrap-loader',
       './src/client.js',
-      // pywb glue
-      //'./src/shared/js/wb.js',
-      //'./src/shared/js/wb_frame.js'
     ]
   },
   output: {

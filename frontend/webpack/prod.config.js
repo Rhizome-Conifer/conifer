@@ -28,7 +28,6 @@ module.exports = {
       './config/polyfills',
       'bootstrap-loader/extractStyles',
       './src/client.js'
-      //'./src/shared/js/wb_frame.js', //'./src/shared/js/wb.js',
     ]
   },
   output: {
