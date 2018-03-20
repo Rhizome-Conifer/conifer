@@ -44,6 +44,7 @@ export default class BaseHtml extends Component {
             dangerouslySetInnerHTML={{ __html: `window.__data=${serialize(store.getState())};` }}
             charSet="UTF-8"
           />
+          <script src="/static/app/wb_frame.js" />
           <script src={assets.javascript.main} charSet="UTF-8" />
         </body>
       </html>

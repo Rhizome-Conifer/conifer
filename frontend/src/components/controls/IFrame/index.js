@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import ContentFrame from 'shared/js/wb_frame';
 import WebSocketHandler from 'helpers/ws';
 import config from 'config';
 import { updateTimestamp, updateUrl } from 'redux/modules/controls';
