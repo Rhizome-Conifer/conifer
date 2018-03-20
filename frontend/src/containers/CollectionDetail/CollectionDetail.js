@@ -9,6 +9,7 @@ import { deleteCollection, load as loadColl } from 'redux/modules/collection';
 import { addTo, load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { deleteUserCollection } from 'redux/modules/user';
+import { deleteRecording } from 'redux/modules/recordings'
 import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/CollectionDetailUI';
@@ -113,6 +114,14 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
             history.push(`/${user}`);
           }
         }, () => {});
+    },
+    deleteRec: (rec) => {
+      dispatch(deleteRecording(user, coll, rec))
+        .then((res) => {
+          if (res.hasOwnProperty('deleted_id')) {
+            dispatch(loadColl(user, coll));
+          }
+        }, () => { console.log('Rec delete error..'); });
     },
     removeBookmark: (list, id) => {
       dispatch(removeBookmark(user, coll, list, id))

@@ -33,6 +33,11 @@ class RemoveWidget extends Component {
 
     if (!this.props.withConfirmation || this.state.confirmRemove) {
       this.setState({ confirmRemove: false });
+      if (!this.props.callback) {
+        console.log('No RemoveWidget callback provided');
+        return;
+      }
+
       this.props.callback();
     }
 

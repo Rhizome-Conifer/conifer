@@ -3,16 +3,20 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
 import Collapsible from 'react-collapsible';
+import RemoveWidget from 'components/RemoveWidget';
 import PageList from 'components/PageList';
 import SizeFormat from 'components/SizeFormat';
 import TimeFormat from 'components/TimeFormat';
+
+import './style.scss';
 
 
 class SessionCollapsible extends PureComponent {
 
   static propTypes = {
-    collection: PropTypes.object,
     browsers: PropTypes.object,
+    collection: PropTypes.object,
+    deleteRec: PropTypes.func,
     expand: PropTypes.bool,
     hasActivePage: PropTypes.bool,
     onCollapse: PropTypes.func,
@@ -21,6 +25,10 @@ class SessionCollapsible extends PureComponent {
     recording: PropTypes.object,
     selectedGroupedPageIdx: PropTypes.number
   };
+
+  confirmDelete = () => {
+    this.props.deleteRec(this.props.recording.get('id'));
+  }
 
   expandCallback = () => {
     this.props.onExpand(this.props.recording);
@@ -36,6 +44,7 @@ class SessionCollapsible extends PureComponent {
         { pageCount > 0 && <span className="glyphicon glyphicon-triangle-right" />}
         <h2>{recording.get('title')}</h2>
         <span className="badge">{ recording.get('pages').size }</span>
+        <RemoveWidget callback={this.confirmDelete} />
         <TimeFormat classes="session-ts" iso={recording.get('updated_at')} />
         <SizeFormat bytes={recording.get('size')} />
       </header>

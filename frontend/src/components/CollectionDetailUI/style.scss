@@ -288,56 +288,6 @@
                     }
                 }
             }
-
-            .wr-coll-session {
-                header {
-                    display: flex;
-                    justify-content: flext-start;
-                    align-items: center;
-                    padding: 1rem 0;
-
-                    &.collapsible {
-                        cursor: pointer;
-
-                        &:hover {
-                            color: $collTrigger;
-                        }
-                    }
-
-                    .badge {
-                        background-color: #0039e5;
-                        font-family: sans-serif;
-                        margin-left: .5rem;
-                    }
-
-                    h2 {
-                        transition: color $quickShift ease-in-out;
-                        font-size: 1.4rem;
-                        margin: 0;
-                    }
-
-                    .session-ts {
-                        margin-left: auto;
-                        margin-right: 1.5rem;
-                    }
-
-
-                    .glyphicon-triangle-right {
-                        transition: transform $midShift ease-in-out;
-                        transform-origin: center center;
-                        margin-right: .5rem;
-                        color: $collTrigger;
-                    }
-                }
-
-                .Collapsible__trigger {
-                    &.is-open header.collapsible {
-                        h2 {
-                            color: $collTrigger;
-                        }
-                    }
-                }
-            }
         }
     }
 }

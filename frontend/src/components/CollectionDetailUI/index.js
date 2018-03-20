@@ -32,6 +32,7 @@ class CollectionDetailUI extends Component {
     browsers: PropTypes.object,
     collection: PropTypes.object,
     deleteColl: PropTypes.func,
+    deleteRec: PropTypes.func,
     dispatch: PropTypes.func,
     list: PropTypes.object,
     pages: PropTypes.object,
@@ -412,6 +413,7 @@ class CollectionDetailUI extends Component {
                         return (
                           <SessionCollapsible
                             key={rec.get('id')}
+                            deleteRec={this.props.deleteRec}
                             hasActivePage={selectedSession === rec && selectedGroupedPageIdx !== null}
                             collection={collection}
                             browsers={browsers}
