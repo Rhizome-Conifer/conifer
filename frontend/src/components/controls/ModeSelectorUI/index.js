@@ -75,9 +75,7 @@ class ModeSelectorUI extends PureComponent {
   onRecord = () => {
     if (this.context.currMode === 'record') return;
 
-    const { activeBrowser, params: { coll, rec }, url } = this.props;
-    const recording = rec && !rec.startsWith('patch') ? rec : encodeURIComponent(config.defaultRecordingTitle);
-
+    const { activeBrowser, params: { coll }, url } = this.props;
     const data = {
       url,
       coll,

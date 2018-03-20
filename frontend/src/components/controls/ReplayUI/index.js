@@ -18,11 +18,12 @@ class ReplayUI extends Component {
   };
 
   static contextTypes = {
+    canAdmin: PropTypes.bool,
     currMode: PropTypes.string
   };
 
   render() {
-    const { currMode } = this.context;
+    const { canAdmin, currMode } = this.context;
     const { params } = this.props;
 
     const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
@@ -45,7 +46,10 @@ class ReplayUI extends Component {
           <RecordingTools params={params} />
         </div>
 
-        <ToolBin />
+        {
+          canAdmin &&
+            <ToolBin />
+        }
       </div>
     );
   }

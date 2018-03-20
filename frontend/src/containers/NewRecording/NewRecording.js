@@ -37,12 +37,8 @@ class NewRecording extends Component {
   }
 
   render() {
-    const { collection, extractable, match: { params: { user, coll } } } = this.props;
-
     return (
-      <NewRecordingUI
-        collection={collection}
-        extractable={extractable} />
+      <NewRecordingUI {...this.props} />
     );
   }
 }
@@ -68,7 +64,7 @@ const mapStateToProps = ({ app }) => {
     auth: app.get('auth'),
     collection: app.get('collection'),
     extractable: app.getIn(['controls', 'extractable']),
-    remoteBrowserSelected: app.getIn(['remoteBrowsers', 'activeBrowser'])
+    remoteBrowserSelected: app.getIn(['remoteBrowsers', 'selectedBrowser'])
   };
 };
 

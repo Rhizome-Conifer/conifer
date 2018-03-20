@@ -56,7 +56,10 @@ export default function CBrowser(reqid, target_div, init_params) {
     var maxRetry = 10;
     var retryCount = 0;
 
-    var clipEvents = ['change', 'keyup', 'paste'];
+    var hasClipboard = false;
+    var lastText = undefined;
+    var stagedText = null;
+    var clipEvents = ['paste'];
     var target_div_obj = document.querySelector(target_div);
 
 
@@ -93,13 +96,9 @@ export default function CBrowser(reqid, target_div, init_params) {
         init_html();
 
         setup_browser();
-
-        init_clipboard();
     }
 
     function close() {
-        destroy_clipboard();
-
         var cnvs = canvas();
         var _screen = screen();
         _screen.removeEventListener('blur', lose_focus);
@@ -119,9 +118,14 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function clipHandler(evt) {
-        var text = document.querySelector(init_params.clipboard).value;
+        if (!hasClipboard) {
+         return false;
+        }
+
+        var text = evt.clipboardData.getData('Text');
 
         if (connected && rfb && lastText != text) {
+            // TODO: see `onVNCCopyCut()`
             rfb.clipboardPasteFrom(text);
             lastText = text;
         }
@@ -132,7 +136,14 @@ export default function CBrowser(reqid, target_div, init_params) {
             return;
         }
 
-        var lastText = undefined;
+        lose_focus();
+        hasClipboard = true;
+
+        // if remote browser cut/copy opperation occured, insert into clipboard field
+        if (stagedText) {
+            document.querySelector(init_params.clipboard).value = stagedText;
+            stagedText = null;
+        }
 
         for (var i = 0; i < clipEvents.length; i++) {
             document.querySelector(init_params.clipboard).addEventListener(clipEvents[i], clipHandler);
@@ -140,9 +151,12 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function destroy_clipboard() {
-        if (!init_params.clipboard || !document.querySelector('init_params.clipboard')) {
+        if (!init_params.clipboard) {
             return;
         }
+
+        grab_focus();
+        hasClipboard = false;
 
         for (var i = 0; i < clipEvents.length; i++) {
             document.querySelector(init_params.clipboard).removeEventListener(clipEvents[i], clipHandler);
@@ -279,8 +293,6 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function handle_browser_response(data) {
-        console.log('handle_browser_response', data);
-
         if (data.cmd_host && data.vnc_host) {
             cmd_host = data.cmd_host;
             vnc_host = data.vnc_host;
@@ -402,8 +414,11 @@ export default function CBrowser(reqid, target_div, init_params) {
 
     function onVNCCopyCut(rfb, text)
     {
-        if (init_params.clipboard) {
-            document.querySelector(init_params.clipboard).value = text;
+        if (init_params.clipboard && hasClipboard) {
+            // TODO: sort out how to send clipboard data to rb, currently `rfb.clipboardPasteFrom(text);`
+            // triggers this fn
+        } else if (init_params.clipboard) {
+            stagedText = text;
         }
     }
 
@@ -802,7 +817,11 @@ export default function CBrowser(reqid, target_div, init_params) {
 
     start();
 
-    return {"grab_focus": grab_focus,
-            "lose_focus": lose_focus,
-            "close": close};
+    return {
+        "grab_focus": grab_focus,
+        "lose_focus": lose_focus,
+        "close": close,
+        "init_clipboard": init_clipboard,
+        "destroy_clipboard": destroy_clipboard
+    };
 };

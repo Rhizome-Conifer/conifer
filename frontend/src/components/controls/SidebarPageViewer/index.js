@@ -4,10 +4,12 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
 
 import { updateUrlAndTimestamp } from 'redux/modules/controls';
+import { setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { Collection } from 'components/icons';
 import Searchbox from 'components/Searchbox';
@@ -40,11 +42,21 @@ class SidebarPageViewer extends Component {
   onKeyNavigate = ({ scrollToRow }) => {
     const { pages } = this.props;
     const page = pages.get(scrollToRow);
-    this.props.dispatch(updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry));
+    // this.props.dispatch(updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry));
+    // TODO: add change to history ?
+    this.props.dispatch(batchActions([
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
+      setBrowser(page.get('browser') || null)
+    ]));
   }
 
   onSelectRow = ({ index, rowData }) => {
-    this.props.dispatch(updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry));
+    // this.props.dispatch(updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry));
+    // TODO: add change to history ?
+    this.props.dispatch(batchActions([
+      updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry),
+      setBrowser(rowData.get('browser') || null)
+    ]));
   }
 
   search = (evt) => {

@@ -23,7 +23,8 @@ class Modal extends Component {
       <BSModal
         show={visible}
         onHide={closeCb}
-        dialogClassName={dialogClassName}>
+        dialogClassName={dialogClassName}
+        {...this.props.propsPass}>
         { header &&
           <BSModal.Header closeButton>
             {

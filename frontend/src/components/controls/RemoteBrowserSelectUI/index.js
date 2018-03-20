@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
 import { DropdownButton } from 'react-bootstrap';
 
-import { remoteBrowserMod } from 'helpers/utils';
+import { appHost, defaultRecordingTitle } from 'config';
+import { apiFetch, remoteBrowserMod } from 'helpers/utils';
+
 import { RemoteBrowserOption } from 'components/controls';
 
 import 'shared/scss/dropdown.scss';
@@ -14,7 +16,9 @@ class RemoteBrowserSelectUI extends Component {
   static propTypes = {
     accessed: PropTypes.number,
     active: PropTypes.bool,
+    activeBookmarkId: PropTypes.string,
     activeBrowser: PropTypes.string,
+    activeListId: PropTypes.string,
     browsers: PropTypes.object,
     getBrowsers: PropTypes.func,
     loading: PropTypes.bool,
@@ -52,20 +56,27 @@ class RemoteBrowserSelectUI extends Component {
   }
 
   selectBrowser = (id) => {
-    const { active, params, timestamp, url } = this.props;
+    const { active, activeBookmarkId, activeListId, params, timestamp, url } = this.props;
     const { currMode } = this.context;
 
     this.setState({ open: false });
 
     if (active) {
-      const { user, coll, rec } = params;
+      const { archiveId, coll, collId, extractMode, rec, user } = params;
 
       if (currMode.includes('replay')) {
-        this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
+        // list replay
+        if (activeBookmarkId) {
+          this.context.router.history.push(`/${user}/${coll}/list/${activeListId}-${activeBookmarkId}/${remoteBrowserMod(id, timestamp)}/${url}`);
+        } else {
+          this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
+        }
+      } else if (currMode === 'record') {
+        this.context.router.history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id, null, '/')}${url}`);
       } else if (['patch', 'record'].includes(currMode)) {
-        this.context.router.history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id, '', '/')}${url}`);
+        this.context.router.history.push(`/${user}/${coll}/${rec}/patch/${remoteBrowserMod(id, timestamp, '/')}${url}`);
       } else if (['extract', 'extract_only'].includes(currMode)) {
-        // TODO: extract route
+        this.context.router.history.push(`/${user}/${coll}/${rec}/${extractMode}:${archiveId}${collId || ''}/${remoteBrowserMod(id, timestamp, '/')}${url}`);
       }
     } else {
       this.props.selectRemoteBrowser(id);

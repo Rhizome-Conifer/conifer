@@ -12,7 +12,6 @@
 }
 
 .wr-tools {
-    transition: margin-top $slowShift ease-in-out;
     margin-top: -4rem;
     height: 4rem;
     background: #F3F3F3;
@@ -20,6 +19,10 @@
     display: -ms-flexbox;
     align-items: center;
     -ms-flex-align: center;
+
+    &.animate {
+        transition: margin-top $slowShift ease-in-out;
+    }
 
     &.open {
         margin-top: 0;

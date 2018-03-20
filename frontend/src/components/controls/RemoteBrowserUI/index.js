@@ -7,6 +7,8 @@ import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
 import CBrowser from 'shared/js/browser_controller';
 
+import './style.scss';
+
 
 class RemoteBrowserUI extends Component {
 
@@ -15,12 +17,15 @@ class RemoteBrowserUI extends Component {
   };
 
   static propTypes = {
+    autoscroll: PropTypes.bool,
+    clipboard: PropTypes.bool,
     dispatch: PropTypes.func,
     inactiveTime: PropTypes.number,
     params: PropTypes.object,
     rb: PropTypes.string,
     rec: PropTypes.string,
     reqId: PropTypes.string,
+    sidebarResize: PropTypes.bool,
     timestamp: PropTypes.string,
     url: PropTypes.string
   }
@@ -39,20 +44,10 @@ class RemoteBrowserUI extends Component {
       static_prefix: '/static/',
       api_prefix: '/api/browsers',
       clipboard: '#clipboard',
-      fill_window: false,
+      fill_window: true,
       on_countdown: this.onCountdown,
       on_event: this.onEvent
     };
-
-    /* TODO:
-    $("#report-modal").on("shown.bs.modal", function () {
-        cb.lose_focus();
-    });
-
-    $("input").on("click", function() {
-        cb.lose_focus();
-    });
-    */
   }
 
   componentDidMount() {
@@ -63,9 +58,10 @@ class RemoteBrowserUI extends Component {
       this.pywbParams.proxy_ws = '_websockify?port=';
     }
 
+    // TODO: Disable browser reuse for now
     // get any preexisting remote browsers from session storage,
     // checking whether they are stale. If so request a new one.
-    const reqFromStorage = this.getReqFromStorage(rb);
+    const reqFromStorage = false; //this.getReqFromStorage(rb);
 
     // generate remote browser
     if (!reqFromStorage) {
@@ -76,8 +72,21 @@ class RemoteBrowserUI extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { dispatch, params, rb, rec, reqId, timestamp, url } = this.props;
+    const { autoscroll, clipboard, dispatch, params, rb, rec, reqId, timestamp, url } = this.props;
     const { currMode } = this.context;
+
+    // bidirectional clipboard
+    if (clipboard !== nextProps.clipboard && this.cb) {
+      if (clipboard) {
+        this.cb.destroy_clipboard();
+      } else {
+        this.cb.init_clipboard();
+      }
+    }
+
+    if (autoscroll !== nextProps.autoscroll && this.socket) {
+      this.socket.doAutoscroll();
+    }
 
     if (nextProps.reqId !== reqId && nextProps.rb === rb) {
       // new reqId for browser, initialize and save
@@ -102,12 +111,18 @@ class RemoteBrowserUI extends Component {
       // write to storage for later reuse
       setStorage('reqId', data, window.sessionStorage);
     } else if (nextProps.rb !== rb) {
+      // TODO: Disable browser reuse for now
       // remote browser change request, load from storage or create a new one
-      const reqFromStorage = this.getReqFromStorage(nextProps.rb);
+      const reqFromStorage = false; // this.getReqFromStorage(nextProps.rb);
 
       // close current connections
-      this.cb.close();
-      this.socket.close();
+      if (this.cb) {
+        this.cb.close();
+      }
+
+      if (this.socket) {
+        this.socket.close();
+      }
 
       // generate remote browser
       if (!reqFromStorage) {
@@ -234,12 +249,12 @@ class RemoteBrowserUI extends Component {
   }
 
   render() {
-    const { message } = this.state;
+    const { sidebarResize } = this.props;
     return (
-      <div>
+      <React.Fragment>
         <div id="message" className="browser" />
-        <div id="browser" className="browser" />
-      </div>
+        <div id="browser" className="browser" style={sidebarResize ? { pointerEvents: 'none' } : {}} />
+      </React.Fragment>
     );
   }
 }

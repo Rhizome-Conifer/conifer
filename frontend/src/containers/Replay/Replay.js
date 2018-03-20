@@ -60,7 +60,7 @@ class Replay extends Component {
 
   shouldComponentUpdate(nextProps) {
     // don't rerender for loading changes
-    if (this.props.loaded !== nextProps.loaded) {
+    if (!nextProps.loaded) {
       return false;
     }
 
@@ -113,6 +113,7 @@ class Replay extends Component {
         </Helmet>
 
         <ReplayUI
+          activeBrowser={activeBrowser}
           params={params}
           timestamp={timestamp}
           url={url} />
@@ -136,6 +137,7 @@ class Replay extends Component {
                 url={url} /> :
               <IFrame
                 activeBookmarkId={activeBookmarkId}
+                autoscroll={this.props.autoscroll}
                 appPrefix={this.getAppPrefix}
                 contentPrefix={this.getContentPrefix}
                 dispatch={dispatch}
@@ -214,6 +216,7 @@ const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     activeBookmarkId: app.getIn(['controls', 'activeBookmarkId']),
+    autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
     collection: app.get('collection'),
     loaded,

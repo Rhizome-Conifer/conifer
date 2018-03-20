@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
-import { getRemoteBrowser } from 'helpers/utils';
 
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, updateUrl } from 'redux/modules/controls';
@@ -49,6 +48,15 @@ class Record extends Component {
       currMode: 'record',
       canAdmin: auth.getIn(['user', 'username']) === user
     };
+  }
+
+  shouldComponentUpdate(nextProps) {
+    // don't rerender for loading changes
+    if (!nextProps.loaded) {
+      return false;
+    }
+
+    return true;
   }
 
   render() {

@@ -24,7 +24,9 @@ const mapStateToProps = ({ app }) => {
   const remoteBrowsers = app.get('remoteBrowsers');
   return {
     accessed: remoteBrowsers.get('accessed'),
+    activeBookmarkId: app.getIn(['controls', 'activeBookmarkId']),
     activeBrowser: remoteBrowsers.get('activeBrowser'),
+    activeListId: app.getIn(['controls', 'activeListId']),
     browsers: remoteBrowsers.get('browsers'),
     loaded: remoteBrowsers.get('loaded'),
     loading: remoteBrowsers.get('loading'),

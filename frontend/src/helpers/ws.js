@@ -1,10 +1,10 @@
-import { updateUrl, updateTimestamp } from 'redux/modules/controls';
+import { updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setSizeCounter } from 'redux/modules/sizeCounter';
 import { setStats } from 'redux/modules/infoStats';
 
 import config from 'config';
 
-import { getRemoteBrowser, remoteBrowserMod, stripProtocol } from 'helpers/utils';
+import { remoteBrowserMod } from 'helpers/utils';
 
 
 class WebSocketHandler {
@@ -25,13 +25,11 @@ class WebSocketHandler {
 
     this.isProxy = false;
     this.isRemoteBrowser = remoteBrowser;
-    this.br = null;
+    this.br = br;
     this.reqId = reqId;
     this.wsEndpoint = '_client_ws';
 
     if (this.isRemoteBrowser) {
-      // br from write modes, ts modified from replay
-      this.br = getRemoteBrowser(br || ts);
       window.addEventListener('popstate', this.syncOuterFrameState);
     }
 
@@ -39,7 +37,6 @@ class WebSocketHandler {
   }
 
   initWS = () => {
-    console.log('init ws', this.reqUrl);
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     let url = `${wsProtocol}${this.host ? this.host : ''}/${this.wsEndpoint}?user=${this.user}&coll=${this.coll}`;
 
@@ -113,8 +110,7 @@ class WebSocketHandler {
       case 'remote_url': {
         if (this.isRemoteBrowser) {
           const page = msg.page;
-          this.dispatch(updateTimestamp(page.timestamp));
-          this.dispatch(updateUrl(page.url));
+          this.dispatch(updateUrlAndTimestamp(page.url, page.timestamp));
 
           //setTitle("Remote", page.url, page.title);
           this.replaceOuterUrl(page, "load");
@@ -122,7 +118,6 @@ class WebSocketHandler {
         break;
       }
       case 'patch_req':
-        console.log('patch_req', msg);
         if (this.isRemoteBrowser) {
           // if we're replaying
           if (this.currMode.indexOf('replay') !== -1) {
@@ -173,7 +168,7 @@ class WebSocketHandler {
 
   /* proxy specific fns */
   sendLocalMsg = (msg) => {
-    window.dispatchEvent(new CustomEvent("__wb_to_event", {detail: msg}));
+    window.dispatchEvent(new CustomEvent('__wb_to_event', { detail: msg }));
   }
 
   sendPageMsg = (isAdd) => {
@@ -198,15 +193,22 @@ class WebSocketHandler {
 
   replaceOuterUrl = (msg, change) => {
     const ts = msg.timestamp;
-    const mod = remoteBrowserMod(this.br, this.currMode.indexOf('replay') !== -1 && ts ? ts : null, '/');
+    const mod = remoteBrowserMod(this.br, ['replay', 'replay-coll', 'patch', 'extract', 'extract_only'].includes(this.currMode) && ts ? ts : null, '/');
     const url = msg.url;
     let prefix;
 
-    if (this.currMode.indexOf('replay') !== -1) {
-      prefix = `${config.appHost}/${this.user}/${this.coll}/`;
-    } else {
-      // TODO: build extract prefix
+    if (this.currMode.includes('replay')) {
+      if (this.params.bookmarkId) {
+        const { listId, bookmarkId } = this.params;
+        prefix = `${config.appHost}/${this.user}/${this.coll}/list/${listId}-${bookmarkId}/`;
+      } else {
+        prefix = `${config.appHost}/${this.user}/${this.coll}/`;
+      }
+    } else if(['patch', 'record'].includes(this.currMode)) {
       prefix = `${config.appHost}/${this.user}/${this.coll}/${this.rec}/${this.currMode}/`;
+    } else if (['extract', 'extract_only'].includes(this.currMode)) {
+      const { archiveId, collId } = this.params;
+      prefix = `${config.appHost}/${this.user}/${this.coll}/${this.rec}/${this.currMode}:${archiveId}${collId || ''}/`;
     }
 
     msg.change = change;

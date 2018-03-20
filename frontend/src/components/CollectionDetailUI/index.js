@@ -85,7 +85,7 @@ class CollectionDetailUI extends Component {
 
   shouldComponentUpdate(nextProps) {
     // don't rerender for loading changes
-    if (this.props.loaded !== nextProps.loaded) {
+    if (!nextProps.loaded) {
       return false;
     }
 

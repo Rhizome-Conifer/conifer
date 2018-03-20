@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { remoteBrowserMod } from 'helpers/utils';
+
 import { InfoWidget, RemoteBrowserSelect } from 'containers';
 
 import TimeFormat from 'components/TimeFormat';
@@ -16,6 +18,7 @@ class ReplayURLBar extends Component {
   }
 
   static propTypes = {
+    activeBrowser: PropTypes.string,
     bookmarks: PropTypes.object,
     params: PropTypes.object,
     recordingIndex: PropTypes.number,
@@ -49,12 +52,12 @@ class ReplayURLBar extends Component {
   }
 
   handleSubmit = (evt) => {
-    const { params: { user, coll } } = this.props;
+    const { activeBrowser, params: { user, coll } } = this.props;
     const { url } = this.state;
 
     if (evt.key === 'Enter') {
       evt.preventDefault();
-      this.context.router.history.push(`/${user}/${coll}/${url}`);
+      this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(activeBrowser, null, '/')}${url}`);
     }
   }
 

@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
+import { batchActions } from 'redux-batched-actions';
+
 
 import config from 'config';
 
@@ -115,26 +117,25 @@ const initialData = [
   },
   {
     // set url and ts in store
-    promise: ({ location: { hash, search }, match: { params: { archiveId, br, collId, extractMode, splat, ts } }, store: { dispatch, getState } }) => {
+    promise: ({ location: { hash, search }, match: { params: { archiveId, br, coll, collId, extractMode, splat, ts } }, store: { dispatch, getState } }) => {
       dispatch(getArchives()).then(() => {
         const state = getState().app;
         const archives = state.getIn(['controls', 'archives']);
         const compositeUrl = `${splat}${search || ''}${hash || ''}`;
 
-        const promises = [
-          dispatch(updateUrlAndTimestamp(compositeUrl, ts)),
-          dispatch(setBrowser(br || null)),
-          dispatch(setExtractable({
+        return dispatch(batchActions([
+          updateUrlAndTimestamp(compositeUrl, ts),
+          setBrowser(br || null),
+          selectCollection(coll),
+          setExtractable({
             allSources: extractMode === 'extract',
             archive: archives.get(archiveId),
             id: archiveId,
             targetColl: collId ? collId.replace(':', '') : null,
             targetUrl: splat,
             timestamp: ts
-          }))
-        ];
-
-        return Promise.all(promises);
+          })
+        ]));
       });
     }
   },
@@ -161,12 +162,6 @@ const initialData = [
       }
 
       return undefined;
-    }
-  },
-  {
-    // set active collection
-    promise: ({ match: { params: { coll } }, store: { dispatch }}) => {
-      return dispatch(selectCollection(coll));
     }
   }
 ];

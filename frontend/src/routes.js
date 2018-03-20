@@ -136,16 +136,16 @@ const controllerRoutes = [
     exact: true
   },
   {
-    path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?/:splat(.*)`,
-    name: 'list replay',
+    path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    name: 'list rb replay',
     footer: false,
     classOverride: true,
     component: Replay,
     exact: true
   },
   {
-    path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
-    name: 'list rb replay',
+    path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?/:splat(.*)`,
+    name: 'list replay',
     footer: false,
     classOverride: true,
     component: Replay,

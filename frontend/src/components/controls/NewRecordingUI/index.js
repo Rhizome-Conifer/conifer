@@ -21,7 +21,6 @@ class NewRecordingUI extends Component {
   static propTypes = {
     collection: PropTypes.object,
     extractable: PropTypes.object,
-    params: PropTypes.object,
     remoteBrowserSelected: PropTypes.string
   }
 

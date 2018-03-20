@@ -8,8 +8,10 @@ import classNames from 'classnames';
 import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
+import { remoteBrowserMod } from 'helpers/utils';
 
 import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
+import { setBrowser } from 'redux/modules/remoteBrowsers';
 
 import { BookmarkRenderer } from './renderers';
 import './style.scss';
@@ -68,17 +70,20 @@ class SidebarListViewer extends Component {
     this.setState({ navigated: false });
     this.props.dispatch(batchActions([
       updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
+      setBrowser(page.get('browser') || null),
       setBookmarkId(page.get('id'))
     ]));
 
     // TODO: should we use router to add history changes?
-    // this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${page.get('id')}/${page.get('timestamp')}/${page.get('url')}`);
+    // const tsMod = remoteBrowserMod(page.get('browser'), page.get('timestamp'), '/');
+    // this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${page.get('id')}/${tsMod}${page.get('url')}`);
   }
 
   onSelectRow = ({ index, rowData }) => {
     const { collection, list } = this.props;
     this.setState({ navigated: false });
-    this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${rowData.get('id')}/${rowData.get('timestamp')}/${rowData.get('url')}`);
+    const tsMod = remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/');
+    this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
   }
 
   rowClass = ({ index }) => {

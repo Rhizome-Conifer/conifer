@@ -83,13 +83,6 @@ export function passwordPassRegex(password) {
   return rgx && rgx[0] === password;
 }
 
-export function getRemoteBrowser(tsFragment) {
-  if (tsFragment && tsFragment.indexOf('$br') !== -1) {
-    return tsFragment.split('$br:')[1];
-  }
-  return null;
-}
-
 export function remoteBrowserMod(rb, ts, sep) {
   // no remote browsers on player
   if (__PLAYER__) {
