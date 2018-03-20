@@ -130,6 +130,7 @@ class Bookmark(RedisUniqueComponent):
         self.data = {'url': props['url'],
                      'timestamp': props.get('timestamp', ''),
                      'title': props['title'],
+                     'desc': props.get('desc', ''),
                      'state': '0',
                      'owner': self.owner.my_id,
                     }
@@ -145,7 +146,7 @@ class Bookmark(RedisUniqueComponent):
         self.access.assert_can_write_coll(self.owner.get_owner())
 
         props = props or {}
-        AVAIL_PROPS = ['title', 'url', 'timestamp', 'browser']
+        AVAIL_PROPS = ['title', 'url', 'timestamp', 'browser', 'desc']
 
         for prop in AVAIL_PROPS:
             if prop in props:

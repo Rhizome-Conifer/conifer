@@ -12,12 +12,14 @@ class TestListsAPI(FullStackTests):
     def _add_bookmark(self, list_id, title,
                       url='http://example.com/',
                       timestamp='20181226000800',
-                      browser='chrome:60'):
+                      browser='chrome:60',
+                      desc='A description for this bookmark'):
 
         params = {'title': title,
                   'url': url,
                   'timestamp': timestamp,
                   'browser': browser,
+                  'desc': desc,
                  }
 
         res = self.testapp.post_json(self._format('/api/v1/list/%s/bookmarks?user={user}&coll=temp' % list_id), params=params)
@@ -212,6 +214,7 @@ class TestListsAPI(FullStackTests):
         assert bookmark['url'] == 'http://example.com/испытание/test'
         assert bookmark['timestamp'] == '20181226000800'
         assert bookmark['browser'] == 'chrome:60'
+        assert bookmark['desc'] == 'A description for this bookmark'
 
         assert self.redis.get(Bookmark.COUNTER_KEY) == '101'
 
@@ -287,7 +290,8 @@ class TestListsAPI(FullStackTests):
 
     def test_update_bookmark(self):
         params = {'title': 'A New Title?',
-                  'timestamp': '201701'
+                  'timestamp': '201701',
+                  'desc': 'New Description'
                  }
 
         res = self.testapp.post_json(self._format('/api/v1/bookmark/104?user={user}&coll=temp&list=1002'), params=params)
@@ -296,6 +300,7 @@ class TestListsAPI(FullStackTests):
         assert bookmark['id'] == '104'
         assert bookmark['title'] == 'A New Title?'
         assert bookmark['timestamp'] == '201701'
+        assert bookmark['desc'] == 'New Description'
 
     def test_get_lists_with_bookmarks(self):
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
