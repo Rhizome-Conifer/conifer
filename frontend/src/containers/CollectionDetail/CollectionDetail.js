@@ -7,8 +7,8 @@ import { Map } from 'immutable';
 import { incrementCollCount } from 'redux/modules/auth';
 import { deleteCollection, load as loadColl, resetSaveState as resetCollSaveState,
          saveDescription as saveCollDesc } from 'redux/modules/collection';
-import { addTo, load as loadList, removeBookmark, saveDescription as saveListDesc,
-         resetEditState as resetListEditState, saveSort } from 'redux/modules/list';
+import { addTo, load as loadList, removeBookmark, edit as editList,
+         resetEditState, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { deleteUserCollection } from 'redux/modules/user';
 import { deleteRecording } from 'redux/modules/recordings';
@@ -135,8 +135,8 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
       dispatch(saveSort(user, coll, list, ids));
     },
     saveDescription: (user, coll, desc, listId = null) => {
-      dispatch(listId ? saveListDesc(user, coll, listId, desc) : saveCollDesc(user, coll, desc))
-        .then(() => setTimeout(() => dispatch(listId ? resetListEditState() : resetCollSaveState()), 3000), () => {});
+      dispatch(listId ? editList(user, coll, listId, { desc }) : saveCollDesc(user, coll, desc))
+        .then(() => setTimeout(() => dispatch(listId ? resetEditState() : resetCollSaveState()), 3000), () => {});
     },
     searchPages: createSearchAction('collection.pages'),
     dispatch
