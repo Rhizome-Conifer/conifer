@@ -11,6 +11,10 @@ const LIST_LOAD = 'wr/list/LIST_LOAD';
 const LIST_LOAD_SUCCESS = 'wr/list/LIST_LOAD_SUCCESS';
 const LIST_LOAD_FAIL = 'wr/list/LIST_LOAD_FAIL';
 
+const LIST_ADD = 'wr/list/LIST_ADD';
+const LIST_ADD_SUCCESS = 'wr/list/LIST_ADD_SUCCESS';
+const LIST_ADD_FAIL = 'wr/list/LIST_ADD_FAIL';
+
 const LIST_EDIT = 'wr/list/LIST_EDIT';
 const LIST_EDIT_SUCCESS = 'wr/list/LIST_EDIT_SUCCESS';
 const LIST_EDIT_FAIL = 'wr/list/LIST_EDIT_FAIL';
@@ -130,7 +134,7 @@ export function edit(user, coll, id, data) {
 
 export function addTo(user, coll, listId, data) {
   return {
-    types: [LIST_CREATE, LIST_CREATE_SUCCESS, LIST_CREATE_FAIL],
+    types: [LIST_ADD, LIST_ADD_SUCCESS, LIST_ADD_FAIL],
     promise: client => client.post(`${apiPath}/list/${listId}/bookmarks`, {
       params: { user, coll },
       data
