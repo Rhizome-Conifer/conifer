@@ -16,7 +16,7 @@ const mapStateToProps = (outerState) => {
     bookmarks,
     collection: app.get('collection'),
     list: app.get('list'),
-    listSaveSuccess: app.getIn(['list', 'edited']),
+    listEdited: app.getIn(['list', 'edited']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

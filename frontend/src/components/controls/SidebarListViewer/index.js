@@ -13,6 +13,7 @@ import { remoteBrowserMod } from 'helpers/utils';
 import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
 
+import InlineEditor from 'components/InlineEditor';
 import WYSIWYG from 'components/WYSIWYG';
 
 import { BookmarkRenderer } from './renderers';
@@ -30,7 +31,7 @@ class SidebarListViewer extends Component {
     bookmarks: PropTypes.object,
     collection: PropTypes.object,
     list: PropTypes.object,
-    listSaveSuccess: PropTypes.bool,
+    listEdited: PropTypes.bool,
     dispatch: PropTypes.func,
     editList: PropTypes.func,
     timestamp: PropTypes.string,
@@ -104,6 +105,11 @@ class SidebarListViewer extends Component {
     });
   }
 
+  editListTitle = (title) => {
+    const { collection, list } = this.props;
+    this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { title });
+  }
+
   editListDesc = (desc) => {
     const { collection, list } = this.props;
     this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
@@ -115,7 +121,13 @@ class SidebarListViewer extends Component {
     return (
       <div className="bookmark-list">
         <header>
-          <h4>{list.get('title')}</h4>
+          <InlineEditor
+            blockDisplay
+            initial={list.get('title')}
+            onSave={this.editListTitle}
+            success={this.props.listEdited}>
+            <h4>{list.get('title')}</h4>
+          </InlineEditor>
           {
             list.get('desc') &&
               <WYSIWYG
@@ -123,7 +135,7 @@ class SidebarListViewer extends Component {
                 initial={list.get('desc')}
                 cancel={this.toggleEdit}
                 save={this.editListDesc}
-                success={this.props.listSaveSuccess} />
+                success={this.props.listEdited} />
           }
         </header>
         <div className="bookmarks">

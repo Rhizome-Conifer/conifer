@@ -1,0 +1,44 @@
+@import 'src/vars';
+
+.wr-inline-editor {
+    display: inline-block;
+    position: relative;
+
+    &.block-display {
+        display: block;
+    }
+
+    .form-wrapper {
+        min-width: 17.5rem;
+
+        .form-group {
+            display: flex;
+
+            button {
+                margin-left: .5rem;
+
+                &.btn-success {
+                    fill: #FFF;
+                }
+            }
+        }
+
+        .child-container {
+            display: inline-block;
+        }
+    }
+
+    .wr-inline-edit-button {
+        transition: opacity $midShift ease-in-out;
+        opacity: 0;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+    }
+
+    &:hover {
+        .wr-inline-edit-button {
+            opacity: 1;
+        }
+    }
+}

@@ -36,12 +36,14 @@ class CollectionDetailUI extends Component {
     deleteRec: PropTypes.func,
     dispatch: PropTypes.func,
     list: PropTypes.object,
+    listEdited: PropTypes.bool,
     listSaveSuccess: PropTypes.bool,
     pages: PropTypes.object,
     recordings: PropTypes.object,
     removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func,
     saveDescription: PropTypes.func,
+    saveListEdit: PropTypes.func,
     searchText: PropTypes.string,
     searchPages: PropTypes.func
   };
@@ -377,6 +379,8 @@ class CollectionDetailUI extends Component {
           activeList={activeList}
           collection={collection}
           list={list}
+          listEdited={this.props.listEdited}
+          saveListEdit={this.props.saveListEdit}
           saveDescription={this.props.saveDescription}
           saveSuccess={activeList ? this.props.listSaveSuccess : this.props.collSaveSuccess} />
 

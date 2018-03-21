@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import { defaultBookmarkDesc, untitledEntry } from 'config';
 
+import InlineEditor from 'components/InlineEditor';
 import WYSIWYG from 'components/WYSIWYG';
 
 import './style.scss';
@@ -44,12 +45,13 @@ class ListMetadataUI extends Component {
         {
           activeBookmark &&
             <React.Fragment>
-              <WYSIWYG
-                minimal
-                className="bookmark-title"
+              <InlineEditor
+                blockDisplay
                 initial={activeBookmark.get('title') || untitledEntry}
-                save={this.editBookmarkTitle}
-                success={this.props.bkEdited} />
+                onSave={this.editBookmarkTitle}
+                success={this.props.bkEdited}>
+                <h4>{activeBookmark.get('title')}</h4>
+              </InlineEditor>
               <WYSIWYG
                 minimal
                 initial={activeBookmark.get('desc') || defaultBookmarkDesc}

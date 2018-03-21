@@ -92,6 +92,7 @@ const mapStateToProps = (outerState) => {
     pages: isIndexing ? getOrderedPages(app) : pageFeed,
     searchText,
     list: app.get('list'),
+    listEdited: app.getIn(['list', 'edited']),
     collSaveSuccess: app.getIn(['collection', 'descSave']),
     listSaveSuccess: app.getIn(['list', 'edited'])
   };
@@ -127,6 +128,11 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
           }
         }, () => { console.log('Rec delete error..'); });
     },
+    saveListEdit: (user, coll, listId, data) => {
+      dispatch(editList(user, coll, listId, data))
+        .then(() => dispatch(loadColl(user, coll)))
+        .then(() => setTimeout(() => dispatch(resetEditState()), 3000), () => {});
+    },
     removeBookmark: (list, id) => {
       dispatch(removeBookmark(user, coll, list, id))
         .then(() => dispatch(loadList(user, coll, list)));
@@ -134,9 +140,9 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
     saveBookmarkSort: (list, ids) => {
       dispatch(saveSort(user, coll, list, ids));
     },
-    saveDescription: (user, coll, desc, listId = null) => {
-      dispatch(listId ? editList(user, coll, listId, { desc }) : saveCollDesc(user, coll, desc))
-        .then(() => setTimeout(() => dispatch(listId ? resetEditState() : resetCollSaveState()), 3000), () => {});
+    saveDescription: (user, coll, desc) => {
+      dispatch(saveCollDesc(user, coll, desc))
+        .then(() => setTimeout(() => dispatch(resetCollSaveState()), 3000));
     },
     searchPages: createSearchAction('collection.pages'),
     dispatch
