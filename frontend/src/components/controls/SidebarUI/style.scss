@@ -52,6 +52,10 @@ $collapsedWidth: 3rem;
         }
     }
 
+    .ReactVirtualized__Grid__innerScrollContainer:last-of-type {
+        margin-bottom: 1.5rem;
+    }
+
     .search-box {
         font-size: 1.2rem;
     }

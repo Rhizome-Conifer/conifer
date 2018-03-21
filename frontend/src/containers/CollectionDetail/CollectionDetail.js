@@ -8,10 +8,10 @@ import { incrementCollCount } from 'redux/modules/auth';
 import { deleteCollection, load as loadColl, resetSaveState as resetCollSaveState,
          saveDescription as saveCollDesc } from 'redux/modules/collection';
 import { addTo, load as loadList, removeBookmark, saveDescription as saveListDesc,
-         resetSaveState as resetListSaveState, saveSort } from 'redux/modules/list';
+         resetEditState as resetListEditState, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { deleteUserCollection } from 'redux/modules/user';
-import { deleteRecording } from 'redux/modules/recordings'
+import { deleteRecording } from 'redux/modules/recordings';
 import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/CollectionDetailUI';
@@ -93,7 +93,7 @@ const mapStateToProps = (outerState) => {
     searchText,
     list: app.get('list'),
     collSaveSuccess: app.getIn(['collection', 'descSave']),
-    listSaveSuccess: app.getIn(['list', 'descSave'])
+    listSaveSuccess: app.getIn(['list', 'edited'])
   };
 };
 
@@ -136,7 +136,7 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
     },
     saveDescription: (user, coll, desc, listId = null) => {
       dispatch(listId ? saveListDesc(user, coll, listId, desc) : saveCollDesc(user, coll, desc))
-        .then(() => setTimeout(() => dispatch(listId ? resetListSaveState() : resetCollSaveState()), 3000), () => {});
+        .then(() => setTimeout(() => dispatch(listId ? resetListEditState() : resetCollSaveState()), 3000), () => {});
     },
     searchPages: createSearchAction('collection.pages'),
     dispatch

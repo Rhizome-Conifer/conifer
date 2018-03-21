@@ -13,12 +13,15 @@ import { remoteBrowserMod } from 'helpers/utils';
 import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
 
+import WYSIWYG from 'components/WYSIWYG';
+
 import { BookmarkRenderer } from './renderers';
 import './style.scss';
 
 
 class SidebarListViewer extends Component {
   static contextTypes = {
+    canAdmin: PropTypes.bool,
     router: PropTypes.object,
   }
 
@@ -27,7 +30,9 @@ class SidebarListViewer extends Component {
     bookmarks: PropTypes.object,
     collection: PropTypes.object,
     list: PropTypes.object,
+    listSaveSuccess: PropTypes.bool,
     dispatch: PropTypes.func,
+    editList: PropTypes.func,
     timestamp: PropTypes.string,
     url: PropTypes.string
   }
@@ -53,8 +58,7 @@ class SidebarListViewer extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (nextProps.list.equals(this.props.list) &&
-        nextProps.activeBookmark === this.props.activeBookmark &&
+    if (nextProps === this.props &&
         nextState.navigated === this.state.navigated) {
       return false;
     }
@@ -100,6 +104,11 @@ class SidebarListViewer extends Component {
     });
   }
 
+  editListDesc = (desc) => {
+    const { collection, list } = this.props;
+    this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
+  }
+
   render() {
     const { activeBookmark, bookmarks, collection, list } = this.props;
 
@@ -107,10 +116,14 @@ class SidebarListViewer extends Component {
       <div className="bookmark-list">
         <header>
           <h4>{list.get('title')}</h4>
-          <hr />
           {
             list.get('desc') &&
-              <p>{list.get('desc')}</p>
+              <WYSIWYG
+                minimal
+                initial={list.get('desc')}
+                cancel={this.toggleEdit}
+                save={this.editListDesc}
+                success={this.props.listSaveSuccess} />
           }
         </header>
         <div className="bookmarks">

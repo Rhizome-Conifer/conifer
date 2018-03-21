@@ -42,6 +42,7 @@ module.exports = Object.assign({
   internalApiPort: process.env.INTERNAL_PORT,
   product: 'Webrecorder',
   defaultRecordingTitle: 'Recording Session',
+  defaultBookmarkDesc: 'No description provided.',
   defaultCollectionTitle: 'New Collection',
   defaultCollDesc: '*This collection doesn\'t yet have a description.*',
   storageKey: 'wrLocalData',

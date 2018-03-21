@@ -7,6 +7,7 @@ import { rts, truncate } from 'helpers/utils';
 
 
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
+const getActiveBookmarkId = state => (state.app ? state.app : state).getIn(['controls', 'activeBookmarkId']);
 const getArchives = state => state.getIn(['controls', 'archives']);
 const getCollections = state => state.getIn(['collections', 'collections']);
 const getListBookmarks = state => (state.app ? state.app : state).getIn(['list', 'bookmarks']);
@@ -207,6 +208,13 @@ export const getActivePage = createSelector(
 );
 
 export const getActiveBookmark = createSelector(
+  [getListBookmarks, getActiveBookmarkId],
+  (bookmarks, bkId) => {
+    return bookmarks.find(bk => bk.get('id') === bkId);
+  }
+);
+
+export const getActiveBookmarkByValues = createSelector(
   [getListBookmarks, getTimestamp, getUrl],
   (bookmarks, ts, url) => {
     const rtsUrl = rts(url);

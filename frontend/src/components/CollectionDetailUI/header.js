@@ -22,22 +22,6 @@ class CollDetailHeader extends Component {
     saveSuccess: PropTypes.bool
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      edit: false
-    };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (this.props.saveSuccess && !nextProps.saveSuccess) {
-      this.setState({ edit: false });
-    }
-  }
-
-  toggleEdit = () => this.setState({ edit: !this.state.edit })
-
   _saveDesc = (desc) => {
     const { activeList, collection, list, saveDescription } = this.props;
     if (activeList) {
@@ -49,7 +33,6 @@ class CollDetailHeader extends Component {
 
   render() {
     const { activeList, collection, list } = this.props;
-    const { edit } = this.state;
 
     return (
       <header>
@@ -57,15 +40,9 @@ class CollDetailHeader extends Component {
         <hr />
         <div className="desc-container">
           <WYSIWYG
-            editMode={edit}
             initial={activeList ? list.get('desc') : collection.get('desc') || defaultCollDesc}
-            cancel={this.toggleEdit}
             save={this._saveDesc}
             success={this.props.saveSuccess} />
-          {
-            this.context.canAdmin && !edit &&
-              <Button bsSize="xs" className="desc-edit-button" onClick={this.toggleEdit}>edit</Button>
-          }
         </div>
       </header>
     );
