@@ -9,6 +9,10 @@ import './style.scss';
 
 
 class InlineEditor extends Component {
+  static contextTypes = {
+    canAdmin: PropTypes.bool
+  };
+
   static propTypes = {
     initial: PropTypes.string,
     onSave: PropTypes.func,
@@ -72,6 +76,7 @@ class InlineEditor extends Component {
   }
 
   render() {
+    const { canAdmin } = this.context;
     const { blockDisplay, label } = this.props;
 
     return (
@@ -96,7 +101,10 @@ class InlineEditor extends Component {
             </div> :
             <div ref={(obj) => { this.childContainer = obj; }} className="child-container">
               {this.props.children}
-              <Button className="wr-inline-edit-button" bsSize="xs" onClick={this.toggleEditMode}>edit</Button>
+              {
+                canAdmin &&
+                  <Button className="wr-inline-edit-button" bsSize="xs" onClick={this.toggleEditMode}>edit</Button>
+              }
             </div>
           }
       </div>

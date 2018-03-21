@@ -6,6 +6,8 @@ import ButtonGroup from 'react-rte/lib/ui/ButtonGroup';
 import IconButton from 'react-rte/lib/ui/IconButton';
 import { Button } from 'react-bootstrap';
 
+import { XIcon } from 'components/icons';
+
 import './style.scss';
 
 
@@ -124,6 +126,8 @@ class WYSIWYG extends Component {
   }
   _save = () => this.props.save(this.state.editorState.toString(this.method))
 
+  toggleMarkdownMode = () => this.setState({ markdownEdit: !this.state.markdownEdit })
+
   toggleEditMode = () => {
     this.setState({ localEditMode: !this.state.localEditMode });
   }
@@ -153,7 +157,7 @@ class WYSIWYG extends Component {
                       iconName="remove-link"
                       focusOnClick={false}
                       className={classNames('markdown-button', {active: this.state.markdownEdit})}
-                      onClick={() => { this.setState({ markdownEdit: !this.state.markdownEdit}); }}
+                      onClick={this.toggleMarkdownMode}
                     />
                   </ButtonGroup>
                 ]} />
@@ -170,10 +174,15 @@ class WYSIWYG extends Component {
         }
         {
           _editMode && this.state.markdownEdit &&
-            <textarea
-              className={classNames('markdown-editor', { visible: this.state.markdownEdit })}
-              onChange={this._onChangeSource}
-              value={this.state.editorState.toString(this.method)} />
+            <React.Fragment>
+              <button onClick={this.toggleMarkdownMode} className="close-markdown borderless">
+                <XIcon />
+              </button>
+              <textarea
+                className={classNames('markdown-editor', { visible: this.state.markdownEdit })}
+                onChange={this._onChangeSource}
+                value={this.state.editorState.toString(this.method)} />
+            </React.Fragment>
         }
         {
           canAdmin && !externalEditButton && !_editMode &&
