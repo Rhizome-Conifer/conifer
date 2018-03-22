@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 
 import { untitledEntry } from 'config';
 
-import EditableString from 'components/EditableString';
 import RemoveWidget from 'components/RemoveWidget';
 import TimeFormat from 'components/TimeFormat';
 import { capitalize, remoteBrowserMod } from 'helpers/utils';
@@ -37,9 +36,7 @@ export function LinkRenderer({ cellData, rowData, columnData: { collection, list
     <Link
       to={linkTo}
       title={rowData.get('title')}>
-      <EditableString
-        string={cellData || untitledEntry}
-        className="edit-coll-title" />
+      {cellData || untitledEntry}
     </Link>
   );
 }
