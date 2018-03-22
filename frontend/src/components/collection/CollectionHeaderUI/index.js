@@ -6,10 +6,9 @@ import { defaultCollDesc } from 'config';
 
 import InlineEditor from 'components/InlineEditor';
 import WYSIWYG from 'components/WYSIWYG';
-import { PencilIcon } from 'components/icons';
 
 
-class CollDetailHeader extends Component {
+class CollectionHeaderUI extends Component {
 
   static contextTypes = {
     canAdmin: PropTypes.bool
@@ -18,10 +17,11 @@ class CollDetailHeader extends Component {
   static propTypes = {
     activeList: PropTypes.bool,
     collection: PropTypes.object,
+    collSaveSuccess: PropTypes.bool,
     list: PropTypes.object,
     listEdited: PropTypes.bool,
     saveDescription: PropTypes.func,
-    saveSuccess: PropTypes.bool,
+    listSaveSuccess: PropTypes.bool,
     saveListEdit: PropTypes.func
   };
 
@@ -79,4 +79,4 @@ class CollDetailHeader extends Component {
 }
 
 
-export default CollDetailHeader;
+export default CollectionHeaderUI;

@@ -5,10 +5,8 @@ import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
 import { incrementCollCount } from 'redux/modules/auth';
-import { deleteCollection, load as loadColl, resetSaveState as resetCollSaveState,
-         saveDescription as saveCollDesc } from 'redux/modules/collection';
-import { addTo, load as loadList, removeBookmark, edit as editList,
-         resetEditState, saveSort } from 'redux/modules/list';
+import { deleteCollection, load as loadColl } from 'redux/modules/collection';
+import { addTo, load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { deleteUserCollection } from 'redux/modules/user';
 import { deleteRecording } from 'redux/modules/recordings';
@@ -91,10 +89,7 @@ const mapStateToProps = (outerState) => {
     recordings: isLoaded ? getOrderedRecordings(app) : null,
     pages: isIndexing ? getOrderedPages(app) : pageFeed,
     searchText,
-    list: app.get('list'),
-    listEdited: app.getIn(['list', 'edited']),
-    collSaveSuccess: app.getIn(['collection', 'descSave']),
-    listSaveSuccess: app.getIn(['list', 'edited'])
+    list: app.get('list')
   };
 };
 
@@ -128,21 +123,12 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
           }
         }, () => { console.log('Rec delete error..'); });
     },
-    saveListEdit: (user, coll, listId, data) => {
-      dispatch(editList(user, coll, listId, data))
-        .then(() => dispatch(loadColl(user, coll)))
-        .then(() => setTimeout(() => dispatch(resetEditState()), 3000), () => {});
-    },
     removeBookmark: (list, id) => {
       dispatch(removeBookmark(user, coll, list, id))
         .then(() => dispatch(loadList(user, coll, list)));
     },
     saveBookmarkSort: (list, ids) => {
       dispatch(saveSort(user, coll, list, ids));
-    },
-    saveDescription: (user, coll, desc) => {
-      dispatch(saveCollDesc(user, coll, desc))
-        .then(() => setTimeout(() => dispatch(resetCollSaveState()), 3000));
     },
     searchPages: createSearchAction('collection.pages'),
     dispatch

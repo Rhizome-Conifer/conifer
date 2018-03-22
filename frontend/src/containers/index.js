@@ -1,5 +1,6 @@
 export CollectionDropdown from './CollectionDropdown/CollectionDropdown';
 export CollectionDetail from './CollectionDetail/CollectionDetail';
+export CollectionHeader from './CollectionHeader/CollectionHeader';
 export CollectionList from './CollectionList/CollectionList';
 export Extract from './Extract/Extract';
 export ExtractWidget from './ExtractWidget/ExtractWidget';

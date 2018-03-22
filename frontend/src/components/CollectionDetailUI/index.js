@@ -10,6 +10,8 @@ import { Link } from 'react-router-dom';
 import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
+import { CollectionHeader } from 'containers';
+
 import SessionCollapsible from 'components/SessionCollapsible';
 import Modal from 'components/Modal';
 import { CloseIcon } from 'components/icons';
@@ -17,7 +19,6 @@ import { CloseIcon } from 'components/icons';
 import 'react-virtualized/styles.css';
 
 import CollectionSidebar from './sidebar';
-import CollDetailHeader from './header';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
 import { CollectionManagement } from './management';
 import { BrowserRenderer, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
@@ -31,19 +32,14 @@ class CollectionDetailUI extends Component {
     auth: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
-    collSaveSuccess: PropTypes.bool,
     deleteColl: PropTypes.func,
     deleteRec: PropTypes.func,
     dispatch: PropTypes.func,
     list: PropTypes.object,
-    listEdited: PropTypes.bool,
-    listSaveSuccess: PropTypes.bool,
     pages: PropTypes.object,
     recordings: PropTypes.object,
     removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func,
-    saveDescription: PropTypes.func,
-    saveListEdit: PropTypes.func,
     searchText: PropTypes.string,
     searchPages: PropTypes.func
   };
@@ -375,14 +371,7 @@ class CollectionDetailUI extends Component {
 
     return (
       <div className="wr-coll-detail">
-        <CollDetailHeader
-          activeList={activeList}
-          collection={collection}
-          list={list}
-          listEdited={this.props.listEdited}
-          saveListEdit={this.props.saveListEdit}
-          saveDescription={this.props.saveDescription}
-          saveSuccess={activeList ? this.props.listSaveSuccess : this.props.collSaveSuccess} />
+        <CollectionHeader activeList={activeList} />
 
         <div className="grid-wrapper">
           <div className="wr-coll-container">
