@@ -242,13 +242,17 @@ class TestRegisterMigrate(FullStackTests):
 
         assert 'Other Coll' in res.text
 
-        res = self.testapp.post('/api/v1/collections/other-coll/rename/New Coll?user=someuser')
+        params = {'title': 'New Coll'}
+
+        res = self.testapp.post_json('/api/v1/collection/other-coll?user=someuser', params=params)
 
         assert res.json == {'error_message': 'duplicate name: new-coll'}
 
-        res = self.testapp.post('/api/v1/collections/other-coll/rename/New Coll 3?user=someuser')
+        params = {'title': 'New Coll 3'}
 
-        assert res.json == {'coll_id': 'new-coll-3'}
+        res = self.testapp.post_json('/api/v1/collection/other-coll?user=someuser', params=params)
+
+        assert res.json['collection']['id'] == 'new-coll-3'
 
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-migrate', 'new-coll-2'}
 
@@ -448,9 +452,10 @@ class TestRegisterMigrate(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
 
     def test_rename_coll(self):
-        res = self.testapp.post('/api/v1/collections/test-migrate/rename/Test Coll?user=someuser')
+        params = {'title': 'Test Coll'}
+        res = self.testapp.post_json('/api/v1/collection/test-migrate?user=someuser', params=params)
 
-        assert res.json == {'coll_id': 'test-coll'}
+        assert res.json['collection']['id'] == 'test-coll'
 
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
 

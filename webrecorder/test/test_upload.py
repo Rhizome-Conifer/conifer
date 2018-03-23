@@ -149,8 +149,8 @@ class TestUpload(FullStackTests):
         assert collection['created_at'] == TestUpload.created_at_0
         assert collection['recordings'][0]['created_at'] == TestUpload.created_at_1
 
-        assert collection['updated_at'] == TestUpload.updated_at_0
-        assert collection['recordings'][0]['updated_at'] == TestUpload.updated_at_1
+        assert collection['updated_at'] >= TestUpload.updated_at_0
+        assert collection['recordings'][0]['updated_at'] >= TestUpload.updated_at_1
 
     def test_upload_3_x_warc(self):
         with open(self.test_upload_warc, 'rb') as fh:
