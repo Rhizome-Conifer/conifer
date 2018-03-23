@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button } from 'react-bootstrap';
+import Toggle from 'react-toggle';
+import { Button, ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
 
 import { defaultCollDesc } from 'config';
 
+import { Upload } from 'containers';
+
+import Modal from 'components/Modal';
 import InlineEditor from 'components/InlineEditor';
 import WYSIWYG from 'components/WYSIWYG';
 
@@ -22,11 +26,13 @@ class CollectionHeaderUI extends Component {
     collection: PropTypes.object,
     collSaveSuccess: PropTypes.bool,
     condensed: PropTypes.bool,
+    deleteColl: PropTypes.func,
     list: PropTypes.object,
     listEdited: PropTypes.bool,
     saveDescription: PropTypes.func,
     listSaveSuccess: PropTypes.bool,
-    saveListEdit: PropTypes.func
+    saveListEdit: PropTypes.func,
+    setCollPublic: PropTypes.func
   };
 
   constructor(props) {
@@ -37,6 +43,8 @@ class CollectionHeaderUI extends Component {
     this.state = {
       animated: false,
       condensed: false,
+      confirmDelete: '',
+      deleteModal: false,
       toggleDesc: false,
       abbreviated: false,
       hoverOverride: false,
@@ -49,7 +57,7 @@ class CollectionHeaderUI extends Component {
       this.setState({ hoverOverride: false });
     }
 
-    if (nextProps.condensed && !this.props.condensed) {
+    if (nextProps.condensed && !this.props.condensed && this.descContainer) {
       const height = this.descContainer.getBoundingClientRect().height;
       this.setState({ height });
       setTimeout(() => this.setState({ condensed: true }), 10);
@@ -59,7 +67,16 @@ class CollectionHeaderUI extends Component {
     }
   }
 
+  setPublic = () => {
+    const { collection } = this.props;
+    this.props.setCollPublic(collection.get('id'), collection.get('user'), !collection.get('isPublic') === '1');
+  }
+
   editorRendered = () => {
+    if (!this.descContainer) {
+      return;
+    }
+
     const h = this.descContainer.getBoundingClientRect().height;
     const state = { animated: true };
 
@@ -74,6 +91,8 @@ class CollectionHeaderUI extends Component {
     // TODO: connect to api
     console.log('saving..', title);
   }
+
+  handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
 
   saveListTitle = (title) => {
     const { collection, list } = this.props;
@@ -107,6 +126,32 @@ class CollectionHeaderUI extends Component {
     }
   }
 
+  toggleDeleteModal = () => this.setState({ deleteModal: !this.state.deleteModal })
+
+  deleteCollection = () => {
+    const { collection } = this.props;
+    const { confirmDelete } = this.state;
+
+    if (collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
+      this.props.deleteColl(collection.get('user'), collection.get('id'));
+    }
+  }
+
+  validateConfirmDelete = (evt) => {
+    const { collection } = this.props;
+    const { confirmDelete } = this.state;
+
+    if (!confirmDelete) {
+      return null;
+    }
+
+    if (confirmDelete && !collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
+      return 'error';
+    }
+
+    return 'success';
+  }
+
   render() {
     const { activeList, collection, collSaveSuccess, list, listEdited } = this.props;
     const { abbreviated, animated, condensed, height, hoverOverride, toggleDesc } = this.state;
@@ -122,23 +167,70 @@ class CollectionHeaderUI extends Component {
         className={containerClasses}
         onMouseEnter={this.hoverDelay}
         onMouseLeave={this.hoverCancel}>
-        <InlineEditor
-          initial={collection.get('title')}
-          onSave={this.editTitle}>
-          <h1>{collection.get('title')}</h1>
-        </InlineEditor>
-        {
-          activeList &&
-            <React.Fragment>
-              <h1>&nbsp;>&nbsp;</h1>
-              <InlineEditor
-                initial={list.get('title')}
-                onSave={this.saveListTitle}
-                success={this.props.listEdited}>
-                <h1>{list.get('title')}</h1>
-              </InlineEditor>
-            </React.Fragment>
-        }
+        <div className="heading-row">
+          <div className="heading-container">
+            <InlineEditor
+              initial={collection.get('title')}
+              onSave={this.editTitle}>
+              <h1>{collection.get('title')}</h1>
+            </InlineEditor>
+            {
+              activeList &&
+                <React.Fragment>
+                  <h1>&nbsp;>&nbsp;</h1>
+                  <InlineEditor
+                    initial={list.get('title')}
+                    onSave={this.saveListTitle}
+                    success={this.props.listEdited}>
+                    <h1>{list.get('title')}</h1>
+                  </InlineEditor>
+                </React.Fragment>
+            }
+          </div>
+          <div className="collection-tools">
+            <div className="access-switch">
+              <span className="right-buffer-sm hidden-xs">Collection Public?</span>
+              <Toggle
+                icons={false}
+                defaultChecked={collection.get('isPublic') === '1'}
+                onChange={this.setPublic} />
+            </div>
+            <Button bsSize="sm" bsStyle="success" onClick={() => { window.location = `/${collection.get('user')}/${collection.get('id')}/$download`; }}>
+              <span className="glyphicon glyphicon-download" /> Download
+            </Button>
+            <Upload fromCollection={collection.get('id')} classes="btn btn-sm btn-default">
+              <span className="glyphicon glyphicon-upload" /> upload
+            </Upload>
+            <Button bsStyle="danger" bsSize="sm" onClick={this.toggleDeleteModal}>
+              Delete Collection
+            </Button>
+            <Modal
+              visible={this.state.deleteModal}
+              closeCb={this.toggleDeleteModal}
+              dialogClassName="wr-delete-modal"
+              header={<h4>Confirm Delete Collection</h4>}
+              footer={
+                <React.Fragment>
+                  <Button onClick={this.toggleDeleteModal} style={{ marginRight: 5 }}>Cancel</Button>
+                  <Button onClick={this.deleteCollection} disabled={this.validateConfirmDelete() !== 'success'} bsStyle="danger">Confirm Delete</Button>
+                </React.Fragment>
+              }>
+              <p>Are you sure you want to delete the collection <b>{collection.get('title')}</b> {`/${collection.get('user')}/${collection.get('id')}/`}?</p>
+              <p>If you confirm, <b>all recordings will be permanently deleted</b>.</p>
+              <p>Be sure to download the collection first if you would like to keep any data.</p>
+              <FormGroup validationState={this.validateConfirmDelete()}>
+                <ControlLabel>Type the collection title to confirm:</ControlLabel>
+                <FormControl
+                  id="confirm-delete"
+                  type="text"
+                  name="confirmDelete"
+                  placeholder={collection.get('title')}
+                  value={this.state.confirmDelete}
+                  onChange={this.handleChange} />
+              </FormGroup>
+            </Modal>
+          </div>
+        </div>
         <hr />
         <div
           ref={(obj) => { this.descContainer = obj; }}

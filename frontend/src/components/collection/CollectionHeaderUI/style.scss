@@ -5,8 +5,11 @@ header.wr-collection-header {
 
     &.animated {
         h1 {
-            transition: font-size 450ms ease-in-out,
-                        margin 450ms ease-in-out;
+            transition: font-size 450ms ease-in-out;
+        }
+
+        .heading-row {
+            transition: margin 450ms ease-in-out;
         }
 
         .desc-container {
@@ -42,9 +45,30 @@ header.wr-collection-header {
     h1 {
         display: inline-block;
         font-family: $serif;
-        margin-top: 0;
-        margin-bottom: 2.5rem;
+        margin: 0;
         font-size: 2.8rem;
+    }
+
+    .heading-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+
+        .access-switch {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+        }
+
+        .collection-tools {
+            display: flex;
+            align-items: center;
+
+            button + button {
+                margin-left: .5rem;
+            }
+        }
     }
 
     hr {
@@ -106,9 +130,12 @@ header.wr-collection-header {
     }
 
     &.condensed {
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
+        .heading-row {
+            margin-bottom: 0.5rem;
+
+            h1 {
+                font-size: 2rem;
+            }
         }
 
         .desc-container {

@@ -3,33 +3,16 @@ import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
 
 import Searchbox from 'components/Searchbox';
-import { Upload } from 'containers';
-import { TrashIcon } from 'components/icons';
 
 import 'shared/scss/toggle.scss';
 
 
 function CollectionManagement(props, context) {
   const { canAdmin, isAnon } = context;
-  const { collection, expandAll, groupDisplay, activeList, onToggle, onDelete, openAddToList,
-          toggleExpandAllSessions, search, searchText, selectedPages } = props;
+  const { expandAll, groupDisplay, activeList, onToggle, openAddToList, toggleExpandAllSessions, search, searchText, selectedPages } = props;
 
   return (
     <nav>
-      {
-        canAdmin &&
-          <React.Fragment>
-            <a href={`/${collection.get('user')}/${collection.get('id')}/$download`}>
-              <span className="glyphicon glyphicon-download" />
-            </a>
-            <Upload fromCollection={collection.get('id')} classes="borderless">
-              <span className="glyphicon glyphicon-upload" />
-            </Upload>
-            <button className="borderless" onClick={onDelete}>
-              <TrashIcon />
-            </button>
-          </React.Fragment>
-      }
       {
         !activeList &&
           <div className="toggle-label">
@@ -61,7 +44,6 @@ CollectionManagement.propTypes = {
   expandAll: PropTypes.bool,
   groupDisplay: PropTypes.bool,
   activeList: PropTypes.bool,
-  onDelete: PropTypes.func,
   onToggle: PropTypes.func,
   openAddToList: PropTypes.func,
   toggleExpandAllSessions: PropTypes.func,
@@ -75,6 +57,4 @@ CollectionManagement.contextTypes = {
   isAnon: PropTypes.bool
 };
 
-export {
-  CollectionManagement
-};
+export default CollectionManagement;

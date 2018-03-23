@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
-import { Button, ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { setSort } from 'redux/modules/collection';
@@ -20,7 +20,7 @@ import 'react-virtualized/styles.css';
 
 import CollectionSidebar from './sidebar';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
-import { CollectionManagement } from './management';
+import CollectionManagement from './management';
 import { BrowserRenderer, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
@@ -32,7 +32,6 @@ class CollectionDetailUI extends Component {
     auth: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
-    deleteColl: PropTypes.func,
     deleteRec: PropTypes.func,
     dispatch: PropTypes.func,
     list: PropTypes.object,
@@ -55,8 +54,6 @@ class CollectionDetailUI extends Component {
     this.initialState = {
       addToListModal: false,
       checkedLists: {},
-      confirmDelete: '',
-      deleteModal: false,
       expandAll: false,
       groupDisplay: false,
       listBookmarks: props.list.get('bookmarks'),
@@ -300,29 +297,6 @@ class CollectionDetailUI extends Component {
     saveBookmarkSort(list.get('id'), order);
   }
 
-  deleteCollection = () => {
-    const { collection } = this.props;
-    const { confirmDelete } = this.state;
-
-    if (collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
-      this.props.deleteColl();
-    }
-  }
-
-  validateConfirmDelete = (evt) => {
-    const { collection } = this.props;
-    const { confirmDelete } = this.state;
-
-    if (!confirmDelete) {
-      return null;
-    }
-
-    if (confirmDelete && !collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
-      return 'error';
-    }
-
-    return 'success';
-  }
 
   scrollHandler = ({ clientHeight, scrollHeight, scrollTop }) => {
     if (scrollHeight > clientHeight * 1.25) {
@@ -335,26 +309,14 @@ class CollectionDetailUI extends Component {
   }
 
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
-  openDeleteModal = () => this.setState({ deleteModal: true })
-  closeDeleteModal = () => this.setState({ deleteModal: false, confirmDelete: '' })
   openAddToList = () => this.setState({ addToListModal: true })
   closeAddToList = () => this.setState({ addToListModal: false })
 
   render() {
     const { canAdmin, isAnon } = this.context;
     const { pages, browsers, collection, list, recordings, searchText, match: { params } } = this.props;
-    const {
-      addToListModal,
-      checkedLists,
-      groupDisplay,
-      expandAll,
-      listBookmarks,
-      scrolled,
-      selectedSession,
-      selectedPageIdx,
-      selectedGroupedPageIdx,
-      selectedRec
-    } = this.state;
+    const { addToListModal, checkedLists, groupDisplay, expandAll, listBookmarks, selectedSession,
+            selectedPageIdx, selectedGroupedPageIdx, selectedRec } = this.state;
 
     // don't render until loaded
     if (!collection.get('loaded')) {
@@ -400,7 +362,6 @@ class CollectionDetailUI extends Component {
                     collection={collection}
                     expandAll={expandAll}
                     groupDisplay={groupDisplay}
-                    onDelete={this.openDeleteModal}
                     onToggle={this.onToggle}
                     openAddToList={this.openAddToList}
                     search={this.search}
@@ -538,37 +499,7 @@ class CollectionDetailUI extends Component {
                   }
                 </ul>
               </Modal>
-              <Modal
-                visible={this.state.deleteModal}
-                closeCb={this.closeDeleteModal}
-                dialogClassName="wr-delete-modal"
-                header={<h4>Confirm Delete Collection</h4>}
-                footer={
-                  <React.Fragment>
-                    <Button onClick={this.closeDeleteModal} style={{ marginRight: 5 }}>Cancel</Button>
-                    <Button onClick={this.deleteCollection} disabled={this.validateConfirmDelete() !== 'success'} bsStyle="danger">Confirm Delete</Button>
-                  </React.Fragment>
-                }>
-                <p>
-                  Are you sure you want to delete the collection <b>{collection.get('title')}</b> {`/${params.user}/${params.coll}/`}?
-                </p>
-                <p>
-                  If you confirm, <b>all recordings will be permanently deleted</b>.
-                </p>
-                <p>
-                  Be sure to download the collection first if you would like to keep any data.
-                </p>
-                <FormGroup validationState={this.validateConfirmDelete()}>
-                  <ControlLabel>Type the collection title to confirm:</ControlLabel>
-                  <FormControl
-                    id="confirm-delete"
-                    type="text"
-                    name="confirmDelete"
-                    placeholder={collection.get('title')}
-                    value={this.state.confirmDelete}
-                    onChange={this.handleChange} />
-                </FormGroup>
-              </Modal>
+
             </React.Fragment>
         }
       </div>
