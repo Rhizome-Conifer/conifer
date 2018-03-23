@@ -40,41 +40,6 @@
     margin: 2rem 2.5rem 0 2.5rem;
     height: 100%;
 
-    & > header {
-        margin-bottom: 2rem;
-
-        h1 {
-            display: inline-block;
-            font-family: $serif;
-            margin-top: 0;
-            font-size: 2.8rem;
-        }
-
-        hr {
-            border-top: solid .3rem $yellow;
-            margin-bottom: 0;
-        }
-
-        .desc-container {
-            position: relative;
-            padding-top: 2.5rem;
-
-            .desc-edit-button {
-                transition: opacity $midShift ease-in-out;
-                position: absolute;
-                top: .7rem;
-                left: .7rem;
-                opacity: 0;
-            }
-
-            &:hover {
-                .desc-edit-button {
-                    opacity: 1;
-                }
-            }
-        }
-    }
-
     .grid-wrapper {
         position: relative;
         flex-grow: 1;
@@ -96,6 +61,12 @@
 
             font-family: $sans;
 
+            &.with-lists {
+                grid-template-areas:
+                    "sidebar lists-modifier"
+                    "sidebar table"
+                    "sidebar table";
+            }
 
             .wr-coll-sidebar-container {
                 grid-area: sidebar;

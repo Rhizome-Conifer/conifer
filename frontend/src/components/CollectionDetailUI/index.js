@@ -60,6 +60,7 @@ class CollectionDetailUI extends Component {
       expandAll: false,
       groupDisplay: false,
       listBookmarks: props.list.get('bookmarks'),
+      scrolled: false,
       selectedSession: null,
       selectedPageIdx: null,
       selectedGroupedPageIdx: null,
@@ -323,6 +324,16 @@ class CollectionDetailUI extends Component {
     return 'success';
   }
 
+  scrollHandler = ({ clientHeight, scrollHeight, scrollTop }) => {
+    if (scrollHeight > clientHeight * 1.25) {
+      if (scrollTop > 5 && !this.state.scrolled) {
+        this.setState({ scrolled: true });
+      } else if (scrollTop < 5 && this.state.scrolled) {
+        this.setState({ scrolled: false });
+      }
+    }
+  }
+
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
   openDeleteModal = () => this.setState({ deleteModal: true })
   closeDeleteModal = () => this.setState({ deleteModal: false, confirmDelete: '' })
@@ -338,6 +349,7 @@ class CollectionDetailUI extends Component {
       groupDisplay,
       expandAll,
       listBookmarks,
+      scrolled,
       selectedSession,
       selectedPageIdx,
       selectedGroupedPageIdx,
@@ -371,27 +383,32 @@ class CollectionDetailUI extends Component {
 
     return (
       <div className="wr-coll-detail">
-        <CollectionHeader activeList={activeList} />
+        <CollectionHeader
+          activeList={activeList}
+          condensed={this.state.scrolled} />
 
         <div className="grid-wrapper">
-          <div className="wr-coll-container">
+          <div className={classNames('wr-coll-container', { 'with-lists': activeList })}>
 
             <CollectionSidebar collection={collection} activeListId={params.list} />
 
-            <div className="wr-coll-utilities">
-              <CollectionManagement
-                activeList={activeList}
-                collection={collection}
-                expandAll={expandAll}
-                groupDisplay={groupDisplay}
-                onDelete={this.openDeleteModal}
-                onToggle={this.onToggle}
-                openAddToList={this.openAddToList}
-                search={this.search}
-                searchText={searchText}
-                selectedPages={selectedPageIdx !== null}
-                toggleExpandAllSessions={this.toggleExpandAllSessions} />
-            </div>
+            {
+              !activeList &&
+                <div className="wr-coll-utilities">
+                  <CollectionManagement
+                    activeList={activeList}
+                    collection={collection}
+                    expandAll={expandAll}
+                    groupDisplay={groupDisplay}
+                    onDelete={this.openDeleteModal}
+                    onToggle={this.onToggle}
+                    openAddToList={this.openAddToList}
+                    search={this.search}
+                    searchText={searchText}
+                    selectedPages={selectedPageIdx !== null}
+                    toggleExpandAllSessions={this.toggleExpandAllSessions} />
+                </div>
+            }
 
             <div className="lists-modifier">
               {
@@ -440,6 +457,7 @@ class CollectionDetailUI extends Component {
                           rowGetter={({ index }) => objects.get(index)}
                           rowClassName={this.testRowHighlight}
                           onRowClick={this.onSelectRow}
+                          onScroll={this.scrollHandler}
                           rowRenderer={customRowRenderer}
                           sort={activeList ? null : this.sort}
                           sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}

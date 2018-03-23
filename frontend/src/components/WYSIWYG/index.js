@@ -25,8 +25,10 @@ class WYSIWYG extends Component {
     externalEditButton: PropTypes.bool,
     initial: PropTypes.string,
     minimal: PropTypes.bool,
+    renderCallback: PropTypes.func,
     save: PropTypes.func,
-    success: PropTypes.bool
+    success: PropTypes.bool,
+    toggleCallback: PropTypes.func
   };
 
   static defaultProps = {
@@ -103,6 +105,12 @@ class WYSIWYG extends Component {
     }
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.renderCallback && this.state.renderable && !prevState.renderable) {
+      this.props.renderCallback();
+    }
+  }
+
   onChange = editorState => this.setState({ editorState })
 
   _onChangeSource = (event) => {
@@ -129,7 +137,14 @@ class WYSIWYG extends Component {
   toggleMarkdownMode = () => this.setState({ markdownEdit: !this.state.markdownEdit })
 
   toggleEditMode = () => {
-    this.setState({ localEditMode: !this.state.localEditMode });
+    const { toggleCallback } = this.props;
+    const { localEditMode } = this.state;
+
+    if (toggleCallback) {
+      toggleCallback(!localEditMode);
+    }
+
+    this.setState({ localEditMode: !localEditMode });
   }
 
   render() {
