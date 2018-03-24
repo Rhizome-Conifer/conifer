@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import Toggle from 'react-toggle';
 import { Button, ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
 
-import { defaultCollDesc } from 'config';
+import { defaultCollDesc, defaultListDesc } from 'config';
 
 import { Upload } from 'containers';
 
@@ -18,7 +18,8 @@ import './style.scss';
 class CollectionHeaderUI extends Component {
 
   static contextTypes = {
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
@@ -39,14 +40,14 @@ class CollectionHeaderUI extends Component {
     super(props);
 
     this.handle = null;
-    this.abbreviateThreshold = 75;
+    this.truncateThreshold = 75;
     this.state = {
       animated: false,
       condensed: false,
       confirmDelete: '',
       deleteModal: false,
       toggleDesc: false,
-      abbreviated: false,
+      truncate: false,
       hoverOverride: false,
       height: 'auto'
     };
@@ -69,7 +70,7 @@ class CollectionHeaderUI extends Component {
 
   setPublic = () => {
     const { collection } = this.props;
-    this.props.setCollPublic(collection.get('id'), collection.get('user'), !collection.get('isPublic') === '1');
+    this.props.setCollPublic(collection.get('id'), collection.get('user'), !(collection.get('isPublic') === '1'));
   }
 
   editorRendered = () => {
@@ -80,8 +81,8 @@ class CollectionHeaderUI extends Component {
     const h = this.descContainer.getBoundingClientRect().height;
     const state = { animated: true };
 
-    if (h >= this.abbreviateThreshold) {
-      state.abbreviated = true;
+    if (h >= this.truncateThreshold) {
+      state.truncate = true;
     }
 
     this.setState(state);
@@ -102,7 +103,13 @@ class CollectionHeaderUI extends Component {
   toggleDesc = () => {
     const { toggleDesc } = this.state;
 
-    this.setState({ abbreviated: false, height: 'auto' });
+    this.setState({ truncate: false, height: 'auto' });
+  }
+
+  editModeCallback = () => {
+    if (this.state.condensed) {
+      this.setState({ height: 'auto' });
+    }
   }
 
   hoverDelay = () => {
@@ -153,12 +160,13 @@ class CollectionHeaderUI extends Component {
   }
 
   render() {
+    const { isAnon } = this.context;
     const { activeList, collection, collSaveSuccess, list, listEdited } = this.props;
-    const { abbreviated, animated, condensed, height, hoverOverride, toggleDesc } = this.state;
+    const { truncate, animated, condensed, height, hoverOverride, toggleDesc } = this.state;
 
     const containerClasses = classNames('wr-collection-header', {
       condensed: condensed && !hoverOverride && !toggleDesc,
-      abbreviated,
+      truncate,
       animated
     });
 
@@ -188,47 +196,58 @@ class CollectionHeaderUI extends Component {
             }
           </div>
           <div className="collection-tools">
-            <div className="access-switch">
-              <span className="right-buffer-sm hidden-xs">Collection Public?</span>
-              <Toggle
-                icons={false}
-                defaultChecked={collection.get('isPublic') === '1'}
-                onChange={this.setPublic} />
-            </div>
+            {
+              !isAnon &&
+                <div className="access-switch">
+                  <span className="right-buffer-sm hidden-xs">Collection Public?</span>
+                  <Toggle
+                    icons={false}
+                    defaultChecked={collection.get('isPublic') === '1'}
+                    onChange={this.setPublic} />
+                </div>
+            }
             <Button bsSize="sm" bsStyle="success" onClick={() => { window.location = `/${collection.get('user')}/${collection.get('id')}/$download`; }}>
-              <span className="glyphicon glyphicon-download" /> Download
+              Download
             </Button>
-            <Upload fromCollection={collection.get('id')} classes="btn btn-sm btn-default">
-              <span className="glyphicon glyphicon-upload" /> upload
-            </Upload>
-            <Button bsStyle="danger" bsSize="sm" onClick={this.toggleDeleteModal}>
-              Delete Collection
-            </Button>
-            <Modal
-              visible={this.state.deleteModal}
-              closeCb={this.toggleDeleteModal}
-              dialogClassName="wr-delete-modal"
-              header={<h4>Confirm Delete Collection</h4>}
-              footer={
+            {
+              !isAnon &&
+                <Upload fromCollection={collection.get('id')} classes="btn btn-sm btn-default">
+                  upload
+                </Upload>
+            }
+            {
+              !isAnon &&
                 <React.Fragment>
-                  <Button onClick={this.toggleDeleteModal} style={{ marginRight: 5 }}>Cancel</Button>
-                  <Button onClick={this.deleteCollection} disabled={this.validateConfirmDelete() !== 'success'} bsStyle="danger">Confirm Delete</Button>
+                  <Button bsStyle="danger" bsSize="sm" onClick={this.toggleDeleteModal}>
+                    Delete Collection
+                  </Button>
+                  <Modal
+                    visible={this.state.deleteModal}
+                    closeCb={this.toggleDeleteModal}
+                    dialogClassName="wr-delete-modal"
+                    header={<h4>Confirm Delete Collection</h4>}
+                    footer={
+                      <React.Fragment>
+                        <Button onClick={this.toggleDeleteModal} style={{ marginRight: 5 }}>Cancel</Button>
+                        <Button onClick={this.deleteCollection} disabled={this.validateConfirmDelete() !== 'success'} bsStyle="danger">Confirm Delete</Button>
+                      </React.Fragment>
+                    }>
+                    <p>Are you sure you want to delete the collection <b>{collection.get('title')}</b> {`/${collection.get('user')}/${collection.get('id')}/`}?</p>
+                    <p>If you confirm, <b>all recordings will be permanently deleted</b>.</p>
+                    <p>Be sure to download the collection first if you would like to keep any data.</p>
+                    <FormGroup validationState={this.validateConfirmDelete()}>
+                      <ControlLabel>Type the collection title to confirm:</ControlLabel>
+                      <FormControl
+                        id="confirm-delete"
+                        type="text"
+                        name="confirmDelete"
+                        placeholder={collection.get('title')}
+                        value={this.state.confirmDelete}
+                        onChange={this.handleChange} />
+                    </FormGroup>
+                  </Modal>
                 </React.Fragment>
-              }>
-              <p>Are you sure you want to delete the collection <b>{collection.get('title')}</b> {`/${collection.get('user')}/${collection.get('id')}/`}?</p>
-              <p>If you confirm, <b>all recordings will be permanently deleted</b>.</p>
-              <p>Be sure to download the collection first if you would like to keep any data.</p>
-              <FormGroup validationState={this.validateConfirmDelete()}>
-                <ControlLabel>Type the collection title to confirm:</ControlLabel>
-                <FormControl
-                  id="confirm-delete"
-                  type="text"
-                  name="confirmDelete"
-                  placeholder={collection.get('title')}
-                  value={this.state.confirmDelete}
-                  onChange={this.handleChange} />
-              </FormGroup>
-            </Modal>
+            }
           </div>
         </div>
         <hr />
@@ -237,9 +256,10 @@ class CollectionHeaderUI extends Component {
           className={classNames('desc-container')}
           style={{ height }}>
           <WYSIWYG
-            initial={activeList ? list.get('desc') : collection.get('desc') || defaultCollDesc}
+            initial={activeList ? list.get('desc') || defaultListDesc : collection.get('desc') || defaultCollDesc}
             save={this.saveDesc}
             renderCallback={this.editorRendered}
+            toggleCallback={this.editModeCallback}
             success={activeList ? listEdited : collSaveSuccess} />
           <button className="read-more borderless" onClick={this.toggleDesc}>Read More</button>
         </div>

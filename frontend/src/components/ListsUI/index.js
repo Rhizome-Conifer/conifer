@@ -116,7 +116,7 @@ class ListsUI extends Component {
           <h4>Lists</h4>
         </div>
         {
-          !isAnon && canAdmin &&
+          canAdmin &&
             <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
         }
       </header>
@@ -153,7 +153,7 @@ class ListsUI extends Component {
             </Collapsible>
 
             {
-              !isAnon && canAdmin &&
+              canAdmin &&
                 <button onClick={this.openEditModal}>+ new list</button>
             }
           </div>

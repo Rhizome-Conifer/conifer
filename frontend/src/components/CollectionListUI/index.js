@@ -14,6 +14,7 @@ import './style.scss';
 
 class CollectionListUI extends Component {
   static contextTypes = {
+    isAnon: PropTypes.bool,
     router: PropTypes.object
   }
 
@@ -68,6 +69,7 @@ class CollectionListUI extends Component {
   }
 
   render() {
+    const { isAnon } = this.context;
     const { auth, collections, orderedCollections, match: { params }, user } = this.props;
     const { showModal } = this.state;
     const userParam = params.user;
@@ -87,7 +89,7 @@ class CollectionListUI extends Component {
         <Row>
           <Col xs={6} className="wr-coll-meta">
             {
-              canAdmin &&
+              !isAnon && canAdmin &&
                 <React.Fragment>
                   <Button onClick={this.toggle} bsStyle="primary" bsSize="small">
                     <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
@@ -99,7 +101,7 @@ class CollectionListUI extends Component {
             }
           </Col>
           {
-            canAdmin &&
+            !isAnon && canAdmin &&
               <Col xs={2} className="pull-right">
                 <strong>Space Used: </strong>
                 <SizeFormat bytes={spaceUsed} />

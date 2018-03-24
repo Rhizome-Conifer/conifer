@@ -45,6 +45,7 @@ module.exports = Object.assign({
   defaultBookmarkDesc: 'No description provided.',
   defaultCollectionTitle: 'New Collection',
   defaultCollDesc: '*This collection doesn\'t yet have a description.*',
+  defaultListDesc: '*This list doesn\'t yet have a description.*',
   storageKey: 'wrLocalData',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),

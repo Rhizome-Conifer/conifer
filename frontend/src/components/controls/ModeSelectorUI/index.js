@@ -38,7 +38,8 @@ class ModeSelectorUI extends PureComponent {
     if (this.context.currMode.indexOf('replay') !== -1) {
       this.context.router.history.push(`/${user}/${coll}`);
     } else {
-      this.context.router.history.push(`/${user}/${coll}/?filter=${rec}`);
+      // TODO: add post record filter ?filter=${rec}
+      this.context.router.history.push(`/${user}/${coll}`);
     }
   }
 

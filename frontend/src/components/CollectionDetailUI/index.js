@@ -329,9 +329,10 @@ class CollectionDetailUI extends Component {
 
     // add react-dnd integration
     const customRowRenderer = (props) => {
-      if (isAnon) {
-        return <DefaultRow {...props} />;
-      } else if (activeList) {
+      // if (isAnon) {
+      //   return <DefaultRow {...props} />;
+      // }
+      if (activeList) {
         return (
           <DnDSortableRow
             id={props.rowData.get('id')}

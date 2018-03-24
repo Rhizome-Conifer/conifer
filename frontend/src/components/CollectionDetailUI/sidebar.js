@@ -19,10 +19,6 @@ class CollectionSidebar extends Component {
       <Resizable classes="wr-coll-sidebar-container">
         <div className="wr-coll-sidebar-stretch">
           <Lists activeListId={activeListId} />
-
-          <div className="wr-coll-sidebar">
-            meta info sidebar
-          </div>
         </div>
       </Resizable>
     );

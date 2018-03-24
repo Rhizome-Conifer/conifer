@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
+import { Link } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 
 import Searchbox from 'components/Searchbox';
 
@@ -9,10 +11,16 @@ import 'shared/scss/toggle.scss';
 
 function CollectionManagement(props, context) {
   const { canAdmin, isAnon } = context;
-  const { expandAll, groupDisplay, activeList, onToggle, openAddToList, toggleExpandAllSessions, search, searchText, selectedPages } = props;
+  const { collection, expandAll, groupDisplay, activeList, onToggle, openAddToList, toggleExpandAllSessions, search, searchText, selectedPages } = props;
 
   return (
     <nav>
+      {
+        canAdmin &&
+          <Link to={`/${collection.get('user')}/${collection.get('id')}/$new`}>
+            <Button bsSize="xs" bsStyle="success">New Recording</Button>
+          </Link>
+      }
       {
         !activeList &&
           <div className="toggle-label">
