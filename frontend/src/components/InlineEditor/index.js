@@ -29,6 +29,7 @@ class InlineEditor extends Component {
   constructor(props) {
     super(props);
 
+    this.handle = null;
     this.state = {
       editMode: false,
       inputVal: props.initial,
@@ -38,7 +39,7 @@ class InlineEditor extends Component {
 
   componentDidMount() {
     // TODO: delay here needed for css/fonts to resolve.. better way?
-    setTimeout(() => {
+    this.handle = setTimeout(() => {
       this.setState({ inputWidth: this.childContainer.getBoundingClientRect().width });
     }, 1000);
   }
@@ -52,6 +53,13 @@ class InlineEditor extends Component {
   componentDidUpdate(lastProps, lastState) {
     if (this.state.editMode && !lastState.editMode) {
       this.focusInput();
+    }
+  }
+
+  componentWillUnmount() {
+    // clear width timeout on unmount
+    if (this.handle) {
+      clearTimeout(this.handle);
     }
   }
 

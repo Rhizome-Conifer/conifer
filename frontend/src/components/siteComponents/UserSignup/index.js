@@ -173,7 +173,7 @@ class UserSignup extends Component {
                     <b>Errors:</b>
                     <ul>
                       {
-                        Object.entries(errors).map(error => <li>{`Error ${error[0]}: ${error[1]}`}</li>)
+                        Object.entries(errors.toJS()).map(error => <li>{`Error ${error[0]}:`} <span dangerouslySetInnerHTML={{ __html: error[1] }} /></li>)
                       }
                     </ul>
                   </div>
