@@ -35,10 +35,10 @@ class RegisterAccount extends Component {
       .then((result) => {
         if (result.error) {
           this.setState({ error: true });
+        } else {
+          // redirect to homepage, disregard history
+          window.location = '/';
         }
-
-        // redirect to homepage, disregard history
-        window.location = '/';
       });
   }
 
