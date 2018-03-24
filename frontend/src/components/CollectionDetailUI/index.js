@@ -371,16 +371,15 @@ class CollectionDetailUI extends Component {
                     toggleExpandAllSessions={this.toggleExpandAllSessions} />
                 </div>
             }
-
-            <div className="lists-modifier">
-              {
-                activeList &&
+            {
+              activeList &&
+                <div className="lists-modifier">
                   <header className="lists-header">
                     <span>Bookmarks in Selected List</span>
                     <Link to={`/${collection.get('user')}/${collection.get('id')}`}>Back to Collection Index <CloseIcon /></Link>
                   </header>
-              }
-            </div>
+                </div>
+            }
             <div className={classNames('wr-coll-detail-table', { 'with-lists': activeList })}>
               {
                 !activeList && groupDisplay ?

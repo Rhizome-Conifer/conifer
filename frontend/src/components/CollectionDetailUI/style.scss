@@ -51,20 +51,19 @@
             width: 100%;
 
             display: grid;
-            grid-template-rows: 4rem max-content 1fr;
+            grid-template-rows: 3rem;
             grid-column-gap: 1.5rem;
-            grid-template-columns: max-content 1fr;
+            grid-template-columns: auto 1fr;
             grid-template-areas:
                 "sidebar utilities"
-                "sidebar lists-modifier"
                 "sidebar table";
 
             font-family: $sans;
 
             &.with-lists {
+                grid-template-rows: 4.5rem;
                 grid-template-areas:
                     "sidebar lists-modifier"
-                    "sidebar table"
                     "sidebar table";
             }
 
@@ -72,25 +71,25 @@
                 grid-area: sidebar;
                 position: relative;
 
-                &:before, &:after {
-                    content: '';
-                    position: absolute;
-                    left: 0;
-                    width: calc(100% - 1.5rem);
-                    height: 3rem;
-                    z-index: 20;
-                    pointer-events: none;
-                }
+                // &:before, &:after {
+                //     content: '';
+                //     position: absolute;
+                //     left: 0;
+                //     width: calc(100% - 1.5rem);
+                //     height: 3rem;
+                //     z-index: 20;
+                //     pointer-events: none;
+                // }
 
-                &:before {
-                    top: 0;
-                    background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
-                }
+                // &:before {
+                //     top: 0;
+                //     background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
+                // }
 
-                &:after {
-                    bottom: 0;
-                    background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
-                }
+                // &:after {
+                //     bottom: 0;
+                //     background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
+                // }
 
                 .wr-coll-sidebar-stretch {
                     display: flex;
@@ -105,7 +104,7 @@
                     overflow: auto;
 
                     // top buffer for fade
-                    padding-top: 2rem;
+                    //padding-top: 2rem;
 
                 }
 

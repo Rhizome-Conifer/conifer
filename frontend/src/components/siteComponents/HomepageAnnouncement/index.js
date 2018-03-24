@@ -15,10 +15,7 @@ function HomepageAnnouncement() {
           <img src={logo} alt="Webrecorder logo" />
         </div>
         <div className="wr-alert-info">
-          <h5><strong>New!</strong> Browse your archives offline with Webrecorder Desktop Player App</h5>
-          <p>
-            <a href="https://github.com/webrecorder/webrecorderplayer-electron/releases/latest" target="_blank">Download the desktop app&nbsp;&raquo;</a>
-          </p>
+          <h5><b>Please Note:</b> this is an experimental demo instance for the EAW workshop. You should download any data that you care about as a WARC file</h5>
         </div>
       </div>
     </div>
