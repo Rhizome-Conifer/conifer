@@ -5,14 +5,14 @@
             <h5>You have temporarily recorded <a href="{{ path }}"><b data-size-display="{{ anon_size }}"></b></a>.<br/>Would you like to import this collection into your account?</h5>
 
             <div class="form-group temp-move-coll">
-                <input id="coll-move" type="checkbox" name="move-temp" value="1" checked="checked" />
+                <input id="coll-move" type="checkbox" name="moveTemp" value="1" checked="checked" />
                 <label for="coll-move">Yes, import <a href="{{ path }}"><b>{{ anon_recordings }} recording(s)</b></a> into my account.</label>
             </div>
         </div>
 
         <div class="form-group">
             <label for="collection_name" class="">Collection Name:</label>
-            <input type="text" id="to-coll" name="to-coll" class="to-coll form-control" value="New Collection" placeholder="New Collection Name" required="true">
+            <input type="text" id="to-coll" name="toColl" class="to-coll form-control" value="New Collection" placeholder="New Collection Name" required="true">
             <div class="help-block with-errors"></div>
         </div>
     </div>

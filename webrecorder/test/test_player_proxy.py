@@ -20,6 +20,8 @@ from warcio.statusandheaders import StatusAndHeaders
 class BaseTestPlayer(BaseTestClass):
     @classmethod
     def setup_class(cls):
+        cls.env_backup = dict(os.environ)
+
         super(BaseTestPlayer, cls).setup_class()
         cls.session = requests.session()
 
@@ -42,6 +44,9 @@ class BaseTestPlayer(BaseTestClass):
         FakeStrictRedis().flushall()
 
         super(BaseTestPlayer, cls).teardown_class()
+
+        os.environ.clear()
+        os.environ.update(cls.env_backup)
 
     @classmethod
     def create_temp_warc(cls):

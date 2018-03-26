@@ -29,7 +29,7 @@ class Recording(RedisUniqueComponent):
     WARC_KEY = 'r:{rec}:warc'
 
     DEL_Q = 'q:del:{target}'
-    MOVE_Q = 'q:mov:{target}'
+    MOVE_Q = 'q:move:{target}'
 
     OPEN_REC_TTL = 5400
 
@@ -92,7 +92,8 @@ class Recording(RedisUniqueComponent):
         return 'Recording on ' + created_at
 
     def delete_me(self):
-        self.delete_warcs()
+        if not self.delete_warcs():
+            return False
 
         return self.delete_object()
 
@@ -108,6 +109,7 @@ class Recording(RedisUniqueComponent):
             yield n, v
 
     def delete_warcs(self):
+        fail = False
         with redis_pipeline(self.redis) as pi:
             for n, v in self.iter_all_files(skip_index=False):
                 parts = urlsplit(v)
@@ -115,22 +117,25 @@ class Recording(RedisUniqueComponent):
                     target = parts.netloc
                 elif parts.scheme:
                     target = parts.scheme
+                    if '+' in target:
+                        target = target.split('+', 1)[0]
                 else:
-                    target = 'nginx'
+                    target = 'local'
 
-                pi.rpush(self.DEL_Q.format(target=target), v)
+                if target == 'local':
+                    if self.redis.publish('handle_delete', v) == 0:
+                        fail = True
+                else:
+                    pi.rpush(self.DEL_Q.format(target=target), v)
+
+        return not fail
 
     def move_warcs(self, to_user):
-        move = {}
-        move['hkey'] = self.WARC_KEY.format(rec=self.my_id)
-        move['to_user'] = to_user.name
+        data = {'rec': self.my_id,
+                'user': to_user.name
+               }
 
-        with redis_pipeline(self.redis) as pi:
-            for n, v in self.iter_all_files(skip_index=False):
-                move['from'] = v
-                move['name'] = n
-
-                pi.rpush(self.MOVE_Q.format(target='local'), json.dumps(move))
+        self.redis.rpush(self.MOVE_Q.format(target='local'), json.dumps(data))
 
     def _get_pagedata(self, pagedata):
         key = self.PAGE_KEY.format(rec=self.my_id)

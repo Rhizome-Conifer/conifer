@@ -17,6 +17,8 @@ from webrecorder.utils import SizeTrackingReader, redis_pipeline
 
 from webrecorder.load.wamloader import WAMLoader
 
+from webrecorder.rec.storage.local import LocalFileStorage
+
 import redis
 import time
 import json
@@ -66,9 +68,15 @@ class WebRecRecorder(object):
         self.config = config
 
         self.redis_base_url = os.environ['REDIS_BASE_URL']
-        self.redis = redis.StrictRedis.from_url(self.redis_base_url)
+        self.redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
 
-    def init_app(self, storage_committer):
+        self.local_storage = LocalFileStorage(self.config)
+
+        self.msg_ge = None
+        self.pubsub = None
+        self.writer = None
+
+    def init_app(self, storage_committer=None):
         self.storage_committer = storage_committer
 
         self.init_recorder()
@@ -78,6 +86,19 @@ class WebRecRecorder(object):
         self.app.mount('/record', self.recorder)
 
         debug(True)
+
+    def close(self):
+        try:
+            if self.pubsub:
+                self.pubsub.close()
+        except Exception as e:
+            print(e)
+
+        try:
+            if self.writer:
+                self.writer.close()
+        except Exception as e:
+            print(e)
 
     def init_indexer(self):
         return WebRecRedisIndexer(
@@ -130,13 +151,6 @@ class WebRecRecorder(object):
         info_key = res_template(self.info_keys['rec'], params)
         return TempWriteBuffer(self.redis, info_key, name, params['url'])
 
-    def get_profile(self, scheme, profile):
-        res = self.redis.hgetall('st:' + profile)
-        if not res:
-            return dict()
-
-        return dict((n.decode('utf-8'), v.decode('utf-8')) for n, v in res.items())
-
     def _iter_all_warcs(self, user, coll, rec):
         warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
 
@@ -144,15 +158,13 @@ class WebRecRecorder(object):
 
         if rec == '*':
             for key in self.redis.scan_iter(warc_key):
-                key = key.decode('utf-8')
                 allwarcs[key] = self.redis.hgetall(key)
         else:
             allwarcs[warc_key] = self.redis.hgetall(warc_key)
 
         for key, warc_map in iteritems(allwarcs):
             for n, v in iteritems(warc_map):
-                n = n.decode('utf-8')
-                yield key, n, v.decode('utf-8')
+                yield key, n, v
 
     # Messaging ===============
     def msg_listen_loop(self):
@@ -161,21 +173,47 @@ class WebRecRecorder(object):
         self.pubsub.subscribe('close_rec')
         self.pubsub.subscribe('close_idle')
 
+        self.pubsub.subscribe('handle_delete')
+
         print('Waiting for messages')
 
-        for item in self.pubsub.listen():
-            try:
-                if item['type'] != 'message':
-                    continue
+        try:
+            for item in self.pubsub.listen():
+                self.handle_message(item)
 
-                elif item['channel'] == b'close_idle':
-                    self.recorder.writer.close_idle_files()
+        except:
+            print('Message Loop Done')
 
-                elif item['channel'] == b'close_rec':
-                    self.recorder.writer.close_key(item['data'].decode('utf-8'))
+    def handle_message(self, item):
+        try:
+            if item['type'] != 'message':
+                return
 
-            except:
-                traceback.print_exc()
+            elif item['channel'] == 'close_idle':
+                self.recorder.writer.close_idle_files()
+
+            elif item['channel'] == 'close_rec':
+                self.recorder.writer.close_key(item['data'])
+
+            elif item['channel'] == 'handle_delete':
+                self.handle_delete(item['data'])
+
+        except:
+            traceback.print_exc()
+
+    def handle_delete(self, uri):
+        # determine if local file
+        filename = self.strip_prefix(uri)
+
+        closed = self.recorder.writer.close_file(filename)
+
+        self.local_storage.delete_file(filename)
+
+    def strip_prefix(self, uri):
+        if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):
+            return uri[len(self.full_warc_prefix):]
+
+        return uri
 
     def queue_message(self, channel, message):
         res = self.redis.publish(channel, json.dumps(message))
@@ -389,7 +427,7 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         skip_key = res_template(self.skip_key_template, params)
 
-        if self.redis.get(skip_key) == b'1':
+        if self.redis.get(skip_key) == '1':
             print('SKIPPING REQ', params.get('url'))
             return False
 

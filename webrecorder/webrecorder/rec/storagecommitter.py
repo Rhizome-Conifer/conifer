@@ -2,16 +2,23 @@ import os
 import redis
 import base64
 import json
+import time
 
 from warcio.timeutils import sec_to_timestamp, timestamp_now
+
 from webrecorder.models.recording import Recording
 from webrecorder.models.base import BaseAccess
+
+from webrecorder.rec.storage.s3 import S3Storage
+from webrecorder.rec.storage.local import LocalFileStorage
+
+from tempfile import NamedTemporaryFile
 
 
 # ============================================================================
 class StorageCommitter(object):
     DEL_Q = 'q:del:{name}'
-    MOVE_Q = 'q:mov:{name}'
+    MOVE_Q = 'q:move:{name}'
 
     def __init__(self, config):
         super(StorageCommitter, self).__init__()
@@ -35,82 +42,102 @@ class StorageCommitter(object):
 
         self.full_warc_prefix = config['full_warc_prefix']
 
-        self.cdxj_key = config['cdxj_key_templ'].format(user='*', coll='*', rec='*')
-
-        self.default_storage_profile = self.create_default_profile(config)
-
-        self.storage_class_map = {}
-
-        self.storage_key_templ = config['storage_key_templ']
+        self.all_cdxj_templ = config['cdxj_key_templ'].format(rec='*')
 
         self.temp_prefix = config['temp_prefix']
 
-        self._init_storage()
+        self.storage_key_templ = config['storage_key_templ']
+
+        # set storage dir to be next to record dir, if not set
+        if 'STORAGE_ROOT' not in os.environ:
+            os.environ['STORAGE_ROOT'] = os.path.abspath(os.path.join(self.record_root_dir, '..', 'storage'))
+
+        self.storage_map = {}
+        self.storage_map['local'] = LocalFileStorage(config)
+
+        self.default_store = os.environ.get('DEFAULT_STORAGE', 'local')
+        if self.default_store == 's3':
+            self.storage_map['s3'] = S3Storage(config)
 
         print('Storage Committer Root: ' + self.record_root_dir)
 
-    def _init_storage(self):
-        from webrecorder.rec.s3 import S3Storage
-        self.add_storage_class('s3', S3Storage)
+    def strip_prefix(self, uri):
+        if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):
+            return uri[len(self.full_warc_prefix):]
 
-    def create_default_profile(self, config):
-        storage_type = os.environ.get('DEFAULT_STORAGE', 'local')
+        return uri
 
-        profile = {'type': storage_type}
-
-        if storage_type == 's3':
-            s3_root = os.environ.get('S3_ROOT')
-            s3_root += config['storage_path_templ']
-
-            profile['remote_url_templ'] = s3_root
-
-        return profile
-
-    def commit_file(self, user, collection, dirname, filename, obj_type,
-                    update_key, curr_value, update_prop=None):
+    def commit_file(self, user, collection, recording,
+                    filename, full_filename, obj_type,
+                    update_key, update_prop=None, direct_delete=False):
 
         if user.is_anon():
-            return True
+            return False
+
+        full_filename = self.strip_prefix(full_filename)
 
         # not a local filename
-        if '://' in curr_value and not curr_value.startswith('local'):
-            return True
+        if '://' in full_filename and not full_filename.startswith('local'):
+            return False
 
-        full_filename = os.path.join(dirname, filename)
+        #full_filename = os.path.join(dirname, filename)
 
         storage = self.get_storage(user, collection)
         if not storage:
-            return True
+            return False
+
+        if not os.path.isfile(full_filename):
+            return False
 
         commit_wait = self.commit_wait_templ.format(filename=full_filename)
 
-        if self.redis.get(commit_wait) != b'1':
-            if not storage.upload_file(user.name, filename, full_filename, obj_type):
-                return False
+        if self.redis.set(commit_wait, 1, ex=self.commit_wait_secs, nx=True):
+            if not storage.upload_file(user, collection, recording,
+                                       filename, full_filename, obj_type):
 
-            self.redis.setex(commit_wait, self.commit_wait_secs, 1)
+                self.redis.delete(commit_wait)
+                return False
 
         # already uploaded, see if it is accessible
         # if so, finalize and delete original
-        remote_url = storage.get_valid_remote_url(user, filename, obj_type)
+        remote_url = storage.get_upload_url(filename)
         if not remote_url:
             print('Not yet available: {0}'.format(full_filename))
             return False
 
+        print('Committed {0} -> {1}'.format(full_filename, remote_url))
         update_prop = update_prop or filename
         self.redis.hset(update_key, update_prop, remote_url)
 
-        if not self.delete_committed(full_filename):
-            return False
+        # if direct delete, call os.remove directly
+        # used for CDXJ files which are not owned by a writer
+        if direct_delete:
+            try:
+                os.remove(full_filename)
+            except Exception as e:
+                print(e)
+                return True
+        else:
+        # for WARCs, send handle_delete to ensure writer can close the file
+             if self.redis.publish('handle_delete', full_filename) < 1:
+                print('No Delete Listener!')
 
         return True
 
-    def write_cdxj(self, warc_key, dirname, cdxj_key, timestamp):
-        cdxj_filename = self.redis.hget(warc_key, self.info_index_key)
-        if cdxj_filename:
-            return cdxj_filename
+    def write_cdxj(self, user, warc_key, cdxj_key, info_key):
+        full_filename = self.redis.hget(warc_key, self.info_index_key)
+        if full_filename:
+            cdxj_filename = os.path.basename(self.strip_prefix(full_filename))
+            return cdxj_filename, full_filename
+
+        dirname = os.path.join(self.record_root_dir, user.name)
 
         randstr = base64.b32encode(os.urandom(5)).decode('utf-8')
+
+        try:
+            timestamp = sec_to_timestamp(int(self.redis.hget(info_key, 'updated_at')))
+        except:
+            timestamp = timestamp_now()
 
         cdxj_filename = self.index_name_templ.format(timestamp=timestamp,
                                                      random=randstr)
@@ -121,94 +148,54 @@ class StorageCommitter(object):
 
         cdxj_list = self.redis.zrange(cdxj_key, 0, -1)
 
-        with open(full_filename, 'wt') as fh:
+        with open(full_filename, 'wt') as out:
             for cdxj in cdxj_list:
-                fh.write(cdxj + '\n')
+                out.write(cdxj + '\n')
+            out.flush()
 
         full_url = self.full_warc_prefix + full_filename.replace(os.path.sep, '/')
-
         self.redis.hset(warc_key, self.info_index_key, full_url)
 
-        return cdxj_filename
+        return cdxj_filename, full_filename
 
-    def remove_if_empty(self, user_dir):
-        # attempt to remove the dir, if empty
-        try:
-            os.rmdir(user_dir)
-            print('Removed dir ' + user_dir)
-        except:
-            pass
+    def process_deletes(self, storage_type):
+        del_q = self.DEL_Q.format(name=storage_type)
 
-    def process_moves(self, q_name):
-        move_q = self.MOVE_Q.format(name=q_name)
+        storage = self.storage_map.get(storage_type)
+        if not storage:
+            return
 
         while True:
-            data = self.redis.lpop(move_q)
+            uri = self.redis.lpop(del_q)
+            if not uri:
+                break
+
+            try:
+                print('Deleting: ' + uri)
+                # do the deletion
+                storage.delete_file(uri)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+
+    def process_moves(self, storage_type):
+        mov_q = self.MOVE_Q.format(name=storage_type)
+
+        while True:
+            data = self.redis.lpop(mov_q)
             if not data:
                 break
 
             move = json.loads(data)
-            print('MOVE', move)
 
-            try:
-                move_from = move['from']
-                if os.path.isfile(move_from):
-                    self.redis.publish('close_file', move_from)
-
-                    move_to = os.path.join(self.warc_path_templ.format(user=move['to_user']),
-                                           move['name'])
-
-                    if move_from != move_to:
-                        os.renames(move_from, move_to)
-                        self.redis.hset(move['hkey'], move['name'], self.full_warc_prefix + move_to)
-
-            except Exception as e:
-                import traceback
-                traceback.print_exc()
-                print(e)
-
-    def process_deletes(self, q_name):
-        del_q = self.DEL_Q.format(name=q_name)
-
-        while True:
-            filename = self.redis.lpop(del_q)
-            if not filename:
-                break
-
-            if os.path.isfile(filename):
-                try:
-                    self.redis.publish('close_file', filename)
-                    #self.recorder.writer.close_file(filename)
-                    print('Deleting: ' + filename)
-                    os.remove(filename)
-                except Exception as e:
-                    print(e)
-        return
-
-        delete_user = data.get('delete_user')
-        if not delete_user:
-            return
-
-        user_path = self.warc_path_templ.format(user=delete_user)
-        user_path += '*.*'
-
-        for filename in glob.glob(user_path):
-            try:
-                print('Deleting Local WARC: ' + filename)
-                os.remove(filename)
-
-            except Exception as e:
-                print(e)
-
-
+            print('Move Request: ' + data)
+            self.commit_recording(move['rec'])
 
     def __call__(self):
         self.process_deletes('s3')
-        self.process_deletes('nginx')
-
         self.process_moves('local')
 
-        for cdxj_key in self.redis.scan_iter(self.cdxj_key):
+        for cdxj_key in self.redis.scan_iter(self.all_cdxj_templ):
             self.process_cdxj_key(cdxj_key)
 
         self.redis.publish('close_idle', '')
@@ -221,6 +208,9 @@ class StorageCommitter(object):
         #_, user, coll, rec = base_key.split(':', 3)
         _, rec = base_key.split(':', 1)
 
+        self.commit_recording(rec, cdxj_key)
+
+    def commit_recording(self, rec, cdxj_key=None):
         recording = Recording(my_id=rec,
                               redis=self.redis,
                               access=BaseAccess())
@@ -228,48 +218,40 @@ class StorageCommitter(object):
         collection = recording.get_owner()
         user = collection.get_owner()
 
-        user_dir = os.path.join(self.record_root_dir, user.my_id)
+        if not cdxj_key:
+            cdxj_key = Recording.CDXJ_KEY.format(rec=rec)
 
-        warc_key = base_key + ':warc'
+        warc_key = Recording.WARC_KEY.format(rec=rec)
         warcs = self.redis.hgetall(warc_key)
 
-        info_key = base_key + ':info'
+        info_key = Recording.INFO_KEY.format(rec=rec)
 
         self.redis.publish('close_rec', info_key)
 
-        try:
-            timestamp = sec_to_timestamp(int(self.redis.hget(info_key, 'updated_at')))
-        except:
-            timestamp = timestamp_now()
+        cdxj_filename, full_cdxj_filename = self.write_cdxj(user, warc_key, cdxj_key, info_key)
 
-        cdxj_filename = self.write_cdxj(warc_key, user_dir, cdxj_key, timestamp)
+        all_done = True
 
-        all_done = self.commit_file(user, collection, user_dir,
-                                    cdxj_filename, 'indexes', warc_key,
-                                    cdxj_filename, self.info_index_key)
+        if not user.is_anon():
+            all_done = self.commit_file(user, collection, recording,
+                                        cdxj_filename, full_cdxj_filename, 'indexes',
+                                        warc_key, self.info_index_key, direct_delete=True)
 
-        for warc_filename in warcs.keys():
-            value = warcs[warc_filename]
-            done = self.commit_file(user, collection, user_dir,
-                                    warc_filename, 'warcs', warc_key,
-                                    value)
+            for warc_filename in warcs.keys():
+                # skip index, not a warc
+                if warc_filename == self.info_index_key:
+                    continue
 
-            all_done = all_done and done
+                warc_full_filename = warcs[warc_filename]
+                done = self.commit_file(user, collection, recording,
+                                        warc_filename, warc_full_filename, 'warcs',
+                                        warc_key)
+
+                all_done = all_done and done
 
         if all_done:
             print('Deleting Redis Key: ' + cdxj_key)
             self.redis.delete(cdxj_key)
-            self.remove_if_empty(user_dir)
-
-    def delete_committed(self, full_filename):
-        print('Commit Verified, Deleting: {0}'.format(full_filename))
-        try:
-            os.remove(full_filename)
-            return True
-        except Exception as e:
-            print(e)
-
-        return False
 
     def get_storage(self, user, collection):
         if user.is_anon():
@@ -277,27 +259,15 @@ class StorageCommitter(object):
 
         storage_type = collection.get_prop('storage_type')
 
-        config = None
+        storage = None
 
-        # attempt to find storage profile by name
         if storage_type:
-            config = self.redis.hgetall(self.storage_key_templ.format(name=storage_type))
+            storage = self.storage_map.get(storage_type)
 
-        # default storage profile
-        if not config:
-            config = self.default_storage_profile
+        if not storage:
+            storage = self.storage_map[self.default_store]
 
-        # storage profile class stored in profile 'type'
-        storage_class = self.storage_class_map.get(config['type'])
-
-        # keeping local storage only
-        if not storage_class:
-            return None
-
-        return storage_class(config)
-
-    def add_storage_class(self, type_, cls):
-        self.storage_class_map[type_] = cls
+        return storage
 
 
 # =============================================================================

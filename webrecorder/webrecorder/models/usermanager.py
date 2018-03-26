@@ -163,12 +163,12 @@ class UserManager(object):
         return msg, redir_extra
 
     def get_move_temp_info(self, input_data):
-        move_temp = input_data.get('move-temp')
+        move_temp = input_data.get('moveTemp')
 
-        if move_temp != '1':
+        if not move_temp:
             return None
 
-        to_coll_title = input_data.get('to-coll', '')
+        to_coll_title = input_data.get('toColl', '')
         to_coll = sanitize_title(to_coll_title)
 
         if not to_coll:

@@ -44,7 +44,8 @@ class FullStackRunner(object):
         # try closing writer
         try:
             if self.rec_serv:
-                self.rec_serv.server.application.wr.writer.close()
+                self.rec_serv.server.application.wr.close()
+                #self.rec_serv.server.application.wr.writer.close()
         except Exception as e:
             traceback.print_exc()
 

@@ -309,6 +309,7 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
                 return
 
             while attempts < 10:
+                fh = None
                 try:
                     fh = load(cdxj_filename)
                     buff = fh.read()
@@ -317,12 +318,15 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
                         self.redis.zadd(output_key, 0, cdxj_line)
 
                     break
-                except:
+                except Exception as e:
+                    import traceback
+                    traceback.print_exc()
                     logging.error('Could not load: ' + cdxj_filename)
                     attempts += 1
 
                 finally:
-                    fh.close()
+                    if fh:
+                        fh.close()
 
             self.redis.expire(output_key, self.COLL_CDXJ_TTL)
 

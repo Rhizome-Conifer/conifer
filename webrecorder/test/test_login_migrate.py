@@ -2,6 +2,7 @@ from .testutils import FullStackTests
 
 import os
 import webtest
+import time
 
 from webrecorder.models.usermanager import CLIUserManager
 
@@ -10,7 +11,8 @@ from webrecorder.models.usermanager import CLIUserManager
 class TestLoginMigrate(FullStackTests):
     @classmethod
     def setup_class(cls, **kwargs):
-        super(TestLoginMigrate, cls).setup_class(storage_worker=True)
+        super(TestLoginMigrate, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
+                                                 storage_worker=True)
 
         cls.user_manager = CLIUserManager()
 
@@ -62,12 +64,11 @@ class TestLoginMigrate(FullStackTests):
     def test_api_test_non_temp_user(self):
         res = self.testapp.get('/api/v1/temp-users/test', status=404)
 
-
     def test_login_fail_no_migrate_name(self):
         params = {'username': 'test',
                   'password': 'TestTest123',
 
-                  'move-temp': '1'
+                  'moveTemp': '1'
                  }
 
         res = self.testapp.post_json('/api/v1/login', params=params, status=401)
@@ -83,8 +84,8 @@ class TestLoginMigrate(FullStackTests):
         params = {'username': 'test',
                   'password': 'TestTest123',
 
-                  'to-coll': 'default-collection',
-                  'move-temp': '1'
+                  'toColl': 'default-collection',
+                  'moveTemp': True,
                  }
 
         res = self.testapp.post_json('/api/v1/login', params=params, status=401)
@@ -100,8 +101,8 @@ class TestLoginMigrate(FullStackTests):
         params = {'username': 'test',
                   'password': 'TestTest123',
 
-                  'to-coll': 'Test Migrate',
-                  'move-temp': '1'
+                  'toColl': 'Test Migrate',
+                  'moveTemp': True,
                  }
 
         res = self.testapp.post_json('/api/v1/login', params=params)
@@ -134,13 +135,26 @@ class TestLoginMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json == {'curr_user': 'test'}
 
-    def test_warcs_in_user_dir(self):
+    def test_warcs_in_storage(self):
         user_dir = os.path.join(self.warcs_dir, 'test')
 
         def assert_one_dir():
-            assert len(os.listdir(user_dir)) == 1
+            assert set(os.listdir(self.storage_today)) == {'warcs', 'indexes'}
+            assert len(os.listdir(os.path.join(self.storage_today, 'warcs'))) == 1
+            assert len(os.listdir(os.path.join(self.storage_today, 'indexes'))) == 1
 
-        self.sleep_try(0.1, 10.0, assert_one_dir)
+            # no data in user_dir
+            user_data = os.listdir(user_dir)
+            assert len(user_data) == 0
+
+        self.sleep_try(0.2, 20.0, assert_one_dir)
+
+        coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
+
+        result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
+        self.storage_today = self.storage_today.replace(os.path.sep, '/')
+        for key in result:
+            assert self.storage_today in result[key]
 
     def test_logout_1(self):
         res = self.testapp.get('/_logout')
@@ -153,6 +167,30 @@ class TestLoginMigrate(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json['curr_user'] != self.anon_user and res.json['curr_user'].startswith('temp-')
 
+    def test_login_2(self):
+        params = {'username': 'test',
+                  'password': 'TestTest123'}
+
+        res = self.testapp.post_json('/api/v1/login', params=params)
+        assert res.json['username'] == 'test'
+        assert 'new_coll_name' not in res.json['username']
+
+    def test_delete_user(self):
+        user_dir = os.path.join(self.warcs_dir, 'test')
+        st_warcs_dir = os.path.join(self.storage_today, 'warcs')
+        st_index_dir = os.path.join(self.storage_today, 'indexes')
+
+        res = self.testapp.delete('/api/v1/users/test')
+
+        assert res.json == {'deleted_user': 'test'}
+
+        def assert_delete():
+            #assert not os.path.isdir(user_dir) or
+            assert len(os.listdir(user_dir)) == 0
+            assert len(os.listdir(st_warcs_dir)) == 0
+            assert len(os.listdir(st_index_dir)) == 0
+
+        self.sleep_try(0.3, 10.0, assert_delete)
 
 
 

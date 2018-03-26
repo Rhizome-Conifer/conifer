@@ -1,6 +1,6 @@
 invites_enabled: 'false'
 
-full_warc_prefix: ''
+full_warc_prefix: 'local+file://'
 
 max_warc_size: 1500
 
