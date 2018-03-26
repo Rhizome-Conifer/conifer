@@ -40,3 +40,11 @@ class BaseStorage(object):
 
         return self.do_delete(target_url, filename)
 
+    # CONVERSIONS
+    def get_client_url(self, target_url):
+        return target_url
+
+    def client_url_to_target_url(self, client_url):
+        return client_url
+
+

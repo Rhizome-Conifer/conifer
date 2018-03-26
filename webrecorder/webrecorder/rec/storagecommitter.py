@@ -11,6 +11,7 @@ from webrecorder.models.base import BaseAccess
 
 from webrecorder.rec.storage.s3 import S3Storage
 from webrecorder.rec.storage.local import LocalFileStorage
+from webrecorder.rec.storage.f4 import F4Storage
 
 from tempfile import NamedTemporaryFile
 
@@ -58,6 +59,9 @@ class StorageCommitter(object):
         self.default_store = os.environ.get('DEFAULT_STORAGE', 'local')
         if self.default_store == 's3':
             self.storage_map['s3'] = S3Storage(config)
+
+        elif self.default_store == 'f4':
+            self.storage_map['f4'] = F4Storage(config)
 
         print('Storage Committer Root: ' + self.record_root_dir)
 
@@ -158,8 +162,9 @@ class StorageCommitter(object):
 
         return cdxj_filename, full_filename
 
-    def process_deletes(self, storage_type):
-        del_q = self.DEL_Q.format(name=storage_type)
+    def process_deletes(self, storage_type, name=None):
+        name = name or storage_type
+        del_q = self.DEL_Q.format(name=name)
 
         storage = self.storage_map.get(storage_type)
         if not storage:
@@ -193,6 +198,7 @@ class StorageCommitter(object):
 
     def __call__(self):
         self.process_deletes('s3')
+        self.process_deletes('f4', 'fcrepo:8080')
         self.process_moves('local')
 
         for cdxj_key in self.redis.scan_iter(self.all_cdxj_templ):
@@ -216,6 +222,10 @@ class StorageCommitter(object):
                               access=BaseAccess())
 
         collection = recording.get_owner()
+        if not collection:
+            print('No Coll Id For: ' + str(rec))
+            return
+
         user = collection.get_owner()
 
         if not cdxj_key:

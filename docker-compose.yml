@@ -126,6 +126,21 @@ services:
         volumes:
             - ./data:/data
 
+    fcrepo:
+        #image: cbeer/fcrepo4:4.7
+        build: ./fcrepo
+
+        ports:
+            - 8100:8080
+
+        volumes:
+          - ./data/fedora:/data
+
+        environment:
+          - JAVA_OPTS=-Dfcrepo.modeshape.configuration="classpath:/config/file-simple/repository.json" -Dfcrepo.object.directory="/data/objects" -Dfcrepo.binary.directory="/data/binaries"
+          - F4_ROOT=http://fcrepo:8080/fcrepo/rest/webrecorder/
+
+
     # Postfix (if sending mail locally)
     mailserver:
         restart: always

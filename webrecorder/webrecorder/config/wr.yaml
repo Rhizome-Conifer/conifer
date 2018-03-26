@@ -25,7 +25,8 @@ default_max_coll: 10
 
 skip_key_secs: 330
 
-open_rec_ttl: 5400
+#open_rec_ttl: 5400
+open_rec_ttl: 30
 max_warc_size: 500000000
 
 max_detect_pages: 500
