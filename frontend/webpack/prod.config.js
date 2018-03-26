@@ -161,7 +161,7 @@ module.exports = {
     // ignore dev config
     new webpack.IgnorePlugin(/\.\/dev/, /\/config$/),
 
-    new HardSourceWebpackPlugin(),
+    //new HardSourceWebpackPlugin(),
 
     // optimizations
     new webpack.optimize.UglifyJsPlugin({
