@@ -24,7 +24,7 @@ class UserSignup extends Component {
     checkUser: PropTypes.func,
     checkedUsername: PropTypes.string,
     result: PropTypes.object,
-    errors: PropTypes.array,
+    errors: PropTypes.object,
     success: PropTypes.bool,
     userCheck: PropTypes.bool,
     user: PropTypes.object,
@@ -173,7 +173,7 @@ class UserSignup extends Component {
                     <b>Errors:</b>
                     <ul>
                       {
-                        Object.entries(errors.toJS()).map(error => <li>{`Error ${error[0]}:`} <span dangerouslySetInnerHTML={{ __html: error[1] }} /></li>)
+                        errors.entrySeq().toArray().map(error => <li key={error[0]}>{`Error ${error[0]}:`} <span dangerouslySetInnerHTML={{ __html: error[1] }} /></li>)
                       }
                     </ul>
                   </div>
