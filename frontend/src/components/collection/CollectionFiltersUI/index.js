@@ -110,7 +110,7 @@ class CollectionFiltersUI extends Component {
               icons={false} />
           </div>
           {
-            !isAnon && canAdmin && this.props.selectedPageIdx &&
+            !isAnon && canAdmin && this.props.selectedPageIdx !== null &&
               <button className="open-all" onClick={this.openAddToList}>Add selection to lists</button>
           }
           {
