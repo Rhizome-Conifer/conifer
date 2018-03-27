@@ -26,9 +26,10 @@ const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
 export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
   edited: false,
+  editError: null,
+  error: null,
   loading: false,
   loaded: false,
-  error: null,
   sortBy: defaultSort
 });
 
@@ -88,7 +89,12 @@ export default function collection(state = initialState, action = {}) {
     case COLL_EDIT_SUCCESS:
       return state.merge({
         edited: true,
+        editError: null,
         ...action.result.collection
+      });
+    case COLL_EDIT_FAIL:
+      return state.merge({
+        editError: action.error.error_message
       });
     case RESET_EDIT_STATE:
       return state.set('edited', false);

@@ -25,7 +25,8 @@ class CollectionHeaderUI extends Component {
   static propTypes = {
     activeList: PropTypes.bool,
     collection: PropTypes.object,
-    collSaveSuccess: PropTypes.bool,
+    collEdited: PropTypes.bool,
+    collEditError: PropTypes.string,
     condensed: PropTypes.bool,
     deleteColl: PropTypes.func,
     list: PropTypes.object,
@@ -161,7 +162,7 @@ class CollectionHeaderUI extends Component {
 
   render() {
     const { isAnon } = this.context;
-    const { activeList, collection, collSaveSuccess, list, listEdited } = this.props;
+    const { activeList, collection, collEdited, list, listEdited } = this.props;
     const { truncate, animated, condensed, height, hoverOverride, toggleDesc } = this.state;
 
     const containerClasses = classNames('wr-collection-header', {
@@ -180,7 +181,8 @@ class CollectionHeaderUI extends Component {
             <InlineEditor
               initial={collection.get('title')}
               onSave={this.editCollTitle}
-              success={collSaveSuccess}>
+              success={collEdited}
+              error={this.props.collEditError}>
               <h1>{collection.get('title')}</h1>
             </InlineEditor>
             {
@@ -261,7 +263,7 @@ class CollectionHeaderUI extends Component {
             save={this.editDesc}
             renderCallback={this.editorRendered}
             toggleCallback={this.editModeCallback}
-            success={activeList ? listEdited : collSaveSuccess} />
+            success={activeList ? listEdited : collEdited} />
           <button className="read-more borderless" onClick={this.toggleDesc}>Read More</button>
         </div>
       </header>

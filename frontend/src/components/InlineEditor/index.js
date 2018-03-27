@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button, ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
+import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
 
 import { CheckIcon, XIcon } from 'components/icons';
 
@@ -14,16 +14,19 @@ class InlineEditor extends Component {
   };
 
   static propTypes = {
+    blockDisplay: PropTypes.bool,
+    canBeEmpty: PropTypes.bool,
+    error: PropTypes.string,
     initial: PropTypes.string,
-    onSave: PropTypes.func,
     label: PropTypes.string,
+    onSave: PropTypes.func,
     success: PropTypes.bool,
-    blockDisplay: PropTypes.bool
   };
 
   static defaultProps = {
-    label: '',
-    blockDisplay: false
+    blockDisplay: false,
+    canBeEmpty: false,
+    label: ''
   }
 
   constructor(props) {
@@ -32,6 +35,7 @@ class InlineEditor extends Component {
     this.handle = null;
     this.state = {
       editMode: false,
+      error: null,
       inputVal: props.initial,
       inputWidth: 'auto'
     };
@@ -72,38 +76,69 @@ class InlineEditor extends Component {
   toggleEditMode = () => {
     const { editMode } = this.state;
 
-    this.setState({ editMode: !editMode });
+    this.setState({ editMode: !editMode, error: null, inputVal: this.props.initial });
   }
 
   _save = () => {
+    const { inputVal } = this.state;
+
     if (this.props.onSave) {
-      this.props.onSave(this.state.inputVal);
+      // optionally allow sending empty edits
+      if ((this.props.canBeEmpty && !inputVal) || inputVal) {
+        if (this.state.error) {
+          this.setState({ error: null });
+        }
+
+        this.props.onSave(this.state.inputVal);
+      } else {
+        this.setState({ error: 'This field cannot be blank.' });
+      }
     } else {
       console.log('No `onSave` method provided..');
     }
   }
 
+  validation = (styles = false) => {
+    const { error, success } = this.props;
+
+    if (success) {
+      return 'success';
+    } else if (error || this.state.error) {
+      return styles ? 'danger' : 'error';
+    }
+
+    return styles ? 'default' : null;
+  }
+
   render() {
     const { canAdmin } = this.context;
-    const { blockDisplay, label } = this.props;
+    const { blockDisplay, error, label } = this.props;
 
     return (
       <div className={classNames('wr-inline-editor', { 'block-display': blockDisplay })}>
         {
           this.state.editMode ?
             <div className="form-wrapper" style={blockDisplay ? {} : { width: this.state.inputWidth }}>
-              <FormGroup>
+              <FormGroup validationState={this.validation()}>
                 {
                   label &&
                     <ControlLabel>{label}</ControlLabel>
                 }
-                <FormControl
-                  type="text"
-                  name="inputVal"
-                  inputRef={(obj) => { this.input = obj; }}
-                  value={this.state.inputVal}
-                  onChange={this.handleChange} />
-                <Button bsSize="sm" onClick={this._save} bsStyle={this.props.success ? 'success' : 'default'}><CheckIcon /></Button>
+                <div className="control-container">
+                  <FormControl
+                    type="text"
+                    name="inputVal"
+                    inputRef={(obj) => { this.input = obj; }}
+                    value={this.state.inputVal}
+                    onChange={this.handleChange} />
+                  {
+                    (error || this.state.error) &&
+                    <div className="help-spanner">
+                      <HelpBlock>{ error || this.state.error }</HelpBlock>
+                    </div>
+                  }
+                </div>
+                <Button bsSize="sm" onClick={this._save} bsStyle={this.validation(true)}><CheckIcon /></Button>
                 <Button onClick={this.toggleEditMode} bsSize="sm"><XIcon /></Button>
               </FormGroup>
             </div> :

@@ -14,7 +14,8 @@ import CollectionHeaderUI from 'components/collection/CollectionHeaderUI';
 const mapStateToProps = ({ app }) => {
   return {
     collection: app.get('collection'),
-    collSaveSuccess: app.getIn(['collection', 'edited']),
+    collEdited: app.getIn(['collection', 'edited']),
+    collEditError: app.getIn(['collection', 'editError']),
     list: app.get('list'),
     listEdited: app.getIn(['list', 'edited'])
   };
@@ -39,7 +40,14 @@ const mapDispatchToProps = (dispatch, { history }) => {
     },
     editCollection: (user, coll, data) => {
       dispatch(editCollDesc(user, coll, data))
-        .then(() => setTimeout(() => dispatch(resetCollEditState()), 3000));
+        .then((res) => {
+          // if editing title, redirect to new title url
+          if (data.hasOwnProperty('title')) {
+            history.push(`/${user}/${res.collection.id}`);
+          }
+
+          setTimeout(() => dispatch(resetCollEditState()), 3000);
+        });
     },
     dispatch
   };

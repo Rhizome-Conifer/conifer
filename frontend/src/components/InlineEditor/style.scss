@@ -14,11 +14,29 @@
         .form-group {
             display: flex;
 
+            .control-container {
+                display: flex;
+                flex-direction: column;
+            }
+
             button {
                 margin-left: .5rem;
+                align-self: flex-start;
 
-                &.btn-success {
+                &.btn-danger, &.btn-success {
                     fill: #FFF;
+                }
+            }
+
+            .help-spanner {
+                position: relative;
+                height: 2rem;
+                margin-top: .5rem;
+
+                .help-block {
+                    position: absolute;
+                    white-space: nowrap;
+                    margin: 0;
                 }
             }
         }
