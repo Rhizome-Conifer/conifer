@@ -324,7 +324,6 @@ class CollectionDetailUI extends Component {
                   </header>
                 </div> :
                 <CollectionFilters
-                  activeList={activeList}
                   expandAll={expandAll}
                   groupDisplay={groupDisplay}
                   onToggle={this.onToggle}

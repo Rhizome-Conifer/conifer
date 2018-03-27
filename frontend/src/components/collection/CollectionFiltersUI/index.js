@@ -14,7 +14,6 @@ class CollectionFiltersUI extends Component {
   };
 
   static propTypes = {
-    activeList: PropTypes.bool,
     addPagesToLists: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
@@ -92,7 +91,7 @@ class CollectionFiltersUI extends Component {
 
   render() {
     const { canAdmin, isAnon } = this.context;
-    const { activeList, collection, groupDisplay, onToggle } = this.props;
+    const { collection, groupDisplay, onToggle } = this.props;
 
     return (
       <div className="wr-coll-utilities">
@@ -103,16 +102,13 @@ class CollectionFiltersUI extends Component {
                 <Button bsSize="xs" bsStyle="success">New Recording</Button>
               </Link>
           }
-          {
-            !activeList &&
-              <div className="toggle-label">
-                <span onClick={onToggle}>Group by session</span>
-                <Toggle
-                  checked={groupDisplay}
-                  onChange={onToggle}
-                  icons={false} />
-              </div>
-          }
+          <div className="toggle-label">
+            <span onClick={onToggle}>Group by session</span>
+            <Toggle
+              checked={groupDisplay}
+              onChange={onToggle}
+              icons={false} />
+          </div>
           {
             !isAnon && canAdmin && this.props.selectedPageIdx &&
               <button className="open-all" onClick={this.openAddToList}>Add selection to lists</button>
@@ -121,11 +117,7 @@ class CollectionFiltersUI extends Component {
             groupDisplay &&
               <button className="open-all" onClick={this.props.toggleExpandAllSessions}>{this.props.expandAll ? 'Close' : 'Open'} All Sessions</button>
           }
-          {
-            !activeList &&
-              <Searchbox search={this.search} searchText={this.props.searchText} />
-          }
-
+          <Searchbox search={this.search} searchText={this.props.searchText} />
           {
             canAdmin &&
               <Modal
