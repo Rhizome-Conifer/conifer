@@ -9,8 +9,9 @@ require('babel-polyfill');
  *
  * module.exports = {
  *   appHost: 'http://localhost:3000',
- *   contentHost: 'http://localhost:8089',
- *   defaultRecordingTitle: "Session"
+ *   contentHost: 'http://localhost:3001',
+ *   defaultRecordingTitle: 'Session',
+ *   homepageAnnouncement: '<h5>This is a test!</h5>'
  * };
  *
  */
@@ -34,44 +35,39 @@ const contentHost = process.env.CONTENT_HOST ? process.env.CONTENT_HOST : `local
 
 module.exports = Object.assign({
   apiProxy: false,
-  port: process.env.FRONTEND_PORT || 8095,
+  apiPath: '/api/v1',
   appHost: `${hostScheme}://${appHost}`,
   contentHost: `${hostScheme}://${contentHost}`,
-  apiPath: '/api/v1',
-  internalApiHost: process.env.INTERNAL_HOST,
-  internalApiPort: process.env.INTERNAL_PORT,
-  product: 'Webrecorder',
-  defaultRecordingTitle: 'Recording Session',
   defaultBookmarkDesc: 'No description provided.',
   defaultCollectionTitle: 'New Collection',
   defaultCollDesc: '*This collection doesn\'t yet have a description.*',
   defaultListDesc: '*This list doesn\'t yet have a description.*',
-  storageKey: 'wrLocalData',
-  userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
-  passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),
-  untitledEntry: 'Untitled Document',
-  ravenConfig: null,
+  defaultRecordingTitle: 'Recording Session',
   draggableTypes: {
     PAGE_ITEM: 'pageItem'
   },
+  homepageAnnouncement: '',
+  internalApiHost: process.env.INTERNAL_HOST,
+  internalApiPort: process.env.INTERNAL_PORT,
+  passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),
+  port: process.env.FRONTEND_PORT || 8095,
+  product: 'Webrecorder',
+  ravenConfig: null,
+  storageKey: 'wrLocalData',
+  untitledEntry: 'Untitled Document',
+  userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   app: {
     title: 'Webrecorder',
-    description: '',
     head: {
       titleTemplate: 'Webrecorder | %s',
       meta: [
         { name: 'description', content: '' },
         { charset: 'utf-8' },
         { property: 'og:site_name', content: 'Webrecorder' },
-        // { property: 'og:image', content: '' },
         { property: 'og:locale', content: 'en_US' },
         { property: 'og:title', content: 'Webrecorder' },
-        { property: 'og:description', content: '' }
-        // { property: 'og:card', content: 'summary' },
-        // { property: 'og:site', content: '' },
-        // { property: 'og:creator', content: '' },
-        // { property: 'og:image:width', content: '200' },
-        // { property: 'og:image:height', content: '200' }
+        { property: 'og:description', content: 'Create high-fidelity, interactive web archives of any web site you browse.' }
+
       ]
     }
   },

@@ -5,7 +5,7 @@ import { incrementCollCount } from 'redux/modules/auth';
 import { createCollection } from 'redux/modules/collections';
 import { addUserCollection, loadCollections, selectCollection } from 'redux/modules/user';
 import { getActiveCollection } from 'redux/selectors';
-import CollectionDropdownUI from 'components/CollectionDropdownUI';
+import CollectionDropdownUI from 'components/collection/CollectionDropdownUI';
 
 
 const mapStateToProps = ({ app }) => {

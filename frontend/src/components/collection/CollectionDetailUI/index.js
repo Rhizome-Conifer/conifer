@@ -4,23 +4,20 @@ import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
-import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
-import { CollectionHeader } from 'containers';
+import { CollectionFilters, CollectionHeader } from 'containers';
 
-import SessionCollapsible from 'components/SessionCollapsible';
-import Modal from 'components/Modal';
+import SessionCollapsible from 'components/collection/SessionCollapsible';
 import { CloseIcon } from 'components/icons';
 
 import 'react-virtualized/styles.css';
 
 import CollectionSidebar from './sidebar';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
-import CollectionManagement from './management';
 import { BrowserRenderer, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
@@ -28,19 +25,17 @@ import './style.scss';
 
 class CollectionDetailUI extends Component {
   static propTypes = {
-    addPagesToLists: PropTypes.func,
     auth: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
     deleteRec: PropTypes.func,
     dispatch: PropTypes.func,
     list: PropTypes.object,
+    match: PropTypes.object,
     pages: PropTypes.object,
     recordings: PropTypes.object,
     removeBookmark: PropTypes.func,
-    saveBookmarkSort: PropTypes.func,
-    searchText: PropTypes.string,
-    searchPages: PropTypes.func
+    saveBookmarkSort: PropTypes.func
   };
 
   static contextTypes = {
@@ -52,8 +47,6 @@ class CollectionDetailUI extends Component {
     super(props);
 
     this.initialState = {
-      addToListModal: false,
-      checkedLists: {},
       expandAll: false,
       groupDisplay: false,
       listBookmarks: props.list.get('bookmarks'),
@@ -190,30 +183,6 @@ class CollectionDetailUI extends Component {
     }
   }
 
-  addToList = () => {
-    const { checkedLists, selectedPageIdx } = this.state;
-    const { pages } = this.props;
-
-    if (!checkedLists || Object.entries(checkedLists).length === 0 || !selectedPageIdx) {
-      return;
-    }
-
-    const selectedLists = Object.entries(checkedLists).filter(l => l[1]);
-    const lists = selectedLists.map(obj => obj[0]);
-
-    const pagesToAdd = [];
-
-    if (typeof selectedPageIdx === "object") {
-      for(const pgIdx of selectedPageIdx) {
-        pagesToAdd.push(pages.get(pgIdx));
-      }
-    } else {
-      pagesToAdd.push(pages.get(selectedPageIdx));
-    }
-
-    this.props.addPagesToLists(pagesToAdd, lists);
-    this.closeAddToList();
-  }
 
   openAndScroll = (sesh) => {
     const index = this.props.recordings.findIndex(o => o.get('id') === sesh.get('id'));
@@ -274,14 +243,6 @@ class CollectionDetailUI extends Component {
     return index === selectedPageIdx ? 'selected' : '';
   }
 
-  listCheckbox = (evt) => {
-    const { checkedLists } = this.state;
-
-    checkedLists[evt.target.name] = evt.target.checked;
-
-    this.setState({ checkedLists });
-  }
-
   sortBookmark = (origIndex, hoverIndex) => {
     const { listBookmarks } = this.state;
     const o = listBookmarks.get(origIndex);
@@ -309,13 +270,11 @@ class CollectionDetailUI extends Component {
   }
 
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
-  openAddToList = () => this.setState({ addToListModal: true })
-  closeAddToList = () => this.setState({ addToListModal: false })
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { pages, browsers, collection, list, recordings, searchText, match: { params } } = this.props;
-    const { addToListModal, checkedLists, groupDisplay, expandAll, listBookmarks, selectedSession,
+    const { canAdmin } = this.context;
+    const { pages, browsers, collection, recordings, match: { params } } = this.props;
+    const { groupDisplay, expandAll, listBookmarks, selectedSession,
             selectedPageIdx, selectedGroupedPageIdx, selectedRec } = this.state;
 
     // don't render until loaded
@@ -329,9 +288,10 @@ class CollectionDetailUI extends Component {
 
     // add react-dnd integration
     const customRowRenderer = (props) => {
-      // if (isAnon) {
-      //   return <DefaultRow {...props} />;
-      // }
+      if (!canAdmin) {
+        return <DefaultRow {...props} />;
+      }
+
       if (activeList) {
         return (
           <DnDSortableRow
@@ -356,30 +316,23 @@ class CollectionDetailUI extends Component {
             <CollectionSidebar collection={collection} activeListId={params.list} />
 
             {
-              !activeList &&
-                <div className="wr-coll-utilities">
-                  <CollectionManagement
-                    activeList={activeList}
-                    collection={collection}
-                    expandAll={expandAll}
-                    groupDisplay={groupDisplay}
-                    onToggle={this.onToggle}
-                    openAddToList={this.openAddToList}
-                    search={this.search}
-                    searchText={searchText}
-                    selectedPages={selectedPageIdx !== null}
-                    toggleExpandAllSessions={this.toggleExpandAllSessions} />
-                </div>
-            }
-            {
-              activeList &&
+              activeList ?
                 <div className="lists-modifier">
                   <header className="lists-header">
                     <span>Bookmarks in Selected List</span>
                     <Link to={`/${collection.get('user')}/${collection.get('id')}`}>Back to Collection Index <CloseIcon /></Link>
                   </header>
-                </div>
+                </div> :
+                <CollectionFilters
+                  activeList={activeList}
+                  expandAll={expandAll}
+                  groupDisplay={groupDisplay}
+                  onToggle={this.onToggle}
+                  pages={pages}
+                  selectedPageIdx={selectedPageIdx}
+                  toggleExpandAllSessions={this.toggleExpandAllSessions} />
             }
+
             <div className={classNames('wr-coll-detail-table', { 'with-lists': activeList })}>
               {
                 !activeList && groupDisplay ?
@@ -469,39 +422,6 @@ class CollectionDetailUI extends Component {
             </div>
           </div>
         </div>
-
-        {
-          /* add to list modal */
-          canAdmin &&
-            <React.Fragment>
-              <Modal
-                visible={addToListModal}
-                closeCb={this.closeAddToList}
-                dialogClassName="add-to-lists-modal"
-                header={<h4>Add to ...</h4>}
-                footer={
-                  <React.Fragment>
-                    <Button disabled style={{ marginRight: 5 }}>Create new list</Button>
-                    <Button onClick={this.addToList} bsStyle="success">Save</Button>
-                  </React.Fragment>
-                }>
-                <ul>
-                  {
-                    collection.get('lists').map((listObj) => {
-                      const id = listObj.get('id');
-                      return (
-                        <li key={id}>
-                          <input type="checkbox" onChange={this.listCheckbox} name={id} id={`add-to-list-${id}`} checked={checkedLists[id] || false} />
-                          <label htmlFor={`add-to-list-${id}`}>{listObj.get('title')}</label>
-                        </li>
-                      );
-                    })
-                  }
-                </ul>
-              </Modal>
-
-            </React.Fragment>
-        }
       </div>
     );
   }

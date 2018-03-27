@@ -30,10 +30,8 @@ class CollectionHeaderUI extends Component {
     deleteColl: PropTypes.func,
     list: PropTypes.object,
     listEdited: PropTypes.bool,
-    saveDescription: PropTypes.func,
-    listSaveSuccess: PropTypes.bool,
-    saveListEdit: PropTypes.func,
-    setCollPublic: PropTypes.func
+    editCollection: PropTypes.func,
+    editList: PropTypes.func
   };
 
   constructor(props) {
@@ -70,7 +68,7 @@ class CollectionHeaderUI extends Component {
 
   setPublic = () => {
     const { collection } = this.props;
-    this.props.setCollPublic(collection.get('id'), collection.get('user'), !(collection.get('isPublic') === '1'));
+    this.props.editCollection(collection.get('user'), collection.get('id'), { public: !(collection.get('isPublic') === '1') });
   }
 
   editorRendered = () => {
@@ -88,16 +86,11 @@ class CollectionHeaderUI extends Component {
     this.setState(state);
   }
 
-  editTitle = (title) => {
-    // TODO: connect to api
-    console.log('saving..', title);
-  }
-
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
 
-  saveListTitle = (title) => {
+  editListTitle = (title) => {
     const { collection, list } = this.props;
-    this.props.saveListEdit(collection.get('user'), collection.get('id'), list.get('id'), { title });
+    this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { title });
   }
 
   toggleDesc = () => {
@@ -113,7 +106,9 @@ class CollectionHeaderUI extends Component {
   }
 
   hoverDelay = () => {
-    this.handle = setTimeout(() => this.setState({ hoverOverride: true }), 250);
+    if (this.props.condensed && !this.state.hoverOverride) {
+      this.handle = setTimeout(() => this.setState({ hoverOverride: true }), 250);
+    }
   }
 
   hoverCancel = () => {
@@ -124,12 +119,17 @@ class CollectionHeaderUI extends Component {
     clearTimeout(this.handle);
   }
 
-  saveDesc = (desc) => {
-    const { activeList, collection, list, saveDescription, saveListEdit } = this.props;
+  editCollTitle = (title) => {
+    const { collection } = this.props;
+    this.props.editCollection(collection.get('user'), collection.get('id'), { title });
+  }
+
+  editDesc = (desc) => {
+    const { activeList, collection, list, editCollection, editList } = this.props;
     if (activeList) {
-      saveListEdit(collection.get('user'), collection.get('id'), list.get('id'), { desc });
+      editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
     } else {
-      saveDescription(collection.get('user'), collection.get('id'), desc);
+      editCollection(collection.get('user'), collection.get('id'), { desc });
     }
   }
 
@@ -179,7 +179,8 @@ class CollectionHeaderUI extends Component {
           <div className="heading-container">
             <InlineEditor
               initial={collection.get('title')}
-              onSave={this.editTitle}>
+              onSave={this.editCollTitle}
+              success={collSaveSuccess}>
               <h1>{collection.get('title')}</h1>
             </InlineEditor>
             {
@@ -188,7 +189,7 @@ class CollectionHeaderUI extends Component {
                   <h1>&nbsp;>&nbsp;</h1>
                   <InlineEditor
                     initial={list.get('title')}
-                    onSave={this.saveListTitle}
+                    onSave={this.editListTitle}
                     success={this.props.listEdited}>
                     <h1>{list.get('title')}</h1>
                   </InlineEditor>
@@ -257,7 +258,7 @@ class CollectionHeaderUI extends Component {
           style={{ height }}>
           <WYSIWYG
             initial={activeList ? list.get('desc') || defaultListDesc : collection.get('desc') || defaultCollDesc}
-            save={this.saveDesc}
+            save={this.editDesc}
             renderCallback={this.editorRendered}
             toggleCallback={this.editModeCallback}
             success={activeList ? listEdited : collSaveSuccess} />

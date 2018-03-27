@@ -5,10 +5,10 @@ const COLL_LOAD = 'wr/coll/COLL_LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
 
-const COLL_DESC = 'wr/coll/COLL_DESC';
-const COLL_DESC_SUCCESS = 'wr/coll/COLL_DESC_SUCCESS';
-const COLL_DESC_FAIL = 'wr/coll/COLL_DESC_FAIL';
-const RESET_SAVE_STATE = 'wr/coll/RESET_SAVE_STATE';
+const COLL_EDIT = 'wr/coll/COLL_EDIT';
+const COLL_EDIT_SUCCESS = 'wr/coll/COLL_EDIT_SUCCESS';
+const COLL_EDIT_FAIL = 'wr/coll/COLL_EDIT_FAIL';
+const RESET_EDIT_STATE = 'wr/coll/RESET_EDIT_STATE';
 
 const COLL_DELETE = 'wr/coll/COLL_DELETE';
 const COLL_DELETE_SUCCESS = 'wr/coll/COLL_DELETE_SUCCESS';
@@ -25,7 +25,7 @@ const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
 
 export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
-  descSave: false,
+  edited: false,
   loading: false,
   loaded: false,
   error: null,
@@ -85,10 +85,13 @@ export default function collection(state = initialState, action = {}) {
         lists: action.result.lists
       });
 
-    case COLL_DESC_SUCCESS:
-      return state.set('descSave', true);
-    case RESET_SAVE_STATE:
-      return state.set('descSave', false);
+    case COLL_EDIT_SUCCESS:
+      return state.merge({
+        edited: true,
+        ...action.result.collection
+      });
+    case RESET_EDIT_STATE:
+      return state.set('edited', false);
 
     case LISTS_LOAD_FAIL:
     case LISTS_LOAD:
@@ -107,8 +110,8 @@ export function isLoaded({ app }) {
 }
 
 
-export function resetSaveState() {
-  return { type: RESET_SAVE_STATE };
+export function resetEditState() {
+  return { type: RESET_EDIT_STATE };
 }
 
 
@@ -133,26 +136,14 @@ export function loadLists(user, coll, withBookmarks = false) {
 }
 
 
-export function saveDescription(user, coll, desc) {
+export function edit(user, coll, data) {
   return {
-    types: [COLL_DESC, COLL_DESC_SUCCESS, COLL_DESC_FAIL],
-    promise: client => client.post(`${apiPath}/collections/${coll}/desc`, {
-      params: { user, coll },
-      data: desc
-    }, 'form')
-  };
-}
-
-
-export function setPublic(coll, user, makePublic = true) {
-  return {
-    types: [COLL_SET_PUBLIC, COLL_SET_PUBLIC_SUCCESS, COLL_SET_PUBLIC_FAIL],
-    promise: client => client.post(`${apiPath}/collections/${coll}/public`, {
+    types: [COLL_EDIT, COLL_EDIT_SUCCESS, COLL_EDIT_FAIL],
+    promise: client => client.post(`${apiPath}/collection/${coll}`, {
       params: { user },
-      data: {
-        'public': makePublic
-      },
-    }, 'form')
+      data
+    }),
+    data
   };
 }
 

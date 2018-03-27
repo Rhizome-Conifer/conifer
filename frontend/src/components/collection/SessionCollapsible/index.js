@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import Collapsible from 'react-collapsible';
 import RemoveWidget from 'components/RemoveWidget';
-import PageList from 'components/PageList';
+import PageList from 'components/collection/PageList';
 import SizeFormat from 'components/SizeFormat';
 import TimeFormat from 'components/TimeFormat';
 

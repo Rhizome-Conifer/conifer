@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Collapse } from 'react-bootstrap';
 
+import { homepageAnnouncement } from 'config';
+
 import { showModal } from 'redux/modules/userLogin';
 
 import { HomepageAnnouncement, HomepageMessage } from 'components/siteComponents';
@@ -51,7 +53,10 @@ class Home extends Component {
         <div className="row top-buffer-lg bottom-buffer-lg">
           <StandaloneRecorder />
         </div>
-        <HomepageAnnouncement />
+        {
+          homepageAnnouncement &&
+            <HomepageAnnouncement />
+        }
 
         <div className="row intro-blurb">
           <div className="col-sm-8 col-sm-offset-2">

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+
+import { homepageAnnouncement } from 'config';
 
 import './style.scss';
 
@@ -14,9 +15,7 @@ function HomepageAnnouncement() {
         <div className="wr-alert-logo">
           <img src={logo} alt="Webrecorder logo" />
         </div>
-        <div className="wr-alert-info">
-          <h5><b>Please Note:</b> this is an experimental demo instance for the EAW workshop. You should download any data that you care about as a WARC file</h5>
-        </div>
+        <div className="wr-alert-info" dangerouslySetInnerHTML={{ __html: homepageAnnouncement }} />
       </div>
     </div>
   );

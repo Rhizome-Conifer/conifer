@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
-import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
 import { load as loadColl } from 'redux/modules/collection';
-import { addTo, load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
+import { load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { deleteRecording } from 'redux/modules/recordings';
 import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
 
-import CollectionDetailUI from 'components/CollectionDetailUI';
+import CollectionDetailUI from 'components/collection/CollectionDetailUI';
 
 
 class CollectionDetail extends Component {
@@ -86,23 +85,12 @@ const mapStateToProps = (outerState) => {
     loaded: reduxAsyncConnect.loaded,
     recordings: isLoaded ? getOrderedRecordings(app) : null,
     pages: isIndexing ? getOrderedPages(app) : pageFeed,
-    searchText,
     list: app.get('list')
   };
 };
 
-const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll } } }) => {
+const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
   return {
-    addPagesToLists: (pages, lists) => {
-      const bookmarkPromises = [];
-      for (const list of lists) {
-        for (const page of pages) {
-          bookmarkPromises.push(dispatch(addTo(user, coll, list, page)));
-        }
-      }
-
-      return Promise.all(bookmarkPromises);
-    },
     deleteRec: (rec) => {
       dispatch(deleteRecording(user, coll, rec))
         .then((res) => {
@@ -118,7 +106,6 @@ const mapDispatchToProps = (dispatch, { history, match: { params: { user, coll }
     saveBookmarkSort: (list, ids) => {
       dispatch(saveSort(user, coll, list, ids));
     },
-    searchPages: createSearchAction('collection.pages'),
     dispatch
   };
 };
