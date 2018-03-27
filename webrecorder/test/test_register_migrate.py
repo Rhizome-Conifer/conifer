@@ -456,6 +456,7 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.post_json('/api/v1/collection/test-migrate?user=someuser', params=params)
 
         assert res.json['collection']['id'] == 'test-coll'
+        assert res.json['collection']['title'] == 'Test Coll'
 
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
 

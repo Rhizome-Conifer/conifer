@@ -95,6 +95,7 @@ class CollsController(BaseController):
                 except DupeNameException as de:
                     return {'error_message': 'duplicate name: ' + new_coll_name}
 
+                collection['title'] = new_coll_title
 
             if 'desc' in data:
                 collection['desc'] = data['desc']
