@@ -1,12 +1,12 @@
 import { createSelector } from 'reselect';
-import { is, List, Map } from 'immutable';
+import { List } from 'immutable';
 import { getSearchSelectors } from 'redux-search';
 
-import { untitledEntry } from 'config';
 import { rts, truncate } from 'helpers/utils';
 
 
 const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
+const getActiveBookmarkId = state => (state.app ? state.app : state).getIn(['controls', 'activeBookmarkId']);
 const getArchives = state => state.getIn(['controls', 'archives']);
 const getCollections = state => state.getIn(['collections', 'collections']);
 const getListBookmarks = state => (state.app ? state.app : state).getIn(['list', 'bookmarks']);
@@ -33,6 +33,7 @@ const sortFn = (a, b, by = null) => {
   return 0;
 };
 
+
 // redux-search
 const { text, result } = getSearchSelectors({
   resourceName: 'collection.pages',
@@ -40,6 +41,13 @@ const { text, result } = getSearchSelectors({
     return state.app.getIn(resourceName.split('.'));
   }
 });
+
+
+export const getSearchText = createSelector(
+  [text],
+  searchText => searchText
+);
+
 
 export const tsOrderedPageSearchResults = createSelector(
   [result, getPages, text],
@@ -53,6 +61,7 @@ export const tsOrderedPageSearchResults = createSelector(
     };
   }
 );
+
 
 export const pageSearchResults = createSelector(
   [result, getPages, userSortBy, text],
@@ -74,6 +83,7 @@ export const pageSearchResults = createSelector(
     };
   }
 );
+
 
 export const getActiveCollection = createSelector(
   [getUserCollections, selectedCollection],
@@ -146,6 +156,7 @@ export const getRecording = createSelector(
   }
 );
 
+
 const sortedSearch = (sortedPages, timestamp, url) => {
   if (!timestamp) {
     const idx = sortedPages.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });
@@ -191,12 +202,14 @@ const sortedSearch = (sortedPages, timestamp, url) => {
   return -1;
 };
 
+
 export const getActiveRecording = createSelector(
   [getOrderedPages, getTimestamp, getUrl],
   (pages, ts, url) => {
     return sortedSearch(pages, ts, url);
   }
 );
+
 
 export const getActivePage = createSelector(
   [tsOrderedPageSearchResults, getTimestamp, getUrl],
@@ -206,7 +219,16 @@ export const getActivePage = createSelector(
   }
 );
 
+
 export const getActiveBookmark = createSelector(
+  [getListBookmarks, getActiveBookmarkId],
+  (bookmarks, bkId) => {
+    return bookmarks.find(bk => bk.get('id') === bkId);
+  }
+);
+
+
+export const getActiveBookmarkByValues = createSelector(
   [getListBookmarks, getTimestamp, getUrl],
   (bookmarks, ts, url) => {
     const rtsUrl = rts(url);
@@ -215,6 +237,7 @@ export const getActiveBookmark = createSelector(
                                     rts(o.get('url')) === rtsUrl);
   }
 );
+
 
 export const getActiveRemoteBrowser = createSelector(
   [getActiveRemoteBrowserId, getRemoteBrowsers],

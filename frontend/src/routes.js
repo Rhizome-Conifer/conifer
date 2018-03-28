@@ -104,7 +104,7 @@ const controllerRoutes = [
     getLocation: ({ user, coll, rec }) => `/${user}/${coll}?filter=${rec}`
   },
   {
-    path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)/:splat(.*)`,
+    path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?/:splat(.*)`,
     name: 'patch',
     footer: false,
     classOverride: true,

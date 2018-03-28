@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { addTo, create, deleteList, edit, load as loadList } from 'redux/modules/list';
 import { loadLists } from 'redux/modules/collection';
 
-import ListsUI from 'components/ListsUI';
+import ListsUI from 'components/collection/ListsUI';
 
 
 class Lists extends Component {

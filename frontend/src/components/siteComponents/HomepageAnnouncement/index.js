@@ -1,5 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+
+import { homepageAnnouncement } from 'config';
 
 import './style.scss';
 
@@ -14,12 +15,7 @@ function HomepageAnnouncement() {
         <div className="wr-alert-logo">
           <img src={logo} alt="Webrecorder logo" />
         </div>
-        <div className="wr-alert-info">
-          <h5><strong>New!</strong> Browse your archives offline with Webrecorder Desktop Player App</h5>
-          <p>
-            <a href="https://github.com/webrecorder/webrecorderplayer-electron/releases/latest" target="_blank">Download the desktop app&nbsp;&raquo;</a>
-          </p>
-        </div>
+        <div className="wr-alert-info" dangerouslySetInnerHTML={{ __html: homepageAnnouncement }} />
       </div>
     </div>
   );

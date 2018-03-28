@@ -187,7 +187,7 @@ class UserManager(object):
         cookie_validate = 'valreg=' + reg_code
 
         if cookie_validate not in cookie:
-            return {'error': 'invalid'}
+            return {'error': 'invalid cookie'}
 
         try:
             user, first_coll = self.create_user_from_reg(reg_code)
@@ -199,8 +199,9 @@ class UserManager(object):
             return {'error': 'already_registered'}
 
         except Exception as e:
-            print(e)
-            return {'error': 'invalid'}
+            import traceback
+            traceback.print_exc()
+            return {'error': 'invalid other'}
 
     def login_user(self, input_data):
         """Authenticate users"""
@@ -472,7 +473,8 @@ class UserManager(object):
 
         # email subscription set up?
         if self.mailing_list:
-            self.add_to_mailing_list(username, init_info['email'], init_info.get('name', ''))
+            name = init_info.get('name', '')
+            self.add_to_mailing_list(username, user['email_addr'], name)
 
         return user, first_coll
 

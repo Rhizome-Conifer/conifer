@@ -78,18 +78,36 @@ class CollsController(BaseController):
             if user.remove_collection(collection, delete=True):
                 return {'deleted_id': coll_name}
 
-        @self.app.post('/api/v1/collections/<coll_name>/rename/<new_coll_title>')
-        def rename_collection(coll_name, new_coll_title):
+        @self.app.post('/api/v1/collection/<coll_name>')
+        def update_collection(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            new_coll_name = self.sanitize_title(new_coll_title)
+            self.access.assert_can_admin_coll(collection)
 
-            try:
-                new_coll_name = user.rename(collection, new_coll_name)
-            except DupeNameException as de:
-                return {'error_message': 'duplicate name: ' + new_coll_name}
+            data = request.json or {}
 
-            return {'coll_id': new_coll_name}
+            if 'title' in data:
+                new_coll_title = data['title']
+                new_coll_name = self.sanitize_title(new_coll_title)
+
+                try:
+                    new_coll_name = user.rename(collection, new_coll_name)
+                except DupeNameException as de:
+                    return {'error_message': 'duplicate name: ' + new_coll_name}
+
+                collection['title'] = new_coll_title
+
+            if 'desc' in data:
+                collection['desc'] = data['desc']
+
+
+            # TODO: notify the user if this is a request from the admin panel
+            if 'public' in data:
+                #if self.access.is_superuser() and data.get('notify'):
+                #    pass
+                self.access.set_public(collection, data['public'])
+
+            return {'collection': collection.serialize()}
 
         @self.app.get('/api/v1/collections/<coll_name>/is_public')
         def is_public(coll_name):
@@ -100,31 +118,6 @@ class CollsController(BaseController):
                 self._raise_error(404, 'Collection not found', api=True)
 
             return {'is_public': self.access.is_public(collection)}
-
-        @self.app.post('/api/v1/collections/<coll_name>/public')
-        def set_public(coll_name):
-            user, collection = self.load_user_coll(coll_name=coll_name)
-
-            # TODO: notify the user if this is a request from the admin panel
-            if self.post_get('notify') == 'true' and self.access.is_superuser():
-                pass
-
-            public = self.post_get('public') == 'true'
-            self.access.set_public(collection, public)
-
-            return {'is_public': '1' if public else False}
-
-        @self.app.post('/api/v1/collections/<coll_name>/desc')
-        def update_desc(coll_name):
-            user, collection = self.load_user_coll(coll_name=coll_name)
-
-            desc = request.body.read().decode('utf-8')
-
-            if not self.access.can_admin_coll(collection):
-                self._raise_error(404, 'Collection not found', api=True)
-
-            collection.set_prop('desc', desc)
-            return {}
 
         @self.app.get('/api/v1/collections/<coll_name>/num_pages')
         def get_num_pages(coll_name):

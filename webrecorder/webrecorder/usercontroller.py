@@ -69,6 +69,8 @@ class UserController(BaseController):
             if 'success' in msg:
                 return msg
 
+            response.status = 400
+
             return {'errors': msg}
 
         @self.app.post(['/api/v1/userval'])
@@ -78,6 +80,9 @@ class UserController(BaseController):
             cookie = request.environ.get('webrec.request_cookie', '')
 
             result = self.user_manager.validate_registration(reg, cookie)
+            if 'error' in result or 'errors' in result:
+                response.status = 400
+
             return result
 
 

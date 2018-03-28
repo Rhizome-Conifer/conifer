@@ -68,7 +68,6 @@ export function auth(state = initialState, action = {}) {
         logoutError: action.error
       });
     case INCR_COLL_COUNT:
-      console.log('incr coll count', state.getIn(['user', 'coll_count']), action.incr);
       return state.setIn(['user', 'coll_count'], state.getIn(['user', 'coll_count']) + action.incr);
     default:
       return state;

@@ -17,30 +17,6 @@ var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 var CircularDependencyPlugin = require('circular-dependency-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 
-var babelrc = fs.readFileSync('./.babelrc');
-var babelrcObject = {};
-
-try {
-  babelrcObject = JSON.parse(babelrc);
-} catch (err) {
-  console.error('==>     ERROR: Error parsing your .babelrc.');
-  console.error(err);
-}
-
-
-var babelrcObjectDevelopment = babelrcObject.env && babelrcObject.env.development || {};
-
-// merge global and dev-only plugins
-var combinedPlugins = babelrcObject.plugins || [];
-combinedPlugins = combinedPlugins.concat(babelrcObjectDevelopment.plugins);
-
-var babelLoaderQuery = Object.assign({}, babelrcObject, babelrcObjectDevelopment, {plugins: combinedPlugins});
-delete babelLoaderQuery.env;
-
-babelLoaderQuery.presets = babelLoaderQuery.presets.map(function (v) {
-  return v === 'es2015' ? ['es2015', { modules: false }] : v;
-});
-
 
 var webpackConfig = module.exports = {
   devtool: 'cheap-module-source-map',
@@ -64,15 +40,18 @@ var webpackConfig = module.exports = {
   module: {
     rules: [
       {
+        enforce: 'pre',
         test: /\.(js|jsx)?$/,
         exclude: /node_modules/,
-        use: ['babel-loader?' + JSON.stringify(babelLoaderQuery),
-        {
-          loader: 'eslint-loader',
-          options: {
-            quiet: true
-          }
-        }]
+        loader: 'eslint-loader',
+        options: {
+          quiet: true
+        }
+      },
+      {
+        test: /\.(js|jsx)?$/,
+        exclude: /node_modules\/(?!(react-rte))/,
+        use: 'babel-loader'
       },
       {
         test: /\.scss$/,
@@ -101,6 +80,12 @@ var webpackConfig = module.exports = {
       },
       {
         test: /\.css$/,
+        include: /node_modules\/react-rte/,
+        use: ['style-loader', 'css-loader?modules']
+      },
+      {
+        test: /\.css$/,
+        exclude: /node_modules\/react-rte/,
         use: ['style-loader', 'css-loader']
       },
       {

@@ -14,8 +14,9 @@ import { resetStats } from 'redux/modules/infoStats';
 import { listLoaded, load as loadList } from 'redux/modules/list';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 
-import { RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
+import { ListMetadata, RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
+import WYSIWYG from 'components/WYSIWYG';
 
 
 class Replay extends Component {
@@ -121,7 +122,10 @@ class Replay extends Component {
           <Sidebar>
             {
               listId ?
-                <SidebarListViewer /> :
+                <React.Fragment>
+                  <SidebarListViewer />
+                  <ListMetadata />
+                </React.Fragment> :
                 <SidebarPageViewer />
             }
           </Sidebar>
