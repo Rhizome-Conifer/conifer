@@ -79,6 +79,12 @@ class InlineEditor extends Component {
     this.setState({ editMode: !editMode, error: null, inputVal: this.props.initial });
   }
 
+  submitCheck = (evt) => {
+    if (evt.key === 'Enter') {
+      this._save();
+    }
+  }
+
   _save = () => {
     const { inputVal } = this.state;
 
@@ -130,7 +136,8 @@ class InlineEditor extends Component {
                     name="inputVal"
                     inputRef={(obj) => { this.input = obj; }}
                     value={this.state.inputVal}
-                    onChange={this.handleChange} />
+                    onChange={this.handleChange}
+                    onKeyPress={this.submitCheck} />
                   {
                     (error || this.state.error) &&
                     <div className="help-spanner">
