@@ -31,7 +31,7 @@ class TestApiUserLogin(FullStackTests):
                   'password': 'Password2',
                   'confirmpassword': 'Password1'}
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params)
+        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'Passwords do not match!'}}
 
@@ -44,7 +44,7 @@ class TestApiUserLogin(FullStackTests):
                   'confirmpassword': '1'
                  }
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params)
+        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'Please choose a different password'}}
 
@@ -56,7 +56,7 @@ class TestApiUserLogin(FullStackTests):
                   'confirmpassword': 'Password1'
                  }
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params)
+        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'The name <b>@#$</b> is not a valid username. Please choose a different username'}}
 
@@ -81,16 +81,16 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
 
         # no cookie, error
-        res = self.testapp.post('/api/v1/userval', params=params)
-        assert res.json == {'error': 'invalid'}
+        res = self.testapp.post('/api/v1/userval', params=params, status=400)
+        assert res.json == {'error': 'invalid cookie'}
 
     def test_api_val_reg_fail_code_mismatch(self):
         params = {'reg': 'foo'}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
         # no cookie, error
-        res = self.testapp.post('/api/v1/userval', headers=headers, params=params)
-        assert res.json == {'error': 'invalid'}
+        res = self.testapp.post('/api/v1/userval', headers=headers, params=params, status=400)
+        assert res.json == {'error': 'invalid cookie'}
 
     def test_check_username_avail(self):
         # still available until registration validated
@@ -119,7 +119,7 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
-        res = self.testapp.post('/api/v1/userval', headers=headers, params=params)
+        res = self.testapp.post('/api/v1/userval', headers=headers, params=params, status=400)
         assert res.json == {'error': 'already_registered'}
 
     def test_api_logout(self):
@@ -136,7 +136,7 @@ class TestApiUserLogin(FullStackTests):
                   'confirmpassword': 'Password2'
                  }
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params)
+        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'User <b>someuser</b> already exists! Please choose '
                                                      'a different username'}}
@@ -150,7 +150,7 @@ class TestApiUserLogin(FullStackTests):
                  }
 
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params)
+        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'There is already an account for '
                                                      '<b>test@example.com</b>. If you have trouble '
@@ -161,7 +161,7 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
-        res = self.testapp.post('/api/v1/userval', headers=headers, params=params)
+        res = self.testapp.post('/api/v1/userval', headers=headers, params=params, status=400)
         assert res.json == {'error': 'already_registered'}
 
     def test_login_fail_bad_password(self):
