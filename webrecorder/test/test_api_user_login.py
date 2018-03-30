@@ -111,7 +111,7 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.redis.hgetall('u:someuser:info')
         #res = self.appcont.manager._format_info(res)
-        assert res['size'] == 0
+        assert res['size'] == '0'
         assert res['max_size'] == '1000000000'
         assert res['created_at'] != None
 
