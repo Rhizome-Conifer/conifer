@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Toggle from 'react-toggle';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
+
+import { columns } from 'config';
+
+import { QueryBox } from 'containers';
 
 import Modal from 'components/Modal';
 import Searchbox from 'components/Searchbox';
@@ -17,19 +20,17 @@ class CollectionFiltersUI extends Component {
     addPagesToLists: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
-    expandAll: PropTypes.bool,
-    groupDisplay: PropTypes.bool,
-    onToggle: PropTypes.func,
     openAddToList: PropTypes.func,
+    querying: PropTypes.bool,
     pages: PropTypes.object,
-    toggleExpandAllSessions: PropTypes.func,
     search: PropTypes.func,
     searchText: PropTypes.string,
     searchPages: PropTypes.func,
     selectedPageIdx: PropTypes.oneOfType([
       PropTypes.number,
       PropTypes.array
-    ])
+    ]),
+    setPageQuery: PropTypes.func
   };
 
   constructor(props) {
@@ -40,7 +41,6 @@ class CollectionFiltersUI extends Component {
       checkedLists: {},
     };
   }
-
 
   addToList = () => {
     const { checkedLists } = this.state;
@@ -79,19 +79,22 @@ class CollectionFiltersUI extends Component {
   closeAddToList = () => this.setState({ addToListModal: false })
 
   search = (evt) => {
-    const { dispatch, groupDisplay, onToggle, searchPages } = this.props;
+    const { dispatch, searchPages, setPageQuery } = this.props;
 
-    // if in group mode, switch to flat display
-    if(groupDisplay) {
-      onToggle();
+    const queryColumn = columns.find(c => evt.target.value.startsWith(`${c}:`));
+
+    if (queryColumn) {
+      // TODO: issue with batchActions and redux-search
+      dispatch(searchPages(''));
+      dispatch(setPageQuery(queryColumn));
+    } else {
+      dispatch(searchPages(evt.target.value));
     }
-
-    dispatch(searchPages(evt.target.value));
   }
 
   render() {
     const { canAdmin, isAnon } = this.context;
-    const { collection, groupDisplay, onToggle } = this.props;
+    const { collection } = this.props;
 
     return (
       <div className="wr-coll-utilities">
@@ -102,22 +105,15 @@ class CollectionFiltersUI extends Component {
                 <Button bsSize="xs" bsStyle="success">New Recording</Button>
               </Link>
           }
-          <div className="toggle-label">
-            <span onClick={onToggle}>Group by session</span>
-            <Toggle
-              checked={groupDisplay}
-              onChange={onToggle}
-              icons={false} />
-          </div>
           {
             !isAnon && canAdmin && this.props.selectedPageIdx !== null &&
-              <button className="open-all" onClick={this.openAddToList}>Add selection to lists</button>
+              <Button bsSize="xs" onClick={this.openAddToList}>Add selection to lists</Button>
           }
           {
-            groupDisplay &&
-              <button className="open-all" onClick={this.props.toggleExpandAllSessions}>{this.props.expandAll ? 'Close' : 'Open'} All Sessions</button>
+            this.props.querying ?
+              <QueryBox /> :
+              <Searchbox search={this.search} searchText={this.props.searchText} />
           }
-          <Searchbox search={this.search} searchText={this.props.searchText} />
           {
             canAdmin &&
               <Modal

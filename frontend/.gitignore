@@ -7,7 +7,7 @@ config.local.js
 coverage
 
 # production
-build
+static
 
 # misc
 .DS_Store

@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect';
 import { List } from 'immutable';
 import { getSearchSelectors } from 'redux-search';
+import { columnMappings } from 'config';
 
 import { rts, truncate } from 'helpers/utils';
 
@@ -9,6 +10,8 @@ const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'active
 const getActiveBookmarkId = state => (state.app ? state.app : state).getIn(['controls', 'activeBookmarkId']);
 const getArchives = state => state.getIn(['controls', 'archives']);
 const getCollections = state => state.getIn(['collections', 'collections']);
+const getColumn = state => (state.app ? state.app : state).getIn(['pageQuery', 'column']);
+const getQuery = state => (state.app ? state.app : state).getIn(['pageQuery', 'query']);
 const getListBookmarks = state => (state.app ? state.app : state).getIn(['list', 'bookmarks']);
 const getPages = state => (state.app ? state.app : state).getIn(['collection', 'pages']);
 const getRecordings = state => state.getIn(['collection', 'recordings']);
@@ -251,6 +254,15 @@ export const getPageCount = createSelector(
   [getPages],
   (pages) => {
     return (pages ? pages.size : 0);
+  }
+);
+
+
+export const getQueryPages = createSelector(
+  [getOrderedPages, getColumn, getQuery],
+  (orderedPages, column, query) => {
+    const c = columnMappings.hasOwnProperty(column) ? columnMappings[column] : column;
+    return orderedPages.filter(o => o.get(c) === query);
   }
 );
 

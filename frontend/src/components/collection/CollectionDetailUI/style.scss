@@ -33,6 +33,23 @@
     }
 }
 
+.table-header-modal {
+    max-width: 30vw;
+
+    ul {
+        padding: 0;
+        margin: 0;
+
+        li {
+            list-style-type: none;
+
+            input {
+                margin-right: 1rem;
+            }
+        }
+    }
+}
+
 .wr-coll-detail {
     flex-grow: 1;
     display: flex;
@@ -126,51 +143,27 @@
                     & > * {
                         margin-right: 2.5rem;
 
-
                         &.glyphicon {
                             font-size: 1.8rem;
                         }
                     }
 
-                    .toggle-label {
-                        display: flex;
-                        align-items: center;
-
-                        & > span:first-of-type {
-                            vertical-align: top;
-                            font-weight: bold;
-                            padding-right: 1rem;
-                            cursor: pointer;
-                        }
-                    }
-
-                    .react-toggle--checked {
-                      & .react-toggle-track{
-                        background-color: $brightGreen;
-                      }
-                      & .react-toggle-thumb {
-                        border-color: $brightGreen;
-
-                      }
-                    }
-
-                    .open-all {
-                        transition: border-color $tableRowFade ease-in-out;
-                        border: solid .2rem #ccc;
-                        background: inherit;
-                        border-radius: .3rem;
-                        padding: .5rem;
-
-                        &:hover {
-                            border-color: $collTrigger;
-                        }
-                    }
-
                     .search-box {
                         margin: 0 0 0 auto;
-                        width: 20%;
-                        max-width: 22.5rem;
+                        width: 30%;
+                        max-width: 30rem;
                         min-width: 10rem;
+                    }
+
+                    .query-box {
+                        margin: 0 0 0 auto;
+                        width: 40%;
+                        max-width: 35rem;
+                        min-width: 20rem;
+
+                        .input-group-addon {
+                            background-color: $brightGreen;
+                        }
                     }
                 }
             }
@@ -198,10 +191,17 @@
             .wr-coll-detail-table {
                 grid-area: table;
                 position: relative;
+                padding-right: 1.5rem;
 
                 &.with-lists {
                     border: solid 0 $listsBlue;
                     border-width: 0 .4rem;
+                }
+
+                .table-header-menu {
+                    position: absolute;
+                    right: -.5rem;
+                    top: 1rem;
                 }
 
                 .ReactVirtualized__Table__headerColumn {
@@ -234,45 +234,6 @@
                         a {
                             display: inline-block;
                             padding: 1rem;
-                        }
-                    }
-                }
-
-                .wr-coll-session-container {
-                    position: absolute;
-                    top: 0;
-                    bottom: 0;
-                    width: 100%;
-                    overflow: auto;
-
-                    table {
-                        tr {
-                            transition: background $tableRowFade ease-in-out;
-                            border: solid 0 #CCCFD5;
-                            border-width: 0 0 .1rem 0;
-                            cursor: context-menu;
-
-                            a { color: $blue }
-
-                            &.selected {
-                                background-color: $dark-gray;
-                                color: #FFF;
-
-                                a:link { color: #FFF; }
-                                a:visited{ color: #FFF; }
-                            }
-
-                            &:not(.selected):hover {
-                                background: rgb(197, 197, 197);
-                            }
-
-                            td {
-                                text-align: left;
-
-                                &.timestamp {
-                                    width: 20rem;
-                                }
-                            }
                         }
                     }
                 }

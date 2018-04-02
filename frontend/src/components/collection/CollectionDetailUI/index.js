@@ -4,21 +4,24 @@ import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+
+import config from 'config';
 
 import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
 import { CollectionFilters, CollectionHeader } from 'containers';
 
-import SessionCollapsible from 'components/collection/SessionCollapsible';
+import Modal from 'components/Modal';
 import { CloseIcon } from 'components/icons';
 
 import 'react-virtualized/styles.css';
 
 import CollectionSidebar from './sidebar';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
-import { BrowserRenderer, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
+import { BrowserRenderer, DnDSortableHeader, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
 
@@ -28,12 +31,10 @@ class CollectionDetailUI extends Component {
     auth: PropTypes.object,
     browsers: PropTypes.object,
     collection: PropTypes.object,
-    deleteRec: PropTypes.func,
     dispatch: PropTypes.func,
     list: PropTypes.object,
     match: PropTypes.object,
     pages: PropTypes.object,
-    recordings: PropTypes.object,
     removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func
   };
@@ -46,26 +47,38 @@ class CollectionDetailUI extends Component {
   constructor(props) {
     super(props);
 
+    this.columns = config.columns;
     this.initialState = {
-      expandAll: false,
-      groupDisplay: false,
+      columns: config.defaultColumns,
+      headerEditor: false,
       listBookmarks: props.list.get('bookmarks'),
       scrolled: false,
-      selectedSession: null,
-      selectedPageIdx: null,
-      selectedGroupedPageIdx: null,
-      selectedRec: null
+      selectedPageIdx: null
     };
+
+    const activeList = Boolean(props.match.params.list);
+
+    if (activeList) {
+      this.initialState.columns = ['remove', ...this.initialState.columns];
+    }
 
     this.state = this.initialState;
   }
 
   componentDidMount() {
-    if (inStorage('groupDisplay')) {
+    if (inStorage('columnOrder')) {
       try {
-        this.setState({ groupDisplay: JSON.parse(getStorage('groupDisplay')) });
+        const columns = JSON.parse(getStorage('columnOrder'));
+
+        if (!this.props.match.params.list && columns.includes('remove')) {
+          columns.splice(columns.indexOf('remove'), 1);
+        } else if (this.props.match.params.list && !columns.includes('remove')) {
+          columns.unshift('remove');
+        }
+
+        this.setState({ columns });
       } catch (e) {
-        console.log('Wrong `groupDisplay` storage value');
+        console.log('Wrong `columnOrder` storage value.', e);
       }
     }
   }
@@ -85,26 +98,7 @@ class CollectionDetailUI extends Component {
     return true;
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    // detect whether this was a state change to expand recording session view
-    if(!prevState.gourpedDisplay && this.state.groupDisplay && this.state.scrollToRec) {
-      this.openAndScroll(this.state.scrollToRec);
-    }
-  }
-
-  onToggle = (e) => {
-    let bool;
-    if (e && typeof e.target.checked !== 'undefined') {
-      bool = e.target.checked;
-    } else {
-      bool = !this.state.groupDisplay;
-    }
-
-    setStorage('groupDisplay', bool);
-    this.setState({ ...this.initialState, groupDisplay: bool });
-  }
-
-  onSelectRow = ({ event, index, rowData }) => {
+  onSelectRow = ({ event, index }) => {
     const { selectedPageIdx } = this.state;
 
     if (selectedPageIdx === index) {
@@ -144,75 +138,9 @@ class CollectionDetailUI extends Component {
       }
 
       this.setState({
-        selectedPageIdx: selectedIndex,
-        selectedSession: null
+        selectedPageIdx: selectedIndex
       });
     }
-  }
-
-  onSelectGroupedRow = ({ rec, index }) => {
-    if (this.state.selectedGroupedPageIdx === index) {
-      this.setState({
-        selectedSession: rec,
-        selectedGroupedPageIdx: null
-      });
-    } else {
-      this.setState({
-        selectedSession: rec,
-        selectedGroupedPageIdx: index
-      });
-    }
-  }
-
-  onExpandSession = (sesh) => {
-    if (!this.state.expandAll) {
-      this.setState({
-        selectedGroupedPageIdx: null,
-        selectedSession: sesh
-      });
-    }
-  }
-
-  onCollapseSession = () => {
-    if (this.state.selectedSession) {
-      this.setState({
-        selectedSession: null,
-        selectedGroupedPageIdx: null,
-        selectedRec: null
-      });
-    }
-  }
-
-
-  openAndScroll = (sesh) => {
-    const index = this.props.recordings.findIndex(o => o.get('id') === sesh.get('id'));
-    const top = this.sessionContainer.querySelectorAll('.wr-coll-session')[index].offsetTop;
-    this.sessionContainer.scrollTop = top;
-
-    this.setState({
-      selectedSession: sesh,
-      selectedRec: sesh.get('id'),
-      scrollToRec: null
-    });
-  }
-
-  selectRecording = (sesh) => {
-    if (!this.state.groupDisplay) {
-      this.setState({ groupDisplay: true, scrollToRec: sesh });
-    } else {
-      this.openAndScroll(sesh);
-    }
-  }
-
-  search = (evt) => {
-    const { dispatch, searchPages } = this.props;
-
-    // if in group mode, switch to flat display
-    if(this.state.groupDisplay) {
-      this.onToggle();
-    }
-
-    dispatch(searchPages(evt.target.value));
   }
 
   sort = ({ sortBy, sortDirection }) => {
@@ -228,10 +156,6 @@ class CollectionDetailUI extends Component {
     } else {
       dispatch(setSort({ sort: sortBy, dir: prevDir === 'ASC' ? 'DESC' : 'ASC' }));
     }
-  }
-
-  toggleExpandAllSessions = () => {
-    this.setState({ expandAll: !this.state.expandAll });
   }
 
   testRowHighlight = ({ index }) => {
@@ -252,12 +176,23 @@ class CollectionDetailUI extends Component {
     this.setState({ listBookmarks: sorted });
   }
 
+  orderColumn = (origIndex, hoverIndex) => {
+    const { columns } = this.state;
+    const c = columns.splice(origIndex, 1)[0];
+    columns.splice(hoverIndex, 0, c);
+    this.setState({ columns });
+    this.saveHeaderState();
+  }
+
+  saveHeaderState = () => {
+    setStorage('columnOrder', JSON.stringify(this.state.columns));
+  }
+
   saveSort = () => {
     const { list, saveBookmarkSort } = this.props;
     const order = this.state.listBookmarks.map(o => o.get('id')).toArray();
     saveBookmarkSort(list.get('id'), order);
   }
-
 
   scrollHandler = ({ clientHeight, scrollHeight, scrollTop }) => {
     if (scrollHeight > clientHeight * 1.25) {
@@ -269,13 +204,56 @@ class CollectionDetailUI extends Component {
     }
   }
 
-  handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
+  toggleHeaderModal = () => {
+    this.setState({ headerEditor: !this.state.headerEditor });
+  }
+
+  toggleColumn = (evt) => {
+    const { columns } = this.state;
+    const idx = columns.indexOf(evt.target.name);
+
+    if (idx !== -1) {
+      columns.splice(idx, 1);
+    } else {
+      columns.push(evt.target.name);
+    }
+
+    this.setState({ columns });
+    this.saveHeaderState();
+  }
+
+  customRowRenderer = (props) => {
+    const { canAdmin } = this.context;
+    const { match: { params: { list } } } = this.props;
+
+    if (!canAdmin) {
+      return <DefaultRow {...props} />;
+    }
+
+    if (list) {
+      return (
+        <DnDSortableRow
+          id={props.rowData.get('id')}
+          save={this.saveSort}
+          sort={this.sortBookmark}
+          {...props} />
+      );
+    }
+    return <DnDRow {...props} />;
+  }
+
+  customHeaderRenderer = (props) => {
+    return (
+      <DnDSortableHeader
+        save={this.saveCollOrder}
+        order={this.orderColumn}
+        {...props} />
+      );
+  }
 
   render() {
-    const { canAdmin } = this.context;
-    const { pages, browsers, collection, recordings, match: { params } } = this.props;
-    const { groupDisplay, expandAll, listBookmarks, selectedSession,
-            selectedPageIdx, selectedGroupedPageIdx, selectedRec } = this.state;
+    const { pages, browsers, collection, match: { params } } = this.props;
+    const { listBookmarks, selectedPageIdx } = this.state;
 
     // don't render until loaded
     if (!collection.get('loaded')) {
@@ -283,25 +261,61 @@ class CollectionDetailUI extends Component {
     }
 
     const activeList = Boolean(params.list);
-    const objectLabel = activeList ? 'Bookmark' : 'Page';
     const objects = activeList ? listBookmarks : pages;
+    const objectLabel = activeList ? 'Bookmark' : 'Page';
 
-    // add react-dnd integration
-    const customRowRenderer = (props) => {
-      if (!canAdmin) {
-        return <DefaultRow {...props} />;
+    const columnDefs = {
+      browser: {
+        width: 150,
+        label: 'remote browser',
+        dataKey: 'browser',
+        key: 'browser',
+        columnData: { browsers },
+        cellRenderer: BrowserRenderer,
+      },
+      remove: {
+        width: 40,
+        dataKey: 'remove',
+        key: 'remove',
+        style: { textAlign: 'center' },
+        columnData: {
+          listId: params.list,
+          removeCallback: this.props.removeBookmark
+        },
+        cellRenderer: RemoveRenderer
+      },
+      session: {
+        label: 'session',
+        dataKey: 'recording',
+        key: 'session',
+        width: 100
+      },
+      timestamp: {
+        width: 200,
+        label: 'timestamp',
+        dataKey: 'timestamp',
+        key: 'timestamp',
+        cellRenderer: TimestampRenderer
+      },
+      title: {
+        width: 200,
+        label: objectLabel,
+        dataKey: 'title',
+        key: 'title',
+        flexGrow: 1,
+        columnData: {
+          collection,
+          listId: params.list
+        },
+        cellRenderer: LinkRenderer,
+      },
+      url: {
+        width: 200,
+        label: 'url',
+        dataKey: 'url',
+        key: 'url',
+        flexGrow: 1
       }
-
-      if (activeList) {
-        return (
-          <DnDSortableRow
-            id={props.rowData.get('id')}
-            save={this.saveSort}
-            sort={this.sortBookmark}
-            {...props} />
-        );
-      }
-      return <DnDRow {...props} />;
     };
 
     return (
@@ -324,100 +338,83 @@ class CollectionDetailUI extends Component {
                   </header>
                 </div> :
                 <CollectionFilters
-                  expandAll={expandAll}
-                  groupDisplay={groupDisplay}
-                  onToggle={this.onToggle}
                   pages={pages}
-                  selectedPageIdx={selectedPageIdx}
-                  toggleExpandAllSessions={this.toggleExpandAllSessions} />
+                  selectedPageIdx={selectedPageIdx} />
             }
 
             <div className={classNames('wr-coll-detail-table', { 'with-lists': activeList })}>
               {
-                !activeList && groupDisplay ?
-                  <div className="wr-coll-session-container" ref={(obj) => { this.sessionContainer = obj; }}>
-                    {
-                      recordings.map((rec) => {
-                        return (
-                          <SessionCollapsible
-                            key={rec.get('id')}
-                            deleteRec={this.props.deleteRec}
-                            hasActivePage={selectedSession === rec && selectedGroupedPageIdx !== null}
-                            collection={collection}
-                            browsers={browsers}
-                            expand={expandAll || rec.get('id') === selectedRec}
-                            onExpand={this.onExpandSession}
-                            onCollapse={this.onCollapseSession}
-                            recording={rec}
-                            onSelectRow={this.onSelectGroupedRow}
-                            selectedGroupedPageIdx={selectedGroupedPageIdx} />
-                        );
-                      })
-                    }
-                  </div> :
-                  <AutoSizer>
-                    {
-                      ({ height, width }) => (
-                        <Table
-                          width={
-                            /* factor border width */
-                            activeList ? width - 8 : width
-                          }
-                          height={height}
-                          rowCount={objects ? objects.size : 0}
-                          headerHeight={40}
-                          rowHeight={40}
-                          rowGetter={({ index }) => objects.get(index)}
-                          rowClassName={this.testRowHighlight}
-                          onRowClick={this.onSelectRow}
-                          onScroll={this.scrollHandler}
-                          rowRenderer={customRowRenderer}
-                          sort={activeList ? null : this.sort}
-                          sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
-                          sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
-                          {
-                            activeList && canAdmin &&
-                              <Column
-                                width={40}
-                                dataKey="remove"
-                                style={{ textAlign: 'center' }}
-                                columnData={{
-                                  listId: params.list,
-                                  removeCallback: this.props.removeBookmark
-                                }}
-                                cellRenderer={RemoveRenderer} />
-                          }
-                          <Column
-                            width={200}
-                            label="timestamp"
-                            dataKey="timestamp"
-                            cellRenderer={TimestampRenderer} />
-                          <Column
-                            width={200}
-                            label={objectLabel}
-                            dataKey="title"
-                            flexGrow={1}
-                            columnData={{
-                              collection,
-                              listId: params.list
-                            }}
-                            cellRenderer={LinkRenderer} />
-                          <Column
-                            width={200}
-                            label="url"
-                            dataKey="url"
-                            flexGrow={1} />
-                          <Column
-                            width={150}
-                            label="remote browser"
-                            dataKey="browser"
-                            columnData={{ browsers }}
-                            cellRenderer={BrowserRenderer} />
-                        </Table>
-                      )
-                    }
-                  </AutoSizer>
+                this.context.canAdmin &&
+                  <React.Fragment>
+                    <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
+                      {/* TODO: placeholder icon */}
+                      <span style={{ display: 'inline-block', fontWeight: 'bold', transform: 'rotateZ(90deg)' }}>...</span>
+                    </Button>
+                    <Modal
+                      visible={this.state.headerEditor}
+                      closeCb={this.toggleHeaderModal}
+                      dialogClassName="table-header-modal"
+                      header={<h4>Edit Table Columns</h4>}
+                      footer={<Button onClick={this.toggleHeaderModal}>Close</Button>}>
+                      <ul>
+                        {
+                          this.columns.map((coll) => {
+                            return (
+                              <li key={coll}>
+                                <input type="checkbox" onChange={this.toggleColumn} name={coll} id={`add-to-list-${coll}`} checked={this.state.columns.includes(coll) || false} />
+                                <label htmlFor={`add-to-list-${coll}`}>{coll}</label>
+                              </li>
+                            );
+                          })
+                        }
+                      </ul>
+                    </Modal>
+                  </React.Fragment>
               }
+              <AutoSizer>
+                {
+                  ({ height, width }) => (
+                    <Table
+                      width={
+                        /* factor border width */
+                        activeList ? width - 8 : width
+                      }
+                      height={height}
+                      rowCount={objects ? objects.size : 0}
+                      headerHeight={50}
+                      rowHeight={40}
+                      rowGetter={({ index }) => objects.get(index)}
+                      rowClassName={this.testRowHighlight}
+                      onRowClick={this.onSelectRow}
+                      onScroll={this.scrollHandler}
+                      rowRenderer={this.customRowRenderer}
+                      sort={activeList ? null : this.sort}
+                      sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
+                      sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                      {
+                        this.state.columns.map((c, idx) => {
+                          let props = columnDefs[c];
+                          let collData = {};
+
+                          if (props.hasOwnProperty('columnData')) {
+                            props = Object.assign({}, props);
+                            collData = props.columnData;
+                            delete props.columnData;
+                          }
+
+                          return (
+                            <Column
+                              headerRenderer={this.customHeaderRenderer}
+                              index={idx}
+                              columnData={{ ...collData, index: idx }}
+                              {...props} />
+                          );
+                        })
+                      }
+                    </Table>
+                  )
+                }
+              </AutoSizer>
             </div>
           </div>
         </div>

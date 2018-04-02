@@ -38,13 +38,19 @@ module.exports = Object.assign({
   apiPath: '/api/v1',
   appHost: `${hostScheme}://${appHost}`,
   contentHost: `${hostScheme}://${contentHost}`,
+  columns: ['timestamp', 'title', 'url', 'browser', 'session'],
+  columnMappings: {
+    'session': 'recording'
+  },
   defaultBookmarkDesc: 'No description provided.',
   defaultCollectionTitle: 'New Collection',
+  defaultColumns: ['timestamp', 'title', 'url', 'browser'],
   defaultCollDesc: '*This collection doesn\'t yet have a description.*',
   defaultListDesc: '*This list doesn\'t yet have a description.*',
   defaultRecordingTitle: 'Recording Session',
   draggableTypes: {
-    PAGE_ITEM: 'pageItem'
+    PAGE_ITEM: 'pageItem',
+    TH: 'tableHeader'
   },
   homepageAnnouncement: '',
   internalApiHost: process.env.INTERNAL_HOST,

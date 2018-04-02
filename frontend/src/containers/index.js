@@ -16,6 +16,7 @@ export NewRecording from './NewRecording/NewRecording';
 export PasswordReset from './PasswordReset/PasswordReset';
 export Patch from './Patch/Patch';
 export PatchWidget from './PatchWidget/PatchWidget';
+export QueryBox from './QueryBox/QueryBox';
 export RecordingTools from './RecordingTools/RecordingTools';
 export RemoteBrowserSelect from './RemoteBrowserSelect/RemoteBrowserSelect';
 export Record from './Record/Record';

@@ -145,8 +145,8 @@ class InlineEditor extends Component {
                     </div>
                   }
                 </div>
-                <Button bsSize="sm" onClick={this._save} bsStyle={this.validation(true)}><CheckIcon /></Button>
-                <Button onClick={this.toggleEditMode} bsSize="sm"><XIcon /></Button>
+                <Button onClick={this._save} bsStyle={this.validation(true)}><CheckIcon /></Button>
+                <Button onClick={this.toggleEditMode}><XIcon /></Button>
               </FormGroup>
             </div> :
             <div ref={(obj) => { this.childContainer = obj; }} className="child-container">

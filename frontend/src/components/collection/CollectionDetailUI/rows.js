@@ -41,7 +41,6 @@ const pageDropSource = {
     monitor.getItem().idx = hoverIndex;
   },
   drop(props, monitor) {
-    const { item } = monitor.getItem();
     props.save();
   }
 };

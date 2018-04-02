@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import defaultHeaderRenderer from 'react-virtualized/dist/commonjs/Table/defaultHeaderRenderer';
+import { DropTarget, DragSource } from 'react-dnd';
 
-import { untitledEntry } from 'config';
+import { draggableTypes, untitledEntry } from 'config';
 
 import RemoveWidget from 'components/RemoveWidget';
 import TimeFormat from 'components/TimeFormat';
@@ -51,3 +53,60 @@ export function RemoveRenderer({ rowData, columnData: { listId, removeCallback }
 export function TimestampRenderer({ cellData }) {
   return <TimeFormat dt={cellData} />;
 }
+
+
+const headerSource = {
+  beginDrag({ dataKey, columnData: { index } }) {
+    return {
+      key: dataKey,
+      idx: index,
+      initialIdx: index
+    };
+  },
+  isDragging(props, monitor) {
+    return props.dataKey === monitor.getItem().key;
+  }
+};
+
+const headerDropSource = {
+  hover(props, monitor) {
+    const origIndex = monitor.getItem().idx;
+    const hoverIndex = props.columnData.index;
+
+    // Don't replace items with themselves
+    if (origIndex === hoverIndex) {
+      return;
+    }
+
+    // Time to actually perform the action
+    props.order(origIndex, hoverIndex);
+
+    monitor.getItem().idx = hoverIndex;
+  },
+  drop(props, monitor) {
+    if (props.save) {
+      props.save();
+    }
+  }
+};
+
+function collect(connect, monitor) {
+  return {
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging()
+  };
+}
+
+function DnDSortableHeaderBuilder(props) {
+  const { isDragging, connectDragSource, connectDropTarget, ...passThrough } = props;
+  const dhr = defaultHeaderRenderer(passThrough);
+  return connectDragSource(connectDropTarget(<div style={{ opacity: isDragging ? 0 : 1 }}>{dhr}</div>));
+}
+
+export const DnDSortableHeader = DropTarget(
+  draggableTypes.TH,
+  headerDropSource,
+  connect => ({
+    connectDropTarget: connect.dropTarget(),
+  })
+)(DragSource(draggableTypes.TH, headerSource, collect)(DnDSortableHeaderBuilder));

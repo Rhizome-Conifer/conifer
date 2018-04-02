@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import querystring from 'querystring';
 import { asyncConnect } from 'redux-connect';
 import { Map } from 'immutable';
 
 import { load as loadColl } from 'redux/modules/collection';
 import { load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
+import { setQueryMode } from 'redux/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { deleteRecording } from 'redux/modules/recordings';
-import { getOrderedPages, getOrderedRecordings, pageSearchResults } from 'redux/selectors';
+import { getQueryPages, getOrderedPages, pageSearchResults } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/collection/CollectionDetailUI';
 
@@ -46,6 +48,20 @@ class CollectionDetail extends Component {
 
 const initialData = [
   {
+    promise: ({ location: { search }, store: { dispatch } }) => {
+      if (search) {
+        const qs = querystring.parse(search.replace(/^\?/, ''));
+
+        if (qs.query && qs.query.includes(':')) {
+          const [column, str] = qs.query.split(':');
+          dispatch(setQueryMode(true, column, str));
+        }
+      }
+
+      return undefined;
+    }
+  },
+  {
     promise: ({ match: { params }, store: { dispatch } }) => {
       const { user, coll } = params;
 
@@ -78,13 +94,21 @@ const mapStateToProps = (outerState) => {
   const { pageFeed, searchText } = isLoaded ? pageSearchResults(outerState) : { pageFeed: Map(), searchText: '' };
   const isIndexing = isLoaded && !pageFeed.size && app.getIn(['collection', 'pages']).size && !searchText;
 
+  const querying = app.getIn(['pageQuery', 'querying']);
+  let pages;
+
+  if (querying) {
+    pages = getQueryPages(app);
+  } else {
+    pages = isIndexing ? getOrderedPages(app) : pageFeed;
+  }
+
   return {
     auth: app.get('auth'),
     collection: app.get('collection'),
     browsers: app.get('remoteBrowsers'),
     loaded: reduxAsyncConnect.loaded,
-    recordings: isLoaded ? getOrderedRecordings(app) : null,
-    pages: isIndexing ? getOrderedPages(app) : pageFeed,
+    pages,
     list: app.get('list')
   };
 };

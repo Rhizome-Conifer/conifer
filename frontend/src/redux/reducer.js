@@ -1,6 +1,5 @@
 import { combineReducers } from 'redux';
 import { combineReducers as combineImmutableReduers } from 'redux-immutable';
-import { Map } from 'immutable';
 import { reducer as reduxAsyncConnect } from 'redux-connect';
 import { reducer as searchReducer } from 'redux-search';
 
@@ -13,6 +12,7 @@ import controls from './modules/controls';
 import infoStats from './modules/infoStats';
 import list from './modules/list';
 import passwordReset from './modules/passwordReset';
+import pageQuery from './modules/pageQuery';
 import recordings from './modules/recordings';
 import remoteBrowsers from './modules/remoteBrowsers';
 import sidebar from './modules/sidebar';
@@ -32,6 +32,7 @@ const makeAppReducer = () => combineImmutableReduers({
   controls,
   infoStats,
   list,
+  pageQuery,
   passwordReset,
   recordings,
   remoteBrowsers,
