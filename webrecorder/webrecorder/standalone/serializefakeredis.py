@@ -1,9 +1,11 @@
 import os
 import logging
 import json
+import datetime
+
 from gzip import open
 
-from fakeredis import DATABASES, _StrKeyDict, _ZSet, _Hash
+from fakeredis import DATABASES, _ZSet, _Hash, _ExpiringDict
 
 
 # ============================================================================
@@ -82,12 +84,21 @@ class FakeRedisSerializer(object):
         for key, value in value._dict.items():
             key = key.decode('utf-8')
 
+            if isinstance(value, tuple):
+                exp = value[1].timestamp() if value[1] else None
+                value = value[0]
+            else:
+                exp = None
+
             if isinstance(value, bytes):
                 value = value.decode('utf-8')
             elif isinstance(value, set):
                 value = [val.decode('utf-8') for val in value]
             elif hasattr(value, '_dict'):
                 value = self.save_redis_dict(value)
+
+            if exp:
+                value = [value, exp]
 
             new_dict[key] = value
         return new_dict
@@ -101,6 +112,12 @@ class FakeRedisSerializer(object):
                 continue
 
             key = key.encode('utf-8')
+
+            if isinstance(value, list):
+                if isinstance(value[1], int):
+                    value = (value[0], datetime.utcfromtimestamp(value[1]))
+                else:
+                    value = (value[0], None)
 
             if isinstance(value, str):
                 value = value.encode('utf-8')
@@ -116,7 +133,7 @@ class FakeRedisSerializer(object):
         elif redis_type == 'hash':
             redis_dict = _Hash()
         else:
-            redis_dict = _StrKeyDict()
+            redis_dict = _ExpiringDict()
 
         redis_dict._dict = new_dict
         return redis_dict

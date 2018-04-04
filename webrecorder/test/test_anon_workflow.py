@@ -144,8 +144,8 @@ class TestTempContent(FullStackTests):
 
         size = self.redis.hget(r_info, 'size')
         assert size is not None
-        assert size == int(self.redis.hget(c_info, 'size'))
-        assert size == int(self.redis.hget(u_info, 'size'))
+        assert size == self.redis.hget(c_info, 'size')
+        assert size == self.redis.hget(u_info, 'size')
 
         assert self.redis.hget(r_info, 'updated_at') is not None
 
