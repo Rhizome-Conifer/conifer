@@ -125,6 +125,13 @@ class TestWebRecRecAPI(FullStackTests):
         assert {'id': 'cf6e50ec2c', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
         assert {'id': 'ce9820d103', 'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
 
+    def test_coll_page_list(self):
+        res = self._anon_get('/api/v1/collection/temp?user={user}')
+
+        assert len(res.json['pages']) == 2
+        assert {'id': 'cf6e50ec2c', 'title': 'Example', 'recording': self.rec_ids[0], 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
+        assert {'id': 'ce9820d103', 'title': 'Example', 'recording': self.rec_ids[0], 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
+
     def test_page_delete(self):
         params = {'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
         res = self._anon_delete('/api/v1/recordings/{rec_id_0}/pages?user={user}&coll=temp', params=params)

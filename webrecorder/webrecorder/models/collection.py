@@ -1,6 +1,7 @@
 import gevent
 import logging
 import json
+import hashlib
 
 from pywb.utils.loaders import load
 from warcio.timeutils import timestamp20_now
@@ -186,7 +187,9 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         return count
 
     def list_coll_pages(self):
-        all_page_keys = self._get_rec_keys(Recording.PAGE_KEY)
+        #all_page_keys = self._get_rec_keys(Recording.PAGE_KEY)
+        all_objs = self.redis.hgetall(self.get_comp_map())
+        all_page_keys = [Recording.PAGE_KEY.format(rec=rec) for rec in all_objs.values()]
 
         pagelist = []
 
@@ -196,13 +199,13 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         all_pages = pi.execute()
 
-        for key, rec_pagelist in zip(all_page_keys, all_pages):
-            rec = key.rsplit(':', 2)[-2]
+        for (name, rec), rec_pagelist in zip(all_objs.items(), all_pages):
             for page in rec_pagelist:
                 page = json.loads(page)
-                #page['user'] = user
-                #page['collection'] = coll
-                #page['recording'] = rec
+
+                bk_attrs = (page['url'] + page['timestamp']).encode('utf-8')
+                page['id'] = hashlib.md5(bk_attrs).hexdigest()[:10]
+                page['recording'] = name
                 pagelist.append(page)
 
         if not self.access.can_admin_coll(self):
@@ -256,8 +259,6 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
     def delete_me(self):
         self.access.assert_can_admin_coll(self)
-
-        all_objs = self.redis.hgetall(self.get_comp_map())
 
         for recording in self.get_recordings(load=False):
             recording.delete_me()

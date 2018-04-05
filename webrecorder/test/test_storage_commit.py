@@ -88,7 +88,7 @@ class BaseStorageCommit(FullStackTests):
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''default-collection-")
 
     def test_delete_storage_with_coll(self):
-        res = self.testapp.delete('/api/v1/collections/default-collection?user=test')
+        res = self.testapp.delete('/api/v1/collection/default-collection?user=test')
 
         assert res.json == {'deleted_id': 'default-collection'}
 

@@ -137,7 +137,7 @@ class TestUpload(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
 
     def test_uploaded_coll_info(self):
-        res = self.testapp.get('/api/v1/collections/default-collection-2?user=test')
+        res = self.testapp.get('/api/v1/collection/default-collection-2?user=test')
 
         assert res.json['collection']
         collection = res.json['collection']
@@ -182,7 +182,7 @@ class TestUpload(FullStackTests):
         assert 'Example Domain' in res.text, res.text
 
     def test_uploaded_coll_info_2(self):
-        res = self.testapp.get('/api/v1/collections/temporary-collection?user=test')
+        res = self.testapp.get('/api/v1/collection/temporary-collection?user=test')
 
         assert res.json['collection']
         collection = res.json['collection']
@@ -220,7 +220,7 @@ class TestUpload(FullStackTests):
 
         assert 'Example Domain' in res.text, res.text
 
-        res = self.testapp.get('/api/v1/collections/default-collection?user=test')
+        res = self.testapp.get('/api/v1/collection/default-collection?user=test')
         assert len(res.json['collection']['recordings']) == 2
 
     def test_logout_1(self):

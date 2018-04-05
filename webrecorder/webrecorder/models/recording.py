@@ -10,6 +10,8 @@ from pywb.warcserver.index.cdxobject import CDXObject
 from webrecorder.utils import redis_pipeline
 from webrecorder.models.base import RedisUniqueComponent
 
+from warcio.timeutils import timestamp_now
+
 
 # ============================================================================
 class Recording(RedisUniqueComponent):

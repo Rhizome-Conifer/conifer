@@ -26,7 +26,7 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert 'error_message' in res.json
 
     def test_get_anon_coll(self):
-        res = self.testapp.get('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
+        res = self.testapp.get('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
 
         assert res.json['collection']
         coll = res.json['collection']
@@ -34,8 +34,6 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert coll['size'] == 0
         assert coll['id'] == 'temp'
         assert coll['title'] == 'Temp'
-        #assert coll['download_url'] == 'http://localhost:80/{user}/temp/$download'.format(user=self.anon_user)
-        #assert coll['created_at'] == coll['updated_at']
         assert coll['created_at'] <= datetime.utcnow().isoformat()
 
         assert self.ISO_DT_RX.match(coll['created_at'])
@@ -56,7 +54,7 @@ class TestWebRecCollsAPI(BaseWRTests):
         #assert colls[0]['download_url'] == 'http://localhost:80/{user}/temp/$download'.format(user=self.anon_user)
 
     def test_error_no_such_coll(self):
-        res = self.testapp.get('/api/v1/collections/blah@$?user={user}'.format(user=self.anon_user), status=404)
+        res = self.testapp.get('/api/v1/collection/blah@$?user={user}'.format(user=self.anon_user), status=404)
         #assert res.json == {'error_message': 'Collection not found', 'id': 'blah@$'}
         assert res.json == {'error_message': 'No such collection'}
 
@@ -73,7 +71,7 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Example'}}
 
     def test_delete_coll(self):
-        res = self.testapp.delete('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'temp'}
 
