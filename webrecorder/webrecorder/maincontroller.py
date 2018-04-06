@@ -379,35 +379,22 @@ class MainController(BaseController):
         def json_error(body_dict):
             response.content_type = 'application/json'
             res = json.dumps(body_dict)
-            print(res)
             return res
 
         def err_handler(out):
-            print(out)
-
-            if (isinstance(out.exception, dict) and
-                hasattr(out, 'json_err')):
-                return json_error(out.exception)
+            if out.status_code == 500:
+                print(out.traceback)
             else:
-                if out.status_code == 404:
-                    start_path = request.environ.get('SCRIPT_NAME')
-                    if not start_path:
-                        start_path = request.environ.get('PATH_INFO')
-                    #else:
-                    #    url = request.environ.get('PATH_INFO', '')[1:]
+                print(out)
 
-                    if start_path.startswith('/' + self.user_manager.temp_prefix):
-                        res = error_view(out, is_temp=True)
-                        return res
+            if out.status_code == 404 and self._check_refer_redirect():
+                return
 
-                    if self._check_refer_redirect():
-                        return
+            if isinstance(out.exception, dict):
+                return json_error(out.exception)
 
-                if out.status_code == 500:
-                    print(out.traceback)
-
-                return error_view(out)
-                #return default_err_handler(out)
+            else:
+                return json_error({'error': 'not_found'})
 
         return err_handler
 

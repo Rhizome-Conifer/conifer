@@ -27,7 +27,7 @@ class TestListsAPI(FullStackTests):
         return res
 
     def test_create_anon_coll(self):
-        res = self.testapp.post(self._format('/api/v1/collections?user={user}'), params={'title': 'Temp'})
+        res = self.testapp.post_json(self._format('/api/v1/collections?user={user}'), params={'title': 'Temp'})
 
         assert self.testapp.cookies['__test_sesh'] != ''
 

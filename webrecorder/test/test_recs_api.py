@@ -12,7 +12,7 @@ class TestWebRecRecAPI(FullStackTests):
         assert self.redis.exists('r:' + rec + ':info')
 
     def test_create_anon_coll(self):
-        res = self.testapp.post('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'Temp'})
+        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'Temp'})
 
         assert self.testapp.cookies['__test_sesh'] != ''
 

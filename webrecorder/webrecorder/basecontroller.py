@@ -93,8 +93,8 @@ class BaseController(object):
         result = {'error_message': message}
         result.update(kwargs)
 
-        if request.forms:
-            result['request_data'] = dict(request.forms.decode())
+        if request.json:
+            result['request_data'] = dict(request.json)
 
         err = HTTPError(code, message, exception=result)
         if api:

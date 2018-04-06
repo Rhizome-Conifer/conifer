@@ -168,11 +168,11 @@ class FullStackTests(BaseWRTests):
 
     @classmethod
     def _anon_post(self, url, *args, **kwargs):
-        return self.testapp.post(self._format_url(url), *args, **kwargs)
+        return self.testapp.post_json(self._format_url(url), *args, **kwargs)
 
     @classmethod
     def _anon_delete(self, url, *args, **kwargs):
-        return self.testapp.delete(self._format_url(url), *args, **kwargs)
+        return self.testapp.delete_json(self._format_url(url), *args, **kwargs)
 
     @classmethod
     def _anon_get(self, url, *args, **kwargs):

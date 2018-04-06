@@ -33,7 +33,7 @@ class TestRegisterMigrate(FullStackTests):
             all_closed = True
 
         with patch('webrecorder.rec.webrecrecorder.SkipCheckingMultiFileWARCWriter.close_file', close_file):
-            res = self.testapp.post(url)
+            res = self.testapp.post_json(url)
 
             def assert_move():
                 assert all_closed == True
@@ -54,7 +54,7 @@ class TestRegisterMigrate(FullStackTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
-        res = self.testapp.post('/api/v1/recordings/abc/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
+        res = self.testapp.post_json('/api/v1/recordings/abc/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
         assert res.json == {}
 
@@ -405,23 +405,23 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_error_logged_out_download(self):
         res = self.testapp.get('/someuser/new-coll/$download', status=404)
-        assert 'No such page' in res.text
+        assert res.json == {'error': 'not_found'}
 
     def test_error_logged_out_no_coll(self):
         res = self.testapp.get('/someuser/test-migrate', status=404)
-        assert 'No such page' in res.text
+        assert res.json == {'error': 'not_found'}
 
     def test_error_logged_out_record(self):
         res = self.testapp.get('/someuser/new-coll/move-test/record/mp_/http://example.com/', status=404)
-        assert 'No such page' in res.text
+        assert res.json == {'error': 'not_found'}
 
     def test_error_logged_out_patch(self):
         res = self.testapp.get('/someuser/new-coll/move-test/patch/mp_/http://example.com/', status=404)
-        assert 'No such page' in res.text
+        assert res.json == {'error': 'not_found'}
 
     def test_error_logged_out_replay_coll_1(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
-        assert 'No such page' in res.text
+        assert res.json == {'error': 'not_found'}
 
     def test_login(self):
         params = {'username': 'someuser',
@@ -436,7 +436,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def _test_rename_rec(self):
-        res = self.testapp.post('/api/v1/recordings/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
+        res = self.testapp.post_json('/api/v1/recordings/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
 
         assert res.json == {'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
 
@@ -576,7 +576,7 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_different_user_replay_private_error(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
-        assert 'No such page' in res.text
+        assert res.json == {'error': 'not_found'}
 
     def test_logout_3(self):
         res = self.testapp.get('/_logout')

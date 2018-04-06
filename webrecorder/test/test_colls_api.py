@@ -10,7 +10,7 @@ class TestWebRecCollsAPI(BaseWRTests):
         super(TestWebRecCollsAPI, cls).setup_class()
 
     def test_create_anon_coll(self):
-        res = self.testapp.post('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'Temp'})
+        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'Temp'})
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
@@ -18,8 +18,8 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert res.json['collection']['title'] == 'Temp'
 
     def test_create_anon_coll_dup_error(self):
-        res = self.testapp.post('/api/v1/collections?user={user}'.format(user=self.anon_user),
-                                params={'title': 'Temp'})
+        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user),
+                                     params={'title': 'Temp'})
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
@@ -59,15 +59,15 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert res.json == {'error_message': 'No such collection'}
 
     def test_error_missing_user_coll(self):
-        res = self.testapp.post('/api/v1/collections', params={'title': 'Recording'}, status=400)
+        res = self.testapp.post_json('/api/v1/collections', params={'title': 'Recording'}, status=400)
         assert res.json == {'error_message': "User must be specified", 'request_data': {'title': 'Recording'}}
 
     def test_error_invalid_user_coll(self):
-        res = self.testapp.post('/api/v1/collections?user=user', params={'title': 'Example'}, status=404)
+        res = self.testapp.post_json('/api/v1/collections?user=user', params={'title': 'Example'}, status=404)
         assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Example'}}
 
     def test_error_invalid_user_coll_2(self):
-        res = self.testapp.post('/api/v1/collections?user=temp$123', params={'title': 'Example'}, status=404)
+        res = self.testapp.post_json('/api/v1/collections?user=temp$123', params={'title': 'Example'}, status=404)
         assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Example'}}
 
     def test_delete_coll(self):

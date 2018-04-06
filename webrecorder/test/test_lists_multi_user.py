@@ -30,7 +30,7 @@ class TestListsAPIAccess(FullStackTests):
 
         coll_name = sanitize_title(coll_title)
 
-        res = self.testapp.post('/api/v1/collections?user={0}'.format(user), params=params)
+        res = self.testapp.post_json('/api/v1/collections?user={0}'.format(user), params=params)
         assert res.json['collection']
 
         return coll_name

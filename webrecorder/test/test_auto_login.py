@@ -38,7 +38,7 @@ class TestAutoLogin(FullStackTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
-        res = self.testapp.post('/api/v1/recordings/rec-sesh/pages?user=test&coll=default-collection', params=page)
+        res = self.testapp.post_json('/api/v1/recordings/rec-sesh/pages?user=test&coll=default-collection', params=page)
 
         assert res.json == {}
 
