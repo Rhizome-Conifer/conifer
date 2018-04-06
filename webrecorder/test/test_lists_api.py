@@ -328,7 +328,7 @@ class TestListsAPI(FullStackTests):
         assert res.json['list']
 
     def test_coll_info_with_lists(self):
-        res = self.testapp.get(self._format('/api/v1/collections/temp?user={user}'))
+        res = self.testapp.get(self._format('/api/v1/collection/temp?user={user}'))
 
         lists = res.json['collection']['lists']
 
@@ -398,7 +398,7 @@ class TestListsAPI(FullStackTests):
     # Delete Collection
     # ========================================================================
     def test_delete_coll(self):
-        res = self.testapp.delete('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'temp'}
 

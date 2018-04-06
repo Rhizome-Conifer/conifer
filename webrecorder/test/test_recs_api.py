@@ -119,11 +119,26 @@ class TestWebRecRecAPI(FullStackTests):
 
         assert res.json == {}
 
+    def test_page_add_3_not_added_yet(self):
+        cdx_key = 'r:{user}:temp:{rec_id}:cdxj'.format(user=self.anon_user, rec_id=self.rec_ids[0])
+
+        page = {'title': 'Example', 'url': 'http://example.com/foo/other'}
+        res = self._anon_post('/api/v1/recordings/{rec_id_0}/pages?user={user}&coll=temp', params=page)
+
+        assert res.json == {}
+
     def test_page_list_2(self):
         res = self._anon_get('/api/v1/recordings/{rec_id_0}/pages?user={user}&coll=temp')
-        assert len(res.json['pages']) == 2
+        assert len(res.json['pages']) == 3
         assert {'id': 'cf6e50ec2c', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
         assert {'id': 'ce9820d103', 'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
+
+    def test_coll_page_list(self):
+        res = self._anon_get('/api/v1/collection/temp?user={user}')
+
+        assert len(res.json['pages']) == 3
+        assert {'id': 'cf6e50ec2c', 'title': 'Example', 'recording': self.rec_ids[0], 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
+        assert {'id': 'ce9820d103', 'title': 'Example', 'recording': self.rec_ids[0], 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
 
     def test_page_delete(self):
         params = {'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
@@ -131,7 +146,7 @@ class TestWebRecRecAPI(FullStackTests):
         assert res.json == {}
 
         res = self._anon_get('/api/v1/recordings/{rec_id_0}/pages?user={user}&coll=temp')
-        assert len(res.json['pages']) == 1
+        assert len(res.json['pages']) == 2
         assert {'id': 'cf6e50ec2c', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
 
     def test_error_no_such_rec(self):

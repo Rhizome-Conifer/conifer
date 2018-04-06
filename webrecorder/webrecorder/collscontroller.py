@@ -65,13 +65,13 @@ class CollsController(BaseController):
 
             return {'collections': [coll.serialize(**kwargs) for coll in collections]}
 
-        @self.app.get('/api/v1/collections/<coll_name>')
+        @self.app.get('/api/v1/collection/<coll_name>')
         def get_collection(coll_name):
-            user = self.get_user(api=True)
+            user = self.get_user(api=True, redir_check=False)
 
             return self.get_collection_info(coll_name, user=user)
 
-        @self.app.delete('/api/v1/collections/<coll_name>')
+        @self.app.delete('/api/v1/collection/<coll_name>')
         def delete_collection(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
@@ -109,7 +109,7 @@ class CollsController(BaseController):
 
             return {'collection': collection.serialize()}
 
-        @self.app.get('/api/v1/collections/<coll_name>/is_public')
+        @self.app.get('/api/v1/collection/<coll_name>/is_public')
         def is_public(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
@@ -119,7 +119,7 @@ class CollsController(BaseController):
 
             return {'is_public': self.access.is_public(collection)}
 
-        @self.app.get('/api/v1/collections/<coll_name>/num_pages')
+        @self.app.get('/api/v1/collection/<coll_name>/num_pages')
         def get_num_pages(coll_name):
             user, collection = self.load_user_coll(coll_name)
 
@@ -226,11 +226,7 @@ class CollsController(BaseController):
         result['coll_name'] = collection.name
         result['coll_title'] = quote(result['collection']['title'])
 
-        result['bookmarks'] = []
-
-        for rec in collection.get_recordings():
-            if rec.count_pages() > 0:
-                result['bookmarks'].extend(rec.list_pages())
+        result['pages'] = collection.list_coll_pages()
 
         if not result['collection'].get('desc'):
             result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])

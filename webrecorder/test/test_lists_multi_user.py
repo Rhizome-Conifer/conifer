@@ -124,7 +124,7 @@ class TestListsAPIAccess(FullStackTests):
         assert len(res.json['lists']) == 1
         assert res.json['lists'][0]['title'] == 'Public List'
 
-        res = self.testapp.get('/api/v1/collections/some-coll?user=another')
+        res = self.testapp.get('/api/v1/collection/some-coll?user=another')
         assert len(res.json['collection']['lists']) == 1
         assert res.json['collection']['lists'][0]['title'] == 'Public List'
 
@@ -152,7 +152,7 @@ class TestListsAPIAccess(FullStackTests):
         assert len(res.json['lists']) == 1
         assert res.json['lists'][0]['title'] == 'Public List'
 
-        res = self.testapp.get('/api/v1/collections/some-coll?user=another')
+        res = self.testapp.get('/api/v1/collection/some-coll?user=another')
         assert len(res.json['collection']['lists']) == 1
         assert res.json['collection']['lists'][0]['title'] == 'Public List'
 

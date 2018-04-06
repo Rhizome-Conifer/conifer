@@ -60,7 +60,7 @@ class TestExtractContent(FullStackTests):
         assert self.testapp.cookies['__test_sesh'] != ''
 
     def test_coll_info(self):
-        res = self.testapp.get('/api/v1/collections/temp?user={user}'.format(user=self.anon_user))
+        res = self.testapp.get('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
         recs = res.json['collection']['recordings']
         assert len(recs) == 5
 
