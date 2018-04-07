@@ -40,13 +40,13 @@ export default function collection(state = initialState, action = {}) {
       return state.set('loading', true);
     case COLL_LOAD_SUCCESS: {
       const {
-        bookmarks,
+        pages,
         collection: { created_at, desc, download_url, id, lists, recordings, size, title },
         user
       } = action.result;
 
-      const bks = {};
-      bookmarks.forEach((bookmark) => { bks[bookmark.id] = bookmark; });
+      const pgs = {};
+      pages.forEach((pg) => { pgs[pg.id] = pg; });
 
       return state.merge({
         loading: false,
@@ -54,7 +54,7 @@ export default function collection(state = initialState, action = {}) {
         accessed: action.accessed,
         error: null,
 
-        pages: bks,
+        pages: pgs,
         created_at,
         desc,
         download_url,
@@ -125,7 +125,7 @@ export function load(user, coll) {
   return {
     types: [COLL_LOAD, COLL_LOAD_SUCCESS, COLL_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${apiPath}/collections/${coll}`, {
+    promise: client => client.get(`${apiPath}/collection/${coll}`, {
       params: { user }
     })
   };
@@ -157,7 +157,7 @@ export function edit(user, coll, data) {
 export function deleteCollection(user, coll) {
   return {
     types: [COLL_DELETE, COLL_DELETE_SUCCESS, COLL_DELETE_FAIL],
-    promise: client => client.del(`${apiPath}/collections/${coll}`, {
+    promise: client => client.del(`${apiPath}/collection/${coll}`, {
       params: { user }
     })
   };
