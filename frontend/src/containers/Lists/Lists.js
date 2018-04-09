@@ -1,39 +1,10 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React from 'react';
 import { connect } from 'react-redux';
 
-import { addTo, create, deleteList, edit, load as loadList } from 'redux/modules/list';
+import { addTo, create, deleteList, edit, resetEditState } from 'redux/modules/list';
 import { loadLists } from 'redux/modules/collection';
 
 import ListsUI from 'components/collection/ListsUI';
-
-
-class Lists extends Component {
-
-  static propTypes = {
-    activeListId: PropTypes.string,
-    collection: PropTypes.object,
-    loaded: PropTypes.bool,
-    loading: PropTypes.bool,
-    lists: PropTypes.object,
-    list: PropTypes.object,
-    getLists: PropTypes.func,
-    editList: PropTypes.func,
-    removeList: PropTypes.func
-  };
-
-  componentWillMount() {
-    const { getLists, loaded, loading } = this.props;
-
-    // if (!loaded && !loading) {
-    //   getLists();
-    // }
-  }
-
-  render() {
-    return <ListsUI {...this.props} />;
-  }
-}
 
 
 const mapStateToProps = ({ app }) => {
@@ -58,7 +29,8 @@ const mapDispatchToProps = (dispatch) => {
     addToList: (user, coll, listId, data) => dispatch(addTo(user, coll, listId, data)),
     editList: (user, coll, id, data) => {
       return dispatch(edit(user, coll, id, data))
-               .then(() => dispatch(loadLists(user, coll)));
+               .then(() => dispatch(loadLists(user, coll)))
+               .then(() => setTimeout(() => dispatch(resetEditState()), 3000));
     },
     deleteList: (user, coll, id) => {
       return dispatch(deleteList(user, coll, id))
@@ -70,4 +42,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Lists);
+)(ListsUI);

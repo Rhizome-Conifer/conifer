@@ -23,15 +23,13 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin: .5rem 0;
 
-        & > div {
-            display: inline-block;
-
-            & > h4 {
-                display: inline;
-                margin-left: .5rem;
-                font-size: 1.4rem;
-            }
+        h4 {
+            display: inline;
+            margin-left: .5rem;
+            font-size: 1.4rem;
+            margin: 0;
         }
 
         .list-edit {
@@ -43,7 +41,7 @@
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: flex-start;
         margin-top: 1.5rem;
 
         ul {
@@ -52,7 +50,6 @@
 
             li {
                 position: relative;
-                padding-left: 2.5rem;
 
                 svg {
                     margin: 0 1rem 0 .5rem;
@@ -75,6 +72,24 @@
                 &.targeted {
                     .wrapper {
                         background-color: $light-gray;
+                    }
+                }
+
+                .visiblity-toggle {
+                    transition: background $quickShift ease-in-out;
+                    content: ' ';
+                    padding: .7rem;
+                    border-radius: 50%;
+                    border: none;
+                    background: #eee;
+                    margin-right: .5rem;
+
+                    &:focus {
+                        outline: none;
+                    }
+
+                    &.public {
+                        background: $brightGreen;
                     }
                 }
 
@@ -103,6 +118,10 @@
                     }
                 }
             }
+        }
+
+        & > button {
+            margin-top: auto;
         }
     }
 }

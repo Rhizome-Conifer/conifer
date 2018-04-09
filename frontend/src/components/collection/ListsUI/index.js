@@ -96,11 +96,16 @@ class ListsUI extends Component {
   }
 
   clearInput = () => this.setState({ title: '' })
-  openEditModal = (evt) => { evt.stopPropagation(); this.setState({ editModal: true }); }
+
+  openEditModal = (evt) => {
+    evt.stopPropagation();
+    this.setState({ editModal: true });
+  }
+
   closeEditModal = () => { this.setState({ editModal: false }); }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
+    const { canAdmin } = this.context;
     const { activeListId, collection, list, lists } = this.props;
     const { created, editModal, isCreating, title, edited, editId } = this.state;
 
@@ -108,19 +113,6 @@ class ListsUI extends Component {
     if (!collection.get('loaded')) {
       return null;
     }
-
-    const collapsibleHeader = (
-      <header className="lists-header">
-        <div>
-          <span className="glyphicon glyphicon-triangle-right" />
-          <h4>Lists</h4>
-        </div>
-        {
-          canAdmin &&
-            <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
-        }
-      </header>
-    );
 
     return (
       <React.Fragment>
@@ -133,28 +125,30 @@ class ListsUI extends Component {
           }
 
           <div className="lists-body">
-            <Collapsible
-              lazyRender
-              open
-              easing="ease-out"
-              trigger={collapsibleHeader}>
-              <ul>
-                {
-                  lists.map(listObj => (
-                    <ListItem
-                      key={listObj.get('id')}
-                      selected={list && listObj.get('id') === activeListId}
-                      list={listObj}
-                      collection={collection}
-                      addToList={this.props.addToList} />
-                  ))
-                }
-              </ul>
-            </Collapsible>
+            <header className="lists-header">
+              <h4>Lists</h4>
+              {
+                canAdmin &&
+                  <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
+              }
+            </header>
+            <ul>
+              {
+                lists.map(listObj => (
+                  <ListItem
+                    addToList={this.props.addToList}
+                    collection={collection}
+                    editList={this.sendEditList}
+                    key={listObj.get('id')}
+                    list={listObj}
+                    selected={list && listObj.get('id') === activeListId} />
+                ))
+              }
+            </ul>
 
             {
               canAdmin &&
-                <button onClick={this.openEditModal}>+ new list</button>
+                <Button onClick={this.openEditModal}>Manage Lists</Button>
             }
           </div>
         </div>

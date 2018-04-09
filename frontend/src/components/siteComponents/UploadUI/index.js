@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 
+import { product } from 'config';
+
 import { CollectionDropdown } from 'containers';
 import Modal from 'components/Modal';
 
@@ -11,7 +13,6 @@ import './style.scss';
 
 class UploadUI extends Component {
   static contextTypes = {
-    metadata: PropTypes.object,
     router: PropTypes.object
   };
 
@@ -172,7 +173,7 @@ class UploadUI extends Component {
     const { file, isUploading, progress, status, targetColl } = this.state;
 
     const modalHeader = (
-      <h4>Upload Web Archive to { this.context.metadata.product }</h4>
+      <h4>Upload Web Archive to { product }</h4>
     );
 
     const modalFooter = (

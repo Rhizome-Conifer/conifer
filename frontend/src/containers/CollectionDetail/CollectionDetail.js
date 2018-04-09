@@ -4,7 +4,7 @@ import querystring from 'querystring';
 import { asyncConnect } from 'redux-connect';
 import { Map } from 'immutable';
 
-import { load as loadColl } from 'redux/modules/collection';
+import { isLoaded as isCollLoaded, load as loadColl } from 'redux/modules/collection';
 import { load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
@@ -24,8 +24,7 @@ class CollectionDetail extends Component {
 
     // TODO move to HOC
   static childContextTypes = {
-    canAdmin: PropTypes.bool,
-    canWrite: PropTypes.bool
+    canAdmin: PropTypes.bool
   };
 
   getChildContext() {
@@ -33,8 +32,7 @@ class CollectionDetail extends Component {
     const username = auth.getIn(['user', 'username']);
 
     return {
-      canAdmin: username === user,
-      canWrite: username === user && !auth.anon
+      canAdmin: username === user
     };
   }
 
@@ -62,14 +60,19 @@ const initialData = [
     }
   },
   {
-    promise: ({ match: { params }, store: { dispatch } }) => {
-      const { user, coll } = params;
+    promise: ({ match: { params: { coll, list, user } }, store: { dispatch, getState } }) => {
+      const state = getState();
 
-      return dispatch(loadColl(user, coll));
+      // if switching to list view, prevent reloading collection
+      if ((!isCollLoaded(state) || state.app.getIn(['collection', 'id']) !== coll) || !list) {
+        return dispatch(loadColl(user, coll));
+      }
+
+      return undefined;
     }
   },
   {
-    promise: ({ match: { params: { user, coll, list } }, store: { dispatch } }) => {
+    promise: ({ match: { params: { coll, list, user } }, store: { dispatch } }) => {
       if (list) {
         return dispatch(loadList(user, coll, list));
       }

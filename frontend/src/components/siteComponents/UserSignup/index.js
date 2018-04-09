@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { Alert, Button, Checkbox, ControlLabel, Form,
          HelpBlock, FormControl, FormGroup } from 'react-bootstrap';
 
-import config from 'config';
+import { product, userRegex } from 'config';
 
 import { passwordPassRegex } from 'helpers/utils';
 import { TempUsage } from 'containers';
@@ -14,10 +14,6 @@ import './style.scss';
 
 
 class UserSignup extends Component {
-  static contextTypes = {
-    metadata: PropTypes.object
-  };
-
   static propTypes = {
     available: PropTypes.bool,
     cb: PropTypes.func,
@@ -100,7 +96,7 @@ class UserSignup extends Component {
   userPassRegex = (username) => {
     if(!username) return false;
 
-    const rgx = username.match(config.userRegex);
+    const rgx = username.match(userRegex);
     return rgx && rgx[0] === username;
   }
 
@@ -150,7 +146,6 @@ class UserSignup extends Component {
   }
 
   render() {
-    const { metadata } = this.context;
     const { available, checkedUsername, errors, result,
             success, user, userCheck } = this.props;
     const { email, moveTemp, name, password, confirmpassword,
@@ -185,7 +180,7 @@ class UserSignup extends Component {
             </Alert>
         }
         <div className="col-sm-8 col-md-6 col-md-offset-3">
-          <h2>{ metadata.product } Account Sign-Up</h2>
+          <h2>{ product } Account Sign-Up</h2>
           <h4>Create your own web archive as you browse!</h4>
           <br />
           <h4>To begin, please fill out the registration form below.</h4>

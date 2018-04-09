@@ -1,5 +1,6 @@
 import React from 'react';
 import { asyncConnect } from 'redux-connect';
+import { batchActions } from 'redux-batched-actions';
 
 import { incrementCollCount } from 'redux/modules/auth';
 import { isLoaded as areCollsLoaded, load as loadCollections,
@@ -41,10 +42,12 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(createCollection(user, collTitle, makePublic))
         .then((res) => {
           if (res.hasOwnProperty('collection')) {
-            dispatch(incrementCollCount(1));
-            dispatch(addUserCollection(res.collection));
+            dispatch(batchActions([
+              incrementCollCount(1),
+              addUserCollection(res.collection)
+            ]));
           }
-        }, () => {})
+        }, () => {});
     }
   };
 };

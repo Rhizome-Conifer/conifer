@@ -36,12 +36,7 @@ export class App extends Component { // eslint-disable-line
   }
 
   static childContextTypes = {
-    isAnon: PropTypes.bool,
-    metadata: PropTypes.shape({
-      product: PropTypes.string,
-      type: PropTypes.string,
-      host: PropTypes.string,
-    })
+    isAnon: PropTypes.bool
   }
 
   constructor(props) {
@@ -54,12 +49,7 @@ export class App extends Component { // eslint-disable-line
     const { auth } = this.props;
 
     return {
-      isAnon: auth.getIn(['user', 'anon']),
-      metadata: {
-        product: config.product,
-        type: 'hosted',
-        host: config.appHost
-      }
+      isAnon: auth.getIn(['user', 'anon'])
     };
   }
 

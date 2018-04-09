@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { product } from 'config';
+
 import BugReport from 'containers/BugReport';
 import ShareWidget from 'containers/ShareWidget';
 
@@ -17,8 +19,7 @@ class RecordingToolsUI extends Component {
 
   static contextTypes = {
     canAdmin: PropTypes.bool,
-    currMode: PropTypes.string,
-    metadata: PropTypes.object
+    currMode: PropTypes.string
   }
 
   toggleTools = () => {
@@ -27,7 +28,7 @@ class RecordingToolsUI extends Component {
   }
 
   render() {
-    const { canAdmin, currMode, metadata } = this.context;
+    const { canAdmin, currMode } = this.context;
     const { params } = this.props;
 
     const isNew = currMode === 'new';
@@ -42,11 +43,11 @@ class RecordingToolsUI extends Component {
             </button>
         }
         {
-          !isNew && metadata.type !== 'player' &&
+          !isNew && product !== 'player' &&
             <BugReport />
         }
         {
-          !isWrite && metadata.type !== 'player' &&
+          !isWrite && product !== 'player' &&
             <ShareWidget params={params} />
         }
       </div>
