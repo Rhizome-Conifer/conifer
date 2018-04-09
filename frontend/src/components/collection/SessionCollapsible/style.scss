@@ -1,59 +1,90 @@
 @import 'src/vars';
 
 .wr-coll-session {
-    header {
-        display: flex;
-        justify-content: flext-start;
-        align-items: center;
-        padding: 1rem 0;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
 
-        &.collapsible {
-            cursor: pointer;
+    .Collapsible {
+        flex-grow: 1;
 
-            &:hover {
+        header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1rem;
+            background-color: #eee;
+
+            &.collapsible {
+                cursor: pointer;
+
+                &:hover {
+                    color: $collTrigger;
+                }
+            }
+
+            .badge {
+                background-color: #0039e5;
+                font-family: sans-serif;
+                margin-left: .5rem;
+            }
+
+            h2 {
+                transition: color $quickShift ease-in-out;
+                font-size: 1.4rem;
+                margin: 0;
+            }
+
+            .session-ts {
+                margin-left: auto;
+                margin-right: 1.5rem;
+            }
+
+            .wr-remove-widget {
+                margin-left: auto;
+                margin-right: .5rem;
+            }
+
+            .wr-remove-widget + .session-ts {
+                margin-left: 0;
+            }
+
+
+            .glyphicon-triangle-right {
+                transition: transform $midShift ease-in-out;
+                transform-origin: center center;
+                margin-right: .5rem;
                 color: $collTrigger;
             }
         }
 
-        .badge {
-            background-color: #0039e5;
-            font-family: sans-serif;
-            margin-left: .5rem;
+        .Collapsible__contentInner {
+            display: flex;
+            justify-content: space-around;
+            min-height: 20rem;
+            padding: 1.5rem 0;
+
+            h4 {
+                margin: 0 0 .5rem 0;
+            }
+
+            .session-notes {
+                width: 45%;
+            }
+
+            .session-pages {
+                width: 45%;
+            }
+
+            .ReactVirtualized__Grid {
+                border: solid 1px #333;
+            }
         }
 
-        h2 {
-            transition: color $quickShift ease-in-out;
-            font-size: 1.4rem;
-            margin: 0;
-        }
-
-        .session-ts {
-            margin-left: auto;
-            margin-right: 1.5rem;
-        }
-
-        .wr-remove-widget {
-            margin-left: auto;
-            margin-right: .5rem;
-        }
-
-        .wr-remove-widget + .session-ts {
-            margin-left: 0;
-        }
-
-
-        .glyphicon-triangle-right {
-            transition: transform $midShift ease-in-out;
-            transform-origin: center center;
-            margin-right: .5rem;
-            color: $collTrigger;
-        }
-    }
-
-    .Collapsible__trigger {
-        &.is-open header.collapsible {
-            h2 {
-                color: $collTrigger;
+        .Collapsible__trigger {
+            &.is-open header.collapsible {
+                h2 {
+                    color: $collTrigger;
+                }
             }
         }
     }

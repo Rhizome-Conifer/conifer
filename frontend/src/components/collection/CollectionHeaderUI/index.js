@@ -161,7 +161,7 @@ class CollectionHeaderUI extends Component {
   }
 
   render() {
-    const { isAnon } = this.context;
+    const { canAdmin, isAnon } = this.context;
     const { activeList, collection, collEdited, list, listEdited } = this.props;
     const { truncate, animated, condensed, height, hoverOverride, toggleDesc } = this.state;
 
@@ -209,9 +209,12 @@ class CollectionHeaderUI extends Component {
                     onChange={this.setPublic} />
                 </div>
             }
-            <Button bsSize="sm" bsStyle="success" onClick={() => { window.location = `/${collection.get('user')}/${collection.get('id')}/$download`; }}>
-              Download
-            </Button>
+            {
+              canAdmin &&
+                <Button bsSize="sm" bsStyle="success" onClick={() => { window.location = `/${collection.get('user')}/${collection.get('id')}/$download`; }}>
+                  Download
+                </Button>
+            }
             {
               !isAnon &&
                 <Upload fromCollection={collection.get('id')} classes="btn btn-sm btn-default">

@@ -8,6 +8,7 @@ import {
 import {
   CollectionDetail,
   CollectionList,
+  CollectionManagement,
   Extract,
   Home,
   HttpStatus,
@@ -57,6 +58,15 @@ const userRoutes = [
     footer: false,
     classOverride: true,
     breadcrumb: collDetailBreadcrumb
+  },
+  {
+    path: `${userPath}/:coll/management`,
+    component: CollectionManagement,
+    exact: true,
+    name: 'collectionMgmt',
+    footer: false,
+    classOverride: true,
+    breadcrumb: 'Management'
   },
   {
     path: `${userPath}/:coll/list/:list`,

@@ -42,7 +42,7 @@ export class App extends Component { // eslint-disable-line
   constructor(props) {
     super(props);
 
-    this.state = { };
+    this.state = {};
   }
 
   getChildContext() {
