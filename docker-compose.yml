@@ -82,6 +82,7 @@ services:
 
             - CLUSTER_NAME=wr_users
             - NETWORK_NAME=webrecorder_browsers
+            - AUDIO_TYPE=opus
 
             - CONTAINER_EXPIRE_SECS=1200
             - IDLE_TIMEOUT=120
