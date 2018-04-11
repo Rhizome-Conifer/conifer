@@ -26,12 +26,17 @@ class TestListsAPIAccess(FullStackTests):
     def _create_coll(self, user, coll_title, public=False):
         # Collection
         params = {'title': coll_title,
-                  'public': 'on' if public else 'off'}
+                  'public': public}
 
         coll_name = sanitize_title(coll_title)
 
         res = self.testapp.post_json('/api/v1/collections?user={0}'.format(user), params=params)
-        assert res.json['collection']
+        collection = res.json['collection']
+
+        if public:
+            assert collection['r:@public'] == '1'
+        else:
+            assert 'r:@public' not in collection
 
         return coll_name
 
