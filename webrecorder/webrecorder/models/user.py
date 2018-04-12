@@ -248,6 +248,10 @@ class User(RedisNamedContainer):
 
         return (total >= limit_max)
 
+    def get_user_temp_warc_path(self):
+        return os.path.join(os.environ['RECORD_ROOT'], self.name)
+
+
 # ============================================================================
 class SessionUser(User):
     def __init__(self, **kwargs):

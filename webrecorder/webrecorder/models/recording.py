@@ -1,6 +1,7 @@
 import json
 import hashlib
 import os
+import base64
 
 from six.moves.urllib.parse import urlsplit
 
@@ -10,7 +11,7 @@ from pywb.warcserver.index.cdxobject import CDXObject
 from webrecorder.utils import redis_pipeline
 from webrecorder.models.base import RedisUniqueComponent
 
-from warcio.timeutils import timestamp_now
+from warcio.timeutils import timestamp_now, sec_to_timestamp
 
 
 # ============================================================================
@@ -33,16 +34,30 @@ class Recording(RedisUniqueComponent):
     DEL_Q = 'q:del:{target}'
     MOVE_Q = 'q:move:{target}'
 
+    INDEX_FILE_KEY = '@index_file'
+
+    COMMIT_WAIT_TEMPL = 'w:{filename}'
+
+    INDEX_NAME_TEMPL = 'index-{timestamp}-{random}.cdxj'
+
+    # overridable
     OPEN_REC_TTL = 5400
 
-    INDEX_FILE_KEY = '@index_file'
+    COMMIT_WAIT_SECS = 30
+
+    FULL_WARC_PREFIX = 'http://nginx:6090'
 
     @classmethod
     def init_props(cls, config):
         cls.OPEN_REC_TTL = int(config['open_rec_ttl'])
-        cls.INDEX_FILE_KEY = config['info_index_key']
+        #cls.INDEX_FILE_KEY = config['info_index_key']
 
-        cls.WARC_PATH_PREFIX = config['warc_path_templ']
+        #cls.INDEX_NAME_TEMPL = config['index_name_templ']
+
+        cls.FULL_WARC_PREFIX = config['full_warc_prefix']
+
+        cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
+        #cls.COMMIT_WAIT_TEMPL = config['commit_wait_templ']
 
     def init_new(self, desc='', rec_type=None, ra_list=None):
         rec = self._create_new_id()
@@ -67,9 +82,16 @@ class Recording(RedisUniqueComponent):
 
         return rec
 
-    def is_open(self):
+    def is_open(self, extend=True):
         open_rec_key = self.OPEN_REC_KEY.format(rec=self.my_id)
-        return self.redis.expire(open_rec_key, self.OPEN_REC_TTL)
+        if extend:
+            return self.redis.expire(open_rec_key, self.OPEN_REC_TTL)
+        else:
+            return self.redis.exists(open_rec_key)
+
+    def set_closed(self):
+        open_rec_key = self.OPEN_REC_KEY.format(rec=self.my_id)
+        self.redis.delete(open_rec_key)
 
     def serialize(self):
         data = super(Recording, self).serialize(include_duration=True)
@@ -183,7 +205,7 @@ class Recording(RedisUniqueComponent):
         self.access.assert_can_write_coll(self.get_owner())
 
         if not self.is_open():
-            return {'error_msg': 'recording not open'}
+            return {'error': 'recording_done'}
 
         # if check dupes, check for existing page and avoid adding duplicate
         #if check_dupes:
@@ -281,5 +303,153 @@ class Recording(RedisUniqueComponent):
     def track_remote_archive(self, pi, source_id):
         ra_key = self.RA_KEY.format(rec=self.my_id)
         pi.sadd(ra_key, source_id)
+
+    def write_cdxj(self, user, warc_key, cdxj_key):
+        full_filename = self.redis.hget(warc_key, self.INDEX_FILE_KEY)
+        if full_filename:
+            cdxj_filename = os.path.basename(self.strip_prefix(full_filename))
+            return cdxj_filename, full_filename
+
+        dirname = user.get_user_temp_warc_path()
+
+        randstr = base64.b32encode(os.urandom(5)).decode('utf-8')
+
+        timestamp = timestamp_now()
+
+        cdxj_filename = self.INDEX_NAME_TEMPL.format(timestamp=timestamp,
+                                                     random=randstr)
+
+        os.makedirs(dirname, exist_ok=True)
+
+        full_filename = os.path.join(dirname, cdxj_filename)
+
+        cdxj_list = self.redis.zrange(cdxj_key, 0, -1)
+
+        with open(full_filename, 'wt') as out:
+            for cdxj in cdxj_list:
+                out.write(cdxj + '\n')
+            out.flush()
+
+        full_url = self.FULL_WARC_PREFIX + full_filename.replace(os.path.sep, '/')
+        self.redis.hset(warc_key, self.INDEX_FILE_KEY, full_url)
+
+        return cdxj_filename, full_filename
+
+    def commit_to_storage(self, storage):
+        info_key = self.INFO_KEY.format(rec=self.my_id)
+        cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
+        warc_key = self.WARC_KEY.format(rec=self.my_id)
+
+        self.set_closed()
+        self.redis.publish('close_rec', info_key)
+
+        collection = self.get_owner()
+        user = collection.get_owner()
+
+        cdxj_filename, full_cdxj_filename = self.write_cdxj(user, warc_key, cdxj_key)
+
+        all_done = True
+
+        if not user.is_anon() and storage:
+            all_done = self.commit_file(user, collection, storage,
+                                        cdxj_filename, full_cdxj_filename, 'indexes',
+                                        warc_key, self.INDEX_FILE_KEY, direct_delete=True)
+
+            for warc_filename, warc_full_filename in self.iter_all_files():
+                done = self.commit_file(user, collection, storage,
+                                        warc_filename, warc_full_filename, 'warcs',
+                                        warc_key)
+
+                all_done = all_done and done
+
+        if all_done:
+            print('Deleting Redis Key: ' + cdxj_key)
+            self.redis.delete(cdxj_key)
+
+    def commit_file(self, user, collection, storage,
+                    filename, full_filename, obj_type,
+                    update_key, update_prop=None, direct_delete=False):
+
+        if not storage or user.is_anon():
+            return False
+
+        full_filename = self.strip_prefix(full_filename)
+
+        # not a local filename
+        if '://' in full_filename and not full_filename.startswith('local'):
+            return False
+
+        if not os.path.isfile(full_filename):
+            return False
+
+        commit_wait = self.COMMIT_WAIT_TEMPL.format(filename=full_filename)
+
+        if self.redis.set(commit_wait, 1, ex=self.COMMIT_WAIT_SECS, nx=True):
+            if not storage.upload_file(user, collection, self,
+                                       filename, full_filename, obj_type):
+
+                self.redis.delete(commit_wait)
+                return False
+
+        # already uploaded, see if it is accessible
+        # if so, finalize and delete original
+        remote_url = storage.get_upload_url(filename)
+        if not remote_url:
+            print('Not yet available: {0}'.format(full_filename))
+            return False
+
+        print('Committed {0} -> {1}'.format(full_filename, remote_url))
+        update_prop = update_prop or filename
+        self.redis.hset(update_key, update_prop, remote_url)
+
+        # if direct delete, call os.remove directly
+        # used for CDXJ files which are not owned by a writer
+        if direct_delete:
+            try:
+                os.remove(full_filename)
+            except Exception as e:
+                print(e)
+                return True
+        else:
+        # for WARCs, send handle_delete to ensure writer can close the file
+             if self.redis.publish('handle_delete', full_filename) < 1:
+                print('No Delete Listener!')
+
+        return True
+
+    def strip_prefix(self, uri):
+        if self.FULL_WARC_PREFIX and uri.startswith(self.FULL_WARC_PREFIX):
+            return uri[len(self.FULL_WARC_PREFIX):]
+
+        return uri
+
+    def copy_data_from_recording(self, source):
+        if not self.is_open():
+            return False
+
+        user = self.get_owner().get_owner()
+        dirname = user.get_user_temp_warc_path()
+
+        target_warc_key = self.WARC_KEY.format(rec=self.my_id)
+
+        for n, url in source.iter_all_files(skip_index=False):
+            local_filename = n + '.' + timestamp_now20()
+            target_file = os.path.join(target_dirname, local_filename)
+
+            src = loader.load(url)
+
+            try:
+                with open(target_file, 'wb') as dest:
+                    shutil.copyfileobj(src, dest)
+
+                size = os.path.getsize(dest)
+
+                self.incr_size(size)
+                self.redis.hset(target_warc_key, n, self.FULL_WARC_PREFIX + target_file)
+            except:
+                import traceback
+                traceback.print_exc()
+
+        return True
 
 
