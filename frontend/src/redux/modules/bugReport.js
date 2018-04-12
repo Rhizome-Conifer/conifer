@@ -26,13 +26,13 @@ export default function bugReport(state = initialState, action = {}) {
     case REPORT_SUCCESS:
       return state.merge({
         submitting: false,
-        sbumitted: true,
+        submitted: true,
         error: null
       });
     case REPORT_FAIL:
       return state.merge({
         submitting: false,
-        sbumitted: false,
+        submitted: false,
         error: true
       });
     default:

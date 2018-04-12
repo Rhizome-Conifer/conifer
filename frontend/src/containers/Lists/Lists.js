@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { edit as editCollection, loadLists, load as loadColl, resetEditState as resetCollEditState } from 'redux/modules/collection';
 import { addTo, create, deleteList, edit, resetEditState } from 'redux/modules/list';
-import { loadLists } from 'redux/modules/collection';
 
 import ListsUI from 'components/collection/ListsUI';
 
@@ -27,6 +27,11 @@ const mapDispatchToProps = (dispatch) => {
     },
     getLists: (user, coll) => dispatch(loadLists(user, coll)),
     addToList: (user, coll, listId, data) => dispatch(addTo(user, coll, listId, data)),
+    editColl: (user, coll, data) => {
+      return dispatch(editCollection(user, coll, data))
+              .then(() => dispatch(resetCollEditState()))
+              .then(() => dispatch(loadColl(user, coll)));
+    },
     editList: (user, coll, id, data) => {
       return dispatch(edit(user, coll, id, data))
                .then(() => dispatch(loadLists(user, coll)))

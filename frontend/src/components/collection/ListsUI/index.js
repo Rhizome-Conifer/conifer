@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Collapsible from 'react-collapsible';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -27,6 +26,7 @@ class ListsUI extends Component {
     collection: PropTypes.object,
     createList: PropTypes.func,
     deleteList: PropTypes.func,
+    editColl: PropTypes.func,
     editList: PropTypes.func,
     getLists: PropTypes.func,
     loaded: PropTypes.bool,
@@ -121,15 +121,18 @@ class ListsUI extends Component {
 
           {
             activeListId &&
-              <Link to={`/${collection.get('user')}/${collection.get('id')}`} className="button-link">See All Resources in Collection</Link>
+              <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`} className="button-link">See All Resources in Collection</Link>
           }
 
           <div className="lists-body">
             <header className="lists-header">
-              <h4>Lists</h4>
+              <h4>Lists ({lists.size})</h4>
               {
                 canAdmin &&
-                  <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
+                  <React.Fragment>
+                    <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
+                    <button onClick={this.openEditModal} className="borderless"><PlusIcon /></button>
+                  </React.Fragment>
               }
             </header>
             <ul>
@@ -138,6 +141,7 @@ class ListsUI extends Component {
                   <ListItem
                     addToList={this.props.addToList}
                     collection={collection}
+                    editColl={this.props.editColl}
                     editList={this.sendEditList}
                     key={listObj.get('id')}
                     list={listObj}
@@ -145,11 +149,6 @@ class ListsUI extends Component {
                 ))
               }
             </ul>
-
-            {
-              canAdmin &&
-                <Button onClick={this.openEditModal}>Manage Lists</Button>
-            }
           </div>
         </div>
 

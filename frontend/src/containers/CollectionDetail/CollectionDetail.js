@@ -8,7 +8,6 @@ import { isLoaded as isCollLoaded, load as loadColl } from 'redux/modules/collec
 import { load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
-import { deleteRecording } from 'redux/modules/recordings';
 import { getQueryPages, getOrderedPages, pageSearchResults } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/collection/CollectionDetailUI';
@@ -118,14 +117,6 @@ const mapStateToProps = (outerState) => {
 
 const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
   return {
-    deleteRec: (rec) => {
-      dispatch(deleteRecording(user, coll, rec))
-        .then((res) => {
-          if (res.hasOwnProperty('deleted_id')) {
-            dispatch(loadColl(user, coll));
-          }
-        }, () => { console.log('Rec delete error..'); });
-    },
     removeBookmark: (list, id) => {
       dispatch(removeBookmark(user, coll, list, id))
         .then(() => dispatch(loadList(user, coll, list)));

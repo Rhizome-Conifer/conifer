@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { appHost } from 'config';
 import { remoteBrowserMod } from 'helpers/utils';
-import { setPublic } from 'redux/modules/collection';
+import { edit } from 'redux/modules/collection';
 import { showModal } from 'redux/modules/userLogin';
 
 import { ShareWidgetUI } from 'components/controls';
@@ -56,7 +56,7 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    setCollPublic: (collId, user) => dispatch(setPublic(collId, user)),
+    setCollPublic: (user, coll) => dispatch(edit(user, coll, { public: true })),
     showLoginModal: () => dispatch(showModal(true))
   };
 };

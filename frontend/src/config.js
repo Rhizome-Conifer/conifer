@@ -39,6 +39,11 @@ module.exports = Object.assign({
   appHost: `${hostScheme}://${appHost}`,
   contentHost: `${hostScheme}://${contentHost}`,
   columns: ['timestamp', 'title', 'url', 'browser', 'session'],
+  columnLabels: {
+    'session': 'Session ID',
+    'browser': 'Capture Browser',
+    'title': 'Page Title'
+  },
   columnMappings: {
     'session': 'recording'
   },

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
 import { inStorage, getStorage, setStorage } from 'helpers/utils';
@@ -8,57 +9,102 @@ import './style.scss';
 
 class Resizable extends Component {
   static propTypes = {
+    axis: PropTypes.oneOf(['x', 'y']),
+    children: PropTypes.node,
     classes: PropTypes.string,
-    resizeState: PropTypes.func,
+    flexGrow: PropTypes.bool,
+    maxHeight: PropTypes.number,
+    maxWidth: PropTypes.number,
+    minHeight: PropTypes.number,
+    minWidth: PropTypes.number,
     overrideWidth: PropTypes.oneOfType([
       PropTypes.bool,
-      PropTypes.number,
-      PropTypes.string
+      PropTypes.number
     ]),
+    overrideHeight: PropTypes.oneOfType([
+      PropTypes.bool,
+      PropTypes.number
+    ]),
+    resizeState: PropTypes.func,
     storageKey: PropTypes.string
+  };
+
+  static defaultProps = {
+    axis: 'x',
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
+      hasResized: false,
+      height: 400,
       width: 300,
       xPos: null
     };
   }
 
   componentDidMount() {
-    const { storageKey } = this.props;
-    let { width } = this.state;
+    const { axis, storageKey, minWidth, maxWidth, minHeight, maxHeight } = this.props;
+
     if (inStorage(storageKey || 'userSidebarWidth')) {
       try {
-        width = JSON.parse(getStorage(storageKey || 'userSidebarWidth'));
-        this.setState({ width });
+        if (axis === 'x') {
+          const { width } = JSON.parse(getStorage(storageKey || 'userSidebarWidth'));
+          this.setState({ width: width || this.state.width, hasResized: typeof width !== 'undefined' });
+        } else {
+          const { height } = JSON.parse(getStorage(storageKey || 'userSidebarWidth'));
+          this.setState({ height: height || this.state.height, hasResized: typeof height !== 'undefined' });
+        }
       } catch (e) {
         console.log('Error retrieving width', e);
       }
     }
 
-    // get container position in dom, offset mouseX to width mapping
-    this.containerOffset = this.container.getBoundingClientRect().left;
-    this.minWidth = window.innerWidth * 0.1;
-    this.maxWidth = window.innerWidth * 0.75;
+    const bcr = this.container.parentNode.getBoundingClientRect();
+    this.minWidth = minWidth || window.innerWidth * 0.1;
+    this.maxWidth = maxWidth || window.innerWidth * 0.75;
+    this.minHeight = minHeight || bcr.height * 0.25;
+    this.maxHeight = maxHeight || bcr.height * 0.75;
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousemove', this._sidebarPosition);
+    if (this.props.axis === 'x') {
+      document.removeEventListener('mousemove', this._sidebarPositionX);
+    } else {
+      document.removeEventListener('mousemove', this._sidebarPositionY);
+    }
+
+    if (this.handle) {
+      clearTimeout(this.handle);
+    }
   }
 
-  _startResize = (evt) => {
+  _startResize = () => {
+    const { axis, maxHeight, minHeight } = this.props;
+
     if (this.props.resizeState) {
       this.props.resizeState(true);
     }
 
-    document.addEventListener('mousemove', this._sidebarPosition);
+    // grab container offset before initiating resize
+    const bcr = this.container.parentNode.getBoundingClientRect();
+    this.containerOffset = axis === 'x' ? bcr.left : bcr.top;
+
+    if (axis === 'x') {
+      document.addEventListener('mousemove', this._sidebarPositionX);
+    } else {
+      // recalc max heights
+      this.minHeight = minHeight || bcr.height * 0.25;
+      this.maxHeight = maxHeight || bcr.height * 0.75;
+      document.addEventListener('mousemove', this._sidebarPositionY);
+    }
     document.addEventListener('mouseup', this._endResize, { once: true });
+
+    this.setState({ hasResized: true });
   }
 
-  _sidebarPosition = (evt) => {
+  _sidebarPositionX = (evt) => {
     requestAnimationFrame(() => {
       const curX = evt.clientX;
       if (curX !== this.state.width) {
@@ -68,29 +114,47 @@ class Resizable extends Component {
     });
   }
 
+  _sidebarPositionY = (evt) => {
+    requestAnimationFrame(() => {
+      const curY = evt.clientY;
+      if (curY !== this.state.height) {
+        const height = Math.max(this.minHeight, Math.min(this.maxHeight, (curY - this.containerOffset)));
+        this.setState({ height });
+      }
+    });
+  }
+
   _endResize = () => {
     const { storageKey } = this.props;
-    document.removeEventListener('mousemove', this._sidebarPosition);
+    const { width, height } = this.state;
+
+    if (this.props.axis === 'x') {
+      document.removeEventListener('mousemove', this._sidebarPositionX);
+    } else {
+      document.removeEventListener('mousemove', this._sidebarPositionY);
+    }
 
     if (this.props.resizeState) {
       this.props.resizeState(false);
     }
 
-    setStorage((storageKey || 'userSidebarWidth'), this.state.width);
+    setStorage((storageKey || 'userSidebarWidth'), JSON.stringify({ width, height }));
   }
 
   render() {
-    const { classes, overrideWidth } = this.props;
-    const { width } = this.state;
+    const { axis, classes, overrideHeight, overrideWidth } = this.props;
+    const { width, height } = this.state;
+    const axisStyle = axis === 'x' ? { width: overrideWidth || width } : { height: overrideHeight || height };
+    const styles = { flexGrow: this.state.hasResized ? 0 : 1, ...axisStyle };
 
     return (
-      <aside
+      <div
         ref={(obj) => { this.container = obj; }}
-        className={classes}
-        style={{ width: overrideWidth || width }}>
+        className={classNames('wr-resizeable', classes)}
+        style={styles}>
         {this.props.children}
-        <div className="resizable-handle" onMouseDown={this._startResize} />
-      </aside>
+        <div className={classNames('resizable-handle', [axis])} onMouseDown={this._startResize} />
+      </div>
     );
   }
 }

@@ -16,6 +16,12 @@ body {
   font-family: $sans;
 }
 
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 /*
  * Spacers and buffers
  *
@@ -110,6 +116,7 @@ body {
 
 .wr-content {
   flex-grow: 1;
+  position: relative;
   display: flex;
   flex-direction: column;
 }

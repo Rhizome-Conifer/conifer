@@ -5,7 +5,6 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 import { Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 
 import config from 'config';
 
@@ -15,7 +14,6 @@ import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 import { CollectionFilters, CollectionHeader } from 'containers';
 
 import Modal from 'components/Modal';
-import { CloseIcon } from 'components/icons';
 
 import 'react-virtualized/styles.css';
 
@@ -160,11 +158,12 @@ class CollectionDetailUI extends Component {
 
   testRowHighlight = ({ index }) => {
     const { selectedPageIdx } = this.state;
+    const baseClass = index % 2 !== 0 ? 'odd' : '';
 
     if (!!selectedPageIdx && typeof selectedPageIdx === 'object') {
-      return selectedPageIdx.includes(index) ? 'selected' : '';
+      return selectedPageIdx.includes(index) ? `${baseClass} selected` : baseClass;
     }
-    return index === selectedPageIdx ? 'selected' : '';
+    return index === selectedPageIdx ? `${baseClass} selected` : baseClass;
   }
 
   sortBookmark = (origIndex, hoverIndex) => {
@@ -173,7 +172,7 @@ class CollectionDetailUI extends Component {
     const sorted = listBookmarks.splice(origIndex, 1)
                                 .splice(hoverIndex, 0, o);
 
-    this.setState({ listBookmarks: sorted });
+    this.setState({ selectedPageIdx: null, listBookmarks: sorted });
   }
 
   orderColumn = (origIndex, hoverIndex) => {
@@ -261,13 +260,13 @@ class CollectionDetailUI extends Component {
     }
 
     const activeList = Boolean(params.list);
+    const activeListId = params.list;
     const objects = activeList ? listBookmarks : pages;
-    const objectLabel = activeList ? 'Bookmark' : 'Page';
+    const objectLabel = activeList ? 'Bookmark Title' : 'Page Title';
 
     const columnDefs = {
       browser: {
         width: 150,
-        label: 'remote browser',
         dataKey: 'browser',
         key: 'browser',
         columnData: { browsers },
@@ -279,20 +278,18 @@ class CollectionDetailUI extends Component {
         key: 'remove',
         style: { textAlign: 'center' },
         columnData: {
-          listId: params.list,
+          listId: activeListId,
           removeCallback: this.props.removeBookmark
         },
         cellRenderer: RemoveRenderer
       },
       session: {
-        label: 'session',
         dataKey: 'recording',
         key: 'session',
         width: 100
       },
       timestamp: {
         width: 200,
-        label: 'timestamp',
         dataKey: 'timestamp',
         key: 'timestamp',
         cellRenderer: TimestampRenderer
@@ -305,13 +302,12 @@ class CollectionDetailUI extends Component {
         flexGrow: 1,
         columnData: {
           collection,
-          listId: params.list
+          listId: activeListId
         },
         cellRenderer: LinkRenderer,
       },
       url: {
         width: 200,
-        label: 'url',
         dataKey: 'url',
         key: 'url',
         flexGrow: 1
@@ -319,104 +315,94 @@ class CollectionDetailUI extends Component {
     };
 
     return (
-      <div className="wr-coll-detail">
+      <div className={classNames('wr-coll-detail', { 'with-lists': activeList })}>
         <CollectionHeader
           activeList={activeList}
           condensed={this.state.scrolled} />
 
-        <div className="grid-wrapper">
-          <div className={classNames('wr-coll-container', { 'with-lists': activeList })}>
+        <CollectionSidebar collection={collection} activeListId={activeListId} />
 
-            <CollectionSidebar collection={collection} activeListId={params.list} />
+        {
+          !activeList &&
+            <CollectionFilters
+              pages={pages}
+              selectedPageIdx={selectedPageIdx} />
+        }
 
+        <div className="wr-coll-detail-table">
+          {
+            this.context.canAdmin &&
+              <React.Fragment>
+                <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
+                  {/* TODO: placeholder icon */}
+                  <span style={{ display: 'inline-block', fontWeight: 'bold', transform: 'rotateZ(90deg)' }}>...</span>
+                </Button>
+                <Modal
+                  visible={this.state.headerEditor}
+                  closeCb={this.toggleHeaderModal}
+                  dialogClassName="table-header-modal"
+                  header={<h4>Edit Table Columns</h4>}
+                  footer={<Button onClick={this.toggleHeaderModal}>Close</Button>}>
+                  <ul>
+                    {
+                      this.columns.map((coll) => {
+                        return (
+                          <li key={coll}>
+                            <input type="checkbox" onChange={this.toggleColumn} name={coll} id={`add-to-list-${coll}`} checked={this.state.columns.includes(coll) || false} />
+                            <label htmlFor={`add-to-list-${coll}`}>{config.columnLabels[coll] || coll}</label>
+                          </li>
+                        );
+                      })
+                    }
+                  </ul>
+                </Modal>
+              </React.Fragment>
+          }
+          <AutoSizer>
             {
-              activeList ?
-                <div className="lists-modifier">
-                  <header className="lists-header">
-                    <span>Bookmarks in Selected List</span>
-                    <Link to={`/${collection.get('user')}/${collection.get('id')}`}>Back to Collection Index <CloseIcon /></Link>
-                  </header>
-                </div> :
-                <CollectionFilters
-                  pages={pages}
-                  selectedPageIdx={selectedPageIdx} />
+              ({ height, width }) => (
+                <Table
+                  width={width}
+                  height={height}
+                  rowCount={objects ? objects.size : 0}
+                  headerHeight={25}
+                  rowHeight={40}
+                  rowGetter={({ index }) => objects.get(index)}
+                  rowClassName={this.testRowHighlight}
+                  onRowClick={this.onSelectRow}
+                  onScroll={this.scrollHandler}
+                  rowRenderer={this.customRowRenderer}
+                  sort={activeList ? null : this.sort}
+                  sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
+                  sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                  {
+                    this.state.columns.map((c, idx) => {
+                      let props = columnDefs[c];
+                      let collData = {};
+
+                      if (props.hasOwnProperty('columnData')) {
+                        props = Object.assign({}, props);
+                        collData = props.columnData;
+                        delete props.columnData;
+                      }
+
+                      if (!props.label) {
+                        props.label = config.columnLabels[[c]] || c;
+                      }
+
+                      return (
+                        <Column
+                          headerRenderer={this.customHeaderRenderer}
+                          index={idx}
+                          columnData={{ ...collData, index: idx }}
+                          {...props} />
+                      );
+                    })
+                  }
+                </Table>
+              )
             }
-
-            <div className={classNames('wr-coll-detail-table', { 'with-lists': activeList })}>
-              {
-                this.context.canAdmin &&
-                  <React.Fragment>
-                    <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
-                      {/* TODO: placeholder icon */}
-                      <span style={{ display: 'inline-block', fontWeight: 'bold', transform: 'rotateZ(90deg)' }}>...</span>
-                    </Button>
-                    <Modal
-                      visible={this.state.headerEditor}
-                      closeCb={this.toggleHeaderModal}
-                      dialogClassName="table-header-modal"
-                      header={<h4>Edit Table Columns</h4>}
-                      footer={<Button onClick={this.toggleHeaderModal}>Close</Button>}>
-                      <ul>
-                        {
-                          this.columns.map((coll) => {
-                            return (
-                              <li key={coll}>
-                                <input type="checkbox" onChange={this.toggleColumn} name={coll} id={`add-to-list-${coll}`} checked={this.state.columns.includes(coll) || false} />
-                                <label htmlFor={`add-to-list-${coll}`}>{coll}</label>
-                              </li>
-                            );
-                          })
-                        }
-                      </ul>
-                    </Modal>
-                  </React.Fragment>
-              }
-              <AutoSizer>
-                {
-                  ({ height, width }) => (
-                    <Table
-                      width={
-                        /* factor border width */
-                        activeList ? width - 8 : width
-                      }
-                      height={height}
-                      rowCount={objects ? objects.size : 0}
-                      headerHeight={50}
-                      rowHeight={40}
-                      rowGetter={({ index }) => objects.get(index)}
-                      rowClassName={this.testRowHighlight}
-                      onRowClick={this.onSelectRow}
-                      onScroll={this.scrollHandler}
-                      rowRenderer={this.customRowRenderer}
-                      sort={activeList ? null : this.sort}
-                      sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
-                      sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
-                      {
-                        this.state.columns.map((c, idx) => {
-                          let props = columnDefs[c];
-                          let collData = {};
-
-                          if (props.hasOwnProperty('columnData')) {
-                            props = Object.assign({}, props);
-                            collData = props.columnData;
-                            delete props.columnData;
-                          }
-
-                          return (
-                            <Column
-                              headerRenderer={this.customHeaderRenderer}
-                              index={idx}
-                              columnData={{ ...collData, index: idx }}
-                              {...props} />
-                          );
-                        })
-                      }
-                    </Table>
-                  )
-                }
-              </AutoSizer>
-            </div>
-          </div>
+          </AutoSizer>
         </div>
       </div>
     );

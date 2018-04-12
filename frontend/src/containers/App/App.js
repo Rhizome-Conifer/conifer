@@ -118,7 +118,7 @@ export class App extends Component { // eslint-disable-line
     }
 
     return (
-      <div className="wr-app">
+      <React.Fragment>
         <Helmet {...config.app.head} />
         <header>
           <div className={navbarClasses}>
@@ -155,7 +155,7 @@ export class App extends Component { // eslint-disable-line
           hasFooter &&
             <Footer />
         }
-      </div>
+      </React.Fragment>
     );
   }
 }

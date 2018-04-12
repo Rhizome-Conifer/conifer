@@ -8,22 +8,6 @@
 
 @font-face {
   font-family: 'HKGrotesk';
-  font-weight: normal;
-  src: url('HKGrotesk-Regular.woff2') format('woff2'),
-       url('HKGrotesk-Regular.woff') format('woff'),
-       url('HKGrotesk-Regular.ttf')  format('truetype');
-}
-
-@font-face {
-  font-family: 'HKGrotesk';
-  font-weight: normal;
-  src: url('HKGrotesk-Regular.woff2') format('woff2'),
-       url('HKGrotesk-Regular.woff') format('woff'),
-       url('HKGrotesk-Regular.ttf')  format('truetype');
-}
-
-@font-face {
-  font-family: 'HKGrotesk';
   font-weight: 300;
   src: url('HKGrotesk-Light.woff2') format('woff2'),
        url('HKGrotesk-Light.woff') format('woff'),
@@ -37,6 +21,30 @@
   src: url('HKGrotesk-LightItalic.woff2') format('woff2'),
        url('HKGrotesk-LightItalic.woff') format('woff'),
        url('HKGrotesk-LightItalic.ttf')  format('truetype');
+}
+
+@font-face {
+  font-family: 'HKGrotesk';
+  font-weight: normal; // 400
+  src: url('HKGrotesk-Regular.woff2') format('woff2'),
+       url('HKGrotesk-Regular.woff') format('woff'),
+       url('HKGrotesk-Regular.ttf')  format('truetype');
+}
+
+@font-face {
+  font-family: 'HKGrotesk';
+  font-weight: 500;
+  src: url('HKGrotesk-Medium.woff2') format('woff2'),
+       url('HKGrotesk-Medium.woff') format('woff'),
+       url('HKGrotesk-Medium.ttf')  format('truetype');
+}
+
+@font-face {
+  font-family: 'HKGrotesk';
+  font-weight: 600;
+  src: url('HKGrotesk-SemiBold.woff2') format('woff2'),
+       url('HKGrotesk-SemiBold.woff') format('woff'),
+       url('HKGrotesk-SemiBold.ttf')  format('truetype');
 }
 
 @font-face {

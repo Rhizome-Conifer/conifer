@@ -178,27 +178,25 @@ class CollectionHeaderUI extends Component {
         onMouseLeave={this.hoverCancel}>
         <div className="heading-row">
           <div className="heading-container">
-            <InlineEditor
-              initial={collection.get('title')}
-              onSave={this.editCollTitle}
-              success={collEdited}
-              error={this.props.collEditError}>
-              <h1>{collection.get('title')}</h1>
-            </InlineEditor>
             {
-              activeList &&
-                <React.Fragment>
-                  <h1>&nbsp;>&nbsp;</h1>
-                  <InlineEditor
-                    initial={list.get('title')}
-                    onSave={this.editListTitle}
-                    success={this.props.listEdited}>
-                    <h1>{list.get('title')}</h1>
-                  </InlineEditor>
-                </React.Fragment>
+              activeList ?
+                <InlineEditor
+                  initial={list.get('title')}
+                  onSave={this.editListTitle}
+                  success={this.props.listEdited}>
+                  <h1>{list.get('title')}</h1>
+                </InlineEditor> :
+                <InlineEditor
+                  initial={collection.get('title')}
+                  onSave={this.editCollTitle}
+                  success={collEdited}
+                  error={this.props.collEditError}>
+                  <h1>{collection.get('title')}</h1>
+                </InlineEditor>
             }
           </div>
-          <div className="collection-tools">
+          {/*
+            <div className="collection-tools">
             {
               !isAnon &&
                 <div className="access-switch">
@@ -255,8 +253,8 @@ class CollectionHeaderUI extends Component {
                 </React.Fragment>
             }
           </div>
+          */ }
         </div>
-        <hr />
         <div
           ref={(obj) => { this.descContainer = obj; }}
           className={classNames('desc-container')}

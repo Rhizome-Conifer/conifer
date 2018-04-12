@@ -42,6 +42,7 @@
 
         li {
             list-style-type: none;
+            text-transform: uppercase;
 
             input {
                 margin-right: 1rem;
@@ -51,191 +52,156 @@
 }
 
 .wr-coll-detail {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    margin: 2rem 2.5rem 0 2.5rem;
-    height: 100%;
+    //flex-grow: 1;
+    padding: 2rem 2.5rem 0 2.5rem;
+    //height: 100%;
+    position: absolute;
+    top:0;
+    bottom:0;
+    width: 100%;
 
-    .grid-wrapper {
+    display: grid;
+    grid-template-rows: auto 3rem 1fr;
+    grid-template-columns: auto 1fr;
+    grid-column-gap: 1.5rem;
+    grid-template-areas:
+        "header header"
+        "sidebar utilities"
+        "sidebar table";
+
+    font-family: $sans;
+
+    // &.with-lists {
+    //     grid-template-rows: 4.5rem;
+    //     grid-template-areas:
+    //         "sidebar lists-modifier"
+    //         "sidebar table";
+    // }
+
+
+
+    .wr-coll-sidebar-container {
+        grid-area: sidebar;
         position: relative;
-        flex-grow: 1;
 
-        .wr-coll-container {
+        .wr-coll-sidebar-stretch {
+            display: flex;
+            flex-direction: column;
+
             position: absolute;
             top: 0;
             bottom: 0;
+            padding-right: 1.5rem;
             width: 100%;
+            overflow: hidden;
+        }
+    }
 
-            display: grid;
-            grid-template-rows: 3rem;
-            grid-column-gap: 1.5rem;
-            grid-template-columns: auto 1fr;
-            grid-template-areas:
-                "sidebar utilities"
-                "sidebar table";
+    .wr-coll-utilities {
+        grid-area: utilities;
 
-            font-family: $sans;
+        nav {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
 
-            &.with-lists {
-                grid-template-rows: 4.5rem;
-                grid-template-areas:
-                    "sidebar lists-modifier"
-                    "sidebar table";
-            }
+            & > * {
+                margin-right: 2.5rem;
 
-            .wr-coll-sidebar-container {
-                grid-area: sidebar;
-                position: relative;
-
-                // &:before, &:after {
-                //     content: '';
-                //     position: absolute;
-                //     left: 0;
-                //     width: calc(100% - 1.5rem);
-                //     height: 3rem;
-                //     z-index: 20;
-                //     pointer-events: none;
-                // }
-
-                // &:before {
-                //     top: 0;
-                //     background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
-                // }
-
-                // &:after {
-                //     bottom: 0;
-                //     background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
-                // }
-
-                .wr-coll-sidebar-stretch {
-                    display: flex;
-                    flex-direction: column;
-
-                    position: absolute;
-                    top: 0;
-                    bottom: 0;
-                    //border-right: 1px solid $slate;
-                    padding-right: 1.5rem;
-                    width: 100%;
-                    overflow: auto;
-
-                    // top buffer for fade
-                    //padding-top: 2rem;
-
-                }
-
-                // & > .wr-coll-sidebar:not(:first-of-type) {
-                //     border: solid .4rem $brightGreen;
-                //     border-width: .4rem 0 0 0;
-                //     margin: 2.5rem 0;
-                // }
-            }
-
-            .wr-coll-utilities {
-                grid-area: utilities;
-
-                nav {
-                    display: flex;
-                    justify-content: flex-start;
-                    align-items: center;
-
-                    & > * {
-                        margin-right: 2.5rem;
-
-                        &.glyphicon {
-                            font-size: 1.8rem;
-                        }
-                    }
-
-                    .search-box {
-                        margin: 0 0 0 auto;
-                        width: 30%;
-                        max-width: 30rem;
-                        min-width: 10rem;
-                    }
-
-                    .query-box {
-                        margin: 0 0 0 auto;
-                        width: 40%;
-                        max-width: 35rem;
-                        min-width: 20rem;
-
-                        .input-group-addon {
-                            background-color: $brightGreen;
-                        }
-                    }
+                &.glyphicon {
+                    font-size: 1.8rem;
                 }
             }
 
-            .lists-modifier {
-                grid-area: lists-modifier;
-
-                .lists-header {
-                    display: flex;
-                    justify-content: space-between;
-                    width: 100%;
-
-                    background-color: $listsBlue;
-                    font-size: 1.4rem;
-                    padding: 1.5rem 1rem;
-
-                    svg {
-                        width: 1rem;
-                        height: 1rem;
-                        margin-left: .2rem;
-                    }
-                }
+            .search-box {
+                margin: 0 0 0 auto;
+                width: 30%;
+                max-width: 30rem;
+                min-width: 10rem;
             }
 
-            .wr-coll-detail-table {
-                grid-area: table;
-                position: relative;
-                padding-right: 1.5rem;
+            .query-box {
+                margin: 0 0 0 auto;
+                width: 40%;
+                max-width: 35rem;
+                min-width: 20rem;
 
-                &.with-lists {
-                    border: solid 0 $listsBlue;
-                    border-width: 0 .4rem;
+                .input-group-addon {
+                    background-color: $brightGreen;
                 }
+            }
+        }
+    }
 
-                .table-header-menu {
-                    position: absolute;
-                    right: -.5rem;
-                    top: 1rem;
-                }
+    .wr-coll-detail-table {
+        grid-area: table;
+        position: relative;
+        padding-right: 1.5rem;
 
-                .ReactVirtualized__Table__headerColumn {
-                    display: flex;
-                    align-items: center;
-                }
+        .table-header-menu {
+            position: absolute;
+            right: -.5rem;
+            top: 0.25rem;
+        }
 
-                .ReactVirtualized__Table__row {
-                    transition: background $tableRowFade ease-in-out;
-                    border: solid 0 #CCCFD5;
-                    border-width: 0 0 .1rem 0;
-                    cursor: context-menu;
+        .ReactVirtualized__Table__headerRow {
+            //margin-bottom: 1.5rem;
+        }
 
-                    a { color: $blue; }
+        .ReactVirtualized__Table__headerColumn {
+            height: 100%;
 
-                    &.selected {
-                        background-color: $dark-gray;
-                        color: #FFF;
-                        fill: #FFF;
+            &:first-of-type {
+                margin-left: 0;
+            }
+            &:last-of-type {
+                margin-right: 0;
+            }
 
-                        a:link { color: #FFF; }
-                        a:visited{ color: #FFF; }
-                    }
+            & > div{
+                display: flex;
+                align-items: center;
+                background: $tableHeaderBg;
+                padding: 0 .5rem;
+                width: 100%;
+                height: 100%;
+            }
+        }
 
-                    &:not(.selected):hover {
-                        background: #eee;
-                    }
+        .ReactVirtualized__Table__row {
+            transition: background $tableRowFade ease-in-out,
+                        color $tableRowFade ease-in-out,
+                        fill $tableRowFade ease-in-out;
+            cursor: context-menu;
+            font-size: 1.2rem;
 
-                    .ReactVirtualized__Table__rowColumn {
-                        a {
-                            display: inline-block;
-                            padding: 1rem;
-                        }
-                    }
+            &.odd {
+                background-color: #F1F1F1;
+            }
+
+            a {
+                transition: color $tableRowFade ease-in-out;
+                color: $dark-gray;
+                font-size: 1.6rem;
+            }
+
+            &.selected, &:not(.selected):hover {
+                background-color: $blue;
+                color: #FFF;
+                fill: #FFF;
+
+                a:link { color: #FFF; }
+                a:visited{ color: #FFF; }
+            }
+
+            // &:not(.selected):hover {
+            //     background: $blue;
+            // }
+
+            .ReactVirtualized__Table__rowColumn {
+                a {
+                    display: inline-block;
+                    padding: 1rem;
                 }
             }
         }

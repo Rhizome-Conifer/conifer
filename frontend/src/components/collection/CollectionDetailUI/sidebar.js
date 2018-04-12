@@ -16,9 +16,14 @@ class CollectionSidebar extends Component {
     const { activeListId } = this.props;
 
     return (
-      <Resizable classes="wr-coll-sidebar-container">
+      <Resizable classes="wr-coll-sidebar-container" minWidth={160}>
         <div className="wr-coll-sidebar-stretch">
-          <Lists activeListId={activeListId} />
+          <Resizable axis="y" minHeight={200} storageKey="collNavigator">
+            <Lists activeListId={activeListId} />
+          </Resizable>
+          <div style={{ flexGrow: 1 }}>
+            Inspector Panel
+          </div>
         </div>
       </Resizable>
     );

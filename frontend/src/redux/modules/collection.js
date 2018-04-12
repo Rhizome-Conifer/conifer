@@ -41,7 +41,7 @@ export default function collection(state = initialState, action = {}) {
     case COLL_LOAD_SUCCESS: {
       const {
         pages,
-        collection: { created_at, desc, download_url, id, lists, recordings, size, title },
+        collection: { created_at, desc, download_url, featured_list, id, lists, recordings, size, title },
         user
       } = action.result;
 
@@ -59,6 +59,7 @@ export default function collection(state = initialState, action = {}) {
         desc,
         download_url,
         id,
+        featured_list,
         isPublic: action.result.collection['r:@public'],
         lists,
         recordings,

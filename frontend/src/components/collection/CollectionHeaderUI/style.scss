@@ -1,6 +1,10 @@
 @import 'src/vars';
 
 header.wr-collection-header {
+    grid-area: header;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-bottom: 2rem;
 
     &.animated {
@@ -78,7 +82,6 @@ header.wr-collection-header {
 
     .desc-container {
         position: relative;
-        margin-top: 2.5rem;
         max-width: 59rem;
         overflow: hidden;
 
