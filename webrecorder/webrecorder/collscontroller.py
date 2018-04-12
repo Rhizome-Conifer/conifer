@@ -1,4 +1,4 @@
-from bottle import request
+from bottle import request, response
 from six.moves.urllib.parse import quote
 
 from webrecorder.basecontroller import BaseController
@@ -106,6 +106,14 @@ class CollsController(BaseController):
                 #if self.access.is_superuser() and data.get('notify'):
                 #    pass
                 self.access.set_public(collection, data['public'])
+
+            if 'featured_list' in data:
+                blist = collection.get_list(data['featured_list'])
+                if not blist:
+                    response.status = 400
+                    return {'error': 'no_such_list'}
+
+                collection['featured_list'] = data['featured_list']
 
             return {'collection': collection.serialize()}
 

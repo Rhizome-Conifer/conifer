@@ -116,6 +116,15 @@ class TestListsAPIAccess(FullStackTests):
         for coll in res.json['user']['collections']:
             assert 'lists' not in coll
 
+    def test_set_featured_list(self):
+        params = {'featured_list': self.priv_list_priv_coll}
+        res = self.testapp.post_json('/api/v1/collection/some-coll?user=another', params=params, status=400)
+        assert res.json['error'] == 'no_such_list'
+
+        params = {'featured_list': self.pub_list_pub_coll}
+        res = self.testapp.post_json('/api/v1/collection/some-coll?user=another', params=params)
+        assert res.json['collection']['featured_list'] == self.pub_list_pub_coll
+
     def test_public_list_private_coll_error_logged_in(self):
         res = self.testapp.get('/api/v1/lists?user=test&coll=some-coll', status=404)
 
@@ -132,6 +141,7 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.get('/api/v1/collection/some-coll?user=another')
         assert len(res.json['collection']['lists']) == 1
         assert res.json['collection']['lists'][0]['title'] == 'Public List'
+        assert res.json['collection']['featured_list'] == self.pub_list_pub_coll
 
     def test_get_list_by_id_logged_out(self):
         res = self.testapp.get('/api/v1/list/{0}?user=another&coll=some-coll'.format(self.priv_list_pub_coll), status=404)
@@ -160,6 +170,7 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.get('/api/v1/collection/some-coll?user=another')
         assert len(res.json['collection']['lists']) == 1
         assert res.json['collection']['lists'][0]['title'] == 'Public List'
+        assert res.json['collection']['featured_list'] == self.pub_list_pub_coll
 
     def test_get_list_by_id_logged_in_diff_user(self):
         res = self.testapp.get('/api/v1/list/{0}?user=another&coll=some-coll'.format(self.priv_list_pub_coll), status=404)
