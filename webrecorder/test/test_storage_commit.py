@@ -58,7 +58,7 @@ class BaseStorageCommit(FullStackTests):
         user_dir = os.path.join(self.warcs_dir, 'test')
         assert len(os.listdir(user_dir)) == 1
 
-        self.sleep_try(0.5, 10.0, self.assert_in_store)
+        self.sleep_try(0.5, 10.0, self.assert_in_store('100'))
 
         def assert_user_dir_empty():
             # user dir removed or empty
@@ -87,31 +87,82 @@ class BaseStorageCommit(FullStackTests):
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''default-collection-")
 
+    def test_create_new_coll(self):
+        # Collection
+        params = {'title': 'Another Coll'}
+
+        res = self.testapp.post_json('/api/v1/collections?user=test', params=params)
+        assert res.json['collection']
+
+    def test_copy_rec(self):
+        # initial user dir
+        user_dir = os.path.join(self.warcs_dir, 'test')
+        assert len(os.listdir(user_dir)) == 0
+
+        res = self.testapp.post_json('/api/v1/recordings/rec/copy/another-coll?user=test&coll=default-collection')
+
+        coll, rec = self.get_coll_rec('test', 'another-coll', 'rec')
+
+        orig_coll, orig_rec = self.get_coll_rec('test', 'default-collection', 'rec')
+
+        def assert_one_dir():
+            assert self.redis.hlen('r:{0}:warc'.format(rec)) >= 1
+
+        self.sleep_try(0.2, 10.0, assert_one_dir)
+
+        info = self.redis.hgetall('r:{0}:info'.format(rec))
+
+        orig_info = self.redis.hgetall('r:{0}:info'.format(orig_rec))
+
+        assert info['size'] == orig_info['size']
+
+        self.sleep_try(0.5, 10.0, self.assert_in_store('101'))
+
+        def assert_user_dir_empty():
+            # user dir removed or empty
+            assert not os.path.isdir(user_dir) or len(os.listdir(user_dir)) == 0
+
+        self.sleep_try(0.1, 10.0, assert_user_dir_empty)
+
+    def test_replay_2_copy(self):
+        res = self.testapp.get('/test/another-coll/mp_/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"food": "bar"' in res.text, res.text
+
     def test_delete_storage_with_coll(self):
         res = self.testapp.delete('/api/v1/collection/default-collection?user=test')
 
         assert res.json == {'deleted_id': 'default-collection'}
+
+        res = self.testapp.delete('/api/v1/collection/another-coll?user=test')
+
+        assert res.json == {'deleted_id': 'another-coll'}
 
         self.sleep_try(0.5, 10.0, self.assert_deleted)
 
 
 # ============================================================================
 class TestLocalStorageCommit(BaseStorageCommit):
-    def assert_in_store(self):
-        today = today_str()
-        storage_dir = os.path.join(self.storage_dir, today)
+    def assert_in_store(self, coll_id):
+        def check():
+            today = today_str()
+            storage_dir = os.path.join(self.storage_dir, today, coll_id)
 
-        # moved to store dir
-        assert set(os.listdir(storage_dir)) == {'warcs', 'indexes'}
-        assert len(os.listdir(os.path.join(storage_dir, 'warcs'))) == 1
-        assert len(os.listdir(os.path.join(storage_dir, 'indexes'))) == 1
+            # moved to store dir
+            assert set(os.listdir(storage_dir)) == {'warcs', 'indexes'}
+            assert len(os.listdir(os.path.join(storage_dir, 'warcs'))) == 1
+            assert len(os.listdir(os.path.join(storage_dir, 'indexes'))) == 1
+
+        return check
 
     def assert_deleted(self):
         storage_dir = os.path.join(self.storage_dir, today_str())
 
-        assert set(os.listdir(storage_dir)) == {'warcs', 'indexes'}
-        assert len(os.listdir(os.path.join(storage_dir, 'warcs'))) == 0
-        assert len(os.listdir(os.path.join(storage_dir, 'indexes'))) == 0
+        assert not os.path.isdir(storage_dir)
+        #assert set(os.listdir(storage_dir)) == {}
+        #assert len(os.listdir(os.path.join(storage_dir, 'warcs'))) == 0
+        #assert len(os.listdir(os.path.join(storage_dir, 'indexes'))) == 0
 
     def assert_warc_key(self, key):
         storage_dir = os.environ['STORAGE_ROOT'].replace(os.path.sep, '/')
@@ -162,18 +213,21 @@ class TestS3Storage(BaseStorageCommit):
         return [obj['Key'] for obj in self.s3.list_objects(Bucket=self.bucket,
                                                            Prefix=self.root_path[1:]).get('Contents', []) if obj['Size'] > 0]
 
-    def assert_in_store(self):
-        today = today_str()
-        storage_dir = os.environ['S3_ROOT'] + '/' + today
+    def assert_in_store(self, coll_id):
+        def check():
+            today = today_str()
+            storage_dir = os.environ['S3_ROOT'] + '/' + today
 
-        keys = self._list_keys()
-        assert len(keys) == 2
+            keys = self._list_keys()
+            assert len(keys) == 2
 
-        assert today in keys[0]
-        assert keys[0].endswith('.cdxj')
+            assert today in keys[0]
+            assert keys[0].endswith('.cdxj')
 
-        assert today in keys[1]
-        assert keys[1].endswith('.warc.gz')
+            assert today in keys[1]
+            assert keys[1].endswith('.warc.gz')
+
+        return check
 
     def assert_warc_key(self, key):
         assert key.startswith(os.environ['S3_ROOT'])

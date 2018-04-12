@@ -3,6 +3,7 @@ import shutil
 
 from webrecorder.rec.storage.base import BaseStorage
 
+
 # ============================================================================
 class LocalFileStorage(BaseStorage):
     def __init__(self, config):
@@ -38,6 +39,8 @@ class LocalFileStorage(BaseStorage):
         try:
             print('Deleting: ' + target_url)
             os.remove(target_url)
+            if target_url.startswith(os.environ['STORAGE_ROOT']):
+                os.removedirs(os.path.dirname(target_url))
             return True
         except Exception as e:
             print(e)

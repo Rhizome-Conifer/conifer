@@ -110,7 +110,7 @@ class User(RedisNamedContainer):
             return False
 
         for recording in collection.get_recordings():
-            if not recording.move_warcs(new_user):
+            if not recording.queue_move_warcs(new_user):
                 return False
 
         return True

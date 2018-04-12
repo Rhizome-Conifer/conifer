@@ -138,18 +138,21 @@ class TestLoginMigrate(FullStackTests):
     def test_warcs_in_storage(self):
         user_dir = os.path.join(self.warcs_dir, 'test')
 
+        coll = None
+
         def assert_one_dir():
-            assert set(os.listdir(self.storage_today)) == {'warcs', 'indexes'}
-            assert len(os.listdir(os.path.join(self.storage_today, 'warcs'))) == 1
-            assert len(os.listdir(os.path.join(self.storage_today, 'indexes'))) == 1
+            coll_dir = os.path.join(self.storage_today, coll)
+            assert set(os.listdir(coll_dir)) == {'warcs', 'indexes'}
+            assert len(os.listdir(os.path.join(coll_dir, 'warcs'))) == 1
+            assert len(os.listdir(os.path.join(coll_dir, 'indexes'))) == 1
 
             # no data in user_dir
             user_data = os.listdir(user_dir)
             assert len(user_data) == 0
 
-        self.sleep_try(0.2, 20.0, assert_one_dir)
-
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
+
+        self.sleep_try(0.2, 20.0, assert_one_dir)
 
         result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
         self.storage_today = self.storage_today.replace(os.path.sep, '/')
@@ -187,8 +190,8 @@ class TestLoginMigrate(FullStackTests):
         def assert_delete():
             #assert not os.path.isdir(user_dir) or
             assert len(os.listdir(user_dir)) == 0
-            assert len(os.listdir(st_warcs_dir)) == 0
-            assert len(os.listdir(st_index_dir)) == 0
+            assert not os.path.isdir(st_warcs_dir)
+            assert not os.path.isdir(st_index_dir)
 
         self.sleep_try(0.3, 10.0, assert_delete)
 

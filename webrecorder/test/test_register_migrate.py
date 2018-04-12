@@ -130,14 +130,15 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_renamed_temp_to_perm(self):
         def assert_one_dir():
-            assert set(os.listdir(self.storage_today)) == {'warcs', 'indexes'}
-            assert len(os.listdir(os.path.join(self.storage_today, 'warcs'))) == 1
-            assert len(os.listdir(os.path.join(self.storage_today, 'indexes'))) == 1
-
-        self.sleep_try(0.2, 20.0, assert_one_dir)
+            coll_dir = os.path.join(self.storage_today, coll)
+            assert set(os.listdir(coll_dir)) == {'warcs', 'indexes'}
+            assert len(os.listdir(os.path.join(coll_dir, 'warcs'))) == 1
+            assert len(os.listdir(os.path.join(coll_dir, 'indexes'))) == 1
 
         coll, rec = self.get_coll_rec('someuser', 'test-migrate', 'abc')
         assert coll != None
+
+        self.sleep_try(0.2, 20.0, assert_one_dir)
 
         result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
         storage_dir = self.storage_today.replace(os.path.sep, '/')
@@ -490,8 +491,10 @@ class TestRegisterMigrate(FullStackTests):
 
         user_dir = os.path.join(self.warcs_dir, 'someuser')
 
-        st_warcs_dir = os.path.join(self.storage_today, 'warcs')
-        st_index_dir = os.path.join(self.storage_today, 'indexes')
+        coll, rec = self.get_coll_rec('someuser', 'test-coll', '')
+
+        st_warcs_dir = os.path.join(self.storage_today, coll, 'warcs')
+        st_index_dir = os.path.join(self.storage_today, coll, 'indexes')
 
         assert len(os.listdir(user_dir)) >= 2
 
@@ -507,8 +510,10 @@ class TestRegisterMigrate(FullStackTests):
 
         def assert_delete_warcs():
             assert len(os.listdir(user_dir)) == 2
-            assert len(os.listdir(st_warcs_dir)) == 0
-            assert len(os.listdir(st_index_dir)) == 0
+            assert not os.path.isdir(st_warcs_dir)
+            assert not os.path.isdir(st_index_dir)
+            #assert len(os.listdir(st_warcs_dir)) == 0
+            #assert len(os.listdir(st_index_dir)) == 0
 
         self.sleep_try(0.1, 10.0, assert_delete_warcs)
 
@@ -635,8 +640,8 @@ class TestRegisterMigrate(FullStackTests):
 
         def assert_delete():
             assert len(os.listdir(user_dir)) == 0
-            assert len(os.listdir(st_warcs_dir)) == 0
-            assert len(os.listdir(st_index_dir)) == 0
+            assert not os.path.isdir(st_warcs_dir)
+            assert not os.path.isdir(st_index_dir)
 
         self.sleep_try(0.3, 10.0, assert_delete)
 

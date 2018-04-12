@@ -12,7 +12,7 @@ class TestAutoLogin(FullStackTests):
     @classmethod
     def setup_class(cls, **kwargs):
         os.environ['AUTO_LOGIN_USER'] = 'test'
-        super(TestAutoLogin, cls).setup_class(temp_worker=True)
+        super(TestAutoLogin, cls).setup_class(temp_worker=True, storage_worker=True)
 
         cls.manager = CLIUserManager()
 
@@ -74,4 +74,28 @@ class TestAutoLogin(FullStackTests):
         assert coll['title'] == 'New Title'
         assert coll['desc'] == 'New Description'
 
+    def test_create_new_coll(self):
+        # Collection
+        params = {'title': 'Another Coll'}
+
+        res = self.testapp.post_json('/api/v1/collections?user=test', params=params)
+        assert res.json['collection']
+
+    def test_copy_rec(self):
+        res = self.testapp.post_json('/api/v1/recordings/rec-sesh/copy/another-coll?user=test&coll=default-collection')
+
+        coll, rec = self.get_coll_rec('test', 'another-coll', 'rec-sesh')
+
+        orig_coll, orig_rec = self.get_coll_rec('test', 'default-collection', 'rec-sesh')
+
+        def assert_one_dir():
+            assert self.redis.hlen('r:{0}:warc'.format(rec)) == 1
+
+        self.sleep_try(0.2, 5.0, assert_one_dir)
+
+        info = self.redis.hgetall('r:{0}:info'.format(rec))
+
+        orig_info = self.redis.hgetall('r:{0}:info'.format(orig_rec))
+
+        assert info['size'] == orig_info['size']
 

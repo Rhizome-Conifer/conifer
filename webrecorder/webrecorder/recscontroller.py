@@ -84,6 +84,24 @@ class RecsController(BaseController):
                 return {'error_message': msg}
 
 
+        @self.app.post('/api/v1/recordings/<rec_name>/copy/<new_coll_name>')
+        def copy_recording(rec_name, new_coll_name):
+            user, collection, recording = self.load_recording(rec_name)
+
+            new_collection = user.get_collection_by_name(new_coll_name)
+            if not new_collection:
+                return {'error_message': 'No Collection: ' + new_coll_name}
+
+            user.access.assert_can_write_coll(collection)
+            user.access.assert_can_admin_coll(new_collection)
+
+            new_rec = new_collection.create_recording(rec_name)
+
+            #new_rec.copy_data_from_recording(recording)
+            new_rec.queue_copy(recording)
+
+            return {'recording': new_rec.serialize()}
+
         @self.app.post('/api/v1/recordings/<rec_name>/pages')
         def add_page(rec_name):
             user, collection, recording = self.load_recording(rec_name)

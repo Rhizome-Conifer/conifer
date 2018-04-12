@@ -19,6 +19,7 @@ from tempfile import NamedTemporaryFile
 class StorageCommitter(object):
     DEL_Q = 'q:del:{name}'
     MOVE_Q = 'q:move:{name}'
+    COPY_Q = 'q:copy'
 
     def __init__(self, config):
         super(StorageCommitter, self).__init__()
@@ -93,9 +94,35 @@ class StorageCommitter(object):
             storage = self.get_storage(recording.get_owner())
             recording.commit_to_storage(storage)
 
+    def process_copy(self):
+        copy_q = self.COPY_Q
+
+        while True:
+            data = self.redis.lpop(copy_q)
+            if not data:
+                break
+
+            copy = json.loads(data)
+
+            print('Copy Request: ' + data)
+
+            source = Recording(my_id=copy['source'],
+                                  redis=self.redis,
+                                  access=BaseAccess())
+
+            target = Recording(my_id=copy['target'],
+                                  redis=self.redis,
+                                  access=BaseAccess())
+
+            target.copy_data_from_recording(source)
+            if copy.get('delete'):
+                collection = source.get_owner()
+                collection.remove_recording(source, user=collection.get_owner(), delete=True)
+
     def __call__(self):
         self.process_deletes('s3')
         self.process_moves('local')
+        self.process_copy()
 
         for cdxj_key in self.redis.scan_iter(self.all_cdxj_templ):
             self.process_cdxj_key(cdxj_key)

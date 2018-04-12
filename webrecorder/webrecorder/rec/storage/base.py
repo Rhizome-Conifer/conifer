@@ -13,6 +13,7 @@ class BaseStorage(object):
     def upload_file(self, user, collection, recording,
                     filename, full_filename, obj_type):
         target_url = self.target_url_templ.format(user=user,
+                                                  coll=collection.my_id,
                                                   obj_type=obj_type,
                                                   filename=filename,
                                                   today=today_str())

@@ -2,16 +2,19 @@ import json
 import hashlib
 import os
 import base64
+import shutil
 
 from six.moves.urllib.parse import urlsplit
 
 from pywb.utils.canonicalize import calc_search_range
 from pywb.warcserver.index.cdxobject import CDXObject
 
+from pywb.utils.loaders import BlockLoader
+
 from webrecorder.utils import redis_pipeline
 from webrecorder.models.base import RedisUniqueComponent
 
-from warcio.timeutils import timestamp_now, sec_to_timestamp
+from warcio.timeutils import timestamp_now, sec_to_timestamp, timestamp20_now
 
 
 # ============================================================================
@@ -33,6 +36,7 @@ class Recording(RedisUniqueComponent):
 
     DEL_Q = 'q:del:{target}'
     MOVE_Q = 'q:move:{target}'
+    COPY_Q = 'q:copy'
 
     INDEX_FILE_KEY = '@index_file'
 
@@ -116,7 +120,7 @@ class Recording(RedisUniqueComponent):
         return 'Recording on ' + created_at
 
     def delete_me(self):
-        if not self.delete_warcs():
+        if not self.queue_delete_warcs():
             return False
 
         return self.delete_object()
@@ -132,7 +136,7 @@ class Recording(RedisUniqueComponent):
 
             yield n, v
 
-    def delete_warcs(self):
+    def queue_delete_warcs(self):
         fail = False
         with redis_pipeline(self.redis) as pi:
             for n, v in self.iter_all_files(skip_index=False):
@@ -154,7 +158,7 @@ class Recording(RedisUniqueComponent):
 
         return not fail
 
-    def move_warcs(self, to_user):
+    def queue_move_warcs(self, to_user):
         data = {'rec': self.my_id,
                 'user': to_user.name
                }
@@ -423,17 +427,29 @@ class Recording(RedisUniqueComponent):
 
         return uri
 
-    def copy_data_from_recording(self, source):
+    def queue_copy(self, source):
         if not self.is_open():
             return False
 
-        user = self.get_owner().get_owner()
-        dirname = user.get_user_temp_warc_path()
+        data = {
+                'target': self.my_id,
+                'source': source.my_id,
+               }
 
+        self.redis.rpush(self.COPY_Q, json.dumps(data))
+        return True
+
+    def copy_data_from_recording(self, source):
+        user = self.get_owner().get_owner()
+
+        target_dirname = user.get_user_temp_warc_path()
         target_warc_key = self.WARC_KEY.format(rec=self.my_id)
 
+        # Copy WARCs
+        loader = BlockLoader()
+
         for n, url in source.iter_all_files(skip_index=False):
-            local_filename = n + '.' + timestamp_now20()
+            local_filename = n + '.' + timestamp20_now()
             target_file = os.path.join(target_dirname, local_filename)
 
             src = loader.load(url)
@@ -442,14 +458,26 @@ class Recording(RedisUniqueComponent):
                 with open(target_file, 'wb') as dest:
                     shutil.copyfileobj(src, dest)
 
-                size = os.path.getsize(dest)
+                size = os.path.getsize(target_file)
 
-                self.incr_size(size)
+                if n != self.INDEX_FILE_KEY:
+                    self.incr_size(size)
+
                 self.redis.hset(target_warc_key, n, self.FULL_WARC_PREFIX + target_file)
+
             except:
                 import traceback
                 traceback.print_exc()
 
-        return True
+        # COPY cdxj, if exists
+        source_key = self.CDXJ_KEY.format(rec=source.my_id)
+        target_key = self.CDXJ_KEY.format(rec=self.my_id)
+
+        self.redis.zunionstore(target_key, [source_key])
+
+        # COPY pagelist
+        pages = self.redis.hgetall(self.PAGE_KEY.format(rec=source.my_id))
+        if pages:
+            self.redis.hmset(self.PAGE_KEY.format(rec=self.my_id), pages)
 
 
