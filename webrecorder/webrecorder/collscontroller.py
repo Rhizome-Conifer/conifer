@@ -75,7 +75,10 @@ class CollsController(BaseController):
         def delete_collection(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            if user.remove_collection(collection, delete=True):
+            errs = user.remove_collection(collection, delete=True)
+            if errs:
+                return errs
+            else:
                 return {'deleted_id': coll_name}
 
         @self.app.post('/api/v1/collection/<coll_name>')
@@ -180,13 +183,13 @@ class CollsController(BaseController):
             self.validate_csrf()
             user, collection = self.load_user_coll()
 
-            success = False
+            success = None
             try:
                 success = user.remove_collection(collection, delete=True)
             except Exception as e:
                 print(e)
 
-            if success:
+            if success == {}:
                 self.flash_message('Collection {0} has been deleted!'.format(collection.name), 'success')
 
                 # if anon user/temp collection, delete user and redirect to homepage

@@ -56,10 +56,11 @@ class RecsController(BaseController):
         def delete_recording(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
-            if collection.remove_recording(recording, delete=True):
+            errs = collection.remove_recording(recording, delete=True)
+            if errs:
+                return errs
+            else:
                 return {'deleted_id': rec_name}
-
-            return {}
 
         @self.app.post('/api/v1/recordings/<rec_name>/move/<new_coll_name>')
         def move_recording(rec_name, new_coll_name):
@@ -95,8 +96,7 @@ class RecsController(BaseController):
 
             new_rec = new_collection.create_recording(rec_name)
 
-            #new_rec.copy_data_from_recording(recording)
-            new_rec.queue_copy(recording)
+            new_rec.copy_data_from_recording(recording)
 
             return {'recording': new_rec.serialize()}
 

@@ -2,6 +2,9 @@ import gevent
 import logging
 import json
 import hashlib
+import os
+
+from datetime import date
 
 from pywb.utils.loaders import load
 from warcio.timeutils import timestamp20_now
@@ -9,6 +12,7 @@ from warcio.timeutils import timestamp20_now
 from webrecorder.models.base import RedisNamedContainer, RedisOrderedListMixin
 from webrecorder.models.recording import Recording
 from webrecorder.models.list_bookmarks import BookmarkList
+from webrecorder.models.storagemap import StorageMap
 
 
 # ============================================================================
@@ -24,14 +28,19 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
     ORDERED_LIST_KEY = 'c:{coll}:lists'
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
-    COLL_CDXJ_TTL = 1800
 
     INDEX_FILE_KEY = '@index_file'
+
+    DEFAULT_STORE_TYPE = 'local'
+
+    COLL_CDXJ_TTL = 1800
 
     @classmethod
     def init_props(cls, config):
         cls.COLL_CDXJ_TTL = config['coll_cdxj_ttl']
-        cls.INDEX_FILE_KEY = config['info_index_key']
+        #cls.INDEX_FILE_KEY = config['info_index_key']
+
+        cls.DEFAULT_STORE_TYPE = os.environ.get('DEFAULT_STORAGE', 'local')
 
     def create_recording(self, rec_name='', **kwargs):
         self.access.assert_can_admin_coll(self)
@@ -57,12 +66,10 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         if rec_type:
             new_recording.set_prop('rec_type', rec_type)
 
-        if new_recording.queue_copy(obj, delete_source=True):
+        if new_recording.copy_data_from_recording(obj, delete_source=True):
             return new_recording.name
 
         return None
-
-        #return self.rename(obj, obj.name, new_container, allow_dupe=allow_dupe)
 
     def create_bookmark_list(self, props):
         self.access.assert_can_write_coll(self)
@@ -258,10 +265,10 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         self.access.assert_can_admin_coll(self)
 
         if not recording:
-            return False
+            return {'error': 'no_recording'}
 
         if not self.remove_object(recording):
-            return False
+            return {'error': 'not_found'}
 
         size = recording.size
         user = self.get_owner()
@@ -269,21 +276,44 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
             user.incr_size(-recording.size)
 
         if delete:
-            return recording.delete_me()
+            storage = self.get_storage()
+            return recording.delete_me(storage)
 
         self.sync_coll_index(exists=True, do_async=True)
-        return True
+        return {}
 
     def delete_me(self):
         self.access.assert_can_admin_coll(self)
 
+        storage = self.get_storage()
+
+        errs = {}
+
         for recording in self.get_recordings(load=False):
-            recording.delete_me()
+            errs.update(recording.delete_me(storage))
 
         for blist in self.get_lists(load=False):
             blist.delete_me()
 
-        return self.delete_object()
+        if storage:
+            if not storage.delete_collection(self):
+                errs['error_delete_coll'] = 'not_found'
+
+        if not self.delete_object():
+            errs['error'] = 'not_found'
+
+        return errs
+
+    def get_storage(self):
+        storage_type = self.get_prop('storage_type')
+
+        if not storage_type:
+            storage_type = self.DEFAULT_STORE_TYPE
+
+        return StorageMap.get_storage(storage_type, self.redis)
+
+    def get_dir_path(self):
+        return date.fromtimestamp(int(self['created_at'])).isoformat() + '/' + self.my_id
 
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)

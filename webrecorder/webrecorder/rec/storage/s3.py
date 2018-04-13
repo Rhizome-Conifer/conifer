@@ -2,19 +2,18 @@ import boto3
 import os
 
 from six.moves.urllib.parse import urlsplit, quote_plus
-from webrecorder.utils import today_str
 
 from webrecorder.rec.storage.base import BaseStorage
 
 
 # ============================================================================
 class S3Storage(BaseStorage):
-    def __init__(self, config):
-        super(S3Storage, self).__init__(config)
-        self.target_url_templ = os.environ['S3_ROOT'] + self.target_url_templ
+    def __init__(self):
+        super(S3Storage, self).__init__()
+        self.storage_root = os.environ['S3_ROOT']
 
-        res = self._split_bucket_path(self.target_url_templ)
-        self.bucket_name, self.target_url_templ = res
+        res = self._split_bucket_path(self.storage_root)
+        self.bucket_name, self.storage_root = res
 
         self.s3 = boto3.client('s3')
 

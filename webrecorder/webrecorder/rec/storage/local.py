@@ -2,16 +2,28 @@ import os
 import shutil
 
 from webrecorder.rec.storage.base import BaseStorage
+from webrecorder.models.recording import Recording
 
 
 # ============================================================================
-class LocalFileStorage(BaseStorage):
-    def __init__(self, config):
-        super(LocalFileStorage, self).__init__(config)
+class DirectLocalFileStorage(BaseStorage):
+    def __init__(self):
+        super(DirectLocalFileStorage, self).__init__()
 
-        self.target_url_templ = os.environ['STORAGE_ROOT'] + self.target_url_templ
+        self.storage_root = os.environ['STORAGE_ROOT']
 
-        self.full_path_prefix = config['full_warc_prefix']
+    def delete_collection_dir(self, dir_path):
+        local_dir = os.path.join(self.storage_root, dir_path)
+
+        try:
+            print('Deleting Directory: ' + local_dir)
+            parent_dir = os.path.dirname(local_dir)
+            shutil.rmtree(local_dir)
+            os.removedirs(parent_dir)
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def do_upload(self, target_url, full_filename):
         os.makedirs(os.path.dirname(target_url), exist_ok=True)
@@ -27,24 +39,35 @@ class LocalFileStorage(BaseStorage):
         return os.path.isfile(target_url)
 
     def get_client_url(self, target_url):
-        return self.full_path_prefix + target_url.replace(os.path.sep, '/')
+        return Recording.FULL_WARC_PREFIX + target_url.replace(os.path.sep, '/')
 
     def client_url_to_target_url(self, client_url):
-        if self.full_path_prefix and client_url.startswith(self.full_path_prefix):
-            return client_url[len(self.full_path_prefix):]
-
-        return client_url
+        return Recording.strip_prefix(client_url)
 
     def do_delete(self, target_url, client_url):
         try:
             print('Deleting: ' + target_url)
             os.remove(target_url)
-            if target_url.startswith(os.environ['STORAGE_ROOT']):
-                os.removedirs(os.path.dirname(target_url))
+            #if target_url.startswith(self.storage_root):
+            #    os.removedirs(os.path.dirname(target_url))
             return True
         except Exception as e:
             print(e)
             return False
+
+
+# ============================================================================
+class LocalFileStorage(DirectLocalFileStorage):
+    def __init__(self, redis):
+        self.redis = redis
+        super(LocalFileStorage, self).__init__()
+
+    def delete_collection(self, collection):
+        dirpath = os.path.join(self.storage_root, collection.get_dir_path())
+        return (self.redis.publish('handle_delete_dir', dirpath) > 0)
+
+    def do_delete(self, target_url, client_url):
+        return (self.redis.publish('handle_delete_file', target_url) > 0)
 
 
 

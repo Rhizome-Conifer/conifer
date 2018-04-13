@@ -110,22 +110,25 @@ class User(RedisNamedContainer):
             return False
 
         for recording in collection.get_recordings():
-            if not recording.queue_move_warcs(new_user):
-                return False
+            # will be marked for commit
+            recording.set_closed()
+
+            #if not recording.queue_move_warcs(new_user):
+            #    return False
 
         return True
 
     def remove_collection(self, collection, delete=False):
         if not collection:
-            return False
+            return {'error': 'no_collection'}
 
         if not self.remove_object(collection):
-            return False
+            return {'error': 'not_found'}
 
         if delete:
             return collection.delete_me()
 
-        return True
+        return {}
 
     def delete_me(self):
         for collection in self.get_collections(load=False):

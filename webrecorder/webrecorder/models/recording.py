@@ -34,10 +34,6 @@ class Recording(RedisUniqueComponent):
 
     WARC_KEY = 'r:{rec}:warc'
 
-    DEL_Q = 'q:del:{target}'
-    MOVE_Q = 'q:move:{target}'
-    COPY_Q = 'q:copy'
-
     INDEX_FILE_KEY = '@index_file'
 
     COMMIT_WAIT_TEMPL = 'w:{filename}'
@@ -119,11 +115,13 @@ class Recording(RedisUniqueComponent):
 
         return 'Recording on ' + created_at
 
-    def delete_me(self):
-        if not self.queue_delete_warcs():
-            return False
+    def delete_me(self, storage):
+        res = self.delete_warcs(storage)
 
-        return self.delete_object()
+        if not self.delete_object():
+            res['error'] = 'not_found'
+
+        return res
 
     def iter_all_files(self, skip_index=True):
         warc_key = self.WARC_KEY.format(rec=self.my_id)
@@ -136,34 +134,17 @@ class Recording(RedisUniqueComponent):
 
             yield n, v
 
-    def queue_delete_warcs(self):
-        fail = False
-        with redis_pipeline(self.redis) as pi:
-            for n, v in self.iter_all_files(skip_index=False):
-                parts = urlsplit(v)
-                if parts.scheme == 'http':
-                    target = parts.netloc
-                elif parts.scheme:
-                    target = parts.scheme
-                    if '+' in target:
-                        target = target.split('+', 1)[0]
-                else:
-                    target = 'local'
+    def delete_warcs(self, storage):
+        errs = []
 
-                if target == 'local':
-                    if self.redis.publish('handle_delete', v) == 0:
-                        fail = True
-                else:
-                    pi.rpush(self.DEL_Q.format(target=target), v)
+        for n, v in self.iter_all_files(skip_index=False):
+            if not storage.delete_file(v):
+                errs.append(v)
 
-        return not fail
-
-    def queue_move_warcs(self, to_user):
-        data = {'rec': self.my_id,
-                'user': to_user.name
-               }
-
-        self.redis.rpush(self.MOVE_Q.format(target='local'), json.dumps(data))
+        if errs:
+            return {'error_delete_files': errs}
+        else:
+            return {}
 
     def _get_pagedata(self, pagedata):
         key = self.PAGE_KEY.format(rec=self.my_id)
@@ -339,22 +320,26 @@ class Recording(RedisUniqueComponent):
 
         return cdxj_filename, full_filename
 
-    def commit_to_storage(self, storage):
+    def commit_to_storage(self):
+        collection = self.get_owner()
+        user = collection.get_owner()
+
+        if not user.is_anon():
+            storage = collection.get_storage()
+        else:
+            storage = None
+
         info_key = self.INFO_KEY.format(rec=self.my_id)
         cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
         warc_key = self.WARC_KEY.format(rec=self.my_id)
 
-        self.set_closed()
         self.redis.publish('close_rec', info_key)
-
-        collection = self.get_owner()
-        user = collection.get_owner()
 
         cdxj_filename, full_cdxj_filename = self.write_cdxj(user, warc_key, cdxj_key)
 
         all_done = True
 
-        if not user.is_anon() and storage:
+        if storage:
             all_done = self.commit_file(user, collection, storage,
                                         cdxj_filename, full_cdxj_filename, 'indexes',
                                         warc_key, self.INDEX_FILE_KEY, direct_delete=True)
@@ -374,7 +359,7 @@ class Recording(RedisUniqueComponent):
                     filename, full_filename, obj_type,
                     update_key, update_prop=None, direct_delete=False):
 
-        if not storage or user.is_anon():
+        if not storage:
             return False
 
         full_filename = self.strip_prefix(full_filename)
@@ -416,33 +401,24 @@ class Recording(RedisUniqueComponent):
                 return True
         else:
         # for WARCs, send handle_delete to ensure writer can close the file
-             if self.redis.publish('handle_delete', full_filename) < 1:
+             if self.redis.publish('handle_delete_file', full_filename) < 1:
                 print('No Delete Listener!')
 
         return True
 
-    def strip_prefix(self, uri):
-        if self.FULL_WARC_PREFIX and uri.startswith(self.FULL_WARC_PREFIX):
-            return uri[len(self.FULL_WARC_PREFIX):]
+    @classmethod
+    def strip_prefix(cls, uri):
+        if cls.FULL_WARC_PREFIX and uri.startswith(cls.FULL_WARC_PREFIX):
+            return uri[len(cls.FULL_WARC_PREFIX):]
 
         return uri
 
-    def queue_copy(self, source, delete_source=False):
+    def copy_data_from_recording(self, source, delete_source=False):
         if not self.is_open():
             return False
 
-        data = {
-                'target': self.my_id,
-                'target_name': self.name,
-                'source': source.my_id,
-                'source_name': source.name,
-                'delete_source': delete_source
-               }
+        errored = False
 
-        self.redis.rpush(self.COPY_Q, json.dumps(data))
-        return True
-
-    def copy_data_from_recording(self, source):
         collection = self.get_owner()
         user = collection.get_owner()
 
@@ -472,6 +448,7 @@ class Recording(RedisUniqueComponent):
             except:
                 import traceback
                 traceback.print_exc()
+                errored = True
 
         # COPY cdxj, if exists
         source_key = self.CDXJ_KEY.format(rec=source.my_id)
@@ -491,5 +468,8 @@ class Recording(RedisUniqueComponent):
         # sync collection cdxj, if exists
         collection.sync_coll_index(exists=True, do_async=True)
 
+        if not errored and delete_source:
+            collection = source.get_owner()
+            collection.remove_recording(source, delete=True)
 
-
+        return not errored
