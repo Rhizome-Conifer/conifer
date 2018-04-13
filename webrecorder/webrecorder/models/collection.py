@@ -49,6 +49,21 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         return recording
 
+    def move_recording(self, obj, new_collection):
+        new_recording = new_collection.create_recording(obj.name)
+
+        new_recording.set_prop('desc', obj.get_prop('desc'))
+        rec_type = obj.get_prop('rec_type')
+        if rec_type:
+            new_recording.set_prop('rec_type', rec_type)
+
+        if new_recording.queue_copy(obj, delete_source=True):
+            return new_recording.name
+
+        return None
+
+        #return self.rename(obj, obj.name, new_container, allow_dupe=allow_dupe)
+
     def create_bookmark_list(self, props):
         self.access.assert_can_write_coll(self)
 
@@ -234,34 +249,29 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         return data
 
     def rename(self, obj, new_name, new_cont=None, allow_dupe=False):
-        res = super(Collection, self).rename(obj, new_name, new_cont, allow_dupe=allow_dupe)
-        if res and new_cont and new_cont != self:
-            self.sync_coll_index(exists=True, do_async=True)
-            new_cont.sync_coll_index(exists=True, do_async=True)
+        if new_cont and new_cont != self:
+            return False
 
-        return res
+        return super(Collection, self).rename(obj, new_name, new_cont, allow_dupe=allow_dupe)
 
-    def remove_recording(self, recording, user, delete=False, many=False):
+    def remove_recording(self, recording, delete=False):
         self.access.assert_can_admin_coll(self)
 
         if not recording:
             return False
 
-        #if not many:
-        #    self.assert_can_admin(user, coll)
-
         if not self.remove_object(recording):
             return False
 
         size = recording.size
+        user = self.get_owner()
         if user:
             user.incr_size(-recording.size)
 
         if delete:
             return recording.delete_me()
 
-        #if not many:
-        #    self.sync_coll_index(user, coll, exists=True, do_async=True)
+        self.sync_coll_index(exists=True, do_async=True)
         return True
 
     def delete_me(self):

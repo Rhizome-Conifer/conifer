@@ -105,10 +105,10 @@ class BaseStorageCommit(FullStackTests):
 
         orig_coll, orig_rec = self.get_coll_rec('test', 'default-collection', 'rec')
 
-        def assert_one_dir():
-            assert self.redis.hlen('r:{0}:warc'.format(rec)) >= 1
+        def assert_copied():
+            assert self.redis.hlen('r:{0}:warc'.format(rec)) == 2
 
-        self.sleep_try(0.2, 10.0, assert_one_dir)
+        self.sleep_try(0.2, 10.0, assert_copied)
 
         info = self.redis.hgetall('r:{0}:info'.format(rec))
 

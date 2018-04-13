@@ -107,17 +107,20 @@ class StorageCommitter(object):
             print('Copy Request: ' + data)
 
             source = Recording(my_id=copy['source'],
-                                  redis=self.redis,
-                                  access=BaseAccess())
+                               name=copy['source_name'],
+                               redis=self.redis,
+                               access=BaseAccess())
 
             target = Recording(my_id=copy['target'],
-                                  redis=self.redis,
-                                  access=BaseAccess())
+                               name=copy['target_name'],
+                               redis=self.redis,
+                               access=BaseAccess())
 
             target.copy_data_from_recording(source)
-            if copy.get('delete'):
+
+            if copy.get('delete_source'):
                 collection = source.get_owner()
-                collection.remove_recording(source, user=collection.get_owner(), delete=True)
+                collection.remove_recording(source, delete=True)
 
     def __call__(self):
         self.process_deletes('s3')

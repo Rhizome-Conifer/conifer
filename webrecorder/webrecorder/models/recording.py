@@ -427,20 +427,24 @@ class Recording(RedisUniqueComponent):
 
         return uri
 
-    def queue_copy(self, source):
+    def queue_copy(self, source, delete_source=False):
         if not self.is_open():
             return False
 
         data = {
                 'target': self.my_id,
+                'target_name': self.name,
                 'source': source.my_id,
+                'source_name': source.name,
+                'delete_source': delete_source
                }
 
         self.redis.rpush(self.COPY_Q, json.dumps(data))
         return True
 
     def copy_data_from_recording(self, source):
-        user = self.get_owner().get_owner()
+        collection = self.get_owner()
+        user = collection.get_owner()
 
         target_dirname = user.get_user_temp_warc_path()
         target_warc_key = self.WARC_KEY.format(rec=self.my_id)
@@ -456,9 +460,9 @@ class Recording(RedisUniqueComponent):
 
             try:
                 with open(target_file, 'wb') as dest:
+                    print('Copying {0} -> {1}'.format(url, target_file))
                     shutil.copyfileobj(src, dest)
-
-                size = os.path.getsize(target_file)
+                    size = dest.tell()
 
                 if n != self.INDEX_FILE_KEY:
                     self.incr_size(size)
@@ -479,5 +483,13 @@ class Recording(RedisUniqueComponent):
         pages = self.redis.hgetall(self.PAGE_KEY.format(rec=source.my_id))
         if pages:
             self.redis.hmset(self.PAGE_KEY.format(rec=self.my_id), pages)
+
+        # COPY remote archives, if any
+        self.redis.sunionstore(self.RA_KEY.format(rec=self.my_id),
+                               self.RA_KEY.format(rec=source.my_id))
+
+        # sync collection cdxj, if exists
+        collection.sync_coll_index(exists=True, do_async=True)
+
 
 
