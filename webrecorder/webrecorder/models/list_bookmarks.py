@@ -1,4 +1,5 @@
 from webrecorder.models.base import RedisUniqueComponent, RedisOrderedListMixin
+from webrecorder.utils import get_bool
 
 
 # ============================================================================
@@ -20,7 +21,7 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
         self.data = {'title': props['title'],
                      'desc': props.get('desc', ''),
-                     'public': '1' if props.get('public') else '0',
+                     'public': self._from_bool(props.get('public')),
                      'owner': self.owner.my_id,
                     }
 
@@ -91,6 +92,8 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
         else:
             data['num_bookmarks'] = self.num_bookmarks()
 
+        data['public'] = get_bool(data['public'])
+
         return data
 
     def update(self, props):
@@ -101,7 +104,14 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
         for prop in AVAIL_PROPS:
             if prop in props:
-                self.set_prop(prop, props[prop])
+                value = props[prop]
+                if prop == 'public':
+                    value = self._from_bool(value)
+                self.set_prop(prop, value)
+
+    @classmethod
+    def _from_bool(self, value):
+        return '1' if value else '0'
 
     def delete_me(self):
         self.access.assert_can_write_coll(self.get_owner())

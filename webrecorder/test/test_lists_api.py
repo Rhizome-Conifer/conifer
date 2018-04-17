@@ -57,7 +57,9 @@ class TestListsAPI(FullStackTests):
         assert blist['owner'] == self.coll
         assert blist['id'] == '1001'
         assert blist['desc'] == 'List Description Goes Here!'
-        assert blist['public'] == '0'
+        assert blist['public'] == False
+
+        assert self.redis.hget('l:1001:info', 'public') == '0'
 
         assert self.redis.get(BookmarkList.COUNTER_KEY) == '1001'
 
@@ -196,6 +198,19 @@ class TestListsAPI(FullStackTests):
         assert blist['created_at'] < blist['updated_at']
 
         assert self.ISO_DT_RX.match(blist['updated_at'])
+
+    def test_update_list_public(self):
+        params = {'public': True}
+
+        res = self.testapp.post_json(self._format('/api/v1/list/1002?user={user}&coll=temp'), params=params)
+
+        blist = res.json['list']
+        assert blist['title'] == 'A List'
+        assert blist['id'] == '1002'
+        assert blist['public'] == True
+
+        assert self.redis.hget('l:1002:info', 'public') == '1'
+
 
     # Bookmarks
     # ========================================================================

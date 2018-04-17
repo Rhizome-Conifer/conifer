@@ -51,6 +51,7 @@ class TestListsAPIAccess(FullStackTests):
 
         assert res.json['list']
         list_id = res.json['list']['id']
+        assert res.json['list']['public'] == public
 
         # Bookmark
         params = {'title': 'A Bookmark',
