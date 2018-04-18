@@ -92,7 +92,7 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
         else:
             data['num_bookmarks'] = self.num_bookmarks()
 
-        data['public'] = get_bool(data['public'])
+        data['public'] = get_bool(data.get('public', False))
 
         return data
 
