@@ -44,10 +44,11 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
         return bookmark
 
-    def get_bookmarks(self, load=True):
+    def get_bookmarks(self, load=True, start=0, end=-1):
         self.access.assert_can_read_coll(self.get_owner())
 
-        return self.get_ordered_objects(Bookmark, load=load)
+        return self.get_ordered_objects(Bookmark, load=load,
+                                        start=start, end=end)
 
     def num_bookmarks(self):
         self.access.assert_can_read_coll(self.get_owner())
@@ -83,18 +84,32 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
         return True
 
-    def serialize(self, include_bookmarks=True):
+    def serialize(self, include_bookmarks='all'):
         data = super(BookmarkList, self).serialize()
+        bookmarks = None
 
-        if include_bookmarks:
+        # return all bookmarks
+        if include_bookmarks == 'all':
             bookmarks = self.get_bookmarks(load=True)
             data['bookmarks'] = [bookmark.serialize() for bookmark in bookmarks]
-        else:
-            data['num_bookmarks'] = self.num_bookmarks()
+            data['total_bookmarks'] = len(bookmarks)
 
-        data['public'] = get_bool(data.get('public', False))
+        # return only first bookmark, set total_bookmarks
+        elif include_bookmarks == 'first':
+            bookmarks = self.get_bookmarks(load=True, start=0, end=0)
+            data['bookmarks'] = [bookmark.serialize() for bookmark in bookmarks]
+            data['total_bookmarks'] = self.num_bookmarks()
+
+        # else only return the number of bookmarks
+        else:
+            data['total_bookmarks'] = self.num_bookmarks()
+
+        data['public'] = self.is_public()
 
         return data
+
+    def is_public(self):
+        return get_bool(self.get_prop('public', default_val=False))
 
     def update(self, props):
         self.access.assert_can_write_coll(self.get_owner())

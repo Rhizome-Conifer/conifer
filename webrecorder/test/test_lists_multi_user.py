@@ -62,6 +62,15 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.post_json('/api/v1/list/%s/bookmarks?user={0}&coll=some-coll'.format(user) % list_id, params=params)
         assert res.json['bookmark']
 
+        # Another  Bookmark
+        params = {'title': 'Another Bookmark',
+                  'url': 'http://example.com/',
+                  'timestamp': '2018',
+                 }
+
+        res = self.testapp.post_json('/api/v1/list/%s/bookmarks?user={0}&coll=some-coll'.format(user) % list_id, params=params)
+        assert res.json['bookmark']
+
         return list_id
 
     def test_login_first_user(self):
@@ -77,6 +86,16 @@ class TestListsAPIAccess(FullStackTests):
         coll_name = self._create_coll('test', 'Some Coll', public=False)
         self.priv_list_priv_coll = self._create_list('test', coll_name, 'New List', public=False)
         self.pub_list_priv_coll = self._create_list('test', coll_name, 'Public List', public=True)
+
+    def test_coll_get_lists_user_1(self):
+        # only public lists
+        res = self.testapp.get('/api/v1/collection/some-coll?user=test')
+        assert len(res.json['collection']['lists']) == 1
+        assert res.json['collection']['lists'][0]['title'] == 'Public List'
+
+        # only first bookmark returned
+        assert len(res.json['collection']['lists'][0]['bookmarks']) == 1
+        assert res.json['collection']['lists'][0]['total_bookmarks'] == 2
 
     def test_logout_login_user_2(self):
         res = self.testapp.get('/api/v1/logout', status=200)
@@ -97,6 +116,16 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.get('/api/v1/lists?user=another&coll=some-coll')
         assert len(res.json['lists']) == 2
 
+    def test_coll_get_lists_user_2(self):
+        # only public lists
+        res = self.testapp.get('/api/v1/collection/some-coll?user=another')
+        assert len(res.json['collection']['lists']) == 1
+        assert res.json['collection']['lists'][0]['title'] == 'Public List'
+
+        # only first bookmark returned
+        assert len(res.json['collection']['lists'][0]['bookmarks']) == 1
+        assert res.json['collection']['lists'][0]['total_bookmarks'] == 2
+
     def test_assert_data_model(self):
         assert len(self.redis.keys('u:*:info')) == 2
 
@@ -105,7 +134,7 @@ class TestListsAPIAccess(FullStackTests):
         assert set(self.redis.hkeys('u:another:colls')) == {'some-coll', 'default-collection'}
 
         assert len(self.redis.keys('l:*:info')) == 4
-        assert len(self.redis.keys('b:*:info')) == 4
+        assert len(self.redis.keys('b:*:info')) == 8
 
     def test_no_lists_user_info(self):
         # wrong user

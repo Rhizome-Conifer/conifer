@@ -67,13 +67,14 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         return bookmark_list
 
-    def get_lists(self, load=True):
+    def get_lists(self, load=True, public_only=False):
         self.access.assert_can_read_coll(self)
 
         lists = self.get_ordered_objects(BookmarkList, load=load)
 
-        if not self.access.can_write_coll(self):
-            lists = [blist for blist in lists if self.access.can_read_list(blist)]
+        if public_only or not self.access.can_write_coll(self):
+            lists = [blist for blist in lists if blist.is_public()]
+            #lists = [blist for blist in lists if self.access.can_read_list(blist)]
 
         return lists
 
@@ -221,8 +222,8 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
             data['recordings'] = [recording.serialize() for recording in recordings]
 
         if include_lists:
-            lists = self.get_lists(load=True)
-            data['lists'] = [blist.serialize(include_bookmarks=False) for blist in lists]
+            lists = self.get_lists(load=True, public_only=True)
+            data['lists'] = [blist.serialize(include_bookmarks='first') for blist in lists]
 
         return data
 

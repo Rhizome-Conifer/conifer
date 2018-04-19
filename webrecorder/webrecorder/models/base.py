@@ -94,7 +94,7 @@ class RedisUniqueComponent(object):
                 if force_type:
                     self.data[attr] = force_type(self.data[attr])
 
-        return self.data.get(attr)
+        return self.data.get(attr, default_val)
 
     def set_prop(self, attr, value):
         self.data[attr] = value
@@ -249,8 +249,8 @@ class RedisOrderedListMixin(object):
     def _ordered_list_key(self):
         return self.ORDERED_LIST_KEY.format_map({self.MY_TYPE: self.my_id})
 
-    def get_ordered_objects(self, cls, load=True):
-        all_objs = self.redis.zrange(self._ordered_list_key, 0, -1)
+    def get_ordered_objects(self, cls, load=True, start=0, end=-1):
+        all_objs = self.redis.zrange(self._ordered_list_key, start, end)
 
         obj_list = []
         for val in all_objs:

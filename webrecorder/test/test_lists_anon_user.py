@@ -5,7 +5,7 @@ from webrecorder.models.list_bookmarks import BookmarkList, Bookmark
 
 
 # ============================================================================
-class TestListsAPI(FullStackTests):
+class TestListsAnonUserAPI(FullStackTests):
     def _format(self, url):
         return url.format(user=self.anon_user)
 
@@ -36,7 +36,7 @@ class TestListsAPI(FullStackTests):
 
         _coll, _ = self.get_coll_rec(self.anon_user, 'temp', '')
 
-        TestListsAPI.coll = _coll
+        TestListsAnonUserAPI.coll = _coll
 
         self.redis.set(BookmarkList.COUNTER_KEY, 1000)
         self.redis.set(Bookmark.COUNTER_KEY, 100)
@@ -78,12 +78,14 @@ class TestListsAPI(FullStackTests):
 
         assert res.json['list']['id'] == '1003'
         assert res.json['list']['title'] == 'Another List'
+        assert res.json['list']['public'] == False
 
     def test_get_list(self):
         res = self.testapp.get(self._format('/api/v1/list/1002?user={user}&coll=temp'))
 
         assert res.json['list']['id'] == '1002'
         assert res.json['list']['title'] == 'New List'
+        assert res.json['list']['public'] == False
 
     def test_list_all_lists(self):
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
@@ -347,13 +349,17 @@ class TestListsAPI(FullStackTests):
 
         lists = res.json['collection']['lists']
 
-        assert len(lists) == 2
+        # only public lists included
+        assert len(lists) == 1
 
         assert lists[0]['id'] == '1002'
-        assert lists[0]['num_bookmarks'] == 4
+        assert lists[0]['total_bookmarks'] == 4
 
-        assert lists[1]['id'] == '1003'
-        assert lists[1]['num_bookmarks'] == 5
+        # only first bookmark loaded
+        assert len(lists[0]['bookmarks']) == 1
+
+        #assert lists[1]['id'] == '1003'
+        #assert lists[1]['total_bookmarks'] == 5
 
     # Record, then Replay Via List
     # ========================================================================
