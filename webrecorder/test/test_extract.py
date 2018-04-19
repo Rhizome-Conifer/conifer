@@ -69,21 +69,31 @@ class TestExtractContent(FullStackTests):
         # Extract Test
         assert recs['extract-test']['desc'] == 'Extract Test'
         assert recs['extract-test']['ra_sources'] == ['ia']
+        assert recs['extract-test']['duration'] >= 0
 
         # empty patch
         assert recs['patch-of-extract-test']['size'] == 0
         assert recs['patch-of-extract-test']['desc'] == 'patch-of-extract-test'
         assert recs['patch-of-extract-test']['rec_type'] == 'patch'
+        assert recs['patch-of-extract-test']['duration'] >= 0
 
         # Extract Test 2
         assert recs['extract-test-2']['desc'] == 'Extract Test'
         assert recs['extract-test-2']['ra_sources'] == ['ia']
+        assert recs['extract-test-2']['duration'] >= 0
 
         # empty patch
         assert recs['patch-of-extract-test-2']['size'] == 0
         assert recs['patch-of-extract-test-2']['desc'] == 'patch-of-extract-test-2'
         assert recs['patch-of-extract-test-2']['rec_type'] == 'patch'
+        assert recs['patch-of-extract-test-2']['duration'] >= 0
 
         # Extract Only Test
         assert recs['extract-only-test']['desc'] == 'Extract Only Test'
         assert recs['extract-only-test']['ra_sources'] == ['ia']
+        assert recs['extract-only-test']['duration'] >= 0
+
+        # at least 1 second has expired
+        assert res.json['collection']['timespan'] >= 0
+        assert res.json['collection']['duration'] >= 0
+

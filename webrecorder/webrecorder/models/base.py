@@ -9,7 +9,7 @@ class DupeNameException(Exception):
 
 # ============================================================================
 class RedisUniqueComponent(object):
-    INT_KEYS = ('size', 'created_at', 'updated_at')
+    INT_KEYS = ('size', 'created_at', 'updated_at', 'recorded_at')
 
     COUNTER_KEY = None
     INFO_KEY = None
@@ -44,6 +44,7 @@ class RedisUniqueComponent(object):
     def incr_size(self, size):
         val = self.redis.hincrby(self.info_key, 'size', size)
         self.data['size'] = int(val)
+        self.set_prop('updated_at', self._get_now())
 
     def set_bool_prop(self, prop, value):
         self.set_prop(prop, self._from_bool(value))
@@ -72,8 +73,11 @@ class RedisUniqueComponent(object):
         self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
         return self.my_id
 
+    def _get_now(self):
+        return int(datetime.utcnow().timestamp())
+
     def _init_new(self, pi=None):
-        now = int(datetime.utcnow().timestamp())
+        now = self._get_now()
 
         self.data['created_at'] = now
         self.data['updated_at'] = now
@@ -93,11 +97,15 @@ class RedisUniqueComponent(object):
         created_at = self.data.get('created_at', 0)
         updated_at = self.data.get('updated_at', 0)
 
+        self.data['timespan'] = updated_at - created_at
+
         if include_duration:
-            self.data['duration'] = updated_at - created_at
+            recorded_at = self.data.get('recorded_at', 0)
+            self.data['duration'] = recorded_at - created_at if recorded_at else 0
 
         self.data['created_at'] = self.to_iso_date(created_at)
         self.data['updated_at'] = self.to_iso_date(updated_at)
+
         return self.data
 
     def get_prop(self, attr, default_val=None, force_type=None, force_update=False):
@@ -115,8 +123,7 @@ class RedisUniqueComponent(object):
 
         # auto-update updated_at
         if attr != 'updated_at':
-            now = int(datetime.utcnow().timestamp())
-            self.set_prop('updated_at', now)
+            self.set_prop('updated_at', self._get_now())
 
     def __getitem__(self, name):
         return self.get_prop(name)

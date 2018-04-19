@@ -539,11 +539,15 @@ class TestTempContent(FullStackTests):
         self._assert_rec_keys(self.anon_user, 'temp', all_recs)
 
 
-    def test_anon_delete_recs(self):
+    def test_anon_coll_info(self):
         res = self.testapp.get('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
         recs = res.json['collection']['recordings']
         assert set([rec['id'] for rec in recs]) == set(['my-recording', 'my-recording-2', 'my-rec2', 'вэбрекордэр', 'test--ok', 'emmyem-test-recording'])
 
+        assert res.json['collection']['timespan'] >= 0
+        assert res.json['collection']['duration'] >= 0
+
+    def test_anon_delete_recs(self):
         res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'my-recording'}

@@ -59,6 +59,9 @@ class TestCDXJCache(FullStackTests):
         self.sleep_try(0.1, 1.0, self.assert_exists(REC_CDXJ, True))
 
     def test_record_2(self):
+        # ensure duration of at least 1 sec
+        time.sleep(1.0)
+
         res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?bood=far')
         res.charset = 'utf-8'
 
@@ -133,6 +136,12 @@ class TestCDXJCache(FullStackTests):
 
         assert load_counter == 1
 
+    def test_check_duration(self):
+        res = self.testapp.get('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
+
+        assert res.json['collection']['duration'] > 0
+        assert res.json['collection']['timespan'] > 0
+
     def test_ensure_all_files_delete(self):
         user_dir = os.path.join(self.warcs_dir, self.anon_user)
         files = os.listdir(user_dir)
@@ -152,5 +161,10 @@ class TestCDXJCache(FullStackTests):
             assert not os.path.isdir(self.storage_today)
 
         self.sleep_try(0.1, 10.0, assert_deleted)
+
+    def test_user_timespan(self):
+        res = self.testapp.get('/api/v1/users/' + self.anon_user)
+        # modified after delete, should have taken more than 2 seconds to get here
+        assert res.json['user']['timespan'] > 2
 
 

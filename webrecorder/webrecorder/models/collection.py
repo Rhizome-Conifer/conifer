@@ -213,7 +213,17 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         if include_recordings:
             recordings = self.get_recordings(load=True)
-            data['recordings'] = [recording.serialize() for recording in recordings]
+            rec_serialized = []
+
+            duration = 0
+            for recording in recordings:
+                rec_data = recording.serialize()
+                rec_serialized.append(rec_data)
+                duration += rec_data.get('duration', 0)
+
+            data['recordings'] = rec_serialized
+
+            data['duration'] = duration
 
         if include_lists:
             lists = self.get_lists(load=True, public_only=True)
