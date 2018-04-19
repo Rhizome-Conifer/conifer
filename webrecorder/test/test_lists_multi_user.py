@@ -33,10 +33,7 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.post_json('/api/v1/collections?user={0}'.format(user), params=params)
         collection = res.json['collection']
 
-        if public:
-            assert collection['r:@public'] == '1'
-        else:
-            assert 'r:@public' not in collection
+        assert collection['public'] == public
 
         return coll_name
 

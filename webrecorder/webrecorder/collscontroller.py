@@ -105,7 +105,10 @@ class CollsController(BaseController):
             if 'public' in data:
                 #if self.access.is_superuser() and data.get('notify'):
                 #    pass
-                self.access.set_public(collection, data['public'])
+                collection.set_public(data['public'])
+
+            if 'public_index' in data:
+                collection.set_bool_prop('public_index', data['public_index'])
 
             if 'featured_list' in data:
                 blist = collection.get_list(data['featured_list'])

@@ -1,4 +1,5 @@
 from datetime import datetime
+from webrecorder.utils import get_bool
 
 
 # ============================================================================
@@ -43,6 +44,18 @@ class RedisUniqueComponent(object):
     def incr_size(self, size):
         val = self.redis.hincrby(self.info_key, 'size', size)
         self.data['size'] = int(val)
+
+    def set_bool_prop(self, prop, value):
+        self.set_prop(prop, self._from_bool(value))
+
+    def get_bool_prop(self, prop, default_val=False):
+        return get_bool(self.get_prop(prop, default_val=False))
+
+    def is_public(self):
+        return self.get_bool_prop('public')
+
+    def set_public(self, value):
+        self.set_bool_prop('public', value)
 
     def load(self):
         self.data = self.redis.hgetall(self.info_key)
@@ -154,6 +167,10 @@ class RedisUniqueComponent(object):
         if no_T:
             dt = dt.replace('T', ' ')
         return dt
+
+    @classmethod
+    def _from_bool(self, value):
+        return '1' if value else '0'
 
 
 # ============================================================================

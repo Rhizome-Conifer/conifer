@@ -54,7 +54,7 @@
 <div class="row">
     <ul class="list-group collection-list">
         {% for coll in collections | sort(attribute='title') %}
-        {% set is_public = coll['r:@public'] %}
+        {% set is_public = coll['public'] %}
         <li class="left-buffer list-group-item">
             <div class="row">
                 <div class="col-xs-9">

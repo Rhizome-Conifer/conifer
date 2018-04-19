@@ -108,9 +108,6 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
         return data
 
-    def is_public(self):
-        return get_bool(self.get_prop('public', default_val=False))
-
     def update(self, props):
         self.access.assert_can_write_coll(self.get_owner())
 
@@ -121,12 +118,9 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
             if prop in props:
                 value = props[prop]
                 if prop == 'public':
-                    value = self._from_bool(value)
-                self.set_prop(prop, value)
-
-    @classmethod
-    def _from_bool(self, value):
-        return '1' if value else '0'
+                    self.set_public(value)
+                else:
+                    self.set_prop(prop, value)
 
     def delete_me(self):
         self.access.assert_can_write_coll(self.get_owner())

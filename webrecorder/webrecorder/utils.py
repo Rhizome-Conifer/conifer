@@ -61,11 +61,11 @@ def sanitize_title(title):
 
 
 # ============================================================================
-def get_bool(string):
-    if not string:
-        return False
+def get_bool(value):
+    if isinstance(value, str):
+        return value.lower() not in ('0', 'false', 'f', 'off')
 
-    return string.lower() not in ('0', 'false', 'f', 'off')
+    return False if not value else True
 
 
 # ============================================================================

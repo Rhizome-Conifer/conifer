@@ -6,8 +6,6 @@ import hashlib
 from pywb.utils.loaders import load
 from warcio.timeutils import timestamp20_now
 
-from webrecorder.utils import redis_pipeline
-
 from webrecorder.models.base import RedisNamedContainer, RedisOrderedListMixin
 from webrecorder.models.recording import Recording
 from webrecorder.models.list_bookmarks import BookmarkList
@@ -29,8 +27,6 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
     COLL_CDXJ_TTL = 1800
 
     INDEX_FILE_KEY = '@index_file'
-
-    PUBLIC_FLAG = 'r:@public'
 
     @classmethod
     def init_props(cls, config):
@@ -125,11 +121,9 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         self.data = {'title': title,
                      'size': 0,
                      'desc': desc,
+                     'public': self._from_bool(public),
+                     'public_index': True,
                     }
-
-        if public:
-            #TODO: standardize prop?
-            self.data[self.PUBLIC_FLAG] = '1'
 
         self._init_new()
 
@@ -225,6 +219,8 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
             lists = self.get_lists(load=True, public_only=True)
             data['lists'] = [blist.serialize(include_bookmarks='first') for blist in lists]
 
+        data['public'] = self.is_public()
+        data['public_index'] = self.get_bool_prop('public_index', True)
         return data
 
     def rename(self, obj, new_name, new_cont=None, allow_dupe=False):

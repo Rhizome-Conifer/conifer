@@ -40,6 +40,8 @@ class TestWebRecCollsAPI(BaseWRTests):
         assert self.ISO_DT_RX.match(coll['updated_at'])
 
         assert coll['recordings'] == []
+        assert coll['public'] == False
+        assert coll['public_index'] == True
 
     def test_list_anon_collections(self):
         res = self.testapp.get('/api/v1/collections?user={user}'.format(user=self.anon_user))
