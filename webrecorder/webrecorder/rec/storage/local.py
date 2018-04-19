@@ -2,7 +2,7 @@ import os
 import shutil
 
 from webrecorder.rec.storage.base import BaseStorage
-from webrecorder.models.recording import Recording
+from webrecorder.rec.storage.storagepaths import add_local_store_prefix, strip_prefix
 
 
 # ============================================================================
@@ -39,10 +39,10 @@ class DirectLocalFileStorage(BaseStorage):
         return os.path.isfile(target_url)
 
     def get_client_url(self, target_url):
-        return Recording.FULL_WARC_PREFIX + target_url.replace(os.path.sep, '/')
+        return add_local_store_prefix(target_url.replace(os.path.sep, '/'))
 
     def client_url_to_target_url(self, client_url):
-        return Recording.strip_prefix(client_url)
+        return strip_prefix(client_url)
 
     def do_delete(self, target_url, client_url):
         try:

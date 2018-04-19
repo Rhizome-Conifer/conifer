@@ -13,6 +13,7 @@ from pywb.utils.loaders import BlockLoader
 
 from webrecorder.utils import redis_pipeline
 from webrecorder.models.base import RedisUniqueComponent
+from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_prefix
 
 from warcio.timeutils import timestamp_now, sec_to_timestamp, timestamp20_now
 
@@ -45,16 +46,12 @@ class Recording(RedisUniqueComponent):
 
     COMMIT_WAIT_SECS = 30
 
-    FULL_WARC_PREFIX = 'http://nginx:6090'
-
     @classmethod
     def init_props(cls, config):
         cls.OPEN_REC_TTL = int(config['open_rec_ttl'])
         #cls.INDEX_FILE_KEY = config['info_index_key']
 
         #cls.INDEX_NAME_TEMPL = config['index_name_templ']
-
-        cls.FULL_WARC_PREFIX = config['full_warc_prefix']
 
         cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
         #cls.COMMIT_WAIT_TEMPL = config['commit_wait_templ']
@@ -292,7 +289,7 @@ class Recording(RedisUniqueComponent):
     def write_cdxj(self, user, warc_key, cdxj_key):
         full_filename = self.redis.hget(warc_key, self.INDEX_FILE_KEY)
         if full_filename:
-            cdxj_filename = os.path.basename(self.strip_prefix(full_filename))
+            cdxj_filename = os.path.basename(strip_prefix(full_filename))
             return cdxj_filename, full_filename
 
         dirname = user.get_user_temp_warc_path()
@@ -315,7 +312,7 @@ class Recording(RedisUniqueComponent):
                 out.write(cdxj + '\n')
             out.flush()
 
-        full_url = self.FULL_WARC_PREFIX + full_filename.replace(os.path.sep, '/')
+        full_url = add_local_store_prefix(full_filename.replace(os.path.sep, '/'))
         self.redis.hset(warc_key, self.INDEX_FILE_KEY, full_url)
 
         return cdxj_filename, full_filename
@@ -362,7 +359,7 @@ class Recording(RedisUniqueComponent):
         if not storage:
             return False
 
-        full_filename = self.strip_prefix(full_filename)
+        full_filename = strip_prefix(full_filename)
 
         # not a local filename
         if '://' in full_filename and not full_filename.startswith('local'):
@@ -406,13 +403,6 @@ class Recording(RedisUniqueComponent):
 
         return True
 
-    @classmethod
-    def strip_prefix(cls, uri):
-        if cls.FULL_WARC_PREFIX and uri.startswith(cls.FULL_WARC_PREFIX):
-            return uri[len(cls.FULL_WARC_PREFIX):]
-
-        return uri
-
     def copy_data_from_recording(self, source, delete_source=False):
         if not self.is_open():
             return False
@@ -443,7 +433,7 @@ class Recording(RedisUniqueComponent):
                 if n != self.INDEX_FILE_KEY:
                     self.incr_size(size)
 
-                self.redis.hset(target_warc_key, n, self.FULL_WARC_PREFIX + target_file)
+                self.redis.hset(target_warc_key, n, add_local_store_prefix(target_file))
 
             except:
                 import traceback

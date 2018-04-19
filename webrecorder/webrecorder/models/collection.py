@@ -12,7 +12,7 @@ from warcio.timeutils import timestamp20_now
 from webrecorder.models.base import RedisNamedContainer, RedisOrderedListMixin
 from webrecorder.models.recording import Recording
 from webrecorder.models.list_bookmarks import BookmarkList
-from webrecorder.models.storagemap import StorageMap
+from webrecorder.rec.storage import get_storage as get_global_storage
 
 
 # ============================================================================
@@ -310,7 +310,7 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         if not storage_type:
             storage_type = self.DEFAULT_STORE_TYPE
 
-        return StorageMap.get_storage(storage_type, self.redis)
+        return get_global_storage(storage_type, self.redis)
 
     def get_dir_path(self):
         return date.fromtimestamp(int(self['created_at'])).isoformat() + '/' + self.my_id
