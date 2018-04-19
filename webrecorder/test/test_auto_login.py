@@ -82,11 +82,11 @@ class TestAutoLogin(FullStackTests):
         assert res.json['collection']
 
     def test_copy_rec(self):
-        res = self.testapp.post_json('/api/v1/recordings/rec-sesh/copy/another-coll?user=test&coll=default-collection')
+        res = self.testapp.post_json('/api/v1/recordings/rec-sesh/copy/another-coll?user=test&coll=new-title')
 
         coll, rec = self.get_coll_rec('test', 'another-coll', 'rec-sesh')
 
-        orig_coll, orig_rec = self.get_coll_rec('test', 'default-collection', 'rec-sesh')
+        orig_coll, orig_rec = self.get_coll_rec('test', 'new-title', 'rec-sesh')
 
         def assert_one_dir():
             assert self.redis.hlen('r:{0}:warc'.format(rec)) == 1
