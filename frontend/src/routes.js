@@ -60,6 +60,15 @@ const userRoutes = [
     breadcrumb: collDetailBreadcrumb
   },
   {
+    path: `${userPath}/:coll/pages`,
+    component: CollectionDetail,
+    exact: true,
+    name: 'collectionPages',
+    footer: false,
+    classOverride: true,
+    breadcrumb: collDetailBreadcrumb
+  },
+  {
     path: `${userPath}/:coll/management`,
     component: CollectionManagement,
     exact: true,

@@ -19,7 +19,7 @@ export function isoToDisplay(dateTime, gmt = false) {
   return displayTime;
 }
 
-export function buildDate(dt, epoch, gmt) {
+export function buildDate(dt, gmt) {
   let displayTime;
 
   if(dt) {
@@ -41,8 +41,6 @@ export function buildDate(dt, epoch, gmt) {
     } else {
       displayTime = date.toLocaleString();
     }
-  } else if(epoch) {
-    displayTime = new Date(epoch * 1000).toLocaleString();
   }
 
   return displayTime;

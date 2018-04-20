@@ -6,7 +6,6 @@ import { load as loadColl } from 'redux/modules/collection';
 import { deleteRecording } from 'redux/modules/recordings';
 import { getOrderedRecordings } from 'redux/selectors';
 
-
 import CollectionManagementUI from 'components/collection/CollectionManagementUI';
 
 

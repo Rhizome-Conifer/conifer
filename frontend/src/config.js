@@ -53,6 +53,7 @@ module.exports = Object.assign({
   defaultCollDesc: '*This collection doesn\'t yet have a description.*',
   defaultListDesc: '*This list doesn\'t yet have a description.*',
   defaultRecordingTitle: 'Recording Session',
+  dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   draggableTypes: {
     PAGE_ITEM: 'pageItem',
     TH: 'tableHeader'
@@ -60,6 +61,7 @@ module.exports = Object.assign({
   homepageAnnouncement: '',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,
+  months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),
   port: process.env.FRONTEND_PORT || 8095,
   product: 'Webrecorder',

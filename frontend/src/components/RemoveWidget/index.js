@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import { Overlay, Tooltip } from 'react-bootstrap';
 
 import OutsideClick from 'components/OutsideClick';
@@ -10,12 +11,17 @@ import './style.scss';
 
 class RemoveWidget extends Component {
   static propTypes = {
+    borderless: PropTypes.bool,
     callback: PropTypes.func,
+    classes: PropTypes.string,
+    children: PropTypes.node,
     withConfirmation: PropTypes.bool,
     message: PropTypes.string
   };
 
   static defaultProps = {
+    borderless: true,
+    classes: '',
     withConfirmation: true,
     message: 'Confirm Delete'
   };
@@ -52,12 +58,18 @@ class RemoveWidget extends Component {
   }
 
   render() {
-    const { message } = this.props;
+    const { borderless, children, classes, message } = this.props;
 
     return (
       <div className="wr-remove-widget" style={{ position: 'relative' }}>
         <OutsideClick handleClick={this.outsideClickCheck} inlineBlock>
-          <button ref={(obj) => { this.target = obj; }} className="borderless remove-widget-icon" onClick={this.removeClick}><TrashIcon /></button>
+          <button
+            ref={(obj) => { this.target = obj; }}
+            className={classNames('remove-widget-icon', [classes], { borderless })}
+            onClick={this.removeClick}
+            type="button">
+            { children || <TrashIcon />}
+          </button>
         </OutsideClick>
         {/* todo: add portal option for tooltip */}
         <Overlay container={this} placement="bottom" target={this.target} show={this.state.confirmRemove}>

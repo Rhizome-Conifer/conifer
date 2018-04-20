@@ -3,6 +3,7 @@ export BugIcon from './Bug';
 export CheckIcon from './Check';
 export CloseIcon from './Close';
 export Collection from './Collection';
+export DownloadIcon from './Download';
 export FlagIcon from './Flag';
 export GithubIcon from './Github';
 export HelpIcon from './Help';

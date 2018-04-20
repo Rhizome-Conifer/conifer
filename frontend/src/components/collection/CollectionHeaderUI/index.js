@@ -87,8 +87,6 @@ class CollectionHeaderUI extends Component {
     this.setState(state);
   }
 
-  handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
-
   editListTitle = (title) => {
     const { collection, list } = this.props;
     this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { title });
@@ -132,32 +130,6 @@ class CollectionHeaderUI extends Component {
     } else {
       editCollection(collection.get('user'), collection.get('id'), { desc });
     }
-  }
-
-  toggleDeleteModal = () => this.setState({ deleteModal: !this.state.deleteModal })
-
-  deleteCollection = () => {
-    const { collection } = this.props;
-    const { confirmDelete } = this.state;
-
-    if (collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
-      this.props.deleteColl(collection.get('user'), collection.get('id'));
-    }
-  }
-
-  validateConfirmDelete = (evt) => {
-    const { collection } = this.props;
-    const { confirmDelete } = this.state;
-
-    if (!confirmDelete) {
-      return null;
-    }
-
-    if (confirmDelete && !collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
-      return 'error';
-    }
-
-    return 'success';
   }
 
   render() {
