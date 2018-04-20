@@ -334,17 +334,16 @@ class UserTable(object):
         return self.redis.sismember(self.users_key, name)
 
     def __setitem__(self, name, obj):
-        if isinstance(obj, dict):
-            user = self.get_user(name)
-            user.access.assert_is_curr_user(user)
-            user.data.update(obj)
+        if not isinstance(obj, dict):
+            raise Exception('Must assign a dict')
 
-            with redis_pipeline(self.redis) as pi:
-                user.commit(pi)
-                pi.sadd(self.users_key, name)
+        user = self.get_user(name)
+        user.access.assert_is_curr_user(user)
+        user.data.update(obj)
 
-        elif not isinstance(values, User):
-            raise Exception('invalid values')
+        with redis_pipeline(self.redis) as pi:
+            user.commit(pi)
+            pi.sadd(self.users_key, name)
 
     def __delitem__(self, name):
         user = self.get_user(name)

@@ -21,15 +21,8 @@ class S3Storage(BaseStorage):
         parts = urlsplit(url)
         return parts.netloc, parts.path.lstrip('/')
 
-    def _get_s3_url(self, target_url, profile_name='', with_cred=False):
-        s3_url = ''
-
-        if profile_name:
-            s3_url = profile_name + '+'
-
-        s3_url += 's3://'
-        s3_url += self.bucket_name + '/' + target_url
-        return s3_url
+    def _get_s3_url(self, target_url):
+        return 's3://' + self.bucket_name + '/' + target_url
 
     def is_valid_url(self, target_url):
         try:
@@ -62,15 +55,10 @@ class S3Storage(BaseStorage):
             print('Failed to Upload to {0}'.format(s3_url))
             return False
 
-        res = self._split_bucket_path(client_url)
-
     def client_url_to_target_url(self, client_url):
-        res = self._split_bucket_path(client_url)
+        bucket, path = self._split_bucket_path(client_url)
 
-        if len(res) != 2:
-            return None
-
-        return res[1]
+        return path
 
     def do_delete(self, target_url, client_url):
         print('Deleting Remote', client_url)
