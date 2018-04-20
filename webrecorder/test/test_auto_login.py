@@ -38,7 +38,7 @@ class TestAutoLogin(FullStackTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
-        res = self.testapp.post('/api/v1/recordings/rec-sesh/pages?user=test&coll=default-collection', params=page)
+        res = self.testapp.post_json('/api/v1/recordings/rec-sesh/pages?user=test&coll=default-collection', params=page)
 
         assert res.json == {}
 
@@ -46,5 +46,32 @@ class TestAutoLogin(FullStackTests):
         res = self.testapp.get('/api/v1/curr_user')
         assert res.json == {'curr_user': 'test'}
 
+    def test_get_collection(self):
+        res = self.testapp.get('/api/v1/collection/default-collection?user=test')
+
+        assert res.json['collection']
+        coll = res.json['collection']
+
+        assert coll['public_index'] == True
+        assert coll['public'] == False
+        assert coll['title'] == 'Default Collection'
+        assert 'This is your first collection' in coll['desc']
+
+    def test_update_collection(self):
+        params = {'desc': 'New Description',
+                  'public_index': False,
+                  'public': True,
+                  'title': 'New Title'
+                 }
+
+        res = self.testapp.post_json('/api/v1/collection/default-collection?user=test', params=params)
+
+        assert res.json['collection']
+        coll = res.json['collection']
+
+        assert coll['public_index'] == False
+        assert coll['public'] == True
+        assert coll['title'] == 'New Title'
+        assert coll['desc'] == 'New Description'
 
 

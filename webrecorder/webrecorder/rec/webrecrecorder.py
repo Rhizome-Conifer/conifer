@@ -20,7 +20,6 @@ from webrecorder.load.wamloader import WAMLoader
 from webrecorder.rec.storage.local import LocalFileStorage
 
 import redis
-import time
 import json
 import glob
 import tempfile
@@ -114,7 +113,7 @@ class WebRecRecorder(object):
             #dupe_policy=WriteRevisitDupePolicy(),
             dupe_policy=SkipDupePolicy(),
 
-            size_keys=self.info_keys.values(),
+            info_keys=self.info_keys.values(),
             rec_info_key_templ=self.info_keys['rec'],
 
             config=self.config,
@@ -271,7 +270,7 @@ class WebRecRedisIndexer(WritableRedisIndexer):
     def __init__(self, *args, **kwargs):
         super(WebRecRedisIndexer, self).__init__(*args, **kwargs)
 
-        self.size_keys = kwargs.get('size_keys', [])
+        self.info_keys = kwargs.get('info_keys', [])
         self.rec_info_key_templ = kwargs.get('rec_info_key_templ')
 
         config = kwargs['config']
@@ -315,7 +314,6 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         cdx_list = (super(WebRecRedisIndexer, self).
                       add_urls_to_index(stream, params, filename, length))
 
-
         # if replay key exists, add to it as well!
         coll_cdxj_key = res_template(self.coll_cdxj_key, params)
         if self.redis.exists(coll_cdxj_key):
@@ -323,16 +321,18 @@ class WebRecRedisIndexer(WritableRedisIndexer):
                 if cdx:
                     self.redis.zadd(coll_cdxj_key, 0, cdx)
 
-        ts = datetime.now().date().isoformat()
-        ts_sec = str(int(time.time()))
+        dt_now = datetime.utcnow()
+        ts = dt_now.date().isoformat()
+        ts_sec = int(dt_now.timestamp())
 
         with redis_pipeline(self.redis) as pi:
-            for key_templ in self.size_keys:
+            for key_templ in self.info_keys:
                 key = res_template(key_templ, params)
                 pi.hincrby(key, 'size', length)
-
-                if key_templ == self.rec_info_key_templ and cdx_list:
+                if cdx_list:
                     pi.hset(key, 'updated_at', ts_sec)
+                    if key_templ == self.rec_info_key_templ:
+                        pi.hset(key, 'recorded_at', ts_sec)
 
             # write size to usage hashes
             if 'param.user' in params:

@@ -178,7 +178,7 @@ class MainController(BaseController):
         def get_coll(context):
             return context.get('coll', '')
 
-        def get_user_coll(context):
+        def get_collection(context):
             coll = context.get('coll', '')
             coll_name = context.get('coll_name', '')
             user = get_user(context)
@@ -208,11 +208,11 @@ class MainController(BaseController):
 
         @contextfunction
         def is_public(context):
-            return self.access.is_public(get_user_coll(context))
+            return get_collection(context).is_public()
 
         @contextfunction
         def can_admin(context):
-            return self.access.can_admin_coll(get_user_coll(context))
+            return self.access.can_admin_coll(get_collection(context))
 
         @contextfunction
         def is_owner(context):
@@ -221,12 +221,12 @@ class MainController(BaseController):
 
         @contextfunction
         def can_write(context):
-            res = self.access.can_write_coll(get_user_coll(context))
+            res = self.access.can_write_coll(get_collection(context))
             return res
 
         @contextfunction
         def can_read(context):
-            res = self.access.can_read_coll(get_user_coll(context))
+            res = self.access.can_read_coll(get_collection(context))
 
         @contextfunction
         def is_anon(context):
@@ -290,7 +290,7 @@ class MainController(BaseController):
 
         @contextfunction
         def get_recs_for_coll(context):
-            collection = get_user_coll(context)
+            collection = get_collection(context)
 
             return [{'ts': r['timestamp'], 'url': r['url'], 'br': r.get('browser', '')}
                     for r in collection.list_coll_pages()]
@@ -379,35 +379,22 @@ class MainController(BaseController):
         def json_error(body_dict):
             response.content_type = 'application/json'
             res = json.dumps(body_dict)
-            print(res)
             return res
 
         def err_handler(out):
-            print(out)
-
-            if (isinstance(out.exception, dict) and
-                hasattr(out, 'json_err')):
-                return json_error(out.exception)
+            if out.status_code == 500:
+                print(out.traceback)
             else:
-                if out.status_code == 404:
-                    start_path = request.environ.get('SCRIPT_NAME')
-                    if not start_path:
-                        start_path = request.environ.get('PATH_INFO')
-                    #else:
-                    #    url = request.environ.get('PATH_INFO', '')[1:]
+                print(out)
 
-                    if start_path.startswith('/' + self.user_manager.temp_prefix):
-                        res = error_view(out, is_temp=True)
-                        return res
+            if out.status_code == 404 and self._check_refer_redirect():
+                return
 
-                    if self._check_refer_redirect():
-                        return
+            if isinstance(out.exception, dict):
+                return json_error(out.exception)
 
-                if out.status_code == 500:
-                    print(out.traceback)
-
-                return error_view(out)
-                #return default_err_handler(out)
+            else:
+                return json_error({'error': 'not_found'})
 
         return err_handler
 

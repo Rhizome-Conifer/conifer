@@ -1,6 +1,8 @@
 from webrecorder.basecontroller import BaseController
 from bottle import request
 
+from webrecorder.utils import get_bool
+
 
 # ============================================================================
 class ListsController(BaseController):
@@ -10,14 +12,12 @@ class ListsController(BaseController):
         def get_lists():
             user, collection = self.load_user_coll()
 
-            with_bookmarks = True
-            if request.query.include_bookmarks:
-                with_bookmarks = request.query.include_bookmarks == 'true'
+            include_bookmarks = request.query.include_bookmarks or 'all'
 
             lists = collection.get_lists()
 
             return {
-                'lists': [blist.serialize(include_bookmarks=with_bookmarks)
+                'lists': [blist.serialize(include_bookmarks=include_bookmarks)
                           for blist in lists]
             }
 

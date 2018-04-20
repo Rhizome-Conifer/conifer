@@ -8,7 +8,6 @@ from webrecorder.models.base import BaseAccess
 class SessionAccessCache(BaseAccess):
     READ_PREFIX = 'r:'
     WRITE_PREFIX = 'w:'
-    PUBLIC = '@public'
 
     def __init__(self, session, redis):
         self.sesh = session
@@ -77,7 +76,7 @@ class SessionAccessCache(BaseAccess):
         if not collection:
             return False
 
-        if self.is_public(collection):
+        if collection.is_public():
             return 'public'
 
         # if superuser, can read
@@ -91,17 +90,6 @@ class SessionAccessCache(BaseAccess):
             return False
 
         return collection.get_prop(self.READ_PREFIX + self.session_user.my_id) != None
-
-    def is_public(self, collection):
-        return collection.get_prop(self.READ_PREFIX + self.PUBLIC) == '1'
-
-    def set_public(self, collection, is_public):
-        if not self.is_superuser() and not self.can_admin_coll(collection):
-            assert False
-            return False
-
-        collection.set_prop(self.READ_PREFIX + self.PUBLIC, 1 if is_public else 0)
-        return True
 
     def can_read_coll(self, collection):
         return bool(self.check_read_access_public(collection))
@@ -149,9 +137,8 @@ class SessionAccessCache(BaseAccess):
         if self._is_coll_owner(coll):
             return True
 
-        if self.is_public(coll):
-            if self.is_list_public(blist):
-                return True
+        if coll.is_public() and blist.is_public():
+            return True
 
         return False
 
@@ -159,5 +146,3 @@ class SessionAccessCache(BaseAccess):
         if not self.can_read_list(blist):
             raise HTTPError(404, 'No List Access')
 
-    def is_list_public(self, blist):
-        return blist.get_prop('public') == '1'

@@ -12,10 +12,12 @@ class RecsController(BaseController):
         def create_recording():
             user, collection = self.load_user_coll()
 
-            rec_title = request.forms.getunicode('title', '')
+            data = request.json or {}
+
+            rec_title = data.get('title', '')
             rec_title = self.sanitize_title(rec_title)
 
-            desc = request.forms.getunicode('desc', '')
+            desc = data.get('desc', '')
 
             recording = collection.create_recording(rec_title, desc=desc)
 
@@ -44,7 +46,7 @@ class RecsController(BaseController):
 
             user.access.assert_can_write_coll(collection)
 
-            desc = request.forms.getunicode('desc', '')
+            desc = request.json.get('desc', '')
 
             recording['desc'] = desc
 
@@ -86,7 +88,7 @@ class RecsController(BaseController):
         def add_page(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
-            page_data = dict(request.forms.decode())
+            page_data = request.json
 
             res = recording.add_page(page_data)
             return res
@@ -95,7 +97,7 @@ class RecsController(BaseController):
         def modify_page(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
-            page_data = dict(request.forms.decode())
+            page_data = request.json
 
             res = recording.modify_page(page_data)
             return {'page-data': page_data, 'recording-id': rec_name}
@@ -117,8 +119,8 @@ class RecsController(BaseController):
         def delete_page(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
-            url = request.forms.getunicode('url')
-            ts = request.forms.getunicode('timestamp')
+            url = request.json.get('url')
+            ts = request.json.get('timestamp')
 
             return recording.delete_page(url, ts)
 

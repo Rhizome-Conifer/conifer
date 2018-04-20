@@ -1,4 +1,4 @@
-from bottle import request
+from bottle import request, response
 from six.moves.urllib.parse import quote
 
 from webrecorder.basecontroller import BaseController
@@ -20,14 +20,14 @@ class CollsController(BaseController):
         def create_collection():
             user = self.get_user(api=True, redir_check=False)
 
-            title = request.forms.getunicode('title')
+            title = request.json.get('title')
 
             coll_name = self.sanitize_title(title)
 
             if not coll_name:
                 return {'error_message': 'Invalid Collection Name'}
 
-            is_public = self.post_get('public') == 'on'
+            is_public = request.json.get('public')
 
             if self.access.is_anon(user):
                 if coll_name != 'temp':
@@ -105,7 +105,18 @@ class CollsController(BaseController):
             if 'public' in data:
                 #if self.access.is_superuser() and data.get('notify'):
                 #    pass
-                self.access.set_public(collection, data['public'])
+                collection.set_public(data['public'])
+
+            if 'public_index' in data:
+                collection.set_bool_prop('public_index', data['public_index'])
+
+            if 'featured_list' in data:
+                blist = collection.get_list(data['featured_list'])
+                if not blist:
+                    response.status = 400
+                    return {'error': 'no_such_list'}
+
+                collection['featured_list'] = data['featured_list']
 
             return {'collection': collection.serialize()}
 

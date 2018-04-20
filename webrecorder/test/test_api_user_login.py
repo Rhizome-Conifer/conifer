@@ -22,7 +22,7 @@ class TestApiUserLogin(FullStackTests):
         assert self.ISO_DT_RX.match(user['created_at'])
         assert self.ISO_DT_RX.match(user['updated_at'])
 
-        assert set(user.keys()) == {'id', 'username', 'created_at', 'updated_at', 'space_utilization', 'ttl', 'max_size', 'size'}
+        assert set(user.keys()) == {'id', 'username', 'created_at', 'updated_at', 'space_utilization', 'ttl', 'max_size', 'size', 'timespan'}
 
     def test_api_register_fail_mismatch_password(self):
         # mismatch password

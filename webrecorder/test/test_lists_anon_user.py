@@ -5,7 +5,7 @@ from webrecorder.models.list_bookmarks import BookmarkList, Bookmark
 
 
 # ============================================================================
-class TestListsAPI(FullStackTests):
+class TestListsAnonUserAPI(FullStackTests):
     def _format(self, url):
         return url.format(user=self.anon_user)
 
@@ -27,7 +27,7 @@ class TestListsAPI(FullStackTests):
         return res
 
     def test_create_anon_coll(self):
-        res = self.testapp.post(self._format('/api/v1/collections?user={user}'), params={'title': 'Temp'})
+        res = self.testapp.post_json(self._format('/api/v1/collections?user={user}'), params={'title': 'Temp'})
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
@@ -36,7 +36,7 @@ class TestListsAPI(FullStackTests):
 
         _coll, _ = self.get_coll_rec(self.anon_user, 'temp', '')
 
-        TestListsAPI.coll = _coll
+        TestListsAnonUserAPI.coll = _coll
 
         self.redis.set(BookmarkList.COUNTER_KEY, 1000)
         self.redis.set(Bookmark.COUNTER_KEY, 100)
@@ -57,7 +57,9 @@ class TestListsAPI(FullStackTests):
         assert blist['owner'] == self.coll
         assert blist['id'] == '1001'
         assert blist['desc'] == 'List Description Goes Here!'
-        assert blist['public'] == '0'
+        assert blist['public'] == False
+
+        assert self.redis.hget('l:1001:info', 'public') == '0'
 
         assert self.redis.get(BookmarkList.COUNTER_KEY) == '1001'
 
@@ -76,12 +78,14 @@ class TestListsAPI(FullStackTests):
 
         assert res.json['list']['id'] == '1003'
         assert res.json['list']['title'] == 'Another List'
+        assert res.json['list']['public'] == False
 
     def test_get_list(self):
         res = self.testapp.get(self._format('/api/v1/list/1002?user={user}&coll=temp'))
 
         assert res.json['list']['id'] == '1002'
         assert res.json['list']['title'] == 'New List'
+        assert res.json['list']['public'] == False
 
     def test_list_all_lists(self):
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
@@ -196,6 +200,19 @@ class TestListsAPI(FullStackTests):
         assert blist['created_at'] < blist['updated_at']
 
         assert self.ISO_DT_RX.match(blist['updated_at'])
+
+    def test_update_list_public(self):
+        params = {'public': True}
+
+        res = self.testapp.post_json(self._format('/api/v1/list/1002?user={user}&coll=temp'), params=params)
+
+        blist = res.json['list']
+        assert blist['title'] == 'A List'
+        assert blist['id'] == '1002'
+        assert blist['public'] == True
+
+        assert self.redis.hget('l:1002:info', 'public') == '1'
+
 
     # Bookmarks
     # ========================================================================
@@ -332,13 +349,17 @@ class TestListsAPI(FullStackTests):
 
         lists = res.json['collection']['lists']
 
-        assert len(lists) == 2
+        # only public lists included
+        assert len(lists) == 1
 
         assert lists[0]['id'] == '1002'
-        assert lists[0]['num_bookmarks'] == 4
+        assert lists[0]['total_bookmarks'] == 4
 
-        assert lists[1]['id'] == '1003'
-        assert lists[1]['num_bookmarks'] == 5
+        # only first bookmark loaded
+        assert len(lists[0]['bookmarks']) == 1
+
+        #assert lists[1]['id'] == '1003'
+        #assert lists[1]['total_bookmarks'] == 5
 
     # Record, then Replay Via List
     # ========================================================================
