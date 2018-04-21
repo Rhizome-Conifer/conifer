@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 
 import { DeleteCollection, Upload } from 'containers';
 
+import HttpStatus from 'components/HttpStatus';
 import SessionCollapsible from 'components/collection/SessionCollapsible';
 import SizeFormat from 'components/SizeFormat';
 import TimeFormat from 'components/TimeFormat';
@@ -14,6 +14,10 @@ import './style.scss';
 
 
 class CollectionManagementUI extends Component {
+  static contextTypes = {
+    canAdmin: PropTypes.bool
+  };
+
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
@@ -43,6 +47,10 @@ class CollectionManagementUI extends Component {
   render() {
     const { collection, recordings } = this.props;
     const { expandAll } = this.state;
+
+    if (!this.context.canAdmin) {
+      return <HttpStatus status={401} />;
+    }
 
     return (
       <div className="wr-coll-mgmt">

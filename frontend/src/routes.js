@@ -1,3 +1,4 @@
+import HttpStatus from 'components/HttpStatus';
 import { FAQ, TermsAndPolicies } from 'components/siteComponents';
 import {
   collDetailBreadcrumb,
@@ -11,7 +12,6 @@ import {
   CollectionManagement,
   Extract,
   Home,
-  HttpStatus,
   Logout,
   NewRecording,
   PasswordReset,

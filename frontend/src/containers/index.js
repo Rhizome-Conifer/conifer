@@ -8,7 +8,6 @@ export DeleteCollection from './DeleteCollection/DeleteCollection';
 export Extract from './Extract/Extract';
 export ExtractWidget from './ExtractWidget/ExtractWidget';
 export Home from './Home/Home';
-export HttpStatus from './HttpStatus/HttpStatus';
 export InfoWidget from './InfoWidget/InfoWidget';
 export Lists from './Lists/Lists';
 export ListMetadata from './ListMetadata/ListMetadata';

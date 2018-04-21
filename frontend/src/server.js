@@ -22,9 +22,6 @@ import './base.scss';
 const app = new express();
 const server = new http.Server(app);
 
-// TODO: use nginx
-app.use(express.static(path.join(__dirname, '..', 'static')));
-
 app.use(compression());
 
 // intercept favicon.ico
@@ -71,11 +68,13 @@ app.use((req, res) => {
         store={store} />
     );
 
-    res.status(context.status ? context.status : 200);
-
-    global.navigator = { userAgent: req.headers['user-agent'] };
-
-    res.send(`<!doctype html>\n ${outputHtml}`);
+    if (context.url) {
+      res.redirect(context.status || 301, context.url);
+    } else {
+      res.status(context.status ? context.status : 200);
+      global.navigator = { userAgent: req.headers['user-agent'] };
+      res.send(`<!doctype html>\n ${outputHtml}`);
+    }
   });
 });
 
