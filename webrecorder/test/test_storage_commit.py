@@ -99,7 +99,7 @@ class BaseStorageCommit(FullStackTests):
         user_dir = os.path.join(self.warcs_dir, 'test')
         assert len(os.listdir(user_dir)) == 0
 
-        res = self.testapp.post_json('/api/v1/recordings/rec/copy/another-coll?user=test&coll=default-collection')
+        res = self.testapp.post_json('/api/v1/recording/rec/copy/another-coll?user=test&coll=default-collection')
 
         coll, rec = self.get_coll_rec('test', 'another-coll', 'rec')
 

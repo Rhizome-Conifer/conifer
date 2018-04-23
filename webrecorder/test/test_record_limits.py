@@ -135,7 +135,7 @@ class TestRecordLimits(FullStackTests):
 
         old_size = int(self.redis.hget(user_key, 'size'))
 
-        res = self.testapp.delete('/api/v1/recordings/rec?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/rec?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'rec'}
 

@@ -31,7 +31,7 @@ class RecsController(BaseController):
 
             return {'recordings': [rec.serialize() for rec in recs]}
 
-        @self.app.get('/api/v1/recordings/<rec_name>')
+        @self.app.get('/api/v1/recording/<rec_name>')
         def get_recording(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
@@ -52,7 +52,7 @@ class RecsController(BaseController):
 
             return {'recording': recording.serialize()}
 
-        @self.app.delete('/api/v1/recordings/<rec_name>')
+        @self.app.delete('/api/v1/recording/<rec_name>')
         def delete_recording(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
@@ -62,7 +62,7 @@ class RecsController(BaseController):
             else:
                 return {'deleted_id': rec_name}
 
-        @self.app.post('/api/v1/recordings/<rec_name>/move/<new_coll_name>')
+        @self.app.post('/api/v1/recording/<rec_name>/move/<new_coll_name>')
         def move_recording(rec_name, new_coll_name):
             user, collection, recording = self.load_recording(rec_name)
 
@@ -83,7 +83,7 @@ class RecsController(BaseController):
             else:
                 return {'error': 'error_move_recording'}
 
-        @self.app.post('/api/v1/recordings/<rec_name>/copy/<new_coll_name>')
+        @self.app.post('/api/v1/recording/<rec_name>/copy/<new_coll_name>')
         def copy_recording(rec_name, new_coll_name):
             user, collection, recording = self.load_recording(rec_name)
 
@@ -100,7 +100,7 @@ class RecsController(BaseController):
 
             return {'recording': new_rec.serialize()}
 
-        @self.app.post('/api/v1/recordings/<rec_name>/pages')
+        @self.app.post('/api/v1/recording/<rec_name>/pages')
         def add_page(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
@@ -109,7 +109,7 @@ class RecsController(BaseController):
             res = recording.add_page(page_data)
             return res
 
-        @self.app.post('/api/v1/recordings/<rec_name>/page')
+        @self.app.post('/api/v1/recording/<rec_name>/page')
         def modify_page(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
@@ -118,20 +118,20 @@ class RecsController(BaseController):
             res = recording.modify_page(page_data)
             return {'page-data': page_data, 'recording-id': rec_name}
 
-        @self.app.get('/api/v1/recordings/<rec_name>/pages')
+        @self.app.get('/api/v1/recording/<rec_name>/pages')
         def list_pages(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
             pages = recording.list_pages()
             return {'pages': pages}
 
-        @self.app.get('/api/v1/recordings/<rec_name>/num_pages')
+        @self.app.get('/api/v1/recording/<rec_name>/num_pages')
         def get_num_pages(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
             return {'count': recording.count_pages() }
 
-        @self.app.delete('/api/v1/recordings/<rec_name>/pages')
+        @self.app.delete('/api/v1/recording/<rec_name>/pages')
         def delete_page(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 

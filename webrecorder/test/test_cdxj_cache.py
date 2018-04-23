@@ -151,7 +151,7 @@ class TestCDXJCache(FullStackTests):
         assert ((files[0].endswith('.cdxj') and files[1].endswith('.warc.gz')) or
                 (files[1].endswith('.cdxj') and files[0].endswith('.warc.gz')))
 
-        res = self.testapp.delete('/api/v1/recordings/rec?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/rec?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'rec'}
 

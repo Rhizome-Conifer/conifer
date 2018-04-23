@@ -179,7 +179,7 @@ class TestTempContent(FullStackTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
-        res = self.testapp.post_json('/api/v1/recordings/my-recording/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
+        res = self.testapp.post_json('/api/v1/recording/my-recording/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
         assert res.json == {}
 
@@ -219,7 +219,7 @@ class TestTempContent(FullStackTests):
         assert self.testapp.cookies['__test_sesh'] != ''
         assert res.headers['Location'].endswith('/temp/my-rec2/record/http://httpbin.org/get?bood=far')
 
-        res = self.testapp.get('/api/v1/recordings/my-rec2?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.get('/api/v1/recording/my-rec2?user={user}&coll=temp'.format(user=self.anon_user))
         assert res.json['recording']['id'] == 'my-rec2'
         assert res.json['recording']['desc'] == 'My Rec2'
 
@@ -244,7 +244,7 @@ class TestTempContent(FullStackTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?bood=far', 'ts': '2016010203000000'}
-        res = self.testapp.post_json('/api/v1/recordings/my-rec2/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
+        res = self.testapp.post_json('/api/v1/recording/my-rec2/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
         assert res.json == {}
 
@@ -271,7 +271,7 @@ class TestTempContent(FullStackTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?good=far', 'ts': '2016010203000000'}
-        res = self.testapp.post_json('/api/v1/recordings/my-recording-2/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
+        res = self.testapp.post_json('/api/v1/recording/my-recording-2/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
         assert res.json == {}
 
@@ -298,7 +298,7 @@ class TestTempContent(FullStackTests):
         # Add as page
         page = {'title': 'вэбрекордэр!', 'url': test_url, 'ts': '2016010203000000'}
         res = self.testapp.post_json(
-            '/api/v1/recordings/{rec}/pages?user={user}&coll=temp'.format(rec=quote('вэбрекордэр'), user=self.anon_user),
+            '/api/v1/recording/{rec}/pages?user={user}&coll=temp'.format(rec=quote('вэбрекордэр'), user=self.anon_user),
             params=page
         )
 
@@ -343,7 +343,7 @@ class TestTempContent(FullStackTests):
         # Add as page
         page = {'title': 'Special char test', 'url': test_url, 'ts': '2016010203000000'}
         res = self.testapp.post_json(
-            '/api/v1/recordings/{rec}/pages?user={user}&coll=temp'.format(rec='test--ok', user=self.anon_user),
+            '/api/v1/recording/{rec}/pages?user={user}&coll=temp'.format(rec='test--ok', user=self.anon_user),
             params=page
         )
 
@@ -376,7 +376,7 @@ class TestTempContent(FullStackTests):
         # Add as page
         page = {'title': 'HTML formatting test', 'url': test_url, 'ts': '2016010203000000'}
         res = self.testapp.post_json(
-            '/api/v1/recordings/{rec}/pages?user={user}&coll=temp'.format(rec='emmyem-test-recording', user=self.anon_user),
+            '/api/v1/recording/{rec}/pages?user={user}&coll=temp'.format(rec='emmyem-test-recording', user=self.anon_user),
             params=page
         )
 
@@ -507,7 +507,7 @@ class TestTempContent(FullStackTests):
         cdx[4]['mime'] = '-'
 
     def _test_rename_rec(self):
-        res = self.testapp.post_json('/api/v1/recordings/my-rec2/rename/My%20Recording?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.post_json('/api/v1/recording/my-rec2/rename/My%20Recording?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'rec_id': 'my-recording-3', 'coll_id': 'temp'}
 
@@ -548,23 +548,23 @@ class TestTempContent(FullStackTests):
         assert res.json['collection']['duration'] >= 0
 
     def test_anon_delete_recs(self):
-        res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/my-recording?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'my-recording'}
 
-        res = self.testapp.delete('/api/v1/recordings/{rec}?user={user}&coll=temp'.format(rec=quote('вэбрекордэр'), user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/{rec}?user={user}&coll=temp'.format(rec=quote('вэбрекордэр'), user=self.anon_user))
 
         assert res.json == {'deleted_id': 'вэбрекордэр'}
 
-        res = self.testapp.delete('/api/v1/recordings/my-recording-2?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/my-recording-2?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'my-recording-2'}
 
-        res = self.testapp.delete('/api/v1/recordings/test--ok?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/test--ok?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'test--ok'}
 
-        res = self.testapp.delete('/api/v1/recordings/emmyem-test-recording?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/emmyem-test-recording?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'emmyem-test-recording'}
 
@@ -586,7 +586,7 @@ class TestTempContent(FullStackTests):
 
         self._assert_rec_keys(user, 'temp', ['my-rec2'], del_q=True, check_stats=True)
 
-        res = self.testapp.delete('/api/v1/recordings/my-recording?user={user}&coll=temp'.format(user=self.anon_user), status=404)
+        res = self.testapp.delete('/api/v1/recording/my-recording?user={user}&coll=temp'.format(user=self.anon_user), status=404)
 
         assert res.json == {'id': 'my-recording', 'error_message': 'Recording not found'}
 
@@ -603,7 +603,7 @@ class TestTempContent(FullStackTests):
         assert parts.path.endswith('/temp/recording-session/record/mp_/http://example.com/')
 
         # Delete this recording
-        res = self.testapp.delete('/api/v1/recordings/recording-session?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/recording-session?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'recording-session'}
 
@@ -620,7 +620,7 @@ class TestTempContent(FullStackTests):
         assert res.headers['Location'].endswith('/temp/patch/patch/http://example.com/?patch=test')
 
         # Delete this recording
-        res = self.testapp.delete('/api/v1/recordings/patch?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/patch?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'patch'}
 

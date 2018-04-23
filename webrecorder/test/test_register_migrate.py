@@ -34,7 +34,7 @@ class TestRegisterMigrate(FullStackTests):
 
         # Add as page
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
-        res = self.testapp.post_json('/api/v1/recordings/abc/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
+        res = self.testapp.post_json('/api/v1/recording/abc/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
         assert res.json == {}
 
@@ -289,7 +289,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.get_rec_names('someuser', 'new-coll') == {'move-test'}
         assert self.get_rec_names('someuser', 'new-coll-2') == set()
 
-        res = self.testapp.post_json('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
+        res = self.testapp.post_json('/api/v1/recording/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
         assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test'}
 
@@ -342,7 +342,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.get_rec_names('someuser', 'new-coll') == {'move-test'}
         assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test'}
 
-        res = self.testapp.post_json('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
+        res = self.testapp.post_json('/api/v1/recording/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
         assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test-2'}
 
@@ -420,7 +420,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def _test_rename_rec(self):
-        res = self.testapp.post_json('/api/v1/recordings/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
+        res = self.testapp.post_json('/api/v1/recording/abc/rename/FOOD%20BAR?user=someuser&coll=test-migrate')
 
         assert res.json == {'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
 
