@@ -90,7 +90,7 @@ export function collRecordings(user, coll) {
 export function loadRecording(user, coll, rec) {
   return {
     types: [REC_LOAD, REC_LOAD_SUCCESS, REC_LOAD_FAIL],
-    promise: client => client.get(`${apiPath}/recordings/${rec}`, {
+    promise: client => client.get(`${apiPath}/recording/${rec}`, {
       params: { user, coll }
     })
   };
@@ -117,7 +117,7 @@ export function resetEditState() {
 export function deleteRecording(user, coll, rec) {
   return {
     types: [REC_DELETE, REC_DELETE_SUCCESS, REC_DELETE_FAIL],
-    promise: client => client.del(`${apiPath}/recordings/${rec}`, {
+    promise: client => client.del(`${apiPath}/recording/${rec}`, {
       params: { user, coll }
     })
   };
