@@ -1,11 +1,11 @@
 from datetime import datetime
 import os
 
-from .testutils import BaseWRTests
+from .testutils import FullStackTests
 
 
 # ============================================================================
-class TestWebRecCollsAPI(BaseWRTests):
+class TestWebRecCollsAPI(FullStackTests):
     def setup_class(cls):
         super(TestWebRecCollsAPI, cls).setup_class()
 

@@ -41,6 +41,7 @@ from webrecorder.session import Session, RedisSessionMiddleware
 from webrecorder.models import User, Collection, Recording
 from webrecorder.models.access import SessionAccessCache
 from webrecorder.models.usermanager import UserManager
+from webrecorder.rec.storage import storagepaths
 
 from webrecorder.basecontroller import BaseController
 
@@ -111,6 +112,7 @@ class MainController(BaseController):
                                         browser_mgr=browser_mgr,
                                         redis=self.redis)
 
+        storagepaths.init_props(config)
         User.init_props(config)
         Collection.init_props(config)
         Recording.init_props(config)

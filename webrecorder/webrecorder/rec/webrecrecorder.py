@@ -17,7 +17,7 @@ from webrecorder.utils import SizeTrackingReader, redis_pipeline
 
 from webrecorder.load.wamloader import WAMLoader
 
-from webrecorder.rec.storage.local import LocalFileStorage
+from webrecorder.rec.storage.local import DirectLocalFileStorage
 
 import redis
 import json
@@ -69,7 +69,7 @@ class WebRecRecorder(object):
         self.redis_base_url = os.environ['REDIS_BASE_URL']
         self.redis = redis.StrictRedis.from_url(self.redis_base_url, decode_responses=True)
 
-        self.local_storage = LocalFileStorage(self.config)
+        self.local_storage = DirectLocalFileStorage()
 
         self.msg_ge = None
         self.pubsub = None
@@ -172,7 +172,8 @@ class WebRecRecorder(object):
         self.pubsub.subscribe('close_rec')
         self.pubsub.subscribe('close_idle')
 
-        self.pubsub.subscribe('handle_delete')
+        self.pubsub.subscribe('handle_delete_file')
+        self.pubsub.subscribe('handle_delete_dir')
 
         print('Waiting for messages')
 
@@ -194,19 +195,25 @@ class WebRecRecorder(object):
             elif item['channel'] == 'close_rec':
                 self.recorder.writer.close_key(item['data'])
 
-            elif item['channel'] == 'handle_delete':
-                self.handle_delete(item['data'])
+            elif item['channel'] == 'handle_delete_file':
+                self.handle_delete_file(item['data'])
+
+            elif item['channel'] == 'handle_delete_dir':
+                self.handle_delete_dir(item['data'])
 
         except:
             traceback.print_exc()
 
-    def handle_delete(self, uri):
+    def handle_delete_file(self, uri):
         # determine if local file
         filename = self.strip_prefix(uri)
 
         closed = self.recorder.writer.close_file(filename)
 
         self.local_storage.delete_file(filename)
+
+    def handle_delete_dir(self, local_dir):
+        self.local_storage.delete_collection_dir(local_dir)
 
     def strip_prefix(self, uri):
         if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):

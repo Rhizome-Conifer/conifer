@@ -110,22 +110,25 @@ class User(RedisNamedContainer):
             return False
 
         for recording in collection.get_recordings():
-            if not recording.move_warcs(new_user):
-                return False
+            # will be marked for commit
+            recording.set_closed()
+
+            #if not recording.queue_move_warcs(new_user):
+            #    return False
 
         return True
 
     def remove_collection(self, collection, delete=False):
         if not collection:
-            return False
+            return {'error': 'no_collection'}
 
         if not self.remove_object(collection):
-            return False
+            return {'error': 'not_found'}
 
         if delete:
             return collection.delete_me()
 
-        return True
+        return {}
 
     def delete_me(self):
         for collection in self.get_collections(load=False):
@@ -248,6 +251,10 @@ class User(RedisNamedContainer):
 
         return (total >= limit_max)
 
+    def get_user_temp_warc_path(self):
+        return os.path.join(os.environ['RECORD_ROOT'], self.name)
+
+
 # ============================================================================
 class SessionUser(User):
     def __init__(self, **kwargs):
@@ -327,17 +334,16 @@ class UserTable(object):
         return self.redis.sismember(self.users_key, name)
 
     def __setitem__(self, name, obj):
-        if isinstance(obj, dict):
-            user = self.get_user(name)
-            user.access.assert_is_curr_user(user)
-            user.data.update(obj)
+        if not isinstance(obj, dict):
+            raise Exception('Must assign a dict')
 
-            with redis_pipeline(self.redis) as pi:
-                user.commit(pi)
-                pi.sadd(self.users_key, name)
+        user = self.get_user(name)
+        user.access.assert_is_curr_user(user)
+        user.data.update(obj)
 
-        elif not isinstance(values, User):
-            raise Exception('invalid values')
+        with redis_pipeline(self.redis) as pi:
+            user.commit(pi)
+            pi.sadd(self.users_key, name)
 
     def __delitem__(self, name):
         user = self.get_user(name)

@@ -22,26 +22,6 @@ class TestRegisterMigrate(FullStackTests):
         super(TestRegisterMigrate, cls).setup_class(extra_config_file='test_no_invites_config.yaml', storage_worker=True)
         cls.val_reg = ''
 
-    def _move_rec(self, url):
-        global all_closed
-        all_closed = False
-
-        def close_file(actual_self, filename):
-            MultiFileWARCWriter.close_file(actual_self, filename)
-            assert list(actual_self.iter_open_files()) == []
-            global all_closed
-            all_closed = True
-
-        with patch('webrecorder.rec.webrecrecorder.SkipCheckingMultiFileWARCWriter.close_file', close_file):
-            res = self.testapp.post_json(url)
-
-            def assert_move():
-                assert all_closed == True
-
-            #self.sleep_try(0.1, 5.0, assert_move)
-
-        return res
-
     def test_anon_record_1(self):
         res = self.testapp.get('/_new/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
         res.headers['Location'].endswith('/' + self.anon_user + '/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
@@ -130,14 +110,15 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_renamed_temp_to_perm(self):
         def assert_one_dir():
-            assert set(os.listdir(self.storage_today)) == {'warcs', 'indexes'}
-            assert len(os.listdir(os.path.join(self.storage_today, 'warcs'))) == 1
-            assert len(os.listdir(os.path.join(self.storage_today, 'indexes'))) == 1
-
-        self.sleep_try(0.2, 20.0, assert_one_dir)
+            coll_dir = os.path.join(self.storage_today, coll)
+            assert set(os.listdir(coll_dir)) == {'warcs', 'indexes'}
+            assert len(os.listdir(os.path.join(coll_dir, 'warcs'))) == 1
+            assert len(os.listdir(os.path.join(coll_dir, 'indexes'))) == 1
 
         coll, rec = self.get_coll_rec('someuser', 'test-migrate', 'abc')
         assert coll != None
+
+        self.sleep_try(0.2, 20.0, assert_one_dir)
 
         result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
         storage_dir = self.storage_today.replace(os.path.sep, '/')
@@ -308,12 +289,15 @@ class TestRegisterMigrate(FullStackTests):
         assert self.get_rec_names('someuser', 'new-coll') == {'move-test'}
         assert self.get_rec_names('someuser', 'new-coll-2') == set()
 
-        res = self._move_rec('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
+        res = self.testapp.post_json('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
         assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test'}
 
-        assert self.get_rec_names('someuser', 'new-coll') == set()
-        assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test'}
+        def assert_moved():
+            assert self.get_rec_names('someuser', 'new-coll') == set()
+            assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test'}
+
+        self.sleep_try(0.2, 5.0, assert_moved)
 
         # rec replay
         res = self.testapp.get('/someuser/new-coll-2/move-test/replay/mp_/http://example.com/')
@@ -358,21 +342,21 @@ class TestRegisterMigrate(FullStackTests):
         assert self.get_rec_names('someuser', 'new-coll') == {'move-test'}
         assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test'}
 
-        res = self._move_rec('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
+        res = self.testapp.post_json('/api/v1/recordings/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
         assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test-2'}
 
-        assert self.get_rec_names('someuser', 'new-coll') == set()
-        assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test', 'move-test-2'}
+        def assert_moved():
+            assert self.get_rec_names('someuser', 'new-coll') == set()
+            assert self.get_rec_names('someuser', 'new-coll-2') == {'move-test', 'move-test-2'}
+
+        self.sleep_try(0.2, 5.0, assert_moved)
 
         # rec replay
         res = self.testapp.get('/someuser/new-coll-2/move-test-2/replay/mp_/http://httpbin.org/get?rec=test')
         res.charset = 'utf-8'
 
         assert '"rec": "test"' in res.text
-
-        #coll, rec = self.get_coll_rec('someuser', 'new-coll')
-        #assert self.redis.exists('c:{coll}:cdxj'.format(coll=coll))
 
         # coll replay
         res = self.testapp.get('/someuser/new-coll-2/mp_/http://httpbin.org/get?rec=test')
@@ -490,8 +474,10 @@ class TestRegisterMigrate(FullStackTests):
 
         user_dir = os.path.join(self.warcs_dir, 'someuser')
 
-        st_warcs_dir = os.path.join(self.storage_today, 'warcs')
-        st_index_dir = os.path.join(self.storage_today, 'indexes')
+        coll, rec = self.get_coll_rec('someuser', 'test-coll', '')
+
+        st_warcs_dir = os.path.join(self.storage_today, coll, 'warcs')
+        st_index_dir = os.path.join(self.storage_today, coll, 'indexes')
 
         assert len(os.listdir(user_dir)) >= 2
 
@@ -507,8 +493,10 @@ class TestRegisterMigrate(FullStackTests):
 
         def assert_delete_warcs():
             assert len(os.listdir(user_dir)) == 2
-            assert len(os.listdir(st_warcs_dir)) == 0
-            assert len(os.listdir(st_index_dir)) == 0
+            assert not os.path.isdir(st_warcs_dir)
+            assert not os.path.isdir(st_index_dir)
+            #assert len(os.listdir(st_warcs_dir)) == 0
+            #assert len(os.listdir(st_index_dir)) == 0
 
         self.sleep_try(0.1, 10.0, assert_delete_warcs)
 
@@ -635,8 +623,8 @@ class TestRegisterMigrate(FullStackTests):
 
         def assert_delete():
             assert len(os.listdir(user_dir)) == 0
-            assert len(os.listdir(st_warcs_dir)) == 0
-            assert len(os.listdir(st_index_dir)) == 0
+            assert not os.path.isdir(st_warcs_dir)
+            assert not os.path.isdir(st_index_dir)
 
         self.sleep_try(0.3, 10.0, assert_delete)
 

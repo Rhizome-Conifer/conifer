@@ -40,7 +40,7 @@ class RecsController(BaseController):
             else:
                 return {'error_message': 'Recording not found', 'id': rec_name}
 
-        @self.app.post('/api/v1/recordings/<rec_name>/update_desc')
+        @self.app.post('/api/v1/recording/<rec_name>')
         def update_rec_desc(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
@@ -56,10 +56,11 @@ class RecsController(BaseController):
         def delete_recording(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 
-            if collection.remove_recording(recording, user, delete=True):
+            errs = collection.remove_recording(recording, delete=True)
+            if errs:
+                return errs
+            else:
                 return {'deleted_id': rec_name}
-
-            return {}
 
         @self.app.post('/api/v1/recordings/<rec_name>/move/<new_coll_name>')
         def move_recording(rec_name, new_coll_name):
@@ -71,18 +72,33 @@ class RecsController(BaseController):
 
             user.access.assert_can_admin_coll(new_collection)
 
-            new_rec_name = collection.move(recording, new_collection, allow_dupe=True)
+            #new_rec_name = collection.move(recording, new_collection, allow_dupe=True)
+            new_rec_name = collection.move_recording(recording, new_collection)
 
             if new_rec_name:
-                msg = 'Recording <b>{0}</b> moved to collection <a href="{1}"><b>{2}</b></a>'
-                msg = msg.format(rec_name, self.get_path(user.name, new_coll_name), new_coll_name)
-                self.flash_message(msg, 'success')
+                #msg = 'Recording <b>{0}</b> moved to collection <a href="{1}"><b>{2}</b></a>'
+                #msg = msg.format(rec_name, self.get_path(user.name, new_coll_name), new_coll_name)
+                #self.flash_message(msg, 'success')
                 return {'coll_id': new_coll_name, 'rec_id': new_rec_name}
             else:
-                msg = 'Error Moving'
-                self.flash_message(msg, 'error')
-                return {'error_message': msg}
+                return {'error': 'error_move_recording'}
 
+        @self.app.post('/api/v1/recordings/<rec_name>/copy/<new_coll_name>')
+        def copy_recording(rec_name, new_coll_name):
+            user, collection, recording = self.load_recording(rec_name)
+
+            new_collection = user.get_collection_by_name(new_coll_name)
+            if not new_collection:
+                return {'error_message': 'No Collection: ' + new_coll_name}
+
+            user.access.assert_can_write_coll(collection)
+            user.access.assert_can_admin_coll(new_collection)
+
+            new_rec = new_collection.create_recording(rec_name)
+
+            new_rec.copy_data_from_recording(recording)
+
+            return {'recording': new_rec.serialize()}
 
         @self.app.post('/api/v1/recordings/<rec_name>/pages')
         def add_page(rec_name):
