@@ -52,6 +52,7 @@ module.exports = Object.assign({
   defaultColumns: ['timestamp', 'title', 'url', 'browser'],
   defaultCollDesc: '*This collection doesn\'t yet have a description.*',
   defaultListDesc: '*This list doesn\'t yet have a description.*',
+  defaultRecDesc: '*This recording doesn\'t have any notes.*',
   defaultRecordingTitle: 'Recording Session',
   dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   draggableTypes: {

@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 import { Button } from 'react-bootstrap';
+
+import { defaultRecDesc } from 'config';
 
 import Collapsible from 'react-collapsible';
 import RemoveWidget from 'components/RemoveWidget';
@@ -25,7 +26,9 @@ class SessionCollapsible extends PureComponent {
     deleteRec: PropTypes.func,
     expand: PropTypes.bool,
     onExpand: PropTypes.func,
-    recording: PropTypes.object
+    recording: PropTypes.object,
+    recordingEdited: PropTypes.bool,
+    saveEdit: PropTypes.func
   };
 
   confirmDelete = () => {
@@ -38,6 +41,11 @@ class SessionCollapsible extends PureComponent {
     window.location = `/${collection.get('user')}/${collection.get('id')}/${recording.get('id')}/$download`;
   }
 
+  editDescription = (txt) => {
+    const { recording } = this.props;
+    this.props.saveEdit(recording.get('id'), { desc: txt });
+  }
+
   render() {
     const { expand, recording } = this.props;
 
@@ -45,7 +53,7 @@ class SessionCollapsible extends PureComponent {
     const pages = recording.get('pages');
 
     const header = (
-      <header className={classNames({ collapsible: pageCount > 0 })}>
+      <header className="collapsible">
         <div className="function-row">
           <RemoveWidget callback={this.confirmDelete} borderless={false} />
           <button onClick={this.downloadAction}><DownloadIcon /></button>
@@ -79,7 +87,10 @@ class SessionCollapsible extends PureComponent {
           </div>
           <div className="session-notes">
             <h4>Session Notes</h4>
-            <WYSIWYG initial="Recording notes go here..." />
+            <WYSIWYG
+              initial={recording.get('desc') || defaultRecDesc}
+              save={this.editDescription}
+              success={this.props.recordingEdited} />
           </div>
           <div className="session-pages">
             <h4>{`Session Pages (${pageCount})`}</h4>

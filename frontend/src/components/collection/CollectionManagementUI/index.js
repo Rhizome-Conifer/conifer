@@ -22,6 +22,8 @@ class CollectionManagementUI extends Component {
     auth: PropTypes.object,
     collection: PropTypes.object,
     deleteRec: PropTypes.func,
+    editRec: PropTypes.func,
+    recordingEdited: PropTypes.bool,
     recordings: PropTypes.object,
     loaded: PropTypes.bool,
     totalDuration: PropTypes.number
@@ -42,6 +44,10 @@ class CollectionManagementUI extends Component {
   downloadAction = (evt) => {
     const { collection } = this.props;
     window.location = `/${collection.get('user')}/${collection.get('id')}/$download`;
+  }
+
+  saveRecordingEdit = (rec, data) => {
+    this.props.editRec(rec, data);
   }
 
   render() {
@@ -101,7 +107,9 @@ class CollectionManagementUI extends Component {
                   collection={collection}
                   expand={expandAll}
                   recording={rec}
-                  onSelectRow={this.onSelectGroupedRow} />
+                  recordingEdited={this.props.recordingEdited}
+                  onSelectRow={this.onSelectGroupedRow}
+                  saveEdit={this.saveRecordingEdit} />
               );
             })
           }

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
 import { load as loadColl } from 'redux/modules/collection';
-import { deleteRecording } from 'redux/modules/recordings';
+import { deleteRecording, edit, resetEditState } from 'redux/modules/recordings';
 import { getOrderedRecordings } from 'redux/selectors';
 
 import CollectionManagementUI from 'components/collection/CollectionManagementUI';
@@ -63,6 +63,7 @@ const mapStateToProps = (outerState) => {
   return {
     auth: app.get('auth'),
     collection: app.get('collection'),
+    recordingEdited: app.getIn(['recordings', 'edited']),
     recordings: isLoaded ? getOrderedRecordings(app) : null,
     loaded: reduxAsyncConnect.loaded
   };
@@ -77,6 +78,11 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
             dispatch(loadColl(user, coll));
           }
         }, () => { console.log('Rec delete error..'); });
+    },
+    editRec: (rec, data) => {
+      dispatch(edit(user, coll, rec, data))
+        .then(() => dispatch(loadColl(user, coll)))
+        .then(() => setTimeout(() => dispatch(resetEditState()), 3000), () => {});
     },
     dispatch
   };
