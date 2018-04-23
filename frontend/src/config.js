@@ -55,6 +55,7 @@ module.exports = Object.assign({
   defaultRecordingTitle: 'Recording Session',
   dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   draggableTypes: {
+    LIST: 'list',
     PAGE_ITEM: 'pageItem',
     TH: 'tableHeader'
   },

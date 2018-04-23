@@ -26,13 +26,13 @@ class ListsUI extends Component {
     collection: PropTypes.object,
     createList: PropTypes.func,
     deleteList: PropTypes.func,
-    editColl: PropTypes.func,
     editList: PropTypes.func,
     getLists: PropTypes.func,
     loaded: PropTypes.bool,
     loading: PropTypes.bool,
     lists: PropTypes.object,
-    list: PropTypes.object
+    list: PropTypes.object,
+    sortLists: PropTypes.func
   };
 
   constructor(props) {
@@ -44,7 +44,8 @@ class ListsUI extends Component {
       isCreating: false,
       created: false,
       isEditing: false,
-      edited: false
+      edited: false,
+      lists: props.lists
     };
   }
 
@@ -59,6 +60,10 @@ class ListsUI extends Component {
     if (isEditing && !edited && this.props.lists !== nextProps.lists) {
       this.setState({ isEditing: false, edited: true });
       setTimeout(() => { this.setState({ edited: false, isEditing: false, editId: null }); }, 5000);
+    }
+
+    if (nextProps.lists !== this.props.lists) {
+      this.setState({ lists: nextProps.lists });
     }
   }
 
@@ -104,10 +109,25 @@ class ListsUI extends Component {
 
   closeEditModal = () => { this.setState({ editModal: false }); }
 
+  sortLists = (origIndex, hoverIndex) => {
+    const { lists } = this.state;
+    const o = lists.get(origIndex);
+    const sorted = lists.splice(origIndex, 1)
+                        .splice(hoverIndex, 0, o);
+
+    this.setState({ lists: sorted });
+  }
+
+  saveListSort = () => {
+    const { collection } = this.props;
+    const order = this.state.lists.map(o => o.get('id')).toArray();
+    this.props.sortLists(collection.get('user'), collection.get('id'), order);
+  }
+
   render() {
     const { canAdmin } = this.context;
-    const { activeListId, collection, list, lists } = this.props;
-    const { created, editModal, isCreating, title, edited, editId } = this.state;
+    const { activeListId, collection, list } = this.props;
+    const { created, editModal, edited, editId, isCreating, lists, title } = this.state;
 
     // wait until collection is loaded
     if (!collection.get('loaded')) {
@@ -137,15 +157,17 @@ class ListsUI extends Component {
             </header>
             <ul>
               {
-                lists.map(listObj => (
+                lists.map((listObj, idx) => (
                   <ListItem
                     addToList={this.props.addToList}
                     collection={collection}
-                    editColl={this.props.editColl}
                     editList={this.sendEditList}
+                    index={idx}
                     key={listObj.get('id')}
                     list={listObj}
-                    selected={list && listObj.get('id') === activeListId} />
+                    selected={list && listObj.get('id') === activeListId}
+                    saveSort={this.saveListSort}
+                    sort={this.sortLists} />
                 ))
               }
             </ul>

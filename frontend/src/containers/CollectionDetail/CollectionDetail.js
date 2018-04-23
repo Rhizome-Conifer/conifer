@@ -5,7 +5,7 @@ import { asyncConnect } from 'redux-connect';
 import { Map } from 'immutable';
 
 import { isLoaded as isCollLoaded, load as loadColl } from 'redux/modules/collection';
-import { load as loadList, removeBookmark, saveSort } from 'redux/modules/list';
+import { load as loadList, removeBookmark, bookmarkSort } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
 import { getQueryPages, getOrderedPages, pageSearchResults } from 'redux/selectors';
@@ -122,7 +122,7 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
         .then(() => dispatch(loadList(user, coll, list)));
     },
     saveBookmarkSort: (list, ids) => {
-      dispatch(saveSort(user, coll, list, ids));
+      dispatch(bookmarkSort(user, coll, list, ids));
     },
     dispatch
   };

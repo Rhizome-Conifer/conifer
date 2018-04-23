@@ -18,6 +18,10 @@ const LISTS_LOAD = 'wr/coll/LISTS_LOAD';
 const LISTS_LOAD_SUCCESS = 'wr/coll/LISTS_LOAD_SUCCESS';
 const LISTS_LOAD_FAIL = 'wr/coll/LISTS_LOAD_FAIL';
 
+const LISTS_REORDER = 'wr/coll/LISTS_REORDER';
+const LISTS_REORDER_SUCCESS = 'wr/coll/LISTS_REORDER_SUCCESS';
+const LISTS_REORDER_FAIL = 'wr/coll/LISTS_REORDER_FAIL';
+
 const COLL_SET_SORT = 'wr/coll/COLL_SET_SORT';
 const COLL_SET_PUBLIC = 'wr/coll/SET_PUBLIC';
 const COLL_SET_PUBLIC_SUCCESS = 'wr/coll/SET_PUBLIC_SUCCESS';
@@ -100,7 +104,18 @@ export default function collection(state = initialState, action = {}) {
       return state.merge({
         lists: action.result.lists
       });
+    case LISTS_REORDER_SUCCESS:
+      return state.set(
+        'lists',
+        state.get('lists').sort((a, b) => {
+          const aidx = action.order.indexOf(a.get('id'));
+          const bidx = action.order.indexOf(b.get('id'));
 
+          if (aidx < bidx) return -1;
+          if (aidx > bidx) return 1;
+          return 0;
+        })
+      );
     case COLL_EDIT_SUCCESS:
       return state.merge({
         edited: true,
@@ -152,6 +167,20 @@ export function loadLists(user, coll, withBookmarks = false) {
     types: [LISTS_LOAD, LISTS_LOAD_SUCCESS, LISTS_LOAD_FAIL],
     promise: client => client.get(`${apiPath}/lists`, {
       params: { user, coll, include_bookmarks: withBookmarks }
+    })
+  };
+}
+
+
+export function sortLists(user, coll, order) {
+  return {
+    types: [LISTS_REORDER, LISTS_REORDER_SUCCESS, LISTS_REORDER_FAIL],
+    order,
+    promise: client => client.post(`${apiPath}/lists/reorder`, {
+      params: { user, coll },
+      data: {
+        order
+      }
     })
   };
 }

@@ -24,9 +24,9 @@ const LIST_EDIT_SUCCESS = 'wr/list/LIST_EDIT_SUCCESS';
 const LIST_EDIT_FAIL = 'wr/list/LIST_EDIT_FAIL';
 const LIST_EDITED_RESET = 'wr/list/LIST_EDITED_RESET';
 
-const LIST_REORDER = 'wr/list/LIST_REORDER';
-const LIST_REORDER_SUCCESS = 'wr/list/LIST_REORDER_SUCCESS';
-const LIST_REORDER_FAIL = 'wr/list/LIST_REORDER_FAIL';
+const BOOKMARK_REORDER = 'wr/list/BOOKMARK_REORDER';
+const BOOKMARK_REORDER_SUCCESS = 'wr/list/BOOKMARK_REORDER_SUCCESS';
+const BOOKMARK_REORDER_FAIL = 'wr/list/BOOKMARK_REORDER_FAIL';
 
 const LIST_REMOVE = 'wr/list/LIST_REMOVE';
 const LIST_REMOVE_SUCCESS = 'wr/list/LIST_REMOVE_SUCCESS';
@@ -54,7 +54,7 @@ const initialState = fromJS({
 
 export default function list(state = initialState, action = {}) {
   switch (action.type) {
-    case LIST_REORDER_SUCCESS:
+    case BOOKMARK_REORDER_SUCCESS:
       return state.set(
         'bookmarks',
         state.get('bookmarks').sort((a, b) => {
@@ -191,9 +191,9 @@ export function resetEditState() {
 }
 
 
-export function saveSort(user, coll, id, order) {
+export function bookmarkSort(user, coll, id, order) {
   return {
-    types: [LIST_REORDER, LIST_REORDER_SUCCESS, LIST_REORDER_FAIL],
+    types: [BOOKMARK_REORDER, BOOKMARK_REORDER_SUCCESS, BOOKMARK_REORDER_FAIL],
     order,
     promise: client => client.post(`${apiPath}/list/${id}/bookmarks/reorder`, {
       params: { user, coll },
