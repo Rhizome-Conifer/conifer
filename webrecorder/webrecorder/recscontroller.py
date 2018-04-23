@@ -40,7 +40,7 @@ class RecsController(BaseController):
             else:
                 return {'error_message': 'Recording not found', 'id': rec_name}
 
-        @self.app.post('/api/v1/recordings/<rec_name>/update_desc')
+        @self.app.post('/api/v1/recording/<rec_name>')
         def update_rec_desc(rec_name):
             user, collection, recording = self.load_recording(rec_name)
 

@@ -171,7 +171,7 @@ class TestWebRecRecAPI(FullStackTests):
 
     def test_update_desc(self):
         test_desc = 'Test / Special Chars !'
-        res = self._anon_post('/api/v1/recordings/{rec_id_0}/update_desc?user={user}&coll=temp', params={'desc': test_desc})
+        res = self._anon_post('/api/v1/recording/{rec_id_0}?user={user}&coll=temp', params={'desc': test_desc})
 
         res = res.json
 
