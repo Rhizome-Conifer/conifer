@@ -68,7 +68,7 @@ module.exports = Object.assign({
   port: process.env.FRONTEND_PORT || 8095,
   product: 'Webrecorder',
   ravenConfig: null,
-  storageKey: 'wrLocalData',
+  storageKey: 'wr__',
   untitledEntry: 'Untitled Document',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   app: {

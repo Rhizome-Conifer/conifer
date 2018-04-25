@@ -7,6 +7,7 @@ import {
   recBookmark
 } from 'components/siteComponents/BreadcrumbsUI/breadcrumbs';
 import {
+  CollectionCover,
   CollectionDetail,
   CollectionList,
   CollectionManagement,
@@ -44,19 +45,11 @@ const userRoutes = [
     breadcrumb: 'Settings'
   },
   {
-    path: '/_valreg/:registration',
-    component: RegisterAccount,
-    exact: true,
-    name: 'Account Registration',
-    footer: true
-  },
-  {
     path: `${userPath}/:coll`,
-    component: CollectionDetail,
+    component: CollectionCover,
     exact: true,
-    name: 'collectionDetail',
-    footer: false,
-    classOverride: true,
+    name: 'collectionCover',
+    footer: true,
     breadcrumb: collDetailBreadcrumb
   },
   {
@@ -66,7 +59,7 @@ const userRoutes = [
     name: 'collectionPages',
     footer: false,
     classOverride: true,
-    breadcrumb: collDetailBreadcrumb
+    breadcrumb: 'Pages'
   },
   {
     path: `${userPath}/:coll/management`,
@@ -220,6 +213,13 @@ export default [
     footer: true,
     component: UserSignup,
     exact: true
+  },
+  {
+    path: '/_valreg/:registration',
+    component: RegisterAccount,
+    exact: true,
+    name: 'Account Registration',
+    footer: true
   },
   {
     path: '/_forgot',

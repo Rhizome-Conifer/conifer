@@ -3,7 +3,7 @@ import React from 'react';
 
 function Warc() {
   return (
-    <svg width="661px" height="661px" viewBox="0 0 661 661" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <svg width="18px" height="18px" viewBox="0 0 661 661" version="1.1" xmlns="http://www.w3.org/2000/svg">
       <g id="WARCBOX_black" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
         <g id="Page-1" transform="translate(83.000000, 70.000000)" stroke="#000000" strokeWidth="41">
           <g id="Group-7" transform="translate(0.000000, 0.839000)">

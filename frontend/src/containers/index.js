@@ -1,3 +1,4 @@
+export CollectionCover from './CollectionCover/CollectionCover';
 export CollectionDropdown from './CollectionDropdown/CollectionDropdown';
 export CollectionDetail from './CollectionDetail/CollectionDetail';
 export CollectionFilters from './CollectionFilters/CollectionFilters';
@@ -9,6 +10,7 @@ export Extract from './Extract/Extract';
 export ExtractWidget from './ExtractWidget/ExtractWidget';
 export Home from './Home/Home';
 export InfoWidget from './InfoWidget/InfoWidget';
+export InspectorPanel from './InspectorPanel/InspectorPanel';
 export Lists from './Lists/Lists';
 export ListMetadata from './ListMetadata/ListMetadata';
 export Logout from './Logout/Logout';

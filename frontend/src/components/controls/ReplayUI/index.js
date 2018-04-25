@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Map } from 'immutable';
+import { Button } from 'react-bootstrap';
 
 import { ModeSelector, RecordingTools, SizeCounter, ToolBin } from 'containers';
 
 import { ReplayURLBar, RecordURLBar } from 'components/controls';
+import { InfoIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -13,7 +14,9 @@ class ReplayUI extends Component {
   static propTypes = {
     activeBrowser: PropTypes.string,
     params: PropTypes.object,
+    sidebarExpanded: PropTypes.bool,
     timestamp: PropTypes.string,
+    toggle: PropTypes.func,
     url: PropTypes.string
   };
 
@@ -21,6 +24,10 @@ class ReplayUI extends Component {
     canAdmin: PropTypes.bool,
     currMode: PropTypes.string
   };
+
+  toggleSidebar = () => {
+    this.props.toggle(!this.props.sidebarExpanded);
+  }
 
   render() {
     const { canAdmin, currMode } = this.context;
@@ -31,7 +38,16 @@ class ReplayUI extends Component {
     return (
       <div>
         <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
+
+          {
+            currMode.includes('replay') &&
+              <Button onClick={this.toggleSidebar}>
+                <InfoIcon />
+              </Button>
+          }
+
           <ModeSelector params={params} />
+
           {
             isWrite &&
               <SizeCounter bytes={0} />

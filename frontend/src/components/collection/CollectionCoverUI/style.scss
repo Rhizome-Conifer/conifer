@@ -1,0 +1,107 @@
+@import 'src/vars';
+
+.coll-cover {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .capstone {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 4rem 0;
+
+        h4 {
+            margin: 0 1.5rem 0 0;
+            text-transform: uppercase;
+            font-weight: 400;
+            font-size: 1.6rem;
+
+            svg {
+                vertical-align: bottom;
+            }
+        }
+    }
+
+    h1 {
+        max-width: 75vw;
+        margin: 0 0 2.5rem 0;
+        font-weight: 400;
+        color: $blue;
+    }
+
+    .description {
+        max-width: 35vw;
+        font-size: 1.4rem;
+        line-height: 1.5;
+    }
+
+    .lists-container {
+        min-width: 25vw;
+
+        .lists-header {
+            width: 80%;
+            margin: 5rem auto 4rem auto;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        ul.lists {
+            list-style-type: none;
+            padding: 0;
+
+            li {
+                margin-bottom: 5rem;
+
+                & > a {
+                    transition: color $quickShift ease-in-out;
+                    text-decoration: none;
+                    color: #000;
+
+                    h3 {
+                        border: solid 0 $blue;
+                        border-width: 0 0 .4rem 0;
+                        padding: 0 1.5rem .5rem 1.5rem;
+                        font-weight: 400;
+                    }
+
+                    &:hover {
+                        color: $blue;
+                    }
+                }
+
+                .desc {
+                    width: 80%;
+                    margin: 0 9%;
+
+                    div + .list-link {
+                        display: inline-block;
+                        margin-top: 1.5rem;
+                    }
+                }
+            }
+        }
+    }
+
+    .browse {
+        transition: color $quickShift ease-in-out,
+                    background $quickShift ease-in-out,
+                    border-color $quickShift ease-in-out;
+        padding: .5rem 2.5rem;
+        margin: 3rem 0;
+        border: solid .1rem $mgmt-gray;
+        border-radius: 2.7rem;
+        text-transform: uppercase;
+        text-decoration: none;
+
+        &:link, &:visited {
+            color: #7B7B7B;
+        }
+
+        &:hover, &:active {
+            border-color: $blue;
+            background: $blue;
+            color: #FFF;
+        }
+    }
+}

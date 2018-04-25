@@ -1,20 +1,22 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { toggleSidebarResize } from 'redux/modules/sidebar';
+import { sidebarResize, toggle } from 'redux/modules/sidebar';
 
 import { SidebarUI } from 'components/controls';
 
 
 const mapStateToProps = ({ app }) => {
   return {
+    expanded: app.getIn(['sidebar', 'expanded']),
     resizing: app.getIn(['sidebar', 'resizing'])
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    sidebarResize: bool => dispatch(toggleSidebarResize(bool)),
+    setSidebarResizing: bool => dispatch(sidebarResize(bool)),
+    toggleSidebar: bool => dispatch(toggle(bool)),
     dispatch
   };
 };

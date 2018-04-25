@@ -14,6 +14,7 @@ import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
 
 import InlineEditor from 'components/InlineEditor';
+import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
 
 import { BookmarkRenderer } from './renderers';
@@ -130,12 +131,14 @@ class SidebarListViewer extends Component {
           </InlineEditor>
           {
             list.get('desc') &&
-              <WYSIWYG
-                minimal
-                initial={list.get('desc')}
-                cancel={this.toggleEdit}
-                save={this.editListDesc}
-                success={this.props.listEdited} />
+              <Truncate height={75}>
+                <WYSIWYG
+                  minimal
+                  initial={list.get('desc')}
+                  cancel={this.toggleEdit}
+                  save={this.editListDesc}
+                  success={this.props.listEdited} />
+              </Truncate>
           }
         </header>
         <div className="bookmarks">

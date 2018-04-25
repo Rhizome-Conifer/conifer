@@ -1,0 +1,19 @@
+@import 'src/vars';
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    background: $sidebarHeaderBg;
+    padding: 1.2rem 1rem;
+    margin-bottom: .5rem;
+    border: solid .1rem #CECECE;
+    border-width: 0 0 .1rem 0;
+
+    h4 {
+        display: inline-block;
+        color: $sidebarHeaderLabel;
+        font-size: 1.6rem;
+        font-weight: 400;
+        margin: 0;
+    }
+}

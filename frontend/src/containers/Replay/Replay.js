@@ -4,7 +4,7 @@ import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 
-import { remoteBrowserMod, truncate } from 'helpers/utils';
+import { remoteBrowserMod } from 'helpers/utils';
 import config from 'config';
 
 import { getActivePage } from 'redux/selectors';
@@ -13,10 +13,11 @@ import { getArchives, setBookmarkId, setListId, updateUrl, updateUrlAndTimestamp
 import { resetStats } from 'redux/modules/infoStats';
 import { listLoaded, load as loadList } from 'redux/modules/list';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
+import { toggle as toggleSidebar } from 'redux/modules/sidebar';
 
-import { ListMetadata, RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
+import Resizable from 'components/Resizable';
+import { InspectorPanel, ListMetadata, RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
-import WYSIWYG from 'components/WYSIWYG';
 
 
 class Replay extends Component {
@@ -25,15 +26,19 @@ class Replay extends Component {
   };
 
   static propTypes = {
+    activeBookmarkId: PropTypes.string,
     activeBrowser: PropTypes.string,
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
+    expanded: PropTypes.bool,
+    loaded: PropTypes.bool,
     match: PropTypes.object,
     recording: PropTypes.string,
     reqId: PropTypes.string,
     sidebarResize: PropTypes.bool,
     timestamp: PropTypes.string,
+    toggleSidebar: PropTypes.func,
     url: PropTypes.string
   };
 
@@ -117,17 +122,19 @@ class Replay extends Component {
           activeBrowser={activeBrowser}
           params={params}
           timestamp={timestamp}
+          sidebarExpanded={this.props.expanded}
+          toggle={this.props.toggleSidebar}
           url={url} />
         <div className="iframe-container">
-          <Sidebar>
-            {
-              listId ?
-                <React.Fragment>
-                  <SidebarListViewer />
-                  <ListMetadata />
-                </React.Fragment> :
-                <SidebarPageViewer />
-            }
+          <Sidebar storageKey="replaySidebar">
+            <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
+              {
+                listId ?
+                  <SidebarListViewer /> :
+                  <SidebarPageViewer />
+              }
+            </Resizable>
+            <InspectorPanel />
           </Sidebar>
           {
             activeBrowser ?
@@ -226,6 +233,7 @@ const mapStateToProps = (outerState) => {
     autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
     collection: app.get('collection'),
+    expanded: app.getIn(['sidebar', 'expanded']),
     loaded,
     recording: activePage ? activePage.get('rec') : null,
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
@@ -235,7 +243,15 @@ const mapStateToProps = (outerState) => {
   };
 };
 
+const mapDispatchToProps = (dispatch) => {
+  return {
+    toggleSidebar: b => dispatch(toggleSidebar(b)),
+    dispatch
+  };
+};
+
 export default asyncConnect(
   initialData,
-  mapStateToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(Replay);

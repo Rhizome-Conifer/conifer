@@ -5,8 +5,6 @@ import classNames from 'classnames';
 import { inStorage, getStorage, setStorage } from 'helpers/utils';
 
 import Resizable from 'components/Resizable';
-import { SidebarToggle } from 'components/icons';
-import { SidebarPageViewer } from 'components/controls';
 
 import './style.scss';
 
@@ -14,48 +12,57 @@ import './style.scss';
 class SidebarUI extends Component {
 
   static propTypes = {
-    sidebarResize: PropTypes.func,
-    resizing: PropTypes.bool
-  }
+    children: PropTypes.node,
+    expanded: PropTypes.bool,
+    resizing: PropTypes.bool,
+    setSidebarResizing: PropTypes.func,
+    storageKey: PropTypes.string,
+    toggleSidebar: PropTypes.func
+  };
+
+  static defaultProps = {
+    storageKey: 'sidebarDisplay'
+  };
 
   constructor(props) {
     super(props);
 
-    this.closedWidth = 30;
-    this.state = { expanded: false, initTimeout: false };
+    this.closedWidth = 1;
+    this.state = { initTimeout: false };
   }
 
   componentDidMount() {
+    const { storageKey, toggleSidebar } = this.props;
+
     // expanded by default
     let expanded = true;
-    if (inStorage('sidebarDisplay')) {
+    if (inStorage(storageKey)) {
       try {
-        expanded = JSON.parse(getStorage('sidebarDisplay'));
+        expanded = JSON.parse(getStorage(storageKey));
       } catch (e) {
-        console.log('Wrong `sidebarDisplay` storage value');
+        console.log(`Wrong '${storageKey}' storage value`);
       }
     }
 
-    this.setState({ expanded });
+    toggleSidebar(expanded);
 
     // allow Resizable to retreive stored width before animating
     setTimeout(() => this.setState({ initTimeout: true }), 100);
   }
 
-  onToggle = () => {
-    const { expanded } = this.state;
+  componentDidUpdate(prevProps) {
+    const { expanded, storageKey } = this.props;
 
-    setStorage('sidebarDisplay', !expanded);
-    this.setState({
-      expanded: !expanded
-    });
+    if (prevProps.expanded !== expanded) {
+      setStorage(storageKey, expanded);
+    }
   }
 
   render() {
-    const { resizing } = this.props;
-    const { expanded, initTimeout } = this.state;
+    const { children, expanded, resizing } = this.props;
+    const { initTimeout } = this.state;
 
-    const classes = classNames('sidebar', {
+    const classes = classNames('wr-sidebar', {
       animate: initTimeout && !resizing,
       expanded
     });
@@ -63,17 +70,15 @@ class SidebarUI extends Component {
     return (
       <Resizable
         classes={classes}
-        resizeState={this.props.sidebarResize}
+        resizeState={this.props.setSidebarResizing}
         storageKey="replaySidebarWidth"
-        overrideWidth={!expanded && this.closedWidth}>
-        <button
-          className="sidebar-toggle"
-          onClick={this.onToggle}>
-          <SidebarToggle flip={!expanded} />
-        </button>
-        {
-          expanded && this.props.children
-        }
+        overrideWidth={!expanded && this.closedWidth}
+        minWidth={175}>
+        <div className="wr-sidebar-stretch">
+          {
+            expanded && children
+          }
+        </div>
       </Resizable>
     );
   }

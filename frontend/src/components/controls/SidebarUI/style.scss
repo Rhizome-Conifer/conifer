@@ -1,55 +1,28 @@
 @import 'src/vars';
 
-$collapsedWidth: 3rem;
-
-.sidebar {
+.wr-sidebar {
+    grid-area: sidebar;
     position: relative;
     background: $sidebarBg;
     padding: 0 .8rem 0 .5rem;
     display: flex;
     flex-direction: column;
-    min-width: $collapsedWidth;
     font-family: $sans;
 
     &.animate {
         transition: width 400ms ease-in-out;
     }
 
-    .sidebar-toggle {
-        transition: background-color $quickShift ease-in-out;
-        position: absolute;
-        right: .1rem;
-        top: 0;
-        background: transparent;
-        border: 0;
-        z-index: 5;
-        width: $collapsedWidth;
+    .wr-sidebar-stretch {
+        display: flex;
+        flex-direction: column;
 
-        &:focus {
-            outline-width: 0;
-        }
-
-        &:hover {
-            background-color: $brightGreen;
-        }
-    }
-
-    $buffer: .8rem;
-    .sidebar-handle {
         position: absolute;
         top: 0;
         bottom: 0;
-        right: -$buffer;
-        padding: 0 $buffer;
-        z-index: 5;
-
-        &:after {
-            content: '';
-            display: block;
-            width: .1rem;
-            height: 100%;
-            background-color: #CCC;
-        }
+        padding-right: 1.5rem;
+        width: 100%;
+        overflow: hidden;
     }
 
     .ReactVirtualized__Grid__innerScrollContainer:last-of-type {
