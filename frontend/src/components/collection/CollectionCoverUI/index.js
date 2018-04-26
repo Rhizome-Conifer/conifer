@@ -44,7 +44,14 @@ class CollectionCoverUI extends Component {
                     const loc = `/${user}/${collId}/list/${list.get('id')}-${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
                     return (
                       <li key={list.get('id')}>
-                        <Link to={loc}><h3><ListIcon />&nbsp;&nbsp;{list.get('title')}</h3></Link>
+                        <Link to={loc}>
+                          <div className="list-title">
+                            <div>
+                              <ListIcon />
+                            </div>
+                            <h3>{list.get('title')}</h3>
+                          </div>
+                        </Link>
                         <div className="desc">
                           {
                             list.get('desc') &&

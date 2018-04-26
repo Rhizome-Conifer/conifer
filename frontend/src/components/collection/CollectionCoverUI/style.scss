@@ -37,7 +37,7 @@
     }
 
     .lists-container {
-        min-width: 25vw;
+        width: 45vw;
 
         .lists-header {
             width: 80%;
@@ -58,11 +58,22 @@
                     text-decoration: none;
                     color: #000;
 
-                    h3 {
+                    .list-title {
+                        display: flex;
+                        align-items: flex-start;
                         border: solid 0 $blue;
                         border-width: 0 0 .4rem 0;
-                        padding: 0 1.5rem .5rem 1.5rem;
-                        font-weight: 400;
+                        padding: 0 1.5rem 1rem 1.5rem;
+
+                        svg {
+                            vertical-align: bottom;
+                            margin-right: 1.5rem;
+                        }
+
+                        h3 {
+                            font-weight: 400;
+                            margin: 0;
+                        }
                     }
 
                     &:hover {
@@ -72,7 +83,7 @@
 
                 .desc {
                     width: 80%;
-                    margin: 0 9%;
+                    margin: .5rem 9% 0 9%;
 
                     div + .list-link {
                         display: inline-block;
