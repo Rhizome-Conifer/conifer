@@ -68,11 +68,12 @@ class TestWebRecRecorder(FullStackTests):
         keys = self.redis.keys()
 
         assert set(keys) == set([
-            'r:REC:warc',
+            'r:REC:wk',
             'r:REC:cdxj',
             'r:REC:info',
             'r:REC:open',
             'c:COLL:info',
+            'c:COLL:warc',
             'u:USER:info'
         ])
 
@@ -92,8 +93,8 @@ class TestWebRecRecorder(FullStackTests):
         keys = self.redis.keys()
 
         assert set(keys) == set([
-            'r:REC:warc',
-            'r:REC2:warc',
+            'r:REC:wk',
+            'r:REC2:wk',
             'r:REC:cdxj',
             'r:REC2:cdxj',
             'r:REC:info',
@@ -101,6 +102,7 @@ class TestWebRecRecorder(FullStackTests):
             'r:REC2:info',
             'r:REC2:open',
             'c:COLL:info',
+            'c:COLL:warc',
             'u:USER:info'
         ])
 

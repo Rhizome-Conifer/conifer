@@ -145,6 +145,11 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
                 if counter >= max_count:
                     raise
 
+    @classmethod
+    def assert_coll_rec_warcs(self, coll, rec, num_coll, num_rec):
+        assert self.redis.hlen(Recording.COLL_WARC_KEY.format(coll=coll)) == num_coll
+        assert self.redis.scard(Recording.REC_WARC_KEY.format(rec=rec)) == num_rec
+
 
 # ============================================================================
 class FullStackTests(BaseWRTests):

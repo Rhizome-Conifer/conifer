@@ -23,6 +23,7 @@ def slow_load(filename):
 REC_CDXJ = 'r:500:cdxj'
 REC_OPEN = 'r:500:open'
 REC_WARC = 'r:500:warc'
+REC_INFO = 'r:500:info'
 REC_CDXJ_T = REC_CDXJ + ':_'
 
 COLL_CDXJ = 'c:100:cdxj'
@@ -87,7 +88,7 @@ class TestCDXJCache(FullStackTests):
         self.sleep_try(0.1, 3.0, assert_files_closed)
 
     def test_download(self):
-        assert self.redis.hget(REC_WARC, '@index_file') != None
+        assert self.redis.hget(REC_INFO, Recording.INDEX_FILE_KEY) != None
 
         res = self.testapp.get('/{user}/temp/$download'.format(user=self.anon_user))
 

@@ -190,7 +190,8 @@ dyn_ref_templ:
 
 dyn_stats_secs: 330
 
-warc_key_templ: 'r:{rec}:warc'
+warc_key_templ: 'r:{rec}:wk'
+coll_warc_key_templ: 'c:{coll}:warc'
 
 commit_wait_templ: 'w:{filename}'
 commit_wait_secs: 30

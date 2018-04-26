@@ -24,8 +24,6 @@ class DownloadController(BaseController):
         config = kwargs['config']
         self.paths = config['url_templates']
         self.download_filename = config['download_paths']['filename']
-        self.warc_key_templ = config['warc_key_templ']
-        self.index_file_key = config['info_index_key']
 
         self.download_chunk_encoded = config['download_chunk_encoded']
 

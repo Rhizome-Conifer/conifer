@@ -7,6 +7,7 @@ from webrecorder.rec.webrecrecorder import WebRecRecorder
 
 from webrecorder.models.importer import InplaceImporter, ImportStatusChecker
 from webrecorder.models.usermanager import CLIUserManager
+from webrecorder.models.collection import Collection
 
 from webrecorder.standalone.serializefakeredis import FakeRedisSerializer
 
@@ -86,7 +87,7 @@ class WebrecPlayerRunner(StandaloneRunner):
             collection = user.get_collection_by_name('collection')
 
             if not upload_status or upload_status.get('done'):
-                if collection and user_manager.redis.exists('c:{coll}:cdxj'.format(coll=collection.my_id)):
+                if collection and user_manager.redis.exists(Collection.COLL_CDXJ_KEY.format(coll=collection.my_id)):
                     self.serializer.save_db()
         except Exception as e:
             if logging.getLogger().getEffectiveLevel() == logging.DEBUG:

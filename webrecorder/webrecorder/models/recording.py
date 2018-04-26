@@ -33,7 +33,8 @@ class Recording(RedisUniqueComponent):
 
     RA_KEY = 'r:{rec}:ra'
 
-    WARC_KEY = 'r:{rec}:warc'
+    REC_WARC_KEY = 'r:{rec}:wk'
+    COLL_WARC_KEY = 'c:{coll}:warc'
 
     INDEX_FILE_KEY = '@index_file'
 
@@ -51,6 +52,7 @@ class Recording(RedisUniqueComponent):
         cls.OPEN_REC_TTL = int(config['open_rec_ttl'])
         #cls.INDEX_FILE_KEY = config['info_index_key']
 
+        cls.CDXJ_KEY = config.get('cdxj_key_templ', cls.CDXJ_KEY)
         #cls.INDEX_NAME_TEMPL = config['index_name_templ']
 
         cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
@@ -113,30 +115,42 @@ class Recording(RedisUniqueComponent):
         return 'Recording on ' + created_at
 
     def delete_me(self, storage):
-        res = self.delete_warcs(storage)
+        res = self.delete_files(storage)
 
         if not self.delete_object():
             res['error'] = 'not_found'
 
         return res
 
-    def iter_all_files(self, skip_index=True):
-        warc_key = self.WARC_KEY.format(rec=self.my_id)
+    def _coll_warc_key(self):
+        return self.COLL_WARC_KEY.format(coll=self.get_prop('owner'))
 
-        all_files = self.redis.hgetall(warc_key)
+    def iter_all_files(self, include_index=False):
+        warc_key = self.REC_WARC_KEY.format(rec=self.my_id)
 
-        for n, v in all_files.items():
-            if skip_index and n == self.INDEX_FILE_KEY:
-                continue
+        #all_files = self.redis.hgetall(warc_key)
+        all_file_keys = self.redis.smembers(warc_key)
 
+        all_files = self.redis.hmget(self._coll_warc_key(), all_file_keys)
+
+        for n, v in zip(all_file_keys, all_files):
             yield n, v
 
-    def delete_warcs(self, storage):
+        if include_index:
+            index_file = self.get_prop(self.INDEX_FILE_KEY)
+            if index_file:
+                yield self.INDEX_FILE_KEY, index_file
+
+    def delete_files(self, storage):
         errs = []
 
-        for n, v in self.iter_all_files(skip_index=False):
+        coll_warc_key = self._coll_warc_key()
+
+        for n, v in self.iter_all_files(include_index=True):
             if not storage.delete_file(v):
                 errs.append(v)
+            else:
+                self.redis.hdel(coll_warc_key, n)
 
         if errs:
             return {'error_delete_files': errs}
@@ -286,8 +300,9 @@ class Recording(RedisUniqueComponent):
         ra_key = self.RA_KEY.format(rec=self.my_id)
         pi.sadd(ra_key, source_id)
 
-    def write_cdxj(self, user, warc_key, cdxj_key):
-        full_filename = self.redis.hget(warc_key, self.INDEX_FILE_KEY)
+    def write_cdxj(self, user, cdxj_key):
+        #full_filename = self.redis.hget(warc_key, self.INDEX_FILE_KEY)
+        full_filename = self.get_prop(self.INDEX_FILE_KEY)
         if full_filename:
             cdxj_filename = os.path.basename(strip_prefix(full_filename))
             return cdxj_filename, full_filename
@@ -313,7 +328,8 @@ class Recording(RedisUniqueComponent):
             out.flush()
 
         full_url = add_local_store_prefix(full_filename.replace(os.path.sep, '/'))
-        self.redis.hset(warc_key, self.INDEX_FILE_KEY, full_url)
+        #self.redis.hset(warc_key, self.INDEX_FILE_KEY, full_url)
+        self.set_prop(self.INDEX_FILE_KEY, full_url)
 
         return cdxj_filename, full_filename
 
@@ -328,18 +344,18 @@ class Recording(RedisUniqueComponent):
 
         info_key = self.INFO_KEY.format(rec=self.my_id)
         cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
-        warc_key = self.WARC_KEY.format(rec=self.my_id)
+        warc_key = self.COLL_WARC_KEY.format(coll=collection.my_id)
 
         self.redis.publish('close_rec', info_key)
 
-        cdxj_filename, full_cdxj_filename = self.write_cdxj(user, warc_key, cdxj_key)
+        cdxj_filename, full_cdxj_filename = self.write_cdxj(user, cdxj_key)
 
         all_done = True
 
         if storage:
             all_done = self.commit_file(user, collection, storage,
                                         cdxj_filename, full_cdxj_filename, 'indexes',
-                                        warc_key, self.INDEX_FILE_KEY, direct_delete=True)
+                                        info_key, self.INDEX_FILE_KEY, direct_delete=True)
 
             for warc_filename, warc_full_filename in self.iter_all_files():
                 done = self.commit_file(user, collection, storage,
@@ -413,12 +429,12 @@ class Recording(RedisUniqueComponent):
         user = collection.get_owner()
 
         target_dirname = user.get_user_temp_warc_path()
-        target_warc_key = self.WARC_KEY.format(rec=self.my_id)
+        target_warc_key = self.COLL_WARC_KEY.format(coll=collection.my_id)
 
         # Copy WARCs
         loader = BlockLoader()
 
-        for n, url in source.iter_all_files(skip_index=False):
+        for n, url in source.iter_all_files(include_index=True):
             local_filename = n + '.' + timestamp20_now()
             target_file = os.path.join(target_dirname, local_filename)
 
@@ -432,8 +448,9 @@ class Recording(RedisUniqueComponent):
 
                 if n != self.INDEX_FILE_KEY:
                     self.incr_size(size)
-
-                self.redis.hset(target_warc_key, n, add_local_store_prefix(target_file))
+                    self.redis.hset(target_warc_key, n, add_local_store_prefix(target_file))
+                else:
+                    self.set_prop(n, target_file)
 
             except:
                 import traceback
@@ -454,6 +471,10 @@ class Recording(RedisUniqueComponent):
         # COPY remote archives, if any
         self.redis.sunionstore(self.RA_KEY.format(rec=self.my_id),
                                self.RA_KEY.format(rec=source.my_id))
+
+        # COPY recording warc keys
+        self.redis.sunionstore(self.REC_WARC_KEY.format(rec=self.my_id),
+                               self.REC_WARC_KEY.format(rec=source.my_id))
 
         # sync collection cdxj, if exists
         collection.sync_coll_index(exists=True, do_async=True)

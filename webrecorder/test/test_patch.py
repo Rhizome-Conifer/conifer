@@ -31,8 +31,7 @@ class TestPatchContent(FullStackTests):
 
         coll, rec = self.get_coll_rec(self.anon_user, 'temp', 'new-patch')
 
-        warc_key = 'r:{rec}:warc'.format(rec=rec)
-        assert self.redis.hlen(warc_key) == 1
+        self.assert_coll_rec_warcs(coll, rec, 1, 1)
 
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == 1

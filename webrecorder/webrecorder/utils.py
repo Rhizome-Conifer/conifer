@@ -32,7 +32,22 @@ def init_logging():
 
 # ============================================================================
 def load_wr_config():
-    return load_overlay_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
+    config = load_overlay_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
+
+    init_props(config)
+
+    return config
+
+
+# ============================================================================
+def init_props(config):
+    from webrecorder.models import User, Collection, Recording
+    User.init_props(config)
+    Collection.init_props(config)
+    Recording.init_props(config)
+
+    import webrecorder.rec.storage.storagepaths as storagepaths
+    storagepaths.init_props(config)
 
 
 # ============================================================================

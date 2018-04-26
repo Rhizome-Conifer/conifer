@@ -1,4 +1,4 @@
-from .testutils import FullStackTests
+from .testutils import FullStackTests, Recording
 
 import os
 import webtest
@@ -154,7 +154,8 @@ class TestLoginMigrate(FullStackTests):
 
         self.sleep_try(0.2, 20.0, assert_one_dir)
 
-        result = self.redis.hgetall('r:{rec}:warc'.format(rec=rec))
+        result = self.redis.hgetall(Recording.COLL_WARC_KEY.format(coll=coll))
+        assert len(result) == 1
         self.storage_today = self.storage_today.replace(os.path.sep, '/')
         for key in result:
             assert self.storage_today in result[key]

@@ -11,6 +11,8 @@ from urllib.parse import urlsplit
 
 REC_CDXJ = 'r:500:cdxj'
 REC_WARC = 'r:500:warc'
+REC_INFO = 'r:500:info'
+COLL_ID = '100'
 
 
 # ============================================================================
@@ -58,7 +60,7 @@ class BaseStorageCommit(FullStackTests):
         user_dir = os.path.join(self.warcs_dir, 'test')
         assert len(os.listdir(user_dir)) == 1
 
-        self.sleep_try(0.5, 10.0, self.assert_in_store('100'))
+        self.sleep_try(0.5, 10.0, self.assert_in_store(COLL_ID))
 
         def assert_user_dir_empty():
             # user dir removed or empty
@@ -68,7 +70,8 @@ class BaseStorageCommit(FullStackTests):
 
         coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
 
-        result = self.redis.hgetall('r:{rec}:warc'.format(rec=REC_CDXJ))
+        result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
+        assert len(result) == 1
         for key in result:
             self.assert_warc_key(result[key])
 
@@ -79,7 +82,7 @@ class BaseStorageCommit(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
 
     def test_download(self):
-        assert self.redis.hget(REC_WARC, '@index_file') != None
+        assert self.redis.hget(REC_INFO, '@index_file') != None
 
         res = self.testapp.get('/test/default-collection/$download')
 
@@ -106,7 +109,7 @@ class BaseStorageCommit(FullStackTests):
         orig_coll, orig_rec = self.get_coll_rec('test', 'default-collection', 'rec')
 
         def assert_copied():
-            assert self.redis.hlen('r:{0}:warc'.format(rec)) == 2
+            self.assert_coll_rec_warcs(coll, rec, 1, 1)
 
         self.sleep_try(0.2, 10.0, assert_copied)
 

@@ -38,7 +38,6 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
     @classmethod
     def init_props(cls, config):
         cls.COLL_CDXJ_TTL = config['coll_cdxj_ttl']
-        #cls.INDEX_FILE_KEY = config['info_index_key']
 
         cls.DEFAULT_STORE_TYPE = os.environ.get('DEFAULT_STORAGE', 'local')
 
@@ -341,14 +340,14 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
     def _do_download_cdxj(self, cdxj_key, output_key):
         lock_key = None
         try:
-            rec_warc_key = cdxj_key.rsplit(':', 1)[0] + ':warc'
-            cdxj_filename = self.redis.hget(rec_warc_key, self.INDEX_FILE_KEY)
+            rec_info_key = cdxj_key.rsplit(':', 1)[0] + ':info'
+            cdxj_filename = self.redis.hget(rec_info_key, self.INDEX_FILE_KEY)
             if not cdxj_filename:
-                logging.debug('No index for ' + rec_warc_key)
+                logging.debug('No index for ' + rec_info_key)
                 return
 
             lock_key = cdxj_key + ':_'
-            logging.debug('Downloading for {0} file {1}'.format(rec_warc_key, cdxj_filename))
+            logging.debug('Downloading for {0} file {1}'.format(rec_info_key, cdxj_filename))
             attempts = 0
 
             if not self.redis.set(lock_key, 1, nx=True):

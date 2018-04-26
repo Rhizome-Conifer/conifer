@@ -89,7 +89,7 @@ class TestAutoLogin(FullStackTests):
         orig_coll, orig_rec = self.get_coll_rec('test', 'new-title', 'rec-sesh')
 
         def assert_one_dir():
-            assert self.redis.hlen('r:{0}:warc'.format(rec)) == 1
+            self.assert_coll_rec_warcs(coll, rec, 1, 1)
 
         self.sleep_try(0.2, 5.0, assert_one_dir)
 
@@ -98,4 +98,16 @@ class TestAutoLogin(FullStackTests):
         orig_info = self.redis.hgetall('r:{0}:info'.format(orig_rec))
 
         assert info['size'] == orig_info['size']
+
+    def test_logged_in_record_2(self):
+        res = self.testapp.get('/_new/another-coll/rec/record/mp_/http://httpbin.org/get?bood=far')
+        res = res.follow()
+        res.charset = 'utf-8'
+
+        coll, rec = self.get_coll_rec('test', 'another-coll', 'rec')
+
+        assert '"bood": "far"' in res.text, res.text
+
+        self.assert_coll_rec_warcs(coll, rec, 2, 1)
+
 

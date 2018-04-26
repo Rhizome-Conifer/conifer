@@ -17,7 +17,10 @@ from webrecorder.utils import SizeTrackingReader, redis_pipeline
 
 from webrecorder.load.wamloader import WAMLoader
 
+import webrecorder.rec.storage.storagepaths as storagepaths
 from webrecorder.rec.storage.local import DirectLocalFileStorage
+
+from webrecorder.models import Recording, Collection
 
 import redis
 import json
@@ -43,20 +46,20 @@ class WebRecRecorder(object):
         self.warc_path_templ = config['warc_path_templ']
         self.warc_path_templ = self.record_root_dir + self.warc_path_templ
 
-        self.cdxj_key_templ = config['cdxj_key_templ']
+        #self.cdxj_key_templ = config['cdxj_key_templ']
 
         self.info_keys = config['info_key_templ']
 
         self.rec_map_key_templ = config['rec_map_key_templ']
         self.rec_map_key_templ = config['rec_map_key_templ']
 
-        self.warc_key_templ = config['warc_key_templ']
+        #self.warc_key_templ = config['coll_warc_key_templ']
 
         self.temp_prefix = config['temp_prefix']
         self.user_usage_key = config['user_usage_key']
         self.temp_usage_key = config['temp_usage_key']
 
-        self.full_warc_prefix = config['full_warc_prefix']
+        #self.full_warc_prefix = config['full_warc_prefix']
 
         self.name = config['recorder_name']
 
@@ -104,11 +107,11 @@ class WebRecRecorder(object):
             name=self.name,
             redis=self.redis,
 
-            cdx_key_template=self.cdxj_key_templ,
-            file_key_template=self.warc_key_templ,
+            cdx_key_template=Recording.CDXJ_KEY,
+            file_key_template=Recording.COLL_WARC_KEY,
             rel_path_template=self.warc_path_templ,
 
-            full_warc_prefix=self.full_warc_prefix,
+            full_warc_prefix=storagepaths.FULL_WARC_PREFIX,
 
             #dupe_policy=WriteRevisitDupePolicy(),
             dupe_policy=SkipDupePolicy(),
@@ -149,21 +152,6 @@ class WebRecRecorder(object):
     def create_buffer(self, params, name):
         info_key = res_template(self.info_keys['rec'], params)
         return TempWriteBuffer(self.redis, info_key, name, params['url'])
-
-    def _iter_all_warcs(self, user, coll, rec):
-        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
-
-        allwarcs = {}
-
-        if rec == '*':
-            for key in self.redis.scan_iter(warc_key):
-                allwarcs[key] = self.redis.hgetall(key)
-        else:
-            allwarcs[warc_key] = self.redis.hgetall(warc_key)
-
-        for key, warc_map in iteritems(allwarcs):
-            for n, v in iteritems(warc_map):
-                yield key, n, v
 
     # Messaging ===============
     def msg_listen_loop(self):
@@ -206,7 +194,7 @@ class WebRecRecorder(object):
 
     def handle_delete_file(self, uri):
         # determine if local file
-        filename = self.strip_prefix(uri)
+        filename = storagepaths.strip_prefix(uri)
 
         closed = self.recorder.writer.close_file(filename)
 
@@ -214,12 +202,6 @@ class WebRecRecorder(object):
 
     def handle_delete_dir(self, local_dir):
         self.local_storage.delete_collection_dir(local_dir)
-
-    def strip_prefix(self, uri):
-        if self.full_warc_prefix and uri.startswith(self.full_warc_prefix):
-            return uri[len(self.full_warc_prefix):]
-
-        return uri
 
     def queue_message(self, channel, message):
         res = self.redis.publish(channel, json.dumps(message))
@@ -292,7 +274,8 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
         self.rate_limit_ttl = self.rate_limit_hours * 60 * 60
 
-        self.coll_cdxj_key = config['coll_cdxj_key_templ']
+        self.coll_cdxj_key = Collection.COLL_CDXJ_KEY
+        self.rec_file_key_template = Recording.REC_WARC_KEY
 
         self.wam_loader = WAMLoader()
 
@@ -310,6 +293,16 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         h = datetime.utcnow().strftime('%H')
         rate_limit_key = self.rate_limit_key.format(ip=ip, H=h)
         return rate_limit_key
+
+    def add_warc_file(self, full_filename, params):
+        base_filename = self._get_rel_or_base_name(full_filename, params)
+        file_key = res_template(self.file_key_template, params)
+        rec_key = res_template(self.rec_file_key_template, params)
+
+        full_load_path = storagepaths.add_local_store_prefix(full_filename)
+
+        self.redis.hset(file_key, base_filename, full_load_path)
+        self.redis.sadd(rec_key, base_filename)
 
     def add_urls_to_index(self, stream, params, filename, length):
         upload_key = params.get('param.upid')

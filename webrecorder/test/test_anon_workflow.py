@@ -28,7 +28,8 @@ class TestTempContent(FullStackTests):
         'r:{rec}:open',
         'r:{rec}:info',
         'r:{rec}:page',
-        'r:{rec}:warc',
+        'r:{rec}:wk',
+        'c:{coll}:warc',
         'c:{coll}:info',
         'c:{coll}:recs',
         'u:{user}:info',
@@ -100,6 +101,7 @@ class TestTempContent(FullStackTests):
 
         if replay_coll:
             exp_keys.append('c:{coll}:cdxj'.format(user=user, coll=coll))
+            #exp_keys.append('c:{coll}:warc'.format(user=user, coll=coll))
 
         #if del_q:
         #    exp_keys.append('q:del:local')
@@ -151,8 +153,10 @@ class TestTempContent(FullStackTests):
 
     def _get_warc_key_len(self, user, coll, rec):
         coll, rec = self.get_coll_rec(user, coll, rec)
-        warc_key = 'r:{rec}:warc'.format(rec=rec)
-        return self.redis.hlen(warc_key)
+        warc_key = 'r:{rec}:wk'.format(rec=rec)
+        #warc_key = 'c:{coll}:warc'.format(coll=coll)
+        #return self.redis.hlen(warc_key)
+        return self.redis.scard(warc_key)
 
     def _get_anon(self, url, status=None):
         return self.testapp.get('/' + self.anon_user + url, status=status)
