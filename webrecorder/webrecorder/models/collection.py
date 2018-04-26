@@ -21,8 +21,6 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
     INFO_KEY = 'c:{coll}:info'
     ALL_KEYS = 'c:{coll}:*'
 
-    COUNTER_KEY = 'n:colls:count'
-
     COMP_KEY = 'c:{coll}:recs'
 
     ORDERED_LIST_KEY = 'c:{coll}:lists'

@@ -8,6 +8,7 @@ from webrecorder.models import User, Collection, Recording
 from webrecorder.models.base import BaseAccess
 
 from mock import patch
+from itertools import count
 
 load_counter = 0
 
@@ -36,8 +37,11 @@ class TestCDXJCache(FullStackTests):
         super(TestCDXJCache, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
                                               storage_worker=True)
 
-        cls.redis.set('n:recs:count', 499)
-        cls.redis.set('n:colls:count', 99)
+        cls.set_uuids('Recording', count(500))
+        cls.set_uuids('Collection', count(100))
+
+        #cls.redis.set('n:recs:count', 499)
+        #cls.redis.set('n:colls:count', 99)
 
     @classmethod
     def teardown_class(cls):

@@ -24,8 +24,6 @@ class Recording(RedisUniqueComponent):
     INFO_KEY = 'r:{rec}:info'
     ALL_KEYS = 'r:{rec}:*'
 
-    COUNTER_KEY = 'n:recs:count'
-
     OPEN_REC_KEY = 'r:{rec}:open'
 
     PAGE_KEY = 'r:{rec}:page'

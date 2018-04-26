@@ -1,4 +1,5 @@
 from .testutils import BaseWRTests, FullStackTests
+from itertools import count
 import time
 
 from webrecorder.models.list_bookmarks import BookmarkList, Bookmark
@@ -38,8 +39,11 @@ class TestListsAnonUserAPI(FullStackTests):
 
         TestListsAnonUserAPI.coll = _coll
 
-        self.redis.set(BookmarkList.COUNTER_KEY, 1000)
-        self.redis.set(Bookmark.COUNTER_KEY, 100)
+        self.set_uuids('BookmarkList', count(1001))
+        self.set_uuids('Bookmark', count(101))
+
+        #self.redis.set(BookmarkList.COUNTER_KEY, 1000)
+        #self.redis.set(Bookmark.COUNTER_KEY, 100)
 
     def test_create_list(self):
         params = {'title': 'New List',
@@ -61,7 +65,7 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert self.redis.hget('l:1001:info', 'public') == '0'
 
-        assert self.redis.get(BookmarkList.COUNTER_KEY) == '1001'
+        #assert self.redis.get(BookmarkList.COUNTER_KEY) == '1001'
 
     def test_create_list_again(self):
         params = {'title': 'New List'}
@@ -233,7 +237,7 @@ class TestListsAnonUserAPI(FullStackTests):
         assert bookmark['browser'] == 'chrome:60'
         assert bookmark['desc'] == 'A description for this bookmark'
 
-        assert self.redis.get(Bookmark.COUNTER_KEY) == '101'
+        #assert self.redis.get(Bookmark.COUNTER_KEY) == '101'
 
     def test_get_bookmark_error_list_missing(self):
         res = self.testapp.get(self._format('/api/v1/bookmark/101?user={user}&coll=temp'), status=400)

@@ -8,6 +8,7 @@ import pytest
 import base64
 
 from urllib.parse import urlsplit
+from itertools import count
 
 REC_CDXJ = 'r:500:cdxj'
 REC_WARC = 'r:500:warc'
@@ -23,8 +24,10 @@ class BaseStorageCommit(FullStackTests):
         super(BaseStorageCommit, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
                                                   storage_worker=True)
 
-        cls.redis.set('n:recs:count', 499)
-        cls.redis.set('n:colls:count', 99)
+        #cls.redis.set('n:recs:count', 499)
+        #cls.redis.set('n:colls:count', 99)
+        cls.set_uuids('Recording', count(500))
+        cls.set_uuids('Collection', count(100))
 
         cls.user_manager = CLIUserManager()
         cls.user_manager.create_user('user@example.com', 'test', 'TestTest456', 'archivist', 'Test User')

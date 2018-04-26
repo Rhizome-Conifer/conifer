@@ -6,6 +6,8 @@ import re
 import gevent
 import logging
 import datetime
+import os
+import base64
 
 
 # ============================================================================
@@ -48,6 +50,11 @@ def init_props(config):
 
     import webrecorder.rec.storage.storagepaths as storagepaths
     storagepaths.init_props(config)
+
+
+# ============================================================================
+def get_new_id():
+    return base64.b32encode(os.urandom(10)).decode('utf-8').lower()
 
 
 # ============================================================================

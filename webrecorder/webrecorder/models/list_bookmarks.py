@@ -10,8 +10,6 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
     ORDERED_LIST_KEY = 'l:{blist}:bookmarks'
 
-    COUNTER_KEY = 'n:lists:count'
-
     def init_new(self, collection, props):
         self.owner = collection
 
@@ -136,8 +134,6 @@ class Bookmark(RedisUniqueComponent):
     MY_TYPE = 'book'
     INFO_KEY = 'b:{book}:info'
     ALL_KEYS = 'b:{book}:*'
-
-    COUNTER_KEY = 'n:bookmarks:count'
 
     def init_new(self, bookmark_list, props):
         self.owner = bookmark_list

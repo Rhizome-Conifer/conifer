@@ -1,5 +1,5 @@
 from datetime import datetime
-from webrecorder.utils import get_bool
+from webrecorder.utils import get_bool, get_new_id
 
 
 # ============================================================================
@@ -11,7 +11,6 @@ class DupeNameException(Exception):
 class RedisUniqueComponent(object):
     INT_KEYS = ('size', 'created_at', 'updated_at', 'recorded_at')
 
-    COUNTER_KEY = None
     INFO_KEY = None
     MY_TYPE = None
 
@@ -69,7 +68,8 @@ class RedisUniqueComponent(object):
                 self.data[key] = int(self.data[key])
 
     def _create_new_id(self):
-        self.my_id = self.redis.incr(self.COUNTER_KEY)
+        #self.my_id = self.redis.incr(self.COUNTER_KEY)
+        self.my_id = self.get_new_id()
         self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
         return self.my_id
 
@@ -178,6 +178,10 @@ class RedisUniqueComponent(object):
     @classmethod
     def _from_bool(self, value):
         return '1' if value else '0'
+
+    @classmethod
+    def get_new_id(cls):
+        return get_new_id()
 
 
 # ============================================================================

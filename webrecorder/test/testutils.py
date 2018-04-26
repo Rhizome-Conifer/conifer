@@ -20,13 +20,13 @@ from webrecorder.maincontroller import MainController
 from webrecorder.fullstackrunner import FullStackRunner
 
 from webrecorder.models import User, Collection, Recording
-from webrecorder.models.base import BaseAccess
+from webrecorder.models.base import BaseAccess, RedisUniqueComponent
 
 from webrecorder.rec.tempchecker import TempChecker
 from webrecorder.rec.storagecommitter import StorageCommitter
 from webrecorder.rec.worker import Worker
 
-from webrecorder.utils import today_str
+from webrecorder.utils import today_str, get_new_id
 
 
 # ============================================================================
@@ -145,11 +145,6 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
                 if counter >= max_count:
                     raise
 
-    @classmethod
-    def assert_coll_rec_warcs(self, coll, rec, num_coll, num_rec):
-        assert self.redis.hlen(Recording.COLL_WARC_KEY.format(coll=coll)) == num_coll
-        assert self.redis.scard(Recording.REC_WARC_KEY.format(rec=rec)) == num_rec
-
 
 # ============================================================================
 class FullStackTests(BaseWRTests):
@@ -158,6 +153,27 @@ class FullStackTests(BaseWRTests):
                          'CONTENT_HOST': ''}
 
     rec_ids = []
+    ids_map = {'Recording': [],
+               'Collection': [],
+               'Bookmark': [],
+               'BookmarkList': []
+              }
+
+    @classmethod
+    def set_uuids(cls, name, id_list):
+        cls.ids_map[name] = iter(id_list)
+
+    @classmethod
+    def new_id_override(cls):
+        def get_new_id_o(self):
+            print(self)
+            id_gen = cls.ids_map.get(self.__class__.__name__)
+            if id_gen:
+                return next(id_gen)
+            else:
+                return get_new_id()
+
+        return get_new_id_o
 
     @classmethod
     def add_rec_id(cls, id_):
@@ -191,6 +207,11 @@ class FullStackTests(BaseWRTests):
             return ''
 
     @classmethod
+    def assert_coll_rec_warcs(cls, coll, rec, num_coll, num_rec):
+        assert cls.redis.hlen(Recording.COLL_WARC_KEY.format(coll=coll)) == num_coll
+        assert cls.redis.scard(Recording.REC_WARC_KEY.format(rec=rec)) == num_rec
+
+    @classmethod
     def _format_url(self, url):
         return url.format(user=self.anon_user,
                           rec_id_0=self._list_get(0),
@@ -221,6 +242,9 @@ class FullStackTests(BaseWRTests):
     def setup_class(cls, *args, **kwargs):
         super(FullStackTests, cls).setup_class(*args, **kwargs)
 
+        cls._orig_get_new_id = RedisUniqueComponent.get_new_id
+        RedisUniqueComponent.get_new_id = cls.new_id_override()
+
         storage_worker = kwargs.get('storage_worker')
         temp_worker = kwargs.get('temp_worker')
 
@@ -234,6 +258,8 @@ class FullStackTests(BaseWRTests):
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
+        RedisUniqueComponent.get_new_id = cls._orig_get_new_id
+
         if cls.temp_worker:
             cls.temp_worker.stop()
 

@@ -34,16 +34,12 @@ class TestTempContent(FullStackTests):
         'c:{coll}:recs',
         'u:{user}:info',
         'u:{user}:colls',
-        'n:colls:count',
-        'n:recs:count',
         'h:defaults',
         'h:roles',
         'h:temp-usage',
     ]
 
     POST_DEL_KEYS = [
-        'n:colls:count',
-        'n:recs:count',
         'h:defaults',
         'h:roles',
         'h:temp-usage',
