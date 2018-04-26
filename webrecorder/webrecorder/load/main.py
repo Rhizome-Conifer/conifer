@@ -44,7 +44,7 @@ class WRWarcServer(object):
         rec_url = redis_base + Recording.CDXJ_KEY
         coll_url = redis_base + Collection.COLL_CDXJ_KEY
         warc_url = redis_base + Recording.COLL_WARC_KEY
-        rec_map_key = Collection.COMP_KEY
+        rec_map_key = Collection.UNORDERED_RECS_KEY
 
 
         redis_resolver = RedisResolver(redis_url=warc_url,

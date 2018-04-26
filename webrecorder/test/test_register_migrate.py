@@ -1,4 +1,4 @@
-from .testutils import FullStackTests, Recording, Collection
+from .testutils import FullStackTests, Recording, Collection, BaseAccess
 
 from mock import patch
 from itertools import count
@@ -23,6 +23,7 @@ class TestRegisterMigrate(FullStackTests):
         cls.val_reg = ''
 
     def test_anon_record_1(self):
+        self.set_uuids('Recording', ['abc'])
         res = self.testapp.get('/_new/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
         res.headers['Location'].endswith('/' + self.anon_user + '/temp/abc/record/mp_/http://httpbin.org/get?food=bar')
         res = res.follow()
@@ -250,6 +251,7 @@ class TestRegisterMigrate(FullStackTests):
         assert 'New Coll' in res.text
 
     def test_logged_in_record_1(self):
+        self.set_uuids('Recording', ['move-test'])
         res = self.testapp.get('/_new/new-coll/move-test/record/mp_/http://example.com/')
         assert res.status_code == 302
         assert res.headers['Location'].endswith('/someuser/new-coll/move-test/record/mp_/http://example.com/')
@@ -282,29 +284,36 @@ class TestRegisterMigrate(FullStackTests):
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''new-coll-")
 
-    def get_rec_names(self, user, coll_name, num):
+    def get_rec_titles(self, user, coll_name, num):
         coll, rec = self.get_coll_rec(user, coll_name, None)
 
         assert self.redis.hlen(Recording.COLL_WARC_KEY.format(coll=coll)) == num
 
-        return set(self.redis.hkeys(Collection.COMP_KEY.format(coll=coll)))
+        collection = Collection(my_id=coll, redis=self.redis, access=BaseAccess())
+
+        return set([recording['title'] for recording in collection.get_recordings()])
+
+        #return self.redis.smembers(Collection.UNORDERED_RECS_KEY.format(coll=coll))
+        #return set(self.redis.hkeys(Collection.COMP_KEY.format(coll=coll)))
 
     def test_logged_in_move_rec(self):
-        assert self.get_rec_names('someuser', 'new-coll', 1) == {'move-test'}
-        assert self.get_rec_names('someuser', 'new-coll-2', 0) == set()
+        assert self.get_rec_titles('someuser', 'new-coll', 1) == {'move-test'}
+        assert self.get_rec_titles('someuser', 'new-coll-2', 0) == set()
 
         res = self.testapp.post_json('/api/v1/recording/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
-        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test'}
+        #assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test'}
+        assert res.json['coll_id'] == 'new-coll-2'
+        rec_id = res.json['rec_id']
 
         def assert_moved():
-            assert self.get_rec_names('someuser', 'new-coll', 0) == set()
-            assert self.get_rec_names('someuser', 'new-coll-2', 1) == {'move-test'}
+            assert self.get_rec_titles('someuser', 'new-coll', 0) == set()
+            assert self.get_rec_titles('someuser', 'new-coll-2', 1) == {'move-test'}
 
         self.sleep_try(0.2, 5.0, assert_moved)
 
         # rec replay
-        res = self.testapp.get('/someuser/new-coll-2/move-test/replay/mp_/http://example.com/')
+        res = self.testapp.get('/someuser/new-coll-2/{0}/replay/mp_/http://example.com/'.format(rec_id))
         res.charset = 'utf-8'
 
         assert 'Example Domain' in res.text
@@ -316,6 +325,7 @@ class TestRegisterMigrate(FullStackTests):
         assert 'Example Domain' in res.text
 
     def test_logged_in_record_2(self):
+        self.set_uuids('Recording', ['move-test'])
         res = self.testapp.get('/_new/new-coll/Move Test/record/mp_/http://httpbin.org/get?rec=test')
         assert res.status_code == 302
         assert res.headers['Location'].endswith('/someuser/new-coll/move-test/record/mp_/http://httpbin.org/get?rec=test')
@@ -344,21 +354,24 @@ class TestRegisterMigrate(FullStackTests):
         assert '"rec": "test"' in res.text
 
     def test_logged_in_move_rec_dupe(self):
-        assert self.get_rec_names('someuser', 'new-coll', 1) == {'move-test'}
-        assert self.get_rec_names('someuser', 'new-coll-2', 1) == {'move-test'}
+        assert self.get_rec_titles('someuser', 'new-coll', 1) == {'Move Test'}
+        assert self.get_rec_titles('someuser', 'new-coll-2', 1) == {'move-test'}
 
         res = self.testapp.post_json('/api/v1/recording/move-test/move/new-coll-2?user=someuser&coll=new-coll')
 
-        assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test-2'}
+        #assert res.json == {'coll_id': 'new-coll-2', 'rec_id': 'move-test-2'}
+        assert res.json['coll_id'] == 'new-coll-2'
+        rec_id = res.json['rec_id']
+
 
         def assert_moved():
-            assert self.get_rec_names('someuser', 'new-coll', 0) == set()
-            assert self.get_rec_names('someuser', 'new-coll-2', 2) == {'move-test', 'move-test-2'}
+            assert self.get_rec_titles('someuser', 'new-coll', 0) == set()
+            assert self.get_rec_titles('someuser', 'new-coll-2', 2) == {'move-test', 'Move Test'}
 
         self.sleep_try(0.2, 5.0, assert_moved)
 
         # rec replay
-        res = self.testapp.get('/someuser/new-coll-2/move-test-2/replay/mp_/http://httpbin.org/get?rec=test')
+        res = self.testapp.get('/someuser/new-coll-2/{0}/replay/mp_/http://httpbin.org/get?rec=test'.format(rec_id))
         res.charset = 'utf-8'
 
         assert '"rec": "test"' in res.text
@@ -429,7 +442,7 @@ class TestRegisterMigrate(FullStackTests):
 
         assert res.json == {'rec_id': 'food-bar', 'coll_id': 'test-migrate'}
 
-        assert self.get_rec_names('someuser', 'test-migrate', 1) == {'food-bar'}
+        assert self.get_rec_titles('someuser', 'test-migrate', 1) == {'food-bar'}
 
         # rec replay
         res = self.testapp.get('/someuser/test-migrate/food-bar/replay/mp_/http://httpbin.org/get?food=bar')

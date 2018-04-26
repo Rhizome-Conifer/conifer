@@ -1,5 +1,6 @@
 from .testutils import FullStackTests
 import os
+from itertools import count
 
 
 # ============================================================================
@@ -12,6 +13,7 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         os.environ['CONTENT_HOST'] = 'content-host'
         os.environ['APP_HOST'] = 'app-host'
         kwargs['init_anon'] = False
+        cls.set_uuids('Recording', ('rec-' + chr(ord('A') + c) for c in count()))
         super(TestCreateNewAPISeparateDomains, cls).setup_class(**kwargs)
 
     @classmethod

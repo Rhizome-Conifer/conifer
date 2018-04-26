@@ -95,7 +95,7 @@ class ContentController(BaseController, RewriterApp):
             data = request.query
 
             coll_name = data.get('coll', '')
-            rec_name = data.get('rec', '')
+            rec = data.get('rec', '')
 
             mode = data.get('mode', '')
 
@@ -107,6 +107,7 @@ class ContentController(BaseController, RewriterApp):
             patch_rec = ''
 
             collection = user.get_collection_by_name(coll_name)
+            recording = collection.get_recording(rec)
 
             if not collection:
                 return {'error': 'Invalid Collection Specified'}
@@ -120,9 +121,9 @@ class ContentController(BaseController, RewriterApp):
                 sources = mode.split(':', 1)[1]
                 inv_sources = sources
                 # load patch recording also
-                patch_recording = collection.get_recording_by_name(self.patch_of_name(rec_name, True))
-                if patch_recording:
-                    patch_rec = patch_recording.my_id
+                #patch_recording = collection.get_recording(recording['patch_rec'])
+                if recording:
+                    patch_rec = recording.get_prop('patch_rec')
 
                 mode = 'extract'
             elif mode.startswith('extract_only:'):
@@ -132,14 +133,10 @@ class ContentController(BaseController, RewriterApp):
                 mode = 'extract'
 
             if mode in self.MODIFY_MODES:
-                recording = None
-                if rec_name and rec_name != '*':
-                    recording = collection.get_recording_by_name(rec_name)
-
                 if not recording:
                     return {'error': 'Invalid Recording Specified'}
 
-                rec = recording.my_id
+                #rec = recording.my_id
             elif mode in ('replay', 'replay-coll'):
                 rec = '*'
             else:
@@ -154,7 +151,7 @@ class ContentController(BaseController, RewriterApp):
                           coll=collection.my_id,
                           rec=rec,
                           coll_name=quote(coll_name),
-                          rec_name=quote(rec_name, safe='/*'),
+                          #rec_name=quote(rec_name, safe='/*'),
 
                           type=mode,
                           sources=sources,
@@ -181,14 +178,14 @@ class ContentController(BaseController, RewriterApp):
         @self.app.route('/record/<wb_url:path>', method='ANY')
         def redir_new_temp_rec(wb_url):
             coll_name = 'temp'
-            rec_name = self.DEF_REC_NAME
+            rec_title = self.DEF_REC_NAME
             wb_url = self.add_query(wb_url)
-            return self.do_create_new_and_redir(coll_name, rec_name, wb_url, 'record')
+            return self.do_create_new_and_redir(coll_name, rec_title, wb_url, 'record')
 
-        @self.app.route('/$record/<coll_name>/<rec_name>/<wb_url:path>', method='ANY')
-        def redir_new_record(coll_name, rec_name, wb_url):
+        @self.app.route('/$record/<coll_name>/<rec_title>/<wb_url:path>', method='ANY')
+        def redir_new_record(coll_name, rec_title, wb_url):
             wb_url = self.add_query(wb_url)
-            return self.do_create_new_and_redir(coll_name, rec_name, wb_url, 'record')
+            return self.do_create_new_and_redir(coll_name, rec_title, wb_url, 'record')
 
         # API NEW
         @self.app.post('/api/v1/new')
@@ -211,13 +208,13 @@ class ContentController(BaseController, RewriterApp):
 
             full_url = request.environ['wsgi.url_scheme'] + '://' + host
 
-            url, rec_name, patch_rec_name = self.do_create_new(coll, '', wb_url, mode)
+            url, rec, patch_rec = self.do_create_new(coll, '', wb_url, mode)
 
             full_url += url
 
             return {'url': full_url,
-                    'rec_name': rec_name,
-                    'patch_rec_name': patch_rec_name
+                    'rec_name': rec,
+                    'patch_rec_name': patch_rec
                    }
 
         # COOKIES
@@ -484,13 +481,11 @@ class ContentController(BaseController, RewriterApp):
         new_url, _, _2 = self.do_create_new(coll_name, rec_name, wb_url, mode)
         return self.redirect(new_url)
 
-    def do_create_new(self, coll_name, rec_name, wb_url, mode):
+    def do_create_new(self, coll_name, rec_title, wb_url, mode):
         if mode == 'record':
             result = self.check_remote_archive(wb_url, mode)
             if result:
                 mode, wb_url = result
-
-        rec_title = rec_name
 
         user = self.access.init_session_user()
 
@@ -515,10 +510,12 @@ class ContentController(BaseController, RewriterApp):
 
         if mode.startswith('extract:'):
             patch_recording = self._create_new_rec(collection,
-                                                   self.patch_of_name(recording.name, True),
+                                                   self.patch_of_name(recording['title']),
                                                    'patch')
 
-            patch_rec_name = patch_recording.name
+            recording.set_prop('patch_rec', patch_recording.my_id)
+
+            patch_rec_name = patch_recording.my_id
         else:
             patch_rec_name = ''
 
@@ -527,7 +524,7 @@ class ContentController(BaseController, RewriterApp):
                                                              rec=recording.name,
                                                              mode=mode,
                                                              url=wb_url)
-        return new_url, recording.name, patch_rec_name
+        return new_url, recording.my_id, patch_rec_name
 
     def is_content_request(self):
         if not self.content_host:
@@ -541,15 +538,12 @@ class ContentController(BaseController, RewriterApp):
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
     def _create_new_rec(self, collection, title, mode):
-        rec_name = self.sanitize_title(title) if title else ''
+        #rec_name = self.sanitize_title(title) if title else ''
         rec_type = 'patch' if mode == 'patch' else None
-        return collection.create_recording(rec_name, desc=title, rec_type=rec_type)
+        return collection.create_recording(title=title, rec_type=rec_type)
 
-    def patch_of_name(self, name, is_id=False):
-        if not is_id:
-            return 'Patch of ' + name
-        else:
-            return 'patch-of-' + name
+    def patch_of_name(self, name):
+        return 'Patch of ' + name
 
     def handle_routing(self, wb_url, user, coll_name, rec_name, type,
                        is_embed=False,
@@ -600,8 +594,9 @@ class ContentController(BaseController, RewriterApp):
                 raise HTTPError(402, 'Rate Limit')
 
             if inv_sources and inv_sources != '*':
-                patch_rec_name = self.patch_of_name(rec, True)
-                patch_recording = collection.get_recording_by_name(patch_rec_name)
+                #patch_rec_name = self.patch_of_name(rec, True)
+                patch_recording = collection.get_recording(recording['patch_rec'])
+                #patch_recording = collection.get_recording_by_name(patch_rec_name)
 
         if type == 'replay-coll':
             if not collection:

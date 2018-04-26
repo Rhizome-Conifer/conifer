@@ -117,20 +117,20 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         return os.path.dirname(os.path.realpath(__file__))
 
     @classmethod
-    def get_coll_rec(cls, user, coll_name, rec_name):
+    def get_coll_rec(cls, user, coll_name, rec):
         user = User(my_id=user, redis=cls.redis, access=BaseAccess())
         collection = user.get_collection_by_name(coll_name)
-        recording = collection.get_recording_by_name(rec_name) if collection else None
+        recording = collection.get_recording(rec) if collection else None
 
         coll = collection.my_id if collection else None
         rec = recording.my_id if recording else None
         return coll, rec
 
     @classmethod
-    def get_coll_rec_obj(cls, coll_name, rec_name):
+    def get_coll_rec_obj(cls, coll_name, rec):
         user = User(my_id=cls.anon_user, redis=cls.redis, access=BaseAccess())
         collection = user.get_collection_by_name(coll_name)
-        recording = collection.get_recording_by_name(rec_name) if collection else None
+        recording = collection.get_recording(rec) if collection else None
         return collection, recording
 
     @classmethod
@@ -166,11 +166,10 @@ class FullStackTests(BaseWRTests):
     @classmethod
     def new_id_override(cls):
         def get_new_id_o(self):
-            print(self)
-            id_gen = cls.ids_map.get(self.__class__.__name__)
-            if id_gen:
-                return next(id_gen)
-            else:
+            try:
+                id_gen = cls.ids_map.get(self.__class__.__name__)
+                return str(next(id_gen))
+            except:
                 return get_new_id()
 
         return get_new_id_o

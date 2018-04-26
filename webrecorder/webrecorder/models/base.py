@@ -92,7 +92,7 @@ class RedisUniqueComponent(object):
         if not self.loaded:
             self.load()
 
-        self.data['id'] = self.name
+        self.data['id'] = self.my_id
 
         created_at = self.data.get('created_at', 0)
         updated_at = self.data.get('updated_at', 0)
@@ -357,6 +357,58 @@ class RedisOrderedListMixin(object):
         # TODO: add xx=True if supported in redis-py
         self.redis.zadd(key, *add_list)
         return True
+
+
+# ============================================================================
+class RedisUnorderedList(object):
+    def __init__(self, list_key, comp):
+        self.list_key_templ = list_key
+        self.comp = comp
+        self.redis = comp.redis
+
+    @property
+    def _list_key(self):
+        return self.list_key_templ.format_map({self.comp.MY_TYPE: self.comp.my_id})
+
+    def get_objects(self, cls, load=True):
+        all_objs = self.get_keys()
+
+        obj_list = []
+
+        for val in all_objs:
+            obj = cls(my_id=val,
+                      redis=self.redis,
+                      access=self.comp.access)
+
+            obj.owner = self.comp
+            if load:
+                obj.load()
+
+            obj_list.append(obj)
+
+        return obj_list
+
+    def add_object(self, obj, owner=True):
+        self.redis.sadd(self._list_key, obj.my_id)
+
+        if owner:
+            obj.owner = self.comp
+            obj['owner'] = self.comp.my_id
+
+    def contains_id(self, obj_id):
+        if not obj_id or obj_id == '*':
+            return None
+
+        return self.redis.sismember(self._list_key, obj_id)
+
+    def num_objects(self):
+        return self.redis.scard(self._list_key)
+
+    def remove_object(self, obj):
+        return self.redis.srem(self._list_key, obj.my_id)
+
+    def get_keys(self):
+        return self.redis.smembers(self._list_key)
 
 
 # ============================================================================

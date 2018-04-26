@@ -17,6 +17,7 @@ class TestLoginMigrate(FullStackTests):
         cls.user_manager = CLIUserManager()
 
     def test_record_1(self):
+        self.set_uuids('Recording', ['rec'])
         res = self.testapp.get('/_new/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
         assert res.status_code == 302
         res = res.follow()

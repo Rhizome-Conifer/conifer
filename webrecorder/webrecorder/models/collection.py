@@ -9,19 +9,19 @@ from datetime import date
 from pywb.utils.loaders import load
 from warcio.timeutils import timestamp20_now
 
-from webrecorder.models.base import RedisNamedContainer, RedisOrderedListMixin
+from webrecorder.models.base import RedisUnorderedList, RedisOrderedListMixin, RedisUniqueComponent
 from webrecorder.models.recording import Recording
 from webrecorder.models.list_bookmarks import BookmarkList
 from webrecorder.rec.storage import get_storage as get_global_storage
 
 
 # ============================================================================
-class Collection(RedisOrderedListMixin, RedisNamedContainer):
+class Collection(RedisOrderedListMixin, RedisUniqueComponent):
     MY_TYPE = 'coll'
     INFO_KEY = 'c:{coll}:info'
     ALL_KEYS = 'c:{coll}:*'
 
-    COMP_KEY = 'c:{coll}:recs'
+    UNORDERED_RECS_KEY = 'c:{coll}:recs'
 
     ORDERED_LIST_KEY = 'c:{coll}:lists'
 
@@ -33,35 +33,32 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
     COLL_CDXJ_TTL = 1800
 
+    def __init__(self, **kwargs):
+        super(Collection, self).__init__(**kwargs)
+        self.recs = RedisUnorderedList(self.UNORDERED_RECS_KEY, self)
+
     @classmethod
     def init_props(cls, config):
         cls.COLL_CDXJ_TTL = config['coll_cdxj_ttl']
 
         cls.DEFAULT_STORE_TYPE = os.environ.get('DEFAULT_STORAGE', 'local')
 
-    def create_recording(self, rec_name='', **kwargs):
+    def create_recording(self, **kwargs):
         self.access.assert_can_admin_coll(self)
-
-        if not rec_name:
-            rec_name = self._new_rec_name()
-
-        rec_name = self.reserve_obj_name(rec_name, allow_dupe=True)
 
         recording = Recording(redis=self.redis,
                               access=self.access)
 
         rec = recording.init_new(**kwargs)
-        self.add_object(rec_name, recording, owner=True)
+
+        recording.name = recording.my_id
+
+        self.recs.add_object(recording, owner=True)
 
         return recording
 
     def move_recording(self, obj, new_collection):
-        new_recording = new_collection.create_recording(obj.name)
-
-        new_recording.set_prop('desc', obj.get_prop('desc'))
-        rec_type = obj.get_prop('rec_type')
-        if rec_type:
-            new_recording.set_prop('rec_type', rec_type)
+        new_recording = new_collection.create_recording()
 
         if new_recording.copy_data_from_recording(obj, delete_source=True):
             return new_recording.name
@@ -129,9 +126,6 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         else:
             return len(list(self.get_lists()))
 
-    def _new_rec_name(self):
-        return 'rec-' + timestamp20_now()
-
     def init_new(self, title, desc='', public=False):
         coll = self._create_new_id()
 
@@ -148,17 +142,12 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         return coll
 
-    def get_recording_by_name(self, rec_name):
-        rec = self.name_to_id(rec_name)
-
-        return self.get_recording_by_id(rec, rec_name)
-
-    def get_recording_by_id(self, rec, rec_name):
-        if not rec or rec == '*':
+    def get_recording(self, rec):
+        if not self.recs.contains_id(rec):
             return None
 
         recording = Recording(my_id=rec,
-                              name=rec_name,
+                              name=rec,
                               redis=self.redis,
                               access=self.access)
 
@@ -166,10 +155,10 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         return recording
 
     def num_recordings(self):
-        return self.num_objects()
+        return self.recs.num_objects()
 
     def get_recordings(self, load=True):
-        recordings = self.get_objects(Recording)
+        recordings = self.recs.get_objects(Recording)
         for recording in recordings:
             recording.owner = self
             if load:
@@ -182,9 +171,10 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         key_pattern = key_templ.format(rec='*')
 
-        comp_map = self.get_comp_map()
+        #comp_map = self.get_comp_map()
 
-        recs = self.redis.hvals(comp_map)
+        #recs = self.redis.hvals(comp_map)
+        recs = self.recs.get_keys()
 
         return [key_pattern.replace('*', rec) for rec in recs]
 
@@ -202,8 +192,9 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
     def list_coll_pages(self):
         #all_page_keys = self._get_rec_keys(Recording.PAGE_KEY)
-        all_objs = self.redis.hgetall(self.get_comp_map())
-        all_page_keys = [Recording.PAGE_KEY.format(rec=rec) for rec in all_objs.values()]
+        #all_objs = self.redis.hgetall(self.get_comp_map())
+        all_objs = self.recs.get_keys()
+        all_page_keys = [Recording.PAGE_KEY.format(rec=rec) for rec in all_objs]
 
         pagelist = []
 
@@ -213,13 +204,13 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
         all_pages = pi.execute()
 
-        for (name, rec), rec_pagelist in zip(all_objs.items(), all_pages):
+        for rec, rec_pagelist in zip(all_objs, all_pages):
             for page in rec_pagelist:
                 page = json.loads(page)
 
                 bk_attrs = (page['url'] + page['timestamp']).encode('utf-8')
                 page['id'] = hashlib.md5(bk_attrs).hexdigest()[:10]
-                page['recording'] = name
+                page['recording'] = rec
                 pagelist.append(page)
 
         if not self.access.can_admin_coll(self):
@@ -229,6 +220,7 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
 
     def serialize(self, include_recordings=True, include_lists=True):
         data = super(Collection, self).serialize()
+        self.data['id'] = self.name
 
         if include_recordings:
             recordings = self.get_recordings(load=True)
@@ -264,8 +256,10 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
         if not recording:
             return {'error': 'no_recording'}
 
-        if not self.remove_object(recording):
+        if not self.recs.remove_object(recording):
             return {'error': 'not_found'}
+        else:
+            self.incr_size(-recording.size)
 
         size = recording.size
         user = self.get_owner()

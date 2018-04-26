@@ -71,7 +71,9 @@ class BaseStorageCommit(FullStackTests):
 
         self.sleep_try(0.1, 10.0, assert_user_dir_empty)
 
-        coll, rec = self.get_coll_rec('test', 'test-migrate', 'rec')
+        #coll, rec = self.get_coll_rec('test', 'test-migrate', '500')
+        coll = '100'
+        rec = '500'
 
         result = self.redis.hgetall('c:{coll}:warc'.format(coll=COLL_ID))
         assert len(result) == 1
@@ -105,11 +107,11 @@ class BaseStorageCommit(FullStackTests):
         user_dir = os.path.join(self.warcs_dir, 'test')
         assert len(os.listdir(user_dir)) == 0
 
-        res = self.testapp.post_json('/api/v1/recording/rec/copy/another-coll?user=test&coll=default-collection')
+        res = self.testapp.post_json('/api/v1/recording/500/copy/another-coll?user=test&coll=default-collection')
 
-        coll, rec = self.get_coll_rec('test', 'another-coll', 'rec')
+        coll, rec = self.get_coll_rec('test', 'another-coll', '501')
 
-        orig_coll, orig_rec = self.get_coll_rec('test', 'default-collection', 'rec')
+        orig_coll, orig_rec = self.get_coll_rec('test', 'default-collection', '500')
 
         def assert_copied():
             self.assert_coll_rec_warcs(coll, rec, 1, 1)

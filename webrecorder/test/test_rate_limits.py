@@ -18,6 +18,7 @@ class TestRateLimits(FullStackTests):
         super(TestRateLimits, cls).setup_class()
 
     def test_record_1(self):
+        self.set_uuids('Recording', ['rec'])
         headers = {'X-Real-IP': '127.0.0.1'}
         res = self.testapp.get('/_new/temp/rec/record/mp_/http://httpbin.org/get?food=bar', headers=headers)
         assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar')

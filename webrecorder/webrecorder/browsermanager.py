@@ -63,8 +63,7 @@ class BrowserManager(object):
         recording = None
 
         if collection:
-            recording = collection.get_recording_by_id(container_data.get('rec'),
-                                                       container_data.get('rec_name'))
+            recording = collection.get_recording(container_data.get('rec'))
 
         container_data['the_user'] = the_user
         container_data['collection'] = collection

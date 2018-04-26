@@ -89,10 +89,12 @@ class TestTempContent(FullStackTests):
         exp_keys = []
 
         coll = self.temp_coll
-        rec_map = 'c:{coll}:recs'.format(coll=coll)
+        actual_rec_list = 'c:{coll}:recs'.format(coll=coll)
 
-        for rec_name in rec_list:
-            rec = self.redis.hget(rec_map, rec_name)
+        for rec in rec_list:
+            #rec = self.redis.hget(rec_map, rec_name)
+            #rec = rec_name
+            assert self.redis.sismember(actual_rec_list, rec)
             exp_keys.extend(self._get_redis_keys(self.REDIS_KEYS, user, coll, rec))
 
         if replay_coll:
@@ -131,10 +133,10 @@ class TestTempContent(FullStackTests):
 
         self.dyn_stats = new_stats
 
-    def _assert_size_all_eq(self, user, coll_name, rec_name):
+    def _assert_size_all_eq(self, user, coll_name, rec):
         coll = self.temp_coll
-        rec_map = 'c:{coll}:recs'.format(coll=self.temp_coll)
-        rec = self.redis.hget(rec_map, rec_name) or '0'
+        #actual_rec_list = 'c:{coll}:recs'.format(coll=self.temp_coll)
+        #rec = self.redis.hget(rec_map, rec_name) or '0'
 
         r_info = 'r:{rec}:info'.format(user=user, coll=coll, rec=rec)
         c_info = 'c:{coll}:info'.format(user=user, coll=coll)
@@ -158,6 +160,8 @@ class TestTempContent(FullStackTests):
         return self.testapp.get('/' + self.anon_user + url, status=status)
 
     def test_rec_top_frame(self):
+        self.set_uuids('Recording', ['my-recording'])
+
         res = self.testapp.get('/_new/temp/my-recording/record/http://httpbin.org/get?food=bar')
         assert res.status_code == 302
         assert res.location.endswith('/temp/my-recording/record/http://httpbin.org/get?food=bar')
@@ -212,6 +216,8 @@ class TestTempContent(FullStackTests):
         assert int(self.redis.ttl('c:{coll}:cdxj'.format(coll=coll)) > 0)
 
     def test_anon_record_sanitize_redir(self):
+        self.set_uuids('Recording', ['my-rec2'])
+
         res = self.testapp.get('/_new/temp/My%20Rec2/record/http://httpbin.org/get?bood=far')
 
         res.charset = 'utf-8'
@@ -221,7 +227,7 @@ class TestTempContent(FullStackTests):
 
         res = self.testapp.get('/api/v1/recording/my-rec2?user={user}&coll=temp'.format(user=self.anon_user))
         assert res.json['recording']['id'] == 'my-rec2'
-        assert res.json['recording']['desc'] == 'My Rec2'
+        assert res.json['recording']['title'] == 'My Rec2'
 
     def test_anon_record_top_frame(self):
         res = self._get_anon('/temp/my-rec2/record/http://httpbin.org/get?food=bar')
@@ -230,7 +236,6 @@ class TestTempContent(FullStackTests):
         assert '"record"' in res.text
         assert '"rec_id": "my-rec2"' in res.text, res.text
         #assert '"rec_title": "My Rec2"' in res.text
-        assert '"rec_title": "Recording on' in res.text
         assert '"coll_id": "temp"' in res.text
         assert '"coll_title": "Temporary Collection"' in res.text
 
@@ -258,6 +263,7 @@ class TestTempContent(FullStackTests):
         assert self._get_warc_key_len(user, 'temp', 'my-rec2') == 1
 
     def test_anon_record_3(self):
+        self.set_uuids('Recording', ['my-recording-2'])
         res = self.testapp.get('/$record/temp/my-recording/mp_/http://httpbin.org/get?good=far')
         assert res.status_code == 302
         assert res.location.endswith('/temp/my-recording-2/record/mp_/http://httpbin.org/get?good=far')
@@ -282,6 +288,8 @@ class TestTempContent(FullStackTests):
         assert self._get_warc_key_len(user, 'temp', 'my-recording-2') == 1
 
     def test_anon_unicode_record_1(self):
+        self.set_uuids('Recording', ['unicode-title-test'])
+
         test_url = 'http://httpbin.org/get?bood=far'
         res = self.testapp.get(
             '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('вэбрекордэр'), url=test_url)
@@ -298,7 +306,7 @@ class TestTempContent(FullStackTests):
         # Add as page
         page = {'title': 'вэбрекордэр!', 'url': test_url, 'ts': '2016010203000000'}
         res = self.testapp.post_json(
-            '/api/v1/recording/{rec}/pages?user={user}&coll=temp'.format(rec=quote('вэбрекордэр'), user=self.anon_user),
+            '/api/v1/recording/{rec}/pages?user={user}&coll=temp'.format(rec='unicode-title-test', user=self.anon_user),
             params=page
         )
 
@@ -306,18 +314,18 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        all_recs = ['my-recording', 'my-recording-2', 'my-rec2', 'вэбрекордэр']
+        all_recs = ['my-recording', 'my-recording-2', 'my-rec2', 'unicode-title-test']
 
         self._assert_rec_keys(user, 'temp', all_recs)
 
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == len(all_recs)
 
-        assert self._get_warc_key_len(user, 'temp', 'вэбрекордэр') == 1
+        assert self._get_warc_key_len(user, 'temp', 'unicode-title-test') == 1
 
         # test non-protocol url replay routing
         res = self._get_anon(
-            '/temp/{rec}/{url}'.format(rec=quote('вэбрекордэр'), url=sub(r'^http://', '', test_url))
+            '/temp/{rec}/{url}'.format(rec=quote('unicode-title-test'), url=sub(r'^http://', '', test_url))
         )
         res.charset = 'utf-8'
 
@@ -326,6 +334,8 @@ class TestTempContent(FullStackTests):
         assert '<iframe' in res.text
 
     def test_anon_special_characters_record(self):
+        self.set_uuids('Recording', ['test--ok'])
+
         test_url = 'http://httpbin.org/get?mood=bar'
         res = self.testapp.get(
             '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('test / "ok!"'), url=test_url)
@@ -351,7 +361,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        all_recs = ['my-recording', 'my-recording-2', 'my-rec2', 'вэбрекордэр',
+        all_recs = ['my-recording', 'my-recording-2', 'my-rec2', 'unicode-title-test',
                     'test--ok']
 
         self._assert_rec_keys(user, 'temp', all_recs)
@@ -359,6 +369,8 @@ class TestTempContent(FullStackTests):
         assert self._get_warc_key_len(user, 'temp', 'test--ok') == 1
 
     def test_anon_html_format_record(self):
+        self.set_uuids('Recording', ['emmyem-test-recording'])
+
         test_url = 'http://httpbin.org/get?boof=mar'
         res = self.testapp.get(
             '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('<em>My</em> test recording'), url=test_url)
@@ -384,7 +396,7 @@ class TestTempContent(FullStackTests):
 
         user = self.anon_user
 
-        all_recs = ['my-recording', 'my-recording-2', 'my-rec2', 'вэбрекордэр',
+        all_recs = ['my-recording', 'my-recording-2', 'my-rec2', 'unicode-title-test',
                     'test--ok', 'emmyem-test-recording']
 
         self._assert_rec_keys(user, 'temp', all_recs)
@@ -411,8 +423,7 @@ class TestTempContent(FullStackTests):
         res = self._get_anon('/temp')
         res.charset = 'utf-8'
 
-        #assert 'My Rec2' in res.text
-        assert 'Recording on' in res.text
+        assert 'My Rec2' in res.text
         assert 'my-recording' in res.text
         assert 'Temporary Collection' in res.text
 
@@ -423,8 +434,7 @@ class TestTempContent(FullStackTests):
         res = self._get_anon('/temp/my-rec2')
         res.charset = 'utf-8'
 
-        #assert 'My Rec2' in res.text
-        assert 'Recording on' in res.text
+        assert 'My Rec2' in res.text
         assert 'Example Title' in res.text
         assert 'Temporary Collection' in res.text
 
@@ -511,7 +521,7 @@ class TestTempContent(FullStackTests):
 
         assert res.json == {'rec_id': 'my-recording-3', 'coll_id': 'temp'}
 
-        all_recs = ['my-recording', 'my-recording-2', 'вэбрекордэр', 'my-recording-3', 'test--ok', 'emmyem-test-recording']
+        all_recs = ['my-recording', 'my-recording-2', 'unicode-title-test', 'my-recording-3', 'test--ok', 'emmyem-test-recording']
 
         # ensure keys up-to-date
         self._assert_rec_keys(self.anon_user, 'temp', all_recs)
@@ -542,7 +552,7 @@ class TestTempContent(FullStackTests):
     def test_anon_coll_info(self):
         res = self.testapp.get('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
         recs = res.json['collection']['recordings']
-        assert set([rec['id'] for rec in recs]) == set(['my-recording', 'my-recording-2', 'my-rec2', 'вэбрекордэр', 'test--ok', 'emmyem-test-recording'])
+        assert set([rec['id'] for rec in recs]) == set(['my-recording', 'my-recording-2', 'my-rec2', 'unicode-title-test', 'test--ok', 'emmyem-test-recording'])
 
         assert res.json['collection']['timespan'] >= 0
         assert res.json['collection']['duration'] >= 0
@@ -552,9 +562,9 @@ class TestTempContent(FullStackTests):
 
         assert res.json == {'deleted_id': 'my-recording'}
 
-        res = self.testapp.delete('/api/v1/recording/{rec}?user={user}&coll=temp'.format(rec=quote('вэбрекордэр'), user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/{rec}?user={user}&coll=temp'.format(rec='unicode-title-test', user=self.anon_user))
 
-        assert res.json == {'deleted_id': 'вэбрекордэр'}
+        assert res.json == {'deleted_id': 'unicode-title-test'}
 
         res = self.testapp.delete('/api/v1/recording/my-recording-2?user={user}&coll=temp'.format(user=self.anon_user))
 
@@ -591,6 +601,7 @@ class TestTempContent(FullStackTests):
         assert res.json == {'id': 'my-recording', 'error_message': 'Recording not found'}
 
     def test_anon_record_redirect_and_delete(self):
+        self.set_uuids('Recording', ['recording-session'])
         res = self.testapp.get('/record/mp_/http://example.com/')
         assert res.status_code == 302
 
@@ -608,6 +619,7 @@ class TestTempContent(FullStackTests):
         assert res.json == {'deleted_id': 'recording-session'}
 
     def test_anon_patch_redirect_and_delete(self):
+        self.set_uuids('Recording', ['patch'])
         res = self.testapp.get('/_new/temp/patch/patch/http://example.com/?patch=test')
         assert res.status_code == 302
 

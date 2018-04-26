@@ -40,8 +40,8 @@ class WebsockController(BaseController):
 
     def client_ws(self):
         user, collection = self.load_user_coll()
-        rec_name = request.query.getunicode('rec')
-        recording = collection.get_recording_by_name(rec_name)
+        rec = request.query.getunicode('rec')
+        recording = collection.get_recording(rec)
 
         reqid = request.query.get('reqid')
         if reqid:
@@ -73,12 +73,11 @@ class WebsockController(BaseController):
         user = info['user']
         coll = info['coll']
         rec = info['rec']
-        rec_name = info['rec_name']
         coll_name = info['coll_name']
 
         user = self.user_manager.all_users.get_user(user)
         collection = user.get_collection_by_id(coll, coll_name)
-        recording = collection.get_recording_by_id(rec, rec_name)
+        recording = collection.get_recording(rec)
 
         reqid = info['reqid']
         sesh_id = self.get_session().get_id()

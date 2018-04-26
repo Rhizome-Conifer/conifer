@@ -27,6 +27,7 @@ class TestAutoLogin(FullStackTests):
         assert '"test"' in res.text
 
     def test_logged_in_record_1(self):
+        self.set_uuids('Recording', ['rec-sesh'])
         res = self.testapp.get('/_new/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
         assert res.headers['Location'].endswith('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
         res = res.follow()
@@ -82,9 +83,11 @@ class TestAutoLogin(FullStackTests):
         assert res.json['collection']
 
     def test_copy_rec(self):
+        self.set_uuids('Recording', ['rec-sesh-a'])
         res = self.testapp.post_json('/api/v1/recording/rec-sesh/copy/another-coll?user=test&coll=new-title')
+        assert res.json['recording']
 
-        coll, rec = self.get_coll_rec('test', 'another-coll', 'rec-sesh')
+        coll, rec = self.get_coll_rec('test', 'another-coll', 'rec-sesh-a')
 
         orig_coll, orig_rec = self.get_coll_rec('test', 'new-title', 'rec-sesh')
 
@@ -99,7 +102,14 @@ class TestAutoLogin(FullStackTests):
 
         assert info['size'] == orig_info['size']
 
+    def test_copy_rec_to_self_error(self):
+        self.set_uuids('Recording', ['rec-sesh'])
+        res = self.testapp.post_json('/api/v1/recording/rec-sesh/copy/another-coll?user=test&coll=new-title')
+
+        assert res.json['error'] == 'copy_error'
+
     def test_logged_in_record_2(self):
+        self.set_uuids('Recording', ['rec'])
         res = self.testapp.get('/_new/another-coll/rec/record/mp_/http://httpbin.org/get?bood=far')
         res = res.follow()
         res.charset = 'utf-8'

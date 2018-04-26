@@ -309,10 +309,10 @@ class UserManager(object):
         collection = user.get_collection_by_name(coll_name)
         return user, collection
 
-    def get_user_coll_rec(self, username, coll_name, rec_name):
+    def get_user_coll_rec(self, username, coll_name, rec):
         user, collection = self.get_user_coll(username, coll_name)
         if collection:
-            recording = collection.get_recording_by_name(rec_name)
+            recording = collection.get_recording(rec)
         else:
             recording = None
 

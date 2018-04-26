@@ -50,6 +50,7 @@ class TestUpload(FullStackTests):
         assert '"test"' in res.text
 
     def test_logged_in_record_1(self):
+        self.set_uuids('Recording', ['rec-sesh'])
         res = self.testapp.get('/_new/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
         assert res.headers['Location'].endswith('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
         res = res.follow()
@@ -98,8 +99,8 @@ class TestUpload(FullStackTests):
                                            'title', 'desc', 'type', 'size',
                                            'pages'}
 
-        assert metadata[1]['title'].startswith('Recording on ')
-        assert metadata[1]['desc'] == 'rec-sesh'
+        #assert metadata[1]['title'].startswith('Recording on ')
+        assert metadata[1]['title'] == 'rec-sesh'
 
         assert metadata[0]['created_at_date'] <= metadata[0]['updated_at_date']
 

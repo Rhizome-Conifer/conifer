@@ -243,11 +243,9 @@ class BaseImporter(ImportStatusChecker):
                 if not collection:
                     collection = self.make_collection(user, filename, self.upload_coll_info)
 
-                info['id'] = sanitize_title(info.get('title', ''))
-
                 desc = info.get('desc', '')
 
-                recording = collection.create_recording(info['id'],
+                recording = collection.create_recording(title=info.get('title', ''),
                                                         desc=desc,
                                                         rec_type=info.get('rec_type'),
                                                         ra_list=info.get('ra'))

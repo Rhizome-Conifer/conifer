@@ -67,7 +67,7 @@ class TestCDXJCache(FullStackTests):
         # ensure duration of at least 1 sec
         time.sleep(1.0)
 
-        res = self.testapp.get('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?bood=far')
+        res = self.testapp.get('/' + self.anon_user + '/temp/500/record/mp_/http://httpbin.org/get?bood=far')
         res.charset = 'utf-8'
 
         assert '"bood": "far"' in res.text, res.text
@@ -156,9 +156,9 @@ class TestCDXJCache(FullStackTests):
         assert ((files[0].endswith('.cdxj') and files[1].endswith('.warc.gz')) or
                 (files[1].endswith('.cdxj') and files[0].endswith('.warc.gz')))
 
-        res = self.testapp.delete('/api/v1/recording/rec?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/500?user={user}&coll=temp'.format(user=self.anon_user))
 
-        assert res.json == {'deleted_id': 'rec'}
+        assert res.json == {'deleted_id': '500'}
 
         def assert_deleted():
             assert len(os.listdir(user_dir)) == 0

@@ -77,11 +77,10 @@ class TestBrowserInit(FullStackTests):
         assert set(res.keys()) == {'user', 'remote_ip',
                                    'ip', 'id', 'type',
                                    'coll', 'coll_name',
-                                   'rec', 'rec_name',
+                                   'rec', 'patch_rec',
                                    'url', 'request_ts',
                                    'sources', 'inv_sources',
                                    'browser', 'browser_can_write',
-                                   'patch_rec',
                                   }
 
     def test_create_browser_for_embed_patch(self):
@@ -126,11 +125,10 @@ class TestBrowserInit(FullStackTests):
         assert set(res.keys()) == {'user', 'remote_ip',
                                    'ip', 'id', 'type',
                                    'coll', 'coll_name',
-                                   'rec', 'rec_name',
+                                   'rec', 'patch_rec',
                                    'url', 'request_ts',
                                    'sources', 'inv_sources',
                                    'browser', 'browser_can_write',
-                                   'patch_rec',
                                   }
 
     def test_create_browser_error_invalid_mode(self):

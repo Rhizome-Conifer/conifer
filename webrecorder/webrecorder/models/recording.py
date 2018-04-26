@@ -56,12 +56,16 @@ class Recording(RedisUniqueComponent):
         cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
         #cls.COMMIT_WAIT_TEMPL = config['commit_wait_templ']
 
-    def init_new(self, desc='', rec_type=None, ra_list=None):
+    def init_new(self, title='', desc='', rec_type=None, ra_list=None):
         rec = self._create_new_id()
+
+        print('REC', rec)
 
         open_rec_key = self.OPEN_REC_KEY.format(rec=rec)
 
-        self.data = {'desc': desc,
+        self.data = {
+                     'title': title,
+                     'desc': desc,
                      'size': 0,
                     }
 
@@ -99,7 +103,7 @@ class Recording(RedisUniqueComponent):
         # add any remote archive sources
         ra_key = self.RA_KEY.format(rec=self.my_id)
         data['ra_sources'] = list(self.redis.smembers(ra_key))
-        data['title'] = self.get_title()
+        #data['title'] = self.get_title()
         return data
 
     def get_title(self):
@@ -417,11 +421,24 @@ class Recording(RedisUniqueComponent):
 
         return True
 
+    def _copy_prop(self, source, name):
+        prop = source.get_prop(name)
+        if prop:
+            self.set_prop(name, prop)
+
     def copy_data_from_recording(self, source, delete_source=False):
+        if self == source:
+            return False
+
         if not self.is_open():
             return False
 
         errored = False
+
+        self._copy_prop(source, 'title')
+        self._copy_prop(source, 'desc')
+        self._copy_prop(source, 'rec_type')
+        #self._copy_prop(source, 'patch_rec')
 
         collection = self.get_owner()
         user = collection.get_owner()

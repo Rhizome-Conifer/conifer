@@ -41,9 +41,8 @@ class TestAppContentDomain(FullStackTests):
         assert res.headers['Location'] == 'http://app-host/'
 
     def test_record_app_top_frame(self):
+        self.set_uuids('Recording', ['rec'])
         res = self.app_get('/_new/temp/rec/record/http://httpbin.org/get?food=bar')
-        print(res.headers)
-        print(res.headers['Location'])
         res = self.app_get(res.headers['Location'])
         assert res.status_code == 200
 

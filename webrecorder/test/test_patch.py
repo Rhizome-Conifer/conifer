@@ -5,6 +5,7 @@ import os
 # ============================================================================
 class TestPatchContent(FullStackTests):
     def test_patch_top_frame(self):
+        self.set_uuids('Recording', ['new-patch'])
         res = self.testapp.get('/_new/temp/new-patch/patch/http://httpbin.org/get?food=bar')
         res.headers['Location'].endswith('/' + self.anon_user + '/temp/new-patch/patch/http://httpbin.org/get?food=bar')
         res = res.follow()
@@ -41,6 +42,7 @@ class TestPatchContent(FullStackTests):
         assert 'let window' in res.text
 
     def test_patch_content_at_timestamp(self):
+        self.set_uuids('Recording', ['new-patch-2'])
         res = self.testapp.get('/_new/temp/new-patch-2/patch/2000mp_/http://example.com/')
         assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/new-patch-2/patch/2000mp_/http://example.com/')
         res = res.follow()

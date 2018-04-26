@@ -3,9 +3,16 @@ import os
 
 from .testutils import FullStackTests
 
+from itertools import count
+
 
 # ============================================================================
 class TestWebRecRecAPI(FullStackTests):
+    @classmethod
+    def setup_class(cls):
+        super(TestWebRecRecAPI, cls).setup_class()
+        cls.set_uuids('Recording', ('rec-' + chr(ord('A') + c) for c in count()))
+
     def assert_rec_key(self, coll, rec):
         coll, rec = self.get_coll_rec(self.anon_user, coll, rec)
 
@@ -28,9 +35,11 @@ class TestWebRecRecAPI(FullStackTests):
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
+        print(res.json['recording'])
+
         self.add_rec_id(res.json['recording']['id'])
 
-        assert self.rec_ids[0].startswith('rec-')
+        assert self.rec_ids[0].startswith('rec-'), self.rec_ids
         assert res.json['recording']['desc'] == 'My Rec Description'
 
         self.assert_rec_key('temp', self.rec_ids[0])

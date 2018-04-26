@@ -35,6 +35,7 @@ class TestRecordLimits(FullStackTests):
         return os.path.join(self.user_dir, warcs[0]), warc_size, user_key, curr_size
 
     def test_record_1(self):
+        self.set_uuids('Recording', ['rec'])
         res = self.testapp.get('/_new/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
         assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
         res = res.follow()
@@ -72,6 +73,7 @@ class TestRecordLimits(FullStackTests):
         assert self.get_cdx_len('temp', 'rec') == 1
 
     def test_dont_record_new_rec(self):
+        self.set_uuids('Recording', ['rec-2'])
         warc_file, warc_size, user_key, curr_size = self._get_info()
 
         self.redis.hset(user_key, 'max_size', curr_size + 10)
