@@ -268,14 +268,17 @@ class RedisNamedContainer(RedisUniqueComponent):
 
 
 # ============================================================================
-class RedisOrderedListMixin(object):
-    ORDERED_LIST_KEY = ''
-
+class RedisOrderedList(object):
     SCORE_UNIT = 1024
+
+    def __init__(self, ordered_list_key, comp):
+        self.ordered_list_key_templ = ordered_list_key
+        self.comp = comp
+        self.redis = comp.redis
 
     @property
     def _ordered_list_key(self):
-        return self.ORDERED_LIST_KEY.format_map({self.MY_TYPE: self.my_id})
+        return self.ordered_list_key_templ.format_map({self.comp.MY_TYPE: self.comp.my_id})
 
     def get_ordered_objects(self, cls, load=True, start=0, end=-1):
         all_objs = self.redis.zrange(self._ordered_list_key, start, end)
@@ -284,9 +287,9 @@ class RedisOrderedListMixin(object):
         for val in all_objs:
             obj = cls(my_id=val,
                       redis=self.redis,
-                      access=self.access)
+                      access=self.comp.access)
 
-            obj.owner = self
+            obj.owner = self.comp
             if load:
                 obj.load()
 
@@ -294,7 +297,7 @@ class RedisOrderedListMixin(object):
 
         return obj_list
 
-    def insert_ordered_object(self, obj, before_obj):
+    def insert_ordered_object(self, obj, before_obj, owner=True):
         key = self._ordered_list_key
 
         new_score = None
@@ -323,6 +326,10 @@ class RedisOrderedListMixin(object):
 
         self.redis.zadd(key, new_score, obj.my_id)
 
+        if owner:
+            obj.owner = self.comp
+            obj['owner'] = self.comp.my_id
+
     def contains_id(self, obj_id):
         return self.redis.zscore(self._ordered_list_key, obj_id) is not None
 
@@ -331,6 +338,9 @@ class RedisOrderedListMixin(object):
 
     def remove_ordered_object(self, obj):
         return self.redis.zrem(self._ordered_list_key, obj.my_id)
+
+    def get_ordered_keys(self):
+        return self.redis.zrange(self._ordered_list_key, 0, -1)
 
     def reorder_objects(self, new_order):
         key = self._ordered_list_key

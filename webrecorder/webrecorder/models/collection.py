@@ -9,14 +9,14 @@ from datetime import date
 from pywb.utils.loaders import load
 from warcio.timeutils import timestamp20_now
 
-from webrecorder.models.base import RedisUnorderedList, RedisOrderedListMixin, RedisUniqueComponent
+from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent
 from webrecorder.models.recording import Recording
 from webrecorder.models.list_bookmarks import BookmarkList
 from webrecorder.rec.storage import get_storage as get_global_storage
 
 
 # ============================================================================
-class Collection(RedisOrderedListMixin, RedisUniqueComponent):
+class Collection(RedisUniqueComponent):
     MY_TYPE = 'coll'
     INFO_KEY = 'c:{coll}:info'
     ALL_KEYS = 'c:{coll}:*'
@@ -36,6 +36,7 @@ class Collection(RedisOrderedListMixin, RedisUniqueComponent):
     def __init__(self, **kwargs):
         super(Collection, self).__init__(**kwargs)
         self.recs = RedisUnorderedList(self.UNORDERED_RECS_KEY, self)
+        self.lists = RedisOrderedList(self.ORDERED_LIST_KEY, self)
 
     @classmethod
     def init_props(cls, config):
@@ -75,14 +76,14 @@ class Collection(RedisOrderedListMixin, RedisUniqueComponent):
 
         before_blist = self.get_list(props.get('before_id'))
 
-        self.insert_ordered_object(bookmark_list, before_blist)
+        self.lists.insert_ordered_object(bookmark_list, before_blist)
 
         return bookmark_list
 
     def get_lists(self, load=True, public_only=False):
         self.access.assert_can_read_coll(self)
 
-        lists = self.get_ordered_objects(BookmarkList, load=load)
+        lists = self.lists.get_ordered_objects(BookmarkList, load=load)
 
         if public_only or not self.access.can_write_coll(self):
             lists = [blist for blist in lists if blist.is_public()]
@@ -91,7 +92,7 @@ class Collection(RedisOrderedListMixin, RedisUniqueComponent):
         return lists
 
     def get_list(self, blist_id):
-        if not self.contains_id(blist_id):
+        if not self.lists.contains_id(blist_id):
             return None
 
         bookmark_list = BookmarkList(my_id=blist_id,
@@ -108,12 +109,12 @@ class Collection(RedisOrderedListMixin, RedisUniqueComponent):
     def move_list_before(self, blist, before_blist):
         self.access.assert_can_write_coll(self)
 
-        self.insert_ordered_object(blist, before_blist)
+        self.lists.insert_ordered_object(blist, before_blist)
 
     def remove_list(self, blist):
         self.access.assert_can_write_coll(self)
 
-        if not self.remove_ordered_object(blist):
+        if not self.lists.remove_ordered_object(blist):
             return False
 
         blist.delete_me()
@@ -122,9 +123,9 @@ class Collection(RedisOrderedListMixin, RedisUniqueComponent):
 
     def num_lists(self):
         if self.access.assert_can_write_coll(self):
-            return self.num_ordered_objects()
+            return self.lists.num_ordered_objects()
         else:
-            return len(list(self.get_lists()))
+            return len(self.get_lists())
 
     def init_new(self, title, desc='', public=False):
         coll = self._create_new_id()
@@ -243,12 +244,6 @@ class Collection(RedisOrderedListMixin, RedisUniqueComponent):
         data['public'] = self.is_public()
         data['public_index'] = self.get_bool_prop('public_index', True)
         return data
-
-    def rename(self, obj, new_name, new_cont=None, allow_dupe=False):
-        if new_cont and new_cont != self:
-            return False
-
-        return super(Collection, self).rename(obj, new_name, new_cont, allow_dupe=allow_dupe)
 
     def remove_recording(self, recording, delete=False):
         self.access.assert_can_admin_coll(self)

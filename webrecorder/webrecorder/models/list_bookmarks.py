@@ -1,14 +1,18 @@
-from webrecorder.models.base import RedisUniqueComponent, RedisOrderedListMixin
+from webrecorder.models.base import RedisUniqueComponent, RedisOrderedList
 from webrecorder.utils import get_bool
 
 
 # ============================================================================
-class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
+class BookmarkList(RedisUniqueComponent):
     MY_TYPE = 'blist'
     INFO_KEY = 'l:{blist}:info'
     ALL_KEYS = 'l:{blist}:*'
 
-    ORDERED_LIST_KEY = 'l:{blist}:bookmarks'
+    ORDERED_BOOKMARKS_KEY = 'l:{blist}:bookmarks'
+
+    def __init__(self, **kwargs):
+        super(BookmarkList, self).__init__(**kwargs)
+        self.bookmarks = RedisOrderedList(self.ORDERED_BOOKMARKS_KEY, self)
 
     def init_new(self, collection, props):
         self.owner = collection
@@ -38,25 +42,25 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
 
         before_bookmark = self.get_bookmark(props.get('before_id'))
 
-        self.insert_ordered_object(bookmark, before_bookmark)
+        self.bookmarks.insert_ordered_object(bookmark, before_bookmark)
 
         return bookmark
 
     def get_bookmarks(self, load=True, start=0, end=-1):
         self.access.assert_can_read_coll(self.get_owner())
 
-        return self.get_ordered_objects(Bookmark, load=load,
-                                        start=start, end=end)
+        return self.bookmarks.get_ordered_objects(Bookmark, load=load,
+                                                  start=start, end=end)
 
     def num_bookmarks(self):
         self.access.assert_can_read_coll(self.get_owner())
 
-        return self.num_ordered_objects()
+        return self.bookmarks.num_ordered_objects()
 
     def get_bookmark(self, bid):
         self.access.assert_can_read_coll(self.get_owner())
 
-        if bid is None or not self.contains_id(bid):
+        if bid is None or not self.bookmarks.contains_id(bid):
             return None
 
         bookmark = Bookmark(my_id=bid,
@@ -70,12 +74,12 @@ class BookmarkList(RedisOrderedListMixin, RedisUniqueComponent):
     def move_bookmark_before(self, bookmark, before_bookmark):
         self.access.assert_can_write_coll(self.get_owner())
 
-        self.insert_ordered_object(bookmark, before_bookmark)
+        self.bookmarks.insert_ordered_object(bookmark, before_bookmark)
 
     def remove_bookmark(self, bookmark):
         self.access.assert_can_write_coll(self.get_owner())
 
-        if not self.remove_ordered_object(bookmark):
+        if not self.bookmarks.remove_ordered_object(bookmark):
             return False
 
         bookmark.delete_me()

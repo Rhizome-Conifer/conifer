@@ -74,7 +74,7 @@ class ListsController(BaseController):
 
             new_order = request.json.get('order', [])
 
-            if collection.reorder_objects(new_order):
+            if collection.lists.reorder_objects(new_order):
                 return {'success': 'reordered'}
             else:
                 return {'error': 'invalid order'}
@@ -136,7 +136,7 @@ class ListsController(BaseController):
 
             new_order = request.json.get('order', [])
 
-            if blist.reorder_objects(new_order):
+            if blist.bookmarks.reorder_objects(new_order):
                 return {'success': 'reordered'}
             else:
                 return {'error': 'invalid order'}
