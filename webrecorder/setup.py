@@ -19,7 +19,7 @@ except ImportError:
 #long_description = open('README.rst').read()
 long_description = ''
 
-PYWB_DEP = 'pywb>=2.0.3'
+PYWB_DEP = 'pywb>=2.0.4'
 
 def load_requirements(filename):
     with open(filename, 'rt') as fh:
@@ -100,7 +100,7 @@ setup(
     ],
     install_requires=load_requirements('requirements.txt'),
     dependency_links=[
-        #'git+https://github.com/ikreymer/pywb.git@develop#egg=pywb-2.0.3',
+        'git+https://github.com/ikreymer/pywb.git@develop#egg=pywb-2.0.4',
         'git+https://github.com/FedericoCeratto/bottle-cork.git@94d4017a4d1b0d20328e9283e341bd674df3a18a#egg=bottle-cork',
     ],
     tests_require=[
@@ -109,6 +109,7 @@ setup(
         'pytest-cov',
         'fakeredis',
         'mock',
+        'httpbin==0.5.0'
        ],
     cmdclass={'test': PyTest,
               'install': Install},

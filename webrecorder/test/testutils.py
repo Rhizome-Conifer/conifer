@@ -1,7 +1,7 @@
 from gevent.monkey import patch_all; patch_all()
 
 from pywb.warcserver.test.testutils import FakeRedisTests, BaseTestClass
-from pywb.warcserver.test.testutils import TempDirTests, to_path
+from pywb.warcserver.test.testutils import TempDirTests, to_path, HttpBinLiveTests
 from pywb.utils.loaders import load_overlay_config
 
 import webtest
@@ -149,7 +149,7 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
 
 
 # ============================================================================
-class FullStackTests(BaseWRTests):
+class FullStackTests(HttpBinLiveTests, BaseWRTests):
     runner_env_params = {'TEMP_SLEEP_CHECK': '1',
                          'APP_HOST': '',
                          'CONTENT_HOST': ''}

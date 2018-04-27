@@ -154,6 +154,7 @@ class TestUpload(FullStackTests):
         assert collection['recordings'][0]['updated_at'] >= TestUpload.updated_at_1
 
     def test_upload_3_x_warc(self):
+        self.set_uuids('Recording', ['uploaded-rec'])
         with open(self.test_upload_warc, 'rb') as fh:
             res = self.testapp.put('/_upload?filename=example2.warc.gz', params=fh.read())
 
@@ -192,7 +193,14 @@ class TestUpload(FullStackTests):
         assert collection['id'] == 'temporary-collection'
         assert collection['title'] == 'Temporary Collection'
 
+        assert collection['pages'] == [{'id': '07dbfa5824',
+                                        'rec': 'uploaded-rec',
+                                        'timestamp': '20180306181354',
+                                        'title': 'Example Domain',
+                                        'url': 'http://example.com/'}]
+
     def test_upload_force_coll(self):
+        self.set_uuids('Recording', ['upload-rec-2'])
         with open(self.test_upload_warc, 'rb') as fh:
             res = self.testapp.put('/_upload?filename=example2.warc.gz&force-coll=default-collection', params=fh.read())
 
@@ -214,6 +222,31 @@ class TestUpload(FullStackTests):
             assert res.json['size'] >= res.json['total_size']
 
         self.sleep_try(0.1, 5.0, assert_finished)
+
+    def test_coll_info_replay_3(self):
+        res = self.testapp.get('/api/v1/collection/default-collection?user=test')
+
+        assert res.json['collection']
+        collection = res.json['collection']
+
+        assert collection['id'] == 'default-collection'
+        assert 'This is your first collection' in collection['desc']
+        assert collection['title'] == 'Default Collection'
+
+        assert len(collection['pages']) == 2
+
+        assert {'id': '07dbfa5824',
+                'rec': 'upload-rec-2',
+                'timestamp': '20180306181354',
+                'title': 'Example Domain',
+                'url': 'http://example.com/'} in collection['pages']
+
+        assert {'id': '7aeff3ce47',
+                'rec': 'rec-sesh',
+                'timestamp': '',
+                'title': 'Example Title',
+                'url': 'http://httpbin.org/get?food=bar'} in collection['pages']
+
 
     def test_replay_3(self):
         res = self.testapp.get('/test/default-collection/mp_/http://example.com/')
