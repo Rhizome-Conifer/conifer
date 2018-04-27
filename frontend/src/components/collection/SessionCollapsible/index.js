@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import { List } from 'immutable';
 import { Button } from 'react-bootstrap';
 
 import { defaultRecDesc } from 'config';
@@ -26,6 +27,7 @@ class SessionCollapsible extends PureComponent {
     deleteRec: PropTypes.func,
     expand: PropTypes.bool,
     onExpand: PropTypes.func,
+    pagesBySession: PropTypes.object,
     recording: PropTypes.object,
     recordingEdited: PropTypes.bool,
     saveEdit: PropTypes.func
@@ -47,10 +49,11 @@ class SessionCollapsible extends PureComponent {
   }
 
   render() {
-    const { expand, recording } = this.props;
+    const { expand, pagesBySession, recording } = this.props;
 
-    const pageCount = recording.get('pages').size;
-    const pages = recording.get('pages');
+    const recId = recording.get('id');
+    const pages = pagesBySession.hasOwnProperty(recId) ? pagesBySession[recId] : List();
+    const pageCount = pages.size;
 
     const header = (
       <header className="collapsible">
@@ -58,7 +61,7 @@ class SessionCollapsible extends PureComponent {
           <RemoveWidget callback={this.confirmDelete} borderless={false} />
           <button onClick={this.downloadAction}><DownloadIcon /></button>
         </div>
-        <h2>{recording.get('title')}</h2>
+        <h2>{recId}</h2>
         <span>{pageCount} Pages</span>
         <TimeFormat seconds={recording.get('duration')} />
         <SizeFormat bytes={recording.get('size')} />

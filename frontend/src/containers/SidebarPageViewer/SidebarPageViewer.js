@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { createSearchAction } from 'redux-search';
 
-import { getActivePage, getOrderedPages,
+import { getActivePageIdx, getOrderedPages,
          tsOrderedPageSearchResults } from 'redux/selectors';
 
 import { SidebarPageViewer } from 'components/controls';
@@ -14,7 +14,7 @@ const mapStateToProps = (outerState) => {
   const isIndexing = !pageFeed.size && app.getIn(['collection', 'pages']).size && !searchText;
 
   return {
-    activePage: getActivePage(outerState),
+    activePage: getActivePageIdx(outerState),
     pages: isIndexing ? getOrderedPages(app) : pageFeed,
     collection: app.get('collection'),
     searchText

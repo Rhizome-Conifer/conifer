@@ -4,7 +4,7 @@ import { asyncConnect } from 'redux-connect';
 
 import { load as loadColl } from 'redux/modules/collection';
 import { deleteRecording, edit, resetEditState } from 'redux/modules/recordings';
-import { getOrderedRecordings } from 'redux/selectors';
+import { getOrderedRecordings, splitPagesBySession } from 'redux/selectors';
 
 import CollectionManagementUI from 'components/collection/CollectionManagementUI';
 
@@ -65,7 +65,8 @@ const mapStateToProps = (outerState) => {
     collection: app.get('collection'),
     recordingEdited: app.getIn(['recordings', 'edited']),
     recordings: isLoaded ? getOrderedRecordings(app) : null,
-    loaded: reduxAsyncConnect.loaded
+    loaded: reduxAsyncConnect.loaded,
+    pagesBySession: splitPagesBySession(app)
   };
 };
 

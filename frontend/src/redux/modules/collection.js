@@ -44,7 +44,6 @@ export default function collection(state = initialState, action = {}) {
       return state.set('loading', true);
     case COLL_LOAD_SUCCESS: {
       const {
-        pages,
         collection: {
           created_at,
           desc,
@@ -52,6 +51,7 @@ export default function collection(state = initialState, action = {}) {
           featured_list,
           id,
           lists,
+          pages,
           recordings,
           size,
           timespan,

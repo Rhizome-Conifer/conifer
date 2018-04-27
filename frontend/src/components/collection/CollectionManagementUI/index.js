@@ -26,6 +26,7 @@ class CollectionManagementUI extends Component {
     recordingEdited: PropTypes.bool,
     recordings: PropTypes.object,
     loaded: PropTypes.bool,
+    pagesBySession: PropTypes.object,
     totalDuration: PropTypes.number
   };
 
@@ -51,7 +52,7 @@ class CollectionManagementUI extends Component {
   }
 
   render() {
-    const { collection, recordings } = this.props;
+    const { collection, pagesBySession, recordings } = this.props;
     const { expandAll } = this.state;
 
     if (!this.context.canAdmin) {
@@ -106,6 +107,7 @@ class CollectionManagementUI extends Component {
                   deleteRec={this.props.deleteRec}
                   collection={collection}
                   expand={expandAll}
+                  pagesBySession={pagesBySession}
                   recording={rec}
                   recordingEdited={this.props.recordingEdited}
                   onSelectRow={this.onSelectGroupedRow}

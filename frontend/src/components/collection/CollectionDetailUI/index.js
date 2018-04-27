@@ -284,7 +284,7 @@ class CollectionDetailUI extends Component {
         cellRenderer: RemoveRenderer
       },
       session: {
-        dataKey: 'recording',
+        dataKey: 'rec',
         key: 'session',
         width: 100
       },

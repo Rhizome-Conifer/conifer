@@ -45,7 +45,7 @@ module.exports = Object.assign({
     'title': 'Page Title'
   },
   columnMappings: {
-    'session': 'recording'
+    'session': 'rec'
   },
   defaultBookmarkDesc: 'No description provided.',
   defaultCollectionTitle: 'New Collection',

@@ -138,28 +138,6 @@ export const getOrderedPages = createSelector(
 );
 
 
-/**
- * Match the current `url` and `timestamp` with a recording in the collection
- */
-export const getRecording = createSelector(
-  [getRecordings, getTimestamp, getUrl],
-  (recordings, ts, url) => {
-    const matchFn = ts ? obj => rts(obj.get('url')) === rts(url) && obj.get('timestamp') === ts :
-                         obj => rts(obj.get('url')) === rts(url);
-
-    for (const rec of recordings) {
-      const match = rec.get('pages').find(matchFn);
-
-      if (match) {
-        return rec;
-      }
-    }
-
-    return null;
-  }
-);
-
-
 const sortedSearch = (sortedPages, timestamp, url) => {
   if (!timestamp) {
     const idx = sortedPages.findIndex((b) => { return b.get('url') === url || rts(b.get('url')) === rts(url); });
@@ -206,19 +184,19 @@ const sortedSearch = (sortedPages, timestamp, url) => {
 };
 
 
-export const getActiveRecording = createSelector(
-  [getOrderedPages, getTimestamp, getUrl],
-  (pages, ts, url) => {
+export const getActivePageIdx = createSelector(
+  [tsOrderedPageSearchResults, getTimestamp, getUrl],
+  (pageSearch, ts, url) => {
+    const pages = pageSearch.pageFeed;
     return sortedSearch(pages, ts, url);
   }
 );
 
 
 export const getActivePage = createSelector(
-  [tsOrderedPageSearchResults, getTimestamp, getUrl],
-  (pageSearch, ts, url) => {
-    const pages = pageSearch.pageFeed;
-    return sortedSearch(pages, ts, url);
+  [tsOrderedPageSearchResults, getActivePageIdx],
+  (pageSearch, pgIdx) => {
+    return pageSearch.pageFeed.get(pgIdx);
   }
 );
 
@@ -305,6 +283,18 @@ export const getRemoteArchiveStats = createSelector(
     }
 
     return null;
+  }
+);
+
+export const splitPagesBySession = createSelector(
+  [getRecordings, getPages],
+  (recordings, pages) => {
+    const recs = {};
+    for(const rec of recordings) {
+      const r = rec.get('id');
+      recs[r] = pages.filter(p => p.get('rec') === r).toList();
+    }
+    return recs;
   }
 );
 

@@ -7,7 +7,7 @@ import { batchActions } from 'redux-batched-actions';
 import { remoteBrowserMod, truncate } from 'helpers/utils';
 import config from 'config';
 
-import { getRecording } from 'redux/selectors';
+import { getActivePage } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, setBookmarkId, setListId, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
@@ -30,7 +30,7 @@ class Replay extends Component {
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     match: PropTypes.object,
-    recording: PropTypes.object,
+    recording: PropTypes.string,
     reqId: PropTypes.string,
     sidebarResize: PropTypes.bool,
     timestamp: PropTypes.string,
@@ -135,7 +135,7 @@ class Replay extends Component {
                 dispatch={dispatch}
                 params={params}
                 rb={activeBrowser}
-                rec={recording ? recording.get('id') : null}
+                rec={recording}
                 reqId={reqId}
                 timestamp={timestamp}
                 url={url} /> :
@@ -216,7 +216,10 @@ const initialData = [
   }
 ];
 
-const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
+const mapStateToProps = (outerState) => {
+  const { reduxAsyncConnect: { loaded }, app } = outerState;
+  const activePage = getActivePage(outerState);
+
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     activeBookmarkId: app.getIn(['controls', 'activeBookmarkId']),
@@ -224,7 +227,7 @@ const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
     auth: app.get('auth'),
     collection: app.get('collection'),
     loaded,
-    recording: app.getIn(['collection', 'loaded']) ? getRecording(app) : null,
+    recording: activePage ? activePage.get('rec') : null,
     reqId: app.getIn(['remoteBrowsers', 'reqId']),
     sidebarResize: app.getIn(['sidebar', 'resizing']),
     timestamp: app.getIn(['controls', 'timestamp']),

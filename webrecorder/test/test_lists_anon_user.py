@@ -423,7 +423,7 @@ class TestListsAnonUserAPI(FullStackTests):
         assert len(lists[0]['bookmarks']) == 1
 
         assert lists[1]['id'] == '1003'
-        assert lists[1]['total_bookmarks'] == 5
+        assert lists[1]['total_bookmarks'] == 6
         assert len(lists[1]['bookmarks']) == 1
 
     # Collection and User Info
