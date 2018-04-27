@@ -1,3 +1,4 @@
+export BookmarkIcon from './Bookmark';
 export BrowserIcon from './Browser';
 export BugIcon from './Bug';
 export CheckIcon from './Check';
@@ -20,4 +21,5 @@ export SnapshotIcon from './Snapshot';
 export TrashIcon from './Trash';
 export TwitterIcon from './Twitter';
 export WarcIcon from './Warc';
+export WrBrowser from './WrBrowser';
 export XIcon from './X';

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
@@ -11,13 +12,14 @@ import config from 'config';
 import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
-import { CollectionFilters, CollectionHeader } from 'containers';
+import { CollectionFilters, CollectionHeader,
+         InspectorPanel, Lists, Sidebar } from 'containers';
 
 import Modal from 'components/Modal';
+import Resizable from 'components/Resizable';
 
 import 'react-virtualized/styles.css';
 
-import CollectionSidebar from './sidebar';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
 import { BrowserRenderer, DnDSortableHeader, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
 
@@ -28,13 +30,17 @@ class CollectionDetailUI extends Component {
   static propTypes = {
     auth: PropTypes.object,
     browsers: PropTypes.object,
+    clearInspector: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     list: PropTypes.object,
     match: PropTypes.object,
     pages: PropTypes.object,
     removeBookmark: PropTypes.func,
-    saveBookmarkSort: PropTypes.func
+    saveBookmarkSort: PropTypes.func,
+    setMultiInspector: PropTypes.func,
+    setBookmarkInspector: PropTypes.func,
+    setPageInspector: PropTypes.func
   };
 
   static contextTypes = {
@@ -50,6 +56,7 @@ class CollectionDetailUI extends Component {
       columns: config.defaultColumns,
       headerEditor: false,
       listBookmarks: props.list.get('bookmarks'),
+      overrideHeight: null,
       scrolled: false,
       selectedPageIdx: null
     };
@@ -61,6 +68,10 @@ class CollectionDetailUI extends Component {
     }
 
     this.state = this.initialState;
+  }
+
+  componentWillMount() {
+    this.props.clearInspector();
   }
 
   componentDidMount() {
@@ -96,16 +107,34 @@ class CollectionDetailUI extends Component {
     return true;
   }
 
+  onKeyNavigate = ({ scrollToRow }) => {
+    const { match: { params: { list } }, pages, setBookmarkInspector, setPageInspector } = this.props;
+    const { listBookmarks } = this.state;
+
+    if (list) {
+      setBookmarkInspector(listBookmarks.getIn([scrollToRow, 'id']));
+    } else {
+      setPageInspector(pages.getIn([scrollToRow, 'id']));
+    }
+
+    this.setState({ selectedPageIdx: scrollToRow });
+  }
+
   onSelectRow = ({ event, index }) => {
-    const { selectedPageIdx } = this.state;
+    const { clearInspector, match: { params: { list } }, pages, setBookmarkInspector,
+            setMultiInspector, setPageInspector } = this.props;
+    const { listBookmarks, selectedPageIdx } = this.state;
 
     if (selectedPageIdx === index) {
       // clear selection
       this.setState({
         selectedPageIdx: null
       });
+
+      // clear inspector
+      clearInspector();
     } else {
-      let selectedIndex = index;
+      let selectedIndex;
       if (event.shiftKey && selectedPageIdx !== null) {
         let start;
         let end;
@@ -122,6 +151,7 @@ class CollectionDetailUI extends Component {
         }
 
         selectedIndex = range(start, end);
+        setMultiInspector(selectedIndex.length);
       } else if (event.metaKey && selectedPageIdx !== null) {
         if (typeof selectedPageIdx === "object") {
           selectedIndex = selectedPageIdx;
@@ -132,6 +162,15 @@ class CollectionDetailUI extends Component {
           }
         } else {
           selectedIndex = [selectedPageIdx, index];
+        }
+        setMultiInspector(selectedIndex.length);
+      } else {
+        selectedIndex = index;
+
+        if (list) {
+          setBookmarkInspector(listBookmarks.getIn([index, 'id']));
+        } else {
+          setPageInspector(pages.getIn([index, 'id']));
         }
       }
 
@@ -250,6 +289,10 @@ class CollectionDetailUI extends Component {
       );
   }
 
+  collapsibleToggle = (isOpen) => {
+    this.setState({ overrideHeight: isOpen ? null : 'auto' });
+  }
+
   render() {
     const { pages, browsers, collection, match: { params } } = this.props;
     const { listBookmarks, selectedPageIdx } = this.state;
@@ -315,12 +358,23 @@ class CollectionDetailUI extends Component {
     };
 
     return (
-      <div className={classNames('wr-coll-detail', { 'with-lists': activeList })}>
+      <div className={classNames('wr-coll-detail', { 'with-list': activeList })}>
         <CollectionHeader
           activeList={activeList}
           condensed={this.state.scrolled} />
 
-        <CollectionSidebar collection={collection} activeListId={activeListId} />
+        <Sidebar storageKey="collSidebar">
+          <Resizable
+            axis="y"
+            minHeight={200}
+            storageKey="collNavigator"
+            overrideHeight={this.state.overrideHeight}>
+            <Lists
+              activeListId={activeListId}
+              collapsibleToggle={this.collapsibleToggle} />
+          </Resizable>
+          <InspectorPanel />
+        </Sidebar>
 
         {
           !activeList &&
@@ -361,45 +415,61 @@ class CollectionDetailUI extends Component {
           <AutoSizer>
             {
               ({ height, width }) => (
-                <Table
-                  width={width}
-                  height={height}
-                  rowCount={objects ? objects.size : 0}
-                  headerHeight={25}
-                  rowHeight={40}
-                  rowGetter={({ index }) => objects.get(index)}
-                  rowClassName={this.testRowHighlight}
-                  onRowClick={this.onSelectRow}
-                  onScroll={this.scrollHandler}
-                  rowRenderer={this.customRowRenderer}
-                  sort={activeList ? null : this.sort}
-                  sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
-                  sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                <ArrowKeyStepper
+                  rowCount={pages.size}
+                  columnCount={1}
+                  mode="cells"
+                  scrollToRow={selectedPageIdx || 0}
+                  onScrollToChange={this.onKeyNavigate}>
                   {
-                    this.state.columns.map((c, idx) => {
-                      let props = columnDefs[c];
-                      let collData = {};
-
-                      if (props.hasOwnProperty('columnData')) {
-                        props = Object.assign({}, props);
-                        collData = props.columnData;
-                        delete props.columnData;
-                      }
-
-                      if (!props.label) {
-                        props.label = config.columnLabels[[c]] || c;
-                      }
-
+                    ({ onSectionRendered, scrollToRow }) => {
                       return (
-                        <Column
-                          headerRenderer={this.customHeaderRenderer}
-                          index={idx}
-                          columnData={{ ...collData, index: idx }}
-                          {...props} />
+                        <Table
+                          width={width}
+                          height={height}
+                          rowCount={objects ? objects.size : 0}
+                          headerHeight={25}
+                          rowHeight={40}
+                          rowGetter={({ index }) => objects.get(index)}
+                          rowClassName={this.testRowHighlight}
+                          onRowClick={this.onSelectRow}
+                          onRowsRendered={({ startIndex, stopIndex }) => {
+                            onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
+                          }}
+                          onScroll={this.scrollHandler}
+                          rowRenderer={this.customRowRenderer}
+                          sort={activeList ? null : this.sort}
+                          sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
+                          sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                          {
+                            this.state.columns.map((c, idx) => {
+                              let props = columnDefs[c];
+                              let collData = {};
+
+                              if (props.hasOwnProperty('columnData')) {
+                                props = Object.assign({}, props);
+                                collData = props.columnData;
+                                delete props.columnData;
+                              }
+
+                              if (!props.label) {
+                                props.label = config.columnLabels[[c]] || c;
+                              }
+
+                              return (
+                                <Column
+                                  headerRenderer={this.customHeaderRenderer}
+                                  index={idx}
+                                  columnData={{ ...collData, index: idx }}
+                                  {...props} />
+                              );
+                            })
+                          }
+                        </Table>
                       );
-                    })
+                    }
                   }
-                </Table>
+                </ArrowKeyStepper>
               )
             }
           </AutoSizer>

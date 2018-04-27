@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import Collapsible from 'react-collapsible';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import Modal from 'components/Modal';
+import SidebarHeader from 'components/SidebarHeader';
 import { CheckIcon, PlusIcon, XIcon } from 'components/icons';
 
 import ListItem from './ListItem';
@@ -24,6 +26,7 @@ class ListsUI extends Component {
     activeListId: PropTypes.string,
     addToList: PropTypes.func,
     collection: PropTypes.object,
+    collapsibleToggle: PropTypes.func,
     createList: PropTypes.func,
     deleteList: PropTypes.func,
     editList: PropTypes.func,
@@ -45,7 +48,8 @@ class ListsUI extends Component {
       created: false,
       isEditing: false,
       edited: false,
-      lists: props.lists
+      lists: props.lists,
+      minimized: false
     };
   }
 
@@ -124,6 +128,13 @@ class ListsUI extends Component {
     this.props.sortLists(collection.get('user'), collection.get('id'), order);
   }
 
+  minimize = () => {
+    this.setState({ minimized: !this.state.minimized });
+  }
+
+  close = () => this.props.collapsibleToggle(false);
+  open = () => this.props.collapsibleToggle(true);
+
   render() {
     const { canAdmin } = this.context;
     const { activeListId, collection, list } = this.props;
@@ -134,11 +145,23 @@ class ListsUI extends Component {
       return null;
     }
 
+    const header = (
+      <SidebarHeader
+        label="Collection Navigator"
+        callback={this.minimize}
+        closed={this.state.minimized} />
+    );
+
     return (
       <React.Fragment>
-        <div className="wr-coll-sidebar">
-          <header>Collection Navigator <span role="button" className="sidebar-minimize" onClick={this.minimize}>-</span></header>
-
+        <Collapsible
+          open
+          transitionTime={300}
+          easing="ease-in-out"
+          classParentString="wr-coll-sidebar"
+          trigger={header}
+          onOpen={this.open}
+          onClose={this.close}>
           {
             activeListId &&
               <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`} className="button-link">See All Resources in Collection</Link>
@@ -172,7 +195,7 @@ class ListsUI extends Component {
               }
             </ul>
           </div>
-        </div>
+        </Collapsible>
 
         {
           /* lists edit modal */

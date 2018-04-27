@@ -19,11 +19,13 @@ class Resizable extends Component {
     minWidth: PropTypes.number,
     overrideWidth: PropTypes.oneOfType([
       PropTypes.bool,
-      PropTypes.number
+      PropTypes.number,
+      PropTypes.string
     ]),
     overrideHeight: PropTypes.oneOfType([
       PropTypes.bool,
-      PropTypes.number
+      PropTypes.number,
+      PropTypes.string
     ]),
     resizeState: PropTypes.func,
     storageKey: PropTypes.string

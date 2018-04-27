@@ -52,9 +52,7 @@
 }
 
 .wr-coll-detail {
-    //flex-grow: 1;
-    padding: 2rem 2.5rem 0 2.5rem;
-    //height: 100%;
+    padding: 0rem 2.5rem 0 0;
     position: absolute;
     top:0;
     bottom:0;
@@ -71,14 +69,12 @@
 
     font-family: $sans;
 
-    // &.with-lists {
-    //     grid-template-rows: 4.5rem;
-    //     grid-template-areas:
-    //         "sidebar lists-modifier"
-    //         "sidebar table";
-    // }
-
-
+    &.with-list {
+        grid-template-areas:
+            "sidebar header"
+            "sidebar utilities"
+            "sidebar table";
+    }
 
     .wr-coll-sidebar-container {
         grid-area: sidebar;
@@ -175,6 +171,10 @@
             cursor: context-menu;
             font-size: 1.2rem;
 
+            &:focus {
+                outline: none;
+            }
+
             &.odd {
                 background-color: #F1F1F1;
             }
@@ -185,6 +185,12 @@
                 font-size: 1.6rem;
             }
 
+            svg {
+                & > g {
+                    transition: fill $tableRowFade ease-in-out;
+                }
+            }
+
             &.selected, &:not(.selected):hover {
                 background-color: $blue;
                 color: #FFF;
@@ -192,6 +198,12 @@
 
                 a:link { color: #FFF; }
                 a:visited{ color: #FFF; }
+
+                svg {
+                    & > g {
+                        fill: #FFF;
+                    }
+                }
             }
 
             // &:not(.selected):hover {

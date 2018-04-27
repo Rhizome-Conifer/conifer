@@ -10,6 +10,7 @@ import collection from './modules/collection';
 import collections from './modules/collections';
 import controls from './modules/controls';
 import infoStats from './modules/infoStats';
+import inspector from './modules/inspector';
 import list from './modules/list';
 import passwordReset from './modules/passwordReset';
 import pageQuery from './modules/pageQuery';
@@ -31,6 +32,7 @@ const makeAppReducer = () => combineImmutableReduers({
   collections,
   controls,
   infoStats,
+  inspector,
   list,
   pageQuery,
   passwordReset,

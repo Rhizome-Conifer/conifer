@@ -35,6 +35,7 @@ class SidebarListViewer extends Component {
     listEdited: PropTypes.bool,
     dispatch: PropTypes.func,
     editList: PropTypes.func,
+    setInspector: PropTypes.func,
     timestamp: PropTypes.string,
     url: PropTypes.string
   }
@@ -45,6 +46,11 @@ class SidebarListViewer extends Component {
     this.state = {
       navigated: false
     };
+  }
+
+  componentWillMount() {
+    const { activeBookmark, bookmarks, setInspector } = this.props;
+    setInspector(bookmarks.getIn([activeBookmark, 'id']));
   }
 
   componentWillReceiveProps(nextProps) {
@@ -66,6 +72,13 @@ class SidebarListViewer extends Component {
     }
 
     return true;
+  }
+
+  componentDidUpdate(prevProps) {
+    const { activeBookmark, bookmarks, setInspector } = this.props;
+    if (activeBookmark !== prevProps.activeBookmark) {
+      setInspector(bookmarks.getIn([activeBookmark, 'id']));
+    }
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
@@ -136,7 +149,7 @@ class SidebarListViewer extends Component {
                   minimal
                   initial={list.get('desc')}
                   cancel={this.toggleEdit}
-                  save={this.editListDesc}
+                  onSave={this.editListDesc}
                   success={this.props.listEdited} />
               </Truncate>
           }

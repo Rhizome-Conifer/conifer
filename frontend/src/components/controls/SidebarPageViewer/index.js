@@ -26,7 +26,13 @@ class SidebarPageViewer extends Component {
     pages: PropTypes.object,
     dispatch: PropTypes.func,
     searchPages: PropTypes.func,
-    searchText: PropTypes.string
+    searchText: PropTypes.string,
+    setInspector: PropTypes.func
+  }
+
+  componentWillMount() {
+    const { activePage, pages, setInspector } = this.props;
+    setInspector(pages.getIn([activePage, 'id']));
   }
 
   shouldComponentUpdate(nextProps) {
@@ -37,6 +43,14 @@ class SidebarPageViewer extends Component {
     }
 
     return true;
+  }
+
+  componentDidUpdate(prevProps) {
+    const { activePage, pages, setInspector } = this.props;
+
+    if (activePage !== prevProps.activePage) {
+      setInspector(pages.getIn([activePage, 'id']));
+    }
   }
 
   onKeyNavigate = ({ scrollToRow }) => {

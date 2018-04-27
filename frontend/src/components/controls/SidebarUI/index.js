@@ -59,7 +59,7 @@ class SidebarUI extends Component {
   }
 
   render() {
-    const { children, expanded, resizing } = this.props;
+    const { children, expanded, resizing, storageKey } = this.props;
     const { initTimeout } = this.state;
 
     const classes = classNames('wr-sidebar', {
@@ -71,7 +71,7 @@ class SidebarUI extends Component {
       <Resizable
         classes={classes}
         resizeState={this.props.setSidebarResizing}
-        storageKey="replaySidebarWidth"
+        storageKey={`${storageKey}Width`}
         overrideWidth={!expanded && this.closedWidth}
         minWidth={175}>
         <div className="wr-sidebar-stretch">

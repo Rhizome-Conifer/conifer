@@ -92,7 +92,7 @@ class SessionCollapsible extends PureComponent {
             <h4>Session Notes</h4>
             <WYSIWYG
               initial={recording.get('desc') || defaultRecDesc}
-              save={this.editDescription}
+              onSave={this.editDescription}
               success={this.props.recordingEdited} />
           </div>
           <div className="session-pages">

@@ -233,7 +233,7 @@ class CollectionHeaderUI extends Component {
           style={{ height }}>
           <WYSIWYG
             initial={activeList ? list.get('desc') || defaultListDesc : collection.get('desc') || defaultCollDesc}
-            save={this.editDesc}
+            onSave={this.editDesc}
             renderCallback={this.editorRendered}
             toggleCallback={this.editModeCallback}
             success={activeList ? listEdited : collEdited} />

@@ -5,6 +5,7 @@ import { asyncConnect } from 'redux-connect';
 import { Map } from 'immutable';
 
 import { isLoaded as isCollLoaded, load as loadColl } from 'redux/modules/collection';
+import { clear, multiSelect, selectBookmark, selectPage } from 'redux/modules/inspector';
 import { load as loadList, removeBookmark, bookmarkSort } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
@@ -117,6 +118,10 @@ const mapStateToProps = (outerState) => {
 
 const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
   return {
+    clearInspector: () => dispatch(clear()),
+    setMultiInspector: count => dispatch(multiSelect(count)),
+    setPageInspector: fields => dispatch(selectPage(fields)),
+    setBookmarkInspector: bk => dispatch(selectBookmark(bk)),
     removeBookmark: (list, id) => {
       dispatch(removeBookmark(user, coll, list, id))
         .then(() => dispatch(loadList(user, coll, list)));

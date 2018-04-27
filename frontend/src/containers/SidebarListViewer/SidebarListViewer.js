@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { clear, selectBookmark } from 'redux/modules/inspector';
 import { resetEditState, edit } from 'redux/modules/list';
 
 import { SidebarListViewer } from 'components/controls';
@@ -24,11 +25,12 @@ const mapStateToProps = (outerState) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    dispatch,
     editList: (user, coll, listId, data) => {
       dispatch(edit(user, coll, listId, data))
         .then(() => setTimeout(() => dispatch(resetEditState()), 3000), () => {});
-    }
+    },
+    setInspector: bk => dispatch(selectBookmark(bk)),
+    dispatch
   };
 };
 

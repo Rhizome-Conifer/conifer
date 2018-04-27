@@ -1,0 +1,54 @@
+@import 'src/vars';
+
+.wr-inspector {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+
+    .inspector-body {
+        height: 100%;
+        overflow: auto;
+        padding: 1.5rem;
+
+        header {
+            border: solid .1rem $light-gray;
+            border-width: 0 0 .1rem 0;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+
+            h2 {
+                font-size: 1.6rem;
+                color: $blue;
+            }
+
+            h4 {
+                text-transform: uppercase;
+                color: $mid-gray;
+                font-size: 1.3rem;
+
+                &:first-of-type {
+                    margin-top: 0;
+                }
+
+                svg {
+                    vertical-align: bottom;
+                }
+            }
+        }
+
+        ul {
+            padding: 0;
+            list-style-type: none;
+
+            li {
+                margin-bottom: 2.5rem;
+
+                h5 {
+                    text-transform: uppercase;
+                    color: $mid-gray;
+                    font-size: 1.3rem;
+                }
+            }
+        }
+    }
+}

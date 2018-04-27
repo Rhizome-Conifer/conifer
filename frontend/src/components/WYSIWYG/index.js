@@ -26,7 +26,7 @@ class WYSIWYG extends Component {
     initial: PropTypes.string,
     minimal: PropTypes.bool,
     renderCallback: PropTypes.func,
-    save: PropTypes.func,
+    onSave: PropTypes.func,
     success: PropTypes.bool,
     toggleCallback: PropTypes.func
   };
@@ -113,7 +113,7 @@ class WYSIWYG extends Component {
 
   onChange = editorState => this.setState({ editorState })
 
-  _onChangeSource = (event) => {
+  onChangeSource = (event) => {
     const source = event.target.value;
     const oldValue = this.state.editorState;
     this.setState({
@@ -121,7 +121,7 @@ class WYSIWYG extends Component {
     });
   }
 
-  _cancel = () => {
+  cancel = () => {
     this.setState({
       editorState: createValueFromString(this.props.initial, this.method)
     });
@@ -132,7 +132,8 @@ class WYSIWYG extends Component {
       this.toggleEditMode();
     }
   }
-  _save = () => this.props.save(this.state.editorState.toString(this.method))
+
+  save = () => this.props.onSave(this.state.editorState.toString(this.method))
 
   toggleMarkdownMode = () => this.setState({ markdownEdit: !this.state.markdownEdit })
 
@@ -171,7 +172,7 @@ class WYSIWYG extends Component {
                       label="Edit Markdown"
                       iconName="remove-link"
                       focusOnClick={false}
-                      className={classNames('markdown-button', {active: this.state.markdownEdit})}
+                      className={classNames('markdown-button', { active: this.state.markdownEdit })}
                       onClick={this.toggleMarkdownMode}
                     />
                   </ButtonGroup>
@@ -181,8 +182,8 @@ class WYSIWYG extends Component {
         {
           _editMode &&
             <div className="editor-button-row">
-              <Button onClick={this._cancel}>Cancel</Button>
-              <Button bsStyle={this.props.success ? 'success' : 'default'} onClick={this._save}>
+              <Button onClick={this.cancel}>Cancel</Button>
+              <Button bsStyle={this.props.success ? 'success' : 'default'} onClick={this.save}>
                 { this.props.success ? 'Saved..' : 'Save' }
               </Button>
             </div>
@@ -195,7 +196,7 @@ class WYSIWYG extends Component {
               </button>
               <textarea
                 className={classNames('markdown-editor', { visible: this.state.markdownEdit })}
-                onChange={this._onChangeSource}
+                onChange={this.onChangeSource}
                 value={this.state.editorState.toString(this.method)} />
             </React.Fragment>
         }

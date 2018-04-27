@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { createSearchAction } from 'redux-search';
 
+import { clear, selectPage } from 'redux/modules/inspector';
 import { getActivePageIdx, getOrderedPages,
          tsOrderedPageSearchResults } from 'redux/selectors';
 
@@ -24,6 +25,7 @@ const mapStateToProps = (outerState) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     searchPages: createSearchAction('collection.pages'),
+    setInspector: pg => dispatch(selectPage(pg)),
     dispatch
   };
 };

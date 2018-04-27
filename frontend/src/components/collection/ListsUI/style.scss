@@ -4,10 +4,12 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-
-    padding-bottom: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
     height: 100%;
+
+    .wr-coll-sidebar__contentOuter {
+        overflow: auto !important;
+    }
 
     & > header {
         display: flex;
@@ -32,7 +34,7 @@
             display: inline;
             margin-left: .5rem;
             font-size: 1.5rem;
-            color: $light-gray;
+            color: $mid-gray;
             font-weight: bold;
             margin: 0;
             text-transform: uppercase;
@@ -42,7 +44,7 @@
             font-size: 1.2rem;
             margin-left: auto;
             font-weight: 500;
-            color: $light-gray;
+            color: $mid-gray;
             font-size: 1.5rem;
             text-decoration: underline;
         }
@@ -53,7 +55,6 @@
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
-        padding-top: 1.5rem;
         overflow: auto;
 
         ul {
@@ -76,34 +77,6 @@
                 &:hover {
                     &:before {
                         background-color: $blue;
-                    }
-
-                    .feature-list:not(.featured) svg {
-                        opacity: .25;
-                    }
-                }
-
-                .feature-list {
-                    margin-left: .5rem;
-
-                    svg {
-                        transition: opacity $quickShift ease-in-out;
-                        vertical-align: middle;
-                        width: 1.2rem;
-                        height: 1.2rem;
-                        opacity: 0;
-
-                        #Symbols {
-                            fill: #7A7A7A;
-                        }
-                    }
-
-                    &:hover svg {
-                        opacity: 1 !important;
-                    }
-
-                    &.featured svg {
-                        opacity: 1;
                     }
                 }
 
@@ -131,7 +104,7 @@
 
                 &.targeted {
                     .wrapper {
-                        background-color: $light-gray;
+                        background-color: $mid-gray;
                     }
                 }
 
@@ -156,12 +129,6 @@
                 &.selected {
                     .wrapper {
                         background-color: $blue;
-                    }
-
-                    .feature-list {
-                        svg #Symbols {
-                            fill: #FFF;
-                        }
                     }
 
                     &:before {

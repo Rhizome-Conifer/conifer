@@ -16,7 +16,7 @@ import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/
 import { toggle as toggleSidebar } from 'redux/modules/sidebar';
 
 import Resizable from 'components/Resizable';
-import { InspectorPanel, ListMetadata, RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
+import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -28,6 +28,7 @@ class Replay extends Component {
   static propTypes = {
     activeBookmarkId: PropTypes.string,
     activeBrowser: PropTypes.string,
+    autoscroll: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
