@@ -30,7 +30,6 @@ class ListsUI extends Component {
     createList: PropTypes.func,
     deleteList: PropTypes.func,
     editList: PropTypes.func,
-    getLists: PropTypes.func,
     loaded: PropTypes.bool,
     loading: PropTypes.bool,
     lists: PropTypes.object,

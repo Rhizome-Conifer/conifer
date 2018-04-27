@@ -26,7 +26,6 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch(create(user, coll, title))
               .then(() => dispatch(loadLists(user, coll)));
     },
-    getLists: (user, coll) => dispatch(loadLists(user, coll)),
     addToList: (user, coll, listId, data) => dispatch(addTo(user, coll, listId, data)),
     editColl: (user, coll, data) => {
       return dispatch(editCollection(user, coll, data))

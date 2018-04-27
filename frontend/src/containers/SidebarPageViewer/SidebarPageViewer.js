@@ -6,7 +6,7 @@ import { clear, selectPage } from 'redux/modules/inspector';
 import { getActivePageIdx, getOrderedPages,
          tsOrderedPageSearchResults } from 'redux/selectors';
 
-import { SidebarPageViewer } from 'components/controls';
+import { SidebarPageViewerUI } from 'components/controls';
 
 
 const mapStateToProps = (outerState) => {
@@ -33,4 +33,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(SidebarPageViewer);
+)(SidebarPageViewerUI);

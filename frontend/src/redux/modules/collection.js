@@ -162,7 +162,10 @@ export function load(user, coll) {
 }
 
 
-export function loadLists(user, coll, withBookmarks = false) {
+/**
+ * withBookmarks accepts `first` or `all` for `include_bookmarks` query prop
+ */
+export function loadLists(user, coll, withBookmarks = 'first') {
   return {
     types: [LISTS_LOAD, LISTS_LOAD_SUCCESS, LISTS_LOAD_FAIL],
     promise: client => client.get(`${apiPath}/lists`, {

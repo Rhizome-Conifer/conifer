@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { clear, selectBookmark } from 'redux/modules/inspector';
 import { resetEditState, edit } from 'redux/modules/list';
 
-import { SidebarListViewer } from 'components/controls';
+import { SidebarListViewerUI } from 'components/controls';
 
 
 const mapStateToProps = (outerState) => {
@@ -37,4 +37,4 @@ const mapDispatchToProps = (dispatch) => {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(SidebarListViewer);
+)(SidebarListViewerUI);
