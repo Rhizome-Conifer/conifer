@@ -85,14 +85,16 @@ class TestListsAPIAccess(FullStackTests):
         self.pub_list_priv_coll = self._create_list('test', coll_name, 'Public List', public=True)
 
     def test_coll_get_lists_user_1(self):
-        # only public lists
         res = self.testapp.get('/api/v1/collection/some-coll?user=test')
-        assert len(res.json['collection']['lists']) == 1
-        assert res.json['collection']['lists'][0]['title'] == 'Public List'
+        assert len(res.json['collection']['lists']) == 2
 
-        # only first bookmark returned
-        assert len(res.json['collection']['lists'][0]['bookmarks']) == 1
-        assert res.json['collection']['lists'][0]['total_bookmarks'] == 2
+        assert res.json['collection']['lists'][0]['title'] == 'New List'
+        assert res.json['collection']['lists'][1]['title'] == 'Public List'
+
+        for blist in res.json['collection']['lists']:
+            # only first bookmark returned
+            assert len(blist['bookmarks']) == 1
+            assert blist['total_bookmarks'] == 2
 
     def test_logout_login_user_2(self):
         res = self.testapp.get('/api/v1/logout', status=200)
@@ -116,12 +118,15 @@ class TestListsAPIAccess(FullStackTests):
     def test_coll_get_lists_user_2(self):
         # only public lists
         res = self.testapp.get('/api/v1/collection/some-coll?user=another')
-        assert len(res.json['collection']['lists']) == 1
-        assert res.json['collection']['lists'][0]['title'] == 'Public List'
+        assert len(res.json['collection']['lists']) == 2
 
-        # only first bookmark returned
-        assert len(res.json['collection']['lists'][0]['bookmarks']) == 1
-        assert res.json['collection']['lists'][0]['total_bookmarks'] == 2
+        assert res.json['collection']['lists'][0]['title'] == 'A List'
+        assert res.json['collection']['lists'][1]['title'] == 'Public List'
+
+        for blist in res.json['collection']['lists']:
+            # only first bookmark returned
+            assert len(blist['bookmarks']) == 1
+            assert blist['total_bookmarks'] == 2
 
     def test_assert_data_model(self):
         assert len(self.redis.keys('u:*:info')) == 2

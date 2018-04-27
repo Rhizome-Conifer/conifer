@@ -248,7 +248,7 @@ class Collection(RedisOrderedListMixin, RedisNamedContainer):
             data['duration'] = duration
 
         if include_lists:
-            lists = self.get_lists(load=True, public_only=True)
+            lists = self.get_lists(load=True, public_only=False)
             data['lists'] = [blist.serialize(include_bookmarks='first') for blist in lists]
 
         data['public'] = self.is_public()

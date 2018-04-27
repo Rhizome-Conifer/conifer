@@ -349,8 +349,7 @@ class TestListsAnonUserAPI(FullStackTests):
 
         lists = res.json['collection']['lists']
 
-        # only public lists included
-        assert len(lists) == 1
+        assert len(lists) == 2
 
         assert lists[0]['id'] == '1002'
         assert lists[0]['total_bookmarks'] == 4
@@ -358,8 +357,9 @@ class TestListsAnonUserAPI(FullStackTests):
         # only first bookmark loaded
         assert len(lists[0]['bookmarks']) == 1
 
-        #assert lists[1]['id'] == '1003'
-        #assert lists[1]['total_bookmarks'] == 5
+        assert lists[1]['id'] == '1003'
+        assert lists[1]['total_bookmarks'] == 5
+        assert len(lists[1]['bookmarks']) == 1
 
     # Record, then Replay Via List
     # ========================================================================
