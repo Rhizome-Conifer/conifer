@@ -122,21 +122,11 @@ class CollsController(BaseController):
 
             return {'collection': collection.serialize()}
 
-        @self.app.get('/api/v1/collection/<coll_name>/is_public')
-        def is_public(coll_name):
+        @self.app.get('/api/v1/collection/<coll_name>/page_bookmarks')
+        def get_page_bookmarks(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            # check ownership
-            if not self.access.can_admin_coll(collection):
-                self._raise_error(404, 'Collection not found', api=True)
-
-            return {'is_public': self.access.is_public(collection)}
-
-        @self.app.get('/api/v1/collection/<coll_name>/num_pages')
-        def get_num_pages(coll_name):
-            user, collection = self.load_user_coll(coll_name)
-
-            return {'count': collection.count_pages()}
+            return {'page_bookmarks': collection.get_page_bookmarks()}
 
         # Create Collection
         @self.app.get('/_create')

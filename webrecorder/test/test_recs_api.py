@@ -13,7 +13,6 @@ class TestWebRecRecAPI(FullStackTests):
         super(TestWebRecRecAPI, cls).setup_class()
         cls.set_uuids('Collection', ('coll-' + chr(ord('A') + c) for c in count()))
         cls.set_uuids('Recording', ('rec-' + chr(ord('a') + c) for c in count()))
-        cls.set_uuids('Page', ('page-' + chr(ord('1') + c) for c in count()))
 
     def assert_rec_key(self, coll, rec):
         coll, rec = self.get_coll_rec(self.anon_user, coll, rec)
@@ -111,12 +110,12 @@ class TestWebRecRecAPI(FullStackTests):
         page = {'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'}
         res = self._anon_post('/api/v1/recording/{rec_id_0}/pages?user={user}&coll=temp', params=page)
 
-        assert res.json['page_id'] == 'page-1'
+        assert res.json['page_id'] == 'cf6e50ec2c'
 
     def test_page_list_1(self):
         res = self._anon_get('/api/v1/recording/{rec_id_0}/pages?user={user}&coll=temp')
 
-        assert res.json == {'pages': [{'id': 'page-1',
+        assert res.json == {'pages': [{'id': 'cf6e50ec2c',
                                        'rec': 'rec-a',
                                        'title': 'Example',
                                        'url': 'http://example.com/',
@@ -129,7 +128,7 @@ class TestWebRecRecAPI(FullStackTests):
         page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
         res = self._anon_post('/api/v1/recording/{rec_id_0}/pages?user={user}&coll=temp', params=page)
 
-        assert res.json['page_id'] == 'page-2'
+        assert res.json['page_id'] == 'ce9820d103'
 
     def test_page_add_3_not_added_yet(self):
         #cdx_key = 'r:{user}:temp:{rec_id}:cdxj'.format(user=self.anon_user, rec_id=self.rec_ids[0])
@@ -137,20 +136,20 @@ class TestWebRecRecAPI(FullStackTests):
         page = {'title': 'Example', 'url': 'http://example.com/foo/other'}
         res = self._anon_post('/api/v1/recording/{rec_id_0}/pages?user={user}&coll=temp', params=page)
 
-        assert res.json['page_id'] == 'page-3'
+        assert res.json['page_id'] == 'c196be3dde'
 
     def test_page_list_2(self):
         res = self._anon_get('/api/v1/recording/{rec_id_0}/pages?user={user}&coll=temp')
         assert len(res.json['pages']) == 3
-        assert {'id': 'page-1', 'rec': 'rec-a', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
-        assert {'id': 'page-2', 'rec': 'rec-a', 'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
+        assert {'id': 'cf6e50ec2c', 'rec': 'rec-a', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['pages']
+        assert {'id': 'ce9820d103', 'rec': 'rec-a', 'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['pages']
 
     def test_coll_page_list(self):
         res = self._anon_get('/api/v1/collection/temp?user={user}')
 
         assert len(res.json['collection']['pages']) == 3
-        assert {'id': 'page-1', 'rec': 'rec-a', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['collection']['pages']
-        assert {'id': 'page-2', 'rec': 'rec-a', 'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['collection']['pages']
+        assert {'id': 'cf6e50ec2c', 'rec': 'rec-a', 'title': 'Example', 'url': 'http://example.com/', 'timestamp': '2016010203000000'} in res.json['collection']['pages']
+        assert {'id': 'ce9820d103', 'rec': 'rec-a', 'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'} in res.json['collection']['pages']
 
     def _test_page_delete(self):
         params = {'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}

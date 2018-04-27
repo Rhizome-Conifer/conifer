@@ -15,7 +15,6 @@ class TestAutoLogin(FullStackTests):
         super(TestAutoLogin, cls).setup_class(temp_worker=True, storage_worker=True)
 
         cls.manager = CLIUserManager()
-        cls.set_uuids('Page', ['page-1', 'page-2', 'page-3'])
 
     def teardown_class(cls, *args, **kwargs):
         super(TestAutoLogin, cls).teardown_class(*args, **kwargs)
@@ -42,7 +41,7 @@ class TestAutoLogin(FullStackTests):
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
         res = self.testapp.post_json('/api/v1/recording/rec-sesh/pages?user=test&coll=default-collection', params=page)
 
-        assert res.json['page_id'] == 'page-1'
+        assert res.json['page_id'] == '7aeff3ce47'
 
     def test_api_curr_user(self):
         res = self.testapp.get('/api/v1/curr_user')
@@ -59,7 +58,7 @@ class TestAutoLogin(FullStackTests):
         assert coll['title'] == 'Default Collection'
         assert 'This is your first collection' in coll['desc']
 
-        assert coll['pages'] == [{'id': 'page-1', 'rec': 'rec-sesh', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''}]
+        assert coll['pages'] == [{'id': '7aeff3ce47', 'rec': 'rec-sesh', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''}]
 
     def test_update_collection(self):
         params = {'desc': 'New Description',
@@ -121,7 +120,7 @@ class TestAutoLogin(FullStackTests):
         assert coll['title'] == 'Another Coll'
         assert "This collection doesn't yet have a description" in coll['desc']
 
-        assert coll['pages'] == [{'id': 'page-2', 'rec': 'rec-sesh-a', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''}]
+        assert coll['pages'] == [{'id': '7aeff3ce47', 'rec': 'rec-sesh-a', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''}]
 
     def test_logged_in_record_2(self):
         self.set_uuids('Recording', ['rec'])

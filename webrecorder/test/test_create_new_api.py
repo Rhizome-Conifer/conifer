@@ -13,8 +13,8 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         os.environ['CONTENT_HOST'] = 'content-host'
         os.environ['APP_HOST'] = 'app-host'
         kwargs['init_anon'] = False
-        cls.set_uuids('Recording', ('rec-' + chr(ord('A') + c) for c in count()))
         super(TestCreateNewAPISeparateDomains, cls).setup_class(**kwargs)
+        cls.set_uuids('Recording', ('rec-' + chr(ord('A') + c) for c in count()))
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
@@ -112,6 +112,11 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
 
 # ============================================================================
 class TestCreateNewSameDomain(FullStackTests):
+    @classmethod
+    def setup_class(cls, **kwargs):
+        super(TestCreateNewSameDomain, cls).setup_class(**kwargs)
+        cls.set_uuids('Recording', ('rec-' + chr(ord('A') + c) for c in count()))
+
     def test_api_new(self):
         params = {'coll': 'temp',
                   'url':  'http://httpbin.org/get?food=bar',

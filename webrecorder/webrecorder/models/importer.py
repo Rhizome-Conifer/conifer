@@ -170,7 +170,8 @@ class BaseImporter(ImportStatusChecker):
                     pages = self.detect_pages(info['coll'], info['rec'])
 
                 if pages:
-                    info['recording'].import_pages(pages)
+                    info['collection'].import_pages(pages, info['recording'])
+                    #info['recording'].import_pages(pages)
 
                 diff = info['offset'] - last_end
                 last_end = info['offset'] + info['length']

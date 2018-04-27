@@ -29,7 +29,7 @@ class TestTempContent(FullStackTests):
         'r:{rec}:info',
         'r:{rec}:wk',
         'c:{coll}:warc',
-        'c:{coll}:pages',
+        'c:{coll}:p',
         'c:{coll}:info',
         'c:{coll}:recs',
         'u:{user}:info',
@@ -107,9 +107,9 @@ class TestTempContent(FullStackTests):
             exp_keys.append('c:{coll}:cdxj'.format(user=user, coll=coll))
             #exp_keys.append('c:{coll}:warc'.format(user=user, coll=coll))
 
-        if self.pages:
-            for page in self.pages:
-                exp_keys.append('p:{page}:info'.format(page=page))
+        #if self.pages:
+        #    for page in self.pages:
+        #        exp_keys.append('p:{page}:info'.format(page=page))
 
         if check_stats:
             self._check_dyn_stats(exp_keys)

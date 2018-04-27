@@ -13,7 +13,6 @@ from pywb.utils.loaders import BlockLoader
 
 from webrecorder.utils import redis_pipeline
 from webrecorder.models.base import RedisUniqueComponent, RedisUnorderedList
-from webrecorder.models.page import Page
 from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_prefix
 
 from warcio.timeutils import timestamp_now, sec_to_timestamp, timestamp20_now
@@ -58,10 +57,6 @@ class Recording(RedisUniqueComponent):
         cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
         #cls.COMMIT_WAIT_TEMPL = config['commit_wait_templ']
 
-    #def __init__(self, **kwargs):
-    #    super(Recording, self).__init__(**kwargs)
-    #    self.pages = RedisUnorderedList(self.PAGES_KEY, self)
-
     def init_new(self, title='', desc='', rec_type=None, ra_list=None):
         rec = self._create_new_id()
 
@@ -102,7 +97,7 @@ class Recording(RedisUniqueComponent):
         data = super(Recording, self).serialize(include_duration=True)
 
         if include_pages:
-            data['pages'] = self.list_pages()
+            data['pages'] = self.get_owner().list_rec_pages(self)
 
         # add any remote archive sources
         ra_key = self.RA_KEY.format(rec=self.my_id)
@@ -114,21 +109,13 @@ class Recording(RedisUniqueComponent):
 
         # if deleting collection, no need to remove pages for each recording
         # they'll be deleted with the collection
-        if not pages:
-            self.delete_pages()
+        if pages:
+            self.get_owner().delete_rec_pages(self)
 
         if not self.delete_object():
             res['error'] = 'not_found'
 
         return res
-
-    def delete_pages(self):
-        collection = self.get_owner()
-
-        for page in self.iter_pages():
-            collection.pages.remove_object(page)
-
-            page.delete_me()
 
     def _coll_warc_key(self):
         return self.COLL_WARC_KEY.format(coll=self.get_prop('owner'))
@@ -164,46 +151,6 @@ class Recording(RedisUniqueComponent):
             return {'error_delete_files': errs}
         else:
             return {}
-
-    def add_page(self, props):
-        if not self.is_open():
-            return {'error': 'recording_done'}
-
-        collection = self.get_owner()
-
-        self.access.assert_can_write_coll(collection)
-
-        page = Page(redis=self.redis,
-                    access=self.access)
-
-        page.init_new(collection, self, props)
-
-        #self.pages.add_object(page, owner=False)
-        collection.pages.add_object(page)
-
-        return page
-
-    def import_pages(self, pagelist):
-        self.access.assert_can_admin_coll(self.get_owner())
-
-        pagemap = {}
-
-        for pagedata in pagelist:
-            key, hkey, pagedata_json = self._get_pagedata(pagedata)
-
-            pagemap[hkey] = pagedata_json
-
-        self.redis.hmset(key, pagemap)
-
-        return {}
-
-    def iter_pages(self):
-        for page in self.get_owner().pages.get_objects(Page, load=True):
-            if page['rec'] == self.my_id:
-                yield page
-
-    def list_pages(self):
-        return [page.serialize() for page in self.iter_pages()]
 
     def track_remote_archive(self, pi, source_id):
         ra_key = self.RA_KEY.format(rec=self.my_id)
@@ -386,8 +333,9 @@ class Recording(RedisUniqueComponent):
         self.redis.zunionstore(target_key, [source_key])
 
         # recreate pages, if any, in new recording
-        for page in source.iter_pages():
-            self.add_page(page.serialize())
+        source_coll = source.get_owner()
+        source_pages = source_coll.list_rec_pages(source)
+        collection.import_pages(source_pages, self)
 
         # COPY remote archives, if any
         self.redis.sunionstore(self.RA_KEY.format(rec=self.my_id),

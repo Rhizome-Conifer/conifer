@@ -7,14 +7,36 @@ from webrecorder.models.list_bookmarks import BookmarkList, Bookmark
 
 # ============================================================================
 class TestListsAnonUserAPI(FullStackTests):
+    @classmethod
+    def setup_class(cls):
+        super(TestListsAnonUserAPI, cls).setup_class()
+        cls.set_uuids('BookmarkList', count(1001))
+        cls.set_uuids('Bookmark', count(101))
+        cls.set_uuids('Recording', ['rec'])
+
     def _format(self, url):
         return url.format(user=self.anon_user)
+
+    def _add_page(self, rec, title,
+                      url='http://example.com/',
+                      timestamp='20181226000800',
+                      browser='chrome:60'):
+
+        params = {'title': title,
+                  'url': url,
+                  'timestamp': timestamp,
+                  'browser': browser,
+                 }
+
+        res = self.testapp.post_json(self._format('/api/v1/recording/%s/pages?user={user}&coll=temp' % rec), params=params)
+        return res.json['page_id']
 
     def _add_bookmark(self, list_id, title,
                       url='http://example.com/',
                       timestamp='20181226000800',
                       browser='chrome:60',
-                      desc='A description for this bookmark'):
+                      desc='A description for this bookmark',
+                      page_id=None):
 
         params = {'title': title,
                   'url': url,
@@ -23,8 +45,10 @@ class TestListsAnonUserAPI(FullStackTests):
                   'desc': desc,
                  }
 
+        if page_id:
+            params['id'] = page_id
+
         res = self.testapp.post_json(self._format('/api/v1/list/%s/bookmarks?user={user}&coll=temp' % list_id), params=params)
-        assert res.json['bookmark']
         return res
 
     def test_create_anon_coll(self):
@@ -38,12 +62,6 @@ class TestListsAnonUserAPI(FullStackTests):
         _coll, _ = self.get_coll_rec(self.anon_user, 'temp', '')
 
         TestListsAnonUserAPI.coll = _coll
-
-        self.set_uuids('BookmarkList', count(1001))
-        self.set_uuids('Bookmark', count(101))
-
-        #self.redis.set(BookmarkList.COUNTER_KEY, 1000)
-        #self.redis.set(Bookmark.COUNTER_KEY, 100)
 
     def test_create_list(self):
         params = {'title': 'New List',
@@ -142,19 +160,19 @@ class TestListsAnonUserAPI(FullStackTests):
         params = {'order': ['1002', '1001']}
         res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'error': 'invalid order'}
+        assert res.json == {'error': 'invalid_order'}
 
     def test_reorder_error_dupe_elements(self):
         params = {'order': ['1002', '1001', '1003', '1001']}
         res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'error': 'invalid order'}
+        assert res.json == {'error': 'invalid_order'}
 
     def test_reorder_error_invalid_elements(self):
         params = {'order': ['1002', '1001', '1004']}
         res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'error': 'invalid order'}
+        assert res.json == {'error': 'invalid_order'}
 
     def test_reorder_lists(self):
         params = {'order': ['1002', '1001', '1003']}
@@ -218,10 +236,36 @@ class TestListsAnonUserAPI(FullStackTests):
         assert self.redis.hget('l:1002:info', 'public') == '1'
 
 
+    # Record, then Replay Via List
+    # ========================================================================
+    def test_record_1(self):
+        res = self.testapp.get('/_new/temp/rec/record/mp_/http://example.com/')
+        assert res.status_code == 302
+        res = res.follow()
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text
+
+    def test_replay_1(self):
+        res = self.testapp.get('/{user}/temp/list/1002/mp_/http://example.com/'.format(user=self.anon_user), status=200)
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text
+
+        assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
+
+    # Pages
+    # ========================================================================
+    def test_create_page(self):
+        page_id = self._add_page('rec', title='A Page', url='http://example.com/испытание/test')
+        assert page_id == 'b874ad9c6d'
+
+
     # Bookmarks
     # ========================================================================
     def test_create_bookmark(self):
-        res = self._add_bookmark('1002', title='An Example (испытание)', url='http://example.com/испытание/test')
+        res = self._add_bookmark('1002', title='An Example (испытание)', url='http://example.com/испытание/test',
+                                 page_id='b874ad9c6d')
 
         bookmark = res.json['bookmark']
 
@@ -237,7 +281,16 @@ class TestListsAnonUserAPI(FullStackTests):
         assert bookmark['browser'] == 'chrome:60'
         assert bookmark['desc'] == 'A description for this bookmark'
 
-        #assert self.redis.get(Bookmark.COUNTER_KEY) == '101'
+        assert bookmark['page']['id'] == 'b874ad9c6d'
+        assert bookmark['page']['url'] == bookmark['url']
+        assert bookmark['page']['timestamp'] == bookmark['timestamp']
+
+    def test_create_bookmark_error_page_not_matcching(self):
+        res = self._add_bookmark('1002', title='An Example (испытание)', url='http://example.com/испытание/test',
+                                 timestamp='2018', page_id='b874ad9c6d')
+
+        # urls and timestamps of page and bookmark must match
+        assert res.json['error'] == 'invalid_page'
 
     def test_get_bookmark_error_list_missing(self):
         res = self.testapp.get(self._format('/api/v1/bookmark/101?user={user}&coll=temp'), status=400)
@@ -290,7 +343,7 @@ class TestListsAnonUserAPI(FullStackTests):
         params = {'order': ['103', '104', '105', '106', '103', '101']}
         res = self.testapp.post_json(self._format('/api/v1/list/1002/bookmarks/reorder?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'error': 'invalid order'}
+        assert res.json == {'error': 'invalid_order'}
 
     def test_delete_bookmark_not_existent(self):
         res = self.testapp.delete(self._format('/api/v1/bookmark/106?user={user}&coll=temp&list=1003'), status=404)
@@ -348,6 +401,14 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert res.json['list']
 
+    def test_multiple_bookmarks_for_page(self):
+        res = self._add_bookmark('1003', title='An Example 2', url='http://example.com/испытание/test',
+                                 page_id='b874ad9c6d')
+
+        res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}'))
+
+        assert res.json == {'page_bookmarks': {'b874ad9c6d': {'111': '1003', '101': '1002'}}}
+
     def test_coll_info_with_lists(self):
         res = self.testapp.get(self._format('/api/v1/collection/temp?user={user}'))
 
@@ -364,24 +425,6 @@ class TestListsAnonUserAPI(FullStackTests):
         assert lists[1]['id'] == '1003'
         assert lists[1]['total_bookmarks'] == 5
         assert len(lists[1]['bookmarks']) == 1
-
-    # Record, then Replay Via List
-    # ========================================================================
-    def test_record_1(self):
-        res = self.testapp.get('/_new/temp/rec/record/mp_/http://example.com/')
-        assert res.status_code == 302
-        res = res.follow()
-        res.charset = 'utf-8'
-
-        assert 'Example Domain' in res.text
-
-    def test_replay_1(self):
-        res = self.testapp.get('/{user}/temp/list/1002/mp_/http://example.com/'.format(user=self.anon_user), status=200)
-        res.charset = 'utf-8'
-
-        assert 'Example Domain' in res.text
-
-        assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
 
     # Collection and User Info
     # ========================================================================

@@ -11,20 +11,19 @@ from warcio.timeutils import timestamp20_now
 
 from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent
 from webrecorder.models.recording import Recording
-from webrecorder.models.page import Page
+from webrecorder.models.pages import PagesMixin
 from webrecorder.models.list_bookmarks import BookmarkList
 from webrecorder.rec.storage import get_storage as get_global_storage
 
 
 # ============================================================================
-class Collection(RedisUniqueComponent):
+class Collection(PagesMixin, RedisUniqueComponent):
     MY_TYPE = 'coll'
     INFO_KEY = 'c:{coll}:info'
     ALL_KEYS = 'c:{coll}:*'
 
     RECS_KEY = 'c:{coll}:recs'
     LISTS_KEY = 'c:{coll}:lists'
-    PAGES_KEY = 'c:{coll}:pages'
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
 
@@ -40,7 +39,6 @@ class Collection(RedisUniqueComponent):
         super(Collection, self).__init__(**kwargs)
         self.recs = RedisUnorderedList(self.RECS_KEY, self)
         self.lists = RedisOrderedList(self.LISTS_KEY, self)
-        self.pages = RedisUnorderedList(self.PAGES_KEY, self)
 
     @classmethod
     def init_props(cls, config):
@@ -179,20 +177,6 @@ class Collection(RedisUniqueComponent):
 
         return [key_pattern.replace('*', rec) for rec in recs]
 
-    def count_pages(self):
-        self.access.assert_can_read_coll(self)
-
-        return self.pages.num_objects()
-
-    def list_pages(self):
-        pagelist = []
-
-        for page in self.pages.get_objects(Page, load=True):
-            pagelist.append(page.serialize())
-
-        return pagelist
-        #return sorted(pagelist, key=lambda x: x['timestamp'])
-
     def serialize(self, include_recordings=True, include_lists=True, include_rec_pages=False):
         data = super(Collection, self).serialize()
         self.data['id'] = self.name
@@ -257,9 +241,6 @@ class Collection(RedisUniqueComponent):
 
         for recording in self.get_recordings(load=False):
             errs.update(recording.delete_me(storage, pages=False))
-
-        for page in self.pages.get_objects(Page, load=False):
-            page.delete_me()
 
         for blist in self.get_lists(load=False):
             blist.delete_me()
@@ -360,5 +341,4 @@ class Collection(RedisUniqueComponent):
 # ============================================================================
 Recording.OWNER_CLS = Collection
 BookmarkList.OWNER_CLS = Collection
-Page.OWNER_CLS = Collection
 

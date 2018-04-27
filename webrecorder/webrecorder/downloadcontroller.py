@@ -68,7 +68,7 @@ class DownloadController(BaseController):
 
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
         metadata = {}
-        metadata['pages'] = recording.list_pages()
+        metadata['pages'] = collection.list_rec_pages(recording)
         metadata['type'] = 'recording'
         rec_type = recording.get_prop('rec_type')
         if rec_type:

@@ -8,11 +8,11 @@ class BookmarkList(RedisUniqueComponent):
     INFO_KEY = 'l:{blist}:info'
     ALL_KEYS = 'l:{blist}:*'
 
-    ORDERED_BOOKMARKS_KEY = 'l:{blist}:bookmarks'
+    BOOKMARKS_KEY = 'l:{blist}:bookmarks'
 
     def __init__(self, **kwargs):
         super(BookmarkList, self).__init__(**kwargs)
-        self.bookmarks = RedisOrderedList(self.ORDERED_BOOKMARKS_KEY, self)
+        self.bookmarks = RedisOrderedList(self.BOOKMARKS_KEY, self)
 
     def init_new(self, collection, props):
         self.owner = collection
@@ -33,12 +33,19 @@ class BookmarkList(RedisUniqueComponent):
         return list_id
 
     def create_bookmark(self, props):
-        self.access.assert_can_write_coll(self.get_owner())
+        collection = self.get_owner()
+        self.access.assert_can_write_coll(collection)
+
+        # if a page is specified for this bookmark, ensure that it has the same url and timestamp
+        page_id = props.get('id')
+        if page_id:
+            if not collection.is_matching_page(page_id, props):
+                return None
 
         bookmark = Bookmark(redis=self.redis,
                             access=self.access)
 
-        bookmark.init_new(self, props)
+        bookmark.init_new(self, collection, props)
 
         before_bookmark = self.get_bookmark(props.get('before_id'))
 
@@ -139,7 +146,7 @@ class Bookmark(RedisUniqueComponent):
     INFO_KEY = 'b:{book}:info'
     ALL_KEYS = 'b:{book}:*'
 
-    def init_new(self, bookmark_list, props):
+    def init_new(self, bookmark_list, collection, props):
         self.owner = bookmark_list
 
         bid = self._create_new_id()
@@ -158,8 +165,17 @@ class Bookmark(RedisUniqueComponent):
         if browser:
             self.data['browser'] = browser
 
+        page_id = props.get('id')
+        if page_id:
+            self.data['page'] = page_id
+
         self.name = str(bid)
         self._init_new()
+
+        if page_id:
+            collection.add_page_bookmark(page_id, self)
+
+        return bid
 
     def update(self, props):
         self.access.assert_can_write_coll(self.owner.get_owner())
@@ -174,7 +190,29 @@ class Bookmark(RedisUniqueComponent):
     def delete_me(self):
         self.access.assert_can_write_coll(self.owner.get_owner())
 
+        page_id = self.get_prop('page_id')
+        collection = self.get_collection()
+        if collection:
+            collection.remove_page_bookmark(page_id, self)
+
         return self.delete_object()
+
+    def get_collection(self):
+        bookmark_list = self.get_owner()
+        if bookmark_list:
+            return bookmark_list.get_owner()
+
+        return None
+
+    def serialize(self):
+        data = super(Bookmark, self).serialize()
+
+        if data.get('page'):
+            collection = self.get_collection()
+            if collection:
+                data['page'] = collection.get_page(data['page'])
+
+        return data
 
 
 # ============================================================================

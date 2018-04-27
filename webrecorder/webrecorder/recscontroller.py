@@ -105,8 +105,8 @@ class RecsController(BaseController):
 
             page_data = request.json
 
-            page = recording.add_page(page_data)
-            return {'page_id': page.my_id}
+            page_id = collection.add_page(page_data, recording)
+            return {'page_id': page_id}
 
         @self.app.post('/api/v1/recording/<rec>/page')
         def modify_page(rec):
@@ -121,7 +121,7 @@ class RecsController(BaseController):
         def list_pages(rec):
             user, collection, recording = self.load_recording(rec)
 
-            pages = recording.list_pages()
+            pages = collection.list_rec_pages(recording)
             return {'pages': pages}
 
         @self.app.get('/api/v1/recording/<rec>/num_pages')

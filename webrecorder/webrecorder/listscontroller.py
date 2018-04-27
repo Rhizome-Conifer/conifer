@@ -77,7 +77,7 @@ class ListsController(BaseController):
             if collection.lists.reorder_objects(new_order):
                 return {'success': 'reordered'}
             else:
-                return {'error': 'invalid order'}
+                return {'error': 'invalid_order'}
 
 
         #BOOKMARKS
@@ -86,8 +86,10 @@ class ListsController(BaseController):
             user, collection, blist = self.load_user_coll_list(list_id)
 
             bookmark = blist.create_bookmark(request.json)
-
-            return {'bookmark': bookmark.serialize()}
+            if bookmark:
+                return {'bookmark': bookmark.serialize()}
+            else:
+                return {'error': 'invalid_page'}
 
         @self.app.post('/api/v1/list/<list_id>/bulk_bookmarks')
         def create_bookmarks(list_id):
@@ -139,7 +141,7 @@ class ListsController(BaseController):
             if blist.bookmarks.reorder_objects(new_order):
                 return {'success': 'reordered'}
             else:
-                return {'error': 'invalid order'}
+                return {'error': 'invalid_order'}
 
     def load_user_coll_list(self, list_id, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)

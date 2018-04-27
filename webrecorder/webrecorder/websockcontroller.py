@@ -218,7 +218,7 @@ class BaseWebSockHandler(object):
 
                     check_dupes = (self.type_ == 'patch')
 
-                    self.recording.add_page(page_local_store, check_dupes)
+                    self.collection.add_page(page_local_store, self.recording)
 
                 else:
                     print('Invalid Rec for Page Data')
@@ -272,7 +272,7 @@ class BaseWebSockHandler(object):
             result = {'ws_type': 'status'}
             result['size'] = size
 
-            result['numPages'] = obj.count_pages()
+            #result['numPages'] = obj.count_pages()
 
             if self.stats_urls:
                 result['stats'] = self.dyn_stats.get_dyn_stats(

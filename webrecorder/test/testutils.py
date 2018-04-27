@@ -164,7 +164,6 @@ class FullStackTests(BaseWRTests):
     def new_id_override(cls):
         cls.ids_map = {'Recording': [],
                        'Collection': [],
-                       'Page': [],
                        'Bookmark': [],
                        'BookmarkList': []
                       }
