@@ -949,8 +949,8 @@ class ContentController(BaseController, RewriterApp):
 
         # recording
         if recording:
-            info['rec_id'] = recording.name
-            info['rec_title'] = quote(recording.get_title(), safe='/ ')
+            info['rec_id'] = recording.my_id
+            #info['rec_title'] = quote(recording.get_title(), safe='/ ')
             info['size'] = recording.size
 
         else:

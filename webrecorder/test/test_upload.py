@@ -64,7 +64,7 @@ class TestUpload(FullStackTests):
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
         res = self.testapp.post_json('/api/v1/recording/rec-sesh/pages?user=test&coll=default-collection', params=page)
 
-        assert res.json == {}
+        assert res.json['page_id']
 
     def test_logged_in_download_coll(self):
         res = self.testapp.get('/test/default-collection/$download')

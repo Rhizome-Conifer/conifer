@@ -13,7 +13,6 @@ class CollsController(BaseController):
     def __init__(self, *args, **kwargs):
         super(CollsController, self).__init__(*args, **kwargs)
         config = kwargs['config']
-        self.default_coll_desc = config['coll_desc']
 
     def init_routes(self):
         @self.app.post('/api/v1/collections')
@@ -216,36 +215,29 @@ class CollsController(BaseController):
         @self.app.get(['/<user>/<coll_name>/<rec_list:re:([\w,-]+)>', '/<user>/<coll_name>/<rec_list:re:([\w,-]+)>/'])
         @self.jinja2_view('collection_info.html')
         def coll_info(user, coll_name, rec_list):
-            rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
-            return self.get_collection_info_for_view(user, coll_name, rec_list)
+            #rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
+            return self.get_collection_info_for_view(user, coll_name)
 
-    def get_collection_info_for_view(self, user, coll_name, rec_list=None):
+    def get_collection_info_for_view(self, user, coll_name):
         self.redir_host()
 
-        result = self.get_collection_info(coll_name, user=user,
-                                          rec_list=rec_list)
+        result = self.get_collection_info(coll_name, user=user, include_pages=True)
+
+        result['coll'] = result['collection']['id']
+        result['coll_name'] = result['coll']
+        result['coll_title'] = quote(result['collection']['title'])
+
         if not result or result.get('error_message'):
             self._raise_error(404, 'Collection not found')
 
         return result
 
-    def get_collection_info(self, coll_name, user=None, rec_list=None):
+    def get_collection_info(self, coll_name, user=None, include_pages=False):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
 
-        result = {'collection': collection.serialize()}
+        result = {'collection': collection.serialize(include_rec_pages=include_pages)}
 
         result['user'] = user.my_id
         result['size_remaining'] = user.get_size_remaining()
-        result['coll'] = collection.name
-        result['coll_name'] = collection.name
-        result['coll_title'] = quote(result['collection']['title'])
-
-        result['pages'] = collection.list_coll_pages()
-
-        if not result['collection'].get('desc'):
-            result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])
-
-        # rec_list = rec_list or []
-        # result['rec_list'] = [rec.serialize() for rec in rec_list]
 
         return result

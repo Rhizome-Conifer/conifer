@@ -12,7 +12,8 @@ from pywb.warcserver.index.cdxobject import CDXObject
 from pywb.utils.loaders import BlockLoader
 
 from webrecorder.utils import redis_pipeline
-from webrecorder.models.base import RedisUniqueComponent
+from webrecorder.models.base import RedisUniqueComponent, RedisUnorderedList
+from webrecorder.models.page import Page
 from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_prefix
 
 from warcio.timeutils import timestamp_now, sec_to_timestamp, timestamp20_now
@@ -26,7 +27,8 @@ class Recording(RedisUniqueComponent):
 
     OPEN_REC_KEY = 'r:{rec}:open'
 
-    PAGE_KEY = 'r:{rec}:page'
+    #PAGES_KEY = 'r:{rec}:p'
+
     CDXJ_KEY = 'r:{rec}:cdxj'
 
     RA_KEY = 'r:{rec}:ra'
@@ -56,10 +58,12 @@ class Recording(RedisUniqueComponent):
         cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
         #cls.COMMIT_WAIT_TEMPL = config['commit_wait_templ']
 
+    #def __init__(self, **kwargs):
+    #    super(Recording, self).__init__(**kwargs)
+    #    self.pages = RedisUnorderedList(self.PAGES_KEY, self)
+
     def init_new(self, title='', desc='', rec_type=None, ra_list=None):
         rec = self._create_new_id()
-
-        print('REC', rec)
 
         open_rec_key = self.OPEN_REC_KEY.format(rec=rec)
 
@@ -94,35 +98,37 @@ class Recording(RedisUniqueComponent):
         open_rec_key = self.OPEN_REC_KEY.format(rec=self.my_id)
         self.redis.delete(open_rec_key)
 
-    def serialize(self):
+    def serialize(self, include_pages=False):
         data = super(Recording, self).serialize(include_duration=True)
 
-        # add pages
-        data['pages'] = self.list_pages()
+        if include_pages:
+            data['pages'] = self.list_pages()
 
         # add any remote archive sources
         ra_key = self.RA_KEY.format(rec=self.my_id)
         data['ra_sources'] = list(self.redis.smembers(ra_key))
-        #data['title'] = self.get_title()
         return data
 
-    def get_title(self):
-        #TODO: remove title altogether?
-        created_at = self.get_prop('created_at')
-        if created_at:
-            created_at = self.to_iso_date(created_at)
-        else:
-            created_at = '<unknown>'
-
-        return 'Recording on ' + created_at
-
-    def delete_me(self, storage):
+    def delete_me(self, storage, pages=True):
         res = self.delete_files(storage)
+
+        # if deleting collection, no need to remove pages for each recording
+        # they'll be deleted with the collection
+        if not pages:
+            self.delete_pages()
 
         if not self.delete_object():
             res['error'] = 'not_found'
 
         return res
+
+    def delete_pages(self):
+        collection = self.get_owner()
+
+        for page in self.iter_pages():
+            collection.pages.remove_object(page)
+
+            page.delete_me()
 
     def _coll_warc_key(self):
         return self.COLL_WARC_KEY.format(coll=self.get_prop('owner'))
@@ -159,73 +165,23 @@ class Recording(RedisUniqueComponent):
         else:
             return {}
 
-    def _get_pagedata(self, pagedata):
-        key = self.PAGE_KEY.format(rec=self.my_id)
-
-        url = pagedata['url']
-
-        ts = pagedata.get('timestamp')
-        if not ts:
-            ts = pagedata.get('ts')
-
-        if not ts:
-            ts = self._get_url_ts(url)
-
-        if not ts:
-            ts = timestamp_now()
-
-        pagedata['timestamp'] = ts
-        pagedata_json = json.dumps(pagedata)
-
-        hkey = pagedata['url'] + ' ' + pagedata['timestamp']
-
-        return key, hkey, pagedata_json
-
-    def _get_url_ts(self, url):
-        try:
-            key, end_key = calc_search_range(url, 'exact')
-        except:
-            return None
-
-        cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
-
-        result = self.redis.zrangebylex(cdxj_key,
-                                        '[' + key,
-                                        '(' + end_key)
-        if not result:
-            return None
-
-        last_cdx = CDXObject(result[-1].encode('utf-8'))
-
-        return last_cdx['timestamp']
-
-    def add_page(self, pagedata, check_dupes=False):
-        self.access.assert_can_write_coll(self.get_owner())
-
+    def add_page(self, props):
         if not self.is_open():
             return {'error': 'recording_done'}
 
-        # if check dupes, check for existing page and avoid adding duplicate
-        #if check_dupes:
-        #    if self.has_page(pagedata['url'], pagedata['timestamp']):
-        #        return {}
+        collection = self.get_owner()
 
-        key, hkey, pagedata_json = self._get_pagedata(pagedata)
+        self.access.assert_can_write_coll(collection)
 
-        self.redis.hset(key, hkey, pagedata_json)
+        page = Page(redis=self.redis,
+                    access=self.access)
 
-        return {}
+        page.init_new(collection, self, props)
 
-    def _has_page(self, user, coll, url, ts):
-        self.access.assert_can_read_coll(self.get_owner())
+        #self.pages.add_object(page, owner=False)
+        collection.pages.add_object(page)
 
-        all_page_keys = self._get_rec_keys(user, coll, self.page_key)
-
-        hkey = url + ' ' + ts
-
-        for key in all_page_keys:
-            if self.redis.hget(key, hkey):
-                return True
+        return page
 
     def import_pages(self, pagelist):
         self.access.assert_can_admin_coll(self.get_owner())
@@ -241,62 +197,13 @@ class Recording(RedisUniqueComponent):
 
         return {}
 
-    def modify_page(self, new_pagedata):
-        self.access.assert_can_admin_coll(self.get_owner())
-
-        key = self.PAGE_KEY.format(rec=self.my_id)
-
-        page_key = new_pagedata['url'] + ' ' + new_pagedata['timestamp']
-
-        pagedata = self.redis.hget(key, page_key)
-        pagedata = json.loads(pagedata)
-        pagedata.update(new_pagedata)
-
-        pagedata_json = json.dumps(pagedata)
-
-        self.redis.hset(key,
-                        pagedata['url'] + ' ' + pagedata['timestamp'],
-                        pagedata_json)
-
-        return {}
-
-    def delete_page(self, url, ts):
-        self.access.assert_can_admin_coll(self.get_owner())
-
-        key = self.PAGE_KEY.format(rec=self.my_id)
-
-        res = self.redis.hdel(key, url + ' ' + ts)
-        if res == 1:
-            return {}
-        else:
-            return {'error': 'not found'}
+    def iter_pages(self):
+        for page in self.get_owner().pages.get_objects(Page, load=True):
+            if page['rec'] == self.my_id:
+                yield page
 
     def list_pages(self):
-        self.access.assert_can_read_coll(self.get_owner())
-
-        key = self.PAGE_KEY.format(rec=self.my_id)
-
-        pagelist = self.redis.hvals(key)
-
-        pagelist = [json.loads(x) for x in pagelist]
-
-        # add page ids
-        for page in pagelist:
-            bk_attrs = (page['url'] + page['timestamp']).encode('utf-8')
-            page['id'] = hashlib.md5(bk_attrs).hexdigest()[:10]
-
-        if not self.access.can_admin_coll(self.get_owner()):
-            pagelist = [page for page in pagelist if page.get('hidden') != '1']
-
-        return pagelist
-
-    def count_pages(self):
-        self.access.assert_can_read_coll(self.get_owner())
-
-        key = self.PAGE_KEY.format(rec=self.my_id)
-        count = self.redis.hlen(key)
-
-        return count
+        return [page.serialize() for page in self.iter_pages()]
 
     def track_remote_archive(self, pi, source_id):
         ra_key = self.RA_KEY.format(rec=self.my_id)
@@ -478,10 +385,9 @@ class Recording(RedisUniqueComponent):
 
         self.redis.zunionstore(target_key, [source_key])
 
-        # COPY pagelist
-        pages = self.redis.hgetall(self.PAGE_KEY.format(rec=source.my_id))
-        if pages:
-            self.redis.hmset(self.PAGE_KEY.format(rec=self.my_id), pages)
+        # recreate pages, if any, in new recording
+        for page in source.iter_pages():
+            self.add_page(page.serialize())
 
         # COPY remote archives, if any
         self.redis.sunionstore(self.RA_KEY.format(rec=self.my_id),

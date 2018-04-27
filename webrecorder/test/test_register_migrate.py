@@ -37,7 +37,7 @@ class TestRegisterMigrate(FullStackTests):
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
         res = self.testapp.post_json('/api/v1/recording/abc/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
-        assert res.json == {}
+        assert res.json['page_id']
 
         user = self.anon_user
         coll, rec = self.get_coll_rec(user, 'temp', 'abc')

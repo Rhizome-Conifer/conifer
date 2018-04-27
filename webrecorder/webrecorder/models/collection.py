@@ -11,6 +11,7 @@ from warcio.timeutils import timestamp20_now
 
 from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent
 from webrecorder.models.recording import Recording
+from webrecorder.models.page import Page
 from webrecorder.models.list_bookmarks import BookmarkList
 from webrecorder.rec.storage import get_storage as get_global_storage
 
@@ -21,13 +22,15 @@ class Collection(RedisUniqueComponent):
     INFO_KEY = 'c:{coll}:info'
     ALL_KEYS = 'c:{coll}:*'
 
-    UNORDERED_RECS_KEY = 'c:{coll}:recs'
-
-    ORDERED_LIST_KEY = 'c:{coll}:lists'
+    RECS_KEY = 'c:{coll}:recs'
+    LISTS_KEY = 'c:{coll}:lists'
+    PAGES_KEY = 'c:{coll}:pages'
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
 
     INDEX_FILE_KEY = '@index_file'
+
+    DEFAULT_COLL_DESC = ''
 
     DEFAULT_STORE_TYPE = 'local'
 
@@ -35,14 +38,17 @@ class Collection(RedisUniqueComponent):
 
     def __init__(self, **kwargs):
         super(Collection, self).__init__(**kwargs)
-        self.recs = RedisUnorderedList(self.UNORDERED_RECS_KEY, self)
-        self.lists = RedisOrderedList(self.ORDERED_LIST_KEY, self)
+        self.recs = RedisUnorderedList(self.RECS_KEY, self)
+        self.lists = RedisOrderedList(self.LISTS_KEY, self)
+        self.pages = RedisUnorderedList(self.PAGES_KEY, self)
 
     @classmethod
     def init_props(cls, config):
         cls.COLL_CDXJ_TTL = config['coll_cdxj_ttl']
 
         cls.DEFAULT_STORE_TYPE = os.environ.get('DEFAULT_STORAGE', 'local')
+
+        cls.DEFAULT_COLL_DESC = config['coll_desc']
 
     def create_recording(self, **kwargs):
         self.access.assert_can_admin_coll(self)
@@ -159,13 +165,7 @@ class Collection(RedisUniqueComponent):
         return self.recs.num_objects()
 
     def get_recordings(self, load=True):
-        recordings = self.recs.get_objects(Recording)
-        for recording in recordings:
-            recording.owner = self
-            if load:
-                recording.load()
-
-        return recordings
+        return self.recs.get_objects(Recording, load=load)
 
     def _get_rec_keys(self, key_templ):
         self.access.assert_can_read_coll(self)
@@ -182,44 +182,18 @@ class Collection(RedisUniqueComponent):
     def count_pages(self):
         self.access.assert_can_read_coll(self)
 
-        all_page_keys = self._get_rec_keys(Recording.PAGE_KEY)
+        return self.pages.num_objects()
 
-        count = 0
-
-        for key in all_page_keys:
-            count += self.redis.hlen(key)
-
-        return count
-
-    def list_coll_pages(self):
-        #all_page_keys = self._get_rec_keys(Recording.PAGE_KEY)
-        #all_objs = self.redis.hgetall(self.get_comp_map())
-        all_objs = self.recs.get_keys()
-        all_page_keys = [Recording.PAGE_KEY.format(rec=rec) for rec in all_objs]
-
+    def list_pages(self):
         pagelist = []
 
-        pi = self.redis.pipeline(transaction=False)
-        for key in all_page_keys:
-            pi.hvals(key)
+        for page in self.pages.get_objects(Page, load=True):
+            pagelist.append(page.serialize())
 
-        all_pages = pi.execute()
+        return pagelist
+        #return sorted(pagelist, key=lambda x: x['timestamp'])
 
-        for rec, rec_pagelist in zip(all_objs, all_pages):
-            for page in rec_pagelist:
-                page = json.loads(page)
-
-                bk_attrs = (page['url'] + page['timestamp']).encode('utf-8')
-                page['id'] = hashlib.md5(bk_attrs).hexdigest()[:10]
-                page['recording'] = rec
-                pagelist.append(page)
-
-        if not self.access.can_admin_coll(self):
-            pagelist = [page for page in pagelist if page.get('hidden') != '1']
-
-        return sorted(pagelist, key=lambda x: x['timestamp'])
-
-    def serialize(self, include_recordings=True, include_lists=True):
+    def serialize(self, include_recordings=True, include_lists=True, include_rec_pages=False):
         data = super(Collection, self).serialize()
         self.data['id'] = self.name
 
@@ -229,7 +203,7 @@ class Collection(RedisUniqueComponent):
 
             duration = 0
             for recording in recordings:
-                rec_data = recording.serialize()
+                rec_data = recording.serialize(include_pages=include_rec_pages)
                 rec_serialized.append(rec_data)
                 duration += rec_data.get('duration', 0)
 
@@ -243,6 +217,12 @@ class Collection(RedisUniqueComponent):
 
         data['public'] = self.is_public()
         data['public_index'] = self.get_bool_prop('public_index', True)
+
+        data['pages'] = self.list_pages()
+
+        if not data.get('desc'):
+            data['desc'] = self.DEFAULT_COLL_DESC.format(self.name)
+
         return data
 
     def remove_recording(self, recording, delete=False):
@@ -276,7 +256,10 @@ class Collection(RedisUniqueComponent):
         errs = {}
 
         for recording in self.get_recordings(load=False):
-            errs.update(recording.delete_me(storage))
+            errs.update(recording.delete_me(storage, pages=False))
+
+        for page in self.pages.get_objects(Page, load=False):
+            page.delete_me()
 
         for blist in self.get_lists(load=False):
             blist.delete_me()
@@ -377,4 +360,5 @@ class Collection(RedisUniqueComponent):
 # ============================================================================
 Recording.OWNER_CLS = Collection
 BookmarkList.OWNER_CLS = Collection
+Page.OWNER_CLS = Collection
 

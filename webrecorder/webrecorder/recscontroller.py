@@ -105,8 +105,8 @@ class RecsController(BaseController):
 
             page_data = request.json
 
-            res = recording.add_page(page_data)
-            return res
+            page = recording.add_page(page_data)
+            return {'page_id': page.my_id}
 
         @self.app.post('/api/v1/recording/<rec>/page')
         def modify_page(rec):

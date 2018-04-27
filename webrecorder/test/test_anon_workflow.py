@@ -27,9 +27,9 @@ class TestTempContent(FullStackTests):
         'r:{rec}:cdxj',
         'r:{rec}:open',
         'r:{rec}:info',
-        'r:{rec}:page',
         'r:{rec}:wk',
         'c:{coll}:warc',
+        'c:{coll}:pages',
         'c:{coll}:info',
         'c:{coll}:recs',
         'u:{user}:info',
@@ -70,6 +70,8 @@ class TestTempContent(FullStackTests):
 
         cls.temp_coll = None
 
+        cls.pages = []
+
     @classmethod
     def teardown_class(cls, *args, **kwargs):
         cls.seshmock.stop()
@@ -83,6 +85,10 @@ class TestTempContent(FullStackTests):
     @classmethod
     def _init_temp_coll(cls):
         cls.temp_coll = cls.redis.hget('u:{user}:colls'.format(user=cls.anon_user), 'temp')
+
+    @classmethod
+    def _add_page(cls, page_id):
+        cls.pages.append(page_id)
 
     def _assert_rec_keys(self, user, coll_name, rec_list, url='', replay_coll=True, del_q=False,
                          check_stats=False):
@@ -101,8 +107,9 @@ class TestTempContent(FullStackTests):
             exp_keys.append('c:{coll}:cdxj'.format(user=user, coll=coll))
             #exp_keys.append('c:{coll}:warc'.format(user=user, coll=coll))
 
-        #if del_q:
-        #    exp_keys.append('q:del:local')
+        if self.pages:
+            for page in self.pages:
+                exp_keys.append('p:{page}:info'.format(page=page))
 
         if check_stats:
             self._check_dyn_stats(exp_keys)
@@ -185,7 +192,7 @@ class TestTempContent(FullStackTests):
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
         res = self.testapp.post_json('/api/v1/recording/my-recording/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
-        assert res.json == {}
+        self._add_page(res.json['page_id'])
 
         user = self.anon_user
 
@@ -251,7 +258,7 @@ class TestTempContent(FullStackTests):
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?bood=far', 'ts': '2016010203000000'}
         res = self.testapp.post_json('/api/v1/recording/my-rec2/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
-        assert res.json == {}
+        self._add_page(res.json['page_id'])
 
         user = self.anon_user
 
@@ -279,7 +286,7 @@ class TestTempContent(FullStackTests):
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?good=far', 'ts': '2016010203000000'}
         res = self.testapp.post_json('/api/v1/recording/my-recording-2/pages?user={user}&coll=temp'.format(user=self.anon_user), params=page)
 
-        assert res.json == {}
+        self._add_page(res.json['page_id'])
 
         user = self.anon_user
 
@@ -310,7 +317,7 @@ class TestTempContent(FullStackTests):
             params=page
         )
 
-        assert res.json == {}
+        self._add_page(res.json['page_id'])
 
         user = self.anon_user
 
@@ -357,7 +364,7 @@ class TestTempContent(FullStackTests):
             params=page
         )
 
-        assert res.json == {}
+        self._add_page(res.json['page_id'])
 
         user = self.anon_user
 
@@ -392,7 +399,7 @@ class TestTempContent(FullStackTests):
             params=page
         )
 
-        assert res.json == {}
+        self._add_page(res.json['page_id'])
 
         user = self.anon_user
 
@@ -448,7 +455,7 @@ class TestTempContent(FullStackTests):
         assert '"replay"' in res.text
         assert '"rec_id": "my-rec2"' in res.text
         #assert '"rec_title": "My Rec2"' in res.text
-        assert '"rec_title": "Recording on' in res.text
+        #assert '"rec_title": "Recording on' in res.text
         assert '"coll_id": "temp"' in res.text
         assert '"coll_title": "Temporary Collection"' in res.text
 

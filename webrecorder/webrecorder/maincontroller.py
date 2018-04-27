@@ -289,7 +289,7 @@ class MainController(BaseController):
             collection = get_collection(context)
 
             return [{'ts': r['timestamp'], 'url': r['url'], 'br': r.get('browser', '')}
-                    for r in collection.list_coll_pages()]
+                    for r in collection.list_pages()]
 
         @contextfunction
         def is_out_of_space(context):

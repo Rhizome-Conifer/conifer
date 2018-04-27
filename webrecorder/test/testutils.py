@@ -11,6 +11,8 @@ import time
 import gevent
 import re
 
+from mock import patch
+
 from warcio.bufferedreaders import ChunkedDataReader
 from io import BytesIO
 
@@ -153,11 +155,6 @@ class FullStackTests(BaseWRTests):
                          'CONTENT_HOST': ''}
 
     rec_ids = []
-    ids_map = {'Recording': [],
-               'Collection': [],
-               'Bookmark': [],
-               'BookmarkList': []
-              }
 
     @classmethod
     def set_uuids(cls, name, id_list):
@@ -165,6 +162,13 @@ class FullStackTests(BaseWRTests):
 
     @classmethod
     def new_id_override(cls):
+        cls.ids_map = {'Recording': [],
+                       'Collection': [],
+                       'Page': [],
+                       'Bookmark': [],
+                       'BookmarkList': []
+                      }
+
         def get_new_id_o(self):
             try:
                 id_gen = cls.ids_map.get(self.__class__.__name__)
@@ -241,8 +245,8 @@ class FullStackTests(BaseWRTests):
     def setup_class(cls, *args, **kwargs):
         super(FullStackTests, cls).setup_class(*args, **kwargs)
 
-        cls._orig_get_new_id = RedisUniqueComponent.get_new_id
-        RedisUniqueComponent.get_new_id = cls.new_id_override()
+        cls.id_mock = patch('webrecorder.models.base.RedisUniqueComponent.get_new_id', cls.new_id_override())
+        cls.id_mock.start()
 
         storage_worker = kwargs.get('storage_worker')
         temp_worker = kwargs.get('temp_worker')
@@ -257,7 +261,7 @@ class FullStackTests(BaseWRTests):
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
-        RedisUniqueComponent.get_new_id = cls._orig_get_new_id
+        cls.id_mock.stop()
 
         if cls.temp_worker:
             cls.temp_worker.stop()
