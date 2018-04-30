@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { Alert, Button, DropdownButton, MenuItem } from 'react-bootstrap';
 
-import { defaultCollDesc, defaultListDesc } from 'config';
+import { defaultCollDesc } from 'config';
 
 import { DeleteCollection, Upload } from 'containers';
 
@@ -32,10 +32,7 @@ class CollectionHeaderUI extends Component {
     condensed: PropTypes.bool,
     deleteColl: PropTypes.func,
     history: PropTypes.object,
-    list: PropTypes.object,
-    listEdited: PropTypes.bool,
-    editCollection: PropTypes.func,
-    editList: PropTypes.func
+    editCollection: PropTypes.func
   };
 
   constructor(props) {
@@ -102,27 +99,13 @@ class CollectionHeaderUI extends Component {
     }
   }
 
-  hoverDelay = () => {
-    if (this.props.condensed && !this.state.hoverOverride) {
-      this.handle = setTimeout(() => this.setState({ hoverOverride: true }), 250);
-    }
-  }
-
-  hoverCancel = () => {
-    if (this.state.hoverOverride) {
-      this.setState({ hoverOverride: false });
-    }
-
-    clearTimeout(this.handle);
-  }
-
   editCollTitle = (title) => {
     const { collection } = this.props;
     this.props.editCollection(collection.get('user'), collection.get('id'), { title });
   }
 
   editDesc = (desc) => {
-    const { collection, list, editCollection, editList } = this.props;
+    const { collection, editCollection } = this.props;
     editCollection(collection.get('user'), collection.get('id'), { desc });
   }
 
@@ -142,7 +125,7 @@ class CollectionHeaderUI extends Component {
   }
 
   togglePublicView = () => {
-    const { history, location: { pathname, search }} = this.props;
+    const { location: { pathname, search }} = this.props;
     const asPublic = search && search.indexOf('asPublic') !== -1;
     if (asPublic) {
       window.location = `${pathname}${search.replace(/(\?|\&)asPublic/, '')}`;
@@ -153,7 +136,7 @@ class CollectionHeaderUI extends Component {
 
   render() {
     const { asPublic, canAdmin, isAnon } = this.context;
-    const { collection, collEdited, list, listEdited } = this.props;
+    const { collection, collEdited } = this.props;
     const { truncate, animated, condensed, height, hoverOverride, toggleDesc } = this.state;
 
     const containerClasses = classNames('wr-collection-header', {
@@ -164,9 +147,6 @@ class CollectionHeaderUI extends Component {
 
     const publicLists = collection.get('lists').reduce((sum, l) => (l.get('public') | 0) + sum, 0);
     const isPublic = collection.get('public');
-
-    // onMouseEnter={this.hoverDelay}
-    // onMouseLeave={this.hoverCancel}>
 
     return (
       <header className={containerClasses}>

@@ -59,7 +59,7 @@
 
         ul {
             list-style-type: none;
-            padding: 0;
+            padding: 0 1rem 0 0;
 
             li {
                 position: relative;
@@ -74,31 +74,90 @@
                     height: 100%;
                 }
 
-                &:hover {
-                    &:before {
-                        background-color: $blue;
-                    }
-                }
-
                 .wrapper {
                     transition: background-color $slowShift ease-in-out;
-                    padding: .4rem 0;
+                    padding: .4rem 0 .4rem 1rem;
 
                     display: flex;
                     justify-content: flex-start;
                     align-items: center;
+
+                    svg {
+                        fill: $mid-gray;
+                    }
 
                     a {
                         display: block;
                         width: 100%;
                         margin: 0 .5rem;
                         text-decoration: none;
-                        color: $dark-gray;
+                        color: $mid-gray;
                         font-weight: 500;
                         font-size: 1.6rem;
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
+                    }
+
+                    .visiblity-toggle {
+                        transition: background $midShift ease-in-out;
+                        content: ' ';
+                        padding: .7rem;
+                        border-radius: 50%;
+                        border: none;
+                        background: $gray400;
+                        margin-right: .5rem;
+
+                        &:focus {
+                            outline: none;
+                        }
+
+                        &.public {
+                            background: $brightGreen;
+                        }
+                    }
+                }
+
+               &:not(.all-pages) .wrapper:before {
+                    content: '';
+                    width: 1.8rem;
+                    height: 1.8rem;
+                    background-image: url('../../../shared/images/private-list.svg');
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: 50% 50%;
+                    margin-right: .5rem;
+                }
+
+                &:hover {
+                    background: $gray300;
+
+                    .wrapper {
+                        &:before {
+                            background-image: url('../../../shared/images/handle.svg');
+                        }
+
+                        a {
+                            color: #000;
+                        }
+
+                        .visiblity-toggle {
+                        }
+                        .visiblity-toggle.public {
+                            background-color: $bright-green-highlight;
+                        }
+                    }
+                }
+
+                &.is-public {
+                    .wrapper {
+                        &:before {
+                            background-image: url('../../../shared/images/public-list.svg');
+                        }
+
+                        a {
+                            color: $dark-gray;
+                        }
                     }
                 }
 
@@ -108,36 +167,26 @@
                     }
                 }
 
-                .visiblity-toggle {
-                    transition: background $midShift ease-in-out;
-                    content: ' ';
-                    padding: .7rem;
-                    border-radius: 50%;
-                    border: none;
-                    background: #eee;
-                    margin-right: .5rem;
-
-                    &:focus {
-                        outline: none;
-                    }
-
-                    &.public {
-                        background: $brightGreen;
-                    }
-                }
-
                 &.selected {
-                    .wrapper {
-                        background-color: $blue;
-                    }
+                    color: $dark-gray;
 
                     &:before {
                         background-color: $blue;
                     }
 
                     a:visited, a:link, a:hover {
-                        color: #FFF;
+                        color: $dark-gray;
                     }
+                }
+
+                &.divider {
+                    margin: 1rem 0;
+                    background: $mgmt-gray;
+                    height: .1rem;
+                }
+
+                &.all-pages .wrapper svg {
+                    vertical-align: middle;
                 }
             }
         }

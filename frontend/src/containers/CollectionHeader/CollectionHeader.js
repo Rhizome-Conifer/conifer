@@ -13,19 +13,12 @@ const mapStateToProps = ({ app }) => {
   return {
     collection: app.get('collection'),
     collEdited: app.getIn(['collection', 'edited']),
-    collEditError: app.getIn(['collection', 'editError']),
-    list: app.get('list'),
-    listEdited: app.getIn(['list', 'edited'])
+    collEditError: app.getIn(['collection', 'editError'])
   };
 };
 
 const mapDispatchToProps = (dispatch, { history }) => {
   return {
-    editList: (user, coll, listId, data) => {
-      dispatch(editList(user, coll, listId, data))
-        .then(() => dispatch(loadColl(user, coll)))
-        .then(() => setTimeout(() => dispatch(resetEditState()), 3000), () => {});
-    },
     editCollection: (user, coll, data) => {
       dispatch(editCollDesc(user, coll, data))
         .then((res) => {

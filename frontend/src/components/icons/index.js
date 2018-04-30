@@ -1,3 +1,4 @@
+export AllPagesIcon from './AllPages';
 export BookmarkIcon from './Bookmark';
 export BrowserIcon from './Browser';
 export BugIcon from './Bug';

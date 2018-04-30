@@ -6,6 +6,8 @@ import { DragSource, DropTarget } from 'react-dnd';
 
 import { draggableTypes as dt } from 'config';
 
+import { ListIcon } from 'components/icons';
+
 
 const listSource = {
   beginDrag({ index, list }) {
@@ -109,15 +111,15 @@ class ListItem extends PureComponent {
     const { canAdmin } = this.context;
     const { collection, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
 
-    const classes = classNames({ selected, targeted: isOver });
-    const isPublic = list.get('public');
     const title = list.get('title');
+    const isPublic = list.get('public');
+    const classes = classNames({ selected, targeted: isOver, 'is-public': isPublic });
 
     const item = (
       <li className={classes} key={list.get('id')} style={{ opacity: isDragging ? 0 : 1 }}>
         <div className="wrapper">
           <Link to={`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}`} title={list.get('title')}>
-            <span>{ list.get('title') }</span>
+            { list.get('title') }
           </Link>
           {
             canAdmin &&

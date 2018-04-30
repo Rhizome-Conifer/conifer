@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 import Modal from 'components/Modal';
 import SidebarHeader from 'components/SidebarHeader';
-import { CheckIcon, PlusIcon, XIcon } from 'components/icons';
+import { AllPagesIcon, CheckIcon, PlusIcon, XIcon } from 'components/icons';
 
 import ListItem from './ListItem';
 import EditItem from './EditItem';
@@ -163,11 +163,6 @@ class ListsUI extends Component {
           trigger={header}
           onOpen={this.open}
           onClose={this.close}>
-          {
-            activeListId &&
-              <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`} className="button-link">See All Resources in Collection</Link>
-          }
-
           <div className="lists-body">
             <header className="lists-header">
               <h4>Lists ({lists.size})</h4>
@@ -194,10 +189,15 @@ class ListsUI extends Component {
                     sort={this.sortLists} />
                 ))
               }
+              <li className="divider" />
+              <li className={classNames('all-pages', { selected: !activeListId })}>
+                <div className="wrapper">
+                  <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`} className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
+                </div>
+              </li>
             </ul>
           </div>
         </Collapsible>
-
         {
           /* lists edit modal */
           canAdmin &&
