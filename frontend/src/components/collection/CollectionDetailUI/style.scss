@@ -52,7 +52,7 @@
 }
 
 .wr-coll-detail {
-    padding: 0rem 2.5rem 0 0;
+    padding: 0rem .5rem 0 0;
     position: absolute;
     top:0;
     bottom:0;
@@ -74,6 +74,10 @@
             "sidebar header"
             "sidebar utilities"
             "sidebar table";
+
+        .wr-coll-detail-table .ReactVirtualized__Table__headerColumn > div {
+            background: $listsYellow;
+        }
     }
 
     .wr-coll-sidebar-container {

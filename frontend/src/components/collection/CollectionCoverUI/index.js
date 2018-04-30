@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
+import Capstone from 'components/collection/Capstone';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
-import { ListIcon, WarcIcon } from 'components/icons';
+import { ListIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -23,10 +24,7 @@ class CollectionCoverUI extends Component {
 
     return (
       <div className="coll-cover">
-        <div className="capstone">
-          <h4><WarcIcon /> Collection</h4>
-          <div>by <Link to={`/${user}`}>{user}</Link></div>
-        </div>
+        <Capstone user={collection.get('user')} />
         <h1>{collection.get('title')}</h1>
         <div className="description">
           <WYSIWYG

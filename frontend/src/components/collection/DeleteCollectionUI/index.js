@@ -9,7 +9,8 @@ class DeleteCollectionUI extends Component {
   static propTypes = {
     children: PropTypes.node,
     collection: PropTypes.object,
-    deleteColl: PropTypes.func
+    deleteColl: PropTypes.func,
+    wrapper: PropTypes.func
   };
 
   constructor(props) {
@@ -50,13 +51,15 @@ class DeleteCollectionUI extends Component {
   }
 
   render() {
-    const { collection } = this.props;
+    const { collection, wrapper } = this.props;
+
+    const Wrapper = wrapper || Button;
 
     return (
       <React.Fragment>
-        <div onClick={this.toggleDeleteModal} style={{ display: 'inline-block' }}>
+        <Wrapper onClick={this.toggleDeleteModal}>
           {this.props.children}
-        </div>
+        </Wrapper>
         <Modal
           visible={this.state.deleteModal}
           closeCb={this.toggleDeleteModal}

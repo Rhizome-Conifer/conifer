@@ -137,6 +137,10 @@ body {
     }
 }
 
+.rounded {
+  border-radius: 2.7rem;
+}
+
 .borderless {
     transition: opacity $slowShift ease-in-out;
     border: none;

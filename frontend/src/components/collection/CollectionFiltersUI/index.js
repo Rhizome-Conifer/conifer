@@ -100,12 +100,6 @@ class CollectionFiltersUI extends Component {
       <div className="wr-coll-utilities">
         <nav>
           {
-            canAdmin &&
-              <Link to={`/${collection.get('user')}/${collection.get('id')}/$new`}>
-                <Button bsSize="xs" bsStyle="success">New Recording</Button>
-              </Link>
-          }
-          {
             !isAnon && canAdmin && this.props.selectedPageIdx !== null &&
               <Button bsSize="xs" onClick={this.openAddToList}>Add selection to lists</Button>
           }

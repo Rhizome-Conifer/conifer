@@ -1,0 +1,11 @@
+@import 'src/vars';
+
+.wr-switch {
+    &:hover {
+        color: green;
+    }
+
+    &.is-public:hover {
+        color: red;
+    }
+}

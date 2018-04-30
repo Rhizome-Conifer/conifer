@@ -24,15 +24,19 @@ class CollectionDetail extends Component {
 
     // TODO move to HOC
   static childContextTypes = {
+    asPublic: PropTypes.bool,
     canAdmin: PropTypes.bool
   };
 
   getChildContext() {
-    const { auth, match: { params: { user } } } = this.props;
+    const { auth, location: { search }, match: { params: { user } } } = this.props;
     const username = auth.getIn(['user', 'username']);
 
+    const asPublic = search ? search.indexOf('asPublic') !== -1 : false;
+
     return {
-      canAdmin: username === user
+      canAdmin: username === user && !asPublic,
+      asPublic
     };
   }
 

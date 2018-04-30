@@ -12,6 +12,7 @@ export HelpIcon from './Help';
 export InfoIcon from './Info';
 export ListIcon from './List';
 export MailIcon from './Mail';
+export MoreIcon from './More';
 export PatchIcon from './Patch';
 export PencilIcon from './Pencil';
 export PlusIcon from './Plus';

@@ -1,0 +1,64 @@
+@import 'src/vars';
+
+.wr-list-header {
+    .alert {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+    }
+
+    .banner {
+        display: inline-block;
+        margin: 2.5rem 0 0 -1.5rem;
+        padding: .5rem 4rem;
+        background-color: $listsYellow;
+        font-size: 1.6rem;
+
+        svg {
+            vertical-align: middle;
+        }
+    }
+
+    .heading-container {
+        padding-left: 1.5rem;
+        margin: 2.5rem 0;
+
+        h1 {
+            font-weight: 400;
+            margin: 0;
+        }
+    }
+
+    .wr-truncate {
+        align-items: flex-start;
+    }
+
+    .wr-editor {
+        padding-left: 1.5rem;
+    }
+
+    .creator {
+        padding-left: 1.5rem;
+        margin: 1.5rem 0;
+
+        a {
+            &:link, &:visited {
+                color: #000;
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+            &:hover {
+                color: $blue;
+            }
+        }
+    }
+
+    .function-row {
+        padding-left: 1.5rem;
+
+        button {
+            margin-right: 1rem;
+        }
+    }
+}

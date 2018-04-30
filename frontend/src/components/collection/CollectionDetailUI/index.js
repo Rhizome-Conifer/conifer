@@ -13,7 +13,7 @@ import { setSort } from 'redux/modules/collection';
 import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
 import { CollectionFilters, CollectionHeader,
-         InspectorPanel, Lists, Sidebar } from 'containers';
+         InspectorPanel, Lists, ListHeader, Sidebar } from 'containers';
 
 import Modal from 'components/Modal';
 import Resizable from 'components/Resizable';
@@ -359,9 +359,12 @@ class CollectionDetailUI extends Component {
 
     return (
       <div className={classNames('wr-coll-detail', { 'with-list': activeList })}>
-        <CollectionHeader
-          activeList={activeList}
-          condensed={this.state.scrolled} />
+
+        {
+          activeList ?
+            <ListHeader /> :
+            <CollectionHeader condensed={this.state.scrolled} />
+        }
 
         <Sidebar storageKey="collSidebar">
           <Resizable

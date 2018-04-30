@@ -20,7 +20,8 @@ class UploadUI extends Component {
     activeCollection: PropTypes.string,
     classes: PropTypes.string,
     fromCollection: PropTypes.string,
-    setColl: PropTypes.func
+    setColl: PropTypes.func,
+    wrapper: PropTypes.func
   };
 
   static defaultProps = {
@@ -176,6 +177,8 @@ class UploadUI extends Component {
       <h4>Upload Web Archive to { product }</h4>
     );
 
+    const Wrapper = this.props.wrapper || Button;
+
     const modalFooter = (
       <React.Fragment>
         <Button onClick={this.close} disabled={this.canCancel}>Cancel</Button>
@@ -185,9 +188,9 @@ class UploadUI extends Component {
 
     return (
       <React.Fragment>
-        <button className={classes} onClick={this.open}>
+        <Wrapper className={classes} onClick={this.open}>
           { this.props.children || 'Upload'}
-        </button>
+        </Wrapper>
         <Modal
           closeCb={this.close}
           visible={this.state.open}

@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import Toggle from 'react-toggle';
-import { Button, ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import { Alert, Button, DropdownButton, MenuItem } from 'react-bootstrap';
 
 import { defaultCollDesc, defaultListDesc } from 'config';
 
-import { Upload } from 'containers';
+import { DeleteCollection, Upload } from 'containers';
 
-import Modal from 'components/Modal';
+import Capstone from 'components/collection/Capstone';
 import InlineEditor from 'components/InlineEditor';
+import PublicSwitch from 'components/collection/PublicSwitch';
 import WYSIWYG from 'components/WYSIWYG';
+import { MoreIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -18,17 +20,18 @@ import './style.scss';
 class CollectionHeaderUI extends Component {
 
   static contextTypes = {
+    asPublic: PropTypes.bool,
     canAdmin: PropTypes.bool,
     isAnon: PropTypes.bool
   };
 
   static propTypes = {
-    activeList: PropTypes.bool,
     collection: PropTypes.object,
     collEdited: PropTypes.bool,
     collEditError: PropTypes.string,
     condensed: PropTypes.bool,
     deleteColl: PropTypes.func,
+    history: PropTypes.object,
     list: PropTypes.object,
     listEdited: PropTypes.bool,
     editCollection: PropTypes.func,
@@ -69,7 +72,7 @@ class CollectionHeaderUI extends Component {
 
   setPublic = () => {
     const { collection } = this.props;
-    this.props.editCollection(collection.get('user'), collection.get('id'), { public: !(collection.get('isPublic') === '1') });
+    this.props.editCollection(collection.get('user'), collection.get('id'), { public: !collection.get('public') });
   }
 
   editorRendered = () => {
@@ -85,11 +88,6 @@ class CollectionHeaderUI extends Component {
     }
 
     this.setState(state);
-  }
-
-  editListTitle = (title) => {
-    const { collection, list } = this.props;
-    this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { title });
   }
 
   toggleDesc = () => {
@@ -124,17 +122,38 @@ class CollectionHeaderUI extends Component {
   }
 
   editDesc = (desc) => {
-    const { activeList, collection, list, editCollection, editList } = this.props;
-    if (activeList) {
-      editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
+    const { collection, list, editCollection, editList } = this.props;
+    editCollection(collection.get('user'), collection.get('id'), { desc });
+  }
+
+  newCapture = () => {
+    const { collection, history } = this.props;
+    history.push(`/${collection.get('user')}/${collection.get('id')}/$new`);
+  }
+
+  manageCollection = () => {
+    const { collection, history } = this.props;
+    history.push(`/${collection.get('user')}/${collection.get('id')}/management`);
+  }
+
+  downloadCollection = () => {
+    const { collection } = this.props;
+    window.location = `/${collection.get('user')}/${collection.get('id')}/$download`;
+  }
+
+  togglePublicView = () => {
+    const { history, location: { pathname, search }} = this.props;
+    const asPublic = search && search.indexOf('asPublic') !== -1;
+    if (asPublic) {
+      window.location = `${pathname}${search.replace(/(\?|\&)asPublic/, '')}`;
     } else {
-      editCollection(collection.get('user'), collection.get('id'), { desc });
+      window.location = `${pathname}${search}${search.indexOf('?') !== -1 ? '&' : '?'}asPublic`;
     }
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { activeList, collection, collEdited, list, listEdited } = this.props;
+    const { asPublic, canAdmin, isAnon } = this.context;
+    const { collection, collEdited, list, listEdited } = this.props;
     const { truncate, animated, condensed, height, hoverOverride, toggleDesc } = this.state;
 
     const containerClasses = classNames('wr-collection-header', {
@@ -143,101 +162,73 @@ class CollectionHeaderUI extends Component {
       animated
     });
 
+    const publicLists = collection.get('lists').reduce((sum, l) => (l.get('public') | 0) + sum, 0);
+    const isPublic = collection.get('public');
+
+    // onMouseEnter={this.hoverDelay}
+    // onMouseLeave={this.hoverCancel}>
+
     return (
-      <header
-        className={containerClasses}
-        onMouseEnter={this.hoverDelay}
-        onMouseLeave={this.hoverCancel}>
-        <div className="heading-row">
+      <header className={containerClasses}>
+        {
+          asPublic &&
+            <Alert bsStyle="warning">
+              Viewing collection as a public user. <Button bsSize="xs" onClick={this.togglePublicView}>return to owner view</Button>
+            </Alert>
+        }
+        <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
+          <Capstone user={collection.get('user')} />
           <div className="heading-container">
             {
-              activeList ?
-                <InlineEditor
-                  initial={list.get('title')}
-                  onSave={this.editListTitle}
-                  success={this.props.listEdited}>
-                  <h1>{list.get('title')}</h1>
-                </InlineEditor> :
-                <InlineEditor
-                  initial={collection.get('title')}
-                  onSave={this.editCollTitle}
-                  success={collEdited}
-                  error={this.props.collEditError}>
-                  <h1>{collection.get('title')}</h1>
-                </InlineEditor>
-            }
-          </div>
-          {/*
-            <div className="collection-tools">
-            {
-              !isAnon &&
-                <div className="access-switch">
-                  <span className="right-buffer-sm hidden-xs">Collection Public?</span>
-                  <Toggle
-                    icons={false}
-                    defaultChecked={collection.get('isPublic') === '1'}
-                    onChange={this.setPublic} />
+              canAdmin &&
+                <div className="coll-status">
+                  <PublicSwitch isPublic={isPublic} callback={this.setPublic} />
+                  <span className="public-lists">{`${publicLists} Published List${publicLists === 1 ? '' : 's'}`}</span>
                 </div>
             }
-            {
-              canAdmin &&
-                <Button bsSize="sm" bsStyle="success" onClick={() => { window.location = `/${collection.get('user')}/${collection.get('id')}/$download`; }}>
-                  Download
-                </Button>
-            }
-            {
-              !isAnon &&
-                <Upload fromCollection={collection.get('id')} classes="btn btn-sm btn-default">
-                  upload
-                </Upload>
-            }
-            {
-              !isAnon &&
-                <React.Fragment>
-                  <Button bsStyle="danger" bsSize="sm" onClick={this.toggleDeleteModal}>
-                    Delete Collection
-                  </Button>
-                  <Modal
-                    visible={this.state.deleteModal}
-                    closeCb={this.toggleDeleteModal}
-                    dialogClassName="wr-delete-modal"
-                    header={<h4>Confirm Delete Collection</h4>}
-                    footer={
-                      <React.Fragment>
-                        <Button onClick={this.toggleDeleteModal} style={{ marginRight: 5 }}>Cancel</Button>
-                        <Button onClick={this.deleteCollection} disabled={this.validateConfirmDelete() !== 'success'} bsStyle="danger">Confirm Delete</Button>
-                      </React.Fragment>
-                    }>
-                    <p>Are you sure you want to delete the collection <b>{collection.get('title')}</b> {`/${collection.get('user')}/${collection.get('id')}/`}?</p>
-                    <p>If you confirm, <b>all recordings will be permanently deleted</b>.</p>
-                    <p>Be sure to download the collection first if you would like to keep any data.</p>
-                    <FormGroup validationState={this.validateConfirmDelete()}>
-                      <ControlLabel>Type the collection title to confirm:</ControlLabel>
-                      <FormControl
-                        id="confirm-delete"
-                        type="text"
-                        name="confirmDelete"
-                        placeholder={collection.get('title')}
-                        value={this.state.confirmDelete}
-                        onChange={this.handleChange} />
-                    </FormGroup>
-                  </Modal>
-                </React.Fragment>
-            }
+            <InlineEditor
+              initial={collection.get('title')}
+              onSave={this.editCollTitle}
+              success={collEdited}
+              error={this.props.collEditError}>
+              <h1>{collection.get('title')}</h1>
+            </InlineEditor>
           </div>
-          */ }
+          {
+            canAdmin &&
+              <div className="utility-row">
+                <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
+                <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
+                  <MenuItem onClick={this.newCapture}>New Capture</MenuItem>
+                  <MenuItem divider />
+                  <MenuItem onClick={this.togglePublicView}>See Public View</MenuItem>
+                  <MenuItem divider />
+                  <MenuItem onClick={this.manageCollection}>Manage Collection Contents</MenuItem>
+                  <Upload classes="" wrapper={MenuItem}>Upload To Collection</Upload>
+                  <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
+                  <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
+                  <MenuItem divider />
+                  <MenuItem>Edit Collection Info</MenuItem>
+                  <MenuItem divider />
+                  <MenuItem disabled>Share Collection</MenuItem>
+                  <MenuItem disabled>Privacy Settings</MenuItem>
+                  <MenuItem divider />
+                  <MenuItem disabled>Help</MenuItem>
+                </DropdownButton>
+              </div>
+          }
         </div>
         <div
           ref={(obj) => { this.descContainer = obj; }}
           className={classNames('desc-container')}
           style={{ height }}>
           <WYSIWYG
-            initial={activeList ? list.get('desc') || defaultListDesc : collection.get('desc') || defaultCollDesc}
+            initial={collection.get('desc') || defaultCollDesc}
             onSave={this.editDesc}
             renderCallback={this.editorRendered}
             toggleCallback={this.editModeCallback}
-            success={activeList ? listEdited : collEdited} />
-          <button className="read-more borderless" onClick={this.toggleDesc}>Read More</button>
+            success={collEdited} />
+          <button className="read-more borderless" onClick={this.toggleDesc}>show More</button>
         </div>
       </header>
     );

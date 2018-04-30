@@ -78,9 +78,7 @@ class CollectionManagementUI extends Component {
               </div>
               <div className="function-row">
                 <DeleteCollection>
-                  <Button>
-                    <TrashIcon /> Delete Entire Collection
-                  </Button>
+                  <TrashIcon /> Delete Entire Collection
                 </DeleteCollection>
                 <Button onClick={this.downloadAction}>
                   <DownloadIcon /> Download Collection

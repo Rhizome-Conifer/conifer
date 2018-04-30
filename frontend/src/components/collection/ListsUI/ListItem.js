@@ -113,7 +113,7 @@ class ListItem extends PureComponent {
     const isPublic = list.get('public');
     const title = list.get('title');
 
-    return connectDragSource(connectDropTarget(
+    const item = (
       <li className={classes} key={list.get('id')} style={{ opacity: isDragging ? 0 : 1 }}>
         <div className="wrapper">
           <Link to={`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}`} title={list.get('title')}>
@@ -129,7 +129,13 @@ class ListItem extends PureComponent {
           }
         </div>
       </li>
-    ));
+    );
+
+    if (canAdmin) {
+      return connectDragSource(connectDropTarget(item));
+    }
+
+    return item;
   }
 }
 

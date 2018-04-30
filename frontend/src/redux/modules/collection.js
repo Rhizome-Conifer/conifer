@@ -76,7 +76,7 @@ export default function collection(state = initialState, action = {}) {
         duration,
         id,
         featured_list,
-        isPublic: action.result.collection.public,
+        'public': action.result.collection.public,
         lists,
         recordings,
         size,
@@ -93,7 +93,7 @@ export default function collection(state = initialState, action = {}) {
         error: action.error
       });
     case COLL_SET_PUBLIC_SUCCESS:
-      return state.set('isPublic', action.result.is_public);
+      return state.set('public', action.result.is_public);
 
     case COLL_SET_SORT:
       return state.merge({
