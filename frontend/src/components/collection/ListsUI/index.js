@@ -5,9 +5,13 @@ import Collapsible from 'react-collapsible';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
+import { defaultCollDesc } from 'config';
+
 import Modal from 'components/Modal';
 import SidebarHeader from 'components/SidebarHeader';
-import { AllPagesIcon, CheckIcon, PlusIcon, XIcon } from 'components/icons';
+import Truncate from 'components/Truncate';
+import WYSIWYG from 'components/WYSIWYG';
+import { AllPagesIcon, CheckIcon, PlusIcon, WarcIcon, XIcon } from 'components/icons';
 
 import ListItem from './ListItem';
 import EditItem from './EditItem';
@@ -164,6 +168,20 @@ class ListsUI extends Component {
           onOpen={this.open}
           onClose={this.close}>
           <div className="lists-body">
+            {
+              activeListId &&
+                <React.Fragment>
+                  <header className="collection-header">
+                    <h4><WarcIcon /> PARENT COLLECTION</h4>
+                    <h2>{collection.get('title')}</h2>
+                  </header>
+                  <Truncate height={50}>
+                    <WYSIWYG
+                      initial={collection.get('desc') || defaultCollDesc}
+                      editMode={false} />
+                  </Truncate>
+                </React.Fragment>
+            }
             <header className="lists-header">
               <h4>Lists ({lists.size})</h4>
               {

@@ -22,6 +22,7 @@ export SidebarToggle from './SidebarToggle';
 export SnapshotIcon from './Snapshot';
 export TrashIcon from './Trash';
 export TwitterIcon from './Twitter';
+export UserIcon from './User';
 export WarcIcon from './Warc';
 export WrBrowser from './WrBrowser';
 export XIcon from './X';

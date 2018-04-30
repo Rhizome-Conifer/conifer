@@ -11,15 +11,8 @@
         overflow: auto !important;
     }
 
-    & > header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .sidebar-minimize {
-            font-size: 4rem;
-            line-height: 2rem;
-        }
+    .sidebar-header {
+        margin: 0;
     }
 
     .lists-header {
@@ -32,11 +25,10 @@
 
         h4 {
             display: inline;
-            margin-left: .5rem;
             font-size: 1.5rem;
             color: $mid-gray;
             font-weight: bold;
-            margin: 0;
+            margin: 0 0 0 1.5rem;
             text-transform: uppercase;
         }
 
@@ -56,6 +48,41 @@
         flex-direction: column;
         justify-content: flex-start;
         overflow: auto;
+
+        .collection-header {
+            background: $blue;
+            color: #FFF;
+            padding: 1rem;
+            margin-bottom: .5rem;
+
+            h4 {
+                margin: .5rem 0 0 0;
+                font-weight: 300;
+                font-size: 1.6rem;
+            }
+
+            h2 {
+                font-size: 2.4rem;
+                font-weight: 600;
+                margin: 1.5rem 0 .5rem 0;
+            }
+
+            svg {
+                vertical-align: bottom;
+
+                polygon, path, polyline {
+                    stroke: #FFF;
+                }
+
+                #W {
+                    fill: #FFF;
+                }
+            }
+        }
+
+        .wr-editor {
+            padding: 1rem;
+        }
 
         ul {
             list-style-type: none;
@@ -129,6 +156,18 @@
                     margin-right: .5rem;
                 }
 
+                &.is-public {
+                    .wrapper {
+                        &:before {
+                            background-image: url('../../../shared/images/public-list.svg');
+                        }
+
+                        a {
+                            color: $dark-gray;
+                        }
+                    }
+                }
+
                 &:hover {
                     background: $gray300;
 
@@ -145,18 +184,6 @@
                         }
                         .visiblity-toggle.public {
                             background-color: $bright-green-highlight;
-                        }
-                    }
-                }
-
-                &.is-public {
-                    .wrapper {
-                        &:before {
-                            background-image: url('../../../shared/images/public-list.svg');
-                        }
-
-                        a {
-                            color: $dark-gray;
                         }
                     }
                 }

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
+import { defaultCollDesc } from 'config';
+
 import Capstone from 'components/collection/Capstone';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
@@ -28,7 +30,7 @@ class CollectionCoverUI extends Component {
         <h1>{collection.get('title')}</h1>
         <div className="description">
           <WYSIWYG
-            initial={collection.get('desc')}
+            initial={collection.get('desc') || defaultCollDesc}
             editMode={false} />
         </div>
         {

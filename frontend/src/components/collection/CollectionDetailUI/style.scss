@@ -80,20 +80,12 @@
         }
     }
 
-    .wr-coll-sidebar-container {
+    .wr-sidebar {
         grid-area: sidebar;
-        position: relative;
+        padding: 0;
 
-        .wr-coll-sidebar-stretch {
-            display: flex;
-            flex-direction: column;
-
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            padding-right: 1.5rem;
-            width: 100%;
-            overflow: hidden;
+        .wr-sidebar-stretch {
+            padding: 0;
         }
     }
 
