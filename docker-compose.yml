@@ -17,6 +17,7 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./webrecorder/proxy-certs:/code/proxy-certs
+            - ./data:/data
 
         networks:
             - default

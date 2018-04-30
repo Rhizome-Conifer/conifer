@@ -81,10 +81,13 @@ class BaseStorageCommit(FullStackTests):
             self.assert_warc_key(result[key])
 
     def test_replay_1(self):
-        res = self.testapp.get('/test/default-collection/mp_/http://httpbin.org/get?food=bar')
-        res.charset = 'utf-8'
+        def assert_replay():
+            res = self.testapp.get('/test/default-collection/mp_/http://httpbin.org/get?food=bar')
+            res.charset = 'utf-8'
 
-        assert '"food": "bar"' in res.text, res.text
+            assert '"food": "bar"' in res.text, res.text
+
+        self.sleep_try(1.0, 10.0, assert_replay)
 
     def test_download(self):
         assert self.redis.hget(REC_INFO, '@index_file') != None
@@ -133,10 +136,14 @@ class BaseStorageCommit(FullStackTests):
         self.sleep_try(0.1, 10.0, assert_user_dir_empty)
 
     def test_replay_2_copy(self):
-        res = self.testapp.get('/test/another-coll/mp_/http://httpbin.org/get?food=bar')
-        res.charset = 'utf-8'
+        def assert_replay():
+            res = self.testapp.get('/test/another-coll/mp_/http://httpbin.org/get?food=bar')
+            res.charset = 'utf-8'
 
-        assert '"food": "bar"' in res.text, res.text
+            assert '"food": "bar"' in res.text, res.text
+
+        self.sleep_try(1.0, 10.0, assert_replay)
+
 
     def test_delete_storage_with_coll(self):
         res = self.testapp.delete('/api/v1/collection/default-collection?user=test')

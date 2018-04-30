@@ -3,6 +3,7 @@ import os
 import json
 import glob
 import requests
+import shutil
 
 from webrecorder.models import User
 from webrecorder.models.base import BaseAccess
@@ -28,66 +29,60 @@ class TempChecker(object):
         self.glob_pattern = os.path.join(self.record_root_dir, self.temp_prefix + '*')
         #self.temp_dir = os.path.join(self.record_root_dir, 'temp')
 
-        self.delete_url = config['url_templates']['delete']
-
         self.sesh_key_template = config['session.key_template']
 
         print('Temp Checker Root: ' + self.glob_pattern)
 
-    def _delete_if_expired(self, temp):
-        sesh = self.sesh_redis.get('t:' + temp)
+    def _delete_if_expired(self, temp_user, temp_dir):
+        temp_key = 't:' + temp_user
+        sesh = self.sesh_redis.get(temp_key)
         if sesh:
             if self.sesh_redis.get(self.sesh_key_template.format(sesh)):
                 #print('Skipping active temp ' + temp)
                 return False
 
-            self.sesh_redis.delete('t:' + temp)
+            self.sesh_redis.delete(temp_key)
 
         #record_host = os.environ['RECORD_HOST']
-        print('Deleting ' + temp)
+        print('Deleting ' + temp_dir)
 
-        user = User(my_id=temp,
+        user = User(my_id=temp_user,
                     redis=self.data_redis,
                     access=BaseAccess())
 
         user.delete_me()
 
-        #delete_url = self.delete_url.format(record_host=record_host,
-        #                                    user=temp,
-        #                                    coll='temp',
-        #                                    rec='*',
-        #                                    type='user')
-
-        #try:
-        #    requests.delete(delete_url)
-        #except:
-        #    print('Deleted Failed: ' + delete_url)
+        try:
+            shutil.rmtree(temp_dir)
+        except Exception as e:
+            print(e)
 
         return True
 
     def __call__(self):
         print('Temp Dir Check')
 
-        temps_removed = set()
+        temps_to_remove = set()
 
         # check warc dirs
-        for temp in glob.glob(self.glob_pattern):
-            if temp.startswith('.'):
+        for temp_dir in glob.glob(self.glob_pattern):
+            if temp_dir.startswith('.'):
                 continue
 
-            if not os.path.isdir(temp):
+            if not os.path.isdir(temp_dir):
                 continue
 
-            try:
-                os.rmdir(temp)
-                print('Removed Dir ' + temp)
-            except Exception as e:
-                print(e)
+            #try:
+            #    os.rmdir(temp_dir)
+            #    print('Removed Dir ' + temp_dir)
+            #    continue
+            #except Exception as e:
+            #    print(e)
 
-            temp = temp.rsplit(os.path.sep, 1)[1]
+            # not yet removed, need to delete contents
+            temp_user = temp_dir.rsplit(os.path.sep, 1)[1]
 
-            self._delete_if_expired(temp)
-            temps_removed.add(temp)
+            temps_to_remove.add((temp_user, temp_dir))
 
         temp_match = 'u:{0}*'.format(self.temp_prefix)
 
@@ -96,8 +91,12 @@ class TempChecker(object):
         for redis_key in self.data_redis.scan_iter(match=temp_match):
             temp_user = redis_key.rsplit(':', 2)[1]
 
-            if temp_user not in temps_removed:
-                self._delete_if_expired(temp_user)
+            if temp_user not in temps_to_remove:
+                temps_to_remove.add((temp_user, os.path.join(self.record_root_dir, temp_user)))
+
+        # remove if expired
+        for temp_user, temp_dir in temps_to_remove:
+            self._delete_if_expired(temp_user, temp_dir)
 
 
 # =============================================================================

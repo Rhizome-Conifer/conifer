@@ -42,7 +42,7 @@ class BaseStorage(object):
         target_url = self.client_url_to_target_url(filename)
 
         if not target_url or not self.is_valid_url(target_url):
-            return None
+            return False
 
         return self.do_delete(target_url, filename)
 

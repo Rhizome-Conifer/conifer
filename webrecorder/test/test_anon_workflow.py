@@ -674,3 +674,8 @@ class TestTempContent(FullStackTests):
 
         self.sleep_try(0.1, 10.0, assert_empty_keys)
 
+        def assert_dir_delete():
+            assert not os.path.isdir(os.path.join(self.warcs_dir, self.anon_user))
+
+        self.sleep_try(0.1, 5.0, assert_dir_delete)
+
