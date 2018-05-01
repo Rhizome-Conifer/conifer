@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Toggle from 'react-toggle';
 import { Alert, ControlLabel, FormGroup, FormControl } from 'react-bootstrap';
 
-
 import { defaultCollectionTitle } from 'config';
 
 import Modal from 'components/Modal';
@@ -29,6 +28,7 @@ class NewCollection extends Component {
   }
 
   submit = (evt) => {
+    evt.stopPropagation();
     evt.preventDefault();
     const { collTitle, isPublic } = this.state;
 
@@ -80,7 +80,7 @@ class NewCollection extends Component {
               onChange={this.togglePublic} />
           </span>
 
-          <button className="btn btn-lg btn-primary btn-block" type="submit" disabled={creatingCollection && !error}>Create</button>
+          <button className="btn btn-lg btn-primary btn-block" onClick={this.submit} disabled={creatingCollection && !error}>Create</button>
         </form>
       </Modal>
     );
