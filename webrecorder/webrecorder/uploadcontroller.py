@@ -19,12 +19,12 @@ class UploadController(BaseController):
         @self.app.put('/_upload')
         def upload_file():
             if self.access.session_user.is_anon():
-                return {'error_message': 'Sorry, uploads only available for logged-in users'}
+                return self._raise_error(400, 'not_logged_in')
 
             expected_size = int(request.headers['Content-Length'])
 
             if not expected_size:
-                return {'error_message': 'No File Specified'}
+                return self._raise_error(400, 'no_file_specified')
 
             force_coll_name = request.query.getunicode('force-coll', '')
             filename = request.query.getunicode('filename')
@@ -46,7 +46,7 @@ class UploadController(BaseController):
             props = self.uploader.get_upload_status(user, upload_id)
 
             if not props:
-                return {'error_message': 'upload expired'}
+                return self._raise_error(400, 'upload_expired')
 
             return props
 

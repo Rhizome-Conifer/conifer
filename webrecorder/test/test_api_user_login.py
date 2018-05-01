@@ -33,7 +33,7 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
 
-        assert res.json == {'errors': {'validation': 'Passwords do not match!'}}
+        assert res.json == {'errors': {'validation': 'password_mismatch'}}
 
 
     def test_api_register_fail_bad_password(self):
@@ -46,7 +46,7 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
 
-        assert res.json == {'errors': {'validation': 'Please choose a different password'}}
+        assert res.json == {'errors': {'validation': 'password_invalid'}}
 
     def test_api_register_fail_bad_user(self):
         # bad user
@@ -124,7 +124,7 @@ class TestApiUserLogin(FullStackTests):
 
     def test_api_logout(self):
         res = self.testapp.get('/api/v1/logout', status=200)
-        assert res.json['message']
+        assert res.json['success']
 
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
@@ -225,7 +225,7 @@ class TestApiUserLogin(FullStackTests):
         # TODO: should be working with post_json?
         res = self.testapp.post('/api/v1/updatepassword', params=params, status=403)
 
-        assert res.json['error_message'] == 'Passwords do not match!'
+        assert res.json['error'] == 'password_mismatch'
 
     def test_update_password(self):
         params = {'currPass': 'Password1',
@@ -286,9 +286,9 @@ class TestApiUserLogin(FullStackTests):
         assert 'collections' not in user
 
     def test_delete_no_such_user(self):
-        res = self.testapp.delete('/api/v1/users/someuser2')
+        res = self.testapp.delete('/api/v1/users/someuser2', status=404)
 
-        assert res.json == {'error_message': 'Could not delete user: someuser2'}
+        assert res.json == {'error': 'no_such_user'}
 
     def test_delete_user(self):
         res = self.testapp.delete('/api/v1/users/someuser')

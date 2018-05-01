@@ -65,15 +65,6 @@ class UserManager(object):
         except Exception as e:
             print('WARNING: Unable to init defaults: ' + str(e))
 
-        # custom cork auth decorators
-        self.admin_view = self.cork.make_auth_decorator(role='admin',
-                                                        fixed_role=True,
-                                                        fail_redirect='/_login')
-        self.auth_view = self.cork.make_auth_decorator(role='archivist',
-                                                       fail_redirect='/_login')
-        self.beta_user = self.cork.make_auth_decorator(role='beta-archivist',
-                                                       fail_redirect='/_login')
-
         self.all_users = UserTable(self.redis, self._get_access)
 
         self.invites = RedisTable(self.redis, 'h:invites')
@@ -287,10 +278,10 @@ class UserManager(object):
 
     def validate_password(self, password, confirm):
         if password != confirm:
-            raise ValidationException('Passwords do not match!')
+            raise ValidationException('password_mismatch')
 
         if not self.PASS_RX.match(password):
-            raise ValidationException('Please choose a different password')
+            raise ValidationException('password_invalid')
 
         return True
 

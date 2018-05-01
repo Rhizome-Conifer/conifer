@@ -1,7 +1,7 @@
 import re
 import os
 
-from bottle import request, HTTPError, redirect as bottle_redirect
+from bottle import request, HTTPError, redirect as bottle_redirect, response
 from functools import wraps
 from six.moves.urllib.parse import quote
 
@@ -49,7 +49,7 @@ class BaseController(object):
         csrf = request.forms.getunicode('csrf')
         sesh_csrf = self.get_session().get_csrf()
         if not sesh_csrf or csrf != sesh_csrf:
-            self._raise_error(403, 'Invalid CSRF Token')
+            self._raise_error(403, 'invalid_csrf_token')
 
     def get_user(self, api=True, redir_check=True, user=None):
         if redir_check:
@@ -59,13 +59,12 @@ class BaseController(object):
             user = request.query.getunicode('user')
 
         if not user:
-            self._raise_error(400, 'User must be specified',
-                              api=api)
+            self._raise_error(400, 'no_user_specified')
 
         try:
             user = self.user_manager.all_users[user]
         except Exception as e:
-            self._raise_error(404, 'No such user', api=api)
+            self._raise_error(404, 'no_such_user')
 
         return user
 
@@ -77,29 +76,24 @@ class BaseController(object):
             coll_name = request.query.getunicode('coll')
 
         if not coll_name:
-            self._raise_error(400, 'Collection must be specified', api=api)
+            self._raise_error(400, 'no_collection_specified')
 
         if self.access.is_anon(user):
             if coll_name != 'temp':
-                self._raise_error(404, 'No such collection', api=api)
+                self._raise_error(404, 'no_such_collection')
 
         collection = user.get_collection_by_name(coll_name)
         if not collection:
-            self._raise_error(404, 'No such collection', api=api)
+            self._raise_error(404, 'no_such_collection')
 
         return user, collection
 
-    def _raise_error(self, code, message, api=False, **kwargs):
-        result = {'error_message': message}
-        result.update(kwargs)
+    def _raise_error(self, code, message='not_found'):
+        result = {'error': message}
+        #result.update(kwargs)
+        response.status = code
 
-        if request.json:
-            result['request_data'] = dict(request.json)
-
-        err = HTTPError(code, message, exception=result)
-        if api:
-            err.json_err = True
-        raise err
+        raise HTTPError(code, message, exception=result)
 
     def get_session(self):
         return request.environ['webrec.session']

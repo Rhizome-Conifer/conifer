@@ -27,9 +27,18 @@ class AdminController(BaseController):
         self.tags_key = config['tags_key']
         self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
 
+    def admin_view(self, function):
+        def check_access(*args, **kwargs):
+            if not self.access.is_superuser():
+                self._raise_error(404)
+
+            return function(*args, **kwargs)
+
+        return check_access
+
     def init_routes(self):
         @self.app.get('/api/v1/defaults')
-        @self.user_manager.admin_view()
+        @self.admin_view
         def get_defaults():
             data = self.redis.hgetall('h:defaults')
             data['max_size'] = int(data['max_size'])
@@ -57,12 +66,12 @@ class AdminController(BaseController):
             return {'defaults': data}
 
         @self.app.get(['/api/v1/user_roles', '/api/v1/user_roles/'])
-        @self.user_manager.admin_view()
+        @self.admin_view
         def api_get_user_roles():
             return {"roles": self.user_manager.get_roles()}
 
         @self.app.get(['/api/v1/dashboard', '/api/v1/dashboard/'])
-        @self.user_manager.admin_view()
+        @self.admin_view
         def api_dashboard():
             cache_key = self.cache_template.format('dashboard')
             expiry = 5 * 60  # 5 min
@@ -99,7 +108,7 @@ class AdminController(BaseController):
             return data
 
         @self.app.get(['/api/v1/users', '/api/v1/users/'])
-        @self.user_manager.admin_view()
+        @self.admin_view
         def api_users():
             """Full admin API resource of all users.
                Containing user info and public collections
@@ -134,7 +143,7 @@ class AdminController(BaseController):
             return {'users': [self.user_manager.all_users[user].serialize(compute_size_allotment=True) for user in users]}
 
         @self.app.get('/api/v1/temp-users')
-        @self.user_manager.admin_view()
+        @self.admin_view
         def temp_users():
             """ Resource returning active temp users
             """
@@ -154,7 +163,7 @@ class AdminController(BaseController):
             return {'users': temp_user_data}
 
         @self.app.post(['/api/v1/users', '/api/v1/users/'])
-        @self.user_manager.admin_view()
+        @self.admin_view
         def api_create_user():
             """API enpoint to create a user"""
             data = request.json
@@ -175,7 +184,7 @@ class AdminController(BaseController):
             return {'user': user.name, 'first_coll': first_coll.name if first_coll else ''}
 
         @self.app.put(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
-        @self.user_manager.admin_view()
+        @self.admin_view
         def api_update_user(username):
             """API enpoint to update user info (full access)
             """

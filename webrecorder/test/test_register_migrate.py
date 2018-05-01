@@ -230,9 +230,9 @@ class TestRegisterMigrate(FullStackTests):
 
         params = {'title': 'New Coll'}
 
-        res = self.testapp.post_json('/api/v1/collection/other-coll?user=someuser', params=params)
+        res = self.testapp.post_json('/api/v1/collection/other-coll?user=someuser', params=params, status=400)
 
-        assert res.json == {'error_message': 'duplicate name: new-coll'}
+        assert res.json == {'error': 'duplicate_name'}
 
         params = {'title': 'New Coll 3'}
 

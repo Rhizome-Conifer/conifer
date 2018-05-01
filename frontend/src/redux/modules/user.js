@@ -82,7 +82,7 @@ export default function user(state = initialState, action = {}) {
         passUpdateFail: null
       });
     case USER_PASS_FAIL:
-      return state.set('passUpdateFail', action.error.error_message);
+      return state.set('passUpdateFail', action.error.error);
     default:
       return state;
   }

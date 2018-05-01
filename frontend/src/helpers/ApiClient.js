@@ -54,7 +54,7 @@ export default class ApiClient {
         request.end((err, res) => {
           const { body } = res;
 
-          return err || !body || body.hasOwnProperty('error_message') ?
+          return err || !body || body.hasOwnProperty('error') ?
             reject(body || err) :
             resolve(body);
         });

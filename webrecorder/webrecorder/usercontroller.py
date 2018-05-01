@@ -28,6 +28,21 @@ class UserController(BaseController):
             'coll_count': u.num_collections(),
         }
 
+    def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
+        # if no username, check if logged in
+        if not username:
+            if self.access.is_anon():
+                self._raise_error(status, msg)
+            return
+
+        user = self.get_user(user=username)
+
+        # check permissions
+        if not self.access.is_logged_in_user(user) and not self.access.is_superuser():
+            self._raise_error(status, msg)
+
+        return user
+
     def init_routes(self):
         # MISC CHECKS
         @self.app.get('/api/v1/load_auth')
@@ -99,20 +114,22 @@ class UserController(BaseController):
 
                 return data
 
-            #self._raise_error(401, result.get('error', ''), api=True)
+            #self._raise_error(401, result.get('error', ''))
             response.status = 401
             return result
 
         @self.app.get('/api/v1/logout')
-        @self.user_manager.auth_view()
         def logout():
+            self.get_user_or_raise()
+
             self.user_manager.logout()
-            return {'message': 'Sucessefully logged out'}
+            return {'success': 'logged_out'}
 
         # PASSWORD
         @self.app.post('/api/v1/updatepassword')
-        @self.user_manager.auth_view()
         def update_password():
+            self.get_user_or_raise()
+
             curr_password = self.post_get('currPass')
             password = self.post_get('newPass')
             confirm_password = self.post_get('newPass2')
@@ -122,7 +139,7 @@ class UserController(BaseController):
                                                      confirm_password)
                 return {}
             except ValidationException as ve:
-                return self._raise_error(403, str(ve), api=True)
+                return self._raise_error(403, str(ve))
 
         # USER INFO
         @self.app.get(['/api/v1/temp-users/<username>', '/api/v1/temp-users/<username>/'])
@@ -130,7 +147,7 @@ class UserController(BaseController):
             anon_user = self.user_manager.get_valid_anon_user(username)
 
             if not anon_user:
-                return self._raise_error(404, 'Temp user not found.', api=True)
+                return self._raise_error(404, 'Temp user not found.',)
 
             data = anon_user.serialize(compute_size_allotment=True)
 
@@ -140,12 +157,7 @@ class UserController(BaseController):
         @self.app.get(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
         def api_get_user(username):
             """API enpoint to return user info"""
-
-            user = self.get_user(user=username)
-
-            # check permissions
-            if not self.access.is_superuser():
-                self.access.assert_is_curr_user(user)
+            user = self.get_user_or_raise(username, 404, 'not_found')
 
             include_colls = True
 
@@ -158,16 +170,18 @@ class UserController(BaseController):
             return {'user': user_data}
 
         @self.app.delete(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
-        @self.user_manager.auth_view()
         def api_delete_user(username):
             """API enpoint to delete a user"""
+            self.get_user_or_raise(username, 404, 'not_found')
+
             # TODO? add validation
             #self.validate_csrf()
             try:
                 assert(self.user_manager.delete_user(username))
                 return {'deleted_user': username}
             except:
-                return {'error_message': 'Could not delete user: ' + username}
+                #return {'error_message': 'Could not delete user: ' + username}
+                return self._raise_error(400, 'error_deleting')
 
 
         # OLD VIEWS BELOW

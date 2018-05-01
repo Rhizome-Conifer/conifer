@@ -156,7 +156,7 @@ class UploadUI extends Component {
 
     this.setState({
       canCancel: true,
-      status: data.error_message || 'Error Encountered'
+      status: data.error || 'Error Encountered'
     });
   }
 

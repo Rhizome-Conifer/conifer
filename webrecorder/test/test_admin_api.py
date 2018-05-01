@@ -9,13 +9,14 @@ class TestAdminAPI(FullStackTests):
         cls.user_manager = CLIUserManager()
 
     def test_no_auth_admin_users(self):
-        res = self.testapp.get('/api/v1/users')
-        # no permissions, redirect to _login
-        assert res.headers['Location'].endswith('_login')
+        res = self.testapp.get('/api/v1/users', status=404)
+        # no permissions, just display 404
+        assert res.json == {'error': 'not_found'}
 
     def test_no_auth_admin_dashboard(self):
-        res = self.testapp.get('/api/v1/dashboard')
-        assert res.headers['Location'].endswith('_login')
+        res = self.testapp.get('/api/v1/dashboard', status=404)
+        # no permissions, just display 404
+        assert res.json == {'error': 'not_found'}
 
     def test_no_auth_client_archives(self):
         res = self.testapp.get('/api/v1/client_archives/')

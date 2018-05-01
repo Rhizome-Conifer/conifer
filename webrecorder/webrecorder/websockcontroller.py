@@ -283,8 +283,7 @@ class BaseWebSockHandler(object):
                                     self.stats_urls)
 
         else:
-            result = {'ws_type': 'error',
-                      'error_message': 'not found'}
+            result = {'ws_type': 'error', 'error': 'not_found'}
 
         return json.dumps(result)
 

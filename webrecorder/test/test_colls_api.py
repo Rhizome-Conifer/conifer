@@ -19,11 +19,11 @@ class TestWebRecCollsAPI(FullStackTests):
 
     def test_create_anon_coll_dup_error(self):
         res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user),
-                                     params={'title': 'Temp'})
+                                     params={'title': 'Temp'}, status=400)
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
-        assert 'error_message' in res.json
+        assert res.json == {'error': 'duplicate_name'}
 
     def test_get_anon_coll(self):
         res = self.testapp.get('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
@@ -57,20 +57,19 @@ class TestWebRecCollsAPI(FullStackTests):
 
     def test_error_no_such_coll(self):
         res = self.testapp.get('/api/v1/collection/blah@$?user={user}'.format(user=self.anon_user), status=404)
-        #assert res.json == {'error_message': 'Collection not found', 'id': 'blah@$'}
-        assert res.json == {'error_message': 'No such collection'}
+        assert res.json == {'error': 'no_such_collection'}
 
     def test_error_missing_user_coll(self):
         res = self.testapp.post_json('/api/v1/collections', params={'title': 'Recording'}, status=400)
-        assert res.json == {'error_message': "User must be specified", 'request_data': {'title': 'Recording'}}
+        assert res.json == {'error': 'no_user_specified'}
 
     def test_error_invalid_user_coll(self):
         res = self.testapp.post_json('/api/v1/collections?user=user', params={'title': 'Example'}, status=404)
-        assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Example'}}
+        assert res.json == {'error': 'no_such_user'}
 
     def test_error_invalid_user_coll_2(self):
         res = self.testapp.post_json('/api/v1/collections?user=temp$123', params={'title': 'Example'}, status=404)
-        assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Example'}}
+        assert res.json == {'error': 'no_such_user'}
 
     def test_delete_coll(self):
         res = self.testapp.delete('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))

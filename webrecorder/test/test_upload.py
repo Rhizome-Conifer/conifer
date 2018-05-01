@@ -29,9 +29,9 @@ class TestUpload(FullStackTests):
 
     def test_upload_anon(self):
         with open(self.test_upload_warc, 'rb') as fh:
-            res = self.testapp.put('/_upload?filename=example2.warc.gz', params=fh.read())
+            res = self.testapp.put('/_upload?filename=example2.warc.gz', params=fh.read(), status=400)
 
-        assert res.json == {'error_message': 'Sorry, uploads only available for logged-in users'}
+        assert res.json == {'error': 'not_logged_in'}
 
     def test_create_user_def_coll(self):
         self.manager.create_user('test@example.com', 'test', 'TestTest123', 'archivist', 'Test')
@@ -276,9 +276,9 @@ class TestUpload(FullStackTests):
 
     def test_upload_anon_2(self):
         with open(self.test_upload_warc, 'rb') as fh:
-            res = self.testapp.put('/_upload?filename=example2.warc.gz', params=fh.read())
+            res = self.testapp.put('/_upload?filename=example2.warc.gz', params=fh.read(), status=400)
 
-        assert res.json == {'error_message': 'Sorry, uploads only available for logged-in users'}
+        assert res.json == {'error': 'not_logged_in'}
 
     def test_stats(self):
         assert self.redis.hget(Stats.DOWNLOADS_KEY, today_str()) == '1'

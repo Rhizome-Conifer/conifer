@@ -128,7 +128,7 @@ export default function collection(state = initialState, action = {}) {
       });
     case COLL_EDIT_FAIL:
       return state.merge({
-        editError: action.error.error_message
+        editError: action.error.error
       });
     case RESET_EDIT_STATE:
       return state.set('edited', false);

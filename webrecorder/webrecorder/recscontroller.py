@@ -36,7 +36,7 @@ class RecsController(BaseController):
             if recording:
                 return {'recording': recording.serialize()}
             else:
-                return {'error_message': 'Recording not found', 'id': rec}
+                self._raise_error(404, 'recording_not_found')
 
         @self.app.post('/api/v1/recording/<rec>')
         def update_rec_desc(rec):
@@ -66,7 +66,7 @@ class RecsController(BaseController):
 
             new_collection = user.get_collection_by_name(new_coll_name)
             if not new_collection:
-                return {'error_message': 'No Collection: ' + new_coll_name}
+                self._raise_error(400, 'no_such_collection')
 
             user.access.assert_can_admin_coll(new_collection)
 
@@ -79,7 +79,7 @@ class RecsController(BaseController):
                 #self.flash_message(msg, 'success')
                 return {'coll_id': new_coll_name, 'rec_id': new_rec}
             else:
-                return {'error': 'error_move_recording'}
+                self._raise_error(400, 'error_move_recording')
 
         @self.app.post('/api/v1/recording/<rec>/copy/<new_coll_name>')
         def copy_recording(rec, new_coll_name):
@@ -87,7 +87,7 @@ class RecsController(BaseController):
 
             new_collection = user.get_collection_by_name(new_coll_name)
             if not new_collection:
-                return {'error_message': 'No Collection: ' + new_coll_name}
+                return self._raise_error(400, 'no_such_collection')
 
             user.access.assert_can_write_coll(collection)
             user.access.assert_can_admin_coll(new_collection)
@@ -97,7 +97,7 @@ class RecsController(BaseController):
             if new_rec.copy_data_from_recording(recording):
                 return {'recording': new_rec.serialize()}
             else:
-                return {'error': 'copy_error'}
+                return self._raise_error(400, 'copy_error')
 
         @self.app.post('/api/v1/recording/<rec>/pages')
         def add_page(rec):
@@ -180,12 +180,10 @@ class RecsController(BaseController):
     def load_recording(self, rec, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
         if not user or not collection:
-            self._raise_error(404, 'Recording not found', api=True,
-                              id=rec)
+            self._raise_error(404, 'recording_not_found')
 
         recording = collection.get_recording(rec)
         if not recording:
-            self._raise_error(404, 'Recording not found', api=True,
-                              id=rec)
+            self._raise_error(404, 'recording_not_found')
 
         return user, collection, recording

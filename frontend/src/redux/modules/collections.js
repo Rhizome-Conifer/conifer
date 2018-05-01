@@ -48,7 +48,7 @@ export default function collections(state = initialState, action = {}) {
         accessed: null
       });
     case CREATE_COLL_FAIL:
-      return state.set('error', action.error.error_message);
+      return state.set('error', action.error.error);
 
     default:
       return state;

@@ -39,6 +39,7 @@ class TestListsAnonUserAPI(FullStackTests):
                       browser='chrome:60',
                       desc='A description for this bookmark',
                       page_id=None,
+                      status=None,
                       rec='rec'):
 
         params = {'title': title,
@@ -52,7 +53,7 @@ class TestListsAnonUserAPI(FullStackTests):
             params['id'] = page_id
             params['rec'] = rec
 
-        res = self.testapp.post_json(self._format('/api/v1/list/%s/bookmarks?user={user}&coll=temp' % list_id), params=params)
+        res = self.testapp.post_json(self._format('/api/v1/list/%s/bookmarks?user={user}&coll=temp' % list_id), params=params, status=status)
         return res
 
     def test_create_anon_coll(self):
@@ -126,13 +127,13 @@ class TestListsAnonUserAPI(FullStackTests):
         params = {'before_id': '1005'}
         res = self.testapp.post_json(self._format('/api/v1/list/1001/move?user={user}&coll=temp'), params=params, status=404)
 
-        assert res.json['error_message'] == 'List not found'
+        assert res.json['error'] == 'no_such_list'
 
     def test_move_list(self):
         params = {'before_id': '1003'}
         res = self.testapp.post_json(self._format('/api/v1/list/1001/move?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'success': 'list moved'}
+        assert res.json == {'success': 'list_moved'}
 
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
 
@@ -147,7 +148,7 @@ class TestListsAnonUserAPI(FullStackTests):
 
         res = self.testapp.post_json(self._format('/api/v1/list/1002/move?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'success': 'list moved'}
+        assert res.json == {'success': 'list_moved'}
 
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
 
@@ -162,19 +163,19 @@ class TestListsAnonUserAPI(FullStackTests):
 
     def test_reorder_error_not_enough_elements(self):
         params = {'order': ['1002', '1001']}
-        res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params)
+        res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params, status=400)
 
         assert res.json == {'error': 'invalid_order'}
 
     def test_reorder_error_dupe_elements(self):
         params = {'order': ['1002', '1001', '1003', '1001']}
-        res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params)
+        res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params, status=400)
 
         assert res.json == {'error': 'invalid_order'}
 
     def test_reorder_error_invalid_elements(self):
         params = {'order': ['1002', '1001', '1004']}
-        res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params)
+        res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params, status=400)
 
         assert res.json == {'error': 'invalid_order'}
 
@@ -291,7 +292,7 @@ class TestListsAnonUserAPI(FullStackTests):
 
     def test_create_bookmark_error_page_not_matcching(self):
         res = self._add_bookmark('1002', title='An Example (испытание)', url='http://example.com/испытание/test',
-                                 timestamp='2018', page_id=self.ID_1)
+                                 timestamp='2018', page_id=self.ID_1, status=400)
 
         # urls and timestamps of page and bookmark must match
         assert res.json['error'] == 'invalid_page'
@@ -345,14 +346,14 @@ class TestListsAnonUserAPI(FullStackTests):
 
     def test_reorder_bookmarks_invalid(self):
         params = {'order': ['103', '104', '105', '106', '103', '101']}
-        res = self.testapp.post_json(self._format('/api/v1/list/1002/bookmarks/reorder?user={user}&coll=temp'), params=params)
+        res = self.testapp.post_json(self._format('/api/v1/list/1002/bookmarks/reorder?user={user}&coll=temp'), params=params, status=400)
 
         assert res.json == {'error': 'invalid_order'}
 
     def test_delete_bookmark_not_existent(self):
         res = self.testapp.delete(self._format('/api/v1/bookmark/106?user={user}&coll=temp&list=1003'), status=404)
 
-        assert res.json['error_message'] == 'Bookmark not found in list'
+        assert res.json['error'] == 'no_such_bookmark'
 
     def test_delete_bookmark(self):
         assert len(self.redis.keys('b:106:*')) > 0

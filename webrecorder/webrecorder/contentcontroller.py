@@ -172,8 +172,8 @@ class ContentController(BaseController, RewriterApp):
 
             data = self.browser_mgr.request_new_browser(kwargs)
 
-            if 'error_message' in data:
-                self._raise_error(400, data['error_message'])
+            if 'error' in data:
+                self._raise_error(400, data['error'])
 
             return data
 
@@ -235,7 +235,7 @@ class ContentController(BaseController, RewriterApp):
             domain = request.forms.getunicode('domain')
 
             if not domain:
-                return {'error_message': 'no domain'}
+                return self._raise_error(400, 'domain_missing')
 
             self.add_cookie(user, collection, recording, name, value, domain)
 
@@ -408,7 +408,7 @@ class ContentController(BaseController, RewriterApp):
     def do_proxy(self, url):
         info = self.browser_mgr.init_cont_browser_sesh()
         if not info:
-            return {'error_message': 'conn not from valid containerized browser'}
+            return self._raise_error(400, 'invalid_connection_source')
 
         try:
             kwargs = info

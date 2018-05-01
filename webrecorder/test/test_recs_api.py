@@ -166,23 +166,23 @@ class TestWebRecRecAPI(FullStackTests):
 
     def test_error_no_such_rec(self):
         res = self._anon_get('/api/v1/recording/blah@$?user={user}&coll=temp', status=404)
-        assert res.json == {'error_message': 'Recording not found', 'id': 'blah@$'}
+        assert res.json == {'error': 'recording_not_found'}
 
     def test_error_no_such_rec_pages(self):
         res = self._anon_get('/api/v1/recording/my-rec3/pages?user={user}&coll=temp', status=404)
-        assert res.json == {'error_message': 'Recording not found', 'id': 'my-rec3'}
+        assert res.json == {'error': 'recording_not_found'}
 
         page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
         res = self._anon_post('/api/v1/recording/my-rec3/pages?user={user}&coll=temp', params=page, status=404)
-        assert res.json == {'error_message': 'Recording not found', 'id': 'my-rec3', 'request_data': page}
+        assert res.json == {'error': 'recording_not_found'}
 
     def test_error_missing_user_coll(self):
         res = self._anon_post('/api/v1/recordings', params={'title': 'Recording'}, status=400)
-        assert res.json == {'error_message': "User must be specified", 'request_data': {'title': 'Recording'}}
+        assert res.json == {'error': 'no_user_specified'}
 
     def test_error_invalid_user_coll(self):
         res = self._anon_post('/api/v1/recordings?user=user&coll=coll', params={'title': 'Recording'}, status=404)
-        assert res.json == {"error_message": "No such user", 'request_data': {'title': 'Recording'}}
+        assert res.json == {'error': 'no_such_user'}
 
     def test_update_desc(self):
         test_desc = 'Test / Special Chars !'

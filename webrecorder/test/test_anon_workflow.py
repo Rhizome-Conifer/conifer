@@ -612,7 +612,7 @@ class TestTempContent(FullStackTests):
 
         res = self.testapp.delete('/api/v1/recording/my-recording?user={user}&coll=temp'.format(user=self.anon_user), status=404)
 
-        assert res.json == {'id': 'my-recording', 'error_message': 'Recording not found'}
+        assert res.json == {'error': 'recording_not_found'}
 
     def test_anon_record_redirect_and_delete(self):
         self.set_uuids('Recording', ['recording-session'])

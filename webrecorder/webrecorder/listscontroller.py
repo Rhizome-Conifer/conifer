@@ -52,7 +52,7 @@ class ListsController(BaseController):
             if collection.remove_list(blist):
                 return {'deleted_id': list_id}
             else:
-                return {'error': 'error deleting: ' + list_id}
+                self._raise_error(400, 'error_deleting')
 
         @self.app.post('/api/v1/list/<list_id>/move')
         def move_list_before(list_id):
@@ -66,7 +66,7 @@ class ListsController(BaseController):
                 before = None
 
             collection.move_list_before(blist, before)
-            return {'success': 'list moved'}
+            return {'success': 'list_moved'}
 
         @self.app.post('/api/v1/lists/reorder')
         def reorder_lists():
@@ -77,7 +77,7 @@ class ListsController(BaseController):
             if collection.lists.reorder_objects(new_order):
                 return {'success': 'reordered'}
             else:
-                return {'error': 'invalid_order'}
+                return self._raise_error(400, 'invalid_order')
 
 
         #BOOKMARKS
@@ -89,7 +89,7 @@ class ListsController(BaseController):
             if bookmark:
                 return {'bookmark': bookmark.serialize()}
             else:
-                return {'error': 'invalid_page'}
+                return self._raise_error(400, 'invalid_page')
 
         @self.app.post('/api/v1/list/<list_id>/bulk_bookmarks')
         def create_bookmarks(list_id):
@@ -130,7 +130,7 @@ class ListsController(BaseController):
             if blist.remove_bookmark(bookmark):
                 return {'deleted_id': bid}
             else:
-                return {'error': 'error deleting: ' + bid}
+                self._raise_error(400, 'error_deleting')
 
         @self.app.post('/api/v1/list/<list_id>/bookmarks/reorder')
         def reorder_bookmarks(list_id):
@@ -141,7 +141,7 @@ class ListsController(BaseController):
             if blist.bookmarks.reorder_objects(new_order):
                 return {'success': 'reordered'}
             else:
-                return {'error': 'invalid_order'}
+                self._raise_error(400, 'invalid_order')
 
     def load_user_coll_list(self, list_id, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
@@ -151,8 +151,7 @@ class ListsController(BaseController):
     def load_list(self, collection, list_id):
         blist = collection.get_list(list_id)
         if not blist:
-            self._raise_error(404, 'List not found', api=True,
-                              id=list_id)
+            self._raise_error(404, 'no_such_list')
 
         return blist
 
@@ -161,14 +160,13 @@ class ListsController(BaseController):
             list_id = request.query.getunicode('list')
 
         if not list_id:
-            self._raise_error(400, 'list_id= must be specified', api=True)
+            self._raise_error(400, 'no_list_specified')
 
         user, collection, blist = self.load_user_coll_list(list_id, user=user, coll_name=coll_name)
 
         bookmark = blist.get_bookmark(bid)
         if not bookmark:
-            self._raise_error(404, 'Bookmark not found in list', api=True,
-                              id=bid)
+            self._raise_error(404, 'no_such_bookmark')
 
         return blist, bookmark
 

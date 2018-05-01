@@ -24,16 +24,16 @@ class CollsController(BaseController):
             coll_name = self.sanitize_title(title)
 
             if not coll_name:
-                return {'error_message': 'Invalid Collection Name'}
+                self._raise_error(400, 'invalid_coll_name')
 
             is_public = request.json.get('public')
 
             if self.access.is_anon(user):
                 if coll_name != 'temp':
-                    return {'error_message': 'Only temp collection available'}
+                    self._raise_error(400, 'invalid_anon_coll_name')
 
                 if user.has_collection(coll_name):
-                    return {'error_message': 'Temp collection already exists'}
+                    self._raise_error(400, 'duplicate_name')
 
             try:
                 collection = user.create_collection(coll_name, title=title,
@@ -43,12 +43,12 @@ class CollsController(BaseController):
                 resp = {'collection': collection.serialize()}
 
             except DupeNameException as de:
-                resp = {'error_message': 'duplicate name: ' + coll_name}
+                self._raise_error(400, 'duplicate_name')
 
             except Exception as ve:
                 print(ve)
                 self.flash_message(str(ve))
-                resp = {'error_message': str(ve)}
+                self._raise_error(400, 'duplicate_name')
 
             return resp
 
@@ -95,7 +95,7 @@ class CollsController(BaseController):
                 try:
                     new_coll_name = user.rename(collection, new_coll_name)
                 except DupeNameException as de:
-                    return {'error_message': 'duplicate name: ' + new_coll_name}
+                    self._raise_error(400, 'duplicate_name')
 
                 collection['title'] = new_coll_title
 
@@ -115,8 +115,7 @@ class CollsController(BaseController):
             if 'featured_list' in data:
                 blist = collection.get_list(data['featured_list'])
                 if not blist:
-                    response.status = 400
-                    return {'error': 'no_such_list'}
+                    self._raise_error(400, 'no_such_list')
 
                 collection['featured_list'] = data['featured_list']
 
@@ -148,7 +147,7 @@ class CollsController(BaseController):
 
             try:
                 if not coll_name:
-                    raise ValidationException('Invalid Collection Name')
+                    raise ValidationException('invalid_name')
 
                 user = self.access.session_user
                 user.create_collection(coll_name, title=title, desc='', public=is_public)
@@ -157,7 +156,7 @@ class CollsController(BaseController):
                 redir_to = self.get_redir_back('/_create')
 
             except DupeNameException as de:
-                self._raise_error(400, 'Duplicate Name: ' + coll_name)
+                self._raise_error(400, 'duplicate_name')
 
             except Exception as ve:
                 import traceback
@@ -217,8 +216,8 @@ class CollsController(BaseController):
         result['coll_name'] = result['coll']
         result['coll_title'] = quote(result['collection']['title'])
 
-        if not result or result.get('error_message'):
-            self._raise_error(404, 'Collection not found')
+        #if not result or result.get('error'):
+        #    self._raise_error(404, 'Collection not found')
 
         return result
 
