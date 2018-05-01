@@ -77,7 +77,7 @@ class TestListsAPIAccess(FullStackTests):
                   'password': 'TestTest123',
                  }
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
         assert res.json['username'] == 'test'
         assert self.testapp.cookies['__test_sesh'] != ''
 
@@ -103,13 +103,13 @@ class TestListsAPIAccess(FullStackTests):
         assert res.json['collection']['recordings'] == []
 
     def test_logout_login_user_2(self):
-        res = self.testapp.get('/api/v1/logout', status=200)
+        res = self.testapp.get('/api/v1/auth/logout', status=200)
 
         params = {'username': 'another',
                   'password': 'TestTest456',
                  }
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
         assert res.json['username'] == 'another'
         assert self.testapp.cookies['__test_sesh'] != ''
 
@@ -150,9 +150,9 @@ class TestListsAPIAccess(FullStackTests):
 
     def test_no_lists_user_info(self):
         # wrong user
-        res = self.testapp.get('/api/v1/users/test', status=404)
+        res = self.testapp.get('/api/v1/user/test', status=404)
 
-        res = self.testapp.get('/api/v1/users/another')
+        res = self.testapp.get('/api/v1/user/another')
 
         assert len(res.json['user']['collections']) == 2
         for coll in res.json['user']['collections']:
@@ -171,7 +171,7 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.get('/api/v1/lists?user=test&coll=some-coll', status=404)
 
     def test_public_list_private_coll_error_logged_out(self):
-        res = self.testapp.get('/api/v1/logout')
+        res = self.testapp.get('/api/v1/auth/logout')
 
         res = self.testapp.get('/api/v1/lists?user=test&coll=some-coll', status=404)
 
@@ -202,7 +202,7 @@ class TestListsAPIAccess(FullStackTests):
                   'password': 'TestTest123',
                  }
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
         assert res.json['username'] == 'test'
         assert self.testapp.cookies['__test_sesh'] != ''
 

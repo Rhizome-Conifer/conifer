@@ -430,7 +430,7 @@ class ContentController(BaseController, RewriterApp):
 
             if remote_ip and info['type'] in self.MODIFY_MODES:
                 if user.is_rate_limited(remote_ip):
-                    raise HTTPError(402, 'Rate Limit')
+                    self._raise_error(402, 'rate_limit_exceeded')
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
@@ -584,21 +584,21 @@ class ContentController(BaseController, RewriterApp):
                                          wb_url)
 
                 # don't auto create recording for inner frame w/o accessing outer frame
-                raise HTTPError(404, 'No Such Recording')
+                self._raise_error(404, 'no_such_recording')
 
             elif not recording.is_open():
                 # force creation of new recording as this one is closed
-                raise HTTPError(404, 'Recording not open')
+                self._raise_error(400, 'recording_not_open')
 
             collection.access.assert_can_write_coll(collection)
 
             if the_user.is_out_of_space():
-                raise HTTPError(402, 'Out of Space')
+                self._raise_error(402, 'out_of_space')
 
             remote_ip = self._get_remote_ip()
 
             if the_user.is_rate_limited(remote_ip):
-                raise HTTPError(402, 'Rate Limit')
+                self._raise_error(402, 'rate_limit_exceeded')
 
             if inv_sources and inv_sources != '*':
                 #patch_rec_name = self.patch_of_name(rec, True)
@@ -612,18 +612,18 @@ class ContentController(BaseController, RewriterApp):
                                          wb_url)
 
 
-                raise HTTPError(404, 'No Such Collection')
+                self._raise_error(404, 'no_such_collection')
 
             access = self.access.check_read_access_public(collection)
             if not access:
-                raise HTTPError(404, 'No Such Collection')
+                self._raise_error(404, 'no_such_collection')
 
             if access != 'public':
                 frontend_cache_header = ('Cache-Control', 'private')
 
         elif type == 'replay':
             if not recording:
-                raise HTTPError(404, 'No Such Recording')
+                self._raise_error(404, 'no_such_recording')
 
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'], safe='/:')
 

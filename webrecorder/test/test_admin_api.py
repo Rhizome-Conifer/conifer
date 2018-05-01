@@ -9,12 +9,12 @@ class TestAdminAPI(FullStackTests):
         cls.user_manager = CLIUserManager()
 
     def test_no_auth_admin_users(self):
-        res = self.testapp.get('/api/v1/users', status=404)
+        res = self.testapp.get('/api/v1/admin/users', status=404)
         # no permissions, just display 404
         assert res.json == {'error': 'not_found'}
 
     def test_no_auth_admin_dashboard(self):
-        res = self.testapp.get('/api/v1/dashboard', status=404)
+        res = self.testapp.get('/api/v1/admin/dashboard', status=404)
         # no permissions, just display 404
         assert res.json == {'error': 'not_found'}
 
@@ -39,12 +39,12 @@ class TestAdminAPI(FullStackTests):
                   'password': 'TestTest123',
                  }
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
         assert res.json['username'] == 'adminuser'
         assert self.testapp.cookies['__test_sesh'] != ''
 
     def test_api_roles(self):
-        res = self.testapp.get('/api/v1/user_roles')
+        res = self.testapp.get('/api/v1/admin/user_roles')
         assert set(res.json['roles']) == {'admin',
                                           'beta-archivist',
                                           'mounts-archivist',
@@ -52,25 +52,25 @@ class TestAdminAPI(FullStackTests):
                                           'archivist'}
 
     def test_get_api_defaults(self):
-        res = self.testapp.get('/api/v1/defaults')
+        res = self.testapp.get('/api/v1/admin/defaults')
         assert res.json == {'defaults': {'max_anon_size': 1000000000, 'max_size': 1000000000}}
 
     def test_set_api_defaults(self):
-        res = self.testapp.put_json('/api/v1/defaults', params={'max_size': 7000000000})
+        res = self.testapp.put_json('/api/v1/admin/defaults', params={'max_size': 7000000000})
         assert res.json == {'defaults': {'max_anon_size': 1000000000, 'max_size': 7000000000}}
 
         # raw key, not converted to int
         assert self.redis.hgetall('h:defaults') == {'max_anon_size': '1000000000', 'max_size': '7000000000'}
 
     def test_api_users(self):
-        res = self.testapp.get('/api/v1/users')
+        res = self.testapp.get('/api/v1/admin/users')
         assert [user['username'] for user in res.json['users']] == ['adminuser', 'test']
         assert [user['role'] for user in res.json['users']] == ['admin', 'archivist']
         assert [user['name'] for user in res.json['users']] == ['Test Admin', 'Test User']
         assert [user['max_size'] for user in res.json['users']] == ['1000000000', '1000000000']
 
     def test_api_temp_users(self):
-        res = self.testapp.get('/api/v1/temp-users')
+        res = self.testapp.get('/api/v1/admin/temp-users')
         assert [user['username'] for user in res.json['users']] == [self.anon_user]
         assert [user.get('role') for user in res.json['users']] == [None]
         assert [user.get('name') for user in res.json['users']] == [None]
@@ -83,7 +83,7 @@ class TestAdminAPI(FullStackTests):
                   'role': 'archivist2',
                   'name': 'Another User'}
 
-        res = self.testapp.post_json('/api/v1/users', params=params)
+        res = self.testapp.post_json('/api/v1/admin/users', params=params)
 
         assert res.json == {'errors': ['Username already exists.',
                                        'Not a valid role.',
@@ -98,12 +98,12 @@ class TestAdminAPI(FullStackTests):
                   'role': 'archivist',
                   'name': 'Another User'}
 
-        res = self.testapp.post_json('/api/v1/users', params=params)
+        res = self.testapp.post_json('/api/v1/admin/users', params=params)
 
         assert res.json == {'first_coll': 'default-collection', 'user': 'another'}
 
     def test_api_users_added(self):
-        res = self.testapp.get('/api/v1/users')
+        res = self.testapp.get('/api/v1/admin/users')
         assert [user['username'] for user in res.json['users']] == ['adminuser', 'another', 'test']
         assert [user['role'] for user in res.json['users']] == ['admin', 'archivist', 'archivist']
         assert [user['name'] for user in res.json['users']] == ['Test Admin', 'Another User', 'Test User']
@@ -115,7 +115,7 @@ class TestAdminAPI(FullStackTests):
                   'desc': 'Custom Desc'
                  }
 
-        res = self.testapp.put_json('/api/v1/users/test', params=params)
+        res = self.testapp.put_json('/api/v1/admin/user/test', params=params)
         assert res.json == {'errors': ['Not a valid role.', 'max_size must be an int']}
 
     def test_update_user(self):
@@ -124,7 +124,7 @@ class TestAdminAPI(FullStackTests):
                   'desc': 'Custom Desc'
                  }
 
-        res = self.testapp.put_json('/api/v1/users/test', params=params)
+        res = self.testapp.put_json('/api/v1/admin/user/test', params=params)
 
         assert res.json['user']['space_utilization'] == {'available': 200000000, 'total': 200000000, 'used': 0}
         assert res.json['user']['role'] == 'beta-archivist'

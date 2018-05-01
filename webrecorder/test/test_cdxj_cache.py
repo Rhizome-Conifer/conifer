@@ -168,7 +168,7 @@ class TestCDXJCache(FullStackTests):
         self.sleep_try(0.1, 10.0, assert_deleted)
 
     def test_user_timespan(self):
-        res = self.testapp.get('/api/v1/users/' + self.anon_user)
+        res = self.testapp.get('/api/v1/user/' + self.anon_user)
         # modified after delete, should have taken more than 2 seconds to get here
         assert res.json['user']['timespan'] > 2
 

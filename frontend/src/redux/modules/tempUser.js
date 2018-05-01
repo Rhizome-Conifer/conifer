@@ -24,7 +24,7 @@ export default function tempUser(state = initialState, action = {}) {
       return state.merge({
         user: {
           accessed: action.accessed,
-          ...action.result,
+          ...action.result.user,
         }
       });
     case TEMP_LOAD_FAIL:
@@ -38,6 +38,6 @@ export function load(username) {
   return {
     types: [TEMP_LOAD, TEMP_LOAD_SUCCESS, TEMP_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${apiPath}/temp-users/${username}`)
+    promise: client => client.get(`${apiPath}/user/${username}`)
   };
 }

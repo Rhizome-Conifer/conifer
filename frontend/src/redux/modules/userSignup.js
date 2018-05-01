@@ -59,16 +59,14 @@ export function checkUser(username) {
   return {
     types: [USERNAME_CHECK, USERNAME_CHECK_SUCCESS, USERNAME_CHECK_ERROR],
     username,
-    promise: client => client.get(`${config.apiPath}/username_check?`, {
-      params: { username }
-    })
+    promise: client => client.get(`${config.apiPath}/auth/check_username/${username}`)
   };
 }
 
 export function sendSignup(postData) {
   return {
     types: [SIGNUP, SIGNUP_SUCCESS, SIGNUP_FAIL],
-    promise: client => client.post(`${config.apiPath}/userreg`, {
+    promise: client => client.post(`${config.apiPath}/auth/register`, {
       data: {
         ...postData
       }

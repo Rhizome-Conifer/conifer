@@ -96,7 +96,7 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.testapp = webtest.TestApp(cls.maincont.app)
 
         if init_anon:
-            res = cls.testapp.get('/api/v1/anon_user')
+            res = cls.testapp.get('/api/v1/auth/anon_user')
             cls.anon_user = res.json['anon_user']
         else:
             cls.anon_user = None

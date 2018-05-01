@@ -9,9 +9,9 @@ class TestApiUserLogin(FullStackTests):
     val_reg = ''
 
     def test_api_temp_user_info(self):
-        res = self.testapp.get('/api/v1/temp-users/{user}'.format(user=self.anon_user))
+        res = self.testapp.get('/api/v1/user/{user}'.format(user=self.anon_user))
 
-        user = res.json
+        user = res.json['user']
 
         assert user['username'] == self.anon_user
         assert user['id'] == self.anon_user
@@ -22,7 +22,7 @@ class TestApiUserLogin(FullStackTests):
         assert self.ISO_DT_RX.match(user['created_at'])
         assert self.ISO_DT_RX.match(user['updated_at'])
 
-        assert set(user.keys()) == {'id', 'username', 'created_at', 'updated_at', 'space_utilization', 'ttl', 'max_size', 'size', 'timespan'}
+        assert set(user.keys()) == {'id', 'username', 'created_at', 'updated_at', 'space_utilization', 'ttl', 'max_size', 'size', 'timespan', 'collections'}
 
     def test_api_register_fail_mismatch_password(self):
         # mismatch password
@@ -31,7 +31,7 @@ class TestApiUserLogin(FullStackTests):
                   'password': 'Password2',
                   'confirmpassword': 'Password1'}
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
+        res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'password_mismatch'}}
 
@@ -44,7 +44,7 @@ class TestApiUserLogin(FullStackTests):
                   'confirmpassword': '1'
                  }
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
+        res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'password_invalid'}}
 
@@ -56,7 +56,7 @@ class TestApiUserLogin(FullStackTests):
                   'confirmpassword': 'Password1'
                  }
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
+        res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'The name <b>@#$</b> is not a valid username. Please choose a different username'}}
 
@@ -72,7 +72,7 @@ class TestApiUserLogin(FullStackTests):
                  }
 
         with patch('cork.Mailer.send_email', self.mock_send_reg_email):
-            res = self.testapp.post_json('/api/v1/userreg', params=params)
+            res = self.testapp.post_json('/api/v1/auth/register', params=params)
 
         assert res.json == {'success': 'A confirmation e-mail has been sent to <b>someuser</b>. Please '
                                        'check your e-mail to complete the registration!'}
@@ -81,7 +81,7 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
 
         # no cookie, error
-        res = self.testapp.post('/api/v1/userval', params=params, status=400)
+        res = self.testapp.post('/api/v1/auth/validate', params=params, status=400)
         assert res.json == {'error': 'invalid cookie'}
 
     def test_api_val_reg_fail_code_mismatch(self):
@@ -89,12 +89,12 @@ class TestApiUserLogin(FullStackTests):
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
         # no cookie, error
-        res = self.testapp.post('/api/v1/userval', headers=headers, params=params, status=400)
+        res = self.testapp.post('/api/v1/auth/validate', headers=headers, params=params, status=400)
         assert res.json == {'error': 'invalid cookie'}
 
     def test_check_username_avail(self):
         # still available until registration validated
-        res = self.testapp.get('/api/v1/username_check?username=someuser')
+        res = self.testapp.get('/api/v1/auth/check_username/someuser')
 
         assert res.json == {'available': True}
 
@@ -102,7 +102,7 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
-        res = self.testapp.post('/api/v1/userval', headers=headers, params=params)
+        res = self.testapp.post('/api/v1/auth/validate', headers=headers, params=params)
 
         assert res.json == {'first_coll_name': 'default-collection', 'registered': 'someuser'}
 
@@ -119,11 +119,11 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
-        res = self.testapp.post('/api/v1/userval', headers=headers, params=params, status=400)
+        res = self.testapp.post('/api/v1/auth/validate', headers=headers, params=params, status=400)
         assert res.json == {'error': 'already_registered'}
 
     def test_api_logout(self):
-        res = self.testapp.get('/api/v1/logout', status=200)
+        res = self.testapp.get('/api/v1/auth/logout', status=200)
         assert res.json['success']
 
         assert self.testapp.cookies.get('__test_sesh', '') == ''
@@ -136,7 +136,7 @@ class TestApiUserLogin(FullStackTests):
                   'confirmpassword': 'Password2'
                  }
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
+        res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'User <b>someuser</b> already exists! Please choose '
                                                      'a different username'}}
@@ -150,7 +150,7 @@ class TestApiUserLogin(FullStackTests):
                  }
 
 
-        res = self.testapp.post_json('/api/v1/userreg', params=params, status=400)
+        res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
 
         assert res.json == {'errors': {'validation': 'There is already an account for '
                                                      '<b>test@example.com</b>. If you have trouble '
@@ -161,14 +161,14 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
-        res = self.testapp.post('/api/v1/userval', headers=headers, params=params, status=400)
+        res = self.testapp.post('/api/v1/auth/validate', headers=headers, params=params, status=400)
         assert res.json == {'error': 'already_registered'}
 
     def test_login_fail_bad_password(self):
         params = {'username': 'someuser',
                   'password': 'Password2'}
 
-        res = self.testapp.post_json('/api/v1/login', params=params, status=401)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
         assert res.json == {'error': 'Invalid Login. Please Try Again'}
         assert self.testapp.cookies.get('__test_sesh', '') == ''
@@ -177,13 +177,13 @@ class TestApiUserLogin(FullStackTests):
         params = {'username': 'someuser2',
                   'password': 'Password2'}
 
-        res = self.testapp.post_json('/api/v1/login', params=params, status=401)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
         assert res.json == {'error': 'Invalid Login. Please Try Again'}
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_load_auth_not_logged_in(self):
-        res = self.testapp.get('/api/v1/load_auth')
+        res = self.testapp.get('/api/v1/auth')
 
         assert res.json['role'] == None
         assert res.json['username'].startswith('temp-')
@@ -194,7 +194,7 @@ class TestApiUserLogin(FullStackTests):
         params = {'username': 'someuser',
                   'password': 'Password1'}
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
         assert res.json == {'role': 'archivist',
                             'username': 'someuser',
@@ -204,7 +204,7 @@ class TestApiUserLogin(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_load_auth_logged_in(self):
-        res = self.testapp.get('/api/v1/load_auth')
+        res = self.testapp.get('/api/v1/auth')
 
         assert res.json == {'role': 'archivist',
                             'username': 'someuser',
@@ -212,7 +212,7 @@ class TestApiUserLogin(FullStackTests):
                             'anon': False}
 
     def test_check_username_not_avail(self):
-        res = self.testapp.get('/api/v1/username_check?username=someuser')
+        res = self.testapp.get('/api/v1/auth/check_username/someuser')
 
         assert res.json == {'available': False}
 
@@ -223,7 +223,7 @@ class TestApiUserLogin(FullStackTests):
                  }
 
         # TODO: should be working with post_json?
-        res = self.testapp.post('/api/v1/updatepassword', params=params, status=403)
+        res = self.testapp.post('/api/v1/auth/updatepassword', params=params, status=403)
 
         assert res.json['error'] == 'password_mismatch'
 
@@ -234,18 +234,18 @@ class TestApiUserLogin(FullStackTests):
                  }
 
         # TODO: should be working with post_json?
-        res = self.testapp.post('/api/v1/updatepassword', params=params)
+        res = self.testapp.post('/api/v1/auth/updatepassword', params=params)
 
         assert res.json == {}
 
-    def test_api_temp_user_info_not_temp(self):
-        res = self.testapp.get('/api/v1/temp-users/someuser', status=404)
+    #def test_api_temp_user_info_not_temp(self):
+    #    res = self.testapp.get('/api/v1/temp-users/someuser', status=404)
 
         # TODO: should be 404 if not same user? check access
-        res = self.testapp.get('/api/v1/temp-users/{user}'.format(user=self.anon_user), status=200)
+    #    res = self.testapp.get('/api/v1/temp-users/{user}'.format(user=self.anon_user), status=200)
 
     def test_api_user_info(self):
-        res = self.testapp.get('/api/v1/users/someuser')
+        res = self.testapp.get('/api/v1/user/someuser')
 
         user = res.json['user']
 
@@ -270,12 +270,12 @@ class TestApiUserLogin(FullStackTests):
         assert self.ISO_DT_RX.match(user['last_login'])
 
     def test_update_user_desc(self):
-        res = self.testapp.post('/api/v1/users/someuser/desc', params='New Description')
+        res = self.testapp.post('/api/v1/user/someuser/desc', params='New Description')
 
         assert res.json == {}
 
     def test_api_user_info_2(self):
-        res = self.testapp.get('/api/v1/users/someuser?include_colls=false')
+        res = self.testapp.get('/api/v1/user/someuser?include_colls=false')
 
         user = res.json['user']
 
@@ -286,17 +286,17 @@ class TestApiUserLogin(FullStackTests):
         assert 'collections' not in user
 
     def test_delete_no_such_user(self):
-        res = self.testapp.delete('/api/v1/users/someuser2', status=404)
+        res = self.testapp.delete('/api/v1/user/someuser2', status=404)
 
         assert res.json == {'error': 'no_such_user'}
 
     def test_delete_user(self):
-        res = self.testapp.delete('/api/v1/users/someuser')
+        res = self.testapp.delete('/api/v1/user/someuser')
 
         assert res.json == {'deleted_user': 'someuser'}
 
     def test_load_auth_not_logged_in_2(self):
-        res = self.testapp.get('/api/v1/load_auth')
+        res = self.testapp.get('/api/v1/auth')
 
         assert res.json['role'] == None
         assert res.json['username'].startswith('temp-')

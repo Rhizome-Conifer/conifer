@@ -23,17 +23,21 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         os.environ['APP_HOST'] = ''
 
     def test_empty_temp_user(self):
-        res = self.testapp.get('/api/v1/load_auth')
+        res = self.testapp.get('/api/v1/auth')
         assert res.json['username']
         username = res.json['username']
 
-        res = self.testapp.get('/api/v1/temp-users/' + username)
-        assert res.json['username'] == username
-        assert res.json['space_utilization']['used'] == 0
+        res = self.testapp.get('/api/v1/user/' + username, status=302)
+        assert res.headers['Location'] == 'http://app-host/api/v1/user/' + username
 
     def test_init_anon(self):
-        res = self.testapp.get('/api/v1/anon_user', headers={'Host': 'app-host'})
+        res = self.testapp.get('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
         TestCreateNewAPISeparateDomains.anon_user = res.json['anon_user']
+
+        res = self.testapp.get('/api/v1/user/' + self.anon_user, headers={'Host': 'app-host'})
+        assert res.json['user']['username'] == self.anon_user
+        assert res.json['user']['space_utilization']['used'] == 0
+        assert res.json['user']['ttl']
 
     def test_api_new(self):
         params = {'coll': 'temp',
@@ -105,8 +109,8 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         assert res.json['patch_rec_name'] == ''
 
     def test_api_temp_user_recs_created(self):
-        res = self.testapp.get('/api/v1/temp-users/' + self.anon_user, headers={'Host': 'app-host'})
-        assert res.json['rec_count'] == 5
+        res = self.testapp.get('/api/v1/user/' + self.anon_user, headers={'Host': 'app-host'})
+        assert res.json['user']['rec_count'] == 5
 
     def test_api_redir_wrong_host(self):
         params = {'coll': 'temp',

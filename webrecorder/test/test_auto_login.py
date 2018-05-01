@@ -49,7 +49,7 @@ class TestAutoLogin(FullStackTests):
         assert res.json['page_id'] == self.ID_1
 
     def test_api_curr_user(self):
-        res = self.testapp.get('/api/v1/curr_user')
+        res = self.testapp.get('/api/v1/auth/curr_user')
         assert res.json == {'curr_user': 'test'}
 
     def test_get_collection(self):

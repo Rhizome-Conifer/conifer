@@ -26,20 +26,21 @@ class TestLoginMigrate(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
 
     def test_api_curr_user(self):
-        res = self.testapp.get('/api/v1/curr_user')
+        res = self.testapp.get('/api/v1/auth/curr_user')
         assert res.json == {'curr_user': self.anon_user}
 
     def test_api_temp_user(self):
-        res = self.testapp.get('/api/v1/temp-users/' + self.anon_user)
+        res = self.testapp.get('/api/v1/user/' + self.anon_user)
 
-        assert res.json['created_at'] != ''
-        assert res.json['max_size'] == '1000000000'
-        assert res.json['rec_count'] == 1
-        assert res.json['ttl'] > 0
+        user = res.json['user']
+        assert user['created_at'] != ''
+        assert user['max_size'] == '1000000000'
+        assert user['rec_count'] == 1
+        assert user['ttl'] > 0
 
-        size = int(res.json['size'])
-        max_size = int(res.json['max_size'])
-        assert res.json['space_utilization'] == {
+        size = int(user['size'])
+        max_size = int(user['max_size'])
+        assert user['space_utilization'] == {
             'available': max_size - size,
             'total': max_size,
             'used': size
@@ -62,8 +63,8 @@ class TestLoginMigrate(FullStackTests):
         # default collection not public
         res = self.testapp.get('/test/default-collection', status=404)
 
-    def test_api_test_non_temp_user(self):
-        res = self.testapp.get('/api/v1/temp-users/test', status=404)
+    #def test_api_test_non_temp_user(self):
+    #    res = self.testapp.get('/api/v1/temp-users/test', status=404)
 
     def test_login_fail_no_migrate_name(self):
         params = {'username': 'test',
@@ -72,13 +73,13 @@ class TestLoginMigrate(FullStackTests):
                   'moveTemp': '1'
                  }
 
-        res = self.testapp.post_json('/api/v1/login', params=params, status=401)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
         assert res.json == {'error': 'Invalid new collection name, please pick a different name'}
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
-        res = self.testapp.get('/api/v1/curr_user')
+        res = self.testapp.get('/api/v1/auth/curr_user')
         assert res.json == {'curr_user': self.anon_user}
 
     def test_login_fail_dupe_coll_name(self):
@@ -89,13 +90,13 @@ class TestLoginMigrate(FullStackTests):
                   'moveTemp': True,
                  }
 
-        res = self.testapp.post_json('/api/v1/login', params=params, status=401)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
         assert res.json == {'error':  'Collection "default-collection" already exists'}
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
-        res = self.testapp.get('/api/v1/curr_user')
+        res = self.testapp.get('/api/v1/auth/curr_user')
         assert res.json == {'curr_user': self.anon_user}
 
     def test_login(self):
@@ -106,7 +107,7 @@ class TestLoginMigrate(FullStackTests):
                   'moveTemp': True,
                  }
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
         assert res.json == {'anon': False,
                             'coll_count': 2,
@@ -117,7 +118,7 @@ class TestLoginMigrate(FullStackTests):
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
-        res = self.testapp.get('/api/v1/curr_user')
+        res = self.testapp.get('/api/v1/auth/curr_user')
         assert res.json == {'curr_user': 'test'}
 
     def test_default_collection_exists(self):
@@ -133,7 +134,7 @@ class TestLoginMigrate(FullStackTests):
 
         assert '"food": "bar"' in res.text, res.text
 
-        res = self.testapp.get('/api/v1/curr_user')
+        res = self.testapp.get('/api/v1/auth/curr_user')
         assert res.json == {'curr_user': 'test'}
 
     def test_warcs_in_storage(self):
@@ -169,14 +170,14 @@ class TestLoginMigrate(FullStackTests):
     def test_logged_out_error(self):
         res = self.testapp.get('/test/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
 
-        res = self.testapp.get('/api/v1/curr_user')
+        res = self.testapp.get('/api/v1/auth/curr_user')
         assert res.json['curr_user'] != self.anon_user and res.json['curr_user'].startswith('temp-')
 
     def test_login_2(self):
         params = {'username': 'test',
                   'password': 'TestTest123'}
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
         assert res.json['username'] == 'test'
         assert 'new_coll_name' not in res.json['username']
 
@@ -185,7 +186,7 @@ class TestLoginMigrate(FullStackTests):
         st_warcs_dir = os.path.join(self.storage_today, 'warcs')
         st_index_dir = os.path.join(self.storage_today, 'indexes')
 
-        res = self.testapp.delete('/api/v1/users/test')
+        res = self.testapp.delete('/api/v1/user/test')
 
         assert res.json == {'deleted_user': 'test'}
 

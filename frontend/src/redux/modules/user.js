@@ -99,7 +99,7 @@ export function getDeleteToken(user) {
 export function deleteUser(user) {
   return {
     types: [USER_DELETE, USER_DELETE_SUCCESS, USER_DELETE_FAIL],
-    promise: client => client.del(`${config.apiPath}/users/${user}`)
+    promise: client => client.del(`${config.apiPath}/user/${user}`)
   };
 }
 
@@ -112,7 +112,7 @@ export function load(username) {
   return {
     types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${config.apiPath}/users/${username}`, {
+    promise: client => client.get(`${config.apiPath}/user/${username}`, {
       params: { include_colls: true }
     })
   };
@@ -155,12 +155,12 @@ export function deleteUserCollection(id) {
 export function updatePassword(currPass, newPass, newPass2) {
   return {
     types: [USER_PASS, USER_PASS_SUCCESS, USER_PASS_FAIL],
-    promise: client => client.post(`${config.apiPath}/updatepassword`, {
+    promise: client => client.post(`${config.apiPath}/auth/updatepassword`, {
       data: {
         currPass,
         newPass,
         newPass2
       }
-    }, 'form')
+    })
   };
 }

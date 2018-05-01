@@ -7,6 +7,7 @@ from bottle import request, response
 from webrecorder.basecontroller import BaseController
 
 from webrecorder.webreccork import ValidationException
+from webrecorder.utils import get_bool
 
 
 # ============================================================================
@@ -44,16 +45,10 @@ class UserController(BaseController):
         return user
 
     def init_routes(self):
-        # MISC CHECKS
-        @self.app.get('/api/v1/load_auth')
-        def load_auth():
-            return self.load_auth()
-
-        @self.app.get('/api/v1/username_check')
-        def test_username():
+        # USER CHECKS
+        @self.app.get('/api/v1/auth/check_username/<username>')
+        def test_username(username):
             """async precheck username availability on signup form"""
-            username = request.query.username
-
             if username in self.user_manager.RESTRICTED_NAMES:
                 return {'available': False}
 
@@ -63,19 +58,23 @@ class UserController(BaseController):
             except:
                 return {'available': True}
 
-        @self.app.get('/api/v1/anon_user')
+        @self.app.get('/api/v1/auth/anon_user')
         def get_anon_user():
             sesh_user = self.access.init_session_user(persist=True)
             return {'anon_user': sesh_user.my_id}
 
-        @self.app.get('/api/v1/curr_user')
+        @self.app.get('/api/v1/auth/curr_user')
         def get_curr_user():
             sesh_user = self.access.session_user
             return {'curr_user': sesh_user.my_id}
 
+        # AUTH CHECK
+        @self.app.get('/api/v1/auth')
+        def load_auth():
+            return self.load_auth()
 
         # REGISTRATION
-        @self.app.post(['/api/v1/userreg', '/api/v1/userreg/'])
+        @self.app.post('/api/v1/auth/register')
         def api_register_user():
             data = request.json
 
@@ -88,7 +87,7 @@ class UserController(BaseController):
 
             return {'errors': msg}
 
-        @self.app.post(['/api/v1/userval'])
+        @self.app.post('/api/v1/auth/validate')
         def api_validate_reg_user():
             reg = self.post_get('reg', '')
 
@@ -102,7 +101,7 @@ class UserController(BaseController):
 
 
         # LOGIN
-        @self.app.post('/api/v1/login')
+        @self.app.post('/api/v1/auth/login')
         def login():
             """Authenticate users"""
             result = self.user_manager.login_user(request.json)
@@ -118,7 +117,7 @@ class UserController(BaseController):
             response.status = 401
             return result
 
-        @self.app.get('/api/v1/logout')
+        @self.app.get('/api/v1/auth/logout')
         def logout():
             self.get_user_or_raise()
 
@@ -126,7 +125,7 @@ class UserController(BaseController):
             return {'success': 'logged_out'}
 
         # PASSWORD
-        @self.app.post('/api/v1/updatepassword')
+        @self.app.post('/api/v1/auth/updatepassword')
         def update_password():
             self.get_user_or_raise()
 
@@ -142,7 +141,7 @@ class UserController(BaseController):
                 return self._raise_error(403, str(ve))
 
         # USER INFO
-        @self.app.get(['/api/v1/temp-users/<username>', '/api/v1/temp-users/<username>/'])
+        #@self.app.get(['/api/v1/temp-user/<username>', '/api/v1/temp-user/<username>/'])
         def api_get_temp_user(username):
             anon_user = self.user_manager.get_valid_anon_user(username)
 
@@ -154,22 +153,19 @@ class UserController(BaseController):
             return data
 
 
-        @self.app.get(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
+        @self.app.get('/api/v1/user/<username>')
         def api_get_user(username):
             """API enpoint to return user info"""
             user = self.get_user_or_raise(username, 404, 'not_found')
 
-            include_colls = True
-
-            if request.query.include_colls:
-                include_colls = request.query.include_colls == 'true'
+            include_colls = get_bool(request.query.get('include_colls', True))
 
             user_data = user.serialize(compute_size_allotment=True,
                                        include_colls=include_colls)
 
             return {'user': user_data}
 
-        @self.app.delete(['/api/v1/users/<username>', '/api/v1/users/<username>/'])
+        @self.app.delete('/api/v1/user/<username>')
         def api_delete_user(username):
             """API enpoint to delete a user"""
             self.get_user_or_raise(username, 404, 'not_found')
@@ -207,7 +203,7 @@ class UserController(BaseController):
 
             return result
 
-        @self.app.post('/api/v1/users/<username>/desc')
+        @self.app.post('/api/v1/user/<username>/desc')
         def update_desc(username):
             """legacy, eventually move to the patch endpoint"""
             desc = request.body.read().decode('utf-8')

@@ -84,14 +84,14 @@ export function isLoaded({ app }) {
 export function load() {
   return {
     types: [LOAD, LOAD_SUCCESS, LOAD_FAIL],
-    promise: client => client.get(`${config.apiPath}/load_auth`)
+    promise: client => client.get(`${config.apiPath}/auth`)
   };
 }
 
 export function login(postData) {
   return {
     types: [LOGIN, LOGIN_SUCCESS, LOGIN_FAIL],
-    promise: client => client.post(`${config.apiPath}/login`, {
+    promise: client => client.post(`${config.apiPath}/auth/login`, {
       data: {
         ...postData
       }
@@ -109,6 +109,6 @@ export function incrementCollCount(incr) {
 export function logout() {
   return {
     types: [LOGOUT, LOGOUT_SUCCESS, LOGOUT_FAIL],
-    promise: client => client.get(`${config.apiPath}/logout`)
+    promise: client => client.get(`${config.apiPath}/auth/logout`)
   };
 }

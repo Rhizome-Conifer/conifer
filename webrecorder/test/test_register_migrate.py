@@ -71,7 +71,7 @@ class TestRegisterMigrate(FullStackTests):
 
         with patch('cork.Mailer.send_email', self.mock_send_reg_email):
             #res = self.testapp.post('/_register', params=params)
-            res = self.testapp.post_json('/api/v1/userreg', params=params)
+            res = self.testapp.post_json('/api/v1/auth/register', params=params)
 
         #assert res.headers['Location'] == 'http://localhost:80/'
         assert res.json == {
@@ -415,21 +415,21 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_error_logged_out_record(self):
         res = self.testapp.get('/someuser/new-coll/move-test/record/mp_/http://example.com/', status=404)
-        assert res.json == {'error': 'not_found'}
+        assert res.json == {'error': 'no_such_recording'}
 
     def test_error_logged_out_patch(self):
         res = self.testapp.get('/someuser/new-coll/move-test/patch/mp_/http://example.com/', status=404)
-        assert res.json == {'error': 'not_found'}
+        assert res.json == {'error': 'no_such_recording'}
 
     def test_error_logged_out_replay_coll_1(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
-        assert res.json == {'error': 'not_found'}
+        assert res.json == {'error': 'no_such_collection'}
 
     def test_login(self):
         params = {'username': 'someuser',
                   'password': 'Password1'}
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
         assert res.json == {'anon': False,
                             'coll_count': 4,
                             'role': 'archivist',
@@ -549,7 +549,7 @@ class TestRegisterMigrate(FullStackTests):
         params = {'username': 'testauto',
                   'password': 'Test12345'}
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
         assert res.json == {'anon': False,
                             'coll_count': 1,
@@ -582,7 +582,7 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_different_user_replay_private_error(self):
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar', status=404)
-        assert res.json == {'error': 'not_found'}
+        assert res.json == {'error': 'no_such_collection'}
 
     def test_logout_3(self):
         res = self.testapp.get('/_logout')
@@ -593,7 +593,7 @@ class TestRegisterMigrate(FullStackTests):
         params = {'username': 'someuser',
                   'password': 'Password1'}
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
         assert res.json == {'anon': False,
                             'coll_count': 3,
@@ -650,7 +650,7 @@ class TestRegisterMigrate(FullStackTests):
         params = {'username': 'someuser',
                   'password': 'Password1'}
 
-        res = self.testapp.post_json('/api/v1/login', params=params, status=401)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
         assert res.json == {"error": "Invalid Login. Please Try Again"}
 
         assert self.testapp.cookies.get('__test_sesh', '') == ''

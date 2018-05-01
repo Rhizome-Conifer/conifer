@@ -456,7 +456,7 @@ class TestListsAnonUserAPI(FullStackTests):
             assert 'recordings' in coll
 
     def test_user_info(self):
-        res = self.testapp.get(self._format('/api/v1/users/{user}?include_colls=true'))
+        res = self.testapp.get(self._format('/api/v1/user/{user}?include_colls=true'))
 
         user = res.json['user']
 

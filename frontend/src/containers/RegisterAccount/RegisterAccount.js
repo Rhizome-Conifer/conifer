@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import config from 'config';
 
 
 class RegisterAccount extends Component {
@@ -21,13 +22,14 @@ class RegisterAccount extends Component {
   componentDidMount() {
     const { match } = this.props;
     const reg = match.params.registration;
-    document.cookie = `valreg=${reg}; Max-Age=60; Path=/api/v1/userval`;
+    const validateApi = `${config.apiPath}/auth/validate`;
+    document.cookie = `valreg=${reg}; Max-Age=60; Path=${validateApi}`;
 
     const data = new FormData();
     data.append('reg', reg);
 
     // call user registration endpoint
-    fetch('/api/v1/userval', {
+    fetch(validateApi, {
       credentials: 'same-origin',
       method: 'POST',
       body: data

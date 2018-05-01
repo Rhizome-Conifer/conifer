@@ -41,7 +41,7 @@ class TestUpload(FullStackTests):
                   'password': 'TestTest123',
                  }
 
-        res = self.testapp.post_json('/api/v1/login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
         assert res.json == {'anon': False,
                             'coll_count': 1,
