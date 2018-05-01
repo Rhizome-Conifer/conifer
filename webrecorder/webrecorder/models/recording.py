@@ -123,13 +123,13 @@ class Recording(RedisUniqueComponent):
     def iter_all_files(self, include_index=False):
         warc_key = self.REC_WARC_KEY.format(rec=self.my_id)
 
-        #all_files = self.redis.hgetall(warc_key)
-        all_file_keys = self.redis.smembers(warc_key)
+        rec_warc_keys = self.redis.smembers(warc_key)
 
-        all_files = self.redis.hmget(self._coll_warc_key(), all_file_keys)
+        if rec_warc_keys:
+            all_files = self.redis.hmget(self._coll_warc_key(), rec_warc_keys)
 
-        for n, v in zip(all_file_keys, all_files):
-            yield n, v
+            for n, v in zip(rec_warc_keys, all_files):
+                yield n, v
 
         if include_index:
             index_file = self.get_prop(self.INDEX_FILE_KEY)

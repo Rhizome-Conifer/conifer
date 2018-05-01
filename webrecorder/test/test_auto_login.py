@@ -134,4 +134,12 @@ class TestAutoLogin(FullStackTests):
 
         self.assert_coll_rec_warcs(coll, rec, 2, 1)
 
+    def test_delete_empty_rec(self):
+        self.set_uuids('Recording', ['empty'])
+        res = self.testapp.post('/api/v1/recordings?user=test&coll=another-coll')
+        assert res.json['recording']['id'] == 'empty'
+
+        res = self.testapp.delete('/api/v1/recording/empty?user=test&coll=another-coll')
+        assert res.json['deleted_id'] == 'empty'
+
 

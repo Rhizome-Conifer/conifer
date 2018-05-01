@@ -137,10 +137,10 @@ class User(RedisNamedContainer):
         return self.delete_object()
 
     def get_size_allotment(self):
-        max_size = self.redis.hmget(self.info_key, 'max_size')
+        max_size = self.redis.hget(self.info_key, 'max_size')
 
-        if max_size and max_size[0]:
-            return int(max_size[0])
+        if max_size:
+            return int(max_size)
 
         return self.MAX_USER_SIZE
 
