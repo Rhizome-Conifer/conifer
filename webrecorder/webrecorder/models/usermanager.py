@@ -543,11 +543,8 @@ class UserManager(object):
 
         user, first_coll = self.create_new_user(user, init_info)
 
-        self.cork.do_login(user.name)
-
-        sesh = self.get_session()
-        if not sesh.curr_user:
-            sesh.curr_user = user.name
+        # login here
+        self.access.log_in(user.name, remember_me=False)
 
         return user, first_coll
 
