@@ -53,12 +53,14 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
                   'url':  'http://httpbin.org/get?food=bar',
                   'mode': 'record',
                   'is_content': True,
+                  'desc': 'Rec Session Description Here',
                  }
 
         res = self.testapp.post_json('/api/v1/new', params=params, headers={'Host': 'app-host'})
         assert res.json['url'].startswith('http://content-host/{0}/temp/rec-'.format(self.anon_user))
         assert res.json['url'].endswith('/record/mp_/http://httpbin.org/get?food=bar')
 
+        rec = res.json['rec_name']
 
         assert self.testapp.cookies['__test_sesh']
         headers = {'Cookie': '__test_sesh=' + self.testapp.cookies['__test_sesh'],
@@ -67,6 +69,12 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
 
         res = self.testapp.get(res.json['url'], status=200, headers=headers)
         assert '"food": "bar"' in res.text, res.text
+
+        res = self.testapp.get('/api/v1/recording/{rec}?coll=temp&user={user}'.format(rec=rec, user=self.anon_user),
+                               headers={'Host': 'app-host'})
+
+        assert res.json['recording']['desc'] == 'Rec Session Description Here'
+
 
     def test_api_new_extract_browser(self):
         params = {'coll': 'temp',

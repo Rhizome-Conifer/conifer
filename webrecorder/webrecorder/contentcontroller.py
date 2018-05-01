@@ -196,6 +196,8 @@ class ContentController(BaseController, RewriterApp):
             coll = request.json.get('coll')
             mode = request.json.get('mode')
 
+            desc = request.json.get('desc', '')
+
             browser = request.json.get('browser')
             is_content = request.json.get('is_content') and not browser
             timestamp = request.json.get('timestamp')
@@ -208,7 +210,7 @@ class ContentController(BaseController, RewriterApp):
 
             full_url = request.environ['wsgi.url_scheme'] + '://' + host
 
-            url, rec, patch_rec = self.do_create_new(coll, '', wb_url, mode)
+            url, rec, patch_rec = self.do_create_new(coll, '', wb_url, mode, desc=desc)
 
             full_url += url
 
@@ -481,7 +483,7 @@ class ContentController(BaseController, RewriterApp):
         new_url, _, _2 = self.do_create_new(coll_name, rec_name, wb_url, mode)
         return self.redirect(new_url)
 
-    def do_create_new(self, coll_name, rec_title, wb_url, mode):
+    def do_create_new(self, coll_name, rec_title, wb_url, mode, desc=''):
         if mode == 'record':
             result = self.check_remote_archive(wb_url, mode)
             if result:
@@ -506,7 +508,7 @@ class ContentController(BaseController, RewriterApp):
         if not collection:
             collection = user.create_collection(coll_name, title=coll_title)
 
-        recording = self._create_new_rec(collection, rec_title, mode)
+        recording = self._create_new_rec(collection, rec_title, mode, desc=desc)
 
         if mode.startswith('extract:'):
             patch_recording = self._create_new_rec(collection,
@@ -537,10 +539,12 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
-    def _create_new_rec(self, collection, title, mode):
+    def _create_new_rec(self, collection, title, mode, desc=''):
         #rec_name = self.sanitize_title(title) if title else ''
         rec_type = 'patch' if mode == 'patch' else None
-        return collection.create_recording(title=title, rec_type=rec_type)
+        return collection.create_recording(title=title,
+                                           desc=desc,
+                                           rec_type=rec_type)
 
     def patch_of_name(self, name):
         return 'Patch of ' + name
