@@ -231,7 +231,7 @@ export default [
   {
     path: '/_logout',
     name: 'logout',
-    footer: false,
+    footer: true,
     component: Logout,
     exact: true
   },

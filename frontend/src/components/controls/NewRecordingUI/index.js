@@ -28,7 +28,6 @@ class NewRecordingUI extends Component {
     super(props);
 
     this.state = {
-      recTitle: config.defaultRecordingTitle,
       url: ''
     };
   }
@@ -36,9 +35,7 @@ class NewRecordingUI extends Component {
   handeSubmit = (evt) => {
     evt.preventDefault();
     const { collection, extractable, remoteBrowserSelected } = this.props;
-    const { recTitle, url } = this.state;
-
-    // const cleanRecsordingTitle = encodeURIComponent(recTitle.trim());
+    const { url } = this.state;
 
     const cleanUrl = addTrailingSlash(fixMalformedUrls(url));
 
@@ -106,12 +103,6 @@ class NewRecordingUI extends Component {
                 }
 
               </div>
-
-              {/*<div>
-                <span className="recorder-status">Create New Recording</span>
-                <label htmlFor="rec-title" className="sr-only">Recording title</label>
-                <input name="recTitle" onChange={this.handleChange} type="text" className="left-buffer form-control input-sm title-inline" value={recTitle} required />
-              </div>*/}
             </form>
           </div>
         </div>

@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom';
 import { Alert, Button, Col, Form, FormGroup,
          FormControl, Row } from 'react-bootstrap';
 
-import config from 'config';
+import { guestSessionTimeout, product, userRegex } from 'config';
 
 import { TempUsage } from 'containers';
 
 
 class LoginForm extends Component {
   static propTypes = {
+    anonCTA: PropTypes.bool,
     auth: PropTypes.object,
     cb: PropTypes.func,
     error: PropTypes.bool,
@@ -41,7 +42,7 @@ class LoginForm extends Component {
   }
 
   validateUsername = () => {
-    const pattern = config.userRegex;
+    const pattern = userRegex;
     if(typeof this.state.username !== 'undefined')
       return this.state.username.match(pattern) === this.state.username ? null : 'warning';
     return null;
@@ -59,12 +60,16 @@ class LoginForm extends Component {
   }
 
   render() {
-    const { auth, closeLogin, error } = this.props;
+    const { anonCTA, auth, closeLogin, error } = this.props;
     const { moveTemp, password, toColl, username } = this.state;
 
     return (
-      <Row className="wr-login-form">
-        <Col md={12} >
+      <React.Fragment>
+        <Row className="wr-login-form">
+          {
+            anonCTA &&
+              <h4>Please sign in to manage collections.</h4>
+          }
           {
             error &&
               <Alert bsStyle="danger" >
@@ -86,7 +91,9 @@ class LoginForm extends Component {
 
             <FormGroup key="remember">
               <input onChange={this.handleChange} type="checkbox" id="remember_me" name="remember_me" />
-              <label htmlFor="remember_me">Stay Logged-In</label>
+              <label htmlFor="remember_me">Remember me</label>
+
+              <Link to="/_forgot" onClick={closeLogin} style={{ float: 'right' }}>Forgot password or username?</Link>
             </FormGroup>
             {
               auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0 &&
@@ -95,11 +102,18 @@ class LoginForm extends Component {
                   moveTemp={moveTemp}
                   toColl={toColl} />
             }
-            <Button bsSize="lg" bsStyle="primary" type="submit" block>Login</Button>
+            <Button bsSize="lg" bsStyle="primary" type="submit" block>Sign in</Button>
           </Form>
-          <p><Link to="/_forgot" onClick={closeLogin}>Forgot password or username?</Link></p>
-        </Col>
-      </Row>
+        </Row>
+        {
+          anonCTA &&
+            <div className="anon-cta">
+              <h5>New to {product}? <Link to="/_register" onClick={closeLogin}>Sign up &raquo;</Link></h5>
+              <h5>Or <Button onClick={closeLogin} className="button-link">continue as guest &raquo;</Button></h5>
+              <span className="info">Guest sessions are limited to {guestSessionTimeout}.</span>
+            </div>
+        }
+      </React.Fragment>
     );
   }
 }

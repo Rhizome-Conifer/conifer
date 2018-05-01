@@ -50,9 +50,9 @@ module.exports = Object.assign({
   defaultBookmarkDesc: 'No description provided.',
   defaultCollectionTitle: 'New Collection',
   defaultColumns: ['timestamp', 'title', 'url', 'browser'],
-  defaultCollDesc: '*This collection doesn\'t yet have a description.*',
-  defaultListDesc: '*This list doesn\'t yet have a description.*',
-  defaultRecDesc: '*This recording doesn\'t have any notes.*',
+  defaultCollDesc: '_This collection doesn\'t yet have a description._',
+  defaultListDesc: '_This list doesn\'t yet have a description._',
+  defaultRecDesc: '_Add notes about this capture session. Visible only to you._',
   defaultRecordingTitle: 'Recording Session',
   dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   draggableTypes: {
@@ -60,6 +60,7 @@ module.exports = Object.assign({
     PAGE_ITEM: 'pageItem',
     TH: 'tableHeader'
   },
+  guestSessionTimeout: '90mins',
   homepageAnnouncement: '',
   internalApiHost: process.env.INTERNAL_HOST,
   internalApiPort: process.env.INTERNAL_PORT,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import { login } from 'redux/modules/auth';
 import { showModal } from 'redux/modules/userLogin';
@@ -7,11 +8,11 @@ import { showModal } from 'redux/modules/userLogin';
 import { UserManagementUI } from 'components/siteComponents';
 
 
-const mapStateToProps = (outerState) => {
-  const state = outerState.app;
+const mapStateToProps = ({ app }) => {
   return {
-    auth: state.get('auth'),
-    open: state.getIn(['userLogin', 'open'])
+    anonCTA: app.getIn(['userLogin', 'anonCTA']),
+    auth: app.get('auth'),
+    open: app.getIn(['userLogin', 'open'])
   };
 };
 
@@ -23,7 +24,7 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 
-export default connect(
+export default withRouter(connect(
   mapStateToProps,
   mapDispatchToProps
-)(UserManagementUI);
+)(UserManagementUI));

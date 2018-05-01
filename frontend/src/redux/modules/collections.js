@@ -67,9 +67,9 @@ export function createCollection(user, title, makePublic = false) {
       params: { user },
       data: {
         title,
-        'public': makePublic ? 'on' : 'no'
+        'public': makePublic
       }
-    }, 'form')
+    })
   };
 }
 

@@ -4,6 +4,7 @@ import { List } from 'immutable';
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 
 import { NewCollection } from 'components/siteComponents';
+import { WarcIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -16,11 +17,14 @@ class CollectionDropdownUI extends Component {
     collectionError: PropTypes.string,
     creatingCollection: PropTypes.bool,
     createNewCollection: PropTypes.func,
-    label: PropTypes.string,
+    label: PropTypes.oneOfType([
+      PropTypes.bool,
+      PropTypes.string
+    ]),
     loadUserCollections: PropTypes.func,
     newCollection: PropTypes.string,
     setCollection: PropTypes.func,
-    user: PropTypes.object
+    user: PropTypes.object,
   };
 
   static defaultProps = {
@@ -73,7 +77,7 @@ class CollectionDropdownUI extends Component {
             collectionError, creatingCollection, label, user } = this.props;
     const { showModal } = this.state;
 
-    const buttonTitle = activeCollection.title ? activeCollection.title : 'Choose a collection';
+    const buttonTitle = activeCollection.title ? <span><WarcIcon /> {activeCollection.title}</span> : 'Add to Collection...';
 
     return (
       <div className="wr-collection-menu">
@@ -103,7 +107,7 @@ class CollectionDropdownUI extends Component {
                         eventKey={id}
                         className={title.length > 50 ? 'make-wrap' : ''}
                         active={activeCollection.id === id}>
-                        { title }
+                        <WarcIcon /> { title }
                       </MenuItem>
                     );
                   })

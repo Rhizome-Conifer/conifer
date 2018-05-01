@@ -1,37 +1,42 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Button, InputGroup, FormGroup, FormControl } from 'react-bootstrap';
+import Collapsible from 'react-collapsible';
+import { Button, FormControl } from 'react-bootstrap';
 
-import config from 'config';
-import { addTrailingSlash, apiFetch, fixMalformedUrls,
-         remoteBrowserMod } from 'helpers/utils';
+import { appHost, defaultRecDesc } from 'config';
+import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
 
 import { CollectionDropdown, ExtractWidget,
          RemoteBrowserSelect } from 'containers';
+
+import WYSIWYG from 'components/WYSIWYG';
 
 import './style.scss';
 
 
 class StandaloneRecorderUI extends Component {
-
   static contextTypes = {
-    router: PropTypes.object
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
     activeCollection: PropTypes.object,
     extractable: PropTypes.object,
     selectedBrowser: PropTypes.string,
+    toggleLogin: PropTypes.func,
     username: PropTypes.string
   };
 
   constructor(props) {
     super(props);
 
+    const hasRB = Boolean(props.selectedBrowser);
     this.state = {
-      recordingTitle: config.defaultRecordingTitle,
-      url: ''
+      sessionNotes: '',
+      url: '',
+      advOpen: hasRB,
+      initialOpen: hasRB
     };
   }
 
@@ -40,11 +45,14 @@ class StandaloneRecorderUI extends Component {
     this.setState({ [evt.target.name]: evt.target.value });
   }
 
+  editRecDesc = (notes) => {
+    this.setState({ sessionNotes: notes });
+  }
+
   startRecording = (evt) => {
     evt.preventDefault();
-    const { activeCollection, extractable, selectedBrowser } = this.props;
-    const { recordingTitle, url } = this.state;
-    //const cleanRecordingTitle = encodeURIComponent(recordingTitle.trim());
+    const { activeCollection, extractable, history, selectedBrowser } = this.props;
+    const { sessionNotes, url } = this.state;
 
     if (!url) {
       return false;
@@ -56,6 +64,7 @@ class StandaloneRecorderUI extends Component {
     const data = {
       url: cleanUrl,
       coll: activeCollection.id,
+      desc: sessionNotes
     };
 
     // add remote browser
@@ -75,58 +84,69 @@ class StandaloneRecorderUI extends Component {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => this.context.router.history.push(url.replace(config.appHost, '')))
+      .then(({ url }) => history.push(url.replace(appHost, '')))
       .catch(err => console.log('error', err));
   }
 
+  closeAdvance = () => this.setState({ advOpen: false })
+  openAdvance = () => this.setState({ advOpen: true })
+
+  triggerLogin = () => this.props.toggleLogin(true);
+
   render() {
-    const { activeCollection, extractable } = this.props;
-    const { recordingTitle, url } = this.state;
+    const { isAnon } = this.context;
+    const { activeCollection, extractable, selectedBrowser } = this.props;
+    const { advOpen, initialOpen, url } = this.state;
 
     const isOutOfSpace = false;
-    const btnClasses = classNames({
-      disabled: isOutOfSpace,
-    });
+
+    const advOptions = (
+      <div>{advOpen ? 'Hide' : 'Show'} advance options <span className={classNames('caret', { 'caret-flip': advOpen })} /></div>
+    );
 
     return (
-      <form className="start-recording-homepage" onSubmit={this.startRecording}>
-        <InputGroup className="col-md-8 col-md-offset-2 containerized">
-
-          <div className="input-group-btn rb-dropdown">
-            <RemoteBrowserSelect />
-          </div>
-
-          {/* TODO: annoying discrepancy in bootstrap height.. adding fixed height here */}
+      <form className="start-recording-homepage clearfix" onSubmit={this.startRecording}>
+        <div className={classNames('col-md-8 col-md-offset-2', { 'input-group': extractable })}>
           <FormControl type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to record" required disabled={isOutOfSpace} />
           <label htmlFor="url" className="control-label sr-only">Url</label>
-
-          {
-            !extractable &&
-              <div className="input-group-btn record-action">
-                <Button bsStyle="default" type="submit" className={btnClasses}>
-                  <span className="glyphicon glyphicon-dot-lg" /> Record
-                </Button>
-              </div>
-          }
-
           <ExtractWidget
-            includeButton
             toCollection={activeCollection.title}
             url={url} />
+        </div>
 
-        </InputGroup>
-        <FormGroup className="col-md-10 col-md-offset-2 top-buffer form-inline">
+        <div className="col-md-8 col-md-offset-2 top-buffer">
+          {
+            isAnon ?
+              <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span><span className="caret" /></Button> :
+              <CollectionDropdown label={false} />
+          }
+        </div>
 
-          {/*
-          <label htmlFor="recording-name">New Recording Name:&emsp;</label>
-          <InputGroup>
-            <FormControl id="recording-name" name="recordingTitle" onChange={this.handleInput} type="text" bsSize="sm" className="homepage-title" value={recordingTitle} required disabled={isOutOfSpace} />
-          </InputGroup>
-         */}
+        <div className="col-md-8 col-md-offset-2 top-buffer">
+          <Collapsible
+            easing="ease-in-out"
+            lazyRender
+            onClose={this.closeAdvance}
+            onOpen={this.openAdvance}
+            open={initialOpen}
+            overflowWhenOpen="visible"
+            transitionTime={300}
+            trigger={advOptions}>
+            <h4>Session Notes</h4>
+            <WYSIWYG
+              editMode
+              externalEditButton
+              contentSync={this.editRecDesc}
+              initial={defaultRecDesc} />
 
-          <CollectionDropdown />
-
-        </FormGroup>
+            <div className="rb-dropdown">
+              <RemoteBrowserSelect />
+            </div>
+          </Collapsible>
+          <Button type="submit" disabled={isOutOfSpace}>
+            Collect
+          </Button>
+        </div>
       </form>
     );
   }

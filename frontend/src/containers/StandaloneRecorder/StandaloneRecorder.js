@@ -1,5 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
+
+import { showModal } from 'redux/modules/userLogin';
 
 import { getActiveCollection } from 'redux/selectors';
 
@@ -15,6 +18,13 @@ const mapStateToProps = ({ app }) => {
   };
 };
 
-export default connect(
-  mapStateToProps
-)(StandaloneRecorderUI);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    toggleLogin: bool => dispatch(showModal(bool, true))
+  };
+};
+
+export default withRouter(connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(StandaloneRecorderUI));

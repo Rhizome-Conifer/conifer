@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
 import { DropdownButton } from 'react-bootstrap';
 
-import { appHost, defaultRecordingTitle } from 'config';
+import { appHost } from 'config';
 import { apiFetch, remoteBrowserMod } from 'helpers/utils';
 
 import { RemoteBrowserOption } from 'components/controls';

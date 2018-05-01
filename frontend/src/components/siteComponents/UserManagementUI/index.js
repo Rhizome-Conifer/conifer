@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 
+import { product } from 'config';
+
 import Modal from 'components/Modal';
 
 import LoginForm from './loginForm';
@@ -15,7 +17,9 @@ class UserManagementUI extends Component {
   };
 
   static propTypes = {
+    anonCTA: PropTypes.bool,
     auth: PropTypes.object,
+    history: PropTypes.object,
     loginFn: PropTypes.func.isRequired,
     open: PropTypes.bool,
     showModal: PropTypes.func,
@@ -40,7 +44,8 @@ class UserManagementUI extends Component {
     if(this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
       if(!nextProps.auth.get('loginError')) {
         this.closeLogin();
-        this.context.router.history.push(`/${nextProps.auth.getIn(['user', 'username'])}`);
+        //this.props.history.push(`/${nextProps.auth.getIn(['user', 'username'])}`);
+        this.props.history.push('/');
       } else {
         this.setState({ formError: true });
       }
@@ -62,11 +67,18 @@ class UserManagementUI extends Component {
   }
 
   render() {
-    const { auth, open } = this.props;
+    const { anonCTA, auth, open } = this.props;
     const { formError } = this.state;
 
     const collCount = auth.getIn(['user', 'coll_count']);
-    const form = <LoginForm auth={auth} cb={this.save} error={formError} closeLogin={this.closeLogin} />;
+    const form = (
+      <LoginForm
+        anonCTA={anonCTA}
+        auth={auth}
+        cb={this.save}
+        error={formError}
+        closeLogin={this.closeLogin} />
+    );
     const username = auth.getIn(['user', 'username']);
     const isAnon = auth.getIn(['user', 'anon']);
 
@@ -120,7 +132,12 @@ class UserManagementUI extends Component {
               </li>
           }
         </ul>
-        <Modal header="Webrecorder Login" body={form} visible={open} closeCb={this.closeLogin} />
+        <Modal
+          dialogClassName="wr-login-modal"
+          header={anonCTA ? false : `${product} Login`}
+          body={form}
+          visible={open}
+          closeCb={this.closeLogin} />
       </div>
     );
   }

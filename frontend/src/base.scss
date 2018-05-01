@@ -22,6 +22,23 @@ body {
   flex-direction: column;
 }
 
+.caret {
+  transition: transform $slowShift ease-in-out;
+}
+
+.caret-flip {
+  transform: rotateZ(180deg);
+}
+
+.btn-primary {
+  background-color: $blue;
+  border-color: $dark-blue;
+
+  &:hover {
+    background-color: $dark-blue;
+  }
+}
+
 /*
  * Spacers and buffers
  *
@@ -134,6 +151,7 @@ body {
 
     &:hover {
         text-decoration: underline;
+        background: none;
     }
 }
 

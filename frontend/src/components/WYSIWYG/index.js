@@ -21,6 +21,7 @@ class WYSIWYG extends Component {
     active: PropTypes.bool,
     cancel: PropTypes.func,
     className: PropTypes.string,
+    contentSync: PropTypes.func,
     editMode: PropTypes.bool,
     externalEditButton: PropTypes.bool,
     initial: PropTypes.string,
@@ -111,14 +112,30 @@ class WYSIWYG extends Component {
     }
   }
 
-  onChange = editorState => this.setState({ editorState })
+  onChange = (editorState) => {
+    const { contentSync } = this.props;
+    this.setState({ editorState });
+
+    // send contents to external component
+    if (contentSync) {
+      contentSync(editorState.toString(this.method));
+    }
+  }
 
   onChangeSource = (event) => {
+    const { contentSync } = this.props;
+
     const source = event.target.value;
     const oldValue = this.state.editorState;
+    const editorState = oldValue.setContentFromString(source, this.method);
     this.setState({
-      editorState: oldValue.setContentFromString(source, this.method),
+      editorState,
     });
+
+    // send contents to external component
+    if (contentSync) {
+      contentSync(editorState.toString(this.method));
+    }
   }
 
   cancel = () => {
@@ -149,9 +166,9 @@ class WYSIWYG extends Component {
   }
 
   render() {
-    const { canAdmin } = this.context;
-    const { className, editMode, externalEditButton } = this.props;
+    const { className, contentSync, editMode, externalEditButton } = this.props;
     const { editorState, localEditMode, renderable } = this.state;
+    const canAdmin = typeof this.context.canAdmin !== 'undefined' ? this.context.canAdmin : true;
 
     const _editMode = externalEditButton ? editMode : localEditMode;
 
@@ -180,7 +197,7 @@ class WYSIWYG extends Component {
           }
         </div>
         {
-          _editMode &&
+          _editMode && !contentSync &&
             <div className="editor-button-row">
               <Button onClick={this.cancel}>Cancel</Button>
               <Button bsStyle={this.props.success ? 'success' : 'default'} onClick={this.save}>

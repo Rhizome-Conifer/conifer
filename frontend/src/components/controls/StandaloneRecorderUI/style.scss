@@ -1,3 +1,5 @@
+@import 'src/vars';
+
 .rb-dropdown, .extract-selector, .patch-selector  {
     .container {
         width: 60vw;
@@ -55,6 +57,61 @@
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-left-width: 0;
+}
+
+.start-recording-homepage {
+    button[type='submit'] {
+        float: right;
+        margin-top: 1.5rem;
+        background: $blue;
+        color: #FFF;
+        padding: 1.5rem 2.5rem;
+    }
+
+    .Collapsible__trigger {
+        cursor: pointer;
+    }
+
+    h4 {
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .wr-editor {
+        width: 100%;
+        max-width: inherit;
+    }
+
+    .anon-button {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .rb-dropdown {
+        margin-top: 1.5rem;
+
+        .dropdown {
+            width: 100%;
+
+            #cnt-button {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                border-width: .1rem;
+            }
+
+            .dropdown-menu {
+                width: 100%;
+
+                .container {
+                    width: 100%;
+                }
+            }
+        }
+    }
 }
 
 @media (min-width: 544px) and (max-width: 767px) {
