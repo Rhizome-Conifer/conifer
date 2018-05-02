@@ -8,6 +8,7 @@ import './style.scss';
 class Truncate extends Component {
   static propTypes = {
     animated: PropTypes.bool,
+    className: PropTypes.string,
     children: PropTypes.node,
     height: PropTypes.number,
     showLess: PropTypes.bool,
@@ -16,6 +17,7 @@ class Truncate extends Component {
 
   static defaultProps = {
     animated: true,
+    className: '',
     height: 100,
     showLess: true,
     showMore: true
@@ -87,12 +89,12 @@ class Truncate extends Component {
   }
 
   render() {
-    const { showLess, showMore } = this.props;
+    const { className, showLess, showMore } = this.props;
     const { expanded, height, noop } = this.state;
 
     return (
       <div
-        className={classNames('wr-truncate', { expanded })}
+        className={classNames('wr-truncate', [className], { expanded })}
         ref={(obj) => { this.container = obj; }}
         role={!expanded ? 'button' : 'presentation'}
         style={{ height }}

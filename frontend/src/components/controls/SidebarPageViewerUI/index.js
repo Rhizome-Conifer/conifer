@@ -4,6 +4,7 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import { Link } from 'react-router-dom';
 import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
@@ -11,11 +12,11 @@ import { untitledEntry } from 'config';
 import { updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
 
-import { Collection } from 'components/icons';
 import Searchbox from 'components/Searchbox';
+import SidebarHeader from 'components/SidebarHeader';
+import { CatalogIcon, WarcIcon } from 'components/icons';
 
 import { PageRenderer } from './renderers';
-
 import './style.scss';
 
 
@@ -23,11 +24,13 @@ class SidebarPageViewer extends Component {
 
   static propTypes = {
     activePage: PropTypes.number,
+    collection: PropTypes.object,
     pages: PropTypes.object,
     dispatch: PropTypes.func,
     searchPages: PropTypes.func,
     searchText: PropTypes.string,
-    setInspector: PropTypes.func
+    setInspector: PropTypes.func,
+    showNavigator: PropTypes.func
   }
 
   componentWillMount() {
@@ -73,6 +76,13 @@ class SidebarPageViewer extends Component {
     ]));
   }
 
+  getRowClass = ({ index }) => {
+    const { activePage } = this.props;
+    const baseClass = index % 2 !== 0 ? 'odd' : '';
+
+    return index === activePage ? `${baseClass} selected` : baseClass;
+  }
+
   search = (evt) => {
     const { dispatch, searchPages } = this.props;
 
@@ -80,18 +90,28 @@ class SidebarPageViewer extends Component {
   }
 
   render() {
-    const { activePage, pages, searchText } = this.props;
+    const { activePage, collection, pages, searchText } = this.props;
 
     return (
       <div className="page-list">
-        <header>
-          <Collection />
-          <span dangerouslySetInnerHTML={{ __html: ` Collection Pages (${activePage + 1} <em>of</em> ${pages.size})` }} />
+        <SidebarHeader label="Collection Navigator" />
+        <nav>
+          <button onClick={this.props.showNavigator} className="borderless">&larr; collection main</button>
+          <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
+        </nav>
+        <header className="pages-header">
+          <WarcIcon />
+          <div>
+            <span className="header-label">All pages archived in</span>
+            <h5>{`${collection.get('title')} (${pages.size})`}</h5>
+          </div>
         </header>
+        {/*
         <Searchbox
           search={this.search}
           searchText={searchText}
           placeholder="search for pages in index" />
+        */}
         <div className="pages">
           <AutoSizer>
             {
@@ -111,7 +131,7 @@ class SidebarPageViewer extends Component {
                           rowCount={pages.size}
                           rowHeight={50}
                           rowGetter={({ index }) => pages.get(index)}
-                          rowClassName={({ index }) => { return index === activePage ? 'selected' : ''; }}
+                          rowClassName={this.getRowClass}
                           onRowClick={this.onSelectRow}
                           onRowsRendered={({ startIndex, stopIndex }) => {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })

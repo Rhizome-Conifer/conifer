@@ -27,6 +27,7 @@ export RemoteBrowser from './RemoteBrowser/RemoteBrowser';
 export RegisterAccount from './RegisterAccount/RegisterAccount';
 export Replay from './Replay/Replay';
 export Sidebar from './Sidebar/Sidebar';
+export SidebarCollectionViewer from './SidebarCollectionViewer/SidebarCollectionViewer';
 export SidebarListViewer from './SidebarListViewer/SidebarListViewer';
 export SidebarPageViewer from './SidebarPageViewer/SidebarPageViewer';
 export SizeCounter from './SizeCounter/SizeCounter';

@@ -1,12 +1,10 @@
 @import 'src/vars';
 
+
 .page-list {
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: solid 0 $brightGreen;
-    border-width: .4rem 0 0 0;
-    padding-top: 1rem;
     user-select: none;
 
     .pages {
@@ -20,7 +18,7 @@
             width: calc(100% - 1rem);
             height: 3rem;
             z-index: 5;
-            pointer-events: none;
+            //pointer-events: none;
         }
 
         &:before {
@@ -34,20 +32,41 @@
         }
     }
 
-    & > header {
-        text-transform: uppercase;
-        font-weight: 400;
-        font-size: 1.2rem;
-        margin-bottom: 1.5rem;
-        white-space: nowrap;
-        overflow: hidden;
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
 
-        em {
-            text-transform: lowercase;
+        svg {
+            vertical-align: bottom;
+        }
+    }
+
+    .pages-header {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+
+        border: solid .2rem $blue;
+        border-width: 0 0 .2rem 0;
+
+        svg {
+            vertical-align: middle;
+            width: 2rem;
+            height: 2rem;
         }
 
-        .glyphicon {
-            color: rgb(125, 125, 125);
+        & > div {
+            margin-left: 1rem;
+
+            .header-label {
+                font-size: 1rem;
+            }
+
+            h5 {
+                font-weight: 400;
+                margin: 0;
+            }
         }
     }
 
@@ -59,6 +78,10 @@
         color: $bookmarkListDefault;
         cursor: pointer;
         padding-left: 2rem;
+
+        &.odd {
+            background-color: $table-zebra;
+        }
 
         &:focus {
             outline-width: 0;

@@ -16,7 +16,8 @@ import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/
 import { toggle as toggleSidebar } from 'redux/modules/sidebar';
 
 import Resizable from 'components/Resizable';
-import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
+import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer,
+         SidebarCollectionViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -54,6 +55,7 @@ class Replay extends Component {
 
     // TODO: unify replay and replay-coll
     this.mode = 'replay-coll';
+    this.state = { collectionNav: false };
   }
 
   getChildContext() {
@@ -65,14 +67,14 @@ class Replay extends Component {
     };
   }
 
-  shouldComponentUpdate(nextProps) {
-    // don't rerender for loading changes
-    if (!nextProps.loaded) {
-      return false;
-    }
+  // shouldComponentUpdate(nextProps) {
+  //   // don't rerender for loading changes
+  //   if (!nextProps.loaded) {
+  //     return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   componentWillUnmount() {
     // clear info stats
@@ -93,6 +95,11 @@ class Replay extends Component {
       `${config.contentHost}/${user}/${coll}/`;
   }
 
+  showCollectionNav = () => {
+    console.log('showCollectionNav');
+    this.setState({ collectionNav: true });
+  }
+
   render() {
     const { activeBookmarkId, activeBrowser, collection, dispatch, match: { params }, recording,
             reqId, timestamp, url } = this.props;
@@ -109,6 +116,10 @@ class Replay extends Component {
     if (!collection.get('loaded')) {
       return null;
     }
+
+    const navigator = listId ?
+      <SidebarListViewer showNavigator={this.showCollectionNav} /> :
+      <SidebarPageViewer showNavigator={this.showCollectionNav} />;
 
     return (
       <React.Fragment>
@@ -130,9 +141,9 @@ class Replay extends Component {
           <Sidebar storageKey="replaySidebar">
             <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
               {
-                listId ?
-                  <SidebarListViewer /> :
-                  <SidebarPageViewer />
+                this.state.collectionNav ?
+                  <SidebarCollectionViewer activeListId={listId} /> :
+                  navigator
               }
             </Resizable>
             <InspectorPanel />

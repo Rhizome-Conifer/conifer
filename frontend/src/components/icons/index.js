@@ -2,6 +2,7 @@ export AllPagesIcon from './AllPages';
 export BookmarkIcon from './Bookmark';
 export BrowserIcon from './Browser';
 export BugIcon from './Bug';
+export CatalogIcon from './Catalog';
 export CheckIcon from './Check';
 export CloseIcon from './Close';
 export Collection from './Collection';
