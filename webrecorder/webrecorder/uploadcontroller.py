@@ -1,5 +1,6 @@
 from webrecorder.basecontroller import BaseController
 from webrecorder.models.importer import UploadImporter
+from webrecorder.models.stats import Stats
 
 from bottle import request
 
@@ -29,6 +30,8 @@ class UploadController(BaseController):
             filename = request.query.getunicode('filename')
             stream = request.environ['wsgi.input']
             user = self.access.session_user
+
+            Stats(self.redis).incr_upload(user)
 
             return self.uploader.upload_file(user,
                                     stream,

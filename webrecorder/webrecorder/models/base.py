@@ -40,10 +40,13 @@ class RedisUniqueComponent(object):
     def size(self):
         return self.get_prop('size', force_type=int, default_val=0, force_update=True)
 
-    def incr_size(self, size):
-        val = self.redis.hincrby(self.info_key, 'size', size)
-        self.data['size'] = int(val)
+    def incr_key(self, key, value):
+        val = self.redis.hincrby(self.info_key, key, value)
+        self.data[key] = int(val)
         self.set_prop('updated_at', self._get_now())
+
+    def incr_size(self, size):
+        self.incr_key('size', size)
 
     def set_bool_prop(self, prop, value):
         self.set_prop(prop, self._from_bool(value))

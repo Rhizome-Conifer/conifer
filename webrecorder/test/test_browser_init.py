@@ -5,6 +5,9 @@ import json
 
 from mock import patch
 
+from webrecorder.utils import today_str
+from webrecorder.models.stats import Stats
+
 
 # ============================================================================
 def mock_load_all_browsers(self):
@@ -166,5 +169,10 @@ class TestBrowserInit(FullStackTests):
             res = self.testapp.get('/api/v1/create_remote_browser', params=params)
 
         assert res.json['error']
+
+    def test_browser_stats(self):
+        assert self.redis.keys(Stats.BROWSER_KEY_PREFIX + '*') == [Stats.BROWSER_KEY_PREFIX + 'chrome:60']
+        assert self.redis.hget(Stats.BROWSER_KEY_PREFIX + 'chrome:60', today_str()) == '4'
+
 
 

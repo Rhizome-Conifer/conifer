@@ -7,6 +7,8 @@ from pywb.utils.io import StreamIter, chunk_encode_iter
 from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
 
+from webrecorder.models.stats import Stats
+
 from bottle import response
 from six.moves.urllib.parse import quote
 from six import iteritems
@@ -88,6 +90,8 @@ class DownloadController(BaseController):
 
         #collection['uid'] = coll
         collection.load()
+
+        Stats(self.redis).incr_download(collection)
 
         now = timestamp_now()
 

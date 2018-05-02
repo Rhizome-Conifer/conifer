@@ -53,7 +53,7 @@ class TestAutoLogin(FullStackTests):
         assert res.json['collection']
         coll = res.json['collection']
 
-        assert coll['public_index'] == True
+        assert coll['public_index'] == False
         assert coll['public'] == False
         assert coll['title'] == 'Default Collection'
         assert 'This is your first collection' in coll['desc']
@@ -62,7 +62,7 @@ class TestAutoLogin(FullStackTests):
 
     def test_update_collection(self):
         params = {'desc': 'New Description',
-                  'public_index': False,
+                  'public_index': True,
                   'public': True,
                   'title': 'New Title'
                  }
@@ -72,7 +72,7 @@ class TestAutoLogin(FullStackTests):
         assert res.json['collection']
         coll = res.json['collection']
 
-        assert coll['public_index'] == False
+        assert coll['public_index'] == True
         assert coll['public'] == True
         assert coll['title'] == 'New Title'
         assert coll['desc'] == 'New Description'
@@ -115,7 +115,7 @@ class TestAutoLogin(FullStackTests):
 
         coll = res.json['collection']
 
-        assert coll['public_index'] == True
+        assert coll['public_index'] == False
         assert coll['public'] == False
         assert coll['title'] == 'Another Coll'
         assert "This collection doesn't yet have a description" in coll['desc']

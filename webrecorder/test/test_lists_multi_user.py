@@ -34,6 +34,7 @@ class TestListsAPIAccess(FullStackTests):
         collection = res.json['collection']
 
         assert collection['public'] == public
+        assert collection['public_index'] == False
 
         return coll_name
 
@@ -84,7 +85,7 @@ class TestListsAPIAccess(FullStackTests):
         self.priv_list_priv_coll = self._create_list('test', coll_name, 'New List', public=False)
         self.pub_list_priv_coll = self._create_list('test', coll_name, 'Public List', public=True)
 
-    def test_coll_get_lists_user_1(self):
+    def test_coll_get_lists_user_1_logged_in(self):
         res = self.testapp.get('/api/v1/collection/some-coll?user=test')
         assert len(res.json['collection']['lists']) == 2
 
@@ -95,6 +96,10 @@ class TestListsAPIAccess(FullStackTests):
             # only first bookmark returned
             assert len(blist['bookmarks']) == 1
             assert blist['total_bookmarks'] == 2
+
+        # pages and recordings included
+        assert res.json['collection']['pages'] == []
+        assert res.json['collection']['recordings'] == []
 
     def test_logout_login_user_2(self):
         res = self.testapp.get('/api/v1/logout', status=200)
@@ -115,7 +120,7 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.get('/api/v1/lists?user=another&coll=some-coll')
         assert len(res.json['lists']) == 2
 
-    def test_coll_get_lists_user_2(self):
+    def test_coll_get_lists_user_2_logged_in(self):
         # only public lists
         res = self.testapp.get('/api/v1/collection/some-coll?user=another')
         assert len(res.json['collection']['lists']) == 2
@@ -127,6 +132,10 @@ class TestListsAPIAccess(FullStackTests):
             # only first bookmark returned
             assert len(blist['bookmarks']) == 1
             assert blist['total_bookmarks'] == 2
+
+        # pages and recordings included
+        assert res.json['collection']['pages'] == []
+        assert res.json['collection']['recordings'] == []
 
     def test_assert_data_model(self):
         assert len(self.redis.keys('u:*:info')) == 2
@@ -175,6 +184,8 @@ class TestListsAPIAccess(FullStackTests):
         assert res.json['collection']['lists'][0]['title'] == 'Public List'
         assert res.json['collection']['featured_list'] == self.pub_list_pub_coll
 
+        assert 'pages' not in res.json['collection']
+
     def test_get_list_by_id_logged_out(self):
         res = self.testapp.get('/api/v1/list/{0}?user=another&coll=some-coll'.format(self.priv_list_pub_coll), status=404)
         res = self.testapp.get('/api/v1/list/{0}?user=another&coll=some-coll'.format(self.pub_list_pub_coll), status=200)
@@ -203,6 +214,9 @@ class TestListsAPIAccess(FullStackTests):
         assert len(res.json['collection']['lists']) == 1
         assert res.json['collection']['lists'][0]['title'] == 'Public List'
         assert res.json['collection']['featured_list'] == self.pub_list_pub_coll
+
+        assert 'pages' not in res.json['collection']
+        assert 'recordings' not in res.json['collection']
 
     def test_get_list_by_id_logged_in_diff_user(self):
         res = self.testapp.get('/api/v1/list/{0}?user=another&coll=some-coll'.format(self.priv_list_pub_coll), status=404)

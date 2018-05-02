@@ -4,6 +4,9 @@ import os
 import webtest
 import json
 
+from webrecorder.models.stats import Stats
+from webrecorder.utils import today_str
+
 from webrecorder.models.usermanager import CLIUserManager
 from warcio import ArchiveIterator
 
@@ -270,6 +273,10 @@ class TestUpload(FullStackTests):
             res = self.testapp.put('/_upload?filename=example2.warc.gz', params=fh.read())
 
         assert res.json == {'error_message': 'Sorry, uploads only available for logged-in users'}
+
+    def test_stats(self):
+        assert self.redis.hget(Stats.DOWNLOADS_KEY, today_str()) == '1'
+        assert self.redis.hget(Stats.UPLOADS_KEY, today_str()) == '3'
 
 
 

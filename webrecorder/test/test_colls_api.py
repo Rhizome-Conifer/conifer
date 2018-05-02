@@ -41,7 +41,7 @@ class TestWebRecCollsAPI(FullStackTests):
 
         assert coll['recordings'] == []
         assert coll['public'] == False
-        assert coll['public_index'] == True
+        assert coll['public_index'] == False
 
     def test_list_anon_collections(self):
         res = self.testapp.get('/api/v1/collections?user={user}'.format(user=self.anon_user))
