@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 from webrecorder.utils import redis_pipeline, today_str
 
+from pywb.warcserver.index.cdxobject import CDXObject
+
 
 # ============================================================================
 class Stats(object):
@@ -10,13 +12,15 @@ class Stats(object):
 
     TEMP_PREFIX = 'temp-'
 
-    BROWSER_KEY_PREFIX = '_:br:'
+    BROWSERS_KEY = 'st:br:{0}'
 
     DOWNLOADS_KEY = 'st:downloads'
     DOWNLOADS_PROP = 'num_downloads'
 
     UPLOADS_KEY = 'st:uploads'
     UPLOADS_PROP = 'num_uploads'
+
+    SOURCES_KEY = 'st:ra:{0}'
 
     RATE_LIMIT_KEY = 'ipr:{ip}:{H}'
     RATE_LIMIT_HOURS = 0
@@ -45,10 +49,12 @@ class Stats(object):
         rate_limit_key = self.RATE_LIMIT_KEY.format(ip=ip, H=h)
         return rate_limit_key
 
-    def incr_record(self, params, size):
+    def incr_record(self, params, size, cdx_list):
         username = params.get('param.user')
         if not username:
             return
+
+        today = today_str()
 
         with redis_pipeline(self.redis) as pi:
             # rate limiting
@@ -64,11 +70,22 @@ class Stats(object):
                 key = self.USER_USAGE_KEY
 
             if key:
-                pi.hincrby(key, today_str(), size)
+                pi.hincrby(key, today, size)
+
+        if params.get('sources') or params.get('param.recorder.rec'):
+            with redis_pipeline(self.redis) as pi:
+                for cdx in cdx_list:
+                    try:
+                        cdx = CDXObject(cdx)
+                        source_id = cdx['orig_source_id']
+                        size = int(cdx['length'])
+                        if source_id and size:
+                            pi.hincrby(self.SOURCES_KEY.format(source_id), today, size)
+                    except Exception as e:
+                        pass
 
     def incr_browser(self, browser_id):
-        browser_key = self.BROWSER_KEY_PREFIX + browser_id
-
+        browser_key = self.BROWSERS_KEY.format(browser_id)
         self.redis.hincrby(browser_key, today_str(), 1)
 
     def incr_download(self, collection):
@@ -78,9 +95,4 @@ class Stats(object):
     def incr_upload(self, user):
         user.incr_key(self.UPLOADS_PROP, 1)
         self.redis.hincrby(self.UPLOADS_KEY, today_str(), 1)
-
-
-
-
-
 

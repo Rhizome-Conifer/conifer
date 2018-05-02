@@ -306,7 +306,7 @@ class WebRecRedisIndexer(WritableRedisIndexer):
                     if key_templ == self.rec_info_key_templ:
                         pi.hset(key, 'recorded_at', ts_sec)
 
-        self.stats.incr_record(params, length)
+        self.stats.incr_record(params, length, cdx_list)
 
         return cdx_list
 

@@ -1,4 +1,6 @@
 from .testutils import FullStackTests
+from webrecorder.models.stats import Stats
+from webrecorder.utils import today_str
 
 
 # ============================================================================
@@ -102,4 +104,9 @@ class TestExtractContent(FullStackTests):
         # at least 1 second has expired
         assert res.json['collection']['timespan'] >= 0
         assert res.json['collection']['duration'] >= 0
+
+    def test_stats(self):
+        assert self.redis.exists(Stats.SOURCES_KEY.format('ia'))
+        assert int(self.redis.hget(Stats.SOURCES_KEY.format('ia'), today_str())) > 0
+
 

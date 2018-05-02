@@ -171,8 +171,8 @@ class TestBrowserInit(FullStackTests):
         assert res.json['error']
 
     def test_browser_stats(self):
-        assert self.redis.keys(Stats.BROWSER_KEY_PREFIX + '*') == [Stats.BROWSER_KEY_PREFIX + 'chrome:60']
-        assert self.redis.hget(Stats.BROWSER_KEY_PREFIX + 'chrome:60', today_str()) == '4'
+        assert self.redis.keys(Stats.BROWSERS_KEY.format('*')) == [Stats.BROWSERS_KEY.format('chrome:60')]
+        assert self.redis.hget(Stats.BROWSERS_KEY.format('chrome:60'), today_str()) == '4'
 
 
 
