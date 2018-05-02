@@ -168,20 +168,22 @@
                     }
                 }
 
-                &:hover {
-                    background: $gray300;
-
+                &.movable:hover {
                     .wrapper {
                         &:before {
                             background-image: url('../../../shared/images/handle.svg');
                         }
+                    }
+                }
 
+                &:hover {
+                    background: $gray300;
+
+                    .wrapper {
                         a {
                             color: #000;
                         }
 
-                        .visiblity-toggle {
-                        }
                         .visiblity-toggle.public {
                             background-color: $bright-green-highlight;
                         }

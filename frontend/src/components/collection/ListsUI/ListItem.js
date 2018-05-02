@@ -113,7 +113,7 @@ class ListItem extends PureComponent {
 
     const title = list.get('title');
     const isPublic = list.get('public');
-    const classes = classNames({ selected, targeted: isOver, 'is-public': isPublic });
+    const classes = classNames({ selected, targeted: isOver, 'is-public': isPublic, movable: canAdmin });
 
     const item = (
       <li className={classes} key={list.get('id')} style={{ opacity: isDragging ? 0 : 1 }}>

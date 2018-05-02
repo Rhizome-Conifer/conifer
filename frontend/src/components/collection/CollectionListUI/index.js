@@ -94,7 +94,7 @@ class CollectionListUI extends Component {
                   <Button onClick={this.toggle} bsStyle="primary" bsSize="small">
                     <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
                   </Button>
-                  <Upload>
+                  <Upload classes="btn btn-sm btn-success">
                     <span className="glyphicon glyphicon-upload" /> Upload
                   </Upload>
                 </React.Fragment>
