@@ -9,6 +9,7 @@ from pywb.warcserver.index.cdxobject import CDXObject
 class Stats(object):
     USER_USAGE_KEY = 'st:user-usage'
     TEMP_USAGE_KEY = 'st:temp-usage'
+    PATCH_USAGE_KEY = 'st:patch-usage'
 
     TEMP_PREFIX = 'temp-'
 
@@ -72,7 +73,10 @@ class Stats(object):
             if key:
                 pi.hincrby(key, today, size)
 
-        if params.get('sources') or params.get('param.recorder.rec'):
+        is_extract = params.get('sources') != None
+        is_patch = params.get('param.recorder.rec') != None
+
+        if is_extract or is_patch:
             with redis_pipeline(self.redis) as pi:
                 for cdx in cdx_list:
                     try:
@@ -83,6 +87,9 @@ class Stats(object):
                             pi.hincrby(self.SOURCES_KEY.format(source_id), today, size)
                     except Exception as e:
                         pass
+
+                if is_patch:
+                    pi.hincrby(self.PATCH_USAGE_KEY, today, size)
 
     def incr_browser(self, browser_id):
         browser_key = self.BROWSERS_KEY.format(browser_id)
