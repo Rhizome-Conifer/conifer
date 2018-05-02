@@ -4,6 +4,14 @@
     margin-right: 1rem;
 }
 
+.custom-report {
+    color: #FFF;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
 .wr-header-btn {
     border: none;
     background: transparent;
