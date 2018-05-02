@@ -518,7 +518,7 @@ class ContentController(BaseController, RewriterApp):
                                                    self.patch_of_name(recording['title']),
                                                    'patch')
 
-            recording.set_prop('patch_rec', patch_recording.my_id)
+            recording.set_patch_recording(patch_recording)
 
             patch_rec_name = patch_recording.my_id
         else:
@@ -602,7 +602,7 @@ class ContentController(BaseController, RewriterApp):
 
             if inv_sources and inv_sources != '*':
                 #patch_rec_name = self.patch_of_name(rec, True)
-                patch_recording = collection.get_recording(recording['patch_rec'])
+                patch_recording = recording.get_patch_recording()
                 #patch_recording = collection.get_recording_by_name(patch_rec_name)
 
         if type == 'replay-coll':

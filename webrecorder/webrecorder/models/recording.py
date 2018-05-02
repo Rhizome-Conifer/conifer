@@ -156,6 +156,15 @@ class Recording(RedisUniqueComponent):
         ra_key = self.RA_KEY.format(rec=self.my_id)
         pi.sadd(ra_key, source_id)
 
+    def set_patch_recording(self, patch_recording):
+        if patch_recording:
+            self.set_prop('patch_rec', patch_recording.my_id)
+
+    def get_patch_recording(self):
+        patch_rec = self.get_prop('patch_rec')
+        if patch_rec:
+            return self.get_owner().get_recording(patch_rec)
+
     def write_cdxj(self, user, cdxj_key):
         #full_filename = self.redis.hget(warc_key, self.INDEX_FILE_KEY)
         full_filename = self.get_prop(self.INDEX_FILE_KEY)

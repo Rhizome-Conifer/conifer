@@ -263,7 +263,7 @@ class BaseWebSockHandler(object):
         if size is not None:
             # if extracting, also add the size from patch recording, if any
             if self.recording and self.type_ == 'extract':
-                patch_recording = self.collection.get_recording_by_name('patch-of-' + self.recording.name)
+                patch_recording = self.recording.get_patch_recording()
                 if patch_recording:
                     patch_size = patch_recording.size
                     if patch_size is not None:
