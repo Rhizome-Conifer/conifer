@@ -4,9 +4,22 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: solid 0 $brightGreen;
-    border-width: .4rem 0 0 0;
     //user-select: none;
+
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        svg {
+            vertical-align: bottom;
+        }
+    }
+
+    .list-header {
+        border: solid .2rem $blue;
+        border-width: 0 0 .2rem 0;
+    }
 
     .bookmarks {
         position: relative;
@@ -30,24 +43,6 @@
         &:after {
             bottom: 0;
             background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
-        }
-    }
-
-    & > header {
-        //white-space: nowrap;
-        overflow: hidden;
-        padding: 0 1rem;
-
-        em {
-            text-transform: lowercase;
-        }
-
-        .glyphicon {
-            color: rgb(125, 125, 125);
-        }
-
-        hr {
-            margin: 0;
         }
     }
 

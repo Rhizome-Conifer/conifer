@@ -5,6 +5,7 @@ import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 import classNames from 'classnames';
+import { Link } from 'react-router-dom';
 import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
@@ -14,8 +15,10 @@ import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
 
 import InlineEditor from 'components/InlineEditor';
+import SidebarHeader from 'components/SidebarHeader';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
+import { CatalogIcon, ListIcon } from 'components/icons';
 
 import { BookmarkRenderer } from './renderers';
 import './style.scss';
@@ -36,6 +39,7 @@ class SidebarListViewer extends Component {
     dispatch: PropTypes.func,
     editList: PropTypes.func,
     setInspector: PropTypes.func,
+    showNavigator: PropTypes.func,
     timestamp: PropTypes.string,
     url: PropTypes.string
   }
@@ -134,25 +138,13 @@ class SidebarListViewer extends Component {
 
     return (
       <div className="bookmark-list">
-        <header>
-          <InlineEditor
-            blockDisplay
-            initial={list.get('title')}
-            onSave={this.editListTitle}
-            success={this.props.listEdited}>
-            <h4>{list.get('title')}</h4>
-          </InlineEditor>
-          {
-            list.get('desc') &&
-              <Truncate height={75}>
-                <WYSIWYG
-                  minimal
-                  initial={list.get('desc')}
-                  cancel={this.toggleEdit}
-                  onSave={this.editListDesc}
-                  success={this.props.listEdited} />
-              </Truncate>
-          }
+        <SidebarHeader label="Collection Navigator" />
+        <nav>
+          <button onClick={this.props.showNavigator} className="borderless">&larr; collection main</button>
+          <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
+        </nav>
+        <header className="list-header">
+          <h4><ListIcon /> {list.get('title')}</h4>
         </header>
         <div className="bookmarks">
           <AutoSizer>

@@ -67,14 +67,21 @@ class Replay extends Component {
     };
   }
 
-  // shouldComponentUpdate(nextProps) {
-  //   // don't rerender for loading changes
-  //   if (!nextProps.loaded) {
-  //     return false;
-  //   }
+  componentWillReceiveProps(nextProps) {
+    const { match: { params: { listId }}} = this.props;
+    if (listId !== nextProps.match.params.listId && this.state.collectionNav) {
+      this.setState({ collectionNav: false });
+    }
+  }
 
-  //   return true;
-  // }
+  shouldComponentUpdate(nextProps) {
+    // don't rerender for loading changes
+    if (!nextProps.loaded) {
+      return false;
+    }
+
+    return true;
+  }
 
   componentWillUnmount() {
     // clear info stats
