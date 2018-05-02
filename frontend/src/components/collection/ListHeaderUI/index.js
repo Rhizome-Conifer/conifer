@@ -38,16 +38,6 @@ class ListHeaderUI extends PureComponent {
     editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
   }
 
-  togglePublicView = () => {
-    const { location: { pathname, search } } = this.props;
-    const asPublic = search && search.indexOf('asPublic') !== -1;
-    if (asPublic) {
-      window.location = `${pathname}${search.replace(/(\?|\&)asPublic/, '')}`;
-    } else {
-      window.location = `${pathname}${search}${search.indexOf('?') !== -1 ? '&' : '?'}asPublic`;
-    }
-  }
-
   startReplay = () => {
     const { collection, history, list } = this.props;
     const first = list.getIn(['bookmarks', 0]);
@@ -96,10 +86,6 @@ class ListHeaderUI extends PureComponent {
           Created by <Link to={`/${user}`}>{user}</Link>, with {bookmarks} from the collection <Link to={`/${user}/${collection.get('id')}`}>{collection.get('title')}</Link>
         </div>
         <div className="function-row">
-          {
-            canAdmin &&
-              <Button className="rounded" onClick={this.togglePublicView}>VIEW AS PUBLIC</Button>
-          }
           <Button onClick={this.startReplay} className="rounded">VIEW PAGES</Button>
           <Button onClick={this.viewCollection} className="rounded">SEE PARENT COLLECTION</Button>
           <Button className="rounded">SHARE</Button>

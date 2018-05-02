@@ -15,6 +15,7 @@ const mapStateToProps = ({ app }) => {
     loading: app.getIn(['lists', 'loading']),
     lists: app.getIn(['collection', 'lists']),
     list: app.get('list'),
+    publicIndex: app.getIn(['collection', 'public_index']),
     isCreating: app.getIn(['list', 'creating']),
     created: app.getIn(['list', 'created'])
   };

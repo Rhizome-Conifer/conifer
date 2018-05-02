@@ -67,12 +67,12 @@ class NewCollection extends Component {
                 { error }
               </Alert>
           }
-          <FormGroup bsClass="form-group col-md-5" validationState={this.titleValidation()}>
+          <FormGroup bsClass="form-group col-xs-5" validationState={this.titleValidation()}>
             <ControlLabel htmlFor="collection">Collection Name:</ControlLabel>
             <FormControl type="text" inputRef={(obj) => { this.input = obj; }} id="title" name="title" onFocus={this.focusInput} onChange={this.handleInput} value={collTitle} />
           </FormGroup>
 
-          <span className="col-md-6 col-md-offset-1">
+          <span className="col-xs-6 col-xs-offset-1">
             <div><label htmlFor="public-switch"><span className="glyphicon glyphicon-globe" style={{ marginRight: '4px' }} />Make public (visible to all)?</label></div>
             <Toggle
               id="public-switch"

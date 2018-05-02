@@ -136,6 +136,10 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
+
+  &.direction-override {
+    flex-direction: row;
+  }
 }
 
 .no-shadow {

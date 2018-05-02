@@ -13,10 +13,27 @@ import './style.scss';
 
 
 class CollectionCoverUI extends Component {
+  static contextTypes = {
+    canAdmin: PropTypes.bool
+  };
+
   static propTypes = {
     collection: PropTypes.object,
-    history: PropTypes.object
+    history: PropTypes.object,
+    orderdPages: PropTypes.object
   };
+
+  collectionLink = () => {
+    const { canAdmin } = this.context;
+    const { collection, orderdPages } = this.props;
+
+    if (!canAdmin && orderdPages) {
+      const pg = orderdPages.get(0);
+      return `/${collection.get('user')}/${collection.get('id')}/${pg.get('timestamp')}/${pg.get('url')}`;
+    }
+
+    return `/${collection.get('user')}/${collection.get('id')}/pages`;
+  }
 
   render() {
     const { collection } = this.props;
@@ -70,7 +87,7 @@ class CollectionCoverUI extends Component {
               </ul>
             </div>
         }
-        <Link className="browse" to={`/${user}/${collId}/pages`}>Browse Entire Collection</Link>
+        <Link className="browse" to={this.collectionLink()}>Browse Entire Collection</Link>
       </div>
     );
   }

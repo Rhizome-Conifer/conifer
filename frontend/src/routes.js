@@ -30,57 +30,60 @@ const userRoutes = [
   /* collection */
   {
     path: userPath,
+    breadcrumb: collList,
     component: CollectionList,
     exact: true,
-    name: 'collection',
     footer: true,
-    breadcrumb: collList
+    name: 'collection'
   },
   {
     path: `${userPath}/_settings`,
+    breadcrumb: 'Settings',
     component: UserSettings,
     exact: true,
-    name: 'settings',
     footer: true,
-    breadcrumb: 'Settings'
+    name: 'settings'
   },
   {
     path: `${userPath}/:coll`,
+    breadcrumb: collDetailBreadcrumb,
     component: CollectionCover,
     exact: true,
-    name: 'collectionCover',
     footer: true,
-    breadcrumb: collDetailBreadcrumb
+    getLocation: ({ user, coll }) => {
+      return `/${user}/${coll}/pages`;
+    },
+    name: 'collectionCover'
   },
   {
     path: `${userPath}/:coll/pages`,
+    breadcrumb: 'Pages',
+    classOverride: 'direction-override',
     component: CollectionDetail,
     exact: true,
-    name: 'collectionPages',
     footer: false,
-    classOverride: true,
-    breadcrumb: 'Pages'
+    name: 'collectionPages'
   },
   {
     path: `${userPath}/:coll/management`,
+    breadcrumb: 'Management',
+    classOverride: '',
     component: CollectionManagement,
     exact: true,
-    name: 'collectionMgmt',
     footer: false,
-    classOverride: true,
-    breadcrumb: 'Management'
+    name: 'collectionMgmt'
   },
   {
     path: `${userPath}/:coll/list/:list`,
+    breadcrumb: listDetailBreadcrumb,
+    classOverride: 'direction-override',
     component: CollectionDetail,
     exact: true,
-    name: 'collectionDetailList',
     footer: false,
-    classOverride: true,
-    breadcrumb: listDetailBreadcrumb,
     getLocation: ({ user, coll, list }) => {
       return `/${user}/${coll}/list/${list.split('-')[0]}`;
-    }
+    },
+    name: 'collectionDetailList'
   }
 ];
 
@@ -89,7 +92,7 @@ const controllerRoutes = [
     path: `${userPath}/:coll/$new`,
     name: 'new recording',
     footer: false,
-    classOverride: true,
+    classOverride: '',
     component: NewRecording,
     exact: true,
     breadcrumb: 'New Recording'
@@ -97,104 +100,104 @@ const controllerRoutes = [
   {
     // record with remote browser id
     path: `${userPath}/:coll/:rec/record/$br::br/:splat(.*)`,
-    name: 'rb record',
-    footer: false,
-    classOverride: true,
+    breadcrumb: recBookmark,
+    classOverride: '',
     component: Record,
     exact: true,
-    breadcrumb: recBookmark,
-    getLocation: ({ user, coll, rec }) => `/${user}/${coll}?filter=${rec}`
+    footer: false,
+    getLocation: ({ user, coll, rec }) => `/${user}/${coll}?filter=${rec}`,
+    name: 'rb record'
   },
   {
     path: `${userPath}/:coll/:rec/record/:splat(.*)`,
-    name: 'record',
-    footer: false,
-    classOverride: true,
+    breadcrumb: recBookmark,
+    classOverride: '',
     component: Record,
     exact: true,
-    breadcrumb: recBookmark,
-    getLocation: ({ user, coll, rec }) => `/${user}/${coll}?filter=${rec}`
+    footer: false,
+    getLocation: ({ user, coll, rec }) => `/${user}/${coll}?filter=${rec}`,
+    name: 'record'
   },
   {
     path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?/:splat(.*)`,
-    name: 'patch',
-    footer: false,
-    classOverride: true,
+    classOverride: '',
     component: Patch,
-    exact: true
+    exact: true,
+    footer: false,
+    name: 'patch'
   },
   {
     path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
-    name: 'rb patch',
-    footer: false,
-    classOverride: true,
+    classOverride: '',
     component: Patch,
-    exact: true
+    exact: true,
+    footer: false,
+    name: 'rb patch'
   },
   {
     path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
-    name: 'rb extract',
-    footer: false,
-    classOverride: true,
+    classOverride: '',
     component: Extract,
-    exact: true
+    exact: true,
+    footer: false,
+    name: 'rb extract'
   },
   {
     path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?/:splat(.*)`,
-    name: 'extract',
-    footer: false,
-    classOverride: true,
+    classOverride: '',
     component: Extract,
-    exact: true
+    exact: true,
+    footer: false,
+    name: 'extract'
   },
   {
     path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
-    name: 'list rb replay',
-    footer: false,
-    classOverride: true,
+    classOverride: '',
     component: Replay,
-    exact: true
+    exact: true,
+    footer: false,
+    name: 'list rb replay'
   },
   {
     path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?/:splat(.*)`,
-    name: 'list replay',
-    footer: false,
-    classOverride: true,
+    classOverride: '',
     component: Replay,
-    exact: true
+    exact: true,
+    footer: false,
+    name: 'list replay'
   },
   {
     path: `${userPath}/:coll/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
-    name: 'rb replay',
-    footer: false,
-    classOverride: true,
+    classOverride: '',
     component: Replay,
-    exact: true
+    exact: true,
+    footer: false,
+    name: 'rb replay'
   },
   {
     path: `${userPath}/:coll/:ts([0-9]+)?/:splat(.*)`,
-    name: 'replay',
-    footer: false,
-    classOverride: true,
+    classOverride: '',
     component: Replay,
-    exact: true
+    exact: true,
+    footer: false,
+    name: 'replay'
   }
 ];
 
 const infoRoutes = [
   {
     path: '/_faq',
-    name: 'FAQ',
-    footer: true,
     component: FAQ,
-    exact: true
+    exact: true,
+    footer: true,
+    name: 'FAQ'
   },
   {
     path: '/_policies',
-    name: 'Terms & Policies',
-    footer: true,
     component: TermsAndPolicies,
-    exact: true
+    exact: true,
+    footer: true,
+    name: 'Terms & Policies'
   }
 ];
 
@@ -202,38 +205,38 @@ export default [
   /* core */
   {
     path: '/',
-    component: Home,
-    footer: true,
-    exact: true,
     breadcrumb: 'Webrecorder',
+    component: Home,
+    exact: true,
+    footer: true
   },
   {
     path: '/_register',
-    name: 'registration',
-    footer: true,
     component: UserSignup,
-    exact: true
+    exact: true,
+    footer: true,
+    name: 'registration'
   },
   {
     path: '/_valreg/:registration',
     component: RegisterAccount,
     exact: true,
-    name: 'Account Registration',
-    footer: true
+    footer: true,
+    name: 'Account Registration'
   },
   {
     path: '/_forgot',
-    name: 'Password Reset',
-    footer: true,
     component: PasswordReset,
-    exact: true
+    exact: true,
+    footer: true,
+    name: 'Password Reset'
   },
   {
     path: '/_logout',
-    name: 'logout',
-    footer: true,
     component: Logout,
-    exact: true
+    exact: true,
+    footer: true,
+    name: 'logout'
   },
 
   ...infoRoutes,
@@ -242,9 +245,9 @@ export default [
 
   {
     path: '/(.*)',
-    name: 'notfound',
-    footer: true,
     component: HttpStatus,
-    exact: true
+    exact: true,
+    footer: true,
+    name: 'notfound'
   }
 ];

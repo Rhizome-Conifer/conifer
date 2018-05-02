@@ -125,13 +125,15 @@ class CollectionHeaderUI extends Component {
   }
 
   togglePublicView = () => {
-    const { location: { pathname, search }} = this.props;
-    const asPublic = search && search.indexOf('asPublic') !== -1;
-    if (asPublic) {
-      window.location = `${pathname}${search.replace(/(\?|\&)asPublic/, '')}`;
-    } else {
-      window.location = `${pathname}${search}${search.indexOf('?') !== -1 ? '&' : '?'}asPublic`;
-    }
+    const { collection, history } = this.props;
+    history.push(`/${collection.get('user')}/${collection.get('id')}`);
+    // const { location: { pathname, search }} = this.props;
+    // const asPublic = search && search.indexOf('asPublic') !== -1;
+    // if (asPublic) {
+    //   window.location = `${pathname}${search.replace(/(\?|\&)asPublic/, '')}`;
+    // } else {
+    //   window.location = `${pathname}${search}${search.indexOf('?') !== -1 ? '&' : '?'}asPublic`;
+    // }
   }
 
   render() {
@@ -189,9 +191,6 @@ class CollectionHeaderUI extends Component {
                   <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
                   <MenuItem divider />
                   <MenuItem>Edit Collection Info</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem disabled>Share Collection</MenuItem>
-                  <MenuItem disabled>Privacy Settings</MenuItem>
                   <MenuItem divider />
                   <MenuItem disabled>Help</MenuItem>
                 </DropdownButton>

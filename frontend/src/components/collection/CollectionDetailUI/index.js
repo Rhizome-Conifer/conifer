@@ -5,6 +5,7 @@ import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import { List } from 'immutable';
 import { Button } from 'react-bootstrap';
 
 import config from 'config';
@@ -27,6 +28,11 @@ import './style.scss';
 
 
 class CollectionDetailUI extends Component {
+  static contextTypes = {
+    canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
+  };
+
   static propTypes = {
     auth: PropTypes.object,
     browsers: PropTypes.object,
@@ -36,17 +42,13 @@ class CollectionDetailUI extends Component {
     list: PropTypes.object,
     match: PropTypes.object,
     pages: PropTypes.object,
+    publicIndex: PropTypes.bool,
     removeBookmark: PropTypes.func,
     saveBookmarkSort: PropTypes.func,
     setMultiInspector: PropTypes.func,
     setBookmarkInspector: PropTypes.func,
     setPageInspector: PropTypes.func
   };
-
-  static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
-  }
 
   constructor(props) {
     super(props);
@@ -294,7 +296,8 @@ class CollectionDetailUI extends Component {
   }
 
   render() {
-    const { pages, browsers, collection, match: { params } } = this.props;
+    const { canAdmin } = this.context;
+    const { pages, browsers, collection, match: { params }, publicIndex } = this.props;
     const { listBookmarks, selectedPageIdx } = this.state;
 
     // don't render until loaded
@@ -304,7 +307,8 @@ class CollectionDetailUI extends Component {
 
     const activeList = Boolean(params.list);
     const activeListId = params.list;
-    const objects = activeList ? listBookmarks : pages;
+    const indexPages = !canAdmin && !publicIndex ? List() : pages;
+    const objects = activeList ? listBookmarks : indexPages;
     const objectLabel = activeList ? 'Bookmark Title' : 'Page Title';
 
     const columnDefs = {

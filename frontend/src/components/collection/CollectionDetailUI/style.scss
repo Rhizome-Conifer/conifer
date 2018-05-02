@@ -53,9 +53,11 @@
 
 .wr-coll-detail {
     padding: 0rem .5rem 0 0;
-    position: absolute;
-    top:0;
-    bottom:0;
+    flex-grow: 1;
+    // position: absolute;
+    // top:0;
+    // bottom:0;
+    // height: calc(100vh - 2.2rem);
     width: 100%;
 
     display: grid;

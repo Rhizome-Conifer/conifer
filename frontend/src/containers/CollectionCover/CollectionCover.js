@@ -1,10 +1,43 @@
-import React from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
+
+import { timestampOrderedPages } from 'redux/selectors';
 
 import { isLoaded as isCollLoaded, load as loadColl } from 'redux/modules/collection';
 
 import CollectionCoverUI from 'components/collection/CollectionCoverUI';
 
+class CollectionCover extends Component {
+  static childContextTypes = {
+    asPublic: PropTypes.bool,
+    canAdmin: PropTypes.bool
+  };
+
+  static propTypes = {
+    auth: PropTypes.object,
+    location: PropTypes.object,
+    match: PropTypes.object
+  };
+
+  getChildContext() {
+    const { auth, location: { search }, match: { params: { user } } } = this.props;
+    const username = auth.getIn(['user', 'username']);
+
+    const asPublic = search ? search.indexOf('asPublic') !== -1 : false;
+
+    return {
+      canAdmin: username === user && !asPublic,
+      asPublic
+    };
+  }
+
+  render() {
+    return (
+      <CollectionCoverUI {...this.props} />
+    );
+  }
+}
 
 const initialData = [
   {
@@ -24,7 +57,9 @@ const initialData = [
 
 const mapStateToProps = ({ app }) => {
   return {
-    collection: app.get('collection')
+    auth: app.get('auth'),
+    collection: app.get('collection'),
+    orderdPages: timestampOrderedPages(app)
   };
 };
 
@@ -32,4 +67,4 @@ const mapStateToProps = ({ app }) => {
 export default asyncConnect(
   initialData,
   mapStateToProps
-)(CollectionCoverUI);
+)(CollectionCover);

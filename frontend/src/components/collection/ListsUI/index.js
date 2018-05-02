@@ -34,11 +34,13 @@ class ListsUI extends Component {
     collapsibleToggle: PropTypes.func,
     createList: PropTypes.func,
     deleteList: PropTypes.func,
+    editColl: PropTypes.func,
     editList: PropTypes.func,
     loaded: PropTypes.bool,
     loading: PropTypes.bool,
     lists: PropTypes.object,
     list: PropTypes.object,
+    publicIndex: PropTypes.bool,
     sortLists: PropTypes.func
   };
 
@@ -109,6 +111,11 @@ class ListsUI extends Component {
     this.props.editList(collection.get('user'), collection.get('id'), listId, data);
   }
 
+  toggleIndexVisibility = () => {
+    const { collection, editColl, publicIndex } = this.props;
+    editColl(collection.get('user'), collection.get('id'), { public_index: !publicIndex });
+  }
+
   clearInput = () => this.setState({ title: '' })
 
   openEditModal = (evt) => {
@@ -142,7 +149,7 @@ class ListsUI extends Component {
 
   render() {
     const { canAdmin } = this.context;
-    const { activeListId, collection, list } = this.props;
+    const { activeListId, collection, list, publicIndex } = this.props;
     const { created, editModal, edited, editId, isCreating, lists, title } = this.state;
 
     // wait until collection is loaded
@@ -207,12 +214,25 @@ class ListsUI extends Component {
                     sort={this.sortLists} />
                 ))
               }
-              <li className="divider" />
-              <li className={classNames('all-pages', { selected: !activeListId })}>
-                <div className="wrapper">
-                  <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`} className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
-                </div>
-              </li>
+              {
+                (publicIndex || canAdmin) &&
+                  <React.Fragment>
+                    <li className="divider" />
+                    <li className={classNames('all-pages', { selected: !activeListId })}>
+                      <div className="wrapper">
+                        <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`} title="See all pages in this collection" className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
+                        {
+                          canAdmin &&
+                            <button
+                              aria-label={publicIndex ? 'set page index public' : 'set page index private'}
+                              onClick={this.toggleIndexVisibility}
+                              className={classNames('visiblity-toggle', { public: publicIndex })}
+                              title="Toggle page index visibility" />
+                        }
+                      </div>
+                    </li>
+                  </React.Fragment>
+              }
             </ul>
           </div>
         </Collapsible>

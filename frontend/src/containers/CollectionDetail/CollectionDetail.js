@@ -22,7 +22,7 @@ class CollectionDetail extends Component {
     match: PropTypes.object
   };
 
-    // TODO move to HOC
+  // TODO: update to new context api
   static childContextTypes = {
     asPublic: PropTypes.bool,
     canAdmin: PropTypes.bool
@@ -116,6 +116,7 @@ const mapStateToProps = (outerState) => {
     browsers: app.get('remoteBrowsers'),
     loaded: reduxAsyncConnect.loaded,
     pages,
+    publicIndex: app.getIn(['collection', 'public_index']),
     list: app.get('list')
   };
 };
