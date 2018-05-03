@@ -150,7 +150,12 @@ class WYSIWYG extends Component {
     }
   }
 
-  save = () => this.props.onSave(this.state.editorState.toString(this.method))
+  save = () => {
+    const { onSave } = this.props;
+    if (onSave) {
+      onSave(this.state.editorState.toString(this.method));
+    }
+  }
 
   toggleMarkdownMode = () => this.setState({ markdownEdit: !this.state.markdownEdit })
 

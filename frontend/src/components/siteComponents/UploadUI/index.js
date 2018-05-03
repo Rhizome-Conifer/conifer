@@ -128,7 +128,7 @@ class UploadUI extends Component {
 
   indexingComplete = (user, coll) => {
     this.close();
-    this.context.router.history.push(`/${user}/${coll}/`);
+    this.context.router.history.push(`/${user}/${coll}/pages`);
   }
 
   indexing = (data) => {
