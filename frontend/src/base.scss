@@ -16,6 +16,16 @@ body {
   font-family: $sans;
 }
 
+a {
+  &:link, &:visited {
+    color: $blue;
+  }
+
+  &:hover {
+    color: $blue;
+  }
+}
+
 #app {
   min-height: 100vh;
   display: flex;

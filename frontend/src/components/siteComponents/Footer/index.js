@@ -20,8 +20,9 @@ function Footer() {
             <a href="https://twitter.com/webrecorder_io" target="_blank">
               <TwitterIcon />
             </a>
-            <a href="mailto:support@webrecorder.io" className="divider"><MailIcon />Contact</a>
+            <a href="mailto:support@webrecorder.io" className="divider contact"><MailIcon />Contact</a>
             <Link to="/_faq" className="divider">About</Link>
+            <Link to="/_documentation" className="divider">User Guide</Link>
             <a href="https://webrecorder.github.io" target="_blank" className="divider">Blog</a>
             <Link to="/_policies" className="divider">Terms & Policies</Link>
           </div>
