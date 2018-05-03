@@ -8,7 +8,7 @@ function HowTo() {
     <div className="row">
       <div className="col-xs-9 col-xs-push-1 col-sm-6 col-sm-push-3">
         <h3>Quick Start</h3>
-        <p>
+        <div className="documentation">
           <ol className="instructions">
             <li>Enter a URL in the box in the center of the screen labeled ‘URL to record’.</li>
             <li>Press the ‘record’ button (on the right side of the box where you entered the URL).</li>
@@ -18,19 +18,19 @@ function HowTo() {
             <li>Your capture (recording) will then be browsable in replay mode. Note the capture (recording) will not ‘replay’ like a linear recording but instead be an interactive copy of the pages you have collected.</li>
             <li>If you are a logged-in user, this collection will be saved to your account. You can also log in to your account to save the collection after you create it. If you have not logged in you can still download your collection for a limited time (approximately 90 minutes from when you stop your recording session).</li>
           </ol>
-        </p>
+        </div>
 
         <h3>Browse (access/review collection)</h3>
-        <p>
+        <div className="documentation">
           <ol className="instructions">
             <li>Select the collection you want to browse.</li>
             <li>From the pages list, click on the page in the collection you want to review.</li>
             <li>You can navigate within your collection by clicking on the arrow button in the upper right section of the screen to view each page you captured one by one. If you collected pages that link to each other you can use hyperlinks between those two pages to move from one page to the next.</li>
           </ol>
-        </p>
+        </div>
 
         <h3>Basic Collection Building</h3>
-        <p>
+        <div className="documentation">
           <ol className="instructions">
             <li>Plan what you want to collect in a collection. Note: you cannot delete or modify the individual pages in your collection––adding or deleting from a collection can only occur session-by-session.</li>
             <li>Start a collection: enter a name for the collection.</li>
@@ -43,7 +43,7 @@ function HowTo() {
             <li>If you are a logged-in user this collection will be saved to your account. You can also log in to your account to save the collection after you   create it. If you have not logged in you can still download your collection for a limited time (approximately 90 minutes from when you stop your recording session).</li>
             <li>Build your collection with additional sessions by repeating the steps above. Again, note, adding or deleting from a collection happens session-by session––you cannot delete or modify individual pages or resources.</li>
           </ol>
-        </p>
+        </div>
 
         <h3>Making a Patch (adding to already collected data)</h3>
         <ol className="instructions">
