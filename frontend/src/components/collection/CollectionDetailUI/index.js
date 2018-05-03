@@ -37,6 +37,7 @@ class CollectionDetailUI extends Component {
     auth: PropTypes.object,
     browsers: PropTypes.object,
     clearInspector: PropTypes.func,
+    clearQuery: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     list: PropTypes.object,
@@ -97,6 +98,11 @@ class CollectionDetailUI extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.list !== this.props.list) {
       this.setState({ listBookmarks: nextProps.list.get('bookmarks') });
+    }
+
+    // clear querybox if removed from url
+    if (this.props.location.search.includes('query') && !nextProps.location.search.includes('query')) {
+      this.props.clearQuery();
     }
   }
 
@@ -342,22 +348,23 @@ class CollectionDetailUI extends Component {
         cellRenderer: TimestampRenderer
       },
       title: {
-        width: 200,
-        label: objectLabel,
+        className: 'page-title',
         dataKey: 'title',
-        key: 'title',
         flexGrow: 1,
-        columnData: {
-          collection,
-          listId: activeListId
-        },
-        cellRenderer: LinkRenderer,
+        key: 'title',
+        label: objectLabel,
+        width: 200,
       },
       url: {
         width: 200,
         dataKey: 'url',
         key: 'url',
-        flexGrow: 1
+        flexGrow: 1,
+        columnData: {
+          collection,
+          listId: activeListId
+        },
+        cellRenderer: LinkRenderer
       }
     };
 

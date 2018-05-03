@@ -1,24 +1,35 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Button, FormControl, InputGroup } from 'react-bootstrap';
+
+import { SearchIcon, XIcon } from 'components/icons';
 
 import './style.scss';
 
 
 function Searchbox(props) {
-  const { placeholder, search, searchText } = props;
+  const { clear, placeholder, search, searchText } = props;
 
   return (
-    <span className="search-box">
-      <input type="text" onChange={search} value={searchText} placeholder={placeholder || 'search'} name="filter" />
-      <span className="glyphicon glyphicon-search" />
-    </span>
+    <InputGroup bsClass="input-group search-box">
+      <FormControl bsSize="sm" onChange={search} value={searchText} placeholder={placeholder || 'Search'} name="filter" />
+      <InputGroup.Button>
+        {
+          searchText ?
+            <Button bsSize="sm" onClick={clear}><XIcon /></Button> :
+            <Button bsSize="sm"><SearchIcon /></Button>
+
+        }
+      </InputGroup.Button>
+    </InputGroup>
   );
 }
 
 Searchbox.propTypes = {
+  clear: PropTypes.func,
+  placeholder: PropTypes.string,
   search: PropTypes.func,
-  searchText: PropTypes.string,
-  placeholder: PropTypes.string
+  searchText: PropTypes.string
 };
 
 export default Searchbox;

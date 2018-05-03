@@ -5,8 +5,6 @@ import { Button, FormControl, InputGroup } from 'react-bootstrap';
 
 import { XIcon } from 'components/icons';
 
-import './style.scss';
-
 
 class QueryBoxUI extends Component {
   static propTypes = {

@@ -24,7 +24,7 @@ const mapDispatchToProps = (dispatch, { history }) => {
         .then((res) => {
           // if editing title, redirect to new title url
           if (data.hasOwnProperty('title')) {
-            history.push(`/${user}/${res.collection.id}`);
+            history.replace(`/${user}/${res.collection.id}/pages`);
           }
 
           setTimeout(() => dispatch(resetCollEditState()), 3000);

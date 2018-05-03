@@ -24,7 +24,14 @@ class ReportBugForm extends Component {
   }
 
   handleChange = (evt) => {
-    this.setState({ [evt.target.name]: evt.target.value });
+    if(evt.target.type === 'checkbox') {
+      if(evt.target.name in this.state)
+        this.setState({ [evt.target.name]: !this.state[evt.target.name] });
+      else
+        this.setState({ [evt.target.name]: true });
+    } else {
+      this.setState({ [evt.target.name]: evt.target.value });
+    }
   }
 
   render() {
@@ -40,6 +47,7 @@ class ReportBugForm extends Component {
 
     return (
       <Form id="bugform" onSubmit={this.save}>
+        <input type="hidden" name="url" value={window.location.href} />
         {
           fields.map(
             field => <CheckboxField {...field} key={field.name} cb={this.handleChange} />

@@ -33,9 +33,9 @@ section {
     background-color: #0000ee;
 }
 
-.header-webrecorder a,
+.header-webrecorder a:link,
 .header-webrecorder a:visited,
-.navbar-user-links>ul>li>a,
+.navbar-user-links>ul>li>a:link,
 .navbar-user-links>ul>li>a:visited {
     color: #FFF;
 }

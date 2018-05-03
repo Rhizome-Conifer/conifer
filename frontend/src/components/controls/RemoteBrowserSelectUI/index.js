@@ -121,7 +121,7 @@ class RemoteBrowserSelectUI extends Component {
               browsers.valueSeq().map(browser => <RemoteBrowserOption browser={browser} key={browser.get('id') ? browser.get('id') : 'native'} selectBrowser={this.selectBrowser} isActive={instanceContext === browser.get('id')} />)
           }
           {
-            <RemoteBrowserOption browser={fromJS({ id: null, name: '(native) Current' })} selectBrowser={this.selectBrowser} isActive={instanceContext === null} />
+            <RemoteBrowserOption browser={fromJS({ id: null, name: 'Use Current Browser (native)' })} selectBrowser={this.selectBrowser} isActive={instanceContext === null} />
           }
         </div>
       </DropdownButton>

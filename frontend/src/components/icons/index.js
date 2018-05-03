@@ -18,6 +18,7 @@ export MoreIcon from './More';
 export PatchIcon from './Patch';
 export PencilIcon from './Pencil';
 export PlusIcon from './Plus';
+export SearchIcon from './Search';
 export ShareIcon from './Share';
 export SidebarToggle from './SidebarToggle';
 export SnapshotIcon from './Snapshot';

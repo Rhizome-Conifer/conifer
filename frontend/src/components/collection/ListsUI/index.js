@@ -123,7 +123,13 @@ class ListsUI extends Component {
     this.setState({ editModal: true });
   }
 
-  closeEditModal = () => { this.setState({ editModal: false }); }
+  closeEditModal = () => {
+    if (this.state.title) {
+      this.createList();
+    }
+
+    this.setState({ editModal: false });
+  }
 
   sortLists = (origIndex, hoverIndex) => {
     const { lists } = this.state;

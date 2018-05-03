@@ -15,7 +15,6 @@ class ModeSelectorUI extends PureComponent {
 
   static contextTypes = {
     currMode: PropTypes.string,
-    router: PropTypes.object
   };
 
   static propTypes = {
@@ -36,16 +35,16 @@ class ModeSelectorUI extends PureComponent {
     const { params: { coll, rec, user } } = this.props;
 
     if (this.context.currMode.indexOf('replay') !== -1) {
-      this.context.router.history.push(`/${user}/${coll}/pages`);
+      window.location.href = `/${user}/${coll}/pages`;
     } else {
-      this.context.router.history.push(`/${user}/${coll}/pages?query=session:${rec}`);
+      window.location.href = `/${user}/${coll}/pages?query=session:${rec}`;
     }
   }
 
   onReplay = () => {
     const { activeBrowser, params: { coll, user }, timestamp, url } = this.props;
 
-    this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
+    window.location.href = `/${user}/${coll}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`;
   }
 
   onPatch = () => {
@@ -68,7 +67,7 @@ class ModeSelectorUI extends PureComponent {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => this.context.router.history.push(url.replace(config.appHost, '')))
+      .then(({ url }) => { window.location.href = url.replace(config.appHost, ''); })
       .catch(err => console.log('error', err));
   }
 
@@ -89,7 +88,7 @@ class ModeSelectorUI extends PureComponent {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => this.context.router.history.push(url.replace(config.appHost, '')))
+      .then(({ url }) => { window.location.href = url.replace(config.appHost, ''); })
       .catch(err => console.log('error', err));
   }
 

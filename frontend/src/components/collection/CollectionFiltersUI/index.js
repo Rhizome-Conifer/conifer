@@ -92,6 +92,11 @@ class CollectionFiltersUI extends Component {
     }
   }
 
+  clearSearch = () => {
+    const { dispatch, searchPages } = this.props;
+    dispatch(searchPages(''));
+  }
+
   render() {
     const { canAdmin, isAnon } = this.context;
     const { collection } = this.props;
@@ -100,13 +105,13 @@ class CollectionFiltersUI extends Component {
       <div className="wr-coll-utilities">
         <nav>
           {
-            !isAnon && canAdmin && this.props.selectedPageIdx !== null &&
-              <Button bsSize="xs" onClick={this.openAddToList}>Add selection to lists</Button>
-          }
-          {
             this.props.querying ?
               <QueryBox /> :
-              <Searchbox search={this.search} searchText={this.props.searchText} />
+              <Searchbox search={this.search} clear={this.clearSearch} searchText={this.props.searchText} />
+          }
+          {
+            !isAnon && canAdmin && this.props.selectedPageIdx !== null &&
+              <Button bsSize="xs" onClick={this.openAddToList}>Add selection to lists</Button>
           }
           {
             canAdmin &&

@@ -61,7 +61,7 @@
     width: 100%;
 
     display: grid;
-    grid-template-rows: auto 3rem 1fr;
+    grid-template-rows: auto 3.5rem 1fr;
     grid-template-columns: auto 1fr;
     grid-column-gap: 1.5rem;
     grid-template-areas:
@@ -108,20 +108,18 @@
             }
 
             .search-box {
-                margin: 0 0 0 auto;
-                width: 30%;
-                max-width: 30rem;
-                min-width: 10rem;
+                width: 50%;
+                max-width: 35rem;
+                min-width: 15rem;
             }
 
             .query-box {
-                margin: 0 0 0 auto;
                 width: 40%;
                 max-width: 35rem;
                 min-width: 20rem;
 
                 .input-group-addon {
-                    background-color: $brightGreen;
+                    background: none;
                 }
             }
         }
@@ -168,6 +166,17 @@
                         fill $tableRowFade ease-in-out;
             cursor: context-menu;
             font-size: 1.2rem;
+            position: relative;
+            padding-left: .75rem;
+
+            &:before {
+                transition: background-color $quickShift ease-in-out;
+                position: absolute;
+                left: 0;
+                content: '';
+                width: .75rem;
+                height: 100%;
+            }
 
             &:focus {
                 outline: none;
@@ -177,9 +186,7 @@
                 background-color: $table-zebra;
             }
 
-            a {
-                transition: color $tableRowFade ease-in-out;
-                color: $dark-gray;
+            .page-title {
                 font-size: 1.6rem;
             }
 
@@ -189,7 +196,21 @@
                 }
             }
 
-            &.selected, &:not(.selected):hover {
+            &:hover {
+                &:not(.selected){
+                    &:before {
+                        background: $tr-selected;
+                    }
+                }
+
+                &.selected {
+                    &:before {
+                        background: $tr-highlight-selected;
+                    }
+                }
+            }
+
+            &.selected {
                 background-color: $blue;
                 color: #FFF;
                 fill: #FFF;
