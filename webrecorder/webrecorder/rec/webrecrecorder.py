@@ -20,7 +20,7 @@ from webrecorder.load.wamloader import WAMLoader
 import webrecorder.rec.storage.storagepaths as storagepaths
 from webrecorder.rec.storage.local import DirectLocalFileStorage
 
-from webrecorder.models import Recording, Collection
+from webrecorder.models import Recording, Collection, Stats
 
 import redis
 import json
@@ -52,14 +52,6 @@ class WebRecRecorder(object):
 
         self.rec_map_key_templ = config['rec_map_key_templ']
         self.rec_map_key_templ = config['rec_map_key_templ']
-
-        #self.warc_key_templ = config['coll_warc_key_templ']
-
-        self.temp_prefix = config['temp_prefix']
-        self.user_usage_key = config['user_usage_key']
-        self.temp_usage_key = config['temp_usage_key']
-
-        #self.full_warc_prefix = config['full_warc_prefix']
 
         self.name = config['recorder_name']
 
@@ -264,16 +256,6 @@ class WebRecRedisIndexer(WritableRedisIndexer):
 
         config = kwargs['config']
 
-        self.temp_prefix = config['temp_prefix']
-
-        self.user_usage_key = config['user_usage_key']
-        self.temp_usage_key = config['temp_usage_key']
-
-        self.rate_limit_key = config['rate_limit_key']
-
-        self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
-        self.rate_limit_ttl = self.rate_limit_hours * 60 * 60
-
         self.coll_cdxj_key = Collection.COLL_CDXJ_KEY
         self.rec_file_key_template = Recording.REC_WARC_KEY
 
@@ -282,17 +264,7 @@ class WebRecRedisIndexer(WritableRedisIndexer):
         # set shared wam_loader for CDXJIndexer index writers
         CDXJIndexer.wam_loader = self.wam_loader
 
-    def get_rate_limit_key(self, params):
-        if not self.rate_limit_key or not self.rate_limit_ttl:
-            return None
-
-        ip = params.get('param.ip')
-        if not ip:
-            return None
-
-        h = datetime.utcnow().strftime('%H')
-        rate_limit_key = self.rate_limit_key.format(ip=ip, H=h)
-        return rate_limit_key
+        self.stats = Stats(self.redis)
 
     def add_warc_file(self, full_filename, params):
         base_filename = self._get_rel_or_base_name(full_filename, params)
@@ -322,7 +294,7 @@ class WebRecRedisIndexer(WritableRedisIndexer):
                     self.redis.zadd(coll_cdxj_key, 0, cdx)
 
         dt_now = datetime.utcnow()
-        ts = dt_now.date().isoformat()
+
         ts_sec = int(dt_now.timestamp())
 
         with redis_pipeline(self.redis) as pi:
@@ -334,21 +306,7 @@ class WebRecRedisIndexer(WritableRedisIndexer):
                     if key_templ == self.rec_info_key_templ:
                         pi.hset(key, 'recorded_at', ts_sec)
 
-            # write size to usage hashes
-            if 'param.user' in params:
-                if params['param.user'].startswith(self.temp_prefix):
-                    key = self.temp_usage_key
-                else:
-                    key = self.user_usage_key
-
-                # rate limiting
-                rate_limit_key = self.get_rate_limit_key(params)
-                if rate_limit_key:
-                    pi.incrby(rate_limit_key, length)
-                    pi.expire(rate_limit_key, self.rate_limit_ttl)
-
-                if key:
-                    pi.hincrby(key, ts, length)
+        self.stats.incr_record(params, length, cdx_list)
 
         return cdx_list
 

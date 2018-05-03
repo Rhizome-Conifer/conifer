@@ -2,6 +2,8 @@ import requests
 import gevent
 from bottle import request
 
+from webrecorder.models.stats import Stats
+
 import socket
 import os
 

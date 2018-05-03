@@ -36,13 +36,14 @@ class TestTempContent(FullStackTests):
         'u:{user}:colls',
         'h:defaults',
         'h:roles',
-        'h:temp-usage',
+        'st:temp-usage',
     ]
 
     POST_DEL_KEYS = [
         'h:defaults',
         'h:roles',
-        'h:temp-usage',
+        'st:temp-usage',
+        'st:downloads',
     ]
 
     PAGE_STATS = {'rec': 'r:{rec}:<sesh_id>:stats:{url}',
@@ -67,6 +68,7 @@ class TestTempContent(FullStackTests):
         #cls.manager = init_manager_for_cli()
 
         cls.dyn_stats = []
+        cls.downloaded = False
 
         cls.temp_coll = None
 
@@ -77,6 +79,10 @@ class TestTempContent(FullStackTests):
         cls.seshmock.stop()
 
         super(TestTempContent, cls).teardown_class(*args, **kwargs)
+
+    @classmethod
+    def set_downloaded(cls):
+        cls.downloaded = True
 
     def _get_redis_keys(self, keylist, user, coll, rec):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]
@@ -107,9 +113,8 @@ class TestTempContent(FullStackTests):
             exp_keys.append('c:{coll}:cdxj'.format(user=user, coll=coll))
             #exp_keys.append('c:{coll}:warc'.format(user=user, coll=coll))
 
-        #if self.pages:
-        #    for page in self.pages:
-        #        exp_keys.append('p:{page}:info'.format(page=page))
+        if self.downloaded:
+            exp_keys.append('st:downloads')
 
         if check_stats:
             self._check_dyn_stats(exp_keys)
@@ -471,6 +476,8 @@ class TestTempContent(FullStackTests):
 
     def test_anon_download_rec(self):
         res = self._get_anon('/temp/my-rec2/$download')
+
+        self.set_downloaded()
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''my-rec2-")
 

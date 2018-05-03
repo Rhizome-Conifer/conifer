@@ -205,7 +205,7 @@ del_templ:
     coll: 'c:{coll}:*'
     user: 'u:{user}:*'
 
-storage_key_templ: 'st:{name}'
+storage_key_templ: 's:{name}'
 
 
 # Recorder

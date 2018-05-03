@@ -15,6 +15,7 @@ from webrecorder.load.wamloader import WAMLoader
 from webrecorder.utils import get_bool
 
 from webrecorder.models.dynstats import DynStats
+from webrecorder.models.stats import Stats
 
 
 # ============================================================================
@@ -89,6 +90,8 @@ class ContentController(BaseController, RewriterApp):
                 return {'error': 'Invalid request'}
 
             browser_id = request.query['browser']
+
+            Stats(self.redis).incr_browser(browser_id)
 
             user = self.get_user(redir_check=False)
 

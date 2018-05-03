@@ -60,14 +60,14 @@ class SessionAccessCache(BaseAccess):
         if not self.is_superuser():
             raise HTTPError(404, 'No Access')
 
-    def _is_coll_owner(self, collection):
+    def is_coll_owner(self, collection):
         return self.session_user.is_owner(collection.get_owner())
 
     def check_write_access(self, collection):
         if not collection:
             return False
 
-        if self._is_coll_owner(collection):
+        if self.is_coll_owner(collection):
             return True
 
         return collection.get_prop(self.WRITE_PREFIX + self.session_user.my_id) != None
@@ -83,7 +83,7 @@ class SessionAccessCache(BaseAccess):
         if self.is_superuser():
             return True
 
-        if self._is_coll_owner(collection):
+        if self.is_coll_owner(collection):
             return True
 
         if self.is_anon():
@@ -111,7 +111,7 @@ class SessionAccessCache(BaseAccess):
         if self.sesh.is_restricted or not collection:
             return False
 
-        return self._is_coll_owner(collection)
+        return self.is_coll_owner(collection)
 
     def assert_can_admin_coll(self, collection):
         if not self.can_admin_coll(collection):
@@ -134,7 +134,7 @@ class SessionAccessCache(BaseAccess):
 
         coll = blist.get_owner()
 
-        if self._is_coll_owner(coll):
+        if self.is_coll_owner(coll):
             return True
 
         if coll.is_public() and blist.is_public():

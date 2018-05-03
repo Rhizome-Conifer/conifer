@@ -1,5 +1,8 @@
 from .testutils import FullStackTests
 import os
+from webrecorder.models.stats import Stats
+from webrecorder.utils import today_str
+
 
 
 # ============================================================================
@@ -54,4 +57,10 @@ class TestPatchContent(FullStackTests):
         assert self.redis.smembers('r:{rec}:ra'.format(rec=rec)) == {'ia'}
 
         assert self.testapp.cookies['__test_sesh'] != ''
+
+    def test_stats(self):
+        assert self.redis.exists(Stats.SOURCES_KEY.format('ia'))
+        assert int(self.redis.hget(Stats.SOURCES_KEY.format('ia'), today_str())) > 0
+
+        assert int(self.redis.hget(Stats.PATCH_USAGE_KEY, today_str())) > 0
 
