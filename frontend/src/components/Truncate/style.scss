@@ -8,12 +8,8 @@
     flex-direction: column;
     align-items: center;
 
-    &:not(.expanded) {
-        cursor: pointer;
-
-        & > * {
-            pointer-events: none;
-        }
+    &:not(.expanded) > *:not(.show-more) {
+        pointer-events: none;
     }
 
     &:after {
@@ -23,15 +19,27 @@
         left: 0;
         bottom: 0;
         width: 100%;
-        height: 5rem;
+        height: 8rem;
         z-index: 5;
         pointer-events: none;
-        background: linear-gradient(180deg, rgba(255,255,255,0), #FFF);
+        background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
         opacity: 0;
     }
 
     &:not(.expanded):after {
         opacity: 1;
+    }
+
+    .show-more {
+        transition: color $quickShift ease-in-out;
+        position: absolute;
+        bottom: 0;
+        text-transform: uppercase;
+        z-index: 50;
+
+        &:hover {
+            color: $blue;
+        }
     }
 
     .show-less {

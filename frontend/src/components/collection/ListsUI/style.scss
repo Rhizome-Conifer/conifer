@@ -226,11 +226,24 @@
     width: 30vw;
     max-width: 45rem;
 
+    header {
+        width: 100%;
+        padding-bottom: 1rem;
+        display: flex;
+        position: relative;
+
+        input {
+            flex-grow: 1;
+        }
+    }
+
     ul {
         list-style-type: none;
         padding: 0;
         margin: 0;
         width: 100%;
+        max-height: 50vh;
+        overflow: auto;
 
         li {
             display: flex;

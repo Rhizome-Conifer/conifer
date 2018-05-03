@@ -9,13 +9,12 @@
 }
 
 .wr-add-list {
-
     svg {
         transition: fill $quickShift ease-in-out;
-    }
 
-    &:hover svg {
-        fill: $success-color;
+        polygon {
+            fill: $success-color;
+        }
     }
 }
 

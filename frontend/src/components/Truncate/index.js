@@ -10,13 +10,15 @@ class Truncate extends Component {
     animated: PropTypes.bool,
     children: PropTypes.node,
     height: PropTypes.number,
-    showLess: PropTypes.bool
+    showLess: PropTypes.bool,
+    showMore: PropTypes.bool
   };
 
   static defaultProps = {
     animated: true,
     height: 100,
-    showLess: true
+    showLess: true,
+    showMore: true
   };
 
   constructor(props) {
@@ -24,19 +26,24 @@ class Truncate extends Component {
 
     this.state = {
       expanded: false,
-      height: props.animated ? 'auto' : props.height
+      height: props.animated ? 'auto' : props.height,
+      noop: false
     };
   }
 
   componentDidMount() {
     const { animated, height } = this.props;
 
-    if (animated && this.container) {
+    if (this.container) {
       // allow for child rendering ops before collapsing
       setTimeout(() => {
         const origHeight = this.container.getBoundingClientRect().height;
-        this.setState({ height, origHeight });
-      }, 100);
+        if (origHeight < height) {
+          this.setState({ noop: true, height: 'auto', expanded: true });
+        } else {
+          this.setState({ height, origHeight });
+        }
+      }, 10);
     }
   }
 
@@ -49,31 +56,56 @@ class Truncate extends Component {
         expanded: true,
         height: animated ? origHeight : 'auto'
       });
+
+      if (animated) {
+        this.container.addEventListener(
+          'transitionend',
+          () => this.setState({ height: 'auto' }),
+          { once: true }
+        );
+      }
     }
   }
 
   collapse = () => {
-    const { height } = this.props;
+    const { animated, height } = this.props;
 
-    this.setState({
-      expanded: false,
-      height
-    });
+    if (animated) {
+      const h = this.container.getBoundingClientRect().height;
+      if (h && h !== this.state.origHeight) {
+        this.setState({ origHeight: h, height: h });
+      } else {
+        this.setState({ height: h });
+      }
+      setTimeout(() => this.setState({ expanded: false, height }), 50);
+    } else {
+      this.setState({
+        expanded: false,
+        height
+      });
+    }
   }
 
   render() {
-    const { expanded, height } = this.state;
+    const { showLess, showMore } = this.props;
+    const { expanded, height, noop } = this.state;
 
     return (
       <div
         className={classNames('wr-truncate', { expanded })}
-        onClick={this.expand}
         ref={(obj) => { this.container = obj; }}
         role={!expanded ? 'button' : 'presentation'}
         style={{ height }}
         title={!expanded ? 'Click to expand' : ''}>
+        {
+          !expanded && !noop && showMore &&
+            <button className="borderless show-more" onClick={this.expand}>show more</button>
+        }
         {this.props.children}
-        <button className="show-less" onClick={this.collapse}>show less</button>
+        {
+          expanded && !noop && showLess &&
+            <button className="show-less" onClick={this.collapse}>show less</button>
+        }
       </div>
     );
   }
