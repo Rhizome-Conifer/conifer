@@ -10,6 +10,8 @@ class BookmarkList(RedisUniqueComponent):
 
     BOOKMARKS_KEY = 'l:{blist}:bookmarks'
 
+    ID_LEN = 8
+
     def __init__(self, **kwargs):
         super(BookmarkList, self).__init__(**kwargs)
         self.bookmarks = RedisOrderedList(self.BOOKMARKS_KEY, self)
@@ -145,6 +147,8 @@ class Bookmark(RedisUniqueComponent):
     MY_TYPE = 'book'
     INFO_KEY = 'b:{book}:info'
     ALL_KEYS = 'b:{book}:*'
+
+    ID_LEN = 8
 
     def init_new(self, bookmark_list, collection, props):
         self.owner = bookmark_list

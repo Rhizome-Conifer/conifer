@@ -168,12 +168,12 @@ class FullStackTests(HttpBinLiveTests, BaseWRTests):
                        'BookmarkList': []
                       }
 
-        def get_new_id_o(self):
+        def get_new_id_o(self, max_len=None):
             try:
                 id_gen = cls.ids_map.get(self.__class__.__name__)
                 return str(next(id_gen))
             except:
-                return get_new_id()
+                return get_new_id(max_len)
 
         return get_new_id_o
 

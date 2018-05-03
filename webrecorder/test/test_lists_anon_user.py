@@ -7,6 +7,8 @@ from webrecorder.models.list_bookmarks import BookmarkList, Bookmark
 
 # ============================================================================
 class TestListsAnonUserAPI(FullStackTests):
+    ID_1 = 'e5371563ab'
+
     @classmethod
     def setup_class(cls):
         super(TestListsAnonUserAPI, cls).setup_class()
@@ -36,7 +38,8 @@ class TestListsAnonUserAPI(FullStackTests):
                       timestamp='20181226000800',
                       browser='chrome:60',
                       desc='A description for this bookmark',
-                      page_id=None):
+                      page_id=None,
+                      rec='rec'):
 
         params = {'title': title,
                   'url': url,
@@ -47,6 +50,7 @@ class TestListsAnonUserAPI(FullStackTests):
 
         if page_id:
             params['id'] = page_id
+            params['rec'] = rec
 
         res = self.testapp.post_json(self._format('/api/v1/list/%s/bookmarks?user={user}&coll=temp' % list_id), params=params)
         return res
@@ -258,14 +262,14 @@ class TestListsAnonUserAPI(FullStackTests):
     # ========================================================================
     def test_create_page(self):
         page_id = self._add_page('rec', title='A Page', url='http://example.com/испытание/test')
-        assert page_id == 'b874ad9c6d'
+        assert page_id == self.ID_1
 
 
     # Bookmarks
     # ========================================================================
     def test_create_bookmark(self):
         res = self._add_bookmark('1002', title='An Example (испытание)', url='http://example.com/испытание/test',
-                                 page_id='b874ad9c6d')
+                                 page_id=self.ID_1)
 
         bookmark = res.json['bookmark']
 
@@ -281,13 +285,13 @@ class TestListsAnonUserAPI(FullStackTests):
         assert bookmark['browser'] == 'chrome:60'
         assert bookmark['desc'] == 'A description for this bookmark'
 
-        assert bookmark['page']['id'] == 'b874ad9c6d'
+        assert bookmark['page']['id'] == self.ID_1
         assert bookmark['page']['url'] == bookmark['url']
         assert bookmark['page']['timestamp'] == bookmark['timestamp']
 
     def test_create_bookmark_error_page_not_matcching(self):
         res = self._add_bookmark('1002', title='An Example (испытание)', url='http://example.com/испытание/test',
-                                 timestamp='2018', page_id='b874ad9c6d')
+                                 timestamp='2018', page_id=self.ID_1)
 
         # urls and timestamps of page and bookmark must match
         assert res.json['error'] == 'invalid_page'
@@ -403,11 +407,11 @@ class TestListsAnonUserAPI(FullStackTests):
 
     def test_multiple_bookmarks_for_page(self):
         res = self._add_bookmark('1003', title='An Example 2', url='http://example.com/испытание/test',
-                                 page_id='b874ad9c6d')
+                                 page_id=self.ID_1)
 
         res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}'))
 
-        assert res.json == {'page_bookmarks': {'b874ad9c6d': {'111': '1003', '101': '1002'}}}
+        assert res.json == {'page_bookmarks': {self.ID_1: {'111': '1003', '101': '1002'}}}
 
     def test_coll_info_with_lists(self):
         res = self.testapp.get(self._format('/api/v1/collection/temp?user={user}'))
