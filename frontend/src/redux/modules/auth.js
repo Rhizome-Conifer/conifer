@@ -52,7 +52,6 @@ export function auth(state = initialState, action = {}) {
     case LOGIN_FAIL:
       return state.merge({
         loggingIn: false,
-        user: defaultUser,
         loginError: action.error
       });
     case LOGOUT:
@@ -75,6 +74,10 @@ export function auth(state = initialState, action = {}) {
 }
 
 export function isLoaded({ app }) {
+  if (app.getIn(['auth', 'user', 'anon']) === true) {
+    return app.getIn(['auth', 'user', 'coll_count']);
+  }
+
   return app.get('auth') && app.getIn(['auth', 'loaded']);
 }
 

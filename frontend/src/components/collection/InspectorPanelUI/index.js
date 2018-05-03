@@ -103,11 +103,11 @@ class InspectorPanelUI extends PureComponent {
                         </span>
                       </li>
                       {
-                        pg.get('recording') &&
+                        pg.get('rec') &&
                         <li>
                           <h5>Session ID</h5>
                           <span className="value">
-                            <Link to={`/${collection.get('user')}/${collection.get('id')}/pages?query=session:${pg.get('recording')}`}>{pg.get('recording')}</Link>
+                            <Link to={`/${collection.get('user')}/${collection.get('id')}/pages?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
                           </span>
                         </li>
                       }

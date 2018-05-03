@@ -50,7 +50,7 @@ class CollectionListUI extends Component {
     // if incoming prop has a newCollection object and we are currently creating
     // a collection, reroute to new collection
     if (creatingCollection && newCollection && prevNewCollection !== newCollection) {
-      history.push(`/${user}/${newCollection}/`);
+      history.push(`/${user}/${newCollection}/pages`);
     }
   }
 
