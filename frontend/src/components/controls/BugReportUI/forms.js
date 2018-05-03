@@ -17,6 +17,10 @@ class ReportBugForm extends Component {
     this.state = {};
   }
 
+  componentDidMount() {
+    this.setState({ url: window.location.href });
+  }
+
   save = (evt) => {
     evt.preventDefault();
 
@@ -47,7 +51,6 @@ class ReportBugForm extends Component {
 
     return (
       <Form id="bugform" onSubmit={this.save}>
-        <input type="hidden" name="url" value={window.location.href} />
         {
           fields.map(
             field => <CheckboxField {...field} key={field.name} cb={this.handleChange} />
