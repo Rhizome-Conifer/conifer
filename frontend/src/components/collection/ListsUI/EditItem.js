@@ -56,11 +56,11 @@ class EditItem extends Component {
     return (
       <li>
         <RemoveWidget callback={this.confirmDelete} />
-        <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
+        <input name="title" className="borderless-input" onBlur={this.editListItem} onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
         {
           edited ?
             <button className="borderless"><CheckIcon success /></button> :
-            <button className="borderless" onClick={this.editListItem} disabled={!hasChanges}><PencilIcon /></button>
+            <button className="borderless" onClick={this.editListItem} disabled={!hasChanges} title="Save edit"><PencilIcon /></button>
         }
       </li>
     );
