@@ -10,6 +10,7 @@
     .pages {
         position: relative;
         flex-grow: 1;
+        margin-bottom: 1rem;
 
         &:before, &:after {
             content: '';
