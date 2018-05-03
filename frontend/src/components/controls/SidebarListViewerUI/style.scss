@@ -4,12 +4,18 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding-bottom: 1.5rem;
     //user-select: none;
 
     nav {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        padding: 0 1rem;
+
+        button {
+            padding: 0;
+        }
 
         svg {
             vertical-align: bottom;
@@ -19,6 +25,17 @@
     .list-header {
         border: solid .2rem $blue;
         border-width: 0 0 .2rem 0;
+        padding: 0 1rem;
+
+        h4 {
+            display: flex;
+
+            svg {
+                flex-shrink: 0;
+                margin-right: 1rem;
+                vertical-align: bottom;
+            }
+        }
     }
 
     .bookmarks {
@@ -35,15 +52,15 @@
             pointer-events: none;
         }
 
-        &:before {
-            top: 0;
-            background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
-        }
+        // &:before {
+        //     top: 0;
+        //     background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
+        // }
 
-        &:after {
-            bottom: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
-        }
+        // &:after {
+        //     bottom: 0;
+        //     background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
+        // }
     }
 
     .ReactVirtualized__Table__Grid {
@@ -54,6 +71,10 @@
         color: $bookmarkListDefault;
         cursor: pointer;
         padding-left: 2rem;
+
+        &.odd {
+            background-color: $table-zebra;
+        }
 
         &:focus {
             outline-width: 0;
@@ -74,31 +95,23 @@
         }
 
         &.selected {
-            color: $blue;
-
-            &:before {
-                content: '';
-                position: absolute;
-                left: .9rem;
-                top: .9rem;
-                width: 1.4rem;
-                height: 1.4rem;
-                background: url('../../../shared/images/active_bookmark_ico.svg');
-                background-size: cover;
-            }
+            background-color: $blue;
+            color: #FFF;
         }
 
         &.last-selected {
-            &:before {
-                content: '';
-                position: absolute;
-                left: .9rem;
-                top: .9rem;
-                width: 1.4rem;
-                height: 1.4rem;
-                background: url('../../../shared/images/last_active_bookmark_ico.svg');
-                background-size: cover;
-            }
+            background-color: $gray400;
+            color: #FFF;
+            // &:before {
+            //     content: '';
+            //     position: absolute;
+            //     left: .9rem;
+            //     top: .9rem;
+            //     width: 1.4rem;
+            //     height: 1.4rem;
+            //     background: url('../../../shared/images/last_active_bookmark_ico.svg');
+            //     background-size: cover;
+            // }
         }
 
         &:not(.selected):hover {

@@ -89,6 +89,8 @@ class SidebarPageViewer extends Component {
     dispatch(searchPages(evt.target.value));
   }
 
+  returnToCollection = () => this.props.showNavigator(true)
+
   render() {
     const { activePage, collection, pages, searchText } = this.props;
 
@@ -96,7 +98,7 @@ class SidebarPageViewer extends Component {
       <div className="page-list">
         <SidebarHeader label="Collection Navigator" />
         <nav>
-          <button onClick={this.props.showNavigator} className="borderless">&larr; collection main</button>
+          <button onClick={this.returnToCollection} className="borderless">&larr; collection main</button>
           <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
         </nav>
         <header className="pages-header">

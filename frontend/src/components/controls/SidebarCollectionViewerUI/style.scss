@@ -8,6 +8,7 @@
 
     .overflow-wrapper {
         overflow: auto;
+        padding: 0 1.5rem;
 
         & > nav {
             display: flex;
@@ -22,6 +23,10 @@
             border: solid .2rem $blue;
             border-width: 0 0 .2rem 0;
             margin-bottom: 1rem;
+
+            svg {
+                vertical-align: bottom;
+            }
         }
 
         .lists-header {
@@ -59,7 +64,12 @@
                         fill: $mid-gray;
                     }
 
-                    a {
+                    .selected-item {
+                        padding: 0;
+                        text-align: left;
+                    }
+
+                    a, .selected-item {
                         display: block;
                         width: 100%;
                         margin: 0 .5rem;
@@ -90,7 +100,7 @@
                             background-image: url('../../../shared/images/public-list.svg');
                         }
 
-                        a {
+                        a, button {
                             color: $dark-gray;
                         }
                     }

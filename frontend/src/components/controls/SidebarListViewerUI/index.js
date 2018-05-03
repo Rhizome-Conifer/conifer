@@ -109,15 +109,16 @@ class SidebarListViewer extends Component {
     this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
   }
 
-  rowClass = ({ index }) => {
+  getRowClass = ({ index }) => {
     const { activeBookmark } = this.props;
     const { navigated } = this.state;
 
     if (index !== activeBookmark) {
-      return '';
+      return index % 2 !== 0 ? 'odd' : '';
     }
 
     return classNames({
+      odd: index % 2 !== 0,
       selected: !navigated,
       'last-selected': navigated
     });
@@ -133,6 +134,8 @@ class SidebarListViewer extends Component {
     this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
   }
 
+  returnToCollection = () => this.props.showNavigator(true)
+
   render() {
     const { activeBookmark, bookmarks, collection, list } = this.props;
 
@@ -140,11 +143,14 @@ class SidebarListViewer extends Component {
       <div className="bookmark-list">
         <SidebarHeader label="Collection Navigator" />
         <nav>
-          <button onClick={this.props.showNavigator} className="borderless">&larr; collection main</button>
-          <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
+          <button onClick={this.returnToCollection} className="borderless">&larr; collection main</button>
+          <Link to={`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}`}>catalog view <CatalogIcon /></Link>
         </nav>
         <header className="list-header">
-          <h4><ListIcon /> {list.get('title')}</h4>
+          <h4>
+            <ListIcon />
+            <span>{list.get('title')}</span>
+          </h4>
         </header>
         <div className="bookmarks">
           <AutoSizer>
@@ -165,7 +171,7 @@ class SidebarListViewer extends Component {
                           rowCount={bookmarks.size}
                           rowHeight={50}
                           rowGetter={({ index }) => bookmarks.get(index)}
-                          rowClassName={this.rowClass}
+                          rowClassName={this.getRowClass}
                           onRowClick={this.onSelectRow}
                           onRowsRendered={({ startIndex, stopIndex }) => {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex });

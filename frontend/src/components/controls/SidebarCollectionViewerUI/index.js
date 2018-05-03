@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 import SidebarHeader from 'components/SidebarHeader';
 import Truncate from 'components/Truncate';
+import WYSIWYG from 'components/WYSIWYG';
 import { AllPagesIcon, CatalogIcon, WarcIcon } from 'components/icons';
 
 import './style.scss';
@@ -18,8 +19,13 @@ class SidebarCollectionViewerUI extends Component {
   static propTypes = {
     activeListId: PropTypes.string,
     collection: PropTypes.object,
-    orderdPages: PropTypes.object
+    orderdPages: PropTypes.object,
+    showNavigator: PropTypes.func
   };
+
+  returnToItem = () => {
+    this.props.showNavigator(false);
+  }
 
   render() {
     const { canAdmin } = this.context;
@@ -40,7 +46,10 @@ class SidebarCollectionViewerUI extends Component {
             <h5><WarcIcon /> {collection.get('title')}</h5>
           </header>
           <Truncate height={75} className="description">
-            {collection.get('desc')}
+            <WYSIWYG
+              externalEditButton
+              editMode={false}
+              initial={collection.get('desc')} />
           </Truncate>
           <header className="lists-header">
             <h4>Lists ({lists.size})</h4>
@@ -48,16 +57,23 @@ class SidebarCollectionViewerUI extends Component {
           <ul>
             {
               lists.map((list) => {
-                const classes = classNames({ selected: activeListId === list.get('id'), 'is-public': list.get('public') });
+                const selected = activeListId === list.get('id');
+                const classes = classNames({ selected, 'is-public': list.get('public') });
                 const bk = list.getIn(['bookmarks', '0']);
-                const loc = `/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
+                const loc = bk ?
+                  `/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}` :
+                  `/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}`;
 
                 return (
                   <li className={classes} key={list.get('id')}>
                     <div className="wrapper">
-                      <Link to={loc} title={list.get('title')}>
-                        { list.get('title') }
-                      </Link>
+                      {
+                        selected ?
+                          <button className="borderless selected-item" onClick={this.returnToItem}>{list.get('title')}</button> :
+                          <Link to={loc} title={list.get('title')}>
+                            { list.get('title') }
+                          </Link>
+                      }
                     </div>
                   </li>
                 );
@@ -69,7 +85,11 @@ class SidebarCollectionViewerUI extends Component {
                   <li className="divider" />
                   <li className={classNames('all-pages', { selected: !activeListId })}>
                     <div className="wrapper">
-                      <Link to={`/${collection.get('user')}/${collection.get('id')}/${pg.get('timestamp')}/${pg.get('url')}`} title="Browse this collection" className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
+                      {
+                        !activeListId ?
+                          <button className="borderless selected-item" onClick={this.returnToItem}><AllPagesIcon /> See all pages in this collection</button> :
+                          <Link to={`/${collection.get('user')}/${collection.get('id')}/${pg.get('timestamp')}/${pg.get('url')}`} title="Browse this collection" className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
+                      }
                     </div>
                   </li>
                 </React.Fragment>

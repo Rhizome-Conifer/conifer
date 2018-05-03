@@ -68,7 +68,7 @@ class Replay extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { match: { params: { listId }}} = this.props;
+    const { match: { params: { listId } } } = this.props;
     if (listId !== nextProps.match.params.listId && this.state.collectionNav) {
       this.setState({ collectionNav: false });
     }
@@ -102,9 +102,8 @@ class Replay extends Component {
       `${config.contentHost}/${user}/${coll}/`;
   }
 
-  showCollectionNav = () => {
-    console.log('showCollectionNav');
-    this.setState({ collectionNav: true });
+  showCollectionNav = (bool = true) => {
+    this.setState({ collectionNav: bool });
   }
 
   render() {
@@ -149,7 +148,9 @@ class Replay extends Component {
             <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
               {
                 this.state.collectionNav ?
-                  <SidebarCollectionViewer activeListId={listId} /> :
+                  (<SidebarCollectionViewer
+                    activeListId={listId}
+                    showNavigator={this.showCollectionNav} />) :
                   navigator
               }
             </Resizable>
