@@ -12,7 +12,7 @@ class Resizable extends Component {
     axis: PropTypes.oneOf(['x', 'y']),
     children: PropTypes.node,
     classes: PropTypes.string,
-    flexGrow: PropTypes.bool,
+    flexGrow: PropTypes.number,
     maxHeight: PropTypes.number,
     maxWidth: PropTypes.number,
     minHeight: PropTypes.number,
@@ -144,10 +144,12 @@ class Resizable extends Component {
   }
 
   render() {
-    const { axis, classes, overrideHeight, overrideWidth } = this.props;
+    const { axis, classes, flexGrow, overrideHeight, overrideWidth } = this.props;
     const { width, height } = this.state;
     const axisStyle = axis === 'x' ? { width: overrideWidth || width } : { height: overrideHeight || height };
-    const styles = { flexGrow: this.state.hasResized ? 0 : 1, ...axisStyle };
+    const flexSet = typeof flexGrow !== 'undefined';
+    const hasResized = this.state.hasResized ? 0 : 1;
+    const styles = { flexGrow: flexSet ? flexGrow : hasResized, ...axisStyle };
 
     return (
       <div
