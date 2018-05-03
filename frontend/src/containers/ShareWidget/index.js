@@ -18,6 +18,7 @@ class ShareWidget extends Component {
     collection: PropTypes.object,
     params: PropTypes.object,
     setCollPublic: PropTypes.func,
+    showLoginModal: PropTypes.func,
     timestamp: PropTypes.string,
     url: PropTypes.string
   }
@@ -30,11 +31,10 @@ class ShareWidget extends Component {
 
     const shareUrl = `${appHost}/${user}/${coll}/${activeList}${tsMod}${url}`;
     const embedUrl = `${appHost}/_embed/${user}/${coll}/${activeList}${tsMod}${url}`;
-    const isPublic = collection.get('isPublic') === '1';
 
     return (
       <ShareWidgetUI
-        isPublic={isPublic}
+        isPublic={collection.get('public')}
         setPublic={this.props.setCollPublic}
         collection={collection}
         shareUrl={shareUrl}
