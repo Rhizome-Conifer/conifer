@@ -48,6 +48,7 @@ class CollectionCoverUI extends Component {
         <div className="description">
           <WYSIWYG
             initial={collection.get('desc') || defaultCollDesc}
+            externalEditButton
             editMode={false} />
         </div>
         {

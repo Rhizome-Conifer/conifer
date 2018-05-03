@@ -16,7 +16,8 @@ import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/
 import { toggle as toggleSidebar } from 'redux/modules/sidebar';
 
 import Resizable from 'components/Resizable';
-import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer, SidebarPageViewer } from 'containers';
+import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer,
+         SidebarCollectionViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -54,6 +55,7 @@ class Replay extends Component {
 
     // TODO: unify replay and replay-coll
     this.mode = 'replay-coll';
+    this.state = { collectionNav: false };
   }
 
   getChildContext() {
@@ -63,6 +65,13 @@ class Replay extends Component {
       currMode: this.mode,
       canAdmin: auth.getIn(['user', 'username']) === user
     };
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { match: { params: { listId } } } = this.props;
+    if (listId !== nextProps.match.params.listId && this.state.collectionNav) {
+      this.setState({ collectionNav: false });
+    }
   }
 
   shouldComponentUpdate(nextProps) {
@@ -93,6 +102,10 @@ class Replay extends Component {
       `${config.contentHost}/${user}/${coll}/`;
   }
 
+  showCollectionNav = (bool = true) => {
+    this.setState({ collectionNav: bool });
+  }
+
   render() {
     const { activeBookmarkId, activeBrowser, collection, dispatch, match: { params }, recording,
             reqId, timestamp, url } = this.props;
@@ -109,6 +122,10 @@ class Replay extends Component {
     if (!collection.get('loaded')) {
       return null;
     }
+
+    const navigator = listId ?
+      <SidebarListViewer showNavigator={this.showCollectionNav} /> :
+      <SidebarPageViewer showNavigator={this.showCollectionNav} />;
 
     return (
       <React.Fragment>
@@ -130,9 +147,11 @@ class Replay extends Component {
           <Sidebar storageKey="replaySidebar">
             <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
               {
-                listId ?
-                  <SidebarListViewer /> :
-                  <SidebarPageViewer />
+                this.state.collectionNav ?
+                  (<SidebarCollectionViewer
+                    activeListId={listId}
+                    showNavigator={this.showCollectionNav} />) :
+                  navigator
               }
             </Resizable>
             <InspectorPanel />

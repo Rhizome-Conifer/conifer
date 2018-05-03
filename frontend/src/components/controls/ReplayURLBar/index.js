@@ -38,14 +38,6 @@ class ReplayURLBar extends Component {
     }
   }
 
-  // TODO: update iframe src not page url
-  changeUrl = () => {
-    const { params: { user, coll } } = this.props;
-    const { url } = this.state;
-
-    this.context.router.push(`/${user}/${coll}/${url}`);
-  }
-
   handleInput = (evt) => {
     evt.preventDefault();
     this.setState({ url: evt.target.value });

@@ -48,6 +48,10 @@
                     color: $mid-gray;
                     font-size: 1.3rem;
                 }
+
+                .value {
+                    word-wrap: break-work;
+                }
             }
         }
     }

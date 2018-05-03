@@ -70,6 +70,7 @@ class SidebarUI extends Component {
     return (
       <Resizable
         classes={classes}
+        flexGrow={0}
         resizeState={this.props.setSidebarResizing}
         storageKey={`${storageKey}Width`}
         overrideWidth={!expanded && this.closedWidth}

@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Raven from 'raven-js';
 import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 
-import { product } from 'config';
+import { product, ravenConfig } from 'config';
 
 import Modal from 'components/Modal';
 
 import LoginForm from './loginForm';
 import './style.scss';
+
 
 class UserManagementUI extends Component {
 
@@ -64,6 +66,17 @@ class UserManagementUI extends Component {
   save = (data) => {
     this.setState({ formError: false });
     this.props.loginFn(data);
+  }
+
+  submitBugreport = () => {
+    try {
+      throw new Error('bugreport');
+    } catch(e) {
+      Raven.captureException(e);
+      if (Raven.lastEventId()) {
+        Raven.showReportDialog();
+      }
+    }
   }
 
   render() {
@@ -129,6 +142,13 @@ class UserManagementUI extends Component {
                 <Link to="/admin/">
                   <span className="glyphicon glyphicon-wrench right-buffer-sm" />admin
                 </Link>
+              </li>
+          }
+
+          {
+            ravenConfig &&
+              <li className="navbar-text navbar-right">
+                <button onClick={this.submitBugreport} className="borderless custom-report">Submit a bug</button>
               </li>
           }
         </ul>

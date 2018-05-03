@@ -36,12 +36,12 @@ class ReplayUI extends Component {
     const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
 
     return (
-      <div>
+      <React.Fragment>
         <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
 
           {
             currMode.includes('replay') &&
-              <Button onClick={this.toggleSidebar}>
+              <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
                 <InfoIcon />
               </Button>
           }
@@ -66,7 +66,7 @@ class ReplayUI extends Component {
           canAdmin &&
             <ToolBin />
         }
-      </div>
+      </React.Fragment>
     );
   }
 }

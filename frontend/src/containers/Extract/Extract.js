@@ -26,6 +26,7 @@ class Extract extends Component {
     activeBrowser: PropTypes.string,
     activeCollection: PropTypes.object,
     auth: PropTypes.object,
+    autoscroll: PropTypes.bool,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     extractable: PropTypes.object,
@@ -93,6 +94,7 @@ class Extract extends Component {
                 url={url} /> :
               <IFrame
                 appPrefix={appPrefix}
+                autoscroll={this.props.autoscroll}
                 contentPrefix={contentPrefix}
                 dispatch={dispatch}
                 params={params}
@@ -171,6 +173,7 @@ const mapStateToProps = ({ app }) => {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     activeCollection: getActiveCollection(app),
     auth: app.get('auth'),
+    autoscroll: app.getIn(['controls', 'autoscroll']),
     collection: app.get('collection'),
     extractable: app.getIn(['controls', 'extractable']),
     reqId: app.getIn(['remoteBrowsers', 'reqId']),

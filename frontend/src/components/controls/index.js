@@ -16,6 +16,7 @@ export ReplayPageDisplay from './ReplayPageDisplay';
 export ReplayUI from './ReplayUI';
 export ReplayURLBar from './ReplayURLBar';
 export ShareWidgetUI from './ShareWidgetUI';
+export SidebarCollectionViewerUI from './SidebarCollectionViewerUI';
 export SidebarListViewerUI from './SidebarListViewerUI';
 export SidebarPageViewerUI from './SidebarPageViewerUI';
 export SidebarUI from './SidebarUI';

@@ -1,12 +1,10 @@
 @import 'src/vars';
 
+
 .page-list {
     display: flex;
     flex-direction: column;
     height: 100%;
-    border: solid 0 $brightGreen;
-    border-width: .4rem 0 0 0;
-    padding-top: 1rem;
     user-select: none;
 
     .pages {
@@ -20,34 +18,60 @@
             width: calc(100% - 1rem);
             height: 3rem;
             z-index: 5;
-            pointer-events: none;
+            //pointer-events: none;
         }
 
-        &:before {
-            top: 0;
-            background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
+        // &:before {
+        //     top: 0;
+        //     background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
+        // }
+
+        // &:after {
+        //     bottom: 0;
+        //     background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
+        // }
+    }
+
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+
+        button {
+            padding: 0;
         }
 
-        &:after {
-            bottom: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
+        svg {
+            vertical-align: bottom;
         }
     }
 
-    & > header {
-        text-transform: uppercase;
-        font-weight: 400;
-        font-size: 1.2rem;
-        margin-bottom: 1.5rem;
-        white-space: nowrap;
-        overflow: hidden;
+    .pages-header {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
 
-        em {
-            text-transform: lowercase;
+        border: solid .2rem $blue;
+        border-width: 0 0 .2rem 0;
+
+        svg {
+            vertical-align: middle;
+            width: 2rem;
+            height: 2rem;
         }
 
-        .glyphicon {
-            color: rgb(125, 125, 125);
+        & > div {
+            margin-left: 1rem;
+
+            .header-label {
+                font-size: 1rem;
+            }
+
+            h5 {
+                font-weight: 400;
+                margin: 0;
+            }
         }
     }
 
@@ -59,6 +83,10 @@
         color: $bookmarkListDefault;
         cursor: pointer;
         padding-left: 2rem;
+
+        &.odd {
+            background-color: $table-zebra;
+        }
 
         &:focus {
             outline-width: 0;
@@ -79,18 +107,20 @@
         }
 
         &.selected {
-            color: $blue;
+            background-color: $blue;
+            color: #FFF;
 
-            &:before {
-                content: '';
-                position: absolute;
-                left: .9rem;
-                top: .9rem;
-                width: 1.4rem;
-                height: 1.4rem;
-                background: url('../../../shared/images/active_bookmark_ico.svg');
-                background-size: cover;
-            }
+            // color: $blue;
+            // &:before {
+            //     content: '';
+            //     position: absolute;
+            //     left: .9rem;
+            //     top: .9rem;
+            //     width: 1.4rem;
+            //     height: 1.4rem;
+            //     background: url('../../../shared/images/active_bookmark_ico.svg');
+            //     background-size: cover;
+            // }
         }
 
         &:not(.selected):hover {

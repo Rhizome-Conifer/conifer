@@ -29,12 +29,9 @@
         }
     }
 
-    .wr-truncate {
-        align-items: flex-start;
-    }
-
     .wr-editor {
         padding-left: 1.5rem;
+        align-self: flex-start;
     }
 
     .creator {

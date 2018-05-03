@@ -11,12 +11,18 @@ class Logout extends Component {
   };
 
   static propTypes = {
-    logout: PropTypes.func
+    logout: PropTypes.func,
+    loggingOut: PropTypes.bool
   }
 
   componentWillMount() {
     this.props.logout();
-    this.context.router.history.replace('/');
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.loggingOut && !nextProps.loggingOut) {
+      window.location = '/';
+    }
   }
 
   render() {
@@ -24,8 +30,10 @@ class Logout extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  return {};
+const mapStateToProps = ({ app }) => {
+  return {
+    loggingOut: app.getIn(['auth', 'loggingOut'])
+  };
 };
 
 const mapDispatchToProps = (dispatch) => {

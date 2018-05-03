@@ -3,7 +3,7 @@
 .wr-sidebar {
     position: relative;
     background: $sidebarBg;
-    padding: 0 .8rem 0 .5rem;
+    //padding: 0 .8rem 0 .5rem;
     display: flex;
     flex-direction: column;
     font-family: $sans;
@@ -19,7 +19,7 @@
         position: absolute;
         top: 0;
         bottom: 0;
-        padding-right: 1.5rem;
+        //padding-right: 1.5rem;
         width: 100%;
         overflow: hidden;
     }

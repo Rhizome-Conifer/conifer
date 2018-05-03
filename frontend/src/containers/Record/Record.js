@@ -20,6 +20,7 @@ class Record extends Component {
 
   static propTypes = {
     activeBrowser: PropTypes.string,
+    autoscroll: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
@@ -50,14 +51,14 @@ class Record extends Component {
     };
   }
 
-  shouldComponentUpdate(nextProps) {
-    // don't rerender for loading changes
-    if (!nextProps.loaded) {
-      return false;
-    }
+  // shouldComponentUpdate(nextProps) {
+  //   // don't rerender for loading changes
+  //   if (!nextProps.loaded) {
+  //     return false;
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   render() {
     const { activeBrowser, dispatch, match: { params }, reqId, timestamp, url } = this.props;
@@ -86,6 +87,7 @@ class Record extends Component {
                 url={url} /> :
               <IFrame
                 appPrefix={appPrefix}
+                autoscroll={this.props.autoscroll}
                 contentPrefix={contentPrefix}
                 dispatch={dispatch}
                 params={params}
@@ -156,6 +158,7 @@ const initialData = [
 const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
+    autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
     collection: app.get('collection'),
     reqId: app.getIn(['remoteBrowsers', 'reqId']),

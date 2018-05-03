@@ -182,7 +182,7 @@ class ListsUI extends Component {
                     <h4><WarcIcon /> PARENT COLLECTION</h4>
                     <h2>{collection.get('title')}</h2>
                   </header>
-                  <Truncate height={50}>
+                  <Truncate height={75}>
                     <WYSIWYG
                       initial={collection.get('desc') || defaultCollDesc}
                       editMode={false} />
@@ -244,16 +244,16 @@ class ListsUI extends Component {
               closeCb={this.closeEditModal}
               footer={<Button onClick={this.closeEditModal} bsStyle="success">Done</Button>}
               dialogClassName="lists-edit-modal">
+              <header>
+                <button className="borderless" onClick={this.clearInput} disabled={!title.length}><XIcon /></button>
+                <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
+                {
+                  created ?
+                    <button className="borderless"><CheckIcon success /></button> :
+                    <button className={classNames('borderless', { 'wr-add-list': Boolean(title.length) })} onClick={this.createList} disabled={!title.length || isCreating} title="Add list"><PlusIcon /></button>
+                }
+              </header>
               <ul>
-                <li>
-                  <button className="borderless" onClick={this.clearInput} disabled={!title.length}><XIcon /></button>
-                  <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
-                  {
-                    created ?
-                      <button className="borderless"><CheckIcon success /></button> :
-                      <button className={classNames('borderless', { 'wr-add-list': title.length })} onClick={this.createList} disabled={!title.length || isCreating}><PlusIcon /></button>
-                  }
-                </li>
                 {
                   lists.map(listObj => (
                     <EditItem

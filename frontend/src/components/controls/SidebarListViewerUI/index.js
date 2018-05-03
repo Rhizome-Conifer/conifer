@@ -5,6 +5,7 @@ import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 import classNames from 'classnames';
+import { Link } from 'react-router-dom';
 import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
@@ -14,8 +15,10 @@ import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
 
 import InlineEditor from 'components/InlineEditor';
+import SidebarHeader from 'components/SidebarHeader';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
+import { CatalogIcon, ListIcon } from 'components/icons';
 
 import { BookmarkRenderer } from './renderers';
 import './style.scss';
@@ -36,6 +39,7 @@ class SidebarListViewer extends Component {
     dispatch: PropTypes.func,
     editList: PropTypes.func,
     setInspector: PropTypes.func,
+    showNavigator: PropTypes.func,
     timestamp: PropTypes.string,
     url: PropTypes.string
   }
@@ -105,15 +109,16 @@ class SidebarListViewer extends Component {
     this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
   }
 
-  rowClass = ({ index }) => {
+  getRowClass = ({ index }) => {
     const { activeBookmark } = this.props;
     const { navigated } = this.state;
 
     if (index !== activeBookmark) {
-      return '';
+      return index % 2 !== 0 ? 'odd' : '';
     }
 
     return classNames({
+      odd: index % 2 !== 0,
       selected: !navigated,
       'last-selected': navigated
     });
@@ -129,30 +134,23 @@ class SidebarListViewer extends Component {
     this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
   }
 
+  returnToCollection = () => this.props.showNavigator(true)
+
   render() {
     const { activeBookmark, bookmarks, collection, list } = this.props;
 
     return (
       <div className="bookmark-list">
-        <header>
-          <InlineEditor
-            blockDisplay
-            initial={list.get('title')}
-            onSave={this.editListTitle}
-            success={this.props.listEdited}>
-            <h4>{list.get('title')}</h4>
-          </InlineEditor>
-          {
-            list.get('desc') &&
-              <Truncate height={75}>
-                <WYSIWYG
-                  minimal
-                  initial={list.get('desc')}
-                  cancel={this.toggleEdit}
-                  onSave={this.editListDesc}
-                  success={this.props.listEdited} />
-              </Truncate>
-          }
+        <SidebarHeader label="Collection Navigator" />
+        <nav>
+          <button onClick={this.returnToCollection} className="borderless">&larr; collection main</button>
+          <Link to={`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}`}>catalog view <CatalogIcon /></Link>
+        </nav>
+        <header className="list-header">
+          <h4>
+            <ListIcon />
+            <span>{list.get('title')}</span>
+          </h4>
         </header>
         <div className="bookmarks">
           <AutoSizer>
@@ -173,7 +171,7 @@ class SidebarListViewer extends Component {
                           rowCount={bookmarks.size}
                           rowHeight={50}
                           rowGetter={({ index }) => bookmarks.get(index)}
-                          rowClassName={this.rowClass}
+                          rowClassName={this.getRowClass}
                           onRowClick={this.onSelectRow}
                           onRowsRendered={({ startIndex, stopIndex }) => {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex });
