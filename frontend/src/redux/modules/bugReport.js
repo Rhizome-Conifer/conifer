@@ -55,7 +55,7 @@ export function closeModal() {
 export function reportBug(postData) {
   return {
     types: [REPORT, REPORT_SUCCESS, REPORT_FAIL],
-    promise: client => client.post('/_reportissues', {
+    promise: client => client.post('/api/v1/report/dnlr', {
       data: {
         ...postData
       }

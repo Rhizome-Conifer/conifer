@@ -31,16 +31,16 @@ class BugReportController(BaseController):
             self.issue_handler = self.redis_issue_handler
 
     def init_routes(self):
-        @self.app.post('/_reportissues')
+        @self.app.post('/api/v1/report/dnlr')
         def report_issues():
             useragent = request.headers.get('User-Agent')
-            self.do_report(request.POST, useragent)
+            self.do_report(request.json, useragent)
             return {}
 
     def do_report(self, params, ua=''):
         report = {}
-        for key in params.iterkeys():
-            report[key] = params.getunicode(key)
+        for key in params:
+            report[key] = params.get(key)
 
         now = str(datetime.utcnow())
 
