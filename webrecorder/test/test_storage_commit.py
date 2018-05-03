@@ -24,8 +24,6 @@ class BaseStorageCommit(FullStackTests):
         super(BaseStorageCommit, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
                                                   storage_worker=True)
 
-        #cls.redis.set('n:recs:count', 499)
-        #cls.redis.set('n:colls:count', 99)
         cls.set_uuids('Recording', count(500))
         cls.set_uuids('Collection', count(100))
 
@@ -57,6 +55,29 @@ class BaseStorageCommit(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
 
         self.sleep_try(0.1, 1.0, self.assert_exists(REC_CDXJ, True))
+
+    def test_record_2_temp(self):
+        res = self.testapp.get('/_new/default-collection/rec/record/mp_/http://httpbin.org/get?food=bar')
+        assert res.status_code == 302
+        res = res.follow()
+        res.charset = 'utf-8'
+
+        assert '"food": "bar"' in res.text, res.text
+
+        self.sleep_try(0.1, 1.0, self.assert_exists(REC_CDXJ, True))
+
+    def test_delete_rec(self):
+        user_dir = os.path.join(self.warcs_dir, 'test')
+        assert len(os.listdir(user_dir)) == 2
+
+        res = self.testapp.delete('/api/v1/recording/501?user=test&coll=default-collection')
+
+        assert res.json == {'deleted_id': '501'}
+
+        def assert_deleted_rec():
+            assert len(os.listdir(user_dir)) == 1
+
+        self.sleep_try(0.5, 10.0, assert_deleted_rec)
 
     def test_warcs_in_storage(self):
         # initial user dir
@@ -112,7 +133,7 @@ class BaseStorageCommit(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/recording/500/copy/another-coll?user=test&coll=default-collection')
 
-        coll, rec = self.get_coll_rec('test', 'another-coll', '501')
+        coll, rec = self.get_coll_rec('test', 'another-coll', '502')
 
         orig_coll, orig_rec = self.get_coll_rec('test', 'default-collection', '500')
 

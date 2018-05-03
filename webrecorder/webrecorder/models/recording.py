@@ -14,6 +14,7 @@ from pywb.utils.loaders import BlockLoader
 from webrecorder.utils import redis_pipeline
 from webrecorder.models.base import RedisUniqueComponent, RedisUnorderedList
 from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_prefix
+from webrecorder.rec.storage import LocalFileStorage
 
 from warcio.timeutils import timestamp_now, sec_to_timestamp, timestamp20_now
 
@@ -141,8 +142,17 @@ class Recording(RedisUniqueComponent):
 
         coll_warc_key = self._coll_warc_key()
 
+        local_storage = LocalFileStorage(self.redis)
+
         for n, v in self.iter_all_files(include_index=True):
-            if not storage.delete_file(v):
+            success = storage.delete_file(v)
+
+            # if delete with default storage failed,
+            #  may be a local, uncomitted file, that must be deleted with local storage
+            if not success:
+                success = local_storage.delete_file(v)
+
+            if not success:
                 errs.append(v)
             else:
                 self.redis.hdel(coll_warc_key, n)
