@@ -166,6 +166,17 @@
                         fill $tableRowFade ease-in-out;
             cursor: context-menu;
             font-size: 1.2rem;
+            position: relative;
+            padding-left: .75rem;
+
+            &:before {
+                transition: background-color $quickShift ease-in-out;
+                position: absolute;
+                left: 0;
+                content: '';
+                width: .75rem;
+                height: 100%;
+            }
 
             &:focus {
                 outline: none;
@@ -175,9 +186,7 @@
                 background-color: $table-zebra;
             }
 
-            a {
-                transition: color $tableRowFade ease-in-out;
-                color: $dark-gray;
+            .page-title {
                 font-size: 1.6rem;
             }
 
@@ -187,7 +196,21 @@
                 }
             }
 
-            &.selected, &:not(.selected):hover {
+            &:hover {
+                &:not(.selected){
+                    &:before {
+                        background: $tr-selected;
+                    }
+                }
+
+                &.selected {
+                    &:before {
+                        background: $tr-highlight-selected;
+                    }
+                }
+            }
+
+            &.selected {
                 background-color: $blue;
                 color: #FFF;
                 fill: #FFF;

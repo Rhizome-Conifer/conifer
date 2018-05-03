@@ -101,7 +101,7 @@ class StandaloneRecorderUI extends Component {
     const isOutOfSpace = false;
 
     const advOptions = (
-      <div>{advOpen ? 'Hide' : 'Show'} advance options <span className={classNames('caret', { 'caret-flip': advOpen })} /></div>
+      <div>{advOpen ? 'Hide' : 'Show'} session settings <span className={classNames('caret', { 'caret-flip': advOpen })} /></div>
     );
 
     return (
@@ -139,6 +139,7 @@ class StandaloneRecorderUI extends Component {
               contentSync={this.editRecDesc}
               initial={defaultRecDesc} />
 
+            <h4>Preconfigured Browsers</h4>
             <div className="rb-dropdown">
               <RemoteBrowserSelect />
             </div>

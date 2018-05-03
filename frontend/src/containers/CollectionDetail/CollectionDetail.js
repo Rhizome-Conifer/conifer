@@ -124,6 +124,7 @@ const mapStateToProps = (outerState) => {
 const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
   return {
     clearInspector: () => dispatch(clear()),
+    clearQuery: () => dispatch(setQueryMode(false)),
     setMultiInspector: count => dispatch(multiSelect(count)),
     setPageInspector: fields => dispatch(selectPage(fields)),
     setBookmarkInspector: bk => dispatch(selectBookmark(bk)),

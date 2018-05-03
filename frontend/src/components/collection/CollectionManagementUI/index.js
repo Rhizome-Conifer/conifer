@@ -64,7 +64,7 @@ class CollectionManagementUI extends Component {
         <div className="extra-info">
           <h4>Manage Collection Content</h4>
           <p>Remove content from collection by <strong>deleting capture sessions</strong>. Add content by <strong>uploading warcs</strong>.</p>
-          <span className="note">Please note that it is not possible to delete individual pages. <a href="#">Please see this guide for best capture practices.</a></span>
+          <span className="note">Please note that it is not possible to delete individual pages.</span>
         </div>
         <header>
           <h4>overview</h4>
