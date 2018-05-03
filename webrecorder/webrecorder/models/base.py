@@ -18,6 +18,8 @@ class RedisUniqueComponent(object):
 
     OWNER_CLS = None
 
+    ID_LEN = None
+
     def __init__(self, **kwargs):
         self.redis = kwargs['redis']
         self.my_id = kwargs.get('my_id', '')
@@ -71,9 +73,17 @@ class RedisUniqueComponent(object):
                 self.data[key] = int(self.data[key])
 
     def _create_new_id(self):
-        #self.my_id = self.redis.incr(self.COUNTER_KEY)
-        self.my_id = self.get_new_id()
-        self.info_key = self.INFO_KEY.format_map({self.MY_TYPE: self.my_id})
+        while True:
+            id_ = self.get_new_id(self.ID_LEN)
+            info_key = self.INFO_KEY.format_map({self.MY_TYPE: id_})
+            if self.redis.hsetnx(info_key, 'owner', '') == 1:
+                break
+
+            print('DUPE: ', id_)
+
+        self.my_id = id_
+        self.info_key = info_key
+
         return self.my_id
 
     def _get_now(self):
@@ -183,8 +193,8 @@ class RedisUniqueComponent(object):
         return '1' if value else '0'
 
     @classmethod
-    def get_new_id(cls):
-        return get_new_id()
+    def get_new_id(cls, max_len=None):
+        return get_new_id(max_len)
 
 
 # ============================================================================

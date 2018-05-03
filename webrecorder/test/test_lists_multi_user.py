@@ -49,6 +49,7 @@ class TestListsAPIAccess(FullStackTests):
 
         assert res.json['list']
         list_id = res.json['list']['id']
+        assert len(list_id) == 8
         assert res.json['list']['public'] == public
 
         # Bookmark
@@ -58,7 +59,7 @@ class TestListsAPIAccess(FullStackTests):
                  }
 
         res = self.testapp.post_json('/api/v1/list/%s/bookmarks?user={0}&coll=some-coll'.format(user) % list_id, params=params)
-        assert res.json['bookmark']
+        assert len(res.json['bookmark']['id']) == 8
 
         # Another  Bookmark
         params = {'title': 'Another Bookmark',

@@ -34,7 +34,7 @@ class PagesMixin(object):
         return pid
 
     def _new_page_id(self, page):
-        page_attrs = (page['url'] + page['timestamp']).encode('utf-8')
+        page_attrs = (page['url'] + page['timestamp'] + page.get('rec', '') + page.get('browser', '')).encode('utf-8')
         return hashlib.md5(page_attrs).hexdigest()[:10]
 
     def is_matching_page(self, pid, page):
@@ -95,8 +95,8 @@ class PagesMixin(object):
             if 'ts' in page and 'timestamp' not in page:
                 page['timestamp'] = page.pop('ts')
 
-            pid = self._new_page_id(page)
             page['rec'] = recording.my_id
+            pid = self._new_page_id(page)
 
             pages[pid] = json.dumps(page)
 

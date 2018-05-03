@@ -13,6 +13,10 @@ from warcio import ArchiveIterator
 
 # ============================================================================
 class TestUpload(FullStackTests):
+    ID_1 = '1884e17293'
+    ID_2 = 'eed99fa580'
+    ID_3 = '9871d09bf7'
+
     @classmethod
     def setup_class(cls, **kwargs):
         super(TestUpload, cls).setup_class(temp_worker=True)
@@ -196,7 +200,7 @@ class TestUpload(FullStackTests):
         assert collection['id'] == 'temporary-collection'
         assert collection['title'] == 'Temporary Collection'
 
-        assert collection['pages'] == [{'id': '07dbfa5824',
+        assert collection['pages'] == [{'id': self.ID_1,
                                         'rec': 'uploaded-rec',
                                         'timestamp': '20180306181354',
                                         'title': 'Example Domain',
@@ -238,13 +242,15 @@ class TestUpload(FullStackTests):
 
         assert len(collection['pages']) == 2
 
-        assert {'id': '07dbfa5824',
+        print(collection['pages'])
+
+        assert {'id': self.ID_2,
                 'rec': 'upload-rec-2',
                 'timestamp': '20180306181354',
                 'title': 'Example Domain',
                 'url': 'http://example.com/'} in collection['pages']
 
-        assert {'id': '7aeff3ce47',
+        assert {'id': self.ID_3,
                 'rec': 'rec-sesh',
                 'timestamp': '',
                 'title': 'Example Title',

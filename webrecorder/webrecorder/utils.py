@@ -54,8 +54,11 @@ def init_props(config):
 
 
 # ============================================================================
-def get_new_id():
-    return base64.b32encode(os.urandom(10)).decode('utf-8').lower()
+def get_new_id(max_len=None):
+    res = base64.b32encode(os.urandom(10)).decode('utf-8').lower()
+    if max_len:
+        res = res[:max_len]
+    return res
 
 
 # ============================================================================

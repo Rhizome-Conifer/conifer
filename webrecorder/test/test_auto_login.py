@@ -9,6 +9,11 @@ from webrecorder.models.usermanager import CLIUserManager
 
 # ============================================================================
 class TestAutoLogin(FullStackTests):
+    ID_1 = '9871d09bf7'
+
+    ID_2 = 'b8b7f9b7b3'
+    ID_3 = '2680c6cb2e'
+
     @classmethod
     def setup_class(cls, **kwargs):
         os.environ['AUTO_LOGIN_USER'] = 'test'
@@ -41,7 +46,7 @@ class TestAutoLogin(FullStackTests):
         page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
         res = self.testapp.post_json('/api/v1/recording/rec-sesh/pages?user=test&coll=default-collection', params=page)
 
-        assert res.json['page_id'] == '7aeff3ce47'
+        assert res.json['page_id'] == self.ID_1
 
     def test_api_curr_user(self):
         res = self.testapp.get('/api/v1/curr_user')
@@ -58,7 +63,7 @@ class TestAutoLogin(FullStackTests):
         assert coll['title'] == 'Default Collection'
         assert 'This is your first collection' in coll['desc']
 
-        assert coll['pages'] == [{'id': '7aeff3ce47', 'rec': 'rec-sesh', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''}]
+        assert coll['pages'] == [{'id': self.ID_1, 'rec': 'rec-sesh', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''}]
 
     def test_update_collection(self):
         params = {'desc': 'New Description',
@@ -104,11 +109,26 @@ class TestAutoLogin(FullStackTests):
 
         assert info['size'] == orig_info['size']
 
-    def test_copy_rec_to_self_error(self):
-        self.set_uuids('Recording', ['rec-sesh'])
+    def test_copy_rec_again_same_coll(self):
+        self.set_uuids('Recording', ['rec-sesh-b'])
         res = self.testapp.post_json('/api/v1/recording/rec-sesh/copy/another-coll?user=test&coll=new-title')
 
-        assert res.json['error'] == 'copy_error'
+        assert res.json['recording']
+
+        coll, rec = self.get_coll_rec('test', 'another-coll', 'rec-sesh-b')
+
+        orig_coll, orig_rec = self.get_coll_rec('test', 'new-title', 'rec-sesh')
+
+        def assert_one_dir():
+            self.assert_coll_rec_warcs(coll, rec, 1, 1)
+
+        self.sleep_try(0.2, 5.0, assert_one_dir)
+
+        info = self.redis.hgetall('r:{0}:info'.format(rec))
+
+        orig_info = self.redis.hgetall('r:{0}:info'.format(orig_rec))
+
+        assert info['size'] == orig_info['size']
 
     def test_get_collection_2(self):
         res = self.testapp.get('/api/v1/collection/another-coll?user=test')
@@ -120,7 +140,10 @@ class TestAutoLogin(FullStackTests):
         assert coll['title'] == 'Another Coll'
         assert "This collection doesn't yet have a description" in coll['desc']
 
-        assert coll['pages'] == [{'id': '7aeff3ce47', 'rec': 'rec-sesh-a', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''}]
+        assert len(coll['pages']) == 2
+
+        assert {'id': self.ID_2, 'rec': 'rec-sesh-a', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''} in coll['pages']
+        assert {'id': self.ID_3, 'rec': 'rec-sesh-b', 'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': ''} in coll['pages']
 
     def test_logged_in_record_2(self):
         self.set_uuids('Recording', ['rec'])
