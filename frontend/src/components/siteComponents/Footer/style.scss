@@ -1,3 +1,5 @@
+@import 'src/vars';
+
 footer {
     width: 100%;
     padding-bottom: 2.4rem;
@@ -30,11 +32,11 @@ footer {
 
         &:hover {
             svg path {
-                fill: #337ab7;
+                fill: $blue;
             }
 
             svg circle {
-                stroke: #337ab7;
+                stroke: $blue;
             }
         }
 
@@ -53,11 +55,17 @@ footer {
             height: 1.8rem;
             margin-right: 1rem;
             vertical-align: middle;
+        }
 
-            &.contact {
+        &.contact {
+            svg {
                 margin-right: .5rem;
                 width: 1.6rem;
                 height: 1.6rem;
+
+                path {
+                    fill: $blue;
+                }
             }
         }
     }

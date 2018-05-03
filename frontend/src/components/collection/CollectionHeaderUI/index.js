@@ -124,6 +124,11 @@ class CollectionHeaderUI extends Component {
     window.location = `/${collection.get('user')}/${collection.get('id')}/$download`;
   }
 
+  howTo = () => {
+    const { history } = this.props;
+    history.push('/_documentation');
+  }
+
   togglePublicView = () => {
     const { collection, history } = this.props;
     history.push(`/${collection.get('user')}/${collection.get('id')}`);
@@ -189,10 +194,12 @@ class CollectionHeaderUI extends Component {
                   <Upload classes="" wrapper={MenuItem}>Upload To Collection</Upload>
                   <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
                   <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
+                  {/* TODO:
                   <MenuItem divider />
                   <MenuItem>Edit Collection Info</MenuItem>
+                  */}
                   <MenuItem divider />
-                  <MenuItem disabled>Help</MenuItem>
+                  <MenuItem onClick={this.howTo}>Help</MenuItem>
                 </DropdownButton>
               </div>
           }

@@ -1,5 +1,5 @@
 import HttpStatus from 'components/HttpStatus';
-import { FAQ, TermsAndPolicies } from 'components/siteComponents';
+import { FAQ, HowTo, TermsAndPolicies } from 'components/siteComponents';
 import {
   collDetailBreadcrumb,
   collList,
@@ -198,6 +198,13 @@ const infoRoutes = [
     exact: true,
     footer: true,
     name: 'Terms & Policies'
+  },
+  {
+    path: '/_documentation',
+    component: HowTo,
+    exact: true,
+    footer: true,
+    name: 'User Guide'
   }
 ];
 
