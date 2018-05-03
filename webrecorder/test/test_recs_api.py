@@ -198,3 +198,9 @@ class TestWebRecRecAPI(FullStackTests):
 
         assert res.json == {'deleted_id': 'rec-a'}
 
+    def test_coll_page_list_2(self):
+        res = self._anon_get('/api/v1/collection/temp?user={user}')
+
+        assert len(res.json['collection']['pages']) == 0
+
+

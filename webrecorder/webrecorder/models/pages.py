@@ -81,7 +81,7 @@ class PagesMixin(object):
         rec_pages = self.list_rec_pages(recording)
 
         for n in rec_pages:
-            self.delete_page(n)
+            self.delete_page(n['id'])
 
     def import_pages(self, pagelist, recording):
         if not pagelist:
