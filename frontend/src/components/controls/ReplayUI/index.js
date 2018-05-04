@@ -46,7 +46,10 @@ class ReplayUI extends Component {
               </Button>
           }
 
-          <ModeSelector params={params} />
+          {
+            canAdmin &&
+              <ModeSelector params={params} />
+          }
 
           {
             isWrite &&

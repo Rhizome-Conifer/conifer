@@ -63,7 +63,9 @@ export default function collection(state = initialState, action = {}) {
       } = action.result;
 
       const pgs = {};
-      pages.forEach((pg) => { pgs[pg.id] = pg; });
+      if (pages) {
+        pages.forEach((pg) => { pgs[pg.id] = pg; });
+      }
 
       return state.merge({
         loading: false,
