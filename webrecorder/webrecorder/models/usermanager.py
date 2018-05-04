@@ -622,13 +622,14 @@ class UserManager(object):
 
 # ============================================================================
 class CLIUserManager(UserManager):
-    def __init__(self):
+    def __init__(self, redis_url=None):
         config = load_wr_config()
 
         self.base_access = BaseAccess()
 
         # Init Redis
-        redis_url = os.environ['REDIS_BASE_URL']
+        if not redis_url:
+            redis_url = os.environ['REDIS_BASE_URL']
 
         r = redis.StrictRedis.from_url(redis_url, decode_responses=True)
 

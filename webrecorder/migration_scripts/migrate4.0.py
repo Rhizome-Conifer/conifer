@@ -20,6 +20,8 @@ from webrecorder.rec.storage.storagepaths import add_local_store_prefix
 from webrecorder.models import User, Collection, Recording, BookmarkList
 from webrecorder.models.usermanager import CLIUserManager, UserTable
 
+from webrecorder.utils import sanitize_title
+
 
 # ============================================================================
 class Migration(object):
@@ -37,13 +39,25 @@ class Migration(object):
 
         print('Redis Inited')
 
-        #self.cli = CLIUserManager(new_redis_url)
-        os.environ['REDIS_BASE_URL'] = new_redis_url
-        self.cli = CLIUserManager()
+        self.cli = CLIUserManager(new_redis_url)
 
     def delete_user(self, username):
         user = self.cli.all_users.get_user(username)
         user.delete_me()
+
+    def delete_coll(self, username, coll_name):
+        print('Deleting Collection: {0}/{1}'.format(username, coll_name))
+        user = self.cli.all_users.get_user(username)
+        if not user:
+            print('No User')
+            return
+
+        collection = user.get_collection_by_name(coll_name)
+        if not collection:
+            print('No Collection')
+            return
+
+        user.remove_collection(collection)
 
     def migrate_user(self, username, new_username=None, coll_name=None):
         new_username = new_username or username
@@ -104,15 +118,34 @@ class Migration(object):
 
         recs = self.old_redis.smembers('c:{user}:{coll}:recs'.format(user=old_user, coll=old_coll))
 
-        for rec in recs:
-            rec_base_key = 'r:{user}:{coll}:{rec}:'.format(user=old_user, coll=old_coll, rec=rec)
-            print('    Processing Recording: ' + rec)
-            self.migrate_recording(collection, rec, rec_base_key)
+        patch_recordings = {}
 
-    def _copy_prop(self, prop, obj, src):
-        value = src.get(prop)
-        if value:
-            obj.set_prop(new_prop, value)
+        for rec in recs:
+            old_rec_base_key = 'r:{user}:{coll}:{rec}:'.format(user=old_user, coll=old_coll, rec=rec)
+            print('    Processing Recording: ' + rec)
+            recording = self.migrate_recording(collection, rec, old_rec_base_key)
+
+            # track patch recordings
+            if recording and recording.get_prop('rec_type') == 'patch':
+                print('    Patch: yes')
+                id_ = self.old_redis.hget(old_rec_base_key + 'info', 'id')
+                patch_recordings[id_] = recording
+
+        # map source to patch recordings, if any
+        if not patch_recordings:
+            return
+
+        all_recordings = collection.get_recordings()
+        for recording in all_recordings:
+            title = recording.get_prop('title')
+            if not title:
+                continue
+
+            patch_title = 'patch-of-' + sanitize_title(title)
+            patch_recording = patch_recordings.get(patch_title)
+            if patch_recording:
+                print('Patch Mapped ({0}) {1} -> {2}'.format(title, recording.my_id, patch_recording.my_id))
+                recording.set_patch_recording(patch_recording)
 
     def migrate_recording(self, collection, rec, old_rec_base_key):
         # old rec info
@@ -127,10 +160,11 @@ class Migration(object):
 
         # set title
         title = old_rec_data.get('title', rec)
+        rec_type = old_rec_data.get('rec_type')
 
         recording = collection.create_recording(title=title,
                                                 desc='',
-                                                rec_type=old_rec_data.get('rec_type', None),
+                                                rec_type=rec_type,
                                                 ra_list=ra_list)
 
         print('    New Recording Created: ' + recording.my_id)
@@ -150,19 +184,19 @@ class Migration(object):
         self.copy_rec_files(collection.get_owner(), collection, recording, warc_files)
 
         # and list for public pages
-        visible_pages = [page for page in pages if not page.get('hidden')]
+        visible_pages = [page for page in pages if page.get('hidden') != '1']
 
         if not visible_pages:
-            return
+            return recording
 
         # shared 'Bookmarks' list
         if not collection.bookmarks_list:
-            collection.bookmarks_list = collection.create_bookmark_list(dict(title='All Bookmarks',
+            collection.bookmarks_list = collection.create_bookmark_list(dict(title='Your Bookmarks',
                                                                              public=True))
         # per-recording list of public bookmarks
         recording_list = collection.create_bookmark_list(dict(title=title,
                                                               public=True))
-
+        # create bookmarks for visible pages
         for page in visible_pages:
             page['rec'] = recording.my_id
             page['id'] = collection._new_page_id(page)
@@ -172,6 +206,7 @@ class Migration(object):
             bookmark = recording_list.create_bookmark(page)
             bookmarks = collection.bookmarks_list.create_bookmark(page)
 
+        return recording
 
     def copy_rec_files(self, user, collection, recording, warc_files):
         if self.dry_run:
@@ -182,7 +217,8 @@ class Migration(object):
         os.makedirs(target_dirname, exist_ok=True)
         print('Writing to dir: ' + target_dirname)
 
-        target_warc_key = recording.COLL_WARC_KEY.format(coll=collection.my_id)
+        coll_warc_key = recording.COLL_WARC_KEY.format(coll=collection.my_id)
+        rec_warc_key = recording.REC_WARC_KEY.format(rec=recording.my_id)
 
         # Copy WARCs
         loader = BlockLoader()
@@ -199,21 +235,34 @@ class Migration(object):
                     shutil.copyfileobj(src, dest)
                     size = dest.tell()
 
+                target_file = add_local_store_prefix(target_file)
                 if n != recording.INDEX_FILE_KEY:
-                    self.redis.hset(target_warc_key, n, add_local_store_prefix(target_file))
+                    self.redis.hset(coll_warc_key, n, target_file)
+                    self.redis.sadd(rec_warc_key, n)
                 else:
                     recording.set_prop(n, target_file)
+
+                if self.dry_run:
+                    os.remove(target_file)
 
             except:
                 import traceback
                 traceback.print_exc()
+
+        # commit from temp dir to storage
+        if not self.dry_run:
+            recording.commit_to_storage()
 
 
 # ============================================================================
 def main():
     m = Migration(old_redis_url=os.environ['REDIS_MIGRATE_URL'],
                   new_redis_url='redis://redis:6379/1',
-                  dry_run=False)
+                  dry_run=False,
+                  overwrite=False)
+
+    if overwrite:
+        m.delete_coll(sys.argv[1], sys.argv[2])
 
     m.migrate_user(username=sys.argv[1],
                    coll_name=sys.argv[2])
