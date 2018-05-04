@@ -68,9 +68,21 @@
     }
 
     .ReactVirtualized__Table__row {
+        transition: background $tableRowFade ease-in-out,
+                    color $tableRowFade ease-in-out;
         color: $bookmarkListDefault;
         cursor: pointer;
-        padding-left: 2rem;
+        padding-left: .75rem;
+        position: relative;
+
+        &:before {
+            transition: background-color $quickShift ease-in-out;
+            position: absolute;
+            left: 0;
+            content: '';
+            width: .75rem;
+            height: 100%;
+        }
 
         &.odd {
             background-color: $table-zebra;
@@ -82,7 +94,6 @@
 
         .bookmark-title {
             h2 {
-                transition: color 125ms ease-in-out;
                 font-size: 1.5rem;
                 font-weight: 400;
                 margin: 0;
@@ -94,28 +105,28 @@
             }
         }
 
+        &.last-selected {
+            background-color: $blue-deselect;
+            color: #FFF;
+        }
+
         &.selected {
             background-color: $blue;
             color: #FFF;
         }
 
-        &.last-selected {
-            background-color: $gray400;
-            color: #FFF;
-            // &:before {
-            //     content: '';
-            //     position: absolute;
-            //     left: .9rem;
-            //     top: .9rem;
-            //     width: 1.4rem;
-            //     height: 1.4rem;
-            //     background: url('../../../shared/images/last_active_bookmark_ico.svg');
-            //     background-size: cover;
-            // }
-        }
+        &:hover {
+            &:not(.selected){
+                &:before {
+                    background: $tr-selected;
+                }
+            }
 
-        &:not(.selected):hover {
-            color: $blue;
+            &.selected {
+                &:before {
+                    background: $tr-highlight-selected;
+                }
+            }
         }
     }
 

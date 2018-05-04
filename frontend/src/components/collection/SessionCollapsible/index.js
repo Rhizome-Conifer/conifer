@@ -57,7 +57,7 @@ class SessionCollapsible extends PureComponent {
 
     const title = recording.get('title');
     const titleRender = (title ? (<span>{title}</span>) :
-                                (<span>Session from <TimeFormat iso={recording.get('created_at')} /></span>))
+                                 (<span>Session from <TimeFormat iso={recording.get('created_at')} /></span>))
 
     const header = (
       <header className="collapsible">
