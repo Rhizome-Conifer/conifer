@@ -255,11 +255,10 @@ class Migration(object):
 
 
 # ============================================================================
-def main():
+def main(overwrite=False):
     m = Migration(old_redis_url=os.environ['REDIS_MIGRATE_URL'],
                   new_redis_url='redis://redis:6379/1',
-                  dry_run=False,
-                  overwrite=False)
+                  dry_run=False)
 
     if overwrite:
         m.delete_coll(sys.argv[1], sys.argv[2])
