@@ -55,13 +55,17 @@ class SessionCollapsible extends PureComponent {
     const pages = pagesBySession.hasOwnProperty(recId) ? pagesBySession[recId] : List();
     const pageCount = pages.size;
 
+    const title = recording.get('title');
+    const titleRender = (title ? (<span>{title}</span>) :
+                                (<span>Session from <TimeFormat iso={recording.get('created_at')} /></span>))
+
     const header = (
       <header className="collapsible">
         <div className="function-row">
           <RemoveWidget callback={this.confirmDelete} borderless={false} />
           <button onClick={this.downloadAction}><DownloadIcon /></button>
         </div>
-        <h2>{recId}</h2>
+        <h2>{titleRender}</h2>
         <span>{pageCount} Pages</span>
         <TimeFormat seconds={recording.get('duration')} />
         <SizeFormat bytes={recording.get('size')} />
