@@ -16,6 +16,7 @@ import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
 import { CollectionFilters, CollectionHeader,
          InspectorPanel, Lists, ListHeader, Sidebar } from 'containers';
 
+import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
 import Resizable from 'components/Resizable';
 
@@ -305,6 +306,15 @@ class CollectionDetailUI extends Component {
     const { canAdmin } = this.context;
     const { pages, browsers, collection, match: { params }, publicIndex } = this.props;
     const { listBookmarks, selectedPageIdx } = this.state;
+
+    if (collection.get('error')) {
+      return (
+        <HttpStatus>
+          <h2>Error</h2>
+          <p>{collection.getIn(['error', 'error_message'])}</p>
+        </HttpStatus>
+      );
+    }
 
     // don't render until loaded
     if (!collection.get('loaded')) {
