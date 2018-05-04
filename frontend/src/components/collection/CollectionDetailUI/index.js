@@ -5,7 +5,7 @@ import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
-import { List } from 'immutable';
+import { fromJS, List } from 'immutable';
 import { Button } from 'react-bootstrap';
 
 import config from 'config';
@@ -18,10 +18,12 @@ import { CollectionFilters, CollectionHeader,
 
 import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
+import OutsideClick from 'components/OutsideClick';
 import Resizable from 'components/Resizable';
 
 import 'react-virtualized/styles.css';
 
+import CustomDragLayer from './dragLayer';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
 import { BrowserRenderer, DnDSortableHeader, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
 
@@ -55,11 +57,26 @@ class CollectionDetailUI extends Component {
   constructor(props) {
     super(props);
 
+    this.keyBuffer = List();
+    this.keyCommands = [
+      // ctrl + a
+      {
+        keys: List([17, 65]),
+        action: this.selectAll
+      },
+      // cmd + a
+      {
+        keys: List([91, 65]),
+        action: this.selectAll
+      },
+    ];
+
     this.columns = config.columns;
     this.initialState = {
       columns: config.defaultColumns,
       headerEditor: false,
       listBookmarks: props.list.get('bookmarks'),
+      sortedBookmarks: props.list.get('bookmarks'),
       overrideHeight: null,
       scrolled: false,
       selectedPageIdx: null
@@ -94,11 +111,14 @@ class CollectionDetailUI extends Component {
         console.log('Wrong `columnOrder` storage value.', e);
       }
     }
+
+    document.addEventListener('keydown', this.handleKeyInput);
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.list !== this.props.list) {
-      this.setState({ listBookmarks: nextProps.list.get('bookmarks') });
+      const bookmarks = nextProps.list.get('bookmarks');
+      this.setState({ listBookmarks: bookmarks, sortedBookmarks: bookmarks });
     }
 
     // clear querybox if removed from url
@@ -114,6 +134,10 @@ class CollectionDetailUI extends Component {
     }
 
     return true;
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keyup', this.handleKeyInput);
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
@@ -189,6 +213,31 @@ class CollectionDetailUI extends Component {
     }
   }
 
+  handleKeyInput = (evt) => {
+    this.keyBuffer = this.keyBuffer.push(evt.keyCode);
+
+    this.keyCommands.forEach((cmd) => {
+      if (this.keyBuffer.equals(cmd.keys)) {
+        cmd.action(evt);
+      }
+    });
+
+    clearTimeout(this.kbHandle);
+    this.kbHandle = setTimeout(() => { this.keyBuffer = this.keyBuffer.clear(); }, 1000);
+  }
+
+  deselect = () => {
+    this.setState({ selectedPageIdx: null });
+  }
+
+  selectAll = (evt) => {
+    evt.preventDefault();
+    const { pages, match: { params: { list } } } = this.props;
+    const { listBookmarks } = this.state;
+    // fill page index with page count
+    this.setState({ selectedPageIdx: [...Array(list ? listBookmarks.size : pages.size).keys()] });
+  }
+
   sort = ({ sortBy, sortDirection }) => {
     const { collection, dispatch } = this.props;
     const prevSort = collection.getIn(['sortBy', 'sort']);
@@ -215,12 +264,20 @@ class CollectionDetailUI extends Component {
   }
 
   sortBookmark = (origIndex, hoverIndex) => {
-    const { listBookmarks } = this.state;
-    const o = listBookmarks.get(origIndex);
-    const sorted = listBookmarks.splice(origIndex, 1)
+    const { sortedBookmarks } = this.state;
+    const o = sortedBookmarks.get(origIndex);
+    const sorted = sortedBookmarks.splice(origIndex, 1)
                                 .splice(hoverIndex, 0, o);
 
-    this.setState({ selectedPageIdx: null, listBookmarks: sorted });
+    this.setState({ sortedBookmarks: sorted });
+  }
+
+  saveSort = () => {
+    const { list, saveBookmarkSort } = this.props;
+    const { sortedBookmarks } = this.state;
+    const order = sortedBookmarks.map(o => o.get('id')).toArray();
+    this.setState({ listBookmarks: sortedBookmarks });
+    saveBookmarkSort(list.get('id'), order);
   }
 
   orderColumn = (origIndex, hoverIndex) => {
@@ -233,12 +290,6 @@ class CollectionDetailUI extends Component {
 
   saveHeaderState = () => {
     setStorage('columnOrder', JSON.stringify(this.state.columns));
-  }
-
-  saveSort = () => {
-    const { list, saveBookmarkSort } = this.props;
-    const order = this.state.listBookmarks.map(o => o.get('id')).toArray();
-    saveBookmarkSort(list.get('id'), order);
   }
 
   scrollHandler = ({ clientHeight, scrollHeight, scrollTop }) => {
@@ -283,6 +334,7 @@ class CollectionDetailUI extends Component {
           id={props.rowData.get('id')}
           save={this.saveSort}
           sort={this.sortBookmark}
+          pageSelection={this.state.selectedPageIdx}
           {...props} />
       );
     }
@@ -305,7 +357,7 @@ class CollectionDetailUI extends Component {
   render() {
     const { canAdmin } = this.context;
     const { pages, browsers, collection, match: { params }, publicIndex } = this.props;
-    const { listBookmarks, selectedPageIdx } = this.state;
+    const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
 
     if (collection.get('error')) {
       return (
@@ -325,6 +377,7 @@ class CollectionDetailUI extends Component {
     const activeListId = params.list;
     const indexPages = !canAdmin && !publicIndex ? List() : pages;
     const objects = activeList ? listBookmarks : indexPages;
+    const displayObjects = activeList ? sortedBookmarks : indexPages;
     const objectLabel = activeList ? 'Bookmark Title' : 'Page Title';
 
     const columnDefs = {
@@ -380,6 +433,9 @@ class CollectionDetailUI extends Component {
 
     return (
       <div className={classNames('wr-coll-detail', { 'with-list': activeList })}>
+        <CustomDragLayer
+          pages={objects}
+          pageSelection={selectedPageIdx} />
 
         {
           activeList ?
@@ -395,7 +451,9 @@ class CollectionDetailUI extends Component {
             overrideHeight={this.state.overrideHeight}>
             <Lists
               activeListId={activeListId}
-              collapsibleToggle={this.collapsibleToggle} />
+              collapsibleToggle={this.collapsibleToggle}
+              pages={objects}
+              pageSelection={selectedPageIdx} />
           </Resizable>
           <InspectorPanel />
         </Sidebar>
@@ -407,7 +465,7 @@ class CollectionDetailUI extends Component {
               selectedPageIdx={selectedPageIdx} />
         }
 
-        <div className="wr-coll-detail-table">
+        <OutsideClick classes="wr-coll-detail-table" handleClick={this.deselect}>
           {
             this.context.canAdmin &&
               <React.Fragment>
@@ -440,10 +498,10 @@ class CollectionDetailUI extends Component {
             {
               ({ height, width }) => (
                 <ArrowKeyStepper
-                  rowCount={pages.size}
+                  rowCount={displayObjects.size}
                   columnCount={1}
                   mode="cells"
-                  scrollToRow={selectedPageIdx || 0}
+                  scrollToRow={typeof selectedPageIdx === 'number' ? selectedPageIdx : 0}
                   onScrollToChange={this.onKeyNavigate}>
                   {
                     ({ onSectionRendered, scrollToRow }) => {
@@ -451,10 +509,10 @@ class CollectionDetailUI extends Component {
                         <Table
                           width={width}
                           height={height}
-                          rowCount={objects ? objects.size : 0}
+                          rowCount={displayObjects.size}
                           headerHeight={25}
                           rowHeight={40}
-                          rowGetter={({ index }) => objects.get(index)}
+                          rowGetter={({ index }) => displayObjects.get(index)}
                           rowClassName={this.testRowHighlight}
                           onRowClick={this.onSelectRow}
                           onRowsRendered={({ startIndex, stopIndex }) => {
@@ -497,7 +555,7 @@ class CollectionDetailUI extends Component {
               )
             }
           </AutoSizer>
-        </div>
+        </OutsideClick>
       </div>
     );
   }

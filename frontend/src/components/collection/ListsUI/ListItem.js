@@ -51,14 +51,12 @@ const listTarget = {
     const itemType = monitor.getItemType();
 
     switch(itemType) {
+      case dt.BOOKMARK_ITEM:
       case dt.PAGE_ITEM:
-        props.addToList(
-          props.collection.get('user'),
-          props.collection.get('id'),
-          props.list.get('id'),
-          item
-        );
-        break;
+        props.dropCallback(item, props.list.get('id'), itemType);
+        return {
+          target: 'lists'
+        };
       case dt.LIST:
         props.saveSort();
         break;
@@ -69,7 +67,8 @@ const listTarget = {
 };
 
 function dropCollect(connect, monitor) {
-  const isOver = monitor.isOver() && monitor.getItemType() === dt.PAGE_ITEM;
+  const isOver = monitor.isOver() &&
+                 [dt.PAGE_ITEM, dt.BOOKMARK_ITEM].includes(monitor.getItemType());
   return {
     connectDropTarget: connect.dropTarget(),
     isOver
@@ -78,6 +77,7 @@ function dropCollect(connect, monitor) {
 
 function dragCollect(connect, monitor) {
   return {
+    connectDragPreview: connect.dragPreview(),
     connectDragSource: connect.dragSource(),
     isDragging: monitor.isDragging()
   };
@@ -91,7 +91,8 @@ class ListItem extends PureComponent {
 
   static propTypes = {
     addToList: PropTypes.func,
-    collection: PropTypes.object,
+    collId: PropTypes.string,
+    collUser: PropTypes.string,
     connectDragSource: PropTypes.func,
     connectDropTarget: PropTypes.func,
     editList: PropTypes.func,
@@ -109,7 +110,7 @@ class ListItem extends PureComponent {
 
   render() {
     const { canAdmin } = this.context;
-    const { collection, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
+    const { collId, collUser, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
 
     const title = list.get('title');
     const isPublic = list.get('public');
@@ -118,7 +119,7 @@ class ListItem extends PureComponent {
     const item = (
       <li className={classes} key={list.get('id')} style={{ opacity: isDragging ? 0 : 1 }}>
         <div className="wrapper">
-          <Link to={`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}`} title={list.get('title')}>
+          <Link to={`/${collUser}/${collId}/list/${list.get('id')}`} title={list.get('title')}>
             { list.get('title') }
           </Link>
           {
@@ -142,7 +143,7 @@ class ListItem extends PureComponent {
 }
 
 export default DropTarget(
-  [dt.PAGE_ITEM, dt.LIST],
+  [dt.BOOKMARK_ITEM, dt.PAGE_ITEM, dt.LIST],
   listTarget,
   dropCollect
 )(DragSource(dt.LIST, listSource, dragCollect)(ListItem));

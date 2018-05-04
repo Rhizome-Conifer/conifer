@@ -5,7 +5,7 @@ import Collapsible from 'react-collapsible';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { defaultCollDesc } from 'config';
+import { defaultCollDesc, draggableTypes } from 'config';
 
 import Modal from 'components/Modal';
 import SidebarHeader from 'components/SidebarHeader';
@@ -30,6 +30,7 @@ class ListsUI extends Component {
   static propTypes = {
     activeListId: PropTypes.string,
     addToList: PropTypes.func,
+    bulkAddToList: PropTypes.func,
     collection: PropTypes.object,
     collapsibleToggle: PropTypes.func,
     createList: PropTypes.func,
@@ -40,6 +41,12 @@ class ListsUI extends Component {
     loading: PropTypes.bool,
     lists: PropTypes.object,
     list: PropTypes.object,
+    pages: PropTypes.object,
+    pageSelection: PropTypes.oneOfType([
+      PropTypes.array,
+      PropTypes.number,
+      PropTypes.object // null
+    ]),
     publicIndex: PropTypes.bool,
     sortLists: PropTypes.func
   };
@@ -150,6 +157,45 @@ class ListsUI extends Component {
     this.setState({ minimized: !this.state.minimized });
   }
 
+  pageDropCallback = (page, list, itemType) => {
+    const { collection, pages, pageSelection } = this.props;
+    const selType = typeof pageSelection;
+
+
+    let pageIds = [];
+    if (selType === 'number') {
+      pageIds = [
+        itemType === draggableTypes.PAGE_ITEM ?
+          pages.get(pageSelection).get('id') :
+          pages.get(pageSelection).getIn(['page', 'id'])
+      ];
+    } else if(selType === 'object' && pageSelection !== null) {
+      pageIds = pageSelection.map((pg) => {
+        return itemType === draggableTypes.PAGE_ITEM ?
+          pages.get(pg).get('id') :
+          pages.get(pg).getIn(['page', 'id']);
+      });
+    }
+
+
+    // check if currently dragged page is within selection
+    // if so, bulk add selection, otherwise add single page
+    if (pageSelection === null || selType === 'number' ||
+        (selType === 'object' && !pageIds.includes(page.id))) {
+      this.props.addToList(collection.get('user'), collection.get('id'), list, page);
+    } else {
+      const pagesToAdd = [];
+      for(const pgIdx of pageSelection) {
+        pagesToAdd.push(
+          itemType === draggableTypes.PAGE_ITEM ?
+            pages.get(pgIdx).toJS() :
+            pages.get(pgIdx).get('page').toJS()
+        );
+      }
+      this.props.bulkAddToList(collection.get('user'), collection.get('id'), list, pagesToAdd);
+    }
+  }
+
   close = () => this.props.collapsibleToggle(false);
   open = () => this.props.collapsibleToggle(true);
 
@@ -209,8 +255,9 @@ class ListsUI extends Component {
               {
                 lists.map((listObj, idx) => (
                   <ListItem
-                    addToList={this.props.addToList}
-                    collection={collection}
+                    dropCallback={this.pageDropCallback}
+                    collId={collection.get('id')}
+                    collUser={collection.get('user')}
                     editList={this.sendEditList}
                     index={idx}
                     key={listObj.get('id')}

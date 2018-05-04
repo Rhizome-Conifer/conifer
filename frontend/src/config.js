@@ -57,6 +57,7 @@ module.exports = Object.assign({
   dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   draggableTypes: {
     LIST: 'list',
+    BOOKMARK_ITEM: 'bookmarkItem',
     PAGE_ITEM: 'pageItem',
     TH: 'tableHeader'
   },

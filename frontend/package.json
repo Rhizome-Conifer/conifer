@@ -63,7 +63,7 @@
     "react-collapsible": "github:m4rk3r/react-collapsible#dist",
     "react-dnd": "^2.5.4",
     "react-dnd-html5-backend": "^2.5.4",
-    "react-dom": "^16.2.0",
+    "react-dom": "^16.3.1",
     "react-ga": "^2.5.0",
     "react-helmet": "^5.2.0",
     "react-hot-loader": "^3.0.0-beta.6",

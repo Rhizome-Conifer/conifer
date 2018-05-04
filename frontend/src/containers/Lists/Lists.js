@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { edit as editCollection, loadLists, load as loadColl,
          resetEditState as resetCollEditState, sortLists } from 'redux/modules/collection';
-import { addTo, create, deleteList, edit, resetEditState } from 'redux/modules/list';
+import { addTo, bulkAddTo, create, deleteList, edit, resetEditState } from 'redux/modules/list';
 
 import ListsUI from 'components/collection/ListsUI';
 
@@ -28,6 +28,7 @@ const mapDispatchToProps = (dispatch) => {
               .then(() => dispatch(loadLists(user, coll)));
     },
     addToList: (user, coll, listId, data) => dispatch(addTo(user, coll, listId, data)),
+    bulkAddToList: (user, coll, listId, pages) => dispatch(bulkAddTo(user, coll, listId, pages)),
     editColl: (user, coll, data) => {
       return dispatch(editCollection(user, coll, data))
               .then(() => dispatch(resetCollEditState()))

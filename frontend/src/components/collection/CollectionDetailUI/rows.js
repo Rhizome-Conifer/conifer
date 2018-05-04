@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import defaultRowRenderer from 'react-virtualized/dist/commonjs/Table/defaultRowRenderer';
-import { DropTarget, DragSource } from 'react-dnd';
+import { DragSource, DropTarget } from 'react-dnd';
+import { getEmptyImage } from 'react-dnd-html5-backend';
+
 import { draggableTypes } from 'config';
 
 
+const baseSource = {
+  isDragging(props, monitor) {
+    return props.id === monitor.getItem().id;
+  }
+};
+
 const pageSource = {
+  ...baseSource,
   beginDrag({ index, rowData }) {
     return {
       id: rowData.get('id'),
@@ -12,14 +22,27 @@ const pageSource = {
       initialIdx: index,
       item: rowData.toJS()
     };
-  },
-  isDragging(props, monitor) {
-    return props.id === monitor.getItem().id;
+  }
+};
+
+const bookmarkSource = {
+  ...baseSource,
+  beginDrag({ index, rowData }) {
+    const pg = rowData.get('page');
+    return {
+      id: pg.get('id'),
+      idx: index,
+      initialIdx: index,
+      item: pg.toJS()
+    };
   },
   endDrag(props, monitor) {
     const { idx, initialIdx } = monitor.getItem();
+    const res = monitor.getDropResult();
+    const dropped = monitor.didDrop();
 
-    if (!monitor.didDrop() && props.sort) {
+    // restore sort if lists were inteded drop target
+    if (props.sort && (!dropped || (dropped && res && res.target === 'lists'))) {
       props.sort(idx, initialIdx);
     }
   }
@@ -35,6 +58,11 @@ const pageDropSource = {
       return;
     }
 
+    // don't sort for multi-select
+    if (typeof props.pageSelection === 'object' && props.pageSelection !== null) {
+      return;
+    }
+
     // Time to actually perform the action
     props.sort(origIndex, hoverIndex);
 
@@ -47,6 +75,7 @@ const pageDropSource = {
 
 function collect(connect, monitor) {
   return {
+    connectDragPreview: connect.dragPreview(),
     connectDragSource: connect.dragSource(),
     isDragging: monitor.isDragging()
   };
@@ -56,26 +85,49 @@ function DefaultRow(props) {
   return defaultRowRenderer(props);
 }
 
-function DnDRowBuilder(props) {
-  const { connectDragSource, ...passThrough } = props;
-  return connectDragSource(defaultRowRenderer(passThrough));
+
+class DnDSortableRowBuilder extends Component {
+  componentDidUpdate(prevProps) {
+    const { pageSelection } = this.props;
+
+    if (typeof pageSelection === 'object' && pageSelection !== null) {
+      this.props.connectDragPreview(getEmptyImage());
+    }
+  }
+
+  render() {
+    const { connectDragPreview, connectDragSource, connectDropTarget, isDragging, ...passThrough } = this.props;
+
+    passThrough.style = { ...passThrough.style, opacity: isDragging ? 0 : 1 };
+    return connectDragPreview(connectDragSource(connectDropTarget(defaultRowRenderer(passThrough))));
+  }
 }
 
-function DnDSortableRowBuilder(props) {
-  const { isDragging, connectDragSource, connectDropTarget, ...passThrough } = props;
-  passThrough.style = { ...passThrough.style, opacity: isDragging ? 0 : 1 };
-  return connectDragSource(connectDropTarget(defaultRowRenderer(passThrough)));
+class DnDRowBuilder extends Component {
+  static propTypes = {
+    connectDragPreview: PropTypes.func,
+    connectDragSource: PropTypes.func
+  }
+
+  componentDidMount() {
+    this.props.connectDragPreview(getEmptyImage());
+  }
+
+  render() {
+    const { connectDragSource, ...passThrough } = this.props;
+    return connectDragSource(defaultRowRenderer(passThrough));
+  }
 }
 
 const DnDRow = DragSource(draggableTypes.PAGE_ITEM, pageSource, collect)(DnDRowBuilder);
 
 const DnDSortableRow = DropTarget(
-  draggableTypes.PAGE_ITEM,
+  draggableTypes.BOOKMARK_ITEM,
   pageDropSource,
   connect => ({
     connectDropTarget: connect.dropTarget(),
   })
-)(DragSource(draggableTypes.PAGE_ITEM, pageSource, collect)(DnDSortableRowBuilder));
+)(DragSource(draggableTypes.BOOKMARK_ITEM, bookmarkSource, collect)(DnDSortableRowBuilder));
 
 export {
   DefaultRow,

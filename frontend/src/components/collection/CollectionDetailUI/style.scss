@@ -22,6 +22,17 @@
     }
 }
 
+.drag-preview {
+    pointer-events: none;
+    position: fixed;
+    z-index: 100;
+    font-size: 2rem;
+    background: #FFF;
+    padding: 0 .8rem;
+    border: solid .4rem $success-color;
+    font-weight: 600;
+}
+
 .wr-delete-modal {
     label {
         display: block;
@@ -168,6 +179,7 @@
             font-size: 1.2rem;
             position: relative;
             padding-left: .75rem;
+            background: #FFF;
 
             &:before {
                 transition: background-color $quickShift ease-in-out;
