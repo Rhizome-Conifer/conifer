@@ -4,6 +4,7 @@ import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
 
+import HttpStatus from 'components/HttpStatus';
 import SizeFormat from 'components/SizeFormat';
 
 import { Upload } from 'containers';
@@ -73,6 +74,15 @@ class CollectionListUI extends Component {
     const { auth, collections, orderedCollections, match: { params }, user } = this.props;
     const { showModal } = this.state;
     const userParam = params.user;
+
+    if (collections.get('error')) {
+      return (
+        <HttpStatus>
+          <h2>Error</h2>
+          <p>{collections.getIn(['error', 'error_message'])}</p>
+        </HttpStatus>
+      );
+    }
 
     const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;
     const spaceUsed = user.getIn(['space_utilization', 'used']);

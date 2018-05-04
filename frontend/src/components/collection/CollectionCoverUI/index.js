@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { defaultCollDesc } from 'config';
 
 import Capstone from 'components/collection/Capstone';
+import HttpStatus from 'components/HttpStatus';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
 import { ListIcon } from 'components/icons';
@@ -27,7 +28,7 @@ class CollectionCoverUI extends Component {
     const { canAdmin } = this.context;
     const { collection, orderdPages } = this.props;
 
-    if (!canAdmin && orderdPages) {
+    if (!canAdmin && orderdPages.size) {
       const pg = orderdPages.get(0);
       return `/${collection.get('user')}/${collection.get('id')}/${pg.get('timestamp')}/${pg.get('url')}`;
     }
@@ -37,6 +38,16 @@ class CollectionCoverUI extends Component {
 
   render() {
     const { collection } = this.props;
+
+    if (collection.get('error')) {
+      return (
+        <HttpStatus>
+          <h2>Error</h2>
+          <p>{collection.getIn(['error', 'error_message'])}</p>
+        </HttpStatus>
+      );
+    }
+
     const user = collection.get('user');
     const collId = collection.get('id');
     const lists = collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size);

@@ -118,7 +118,7 @@ export const getOrderedRecordings = createSelector(
 export const timestampOrderedPages = createSelector(
   [getPages],
   (pages) => {
-    return pages.toList().sortBy(b => b.get('timestamp')).reverse();
+    return pages ? pages.toList().sortBy(b => b.get('timestamp')).reverse() : List();
   }
 );
 

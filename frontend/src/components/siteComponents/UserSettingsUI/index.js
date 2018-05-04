@@ -5,6 +5,7 @@ import { Alert, ControlLabel, FormControl, FormGroup,
 
 import { passwordPassRegex } from 'helpers/utils';
 
+import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
 import SizeFormat from 'components/SizeFormat';
 
@@ -15,6 +16,7 @@ class UserSettingsUI extends Component {
   static propTypes = {
     collSum: PropTypes.number,
     deleteUser: PropTypes.func,
+    match: PropTypes.object,
     updatePass: PropTypes.func,
     user: PropTypes.object
   }
@@ -76,8 +78,12 @@ class UserSettingsUI extends Component {
   closeDeleteModal = evt => this.setState({ showModal: false })
 
   render() {
-    const { user } = this.props;
+    const { match: { params }, user } = this.props;
     const { currPassword, password, password2, showModal } = this.state;
+
+    if (user.get('username') !== params.user) {
+      return <HttpStatus />;
+    }
 
     const usedSpace = user.getIn(['space_utilization', 'used']);
     const totalSpace = user.getIn(['space_utilization', 'total']);

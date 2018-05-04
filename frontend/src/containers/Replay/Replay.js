@@ -15,6 +15,7 @@ import { listLoaded, load as loadList } from 'redux/modules/list';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 import { toggle as toggleSidebar } from 'redux/modules/sidebar';
 
+import HttpStatus from 'components/HttpStatus';
 import Resizable from 'components/Resizable';
 import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer,
          SidebarCollectionViewer, SidebarPageViewer } from 'containers';
@@ -110,6 +111,15 @@ class Replay extends Component {
     const { activeBookmarkId, activeBrowser, collection, dispatch, match: { params }, recording,
             reqId, timestamp, url } = this.props;
     const { product } = this.context;
+
+    if (collection.get('error')) {
+      return (
+        <HttpStatus>
+          <h2>Error</h2>
+          <p>{collection.getIn(['error', 'error_message'])}</p>
+        </HttpStatus>
+      );
+    }
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
     const listId = params.listId;
@@ -245,7 +255,7 @@ const initialData = [
 
 const mapStateToProps = (outerState) => {
   const { reduxAsyncConnect: { loaded }, app } = outerState;
-  const activePage = getActivePage(outerState);
+  const activePage = app.getIn(['collection', 'loaded']) ? getActivePage(outerState) : null;
 
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
