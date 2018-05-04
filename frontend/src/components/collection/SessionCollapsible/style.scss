@@ -38,11 +38,14 @@
 
                     h2 {
                         margin-left: 2.5rem;
-                        flex-grow: 1;
+                        flex-grow: 0;
+                        width: 25%;
                     }
 
                     & > span {
+                        width: 25%;
                         flex-grow: 1;
+                        text-align: center;
                     }
                 }
 

@@ -81,9 +81,21 @@
     }
 
     .ReactVirtualized__Table__row {
+        transition: background $tableRowFade ease-in-out,
+                    color $tableRowFade ease-in-out;
         color: $bookmarkListDefault;
         cursor: pointer;
-        padding-left: 2rem;
+        padding-left: .75rem;
+        position: relative;
+
+        &:before {
+            transition: background-color $quickShift ease-in-out;
+            position: absolute;
+            left: 0;
+            content: '';
+            width: .75rem;
+            height: 100%;
+        }
 
         &.odd {
             background-color: $table-zebra;
@@ -95,7 +107,6 @@
 
         .page-title {
             h2 {
-                transition: color $quickShift ease-in-out;
                 font-size: 1.5rem;
                 font-weight: 400;
                 margin: 0;
@@ -110,22 +121,20 @@
         &.selected {
             background-color: $blue;
             color: #FFF;
-
-            // color: $blue;
-            // &:before {
-            //     content: '';
-            //     position: absolute;
-            //     left: .9rem;
-            //     top: .9rem;
-            //     width: 1.4rem;
-            //     height: 1.4rem;
-            //     background: url('../../../shared/images/active_bookmark_ico.svg');
-            //     background-size: cover;
-            // }
         }
 
-        &:not(.selected):hover {
-            color: $blue;
+        &:hover {
+            &:not(.selected){
+                &:before {
+                    background: $tr-selected;
+                }
+            }
+
+            &.selected {
+                &:before {
+                    background: $tr-highlight-selected;
+                }
+            }
         }
     }
 
