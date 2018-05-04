@@ -4,6 +4,7 @@ import { Button } from 'react-bootstrap';
 
 import { ModeSelector, RecordingTools, SizeCounter, ToolBin } from 'containers';
 
+import ClickTracker from 'components/ClickTracker';
 import { ReplayURLBar, RecordURLBar } from 'components/controls';
 import { InfoIcon } from 'components/icons';
 
@@ -41,9 +42,11 @@ class ReplayUI extends Component {
 
           {
             currMode.includes('replay') &&
-              <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
-                <InfoIcon />
-              </Button>
+              <ClickTracker action={`${this.props.sidebarExpanded ? 'Collapse' : 'Expand'} sidebar menu during replay`}>
+                <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
+                  <InfoIcon />
+                </Button>
+              </ClickTracker>
           }
 
           {

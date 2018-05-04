@@ -10,6 +10,7 @@ import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
 import { CollectionDropdown, ExtractWidget,
          RemoteBrowserSelect } from 'containers';
 
+import ClickTracker from 'components/ClickTracker';
 import WYSIWYG from 'components/WYSIWYG';
 
 import './style.scss';
@@ -101,7 +102,9 @@ class StandaloneRecorderUI extends Component {
     const isOutOfSpace = false;
 
     const advOptions = (
-      <div>{advOpen ? 'Hide' : 'Show'} session settings <span className={classNames('caret', { 'caret-flip': advOpen })} /></div>
+      <ClickTracker action={`${advOpen ? 'Close' : 'Open'} session settings dropdown`}>
+        <div>{advOpen ? 'Hide' : 'Show'} session settings <span className={classNames('caret', { 'caret-flip': advOpen })} /></div>
+      </ClickTracker>
     );
 
     return (
@@ -141,7 +144,9 @@ class StandaloneRecorderUI extends Component {
 
             <h4>Preconfigured Browsers</h4>
             <div className="rb-dropdown">
-              <RemoteBrowserSelect />
+              <ClickTracker action="Toggle session settings remote browser dropdown">
+                <RemoteBrowserSelect />
+              </ClickTracker>
             </div>
           </Collapsible>
           <Button type="submit" disabled={isOutOfSpace}>

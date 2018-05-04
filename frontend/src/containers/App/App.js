@@ -18,6 +18,8 @@ import { load as loadTemp } from 'redux/modules/tempUser';
 import { UserManagement } from 'containers';
 
 import config from 'config';
+
+import Analytics from 'components/Analytics';
 import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
 import { Footer } from 'components/siteComponents';
 
@@ -97,7 +99,7 @@ export class App extends Component { // eslint-disable-line
   }
 
   render() {
-    const { loaded, location: { pathname } } = this.props;
+    const { loaded, location: { pathname, search } } = this.props;
     const { error, info, lastMatch, match } = this.state;
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
@@ -119,6 +121,10 @@ export class App extends Component { // eslint-disable-line
 
     return (
       <React.Fragment>
+        {
+          config.gaId &&
+            <Analytics pathname={pathname + search} />
+        }
         <Helmet {...config.app.head} />
         <header>
           <div className={navbarClasses}>
