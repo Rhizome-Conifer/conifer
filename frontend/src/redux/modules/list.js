@@ -136,23 +136,35 @@ export function edit(user, coll, id, data) {
 }
 
 
-export function addTo(user, coll, listId, data) {
+export function addTo(user, coll, listId, page) {
+  // if page id is specified, replace with 'page_id'
+  if (page.id) {
+    page.page_id = page.id;
+    page.id = undefined;
+  }
   return {
     types: [LIST_ADD, LIST_ADD_SUCCESS, LIST_ADD_FAIL],
     promise: client => client.post(`${apiPath}/list/${listId}/bookmarks`, {
       params: { user, coll },
-      data
+      data: page
     })
   };
 }
 
 
-export function bulkAddTo(user, coll, listId, data) {
+export function bulkAddTo(user, coll, listId, pages) {
+  pages.forEach((page) => {
+    if (page.id) {
+      page.page_id = page.id;
+      page.id = undefined;
+    }
+  });
+
   return {
     types: [BULK_ADD, BULK_ADD_SUCCESS, BULK_ADD_FAIL],
     promise: client => client.post(`${apiPath}/list/${listId}/bulk_bookmarks`, {
       params: { user, coll },
-      data
+      data: pages
     })
   };
 }

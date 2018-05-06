@@ -64,7 +64,10 @@ class BookmarkList(RedisUniqueComponent):
 
         order = self.bookmark_order.get_ordered_keys(start, end)
 
-        bookmarks = self.redis.hmget(self.BOOK_CONTENT_KEY.format(blist=self.my_id), order)
+        if order:
+            bookmarks = self.redis.hmget(self.BOOK_CONTENT_KEY.format(blist=self.my_id), order)
+        else:
+            bookmarks = []
 
         return [json.loads(bookmark) for bookmark in bookmarks]
 
