@@ -1,3 +1,5 @@
+import config from 'config';
+
 const RESET = 'wr/passwordReset/RESET';
 const RESET_SUCCESS = 'wr/passwordReset/RESET_SUCCESS';
 const RESET_FAIL = 'wr/passwordReset/RESET_FAIL';
@@ -33,7 +35,7 @@ export default function passwordReset(state = initialState, action = {}) {
 export function resetPassword(postData) {
   return {
     types: [RESET, RESET_SUCCESS, RESET_FAIL],
-    promise: client => client.post('/_forgot', {
+    promise: client => client.post(`${config.apiPath}/auth/password/reset_request`, {
       data: {
         ...postData
       }

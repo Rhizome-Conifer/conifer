@@ -16,7 +16,7 @@ from string import ascii_lowercase as alpha
 from bottle import template, request
 #from cork import AAAException
 
-from webrecorder.webreccork import ValidationException
+from webrecorder.webreccork import ValidationException, AuthException
 
 from webrecorder.models.base import BaseAccess, DupeNameException
 from webrecorder.models.user import User, UserTable
@@ -318,12 +318,21 @@ class UserManager(object):
 
     def update_password(self, curr_password, password, confirm):
         username = self.access.session_user.name
+
         if not self.cork.verify_password(username, curr_password):
             raise ValidationException('Incorrect Current Password')
 
         self.validate_password(password, confirm)
 
         self.cork.update_password(username, password)
+
+    def reset_password(self, password, confirm, resetcode):
+        self.validate_password(password, confirm)
+
+        try:
+            self.cork.reset_password(resetcode, password)
+        except AuthException:
+            raise ValidationException('invalid_reset_code')
 
     def is_valid_invite(self, invitekey):
         try:

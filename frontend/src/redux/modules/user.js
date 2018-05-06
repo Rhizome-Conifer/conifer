@@ -155,7 +155,7 @@ export function deleteUserCollection(id) {
 export function updatePassword(currPass, newPass, newPass2) {
   return {
     types: [USER_PASS, USER_PASS_SUCCESS, USER_PASS_FAIL],
-    promise: client => client.post(`${config.apiPath}/auth/updatepassword`, {
+    promise: client => client.post(`${config.apiPath}/auth/password/update`, {
       data: {
         currPass,
         newPass,

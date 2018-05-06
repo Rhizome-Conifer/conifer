@@ -222,8 +222,7 @@ class TestApiUserLogin(FullStackTests):
                   'newPass2': 'Password3'
                  }
 
-        # TODO: should be working with post_json?
-        res = self.testapp.post('/api/v1/auth/updatepassword', params=params, status=403)
+        res = self.testapp.post_json('/api/v1/auth/password/update', params=params, status=403)
 
         assert res.json['error'] == 'password_mismatch'
 
@@ -233,16 +232,89 @@ class TestApiUserLogin(FullStackTests):
                   'newPass2': 'Password2'
                  }
 
-        # TODO: should be working with post_json?
-        res = self.testapp.post('/api/v1/auth/updatepassword', params=params)
+        res = self.testapp.post_json('/api/v1/auth/password/update', params=params)
 
-        assert res.json == {}
+        assert res.json == {'success': True}
 
-    #def test_api_temp_user_info_not_temp(self):
-    #    res = self.testapp.get('/api/v1/temp-users/someuser', status=404)
+    def test_logout_2(self):
+        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        assert res.json['success']
 
-        # TODO: should be 404 if not same user? check access
-    #    res = self.testapp.get('/api/v1/temp-users/{user}'.format(user=self.anon_user), status=200)
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+    @classmethod
+    def mock_send_reset_email(cls, sender, title, text):
+        groups = re.search('(/_resetpassword/([^"]+))', text).groups()
+        cls.reset_code = groups[1]
+
+    def test_reset_invalid(self):
+        # invalid username and email
+        params = {'username': 'foo', 'email': 'bar'}
+        res = self.testapp.post_json('/api/v1/auth/password/reset_request', params=params, status=404)
+
+        assert res.json == {'error': 'no_such_user'}
+
+    def test_reset_by_email(self):
+        TestApiUserLogin.reset_code = None
+
+        # reset by email
+        params = {'email': 'test@example.com'}
+        with patch('cork.Mailer.send_email', self.mock_send_reset_email):
+            res = self.testapp.post_json('/api/v1/auth/password/reset_request', params=params)
+
+        # valid reset
+        assert TestApiUserLogin.reset_code != None
+
+    def test_reset_by_username(self):
+        TestApiUserLogin.reset_code = None
+
+        # reset by username
+        params = {'username': 'someuser', 'email': ''}
+        with patch('cork.Mailer.send_email', self.mock_send_reset_email):
+            res = self.testapp.post_json('/api/v1/auth/password/reset_request', params=params)
+
+        # valid reset
+        assert TestApiUserLogin.reset_code != None
+
+    def test_reset_code_invalid(self):
+        # invalid reset
+        params = {'resetCode': 'abc',
+                  'newPass': 'TestTest789',
+                  'newPass2': 'TestTest789'
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/password/reset', params=params, status=403)
+        assert res.json == {'error': 'invalid_reset_code'}
+
+    def test_reset_code_valid_password_mismatch(self):
+        # invalid reset
+        params = {'resetCode': TestApiUserLogin.reset_code,
+                  'newPass': 'TestTest789',
+                  'newPass2': 'TestTest780'
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/password/reset', params=params, status=403)
+        assert res.json == {'error': 'password_mismatch'}
+
+    def test_reset_code_valid(self):
+        # valid reset
+        params = {'resetCode': TestApiUserLogin.reset_code,
+                  'newPass': 'TestTest789',
+                  'newPass2': 'TestTest789'
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/password/reset', params=params)
+        assert res.json == {'success': True}
+
+    def test_login_2(self):
+        params = {'username': 'someuser',
+                  'password': 'TestTest789'}
+
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
+
+        assert res.json['username'] == 'someuser'
+
+        assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_api_user_info(self):
         res = self.testapp.get('/api/v1/user/someuser')

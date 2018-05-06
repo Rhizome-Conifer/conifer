@@ -125,33 +125,59 @@ class UserController(BaseController):
             return {'success': 'logged_out'}
 
         # PASSWORD
-        @self.app.post('/api/v1/auth/updatepassword')
+        @self.app.post('/api/v1/auth/password/reset_request')
+        def request_reset_password():
+            data = request.json or {}
+            email = data.get('email', '')
+            username = data.get('username', '')
+            host = self.get_host()
+
+            try:
+                self.user_manager.cork.send_password_reset_email(
+                                          username=username,
+                                          email_addr=email,
+                                          subject='webrecorder.io password reset confirmation',
+                                          email_template='webrecorder/templates/emailreset.html',
+                                          host=host)
+
+                return {'success': True}
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                self._raise_error(404, 'no_such_user')
+
+        @self.app.post('/api/v1/auth/password/reset')
+        def reset_password():
+            self.get_user_or_raise()
+
+            data = request.json or {}
+
+            password = data.get('newPass', '')
+            confirm_password = data.get('newPass2', '')
+            reset_code = data.get('resetCode', '')
+
+            try:
+                self.user_manager.reset_password(password, confirm_password, reset_code)
+                return {'success': True}
+            except ValidationException as ve:
+                self._raise_error(403, str(ve))
+
+        @self.app.post('/api/v1/auth/password/update')
         def update_password():
             self.get_user_or_raise()
 
-            curr_password = self.post_get('currPass')
-            password = self.post_get('newPass')
-            confirm_password = self.post_get('newPass2')
+            data = request.json or {}
+
+            curr_password = data.get('currPass', '')
+            password = data.get('newPass', '')
+            confirm_password = data.get('newPass2', '')
 
             try:
                 self.user_manager.update_password(curr_password, password,
-                                                     confirm_password)
-                return {}
+                                                  confirm_password)
+                return {'success': True}
             except ValidationException as ve:
                 return self._raise_error(403, str(ve))
-
-        # USER INFO
-        #@self.app.get(['/api/v1/temp-user/<username>', '/api/v1/temp-user/<username>/'])
-        def api_get_temp_user(username):
-            anon_user = self.user_manager.get_valid_anon_user(username)
-
-            if not anon_user:
-                return self._raise_error(404, 'Temp user not found.',)
-
-            data = anon_user.serialize(compute_size_allotment=True)
-
-            return data
-
 
         @self.app.get('/api/v1/user/<username>')
         def api_get_user(username):

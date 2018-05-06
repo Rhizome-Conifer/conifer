@@ -23,14 +23,14 @@ class TestListsAnonUserAPI(FullStackTests):
 
             return new_bookmark_id_actual
 
-        cls.id_mock = patch('webrecorder.models.list_bookmarks.BookmarkList.get_new_bookmark_id',
+        cls.bid_mock = patch('webrecorder.models.list_bookmarks.BookmarkList.get_new_bookmark_id',
                             new_bookmark_id(count(101)))
 
-        cls.id_mock.start()
+        cls.bid_mock.start()
 
     @classmethod
     def teardown_class(cls):
-        cls.id_mock.stop()
+        cls.bid_mock.stop()
 
         super(TestListsAnonUserAPI, cls).teardown_class()
 
