@@ -294,7 +294,7 @@ class RedisOrderedList(object):
         return self.ordered_list_key_templ.format_map({self.comp.MY_TYPE: self.comp.my_id})
 
     def get_ordered_objects(self, cls, load=True, start=0, end=-1):
-        all_objs = self.redis.zrange(self._ordered_list_key, start, end)
+        all_objs = self.get_ordered_keys(start, end)
 
         obj_list = []
         for val in all_objs:
@@ -311,17 +311,24 @@ class RedisOrderedList(object):
         return obj_list
 
     def insert_ordered_object(self, obj, before_obj, owner=True):
+        self.insert_ordered_id(obj.my_id, before_obj.my_id if before_obj else None)
+
+        if owner:
+            obj.owner = self.comp
+            obj['owner'] = self.comp.my_id
+
+    def insert_ordered_id(self, id, before_id=None):
         key = self._ordered_list_key
 
         new_score = None
         before_score = None
 
-        if before_obj:
-            before_score = self.redis.zscore(key, before_obj.my_id)
+        if before_id:
+            before_score = self.redis.zscore(key, before_id)
 
         if before_score is not None:
             res = self.redis.zrevrangebyscore(key, '(' + str(before_score), 0, start=0, num=1, withscores=True)
-            # insert before before_obj, possibly at the beginning
+            # insert before before_id, possibly at the beginning
             after_score = res[0][1] if res else 0
             new_score = (before_score + after_score) / 2.0
 
@@ -337,11 +344,7 @@ class RedisOrderedList(object):
             elif len(res) == 2:
                 new_score = res[0][1] * 2.0 - res[1][1]
 
-        self.redis.zadd(key, new_score, obj.my_id)
-
-        if owner:
-            obj.owner = self.comp
-            obj['owner'] = self.comp.my_id
+        self.redis.zadd(key, new_score, id)
 
     def contains_id(self, obj_id):
         return self.redis.zscore(self._ordered_list_key, obj_id) is not None
@@ -350,10 +353,13 @@ class RedisOrderedList(object):
         return self.redis.zcard(self._ordered_list_key)
 
     def remove_ordered_object(self, obj):
-        return self.redis.zrem(self._ordered_list_key, obj.my_id)
+        return self.remove_ordered_id(obj.my_id)
 
-    def get_ordered_keys(self):
-        return self.redis.zrange(self._ordered_list_key, 0, -1)
+    def remove_ordered_id(self, id):
+        return self.redis.zrem(self._ordered_list_key, id)
+
+    def get_ordered_keys(self, start=0, end=-1):
+        return self.redis.zrange(self._ordered_list_key, start, end)
 
     def reorder_objects(self, new_order):
         key = self._ordered_list_key

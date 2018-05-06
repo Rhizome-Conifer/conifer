@@ -1,5 +1,5 @@
 from webrecorder.basecontroller import BaseController
-from bottle import request
+from bottle import request, response
 
 from webrecorder.utils import get_bool
 
@@ -87,7 +87,7 @@ class ListsController(BaseController):
 
             bookmark = blist.create_bookmark(request.json)
             if bookmark:
-                return {'bookmark': bookmark.serialize()}
+                return {'bookmark': bookmark}
             else:
                 return self._raise_error(400, 'invalid_page')
 
@@ -108,29 +108,30 @@ class ListsController(BaseController):
 
             bookmarks = blist.get_bookmarks()
 
-            return {'bookmarks': [bookmark.serialize() for bookmark in bookmarks]}
+            return {'bookmarks': bookmarks}
 
         @self.app.get('/api/v1/bookmark/<bid>')
         def get_bookmark(bid):
-            blist, bookmark = self.load_list_bookmark(bid)
+            user, collection, blist = self.load_user_coll_list()
 
-            return {'bookmark': bookmark.serialize()}
+            bookmark = blist.get_bookmark(bid)
+            return {'bookmark': bookmark}
 
         @self.app.post('/api/v1/bookmark/<bid>')
         def update_bookmark(bid):
-            blist, bookmark = self.load_list_bookmark(bid)
+            user, collection, blist = self.load_user_coll_list()
 
-            bookmark.update(request.json)
+            bookmark = blist.update_bookmark(bid, request.json)
 
-            return {'bookmark': bookmark.serialize()}
+            return {'bookmark': bookmark}
 
         @self.app.delete('/api/v1/bookmark/<bid>')
         def delete_bookmark(bid):
-            blist, bookmark = self.load_list_bookmark(bid)
-            if blist.remove_bookmark(bookmark):
+            user, collection, blist = self.load_user_coll_list()
+            if blist.remove_bookmark(bid):
                 return {'deleted_id': bid}
             else:
-                self._raise_error(400, 'error_deleting')
+                self._raise_error(404, 'no_such_bookmark')
 
         @self.app.post('/api/v1/list/<list_id>/bookmarks/reorder')
         def reorder_bookmarks(list_id):
@@ -138,12 +139,18 @@ class ListsController(BaseController):
 
             new_order = request.json.get('order', [])
 
-            if blist.bookmarks.reorder_objects(new_order):
+            if blist.reorder_bookmarks(new_order):
                 return {'success': 'reordered'}
             else:
                 self._raise_error(400, 'invalid_order')
 
-    def load_user_coll_list(self, list_id, user=None, coll_name=None):
+    def load_user_coll_list(self, list_id=None, user=None, coll_name=None):
+        if not list_id:
+            list_id = request.query.getunicode('list')
+
+        if not list_id:
+            self._raise_error(400, 'list_not_specified')
+
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
 
         return user, collection, self.load_list(collection, list_id)
@@ -155,18 +162,4 @@ class ListsController(BaseController):
 
         return blist
 
-    def load_list_bookmark(self, bid, user=None, coll_name=None, list_id=None):
-        if not list_id:
-            list_id = request.query.getunicode('list')
-
-        if not list_id:
-            self._raise_error(400, 'no_list_specified')
-
-        user, collection, blist = self.load_user_coll_list(list_id, user=user, coll_name=coll_name)
-
-        bookmark = blist.get_bookmark(bid)
-        if not bookmark:
-            self._raise_error(404, 'no_such_bookmark')
-
-        return blist, bookmark
 

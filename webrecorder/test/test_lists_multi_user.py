@@ -145,8 +145,12 @@ class TestListsAPIAccess(FullStackTests):
         assert set(self.redis.hkeys('u:test:colls')) == {'some-coll', 'default-collection'}
         assert set(self.redis.hkeys('u:another:colls')) == {'some-coll', 'default-collection'}
 
-        assert len(self.redis.keys('l:*:info')) == 4
-        assert len(self.redis.keys('b:*:info')) == 8
+        lists = self.redis.keys('l:*:info')
+        assert len(lists) == 4
+
+        for blist in lists:
+            assert self.redis.hlen(blist.replace(':info', ':b')) == 2
+        #assert len(self.redis.keys('b:*:info')) == 8
 
     def test_no_lists_user_info(self):
         # wrong user

@@ -102,13 +102,13 @@ class PagesMixin(object):
 
         self.redis.hmset(self.pages_key, pages)
 
-    def add_page_bookmark(self, pid, bookmark):
+    def add_page_bookmark(self, pid, bid, list_id):
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
-        self.redis.hset(key, bookmark.my_id, bookmark.get_prop('owner'))
+        self.redis.hset(key, bid, list_id)
 
-    def remove_page_bookmark(self, pid, bookmark):
+    def remove_page_bookmark(self, pid, bid):
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
-        self.redis.hdel(key, bookmark.my_id)
+        self.redis.hdel(key, bid)
 
     def get_page_bookmarks(self):
         bookmarks = {}

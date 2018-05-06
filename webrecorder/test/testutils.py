@@ -164,7 +164,6 @@ class FullStackTests(HttpBinLiveTests, BaseWRTests):
     def new_id_override(cls):
         cls.ids_map = {'Recording': [],
                        'Collection': [],
-                       'Bookmark': [],
                        'BookmarkList': []
                       }
 
@@ -185,7 +184,6 @@ class FullStackTests(HttpBinLiveTests, BaseWRTests):
         res = self.testapp.get(url, *args, **kwargs)
         assert res.status_code == 302
         rec_id = res.location.split('/', 7)[5]
-        print(rec_id)
         self.add_rec_id(rec_id)
         return res
 

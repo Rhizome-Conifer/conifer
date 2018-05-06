@@ -1,5 +1,6 @@
 from webrecorder.models.base import RedisUniqueComponent, RedisOrderedList
-from webrecorder.utils import get_bool
+from webrecorder.utils import get_bool, redis_pipeline, get_new_id
+import json
 
 
 # ============================================================================
@@ -8,13 +9,13 @@ class BookmarkList(RedisUniqueComponent):
     INFO_KEY = 'l:{blist}:info'
     ALL_KEYS = 'l:{blist}:*'
 
-    BOOKMARKS_KEY = 'l:{blist}:bookmarks'
-
     ID_LEN = 8
+    BOOK_ORDER_KEY = 'l:{blist}:o'
+    BOOK_CONTENT_KEY = 'l:{blist}:b'
 
     def __init__(self, **kwargs):
         super(BookmarkList, self).__init__(**kwargs)
-        self.bookmarks = RedisOrderedList(self.BOOKMARKS_KEY, self)
+        self.bookmark_order = RedisOrderedList(self.BOOK_ORDER_KEY, self)
 
     def init_new(self, collection, props):
         self.owner = collection
@@ -39,61 +40,83 @@ class BookmarkList(RedisUniqueComponent):
         self.access.assert_can_write_coll(collection)
 
         # if a page is specified for this bookmark, ensure that it has the same url and timestamp
-        page_id = props.get('id')
+        page_id = props.get('page_id')
         if page_id:
             if not collection.is_matching_page(page_id, props):
                 return None
 
-        bookmark = Bookmark(redis=self.redis,
-                            access=self.access)
+        bid = self.get_new_bookmark_id()
+        props['id'] = bid
 
-        bookmark.init_new(self, collection, props)
+        bookmark = props
 
-        before_bookmark = self.get_bookmark(props.get('before_id'))
+        self.bookmark_order.insert_ordered_id(bid, props.get('before_id'))
 
-        self.bookmarks.insert_ordered_object(bookmark, before_bookmark)
+        self.redis.hset(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid, json.dumps(bookmark))
+
+        if page_id:
+            collection.add_page_bookmark(page_id, bid, self.my_id)
 
         return bookmark
 
     def get_bookmarks(self, load=True, start=0, end=-1):
         self.access.assert_can_read_coll(self.get_owner())
 
-        return self.bookmarks.get_ordered_objects(Bookmark, load=load,
-                                                  start=start, end=end)
+        order = self.bookmark_order.get_ordered_keys(start, end)
+
+        bookmarks = self.redis.hmget(self.BOOK_CONTENT_KEY.format(blist=self.my_id), order)
+
+        return [json.loads(bookmark) for bookmark in bookmarks]
 
     def num_bookmarks(self):
         self.access.assert_can_read_coll(self.get_owner())
 
-        return self.bookmarks.num_ordered_objects()
+        return self.redis.hlen(self.BOOK_CONTENT_KEY.format(blist=self.my_id))
 
     def get_bookmark(self, bid):
         self.access.assert_can_read_coll(self.get_owner())
 
-        if bid is None or not self.bookmarks.contains_id(bid):
+        bookmark = self.redis.hget(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid)
+
+        if not bookmark:
             return None
 
-        bookmark = Bookmark(my_id=bid,
-                            redis=self.redis,
-                            access=self.access)
+        return json.loads(bookmark)
 
-        bookmark.owner = self
-
-        return bookmark
-
-    def move_bookmark_before(self, bookmark, before_bookmark):
+    def update_bookmark(self, bid, props):
         self.access.assert_can_write_coll(self.get_owner())
 
-        self.bookmarks.insert_ordered_object(bookmark, before_bookmark)
+        bookmark = self.get_bookmark(bid)
 
-    def remove_bookmark(self, bookmark):
-        self.access.assert_can_write_coll(self.get_owner())
-
-        if not self.bookmarks.remove_ordered_object(bookmark):
+        if not bookmark:
             return False
 
-        bookmark.delete_me()
+        AVAIL_PROPS = ('title', 'url', 'timestamp', 'browser', 'desc')
 
-        return True
+        for prop in props:
+            if prop in AVAIL_PROPS:
+                bookmark[prop] = props[prop]
+
+        self.redis.hset(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid, json.dumps(bookmark))
+        return bookmark
+
+    def remove_bookmark(self, bid):
+        self.access.assert_can_write_coll(self.get_owner())
+
+        res = self.bookmark_order.remove_ordered_id(bid)
+        if not res:
+            return False
+
+        # check if bookmark had a page_id
+        bookmark = self.get_bookmark(bid)
+        page_id = bookmark.get('page_id')
+        if page_id:
+            self.get_owner().remove_page_bookmark(page_id, bid)
+
+        return self.redis.hdel(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid) == 1
+
+    def reorder_bookmarks(self, new_order):
+        return self.bookmark_order.reorder_objects(new_order)
 
     def serialize(self, include_bookmarks='all'):
         data = super(BookmarkList, self).serialize()
@@ -102,13 +125,13 @@ class BookmarkList(RedisUniqueComponent):
         # return all bookmarks
         if include_bookmarks == 'all':
             bookmarks = self.get_bookmarks(load=True)
-            data['bookmarks'] = [bookmark.serialize() for bookmark in bookmarks]
+            data['bookmarks'] = bookmarks
             data['total_bookmarks'] = len(bookmarks)
 
         # return only first bookmark, set total_bookmarks
         elif include_bookmarks == 'first':
             bookmarks = self.get_bookmarks(load=True, start=0, end=0)
-            data['bookmarks'] = [bookmark.serialize() for bookmark in bookmarks]
+            data['bookmarks'] = bookmarks
             data['total_bookmarks'] = self.num_bookmarks()
 
         # else only return the number of bookmarks
@@ -136,89 +159,8 @@ class BookmarkList(RedisUniqueComponent):
     def delete_me(self):
         self.access.assert_can_write_coll(self.get_owner())
 
-        for bookmark in self.get_bookmarks():
-            bookmark.delete_me()
-
         return self.delete_object()
 
-
-# ============================================================================
-class Bookmark(RedisUniqueComponent):
-    MY_TYPE = 'book'
-    INFO_KEY = 'b:{book}:info'
-    ALL_KEYS = 'b:{book}:*'
-
-    ID_LEN = 8
-
-    def init_new(self, bookmark_list, collection, props):
-        self.owner = bookmark_list
-
-        bid = self._create_new_id()
-
-        key = self.INFO_KEY.format(book=bid)
-
-        self.data = {'url': props['url'],
-                     'timestamp': props.get('timestamp', ''),
-                     'title': props['title'],
-                     'desc': props.get('desc', ''),
-                     'state': '0',
-                     'owner': self.owner.my_id,
-                    }
-
-        browser = props.get('browser')
-        if browser:
-            self.data['browser'] = browser
-
-        page_id = props.get('id')
-        if page_id:
-            self.data['page'] = page_id
-
-        self.name = str(bid)
-        self._init_new()
-
-        if page_id:
-            collection.add_page_bookmark(page_id, self)
-
-        return bid
-
-    def update(self, props):
-        self.access.assert_can_write_coll(self.owner.get_owner())
-
-        props = props or {}
-        AVAIL_PROPS = ['title', 'url', 'timestamp', 'browser', 'desc']
-
-        for prop in AVAIL_PROPS:
-            if prop in props:
-                self.set_prop(prop, props[prop])
-
-    def delete_me(self):
-        self.access.assert_can_write_coll(self.owner.get_owner())
-
-        page_id = self.get_prop('page_id')
-        collection = self.get_collection()
-        if collection:
-            collection.remove_page_bookmark(page_id, self)
-
-        return self.delete_object()
-
-    def get_collection(self):
-        bookmark_list = self.get_owner()
-        if bookmark_list:
-            return bookmark_list.get_owner()
-
-        return None
-
-    def serialize(self):
-        data = super(Bookmark, self).serialize()
-
-        if data.get('page'):
-            collection = self.get_collection()
-            if collection:
-                data['page'] = collection.get_page(data['page'])
-
-        return data
-
-
-# ============================================================================
-Bookmark.OWNER_CLS = BookmarkList
+    def get_new_bookmark_id(self):
+        return get_new_id(8)
 
