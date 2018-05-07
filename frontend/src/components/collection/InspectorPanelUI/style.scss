@@ -19,12 +19,18 @@
             h2 {
                 font-size: 1.6rem;
                 color: $blue;
+                margin-top: 0.95rem;
+                margin-bottom: 2rem;
+                line-height: 1.2em;
             }
 
             h4 {
                 text-transform: uppercase;
                 color: $mid-gray;
-                font-size: 1.3rem;
+                font-size: 1rem;
+                font-weight: 300;
+                margin-bottom: 0.5rem;
+                letter-spacing: 0.5pt;
 
                 &:first-of-type {
                     margin-top: 0;
@@ -32,6 +38,7 @@
 
                 svg {
                     vertical-align: bottom;
+                    margin-right: 0.6rem;
                 }
             }
         }
@@ -46,11 +53,19 @@
                 h5 {
                     text-transform: uppercase;
                     color: $mid-gray;
-                    font-size: 1.3rem;
+                    font-size: 1.1rem;
+                    font-weight: 300;
+                    margin-bottom: 0.5rem;
+                    letter-spacing: 0.5pt;
                 }
 
                 .value {
                     word-wrap: break-work;
+
+                    a {
+                      color: black;
+                      font-size: 1.15rem;
+                    }
                 }
             }
         }

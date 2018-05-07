@@ -15,7 +15,9 @@
         font-size: 1.6rem;
 
         svg {
-            vertical-align: middle;
+          vertical-align: text-top;
+          width: 1.6rem;
+          margin-right: 0.6rem;
         }
     }
 
@@ -37,11 +39,13 @@
     .creator {
         padding-left: 1.5rem;
         margin: 1.5rem 0;
+        color: $mid-gray;
+        font-weight: 300;
 
         a {
             &:link, &:visited {
                 color: #000;
-                font-weight: 600;
+                font-weight: 400;
                 text-decoration: none;
             }
 
