@@ -154,6 +154,7 @@
                     background-repeat: no-repeat;
                     background-position: 50% 50%;
                     margin-right: .5rem;
+                    flex-shrink: 0;
                 }
 
                 &.is-public {

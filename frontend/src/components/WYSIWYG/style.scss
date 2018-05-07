@@ -67,6 +67,11 @@
         font-size: 1.4rem;
     }
 
+    .DraftEditor-editorContainer {
+        max-height: 30rem;
+        overflow: auto;
+    }
+
     .editor-button-row {
         display: flex;
         justify-content: flex-end;

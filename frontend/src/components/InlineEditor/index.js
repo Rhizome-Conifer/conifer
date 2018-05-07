@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
@@ -8,7 +8,7 @@ import { CheckIcon, XIcon } from 'components/icons';
 import './style.scss';
 
 
-class InlineEditor extends Component {
+class InlineEditor extends PureComponent {
   static contextTypes = {
     canAdmin: PropTypes.bool
   };

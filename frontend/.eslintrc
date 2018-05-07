@@ -31,6 +31,7 @@
     "react/forbid-prop-types": 0,
     "react/prefer-stateless-function": 0,
     "react/prop-types": 1,
+    "react/no-did-update-set-state": 1,
     "react/no-unused-prop-types": 0,
     "react/no-did-mount-set-state": 1,
     "react/no-find-dom-node": 1,

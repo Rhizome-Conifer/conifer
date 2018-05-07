@@ -3,16 +3,19 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { Alert, Button, DropdownButton, MenuItem } from 'react-bootstrap';
+import { CSSTransitionGroup } from 'react-transition-group';
 
 import { defaultCollDesc } from 'config';
+import { doubleRAF, stopPropagation } from 'helpers/utils';
 
 import { DeleteCollection, Upload } from 'containers';
 
 import Capstone from 'components/collection/Capstone';
 import InlineEditor from 'components/InlineEditor';
 import PublicSwitch from 'components/collection/PublicSwitch';
+import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
-import { MoreIcon } from 'components/icons';
+import { MoreIcon, PlusIcon, WarcIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -20,7 +23,6 @@ import './style.scss';
 class CollectionHeaderUI extends Component {
 
   static contextTypes = {
-    asPublic: PropTypes.bool,
     canAdmin: PropTypes.bool,
     isAnon: PropTypes.bool
   };
@@ -38,32 +40,22 @@ class CollectionHeaderUI extends Component {
   constructor(props) {
     super(props);
 
-    this.handle = null;
-    this.truncateThreshold = 75;
     this.state = {
       animated: false,
       condensed: false,
-      confirmDelete: '',
-      deleteModal: false,
-      toggleDesc: false,
-      truncate: false,
-      hoverOverride: false,
       height: 'auto'
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.state.hoverOverride && nextProps.condensed) {
-      this.setState({ hoverOverride: false });
-    }
+  componentDidUpdate(prevProps, prevState) {
+    const { condensed } = this.props;
 
-    if (nextProps.condensed && !this.props.condensed && this.descContainer) {
-      const height = this.descContainer.getBoundingClientRect().height;
+    if (condensed && !prevProps.condensed) {
+      const height = this.container.getBoundingClientRect().height;
       this.setState({ height });
-      setTimeout(() => this.setState({ condensed: true }), 10);
-    } else if (this.props.condensed && !nextProps.condensed) {
-      this.setState({ condensed: false });
-      this.descContainer.addEventListener('transitionend', () => { this.setState({ height: 'auto' }); }, { once: true });
+      doubleRAF(() => this.setState({ condensed: true }));
+    } else if (!condensed && prevProps.condensed) {
+      this.expandHeader();
     }
   }
 
@@ -72,25 +64,9 @@ class CollectionHeaderUI extends Component {
     this.props.editCollection(collection.get('user'), collection.get('id'), { public: !collection.get('public') });
   }
 
-  editorRendered = () => {
-    if (!this.descContainer) {
-      return;
-    }
-
-    const h = this.descContainer.getBoundingClientRect().height;
-    const state = { animated: true };
-
-    if (h >= this.truncateThreshold) {
-      state.truncate = true;
-    }
-
-    this.setState(state);
-  }
-
-  toggleDesc = () => {
-    const { toggleDesc } = this.state;
-
-    this.setState({ truncate: false, height: 'auto' });
+  expandHeader = () => {
+    this.setState({ condensed: false });
+    this.container.addEventListener('transitionend', () => { this.setState({ height: 'auto' }); }, { once: true });
   }
 
   editModeCallback = () => {
@@ -142,80 +118,113 @@ class CollectionHeaderUI extends Component {
   }
 
   render() {
-    const { asPublic, canAdmin, isAnon } = this.context;
+    const { canAdmin, isAnon } = this.context;
     const { collection, collEdited } = this.props;
-    const { truncate, animated, condensed, height, hoverOverride, toggleDesc } = this.state;
+    const { condensed, height } = this.state;
 
     const containerClasses = classNames('wr-collection-header', {
-      condensed: condensed && !hoverOverride && !toggleDesc,
-      truncate,
-      animated
+      condensed
     });
 
     const publicLists = collection.get('lists').reduce((sum, l) => (l.get('public') | 0) + sum, 0);
     const isPublic = collection.get('public');
 
-    return (
-      <header className={containerClasses}>
+    const menu = (
+      <div className="utility-row" onClick={stopPropagation}>
         {
-          asPublic &&
-            <Alert bsStyle="warning">
-              Viewing collection as a public user. <Button bsSize="xs" onClick={this.togglePublicView}>return to owner view</Button>
-            </Alert>
+          condensed &&
+            <Button className="rounded" onClick={this.newCapture}><PlusIcon /> New Capture</Button>
         }
-        <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
-          <Capstone user={collection.get('user')} />
-          <div className="heading-container">
-            {
-              canAdmin &&
-                <div className="coll-status">
-                  <PublicSwitch isPublic={isPublic} callback={this.setPublic} />
-                  <span className="public-lists">{`${publicLists} Published List${publicLists === 1 ? '' : 's'}`}</span>
-                </div>
-            }
-            <InlineEditor
-              initial={collection.get('title')}
-              onSave={this.editCollTitle}
-              success={collEdited}
-              error={this.props.collEditError}>
-              <h1>{collection.get('title')}</h1>
-            </InlineEditor>
-          </div>
+        <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
+        <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
+          <MenuItem onClick={this.newCapture}>New Capture</MenuItem>
+          <MenuItem divider />
+          <MenuItem onClick={this.togglePublicView}>See Public View</MenuItem>
+          <MenuItem divider />
+          <MenuItem onClick={this.manageCollection}>Manage Collection Contents</MenuItem>
+          <Upload classes="" wrapper={MenuItem}>Upload To Collection</Upload>
+          <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
+          <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
+          {/* TODO:
+          <MenuItem divider />
+          <MenuItem>Edit Collection Info</MenuItem>
+          */}
+          <MenuItem divider />
+          <MenuItem onClick={this.howTo}>Help</MenuItem>
+        </DropdownButton>
+      </div>
+    );
+
+    return (
+      <header
+        className={containerClasses}
+        ref={(obj) => { this.container = obj; }}
+        style={{ height }}
+        onClick={this.expandHeader}>
+        <CSSTransitionGroup
+          component="div"
+          transitionName="condense"
+          transitionEnterTimeout={275}
+          transitionLeaveTimeout={275}>
           {
-            canAdmin &&
-              <div className="utility-row">
-                <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
-                <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
-                  <MenuItem onClick={this.newCapture}>New Capture</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem onClick={this.togglePublicView}>See Public View</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem onClick={this.manageCollection}>Manage Collection Contents</MenuItem>
-                  <Upload classes="" wrapper={MenuItem}>Upload To Collection</Upload>
-                  <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
-                  <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
-                  {/* TODO:
-                  <MenuItem divider />
-                  <MenuItem>Edit Collection Info</MenuItem>
-                  */}
-                  <MenuItem divider />
-                  <MenuItem onClick={this.howTo}>Help</MenuItem>
-                </DropdownButton>
+            condensed ?
+              <div className="collection-bar" key="collBar">
+                <div className="bar-heading">
+                  <div className="coll-title">
+                    <WarcIcon />
+                    <InlineEditor
+                      initial={collection.get('title')}
+                      onSave={this.editCollTitle}
+                      success={collEdited}
+                      error={this.props.collEditError}>
+                      <h1>{collection.get('title')}</h1>
+                    </InlineEditor>
+                  </div>
+                  {
+                    canAdmin &&
+                      <div className="coll-status">
+                        <PublicSwitch isPublic={isPublic} callback={this.setPublic} />
+                        <span className="public-lists">{`${publicLists} Published List${publicLists === 1 ? '' : 's'}`}</span>
+                      </div>
+                  }
+                </div>
+                {
+                  menu
+                }
+              </div> :
+              <div className="overview" key="collOverview">
+                <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
+                  <Capstone user={collection.get('user')} />
+                  <div className="heading-container">
+                    {
+                      canAdmin &&
+                        <div className="coll-status">
+                          <PublicSwitch isPublic={isPublic} callback={this.setPublic} />
+                          <span className="public-lists">{`${publicLists} Published List${publicLists === 1 ? '' : 's'}`}</span>
+                        </div>
+                    }
+                    <InlineEditor
+                      initial={collection.get('title')}
+                      onSave={this.editCollTitle}
+                      success={collEdited}
+                      error={this.props.collEditError}>
+                      <h1>{collection.get('title')}</h1>
+                    </InlineEditor>
+                  </div>
+                  {
+                    canAdmin && menu
+                  }
+                </div>
+                <Truncate className="desc-container" height={100}>
+                  <WYSIWYG
+                    initial={collection.get('desc') || defaultCollDesc}
+                    onSave={this.editDesc}
+                    toggleCallback={this.editModeCallback}
+                    success={collEdited} />
+                </Truncate>
               </div>
           }
-        </div>
-        <div
-          ref={(obj) => { this.descContainer = obj; }}
-          className={classNames('desc-container')}
-          style={{ height }}>
-          <WYSIWYG
-            initial={collection.get('desc') || defaultCollDesc}
-            onSave={this.editDesc}
-            renderCallback={this.editorRendered}
-            toggleCallback={this.editModeCallback}
-            success={collEdited} />
-          <button className="read-more borderless" onClick={this.toggleDesc}>show More</button>
-        </div>
+        </CSSTransitionGroup>
       </header>
     );
   }
