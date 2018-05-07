@@ -91,8 +91,9 @@
         .wr-coll-detail-table .ReactVirtualized__Table__headerColumn > div {
             background: $listsYellow;
             font-size: 1rem;
-            letter-spacing: 0.5pt;
             font-weight: 500;
+            letter-spacing: 0.5pt;
+            cursor: move;
         }
     }
 
