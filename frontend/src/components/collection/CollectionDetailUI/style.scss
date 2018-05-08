@@ -153,11 +153,15 @@
         }
 
         .ReactVirtualized__Table__headerRow {
-            //margin-bottom: 1.5rem;
+          font-size: 1rem;
+          font-weight: 500;
+          letter-spacing: 0.5pt;
+          cursor: move;
         }
 
         .ReactVirtualized__Table__headerColumn {
             height: 100%;
+            cursor: move;
 
             &:first-of-type {
                 margin-left: 0;
@@ -204,7 +208,7 @@
             }
 
             .page-title {
-                font-size: 1.6rem;
+                font-size: 1.45rem;
             }
 
             svg {
