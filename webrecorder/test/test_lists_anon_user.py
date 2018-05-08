@@ -305,8 +305,9 @@ class TestListsAnonUserAPI(FullStackTests):
         assert bookmark['desc'] == 'A description for this bookmark'
 
         assert bookmark['page_id'] == self.ID_1
-        #assert bookmark['page']['url'] == bookmark['url']
-        #assert bookmark['page']['timestamp'] == bookmark['timestamp']
+        assert bookmark['page']['id'] == self.ID_1
+        assert bookmark['page']['url'] == bookmark['url']
+        assert bookmark['page']['timestamp'] == bookmark['timestamp']
 
     def test_create_bookmark_error_page_not_matcching(self):
         res = self._add_bookmark('1002', title='An Example (испытание)', url='http://example.com/испытание/test',
@@ -327,6 +328,8 @@ class TestListsAnonUserAPI(FullStackTests):
         #assert bookmark['owner'] == '1002'
         assert bookmark['id'] == '101'
         assert bookmark['page_id'] == self.ID_1
+        assert bookmark['page']['id'] == self.ID_1
+        assert bookmark['page']['url'] == bookmark['url']
 
     def test_get_all_bookmarks(self):
         res = self._add_bookmark('1003', title='An Example')
@@ -351,6 +354,8 @@ class TestListsAnonUserAPI(FullStackTests):
                 'More Example'] == [b['title'] for b in bookmarks]
 
         assert ['101', '103', '104', '105', '106'] == [b['id'] for b in bookmarks]
+
+        assert [self.ID_1, None, None, None, None] == [b.get('page', {}).get('id') for b in bookmarks]
 
     def test_reorder_bookmarks(self):
         params = {'order': ['103', '104', '105', '106', '101']}

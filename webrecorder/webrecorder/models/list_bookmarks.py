@@ -56,6 +56,7 @@ class BookmarkList(RedisUniqueComponent):
 
         if page_id:
             collection.add_page_bookmark(page_id, bid, self.my_id)
+            self.load_pages([bookmark])
 
         return bookmark
 
@@ -69,7 +70,8 @@ class BookmarkList(RedisUniqueComponent):
         else:
             bookmarks = []
 
-        return [json.loads(bookmark) for bookmark in bookmarks]
+        bookmarks = [json.loads(bookmark) for bookmark in bookmarks]
+        return self.load_pages(bookmarks)
 
     def num_bookmarks(self):
         self.access.assert_can_read_coll(self.get_owner())
@@ -84,7 +86,9 @@ class BookmarkList(RedisUniqueComponent):
         if not bookmark:
             return None
 
-        return json.loads(bookmark)
+        bookmark = json.loads(bookmark)
+        self.load_pages([bookmark])
+        return bookmark
 
     def update_bookmark(self, bid, props):
         self.access.assert_can_write_coll(self.get_owner())
@@ -128,13 +132,13 @@ class BookmarkList(RedisUniqueComponent):
         # return all bookmarks
         if include_bookmarks == 'all':
             bookmarks = self.get_bookmarks(load=True)
-            data['bookmarks'] = bookmarks
+            data['bookmarks'] = self.load_pages(bookmarks)
             data['total_bookmarks'] = len(bookmarks)
 
         # return only first bookmark, set total_bookmarks
         elif include_bookmarks == 'first':
             bookmarks = self.get_bookmarks(load=True, start=0, end=0)
-            data['bookmarks'] = bookmarks
+            data['bookmarks'] = self.load_pages(bookmarks)
             data['total_bookmarks'] = self.num_bookmarks()
 
         # else only return the number of bookmarks
@@ -144,6 +148,27 @@ class BookmarkList(RedisUniqueComponent):
         data['public'] = self.is_public()
 
         return data
+
+    def load_pages(self, bookmarks):
+        page_ids = []
+        page_bookmarks = []
+
+        for bookmark in bookmarks:
+            page_id = bookmark.get('page_id')
+            if page_id:
+                page_ids.append(page_id)
+                page_bookmarks.append(bookmark)
+
+        if not page_ids:
+            return bookmarks
+
+        page_data_list = self.get_owner().get_pages_for_list(page_ids)
+
+        for bookmark, page in zip(page_bookmarks, page_data_list):
+            bookmark['page'] = json.loads(page)
+            bookmark['page']['id'] = bookmark['page_id']
+
+        return bookmarks
 
     def update(self, props):
         self.access.assert_can_write_coll(self.get_owner())

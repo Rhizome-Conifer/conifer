@@ -75,6 +75,13 @@ class PagesMixin(object):
 
         return [page for page in self._pages_cache if page.get('rec') == recording.my_id]
 
+    def get_pages_for_list(self, id_list):
+        if not id_list:
+            return []
+
+        page_data_list = self.redis.hmget(self.pages_key, id_list)
+        return page_data_list
+
     def delete_rec_pages(self, recording):
         self.access.assert_can_write_coll(self)
 
