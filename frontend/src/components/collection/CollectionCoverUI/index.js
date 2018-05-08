@@ -99,7 +99,10 @@ class CollectionCoverUI extends Component {
               </ul>
             </div>
         }
-        <Link className="browse" to={this.collectionLink()}>Browse Entire Collection</Link>
+        {
+          (this.context.canAdmin || collection.get('public_index')) &&
+            <Link className="browse" to={this.collectionLink()}>Browse Entire Collection</Link>
+        }
       </div>
     );
   }

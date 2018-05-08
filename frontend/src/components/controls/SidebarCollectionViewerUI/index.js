@@ -39,9 +39,12 @@ class SidebarCollectionViewerUI extends Component {
       <div className="sidebar-coll-navigator">
         <SidebarHeader label="Collection Navigator" />
         <div className="overflow-wrapper">
-          <nav>
-            <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
-          </nav>
+          {
+            (canAdmin || publicIndex) &&
+              <nav>
+                <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
+              </nav>
+          }
           <header className="collection-header">
             <h5><WarcIcon /> {collection.get('title')}</h5>
           </header>

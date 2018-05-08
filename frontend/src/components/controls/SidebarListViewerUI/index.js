@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { batchActions } from 'redux-batched-actions';
 
-import { untitledEntry } from 'config';
+import { defaultListDesc, untitledEntry } from 'config';
 import { remoteBrowserMod } from 'helpers/utils';
 
 import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
@@ -33,6 +33,7 @@ class SidebarListViewer extends Component {
   static propTypes = {
     activeBookmark: PropTypes.number,
     bookmarks: PropTypes.object,
+    clearInspector: PropTypes.func,
     collection: PropTypes.object,
     list: PropTypes.object,
     listEdited: PropTypes.bool,
@@ -83,6 +84,10 @@ class SidebarListViewer extends Component {
     if (activeBookmark !== prevProps.activeBookmark) {
       setInspector(bookmarks.getIn([activeBookmark, 'id']));
     }
+  }
+
+  componentWillUnmount() {
+    this.props.clearInspector();
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
@@ -137,7 +142,7 @@ class SidebarListViewer extends Component {
   returnToCollection = () => this.props.showNavigator(true)
 
   render() {
-    const { activeBookmark, bookmarks, collection, list } = this.props;
+    const { activeBookmark, bookmarks, collection, list, listEdited } = this.props;
 
     return (
       <div className="bookmark-list">
@@ -149,8 +154,21 @@ class SidebarListViewer extends Component {
         <header className="list-header">
           <h4>
             <ListIcon />
-            <span>{list.get('title')}</span>
+            <InlineEditor
+              blockDisplay
+              initial={list.get('title')}
+              onSave={this.editListTitle}
+              success={listEdited}>
+              <span>{list.get('title')}</span>
+            </InlineEditor>
           </h4>
+          <Truncate height={75} className="description">
+            <WYSIWYG
+              minimal
+              initial={list.get('desc') || defaultListDesc}
+              onSave={this.editListDesc}
+              success={listEdited} />
+          </Truncate>
         </header>
         <div className="bookmarks">
           <AutoSizer>

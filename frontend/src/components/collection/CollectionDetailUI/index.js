@@ -359,7 +359,7 @@ class CollectionDetailUI extends Component {
     const { pages, browsers, collection, match: { params }, publicIndex } = this.props;
     const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
 
-    if (collection.get('error')) {
+    if (collection.get('error') || (!canAdmin && !collection.get('public_index'))) {
       return (
         <HttpStatus>
           <h2>Error</h2>

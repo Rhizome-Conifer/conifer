@@ -6,7 +6,6 @@ import { saveDelay } from 'config';
 
 import { resetEditState as resetCollEditState,
          edit as editCollDesc } from 'redux/modules/collection';
-import { edit as editList, resetEditState } from 'redux/modules/list';
 import { loadCollections } from 'redux/modules/user';
 
 import CollectionHeaderUI from 'components/collection/CollectionHeaderUI';

@@ -21,6 +21,9 @@ import './style.scss';
 
 
 class SidebarPageViewer extends Component {
+  static contextTypes = {
+    canAdmin: PropTypes.bool
+  };
 
   static propTypes = {
     activePage: PropTypes.number,
@@ -99,7 +102,10 @@ class SidebarPageViewer extends Component {
         <SidebarHeader label="Collection Navigator" />
         <nav>
           <button onClick={this.returnToCollection} className="borderless">&larr; collection main</button>
-          <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
+          {
+            (this.context.canAdmin || collection.get('public_index')) &&
+              <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
+          }
         </nav>
         <header className="pages-header">
           <WarcIcon />

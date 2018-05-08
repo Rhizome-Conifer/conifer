@@ -96,9 +96,7 @@ class Truncate extends Component {
       <div
         className={classNames('wr-truncate', [className], { expanded })}
         ref={(obj) => { this.container = obj; }}
-        role={!expanded ? 'button' : 'presentation'}
-        style={{ height }}
-        title={!expanded ? 'Click to expand' : ''}>
+        style={{ height }}>
         {
           !expanded && !noop && showMore &&
             <button className="borderless show-more" onClick={this.expand}>show more</button>
