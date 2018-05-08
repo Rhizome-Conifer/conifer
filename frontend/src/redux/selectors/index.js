@@ -108,8 +108,7 @@ export const getActiveCollection = createSelector(
 export const getOrderedRecordings = createSelector(
   [getRecordings],
   (recordings) => {
-    const sortedRecordings = recordings.sortBy(o => o.get('created_at'));
-
+    const sortedRecordings = recordings.sortBy(o => o.get('created_at')).reverse();
     return sortedRecordings;
   }
 );

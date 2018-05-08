@@ -1,6 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { saveDelay } from 'config';
+
 import { editBookmark, load, resetBookmarkEdit } from 'redux/modules/list';
 
 import InspectorPanelUI from 'components/collection/InspectorPanelUI';
@@ -24,7 +26,7 @@ const mapDispatchToProps = (dispatch) => {
     saveBookmarkEdit: (user, coll, list, bkId, data) => {
       dispatch(editBookmark(user, coll, list, bkId, data))
         .then(() => dispatch(load(user, coll, list)))
-        .then(() => setTimeout(() => dispatch(resetBookmarkEdit()), 3000), () => { console.log('bkEdit error..'); });
+        .then(() => setTimeout(() => dispatch(resetBookmarkEdit()), saveDelay), () => { console.log('bkEdit error..'); });
     }
   };
 };

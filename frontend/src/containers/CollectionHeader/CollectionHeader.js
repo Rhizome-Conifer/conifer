@@ -2,9 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { load as loadColl, resetEditState as resetCollEditState,
+import { saveDelay } from 'config';
+
+import { resetEditState as resetCollEditState,
          edit as editCollDesc } from 'redux/modules/collection';
 import { edit as editList, resetEditState } from 'redux/modules/list';
+import { loadCollections } from 'redux/modules/user';
 
 import CollectionHeaderUI from 'components/collection/CollectionHeaderUI';
 
@@ -27,8 +30,9 @@ const mapDispatchToProps = (dispatch, { history }) => {
             history.replace(`/${user}/${res.collection.id}/pages`);
           }
 
-          setTimeout(() => dispatch(resetCollEditState()), 3000);
-        });
+          setTimeout(() => dispatch(resetCollEditState()), saveDelay);
+        })
+        .then(() => dispatch(loadCollections(user)));
     },
     dispatch
   };

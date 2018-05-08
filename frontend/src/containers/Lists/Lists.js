@@ -1,6 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { saveDelay } from 'config';
+
 import { edit as editCollection, loadLists, load as loadColl,
          resetEditState as resetCollEditState, sortLists } from 'redux/modules/collection';
 import { addTo, bulkAddTo, create, deleteList, edit, resetEditState } from 'redux/modules/list';
@@ -37,7 +39,7 @@ const mapDispatchToProps = (dispatch) => {
     editList: (user, coll, id, data) => {
       return dispatch(edit(user, coll, id, data))
                .then(() => dispatch(loadLists(user, coll)))
-               .then(() => setTimeout(() => dispatch(resetEditState()), 3000));
+               .then(() => setTimeout(() => dispatch(resetEditState()), saveDelay));
     },
     sortLists: (user, coll, ids) => dispatch(sortLists(user, coll, ids)),
     deleteList: (user, coll, id) => {

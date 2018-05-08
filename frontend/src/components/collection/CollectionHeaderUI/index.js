@@ -132,10 +132,7 @@ class CollectionHeaderUI extends Component {
 
     const menu = (
       <div className="utility-row" onClick={stopPropagation}>
-        {
-          condensed &&
-            <Button className="rounded" onClick={this.newCapture}><PlusIcon /> New Capture</Button>
-        }
+        <Button className="rounded" onClick={this.newCapture}><PlusIcon /> New Capture</Button>
         <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
         <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
           <MenuItem onClick={this.newCapture}>New Capture</MenuItem>
@@ -143,7 +140,7 @@ class CollectionHeaderUI extends Component {
           <MenuItem onClick={this.togglePublicView}>See Public View</MenuItem>
           <MenuItem divider />
           <MenuItem onClick={this.manageCollection}>Manage Collection Contents</MenuItem>
-          <Upload classes="" wrapper={MenuItem}>Upload To Collection</Upload>
+          <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>
           <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
           <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
           {/* TODO:
