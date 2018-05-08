@@ -43,7 +43,8 @@ class CollectionHeaderUI extends Component {
     this.state = {
       animated: false,
       condensed: false,
-      height: 'auto'
+      height: 'auto',
+      zIndex: 20
     };
   }
 
@@ -52,7 +53,7 @@ class CollectionHeaderUI extends Component {
 
     if (condensed && !prevProps.condensed) {
       const height = this.container.getBoundingClientRect().height;
-      this.setState({ height });
+      this.setState({ height, zIndex: 0 });
       doubleRAF(() => this.setState({ condensed: true }));
     } else if (!condensed && prevProps.condensed) {
       this.expandHeader();
@@ -66,12 +67,12 @@ class CollectionHeaderUI extends Component {
 
   expandHeader = () => {
     this.setState({ condensed: false });
-    this.container.addEventListener('transitionend', () => { this.setState({ height: 'auto' }); }, { once: true });
+    this.container.addEventListener('transitionend', () => { this.setState({ height: 'auto', zIndex: 20 }); }, { once: true });
   }
 
   editModeCallback = () => {
     if (this.state.condensed) {
-      this.setState({ height: 'auto' });
+      this.setState({ height: 'auto', zIndex: 20 });
     }
   }
 
@@ -120,7 +121,7 @@ class CollectionHeaderUI extends Component {
   render() {
     const { canAdmin, isAnon } = this.context;
     const { collection, collEdited } = this.props;
-    const { condensed, height } = this.state;
+    const { condensed, height, zIndex } = this.state;
 
     const containerClasses = classNames('wr-collection-header', {
       condensed
@@ -159,13 +160,13 @@ class CollectionHeaderUI extends Component {
       <header
         className={containerClasses}
         ref={(obj) => { this.container = obj; }}
-        style={{ height }}
+        style={{ height, zIndex }}
         onClick={this.expandHeader}>
         <CSSTransitionGroup
           component="div"
           transitionName="condense"
-          transitionEnterTimeout={275}
-          transitionLeaveTimeout={275}>
+          transitionEnterTimeout={300}
+          transitionLeaveTimeout={300}>
           {
             condensed ?
               <div className="collection-bar" key="collBar">
