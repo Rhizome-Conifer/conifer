@@ -32,7 +32,7 @@ class UserSignup extends Component {
 
     this.state = {
       moveTemp: false,
-      toColl: '',
+      toColl: 'New Collection',
       username: '',
       name: '',
       email: '',
@@ -45,7 +45,7 @@ class UserSignup extends Component {
   save = (evt) => {
     evt.preventDefault();
     const { announce_mailer, username, name, full_name,
-            email, password, confirmpassword } = this.state;
+            email, password, confirmpassword, moveTemp, toColl } = this.state;
 
     if(!password || !confirmpassword) {
       this.setState({ missingPw: true });
@@ -54,7 +54,7 @@ class UserSignup extends Component {
     if(username && this.validateUsername() === 'success' &&
        password && confirmpassword && this.validatePassword() === null && email) {
       // core fields to send to server
-      let data = { username, email, password, confirmpassword };
+      let data = { username, email, password, confirmpassword, moveTemp, toColl };
 
       if(announce_mailer)
         data = { ...data, announce_mailer };
