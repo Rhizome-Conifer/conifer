@@ -87,6 +87,7 @@ class CollectionCoverUI extends Component {
                               <Truncate height={75}>
                                 <WYSIWYG
                                   initial={list.get('desc')}
+                                  externalEditButton
                                   editMode={false} />
                               </Truncate>
                           }

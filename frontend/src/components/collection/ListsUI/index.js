@@ -37,6 +37,7 @@ class ListsUI extends Component {
     deleteList: PropTypes.func,
     editColl: PropTypes.func,
     editList: PropTypes.func,
+    history: PropTypes.object,
     loaded: PropTypes.bool,
     loading: PropTypes.bool,
     lists: PropTypes.object,
@@ -198,6 +199,12 @@ class ListsUI extends Component {
 
   close = () => this.props.collapsibleToggle(false);
   open = () => this.props.collapsibleToggle(true);
+  goToIndex = () => {
+    const { collection } = this.props;
+    if (this.context.canAdmin || collection.get('public_index')) {
+      this.props.history.push(`/${collection.get('user')}/${collection.get('id')}/pages`);
+    }
+  }
 
   render() {
     const { canAdmin } = this.context;
@@ -230,7 +237,10 @@ class ListsUI extends Component {
             {
               activeListId &&
                 <React.Fragment>
-                  <header className="collection-header">
+                  <header
+                    className="collection-header"
+                    role={canAdmin || collection.get('public_index') ? 'button' : 'heading'}
+                    onClick={this.goToIndex}>
                     <h4><WarcIcon /> PARENT COLLECTION</h4>
                     <h2>{collection.get('title')}</h2>
                   </header>
