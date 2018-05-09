@@ -137,7 +137,7 @@ class CollectionDetailUI extends Component {
   }
 
   componentWillUnmount() {
-    document.removeEventListener('keyup', this.handleKeyInput);
+    document.removeEventListener('keydown', this.handleKeyInput);
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
