@@ -2,17 +2,28 @@
 .capstone {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: baseline;
     margin: 4rem 0;
+    color: #7e7e7e;
 
     h4 {
-        margin: 0 1.5rem 0 0;
+        margin: 0 0.5rem 0 0;
         text-transform: uppercase;
         font-weight: 400;
-        font-size: 1.6rem;
+        font-size: 1.2rem;
 
         svg {
             vertical-align: bottom;
+            opacity: 0.4;
+        }
+    }
+
+    a {
+        &:link, &:visited, &:active, &:hover {
+          color: #7e7e7e;
+          font-weight: 400;
+          font-size: 1.2rem;
+          text-decoration: underline;
         }
     }
 }

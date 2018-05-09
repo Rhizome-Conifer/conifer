@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
+import { saveDelay } from 'config';
+
 import { load as loadColl } from 'redux/modules/collection';
 import { deleteRecording, edit, resetEditState } from 'redux/modules/recordings';
 import { getOrderedRecordings, splitPagesBySession } from 'redux/selectors';
@@ -64,7 +66,7 @@ const mapStateToProps = (outerState) => {
     auth: app.get('auth'),
     collection: app.get('collection'),
     recordingEdited: app.getIn(['recordings', 'edited']),
-    recordings: isLoaded ? getOrderedRecordings(app) : null,
+    recordings: isLoaded ? getOrderedRecordings(app, true) : null,
     loaded: reduxAsyncConnect.loaded,
     pagesBySession: splitPagesBySession(app)
   };
@@ -83,7 +85,7 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
     editRec: (rec, data) => {
       dispatch(edit(user, coll, rec, data))
         .then(() => dispatch(loadColl(user, coll)))
-        .then(() => setTimeout(() => dispatch(resetEditState()), 3000), () => {});
+        .then(() => setTimeout(() => dispatch(resetEditState()), saveDelay), () => {});
     },
     dispatch
   };

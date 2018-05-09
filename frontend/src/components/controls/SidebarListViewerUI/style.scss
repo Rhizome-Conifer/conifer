@@ -26,11 +26,15 @@
         border: solid .2rem $blue;
         border-width: 0 0 .2rem 0;
         padding: 0 1rem;
+        max-height: 30rem;
+        overflow: auto;
 
         h4 {
             display: flex;
+            font-size: 1.2rem;
+            font-weight: 400;
 
-            svg {
+            & > svg {
                 flex-shrink: 0;
                 margin-right: 1rem;
                 vertical-align: bottom;

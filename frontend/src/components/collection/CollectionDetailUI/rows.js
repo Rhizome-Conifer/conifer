@@ -9,7 +9,7 @@ import { draggableTypes } from 'config';
 
 const baseSource = {
   isDragging(props, monitor) {
-    return props.id === monitor.getItem().id;
+    return props.id === monitor.getItem().id && typeof props.pageSelection !== 'object';
   }
 };
 
@@ -28,12 +28,11 @@ const pageSource = {
 const bookmarkSource = {
   ...baseSource,
   beginDrag({ index, rowData }) {
-    const pg = rowData.get('page');
     return {
-      id: pg.get('id'),
+      id: rowData.get('id'),
       idx: index,
       initialIdx: index,
-      item: pg.toJS()
+      item: rowData.get('page').toJS()
     };
   },
   endDrag(props, monitor) {

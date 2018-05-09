@@ -39,11 +39,7 @@ class CustomDragLayer extends Component {
 
       let pageIds = [];
       if(selType === 'object' && pageSelection !== null) {
-        pageIds = pageSelection.map((pg) => {
-          return itemType === draggableTypes.PAGE_ITEM ?
-            pages.get(pg).get('id') :
-            pages.get(pg).getIn(['page', 'id']);
-        });
+        pageIds = pageSelection.map(pg => pages.get(pg).get('id'));
       }
 
       return {

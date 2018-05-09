@@ -137,7 +137,7 @@ class CollectionDetailUI extends Component {
   }
 
   componentWillUnmount() {
-    document.removeEventListener('keyup', this.handleKeyInput);
+    document.removeEventListener('keydown', this.handleKeyInput);
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
@@ -231,6 +231,11 @@ class CollectionDetailUI extends Component {
   }
 
   selectAll = (evt) => {
+    // ignore when edtiors in use
+    if (evt.target.nodeName.toLowerCase() === 'input' || evt.target.classList.contains('public-DraftEditor-content')) {
+      return;
+    }
+
     evt.preventDefault();
     const { pages, match: { params: { list } } } = this.props;
     const { listBookmarks } = this.state;
@@ -356,10 +361,14 @@ class CollectionDetailUI extends Component {
 
   render() {
     const { canAdmin } = this.context;
-    const { pages, browsers, collection, match: { params }, publicIndex } = this.props;
+    const { pages, browsers, collection, list, match: { params }, publicIndex } = this.props;
     const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
+    const activeList = Boolean(params.list);
 
-    if (collection.get('error')) {
+    const pageIndexAccess = !canAdmin && !collection.get('public_index') && !activeList;
+    const listIndexAccess = !canAdmin && activeList && !list.get('loaded');
+
+    if (collection.get('error') || pageIndexAccess || listIndexAccess) {
       return (
         <HttpStatus>
           <h2>Error</h2>
@@ -373,7 +382,6 @@ class CollectionDetailUI extends Component {
       return null;
     }
 
-    const activeList = Boolean(params.list);
     const activeListId = params.list;
     const indexPages = !canAdmin && !publicIndex ? List() : pages;
     const objects = activeList ? listBookmarks : indexPages;

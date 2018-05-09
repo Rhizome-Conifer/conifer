@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
@@ -11,7 +11,7 @@ import Modal from 'components/Modal';
 import './style.scss';
 
 
-class UploadUI extends Component {
+class UploadUI extends PureComponent {
   static contextTypes = {
     router: PropTypes.object
   };
@@ -31,7 +31,7 @@ class UploadUI extends Component {
   constructor(props) {
     super(props);
 
-    if (props.fromCollection) {
+    if (props.activeCollection !== props.fromCollection) {
       this.props.setColl(props.fromCollection);
     }
 
@@ -48,6 +48,13 @@ class UploadUI extends Component {
       targetColl: props.fromCollection ? 'chosen' : 'auto'
     };
     this.state = this.initialState;
+  }
+
+  componentDidUpdate(prevProps) {
+    const { fromCollection } = this.props;
+    if (fromCollection !== prevProps.fromCollection) {
+      this.props.setColl(fromCollection);
+    }
   }
 
   triggerFile = () => {

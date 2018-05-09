@@ -72,7 +72,7 @@
     width: 100%;
 
     display: grid;
-    grid-template-rows: auto 3.5rem 1fr;
+    grid-template-rows: auto 4rem 1fr;
     grid-template-columns: auto 1fr;
     grid-column-gap: 1.5rem;
     grid-template-areas:
@@ -90,6 +90,10 @@
 
         .wr-coll-detail-table .ReactVirtualized__Table__headerColumn > div {
             background: $listsYellow;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.5pt;
+            cursor: move;
         }
     }
 
@@ -104,8 +108,11 @@
 
     .wr-coll-utilities {
         grid-area: utilities;
+        background: #FFF;
+        z-index: 10;
 
         nav {
+            height: 100%;
             display: flex;
             justify-content: flex-start;
             align-items: center;
@@ -148,11 +155,15 @@
         }
 
         .ReactVirtualized__Table__headerRow {
-            //margin-bottom: 1.5rem;
+          font-size: 1rem;
+          font-weight: 500;
+          letter-spacing: 0.5pt;
+          cursor: move;
         }
 
         .ReactVirtualized__Table__headerColumn {
             height: 100%;
+            cursor: move;
 
             &:first-of-type {
                 margin-left: 0;
@@ -199,7 +210,7 @@
             }
 
             .page-title {
-                font-size: 1.6rem;
+                font-size: 1.45rem;
             }
 
             svg {

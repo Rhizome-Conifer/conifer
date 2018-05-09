@@ -7,24 +7,30 @@
         top: 1rem;
     }
 
+    .wr-truncate {
+        max-width: 50rem;
+    }
+
     .banner {
         display: inline-block;
-        margin: 2.5rem 0 0 -1.5rem;
-        padding: .5rem 4rem;
+        margin: 1.5rem 0 0 -1.5rem;
+        padding: .5rem 3.5rem;
         background-color: $listsYellow;
-        font-size: 1.6rem;
+        font-size: 1.2rem;
 
         svg {
-            vertical-align: middle;
+          vertical-align: top;
+          width: 1.2rem;
+          margin-right: 0.6rem;
         }
     }
 
     .heading-container {
         padding-left: 1.5rem;
-        margin: 2.5rem 0;
+        margin: 2rem 0 1rem 0;
 
         h1 {
-            font-weight: 400;
+            font-weight: 300;
             margin: 0;
         }
     }
@@ -37,11 +43,14 @@
     .creator {
         padding-left: 1.5rem;
         margin: 1.5rem 0;
+        color: $mid-gray;
+        font-size: 1.2rem;
+        font-weight: 300;
 
         a {
             &:link, &:visited {
                 color: #000;
-                font-weight: 600;
+                font-weight: 400;
                 text-decoration: none;
             }
 

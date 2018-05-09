@@ -1,205 +1,193 @@
 @import 'src/vars';
 
+$movement: -75px;
 header.wr-collection-header {
+    transition: height 300ms ease-in-out;
     grid-area: header;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 2rem;
+    padding: 1rem 0;
+    position: relative;
+    border-bottom: solid .1rem $mgmt-gray;
+    transform: translateZ(0);
 
-    &.animated {
-        h1 {
-            transition: font-size 450ms ease-in-out;
+    & > div {
+        width: 100%;
+    }
+
+    .utility-row {
+        button#coll-menu {
+          width: 3.2rem;
+          height: 3.2rem;
+          padding: 0;
+
+          svg {
+            width: 1.4rem;
+            height: .6rem;
+          }
+        }
+    }
+
+    .overview {
+        transition: opacity 200ms ease-in-out,
+                    transform 200ms ease-out;
+
+        &.condense-enter {
+            opacity: 0;
+
+            &.condense-enter-active {
+                opacity: 1;
+            }
+        }
+
+        &.condense-leave {
+            opacity: 1;
+            transform: translateY(0px);
+
+            &.condense-leave-active {
+                opacity: 0;
+                transform: translateY($movement);
+            }
         }
 
         .heading-row {
-            transition: margin 450ms ease-in-out;
-        }
-
-        .desc-container {
-            transition: height 450ms ease-in-out,
-                        margin 450ms ease-in-out;
-        }
-    }
-
-    &.truncate {
-        .desc-container {
-            height: 7.5rem !important;
-
-            &:after {
-                transition: opacity $slowShift ease-in-out;
-                content: '';
-                position: absolute;
-                left: 0;
-                width: 100%;
-                height: 5.5rem;
-                z-index: 5;
-                pointer-events: none;
-                bottom: 0;
-                background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 80%);
-                opacity: 1;
-            }
-
-            .read-more {
-                display: block;
-            }
-        }
-    }
-
-    .alert {
-        position: absolute;
-        left: 1rem;
-        top: 1rem;
-        z-index: 50;
-        padding: .8rem;
-    }
-
-    .heading-row {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2.5rem;
-        width: 100%;
-
-        .capstone {
-            margin: 2rem 0;
-        }
-
-        &.is-public {
-            .capstone {
-                margin: 2rem 0 0 0;
-            }
-        }
-
-        .access-switch {
+            position: relative;
             display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            margin-right: 1rem;
+            margin-bottom: 2.5rem;
+            width: 100%;
+
+            .capstone {
+                margin: 2rem 0 0.6rem 0;
+            }
+
+            &.is-public {
+                .capstone {
+                    margin: 2rem 0 0 0;
+                }
+            }
+
+            .access-switch {
+                display: flex;
+                align-items: center;
+                margin-right: 1rem;
+            }
+
+            .utility-row {
+                margin-top: 1.5rem;
+
+                & > *:not(:first-child) {
+                    margin-left: .5rem;
+                }
+
+                .dropdown-menu > li > a{
+                  margin: -8px 0;
+                  padding: 11px 20px;
+                }
+            }
+
+            .heading-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+
+                .coll-status {
+                    color: $gray600;
+
+                    .public-lists {
+                        border: solid .1rem $gray600;
+                        border-width: 0 0 0 .1rem;
+                        padding-left: .7rem;
+                    }
+                }
+
+                h1 {
+                    display: inline-block;
+                    font-family: $sans;
+                    margin: 2rem 0 0 0;
+                    font-size: 3.2rem;
+                    font-weight: 300;
+                    color: black;
+                }
+            }
+        }
+    }
+
+    .collection-bar {
+        transition: opacity 200ms ease-in-out,
+                    transform 250ms ease-in-out;
+        width: 100%;
+        height: 7.4rem;
+        position: absolute;
+        top: 0;
+
+        display: grid;
+        align-items: center;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-areas: "blank title utility";
+        background: #FFF;
+        z-index: 20;
+
+        &.condense-enter {
+            opacity: 0;
+            transform: translateY($movement);
+
+            &.condense-enter-active {
+                opacity: 1;
+                transform: translateY(0px);
+            }
+        }
+
+        &.condense-leave {
+            opacity: 1;
+            transform: translateY(0px);
+
+            &.condense-leave-active {
+                opacity: 0;
+                transform: translateY($movement);
+            }
+        }
+
+        .bar-heading {
+            grid-area: title;
+            justify-self: center;
+
+            .coll-title {
+                h1 {
+                    font-size: 2.4rem;
+                    margin: 0 0 0 1.5rem;
+                }
+
+                & > svg {
+                    width: 2rem;
+                    height: 2rem;
+                }
+            }
         }
 
         .utility-row {
-            margin-top: 1.5rem;
+            grid-area: utility;
+            justify-self: end;
 
-            & > *:not(:first-child) {
+            & > * {
                 margin-left: .5rem;
             }
         }
 
-        .heading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        @media (max-width: 950px) {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas: "title utility";
 
-            .coll-status {
-                color: $gray600;
-
-                .public-lists {
-                    border: solid .1rem $gray600;
-                    border-width: 0 0 0 .1rem;
-                    padding-left: .7rem;
-                }
-            }
-
-            h1 {
-                display: inline-block;
-                font-family: $sans;
-                margin: 2rem 0 0 0;
-                font-size: 3.2rem;
-                font-weight: 400;
-                color: $gray600;
-            }
-        }
-    }
-
-    .desc-container {
-        position: relative;
-        max-width: 59rem;
-        overflow: hidden;
-
-        .read-more {
-            display: none;
-            transition: opacity $slowShift ease-in-out;
-            position: absolute;
-            z-index: 10;
-            bottom: 0;
-            left: calc(50% - 5rem);
-            width: 10rem;
-            margin: 0 auto;
-            color: #6E6E6E;
-            opacity: 1;
-            background: #FFF;
-            border: none;
-            text-transform: uppercase;
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
-
-        &.full {
-            height: auto;
-
-            &:after {
-                opacity: 0;
-            }
-
-            .read-more {
-                opacity: 0;
-            }
-        }
-
-
-        .desc-edit-button {
-            transition: opacity $midShift ease-in-out;
-            position: absolute;
-            top: .7rem;
-            left: .7rem;
-            opacity: 0;
-        }
-
-        &:hover {
-            .desc-edit-button {
-                opacity: 1;
+            .bar-heading {
+                justify-self: start;
             }
         }
     }
 
     &.condensed {
-        .heading-row {
-            margin-bottom: 0;
-            flex-direction: row;
-            justify-content: center;
-
-            .capstone {
-                display: none;
-            }
-
-            .heading-container {
-                .coll-status {
-                    order: 1;
-                    margin-bottom: 0;
-                }
-
-                h1 {
-                    font-size: 2rem;
-                }
-            }
-
-            .utility-row {
-                position: absolute;
-                right: 0;
-            }
-        }
-
-        .desc-container {
-            height: 0 !important;
-            margin-top: 0;
-
-            .read-more {
-                opacity: 0;
-            }
-        }
+        height: 7.5rem !important;
     }
 }

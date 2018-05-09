@@ -184,3 +184,21 @@ export function inStorage(key, device = window.localStorage) {
 export function range(start, end) {
   return Array((end - start) + 1).fill().map((_, idx) => start + idx);
 }
+
+export function stopPropagation(evt) {
+  evt.stopPropagation();
+}
+
+/**
+ * Helpful with the need to set the height of an element before a css transition.
+ * Prevents browsers from mereging updates into the same frame.
+ */
+export function doubleRAF(cb) {
+  if (typeof window === 'undefined') {
+    return cb();
+  }
+
+  requestAnimationFrame(
+    () => requestAnimationFrame(cb)
+  );
+}
