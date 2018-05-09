@@ -109,10 +109,10 @@ class CollectionFiltersUI extends Component {
               <QueryBox /> :
               <Searchbox search={this.search} clear={this.clearSearch} searchText={this.props.searchText} />
           }
-          {
+          {/*
             !isAnon && canAdmin && this.props.selectedPageIdx !== null &&
               <Button bsSize="xs" onClick={this.openAddToList}>Add selection to lists</Button>
-          }
+          */}
           {
             canAdmin &&
               <Modal
