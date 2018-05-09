@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 import { Alert, ControlLabel, FormControl, FormGroup,
          HelpBlock, Panel, ProgressBar } from 'react-bootstrap';
 
@@ -107,6 +108,9 @@ class UserSettingsUI extends Component {
 
     return (
       <div className="row top-buffer col-xs-10 col-xs-push-1">
+        <Helmet>
+          <title>{`${username}'s Account Settings`}</title>
+        </Helmet>
         <Panel>
           <Panel.Heading>
             <Panel.Title>Usage for <b>{ username }</b></Panel.Title>

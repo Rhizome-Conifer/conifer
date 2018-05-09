@@ -61,7 +61,7 @@ app.use((req, res) => {
       </Provider>
     );
 
-    const outputHtml = ReactDOM.renderToString(
+    const outputHtml = ReactDOM.renderToNodeStream(
       <BaseHtml
         assets={webpackIsomorphicTools.assets()}
         component={component}
@@ -73,7 +73,8 @@ app.use((req, res) => {
     } else {
       res.status(context.status ? context.status : 200);
       global.navigator = { userAgent: req.headers['user-agent'] };
-      res.send(`<!doctype html>\n ${outputHtml}`);
+      res.write('<!doctype html>');
+      outputHtml.pipe(res);
     }
   });
 });

@@ -5,6 +5,7 @@ import ArrowKeyStepper from 'react-virtualized/dist/commonjs/ArrowKeyStepper';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
+import Helmet from 'react-helmet';
 import { fromJS, List } from 'immutable';
 import { Button } from 'react-bootstrap';
 
@@ -441,6 +442,13 @@ class CollectionDetailUI extends Component {
 
     return (
       <div className={classNames('wr-coll-detail', { 'with-list': activeList })}>
+        <Helmet>
+          {
+            activeList ?
+              <title>{`${list.get('title')} (List by ${collection.get('user')})`}</title> :
+              <title>{`${collection.get('title')} (Web archive collection by ${collection.get('user')})`}</title>
+          }
+        </Helmet>
         <CustomDragLayer
           pages={objects}
           pageSelection={selectedPageIdx} />

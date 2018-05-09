@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
@@ -69,6 +70,9 @@ class Record extends Component {
 
     return (
       <React.Fragment>
+        <Helmet>
+          <title>Recording</title>
+        </Helmet>
         <ReplayUI
           activeBrowser={activeBrowser}
           params={params}

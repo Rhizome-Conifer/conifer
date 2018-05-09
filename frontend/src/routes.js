@@ -96,7 +96,7 @@ const controllerRoutes = [
     classOverride: '',
     component: NewRecording,
     exact: true,
-    breadcrumb: 'New Recording'
+    breadcrumb: 'New Capture'
   },
   {
     // record with remote browser id

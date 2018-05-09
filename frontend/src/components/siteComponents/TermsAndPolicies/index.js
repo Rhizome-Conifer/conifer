@@ -1,11 +1,15 @@
 import React from 'react';
+import Helmet from 'react-helmet';
 
 import './style.scss';
 
 function TermsAndPolicies() {
   return (
-    <div className="container">
-      <div className="row">
+    <React.Fragment>
+      <Helmet>
+        <title>Terms and Policies</title>
+      </Helmet>
+      <div className="row terms-policies">
         <div className="col-md-12">
           <h1>Terms and Policies</h1>
 
@@ -16,7 +20,7 @@ function TermsAndPolicies() {
           </ul>
 
           <div className="tos-div">
-            <a name="tos" >
+            <a name="tos">
               <h3>Terms of Service</h3>
             </a>
             <p>
@@ -230,7 +234,7 @@ function TermsAndPolicies() {
           </div>
         </div>
       </div>
-    </div>
+    </React.Fragment>
   );
 }
 

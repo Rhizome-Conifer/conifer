@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
@@ -89,7 +90,10 @@ class CollectionListUI extends Component {
     const totalSpace = user.getIn(['space_utilization', 'total']);
 
     return (
-      <div>
+      <React.Fragment>
+        <Helmet>
+          <title>{`${userParam}'s Collections`}</title>
+        </Helmet>
         <Row className="collection-description page-archive">
           <Col xs={12}>
             <h2>{ userParam } Archive</h2>
@@ -156,7 +160,7 @@ class CollectionListUI extends Component {
           creatingCollection={collections.get('creatingCollection')}
           error={collections.get('error')} />
 
-      </div>
+      </React.Fragment>
     );
   }
 }

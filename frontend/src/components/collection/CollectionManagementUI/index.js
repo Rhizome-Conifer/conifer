@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 import { Button } from 'react-bootstrap';
 
 import { DeleteCollection, Upload } from 'containers';
@@ -61,6 +62,9 @@ class CollectionManagementUI extends Component {
 
     return (
       <div className="wr-coll-mgmt">
+        <Helmet>
+          <title>{`${collection.get('title')} Management`}</title>
+        </Helmet>
         <div className="extra-info">
           <h4>Manage Collection Content</h4>
           <p>Remove content from collection by <strong>deleting capture sessions</strong>. Add content by <strong>uploading warcs</strong>.</p>

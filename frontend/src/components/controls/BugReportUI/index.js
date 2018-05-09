@@ -26,15 +26,15 @@ class BugReportUI extends Component {
     const { closeBugReport, showModal, openBugReport } = this.props;
 
     const reportHeader = (
-      <div>
+      <React.Fragment>
         <h4>This Page Doesn't Look Right? Let Us Know!</h4>
         <p>{`Some pages are tricky for ${product} to capture and replay. Our goal is to make it work as best as possible on any page!`}</p>
         <p>{`Please indicate anything that may have gone wrong on this page. Your feedback will help make ${product} better!`}</p>
-      </div>
+      </React.Fragment>
     );
 
     return (
-      <div>
+      <React.Fragment>
         <button
           className="btn btn-default"
           title="Doesn't look right?"
@@ -47,7 +47,7 @@ class BugReportUI extends Component {
           closeCb={closeBugReport}>
           <ReportBugForm cb={this.submitWrapper} />
         </Modal>
-      </div>
+      </React.Fragment>
     );
   }
 }
