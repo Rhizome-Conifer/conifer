@@ -53,7 +53,7 @@ class CollectionHeaderUI extends Component {
 
     if (condensed && !prevProps.condensed) {
       const height = this.container.getBoundingClientRect().height;
-      this.setState({ height, zIndex: 0 });
+      this.setState({ height });
       doubleRAF(() => this.setState({ condensed: true }));
     } else if (!condensed && prevProps.condensed) {
       this.expandHeader();
@@ -66,7 +66,7 @@ class CollectionHeaderUI extends Component {
   }
 
   expandHeader = () => {
-    this.setState({ condensed: false });
+    this.setState({ condensed: false, zIndex: 0 });
     this.container.addEventListener('transitionend', () => { this.setState({ height: 'auto', zIndex: 20 }); }, { once: true });
   }
 

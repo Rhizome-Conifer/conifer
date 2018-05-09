@@ -16,6 +16,19 @@ header.wr-collection-header {
         width: 100%;
     }
 
+    .utility-row {
+        button#coll-menu {
+          width: 3.2rem;
+          height: 3.2rem;
+          padding: 0;
+
+          svg {
+            width: 1.4rem;
+            height: .6rem;
+          }
+        }
+    }
+
     .overview {
         transition: opacity 200ms ease-in-out,
                     transform 200ms ease-out;
@@ -70,12 +83,6 @@ header.wr-collection-header {
                     margin-left: .5rem;
                 }
 
-                button#coll-menu {
-                  padding:0.7rem;
-                  svg {
-                    width: 1.5rem;
-                  }
-                }
                 .dropdown-menu > li > a{
                   margin: -8px 0;
                   padding: 11px 20px;
