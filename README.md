@@ -30,7 +30,7 @@ Webrecorder can be run using Docker and Docker Compose. See [Docker Installation
 
 (The `init-default.sh` is a convenience script that copies [wr_sample.env](webrecorder/webrecorder/config/wr_sample.env) -> `wr.env` and creates keys for session encryption.)
 
-Point your browser to port `http://<DOCKER HOST>:8089/` to view the Webrecorder.
+5). Point your browser to port `http://<DOCKER HOST>:8089/` to view the Webrecorder. (FYI: Your machine's IP address is the `<DOCKER HOST>`.)
 
 ### Configuration
 
