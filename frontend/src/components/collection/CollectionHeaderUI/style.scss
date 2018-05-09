@@ -48,7 +48,7 @@ header.wr-collection-header {
             width: 100%;
 
             .capstone {
-                margin: 2rem 0;
+                margin: 2rem 0 0.6rem 0;
             }
 
             &.is-public {
@@ -68,6 +68,17 @@ header.wr-collection-header {
 
                 & > *:not(:first-child) {
                     margin-left: .5rem;
+                }
+
+                button#coll-menu {
+                  padding:0.7rem;
+                  svg {
+                    width: 1.5rem;
+                  }
+                }
+                .dropdown-menu > li > a{
+                  margin: -8px 0;
+                  padding: 11px 20px;
                 }
             }
 
@@ -91,8 +102,8 @@ header.wr-collection-header {
                     font-family: $sans;
                     margin: 2rem 0 0 0;
                     font-size: 3.2rem;
-                    font-weight: 400;
-                    color: $gray600;
+                    font-weight: 300;
+                    color: black;
                 }
             }
         }

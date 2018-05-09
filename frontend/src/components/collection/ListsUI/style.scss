@@ -25,9 +25,9 @@
 
         h4 {
             display: inline;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: $mid-gray;
-            font-weight: bold;
+            font-weight: 300rem;
             margin: 0 0 0 1.5rem;
             text-transform: uppercase;
         }
@@ -37,7 +37,6 @@
             margin-left: auto;
             font-weight: 500;
             color: $mid-gray;
-            font-size: 1.5rem;
             text-decoration: underline;
         }
     }
@@ -63,11 +62,11 @@
             }
 
             h2 {
-              font-size: 1.6rem;
+              font-size: 1.4rem;
               font-weight: 300;
               margin: 0.7rem 0 .5rem 0;
               line-height: 1.4em;
-              letter-spacing: 0.5pt;
+              letter-spacing: 0.3pt;
             }
 
             svg {
