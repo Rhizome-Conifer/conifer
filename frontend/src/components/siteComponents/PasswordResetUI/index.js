@@ -1,13 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ControlLabel, Form,
+import classNames from 'classnames';
+import { Alert, Button, ControlLabel, Form,
          FormControl, FormGroup } from 'react-bootstrap';
+
+import './style.scss';
 
 
 class ResetPasswordUI extends Component {
   static propTypes = {
     cb: PropTypes.func,
-    errors: PropTypes.object
+    errors: PropTypes.object,
+    success: PropTypes.bool
   };
 
   constructor(props) {
@@ -21,8 +25,8 @@ class ResetPasswordUI extends Component {
   }
 
   save = (evt) => {
-    const { email, username } = this.state;
     evt.preventDefault();
+    const { email, username } = this.state;
 
     if (email && username) {
       this.props.cb(this.state);
@@ -57,11 +61,22 @@ class ResetPasswordUI extends Component {
   }
 
   render() {
+    const { errors, success } = this.props;
     const { username, email } = this.state;
 
     return (
       <div className="row">
-        <div className="col-sm-6 col-md-4 col-md-offset-4">
+        {
+          (success || errors) &&
+            <Alert bsStyle={errors ? 'danger' : 'success'}>
+              {
+                errors ?
+                  <span>Username/email address pair not found.</span> :
+                  <span>A password reset e-mail has been sent to your e-mail!</span>
+              }
+            </Alert>
+        }
+        <div className={classNames('col-sm-6 col-md-6 col-md-offset-3 pw-reset', { success })}>
           <Form onSubmit={this.save}>
             <h3>Password Recovery</h3>
             <h4>Please enter either your e-mail address and/or username to request a password reset.</h4>
@@ -84,11 +99,10 @@ class ResetPasswordUI extends Component {
                 name="email"
                 placeholder="Email"
                 value={email}
-                onChange={this.handleChange}
-                autoFocus />
+                onChange={this.handleChange} />
             </FormGroup>
 
-            <Button bsStyle="primary" type="submit" block>Send Reset Email</Button>
+            <Button bsStyle="primary" type="submit" disabled={success} block>Send Reset Email</Button>
           </Form>
         </div>
       </div>

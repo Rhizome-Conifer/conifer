@@ -16,6 +16,7 @@ export ListHeader from './ListHeader/ListHeader';
 export Logout from './Logout/Logout';
 export ModeSelector from './ModeSelector/ModeSelector';
 export NewRecording from './NewRecording/NewRecording';
+export NewPassword from './NewPassword/NewPassword';
 export PasswordReset from './PasswordReset/PasswordReset';
 export Patch from './Patch/Patch';
 export PatchWidget from './PatchWidget/PatchWidget';

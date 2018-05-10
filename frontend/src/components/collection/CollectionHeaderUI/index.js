@@ -66,8 +66,10 @@ class CollectionHeaderUI extends Component {
   }
 
   expandHeader = () => {
-    this.setState({ condensed: false, zIndex: 0 });
-    this.container.addEventListener('transitionend', () => { this.setState({ height: 'auto', zIndex: 20 }); }, { once: true });
+    if (this.state.condensed) {
+      this.setState({ condensed: false, zIndex: 0 });
+      this.container.addEventListener('transitionend', () => { this.setState({ height: 'auto', zIndex: 20 }); }, { once: true });
+    }
   }
 
   editModeCallback = () => {
