@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button } from 'react-bootstrap';
 
-import { ModeSelector, RecordingTools, SizeCounter, ToolBin } from 'containers';
+import { ModeSelector, RecordingTools, SizeCounter } from 'containers';
 
 import ClickTracker from 'components/ClickTracker';
 import { ReplayURLBar, RecordURLBar } from 'components/controls';
@@ -32,47 +32,38 @@ class ReplayUI extends Component {
 
   render() {
     const { canAdmin, currMode } = this.context;
-    const { params } = this.props;
 
     const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
 
     return (
-      <React.Fragment>
-        <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
-
-          {
-            currMode.includes('replay') &&
-              <ClickTracker action={`${this.props.sidebarExpanded ? 'Collapse' : 'Expand'} sidebar menu during replay`}>
-                <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
-                  <InfoIcon />
-                </Button>
-              </ClickTracker>
-          }
-
-          {
-            canAdmin &&
-              <ModeSelector params={params} />
-          }
-
-          {
-            isWrite &&
-              <SizeCounter bytes={0} />
-          }
-
-          {
-            isWrite ?
-              <RecordURLBar {...this.props} /> :
-              <ReplayURLBar {...this.props} />
-          }
-
-          <RecordingTools params={params} />
-        </div>
+      <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
+        {
+          currMode.includes('replay') &&
+            <ClickTracker action={`${this.props.sidebarExpanded ? 'Collapse' : 'Expand'} sidebar menu during replay`}>
+              <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
+                <InfoIcon />
+              </Button>
+            </ClickTracker>
+        }
 
         {
           canAdmin &&
-            <ToolBin />
+            <ModeSelector />
         }
-      </React.Fragment>
+
+        {
+          isWrite &&
+            <SizeCounter bytes={0} />
+        }
+
+        {
+          isWrite ?
+            <RecordURLBar {...this.props} /> :
+            <ReplayURLBar {...this.props} />
+        }
+
+        <RecordingTools />
+      </div>
     );
   }
 }

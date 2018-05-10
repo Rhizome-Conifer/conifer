@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import { appHost } from 'config';
 import { remoteBrowserMod } from 'helpers/utils';
@@ -16,7 +17,7 @@ class ShareWidget extends Component {
     activeBrowser: PropTypes.string,
     activeListId: PropTypes.string,
     collection: PropTypes.object,
-    params: PropTypes.object,
+    match: PropTypes.object,
     setCollPublic: PropTypes.func,
     showLoginModal: PropTypes.func,
     timestamp: PropTypes.string,
@@ -24,7 +25,7 @@ class ShareWidget extends Component {
   }
 
   render() {
-    const { activeBrowser, activeListId, collection, params: { user, coll }, showLoginModal, timestamp, url } = this.props;
+    const { activeBrowser, activeListId, collection, match: { params: { user, coll } }, showLoginModal, timestamp, url } = this.props;
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp, '/');
     const activeList = activeListId ? `list/${activeListId}/` : '';
@@ -61,7 +62,7 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(
+export default withRouter(connect(
   mapStateToProps,
   mapDispatchToProps
-)(ShareWidget);
+)(ShareWidget));

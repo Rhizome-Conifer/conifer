@@ -19,7 +19,7 @@ class ModeSelectorUI extends PureComponent {
 
   static propTypes = {
     activeBrowser: PropTypes.string,
-    params: PropTypes.object,
+    match: PropTypes.object,
     timestamp: PropTypes.string,
     url: PropTypes.string
   };
@@ -32,7 +32,7 @@ class ModeSelectorUI extends PureComponent {
 
   onStop = (evt) => {
     evt.preventDefault();
-    const { params: { coll, rec, user } } = this.props;
+    const { match: { params: { coll, rec, user } } } = this.props;
 
     if (this.context.currMode.indexOf('replay') !== -1) {
       window.location.href = `/${user}/${coll}/pages`;
@@ -42,7 +42,7 @@ class ModeSelectorUI extends PureComponent {
   }
 
   onReplay = () => {
-    const { activeBrowser, params: { coll, user }, timestamp, url } = this.props;
+    const { activeBrowser, match: { params: { coll, user } }, timestamp, url } = this.props;
 
     window.location.href = `/${user}/${coll}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`;
   }
@@ -50,7 +50,7 @@ class ModeSelectorUI extends PureComponent {
   onPatch = () => {
     if (this.context.currMode === 'record') return;
 
-    const { activeBrowser, params: { coll }, timestamp, url } = this.props;
+    const { activeBrowser, match: { params: { coll } }, timestamp, url } = this.props;
 
     // data to create new recording
     const data = {
@@ -74,7 +74,7 @@ class ModeSelectorUI extends PureComponent {
   onRecord = () => {
     if (this.context.currMode === 'record') return;
 
-    const { activeBrowser, params: { coll }, url } = this.props;
+    const { activeBrowser, match: { params: { coll } }, url } = this.props;
     const data = {
       url,
       coll,
