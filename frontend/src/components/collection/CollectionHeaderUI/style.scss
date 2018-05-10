@@ -94,16 +94,6 @@ header.wr-collection-header {
                 flex-direction: column;
                 align-items: center;
 
-                .coll-status {
-                    color: $gray600;
-
-                    .public-lists {
-                        border: solid .1rem $gray600;
-                        border-width: 0 0 0 .1rem;
-                        padding-left: .7rem;
-                    }
-                }
-
                 h1 {
                     display: inline-block;
                     font-family: $sans;
@@ -156,6 +146,8 @@ header.wr-collection-header {
             justify-self: center;
 
             .coll-title {
+                text-align: center;
+
                 h1 {
                     font-size: 2.4rem;
                     margin: 0 0 0 1.5rem;

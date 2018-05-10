@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Link } from 'react-router-dom';
-import { Alert, Button, DropdownButton, MenuItem } from 'react-bootstrap';
+import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
 import { CSSTransitionGroup } from 'react-transition-group';
 
 import { defaultCollDesc } from 'config';
@@ -182,10 +181,10 @@ class CollectionHeaderUI extends Component {
                   </div>
                   {
                     canAdmin &&
-                      <div className="coll-status">
-                        <PublicSwitch isPublic={isPublic} callback={this.setPublic} />
-                        <span className="public-lists">{`${publicLists} Published List${publicLists === 1 ? '' : 's'}`}</span>
-                      </div>
+                      <PublicSwitch
+                        isPublic={isPublic}
+                        callback={this.setPublic}
+                        publicLists={publicLists} />
                   }
                 </div>
                 {
@@ -198,10 +197,10 @@ class CollectionHeaderUI extends Component {
                   <div className="heading-container">
                     {
                       canAdmin &&
-                        <div className="coll-status">
-                          <PublicSwitch isPublic={isPublic} callback={this.setPublic} />
-                          <span className="public-lists">{`${publicLists} Published List${publicLists === 1 ? '' : 's'}`}</span>
-                        </div>
+                        <PublicSwitch
+                          isPublic={isPublic}
+                          callback={this.setPublic}
+                          publicLists={publicLists} />
                     }
                     <InlineEditor
                       initial={collection.get('title')}
