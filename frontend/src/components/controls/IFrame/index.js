@@ -158,7 +158,7 @@ class IFrame extends Component {
 
     switch(state.wb_type) {
       case 'load':
-        this.addNewPage(state);
+        this.addNewPage(state, true);
         break;
       case 'cookie':
         this.setDomainCookie(state);
@@ -169,7 +169,6 @@ class IFrame extends Component {
         this.addSkipReq(state);
         break;
       case 'hashchange': {
-        console.log('pywb hashchange');
         let url = this.props.url.split("#", 1)[0];
         if (state.hash) {
           url = state.hash;
@@ -177,6 +176,9 @@ class IFrame extends Component {
         this.setUrl(url);
         break;
       }
+      case 'replace-url':
+        this.addNewPage(state, false);
+        break;
       case 'bug-report':
         this.props.dispatch(showModal());
         break;
@@ -185,7 +187,7 @@ class IFrame extends Component {
     }
   }
 
-  addNewPage = (state) => {
+  addNewPage = (state, doAdd = false) => {
     const { currMode } = this.context;
     const { timestamp } = this.props;
 
@@ -217,7 +219,7 @@ class IFrame extends Component {
       const modeMsg = { record: 'recording', patch: 'Patching', extract: 'Extracting' };
       setTitle(currMode in modeMsg ? modeMsg[currMode] : '', state.url, state.tittle);
 
-      if (attributes.timestamp || currMode !== 'patch') {
+      if (doAdd && (attributes.timestamp || currMode !== 'patch')) {
         if (!this.socket.addPage(attributes)) {
           // TODO: addPage fallback
           // addPage(recordingId, attributes);
