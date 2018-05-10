@@ -137,7 +137,7 @@
       }
     },
     "start-docker-prod": {
-      "command": "node ./bin/server.js",
+      "command": "pm2 start ./bin/server.js -i 0 --no-daemon --name 'frontend'",
       "env": {
         "NODE_PATH": "./src"
       }
