@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { CSSTransitionGroup } from 'react-transition-group';
@@ -6,7 +6,7 @@ import { CSSTransitionGroup } from 'react-transition-group';
 import './style.scss';
 
 
-class PublicSwitch extends Component {
+class PublicSwitch extends PureComponent {
   static propTypes = {
     callback: PropTypes.func,
     isPublic: PropTypes.bool,
@@ -27,12 +27,22 @@ class PublicSwitch extends Component {
 
   constructor(props) {
     super(props);
-
+    this.handle = null;
     this.state = { active: false, isPublic: props.isPublic };
   }
 
-  onEnter = () => this.setState({ active: true })
-  onExit = () => this.setState({ active: false })
+  onEnter = () => {
+    clearTimeout(this.handle);
+    this.handle = setTimeout(() => this.setState({ active: true }), 100);
+  }
+
+  onExit = () => {
+    clearTimeout(this.handle);
+    if (this.state.active) {
+      this.setState({ active: false });
+    }
+  }
+
   callback = (evt) => {
     evt.stopPropagation();
     this.props.callback();

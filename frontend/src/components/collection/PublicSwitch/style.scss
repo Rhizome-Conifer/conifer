@@ -4,6 +4,7 @@
     position: relative;
     width: 30rem;
     height: 2.5rem;
+    cursor: pointer;
 
     & > div {
         height: 100%;
@@ -54,7 +55,8 @@
     .toggle {
         position: absolute;
         top: 0;
-        width: 100%;
+        width: 80%;
+        margin: 0 auto;
         z-index: 10;
         border-radius: .3rem;
         background: none;
