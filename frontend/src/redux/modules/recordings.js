@@ -1,3 +1,5 @@
+import { fromJS } from 'immutable';
+
 import { apiPath } from 'config';
 
 const RECS_LOAD = 'wr/recordings/RECS_LOAD';
@@ -18,33 +20,28 @@ const REC_DELETE_SUCCESS = 'wr/recordings/REC_DELETE_SUCCESS';
 const REC_DELETE_FAIL = 'wr/recordings/REC_DELETE_FAIL';
 
 
-const initialState = {
+const initialState = fromJS({
   edited: false,
   loaded: false
-};
+});
 
 
 export default function recordings(state = initialState, action = {}) {
   switch (action.type) {
     case RECS_LOAD:
-      return {
-        ...state,
-        loading: true
-      };
+      return state.merge('loading': true);
     case RECS_LOAD_SUCCESS:
-      return {
-        ...state,
+      return state.merge({
         loading: false,
         loaded: true,
         recordings: action.result.recordings
-      };
+      });
     case RECS_LOAD_FAIL:
-      return {
-        ...state,
+      return state.merge({
         loading: false,
         loaded: false,
         error: action.error
-      };
+      });
     case REC_EDIT_SUCCESS:
       return state.merge({
         edited: true,
@@ -53,24 +50,21 @@ export default function recordings(state = initialState, action = {}) {
     case REC_EDITED_RESET:
       return state.set('edited', false);
     case REC_LOAD:
-      return {
-        ...state,
+      return state.merge({
         loading: true
-      };
+      });
     case REC_LOAD_SUCCESS:
-      return {
-        ...state,
+      return state.merge({
         loading: false,
         loaded: true,
         recording: action.result.recording
-      };
+      });
     case REC_LOAD_FAIL:
-      return {
-        ...state,
+      return state.merge({
         loading: false,
         loaded: false,
         error: action.error
-      };
+      });
     default:
       return state;
   }

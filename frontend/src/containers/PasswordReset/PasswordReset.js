@@ -7,7 +7,8 @@ import { PasswordResetUI } from 'components/siteComponents';
 
 const mapStateToProps = ({ app }) => {
   return {
-    errors: app.getIn(['passwordReset', 'errors'])
+    errors: app.getIn(['passwordReset', 'errors']),
+    success: app.getIn(['passwordReset', 'reset'])
   };
 };
 

@@ -1,11 +1,87 @@
 @import 'src/vars';
 
 .wr-switch {
-    &:hover {
-        color: green;
+    position: relative;
+    width: 30rem;
+    height: 2.5rem;
+    cursor: pointer;
+
+    & > div {
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
-    &.is-public:hover {
-        color: red;
+    .coll-status {
+        transition: opacity $slowShift ease-in-out,
+                    transform $slowShift ease-in-out;
+        color: $gray600;
+        align-self: center;
+        text-align: center;
+
+        .private {
+            font-style: italic;
+            white-space: nowrap;
+        }
+
+        &.switch-enter {
+            opacity: 0;
+            //transform: scale(0.95, 0.95);
+
+            &.switch-enter-active {
+                opacity: 1;
+                //transform: scale(1, 1);
+            }
+        }
+
+        &.switch-leave {
+            opacity: 1;
+            //transform: scale(1, 1);
+
+            &.switch-leave-active {
+                opacity: 0;
+                //transform: scale(0.95, 0.95);
+            }
+        }
+
+        .public-lists {
+            border-left: solid .1rem $gray600;
+            padding-left: .7rem;
+            margin-left: .7rem;
+        }
+    }
+
+    .toggle {
+        position: absolute;
+        top: 0;
+        width: 80%;
+        margin: 0 auto;
+        z-index: 10;
+        border-radius: .3rem;
+        background: none;
+        font-style: italic;
+        transition: opacity $slowShift ease-in-out,
+                    transform $slowShift ease-in-out;
+
+        &.switch-enter {
+            opacity: 0;
+            transform: scale(0.95, 0.95);
+
+            &.switch-enter-active {
+                opacity: 1;
+                transform: scale(1, 1);
+            }
+        }
+
+        &.switch-leave {
+            opacity: 1;
+            transform: scale(1, 1);
+
+            &.switch-leave-active {
+                opacity: 0;
+                transform: scale(0.95, 0.95);
+            }
+        }
     }
 }

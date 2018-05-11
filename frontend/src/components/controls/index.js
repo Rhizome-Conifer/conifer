@@ -22,4 +22,4 @@ export SidebarPageViewerUI from './SidebarPageViewerUI';
 export SidebarUI from './SidebarUI';
 export SizeCounter from './SizeCounter';
 export StandaloneRecorderUI from './StandaloneRecorderUI';
-export ToolBinUI from './ToolBinUI';
+

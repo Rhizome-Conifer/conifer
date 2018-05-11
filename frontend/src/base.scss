@@ -32,6 +32,10 @@ a {
   flex-direction: column;
 }
 
+.alert {
+  margin-top: 1.5rem;
+}
+
 .caret {
   transition: transform $slowShift ease-in-out;
 }

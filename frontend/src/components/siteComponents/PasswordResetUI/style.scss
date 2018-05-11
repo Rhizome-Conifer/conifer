@@ -1,0 +1,9 @@
+@import 'src/vars';
+
+.pw-reset {
+    transition: opacity $slowShift ease-in-out;
+
+    &.success {
+        opacity: 0.5;
+    }
+}

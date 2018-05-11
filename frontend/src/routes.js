@@ -14,6 +14,7 @@ import {
   Extract,
   Home,
   Logout,
+  NewPassword,
   NewRecording,
   PasswordReset,
   Patch,
@@ -234,6 +235,13 @@ export default [
   {
     path: '/_forgot',
     component: PasswordReset,
+    exact: true,
+    footer: true,
+    name: 'Password Reset'
+  },
+  {
+    path: '/_resetpassword/:resetCode',
+    component: NewPassword,
     exact: true,
     footer: true,
     name: 'Password Reset'

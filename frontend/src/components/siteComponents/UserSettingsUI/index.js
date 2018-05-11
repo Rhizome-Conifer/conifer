@@ -140,7 +140,7 @@ class UserSettingsUI extends Component {
                   Password successfully updated
                 </Alert>
             }
-            <div className="row col-md-3">
+            <div className="row col-md-6">
               <form id="changepassword" onSubmit={this.send} role="form">
                 <div className="form-group">
                   <label htmlFor="curr_password">Current Password</label>
@@ -193,7 +193,7 @@ class UserSettingsUI extends Component {
             <Panel.Title>Delete Account</Panel.Title>
           </Panel.Heading>
           <Panel.Body>
-            <div className="row col-md-6">
+            <div className="row col-md-12">
               <div>
                 <b>Permanently delete this account and all archived data for this user</b>
                 <p>This action can not be undone!</p>
