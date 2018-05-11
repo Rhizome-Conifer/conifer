@@ -101,7 +101,7 @@ class RedisUniqueComponent(object):
         pi = pi or self.redis
         pi.hmset(self.info_key, self.data)
 
-    def serialize(self, include_duration=False):
+    def serialize(self, include_duration=False, convert_date=True):
         if not self.loaded:
             self.load()
 
@@ -116,8 +116,10 @@ class RedisUniqueComponent(object):
             recorded_at = self.data.get('recorded_at', 0)
             self.data['duration'] = recorded_at - created_at if recorded_at else 0
 
-        self.data['created_at'] = self.to_iso_date(created_at)
-        self.data['updated_at'] = self.to_iso_date(updated_at)
+        # for WARC serialization, don't convert date to preserve format
+        if convert_date:
+            self.data['created_at'] = self.to_iso_date(created_at)
+            self.data['updated_at'] = self.to_iso_date(updated_at)
 
         return self.data
 

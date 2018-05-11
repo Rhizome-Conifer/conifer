@@ -267,8 +267,8 @@ class BaseImporter(ImportStatusChecker):
                                   'recording': recording,
                                  })
 
-                self.set_date_prop(recording, info, 'created_at', 'created_at_date')
-                self.set_date_prop(recording, info, 'updated_at', 'updated_at_date')
+                self.set_date_prop(recording, info, 'created_at')
+                self.set_date_prop(recording, info, 'updated_at')
 
             if not first_coll:
                 first_coll = collection
@@ -413,21 +413,11 @@ class BaseImporter(ImportStatusChecker):
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
         return warcinfo if valid else None
 
-    def set_date_prop(self, obj, info, ts_prop, iso_prop):
-
-        # first check the iso_prop field
-        value = info.get(iso_prop)
-        if value:
-            # convert back to seconds
-            dt = iso_date_to_datetime(value)
-            value = dt.timestamp()
-        else:
-            # use seconds field, if set
-            value = info.get(ts_prop)
-
-        if value is not None:
-            value = int(value)
-            obj.set_prop(ts_prop, value)
+    def set_date_prop(self, obj, info, ts_prop):
+        try:
+            obj.set_prop(ts_prop, int(info.get(ts_prop)))
+        except (ValueError, TypeError):
+            pass
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         raise NotImplemented()
@@ -543,8 +533,8 @@ class UploadImporter(BaseImporter):
         info['id'] = collection.name
         info['type'] = 'collection'
 
-        self.set_date_prop(collection, info, 'created_at', 'created_at_date')
-        self.set_date_prop(collection, info, 'updated_at', 'updated_at_date')
+        self.set_date_prop(collection, info, 'created_at')
+        self.set_date_prop(collection, info, 'updated_at')
 
         return collection
 

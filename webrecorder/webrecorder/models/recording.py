@@ -94,8 +94,9 @@ class Recording(RedisUniqueComponent):
         open_rec_key = self.OPEN_REC_KEY.format(rec=self.my_id)
         self.redis.delete(open_rec_key)
 
-    def serialize(self, include_pages=False):
-        data = super(Recording, self).serialize(include_duration=True)
+    def serialize(self, include_pages=False, convert_date=True):
+        data = super(Recording, self).serialize(include_duration=True,
+                                                convert_date=convert_date)
 
         if include_pages:
             data['pages'] = self.get_owner().list_rec_pages(self)

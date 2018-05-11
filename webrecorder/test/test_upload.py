@@ -5,6 +5,7 @@ import webtest
 import json
 
 from webrecorder.models.stats import Stats
+from webrecorder.models.base import RedisUniqueComponent
 from webrecorder.utils import today_str
 
 from webrecorder.models.usermanager import CLIUserManager
@@ -83,39 +84,52 @@ class TestUpload(FullStackTests):
     def test_read_warcinfo(self):
         self.warc.seek(0)
         metadata = []
+
         for record in ArchiveIterator(self.warc):
             if record.rec_type == 'warcinfo':
                 stream = record.content_stream()
+                warcinfo = {}
+
                 while True:
                     line = stream.readline().decode('utf-8')
-                    if line.startswith('json-metadata'):
-                        metadata.append(json.loads(line.split(' ', 1)[1]))
                     if not line:
                         break
 
+                    parts = line.split(': ', 1)
+                    warcinfo[parts[0].strip()] = parts[1].strip()
+
+                assert set(warcinfo.keys()) == {'software', 'format', 'creator', 'isPartOf', 'json-metadata'}
+                assert warcinfo['software'].startswith('Webrecorder Platform ')
+                assert warcinfo['format'] == 'WARC File Format 1.0'
+                assert warcinfo['creator'] == 'test'
+                assert warcinfo['isPartOf'] in ('default-collection', 'default-collection/rec-sesh')
+
+                metadata.append(json.loads(warcinfo['json-metadata']))
+
         assert len(metadata) == 2
         assert metadata[0]['type'] == 'collection'
-        assert set(metadata[0].keys()) == {'created_at_date', 'updated_at_date',
-                                           'title', 'desc', 'type', 'size'}
+        assert set(metadata[0].keys()) == {'created_at', 'updated_at',
+                                           'title', 'desc', 'type', 'size',
+                                           'lists', 'public', 'public_index'}
 
         assert metadata[0]['title'] == 'Default Collection'
         assert 'This is your first' in metadata[0]['desc']
 
         assert metadata[1]['type'] == 'recording'
-        assert set(metadata[1].keys()) == {'created_at_date', 'updated_at_date',
+        assert set(metadata[1].keys()) == {'created_at', 'updated_at', 'id',
                                            'title', 'desc', 'type', 'size',
                                            'pages'}
 
         #assert metadata[1]['title'].startswith('Recording on ')
         assert metadata[1]['title'] == 'rec-sesh'
 
-        assert metadata[0]['created_at_date'] <= metadata[0]['updated_at_date']
+        assert metadata[0]['created_at'] <= metadata[0]['updated_at']
 
-        TestUpload.created_at_0 = metadata[0]['created_at_date']
-        TestUpload.created_at_1 = metadata[1]['created_at_date']
+        TestUpload.created_at_0 = RedisUniqueComponent.to_iso_date(metadata[0]['created_at'])
+        TestUpload.created_at_1 = RedisUniqueComponent.to_iso_date(metadata[1]['created_at'])
 
-        TestUpload.updated_at_0 = metadata[0]['updated_at_date']
-        TestUpload.updated_at_1 = metadata[1]['updated_at_date']
+        TestUpload.updated_at_0 = RedisUniqueComponent.to_iso_date(metadata[0]['updated_at'])
+        TestUpload.updated_at_1 = RedisUniqueComponent.to_iso_date(metadata[1]['updated_at'])
 
     def test_logged_in_upload_coll(self):
         res = self.testapp.put('/_upload?filename=example.warc.gz', params=self.warc.getvalue())
