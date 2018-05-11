@@ -203,6 +203,14 @@ class TestApiUserLogin(FullStackTests):
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
+    def test_login_already_logged_in(self):
+        params = {'username': 'someuser',
+                  'password': 'Password1'}
+
+        res = self.testapp.post_json('/api/v1/auth/login', params=params, status=403)
+
+        assert res.json == {'error': 'already_logged_in'}
+
     def test_load_auth_logged_in(self):
         res = self.testapp.get('/api/v1/auth')
 
@@ -303,6 +311,8 @@ class TestApiUserLogin(FullStackTests):
                   'newPass2': 'TestTest789'
                  }
 
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
         res = self.testapp.post_json('/api/v1/auth/password/reset', params=params)
         assert res.json == {'success': True}
 
@@ -315,6 +325,16 @@ class TestApiUserLogin(FullStackTests):
         assert res.json['username'] == 'someuser'
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
+
+    def test_reset_code_valid_already_logged_in(self):
+        # valid reset
+        params = {'resetCode': TestApiUserLogin.reset_code,
+                  'newPass': 'TestTest789',
+                  'newPass2': 'TestTest789'
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/password/reset', params=params, status=403)
+        assert res.json == {'error': 'already_logged_in'}
 
     def test_api_user_info(self):
         res = self.testapp.get('/api/v1/user/someuser')

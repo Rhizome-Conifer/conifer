@@ -42,7 +42,8 @@ class SessionAccessCache(BaseAccess):
         if not user:
             user = self.session_user
 
-        return self.sesh.is_anon(user.my_id)
+        #return self.sesh.is_anon(user.my_id)
+        return user.is_anon()
 
     def is_logged_in_user(self, user):
         if self.sesh.is_restricted:

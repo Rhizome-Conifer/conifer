@@ -104,6 +104,10 @@ class UserController(BaseController):
         @self.app.post('/api/v1/auth/login')
         def login():
             """Authenticate users"""
+
+            if not self.access.is_anon():
+                return self._raise_error(403, 'already_logged_in')
+
             result = self.user_manager.login_user(request.json)
 
             if 'success' in result:
@@ -148,7 +152,9 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/auth/password/reset')
         def reset_password():
-            self.get_user_or_raise()
+            #self.get_user_or_raise()
+            if not self.access.is_anon():
+                return self._raise_error(403, 'already_logged_in')
 
             data = request.json or {}
 
