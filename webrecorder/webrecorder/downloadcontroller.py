@@ -51,6 +51,7 @@ class DownloadController(BaseController):
 
         if not metadata.get('title'):
             metadata['title'] = self.DEFAULT_REC_TITLE.format(source.to_iso_date(metadata['created_at'], no_T=True))
+            metadata['auto_title'] = True
 
         info = OrderedDict([
                 ('software', 'Webrecorder Platform v' + __version__),
@@ -82,7 +83,7 @@ class DownloadController(BaseController):
         metadata = {}
         #metadata['pages'] = collection.list_rec_pages(recording)
         metadata['type'] = 'recording'
-        metadata['id'] = recording.my_id
+        #metadata['id'] = recording.my_id
         rec_type = recording.get_prop('rec_type')
         if rec_type:
             metadata['rec_type'] = rec_type

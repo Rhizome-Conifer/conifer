@@ -117,7 +117,8 @@ class BaseImporter(ImportStatusChecker):
                            stream,
                            user,
                            rec_infos,
-                           total_size)
+                           total_size,
+                           first_coll)
 
         return {'upload_id': upload_id,
                 'user': user.name
@@ -142,11 +143,12 @@ class BaseImporter(ImportStatusChecker):
 
         return upload_id, upload_key
 
-    def run_upload(self, upload_key, filename, stream, user, rec_infos, total_size):
+    def run_upload(self, upload_key, filename, stream, user, rec_infos, total_size, first_coll):
         try:
             count = 0
             num_recs = len(rec_infos)
             last_end = 0
+            page_id_map = {}
 
             for info in rec_infos:
                 count += 1
@@ -170,13 +172,15 @@ class BaseImporter(ImportStatusChecker):
                     pages = self.detect_pages(info['coll'], info['rec'])
 
                 if pages:
-                    info['collection'].import_pages(pages, info['recording'])
+                    page_id_map.update(info['collection'].import_pages(pages, info['recording']) or {})
                     #info['recording'].import_pages(pages)
 
                 diff = info['offset'] - last_end
                 last_end = info['offset'] + info['length']
                 if diff > 0:
                     self._add_split_padding(diff, upload_key)
+
+            self.import_lists(first_coll, page_id_map)
 
         except:
             traceback.print_exc()
@@ -233,12 +237,16 @@ class BaseImporter(ImportStatusChecker):
 
         rec_infos = []
 
+        lists = None
+
         for info in infos:
             type = info.get('type')
 
             if type == 'collection':
                 if not collection:
                     collection = self.make_collection(user, filename, info)
+                lists = info.get('lists')
+
 
             elif type == 'recording':
                 if not collection:
@@ -246,7 +254,14 @@ class BaseImporter(ImportStatusChecker):
 
                 desc = info.get('desc', '')
 
-                recording = collection.create_recording(title=info.get('title', ''),
+                # if title was auto-generated for compatibility on export,
+                # set title to blank
+                if info.get('auto_title'):
+                    title = ''
+                else:
+                    title = info.get('title', '')
+
+                recording = collection.create_recording(title=title,
                                                         desc=desc,
                                                         rec_type=info.get('rec_type'),
                                                         ra_list=info.get('ra'))
@@ -273,7 +288,26 @@ class BaseImporter(ImportStatusChecker):
             if not first_coll:
                 first_coll = collection
 
+
+        if lists:
+            collection.data['_lists'] = lists
+
         return first_coll, rec_infos
+
+    def import_lists(self, collection, page_id_map):
+        lists = collection.data.get('_lists')
+
+        if not lists:
+            return
+
+        for list_data in lists:
+            bookmarks = list_data.pop('bookmarks', [])
+            blist = collection.create_bookmark_list(list_data)
+            for bookmark_data in bookmarks:
+                page_id = bookmark_data.get('page_id')
+                if page_id:
+                    bookmark_data['page_id'] = page_id_map.get(page_id)
+                bookmark = blist.create_bookmark(bookmark_data)
 
     def detect_pages(self, coll, rec):
         key = self.cdxj_key.format(coll=coll, rec=rec)

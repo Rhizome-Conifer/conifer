@@ -39,10 +39,13 @@ class BookmarkList(RedisUniqueComponent):
         collection = self.get_owner()
         self.access.assert_can_write_coll(collection)
 
+        # don't store rec id, if provided
+        props.pop('rec', '')
+
         # if a page is specified for this bookmark, ensure that it has the same url and timestamp
         page_id = props.get('page_id')
         if page_id:
-            if not collection.is_matching_page(page_id, props):
+            if not collection.page_exists(page_id):
                 return None
 
         bid = self.get_new_bookmark_id()

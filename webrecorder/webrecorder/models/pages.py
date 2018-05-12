@@ -37,14 +37,11 @@ class PagesMixin(object):
         page_attrs = (page['url'] + page['timestamp'] + page.get('rec', '') + page.get('browser', '')).encode('utf-8')
         return hashlib.md5(page_attrs).hexdigest()[:10]
 
-    def is_matching_page(self, pid, page):
-        try:
-            return self._new_page_id(page) == pid
-        except:
-            return False
-
     def delete_page(self, pid):
         self.redis.hdel(self.pages_key, pid)
+
+    def page_exists(self, pid):
+        return self.redis.hexists(self.pages_key, pid)
 
     def get_page(self, pid):
         page = self.redis.hget(self.pages_key, pid)
@@ -97,6 +94,7 @@ class PagesMixin(object):
         self.access.assert_can_write_coll(self)
 
         pages = {}
+        id_map = {}
 
         for page in pagelist:
             if 'ts' in page and 'timestamp' not in page:
@@ -104,10 +102,15 @@ class PagesMixin(object):
 
             page['rec'] = recording.my_id
             pid = self._new_page_id(page)
+            if page.get('id'):
+                id_map[page['id']] = pid
+
+            page['id'] = pid
 
             pages[pid] = json.dumps(page)
 
         self.redis.hmset(self.pages_key, pages)
+        return id_map
 
     def add_page_bookmark(self, pid, bid, list_id):
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
