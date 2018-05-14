@@ -167,6 +167,11 @@ header.wr-collection-header {
             & > * {
                 margin-left: .5rem;
             }
+
+            .dropdown-menu > li > a{
+              margin: -8px 0;
+              padding: 11px 20px;
+            }
         }
 
         @media (max-width: 950px) {

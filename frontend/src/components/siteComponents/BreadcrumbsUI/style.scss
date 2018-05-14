@@ -18,6 +18,7 @@
         }
 
         a, span {
+            color: #ccc;
             max-width: 10rem !important;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -25,11 +26,12 @@
         }
 
         span {
-            color: $white;
+            color: $mid-gray;
+            font-weight: 500;
         }
 
         a:focus, a:hover, a:active {
-            text-decoration: underline;
+          text-decoration: underline;
         }
 
         a.branding {
