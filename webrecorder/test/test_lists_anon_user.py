@@ -69,7 +69,6 @@ class TestListsAnonUserAPI(FullStackTests):
 
         if page_id:
             params['page_id'] = page_id
-            params['rec'] = rec
 
         res = self.testapp.post_json(self._format('/api/v1/list/%s/bookmarks?user={user}&coll=temp' % list_id), params=params, status=status)
         return res
@@ -309,11 +308,11 @@ class TestListsAnonUserAPI(FullStackTests):
         assert bookmark['page']['url'] == bookmark['url']
         assert bookmark['page']['timestamp'] == bookmark['timestamp']
 
-    def test_create_bookmark_error_page_not_matcching(self):
+    def test_create_bookmark_error_no_such_page(self):
         res = self._add_bookmark('1002', title='An Example (испытание)', url='http://example.com/испытание/test',
-                                 timestamp='2018', page_id=self.ID_1, status=400)
+                                 timestamp='2018', page_id='abc', status=400)
 
-        # urls and timestamps of page and bookmark must match
+        # must be a valid page
         assert res.json['error'] == 'invalid_page'
 
     def test_get_bookmark_error_list_missing(self):

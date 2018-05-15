@@ -18,8 +18,10 @@ import json
 
 # ============================================================================
 class DownloadController(BaseController):
-    COPY_FIELDS = ('title', 'desc', 'size', 'updated_at', 'created_at')
-    APPEND_DATE = ('updated_at', 'created_at')
+    COPY_FIELDS = ('title', 'desc', 'size', 'updated_at', 'created_at', 'pages', 'lists',
+                   'public', 'public_index')
+
+    DEFAULT_REC_TITLE = 'Session from {0}'
 
     def __init__(self, *args, **kwargs):
         super(DownloadController, self).__init__(*args, **kwargs)
@@ -42,17 +44,19 @@ class DownloadController(BaseController):
 
             return self.handle_download(user, coll, '*')
 
-    def create_warcinfo(self, creator, name, metadata, source, filename):
-        for name, value in iteritems(source.serialize()):
-            if name in self.COPY_FIELDS:
-                if name in self.APPEND_DATE:
-                    name += '_date'
-                metadata[name] = value
+    def create_warcinfo(self, creator, name, metadata, source, serialized, filename):
+        for key, value in iteritems(serialized):
+            if key in self.COPY_FIELDS:
+                metadata[key] = value
+
+        if not metadata.get('title'):
+            metadata['title'] = self.DEFAULT_REC_TITLE.format(source.to_iso_date(metadata['created_at'], no_T=True))
+            metadata['auto_title'] = True
 
         info = OrderedDict([
                 ('software', 'Webrecorder Platform v' + __version__),
                 ('format', 'WARC File Format 1.0'),
-                ('creator', creator),
+                ('creator', creator.name),
                 ('isPartOf', name),
                 ('json-metadata', json.dumps(metadata)),
                ])
@@ -65,19 +69,31 @@ class DownloadController(BaseController):
         metadata = {}
         metadata['type'] = 'collection'
 
-        name = quote(collection.name)
-        return self.create_warcinfo(user, name, metadata, collection, filename)
+        isPartOf_name = quote(collection.name)
+        serialized = collection.serialize(include_recordings=False,
+                                          include_lists=True,
+                                          include_bookmarks='all-serialize',
+                                          include_rec_pages=False,
+                                          include_pages=False,
+                                          convert_date=False)
+
+        return self.create_warcinfo(user, isPartOf_name, metadata, collection, serialized, filename)
 
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
         metadata = {}
-        metadata['pages'] = collection.list_rec_pages(recording)
+        #metadata['pages'] = collection.list_rec_pages(recording)
         metadata['type'] = 'recording'
+        #metadata['id'] = recording.my_id
         rec_type = recording.get_prop('rec_type')
         if rec_type:
             metadata['rec_type'] = rec_type
 
-        name = quote(collection.name) + '/' + quote(recording.name)
-        return self.create_warcinfo(user, name, metadata, recording, filename)
+        isPartOf_name = quote(collection.name) + '/' + quote(recording.name)
+
+        serialized = recording.serialize(include_pages=True,
+                                         convert_date=False)
+
+        return self.create_warcinfo(user, isPartOf_name, metadata, recording, serialized, filename)
 
     def handle_download(self, user, coll_name, recs):
         user, collection = self.user_manager.get_user_coll(user, coll_name)

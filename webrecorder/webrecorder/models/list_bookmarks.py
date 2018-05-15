@@ -39,10 +39,13 @@ class BookmarkList(RedisUniqueComponent):
         collection = self.get_owner()
         self.access.assert_can_write_coll(collection)
 
+        # don't store rec id, if provided
+        props.pop('rec', '')
+
         # if a page is specified for this bookmark, ensure that it has the same url and timestamp
         page_id = props.get('page_id')
         if page_id:
-            if not collection.is_matching_page(page_id, props):
+            if not collection.page_exists(page_id):
                 return None
 
         bid = self.get_new_bookmark_id()
@@ -60,7 +63,7 @@ class BookmarkList(RedisUniqueComponent):
 
         return bookmark
 
-    def get_bookmarks(self, load=True, start=0, end=-1):
+    def get_bookmarks(self, load=True, start=0, end=-1, load_pages=True):
         self.access.assert_can_read_coll(self.get_owner())
 
         order = self.bookmark_order.get_ordered_keys(start, end)
@@ -71,6 +74,9 @@ class BookmarkList(RedisUniqueComponent):
             bookmarks = []
 
         bookmarks = [json.loads(bookmark) for bookmark in bookmarks]
+        if not load_pages:
+            return bookmarks
+
         return self.load_pages(bookmarks)
 
     def num_bookmarks(self):
@@ -125,20 +131,32 @@ class BookmarkList(RedisUniqueComponent):
     def reorder_bookmarks(self, new_order):
         return self.bookmark_order.reorder_objects(new_order)
 
-    def serialize(self, include_bookmarks='all'):
-        data = super(BookmarkList, self).serialize()
+    def serialize(self, include_bookmarks='all', convert_date=True):
+        data = super(BookmarkList, self).serialize(convert_date=convert_date)
         bookmarks = None
 
-        # return all bookmarks
+        # return all bookmarks with pages
         if include_bookmarks == 'all':
             bookmarks = self.get_bookmarks(load=True)
-            data['bookmarks'] = self.load_pages(bookmarks)
+            data['bookmarks'] = bookmarks
             data['total_bookmarks'] = len(bookmarks)
+
+        # returns all bookmarks without pages
+        # remove ids that need not be serialized
+        elif include_bookmarks == 'all-serialize':
+            bookmarks = self.get_bookmarks(load=True, load_pages=False)
+            for bookmark in bookmarks:
+                bookmark.pop('id', '')
+            data['bookmarks'] = bookmarks
+
+            data.pop('owner', '')
+            data.pop('timespan', '')
+            data.pop('id', '')
 
         # return only first bookmark, set total_bookmarks
         elif include_bookmarks == 'first':
             bookmarks = self.get_bookmarks(load=True, start=0, end=0)
-            data['bookmarks'] = self.load_pages(bookmarks)
+            data['bookmarks'] = bookmarks
             data['total_bookmarks'] = self.num_bookmarks()
 
         # else only return the number of bookmarks

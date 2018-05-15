@@ -5,6 +5,7 @@ import webtest
 import json
 
 from webrecorder.models.stats import Stats
+from webrecorder.models.base import RedisUniqueComponent
 from webrecorder.utils import today_str
 
 from webrecorder.models.usermanager import CLIUserManager
@@ -15,7 +16,7 @@ from warcio import ArchiveIterator
 class TestUpload(FullStackTests):
     ID_1 = '1884e17293'
     ID_2 = 'eed99fa580'
-    ID_3 = '9871d09bf7'
+    ID_3 = 'fc17891a4a'
 
     @classmethod
     def setup_class(cls, **kwargs):
@@ -68,10 +69,61 @@ class TestUpload(FullStackTests):
         assert self.testapp.cookies['__test_sesh'] != ''
 
         # Add as page
-        page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'ts': '2016010203000000'}
+        page = {'title': 'Example Title', 'url': 'http://httpbin.org/get?food=bar', 'timestamp': '2016010203000000'}
         res = self.testapp.post_json('/api/v1/recording/rec-sesh/pages?user=test&coll=default-collection', params=page)
 
         assert res.json['page_id']
+        page_id = res.json['page_id']
+
+        # Add list
+        params = {'title': 'New List',
+                  'desc': 'List Description Goes Here!'
+                 }
+
+        res = self.testapp.post_json('/api/v1/lists?user=test&coll=default-collection', params=params)
+
+        blist = res.json['list']
+        list_id = blist['id']
+
+        # Add bookmark
+        page['page_id'] = page_id
+        res = self.testapp.post_json('/api/v1/list/%s/bookmarks?user=test&coll=default-collection' % list_id, params=page)
+
+        bookmark = res.json['bookmark']
+
+    def test_logged_in_record_2(self):
+        self.set_uuids('Recording', ['another-sesh'])
+        res = self.testapp.get('/_new/default-collection/another-sesh/record/mp_/http://httpbin.org/get?bood=far')
+        assert res.headers['Location'].endswith('/test/default-collection/another-sesh/record/mp_/http://httpbin.org/get?bood=far')
+        res = res.follow()
+        res.charset = 'utf-8'
+
+        assert '"bood": "far"' in res.text, res.text
+
+        assert self.testapp.cookies['__test_sesh'] != ''
+
+        # Add as page
+        page = {'title': 'Example Title 2', 'url': 'http://httpbin.org/get?bood=far', 'timestamp': '2016010203000000'}
+        res = self.testapp.post_json('/api/v1/recording/another-sesh/pages?user=test&coll=default-collection', params=page)
+
+        assert res.json['page_id']
+        page_id = res.json['page_id']
+
+        # Add list
+        params = {'title': 'New List 2',
+                  'desc': 'Another List'
+                 }
+
+        res = self.testapp.post_json('/api/v1/lists?user=test&coll=default-collection', params=params)
+
+        blist = res.json['list']
+        list_id = blist['id']
+
+        # Add bookmark
+        page['page_id'] = page_id
+        res = self.testapp.post_json('/api/v1/list/%s/bookmarks?user=test&coll=default-collection' % list_id, params=page)
+
+        bookmark = res.json['bookmark']
 
     def test_logged_in_download_coll(self):
         res = self.testapp.get('/test/default-collection/$download')
@@ -83,39 +135,53 @@ class TestUpload(FullStackTests):
     def test_read_warcinfo(self):
         self.warc.seek(0)
         metadata = []
+
         for record in ArchiveIterator(self.warc):
             if record.rec_type == 'warcinfo':
                 stream = record.content_stream()
+                warcinfo = {}
+
                 while True:
                     line = stream.readline().decode('utf-8')
-                    if line.startswith('json-metadata'):
-                        metadata.append(json.loads(line.split(' ', 1)[1]))
                     if not line:
                         break
 
-        assert len(metadata) == 2
+                    parts = line.split(': ', 1)
+                    warcinfo[parts[0].strip()] = parts[1].strip()
+
+                assert set(warcinfo.keys()) == {'software', 'format', 'creator', 'isPartOf', 'json-metadata'}
+                assert warcinfo['software'].startswith('Webrecorder Platform ')
+                assert warcinfo['format'] == 'WARC File Format 1.0'
+                assert warcinfo['creator'] == 'test'
+                assert warcinfo['isPartOf'] in ('default-collection', 'default-collection/rec-sesh', 'default-collection/another-sesh')
+
+                metadata.append(json.loads(warcinfo['json-metadata']))
+
+        assert len(metadata) == 3
         assert metadata[0]['type'] == 'collection'
-        assert set(metadata[0].keys()) == {'created_at_date', 'updated_at_date',
-                                           'title', 'desc', 'type', 'size'}
+        assert set(metadata[0].keys()) == {'created_at', 'updated_at',
+                                           'title', 'desc', 'type', 'size',
+                                           'lists', 'public', 'public_index'}
 
         assert metadata[0]['title'] == 'Default Collection'
         assert 'This is your first' in metadata[0]['desc']
 
         assert metadata[1]['type'] == 'recording'
-        assert set(metadata[1].keys()) == {'created_at_date', 'updated_at_date',
+        assert set(metadata[1].keys()) == {'created_at', 'updated_at',
                                            'title', 'desc', 'type', 'size',
                                            'pages'}
 
         #assert metadata[1]['title'].startswith('Recording on ')
-        assert metadata[1]['title'] == 'rec-sesh'
+        assert metadata[1]['title'] in ('rec-sesh', 'another-sesh')
+        assert metadata[2]['title'] in ('another-sesh', 'rec-sesh')
 
-        assert metadata[0]['created_at_date'] <= metadata[0]['updated_at_date']
+        assert metadata[0]['created_at'] <= metadata[0]['updated_at']
 
-        TestUpload.created_at_0 = metadata[0]['created_at_date']
-        TestUpload.created_at_1 = metadata[1]['created_at_date']
+        TestUpload.created_at_0 = RedisUniqueComponent.to_iso_date(metadata[0]['created_at'])
+        TestUpload.created_at_1 = RedisUniqueComponent.to_iso_date(metadata[1]['created_at'])
 
-        TestUpload.updated_at_0 = metadata[0]['updated_at_date']
-        TestUpload.updated_at_1 = metadata[1]['updated_at_date']
+        TestUpload.updated_at_0 = RedisUniqueComponent.to_iso_date(metadata[0]['updated_at'])
+        TestUpload.updated_at_1 = RedisUniqueComponent.to_iso_date(metadata[1]['updated_at'])
 
     def test_logged_in_upload_coll(self):
         res = self.testapp.put('/_upload?filename=example.warc.gz', params=self.warc.getvalue())
@@ -159,6 +225,41 @@ class TestUpload(FullStackTests):
 
         assert collection['updated_at'] >= TestUpload.updated_at_0
         assert collection['recordings'][0]['updated_at'] >= TestUpload.updated_at_1
+
+        assert len(collection['lists']) == 2
+        assert collection['lists'][0]['desc'] == 'List Description Goes Here!'
+        assert collection['lists'][0]['title'] == 'New List'
+
+        assert collection['lists'][1]['desc'] == 'Another List'
+        assert collection['lists'][1]['title'] == 'New List 2'
+
+        # Pages
+        assert len(collection['pages']) == 2
+        assert len(collection['recordings']) == 2
+
+        # ensure each page maps to a recording
+        assert (set([page['rec'] for page in collection['pages']]) ==
+                set([recording['id'] for recording in collection['recordings']]))
+
+        # First List
+        assert len(collection['lists'][0]['bookmarks']) == 1
+        bookmark = collection['lists'][0]['bookmarks'][0]
+
+        assert bookmark['timestamp'] == '2016010203000000'
+        assert bookmark['url'] == 'http://httpbin.org/get?food=bar'
+        assert bookmark['title'] == 'Example Title'
+
+        assert bookmark['page_id'] in [page['id'] for page in collection['pages']]
+
+        # Second List
+        assert len(collection['lists'][1]['bookmarks']) == 1
+        bookmark = collection['lists'][1]['bookmarks'][0]
+
+        assert bookmark['timestamp'] == '2016010203000000'
+        assert bookmark['url'] == 'http://httpbin.org/get?bood=far'
+        assert bookmark['title'] == 'Example Title 2'
+
+        assert bookmark['page_id'] in [page['id'] for page in collection['pages']]
 
     def test_upload_3_x_warc(self):
         self.set_uuids('Recording', ['uploaded-rec'])
@@ -240,7 +341,7 @@ class TestUpload(FullStackTests):
         assert 'This is your first collection' in collection['desc']
         assert collection['title'] == 'Default Collection'
 
-        assert len(collection['pages']) == 2
+        assert len(collection['pages']) == 3
 
         print(collection['pages'])
 
@@ -252,7 +353,7 @@ class TestUpload(FullStackTests):
 
         assert {'id': self.ID_3,
                 'rec': 'rec-sesh',
-                'timestamp': '',
+                'timestamp': '2016010203000000',
                 'title': 'Example Title',
                 'url': 'http://httpbin.org/get?food=bar'} in collection['pages']
 
@@ -264,7 +365,7 @@ class TestUpload(FullStackTests):
         assert 'Example Domain' in res.text, res.text
 
         res = self.testapp.get('/api/v1/collection/default-collection?user=test')
-        assert len(res.json['collection']['recordings']) == 2
+        assert len(res.json['collection']['recordings']) == 3
 
     def test_logout_1(self):
         res = self.testapp.get('/_logout')

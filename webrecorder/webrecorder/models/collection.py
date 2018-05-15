@@ -177,8 +177,14 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         return [key_pattern.replace('*', rec) for rec in recs]
 
-    def serialize(self, include_recordings=True, include_lists=True, include_rec_pages=False):
-        data = super(Collection, self).serialize()
+    def serialize(self, include_recordings=True,
+                        include_lists=True,
+                        include_rec_pages=False,
+                        include_pages=True,
+                        include_bookmarks='first',
+                        convert_date=True):
+
+        data = super(Collection, self).serialize(convert_date=convert_date)
         self.data['id'] = self.name
 
         is_owner = self.access.is_coll_owner(self)
@@ -200,7 +206,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         if include_lists:
             lists = self.get_lists(load=True, public_only=False)
-            data['lists'] = [blist.serialize(include_bookmarks='first') for blist in lists]
+            data['lists'] = [blist.serialize(include_bookmarks=include_bookmarks,
+                                             convert_date=convert_date) for blist in lists]
 
         if not data.get('desc'):
             data['desc'] = self.DEFAULT_COLL_DESC.format(self.name)
@@ -208,8 +215,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
         data['public'] = self.is_public()
         data['public_index'] = self.get_bool_prop('public_index', False)
 
-        if is_owner or data['public_index']:
-            data['pages'] = self.list_pages()
+        if include_pages:
+            if is_owner or data['public_index']:
+                data['pages'] = self.list_pages()
 
         if not is_owner:
             self.data.pop('downloads', '')
