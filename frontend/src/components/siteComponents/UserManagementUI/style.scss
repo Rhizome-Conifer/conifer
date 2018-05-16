@@ -15,8 +15,8 @@
 .wr-header-btn {
     border: none;
     background: transparent;
-    color: $white;
-    padding: 0;
+    color: $mid-gray;
+    padding: 0 1rem;
 
     &:hover {
         text-decoration: underline;
@@ -55,7 +55,6 @@
 }
 
 .num-collection {
-    color: #FFF;
     font-feature-settings: 'tnum';
     margin-left: .5rem;
 
