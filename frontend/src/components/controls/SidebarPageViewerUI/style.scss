@@ -22,6 +22,16 @@
             //pointer-events: none;
         }
 
+        .row-index-container {
+            align-self: flex-start;
+            margin-top: .5rem;
+
+            .row-index {
+                font-size: 1rem;
+                color: #B2B2B2;
+            }
+        }
+
         // &:before {
         //     top: 0;
         //     background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);

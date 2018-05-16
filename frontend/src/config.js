@@ -38,10 +38,11 @@ module.exports = Object.assign({
   apiPath: '/api/v1',
   appHost: `${hostScheme}://${appHost}`,
   contentHost: `${hostScheme}://${contentHost}`,
-  columns: ['timestamp', 'title', 'url', 'browser', 'session'],
+  columns: ['rowIndex', 'timestamp', 'title', 'url', 'browser', 'session'],
   columnLabels: {
-    'session': 'Session ID',
     'browser': 'Capture Browser',
+    'rowIndex': 'Index',
+    'session': 'Session ID',
     'title': 'Page Title'
   },
   columnMappings: {
@@ -49,7 +50,7 @@ module.exports = Object.assign({
   },
   defaultBookmarkDesc: 'No description provided.',
   defaultCollectionTitle: 'New Collection',
-  defaultColumns: ['timestamp', 'title', 'url', 'browser'],
+  defaultColumns: ['rowIndex', 'timestamp', 'title', 'url', 'browser'],
   defaultCollDesc: '_This collection doesn\'t yet have a description._',
   defaultListDesc: '_This list doesn\'t yet have a description._',
   defaultRecDesc: '_Add notes about this capture session. Visible only to you._',

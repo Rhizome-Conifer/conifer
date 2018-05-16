@@ -26,7 +26,8 @@ import 'react-virtualized/styles.css';
 
 import CustomDragLayer from './dragLayer';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
-import { BrowserRenderer, DnDSortableHeader, LinkRenderer, RemoveRenderer, TimestampRenderer } from './columns';
+import { BasicRenderer, BrowserRenderer, DnDSortableHeader, LinkRenderer, RemoveRenderer,
+         RowIndexRenderer, TitleRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
 
@@ -46,6 +47,7 @@ class CollectionDetailUI extends Component {
     dispatch: PropTypes.func,
     list: PropTypes.object,
     match: PropTypes.object,
+    orderedIds: PropTypes.object,
     pages: PropTypes.object,
     publicIndex: PropTypes.bool,
     removeBookmark: PropTypes.func,
@@ -55,7 +57,7 @@ class CollectionDetailUI extends Component {
     setPageInspector: PropTypes.func
   };
 
-  constructor(props) {
+  constructor(props, context) {
     super(props);
 
     this.keyBuffer = List();
@@ -85,7 +87,7 @@ class CollectionDetailUI extends Component {
 
     const activeList = Boolean(props.match.params.list);
 
-    if (activeList) {
+    if (activeList && context.canAdmin) {
       this.initialState.columns = ['remove', ...this.initialState.columns];
     }
 
@@ -97,13 +99,15 @@ class CollectionDetailUI extends Component {
   }
 
   componentDidMount() {
+    const { canAdmin } = this.context;
+
     if (inStorage('columnOrder')) {
       try {
-        const columns = JSON.parse(getStorage('columnOrder'));
+        const columns = JSON.parse(getStorage('columnOrder')).filter(o => config.columns.includes(o));
 
-        if (!this.props.match.params.list && columns.includes('remove')) {
+        if ((!this.props.match.params.list || !canAdmin) && columns.includes('remove')) {
           columns.splice(columns.indexOf('remove'), 1);
-        } else if (this.props.match.params.list && !columns.includes('remove')) {
+        } else if (this.props.match.params.list && canAdmin && !columns.includes('remove')) {
           columns.unshift('remove');
         }
 
@@ -228,7 +232,9 @@ class CollectionDetailUI extends Component {
   }
 
   deselect = () => {
-    this.setState({ selectedPageIdx: null });
+    if (this.state.selectedPageIdx !== null) {
+      this.setState({ selectedPageIdx: null });
+    }
   }
 
   selectAll = (evt) => {
@@ -391,54 +397,67 @@ class CollectionDetailUI extends Component {
 
     const columnDefs = {
       browser: {
-        width: 150,
+        cellRenderer: BrowserRenderer,
+        columnData: { browsers },
         dataKey: 'browser',
         key: 'browser',
-        columnData: { browsers },
-        cellRenderer: BrowserRenderer,
+        width: 150
+      },
+      rowIndex: {
+        cellRenderer: RowIndexRenderer,
+        columnData: {
+          activeList,
+          objects: activeList ? list.get('bookmarks') : this.props.orderedIds
+        },
+        dataKey: 'id',
+        disableSort: true,
+        key: 'rowIndex',
+        width: 60
       },
       remove: {
-        width: 40,
-        dataKey: 'remove',
-        key: 'remove',
-        style: { textAlign: 'center' },
+        cellRenderer: RemoveRenderer,
         columnData: {
           listId: activeListId,
           removeCallback: this.props.removeBookmark
         },
-        cellRenderer: RemoveRenderer
+        dataKey: 'remove',
+        key: 'remove',
+        width: 55
       },
       session: {
+        cellRenderer: BasicRenderer,
         dataKey: 'rec',
         key: 'session',
         width: 100
       },
       timestamp: {
-        width: 200,
+        cellRenderer: TimestampRenderer,
         dataKey: 'timestamp',
         key: 'timestamp',
-        cellRenderer: TimestampRenderer
+        width: 200
       },
       title: {
+        cellRenderer: TitleRenderer,
         className: 'page-title',
         dataKey: 'title',
         flexGrow: 1,
         key: 'title',
         label: objectLabel,
-        width: 200,
+        width: 200
       },
       url: {
-        width: 200,
-        dataKey: 'url',
-        key: 'url',
-        flexGrow: 1,
+        cellRenderer: LinkRenderer,
         columnData: {
           collection,
           listId: activeListId
         },
-        cellRenderer: LinkRenderer
+        dataKey: 'url',
+        flexGrow: 1,
+        key: 'url',
+        width: 200
       }
     };
+
 
     return (
       <div className={classNames('wr-coll-detail', { 'with-list': activeList })}>

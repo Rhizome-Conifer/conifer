@@ -9,7 +9,8 @@ import { clear, multiSelect, selectBookmark, selectPage } from 'redux/modules/in
 import { load as loadList, removeBookmark, bookmarkSort } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
-import { getQueryPages, getOrderedPages, pageSearchResults } from 'redux/selectors';
+import { getQueryPages, getOrderedPages, pageSearchResults,
+         timestampOrderedIds } from 'redux/selectors';
 
 import CollectionDetailUI from 'components/collection/CollectionDetailUI';
 
@@ -116,6 +117,7 @@ const mapStateToProps = (outerState) => {
     browsers: app.get('remoteBrowsers'),
     loaded: reduxAsyncConnect.loaded,
     pages,
+    orderedIds: timestampOrderedIds(app),
     publicIndex: app.getIn(['collection', 'public_index']),
     list: app.get('list')
   };

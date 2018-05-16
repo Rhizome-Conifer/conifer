@@ -6,6 +6,11 @@ import { buildDate } from 'helpers/utils';
 import { Collection } from 'components/icons';
 
 
+export function PageIndex({ rowIndex }) {
+  return <div className="row-index">{rowIndex + 1}</div>;
+}
+
+
 export function BookmarkRenderer({ cellData, rowData }) {
   return (
     <div className="bookmark-title" title={buildDate(rowData.get('timestamp'))}>
@@ -14,6 +19,7 @@ export function BookmarkRenderer({ cellData, rowData }) {
     </div>
   );
 }
+
 
 export function headerRenderer({ dataKey, label, sortBy, sortDirection, columnData: { count, activeBookmark } }) {
   return (

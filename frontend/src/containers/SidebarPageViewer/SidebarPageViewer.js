@@ -4,7 +4,7 @@ import { createSearchAction } from 'redux-search';
 
 import { clear, selectPage } from 'redux/modules/inspector';
 import { getActivePageIdx, getOrderedPages,
-         tsOrderedPageSearchResults } from 'redux/selectors';
+         timestampOrderedIds, tsOrderedPageSearchResults } from 'redux/selectors';
 
 import { SidebarPageViewerUI } from 'components/controls';
 
@@ -18,6 +18,7 @@ const mapStateToProps = (outerState) => {
     activePage: getActivePageIdx(outerState),
     pages: isIndexing ? getOrderedPages(app) : pageFeed,
     collection: app.get('collection'),
+    orderedIds: timestampOrderedIds(app),
     searchText
   };
 };

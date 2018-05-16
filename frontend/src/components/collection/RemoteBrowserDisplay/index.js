@@ -5,6 +5,10 @@ import { capitalize } from 'helpers/utils';
 
 
 function RemoteBrowserDisplay({ browser }) {
+  if (!browser) {
+    return null;
+  }
+
   const browserName = capitalize(browser.get('name'));
   const browserVrs = browser.get('version');
   return (

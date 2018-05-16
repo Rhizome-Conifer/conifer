@@ -65,6 +65,11 @@
         //     bottom: 0;
         //     background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
         // }
+
+        .row-index-container {
+            align-self: flex-start;
+            margin-top: .6rem;
+        }
     }
 
     .ReactVirtualized__Table__Grid {
