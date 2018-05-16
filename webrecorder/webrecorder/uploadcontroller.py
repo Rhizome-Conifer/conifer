@@ -31,13 +31,17 @@ class UploadController(BaseController):
             stream = request.environ['wsgi.input']
             user = self.access.session_user
 
-            Stats(self.redis).incr_upload(user)
-
-            return self.uploader.upload_file(user,
+            res = self.uploader.upload_file(user,
                                     stream,
                                     expected_size,
                                     filename,
                                     force_coll_name)
+
+            if 'error' in res:
+                return self._raise_error(400, res['error'])
+
+            Stats(self.redis).incr_upload(user)
+            return res
 
         @self.app.get('/_upload/<upload_id>')
         def get_upload_status(upload_id):

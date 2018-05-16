@@ -183,6 +183,15 @@ class TestUpload(FullStackTests):
         TestUpload.updated_at_0 = RedisUniqueComponent.to_iso_date(metadata[0]['updated_at'])
         TestUpload.updated_at_1 = RedisUniqueComponent.to_iso_date(metadata[1]['updated_at'])
 
+    def test_upload_error_out_of_space(self):
+        max_size = self.redis.hget('u:test:info', 'max_size')
+        self.redis.hset('u:test:info', 'max_size', '5')
+
+        res = self.testapp.put('/_upload?filename=example.warc.gz', params=self.warc.getvalue(), status=400)
+
+        assert res.json == {'error': 'out_of_space'}
+        self.redis.hset('u:test:info', 'max_size', max_size)
+
     def test_logged_in_upload_coll(self):
         res = self.testapp.put('/_upload?filename=example.warc.gz', params=self.warc.getvalue())
         res.charset = 'utf-8'

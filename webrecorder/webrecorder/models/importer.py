@@ -103,7 +103,7 @@ class BaseImporter(ImportStatusChecker):
         if not rec_infos:
             print('NO ARCHIVES!')
             #stream.close()
-            return {'error_message': 'No Archive Data Found'}
+            return {'error': 'no_archive_data'}
 
         with redis_pipeline(self.redis) as pi:
             pi.hset(upload_key, 'coll', first_coll.name)
@@ -441,7 +441,7 @@ class BaseImporter(ImportStatusChecker):
             if parts[0] == 'json-metadata':
                 warcinfo['json-metadata'] = json.loads(parts[1])
                 valid = True
-            else:
+            elif len(parts) == 2:
                 warcinfo[parts[0]] = parts[1].strip()
 
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
@@ -490,15 +490,15 @@ class UploadImporter(BaseImporter):
         logger.debug('User Size Rem: ' + str(size_rem))
 
         if size_rem < expected_size:
-            return {'error_message': 'Sorry, not enough space to upload this file'}
+            return {'error': 'out_of_space'}
 
         if force_coll_name and not user.has_collection(force_coll_name):
             #if is_anon:
             #    user.create_collection(force_coll, 'Temporary Collection')
 
             #else:
-            status = 'Collection {0} not found'.format(force_coll_name)
-            return {'error_message': status}
+            #status = 'Collection {0} not found'.format(force_coll_name)
+            return {'error': 'coll_not_found'}
 
         temp_file = SpooledTemporaryFile(max_size=BLOCK_SIZE)
 
@@ -513,7 +513,7 @@ class UploadImporter(BaseImporter):
 
         total_size = temp_file.tell()
         if total_size != expected_size:
-            return {'error_message': 'size mismatch: expected {0}, got {1}'.format(expected_size, total_size)}
+            return {'error': 'size mismatch: expected {0}, got {1}'.format(expected_size, total_size)}
 
         upload_id, upload_key = self._init_upload_status(user, total_size, 1, filename=filename)
 
@@ -624,7 +624,7 @@ class InplaceImporter(BaseImporter):
                 res = self.handle_upload(fh, upload_id, upload_key, infos, filename,
                                          user, False, size)
 
-                assert('error_message' not in res)
+                assert('error' not in res)
             except Exception as e:
                 traceback.print_exc()
                 print('ERROR PARSING: ' + filename)
