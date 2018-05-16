@@ -188,7 +188,7 @@ class CollectionHeaderUI extends Component {
                   }
                 </div>
                 {
-                  menu
+                  canAdmin && menu
                 }
               </div> :
               <div className="overview" key="collOverview">
