@@ -52,7 +52,8 @@ export function LinkRenderer({ cellData, rowData, columnData: { collection, list
 
 export function RemoveRenderer({ rowData, columnData: { listId, removeCallback } }) {
   const removeClick = () => removeCallback(listId, rowData.get('id'));
-  return <RemoveWidget callback={removeClick} withConfirmation={false} />;
+  // withConfirmation={false}
+  return <RemoveWidget callback={removeClick} />;
 }
 
 

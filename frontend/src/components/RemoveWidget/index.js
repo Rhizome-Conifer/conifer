@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Overlay, Tooltip } from 'react-bootstrap';
+import { Overlay as BSOverlay, Tooltip } from 'react-bootstrap';
 
+import Overlay from 'components/Overlay';
 import OutsideClick from 'components/OutsideClick';
 import { TrashIcon } from 'components/icons';
 
@@ -71,9 +72,12 @@ class RemoveWidget extends Component {
             { children || <TrashIcon />}
           </button>
         </OutsideClick>
-        {/* todo: add portal option for tooltip */}
-        <Overlay container={this} placement="bottom" target={this.target} show={this.state.confirmRemove}>
+        {/*
+        <BSOverlay container={this} placement="bottom" target={this.target} show={this.state.confirmRemove}>
           <Tooltip placement="bottom" id="confirm-remove">{ message }</Tooltip>
+        </BSOverlay>*/}
+        <Overlay target={() => this.target} show={this.state.confirmRemove}>
+          <Tooltip placement="bottom" className={classNames({ in: this.state.confirmRemove })} id="confirm-remove">{ message }</Tooltip>
         </Overlay>
       </div>
     );

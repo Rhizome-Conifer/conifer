@@ -32,6 +32,15 @@ a {
   flex-direction: column;
 }
 
+#portal {
+
+}
+
+.wr-overlay {
+  position: absolute;
+  z-index: 3000;
+}
+
 .alert {
   margin-top: 1.5rem;
 }
