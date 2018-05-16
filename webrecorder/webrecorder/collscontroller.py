@@ -125,7 +125,9 @@ class CollsController(BaseController):
         def get_page_bookmarks(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            return {'page_bookmarks': collection.get_page_bookmarks()}
+            rec = request.query.get('rec')
+
+            return {'page_bookmarks': collection.get_page_bookmarks(rec)}
 
         # Create Collection
         @self.app.get('/_create')

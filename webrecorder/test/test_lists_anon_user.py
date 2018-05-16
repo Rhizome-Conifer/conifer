@@ -437,6 +437,16 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert res.json == {'page_bookmarks': {self.ID_1: {'111': '1003', '101': '1002'}}}
 
+        # filter by rec
+        res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}&rec=rec'))
+
+        assert res.json == {'page_bookmarks': {self.ID_1: {'111': '1003', '101': '1002'}}}
+
+        # filter by non-existant rec
+        res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}&rec=rec-none'))
+
+        assert res.json == {'page_bookmarks': {}}
+
     def test_coll_info_with_lists(self):
         res = self.testapp.get(self._format('/api/v1/collection/temp?user={user}'))
 
@@ -490,6 +500,39 @@ class TestListsAnonUserAPI(FullStackTests):
             assert 'lists' not in coll
             assert 'recordings' not in coll
 
+    # Delete Recording
+    # ========================================================================
+    def test_delete_rec(self):
+        res = self.testapp.delete('/api/v1/recording/rec?user={user}&coll=temp'.format(user=self.anon_user))
+
+        assert res.json == {'deleted_id': 'rec'}
+
+        # list still exists
+        res = self.testapp.get(self._format('/api/v1/list/1002?user={user}&coll=temp'))
+
+        assert res.json['list']
+
+        # no bookmarks for deleted page
+        res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}'))
+
+        assert res.json == {'page_bookmarks': {}}
+
+        res = self.testapp.get(self._format('/api/v1/collection/temp?user={user}'))
+
+        # no pages
+        assert len(res.json['collection']['pages']) == 0
+
+        lists = res.json['collection']['lists']
+
+        assert len(lists) == 2
+
+        # one bookmark less, (bookmark tied to page is removed)
+        assert lists[0]['id'] == '1002'
+        assert lists[0]['total_bookmarks'] == 3
+
+
+        assert lists[1]['id'] == '1003'
+        assert lists[1]['total_bookmarks'] == 5
 
     # Delete Collection
     # ========================================================================

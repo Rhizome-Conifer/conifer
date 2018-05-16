@@ -183,8 +183,11 @@ class BookmarkList(RedisUniqueComponent):
         page_data_list = self.get_owner().get_pages_for_list(page_ids)
 
         for bookmark, page in zip(page_bookmarks, page_data_list):
-            bookmark['page'] = json.loads(page)
-            bookmark['page']['id'] = bookmark['page_id']
+            if page:
+                bookmark['page'] = json.loads(page)
+                bookmark['page']['id'] = bookmark['page_id']
+            else:
+                bookmark.pop('page_id', '')
 
         return bookmarks
 
