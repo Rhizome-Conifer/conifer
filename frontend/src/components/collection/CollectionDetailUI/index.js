@@ -378,8 +378,7 @@ class CollectionDetailUI extends Component {
     if (collection.get('error') || pageIndexAccess || listIndexAccess) {
       return (
         <HttpStatus>
-          <h2>Error</h2>
-          <p>{collection.getIn(['error', 'error_message'])}</p>
+          {collection.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
     }

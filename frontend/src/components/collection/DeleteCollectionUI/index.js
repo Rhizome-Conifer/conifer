@@ -77,12 +77,13 @@ class DeleteCollectionUI extends Component {
           <FormGroup validationState={this.validateConfirmDelete()}>
             <ControlLabel>Type the collection title to confirm:</ControlLabel>
             <FormControl
+              autoFocus
               id="confirm-delete"
-              type="text"
               name="confirmDelete"
+              onChange={this.handleChange}
               placeholder={collection.get('title')}
-              value={this.state.confirmDelete}
-              onChange={this.handleChange} />
+              type="text"
+              value={this.state.confirmDelete} />
           </FormGroup>
         </Modal>
       </React.Fragment>

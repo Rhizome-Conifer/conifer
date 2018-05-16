@@ -87,7 +87,7 @@ const initialData = [
   },
   {
     promise: ({ store: { dispatch, getState } }) => {
-      if(!isRBLoaded(getState())) {
+      if (!isRBLoaded(getState())) {
         return dispatch(loadRB());
       }
 

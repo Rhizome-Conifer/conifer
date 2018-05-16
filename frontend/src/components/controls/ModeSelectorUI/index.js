@@ -97,8 +97,9 @@ class ModeSelectorUI extends PureComponent {
   }
 
   close = () => {
-    if(this.state.open)
+    if (this.state.open) {
       this.setState({ open: false });
+    }
   }
 
   toggle = () => {

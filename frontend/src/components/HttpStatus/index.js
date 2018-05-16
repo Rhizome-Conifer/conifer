@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { Panel } from 'react-bootstrap';
 
 import SetStatus from 'components/SetStatus';
 
@@ -19,7 +20,12 @@ class HttpStatus extends PureComponent {
 
     return (
       <SetStatus code={status}>
-        { children || <p>Oops, Error { status }</p>}
+        <Panel bsStyle="danger" className="wr-error-notice">
+          <Panel.Heading>There's been an error</Panel.Heading>
+          <Panel.Body>
+            { children || 'No such page or content is not accessible.'}
+          </Panel.Body>
+        </Panel>
       </SetStatus>
     );
   }

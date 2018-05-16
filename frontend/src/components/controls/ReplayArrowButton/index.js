@@ -15,7 +15,7 @@ class ReplayArrowButton extends Component {
   };
 
   shouldComponentUpdate(nextProps) {
-    if(nextProps.page === this.props.page) {
+    if (nextProps.page === this.props.page) {
       return false;
     }
 
@@ -26,8 +26,9 @@ class ReplayArrowButton extends Component {
     const { params, page } = this.props;
     const { user, coll } = params;
 
-    if(page === null)
+    if (page === null) {
       return;
+    }
 
     this.context.router.history.push(`/${user}/${coll}/${page.get('timestamp')}/${page.get('url')}`);
   }

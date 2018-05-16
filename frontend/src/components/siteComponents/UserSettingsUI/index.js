@@ -51,7 +51,7 @@ class UserSettingsUI extends Component {
     evt.preventDefault();
     const { currPassword, password, password2 } = this.state;
 
-    if(!password || !password2) {
+    if (!password || !password2) {
       this.setState({ missingPw: true });
     }
 
@@ -62,10 +62,10 @@ class UserSettingsUI extends Component {
   validatePassword = () => {
     const { password, password2, missingPw } = this.state;
 
-    if(password && !passwordPassRegex(password))
+    if (password && !passwordPassRegex(password))
       return 'warning';
 
-    if((password && password2 && password !== password2) || missingPw)
+    if ((password && password2 && password !== password2) || missingPw)
       return 'error';
 
     return null;

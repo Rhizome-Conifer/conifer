@@ -79,8 +79,7 @@ class CollectionListUI extends Component {
     if (collections.get('error')) {
       return (
         <HttpStatus>
-          <h2>Error</h2>
-          <p>{collections.getIn(['error', 'error_message'])}</p>
+          {collections.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
     }

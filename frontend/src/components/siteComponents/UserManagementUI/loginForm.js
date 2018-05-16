@@ -43,14 +43,14 @@ class LoginForm extends Component {
 
   validateUsername = () => {
     const pattern = userRegex;
-    if(typeof this.state.username !== 'undefined')
+    if (typeof this.state.username !== 'undefined')
       return this.state.username.match(pattern) === this.state.username ? null : 'warning';
     return null;
   }
 
   handleChange = (evt) => {
-    if(evt.target.type === 'checkbox') {
-      if(evt.target.name in this.state)
+    if (evt.target.type === 'checkbox') {
+      if (evt.target.name in this.state)
         this.setState({ [evt.target.name]: !this.state[evt.target.name] });
       else
         this.setState({ [evt.target.name]: true });

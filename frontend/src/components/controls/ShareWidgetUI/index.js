@@ -44,7 +44,7 @@ class ShareWidgetUI extends Component {
   }
 
   componentDidMount() {
-    if(!this.props.isPublic) {
+    if (!this.props.isPublic) {
       this.setState({
         sizeSet: true,
         widgetHeight: this.shareables.getBoundingClientRect().height
@@ -53,14 +53,14 @@ class ShareWidgetUI extends Component {
   }
 
   componentWillReceiveProps(nextProps, nextState) {
-    if(nextProps.isPublic && nextProps.collection !== this.props.collection) {
+    if (nextProps.isPublic && nextProps.collection !== this.props.collection) {
       this.thirdPartyJS();
       this.buildSocialWidgets();
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(!prevState.open && this.state.open) {
+    if (!prevState.open && this.state.open) {
       this.thirdPartyJS();
       this.buildSocialWidgets();
     }
@@ -105,10 +105,10 @@ class ShareWidgetUI extends Component {
     const { shareUrl } = this.props;
 
     // clear previous widget
-    if(this.wrTW.childNodes.length)
+    if (this.wrTW.childNodes.length)
       this.wrTW.removeChild(this.wrTW.childNodes[0]);
 
-    if(typeof window.twttr !== 'undefined') {
+    if (typeof window.twttr !== 'undefined') {
       window.twttr.ready(() =>
         window.twttr.widgets.createShareButton(
           shareUrl,
@@ -122,12 +122,12 @@ class ShareWidgetUI extends Component {
     }
 
     // fb sdk loaded?
-    if(typeof window.FB === 'undefined') {
+    if (typeof window.FB === 'undefined') {
       window.fbAsyncInit = () => {
         window.FB.init({ xfbml: true, version: 'v2.8' });
         window.fbInitialized = true;
       };
-    } else if(!window.fbInitialized) {
+    } else if (!window.fbInitialized) {
       window.FB.init({ xfbml: true, version: 'v2.8' });
       window.fbInitialized = true;
     } else {
@@ -136,7 +136,7 @@ class ShareWidgetUI extends Component {
   }
 
   close = () => {
-    if(this.state.open)
+    if (this.state.open)
       this.setState({ open: false });
   }
 

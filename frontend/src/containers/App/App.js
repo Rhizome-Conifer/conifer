@@ -44,7 +44,7 @@ export class App extends Component { // eslint-disable-line
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = { error: null };
   }
 
   getChildContext() {
@@ -76,8 +76,15 @@ export class App extends Component { // eslint-disable-line
 
   componentDidUpdate(prevProps) {
     // restore scroll postion
-    if (window && this.props.location !== prevProps.location) {
-      window.scrollTo(0, 0);
+    if (this.props.location !== prevProps.location) {
+      if (window) {
+        window.scrollTo(0, 0);
+      }
+
+      // clear error state on navigation
+      if (this.state.error) {
+        this.setState({ error: null, info: null });
+      }
     }
   }
 
@@ -172,7 +179,7 @@ const initalData = [
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();
 
-      if(!isAuthLoaded(state)) {
+      if (!isAuthLoaded(state)) {
         return dispatch(loadAuth()).then(
           (auth) => {
             if (auth.anon && auth.coll_count === 0) return undefined;

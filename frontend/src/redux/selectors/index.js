@@ -90,12 +90,14 @@ export const pageSearchResults = createSelector(
 export const getActiveCollection = createSelector(
   [getUserCollections, selectedCollection],
   (collections, activeCollection) => {
-    if(!activeCollection)
+    if (!activeCollection) {
       return { title: null, id: null };
+    }
 
     const selected = collections.find(coll => coll.get('id') === activeCollection);
-    if (!selected)
+    if (!selected) {
       return { title: null, id: null };
+    }
 
     const title = selected.get('title');
     const id = selected.get('id');
@@ -107,6 +109,10 @@ export const getActiveCollection = createSelector(
 export const getOrderedRecordings = createSelector(
   [getRecordings],
   (recordings) => {
+    if (!recordings) {
+      return List();
+    }
+
     const sortedRecordings = recordings.sortBy(o => o.get('created_at')).reverse();
     return sortedRecordings;
   }
@@ -298,6 +304,11 @@ export const splitPagesBySession = createSelector(
   [getRecordings, getPages],
   (recordings, pages) => {
     const recs = {};
+
+    if (!recordings) {
+      return recs;
+    }
+
     for(const rec of recordings) {
       const r = rec.get('id');
       recs[r] = pages.filter(p => p.get('rec') === r).toList();

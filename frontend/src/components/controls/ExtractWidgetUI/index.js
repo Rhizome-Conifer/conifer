@@ -36,8 +36,9 @@ class ExtractWidgetUI extends Component {
   }
 
   close = () => {
-    if(this.state.open)
+    if (this.state.open) {
       this.setState({ open: false });
+    }
   }
 
   toggleSources = (evt) => {
