@@ -170,7 +170,7 @@ class ListsUI extends Component {
           pages.get(pageSelection).get('id') :
           pages.get(pageSelection).getIn(['page', 'id'])
       ];
-    } else if(selType === 'object' && pageSelection !== null) {
+    } else if (selType === 'object' && pageSelection !== null) {
       pageIds = pageSelection.map((pg) => {
         return itemType === draggableTypes.PAGE_ITEM ?
           pages.get(pg).get('id') :

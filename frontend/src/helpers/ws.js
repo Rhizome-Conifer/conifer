@@ -40,7 +40,7 @@ class WebSocketHandler {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     let url = `${wsProtocol}${this.host ? this.host : ''}/${this.wsEndpoint}?user=${this.user}&coll=${this.coll}`;
 
-    if(this.rec && this.rec !== '*') {
+    if (this.rec && this.rec !== '*') {
       url += `&rec=${this.rec}`;
     }
 
@@ -204,7 +204,7 @@ class WebSocketHandler {
       } else {
         prefix = `${config.appHost}/${this.user}/${this.coll}/`;
       }
-    } else if(['patch', 'record'].includes(this.currMode)) {
+    } else if (['patch', 'record'].includes(this.currMode)) {
       prefix = `${config.appHost}/${this.user}/${this.coll}/${this.rec}/${this.currMode}/`;
     } else if (['extract', 'extract_only'].includes(this.currMode)) {
       const { archiveId, collId } = this.params;

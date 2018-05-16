@@ -11,7 +11,7 @@ export function addTrailingSlash(url) {
 export function isoToDisplay(dateTime, gmt = false) {
   let displayTime;
   const date = new Date(dateTime);
-  if(gmt) {
+  if (gmt) {
     displayTime = date.toGMTString();
   } else {
     displayTime = date.toLocaleString();
@@ -22,10 +22,10 @@ export function isoToDisplay(dateTime, gmt = false) {
 export function buildDate(dt, gmt) {
   let displayTime;
 
-  if(dt) {
+  if (dt) {
     let DTString = String(dt);
 
-    if(DTString.length < 14)
+    if (DTString.length < 14)
       DTString += '10000101000000'.substr(DTString.length);
 
     const datestr = (DTString.substring(0, 4) + '-' +
@@ -36,7 +36,7 @@ export function buildDate(dt, gmt) {
                      DTString.substring(12, 14) + '-00:00');
 
     const date = new Date(datestr);
-    if(gmt) {
+    if (gmt) {
       displayTime = date.toGMTString();
     } else {
       displayTime = date.toLocaleString();
@@ -75,7 +75,9 @@ export function isSafari() {
 }
 
 export function passwordPassRegex(password) {
-  if(!password) return false;
+  if (!password) {
+    return false;
+  }
 
   const rgx = password.match(config.passwordRegex);
   return rgx && rgx[0] === password;

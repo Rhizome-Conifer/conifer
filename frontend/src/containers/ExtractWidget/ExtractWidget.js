@@ -42,12 +42,13 @@ class ExtractWidget extends Component {
   componentDidMount() {
     const { archives, archivesLoading } = this.props;
 
-    if(!archivesLoading && archives.size === 0)
+    if (!archivesLoading && archives.size === 0) {
       this.props.getArchives();
+    }
   }
 
   componentWillReceiveProps(nextProps) {
-    if(!this.props.active && nextProps.url !== this.props.url) {
+    if (!this.props.active && nextProps.url !== this.props.url) {
       this.parseURL(nextProps.url);
     }
   }
@@ -55,19 +56,20 @@ class ExtractWidget extends Component {
   parseURL = (url) => {
     const { archives, extractable, setExtractWidget } = this.props;
 
-    if(!archives || archives.size === 0)
+    if (!archives || archives.size === 0) {
       return;
+    }
 
     const baseURL = stripProtocol(url);
     const match = archives.findKey(arch => baseURL.length >= arch.get('prefix').length && baseURL.startsWith(arch.get('prefix')));
 
-    if(match) {
+    if (match) {
       const archive = archives.get(match);
 
       let targetUrl = baseURL.replace(archive.get('prefix'), '');
       let targetColl = null;
 
-      if(archive.get('parse_collection')) {
+      if (archive.get('parse_collection')) {
         targetColl = targetUrl.split('/', 1)[0];
         targetUrl = targetUrl.substr(targetColl.length + 1);
       }
@@ -84,7 +86,7 @@ class ExtractWidget extends Component {
         targetUrl,
         timestamp
       });
-    } else if(extractable) {
+    } else if (extractable) {
       // disable widget
       setExtractWidget(null);
     }

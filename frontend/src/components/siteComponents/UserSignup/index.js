@@ -47,31 +47,34 @@ class UserSignup extends Component {
     const { announce_mailer, username, name, full_name,
             email, password, confirmpassword, moveTemp, toColl } = this.state;
 
-    if(!password || !confirmpassword) {
+    if (!password || !confirmpassword) {
       this.setState({ missingPw: true });
     }
 
-    if(username && this.validateUsername() === 'success' &&
+    if (username && this.validateUsername() === 'success' &&
        password && confirmpassword && this.validatePassword() === null && email) {
       // core fields to send to server
       let data = { username, email, password, confirmpassword, moveTemp, toColl };
 
-      if(announce_mailer)
+      if (announce_mailer) {
         data = { ...data, announce_mailer };
+      }
 
-      if(name)
+      if (name) {
         data = { ...data, name };
+      }
 
-      if(full_name)
+      if (full_name) {
         data = { ...data, full_name };
+      }
 
       this.props.cb(data);
     }
   }
 
   handleChange = (evt) => {
-    if(evt.target.type === 'checkbox') {
-      if(evt.target.name in this.state)
+    if (evt.target.type === 'checkbox') {
+      if (evt.target.name in this.state)
         this.setState({ [evt.target.name]: !this.state[evt.target.name] });
       else
         this.setState({ [evt.target.name]: true });
@@ -84,17 +87,20 @@ class UserSignup extends Component {
     const { userCheck, checkedUsername } = this.props;
     const { username } = this.state;
 
-    if(!username) {
+    if (!username) {
       this.setState({ userIsRequired: true });
       return;
     }
 
-    if(!userCheck || (userCheck && checkedUsername !== username))
+    if (!userCheck || (userCheck && checkedUsername !== username)) {
       this.props.checkUser(username.trim());
+    }
   }
 
   userPassRegex = (username) => {
-    if(!username) return false;
+    if (!username) {
+      return false;
+    }
 
     const rgx = username.match(userRegex);
     return rgx && rgx[0] === username;
@@ -104,18 +110,19 @@ class UserSignup extends Component {
     const { available, checkedUsername, userCheck } = this.props;
     const { username, userIsRequired } = this.state;
 
-    if(username && username.length > 1) {
+    if (username && username.length > 1) {
       // check if valid username formatting
-      if(!this.userPassRegex(username))
+      if (!this.userPassRegex(username))
         return 'error';
 
       // check if already exists
-      if(userCheck && username === checkedUsername && !available)
+      if (userCheck && username === checkedUsername && !available)
         return 'error';
 
       return 'success';
-    } else if(userIsRequired)
+    } else if (userIsRequired) {
       return 'error';
+    }
 
     return null;
   }
@@ -127,8 +134,9 @@ class UserSignup extends Component {
   validateEmail = () => {
     const { checkEmail, email } = this.state;
 
-    if(checkEmail && (!email || email.indexOf('@') === -1 || email.match(/\.\w+$/) === null))
+    if (checkEmail && (!email || email.indexOf('@') === -1 || email.match(/\.\w+$/) === null)) {
       return 'error';
+    }
 
     return null;
   }
@@ -136,11 +144,13 @@ class UserSignup extends Component {
   validatePassword = () => {
     const { password, confirmpassword, missingPw } = this.state;
 
-    if(password && !passwordPassRegex(password))
+    if (password && !passwordPassRegex(password)) {
       return 'warning';
+    }
 
-    if((password && confirmpassword && password !== confirmpassword) || missingPw)
+    if ((password && confirmpassword && password !== confirmpassword) || missingPw) {
       return 'error';
+    }
 
     return null;
   }

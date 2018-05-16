@@ -43,8 +43,8 @@ class UserManagementUI extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
-      if(!nextProps.auth.get('loginError')) {
+    if (this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
+      if (!nextProps.auth.get('loginError')) {
         this.closeLogin();
         //this.props.history.push(`/${nextProps.auth.getIn(['user', 'username'])}`);
         this.props.history.push('/');

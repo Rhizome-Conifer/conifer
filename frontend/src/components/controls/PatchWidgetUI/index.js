@@ -30,8 +30,9 @@ class PatchWidgetUI extends Component {
   }
 
   close = () => {
-    if(this.state.open)
+    if (this.state.open) {
       this.setState({ open: false });
+    }
   }
 
   render() {

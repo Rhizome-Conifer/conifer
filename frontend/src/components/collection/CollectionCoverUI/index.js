@@ -43,8 +43,7 @@ class CollectionCoverUI extends Component {
     if (collection.get('error')) {
       return (
         <HttpStatus>
-          <h2>Error</h2>
-          <p>{collection.getIn(['error', 'error_message'])}</p>
+          {collection.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
     }

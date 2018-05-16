@@ -127,6 +127,11 @@ class UploadUI extends PureComponent {
       stateUpdate.progress = 50 + Math.round((50 * data.size) / data.total_size);
     }
 
+    // update ui
+    if (Object.keys(stateUpdate).length) {
+      this.setState(stateUpdate);
+    }
+
     if (data.size >= data.total_size) {
       clearInterval(this.interval);
       this.indexingComplete(data.user, data.coll);

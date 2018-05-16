@@ -33,7 +33,7 @@ class ReplayURLBar extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(nextProps.url !== this.props.url) {
+    if (nextProps.url !== this.props.url) {
       this.setState({ url: nextProps.url });
     }
   }

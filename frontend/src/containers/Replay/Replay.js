@@ -127,8 +127,7 @@ class Replay extends Component {
     if (collection.get('error')) {
       return (
         <HttpStatus>
-          <h2>Error</h2>
-          <p>{collection.getIn(['error', 'error_message'])}</p>
+          {collection.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
     }
@@ -244,7 +243,7 @@ const initialData = [
       const collection = state.app.get('collection');
       const { user, coll } = params;
 
-      if(!isLoaded(state) || collection.get('id') !== coll) {
+      if (!isLoaded(state) || collection.get('id') !== coll) {
         return dispatch(loadColl(user, coll));
       }
 

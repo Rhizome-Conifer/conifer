@@ -15,8 +15,9 @@ const preloadData = [
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();
 
-      if(isAuthLoaded(state) && !isUserLoaded(state))
+      if (isAuthLoaded(state) && !isUserLoaded(state)) {
         return dispatch(loadUser(state.app.getIn(['auth', 'user', 'username'])));
+      }
 
       return undefined;
     }

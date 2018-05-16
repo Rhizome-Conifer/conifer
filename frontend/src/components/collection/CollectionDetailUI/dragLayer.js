@@ -38,7 +38,7 @@ class CustomDragLayer extends Component {
       const selType = typeof pageSelection;
 
       let pageIds = [];
-      if(selType === 'object' && pageSelection !== null) {
+      if (selType === 'object' && pageSelection !== null) {
         pageIds = pageSelection.map(pg => pages.get(pg).get('id'));
       }
 

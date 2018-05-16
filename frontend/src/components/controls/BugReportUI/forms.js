@@ -28,8 +28,8 @@ class ReportBugForm extends Component {
   }
 
   handleChange = (evt) => {
-    if(evt.target.type === 'checkbox') {
-      if(evt.target.name in this.state)
+    if (evt.target.type === 'checkbox') {
+      if (evt.target.name in this.state)
         this.setState({ [evt.target.name]: !this.state[evt.target.name] });
       else
         this.setState({ [evt.target.name]: true });

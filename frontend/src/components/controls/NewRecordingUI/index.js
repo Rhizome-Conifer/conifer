@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
+import { Panel } from 'react-bootstrap';
 
 import config from 'config';
 
@@ -111,15 +112,10 @@ class NewRecordingUI extends Component {
           </div>
         </div>
         <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
-          <div className="panel panel-default">
-            <div className="panel-heading">
-              <span className="glyphicon glyphicon-info-sign" aria-hidden="true" />
-              <strong className="left-buffer">Create a new capture</strong>
-            </div>
-            <div className="panel-body">
-              Ready to add a new capture to your collection <b>{collection.get('title')}</b>
-            </div>
-          </div>
+          <Panel>
+            <Panel.Heading>Create a new capture</Panel.Heading>
+            <Panel.Body>Ready to add a new capture to your collection <b>{collection.get('title')}</b></Panel.Body>
+          </Panel>
         </div>
       </React.Fragment>
     );
