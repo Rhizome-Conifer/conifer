@@ -23,6 +23,6 @@ ADD src $APP/
 
 WORKDIR $APP
 
-RUN npm install --global yarn pm2
+RUN npm install --global yarn
 
 RUN rm -rf node_modules && yarn install && yarn cache clean && rm -rf ~/tmp/*
