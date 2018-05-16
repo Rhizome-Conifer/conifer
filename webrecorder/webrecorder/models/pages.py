@@ -38,7 +38,16 @@ class PagesMixin(object):
         return hashlib.md5(page_attrs).hexdigest()[:10]
 
     def delete_page(self, pid):
+        page_bookmarks_key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
+        page_bookmarks = self.redis.hgetall(page_bookmarks_key)
+
+        for bid, list_id in page_bookmarks.items():
+            blist = self.get_list(list_id)
+            if blist:
+                blist.remove_bookmark(bid)
+
         self.redis.hdel(self.pages_key, pid)
+        self.redis.delete(page_bookmarks_key)
 
     def page_exists(self, pid):
         return self.redis.hexists(self.pages_key, pid)
@@ -67,10 +76,13 @@ class PagesMixin(object):
         return pages
 
     def list_rec_pages(self, recording):
+        return self.list_rec_pages_by_id(recording.my_id)
+
+    def list_rec_pages_by_id(self, rec_id):
         if not self._pages_cache:
             self._pages_cache = self.list_pages()
 
-        return [page for page in self._pages_cache if page.get('rec') == recording.my_id]
+        return [page for page in self._pages_cache if page.get('rec') == rec_id]
 
     def get_pages_for_list(self, id_list):
         if not id_list:
@@ -120,12 +132,18 @@ class PagesMixin(object):
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
         self.redis.hdel(key, bid)
 
-    def get_page_bookmarks(self):
+    def get_page_bookmarks(self, rec_id=None):
         bookmarks = {}
 
-        for key in self.redis.scan_iter(match=self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page='*'),
-                                        count=100):
-            pid = key.split(':')[3]
+        if not rec_id:
+            page_iter = self.redis.scan_iter(match=self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page='*'),
+                                             count=100)
+            page_iter = [(key, key.split(':')[3]) for key in page_iter]
+
+        else:
+            page_iter = [(self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=page['id']), page['id']) for page in self.list_rec_pages_by_id(rec_id)]
+
+        for key, pid in page_iter:
             bookmarks[pid] = self.redis.hgetall(key)
 
         return bookmarks
