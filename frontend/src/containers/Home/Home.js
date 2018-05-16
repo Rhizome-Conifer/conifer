@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 import { connect } from 'react-redux';
 import { Collapse } from 'react-bootstrap';
 
@@ -36,7 +37,10 @@ class Home extends Component {
     const { introVideoOpen } = this.state;
 
     return (
-      <div>
+      <React.Fragment>
+        <Helmet>
+          <title>Homepage</title>
+        </Helmet>
         <div className="row top-buffer main-logo">
           <h1>Webrecorder</h1>
         </div>
@@ -155,7 +159,7 @@ class Home extends Component {
             </div>
           </Collapse>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
 }

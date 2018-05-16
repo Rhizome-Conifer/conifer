@@ -54,6 +54,7 @@
     "node-sass": "^4.3.0",
     "object-assign": "4.1.0",
     "piping": "^1.0.0-rc.4",
+    "pm2": "^2.10.3",
     "postcss-loader": "0.11.1",
     "prop-types": "^15.5.8",
     "raven-for-redux": "^1.3.0",
@@ -100,34 +101,20 @@
   },
   "scripts": {
     "analyze": "NODE_ENV=\"production\" webpack --config ./webpack/prod.config.js --json | webpack-bundle-size-analyzer",
-    "stats": "NODE_ENV=\"production\" webpack --config ./webpack/prod.config.js --json --profile > stats.json",
     "build": "better-npm-run build",
-    "test": "jest --watch --env=jsdom",
-    "dev": "concurrently --kill-others \"npm run watch-client-local\" \"npm run start-dev\"",
     "docker-dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-docker-dev\"",
     "docker-prod": "concurrently --kill-others \"npm run start-docker-prod\"",
-    "watch-client": "better-npm-run watch-client",
-    "watch-client-local": "better-npm-run watch-client-local",
-    "start-dev": "better-npm-run start-dev",
     "start-docker-dev": "better-npm-run start-docker-dev",
-    "start-docker-prod": "better-npm-run start-docker-prod"
+    "start-docker-prod": "better-npm-run start-docker-prod",
+    "stats": "NODE_ENV=\"production\" webpack --config ./webpack/prod.config.js --json --profile > stats.json",
+    "test": "jest --watch --env=jsdom",
+    "watch-client": "better-npm-run watch-client"
   },
   "betterScripts": {
     "build": {
       "command": "webpack --verbose --colors --display-error-details --config webpack/prod.config.js",
       "env": {
         "NODE_ENV": "production"
-      }
-    },
-    "start-dev": {
-      "command": "node ./bin/server.js",
-      "env": {
-        "NODE_PATH": "./src",
-        "NODE_ENV": "development",
-        "FRONTEND_PORT": 8095,
-        "CONTENT_HOST": "localhost:8092",
-        "INTERNAL_HOST": "localhost",
-        "INTERNAL_PORT": 8089
       }
     },
     "start-docker-dev": {
@@ -137,25 +124,14 @@
       }
     },
     "start-docker-prod": {
-      "command": "node ./bin/server.js",
+      "command": "pm2 start ./bin/server.js -i 0 --no-daemon --name 'frontend'",
       "env": {
         "NODE_PATH": "./src"
-      }
-    },
-    "watch-client-local": {
-      "command": "node webpack/webpack-dev-server.js",
-      "env": {
-        "NODE_ENV": "development",
-        "UV_THREADPOOL_SIZE": 100,
-        "NODE_PATH": "./src",
-        "FRONTEND_PORT": 8095,
-        "CONTENT_HOST": "localhost:8092"
       }
     },
     "watch-client": {
       "command": "node webpack/webpack-dev-server.js",
       "env": {
-        "UV_THREADPOOL_SIZE": 100,
         "NODE_PATH": "./src"
       }
     }

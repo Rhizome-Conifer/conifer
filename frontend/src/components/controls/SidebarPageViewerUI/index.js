@@ -16,7 +16,7 @@ import Searchbox from 'components/Searchbox';
 import SidebarHeader from 'components/SidebarHeader';
 import { CatalogIcon, WarcIcon } from 'components/icons';
 
-import { PageRenderer } from './renderers';
+import { PageIndex, PageRenderer } from './renderers';
 import './style.scss';
 
 
@@ -30,6 +30,7 @@ class SidebarPageViewer extends Component {
     collection: PropTypes.object,
     pages: PropTypes.object,
     dispatch: PropTypes.func,
+    orderedIds: PropTypes.object,
     searchPages: PropTypes.func,
     searchText: PropTypes.string,
     setInspector: PropTypes.func,
@@ -95,7 +96,7 @@ class SidebarPageViewer extends Component {
   returnToCollection = () => this.props.showNavigator(true)
 
   render() {
-    const { activePage, collection, pages, searchText } = this.props;
+    const { activePage, collection, orderedIds, pages, searchText } = this.props;
 
     return (
       <div className="page-list">
@@ -145,6 +146,17 @@ class SidebarPageViewer extends Component {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
                           }}
                           scrollToIndex={activePage}>
+                          <Column
+                            label="row index"
+                            dataKey="id"
+                            width={25}
+                            flexShrink={1}
+                            className="row-index-container"
+                            columnData={{
+                              orderedIds
+                            }}
+                            cellRenderer={PageIndex}
+                          />
                           <Column
                             label="collection pages"
                             dataKey="title"

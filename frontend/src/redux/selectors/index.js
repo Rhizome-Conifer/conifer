@@ -22,7 +22,8 @@ const getTimestamp = state => (state.app ? state.app : state).getIn(['controls',
 const getUrl = state => (state.app ? state.app : state).getIn(['controls', 'url']);
 const getUserCollections = state => state.getIn(['user', 'collections']);
 const selectedCollection = state => state.getIn(['user', 'activeCollection']);
-const userSortBy = state => (state.app ? state.app : state).getIn(['collection', 'sortBy']);
+const userSortBy = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'sort']);
+const userSortDir = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'dir']);
 
 
 const sortFn = (a, b, by = null) => {
@@ -67,11 +68,9 @@ export const tsOrderedPageSearchResults = createSelector(
 
 
 export const pageSearchResults = createSelector(
-  [result, getPages, userSortBy, text],
-  (pageIds, pageObjs, sortBy, searchText) => {
+  [result, getPages, userSortBy, userSortDir, text],
+  (pageIds, pageObjs, sort, dir, searchText) => {
     const pages = List(pageIds.map(id => pageObjs.get(id)));
-    const sort = sortBy.get('sort');
-    const dir = sortBy.get('dir');
     const pageFeed = pages.sortBy(o => o.get(sort));
 
     if (dir === 'DESC') {
@@ -122,11 +121,21 @@ export const timestampOrderedPages = createSelector(
 );
 
 
+export const timestampOrderedIds = createSelector(
+  [timestampOrderedPages],
+  (orderdPages) => {
+    return orderdPages.map(v => v.get('id'));
+  }
+);
+
+
 export const getOrderedPages = createSelector(
-  getPages, userSortBy,
-  (pages, sortBy) => {
-    const sort = sortBy.get('sort');
-    const dir = sortBy.get('dir');
+  getPages, userSortBy, userSortDir,
+  (pages, sort, dir) => {
+    if (!pages) {
+      return List();
+    }
+
     const sortedPages = pages.toList().sortBy(o => o.get(sort));
 
     if (dir === 'DESC') {

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 
 import config from 'config';
 
@@ -78,6 +79,9 @@ class NewRecordingUI extends Component {
 
     return (
       <React.Fragment>
+        <Helmet>
+          <title>New Capture</title>
+        </Helmet>
         <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
           <div className="main-bar">
             <form className="form-group-recorder-url start-recording" onSubmit={this.handeSubmit}>
@@ -86,7 +90,7 @@ class NewRecordingUI extends Component {
                   <RemoteBrowserSelect />
                 </div>
 
-                <input type="text" onChange={this.handleChange} className="url-input-recorder form-control" name="url" value={url} autoFocus required />
+                <input type="text" onChange={this.handleChange} className="url-input-recorder form-control" name="url" value={url} style={{ height: '3.3rem' }} autoFocus required />
 
                 <ExtractWidget
                   includeButton
@@ -110,10 +114,10 @@ class NewRecordingUI extends Component {
           <div className="panel panel-default">
             <div className="panel-heading">
               <span className="glyphicon glyphicon-info-sign" aria-hidden="true" />
-              <strong className="left-buffer">Create a new recording</strong>
+              <strong className="left-buffer">Create a new capture</strong>
             </div>
             <div className="panel-body">
-              Ready to add a new recording to your collection <b>{collection.get('title')}</b>
+              Ready to add a new capture to your collection <b>{collection.get('title')}</b>
             </div>
           </div>
         </div>

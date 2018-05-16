@@ -20,14 +20,16 @@ class InlineEditor extends PureComponent {
     initial: PropTypes.string,
     label: PropTypes.string,
     onSave: PropTypes.func,
+    readOnly: PropTypes.bool,
     success: PropTypes.bool,
   };
 
   static defaultProps = {
     blockDisplay: false,
     canBeEmpty: false,
-    label: ''
-  }
+    label: '',
+    readOnly: false
+  };
 
   constructor(props) {
     super(props);
@@ -118,7 +120,7 @@ class InlineEditor extends PureComponent {
 
   render() {
     const { canAdmin } = this.context;
-    const { blockDisplay, error, label } = this.props;
+    const { blockDisplay, error, label, readOnly } = this.props;
 
     return (
       <div className={classNames('wr-inline-editor', { 'block-display': blockDisplay })}>
@@ -152,7 +154,7 @@ class InlineEditor extends PureComponent {
             <div ref={(obj) => { this.childContainer = obj; }} className="child-container">
               {this.props.children}
               {
-                canAdmin &&
+                canAdmin && !readOnly &&
                   <Button className="wr-inline-edit-button" bsSize="xs" onClick={this.toggleEditMode}>edit</Button>
               }
             </div>

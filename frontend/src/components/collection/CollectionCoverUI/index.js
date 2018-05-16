@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import { defaultCollDesc } from 'config';
@@ -54,6 +55,9 @@ class CollectionCoverUI extends Component {
 
     return (
       <div className="coll-cover">
+        <Helmet>
+          <title>{`${collection.get('title')} (Web archive collection by ${collection.get('user')})`}</title>
+        </Helmet>
         <Capstone user={collection.get('user')} />
         <h1>{collection.get('title')}</h1>
         <div className="description">

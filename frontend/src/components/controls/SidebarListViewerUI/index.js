@@ -20,7 +20,7 @@ import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
 import { CatalogIcon, ListIcon } from 'components/icons';
 
-import { BookmarkRenderer } from './renderers';
+import { BookmarkRenderer, PageIndex } from './renderers';
 import './style.scss';
 
 
@@ -195,6 +195,13 @@ class SidebarListViewer extends Component {
                             onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex });
                           }}
                           scrollToIndex={activeBookmark}>
+                          <Column
+                            label="row index"
+                            dataKey="id"
+                            flexShrink={1}
+                            width={25}
+                            className="row-index-container"
+                            cellRenderer={PageIndex} />
                           <Column
                             label="list bookmarks"
                             dataKey="title"

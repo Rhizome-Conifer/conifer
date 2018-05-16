@@ -1,4 +1,5 @@
 import React from 'react';
+import Helmet from 'react-helmet';
 
 import './style.scss';
 
@@ -6,6 +7,9 @@ import './style.scss';
 function HowTo() {
   return (
     <div className="row">
+      <Helmet>
+        <title>User Guide</title>
+      </Helmet>
       <div className="col-xs-9 col-xs-push-1 col-sm-6 col-sm-push-3">
         <h3>Quick Start</h3>
         <div className="documentation">

@@ -1,4 +1,5 @@
 import React from 'react';
+import Helmet from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import './style.scss';
@@ -7,6 +8,9 @@ import './style.scss';
 function FAQ() {
   return (
     <div className="container faq">
+      <Helmet>
+        <title>About</title>
+      </Helmet>
       <div className="row heading">
         <aside className="col-sm-3 hidden-xs">
           <img src={require('shared/images/logo.png')} alt="Webrecorder logo" />

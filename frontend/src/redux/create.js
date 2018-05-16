@@ -13,7 +13,7 @@ import createMiddleware from './middleware/clientMiddleware';
 export default function createStore(client, data) {
   const middleware = [createMiddleware(client)];
 
-  if (config.ravenConfig) {
+  if (config.ravenConfig && !__SERVER__) {
     middleware.push(createRavenMiddleware(Raven));
   }
 

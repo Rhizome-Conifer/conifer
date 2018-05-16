@@ -8,11 +8,9 @@ export function CheckboxField(props) {
   const { cb, label, name } = props;
 
   return (
-    <div>
-      <Checkbox name={name} onChange={cb}>
-        { label }
-      </Checkbox>
-    </div>
+    <Checkbox name={name} onChange={cb}>
+      { label }
+    </Checkbox>
   );
 }
 

@@ -42,6 +42,7 @@ export default function collection(state = initialState, action = {}) {
   switch (action.type) {
     case COLL_LOAD:
       return state.set('loading', true);
+    case COLL_EDIT_SUCCESS:
     case COLL_LOAD_SUCCESS: {
       const {
         collection: {
@@ -51,6 +52,7 @@ export default function collection(state = initialState, action = {}) {
           featured_list,
           id,
           lists,
+          owner,
           pages,
           public_index,
           recordings,
@@ -58,8 +60,7 @@ export default function collection(state = initialState, action = {}) {
           timespan,
           title,
           updated_at
-        },
-        user
+        }
       } = action.result;
 
       const pgs = {};
@@ -67,11 +68,20 @@ export default function collection(state = initialState, action = {}) {
         pages.forEach((pg) => { pgs[pg.id] = pg; });
       }
 
+      let editState = {};
+      if (action.type === COLL_EDIT_SUCCESS) {
+        editState = {
+          edited: true,
+          editError: null
+        };
+      }
+
       return state.merge({
         loading: false,
         loaded: true,
         accessed: action.accessed,
         error: null,
+        ...editState,
 
         pages: pgs,
         created_at,
@@ -87,7 +97,7 @@ export default function collection(state = initialState, action = {}) {
         timespan,
         title,
         updated_at,
-        user,
+        user: owner,
       });
     }
     case COLL_LOAD_FAIL:
@@ -120,12 +130,6 @@ export default function collection(state = initialState, action = {}) {
           return 0;
         })
       );
-    case COLL_EDIT_SUCCESS:
-      return state.merge({
-        edited: true,
-        editError: null,
-        ...action.result.collection
-      });
     case COLL_EDIT_FAIL:
       return state.merge({
         editError: action.error.error

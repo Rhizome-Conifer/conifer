@@ -10,6 +10,11 @@ import TimeFormat from 'components/TimeFormat';
 import { capitalize, remoteBrowserMod } from 'helpers/utils';
 
 
+export function BasicRenderer({ cellData }) {
+  return <span>{cellData}</span>;
+}
+
+
 export function BrowserRenderer({ cellData, columnData: { browsers } }) {
   if (!__PLAYER__ && typeof cellData !== 'undefined') {
     const browserObj = browsers.getIn(['browsers', cellData]);
@@ -29,6 +34,7 @@ export function BrowserRenderer({ cellData, columnData: { browsers } }) {
   }
   return null;
 }
+
 
 export function LinkRenderer({ cellData, rowData, columnData: { collection, listId } }) {
   const linkTo = listId ?
@@ -50,8 +56,18 @@ export function RemoveRenderer({ rowData, columnData: { listId, removeCallback }
 }
 
 
+export function RowIndexRenderer({ cellData, rowIndex, columnData: { activeList, objects } }) {
+  return <div className="row-index">{activeList ? rowIndex + 1 : objects.indexOf(cellData) + 1}</div>;
+}
+
+
 export function TimestampRenderer({ cellData }) {
   return <TimeFormat dt={cellData} />;
+}
+
+
+export function TitleRenderer({ cellData }) {
+  return <span>{ cellData || untitledEntry }</span>;
 }
 
 
@@ -67,6 +83,7 @@ const headerSource = {
     return props.dataKey === monitor.getItem().key;
   }
 };
+
 
 const headerDropSource = {
   hover(props, monitor) {
@@ -90,18 +107,27 @@ const headerDropSource = {
   }
 };
 
+
 function collect(connect, monitor) {
   return {
     connectDragSource: connect.dragSource(),
+    connectDragPreview: connect.dragPreview(),
     isDragging: monitor.isDragging()
   };
 }
 
+
 function DnDSortableHeaderBuilder(props) {
-  const { isDragging, connectDragSource, connectDropTarget, ...passThrough } = props;
+  const { isDragging, connectDragPreview, connectDragSource, connectDropTarget, ...passThrough } = props;
   const dhr = defaultHeaderRenderer(passThrough);
-  return connectDragSource(connectDropTarget(<div style={{ opacity: isDragging ? 0 : 1 }}>{dhr}</div>));
+  return connectDragPreview(
+    <div style={{ opacity: isDragging ? 0 : 1 }}>
+      {connectDragSource(connectDropTarget(<div className="header-handle" />))}
+      {dhr}
+    </div>
+  );
 }
+
 
 export const DnDSortableHeader = DropTarget(
   draggableTypes.TH,

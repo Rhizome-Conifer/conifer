@@ -1,22 +1,40 @@
-.tos-sub {
-    list-style-type: lower-alpha;
-}
+@import 'src/vars';
 
-ol.tos {
+.terms-policies {
 
-    padding-left: 1.6rem;
-}
+    h1 {
+        font-family: $serif;
+        font-size: 5.1rem;
+    }
 
-.tos li {
-    margin-top: 1.8rem;
-}
+    h1, h3 {
+        color: #434a54;
+    }
 
-.privacy li {
-    list-style-type: none;
-}
+    a[name="tos"], a[name="privacy"], a[name="copyright"] {
+        text-decoration: none;
+    }
 
-.section-updated {
-    margin-top: 2rem;
-    margin-bottom: 4rem;
-    font-style: italic;
+    .tos-sub {
+        list-style-type: lower-alpha;
+    }
+
+    ol.tos {
+
+        padding-left: 1.6rem;
+    }
+
+    .tos li {
+        margin-top: 1.8rem;
+    }
+
+    .privacy li {
+        list-style-type: none;
+    }
+
+    .section-updated {
+        margin-top: 2rem;
+        margin-bottom: 4rem;
+        font-style: italic;
+    }
 }

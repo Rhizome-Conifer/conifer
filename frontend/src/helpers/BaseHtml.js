@@ -15,7 +15,6 @@ export default class BaseHtml extends Component {
 
   render() {
     const { assets, component, store } = this.props;
-    const content = component ? ReactDOM.renderToString(component) : '';
     const head = Helmet.rewind();
 
     return (
@@ -39,7 +38,7 @@ export default class BaseHtml extends Component {
           ))}
         </head>
         <body>
-          <div id="app" dangerouslySetInnerHTML={{ __html: content }} />
+          <div id="app">{component}</div>
           <script
             dangerouslySetInnerHTML={{ __html: `window.__data=${serialize(store.getState())};` }}
             charSet="UTF-8"

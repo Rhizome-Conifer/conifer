@@ -24,7 +24,7 @@ class TimeFormat extends PureComponent {
     this.setState({ displayTime: this.renderTime() });
   }
 
-  componentWillReceiveProps() {
+  componentDidUpdate() {
     this.setState({ displayTime: this.renderTime() });
   }
 

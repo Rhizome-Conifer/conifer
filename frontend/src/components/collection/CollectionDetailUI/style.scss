@@ -93,7 +93,6 @@
             font-size: 1rem;
             font-weight: 500;
             letter-spacing: 0.5pt;
-            cursor: move;
         }
     }
 
@@ -155,19 +154,18 @@
         }
 
         .ReactVirtualized__Table__headerRow {
-          font-size: 1rem;
-          font-weight: 500;
-          letter-spacing: 0.5pt;
-          cursor: move;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.5pt;
         }
 
         .ReactVirtualized__Table__headerColumn {
             height: 100%;
-            cursor: move;
 
             &:first-of-type {
                 margin-left: 0;
             }
+
             &:last-of-type {
                 margin-right: 0;
             }
@@ -176,9 +174,20 @@
                 display: flex;
                 align-items: center;
                 background: $tableHeaderBg;
-                padding: 0 .5rem;
+                padding: 0 .5rem 0 0;
                 width: 100%;
                 height: 100%;
+            }
+
+            .header-handle {
+                width: 1rem;
+                height: 100%;
+                margin-right: .75rem;
+                cursor: move;
+                background-image: url('../../../shared/images/Table-Col-Header-Handle.svg');
+                background-repeat: no-repeat;
+                flex-shrink: 0;
+                background-position: .3rem .6rem;
             }
         }
 
@@ -189,7 +198,6 @@
             cursor: context-menu;
             font-size: 1.2rem;
             position: relative;
-            padding-left: .75rem;
             background: #FFF;
 
             &:before {
@@ -207,6 +215,28 @@
 
             &.odd {
                 background-color: $table-zebra;
+            }
+
+            .ReactVirtualized__Table__rowColumn {
+                margin-left: 0;
+
+                &:first-of-type {
+                    & > * {
+                        padding: 0 1.25rem;
+                    }
+                }
+
+                .wr-remove-widget {
+                    text-align: left;
+
+                    button {
+                        margin: 0;
+                    }
+                }
+
+                .row-index {
+                    text-align: center;
+                }
             }
 
             .page-title {
