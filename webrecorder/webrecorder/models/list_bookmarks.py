@@ -13,6 +13,8 @@ class BookmarkList(RedisUniqueComponent):
     BOOK_ORDER_KEY = 'l:{blist}:o'
     BOOK_CONTENT_KEY = 'l:{blist}:b'
 
+    BOOKMARK_COUNTER = 'l:{blist}:c'
+
     def __init__(self, **kwargs):
         super(BookmarkList, self).__init__(**kwargs)
         self.bookmark_order = RedisOrderedList(self.BOOK_ORDER_KEY, self)
@@ -30,7 +32,6 @@ class BookmarkList(RedisUniqueComponent):
                      'owner': self.owner.my_id,
                     }
 
-        self.name = str(list_id)
         self._init_new()
 
         return list_id
@@ -131,9 +132,12 @@ class BookmarkList(RedisUniqueComponent):
     def reorder_bookmarks(self, new_order):
         return self.bookmark_order.reorder_objects(new_order)
 
-    def serialize(self, include_bookmarks='all', convert_date=True):
+    def serialize(self, include_bookmarks='all', convert_date=True, check_slug=None):
         data = super(BookmarkList, self).serialize(convert_date=convert_date)
         bookmarks = None
+
+        if check_slug:
+            data['slug_matched'] = (check_slug == data.get('slug'))
 
         # return all bookmarks with pages
         if include_bookmarks == 'all':
@@ -195,15 +199,19 @@ class BookmarkList(RedisUniqueComponent):
         self.access.assert_can_write_coll(self.get_owner())
 
         props = props or {}
-        AVAIL_PROPS = ['title', 'desc', 'public']
 
-        for prop in AVAIL_PROPS:
-            if prop in props:
-                value = props[prop]
-                if prop == 'public':
-                    self.set_public(value)
-                else:
-                    self.set_prop(prop, value)
+        title = props.get('title')
+        if title is not None:
+            self.get_owner().update_list_slug(title, self)
+            self.set_prop('title', title)
+
+        public = props.get('public')
+        if public is not None:
+            self.set_public(public)
+
+        desc = props.get('desc')
+        if desc is not None:
+            self.set_prop('desc', desc)
 
     def delete_me(self):
         self.access.assert_can_write_coll(self.get_owner())
@@ -211,5 +219,7 @@ class BookmarkList(RedisUniqueComponent):
         return self.delete_object()
 
     def get_new_bookmark_id(self):
-        return get_new_id(8)
+        book_id = self.redis.incrby(self.BOOKMARK_COUNTER.format(blist=self.my_id))
+        #return get_new_id(8)
+        return str(book_id)
 

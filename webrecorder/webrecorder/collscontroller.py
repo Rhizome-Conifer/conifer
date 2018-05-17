@@ -56,8 +56,9 @@ class CollsController(BaseController):
         def get_collections():
             user = self.get_user(api=True, redir_check=False)
 
-            kwargs = {'include_recordings': get_bool(request.query.get('include_recordings', 'true')),
-                      'include_lists': get_bool(request.query.get('include_lists', 'true'))
+            kwargs = {'include_recordings': get_bool(request.query.get('include_recordings')),
+                      'include_lists': get_bool(request.query.get('include_lists')),
+                      'include_pages': get_bool(request.query.get('include_pages')),
                      }
 
             collections = user.get_collections()
@@ -93,7 +94,7 @@ class CollsController(BaseController):
                 new_coll_name = self.sanitize_title(new_coll_title)
 
                 try:
-                    new_coll_name = user.rename(collection, new_coll_name)
+                    new_coll_name = user.colls.rename(collection, new_coll_name, allow_dupe=False)
                 except DupeNameException as de:
                     self._raise_error(400, 'duplicate_name')
 
@@ -226,7 +227,11 @@ class CollsController(BaseController):
     def get_collection_info(self, coll_name, user=None, include_pages=False):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
 
-        result = {'collection': collection.serialize(include_rec_pages=include_pages)}
+        result = {'collection': collection.serialize(include_rec_pages=include_pages,
+                                                     include_lists=True,
+                                                     include_recordings=True,
+                                                     include_pages=True,
+                                                     check_slug=coll_name)}
 
         result['user'] = user.my_id
         result['size_remaining'] = user.get_size_remaining()

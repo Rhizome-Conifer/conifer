@@ -102,6 +102,7 @@ class TestListsAnonUserAPI(FullStackTests):
         assert blist['id'] == '1001'
         assert blist['desc'] == 'List Description Goes Here!'
         assert blist['public'] == False
+        assert blist['slug'] == 'new-list'
 
         assert self.redis.hget('l:1001:info', 'public') == '0'
 
@@ -114,6 +115,7 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert res.json['list']['id'] == '1002'
         assert res.json['list']['title'] == 'New List'
+        assert res.json['list']['slug'] == 'new-list-2'
 
     def test_create_another_list(self):
         params = {'title': 'Another List'}
@@ -124,12 +126,23 @@ class TestListsAnonUserAPI(FullStackTests):
         assert res.json['list']['title'] == 'Another List'
         assert res.json['list']['public'] == False
 
-    def test_get_list(self):
+    def test_get_list_by_slug(self):
+        res = self.testapp.get(self._format('/api/v1/list/new-list-2?user={user}&coll=temp'))
+
+        assert res.json['list']['id'] == '1002'
+        assert res.json['list']['title'] == 'New List'
+        assert res.json['list']['public'] == False
+        assert res.json['list']['slug'] == 'new-list-2'
+        assert res.json['list']['slug_matched'] == True
+
+    def test_get_list_by_id(self):
         res = self.testapp.get(self._format('/api/v1/list/1002?user={user}&coll=temp'))
 
         assert res.json['list']['id'] == '1002'
         assert res.json['list']['title'] == 'New List'
         assert res.json['list']['public'] == False
+        assert res.json['list']['slug'] == 'new-list-2'
+        assert res.json['list']['slug_matched'] == False
 
     def test_list_all_lists(self):
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
@@ -212,10 +225,17 @@ class TestListsAnonUserAPI(FullStackTests):
     def test_delete_list(self):
         assert len(self.redis.keys('l:1001:*')) > 0
 
+        assert self.redis.hget('c:{coll}:ln'.format(coll=self.coll), 'new-list') == '1001'
+
         res = self.testapp.delete(self._format('/api/v1/list/1001?user={user}&coll=temp'))
 
         assert res.json == {'deleted_id': '1001'}
         assert len(self.redis.keys('l:1001:*')) == 0
+
+        assert self.redis.hget('c:{coll}:ln'.format(coll=self.coll), 'new-list') == None
+
+        assert self.redis.hgetall('c:{coll}:ln'.format(coll=self.coll)) == {'another-list': '1003', 'new-list-2': '1002'}
+
 
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
 
@@ -229,7 +249,7 @@ class TestListsAnonUserAPI(FullStackTests):
         params = {'title': 'A List'}
         res = self.testapp.post_json(self._format('/api/v1/list/1001?user={user}&coll=temp'), params=params, status=404)
 
-    def test_update_list(self):
+    def test_update_rename_list(self):
         params = {'title': 'A List'}
 
         time.sleep(1)
@@ -240,10 +260,20 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert blist['title'] == 'A List'
         assert blist['id'] == '1002'
+        assert blist['slug'] == 'a-list'
 
         assert blist['created_at'] < blist['updated_at']
 
         assert self.ISO_DT_RX.match(blist['updated_at'])
+
+    def test_get_list_by_old_slug(self):
+        res = self.testapp.get(self._format('/api/v1/list/new-list-2?user={user}&coll=temp'))
+
+        assert res.json['list']['id'] == '1002'
+        assert res.json['list']['title'] == 'A List'
+        assert res.json['list']['public'] == False
+        assert res.json['list']['slug'] == 'a-list'
+        assert res.json['list']['slug_matched'] == False
 
     def test_update_list_public(self):
         params = {'public': True}
@@ -257,6 +287,18 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert self.redis.hget('l:1002:info', 'public') == '1'
 
+    def test_update_list_private(self):
+        params = {'public': False}
+
+        res = self.testapp.post_json(self._format('/api/v1/list/1002?user={user}&coll=temp'), params=params)
+
+        blist = res.json['list']
+        assert blist['title'] == 'A List'
+        assert blist['id'] == '1002'
+        assert blist['public'] == False
+
+        assert self.redis.hget('l:1002:info', 'public') == '0'
+
 
     # Record, then Replay Via List
     # ========================================================================
@@ -269,12 +311,12 @@ class TestListsAnonUserAPI(FullStackTests):
         assert 'Example Domain' in res.text
 
     def test_replay_1(self):
-        res = self.testapp.get('/{user}/temp/list/1002/mp_/http://example.com/'.format(user=self.anon_user), status=200)
+        res = self.testapp.get('/{user}/temp/list/1002/b1/mp_/http://example.com/'.format(user=self.anon_user), status=200)
         res.charset = 'utf-8'
 
         assert 'Example Domain' in res.text
 
-        assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
+        assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/b1/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
 
     # Pages
     # ========================================================================
@@ -467,7 +509,7 @@ class TestListsAnonUserAPI(FullStackTests):
     # Collection and User Info
     # ========================================================================
     def test_colls_info(self):
-        res = self.testapp.get(self._format('/api/v1/collections?user={user}'))
+        res = self.testapp.get(self._format('/api/v1/collections?user={user}&include_lists=true&include_recordings=true'))
 
         assert len(res.json['collections']) == 1
         assert res.json['collections'][0]['id'] == 'temp'
@@ -533,6 +575,23 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert lists[1]['id'] == '1003'
         assert lists[1]['total_bookmarks'] == 5
+
+    def test_delete_list_after_slug_update(self):
+        assert self.redis.hgetall('c:{coll}:ln'.format(coll=self.coll)) == {'another-list': '1003', 'a-list': '1002'}
+        assert self.redis.hgetall('c:{coll}:lr'.format(coll=self.coll)) == {'new-list-2': '1002'}
+
+        res = self.testapp.delete(self._format('/api/v1/list/1002?user={user}&coll=temp'))
+
+        assert res.json == {'deleted_id': '1002'}
+
+        assert self.redis.hgetall('c:{coll}:ln'.format(coll=self.coll)) == {'another-list': '1003'}
+        assert self.redis.hgetall('c:{coll}:lr'.format(coll=self.coll)) == {'new-list-2': '1002'}
+
+        res = self.testapp.get(self._format('/api/v1/list/new-list-2?user={user}&coll=temp'), status=404)
+        assert res.json == {'error': 'no_such_list'}
+
+        res = self.testapp.get(self._format('/api/v1/list/a-list?user={user}&coll=temp'), status=404)
+        assert res.json == {'error': 'no_such_list'}
 
     # Delete Collection
     # ========================================================================
