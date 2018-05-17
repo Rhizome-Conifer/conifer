@@ -27,6 +27,7 @@ export Record from './Record/Record';
 export RemoteBrowser from './RemoteBrowser/RemoteBrowser';
 export RegisterAccount from './RegisterAccount/RegisterAccount';
 export Replay from './Replay/Replay';
+export SessionCollapsible from './SessionCollapsible/SessionCollapsible';
 export Sidebar from './Sidebar/Sidebar';
 export SidebarCollectionViewer from './SidebarCollectionViewer/SidebarCollectionViewer';
 export SidebarListViewer from './SidebarListViewer/SidebarListViewer';

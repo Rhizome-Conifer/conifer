@@ -1,5 +1,24 @@
 @import 'src/vars';
 
+
+#wr-rec-delete {
+    max-width: 40rem;
+
+    h4 {
+        font-weight: 300;
+    }
+
+    .warning {
+        color: $warning;
+        margin: 1rem 0;
+    }
+
+    .action-row {
+        display: flex;
+        justify-content: space-between;
+    }
+}
+
 .wr-coll-session {
     display: flex;
     position: relative;
@@ -30,7 +49,7 @@
                     left: 0;
                     top: 0;
                     bottom: 0;
-                    width: 2rem;
+                    width: 1.5rem;
                 }
 
                 &.collapsible {
@@ -54,9 +73,17 @@
                     opacity: 0;
                     display: flex;
 
+                    .delete-action {
+                        svg {
+                            width: .8rem;
+                            height: .8rem;
+                        }
+                    }
+
                     button {
                         background: none;
                         border-radius: .3rem;
+                        margin-left: .5rem;
                     }
                 }
 
@@ -82,6 +109,12 @@
                 &:before {
                     background: $blue;
                 }
+            }
+        }
+
+        &.popover-open .Collapsible__trigger header {
+            .function-row {
+                opacity: 1;
             }
         }
 
@@ -141,10 +174,6 @@
                     transition: opacity $quickShift ease-in-out;
                     opacity: 0;
 
-                    .wr-remove-widget > div {
-                        width: 100%;
-                    }
-
                     button {
                         width: 100%;
 
@@ -152,6 +181,12 @@
                             margin: 0 0 .5rem 0;
                         }
                     }
+                }
+            }
+
+            &.popover-open {
+                .functions {
+                    opacity: 1;
                 }
             }
 

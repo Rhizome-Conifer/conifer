@@ -84,7 +84,7 @@ styles:
   # Components w/ JavaScript
   modals: true
   tooltip: true
-  popovers: false
+  popovers: true
   carousel: false
 
   # Utility classes

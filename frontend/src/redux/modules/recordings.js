@@ -15,6 +15,10 @@ const REC_EDIT_SUCCESS = 'wr/recordings/REC_EDIT_SUCCESS';
 const REC_EDIT_FAIL = 'wr/recordings/REC_EDIT_FAIL';
 const REC_EDITED_RESET = 'wr/recordings/REC_EDITED_RESET';
 
+const REC_BK = 'wr/rec/REC_BK';
+const REC_BK_SUCCESS = 'wr/recordings/REC_BK_SUCCESS';
+const REC_BK_FAIL = 'wr/recordings/REC_BK_FAIL';
+
 const REC_DELETE = 'wr/recordings/REC_DELETE';
 const REC_DELETE_SUCCESS = 'wr/recordings/REC_DELETE_SUCCESS';
 const REC_DELETE_FAIL = 'wr/recordings/REC_DELETE_FAIL';
@@ -22,7 +26,10 @@ const REC_DELETE_FAIL = 'wr/recordings/REC_DELETE_FAIL';
 
 const initialState = fromJS({
   edited: false,
-  loaded: false
+  loaded: false,
+  loadingRecBK: false,
+  loadedRecBK: false,
+  recordingBookmarks: null
 });
 
 
@@ -52,6 +59,19 @@ export default function recordings(state = initialState, action = {}) {
     case REC_LOAD:
       return state.merge({
         loading: true
+      });
+
+    case REC_BK:
+      return state.merge({
+        loadingRecBK: true,
+        loadedRecBK: false,
+        recordingBookmarks: null
+      });
+    case REC_BK_SUCCESS:
+      return state.merge({
+        loadingRecBK: false,
+        loadedRecBK: true,
+        recordingBookmarks: action.result.page_bookmarks
       });
     case REC_LOAD_SUCCESS:
       return state.merge({
@@ -99,6 +119,16 @@ export function edit(user, coll, rec, data) {
       data
     }),
     data
+  };
+}
+
+
+export function getRecordingBookmarks(user, coll, rec) {
+  return {
+    types: [REC_BK, REC_BK_SUCCESS, REC_BK_FAIL],
+    promise: client => client.get(`${apiPath}/collection/${coll}/page_bookmarks`, {
+      params: { user, rec }
+    })
   };
 }
 

@@ -3,10 +3,9 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { Button } from 'react-bootstrap';
 
-import { DeleteCollection, Upload } from 'containers';
+import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 
 import HttpStatus from 'components/HttpStatus';
-import SessionCollapsible from 'components/collection/SessionCollapsible';
 import SizeFormat from 'components/SizeFormat';
 import TimeFormat from 'components/TimeFormat';
 import { DownloadIcon, TrashIcon, WarcIcon } from 'components/icons';
@@ -22,12 +21,8 @@ class CollectionManagementUI extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
-    deleteRec: PropTypes.func,
-    editRec: PropTypes.func,
-    recordingEdited: PropTypes.bool,
     recordings: PropTypes.object,
     loaded: PropTypes.bool,
-    pagesBySession: PropTypes.object,
     totalDuration: PropTypes.number
   };
 
@@ -48,12 +43,9 @@ class CollectionManagementUI extends Component {
     window.location = `/${collection.get('user')}/${collection.get('id')}/$download`;
   }
 
-  saveRecordingEdit = (rec, data) => {
-    this.props.editRec(rec, data);
-  }
 
   render() {
-    const { collection, pagesBySession, recordings } = this.props;
+    const { collection, recordings } = this.props;
     const { expandAll } = this.state;
 
     if (!this.context.canAdmin) {
@@ -106,14 +98,8 @@ class CollectionManagementUI extends Component {
               return (
                 <SessionCollapsible
                   key={rec.get('id')}
-                  deleteRec={this.props.deleteRec}
-                  collection={collection}
                   expand={expandAll}
-                  pagesBySession={pagesBySession}
-                  recording={rec}
-                  recordingEdited={this.props.recordingEdited}
-                  onSelectRow={this.onSelectGroupedRow}
-                  saveEdit={this.saveRecordingEdit} />
+                  recording={rec} />
               );
             })
           }
