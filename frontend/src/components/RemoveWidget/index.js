@@ -17,14 +17,19 @@ class RemoveWidget extends Component {
     classes: PropTypes.string,
     children: PropTypes.node,
     withConfirmation: PropTypes.bool,
-    message: PropTypes.string
+    message: PropTypes.string,
+    placement: PropTypes.string,
+    usePortal: PropTypes.bool,
+    scrollCheck: PropTypes.string
   };
 
   static defaultProps = {
     borderless: true,
     classes: '',
     withConfirmation: true,
-    message: 'Confirm Delete'
+    message: 'Confirm Delete',
+    placement: 'bottom',
+    usePortal: false
   };
 
   constructor(props) {
@@ -46,12 +51,13 @@ class RemoveWidget extends Component {
       }
 
       this.props.callback();
+      this.setState({ confirmRemove: false });
     }
 
     this.setState({ confirmRemove: true });
   }
 
-  outsideClickCheck = () => {
+  outsideClickCheck = (evt) => {
     // if delete prompt is up, cancel it
     if (this.state.confirmRemove) {
       this.setState({ confirmRemove: false });
@@ -59,27 +65,27 @@ class RemoveWidget extends Component {
   }
 
   render() {
-    const { borderless, children, classes, message } = this.props;
-
+    const { borderless, children, classes, placement, message } = this.props;
     return (
-      <div className="wr-remove-widget" style={{ position: 'relative' }}>
-        <OutsideClick handleClick={this.outsideClickCheck} inlineBlock>
+      <OutsideClick handleClick={this.outsideClickCheck} scrollCheck={this.props.scrollCheck} inlineBlock>
+        <div className="wr-remove-widget" style={{ position: 'relative' }} onClick={this.removeClick}>
           <button
             ref={(obj) => { this.target = obj; }}
             className={classNames('remove-widget-icon', [classes], { borderless })}
-            onClick={this.removeClick}
             type="button">
             { children || <TrashIcon />}
           </button>
-        </OutsideClick>
-        {/*
-        <BSOverlay container={this} placement="bottom" target={this.target} show={this.state.confirmRemove}>
-          <Tooltip placement="bottom" id="confirm-remove">{ message }</Tooltip>
-        </BSOverlay>*/}
-        <Overlay target={() => this.target} show={this.state.confirmRemove}>
-          <Tooltip placement="bottom" className={classNames({ in: this.state.confirmRemove })} id="confirm-remove">{ message }</Tooltip>
-        </Overlay>
-      </div>
+          {
+            this.props.usePortal ?
+              <Overlay target={() => this.target} placement={placement} show={this.state.confirmRemove}>
+                <Tooltip placement={placement} className="in" id="confirm-remove">{ message }</Tooltip>
+              </Overlay> :
+              <BSOverlay container={this} placement={placement} target={this.target} show={this.state.confirmRemove}>
+                <Tooltip placement={placement} id="confirm-remove">{ message }</Tooltip>
+              </BSOverlay>
+          }
+        </div>
+      </OutsideClick>
     );
   }
 }

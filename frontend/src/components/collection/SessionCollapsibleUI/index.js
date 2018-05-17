@@ -88,7 +88,7 @@ class SessionCollapsibleUI extends PureComponent {
     const recId = recording.get('id');
     const pages = pagesBySession.hasOwnProperty(recId) ? pagesBySession[recId] : List();
     const pageCount = pages.size;
-
+    const popoverClasses = classNames({ 'popover-open': this.state.deletePopover });
     const title = recording.get('title');
     const titleRender = (title ? (<span>{title}</span>) :
                                  (<span>Session from <TimeFormat iso={recording.get('created_at')} /></span>));
@@ -116,8 +116,6 @@ class SessionCollapsibleUI extends PureComponent {
         </React.Fragment>) :
         <div className="warning">This <b><SizeFormat bytes={recording.get('size')} /></b> session will be deleted.</div>
     );
-
-    const popoverClasses = classNames({ 'popover-open': this.state.deletePopover });
 
     return (
       <div className="wr-coll-session">

@@ -52,13 +52,17 @@ export function LinkRenderer({ cellData, rowData, columnData: { collection, list
 
 export function RemoveRenderer({ rowData, columnData: { listId, removeCallback } }) {
   const removeClick = () => removeCallback(listId, rowData.get('id'));
-  // withConfirmation={false}
-  return <RemoveWidget callback={removeClick} />;
+  return <RemoveWidget usePortal callback={removeClick} placement="right" scrollCheck=".ReactVirtualized__Grid" />;
 }
 
 
 export function RowIndexRenderer({ cellData, rowIndex, columnData: { activeList, objects } }) {
   return <div className="row-index">{activeList ? rowIndex + 1 : objects.indexOf(cellData) + 1}</div>;
+}
+
+
+export function SessionRenderer({ cellData, columnData: { activeList }, rowData }) {
+  return <span>{activeList ? rowData.getIn(['page', 'rec']) : cellData}</span>;
 }
 
 

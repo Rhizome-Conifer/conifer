@@ -316,7 +316,7 @@ class ListsUI extends Component {
                     <button className={classNames('borderless', { 'wr-add-list': Boolean(title.length) })} onClick={this.createList} disabled={!title.length || isCreating} title="Add list"><PlusIcon /></button>
                 }
               </header>
-              <ul>
+              <ul className="lists-modal-list">
                 {
                   lists.map(listObj => (
                     <EditItem

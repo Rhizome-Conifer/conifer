@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { throttle } from 'helpers/utils';
+
 
 class OutsideClick extends Component {
   /**
@@ -12,17 +14,35 @@ class OutsideClick extends Component {
     children: PropTypes.node.isRequired,
     classes: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     handleClick: PropTypes.func,
-    inlineBlock: PropTypes.bool
+    inlineBlock: PropTypes.bool,
+    scrollCheck: PropTypes.string
   };
 
+  constructor(props) {
+    super(props);
+
+    // create throttled scroll check
+    if (props.handleClick && props.scrollCheck) {
+      this.throttledCB = throttle(props.handleClick, 300);
+    }
+  }
+
   componentDidMount() {
-    document.addEventListener('mousedown', this.checkClick);
+    document.addEventListener('click', this.checkClick, false);
     document.addEventListener('keyup', this.checkKey);
+
+    if (this.props.handleClick && this.props.scrollCheck && document.querySelector(this.props.scrollCheck)) {
+      document.querySelector(this.props.scrollCheck).addEventListener('scroll', this.handleScroll);
+    }
   }
 
   componentWillUnmount() {
-    document.removeEventListener('mousedown', this.checkClick);
+    document.removeEventListener('click', this.checkClick, false);
     document.removeEventListener('keyup', this.checkKey);
+
+    if (this.props.handleClick && this.props.scrollCheck && document.querySelector(this.props.scrollCheck)) {
+      document.querySelector(this.props.scrollCheck).removeEventListener('scroll', this.handleScroll);
+    }
   }
 
   checkKey = (evt) => {
@@ -35,6 +55,10 @@ class OutsideClick extends Component {
     if (this.container && !this.container.contains(evt.target) && this.props.handleClick) {
       this.props.handleClick(evt);
     }
+  }
+
+  handleScroll = () => {
+    requestAnimationFrame(this.throttledCB);
   }
 
   render() {

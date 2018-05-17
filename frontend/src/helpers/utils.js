@@ -117,6 +117,16 @@ export function setTitle(msg, url, title) {
   document.title = `${title} (${msg})`;
 }
 
+export function throttle(fn, wait) {
+  let t = Date.now();
+  return () => {
+    if ((t + wait) - Date.now() < 0) {
+      fn();
+      t = Date.now();
+    }
+  };
+}
+
 export function apiFetch(path, data, opts = {}) {
   const options = Object.assign({
     credentials: 'same-origin',

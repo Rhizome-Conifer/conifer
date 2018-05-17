@@ -26,8 +26,8 @@ import 'react-virtualized/styles.css';
 
 import CustomDragLayer from './dragLayer';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
-import { BasicRenderer, BrowserRenderer, DnDSortableHeader, LinkRenderer, RemoveRenderer,
-         RowIndexRenderer, TitleRenderer, TimestampRenderer } from './columns';
+import { BrowserRenderer, DnDSortableHeader, LinkRenderer, RemoveRenderer,
+         RowIndexRenderer, SessionRenderer, TitleRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
 
@@ -424,7 +424,10 @@ class CollectionDetailUI extends Component {
         width: 55
       },
       session: {
-        cellRenderer: BasicRenderer,
+        cellRenderer: SessionRenderer,
+        columnData: {
+          activeList,
+        },
         dataKey: 'rec',
         key: 'session',
         width: 100
