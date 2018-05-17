@@ -93,7 +93,7 @@ class CollsController(BaseController):
                 new_coll_name = self.sanitize_title(new_coll_title)
 
                 try:
-                    new_coll_name = user.rename(collection, new_coll_name)
+                    new_coll_name = user.colls.rename(collection, new_coll_name)
                 except DupeNameException as de:
                     self._raise_error(400, 'duplicate_name')
 

@@ -5,18 +5,18 @@ import time
 
 from webrecorder.utils import redis_pipeline
 
-from webrecorder.models.base import RedisNamedContainer
+from webrecorder.models.base import RedisUniqueComponent, RedisNamedContainer
 
 from webrecorder.models.collection import Collection
 
 
 # ============================================================================
-class User(RedisNamedContainer):
+class User(RedisUniqueComponent):
     MY_TYPE = 'user'
     INFO_KEY = 'u:{user}:info'
     ALL_KEYS = 'u:{user}:*'
 
-    COMP_KEY = 'u:{user}:colls'
+    COLLS_KEY = 'u:{user}:colls'
 
     MAX_ANON_SIZE = 1000000000
     MAX_USER_SIZE = 5000000000
@@ -41,6 +41,10 @@ class User(RedisNamedContainer):
         cls.URL_SKIP_KEY = config['skip_key_templ']
         cls.SKIP_KEY_SECS = int(config['skip_key_secs'])
 
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        self.colls = RedisNamedContainer(self.COLLS_KEY, self)
+
     def create_new(self):
         max_size = self.redis.hget('h:defaults', 'max_size')
         if not max_size:
@@ -59,22 +63,22 @@ class User(RedisNamedContainer):
         return self.my_id
 
     def create_collection(self, coll_name, allow_dupe=False, **kwargs):
-        coll_name = self.reserve_obj_name(coll_name, allow_dupe=allow_dupe)
+        coll_name = self.colls.reserve_obj_name(coll_name, allow_dupe=allow_dupe)
 
         collection = Collection(redis=self.redis,
                                 access=self.access)
 
         coll = collection.init_new(**kwargs)
 
-        self.add_object(coll_name, collection, owner=True)
+        self.colls.add_object(coll_name, collection, owner=True)
 
         return collection
 
     def has_collection(self, coll_name):
-        return self.name_to_id(coll_name) != None
+        return self.colls.name_to_id(coll_name) != None
 
     def get_collection_by_name(self, coll_name):
-        coll = self.name_to_id(coll_name)
+        coll = self.colls.name_to_id(coll_name)
 
         return self.get_collection_by_id(coll, coll_name)
 
@@ -91,7 +95,7 @@ class User(RedisNamedContainer):
         return collection
 
     def get_collections(self, load=True):
-        all_collections = self.get_objects(Collection)
+        all_collections = self.colls.get_objects(Collection)
         collections = []
         for collection in all_collections:
             collection.owner = self
@@ -103,10 +107,10 @@ class User(RedisNamedContainer):
         return collections
 
     def num_collections(self):
-        return self.num_objects()
+        return self.colls.num_objects()
 
     def move(self, collection, new_name, new_user):
-        if not self.rename(collection, new_name, new_user):
+        if not self.colls.rename(collection, new_name, new_user.colls):
             return False
 
         for recording in collection.get_recordings():
@@ -122,7 +126,7 @@ class User(RedisNamedContainer):
         if not collection:
             return {'error': 'no_collection'}
 
-        if not self.remove_object(collection):
+        if not self.colls.remove_object(collection):
             return {'error': 'not_found'}
 
         if delete:
@@ -253,6 +257,9 @@ class User(RedisNamedContainer):
 
     def get_user_temp_warc_path(self):
         return os.path.join(os.environ['RECORD_ROOT'], self.name)
+
+    def is_owner(self, owner):
+        return self == owner
 
 
 # ============================================================================

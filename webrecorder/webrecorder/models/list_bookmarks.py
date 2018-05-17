@@ -13,6 +13,8 @@ class BookmarkList(RedisUniqueComponent):
     BOOK_ORDER_KEY = 'l:{blist}:o'
     BOOK_CONTENT_KEY = 'l:{blist}:b'
 
+    BOOKMARK_COUNTER = 'c:{coll}:l:{blist}:c'
+
     def __init__(self, **kwargs):
         super(BookmarkList, self).__init__(**kwargs)
         self.bookmark_order = RedisOrderedList(self.BOOK_ORDER_KEY, self)
@@ -211,5 +213,8 @@ class BookmarkList(RedisUniqueComponent):
         return self.delete_object()
 
     def get_new_bookmark_id(self):
-        return get_new_id(8)
+        book_id = self.redis.incrby(self.BOOKMARK_COUNTER.format(coll=self.get_prop('owner'),
+                                                                 blist=self.my_id))
+        #return get_new_id(8)
+        return str(book_id)
 

@@ -200,8 +200,11 @@ class RedisUniqueComponent(object):
 
 
 # ============================================================================
-class RedisNamedContainer(RedisUniqueComponent):
-    COMP_KEY = ''
+class RedisNamedContainer(object):
+    def __init__(self, hashmap_key, comp):
+        self.hashmap_key = hashmap_key
+        self.comp = comp
+        self.redis = comp.redis
 
     def remove_object(self, obj):
         if not obj:
@@ -210,7 +213,7 @@ class RedisNamedContainer(RedisUniqueComponent):
         comp_map = self.get_comp_map()
         res = self.redis.hdel(comp_map, obj.name)
 
-        self.incr_size(-obj.size)
+        self.comp.incr_size(-obj.size)
         return res
 
     def reserve_obj_name(self, name, allow_dupe=False):
@@ -237,16 +240,16 @@ class RedisNamedContainer(RedisUniqueComponent):
 
         self.redis.hset(comp_map, name, obj.my_id)
 
-        self.incr_size(obj.size)
+        self.comp.incr_size(obj.size)
 
         obj.name = name
 
         if owner:
-            obj.owner = self
-            obj['owner'] = self.my_id
+            obj.owner = self.comp
+            obj['owner'] = self.comp.my_id
 
     def get_comp_map(self):
-        return self.COMP_KEY.format_map({self.MY_TYPE: self.my_id})
+        return self.hashmap_key.format_map({self.comp.MY_TYPE: self.comp.my_id})
 
     def name_to_id(self, obj_name):
         comp_map = self.get_comp_map()
@@ -263,8 +266,8 @@ class RedisNamedContainer(RedisUniqueComponent):
         new_cont.add_object(new_name, obj, owner=True)
         return new_name
 
-    def move(self, obj, new_container, allow_dupe=False):
-        return self.rename(obj, obj.name, new_container, allow_dupe=allow_dupe)
+    #def move(self, obj, new_container, allow_dupe=False):
+    #    return self.rename(obj, obj.name, new_container, allow_dupe=allow_dupe)
 
     def num_objects(self):
         return int(self.redis.hlen(self.get_comp_map()))
@@ -274,12 +277,9 @@ class RedisNamedContainer(RedisUniqueComponent):
         obj_list = [cls(my_id=val,
                         name=name,
                         redis=self.redis,
-                        access=self.access) for name, val in all_objs.items()]
+                        access=self.comp.access) for name, val in all_objs.items()]
 
         return obj_list
-
-    def is_owner(self, owner):
-        return self == owner
 
 
 # ============================================================================
