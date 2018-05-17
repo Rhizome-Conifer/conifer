@@ -102,6 +102,7 @@ class TestListsAnonUserAPI(FullStackTests):
         assert blist['id'] == '1001'
         assert blist['desc'] == 'List Description Goes Here!'
         assert blist['public'] == False
+        assert blist['slug'] == 'new-list'
 
         assert self.redis.hget('l:1001:info', 'public') == '0'
 
@@ -114,6 +115,7 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert res.json['list']['id'] == '1002'
         assert res.json['list']['title'] == 'New List'
+        assert res.json['list']['slug'] == 'new-list-2'
 
     def test_create_another_list(self):
         params = {'title': 'Another List'}
@@ -124,12 +126,21 @@ class TestListsAnonUserAPI(FullStackTests):
         assert res.json['list']['title'] == 'Another List'
         assert res.json['list']['public'] == False
 
-    def test_get_list(self):
+    def test_get_list_by_slug(self):
+        res = self.testapp.get(self._format('/api/v1/list/new-list-2?user={user}&coll=temp'))
+
+        assert res.json['list']['id'] == '1002'
+        assert res.json['list']['title'] == 'New List'
+        assert res.json['list']['public'] == False
+        assert res.json['list']['slug'] == 'new-list-2'
+
+    def test_get_list_by_id(self):
         res = self.testapp.get(self._format('/api/v1/list/1002?user={user}&coll=temp'))
 
         assert res.json['list']['id'] == '1002'
         assert res.json['list']['title'] == 'New List'
         assert res.json['list']['public'] == False
+        assert res.json['list']['slug'] == 'new-list-2'
 
     def test_list_all_lists(self):
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
@@ -212,10 +223,17 @@ class TestListsAnonUserAPI(FullStackTests):
     def test_delete_list(self):
         assert len(self.redis.keys('l:1001:*')) > 0
 
+        assert self.redis.hget('c:{coll}:ln'.format(coll=self.coll), 'new-list') == '1001'
+
         res = self.testapp.delete(self._format('/api/v1/list/1001?user={user}&coll=temp'))
 
         assert res.json == {'deleted_id': '1001'}
         assert len(self.redis.keys('l:1001:*')) == 0
+
+        assert self.redis.hget('c:{coll}:ln'.format(coll=self.coll), 'new-list') == None
+
+        assert self.redis.hgetall('c:{coll}:ln'.format(coll=self.coll)) == {'another-list': '1003', 'new-list-2': '1002'}
+
 
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
 
@@ -467,7 +485,7 @@ class TestListsAnonUserAPI(FullStackTests):
     # Collection and User Info
     # ========================================================================
     def test_colls_info(self):
-        res = self.testapp.get(self._format('/api/v1/collections?user={user}'))
+        res = self.testapp.get(self._format('/api/v1/collections?user={user}&include_lists=true&include_recordings=true'))
 
         assert len(res.json['collections']) == 1
         assert res.json['collections'][0]['id'] == 'temp'

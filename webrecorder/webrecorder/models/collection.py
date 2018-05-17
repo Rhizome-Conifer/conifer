@@ -9,7 +9,8 @@ from datetime import date
 from pywb.utils.loaders import load
 from warcio.timeutils import timestamp20_now
 
-from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent
+from webrecorder.utils import sanitize_title
+from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent, RedisNamedMap
 from webrecorder.models.recording import Recording
 from webrecorder.models.pages import PagesMixin
 from webrecorder.models.list_bookmarks import BookmarkList
@@ -23,7 +24,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
     ALL_KEYS = 'c:{coll}:*'
 
     RECS_KEY = 'c:{coll}:recs'
+
     LISTS_KEY = 'c:{coll}:lists'
+    LIST_NAMES_KEY = 'c:{coll}:ln'
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
 
@@ -39,6 +42,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
         super(Collection, self).__init__(**kwargs)
         self.recs = RedisUnorderedList(self.RECS_KEY, self)
         self.lists = RedisOrderedList(self.LISTS_KEY, self)
+
+        self.list_names = RedisNamedMap(self.LIST_NAMES_KEY, self)
 
     @classmethod
     def init_props(cls, config):
@@ -73,6 +78,14 @@ class Collection(PagesMixin, RedisUniqueComponent):
     def create_bookmark_list(self, props):
         self.access.assert_can_write_coll(self)
 
+        title = props.get('title')
+        slug = None
+        if title:
+            slug = sanitize_title(title)
+            if slug:
+                slug = self.list_names.reserve_obj_name(slug, allow_dupe=True)
+                props['slug'] = slug
+
         bookmark_list = BookmarkList(redis=self.redis,
                                      access=self.access)
 
@@ -81,6 +94,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
         before_blist = self.get_list(props.get('before_id'))
 
         self.lists.insert_ordered_object(bookmark_list, before_blist)
+
+        if slug:
+            self.list_names.add_object(slug, bookmark_list)
 
         return bookmark_list
 
@@ -110,6 +126,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         return bookmark_list
 
+    def get_list_by_slug_or_id(self, slug_or_id):
+        # see if its a slug, otherwise treat as id
+        blist_id = self.list_names.name_to_id(slug_or_id) or slug_or_id
+
+        return self.get_list(blist_id)
+
     def move_list_before(self, blist, before_blist):
         self.access.assert_can_write_coll(self)
 
@@ -120,6 +142,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         if not self.lists.remove_ordered_object(blist):
             return False
+
+        blist.name = blist.get_prop('slug')
+        self.list_names.remove_object(blist)
 
         blist.delete_me()
 

@@ -56,8 +56,9 @@ class CollsController(BaseController):
         def get_collections():
             user = self.get_user(api=True, redir_check=False)
 
-            kwargs = {'include_recordings': get_bool(request.query.get('include_recordings', 'true')),
-                      'include_lists': get_bool(request.query.get('include_lists', 'true'))
+            kwargs = {'include_recordings': get_bool(request.query.get('include_recordings')),
+                      'include_lists': get_bool(request.query.get('include_lists')),
+                      'include_pages': get_bool(request.query.get('include_pages')),
                      }
 
             collections = user.get_collections()

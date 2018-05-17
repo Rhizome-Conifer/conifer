@@ -5,7 +5,7 @@ import time
 
 from webrecorder.utils import redis_pipeline
 
-from webrecorder.models.base import RedisUniqueComponent, RedisNamedContainer
+from webrecorder.models.base import RedisUniqueComponent, RedisNamedMap
 
 from webrecorder.models.collection import Collection
 
@@ -43,7 +43,7 @@ class User(RedisUniqueComponent):
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
-        self.colls = RedisNamedContainer(self.COLLS_KEY, self)
+        self.colls = RedisNamedMap(self.COLLS_KEY, self)
 
     def create_new(self):
         max_size = self.redis.hget('h:defaults', 'max_size')
@@ -113,6 +113,10 @@ class User(RedisUniqueComponent):
         if not self.colls.rename(collection, new_name, new_user.colls):
             return False
 
+        if self != new_user:
+            self.incr_size(-collection.size)
+            new_user.incr_size(collection.size)
+
         for recording in collection.get_recordings():
             # will be marked for commit
             recording.set_closed()
@@ -128,6 +132,8 @@ class User(RedisUniqueComponent):
 
         if not self.colls.remove_object(collection):
             return {'error': 'not_found'}
+
+        self.incr_size(-collection.size)
 
         if delete:
             return collection.delete_me()

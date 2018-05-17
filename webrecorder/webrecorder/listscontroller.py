@@ -156,7 +156,7 @@ class ListsController(BaseController):
         return user, collection, self.load_list(collection, list_id)
 
     def load_list(self, collection, list_id):
-        blist = collection.get_list(list_id)
+        blist = collection.get_list_by_slug_or_id(list_id)
         if not blist:
             self._raise_error(404, 'no_such_list')
 

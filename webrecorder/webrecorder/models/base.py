@@ -200,7 +200,7 @@ class RedisUniqueComponent(object):
 
 
 # ============================================================================
-class RedisNamedContainer(object):
+class RedisNamedMap(object):
     def __init__(self, hashmap_key, comp):
         self.hashmap_key = hashmap_key
         self.comp = comp
@@ -213,7 +213,6 @@ class RedisNamedContainer(object):
         comp_map = self.get_comp_map()
         res = self.redis.hdel(comp_map, obj.name)
 
-        self.comp.incr_size(-obj.size)
         return res
 
     def reserve_obj_name(self, name, allow_dupe=False):
@@ -239,8 +238,6 @@ class RedisNamedContainer(object):
         comp_map = self.get_comp_map()
 
         self.redis.hset(comp_map, name, obj.my_id)
-
-        self.comp.incr_size(obj.size)
 
         obj.name = name
 
