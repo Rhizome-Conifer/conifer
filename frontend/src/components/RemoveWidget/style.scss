@@ -1,5 +1,9 @@
 @import 'src/vars';
 
+#confirm-remove {
+    cursor: pointer;
+}
+
 .wr-remove-widget {
     button {
         transition: fill $midShift ease-in-out;

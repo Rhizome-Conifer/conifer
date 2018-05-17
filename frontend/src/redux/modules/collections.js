@@ -78,7 +78,7 @@ export function load(user) {
     types: [COLLS_LOAD, COLLS_LOAD_SUCCESS, COLLS_LOAD_FAIL],
     accessed: Date.now(),
     promise: client => client.get(`${config.apiPath}/collections`, {
-      params: { user }
+      params: { user, include_pages: false, include_recordings: false, include_lists: false }
     })
   };
 }

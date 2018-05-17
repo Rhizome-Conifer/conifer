@@ -139,7 +139,7 @@ class CollectionListUI extends Component {
                             <SizeFormat bytes={coll.get('size')} />
                           </Col>
                           <Col xs={1}>
-                            { coll.get('r:@public') === '1' &&
+                            { coll.get('public') &&
                               <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
                             }
                           </Col>

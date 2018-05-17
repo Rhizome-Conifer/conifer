@@ -55,7 +55,7 @@ class EditItem extends Component {
 
     return (
       <li>
-        <RemoveWidget callback={this.confirmDelete} />
+        <RemoveWidget usePortal callback={this.confirmDelete} placement="left" scrollCheck=".lists-modal-list" />
         <input name="title" className="borderless-input" onBlur={this.editListItem} onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
         {
           edited ?

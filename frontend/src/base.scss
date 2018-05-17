@@ -32,6 +32,11 @@ a {
   flex-direction: column;
 }
 
+.wr-overlay {
+  position: absolute;
+  z-index: 3000;
+}
+
 .alert {
   margin-top: 1.5rem;
 }

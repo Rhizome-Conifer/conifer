@@ -39,6 +39,7 @@ export default class BaseHtml extends Component {
         </head>
         <body>
           <div id="app">{component}</div>
+          <div id="portal" />
           <script
             dangerouslySetInnerHTML={{ __html: `window.__data=${serialize(store.getState())};` }}
             charSet="UTF-8"

@@ -50,7 +50,7 @@ class CollectionCoverUI extends Component {
 
     const user = collection.get('user');
     const collId = collection.get('id');
-    const lists = collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size);
+    const lists = collection.get('lists') ? collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size) : [];
 
     return (
       <div className="coll-cover">

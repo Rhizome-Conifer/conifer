@@ -2,11 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
-import { saveDelay } from 'config';
-
 import { load as loadColl } from 'redux/modules/collection';
-import { deleteRecording, edit, resetEditState } from 'redux/modules/recordings';
-import { getOrderedRecordings, splitPagesBySession } from 'redux/selectors';
+import { getOrderedRecordings } from 'redux/selectors';
 
 import CollectionManagementUI from 'components/collection/CollectionManagementUI';
 
@@ -31,15 +28,6 @@ class CollectionManagement extends Component {
     return {
       canAdmin: username === user
     };
-  }
-
-  componentDidMount() {
-    const { auth, match: { params: { coll, user } } } = this.props;
-    const username = auth.getIn(['user', 'username']);
-
-    if (username !== user) {
-      this.props.history.push(`/${user}/${coll}`);
-    }
   }
 
   render() {
@@ -68,31 +56,11 @@ const mapStateToProps = (outerState) => {
     recordingEdited: app.getIn(['recordings', 'edited']),
     recordings: isLoaded ? getOrderedRecordings(app, true) : null,
     loaded: reduxAsyncConnect.loaded,
-    pagesBySession: splitPagesBySession(app)
   };
 };
 
-const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => {
-  return {
-    deleteRec: (rec) => {
-      dispatch(deleteRecording(user, coll, rec))
-        .then((res) => {
-          if (res.hasOwnProperty('deleted_id')) {
-            dispatch(loadColl(user, coll));
-          }
-        }, () => { console.log('Rec delete error..'); });
-    },
-    editRec: (rec, data) => {
-      dispatch(edit(user, coll, rec, data))
-        .then(() => dispatch(loadColl(user, coll)))
-        .then(() => setTimeout(() => dispatch(resetEditState()), saveDelay), () => {});
-    },
-    dispatch
-  };
-};
 
 export default asyncConnect(
   initialData,
-  mapStateToProps,
-  mapDispatchToProps
+  mapStateToProps
 )(CollectionManagement);

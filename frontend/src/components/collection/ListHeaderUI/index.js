@@ -87,7 +87,10 @@ class ListHeaderUI extends PureComponent {
         </div>
         <div className="function-row">
           <Button onClick={this.startReplay} className="rounded">VIEW PAGES</Button>
-          <Button onClick={this.viewCollection} className="rounded">SEE PARENT COLLECTION</Button>
+          {
+            (canAdmin || collection.get('public_index')) &&
+              <Button onClick={this.viewCollection} className="rounded">SEE PARENT COLLECTION</Button>
+          }
           {/*<Button className="rounded">SHARE</Button>*/}
         </div>
       </div>
