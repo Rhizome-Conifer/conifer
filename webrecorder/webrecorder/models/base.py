@@ -201,8 +201,9 @@ class RedisUniqueComponent(object):
 
 # ============================================================================
 class RedisNamedMap(object):
-    def __init__(self, hashmap_key, comp):
+    def __init__(self, hashmap_key, comp, redirmap_key=None):
         self.hashmap_key = hashmap_key
+        self.redirmap_key = redirmap_key
         self.comp = comp
         self.redis = comp.redis
 
@@ -241,6 +242,10 @@ class RedisNamedMap(object):
 
         obj.name = name
 
+        redir_map = self.get_redir_map()
+        if redir_map:
+            self.redis.hdel(redir_map, name)
+
         if owner:
             obj.owner = self.comp
             obj['owner'] = self.comp.my_id
@@ -248,23 +253,43 @@ class RedisNamedMap(object):
     def get_comp_map(self):
         return self.hashmap_key.format_map({self.comp.MY_TYPE: self.comp.my_id})
 
+    def get_redir_map(self):
+        if not self.redirmap_key:
+            return None
+
+        return self.redirmap_key.format_map({self.comp.MY_TYPE: self.comp.my_id})
+
     def name_to_id(self, obj_name):
         comp_map = self.get_comp_map()
 
-        return self.redis.hget(comp_map, obj_name)
+        res = self.redis.hget(comp_map, obj_name)
 
-    def rename(self, obj, new_name, new_cont=None, allow_dupe=False):
-        new_cont = new_cont or self
-        new_name = new_cont.reserve_obj_name(new_name, allow_dupe=allow_dupe)
+        if res is not None:
+            return res
 
-        if not self.remove_object(obj):
+        redir_map = self.get_redir_map()
+        if redir_map:
+            return self.redis.hget(redir_map, obj_name)
+
+    def rename(self, obj, new_name, allow_dupe=True):
+        new_name = self.reserve_obj_name(new_name, allow_dupe=allow_dupe)
+
+        comp_map = self.get_comp_map()
+
+        res = self.redis.hdel(comp_map, obj.name)
+        if not res:
             return None
 
-        new_cont.add_object(new_name, obj, owner=True)
-        return new_name
+        self.redis.hset(comp_map, new_name, obj.my_id)
 
-    #def move(self, obj, new_container, allow_dupe=False):
-    #    return self.rename(obj, obj.name, new_container, allow_dupe=allow_dupe)
+        old_name = obj.name
+        obj.name = new_name
+
+        redir_map = self.get_redir_map()
+        if redir_map:
+            self.redis.hset(redir_map, old_name, obj.my_id)
+
+        return new_name
 
     def num_objects(self):
         return int(self.redis.hlen(self.get_comp_map()))

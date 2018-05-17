@@ -17,6 +17,7 @@ class User(RedisUniqueComponent):
     ALL_KEYS = 'u:{user}:*'
 
     COLLS_KEY = 'u:{user}:colls'
+    COLLS_REDIR_KEY = 'u:{user}:cr'
 
     MAX_ANON_SIZE = 1000000000
     MAX_USER_SIZE = 5000000000
@@ -43,7 +44,7 @@ class User(RedisUniqueComponent):
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
-        self.colls = RedisNamedMap(self.COLLS_KEY, self)
+        self.colls = RedisNamedMap(self.COLLS_KEY, self, self.COLLS_REDIR_KEY)
 
     def create_new(self):
         max_size = self.redis.hget('h:defaults', 'max_size')
@@ -110,19 +111,22 @@ class User(RedisUniqueComponent):
         return self.colls.num_objects()
 
     def move(self, collection, new_name, new_user):
-        if not self.colls.rename(collection, new_name, new_user.colls):
+        if self == new_user:
             return False
 
-        if self != new_user:
-            self.incr_size(-collection.size)
-            new_user.incr_size(collection.size)
+        new_name = new_user.colls.reserve_obj_name(new_name, allow_dupe=False)
+
+        if not self.colls.remove_object(collection):
+            return False
+
+        new_user.colls.add_object(new_name, collection, owner=True)
+
+        self.incr_size(-collection.size)
+        new_user.incr_size(collection.size)
 
         for recording in collection.get_recordings():
             # will be marked for commit
             recording.set_closed()
-
-            #if not recording.queue_move_warcs(new_user):
-            #    return False
 
         return True
 

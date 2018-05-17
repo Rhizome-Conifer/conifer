@@ -27,6 +27,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
     LISTS_KEY = 'c:{coll}:lists'
     LIST_NAMES_KEY = 'c:{coll}:ln'
+    LIST_REDIR_KEY = 'c:{coll}:lr'
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
 
@@ -43,7 +44,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         self.recs = RedisUnorderedList(self.RECS_KEY, self)
         self.lists = RedisOrderedList(self.LISTS_KEY, self)
 
-        self.list_names = RedisNamedMap(self.LIST_NAMES_KEY, self)
+        self.list_names = RedisNamedMap(self.LIST_NAMES_KEY, self, self.LIST_REDIR_KEY)
 
     @classmethod
     def init_props(cls, config):
@@ -79,12 +80,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
         self.access.assert_can_write_coll(self)
 
         title = props.get('title')
-        slug = None
-        if title:
-            slug = sanitize_title(title)
-            if slug:
-                slug = self.list_names.reserve_obj_name(slug, allow_dupe=True)
-                props['slug'] = slug
+        slug = self.get_list_slug(title)
+        if slug:
+            props['slug'] = slug
 
         bookmark_list = BookmarkList(redis=self.redis,
                                      access=self.access)
@@ -110,6 +108,26 @@ class Collection(PagesMixin, RedisUniqueComponent):
             #lists = [blist for blist in lists if self.access.can_read_list(blist)]
 
         return lists
+
+    def get_list_slug(self, title):
+        if not title:
+            return
+
+        slug = sanitize_title(title)
+        if not slug:
+            return
+
+        return self.list_names.reserve_obj_name(slug, allow_dupe=True)
+
+    def update_list_slug(self, new_title, bookmark_list):
+        old_title = bookmark_list.get_prop('title')
+        if old_title == new_title:
+            return False
+
+        bookmark_list.name = bookmark_list.get_prop('slug')
+        new_slug = self.list_names.rename(bookmark_list, sanitize_title(new_title))
+        if new_slug:
+            bookmark_list.set_prop('slug', new_slug)
 
     def get_list(self, blist_id):
         if not self.lists.contains_id(blist_id):
