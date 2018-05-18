@@ -14,7 +14,8 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    setColl: coll => dispatch(selectCollection(coll))
+    setColl: coll => dispatch(selectCollection(coll)),
+    dispatch
   };
 };
 

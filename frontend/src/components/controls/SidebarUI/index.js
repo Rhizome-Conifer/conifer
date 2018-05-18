@@ -55,6 +55,7 @@ class SidebarUI extends Component {
 
     if (prevProps.expanded !== expanded) {
       setStorage(storageKey, expanded);
+      window.dispatchEvent(new Event('resize'));
     }
   }
 

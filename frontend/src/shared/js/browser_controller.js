@@ -101,6 +101,8 @@ export default function CBrowser(reqid, target_div, init_params) {
     function close() {
         var cnvs = canvas();
         var _screen = screen();
+        // ensure focus is freed
+        lose_focus();
         _screen.removeEventListener('blur', lose_focus);
         _screen.removeEventListener('mouseleave', lose_focus);
         _screen.removeEventListener('mouseenter', grab_focus);
@@ -175,18 +177,6 @@ export default function CBrowser(reqid, target_div, init_params) {
         return target_div_obj.querySelector("#noVNC_screen");
     }
 
-    function getHeaderHeight() {
-        const header = document.querySelector('header');
-        let hh = 0;
-
-        if (header) {
-            let hh = header.getBoundingClientRect().height;
-            hh += document.querySelector('.wr-controls').getBoundingClientRect().height;
-        }
-
-        return hh;
-    }
-
     function init_html() {
         var msgDiv = document.createElement('div');
         msgDiv.setAttribute('id', 'browserMsg');
@@ -225,15 +215,13 @@ export default function CBrowser(reqid, target_div, init_params) {
         getMsgDiv().innerHTML = msg;
         getMsgDiv().style.display = 'block';
 
-        // calculate dimensions
-        var hh = getHeaderHeight();
-        var w, h;
+        const bcr = target_div_obj.getBoundingClientRect();
+        let w = bcr.width;
+        let h = bcr.height;
+
         if (!init_params.fill_window) {
-            w = window.innerWidth * 0.96;
-            h = window.innerHeight - (25 + hh);
-        } else {
-            w = window.innerWidth;
-            h = window.innerHeight;
+            w *= 0.96;
+            h -= 25;
         }
 
         if (w < h) {
@@ -374,27 +362,26 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function clientPosition() {
-        var hh = getHeaderHeight();
-        var c = canvas();
-        var ch = c.getBoundingClientRect().height;
-        var cw = c.getBoundingClientRect().width;
+        const bcr = target_div_obj.getBoundingClientRect();
+        const c = canvas();
+        const ch = c.getBoundingClientRect().height;
+        const cw = c.getBoundingClientRect().width;
 
         if (!init_params.fill_window) {
-            c.style.marginLeft = ((window.innerWidth - cw)/2) + 'px';
-            c.style.marginTop = ((window.innerHeight - (hh + ch + 25))/2) + 'px';
+            c.style.marginLeft = ((bcr.width - cw)/2) + 'px';
+            c.style.marginTop = ((bcr.height - (ch + 25))/2) + 'px';
         }
     }
 
     function clientResize() {
-        var hh = getHeaderHeight();
-        var w, h;
+        const bcr = target_div_obj.getBoundingClientRect();
 
-        if (init_params.fill_window) {
-            w = window.innerWidth;
-            h = window.innerHeight;
-        } else {
-            w = Math.round(window.innerWidth * 0.96);
-            h = Math.round(window.innerHeight - (25 + hh));
+        let w = bcr.width;
+        let h = bcr.height;
+
+        if (!init_params.fill_window) {
+            w = Math.round(w * 0.96);
+            h = h - 25;
         }
 
         if (rfb) {

@@ -34,6 +34,10 @@
 .iframe-container {
     flex-grow: 1;
     display: flex;
+
+    .wr-resizeable {
+        flex-shrink: 0;
+    }
 }
 
 @media (max-width: 500px) {
