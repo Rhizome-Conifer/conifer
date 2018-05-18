@@ -249,7 +249,7 @@ class TestListsAnonUserAPI(FullStackTests):
         params = {'title': 'A List'}
         res = self.testapp.post_json(self._format('/api/v1/list/1001?user={user}&coll=temp'), params=params, status=404)
 
-    def test_update_list(self):
+    def test_update_rename_list(self):
         params = {'title': 'A List'}
 
         time.sleep(1)

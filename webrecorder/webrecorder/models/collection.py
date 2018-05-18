@@ -62,8 +62,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         rec = recording.init_new(**kwargs)
 
-        recording.name = recording.my_id
-
         self.recs.add_object(recording, owner=True)
 
         return recording
@@ -79,11 +77,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
     def create_bookmark_list(self, props):
         self.access.assert_can_write_coll(self)
 
-        title = props.get('title')
-        slug = self.get_list_slug(title)
-        if slug:
-            props['slug'] = slug
-
         bookmark_list = BookmarkList(redis=self.redis,
                                      access=self.access)
 
@@ -93,6 +86,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         self.lists.insert_ordered_object(bookmark_list, before_blist)
 
+        slug = self.get_list_slug(props.get('title'))
         if slug:
             self.list_names.add_object(slug, bookmark_list)
 
@@ -124,10 +118,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
         if old_title == new_title:
             return False
 
-        bookmark_list.name = bookmark_list.get_prop('slug')
         new_slug = self.list_names.rename(bookmark_list, sanitize_title(new_title))
-        if new_slug:
-            bookmark_list.set_prop('slug', new_slug)
+        return new_slug is not None
 
     def get_list(self, blist_id):
         if not self.lists.contains_id(blist_id):
@@ -161,7 +153,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
         if not self.lists.remove_ordered_object(blist):
             return False
 
-        blist.name = blist.get_prop('slug')
         self.list_names.remove_object(blist)
 
         blist.delete_me()
@@ -174,7 +165,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         else:
             return len(self.get_lists())
 
-    def init_new(self, title, desc='', public=False):
+    def init_new(self, slug, title, desc='', public=False):
         coll = self._create_new_id()
 
         key = self.INFO_KEY.format(coll=coll)
@@ -225,10 +216,14 @@ class Collection(PagesMixin, RedisUniqueComponent):
                         include_rec_pages=False,
                         include_pages=True,
                         include_bookmarks='first',
-                        convert_date=True):
+                        convert_date=True,
+                        check_slug=False):
 
         data = super(Collection, self).serialize(convert_date=convert_date)
-        self.data['id'] = self.name
+        data['id'] = self.name
+
+        if check_slug:
+            data['slug_matched'] = (check_slug == data.get('slug'))
 
         is_owner = self.access.is_coll_owner(self)
 

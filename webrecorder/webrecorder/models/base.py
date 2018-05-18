@@ -23,7 +23,6 @@ class RedisUniqueComponent(object):
     def __init__(self, **kwargs):
         self.redis = kwargs['redis']
         self.my_id = kwargs.get('my_id', '')
-        self.name = kwargs.get('name', self.my_id)
         self.access = kwargs['access']
         self.owner = None
 
@@ -41,6 +40,10 @@ class RedisUniqueComponent(object):
     @property
     def size(self):
         return self.get_prop('size', force_type=int, default_val=0, force_update=True)
+
+    @property
+    def name(self):
+        return self.get_prop('slug')
 
     def incr_key(self, key, value):
         val = self.redis.hincrby(self.info_key, key, value)
@@ -240,7 +243,8 @@ class RedisNamedMap(object):
 
         self.redis.hset(comp_map, name, obj.my_id)
 
-        obj.name = name
+        #obj.name = name
+        obj['slug'] = name
 
         redir_map = self.get_redir_map()
         if redir_map:
@@ -283,7 +287,8 @@ class RedisNamedMap(object):
         self.redis.hset(comp_map, new_name, obj.my_id)
 
         old_name = obj.name
-        obj.name = new_name
+        #obj.name = new_name
+        obj.set_prop('slug', new_name)
 
         redir_map = self.get_redir_map()
         if redir_map:

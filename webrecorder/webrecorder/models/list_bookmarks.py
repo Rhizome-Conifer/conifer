@@ -33,7 +33,6 @@ class BookmarkList(RedisUniqueComponent):
                      'owner': self.owner.my_id,
                     }
 
-        self.name = str(list_id)
         self._init_new()
 
         return list_id

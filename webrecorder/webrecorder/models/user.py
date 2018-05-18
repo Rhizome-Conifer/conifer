@@ -46,6 +46,10 @@ class User(RedisUniqueComponent):
         super(User, self).__init__(**kwargs)
         self.colls = RedisNamedMap(self.COLLS_KEY, self, self.COLLS_REDIR_KEY)
 
+    @property
+    def name(self):
+        return self.my_id
+
     def create_new(self):
         max_size = self.redis.hget('h:defaults', 'max_size')
         if not max_size:
@@ -69,7 +73,7 @@ class User(RedisUniqueComponent):
         collection = Collection(redis=self.redis,
                                 access=self.access)
 
-        coll = collection.init_new(**kwargs)
+        coll = collection.init_new(coll_name, **kwargs)
 
         self.colls.add_object(coll_name, collection, owner=True)
 

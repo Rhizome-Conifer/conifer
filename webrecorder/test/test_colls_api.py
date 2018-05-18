@@ -33,7 +33,9 @@ class TestWebRecCollsAPI(FullStackTests):
 
         assert coll['size'] == 0
         assert coll['id'] == 'temp'
+        assert coll['slug'] == 'temp'
         assert coll['title'] == 'Temp'
+        assert coll['slug_matched'] == True
         assert coll['created_at'] <= datetime.utcnow().isoformat()
 
         assert self.ISO_DT_RX.match(coll['created_at'])

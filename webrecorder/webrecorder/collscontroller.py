@@ -227,7 +227,11 @@ class CollsController(BaseController):
     def get_collection_info(self, coll_name, user=None, include_pages=False):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
 
-        result = {'collection': collection.serialize(include_rec_pages=include_pages)}
+        result = {'collection': collection.serialize(include_rec_pages=include_pages,
+                                                     include_lists=True,
+                                                     include_recordings=True,
+                                                     include_pages=True,
+                                                     check_slug=coll_name)}
 
         result['user'] = user.my_id
         result['size_remaining'] = user.get_size_remaining()
