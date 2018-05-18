@@ -287,6 +287,18 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert self.redis.hget('l:1002:info', 'public') == '1'
 
+    def test_update_list_private(self):
+        params = {'public': False}
+
+        res = self.testapp.post_json(self._format('/api/v1/list/1002?user={user}&coll=temp'), params=params)
+
+        blist = res.json['list']
+        assert blist['title'] == 'A List'
+        assert blist['id'] == '1002'
+        assert blist['public'] == False
+
+        assert self.redis.hget('l:1002:info', 'public') == '0'
+
 
     # Record, then Replay Via List
     # ========================================================================

@@ -202,16 +202,16 @@ class BookmarkList(RedisUniqueComponent):
         props = props or {}
 
         title = props.get('title')
-        if title:
+        if title is not None:
             self.get_owner().update_list_slug(title, self)
             self.set_prop('title', title)
 
         public = props.get('public')
-        if public:
+        if public is not None:
             self.set_public(public)
 
         desc = props.get('desc')
-        if desc:
+        if desc is not None:
             self.set_prop('desc', desc)
 
     def delete_me(self):
