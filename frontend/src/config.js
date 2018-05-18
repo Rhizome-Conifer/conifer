@@ -34,6 +34,7 @@ const contentHost = process.env.CONTENT_HOST ? process.env.CONTENT_HOST : `local
 
 
 module.exports = Object.assign({
+  announceMailingList: process.env.ANNOUNCE_MAILING_LIST,
   apiProxy: false,
   apiPath: '/api/v1',
   appHost: `${hostScheme}://${appHost}`,

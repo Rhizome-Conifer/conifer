@@ -152,6 +152,7 @@ var webpackConfig = module.exports = {
     new webpack.EnvironmentPlugin([
       'NODE_ENV',
       'APP_HOST',
+      'ANNOUNCE_MAILING_LIST',
       'FRONTEND_PORT',
       'CONTENT_HOST',
       'SCHEME'
