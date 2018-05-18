@@ -77,7 +77,6 @@ class InspectorPanelUI extends PureComponent {
 
                       <h4>Description</h4>
                       <WYSIWYG
-                        minimal
                         initial={bk.get('desc') || defaultBookmarkDesc}
                         onSave={this.editBookmarkDesc}
                         success={bkEdited} />

@@ -20,11 +20,11 @@ export default function createStore(client, data) {
   const searchConfig = reduxSearch({
     resourceIndexes: {
       'collection.pages': ({ resources, indexDocument, state }) => {
-        if (resources) {
-          resources.forEach((bk) => {
-            const id = bk.get('id');
-            indexDocument(id, bk.get('title') || '');
-            indexDocument(id, bk.get('url') || '');
+        if (resources && !__SERVER__) {
+          resources.forEach((pg) => {
+            const id = pg.get('id');
+            indexDocument(id, pg.get('title') || '');
+            indexDocument(id, pg.get('url') || '');
           });
         }
       }

@@ -111,12 +111,12 @@ const controllerRoutes = [
   },
   {
     path: `${userPath}/:coll/:rec/record/:splat(.*)`,
-    breadcrumb: recBookmark,
+    breadcrumb: 'Recording Session',
     classOverride: '',
     component: Record,
     exact: true,
     footer: false,
-    getLocation: ({ user, coll, rec }) => `/${user}/${coll}?filter=${rec}`,
+    getLocation: ({ user, coll, rec }) => `/${user}/${coll}/pages?filter=${rec}`,
     name: 'record'
   },
   {

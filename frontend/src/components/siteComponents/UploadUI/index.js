@@ -5,6 +5,8 @@ import { Button } from 'react-bootstrap';
 
 import { product } from 'config';
 
+import { incrementCollCount } from 'redux/modules/auth';
+
 import { CollectionDropdown } from 'containers';
 import Modal from 'components/Modal';
 
@@ -19,6 +21,7 @@ class UploadUI extends PureComponent {
   static propTypes = {
     activeCollection: PropTypes.string,
     classes: PropTypes.string,
+    dispatch: PropTypes.func,
     fromCollection: PropTypes.string,
     setColl: PropTypes.func,
     wrapper: PropTypes.func
@@ -140,6 +143,9 @@ class UploadUI extends PureComponent {
 
   indexingComplete = (user, coll) => {
     this.close();
+    if (this.state.targetColl !== 'chosen') {
+      this.props.dispatch(incrementCollCount(1));
+    }
     this.context.router.history.push(`/${user}/${coll}/pages`);
   }
 

@@ -140,6 +140,9 @@ class Resizable extends Component {
       this.props.resizeState(false);
     }
 
+    // Trigger window resize for remote browser manager
+    window.dispatchEvent(new Event('resize'));
+
     setStorage((storageKey || 'userSidebarWidth'), JSON.stringify({ width, height }));
   }
 
