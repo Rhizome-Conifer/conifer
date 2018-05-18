@@ -164,7 +164,6 @@ class SidebarListViewer extends Component {
           </h4>
           <Truncate height={75} className="description">
             <WYSIWYG
-              minimal
               initial={list.get('desc') || defaultListDesc}
               onSave={this.editListDesc}
               success={listEdited} />

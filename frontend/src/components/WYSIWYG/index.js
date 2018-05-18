@@ -26,6 +26,7 @@ class WYSIWYG extends Component {
     externalEditButton: PropTypes.bool,
     initial: PropTypes.string,
     minimal: PropTypes.bool,
+    readOnly: PropTypes.bool,
     renderCallback: PropTypes.func,
     onSave: PropTypes.func,
     success: PropTypes.bool,
@@ -36,7 +37,8 @@ class WYSIWYG extends Component {
     active: true,
     externalEditButton: false,
     initial: '',
-    minimal: false
+    minimal: true,
+    readOnly: false
   };
 
   constructor(props) {
@@ -106,6 +108,14 @@ class WYSIWYG extends Component {
     }
   }
 
+  shouldComponentUpdate() {
+    if (this.state.renderable && this.props.readOnly) {
+      return false;
+    }
+
+    return true;
+  }
+
   componentDidUpdate(prevProps, prevState) {
     if (this.props.renderCallback && this.state.renderable && !prevState.renderable) {
       this.props.renderCallback();
@@ -171,7 +181,7 @@ class WYSIWYG extends Component {
   }
 
   render() {
-    const { className, contentSync, editMode, externalEditButton } = this.props;
+    const { className, contentSync, editMode, externalEditButton, readOnly } = this.props;
     const { editorState, localEditMode, renderable } = this.state;
     const canAdmin = typeof this.context.canAdmin !== 'undefined' ? this.context.canAdmin : true;
 
@@ -187,7 +197,7 @@ class WYSIWYG extends Component {
                 onChange={this.onChange}
                 toolbarConfig={this.editorConf}
                 className={classNames('wr-editor-instance', { 'read-only': !canAdmin || !_editMode })}
-                readOnly={!canAdmin || !_editMode}
+                readOnly={!canAdmin || !_editMode || readOnly}
                 customControls={[
                   <ButtonGroup key={2}>
                     <IconButton
@@ -223,7 +233,7 @@ class WYSIWYG extends Component {
             </React.Fragment>
         }
         {
-          canAdmin && !externalEditButton && !_editMode &&
+          canAdmin && !readOnly && !externalEditButton && !_editMode &&
             <Button className="wr-edit-button" bsSize="xs" onClick={this.toggleEditMode}>edit</Button>
         }
       </div>

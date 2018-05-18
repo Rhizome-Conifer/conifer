@@ -21,12 +21,3 @@ export const listDetailBreadcrumb = connect(
       list: list && app.getIn(['list', 'loaded']) ? app.get('list') : null
     };
   })(listDetail);
-
-
-export const recording = ({ recording }) => { return recording ? recording.get('title') : defaultRecordingTitle };
-export const recBookmark = connect(
-  ({ app }) => {
-    return {
-      recording: app.getIn(['recordings', 'recording'])
-    };
-  })(recording);

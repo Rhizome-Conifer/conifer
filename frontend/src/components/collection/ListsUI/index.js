@@ -245,9 +245,7 @@ class ListsUI extends Component {
                     <h2>{collection.get('title')}</h2>
                   </header>
                   <Truncate height={75}>
-                    <WYSIWYG
-                      initial={collection.get('desc') || defaultCollDesc}
-                      editMode={false} />
+                    <WYSIWYG initial={collection.get('desc') || defaultCollDesc} />
                   </Truncate>
                 </React.Fragment>
             }

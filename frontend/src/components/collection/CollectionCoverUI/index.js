@@ -61,9 +61,8 @@ class CollectionCoverUI extends Component {
         <h1>{collection.get('title')}</h1>
         <div className="description">
           <WYSIWYG
-            initial={collection.get('desc') || defaultCollDesc}
-            externalEditButton
-            editMode={false} />
+            readOnly
+            initial={collection.get('desc') || defaultCollDesc} />
         </div>
         {
           lists &&
@@ -89,9 +88,8 @@ class CollectionCoverUI extends Component {
                             list.get('desc') &&
                               <Truncate height={75}>
                                 <WYSIWYG
-                                  initial={list.get('desc')}
-                                  externalEditButton
-                                  editMode={false} />
+                                  readOnly
+                                  initial={list.get('desc')} />
                               </Truncate>
                           }
                           <Link to={loc} className="list-link">view list &raquo;</Link>
