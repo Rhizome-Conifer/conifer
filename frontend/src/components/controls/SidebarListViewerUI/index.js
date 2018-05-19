@@ -111,7 +111,7 @@ class SidebarListViewer extends Component {
     const { collection, list } = this.props;
     this.setState({ navigated: false });
     const tsMod = remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/');
-    this.context.router.history.push(`${getListLink(collection)}/b${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
+    this.context.router.history.push(`${getListLink(collection, list)}/b${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
   }
 
   getRowClass = ({ index }) => {
@@ -149,7 +149,7 @@ class SidebarListViewer extends Component {
         <SidebarHeader label="Collection Navigator" />
         <nav>
           <button onClick={this.returnToCollection} className="borderless">&larr; collection main</button>
-          <Link to={getListLink(collection)}>catalog view <CatalogIcon /></Link>
+          <Link to={getListLink(collection, list)}>catalog view <CatalogIcon /></Link>
         </nav>
         <header className="list-header">
           <h4>

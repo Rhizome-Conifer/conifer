@@ -470,7 +470,7 @@ class CollectionDetailUI extends Component {
         cellRenderer: LinkRenderer,
         columnData: {
           collection,
-          list: activeList ? list.get('slug') : null
+          list: activeList ? list : null
         },
         dataKey: 'url',
         flexGrow: 1,

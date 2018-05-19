@@ -67,7 +67,7 @@ export function getCollectionLink(coll, pages = false) {
 }
 
 export function getListLink(coll, list) {
-  return `${getCollectionLink(coll)}/${list.get('slug')}`;
+  return `${getCollectionLink(coll)}/list/${list.get('slug')}`;
 }
 
 export function isMS() {
