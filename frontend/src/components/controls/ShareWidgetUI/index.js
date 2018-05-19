@@ -68,7 +68,7 @@ class ShareWidgetUI extends Component {
 
   setPublic = () => {
     const { collection } = this.props;
-    this.props.setPublic(collection.get('user'), collection.get('id'));
+    this.props.setPublic(collection.get('owner'), collection.get('id'));
   }
 
   thirdPartyJS = () => {

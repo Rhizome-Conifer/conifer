@@ -9,7 +9,8 @@ from datetime import date
 from pywb.utils.loaders import load
 from warcio.timeutils import timestamp20_now
 
-from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent
+from webrecorder.utils import sanitize_title
+from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent, RedisNamedMap
 from webrecorder.models.recording import Recording
 from webrecorder.models.pages import PagesMixin
 from webrecorder.models.list_bookmarks import BookmarkList
@@ -23,7 +24,10 @@ class Collection(PagesMixin, RedisUniqueComponent):
     ALL_KEYS = 'c:{coll}:*'
 
     RECS_KEY = 'c:{coll}:recs'
+
     LISTS_KEY = 'c:{coll}:lists'
+    LIST_NAMES_KEY = 'c:{coll}:ln'
+    LIST_REDIR_KEY = 'c:{coll}:lr'
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
 
@@ -40,6 +44,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
         self.recs = RedisUnorderedList(self.RECS_KEY, self)
         self.lists = RedisOrderedList(self.LISTS_KEY, self)
 
+        self.list_names = RedisNamedMap(self.LIST_NAMES_KEY, self, self.LIST_REDIR_KEY)
+
     @classmethod
     def init_props(cls, config):
         cls.COLL_CDXJ_TTL = config['coll_cdxj_ttl']
@@ -55,8 +61,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
                               access=self.access)
 
         rec = recording.init_new(**kwargs)
-
-        recording.name = recording.my_id
 
         self.recs.add_object(recording, owner=True)
 
@@ -82,6 +86,10 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         self.lists.insert_ordered_object(bookmark_list, before_blist)
 
+        slug = self.get_list_slug(props.get('title'))
+        if slug:
+            self.list_names.add_object(slug, bookmark_list)
+
         return bookmark_list
 
     def get_lists(self, load=True, public_only=False):
@@ -94,6 +102,24 @@ class Collection(PagesMixin, RedisUniqueComponent):
             #lists = [blist for blist in lists if self.access.can_read_list(blist)]
 
         return lists
+
+    def get_list_slug(self, title):
+        if not title:
+            return
+
+        slug = sanitize_title(title)
+        if not slug:
+            return
+
+        return self.list_names.reserve_obj_name(slug, allow_dupe=True)
+
+    def update_list_slug(self, new_title, bookmark_list):
+        old_title = bookmark_list.get_prop('title')
+        if old_title == new_title:
+            return False
+
+        new_slug = self.list_names.rename(bookmark_list, sanitize_title(new_title))
+        return new_slug is not None
 
     def get_list(self, blist_id):
         if not self.lists.contains_id(blist_id):
@@ -110,6 +136,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         return bookmark_list
 
+    def get_list_by_slug_or_id(self, slug_or_id):
+        # see if its a slug, otherwise treat as id
+        blist_id = self.list_names.name_to_id(slug_or_id) or slug_or_id
+
+        return self.get_list(blist_id)
+
     def move_list_before(self, blist, before_blist):
         self.access.assert_can_write_coll(self)
 
@@ -121,6 +153,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
         if not self.lists.remove_ordered_object(blist):
             return False
 
+        self.list_names.remove_object(blist)
+
         blist.delete_me()
 
         return True
@@ -131,7 +165,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         else:
             return len(self.get_lists())
 
-    def init_new(self, title, desc='', public=False):
+    def init_new(self, slug, title, desc='', public=False):
         coll = self._create_new_id()
 
         key = self.INFO_KEY.format(coll=coll)
@@ -182,10 +216,14 @@ class Collection(PagesMixin, RedisUniqueComponent):
                         include_rec_pages=False,
                         include_pages=True,
                         include_bookmarks='first',
-                        convert_date=True):
+                        convert_date=True,
+                        check_slug=False):
 
         data = super(Collection, self).serialize(convert_date=convert_date)
-        self.data['id'] = self.name
+        data['id'] = self.name
+
+        if check_slug:
+            data['slug_matched'] = (check_slug == data.get('slug'))
 
         is_owner = self.access.is_coll_owner(self)
 

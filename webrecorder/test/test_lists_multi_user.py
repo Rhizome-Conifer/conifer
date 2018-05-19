@@ -49,7 +49,7 @@ class TestListsAPIAccess(FullStackTests):
 
         assert res.json['list']
         list_id = res.json['list']['id']
-        assert len(list_id) == 8
+        #assert len(list_id) == 8
         assert res.json['list']['public'] == public
 
         # Bookmark
@@ -59,7 +59,7 @@ class TestListsAPIAccess(FullStackTests):
                  }
 
         res = self.testapp.post_json('/api/v1/list/%s/bookmarks?user={0}&coll=some-coll'.format(user) % list_id, params=params)
-        assert len(res.json['bookmark']['id']) == 8
+        #assert len(res.json['bookmark']['id']) == 8
 
         # Another  Bookmark
         params = {'title': 'Another Bookmark',
@@ -183,10 +183,12 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.get('/api/v1/lists?user=another&coll=some-coll')
         assert len(res.json['lists']) == 1
         assert res.json['lists'][0]['title'] == 'Public List'
+        assert res.json['lists'][0]['slug'] == 'public-list'
 
         res = self.testapp.get('/api/v1/collection/some-coll?user=another')
         assert len(res.json['collection']['lists']) == 1
         assert res.json['collection']['lists'][0]['title'] == 'Public List'
+        assert res.json['collection']['lists'][0]['slug'] == 'public-list'
         assert res.json['collection']['featured_list'] == self.pub_list_pub_coll
 
         assert 'pages' not in res.json['collection']

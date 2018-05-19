@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
 import { Panel } from 'react-bootstrap';
 
 import SetStatus from 'components/SetStatus';
@@ -20,6 +21,9 @@ class HttpStatus extends PureComponent {
 
     return (
       <SetStatus code={status}>
+        <Helmet>
+          <title>There's been an error</title>
+        </Helmet>
         <Panel bsStyle="danger" className="wr-error-notice">
           <Panel.Heading>There's been an error</Panel.Heading>
           <Panel.Body>

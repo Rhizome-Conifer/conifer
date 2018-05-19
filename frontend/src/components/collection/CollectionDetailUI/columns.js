@@ -4,10 +4,10 @@ import defaultHeaderRenderer from 'react-virtualized/dist/commonjs/Table/default
 import { DropTarget, DragSource } from 'react-dnd';
 
 import { draggableTypes, untitledEntry } from 'config';
+import { capitalize, getCollectionLink, getListLink, remoteBrowserMod } from 'helpers/utils';
 
 import RemoveWidget from 'components/RemoveWidget';
 import TimeFormat from 'components/TimeFormat';
-import { capitalize, remoteBrowserMod } from 'helpers/utils';
 
 
 export function BasicRenderer({ cellData }) {
@@ -36,10 +36,10 @@ export function BrowserRenderer({ cellData, columnData: { browsers } }) {
 }
 
 
-export function LinkRenderer({ cellData, rowData, columnData: { collection, listId } }) {
-  const linkTo = listId ?
-    `/${collection.get('user')}/${collection.get('id')}/list/${listId}-${rowData.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}` :
-    `/${collection.get('user')}/${collection.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}`;
+export function LinkRenderer({ cellData, rowData, columnData: { collection, list } }) {
+  const linkTo = list ?
+    `${getListLink(collection, list)}/b${rowData.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}` :
+    `${getCollectionLink(collection)}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}`;
   return (
     <Link
       to={linkTo}

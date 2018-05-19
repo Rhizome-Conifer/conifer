@@ -15,7 +15,8 @@ class ShareWidget extends Component {
 
   static propTypes = {
     activeBrowser: PropTypes.string,
-    activeListId: PropTypes.string,
+    activeBookmarkId: PropTypes.string,
+    activeList: PropTypes.string,
     collection: PropTypes.object,
     match: PropTypes.object,
     setCollPublic: PropTypes.func,
@@ -25,13 +26,14 @@ class ShareWidget extends Component {
   }
 
   render() {
-    const { activeBrowser, activeListId, collection, match: { params: { user, coll } }, showLoginModal, timestamp, url } = this.props;
+    const { activeBrowser, activeBookmarkId, activeList, collection,
+            match: { params: { user, coll } }, showLoginModal, timestamp, url } = this.props;
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp, '/');
-    const activeList = activeListId ? `list/${activeListId}/` : '';
+    const listFrag = activeList ? `list/${activeList}/b${activeBookmarkId}/` : '';
 
-    const shareUrl = `${appHost}/${user}/${coll}/${activeList}${tsMod}${url}`;
-    const embedUrl = `${appHost}/_embed/${user}/${coll}/${activeList}${tsMod}${url}`;
+    const shareUrl = `${appHost}/${user}/${coll}/${listFrag}${tsMod}${url}`;
+    const embedUrl = `${appHost}/_embed/${user}/${coll}/${listFrag}${tsMod}${url}`;
 
     return (
       <ShareWidgetUI
@@ -48,7 +50,8 @@ class ShareWidget extends Component {
 const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
-    activeListId: app.getIn(['controls', 'activeListId']),
+    activeBookmarkId: app.getIn(['controls', 'activeBookmarkId']),
+    activeList: app.getIn(['controls', 'activeList']),
     collection: app.get('collection'),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])

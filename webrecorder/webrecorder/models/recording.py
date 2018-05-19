@@ -58,6 +58,10 @@ class Recording(RedisUniqueComponent):
         cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
         #cls.COMMIT_WAIT_TEMPL = config['commit_wait_templ']
 
+    @property
+    def name(self):
+        return self.my_id
+
     def init_new(self, title='', desc='', rec_type=None, ra_list=None):
         rec = self._create_new_id()
 

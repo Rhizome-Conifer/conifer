@@ -461,6 +461,7 @@ class TestRegisterMigrate(FullStackTests):
         res = self.testapp.post_json('/api/v1/collection/test-migrate?user=someuser', params=params)
 
         assert res.json['collection']['id'] == 'test-coll'
+        assert res.json['collection']['slug'] == 'test-coll'
         assert res.json['collection']['title'] == 'Test Coll'
 
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
@@ -473,6 +474,19 @@ class TestRegisterMigrate(FullStackTests):
 
         # coll replay
         res = self.testapp.get('/someuser/test-coll/mp_/http://httpbin.org/get?food=bar')
+        res.charset = 'utf-8'
+
+        assert '"food": "bar"' in res.text, res.text
+
+    def test_orig_slug_after_rename(self):
+        res = self.testapp.get('/api/v1/collection/test-migrate?user=someuser')
+
+        assert res.json['collection']['id'] == 'test-coll'
+        assert res.json['collection']['slug'] == 'test-coll'
+        assert res.json['collection']['title'] == 'Test Coll'
+        assert res.json['collection']['slug_matched'] == False
+
+        res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar')
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text

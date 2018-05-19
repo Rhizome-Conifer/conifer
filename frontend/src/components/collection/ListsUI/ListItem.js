@@ -119,7 +119,7 @@ class ListItem extends PureComponent {
     const item = (
       <li className={classes} key={list.get('id')} style={{ opacity: isDragging ? 0 : 1 }}>
         <div className="wrapper">
-          <Link to={`/${collUser}/${collId}/list/${list.get('id')}`} title={list.get('title')}>
+          <Link to={`/${collUser}/${collId}/list/${list.get('slug')}`} title={list.get('title')}>
             { list.get('title') }
           </Link>
           {

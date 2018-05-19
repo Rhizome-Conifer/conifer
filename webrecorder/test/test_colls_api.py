@@ -33,7 +33,9 @@ class TestWebRecCollsAPI(FullStackTests):
 
         assert coll['size'] == 0
         assert coll['id'] == 'temp'
+        assert coll['slug'] == 'temp'
         assert coll['title'] == 'Temp'
+        assert coll['slug_matched'] == True
         assert coll['created_at'] <= datetime.utcnow().isoformat()
 
         assert self.ISO_DT_RX.match(coll['created_at'])
@@ -53,6 +55,9 @@ class TestWebRecCollsAPI(FullStackTests):
 
         assert colls[0]['id'] == 'temp'
         assert colls[0]['title'] == 'Temp'
+        assert 'pages' not in colls[0]
+        assert 'recordings' not in colls[0]
+        assert 'lists' not in colls[0]
         #assert colls[0]['download_url'] == 'http://localhost:80/{user}/temp/$download'.format(user=self.anon_user)
 
     def test_error_no_such_coll(self):

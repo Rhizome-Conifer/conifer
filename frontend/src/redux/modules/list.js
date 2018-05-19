@@ -76,16 +76,18 @@ export default function list(state = initialState, action = {}) {
     case LIST_LOAD:
       return state.merge({
         loading: true,
-        loaded: false
+        loaded: false,
+        error: null
       });
     case LIST_LOAD_SUCCESS:
       return state.merge({
         loading: false,
         loaded: true,
+        error: null,
         ...action.result.list
       });
     case LIST_LOAD_FAIL:
-      return state.set('error', true);
+      return state.merge(action.error);
     case BOOKMARK_EDIT_SUCCESS:
       return state.set('bkEdited', true);
     case RESET_BOOKMARK_EDIT:
