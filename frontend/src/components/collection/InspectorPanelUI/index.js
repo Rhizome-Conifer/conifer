@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 import { defaultBookmarkDesc, untitledEntry } from 'config';
+import { getCollectionLink } from 'helpers/utils';
 
 import InlineEditor from 'components/InlineEditor';
 import RemoteBrowserDisplay from 'components/collection/RemoteBrowserDisplay';
@@ -92,7 +93,7 @@ class InspectorPanelUI extends PureComponent {
                       <li>
                         <h5>Page Url</h5>
                         <span className="value">
-                          <Link to={`/${collection.get('user')}/${collection.get('id')}/${pg.get('timestamp')}/${pg.get('url')}`}>{pg.get('url')}</Link>
+                          <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`}>{pg.get('url')}</Link>
                         </span>
                       </li>
                       <li>
@@ -106,7 +107,7 @@ class InspectorPanelUI extends PureComponent {
                         <li>
                           <h5>Session ID</h5>
                           <span className="value">
-                            <Link to={`/${collection.get('user')}/${collection.get('id')}/pages?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
+                            <Link to={`${getCollectionLink(collection, true)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
                           </span>
                         </li>
                       }

@@ -6,6 +6,7 @@ import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { defaultCollDesc, draggableTypes } from 'config';
+import { getCollectionLink } from 'helpers/utils';
 
 import Modal from 'components/Modal';
 import SidebarHeader from 'components/SidebarHeader';
@@ -28,7 +29,7 @@ class ListsUI extends Component {
   };
 
   static propTypes = {
-    activeListId: PropTypes.string,
+    activeListSlug: PropTypes.string,
     addToList: PropTypes.func,
     bulkAddToList: PropTypes.func,
     collection: PropTypes.object,
@@ -202,13 +203,13 @@ class ListsUI extends Component {
   goToIndex = () => {
     const { collection } = this.props;
     if (this.context.canAdmin || collection.get('public_index')) {
-      this.props.history.push(`/${collection.get('user')}/${collection.get('id')}/pages`);
+      this.props.history.push(getCollectionLink(collection, true));
     }
   }
 
   render() {
     const { canAdmin } = this.context;
-    const { activeListId, collection, list, publicIndex } = this.props;
+    const { activeListSlug, collection, list, publicIndex } = this.props;
     const { created, editModal, edited, editId, isCreating, lists, title } = this.state;
 
     // wait until collection is loaded
@@ -235,7 +236,7 @@ class ListsUI extends Component {
           onClose={this.close}>
           <div className="lists-body">
             {
-              activeListId &&
+              activeListSlug &&
                 <React.Fragment>
                   <header
                     className="collection-header"
@@ -270,7 +271,7 @@ class ListsUI extends Component {
                     index={idx}
                     key={listObj.get('id')}
                     list={listObj}
-                    selected={list && listObj.get('id') === activeListId}
+                    selected={list && listObj.get('slug') === activeListSlug}
                     saveSort={this.saveListSort}
                     sort={this.sortLists} />
                 ))
@@ -279,9 +280,9 @@ class ListsUI extends Component {
                 (publicIndex || canAdmin) &&
                   <React.Fragment>
                     <li className="divider" />
-                    <li className={classNames('all-pages', { selected: !activeListId })}>
+                    <li className={classNames('all-pages', { selected: !activeListSlug })}>
                       <div className="wrapper">
-                        <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`} title="See all pages in this collection" className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
+                        <Link to={getCollectionLink(collection, true)} title="See all pages in this collection" className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
                         {
                           canAdmin &&
                             <button

@@ -50,11 +50,11 @@ class RemoveWidget extends Component {
         return;
       }
 
-      this.props.callback();
       this.setState({ confirmRemove: false });
+      this.props.callback();
+    } else {
+      this.setState({ confirmRemove: true });
     }
-
-    this.setState({ confirmRemove: true });
   }
 
   outsideClickCheck = (evt) => {

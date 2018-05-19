@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { Button } from 'react-bootstrap';
 
+import { getCollectionLink } from 'helpers/utils';
+
 import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 
 import HttpStatus from 'components/HttpStatus';
@@ -40,7 +42,7 @@ class CollectionManagementUI extends Component {
 
   downloadAction = (evt) => {
     const { collection } = this.props;
-    window.location = `/${collection.get('user')}/${collection.get('id')}/$download`;
+    window.location = `${getCollectionLink(collection)}/$download`;
   }
 
 

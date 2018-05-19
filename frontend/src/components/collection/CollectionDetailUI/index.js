@@ -12,7 +12,7 @@ import { Button } from 'react-bootstrap';
 import config from 'config';
 
 import { setSort } from 'redux/modules/collection';
-import { getStorage, inStorage, setStorage, range } from 'helpers/utils';
+import { getCollectionLink, getListLink, getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
 import { CollectionFilters, CollectionHeader,
          InspectorPanel, Lists, ListHeader, Sidebar } from 'containers';
@@ -20,6 +20,7 @@ import { CollectionFilters, CollectionHeader,
 import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
 import OutsideClick from 'components/OutsideClick';
+import RedirectWithStatus from 'components/RedirectWithStatus';
 import Resizable from 'components/Resizable';
 
 import 'react-virtualized/styles.css';
@@ -372,8 +373,14 @@ class CollectionDetailUI extends Component {
     const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
     const activeList = Boolean(params.list);
 
+    // don't render until loaded
+    if (!collection.get('loaded')) {
+      return null;
+    }
+
     const pageIndexAccess = !canAdmin && !collection.get('public_index') && !activeList;
     const listIndexAccess = !canAdmin && activeList && !list.get('loaded');
+    const collRedirect = collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug');
 
     if (collection.get('error') || pageIndexAccess || listIndexAccess) {
       return (
@@ -381,14 +388,26 @@ class CollectionDetailUI extends Component {
           {collection.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
+    } else if (collRedirect) {
+      const toUrl = activeList ? getListLink(collection, list) : getCollectionLink(collection, true);
+      return <RedirectWithStatus to={toUrl} status={301} />;
+    } else if (activeList && (list.get('error') || (!list.get('slug_matched') && params.list !== list.get('slug')))) {
+      if (list.get('loaded') && !list.get('slug_matched')) {
+        return (
+          <RedirectWithStatus to={getListLink(collection, list)} status={301} />
+        );
+      }
+      return (
+        <HttpStatus>
+          {
+            list.get('error') === 'no_such_list' &&
+              <span>Sorry, we couldn't find that list.</span>
+          }
+        </HttpStatus>
+      );
     }
 
-    // don't render until loaded
-    if (!collection.get('loaded')) {
-      return null;
-    }
-
-    const activeListId = params.list;
+    const activeListSlug = params.list;
     const indexPages = !canAdmin && !publicIndex ? List() : pages;
     const objects = activeList ? listBookmarks : indexPages;
     const displayObjects = activeList ? sortedBookmarks : indexPages;
@@ -416,7 +435,7 @@ class CollectionDetailUI extends Component {
       remove: {
         cellRenderer: RemoveRenderer,
         columnData: {
-          listId: activeListId,
+          listId: activeList ? list.get('id') : null,
           removeCallback: this.props.removeBookmark
         },
         dataKey: 'remove',
@@ -451,7 +470,7 @@ class CollectionDetailUI extends Component {
         cellRenderer: LinkRenderer,
         columnData: {
           collection,
-          listId: activeListId
+          list: activeList ? list.get('slug') : null
         },
         dataKey: 'url',
         flexGrow: 1,
@@ -487,7 +506,7 @@ class CollectionDetailUI extends Component {
             storageKey="collNavigator"
             overrideHeight={this.state.overrideHeight}>
             <Lists
-              activeListId={activeListId}
+              activeListSlug={activeListSlug}
               collapsibleToggle={this.collapsibleToggle}
               pages={objects}
               pageSelection={selectedPageIdx} />

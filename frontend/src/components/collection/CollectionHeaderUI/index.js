@@ -5,7 +5,7 @@ import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
 import { CSSTransitionGroup } from 'react-transition-group';
 
 import { defaultCollDesc } from 'config';
-import { doubleRAF, stopPropagation } from 'helpers/utils';
+import { doubleRAF, getCollectionLink, stopPropagation } from 'helpers/utils';
 
 import { DeleteCollection, Upload } from 'containers';
 
@@ -89,17 +89,17 @@ class CollectionHeaderUI extends Component {
 
   newCapture = () => {
     const { collection, history } = this.props;
-    history.push(`/${collection.get('user')}/${collection.get('id')}/$new`);
+    history.push(`${getCollectionLink(collection)}/$new`);
   }
 
   manageCollection = () => {
     const { collection, history } = this.props;
-    history.push(`/${collection.get('user')}/${collection.get('id')}/management`);
+    history.push(`${getCollectionLink(collection)}/management`);
   }
 
   downloadCollection = () => {
     const { collection } = this.props;
-    window.location = `/${collection.get('user')}/${collection.get('id')}/$download`;
+    window.location = `${getCollectionLink(collection)}/$download`;
   }
 
   howTo = () => {
@@ -109,7 +109,7 @@ class CollectionHeaderUI extends Component {
 
   togglePublicView = () => {
     const { collection, history } = this.props;
-    history.push(`/${collection.get('user')}/${collection.get('id')}`);
+    history.push(getCollectionLink(collection));
     // const { location: { pathname, search }} = this.props;
     // const asPublic = search && search.indexOf('asPublic') !== -1;
     // if (asPublic) {

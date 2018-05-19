@@ -61,7 +61,7 @@ app.use((req, res) => {
       </Provider>
     );
 
-    const outputHtml = ReactDOM.renderToNodeStream(
+    const outputHtml = ReactDOM.renderToString(
       <BaseHtml
         assets={webpackIsomorphicTools.assets()}
         component={component}
@@ -71,10 +71,9 @@ app.use((req, res) => {
     if (context.url) {
       res.redirect(context.status || 301, context.url);
     } else {
-      res.status(context.status ? context.status : 200);
+      res.status(context.status || 200);
       global.navigator = { userAgent: req.headers['user-agent'] };
-      res.write('<!doctype html>');
-      outputHtml.pipe(res);
+      res.send(`<!doctype html>\n ${outputHtml}`);
     }
   });
 });

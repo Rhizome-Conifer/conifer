@@ -57,6 +57,8 @@ export default function collection(state = initialState, action = {}) {
           public_index,
           recordings,
           size,
+          slug,
+          slug_matched,
           timespan,
           title,
           updated_at
@@ -94,6 +96,8 @@ export default function collection(state = initialState, action = {}) {
         lists,
         recordings,
         size,
+        slug,
+        slug_matched,
         timespan,
         title,
         updated_at,

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Alert, Button } from 'react-bootstrap';
 
 import { defaultListDesc } from 'config';
+import { getCollectionLink, getListLink } from 'helpers/utils';
 
 import InlineEditor from 'components/InlineEditor';
 import Truncate from 'components/Truncate';
@@ -43,13 +44,13 @@ class ListHeaderUI extends PureComponent {
     const first = list.getIn(['bookmarks', 0]);
 
     if (first) {
-      history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${first.get('id')}/${first.get('timestamp')}/${first.get('url')}`);
+      history.push(`${getListLink(collection, list)}/b${first.get('id')}/${first.get('timestamp')}/${first.get('url')}`);
     }
   }
 
   viewCollection = () => {
     const { collection, history } = this.props;
-    history.push(`/${collection.get('user')}/${collection.get('id')}/pages`);
+    history.push(getCollectionLink(collection));
   }
 
   render() {
@@ -83,7 +84,7 @@ class ListHeaderUI extends PureComponent {
             success={this.props.listEdited} />
         </Truncate>
         <div className="creator">
-          Created by <Link to={`/${user}`}>{user}</Link>, with {bookmarks} from the collection <Link to={`/${user}/${collection.get('id')}`}>{collection.get('title')}</Link>
+          Created by <Link to={`/${user}`}>{user}</Link>, with {bookmarks} from the collection <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link>
         </div>
         <div className="function-row">
           <Button onClick={this.startReplay} className="rounded">VIEW PAGES</Button>

@@ -62,6 +62,14 @@ export function fixMalformedUrls(url) {
   return url;
 }
 
+export function getCollectionLink(coll, pages = false) {
+  return `/${coll.get('user')}/${coll.get('slug')}${pages ? '/pages' : ''}`;
+}
+
+export function getListLink(coll, list) {
+  return `${getCollectionLink(coll)}/${list.get('slug')}`;
+}
+
 export function isMS() {
   if (/(MSIE|Edge|rv:11)/i.test(navigator.userAgent)) {
     return true;

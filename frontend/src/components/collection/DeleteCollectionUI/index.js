@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, ControlLabel, FormControl, FormGroup } from 'react-bootstrap';
 
+import { getCollectionLink } from 'helpers/utils';
+
 import Modal from 'components/Modal';
 
 
@@ -71,7 +73,7 @@ class DeleteCollectionUI extends Component {
               <Button onClick={this.deleteCollection} disabled={this.validateConfirmDelete() !== 'success'} bsStyle="danger">Confirm Delete</Button>
             </React.Fragment>
           }>
-          <p>Are you sure you want to delete the collection <b>{collection.get('title')}</b> {`/${collection.get('user')}/${collection.get('id')}/`}?</p>
+          <p>Are you sure you want to delete the collection <b>{collection.get('title')}</b> {getCollectionLink(collection)}?</p>
           <p>If you confirm, <b>all recordings will be permanently deleted</b>.</p>
           <p>Be sure to download the collection first if you would like to keep any data.</p>
           <FormGroup validationState={this.validateConfirmDelete()}>

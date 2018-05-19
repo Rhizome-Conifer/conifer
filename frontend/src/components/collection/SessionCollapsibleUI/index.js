@@ -9,6 +9,7 @@ import { List } from 'immutable';
 import { Button, Overlay, Popover } from 'react-bootstrap';
 
 import { defaultRecDesc } from 'config';
+import { getCollectionLink } from 'helpers/utils';
 
 import { getRecordingBookmarks } from 'redux/modules/recordings';
 
@@ -62,7 +63,7 @@ class SessionCollapsibleUI extends PureComponent {
   downloadAction = (evt) => {
     evt.stopPropagation();
     const { collection, recording } = this.props;
-    window.location = `/${collection.get('user')}/${collection.get('id')}/${recording.get('id')}/$download`;
+    window.location = `${getCollectionLink(collection)}/${recording.get('id')}/$download`;
   }
 
   editDescription = (txt) => {
