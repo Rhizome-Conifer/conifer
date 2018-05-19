@@ -61,7 +61,7 @@ class CollectionHeaderUI extends Component {
 
   setPublic = () => {
     const { collection } = this.props;
-    this.props.editCollection(collection.get('user'), collection.get('id'), { public: !collection.get('public') });
+    this.props.editCollection(collection.get('owner'), collection.get('id'), { public: !collection.get('public') });
   }
 
   expandHeader = () => {
@@ -79,12 +79,12 @@ class CollectionHeaderUI extends Component {
 
   editCollTitle = (title) => {
     const { collection } = this.props;
-    this.props.editCollection(collection.get('user'), collection.get('id'), { title });
+    this.props.editCollection(collection.get('owner'), collection.get('id'), { title });
   }
 
   editDesc = (desc) => {
     const { collection, editCollection } = this.props;
-    editCollection(collection.get('user'), collection.get('id'), { desc });
+    editCollection(collection.get('owner'), collection.get('id'), { desc });
   }
 
   newCapture = () => {
@@ -193,7 +193,7 @@ class CollectionHeaderUI extends Component {
               </div> :
               <div className="overview" key="collOverview">
                 <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
-                  <Capstone user={collection.get('user')} />
+                  <Capstone user={collection.get('owner')} />
                   <div className="heading-container">
                     {
                       canAdmin && !isAnon &&

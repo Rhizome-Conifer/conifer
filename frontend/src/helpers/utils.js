@@ -63,7 +63,7 @@ export function fixMalformedUrls(url) {
 }
 
 export function getCollectionLink(coll, pages = false) {
-  return `/${coll.get('user')}/${coll.get('slug')}${pages ? '/pages' : ''}`;
+  return `/${coll.get('owner')}/${coll.get('slug')}${pages ? '/pages' : ''}`;
 }
 
 export function getListLink(coll, list) {

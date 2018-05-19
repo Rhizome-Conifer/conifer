@@ -31,12 +31,12 @@ class ListHeaderUI extends PureComponent {
 
   editListTitle = (title) => {
     const { collection, editList, list } = this.props;
-    editList(collection.get('user'), collection.get('id'), list.get('id'), { title });
+    editList(collection.get('owner'), collection.get('id'), list.get('id'), { title });
   }
 
   editDesc = (desc) => {
     const { collection, list, editList } = this.props;
-    editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
+    editList(collection.get('owner'), collection.get('id'), list.get('id'), { desc });
   }
 
   startReplay = () => {
@@ -50,7 +50,7 @@ class ListHeaderUI extends PureComponent {
 
   viewCollection = () => {
     const { collection, history } = this.props;
-    history.push(getCollectionLink(collection));
+    history.push(getCollectionLink(collection, this.context.canAdmin));
   }
 
   render() {
@@ -58,7 +58,7 @@ class ListHeaderUI extends PureComponent {
     const { collection, list } = this.props;
     const bkCount = list.get('bookmarks').size;
     const bookmarks = `${bkCount} Page${bkCount === 1 ? '' : 's'}`;
-    const user = collection.get('user');
+    const user = collection.get('owner');
 
     return (
       <div className="wr-list-header">

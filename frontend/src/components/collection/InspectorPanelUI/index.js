@@ -36,7 +36,7 @@ class InspectorPanelUI extends PureComponent {
   saveEdit = (data) => {
     const { collection, list, selectedBk } = this.props;
     this.props.saveBookmarkEdit(
-      collection.get('user'),
+      collection.get('owner'),
       collection.get('id'),
       list.get('id'),
       selectedBk,

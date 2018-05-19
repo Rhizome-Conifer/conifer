@@ -33,7 +33,7 @@ class DeleteCollectionUI extends Component {
     const { confirmDelete } = this.state;
 
     if (collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
-      this.props.deleteColl(collection.get('user'), collection.get('id'));
+      this.props.deleteColl(collection.get('owner'), collection.get('id'));
     }
   }
 

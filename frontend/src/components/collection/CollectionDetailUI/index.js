@@ -485,8 +485,8 @@ class CollectionDetailUI extends Component {
         <Helmet>
           {
             activeList ?
-              <title>{`${list.get('title')} (List by ${collection.get('user')})`}</title> :
-              <title>{`${collection.get('title')} (Web archive collection by ${collection.get('user')})`}</title>
+              <title>{`${list.get('title')} (List by ${collection.get('owner')})`}</title> :
+              <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
           }
         </Helmet>
         <CustomDragLayer

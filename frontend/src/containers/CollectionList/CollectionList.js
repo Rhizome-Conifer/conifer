@@ -18,7 +18,7 @@ const preloadCollections = [
       const collections = state.app.get('collections');
       const { user } = params;
 
-      // if (!areCollsLoaded(state) || collections.get('user') !== user) {
+      // if (!areCollsLoaded(state) || collections.get('owner') !== user) {
       return dispatch(loadCollections(user));
       // }
 

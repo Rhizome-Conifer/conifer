@@ -105,24 +105,24 @@ class ListsUI extends Component {
 
     if (title) {
       this.setState({ created: false, isCreating: true });
-      createList(collection.get('user'), collection.get('id'), title);
+      createList(collection.get('owner'), collection.get('id'), title);
     }
   }
 
   sendDeleteList = (listId) => {
     const { collection } = this.props;
-    this.props.deleteList(collection.get('user'), collection.get('id'), listId);
+    this.props.deleteList(collection.get('owner'), collection.get('id'), listId);
   }
 
   sendEditList = (listId, data) => {
     const { collection } = this.props;
     this.setState({ edited: false, isEditing: true, editId: listId });
-    this.props.editList(collection.get('user'), collection.get('id'), listId, data);
+    this.props.editList(collection.get('owner'), collection.get('id'), listId, data);
   }
 
   toggleIndexVisibility = () => {
     const { collection, editColl, publicIndex } = this.props;
-    editColl(collection.get('user'), collection.get('id'), { public_index: !publicIndex });
+    editColl(collection.get('owner'), collection.get('id'), { public_index: !publicIndex });
   }
 
   clearInput = () => this.setState({ title: '' })
@@ -152,7 +152,7 @@ class ListsUI extends Component {
   saveListSort = () => {
     const { collection } = this.props;
     const order = this.state.lists.map(o => o.get('id')).toArray();
-    this.props.sortLists(collection.get('user'), collection.get('id'), order);
+    this.props.sortLists(collection.get('owner'), collection.get('id'), order);
   }
 
   minimize = () => {
@@ -184,7 +184,7 @@ class ListsUI extends Component {
     // if so, bulk add selection, otherwise add single page
     if (pageSelection === null || selType === 'number' ||
         (selType === 'object' && !pageIds.includes(page.id))) {
-      this.props.addToList(collection.get('user'), collection.get('id'), list, page);
+      this.props.addToList(collection.get('owner'), collection.get('id'), list, page);
     } else {
       const pagesToAdd = [];
       for(const pgIdx of pageSelection) {
@@ -194,7 +194,7 @@ class ListsUI extends Component {
             pages.get(pgIdx).get('page').toJS()
         );
       }
-      this.props.bulkAddToList(collection.get('user'), collection.get('id'), list, pagesToAdd);
+      this.props.bulkAddToList(collection.get('owner'), collection.get('id'), list, pagesToAdd);
     }
   }
 
@@ -266,7 +266,7 @@ class ListsUI extends Component {
                   <ListItem
                     dropCallback={this.pageDropCallback}
                     collId={collection.get('id')}
-                    collUser={collection.get('user')}
+                    collUser={collection.get('owner')}
                     editList={this.sendEditList}
                     index={idx}
                     key={listObj.get('id')}

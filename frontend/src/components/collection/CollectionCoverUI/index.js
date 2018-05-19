@@ -55,16 +55,16 @@ class CollectionCoverUI extends Component {
       );
     }
 
-    const user = collection.get('user');
+    const user = collection.get('owner');
     const collId = collection.get('id');
     const lists = collection.get('lists') ? collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size) : [];
 
     return (
       <div className="coll-cover">
         <Helmet>
-          <title>{`${collection.get('title')} (Web archive collection by ${collection.get('user')})`}</title>
+          <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
         </Helmet>
-        <Capstone user={collection.get('user')} />
+        <Capstone user={collection.get('owner')} />
         <h1>{collection.get('title')}</h1>
         <div className="description">
           <WYSIWYG

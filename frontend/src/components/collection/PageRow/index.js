@@ -42,7 +42,7 @@ class PageRow extends Component {
         role="button">
         <td className="timestamp"><TimeFormat dt={ts} /></td>
         <td className="bookmark-title">
-          <Link to={`/${coll.get('user')}/${coll.get('id')}/${remoteBrowserMod(browser, ts)}/${url}`}>
+          <Link to={`/${coll.get('owner')}/${coll.get('id')}/${remoteBrowserMod(browser, ts)}/${url}`}>
             {page.get('title') || 'No Title'}
           </Link>
         </td>

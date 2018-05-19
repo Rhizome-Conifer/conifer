@@ -57,7 +57,7 @@ class SessionCollapsibleUI extends PureComponent {
 
   confirmDelete = () => {
     const { collection, deleteRec, recording } = this.props;
-    deleteRec(collection.get('user'), collection.get('id'), recording.get('id'));
+    deleteRec(collection.get('owner'), collection.get('id'), recording.get('id'));
   }
 
   downloadAction = (evt) => {
@@ -68,7 +68,7 @@ class SessionCollapsibleUI extends PureComponent {
 
   editDescription = (txt) => {
     const { collection, editRec, recording } = this.props;
-    editRec(collection.get('user'), collection.get('id'), recording.get('id'), { desc: txt });
+    editRec(collection.get('owner'), collection.get('id'), recording.get('id'), { desc: txt });
   }
 
   toggleDeletePopover = (evt) => {
@@ -77,7 +77,7 @@ class SessionCollapsibleUI extends PureComponent {
 
     // check if deletion will effect any lists
     if (!this.state.deletePopover) {
-      dispatch(getRecordingBookmarks(collection.get('user'), collection.get('id'), recording.get('id')));
+      dispatch(getRecordingBookmarks(collection.get('owner'), collection.get('id'), recording.get('id')));
     }
 
     this.setState({ deletePopover: !this.state.deletePopover });

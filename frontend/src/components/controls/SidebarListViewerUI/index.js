@@ -131,12 +131,12 @@ class SidebarListViewer extends Component {
 
   editListTitle = (title) => {
     const { collection, list } = this.props;
-    this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { title });
+    this.props.editList(collection.get('owner'), collection.get('id'), list.get('id'), { title });
   }
 
   editListDesc = (desc) => {
     const { collection, list } = this.props;
-    this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
+    this.props.editList(collection.get('owner'), collection.get('id'), list.get('id'), { desc });
   }
 
   returnToCollection = () => this.props.showNavigator(true)

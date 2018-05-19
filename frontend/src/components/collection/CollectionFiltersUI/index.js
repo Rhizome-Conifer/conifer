@@ -63,7 +63,7 @@ class CollectionFiltersUI extends Component {
       pagesToAdd.push(pages.get(selectedPageIdx).toJS());
     }
 
-    this.props.addPagesToLists(collection.get('user'), collection.get('id'), pagesToAdd, lists);
+    this.props.addPagesToLists(collection.get('owner'), collection.get('id'), pagesToAdd, lists);
     this.closeAddToList();
   }
 
