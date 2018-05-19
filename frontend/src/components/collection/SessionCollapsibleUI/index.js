@@ -9,6 +9,7 @@ import { List } from 'immutable';
 import { Button, Overlay, Popover } from 'react-bootstrap';
 
 import { defaultRecDesc } from 'config';
+import { getCollectionLink } from 'helpers/utils';
 
 import { getRecordingBookmarks } from 'redux/modules/recordings';
 
@@ -56,18 +57,18 @@ class SessionCollapsibleUI extends PureComponent {
 
   confirmDelete = () => {
     const { collection, deleteRec, recording } = this.props;
-    deleteRec(collection.get('user'), collection.get('id'), recording.get('id'));
+    deleteRec(collection.get('owner'), collection.get('id'), recording.get('id'));
   }
 
   downloadAction = (evt) => {
     evt.stopPropagation();
     const { collection, recording } = this.props;
-    window.location = `/${collection.get('user')}/${collection.get('id')}/${recording.get('id')}/$download`;
+    window.location = `${getCollectionLink(collection)}/${recording.get('id')}/$download`;
   }
 
   editDescription = (txt) => {
     const { collection, editRec, recording } = this.props;
-    editRec(collection.get('user'), collection.get('id'), recording.get('id'), { desc: txt });
+    editRec(collection.get('owner'), collection.get('id'), recording.get('id'), { desc: txt });
   }
 
   toggleDeletePopover = (evt) => {
@@ -76,7 +77,7 @@ class SessionCollapsibleUI extends PureComponent {
 
     // check if deletion will effect any lists
     if (!this.state.deletePopover) {
-      dispatch(getRecordingBookmarks(collection.get('user'), collection.get('id'), recording.get('id')));
+      dispatch(getRecordingBookmarks(collection.get('owner'), collection.get('id'), recording.get('id')));
     }
 
     this.setState({ deletePopover: !this.state.deletePopover });

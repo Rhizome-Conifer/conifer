@@ -5,10 +5,12 @@ import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
 
-import HttpStatus from 'components/HttpStatus';
-import SizeFormat from 'components/SizeFormat';
+import { getCollectionLink } from 'helpers/utils';
 
 import { Upload } from 'containers';
+
+import HttpStatus from 'components/HttpStatus';
+import SizeFormat from 'components/SizeFormat';
 import { NewCollection } from 'components/siteComponents';
 
 import './style.scss';
@@ -133,7 +135,7 @@ class CollectionListUI extends Component {
                       <li className="left-buffer list-group-item" key={coll.get('id')}>
                         <Row>
                           <Col xs={9}>
-                            <Link to={`/${userParam}/${coll.get('id')}${canAdmin ? '/pages' : ''}`} className="collection-title">{coll.get('title')}</Link>
+                            <Link to={getCollectionLink(coll, canAdmin)} className="collection-title">{coll.get('title')}</Link>
                           </Col>
                           <Col xs={2}>
                             <SizeFormat bytes={coll.get('size')} />

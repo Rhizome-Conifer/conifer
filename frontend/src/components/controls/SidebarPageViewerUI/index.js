@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { batchActions } from 'redux-batched-actions';
 
 import { untitledEntry } from 'config';
+import { getCollectionLink } from 'helpers/utils';
 
 import { updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
@@ -105,7 +106,7 @@ class SidebarPageViewer extends Component {
           <button onClick={this.returnToCollection} className="borderless">&larr; collection main</button>
           {
             (this.context.canAdmin || collection.get('public_index')) &&
-              <Link to={`/${collection.get('user')}/${collection.get('id')}/pages`}>catalog view <CatalogIcon /></Link>
+              <Link to={getCollectionLink(collection, true)}>catalog view <CatalogIcon /></Link>
           }
         </nav>
         <header className="pages-header">

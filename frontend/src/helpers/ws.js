@@ -199,8 +199,8 @@ class WebSocketHandler {
 
     if (this.currMode.includes('replay')) {
       if (this.params.bookmarkId) {
-        const { listId, bookmarkId } = this.params;
-        prefix = `${config.appHost}/${this.user}/${this.coll}/list/${listId}-${bookmarkId}/`;
+        const { listSlug, bookmarkId } = this.params;
+        prefix = `${config.appHost}/${this.user}/${this.coll}/list/${listSlug}/b${bookmarkId}/`;
       } else {
         prefix = `${config.appHost}/${this.user}/${this.coll}/`;
       }

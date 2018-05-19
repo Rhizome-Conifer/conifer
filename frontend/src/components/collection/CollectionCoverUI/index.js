@@ -4,9 +4,11 @@ import Helmet from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 import { defaultCollDesc } from 'config';
+import { getCollectionLink, getListLink } from 'helpers/utils';
 
 import Capstone from 'components/collection/Capstone';
 import HttpStatus from 'components/HttpStatus';
+import RedirectWithStatus from 'components/RedirectWithStatus';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
 import { ListIcon } from 'components/icons';
@@ -22,6 +24,7 @@ class CollectionCoverUI extends Component {
   static propTypes = {
     collection: PropTypes.object,
     history: PropTypes.object,
+    match: PropTypes.object,
     orderdPages: PropTypes.object
   };
 
@@ -31,14 +34,14 @@ class CollectionCoverUI extends Component {
 
     if (!canAdmin && orderdPages.size) {
       const pg = orderdPages.get(0);
-      return `/${collection.get('user')}/${collection.get('id')}/${pg.get('timestamp')}/${pg.get('url')}`;
+      return `${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`;
     }
 
-    return `/${collection.get('user')}/${collection.get('id')}/pages`;
+    return getCollectionLink(collection, true);
   }
 
   render() {
-    const { collection } = this.props;
+    const { collection, match: { params: { coll } } } = this.props;
 
     if (collection.get('error')) {
       return (
@@ -46,18 +49,22 @@ class CollectionCoverUI extends Component {
           {collection.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
+    } else if (collection.get('loaded') && !collection.get('slug_matched') && coll !== collection.get('slug')) {
+      return (
+        <RedirectWithStatus to={getCollectionLink(collection)} status={301} />
+      );
     }
 
-    const user = collection.get('user');
+    const user = collection.get('owner');
     const collId = collection.get('id');
     const lists = collection.get('lists') ? collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size) : [];
 
     return (
       <div className="coll-cover">
         <Helmet>
-          <title>{`${collection.get('title')} (Web archive collection by ${collection.get('user')})`}</title>
+          <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
         </Helmet>
-        <Capstone user={collection.get('user')} />
+        <Capstone user={collection.get('owner')} />
         <h1>{collection.get('title')}</h1>
         <div className="description">
           <WYSIWYG
@@ -72,7 +79,7 @@ class CollectionCoverUI extends Component {
                 {
                   lists.map((list) => {
                     const bk = list.getIn(['bookmarks', '0']);
-                    const loc = `/${user}/${collId}/list/${list.get('id')}-${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
+                    const loc = `${getListLink(collection, list)}/b${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
                     return (
                       <li key={list.get('id')}>
                         <Link to={loc}>

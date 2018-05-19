@@ -57,6 +57,8 @@ export default function collection(state = initialState, action = {}) {
           public_index,
           recordings,
           size,
+          slug,
+          slug_matched,
           timespan,
           title,
           updated_at
@@ -92,12 +94,14 @@ export default function collection(state = initialState, action = {}) {
         'public': action.result.collection.public,
         public_index,
         lists,
+        owner,
         recordings,
         size,
+        slug,
+        slug_matched,
         timespan,
         title,
-        updated_at,
-        user: owner,
+        updated_at
       });
     }
     case COLL_LOAD_FAIL:

@@ -5,18 +5,19 @@ import ReactGA from 'react-ga';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 
-import { remoteBrowserMod } from 'helpers/utils';
+import { getCollectionLink, remoteBrowserMod } from 'helpers/utils';
 import config from 'config';
 
 import { getActivePage } from 'redux/selectors';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, setBookmarkId, setListId, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
+import { getArchives, setBookmarkId, setList, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
 import { listLoaded, load as loadList } from 'redux/modules/list';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 import { toggle as toggleSidebar } from 'redux/modules/sidebar';
 
 import HttpStatus from 'components/HttpStatus';
+import RedirectWithStatus from 'components/RedirectWithStatus';
 import Resizable from 'components/Resizable';
 import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer,
          SidebarCollectionViewer, SidebarPageViewer } from 'containers';
@@ -73,16 +74,16 @@ class Replay extends Component {
     if (config.gaId && this.props.loaded) {
       const { activeBrowser, match: { params }, timestamp, url } = nextProps;
       const tsMod = remoteBrowserMod(activeBrowser, timestamp);
-      const nextUrl = params.listId ?
-        `/${params.user}/${params.coll}/list/${params.listId}-${params.bookmarkId}/${tsMod}/${url}` :
+      const nextUrl = params.listSlug ?
+        `/${params.user}/${params.coll}/list/${params.listSlug}/b${params.bookmarkId}/${tsMod}/${url}` :
         `/${params.user}/${params.coll}/${tsMod}/${url}`;
 
       ReactGA.set({ page: nextUrl });
       ReactGA.pageview(nextUrl);
     }
 
-    const { match: { params: { listId } } } = this.props;
-    if (listId !== nextProps.match.params.listId && this.state.collectionNav) {
+    const { match: { params: { listSlug } } } = this.props;
+    if (listSlug !== nextProps.match.params.listSlug && this.state.collectionNav) {
       this.setState({ collectionNav: false });
     }
   }
@@ -102,16 +103,16 @@ class Replay extends Component {
   }
 
   getAppPrefix = () => {
-    const { activeBookmarkId, match: { params: { user, coll, listId } } } = this.props;
-    return listId ?
-      `${config.appHost}/${user}/${coll}/list/${listId}-${activeBookmarkId}/` :
+    const { activeBookmarkId, match: { params: { user, coll, listSlug } } } = this.props;
+    return listSlug ?
+      `${config.appHost}/${user}/${coll}/list/${listSlug}/b${activeBookmarkId}/` :
       `${config.appHost}/${user}/${coll}/`;
   }
 
   getContentPrefix = () => {
-    const { activeBookmarkId, match: { params: { user, coll, listId } } } = this.props;
-    return listId ?
-      `${config.contentHost}/${user}/${coll}/list/${listId}-${activeBookmarkId}/` :
+    const { activeBookmarkId, match: { params: { user, coll, listSlug } } } = this.props;
+    return listSlug ?
+      `${config.contentHost}/${user}/${coll}/list/${listSlug}/b${activeBookmarkId}/` :
       `${config.contentHost}/${user}/${coll}/`;
   }
 
@@ -120,31 +121,57 @@ class Replay extends Component {
   }
 
   render() {
-    const { activeBookmarkId, activeBrowser, collection, dispatch, match: { params }, recording,
-            reqId, timestamp, url } = this.props;
+    const { activeBookmarkId, activeBrowser, collection, dispatch, list,
+            match: { params }, recording, reqId, timestamp, url } = this.props;
     const { product } = this.context;
 
+    // coll access
     if (collection.get('error')) {
       return (
         <HttpStatus>
           {collection.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
+    } else if (collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug')) {
+      return (
+        <RedirectWithStatus
+          to={`${getCollectionLink(collection)}/${remoteBrowserMod(activeBrowser, timestamp)}/${url}`}
+          status={301} />
+      );
+    }
+
+    // list access
+    if (params.listSlug && (list.get('error') || (!list.get('slug_matched') && params.list !== list.get('slug')))) {
+      if (list.get('loaded') && !list.get('slug_matched')) {
+        return (
+          <RedirectWithStatus
+            to={`${getCollectionLink(collection)}/list/${list.get('slug')}/b${activeBookmarkId}/${timestamp}/${url}`}
+            status={301} />
+        );
+      }
+      return (
+        <HttpStatus>
+          {
+            list.get('error') === 'no_such_list' &&
+              <span>Sorry, we couldn't find that list.</span>
+          }
+        </HttpStatus>
+      );
     }
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
-    const listId = params.listId;
+    const listSlug = params.listSlug;
     const bkId = params.bookmarkId;
 
-    const shareUrl = listId ?
-      `${config.appHost}${params.user}/${params.coll}/list/${listId}-${bkId}/${tsMod}/${url}` :
+    const shareUrl = listSlug ?
+      `${config.appHost}${params.user}/${params.coll}/list/${listSlug}/b${bkId}/${tsMod}/${url}` :
       `${config.appHost}${params.user}/${params.coll}/${tsMod}/${url}`;
 
     if (!collection.get('loaded')) {
       return null;
     }
 
-    const navigator = listId ?
+    const navigator = listSlug ?
       <SidebarListViewer showNavigator={this.showCollectionNav} /> :
       <SidebarPageViewer showNavigator={this.showCollectionNav} />;
 
@@ -170,7 +197,7 @@ class Replay extends Component {
               {
                 this.state.collectionNav ?
                   (<SidebarCollectionViewer
-                    activeListId={listId}
+                    activeList={listSlug}
                     showNavigator={this.showCollectionNav} />) :
                   navigator
               }
@@ -216,22 +243,22 @@ const initialData = [
   },
   {
     // set url, ts, list and bookmark id in store
-    promise: ({ location: { hash, search }, match: { params: { bookmarkId, br, listId, ts, splat } }, store: { dispatch } }) => {
+    promise: ({ location: { hash, search }, match: { params: { bookmarkId, br, listSlug, ts, splat } }, store: { dispatch } }) => {
       const compositeUrl = `${splat}${search || ''}${hash || ''}`;
 
       return dispatch(batchActions([
         ts ? updateUrlAndTimestamp(compositeUrl, ts) : updateUrl(compositeUrl),
         setBrowser(br || null),
-        setListId(listId || null),
+        setList(listSlug || null),
         setBookmarkId(bookmarkId || null)
       ]));
     }
   },
   {
     // check for list playback, load list
-    promise: ({ match: { params: { user, coll, listId } }, store: { dispatch, getState } }) => {
-      if (listId && !listLoaded(listId, getState())) {
-        return dispatch(loadList(user, coll, listId));
+    promise: ({ match: { params: { user, coll, listSlug } }, store: { dispatch, getState } }) => {
+      if (listSlug && !listLoaded(listSlug, getState())) {
+        return dispatch(loadList(user, coll, listSlug));
       }
 
       return undefined;
@@ -275,6 +302,7 @@ const mapStateToProps = (outerState) => {
     auth: app.get('auth'),
     collection: app.get('collection'),
     expanded: app.getIn(['sidebar', 'expanded']),
+    list: app.get('list'),
     loaded,
     recording: activePage ? activePage.get('rec') : null,
     reqId: app.getIn(['remoteBrowsers', 'reqId']),

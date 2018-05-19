@@ -5,7 +5,7 @@ import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
 import { CSSTransitionGroup } from 'react-transition-group';
 
 import { defaultCollDesc } from 'config';
-import { doubleRAF, stopPropagation } from 'helpers/utils';
+import { doubleRAF, getCollectionLink, stopPropagation } from 'helpers/utils';
 
 import { DeleteCollection, Upload } from 'containers';
 
@@ -61,7 +61,7 @@ class CollectionHeaderUI extends Component {
 
   setPublic = () => {
     const { collection } = this.props;
-    this.props.editCollection(collection.get('user'), collection.get('id'), { public: !collection.get('public') });
+    this.props.editCollection(collection.get('owner'), collection.get('id'), { public: !collection.get('public') });
   }
 
   expandHeader = () => {
@@ -79,27 +79,27 @@ class CollectionHeaderUI extends Component {
 
   editCollTitle = (title) => {
     const { collection } = this.props;
-    this.props.editCollection(collection.get('user'), collection.get('id'), { title });
+    this.props.editCollection(collection.get('owner'), collection.get('id'), { title });
   }
 
   editDesc = (desc) => {
     const { collection, editCollection } = this.props;
-    editCollection(collection.get('user'), collection.get('id'), { desc });
+    editCollection(collection.get('owner'), collection.get('id'), { desc });
   }
 
   newCapture = () => {
     const { collection, history } = this.props;
-    history.push(`/${collection.get('user')}/${collection.get('id')}/$new`);
+    history.push(`${getCollectionLink(collection)}/$new`);
   }
 
   manageCollection = () => {
     const { collection, history } = this.props;
-    history.push(`/${collection.get('user')}/${collection.get('id')}/management`);
+    history.push(`${getCollectionLink(collection)}/management`);
   }
 
   downloadCollection = () => {
     const { collection } = this.props;
-    window.location = `/${collection.get('user')}/${collection.get('id')}/$download`;
+    window.location = `${getCollectionLink(collection)}/$download`;
   }
 
   howTo = () => {
@@ -109,7 +109,7 @@ class CollectionHeaderUI extends Component {
 
   togglePublicView = () => {
     const { collection, history } = this.props;
-    history.push(`/${collection.get('user')}/${collection.get('id')}`);
+    history.push(getCollectionLink(collection));
     // const { location: { pathname, search }} = this.props;
     // const asPublic = search && search.indexOf('asPublic') !== -1;
     // if (asPublic) {
@@ -193,7 +193,7 @@ class CollectionHeaderUI extends Component {
               </div> :
               <div className="overview" key="collOverview">
                 <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
-                  <Capstone user={collection.get('user')} />
+                  <Capstone user={collection.get('owner')} />
                   <div className="heading-container">
                     {
                       canAdmin && !isAnon &&

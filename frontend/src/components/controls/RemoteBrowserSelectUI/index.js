@@ -18,7 +18,7 @@ class RemoteBrowserSelectUI extends Component {
     active: PropTypes.bool,
     activeBookmarkId: PropTypes.string,
     activeBrowser: PropTypes.string,
-    activeListId: PropTypes.string,
+    activeList: PropTypes.string,
     browsers: PropTypes.object,
     getBrowsers: PropTypes.func,
     loading: PropTypes.bool,
@@ -56,7 +56,7 @@ class RemoteBrowserSelectUI extends Component {
   }
 
   selectBrowser = (id) => {
-    const { active, activeBookmarkId, activeListId, params, timestamp, url } = this.props;
+    const { active, activeBookmarkId, activeList, params, timestamp, url } = this.props;
     const { currMode } = this.context;
 
     this.setState({ open: false });
@@ -67,7 +67,7 @@ class RemoteBrowserSelectUI extends Component {
       if (currMode.includes('replay')) {
         // list replay
         if (activeBookmarkId) {
-          this.context.router.history.push(`/${user}/${coll}/list/${activeListId}-${activeBookmarkId}/${remoteBrowserMod(id, timestamp)}/${url}`);
+          this.context.router.history.push(`/${user}/${coll}/list/${activeList}/b${activeBookmarkId}/${remoteBrowserMod(id, timestamp)}/${url}`);
         } else {
           this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
         }

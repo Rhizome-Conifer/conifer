@@ -82,7 +82,7 @@ const userRoutes = [
     exact: true,
     footer: false,
     getLocation: ({ user, coll, list }) => {
-      return `/${user}/${coll}/list/${list.split('-')[0]}`;
+      return `/${user}/${coll}/list/${list}`;
     },
     name: 'collectionDetailList'
   }
@@ -152,7 +152,7 @@ const controllerRoutes = [
     name: 'extract'
   },
   {
-    path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    path: `${userPath}/:coll/list/:listSlug([a-zA-Z0-9-]+)/b:bookmarkId([0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
     classOverride: '',
     component: Replay,
     exact: true,
@@ -160,7 +160,7 @@ const controllerRoutes = [
     name: 'list rb replay'
   },
   {
-    path: `${userPath}/:coll/list/:listId([a-zA-Z0-9]+)-:bookmarkId([a-zA-Z0-9]+)/:ts([0-9]+)?/:splat(.*)`,
+    path: `${userPath}/:coll/list/:listSlug([a-zA-Z0-9-]+)/b:bookmarkId([0-9]+)/:ts([0-9]+)?/:splat(.*)`,
     classOverride: '',
     component: Replay,
     exact: true,

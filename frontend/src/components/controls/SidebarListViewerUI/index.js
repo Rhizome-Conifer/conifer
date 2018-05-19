@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 import { batchActions } from 'redux-batched-actions';
 
 import { defaultListDesc, untitledEntry } from 'config';
-import { remoteBrowserMod } from 'helpers/utils';
+import { getListLink, remoteBrowserMod } from 'helpers/utils';
 
 import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
@@ -104,14 +104,14 @@ class SidebarListViewer extends Component {
 
     // TODO: should we use router to add history changes?
     // const tsMod = remoteBrowserMod(page.get('browser'), page.get('timestamp'), '/');
-    // this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${page.get('id')}/${tsMod}${page.get('url')}`);
+    // this.context.router.history.push(`${getListLink(collection, list)}/b${page.get('id')}/${tsMod}${page.get('url')}`);
   }
 
   onSelectRow = ({ index, rowData }) => {
     const { collection, list } = this.props;
     this.setState({ navigated: false });
     const tsMod = remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/');
-    this.context.router.history.push(`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}-${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
+    this.context.router.history.push(`${getListLink(collection, list)}/b${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
   }
 
   getRowClass = ({ index }) => {
@@ -131,12 +131,12 @@ class SidebarListViewer extends Component {
 
   editListTitle = (title) => {
     const { collection, list } = this.props;
-    this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { title });
+    this.props.editList(collection.get('owner'), collection.get('id'), list.get('id'), { title });
   }
 
   editListDesc = (desc) => {
     const { collection, list } = this.props;
-    this.props.editList(collection.get('user'), collection.get('id'), list.get('id'), { desc });
+    this.props.editList(collection.get('owner'), collection.get('id'), list.get('id'), { desc });
   }
 
   returnToCollection = () => this.props.showNavigator(true)
@@ -149,7 +149,7 @@ class SidebarListViewer extends Component {
         <SidebarHeader label="Collection Navigator" />
         <nav>
           <button onClick={this.returnToCollection} className="borderless">&larr; collection main</button>
-          <Link to={`/${collection.get('user')}/${collection.get('id')}/list/${list.get('id')}`}>catalog view <CatalogIcon /></Link>
+          <Link to={getListLink(collection, list)}>catalog view <CatalogIcon /></Link>
         </nav>
         <header className="list-header">
           <h4>

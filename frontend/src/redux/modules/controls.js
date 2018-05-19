@@ -2,7 +2,7 @@ import config from 'config';
 import { fromJS } from 'immutable';
 
 
-const ACTIVE_LIST_ID = 'wr/ctrls/ACTIVE_LIST_ID';
+const ACTIVE_LIST = 'wr/ctrls/ACTIVE_LIST';
 const SET_AUTOSCROLL = 'wr/ctrls/SET_AUTOSCROLL';
 const SET_MODE = 'wr/ctrls/SET_MODE';
 const SET_EXTRACTABLE = 'wr/ctrls/SET_EXTRACTABLE';
@@ -20,7 +20,7 @@ const GET_ARCHIVES_FAIL = 'wr/ctrls/ARCHIVES_FAIL';
 
 const initialState = fromJS({
   mode: null,
-  activeListId: null,
+  activeList: null,
   activeBookmarkId: null,
   autoscroll: false,
   extractable: null,
@@ -32,8 +32,8 @@ const initialState = fromJS({
 
 export default function controls(state = initialState, action = {}) {
   switch(action.type) {
-    case ACTIVE_LIST_ID:
-      return state.set('activeListId', action.id);
+    case ACTIVE_LIST:
+      return state.set('activeList', action.slug);
     case GET_ARCHIVES:
       return state.set('archivesLoading', true);
     case GET_ARCHIVES_SUCCESS:
@@ -110,10 +110,10 @@ export function setMode(mode) {
 }
 
 
-export function setListId(id) {
+export function setList(slug) {
   return {
-    type: ACTIVE_LIST_ID,
-    id
+    type: ACTIVE_LIST,
+    slug
   };
 }
 
