@@ -228,6 +228,7 @@ class TestUpload(FullStackTests):
         assert 'This is your first collection' in collection['desc']
         assert collection['id'] == 'default-collection-2'
         assert collection['title'] == 'Default Collection'
+        assert collection['slug'] == 'default-collection-2'
 
         assert collection['created_at'] == TestUpload.created_at_0
         assert collection['recordings'][0]['created_at'] == TestUpload.created_at_1
@@ -238,9 +239,11 @@ class TestUpload(FullStackTests):
         assert len(collection['lists']) == 2
         assert collection['lists'][0]['desc'] == 'List Description Goes Here!'
         assert collection['lists'][0]['title'] == 'New List'
+        assert collection['lists'][0]['slug'] == 'new-list'
 
         assert collection['lists'][1]['desc'] == 'Another List'
         assert collection['lists'][1]['title'] == 'New List 2'
+        assert collection['lists'][1]['slug'] == 'new-list-2'
 
         # Pages
         assert len(collection['pages']) == 2
@@ -308,6 +311,7 @@ class TestUpload(FullStackTests):
 
         assert "This collection doesn't yet have" in collection['desc']
         assert collection['id'] == 'temporary-collection'
+        assert collection['slug'] == 'temporary-collection'
         assert collection['title'] == 'Temporary Collection'
 
         assert collection['pages'] == [{'id': self.ID_1,

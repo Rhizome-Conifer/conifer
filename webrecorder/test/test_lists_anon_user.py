@@ -311,12 +311,12 @@ class TestListsAnonUserAPI(FullStackTests):
         assert 'Example Domain' in res.text
 
     def test_replay_1(self):
-        res = self.testapp.get('/{user}/temp/list/1002/mp_/http://example.com/'.format(user=self.anon_user), status=200)
+        res = self.testapp.get('/{user}/temp/list/1002/b1/mp_/http://example.com/'.format(user=self.anon_user), status=200)
         res.charset = 'utf-8'
 
         assert 'Example Domain' in res.text
 
-        assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
+        assert 'wbinfo.top_url = "http://localhost:80/{user}/temp/list/1002/b1/http://example.com/"'.format(user=self.anon_user) in res.text, res.text
 
     # Pages
     # ========================================================================

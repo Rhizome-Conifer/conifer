@@ -28,7 +28,6 @@ class BookmarkList(RedisUniqueComponent):
 
         self.data = {'title': props['title'],
                      'desc': props.get('desc', ''),
-                     'slug': props.get('slug'),
                      'public': self._from_bool(props.get('public')),
                      'owner': self.owner.my_id,
                     }
