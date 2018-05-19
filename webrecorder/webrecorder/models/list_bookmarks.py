@@ -59,7 +59,7 @@ class BookmarkList(RedisUniqueComponent):
         self.redis.hset(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid, json.dumps(bookmark))
 
         if page_id:
-            collection.add_page_bookmark(page_id, bid, self.my_id)
+            #collection.add_page_bookmark(page_id, bid, self.my_id)
             self.load_pages([bookmark])
 
         return bookmark
@@ -124,8 +124,8 @@ class BookmarkList(RedisUniqueComponent):
         # check if bookmark had a page_id
         bookmark = self.get_bookmark(bid)
         page_id = bookmark.get('page_id')
-        if page_id:
-            self.get_owner().remove_page_bookmark(page_id, bid)
+        #if page_id:
+        #    self.get_owner().remove_page_bookmark(page_id, bid)
 
         return self.redis.hdel(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid) == 1
 

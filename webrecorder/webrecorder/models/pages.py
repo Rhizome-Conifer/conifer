@@ -132,7 +132,7 @@ class PagesMixin(object):
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
         self.redis.hdel(key, bid)
 
-    def get_page_bookmarks(self, rec_id=None):
+    def get_page_bookmarks2(self, rec_id=None):
         bookmarks = {}
 
         if not rec_id:
@@ -147,4 +147,30 @@ class PagesMixin(object):
             bookmarks[pid] = self.redis.hgetall(key)
 
         return bookmarks
+
+    def get_page_bookmarks(self, rec_id=None):
+        all_pages = None
+        if rec_id:
+            all_pages = self.list_rec_pages_by_id(rec_id)
+            all_pages = [page['id'] for page in all_pages]
+
+        all_lists = self.get_lists()
+        all_bookmarks = {}
+
+        for blist in all_lists:
+            for bk in blist.get_bookmarks():
+                page_id = bk.get('page_id')
+                if not page_id:
+                    continue
+
+                if rec_id and not page_id in all_pages:
+                    continue
+
+                if page_id not in all_bookmarks:
+                    all_bookmarks[page_id] = {bk['id']: blist.my_id}
+                else:
+                    all_bookmarks[page_id][bk['id']] = blist.my_id
+
+        return all_bookmarks
+
 
