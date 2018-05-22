@@ -54,8 +54,7 @@ const mapStateToProps = (outerState) => {
     auth: app.get('auth'),
     collection: app.get('collection'),
     recordingEdited: app.getIn(['recordings', 'edited']),
-    recordings: isLoaded ? getOrderedRecordings(app, true) : null,
-    loaded: reduxAsyncConnect.loaded,
+    recordings: isLoaded ? getOrderedRecordings(app, true) : null
   };
 };
 

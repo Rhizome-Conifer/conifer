@@ -13,6 +13,7 @@ export HandleIcon from './Handle';
 export HelpIcon from './Help';
 export InfoIcon from './Info';
 export ListIcon from './List';
+export LoaderIcon from './Loader';
 export MailIcon from './Mail';
 export MoreIcon from './More';
 export PatchIcon from './Patch';

@@ -14,7 +14,8 @@ const mapStateToProps = ({ app }) => {
     activeCollection: getActiveCollection(app),
     extractable: app.getIn(['controls', 'extractable']),
     selectedBrowser: app.getIn(['remoteBrowsers', 'selectedBrowser']),
-    username: app.getIn(['user', 'username'])
+    username: app.getIn(['user', 'username']),
+    spaceUtilization: app.getIn(['user', 'space_utilization'])
   };
 };
 

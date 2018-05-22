@@ -74,6 +74,7 @@ module.exports = Object.assign({
   ravenConfig: null,
   saveDelay: 1000,
   storageKey: 'wr__',
+  supportEmail: 'support@webrecorder.io',
   untitledEntry: 'Untitled Document',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   app: {
