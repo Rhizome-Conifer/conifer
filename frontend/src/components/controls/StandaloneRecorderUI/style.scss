@@ -1,9 +1,9 @@
 @import 'src/vars';
 
 .rb-dropdown, .extract-selector, .patch-selector  {
-    .container {
-        width: 60vw;
-    }
+    // .container {
+    //     width: 60vw;
+    // }
 
     #cnt-button {
         border-width: .1rem 0 .1rem .1rem;
@@ -77,6 +77,10 @@
         font-weight: 600;
     }
 
+    .input-group {
+        padding: 0 1.5rem;
+    }
+
     .wr-editor {
         width: 100%;
         max-width: inherit;
@@ -90,48 +94,31 @@
         align-items: center;
     }
 
-    .rb-dropdown {
-        .dropdown {
-            width: 100%;
-
-            #cnt-button {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                width: 100%;
-                border-width: .1rem;
-            }
-
-            .dropdown-menu {
-                width: 100%;
-
-                .container {
-                    width: 100%;
-                }
-            }
-        }
+    textarea {
+        width: 100%;
+        padding: .5rem;
     }
 }
 
 @media (min-width: 544px) and (max-width: 767px) {
-    .start-recording-homepage .containerized .container {
+    .start-recording-homepage .container {
         width: 544px;
     }
 }
 @media (min-width: 768) and (max-width: 99.1rem) {
-    .start-recording-homepage .containerized .container {
+    .start-recording-homepage .container {
         width: 768px;
     }
 }
 @media (min-width: 992px) and (max-width: 1199px) {
-    .start-recording-homepage .containerized .container {
+    .start-recording-homepage .container {
         /* grid width * column fraction + grid gutter * 2 */
-        width: calc(992px * 0.6 + 60px);
+        width: calc(992px * 0.6 + 30px);
     }
 }
 @media (min-width: 1200px) {
-    .start-recording-homepage .containerized .container {
+    .start-recording-homepage .container {
         /* grid width * column fraction + grid gutter * 2 */
-        width: calc(1200px * 0.6 + 60px);
+        width: calc(1200px * 0.6 + 30px);
     }
 }

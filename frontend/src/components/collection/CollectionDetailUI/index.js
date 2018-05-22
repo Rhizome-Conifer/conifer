@@ -502,6 +502,7 @@ class CollectionDetailUI extends Component {
         <Sidebar storageKey="collSidebar">
           <Resizable
             axis="y"
+            flexGrow={0}
             minHeight={200}
             storageKey="collNavigator"
             overrideHeight={this.state.overrideHeight}>

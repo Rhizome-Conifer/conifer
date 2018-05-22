@@ -12,9 +12,12 @@ import CollectionFiltersUI from 'components/collection/CollectionFiltersUI';
 
 const mapStateToProps = (outerState) => {
   const { app } = outerState;
+  const searchKey = outerState.search['collection.pages'];
+  const isIndexing = searchKey.isSearching && searchKey.text === '';
 
   return {
     collection: app.get('collection'),
+    isIndexing,
     querying: app.getIn(['pageQuery', 'querying']),
     searchText: getSearchText(outerState)
   };
