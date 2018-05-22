@@ -25,6 +25,8 @@ const REC_DELETE_FAIL = 'wr/recordings/REC_DELETE_FAIL';
 
 
 const initialState = fromJS({
+  deleting: false,
+  deleted: false,
   edited: false,
   loaded: false,
   loadingRecBK: false,
@@ -35,32 +37,6 @@ const initialState = fromJS({
 
 export default function recordings(state = initialState, action = {}) {
   switch (action.type) {
-    case RECS_LOAD:
-      return state.merge('loading': true);
-    case RECS_LOAD_SUCCESS:
-      return state.merge({
-        loading: false,
-        loaded: true,
-        recordings: action.result.recordings
-      });
-    case RECS_LOAD_FAIL:
-      return state.merge({
-        loading: false,
-        loaded: false,
-        error: action.error
-      });
-    case REC_EDIT_SUCCESS:
-      return state.merge({
-        edited: true,
-        ...action.data
-      });
-    case REC_EDITED_RESET:
-      return state.set('edited', false);
-    case REC_LOAD:
-      return state.merge({
-        loading: true
-      });
-
     case REC_BK:
       return state.merge({
         loadingRecBK: true,
@@ -73,6 +49,33 @@ export default function recordings(state = initialState, action = {}) {
         loadedRecBK: true,
         recordingBookmarks: action.result.page_bookmarks
       });
+    case REC_DELETE:
+      return state.merge({
+        deleting: true,
+        deleted: false
+      });
+    case REC_DELETE_SUCCESS:
+      return state.merge({
+        deleting: false,
+        deleted: true
+      });
+    case REC_DELETE_FAIL:
+      return state.merge({
+        deleting: false,
+        deleted: false,
+        error: action.result.error
+      });
+    case REC_EDIT_SUCCESS:
+      return state.merge({
+        edited: true,
+        ...action.data
+      });
+    case REC_EDITED_RESET:
+      return state.set('edited', false);
+    case REC_LOAD:
+      return state.merge({
+        loading: true
+      });
     case REC_LOAD_SUCCESS:
       return state.merge({
         loading: false,
@@ -80,6 +83,20 @@ export default function recordings(state = initialState, action = {}) {
         recording: action.result.recording
       });
     case REC_LOAD_FAIL:
+      return state.merge({
+        loading: false,
+        loaded: false,
+        error: action.error
+      });
+    case RECS_LOAD:
+      return state.merge('loading': true);
+    case RECS_LOAD_SUCCESS:
+      return state.merge({
+        loading: false,
+        loaded: true,
+        recordings: action.result.recordings
+      });
+    case RECS_LOAD_FAIL:
       return state.merge({
         loading: false,
         loaded: false,

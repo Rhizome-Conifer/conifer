@@ -17,7 +17,7 @@ import OutsideClick from 'components/OutsideClick';
 import SizeFormat from 'components/SizeFormat';
 import TimeFormat from 'components/TimeFormat';
 import WYSIWYG from 'components/WYSIWYG';
-import { DownloadIcon, TrashIcon } from 'components/icons';
+import { DownloadIcon, LoaderIcon, TrashIcon } from 'components/icons';
 
 import { DateHeader } from './ancillary';
 
@@ -38,6 +38,8 @@ class SessionCollapsibleUI extends PureComponent {
     recording: PropTypes.object,
     recordingBookmarks: PropTypes.object,
     recordingEdited: PropTypes.bool,
+    recordingDeleted: PropTypes.bool,
+    recordingDeleting: PropTypes.bool,
     saveEdit: PropTypes.func
   };
 
@@ -84,7 +86,8 @@ class SessionCollapsibleUI extends PureComponent {
   }
 
   render() {
-    const { expand, loadingRecBK, loadedRecBK, pagesBySession, recording, recordingBookmarks } = this.props;
+    const { expand, loadingRecBK, loadedRecBK, pagesBySession, recording,
+            recordingDeleting, recordingBookmarks } = this.props;
 
     const recId = recording.get('id');
     const pages = pagesBySession.hasOwnProperty(recId) ? pagesBySession[recId] : List();
@@ -174,7 +177,7 @@ class SessionCollapsibleUI extends PureComponent {
               }
               <div className="action-row">
                 <Button onClick={this.closeDeletePopover}>Cancel</Button>
-                <Button bsStyle="danger" onClick={this.confirmDelete}>OK</Button>
+                <Button bsStyle="danger" onClick={this.confirmDelete} disabled={recordingDeleting}>{recordingDeleting ? <LoaderIcon /> : 'OK'}</Button>
               </div>
             </OutsideClick>
           </Popover>

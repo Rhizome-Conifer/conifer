@@ -20,8 +20,6 @@ export default class ApiClient {
       ApiClient.prototype[method] = (path, { params, data } = {}, dataType = false) => new Promise((resolve, reject) => {
         const request = superagent[method](formatUrl(path));
 
-        console.log('requesting', formatUrl(path));
-
         if (params) {
           request.query(params);
         }
@@ -42,8 +40,6 @@ export default class ApiClient {
         }
 
         if (data) {
-          console.log('sending data..', data);
-
           if(dataType) {
             request.type(dataType);
           }

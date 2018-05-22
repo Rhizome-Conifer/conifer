@@ -24,7 +24,6 @@ class CollectionManagementUI extends Component {
     auth: PropTypes.object,
     collection: PropTypes.object,
     recordings: PropTypes.object,
-    loaded: PropTypes.bool,
     totalDuration: PropTypes.number
   };
 

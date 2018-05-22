@@ -15,12 +15,14 @@ const mapStateToProps = ({ app }) => {
 
   return {
     collection: app.get('collection'),
-    recordingEdited: app.getIn(['recordings', 'edited']),
-    recordings: isLoaded ? getOrderedRecordings(app, true) : null,
     loadedRecBK: app.getIn(['recordings', 'loadedRecBK']),
     loadingRecBK: app.getIn(['recordings', 'loadingRecBK']),
     pagesBySession: splitPagesBySession(app),
-    recordingBookmarks: app.getIn(['recordings', 'recordingBookmarks'])
+    recordingBookmarks: app.getIn(['recordings', 'recordingBookmarks']),
+    recordingDeleted: app.getIn(['recordings', 'deleted']),
+    recordingDeleting: app.getIn(['recordings', 'deleting']),
+    recordingEdited: app.getIn(['recordings', 'edited']),
+    recordings: isLoaded ? getOrderedRecordings(app, true) : null
   };
 };
 
