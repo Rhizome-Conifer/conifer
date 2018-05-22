@@ -35,6 +35,7 @@
     "react/no-unused-prop-types": 0,
     "react/no-did-mount-set-state": 1,
     "react/no-find-dom-node": 1,
+    "react/sort-comp": 1,
     "spaced-comment": 0,
     "no-unused-vars": 1,
     "keyword-spacing": 0,

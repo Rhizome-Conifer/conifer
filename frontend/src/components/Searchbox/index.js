@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, FormControl, InputGroup } from 'react-bootstrap';
 
-import { SearchIcon, XIcon } from 'components/icons';
+import { LoaderIcon, SearchIcon, XIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -47,7 +47,7 @@ class Searchbox extends PureComponent {
           {
             searchText ?
               <Button bsSize="sm" onClick={clear}><XIcon /></Button> :
-              <Button bsSize="sm" className={classNames({ indexing })} disabled={indexing}><SearchIcon /></Button>
+              <Button bsSize="sm" disabled={indexing}>{indexing ? <LoaderIcon /> : <SearchIcon />}</Button>
 
           }
         </InputGroup.Button>
