@@ -33,12 +33,13 @@ class TestAutoLogin(FullStackTests):
 
     def test_logged_in_record_1(self):
         self.set_uuids('Recording', ['rec-sesh'])
-        res = self.testapp.get('/_new/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
-        assert res.headers['Location'].endswith('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar')
+        res = self.testapp.get('/_new/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar&other=/record/bar')
+        assert res.headers['Location'].endswith('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get?food=bar&other=/record/bar')
         res = res.follow()
         res.charset = 'utf-8'
 
         assert '"food": "bar"' in res.text, res.text
+        assert '"other": "/record/bar"' in res.text, res.text
 
         assert self.testapp.cookies['__test_sesh'] != ''
 
@@ -47,6 +48,18 @@ class TestAutoLogin(FullStackTests):
         res = self.testapp.post_json('/api/v1/recording/rec-sesh/pages?user=test&coll=default-collection', params=page)
 
         assert res.json['page_id'] == self.ID_1
+
+    def test_logged_in_record_record_in_url(self):
+        # record 404 of path with '/record' in url
+        res = self.testapp.get('/test/default-collection/rec-sesh/record/mp_/http://httpbin.org/get/record/bar', status=404)
+
+        assert 'Not Found' in res.text
+
+    def test_logged_in_replay_record_in_url(self):
+        # replay same 404 of url with '/record' in url
+        res = self.testapp.get('/test/default-collection/mp_/http://httpbin.org/get/record/bar', status=404)
+
+        assert 'Not Found' in res.text
 
     def test_api_curr_user(self):
         res = self.testapp.get('/api/v1/auth/curr_user')
