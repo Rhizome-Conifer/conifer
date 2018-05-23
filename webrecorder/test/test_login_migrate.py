@@ -202,7 +202,6 @@ class TestLoginMigrate(FullStackTests):
         assert res.json == {'deleted_user': 'test'}
 
         def assert_delete():
-            #assert not os.path.isdir(user_dir) or
             assert len(os.listdir(user_dir)) == 0
             assert not os.path.isdir(st_warcs_dir)
             assert not os.path.isdir(st_index_dir)
@@ -210,6 +209,13 @@ class TestLoginMigrate(FullStackTests):
 
         self.sleep_try(0.3, 10.0, assert_delete)
 
+    def test_delete_user_dir(self):
+        user_dir = os.path.join(self.warcs_dir, 'test')
 
+        def assert_user_dir_removed():
+            assert not os.path.isdir(user_dir)
+
+        with patch('webrecorder.rec.tempchecker.TempChecker.USER_DIR_IDLE_TIME', 1.0) as p:
+            self.sleep_try(0.5, 10.0, assert_user_dir_removed)
 
 
