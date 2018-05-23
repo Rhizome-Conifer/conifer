@@ -23,6 +23,7 @@ class UserManagementUI extends Component {
     auth: PropTypes.object,
     history: PropTypes.object,
     loginFn: PropTypes.func.isRequired,
+    next: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     open: PropTypes.bool,
     showModal: PropTypes.func,
   };
@@ -46,8 +47,9 @@ class UserManagementUI extends Component {
     if (this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
       if (!nextProps.auth.get('loginError')) {
         this.closeLogin();
-        //this.props.history.push(`/${nextProps.auth.getIn(['user', 'username'])}`);
-        this.props.history.push('/');
+        this.props.history.push(
+          this.props.next !== null ? this.props.next : `/${nextProps.auth.getIn(['user', 'username'])}`
+        );
       } else {
         this.setState({ formError: true });
       }

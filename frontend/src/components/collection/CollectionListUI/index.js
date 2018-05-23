@@ -90,7 +90,6 @@ class CollectionListUI extends Component {
     const spaceUsed = user.getIn(['space_utilization', 'used']);
     const totalSpace = user.getIn(['space_utilization', 'total']);
     const remaining = spaceUsed / totalSpace;
-    console.log(remaining);
 
     let progressState = 'success';
     if (remaining >= 0.75) {

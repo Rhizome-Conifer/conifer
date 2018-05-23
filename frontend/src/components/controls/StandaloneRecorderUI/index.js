@@ -95,7 +95,7 @@ class StandaloneRecorderUI extends Component {
   closeAdvance = () => this.setState({ advOpen: false })
   openAdvance = () => this.setState({ advOpen: true })
 
-  triggerLogin = () => this.props.toggleLogin(true);
+  triggerLogin = () => this.props.toggleLogin(true, '/');
 
   render() {
     const { isAnon } = this.context;

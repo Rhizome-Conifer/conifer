@@ -12,6 +12,7 @@ const mapStateToProps = ({ app }) => {
   return {
     anonCTA: app.getIn(['userLogin', 'anonCTA']),
     auth: app.get('auth'),
+    next: app.getIn(['userLogin', 'next']),
     open: app.getIn(['userLogin', 'open'])
   };
 };

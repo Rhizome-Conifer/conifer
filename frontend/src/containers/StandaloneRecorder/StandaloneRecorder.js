@@ -21,7 +21,7 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    toggleLogin: bool => dispatch(showModal(bool, true))
+    toggleLogin: (bool, next) => dispatch(showModal(bool, true, next))
   };
 };
 
