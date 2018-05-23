@@ -42,11 +42,12 @@ a {
 }
 
 .caret {
-  transition: transform $slowShift ease-in-out;
+  transition: transform $quickShift ease-in-out;
+  transform: rotateZ(90deg);
 }
 
 .caret-flip {
-  transform: rotateZ(180deg);
+  transform: rotateZ(0deg);
 }
 
 .btn-primary {
