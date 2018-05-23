@@ -53,25 +53,35 @@ class TempChecker(object):
                 print('Waiting for commit')
                 return False
 
-        else:
-            if sesh and self.sesh_redis.get(self.sesh_key_template.format(sesh)):
+        # temp user key exists
+        elif self.data_redis.exists(User.INFO_KEY.format(user=temp_user)):
+            # if user still active, don't remove
+            if self.sesh_redis.get(self.sesh_key_template.format(sesh)):
                 #print('Skipping active temp ' + temp)
                 return False
 
+            # delete user
+            print('Deleting expired user: ' + temp_user)
+
+            user = User(my_id=temp_user,
+                        redis=self.data_redis,
+                        access=BaseAccess())
+
+            user.delete_me()
+
+            self.sesh_redis.delete(temp_key)
+
+            # delete temp dir on next pass
+            return True
+
+        # no user session, remove temp dir and everything in it
+        else:
             try:
                 print('Deleted expired temp dir: ' + temp_dir)
                 shutil.rmtree(temp_dir)
             except Exception as e:
                 print(e)
                 return False
-
-        user = User(my_id=temp_user,
-                    redis=self.data_redis,
-                    access=BaseAccess())
-
-        user.delete_me()
-
-        self.sesh_redis.delete(temp_key)
 
         return True
 
@@ -112,11 +122,11 @@ class TempChecker(object):
 
             temps_to_remove.add((temp_user, warc_dir))
 
-        temp_match = 'u:{0}*'.format(self.temp_prefix)
+        temp_match = User.INFO_KEY.format(user=self.temp_prefix + '*')
 
         #print('Temp Key Check')
 
-        for redis_key in self.data_redis.scan_iter(match=temp_match):
+        for redis_key in self.data_redis.scan_iter(match=temp_match, count=100):
             temp_user = redis_key.rsplit(':', 2)[1]
 
             if temp_user not in temps_to_remove:
