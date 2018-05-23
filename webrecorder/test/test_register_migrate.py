@@ -6,6 +6,7 @@ from itertools import count
 from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
 
 from webrecorder.models.usermanager import CLIUserManager
+from webrecorder.rec.storage import get_storage
 
 import re
 import os
@@ -19,7 +20,9 @@ all_closed = False
 class TestRegisterMigrate(FullStackTests):
     @classmethod
     def setup_class(cls):
-        super(TestRegisterMigrate, cls).setup_class(extra_config_file='test_no_invites_config.yaml', storage_worker=True)
+        super(TestRegisterMigrate, cls).setup_class(extra_config_file='test_no_invites_config.yaml',
+                                                    storage_worker=True,
+                                                    temp_worker=True)
         cls.val_reg = ''
 
     def test_anon_record_1(self):
@@ -85,10 +88,17 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_val_user_reg_post(self):
         params = {'reg': self.val_reg}
-        headers = {'Cookie': 'valreg=' + self.val_reg}
-        res = self.testapp.post('/_valreg', params=params, headers=headers)
+        headers = {'Cookie': '__test_sesh={0}; valreg={1}'.format(self.testapp.cookies['__test_sesh'], self.val_reg)}
 
-        assert res.headers['Location'] == 'http://localhost:80/'
+        def _get_storage(storage_type, redis):
+            time.sleep(1.1)
+            return get_storage(storage_type, redis)
+
+        with patch('webrecorder.models.collection.get_global_storage', _get_storage) as p:
+            res = self.testapp.post('/api/v1/auth/validate', params=params, headers=headers)
+            time.sleep(1.1)
+
+        assert res.json == {'first_coll_name': 'test-migrate', 'registered': 'someuser'}
 
         user_info = self.redis.hgetall('u:someuser:info')
         #user_info = self.appcont.manager._format_info(user_info)

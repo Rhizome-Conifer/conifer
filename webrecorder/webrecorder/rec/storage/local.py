@@ -29,7 +29,11 @@ class DirectLocalFileStorage(BaseStorage):
         os.makedirs(os.path.dirname(target_url), exist_ok=True)
 
         try:
-            shutil.copyfile(full_filename, target_url)
+            if full_filename != target_url:
+                shutil.copyfile(full_filename, target_url)
+            else:
+                print('Same File')
+
             return True
         except Exception as e:
             print(e)

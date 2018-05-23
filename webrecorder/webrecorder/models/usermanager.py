@@ -139,6 +139,11 @@ class UserManager(object):
             if self.invites_enabled:
                 self.delete_invite(email)
 
+            # extend session for upto 90 mins to store data to be migrated
+            # to allow time for user to validate registration
+            if move_info:
+                self.get_session().save()
+
         except ValidationException as ve:
             msg['validation'] = str(ve)
 
@@ -615,8 +620,18 @@ class UserManager(object):
     def move_temp_coll(self, user, move_info):
         from_user = self.all_users[move_info['from_user']]
         temp_coll = from_user.get_collection_by_name('temp')
-        from_user.move(temp_coll, move_info['to_coll'], user)
+        if not from_user.move(temp_coll, move_info['to_coll'], user):
+            return None
+
         temp_coll.set_prop('title', move_info['to_title'])
+
+        # don't delete data in temp user dir as its waiting to be committed!
+        self.get_session().set_anon_commit_wait()
+
+        for recording in temp_coll.get_recordings():
+            # will be marked for commit
+            recording.set_closed()
+
         return temp_coll
 
 

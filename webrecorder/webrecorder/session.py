@@ -15,11 +15,13 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature
 
 # ============================================================================
 class Session(object):
+    TEMP_KEY = 't:{0}'
     temp_prefix = ''
 
-    def __init__(self, cork, environ, key, sesh, ttl, is_restricted):
+    def __init__(self, cork, environ, redis, key, sesh, ttl, is_restricted):
         self.environ = environ
         self._sesh = sesh
+        self.redis = redis
         self.key = key
 
         self.curr_role = None
@@ -119,6 +121,11 @@ class Session(object):
             return user == anon
 
         return True
+
+    def set_anon_commit_wait(self):
+        anon = self._sesh.get('anon')
+        if anon:
+            self.redis.set(self.TEMP_KEY.format(anon), 'commit-wait')
 
     @property
     def curr_user(self):
@@ -253,6 +260,7 @@ class RedisSessionMiddleware(CookieGuard):
 
         session = Session(self.cork,
                           environ,
+                          self.redis,
                           redis_key,
                           data,
                           ttl,
@@ -265,7 +273,7 @@ class RedisSessionMiddleware(CookieGuard):
             session.template_params['anon_ttl'] = ttl
 
             anon_user = session['anon']
-            self.redis.set('t:' + anon_user, sesh_id)
+            self.redis.set(Session.TEMP_KEY.format(anon_user), sesh_id)
 
         if self.auto_login_user:
             session.template_params['auto_login'] = True

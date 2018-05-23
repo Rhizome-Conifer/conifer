@@ -5,6 +5,8 @@ import webtest
 import time
 
 from webrecorder.models.usermanager import CLIUserManager
+from webrecorder.rec.storage import get_storage
+from mock import patch
 
 
 # ============================================================================
@@ -12,7 +14,8 @@ class TestLoginMigrate(FullStackTests):
     @classmethod
     def setup_class(cls, **kwargs):
         super(TestLoginMigrate, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
-                                                 storage_worker=True)
+                                                 storage_worker=True,
+                                                 temp_worker=True)
 
         cls.user_manager = CLIUserManager()
 
@@ -107,7 +110,14 @@ class TestLoginMigrate(FullStackTests):
                   'moveTemp': True,
                  }
 
-        res = self.testapp.post_json('/api/v1/auth/login', params=params)
+
+        def _get_storage(storage_type, redis):
+            time.sleep(1.1)
+            return get_storage(storage_type, redis)
+
+        with patch('webrecorder.models.collection.get_global_storage', _get_storage) as p:
+            res = self.testapp.post_json('/api/v1/auth/login', params=params)
+            time.sleep(1.1)
 
         assert res.json == {'anon': False,
                             'coll_count': 2,
@@ -183,6 +193,7 @@ class TestLoginMigrate(FullStackTests):
 
     def test_delete_user(self):
         user_dir = os.path.join(self.warcs_dir, 'test')
+        anon_dir = os.path.join(self.warcs_dir, self.anon_user)
         st_warcs_dir = os.path.join(self.storage_today, 'warcs')
         st_index_dir = os.path.join(self.storage_today, 'indexes')
 
@@ -191,12 +202,20 @@ class TestLoginMigrate(FullStackTests):
         assert res.json == {'deleted_user': 'test'}
 
         def assert_delete():
-            #assert not os.path.isdir(user_dir) or
             assert len(os.listdir(user_dir)) == 0
             assert not os.path.isdir(st_warcs_dir)
             assert not os.path.isdir(st_index_dir)
+            assert not os.path.isdir(anon_dir)
 
         self.sleep_try(0.3, 10.0, assert_delete)
 
+    def test_delete_user_dir(self):
+        user_dir = os.path.join(self.warcs_dir, 'test')
+
+        def assert_user_dir_removed():
+            assert not os.path.isdir(user_dir)
+
+        with patch('webrecorder.rec.tempchecker.TempChecker.USER_DIR_IDLE_TIME', 1.0) as p:
+            self.sleep_try(0.5, 10.0, assert_user_dir_removed)
 
 
