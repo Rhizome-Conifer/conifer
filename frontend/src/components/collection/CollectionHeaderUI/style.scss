@@ -104,6 +104,14 @@ header.wr-collection-header {
                 }
             }
         }
+
+        .wr-editor {
+            width: 60rem;
+
+            @media (max-width: 600px) {
+                width: 90vw;
+            }
+        }
     }
 
     .collection-bar {
