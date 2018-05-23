@@ -8,5 +8,3 @@ session.secret: 'secret'
    
 session.key: __test_sesh
 
-session.key_template: test_key
-

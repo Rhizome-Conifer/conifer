@@ -36,15 +36,29 @@ class TempChecker(object):
     def _delete_if_expired(self, temp_user, temp_dir):
         temp_key = 't:' + temp_user
         sesh = self.sesh_redis.get(temp_key)
-        if sesh:
-            if self.sesh_redis.get(self.sesh_key_template.format(sesh)):
+
+        if sesh == 'commit-wait':
+            try:
+                print('Removing if empty: ' + temp_dir)
+                os.rmdir(temp_dir)
+                #shutil.rmtree(temp_dir)
+                print('Deleted empty dir: ' + temp_dir)
+            except Exception as e:
+                #print(e)
+                print('Waiting for commit')
+                return False
+
+        else:
+            if sesh and self.sesh_redis.get(self.sesh_key_template.format(sesh)):
                 #print('Skipping active temp ' + temp)
                 return False
 
-            self.sesh_redis.delete(temp_key)
-
-        #record_host = os.environ['RECORD_HOST']
-        print('Deleting ' + temp_dir)
+            try:
+                print('Deleted expired temp dir: ' + temp_dir)
+                shutil.rmtree(temp_dir)
+            except Exception as e:
+                print(e)
+                return False
 
         user = User(my_id=temp_user,
                     redis=self.data_redis,
@@ -52,10 +66,7 @@ class TempChecker(object):
 
         user.delete_me()
 
-        try:
-            shutil.rmtree(temp_dir)
-        except Exception as e:
-            print(e)
+        self.sesh_redis.delete(temp_key)
 
         return True
 
@@ -71,13 +82,6 @@ class TempChecker(object):
 
             if not os.path.isdir(temp_dir):
                 continue
-
-            #try:
-            #    os.rmdir(temp_dir)
-            #    print('Removed Dir ' + temp_dir)
-            #    continue
-            #except Exception as e:
-            #    print(e)
 
             # not yet removed, need to delete contents
             temp_user = temp_dir.rsplit(os.path.sep, 1)[1]
