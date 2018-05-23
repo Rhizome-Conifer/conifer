@@ -234,6 +234,12 @@
                     }
                 }
 
+                .session-link {
+                    &:link, &:visited {
+                        color: #333;
+                    }
+                }
+
                 .row-index {
                     text-align: center;
                 }

@@ -16,6 +16,10 @@ import './style.scss';
 
 
 class InspectorPanelUI extends PureComponent {
+  static contextTypes = {
+    canAdmin: PropTypes.bool
+  };
+
   static propTypes = {
     bkEdited: PropTypes.bool,
     browsers: PropTypes.object,
@@ -107,7 +111,11 @@ class InspectorPanelUI extends PureComponent {
                         <li>
                           <h5>Session ID</h5>
                           <span className="value">
-                            <Link to={`${getCollectionLink(collection, true)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
+                            {
+                              this.context.canAdmin ?
+                                <Link to={`${getCollectionLink(collection)}/management?session=${pg.get('rec')}`}>{pg.get('rec')}</Link> :
+                                <Link to={`${getCollectionLink(collection, true)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
+                            }
                           </span>
                         </li>
                       }

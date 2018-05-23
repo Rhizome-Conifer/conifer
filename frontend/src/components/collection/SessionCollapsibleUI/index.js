@@ -27,6 +27,7 @@ import './style.scss';
 class SessionCollapsibleUI extends PureComponent {
 
   static propTypes = {
+    active: PropTypes.bool,
     collection: PropTypes.object,
     deleteRec: PropTypes.func,
     dispatch: PropTypes.func,
@@ -50,6 +51,13 @@ class SessionCollapsibleUI extends PureComponent {
       deletePopover: false,
       open: false
     };
+  }
+
+  componentDidMount() {
+    if (this.props.active) {
+      // delay to avoid conflict with app scroll restoration
+      setTimeout(() => window.scrollTo(0, this.container.offsetTop), 500);
+    }
   }
 
   onExpand = () => this.setState({ open: true })
@@ -122,7 +130,7 @@ class SessionCollapsibleUI extends PureComponent {
     );
 
     return (
-      <div className="wr-coll-session">
+      <div className="wr-coll-session" ref={(o) => { this.container = o; }}>
         <Collapsible
           lazyRender
           open={expand}

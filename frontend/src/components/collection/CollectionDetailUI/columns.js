@@ -61,8 +61,11 @@ export function RowIndexRenderer({ cellData, rowIndex, columnData: { activeList,
 }
 
 
-export function SessionRenderer({ cellData, columnData: { activeList }, rowData }) {
-  return <span>{activeList ? rowData.getIn(['page', 'rec']) : cellData}</span>;
+export function SessionRenderer({ cellData, columnData: { activeList, canAdmin, collLink }, rowData }) {
+  const recording = activeList ? rowData.getIn(['page', 'rec']) : cellData;
+  return canAdmin ?
+    <Link to={`${collLink}/management?session=${recording}`} className="session-link">{recording}</Link> :
+    <span>{recording}</span>;
 }
 
 

@@ -71,7 +71,7 @@ const userRoutes = [
     classOverride: '',
     component: CollectionManagement,
     exact: true,
-    footer: false,
+    footer: true,
     name: 'collectionMgmt'
   },
   {

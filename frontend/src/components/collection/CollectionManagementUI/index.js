@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
+import querystring from 'querystring';
 import { Button } from 'react-bootstrap';
 
 import { getCollectionLink } from 'helpers/utils';
@@ -23,6 +24,7 @@ class CollectionManagementUI extends Component {
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,
+    location: PropTypes.object,
     recordings: PropTypes.object,
     totalDuration: PropTypes.number
   };
@@ -44,10 +46,15 @@ class CollectionManagementUI extends Component {
     window.location = `${getCollectionLink(collection)}/$download`;
   }
 
-
   render() {
-    const { collection, recordings } = this.props;
+    const { collection, recordings, location: { search } } = this.props;
     const { expandAll } = this.state;
+
+    let activeSession = null;
+    if (search) {
+      const qs = querystring.parse(search.replace(/^\?/, ''));
+      activeSession = qs.session;
+    }
 
     if (!this.context.canAdmin) {
       return <HttpStatus status={401} />;
@@ -98,8 +105,9 @@ class CollectionManagementUI extends Component {
             recordings.map((rec) => {
               return (
                 <SessionCollapsible
+                  active={rec.get('id') === activeSession}
                   key={rec.get('id')}
-                  expand={expandAll}
+                  expand={expandAll || rec.get('id') === activeSession}
                   recording={rec} />
               );
             })
