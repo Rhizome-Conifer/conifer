@@ -156,7 +156,7 @@ class UserManagementUI extends Component {
         </ul>
         <Modal
           dialogClassName="wr-login-modal"
-          header={anonCTA ? false : `${product} Login`}
+          header={anonCTA ? null : `${product} Login`}
           body={form}
           visible={open}
           closeCb={this.closeLogin} />

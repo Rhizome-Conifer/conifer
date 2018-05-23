@@ -124,7 +124,7 @@ class StandaloneRecorderUI extends Component {
         <div className="col-md-8 col-md-offset-2 top-buffer">
           {
             isAnon ?
-              <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span><span className="caret" /></Button> :
+              <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span></Button> :
               <CollectionDropdown label={false} />
           }
         </div>
