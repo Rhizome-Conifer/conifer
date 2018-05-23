@@ -48,7 +48,6 @@ class WYSIWYG extends Component {
     const displayItems = [
       'INLINE_STYLE_BUTTONS',
       'LINK_BUTTONS',
-      'BLOCK_TYPE_DROPDOWN'
     ];
 
     if (!props.minimal) {

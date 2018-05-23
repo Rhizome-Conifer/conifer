@@ -7,14 +7,18 @@ import './style.scss';
 
 
 function SidebarHeader(props) {
-  const { label, callback, closed } = props;
+  const { label, callback, closed, collapsible } = props;
   return (
     <header
       role="button"
       className="sidebar-header"
       onClick={callback}
       title={`Minimize ${label}`}>
-      <h4>{label}</h4><HandleIcon closed={closed} />
+      <h4>{label}</h4>
+      {
+        collapsible &&
+          <HandleIcon closed={closed} />
+      }
     </header>
   );
 }
@@ -23,7 +27,12 @@ function SidebarHeader(props) {
 SidebarHeader.propTypes = {
   callback: PropTypes.func,
   closed: PropTypes.bool,
+  collapsible: PropTypes.bool,
   label: PropTypes.string
+};
+
+SidebarHeader.defaultProps = {
+  collapsible: false
 };
 
 export default SidebarHeader;

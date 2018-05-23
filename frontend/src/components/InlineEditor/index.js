@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
 
-import { CheckIcon, XIcon } from 'components/icons';
+import { CheckIcon, PencilIcon, XIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -47,7 +47,14 @@ class InlineEditor extends PureComponent {
     // TODO: delay here needed for css/fonts to resolve.. better way?
     this.handle = setTimeout(() => {
       this.setState({ inputWidth: this.childContainer.getBoundingClientRect().width });
-    }, 1000);
+
+      const child = this.childContainer.childNodes[0];
+      if (child && child.nodeName !== 'BUTTON') {
+        const style = window.getComputedStyle(child);
+        this.container.style.margin = style.margin;
+        child.style.margin = 0;
+      }
+    }, 500);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -59,6 +66,11 @@ class InlineEditor extends PureComponent {
   componentDidUpdate(lastProps, lastState) {
     if (this.state.editMode && !lastState.editMode) {
       this.focusInput();
+    } else if (!this.state.editMode && lastState.editMode) {
+      const child = this.childContainer.childNodes[0];
+      if (child && child.nodeName !== 'BUTTON') {
+        child.style.margin = 0;
+      }
     }
   }
 
@@ -75,16 +87,21 @@ class InlineEditor extends PureComponent {
   }
 
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value });
-  toggleEditMode = () => {
-    const { editMode } = this.state;
-
-    this.setState({ editMode: !editMode, error: null, inputVal: this.props.initial });
-  }
 
   submitCheck = (evt) => {
     if (evt.key === 'Enter') {
       this._save();
     }
+  }
+
+  toggleEditMode = () => {
+    const { editMode } = this.state;
+
+    if (!this.context.canAdmin || this.props.readOnly) {
+      return;
+    }
+
+    this.setState({ editMode: !editMode, error: null, inputVal: this.props.initial });
   }
 
   _save = () => {
@@ -123,10 +140,10 @@ class InlineEditor extends PureComponent {
     const { blockDisplay, error, label, readOnly } = this.props;
 
     return (
-      <div className={classNames('wr-inline-editor', { 'block-display': blockDisplay })}>
+      <div className={classNames('wr-inline-editor', { 'block-display': blockDisplay })} ref={(o) => { this.container = o; }}>
         {
           this.state.editMode ?
-            <div className="form-wrapper" style={blockDisplay ? {} : { width: this.state.inputWidth }}>
+            <div key="formWrapper" className="form-wrapper" style={blockDisplay ? {} : { width: this.state.inputWidth }}>
               <FormGroup validationState={this.validation()}>
                 {
                   label &&
@@ -151,11 +168,11 @@ class InlineEditor extends PureComponent {
                 <Button onClick={this.toggleEditMode}><XIcon /></Button>
               </FormGroup>
             </div> :
-            <div ref={(obj) => { this.childContainer = obj; }} className="child-container">
+            <div key="childWrapper" onClick={this.toggleEditMode} ref={(obj) => { this.childContainer = obj; }} className="child-container">
               {this.props.children}
               {
                 canAdmin && !readOnly &&
-                  <Button className="wr-inline-edit-button" bsSize="xs" onClick={this.toggleEditMode}>edit</Button>
+                  <Button className="wr-inline-edit-button borderless"><PencilIcon /></Button>
               }
             </div>
           }

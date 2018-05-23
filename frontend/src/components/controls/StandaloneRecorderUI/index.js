@@ -105,7 +105,7 @@ class StandaloneRecorderUI extends Component {
     const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
 
     const advOptions = (
-      <div>{advOpen ? 'Hide' : 'Show'} session settings <span className={classNames('caret', { 'caret-flip': advOpen })} /></div>
+      <div><span className={classNames('caret', { 'caret-flip': advOpen })} /> Show session settings</div>
     );
 
     return (

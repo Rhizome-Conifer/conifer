@@ -43,7 +43,13 @@ a {
 
 .caret {
   transition: transform $quickShift ease-in-out;
-  transform: rotateZ(90deg);
+}
+
+.Collapsible__trigger .caret {
+  transform: rotateZ(-90deg);
+}
+.Collapsible__trigger .caret-flip {
+  transform: rotateZ(0deg);
 }
 
 .caret-flip {

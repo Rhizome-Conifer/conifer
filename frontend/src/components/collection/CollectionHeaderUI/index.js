@@ -179,13 +179,13 @@ class CollectionHeaderUI extends Component {
                       <h1>{collection.get('title')}</h1>
                     </InlineEditor>
                   </div>
-                  {
+                  {/*
                     canAdmin && !isAnon &&
                       <PublicSwitch
                         isPublic={isPublic}
                         callback={this.setPublic}
                         publicLists={publicLists} />
-                  }
+                  */}
                 </div>
                 {
                   canAdmin && menu
@@ -195,13 +195,13 @@ class CollectionHeaderUI extends Component {
                 <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
                   <Capstone user={collection.get('owner')} />
                   <div className="heading-container">
-                    {
+                    {/*
                       canAdmin && !isAnon &&
                         <PublicSwitch
                           isPublic={isPublic}
                           callback={this.setPublic}
                           publicLists={publicLists} />
-                    }
+                    */}
                     <InlineEditor
                       initial={collection.get('title')}
                       onSave={this.editCollTitle}

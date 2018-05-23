@@ -163,7 +163,6 @@ class ListsUI extends Component {
     const { collection, pages, pageSelection } = this.props;
     const selType = typeof pageSelection;
 
-
     let pageIds = [];
     if (selType === 'number') {
       pageIds = [
@@ -178,7 +177,6 @@ class ListsUI extends Component {
           pages.get(pg).getIn(['page', 'id']);
       });
     }
-
 
     // check if currently dragged page is within selection
     // if so, bulk add selection, otherwise add single page
@@ -219,6 +217,7 @@ class ListsUI extends Component {
 
     const header = (
       <SidebarHeader
+        collapsible
         label="Collection Navigator"
         callback={this.minimize}
         closed={this.state.minimized} />
@@ -235,7 +234,7 @@ class ListsUI extends Component {
           onOpen={this.open}
           onClose={this.close}>
           <div className="lists-body">
-            {
+            {/*
               activeListSlug &&
                 <React.Fragment>
                   <header
@@ -249,7 +248,7 @@ class ListsUI extends Component {
                     <WYSIWYG initial={collection.get('desc') || defaultCollDesc} />
                   </Truncate>
                 </React.Fragment>
-            }
+            */}
             <header className="lists-header">
               <h4>Lists ({lists.size})</h4>
               {
@@ -261,6 +260,25 @@ class ListsUI extends Component {
               }
             </header>
             <ul>
+              {
+                (publicIndex || canAdmin) &&
+                  <React.Fragment>
+                    <li className={classNames('all-pages', { selected: !activeListSlug })}>
+                      <div className="wrapper">
+                        <Link to={getCollectionLink(collection, true)} title="All pages" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
+                        {
+                          canAdmin &&
+                            <button
+                              aria-label={publicIndex ? 'set page index public' : 'set page index private'}
+                              onClick={this.toggleIndexVisibility}
+                              className={classNames('visiblity-toggle', { public: publicIndex })}
+                              title="Toggle page index visibility" />
+                        }
+                      </div>
+                    </li>
+                    <li className="divider" />
+                  </React.Fragment>
+              }
               {
                 lists.map((listObj, idx) => (
                   <ListItem
@@ -275,25 +293,6 @@ class ListsUI extends Component {
                     saveSort={this.saveListSort}
                     sort={this.sortLists} />
                 ))
-              }
-              {
-                (publicIndex || canAdmin) &&
-                  <React.Fragment>
-                    <li className="divider" />
-                    <li className={classNames('all-pages', { selected: !activeListSlug })}>
-                      <div className="wrapper">
-                        <Link to={getCollectionLink(collection, true)} title="See all pages in this collection" className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
-                        {
-                          canAdmin &&
-                            <button
-                              aria-label={publicIndex ? 'set page index public' : 'set page index private'}
-                              onClick={this.toggleIndexVisibility}
-                              className={classNames('visiblity-toggle', { public: publicIndex })}
-                              title="Toggle page index visibility" />
-                        }
-                      </div>
-                    </li>
-                  </React.Fragment>
               }
             </ul>
           </div>
