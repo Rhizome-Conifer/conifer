@@ -350,7 +350,7 @@ class TestTempContent(FullStackTests):
 
         test_url = 'http://httpbin.org/get?mood=bar'
         res = self.testapp.get(
-            '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('test / "ok!"'), url=test_url)
+            '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('test "ok!"'), url=test_url)
         )
         assert res.status_code == 302
         assert res.location.endswith('/temp/test--ok/record/mp_/{0}'.format(test_url))
@@ -385,7 +385,7 @@ class TestTempContent(FullStackTests):
 
         test_url = 'http://httpbin.org/get?boof=mar'
         res = self.testapp.get(
-            '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('<em>My</em> test recording'), url=test_url)
+            '/_new/temp/{rec}/record/mp_/{url}'.format(rec=quote('<em>My<em> test recording'), url=test_url)
         )
         assert res.status_code == 302
         assert res.location.endswith('/temp/emmyem-test-recording/record/mp_/{0}'.format(test_url))
