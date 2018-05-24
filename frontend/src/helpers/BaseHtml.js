@@ -1,5 +1,6 @@
 /* eslint-disable react/no-danger*/
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom/server';
 import PropTypes from 'prop-types';
 import serialize from 'serialize-javascript';
 import Helmet from 'react-helmet';
@@ -14,7 +15,9 @@ export default class BaseHtml extends Component {
 
   render() {
     const { assets, component, store } = this.props;
-    const head = Helmet.rewind();
+
+    const appHtml = ReactDOM.renderToString(component);
+    const head = Helmet.renderStatic();
 
     return (
       <html lang="en-US">
@@ -37,7 +40,7 @@ export default class BaseHtml extends Component {
           ))}
         </head>
         <body>
-          <div id="app">{component}</div>
+          <div id="app" dangerouslySetInnerHTML={{ __html: appHtml }} />
           <div id="portal" />
           <script
             dangerouslySetInnerHTML={{ __html: `window.__data=${serialize(store.getState())};` }}
