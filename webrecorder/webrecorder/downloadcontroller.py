@@ -18,7 +18,7 @@ import json
 
 # ============================================================================
 class DownloadController(BaseController):
-    COPY_FIELDS = ('title', 'desc', 'size', 'updated_at', 'created_at', 'pages', 'lists',
+    COPY_FIELDS = ('title', 'desc', 'size', 'updated_at', 'created_at', 'recorded_at', 'pages', 'lists',
                    'public', 'public_index')
 
     DEFAULT_REC_TITLE = 'Session from {0}'

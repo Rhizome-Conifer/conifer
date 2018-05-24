@@ -118,6 +118,8 @@ class RedisUniqueComponent(object):
         if include_duration:
             recorded_at = self.data.get('recorded_at', 0)
             self.data['duration'] = recorded_at - created_at if recorded_at else 0
+            if convert_date:
+                self.data['recorded_at'] = self.to_iso_date(recorded_at)
 
         # for WARC serialization, don't convert date to preserve format
         if convert_date:
@@ -135,12 +137,12 @@ class RedisUniqueComponent(object):
 
         return self.data.get(attr, default_val)
 
-    def set_prop(self, attr, value):
+    def set_prop(self, attr, value, update_ts=True):
         self.data[attr] = value
         self.redis.hset(self.info_key, attr, value)
 
         # auto-update updated_at
-        if attr != 'updated_at':
+        if update_ts and attr != 'updated_at':
             self.set_prop('updated_at', self._get_now())
 
     def __getitem__(self, name):

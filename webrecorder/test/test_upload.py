@@ -3,6 +3,7 @@ from .testutils import FullStackTests
 import os
 import webtest
 import json
+import time
 
 from webrecorder.models.stats import Stats
 from webrecorder.models.base import RedisUniqueComponent
@@ -18,9 +19,14 @@ class TestUpload(FullStackTests):
     ID_2 = 'eed99fa580'
     ID_3 = 'fc17891a4a'
 
+    timestamps = dict(created_at={},
+                      updated_at={},
+                      recorded_at={}
+                     )
+
     @classmethod
     def setup_class(cls, **kwargs):
-        super(TestUpload, cls).setup_class(temp_worker=True)
+        super(TestUpload, cls).setup_class(temp_worker=False)
 
         cls.manager = CLIUserManager()
 
@@ -167,21 +173,20 @@ class TestUpload(FullStackTests):
         assert 'This is your first' in metadata[0]['desc']
 
         assert metadata[1]['type'] == 'recording'
-        assert set(metadata[1].keys()) == {'created_at', 'updated_at',
+        assert set(metadata[1].keys()) == {'created_at', 'updated_at', 'recorded_at',
                                            'title', 'desc', 'type', 'size',
                                            'pages'}
 
-        #assert metadata[1]['title'].startswith('Recording on ')
-        assert metadata[1]['title'] in ('rec-sesh', 'another-sesh')
-        assert metadata[2]['title'] in ('another-sesh', 'rec-sesh')
-
         assert metadata[0]['created_at'] <= metadata[0]['updated_at']
 
-        TestUpload.created_at_0 = RedisUniqueComponent.to_iso_date(metadata[0]['created_at'])
-        TestUpload.created_at_1 = RedisUniqueComponent.to_iso_date(metadata[1]['created_at'])
+        for metadata_item in metadata:
+            for field in TestUpload.timestamps.keys():
+                if field == 'recorded_at' and metadata_item['type'] == 'collection':
+                    continue
 
-        TestUpload.updated_at_0 = RedisUniqueComponent.to_iso_date(metadata[0]['updated_at'])
-        TestUpload.updated_at_1 = RedisUniqueComponent.to_iso_date(metadata[1]['updated_at'])
+                TestUpload.timestamps[field][metadata_item['title']] = RedisUniqueComponent.to_iso_date(metadata_item[field])
+
+        assert set(TestUpload.timestamps['created_at'].keys()) == {'rec-sesh', 'another-sesh', 'Default Collection'}
 
     def test_upload_error_out_of_space(self):
         max_size = self.redis.hget('u:test:info', 'max_size')
@@ -193,12 +198,15 @@ class TestUpload(FullStackTests):
         self.redis.hset('u:test:info', 'max_size', max_size)
 
     def test_logged_in_upload_coll(self):
+        time.sleep(1.0)
+
         res = self.testapp.put('/_upload?filename=example.warc.gz', params=self.warc.getvalue())
         res.charset = 'utf-8'
         assert res.json['user'] == 'test'
         assert res.json['upload_id'] != ''
 
         upload_id = res.json['upload_id']
+
         res = self.testapp.get('/_upload/' + upload_id + '?user=test')
 
         assert res.json['coll'] == 'default-collection-2'
@@ -230,11 +238,15 @@ class TestUpload(FullStackTests):
         assert collection['title'] == 'Default Collection'
         assert collection['slug'] == 'default-collection-2'
 
-        assert collection['created_at'] == TestUpload.created_at_0
-        assert collection['recordings'][0]['created_at'] == TestUpload.created_at_1
+        for field in TestUpload.timestamps.keys():
+            if field == 'recorded_at':
+                continue
 
-        assert collection['updated_at'] >= TestUpload.updated_at_0
-        assert collection['recordings'][0]['updated_at'] >= TestUpload.updated_at_1
+            assert TestUpload.timestamps[field][collection['title']] == collection[field], (field, collection.get('title'))
+
+        for recording in collection['recordings']:
+            for field in TestUpload.timestamps.keys():
+                assert TestUpload.timestamps[field][recording['title']] == recording[field], (field, recording.get('title'))
 
         assert len(collection['lists']) == 2
         assert collection['lists'][0]['desc'] == 'List Description Goes Here!'

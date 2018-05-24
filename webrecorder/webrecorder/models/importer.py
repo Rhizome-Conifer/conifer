@@ -180,7 +180,14 @@ class BaseImporter(ImportStatusChecker):
                 if diff > 0:
                     self._add_split_padding(diff, upload_key)
 
+                self.set_date_prop(info['recording'], info, 'created_at')
+                self.set_date_prop(info['recording'], info, 'recorded_at')
+                self.set_date_prop(info['recording'], info, 'updated_at')
+
             self.import_lists(first_coll, page_id_map)
+
+            self.set_date_prop(first_coll, first_coll.data, 'created_at', '_created_at')
+            self.set_date_prop(first_coll, first_coll.data, 'updated_at', '_updated_at')
 
         except:
             traceback.print_exc()
@@ -280,10 +287,10 @@ class BaseImporter(ImportStatusChecker):
                                   'pages': info.get('pages', None),
                                   'collection': collection,
                                   'recording': recording,
+                                  'created_at': info.get('created_at'),
+                                  'updated_at': info.get('updated_at'),
+                                  'recorded_at': info.get('recorded_at', info.get('updated_at')),
                                  })
-
-                self.set_date_prop(recording, info, 'created_at')
-                self.set_date_prop(recording, info, 'updated_at')
 
             if not first_coll:
                 first_coll = collection
@@ -447,11 +454,15 @@ class BaseImporter(ImportStatusChecker):
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
         return warcinfo if valid else None
 
-    def set_date_prop(self, obj, info, ts_prop):
+    def set_date_prop(self, obj, info, ts_prop, src_prop=None):
         try:
-            obj.set_prop(ts_prop, int(info.get(ts_prop)))
+            src_prop = src_prop or ts_prop
+            value = info.get(src_prop)
+            obj.set_prop(ts_prop, int(value), update_ts=False)
+
         except (ValueError, TypeError):
             pass
+
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         raise NotImplemented()
@@ -567,8 +578,8 @@ class UploadImporter(BaseImporter):
         info['id'] = collection.name
         info['type'] = 'collection'
 
-        self.set_date_prop(collection, info, 'created_at')
-        self.set_date_prop(collection, info, 'updated_at')
+        collection.data['_updated_at'] = info.get('updated_at')
+        collection.data['_created_at'] = info.get('created_at')
 
         return collection
 
@@ -672,7 +683,7 @@ class InplaceImporter(BaseImporter):
             if not info.get('desc'):
                 info['desc'] = self.upload_coll_info.get('desc', '').format(filename=filename)
 
-        self.the_collection.set_prop('title', info['title'])
-        self.the_collection.set_prop('desc', info['desc'])
+        self.the_collection.set_prop('title', info['title'], update_ts=False)
+        self.the_collection.set_prop('desc', info['desc'], update_ts=False)
         return self.the_collection
 
