@@ -12,6 +12,7 @@ import { Upload } from 'containers';
 import HttpStatus from 'components/HttpStatus';
 import SizeFormat from 'components/SizeFormat';
 import { NewCollection } from 'components/siteComponents';
+import { GlobeIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -152,7 +153,9 @@ class CollectionListUI extends Component {
                           </Col>
                           <Col xs={1}>
                             { coll.get('public') &&
-                              <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
+                              <span title="Public Collection &mdash; Visible to Everyone">
+                                <GlobeIcon />
+                              </span>
                             }
                           </Col>
                         </Row>

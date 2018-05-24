@@ -59,9 +59,9 @@ class CollectionHeaderUI extends Component {
     }
   }
 
-  setPublic = () => {
+  setPublic = (bool) => {
     const { collection } = this.props;
-    this.props.editCollection(collection.get('owner'), collection.get('id'), { public: !collection.get('public') });
+    this.props.editCollection(collection.get('owner'), collection.get('id'), { public: bool });
   }
 
   expandHeader = () => {
@@ -128,13 +128,18 @@ class CollectionHeaderUI extends Component {
       condensed
     });
 
-    const publicLists = collection.get('lists').reduce((sum, l) => (l.get('public') | 0) + sum, 0);
     const isPublic = collection.get('public');
 
     const menu = (
       <div className="utility-row" onClick={stopPropagation}>
         <Button className="rounded" onClick={this.newCapture}><PlusIcon /> New Capture</Button>
-        <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
+        <PublicSwitch
+          isPublic={isPublic}
+          callback={this.setPublic} />
+        {
+          !condensed &&
+            <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
+        }
         <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
           <MenuItem onClick={this.newCapture}>New Capture</MenuItem>
           <MenuItem divider />
@@ -163,8 +168,8 @@ class CollectionHeaderUI extends Component {
         <CSSTransitionGroup
           component="div"
           transitionName="condense"
-          transitionEnterTimeout={300}
-          transitionLeaveTimeout={300}>
+          transitionEnterTimeout={400}
+          transitionLeaveTimeout={400}>
           {
             condensed ?
               <div className="collection-bar" key="collBar">
@@ -180,13 +185,6 @@ class CollectionHeaderUI extends Component {
                       <h1>{collection.get('title')}</h1>
                     </InlineEditor>
                   </div>
-                  {/*
-                    canAdmin && !isAnon &&
-                      <PublicSwitch
-                        isPublic={isPublic}
-                        callback={this.setPublic}
-                        publicLists={publicLists} />
-                  */}
                 </div>
                 {
                   canAdmin && menu
@@ -196,13 +194,6 @@ class CollectionHeaderUI extends Component {
                 <div className={classNames('heading-row', { 'is-public': !canAdmin })}>
                   <Capstone user={collection.get('owner')} />
                   <div className="heading-container">
-                    {/*
-                      canAdmin && !isAnon &&
-                        <PublicSwitch
-                          isPublic={isPublic}
-                          callback={this.setPublic}
-                          publicLists={publicLists} />
-                    */}
                     <InlineEditor
                       initial={collection.get('title')}
                       onSave={this.editCollTitle}

@@ -1,8 +1,13 @@
 @import 'src/vars';
 
+// transition speed
 $movement: -75px;
+$opacity: 200ms;
+$transform: 250ms;
+
+
 header.wr-collection-header {
-    transition: height 300ms ease-in-out;
+    transition: height 400ms ease-in-out;
     grid-area: header;
     display: flex;
     flex-direction: column;
@@ -30,13 +35,11 @@ header.wr-collection-header {
     }
 
     .overview {
-        transition: opacity 200ms ease-in-out,
-                    transform 200ms ease-out;
-
         &.condense-enter {
             opacity: 0;
 
             &.condense-enter-active {
+                transition: opacity $opacity ease-in-out;
                 opacity: 1;
             }
         }
@@ -46,6 +49,8 @@ header.wr-collection-header {
             transform: translateY(0px);
 
             &.condense-leave-active {
+                transition: opacity $opacity ease-in-out,
+                            transform $transform ease-in-out;
                 opacity: 0;
                 transform: translateY($movement);
             }
@@ -115,8 +120,6 @@ header.wr-collection-header {
     }
 
     .collection-bar {
-        transition: opacity 200ms ease-in-out,
-                    transform 250ms ease-in-out;
         width: 100%;
         height: 7.4rem;
         position: absolute;
@@ -134,6 +137,8 @@ header.wr-collection-header {
             transform: translateY($movement);
 
             &.condense-enter-active {
+                transition: opacity $opacity ease-in-out,
+                            transform $transform ease-in-out;
                 opacity: 1;
                 transform: translateY(0px);
             }
@@ -144,6 +149,8 @@ header.wr-collection-header {
             transform: translateY(0px);
 
             &.condense-leave-active {
+                transition: opacity $opacity ease-in-out,
+                            transform $transform ease-in-out;
                 opacity: 0;
                 transform: translateY($movement);
             }
