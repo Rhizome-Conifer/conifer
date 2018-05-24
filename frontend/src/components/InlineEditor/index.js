@@ -31,6 +31,19 @@ class InlineEditor extends PureComponent {
     readOnly: false
   };
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    // external input changed, and no local edits.. update
+    if (nextProps.initial !== prevState.initial &&
+        prevState.initial === prevState.inputVal) {
+      return {
+        initial: nextProps.initial,
+        inputVal: nextProps.initial
+      };
+    }
+
+    return null;
+  }
+
   constructor(props) {
     super(props);
 
@@ -38,46 +51,41 @@ class InlineEditor extends PureComponent {
     this.state = {
       editMode: false,
       error: null,
+      initial: props.initial,
       inputVal: props.initial,
       inputWidth: 'auto'
     };
   }
 
   componentDidMount() {
-    // TODO: delay here needed for css/fonts to resolve.. better way?
-    this.handle = setTimeout(() => {
+    if (!this.props.readOnly) {
       this.setState({ inputWidth: this.childContainer.getBoundingClientRect().width });
 
       const child = this.childContainer.childNodes[0];
       if (child && child.nodeName !== 'BUTTON') {
         const style = window.getComputedStyle(child);
-        this.container.style.margin = style.margin;
+        this.container.style.marginTop = style.marginTop;
+        this.container.style.marginBottom = style.marginBottom;
         child.style.margin = 0;
       }
-    }, 500);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (this.props.success && !nextProps.success) {
-      this.setState({ editMode: false });
     }
   }
+
 
   componentDidUpdate(lastProps, lastState) {
-    if (this.state.editMode && !lastState.editMode) {
-      this.focusInput();
-    } else if (!this.state.editMode && lastState.editMode) {
-      const child = this.childContainer.childNodes[0];
-      if (child && child.nodeName !== 'BUTTON') {
-        child.style.margin = 0;
+    if (!this.props.readOnly) {
+      if (lastProps.success && !this.props.success) {
+        this.setState({ editMode: false });
       }
-    }
-  }
 
-  componentWillUnmount() {
-    // clear width timeout on unmount
-    if (this.handle) {
-      clearTimeout(this.handle);
+      if (this.state.editMode && !lastState.editMode) {
+        this.focusInput();
+      } else if (!this.state.editMode && lastState.editMode) {
+        const child = this.childContainer.childNodes[0];
+        if (child && child.nodeName !== 'BUTTON') {
+          child.style.margin = 0;
+        }
+      }
     }
   }
 

@@ -73,6 +73,7 @@ class ListHeaderUI extends PureComponent {
           <InlineEditor
             initial={list.get('title')}
             onSave={this.editListTitle}
+            readOnly={!canAdmin}
             success={this.props.listEdited}>
             <h1>{list.get('title')}</h1>
           </InlineEditor>

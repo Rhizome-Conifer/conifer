@@ -174,6 +174,7 @@ class CollectionHeaderUI extends Component {
                     <InlineEditor
                       initial={collection.get('title')}
                       onSave={this.editCollTitle}
+                      readOnly={isAnon || !canAdmin}
                       success={collEdited}
                       error={this.props.collEditError}>
                       <h1>{collection.get('title')}</h1>
@@ -207,7 +208,7 @@ class CollectionHeaderUI extends Component {
                       onSave={this.editCollTitle}
                       success={collEdited}
                       error={this.props.collEditError}
-                      readOnly={isAnon}>
+                      readOnly={isAnon || !canAdmin}>
                       <h1>{collection.get('title')}</h1>
                     </InlineEditor>
                   </div>

@@ -52,6 +52,7 @@ class InspectorPanelUI extends PureComponent {
   editBookmarkDesc = desc => this.saveEdit({ desc })
 
   render() {
+    const { canAdmin } = this.context;
     const { bkEdited, browsers, collection, list, multiSelect,
             selectedPage, selectedBk } = this.props;
 
@@ -76,6 +77,7 @@ class InspectorPanelUI extends PureComponent {
                         blockDisplay
                         initial={bk.get('title') || untitledEntry}
                         onSave={this.editBookmarkTitle}
+                        readOnly={!canAdmin}
                         success={bkEdited}>
                         <h2>{bk.get('title')}</h2>
                       </InlineEditor>
@@ -112,7 +114,7 @@ class InspectorPanelUI extends PureComponent {
                           <h5>Session ID</h5>
                           <span className="value">
                             {
-                              this.context.canAdmin ?
+                              canAdmin ?
                                 <Link to={`${getCollectionLink(collection)}/management?session=${pg.get('rec')}`}>{pg.get('rec')}</Link> :
                                 <Link to={`${getCollectionLink(collection, true)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
                             }
