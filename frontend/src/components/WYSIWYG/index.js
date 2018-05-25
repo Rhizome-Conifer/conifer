@@ -6,7 +6,7 @@ import ButtonGroup from 'react-rte/lib/ui/ButtonGroup';
 import IconButton from 'react-rte/lib/ui/IconButton';
 import { Button } from 'react-bootstrap';
 
-import { XIcon } from 'components/icons';
+import { PencilIcon, XIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -21,6 +21,7 @@ class WYSIWYG extends Component {
     active: PropTypes.bool,
     cancel: PropTypes.func,
     className: PropTypes.string,
+    clickToEdit: PropTypes.bool,
     contentSync: PropTypes.func,
     editMode: PropTypes.bool,
     externalEditButton: PropTypes.bool,
@@ -180,14 +181,14 @@ class WYSIWYG extends Component {
   }
 
   render() {
-    const { className, contentSync, editMode, externalEditButton, readOnly } = this.props;
+    const { className, clickToEdit, contentSync, editMode, externalEditButton, readOnly } = this.props;
     const { editorState, localEditMode, renderable } = this.state;
     const canAdmin = typeof this.context.canAdmin !== 'undefined' ? this.context.canAdmin : true;
 
     const _editMode = externalEditButton ? editMode : localEditMode;
 
     return (
-      <div className={classNames('wr-editor', className)}>
+      <div className={classNames('wr-editor', className, { 'click-to-edit': clickToEdit, open: _editMode })} onClick={canAdmin && !readOnly && clickToEdit ? this.toggleEditMode : undefined}>
         <div>
           {
             renderable &&
@@ -213,8 +214,8 @@ class WYSIWYG extends Component {
         {
           _editMode && !contentSync &&
             <div className="editor-button-row">
-              <Button onClick={this.cancel}>Cancel</Button>
-              <Button bsStyle={this.props.success ? 'success' : 'default'} onClick={this.save}>
+              <Button onClick={this.cancel} className="rounded">Cancel</Button>
+              <Button bsStyle={this.props.success ? 'success' : 'default'} className="rounded" onClick={this.save}>
                 { this.props.success ? 'Saved..' : 'Save' }
               </Button>
             </div>
@@ -232,8 +233,16 @@ class WYSIWYG extends Component {
             </React.Fragment>
         }
         {
-          canAdmin && !readOnly && !externalEditButton && !_editMode &&
-            <Button className="wr-edit-button" bsSize="xs" onClick={this.toggleEditMode}>edit</Button>
+          canAdmin && !readOnly && !externalEditButton && !_editMode && !clickToEdit &&
+            <div className="toggle-btn-row">
+              <Button className="rounded wr-edit-button" onClick={this.toggleEditMode}>edit</Button>
+            </div>
+        }
+        {
+          canAdmin && !readOnly && clickToEdit && !_editMode &&
+            <div className="click-indicator" onClick={this.toggleEditMode}>
+              <PencilIcon />
+            </div>
         }
       </div>
     );

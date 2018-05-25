@@ -230,6 +230,7 @@
 
                 .session-link {
                     &:link, &:visited {
+                        transition: color $tableRowFade ease-in-out;
                         color: #333;
                     }
                 }
@@ -268,8 +269,8 @@
                 color: #FFF;
                 fill: #FFF;
 
-                a:link { color: #FFF; }
-                a:visited{ color: #FFF; }
+                .session-link:link, a:link { color: #FFF; }
+                .session-link:visited, a:visited{ color: #FFF; }
 
                 svg {
                     & > g {

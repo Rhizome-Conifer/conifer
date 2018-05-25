@@ -135,7 +135,7 @@ class UploadUI extends PureComponent {
       this.setState(stateUpdate);
     }
 
-    if (data.size >= data.total_size) {
+    if (data.size >= data.total_size && data.done) {
       clearInterval(this.interval);
       this.indexingComplete(data.user, data.coll);
     }

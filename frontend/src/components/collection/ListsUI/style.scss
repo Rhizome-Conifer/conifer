@@ -29,7 +29,10 @@
             color: $mid-gray;
             font-weight: 300;
             margin: 0 0 0 1.5rem;
-            text-transform: uppercase;
+
+            span {
+                text-transform: uppercase;
+            }
         }
 
         .list-edit {

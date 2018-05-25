@@ -53,6 +53,7 @@ class SidebarCollectionViewerUI extends Component {
           <Truncate height={75} className="description">
             <WYSIWYG
               readOnly
+              key={collection.get('id')}
               initial={collection.get('desc')} />
           </Truncate>
           <header className="lists-header">

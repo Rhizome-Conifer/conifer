@@ -162,8 +162,9 @@ class SidebarListViewer extends Component {
               <span>{list.get('title')}</span>
             </InlineEditor>
           </h4>
-          <Truncate height={75} className="description">
+          <Truncate height={75} className="description" propPass="clickToEdit">
             <WYSIWYG
+              key={list.get('id')}
               initial={list.get('desc') || defaultListDesc}
               onSave={this.editListDesc}
               success={listEdited} />

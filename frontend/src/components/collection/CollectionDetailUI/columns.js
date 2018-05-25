@@ -56,8 +56,8 @@ export function RemoveRenderer({ rowData, columnData: { listId, removeCallback }
 }
 
 
-export function RowIndexRenderer({ cellData, rowIndex, columnData: { activeList, objects } }) {
-  return <div className="row-index">{activeList ? rowIndex + 1 : objects.indexOf(cellData) + 1}</div>;
+export function RowIndexRenderer({ cellData, rowIndex }) {
+  return <div className="row-index">{rowIndex + 1}</div>;
 }
 
 

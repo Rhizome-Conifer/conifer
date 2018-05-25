@@ -5,6 +5,11 @@
     max-width: 59rem;
     position: relative;
 
+    &.click-to-edit:not(.open) {
+        display: flex;
+        align-items: center;
+    }
+
     & > div {
         border: none;
     }
@@ -74,25 +79,40 @@
 
     .editor-button-row {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
         margin-top: 1rem;
+        text-transform: uppercase;
 
         & > button:last-of-type {
             margin-left: .5rem;
         }
     }
 
-    .wr-edit-button {
-        transition: opacity $midShift ease-in-out;
+    .click-indicator {
+        transition: opacity $quickShift ease-in-out;
+        margin-left: 1rem;
+        cursor: pointer;
         opacity: 0;
-        position: absolute;
-        bottom: 0;
-        right: 0;
+
+        svg {
+            width: 1.4rem;
+            height: 1.4rem;
+        }
     }
 
-    &:hover {
+    &:hover .click-indicator {
+        opacity: 1;
+    }
+
+    .toggle-btn-row {
+        display: flex;
+        justify-content: center;
+        margin-top: .5rem;
+
         .wr-edit-button {
-            opacity: 1;
+            transition: opacity $midShift ease-in-out;
+            text-transform: uppercase;
+            padding: 0.4rem 2rem;
         }
     }
 }

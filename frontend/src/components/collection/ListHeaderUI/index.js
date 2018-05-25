@@ -72,8 +72,9 @@ class ListHeaderUI extends PureComponent {
             <h1>{list.get('title')}</h1>
           </InlineEditor>
         </div>
-        <Truncate height={75}>
+        <Truncate height={75} propPass="clickToEdit">
           <WYSIWYG
+            key={list.get('id')}
             initial={list.get('desc') || defaultListDesc}
             onSave={this.editDesc}
             success={this.props.listEdited} />

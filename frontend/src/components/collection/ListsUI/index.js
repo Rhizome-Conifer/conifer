@@ -215,6 +215,8 @@ class ListsUI extends Component {
       return null;
     }
 
+    const publicListCount = lists.filter(l => l.get('public')).size;
+
     const header = (
       <SidebarHeader
         collapsible
@@ -234,23 +236,8 @@ class ListsUI extends Component {
           onOpen={this.open}
           onClose={this.close}>
           <div className="lists-body">
-            {/*
-              activeListSlug &&
-                <React.Fragment>
-                  <header
-                    className="collection-header"
-                    role={canAdmin || collection.get('public_index') ? 'button' : 'heading'}
-                    onClick={this.goToIndex}>
-                    <h4><WarcIcon /> PARENT COLLECTION</h4>
-                    <h2>{collection.get('title')}</h2>
-                  </header>
-                  <Truncate height={75}>
-                    <WYSIWYG initial={collection.get('desc') || defaultCollDesc} />
-                  </Truncate>
-                </React.Fragment>
-            */}
             <header className="lists-header">
-              <h4>Lists ({lists.size})</h4>
+              <h4><span>Lists</span> ({publicListCount} Public)</h4>
               {
                 canAdmin &&
                   <React.Fragment>

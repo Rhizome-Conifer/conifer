@@ -10,7 +10,7 @@ function SidebarHeader(props) {
   const { label, callback, closed, collapsible } = props;
   return (
     <header
-      role="button"
+      role={collapsible ? 'button' : 'presentation'}
       className="sidebar-header"
       onClick={callback}
       title={`Minimize ${label}`}>

@@ -130,12 +130,13 @@ class CollectionHeaderUI extends Component {
 
     const isPublic = collection.get('public');
 
-    const menu = (
+    const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>
         <Button className="rounded" onClick={this.newCapture}><PlusIcon /> New Capture</Button>
         <PublicSwitch
+          callback={this.setPublic}
           isPublic={isPublic}
-          callback={this.setPublic} />
+          label="Collection" />
         {
           !condensed &&
             <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
@@ -207,8 +208,9 @@ class CollectionHeaderUI extends Component {
                     canAdmin && menu
                   }
                 </div>
-                <Truncate className="desc-container" height={100}>
+                <Truncate className="desc-container" propPass="clickToEdit" height={100}>
                   <WYSIWYG
+                    key={collection.get('id')}
                     initial={collection.get('desc') || defaultCollDesc}
                     onSave={this.editDesc}
                     toggleCallback={this.editModeCallback}
