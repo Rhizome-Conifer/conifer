@@ -85,7 +85,8 @@ class InspectorPanelUI extends PureComponent {
                       <h4>Description</h4>
                       <WYSIWYG
                         clickToEdit
-                        initial={bk.get('desc') || 'Add annotation'}
+                        initial={bk.get('desc')}
+                        placeholder="Add annotation"
                         onSave={this.editBookmarkDesc}
                         success={bkEdited} />
                     </header>

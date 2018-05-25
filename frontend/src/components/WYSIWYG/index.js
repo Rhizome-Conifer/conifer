@@ -27,6 +27,7 @@ class WYSIWYG extends Component {
     externalEditButton: PropTypes.bool,
     initial: PropTypes.string,
     minimal: PropTypes.bool,
+    placeholder: PropTypes.string,
     readOnly: PropTypes.bool,
     renderCallback: PropTypes.func,
     onSave: PropTypes.func,
@@ -80,7 +81,7 @@ class WYSIWYG extends Component {
 
     this.state = {
       renderable: false,
-      editorState: createValueFromString(this.props.initial, this.method),
+      editorState: createValueFromString(props.initial || props.placeholder, this.method),
       markdownEdit: false,
       localEditMode: false
     };
@@ -104,7 +105,7 @@ class WYSIWYG extends Component {
         this.toggleEditMode();
       }
 
-      this.setState({ editorState: createValueFromString(nextProps.initial, this.method) });
+      this.setState({ editorState: createValueFromString(nextProps.initial || nextProps.placeholder, this.method) });
     }
   }
 
@@ -148,9 +149,11 @@ class WYSIWYG extends Component {
     }
   }
 
-  cancel = () => {
+  cancel = (evt) => {
+    evt.stopPropagation();
+
     this.setState({
-      editorState: createValueFromString(this.props.initial, this.method)
+      editorState: createValueFromString(this.props.initial || this.props.placeholder, this.method)
     });
 
     if (this.props.externalEditButton) {
@@ -160,7 +163,9 @@ class WYSIWYG extends Component {
     }
   }
 
-  save = () => {
+  save = (evt) => {
+    evt.stopPropagation();
+
     const { onSave } = this.props;
     if (onSave) {
       onSave(this.state.editorState.toString(this.method));
@@ -170,14 +175,35 @@ class WYSIWYG extends Component {
   toggleMarkdownMode = () => this.setState({ markdownEdit: !this.state.markdownEdit })
 
   toggleEditMode = () => {
-    const { toggleCallback } = this.props;
+    const { initial, placeholder, toggleCallback } = this.props;
     const { localEditMode } = this.state;
+    const state = { localEditMode: !localEditMode };
 
     if (toggleCallback) {
       toggleCallback(!localEditMode);
     }
 
-    this.setState({ localEditMode: !localEditMode });
+    // if opening, clear out placeholder text
+    if (!initial && placeholder && !localEditMode) {
+      state.editorState = createValueFromString('', this.method);
+    }
+
+    this.setState(state);
+  }
+
+  enterEditMode = () => {
+    const { toggleCallback } = this.props;
+    const state = { localEditMode: true };
+
+    if (toggleCallback) {
+      toggleCallback(true);
+    }
+
+    if (!this.props.initial && this.props.placeholder) {
+      state.editorState = createValueFromString('', this.method);
+    }
+
+    this.setState(state);
   }
 
   render() {
@@ -188,7 +214,7 @@ class WYSIWYG extends Component {
     const _editMode = externalEditButton ? editMode : localEditMode;
 
     return (
-      <div className={classNames('wr-editor', className, { 'click-to-edit': clickToEdit, open: _editMode })} onClick={canAdmin && !readOnly && clickToEdit ? this.toggleEditMode : undefined}>
+      <div className={classNames('wr-editor', className, { 'click-to-edit': clickToEdit, open: _editMode })} onClick={canAdmin && !readOnly && clickToEdit && !_editMode ? this.enterEditMode : undefined}>
         <div>
           {
             renderable &&
@@ -240,7 +266,7 @@ class WYSIWYG extends Component {
         }
         {
           canAdmin && !readOnly && clickToEdit && !_editMode &&
-            <div className="click-indicator" onClick={this.toggleEditMode}>
+            <div className="click-indicator" onClick={this.enterEditMode}>
               <PencilIcon />
             </div>
         }

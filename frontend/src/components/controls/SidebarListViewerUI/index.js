@@ -165,8 +165,9 @@ class SidebarListViewer extends Component {
           <Truncate height={75} className="description" propPass="clickToEdit">
             <WYSIWYG
               key={list.get('id')}
-              initial={list.get('desc') || defaultListDesc}
+              initial={list.get('desc')}
               onSave={this.editListDesc}
+              placeholder={defaultListDesc}
               success={listEdited} />
           </Truncate>
         </header>

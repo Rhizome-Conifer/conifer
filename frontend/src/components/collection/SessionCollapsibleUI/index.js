@@ -151,8 +151,9 @@ class SessionCollapsibleUI extends PureComponent {
           <div className="session-notes">
             <h4>Session Notes</h4>
             <WYSIWYG
-              initial={recording.get('desc') || defaultRecDesc}
+              initial={recording.get('desc')}
               onSave={this.editDescription}
+              placeholder={defaultRecDesc}
               success={this.props.recordingEdited} />
           </div>
           <div className="session-pages">

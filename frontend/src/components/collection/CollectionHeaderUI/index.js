@@ -211,8 +211,9 @@ class CollectionHeaderUI extends Component {
                 <Truncate className="desc-container" propPass="clickToEdit" height={100}>
                   <WYSIWYG
                     key={collection.get('id')}
-                    initial={collection.get('desc') || defaultCollDesc}
+                    initial={collection.get('desc')}
                     onSave={this.editDesc}
+                    placeholder={defaultCollDesc}
                     toggleCallback={this.editModeCallback}
                     success={collEdited} />
                 </Truncate>
