@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 
+import { defaultCollDesc } from 'config';
 import { getCollectionLink, getListLink } from 'helpers/utils';
 
 import SidebarHeader from 'components/SidebarHeader';
@@ -53,7 +54,8 @@ class SidebarCollectionViewerUI extends Component {
           <Truncate height={75} className="description">
             <WYSIWYG
               readOnly
-              initial={collection.get('desc')} />
+              key={collection.get('id')}
+              initial={collection.get('desc') || defaultCollDesc} />
           </Truncate>
           <header className="lists-header">
             <h4>Lists ({lists.size})</h4>

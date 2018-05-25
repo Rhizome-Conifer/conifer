@@ -6,7 +6,7 @@ import ButtonGroup from 'react-rte/lib/ui/ButtonGroup';
 import IconButton from 'react-rte/lib/ui/IconButton';
 import { Button } from 'react-bootstrap';
 
-import { XIcon } from 'components/icons';
+import { PencilIcon, XIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -21,11 +21,13 @@ class WYSIWYG extends Component {
     active: PropTypes.bool,
     cancel: PropTypes.func,
     className: PropTypes.string,
+    clickToEdit: PropTypes.bool,
     contentSync: PropTypes.func,
     editMode: PropTypes.bool,
     externalEditButton: PropTypes.bool,
     initial: PropTypes.string,
     minimal: PropTypes.bool,
+    placeholder: PropTypes.string,
     readOnly: PropTypes.bool,
     renderCallback: PropTypes.func,
     onSave: PropTypes.func,
@@ -44,10 +46,9 @@ class WYSIWYG extends Component {
   constructor(props) {
     super(props);
 
-    const extraElements = ['BLOCK_TYPE_BUTTONS', 'IMAGE_BUTTON', 'HISTORY_BUTTONS'];
+    const extraElements = ['LINK_BUTTONS', 'BLOCK_TYPE_BUTTONS', 'IMAGE_BUTTON', 'HISTORY_BUTTONS'];
     const displayItems = [
       'INLINE_STYLE_BUTTONS',
-      'LINK_BUTTONS',
     ];
 
     if (!props.minimal) {
@@ -79,7 +80,7 @@ class WYSIWYG extends Component {
 
     this.state = {
       renderable: false,
-      editorState: createValueFromString(this.props.initial, this.method),
+      editorState: createValueFromString(props.initial || props.placeholder, this.method),
       markdownEdit: false,
       localEditMode: false
     };
@@ -103,7 +104,7 @@ class WYSIWYG extends Component {
         this.toggleEditMode();
       }
 
-      this.setState({ editorState: createValueFromString(nextProps.initial, this.method) });
+      this.setState({ editorState: createValueFromString(nextProps.initial || nextProps.placeholder, this.method) });
     }
   }
 
@@ -147,9 +148,11 @@ class WYSIWYG extends Component {
     }
   }
 
-  cancel = () => {
+  cancel = (evt) => {
+    evt.stopPropagation();
+
     this.setState({
-      editorState: createValueFromString(this.props.initial, this.method)
+      editorState: createValueFromString(this.props.initial || this.props.placeholder, this.method)
     });
 
     if (this.props.externalEditButton) {
@@ -159,7 +162,9 @@ class WYSIWYG extends Component {
     }
   }
 
-  save = () => {
+  save = (evt) => {
+    evt.stopPropagation();
+
     const { onSave } = this.props;
     if (onSave) {
       onSave(this.state.editorState.toString(this.method));
@@ -169,25 +174,46 @@ class WYSIWYG extends Component {
   toggleMarkdownMode = () => this.setState({ markdownEdit: !this.state.markdownEdit })
 
   toggleEditMode = () => {
-    const { toggleCallback } = this.props;
+    const { initial, placeholder, toggleCallback } = this.props;
     const { localEditMode } = this.state;
+    const state = { localEditMode: !localEditMode };
 
     if (toggleCallback) {
       toggleCallback(!localEditMode);
     }
 
-    this.setState({ localEditMode: !localEditMode });
+    // if opening, clear out placeholder text
+    if (!initial && placeholder && !localEditMode) {
+      state.editorState = createValueFromString('', this.method);
+    }
+
+    this.setState(state);
+  }
+
+  enterEditMode = () => {
+    const { toggleCallback } = this.props;
+    const state = { localEditMode: true };
+
+    if (toggleCallback) {
+      toggleCallback(true);
+    }
+
+    if (!this.props.initial && this.props.placeholder) {
+      state.editorState = createValueFromString('', this.method);
+    }
+
+    this.setState(state);
   }
 
   render() {
-    const { className, contentSync, editMode, externalEditButton, readOnly } = this.props;
+    const { className, clickToEdit, contentSync, editMode, externalEditButton, readOnly } = this.props;
     const { editorState, localEditMode, renderable } = this.state;
     const canAdmin = typeof this.context.canAdmin !== 'undefined' ? this.context.canAdmin : true;
 
     const _editMode = externalEditButton ? editMode : localEditMode;
 
     return (
-      <div className={classNames('wr-editor', className)}>
+      <div className={classNames('wr-editor', className, { 'click-to-edit': clickToEdit, open: _editMode })} onClick={canAdmin && !readOnly && clickToEdit && !_editMode ? this.enterEditMode : undefined}>
         <div>
           {
             renderable &&
@@ -213,8 +239,8 @@ class WYSIWYG extends Component {
         {
           _editMode && !contentSync &&
             <div className="editor-button-row">
-              <Button onClick={this.cancel}>Cancel</Button>
-              <Button bsStyle={this.props.success ? 'success' : 'default'} onClick={this.save}>
+              <Button onClick={this.cancel} className="rounded">Cancel</Button>
+              <Button bsStyle={this.props.success ? 'success' : 'default'} className="rounded" onClick={this.save}>
                 { this.props.success ? 'Saved..' : 'Save' }
               </Button>
             </div>
@@ -232,8 +258,16 @@ class WYSIWYG extends Component {
             </React.Fragment>
         }
         {
-          canAdmin && !readOnly && !externalEditButton && !_editMode &&
-            <Button className="wr-edit-button" bsSize="xs" onClick={this.toggleEditMode}>edit</Button>
+          canAdmin && !readOnly && !externalEditButton && !_editMode && !clickToEdit &&
+            <div className="toggle-btn-row">
+              <Button className="rounded wr-edit-button" onClick={this.toggleEditMode}>edit</Button>
+            </div>
+        }
+        {
+          canAdmin && !readOnly && clickToEdit && !_editMode &&
+            <div className="click-indicator" onClick={this.enterEditMode}>
+              <PencilIcon />
+            </div>
         }
       </div>
     );

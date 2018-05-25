@@ -235,6 +235,7 @@ class CollectionDetailUI extends Component {
   deselect = () => {
     if (this.state.selectedPageIdx !== null) {
       this.setState({ selectedPageIdx: null });
+      //this.props.clearInspector();
     }
   }
 
@@ -423,10 +424,6 @@ class CollectionDetailUI extends Component {
       },
       rowIndex: {
         cellRenderer: RowIndexRenderer,
-        columnData: {
-          activeList,
-          objects: activeList ? list.get('bookmarks') : this.props.orderedIds
-        },
         dataKey: 'id',
         disableSort: true,
         key: 'rowIndex',

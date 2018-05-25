@@ -10,7 +10,7 @@ import RemoteBrowserDisplay from 'components/collection/RemoteBrowserDisplay';
 import SidebarHeader from 'components/SidebarHeader';
 import TimeFormat from 'components/TimeFormat';
 import WYSIWYG from 'components/WYSIWYG';
-import { BookmarkIcon } from 'components/icons';
+import { BookmarkIcon, InfoIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -58,7 +58,7 @@ class InspectorPanelUI extends PureComponent {
 
     const bk = selectedBk ? list.get('bookmarks').find(o => o.get('id') === selectedBk) : false;
     const pg = bk ? bk.get('page') : collection.getIn(['pages', selectedPage]);
-
+    const selectedIndex = selectedBk ? list.get('bookmarks').findIndex(o => o.get('id') === selectedBk) : null;
 
     return (
       <div className="wr-inspector">
@@ -71,7 +71,7 @@ class InspectorPanelUI extends PureComponent {
                 {
                   bk &&
                     <header className="bookmark-cap">
-                      <h4><BookmarkIcon /> Archived Page</h4>
+                      <h4><BookmarkIcon /> Bookmark {selectedIndex + 1} of {list.get('bookmarks').size}</h4>
 
                       <InlineEditor
                         blockDisplay
@@ -84,51 +84,56 @@ class InspectorPanelUI extends PureComponent {
 
                       <h4>Description</h4>
                       <WYSIWYG
-                        initial={bk.get('desc') || defaultBookmarkDesc}
+                        clickToEdit
+                        initial={bk.get('desc')}
+                        placeholder="Add annotation"
                         onSave={this.editBookmarkDesc}
                         success={bkEdited} />
                     </header>
                 }
                 {
                   pg ?
-                    <ul>
-                      <li>
-                        <h5>Page Title</h5>
-                        <span className="value">{pg.get('title')}</span>
-                      </li>
-                      <li>
-                        <h5>Page Url</h5>
-                        <span className="value">
-                          <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`}>{pg.get('url')}</Link>
-                        </span>
-                      </li>
-                      <li>
-                        <h5>Captured At</h5>
-                        <span className="value">
-                          <TimeFormat dt={pg.get('timestamp')} />
-                        </span>
-                      </li>
-                      {
-                        pg.get('rec') &&
+                    <div className="page-metadata">
+                      <h4><InfoIcon /> Page Properties</h4>
+                      <ul>
                         <li>
-                          <h5>Session ID</h5>
+                          <h5>Page Title</h5>
+                          <span className="value">{pg.get('title')}</span>
+                        </li>
+                        <li>
+                          <h5>Page Url</h5>
                           <span className="value">
-                            {
-                              canAdmin ?
-                                <Link to={`${getCollectionLink(collection)}/management?session=${pg.get('rec')}`}>{pg.get('rec')}</Link> :
-                                <Link to={`${getCollectionLink(collection, true)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
-                            }
+                            <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`}>{pg.get('url')}</Link>
                           </span>
                         </li>
-                      }
-                      {
-                        pg.get('browser') &&
                         <li>
-                          <h5>Preconfigured Browser</h5>
-                          <span className="value"><RemoteBrowserDisplay browser={browsers.getIn(['browsers', pg.get('browser')])} /></span>
+                          <h5>Captured At</h5>
+                          <span className="value">
+                            <TimeFormat dt={pg.get('timestamp')} />
+                          </span>
                         </li>
-                      }
-                    </ul> :
+                        {
+                          pg.get('rec') &&
+                          <li>
+                            <h5>Session ID</h5>
+                            <span className="value">
+                              {
+                                canAdmin ?
+                                  <Link to={`${getCollectionLink(collection)}/management?session=${pg.get('rec')}`}>{pg.get('rec')}</Link> :
+                                  <Link to={`${getCollectionLink(collection, true)}?query=session:${pg.get('rec')}`}>{pg.get('rec')}</Link>
+                              }
+                            </span>
+                          </li>
+                        }
+                        {
+                          pg.get('browser') &&
+                          <li>
+                            <h5>Preconfigured Browser</h5>
+                            <span className="value"><RemoteBrowserDisplay browser={browsers.getIn(['browsers', pg.get('browser')])} /></span>
+                          </li>
+                        }
+                      </ul>
+                    </div> :
                     <h5><em>Select a page to see metadata</em></h5>
                 }
               </React.Fragment>

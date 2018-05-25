@@ -110,13 +110,17 @@ header.wr-collection-header {
             }
         }
 
-        .wr-editor {
-            width: 60rem;
 
-            @media (max-width: 600px) {
-                width: 90vw;
-            }
+        .wr-editor {
+            min-width: 32rem;
         }
+
+        // .wr-editor {
+        //     width: 60rem;
+        //     @media (max-width: 600px) {
+        //         width: 90vw;
+        //     }
+        // }
     }
 
     .collection-bar {
@@ -189,12 +193,13 @@ header.wr-collection-header {
             }
         }
 
-        @media (max-width: 950px) {
+        @media (max-width: 1060px) {
             grid-template-columns: 1fr 1fr;
             grid-template-areas: "title utility";
 
             .bar-heading {
                 justify-self: start;
+                margin-left: 1rem;
             }
         }
     }

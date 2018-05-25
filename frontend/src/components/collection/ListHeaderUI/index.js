@@ -1,12 +1,13 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Alert, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import { defaultListDesc } from 'config';
 import { getCollectionLink, getListLink } from 'helpers/utils';
 
 import InlineEditor from 'components/InlineEditor';
+import PublicSwitch from 'components/collection/PublicSwitch';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
 import { ListIcon } from 'components/icons';
@@ -16,7 +17,6 @@ import './style.scss';
 
 class ListHeaderUI extends PureComponent {
   static contextTypes = {
-    asPublic: PropTypes.bool,
     canAdmin: PropTypes.bool
   };
 
@@ -39,6 +39,11 @@ class ListHeaderUI extends PureComponent {
     editList(collection.get('owner'), collection.get('id'), list.get('id'), { desc });
   }
 
+  setPublic = (bool) => {
+    const { collection, editList, list } = this.props;
+    editList(collection.get('owner'), collection.get('id'), list.get('id'), { public: bool });
+  }
+
   startReplay = () => {
     const { collection, history, list } = this.props;
     const first = list.getIn(['bookmarks', 0]);
@@ -48,13 +53,8 @@ class ListHeaderUI extends PureComponent {
     }
   }
 
-  viewCollection = () => {
-    const { collection, history } = this.props;
-    history.push(getCollectionLink(collection, this.context.canAdmin));
-  }
-
   render() {
-    const { asPublic, canAdmin } = this.context;
+    const { canAdmin } = this.context;
     const { collection, list } = this.props;
     const bkCount = list.get('bookmarks').size;
     const bookmarks = `${bkCount} Page${bkCount === 1 ? '' : 's'}`;
@@ -62,12 +62,6 @@ class ListHeaderUI extends PureComponent {
 
     return (
       <div className="wr-list-header">
-        {
-          asPublic &&
-            <Alert bsStyle="warning">
-              Viewing collection as a public user. <Button bsSize="xs" onClick={this.togglePublicView}>return to owner view</Button>
-            </Alert>
-        }
         <span className="banner"><ListIcon /> LIST</span>
         <div className="heading-container">
           <InlineEditor
@@ -78,22 +72,23 @@ class ListHeaderUI extends PureComponent {
             <h1>{list.get('title')}</h1>
           </InlineEditor>
         </div>
-        <Truncate height={75}>
+        <Truncate height={75} propPass="clickToEdit">
           <WYSIWYG
-            initial={list.get('desc') || defaultListDesc}
+            initial={list.get('desc')}
+            key={list.get('id')}
             onSave={this.editDesc}
+            placeholder={defaultListDesc}
             success={this.props.listEdited} />
         </Truncate>
         <div className="creator">
           Created by <Link to={`/${user}`}>{user}</Link>, with {bookmarks} from the collection <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link>
         </div>
         <div className="function-row">
+          <PublicSwitch
+            callback={this.setPublic}
+            isPublic={list.get('public')}
+            label="List" />
           <Button onClick={this.startReplay} className="rounded">VIEW PAGES</Button>
-          {
-            (canAdmin || collection.get('public_index')) &&
-              <Button onClick={this.viewCollection} className="rounded">SEE PARENT COLLECTION</Button>
-          }
-          {/*<Button className="rounded">SHARE</Button>*/}
         </div>
       </div>
     );
