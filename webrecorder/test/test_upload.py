@@ -214,9 +214,11 @@ class TestUpload(FullStackTests):
         assert res.json['filename'] == 'example.warc.gz'
         assert res.json['files'] == 1
         assert res.json['total_size'] >= 3000
+        assert res.json['done'] == False
 
         def assert_finished():
             res = self.testapp.get('/_upload/' + upload_id + '?user=test')
+            assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
         self.sleep_try(0.1, 5.0, assert_finished)
@@ -302,9 +304,11 @@ class TestUpload(FullStackTests):
         assert res.json['filename'] == 'example2.warc.gz'
         assert res.json['files'] == 1
         assert res.json['total_size'] == 5192
+        assert res.json['done'] == False
 
         def assert_finished():
             res = self.testapp.get('/_upload/' + upload_id + '?user=test')
+            assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
         self.sleep_try(0.1, 5.0, assert_finished)
@@ -349,9 +353,11 @@ class TestUpload(FullStackTests):
         assert res.json['filename'] == 'example2.warc.gz'
         assert res.json['files'] == 1
         assert res.json['total_size'] >= 3000
+        assert res.json['done'] == False
 
         def assert_finished():
             res = self.testapp.get('/_upload/' + upload_id + '?user=test')
+            assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
         self.sleep_try(0.1, 5.0, assert_finished)

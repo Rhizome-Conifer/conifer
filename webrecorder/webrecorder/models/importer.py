@@ -59,6 +59,7 @@ class ImportStatusChecker(object):
         props['size'] = int(props.get('size', 0))
         props['files'] = int(props['files'])
         props['total_files'] = int(props['total_files'])
+        props['done'] = (props.get('done') == '1')
 
         if props.get('files') == 0:
             props['size'] = props['total_size']
