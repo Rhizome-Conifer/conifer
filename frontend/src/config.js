@@ -54,7 +54,7 @@ module.exports = Object.assign({
   defaultColumns: ['rowIndex', 'timestamp', 'title', 'url', 'browser'],
   defaultCollDesc: '_This collection doesn\'t yet have a description._',
   defaultListDesc: '_This list doesn\'t yet have a description._',
-  defaultRecDesc: '_Add notes about this capture session. Visible only to you._',
+  defaultRecDesc: 'Add notes about this capture session. Visible only to you.',
   defaultRecordingTitle: 'Recording Session',
   dow: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
   draggableTypes: {
@@ -74,6 +74,7 @@ module.exports = Object.assign({
   ravenConfig: null,
   saveDelay: 1000,
   storageKey: 'wr__',
+  supportEmail: 'support@webrecorder.io',
   untitledEntry: 'Untitled Document',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   app: {

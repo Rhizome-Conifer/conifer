@@ -4,7 +4,6 @@ import { Button } from 'react-bootstrap';
 
 import { ModeSelector, RecordingTools, SizeCounter } from 'containers';
 
-import ClickTracker from 'components/ClickTracker';
 import { ReplayURLBar, RecordURLBar } from 'components/controls';
 import { InfoIcon } from 'components/icons';
 
@@ -36,14 +35,12 @@ class ReplayUI extends Component {
     const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
 
     return (
-      <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
+      <div role="presentation" className="container-fluid wr-controls navbar-default">
         {
           currMode.includes('replay') &&
-            <ClickTracker action={`${this.props.sidebarExpanded ? 'Collapse' : 'Expand'} sidebar menu during replay`}>
-              <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
-                <InfoIcon />
-              </Button>
-            </ClickTracker>
+            <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
+              <InfoIcon />
+            </Button>
         }
 
         {

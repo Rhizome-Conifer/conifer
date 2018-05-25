@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
 
-import { CheckIcon, XIcon } from 'components/icons';
+import { CheckIcon, PencilIcon, XIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -31,6 +31,19 @@ class InlineEditor extends PureComponent {
     readOnly: false
   };
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    // external input changed, and no local edits.. update
+    if (nextProps.initial !== prevState.initial &&
+        prevState.initial === prevState.inputVal) {
+      return {
+        initial: nextProps.initial,
+        inputVal: nextProps.initial
+      };
+    }
+
+    return null;
+  }
+
   constructor(props) {
     super(props);
 
@@ -38,34 +51,41 @@ class InlineEditor extends PureComponent {
     this.state = {
       editMode: false,
       error: null,
+      initial: props.initial,
       inputVal: props.initial,
       inputWidth: 'auto'
     };
   }
 
   componentDidMount() {
-    // TODO: delay here needed for css/fonts to resolve.. better way?
-    this.handle = setTimeout(() => {
+    if (!this.props.readOnly) {
       this.setState({ inputWidth: this.childContainer.getBoundingClientRect().width });
-    }, 1000);
-  }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.success && !nextProps.success) {
-      this.setState({ editMode: false });
+      const child = this.childContainer.childNodes[0];
+      if (child && child.nodeName !== 'BUTTON') {
+        const style = window.getComputedStyle(child);
+        this.container.style.marginTop = style.marginTop;
+        this.container.style.marginBottom = style.marginBottom;
+        child.style.margin = 0;
+      }
     }
   }
+
 
   componentDidUpdate(lastProps, lastState) {
-    if (this.state.editMode && !lastState.editMode) {
-      this.focusInput();
-    }
-  }
+    if (!this.props.readOnly) {
+      if (lastProps.success && !this.props.success) {
+        this.setState({ editMode: false });
+      }
 
-  componentWillUnmount() {
-    // clear width timeout on unmount
-    if (this.handle) {
-      clearTimeout(this.handle);
+      if (this.state.editMode && !lastState.editMode) {
+        this.focusInput();
+      } else if (!this.state.editMode && lastState.editMode) {
+        const child = this.childContainer.childNodes[0];
+        if (child && child.nodeName !== 'BUTTON') {
+          child.style.margin = 0;
+        }
+      }
     }
   }
 
@@ -75,16 +95,21 @@ class InlineEditor extends PureComponent {
   }
 
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value });
-  toggleEditMode = () => {
-    const { editMode } = this.state;
-
-    this.setState({ editMode: !editMode, error: null, inputVal: this.props.initial });
-  }
 
   submitCheck = (evt) => {
     if (evt.key === 'Enter') {
       this._save();
     }
+  }
+
+  toggleEditMode = () => {
+    const { editMode } = this.state;
+
+    if (!this.context.canAdmin || this.props.readOnly) {
+      return;
+    }
+
+    this.setState({ editMode: !editMode, error: null, inputVal: this.props.initial });
   }
 
   _save = () => {
@@ -123,10 +148,10 @@ class InlineEditor extends PureComponent {
     const { blockDisplay, error, label, readOnly } = this.props;
 
     return (
-      <div className={classNames('wr-inline-editor', { 'block-display': blockDisplay })}>
+      <div className={classNames('wr-inline-editor', { 'block-display': blockDisplay })} ref={(o) => { this.container = o; }}>
         {
           this.state.editMode ?
-            <div className="form-wrapper" style={blockDisplay ? {} : { width: this.state.inputWidth }}>
+            <div key="formWrapper" className="form-wrapper" style={blockDisplay ? {} : { width: this.state.inputWidth }}>
               <FormGroup validationState={this.validation()}>
                 {
                   label &&
@@ -151,11 +176,11 @@ class InlineEditor extends PureComponent {
                 <Button onClick={this.toggleEditMode}><XIcon /></Button>
               </FormGroup>
             </div> :
-            <div ref={(obj) => { this.childContainer = obj; }} className="child-container">
+            <div key="childWrapper" onClick={this.toggleEditMode} ref={(obj) => { this.childContainer = obj; }} className="child-container">
               {this.props.children}
               {
                 canAdmin && !readOnly &&
-                  <Button className="wr-inline-edit-button" bsSize="xs" onClick={this.toggleEditMode}>edit</Button>
+                  <Button className="wr-inline-edit-button borderless"><PencilIcon /></Button>
               }
             </div>
           }

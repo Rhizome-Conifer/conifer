@@ -175,12 +175,15 @@ class Replay extends Component {
       <SidebarListViewer showNavigator={this.showCollectionNav} /> :
       <SidebarPageViewer showNavigator={this.showCollectionNav} />;
 
+    const title = `Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${product}`;
+
     return (
       <React.Fragment>
         <Helmet>
+          <title>{title}</title>
           <meta property="og:url" content={shareUrl} />
           <meta property="og:type" content="website" />
-          <meta property="og:title" content={`Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${product}`} />
+          <meta property="og:title" content={title} />
           <meta name="og:description" content={collection.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
         </Helmet>
 

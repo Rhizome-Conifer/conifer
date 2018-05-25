@@ -1,7 +1,9 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { CSSTransitionGroup } from 'react-transition-group';
+import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
+
+import { GlobeIcon, LockIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -9,80 +11,24 @@ import './style.scss';
 class PublicSwitch extends PureComponent {
   static propTypes = {
     callback: PropTypes.func,
-    isPublic: PropTypes.bool,
-    publicLists: PropTypes.number
+    isPublic: PropTypes.bool
   };
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    const { isPublic } = nextProps;
-    if (isPublic !== prevState.isPublic) {
-      return {
-        active: false,
-        isPublic
-      };
-    }
+  setPrivate = () => this.props.callback(false);
 
-    return null;
-  }
-
-  constructor(props) {
-    super(props);
-    this.handle = null;
-    this.state = { active: false, isPublic: props.isPublic };
-  }
-
-  onEnter = () => {
-    clearTimeout(this.handle);
-    this.handle = setTimeout(() => this.setState({ active: true }), 100);
-  }
-
-  onExit = () => {
-    clearTimeout(this.handle);
-    if (this.state.active) {
-      this.setState({ active: false });
-    }
-  }
-
-  callback = (evt) => {
-    evt.stopPropagation();
-    this.props.callback();
-  }
+  setPublic = () => this.props.callback(true);
 
   render() {
-    const { publicLists } = this.props;
-    const { active, adjusted, isPublic } = this.state;
+    const { isPublic } = this.props;
 
-    const toggleButton = (
-      <button onClick={this.callback} key="toggle" className={classNames('toggle', { 'is-public': isPublic })}>
-        {isPublic ? 'Set collection to private' : 'Make collection viewable to public'}
-      </button>
-    );
+    const button = isPublic ? <span><GlobeIcon /> Public Collection</span> : <span className="is-private"><LockIcon /> Private Collection</span>;
 
     return (
-      <div
-        className={classNames('wr-switch', { adjusted })}
-        onMouseEnter={this.onEnter}
-        onMouseLeave={this.onExit}>
-        <CSSTransitionGroup
-          component="div"
-          transitionName="switch"
-          transitionEnterTimeout={350}
-          transitionLeaveTimeout={350}>
-          {
-            active ?
-            toggleButton :
-            <div className="coll-status" key="status">
-              {
-                isPublic ?
-                  <React.Fragment>
-                    <span>Public Collection</span>
-                    <span className="public-lists">{`${publicLists} Published List${publicLists === 1 ? '' : 's'}`}</span>
-                  </React.Fragment> :
-                  <div className="private">Private Collection</div>
-              }
-            </div>
-          }
-        </CSSTransitionGroup>
+      <div className="wr-coll-visibility">
+        <DropdownButton noCaret id="visibility-menu" className={classNames('rounded', { 'is-public': isPublic })} title={button}>
+          <MenuItem onClick={this.setPublic} disabled={isPublic}><GlobeIcon /> Set Collection Public</MenuItem>
+          <MenuItem onClick={this.setPrivate} disabled={!isPublic}><LockIcon /> Set Collection Private</MenuItem>
+        </DropdownButton>
       </div>
     );
   }

@@ -100,6 +100,10 @@
         grid-area: sidebar;
         padding: 0;
 
+        @media (max-width: 500px) {
+            display: none;
+        }
+
         .wr-sidebar-stretch {
             padding: 0;
         }
@@ -128,16 +132,6 @@
                 width: 50%;
                 max-width: 35rem;
                 min-width: 15rem;
-            }
-
-            .query-box {
-                width: 40%;
-                max-width: 35rem;
-                min-width: 20rem;
-
-                .input-group-addon {
-                    background: none;
-                }
             }
         }
     }
@@ -231,6 +225,12 @@
 
                     button {
                         margin: 0;
+                    }
+                }
+
+                .session-link {
+                    &:link, &:visited {
+                        color: #333;
                     }
                 }
 

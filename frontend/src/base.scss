@@ -42,11 +42,18 @@ a {
 }
 
 .caret {
-  transition: transform $slowShift ease-in-out;
+  transition: transform $quickShift ease-in-out;
+}
+
+.Collapsible__trigger .caret {
+  transform: rotateZ(-90deg);
+}
+.Collapsible__trigger .caret-flip {
+  transform: rotateZ(0deg);
 }
 
 .caret-flip {
-  transform: rotateZ(180deg);
+  transform: rotateZ(0deg);
 }
 
 .btn-primary {

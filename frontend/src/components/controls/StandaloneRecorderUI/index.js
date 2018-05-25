@@ -10,7 +10,6 @@ import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
 import { CollectionDropdown, ExtractWidget,
          RemoteBrowserSelect } from 'containers';
 
-import ClickTracker from 'components/ClickTracker';
 import WYSIWYG from 'components/WYSIWYG';
 
 import './style.scss';
@@ -25,6 +24,7 @@ class StandaloneRecorderUI extends Component {
     activeCollection: PropTypes.object,
     extractable: PropTypes.object,
     selectedBrowser: PropTypes.string,
+    spaceUtilization: PropTypes.object,
     toggleLogin: PropTypes.func,
     username: PropTypes.string
   };
@@ -34,20 +34,23 @@ class StandaloneRecorderUI extends Component {
 
     const hasRB = Boolean(props.selectedBrowser);
     this.state = {
-      sessionNotes: '',
-      url: '',
       advOpen: hasRB,
-      initialOpen: hasRB
+      initialOpen: hasRB,
+      sessionNotes: '',
+      url: ''
     };
+  }
+
+  handleFocus = (evt) => {
+    if (!this.state.highlight) {
+      this.textarea.setSelectionRange(0, this.state.sessionNotes.length);
+      this.setState({ highlight: true });
+    }
   }
 
   handleInput = (evt) => {
     evt.preventDefault();
     this.setState({ [evt.target.name]: evt.target.value });
-  }
-
-  editRecDesc = (notes) => {
-    this.setState({ sessionNotes: notes });
   }
 
   startRecording = (evt) => {
@@ -92,25 +95,26 @@ class StandaloneRecorderUI extends Component {
   closeAdvance = () => this.setState({ advOpen: false })
   openAdvance = () => this.setState({ advOpen: true })
 
-  triggerLogin = () => this.props.toggleLogin(true);
+  triggerLogin = () => this.props.toggleLogin(true, '/');
 
   render() {
     const { isAnon } = this.context;
-    const { activeCollection, extractable, selectedBrowser } = this.props;
+    const { activeCollection, spaceUtilization } = this.props;
     const { advOpen, initialOpen, url } = this.state;
 
-    const isOutOfSpace = false;
+    const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
 
     const advOptions = (
-      <ClickTracker action={`${advOpen ? 'Close' : 'Open'} session settings dropdown`}>
-        <div>{advOpen ? 'Hide' : 'Show'} session settings <span className={classNames('caret', { 'caret-flip': advOpen })} /></div>
-      </ClickTracker>
+      <div><span className={classNames('caret', { 'caret-flip': advOpen })} /> Show session settings</div>
     );
 
     return (
       <form className="start-recording-homepage clearfix" onSubmit={this.startRecording}>
-        <div className={classNames('col-md-8 col-md-offset-2', { 'input-group': extractable })}>
-          <FormControl type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to record" required disabled={isOutOfSpace} />
+        <div className="col-md-8 col-md-offset-2 input-group">
+          <div className="input-group-btn rb-dropdown">
+            <RemoteBrowserSelect />
+          </div>
+          <FormControl type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to record" title={isOutOfSpace ? 'Out of space' : 'Enter URL to record'} required disabled={isOutOfSpace} />
           <label htmlFor="url" className="control-label sr-only">Url</label>
           <ExtractWidget
             toCollection={activeCollection.title}
@@ -120,7 +124,7 @@ class StandaloneRecorderUI extends Component {
         <div className="col-md-8 col-md-offset-2 top-buffer">
           {
             isAnon ?
-              <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span><span className="caret" /></Button> :
+              <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span></Button> :
               <CollectionDropdown label={false} />
           }
         </div>
@@ -136,18 +140,7 @@ class StandaloneRecorderUI extends Component {
             transitionTime={300}
             trigger={advOptions}>
             <h4>Session Notes</h4>
-            <WYSIWYG
-              editMode
-              externalEditButton
-              contentSync={this.editRecDesc}
-              initial={defaultRecDesc} />
-
-            <h4>Preconfigured Browsers</h4>
-            <div className="rb-dropdown">
-              <ClickTracker action="Toggle session settings remote browser dropdown">
-                <RemoteBrowserSelect />
-              </ClickTracker>
-            </div>
+            <textarea rows={5} ref={(o) => { this.textarea = o; }} onFocus={this.handleFocus} name="sessionNotes" placeholder={defaultRecDesc} value={this.state.sessionNotes} onChange={this.handleInput} />
           </Collapsible>
           <Button type="submit" disabled={isOutOfSpace}>
             Collect

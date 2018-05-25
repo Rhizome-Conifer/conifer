@@ -75,8 +75,9 @@ class NewRecordingUI extends Component {
   }
 
   render() {
-    const { collection, extractable } = this.props;
+    const { collection, extractable, spaceUtilization } = this.props;
     const { url } = this.state;
+    const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
 
     return (
       <React.Fragment>
@@ -91,7 +92,17 @@ class NewRecordingUI extends Component {
                   <RemoteBrowserSelect />
                 </div>
 
-                <input type="text" onChange={this.handleChange} className="url-input-recorder form-control" name="url" value={url} style={{ height: '3.3rem' }} autoFocus required />
+                <input
+                  autoFocus
+                  required
+                  className="url-input-recorder form-control"
+                  disabled={isOutOfSpace}
+                  name="url"
+                  onChange={this.handleChange}
+                  style={{ height: '3.3rem' }}
+                  title={isOutOfSpace ? 'Out of space' : 'Enter URL to record'}
+                  type="text"
+                  value={url} />
 
                 <ExtractWidget
                   includeButton
@@ -101,7 +112,7 @@ class NewRecordingUI extends Component {
                 {
                   !extractable &&
                     <div className="input-group-btn record-action">
-                      <button type="submit" className="btn btn-default">
+                      <button type="submit" className="btn btn-default" disabled={isOutOfSpace}>
                         Start
                       </button>
                     </div>

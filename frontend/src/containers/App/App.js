@@ -6,7 +6,7 @@ import matchPath from 'react-router-dom/matchPath';
 import PropTypes from 'prop-types';
 import Raven from 'raven-js';
 import renderRoutes from 'react-router-config/renderRoutes';
-import { Button } from 'react-bootstrap';
+import { Alert, Button } from 'react-bootstrap';
 import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
@@ -35,6 +35,7 @@ export class App extends Component { // eslint-disable-line
     loaded: PropTypes.bool,
     route: PropTypes.object,
     location: PropTypes.object,
+    spaceUtilization: PropTypes.object
   }
 
   static childContextTypes = {
@@ -44,7 +45,7 @@ export class App extends Component { // eslint-disable-line
   constructor(props) {
     super(props);
 
-    this.state = { error: null };
+    this.state = { error: null, showAlert: true };
   }
 
   getChildContext() {
@@ -88,6 +89,8 @@ export class App extends Component { // eslint-disable-line
     }
   }
 
+  dismissAlert = () => this.setState({ showAlert: false })
+
   getActiveRoute = (url) => {
     const { route: { routes } } = this.props;
 
@@ -106,12 +109,13 @@ export class App extends Component { // eslint-disable-line
   }
 
   render() {
-    const { loaded, location: { pathname, search } } = this.props;
-    const { error, info, lastMatch, match } = this.state;
+    const { loaded, location: { pathname, search }, spaceUtilization } = this.props;
+    const { error, info, lastMatch, match, showAlert } = this.state;
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
     const classOverride = match.classOverride;
     const lastClassOverride = lastMatch ? lastMatch.classOverride : classOverride;
+    const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
 
     const containerClasses = classNames('wr-content', [!loaded ? lastClassOverride : classOverride], {
       container: !loaded ? typeof lastClassOverride === 'undefined' : typeof classOverride === 'undefined',
@@ -141,6 +145,17 @@ export class App extends Component { // eslint-disable-line
             </nav>
           </div>
         </header>
+        {
+          isOutOfSpace && showAlert &&
+            <Alert bsStyle="warning" className="oos-alert" onDismiss={this.dismissAlert}>
+              <p><b>Your account is out of space.</b> This means you can't record anything right now.</p>
+              To be able to record again, you can:
+              <ul>
+                <li>Download some collections or recordings and then delete them to make space.</li>
+                <li><a href={`mailto:${config.supportEmail}`}>Contact Us</a> to request more space.</li>
+              </ul>
+            </Alert>
+        }
         {
           error ?
             <div>
@@ -196,7 +211,8 @@ const initalData = [
 const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
   return {
     auth: app.get('auth'),
-    loaded
+    loaded,
+    spaceUtilization: app.getIn(['user', 'space_utilization'])
   };
 };
 

@@ -12,6 +12,7 @@ import { Upload } from 'containers';
 import HttpStatus from 'components/HttpStatus';
 import SizeFormat from 'components/SizeFormat';
 import { NewCollection } from 'components/siteComponents';
+import { GlobeIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -89,6 +90,16 @@ class CollectionListUI extends Component {
     const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;
     const spaceUsed = user.getIn(['space_utilization', 'used']);
     const totalSpace = user.getIn(['space_utilization', 'total']);
+    const remaining = spaceUsed / totalSpace;
+
+    let progressState = 'success';
+    if (remaining >= 0.75) {
+      if (remaining < 0.9) {
+        progressState = 'warning';
+      } else {
+        progressState = 'danger';
+      }
+    }
 
     return (
       <React.Fragment>
@@ -120,7 +131,7 @@ class CollectionListUI extends Component {
               <Col xs={2} className="pull-right">
                 <strong>Space Used: </strong>
                 <SizeFormat bytes={spaceUsed} />
-                <ProgressBar now={(spaceUsed / totalSpace) * 100} bsStyle="success" />
+                <ProgressBar now={(remaining) * 100} bsStyle={progressState} />
               </Col>
           }
         </Row>
@@ -142,7 +153,9 @@ class CollectionListUI extends Component {
                           </Col>
                           <Col xs={1}>
                             { coll.get('public') &&
-                              <span className="glyphicon glyphicon-globe" title="Public Collection &mdash; Visible to Everyone" />
+                              <span title="Public Collection &mdash; Visible to Everyone">
+                                <GlobeIcon />
+                              </span>
                             }
                           </Col>
                         </Row>

@@ -446,6 +446,8 @@ class CollectionDetailUI extends Component {
         cellRenderer: SessionRenderer,
         columnData: {
           activeList,
+          canAdmin,
+          collLink: getCollectionLink(collection)
         },
         dataKey: 'rec',
         key: 'session',
@@ -502,6 +504,7 @@ class CollectionDetailUI extends Component {
         <Sidebar storageKey="collSidebar">
           <Resizable
             axis="y"
+            flexGrow={0}
             minHeight={200}
             storageKey="collNavigator"
             overrideHeight={this.state.overrideHeight}>
@@ -523,7 +526,7 @@ class CollectionDetailUI extends Component {
 
         <OutsideClick classes="wr-coll-detail-table" handleClick={this.deselect}>
           {
-            this.context.canAdmin &&
+            canAdmin &&
               <React.Fragment>
                 <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
                   {/* TODO: placeholder icon */}

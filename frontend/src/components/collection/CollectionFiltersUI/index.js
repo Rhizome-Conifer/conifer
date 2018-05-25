@@ -20,9 +20,10 @@ class CollectionFiltersUI extends Component {
     addPagesToLists: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
+    isIndexing: PropTypes.bool,
     openAddToList: PropTypes.func,
-    querying: PropTypes.bool,
     pages: PropTypes.object,
+    querying: PropTypes.bool,
     search: PropTypes.func,
     searchText: PropTypes.string,
     searchPages: PropTypes.func,
@@ -107,7 +108,11 @@ class CollectionFiltersUI extends Component {
           {
             this.props.querying ?
               <QueryBox /> :
-              <Searchbox search={this.search} clear={this.clearSearch} searchText={this.props.searchText} />
+              <Searchbox
+                search={this.search}
+                clear={this.clearSearch}
+                searchText={this.props.searchText}
+                isIndexing={this.props.isIndexing} />
           }
           {/*
             !isAnon && canAdmin && this.props.selectedPageIdx !== null &&

@@ -29,6 +29,16 @@
         border-width: .1rem 0 .1rem 0;
     }
 
+    .wr-loader {
+        vertical-align: middle;
+        width: 1.8rem;
+        height: 1.8rem;
+
+        path {
+            fill: #FFF;
+        }
+    }
+
     .Collapsible {
         flex-grow: 1;
 

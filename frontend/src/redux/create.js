@@ -24,7 +24,7 @@ export default function createStore(client, data) {
           resources.forEach((pg) => {
             const id = pg.get('id');
             indexDocument(id, pg.get('title') || '');
-            indexDocument(id, pg.get('url') || '');
+            indexDocument(id, pg.get('url').split('?')[0]);
           });
         }
       }

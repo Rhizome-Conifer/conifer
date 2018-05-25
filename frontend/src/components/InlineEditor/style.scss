@@ -13,6 +13,7 @@
 
         .form-group {
             display: flex;
+            margin: 0;
 
             .control-container {
                 flex-grow: 1;
@@ -41,18 +42,26 @@
                 }
             }
         }
+    }
 
-        .child-container {
-            display: inline-block;
-        }
+    .child-container {
+        //display: inline-block;
+        display: flex;
+        align-items: center;
     }
 
     .wr-inline-edit-button {
         transition: opacity $midShift ease-in-out;
         opacity: 0;
-        position: absolute;
-        bottom: 0;
-        right: 0;
+
+        &:hover {
+            background: none;
+        }
+
+        svg {
+            width: 1.4rem;
+            height: 1.4rem;
+        }
     }
 
     &:hover {
