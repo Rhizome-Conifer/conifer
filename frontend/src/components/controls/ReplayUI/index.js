@@ -35,7 +35,7 @@ class ReplayUI extends Component {
     const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
 
     return (
-      <div role="presentation" className="container-fluid wr-controls navbar-default new-recording-ui">
+      <div role="presentation" className="container-fluid wr-controls navbar-default">
         {
           currMode.includes('replay') &&
             <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
