@@ -46,10 +46,9 @@ class WYSIWYG extends Component {
   constructor(props) {
     super(props);
 
-    const extraElements = ['BLOCK_TYPE_BUTTONS', 'IMAGE_BUTTON', 'HISTORY_BUTTONS'];
+    const extraElements = ['LINK_BUTTONS', 'BLOCK_TYPE_BUTTONS', 'IMAGE_BUTTON', 'HISTORY_BUTTONS'];
     const displayItems = [
       'INLINE_STYLE_BUTTONS',
-      'LINK_BUTTONS',
     ];
 
     if (!props.minimal) {

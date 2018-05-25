@@ -189,12 +189,13 @@ header.wr-collection-header {
             }
         }
 
-        @media (max-width: 950px) {
+        @media (max-width: 1060px) {
             grid-template-columns: 1fr 1fr;
             grid-template-areas: "title utility";
 
             .bar-heading {
                 justify-self: start;
+                margin-left: 1rem;
             }
         }
     }

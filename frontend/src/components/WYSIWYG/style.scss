@@ -3,6 +3,7 @@
 .wr-editor {
     min-height: 2.5rem;
     max-width: 59rem;
+    min-width: 32rem;
     position: relative;
 
     &.click-to-edit:not(.open) {
