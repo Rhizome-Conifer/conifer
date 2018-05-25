@@ -211,10 +211,11 @@ class UploadUI extends PureComponent {
         </Wrapper>
         <Modal
           closeCb={this.close}
-          visible={this.state.open}
-          header={modalHeader}
+          dialogClassName={classNames({ 'wr-uploading': isUploading })}
           footer={modalFooter}
-          dialogClassName={classNames({ 'wr-uploading': isUploading })}>
+          header={modalHeader}
+          propsPass={{ backdrop: 'static' }}
+          visible={this.state.open}>
           <label htmlFor="upload-file">WARC/ARC file to upload: </label>
 
           <div className="input-group">
