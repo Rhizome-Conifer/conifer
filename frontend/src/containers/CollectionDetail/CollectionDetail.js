@@ -4,7 +4,7 @@ import querystring from 'querystring';
 import { asyncConnect } from 'redux-connect';
 import { Map } from 'immutable';
 
-import { isLoaded as isCollLoaded, load as loadColl } from 'redux/modules/collection';
+import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl } from 'redux/modules/collection';
 import { clear, multiSelect, selectBookmark, selectPage } from 'redux/modules/inspector';
 import { load as loadList, removeBookmark, bookmarkSort } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
@@ -132,7 +132,8 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
     setBookmarkInspector: bk => dispatch(selectBookmark(bk)),
     removeBookmark: (list, id) => {
       dispatch(removeBookmark(user, coll, list, id))
-        .then(() => dispatch(loadList(user, coll, list)));
+        .then(() => dispatch(loadList(user, coll, list)))
+        .then(() => dispatch(getBookmarkCount(user, coll, list)));
     },
     saveBookmarkSort: (list, ids) => {
       dispatch(bookmarkSort(user, coll, list, ids));

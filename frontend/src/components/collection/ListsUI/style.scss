@@ -130,6 +130,20 @@
                         text-overflow: ellipsis;
                     }
 
+                    .bookmark-count {
+                        font-feature-settings: 'tnum';
+                        margin: 0 .5rem;
+
+                        &:before {
+                            content: '(';
+                            padding-right: .1rem;
+                        }
+                        &:after {
+                            content: ')';
+                            padding-left: .1rem;
+                        }
+                    }
+
                     .visiblity-toggle {
                         transition: background $midShift ease-in-out;
                         content: ' ';

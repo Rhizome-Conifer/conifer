@@ -5,7 +5,8 @@ import { withRouter } from 'react-router';
 import { saveDelay } from 'config';
 
 import { edit as editCollection, loadLists, load as loadColl,
-         resetEditState as resetCollEditState, sortLists } from 'redux/modules/collection';
+         resetEditState as resetCollEditState, sortLists,
+         getBookmarkCount } from 'redux/modules/collection';
 import { addTo, bulkAddTo, create, deleteList, edit, resetEditState } from 'redux/modules/list';
 
 import ListsUI from 'components/collection/ListsUI';
@@ -30,8 +31,14 @@ const mapDispatchToProps = (dispatch) => {
       return dispatch(create(user, coll, title))
               .then(() => dispatch(loadLists(user, coll)));
     },
-    addToList: (user, coll, listId, data) => dispatch(addTo(user, coll, listId, data)),
-    bulkAddToList: (user, coll, listId, pages) => dispatch(bulkAddTo(user, coll, listId, pages)),
+    addToList: (user, coll, listId, data) => {
+      dispatch(addTo(user, coll, listId, data))
+        .then(() => dispatch(getBookmarkCount(user, coll, listId)));
+    },
+    bulkAddToList: (user, coll, listId, pages) => {
+      dispatch(bulkAddTo(user, coll, listId, pages))
+        .then(() => dispatch(getBookmarkCount(user, coll, listId)));
+    },
     editColl: (user, coll, data) => {
       return dispatch(editCollection(user, coll, data))
               .then(() => dispatch(resetCollEditState()))

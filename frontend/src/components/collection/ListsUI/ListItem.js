@@ -122,6 +122,7 @@ class ListItem extends PureComponent {
           <Link to={`/${collUser}/${collId}/list/${list.get('slug')}`} title={list.get('title')}>
             { list.get('title') }
           </Link>
+          <span className="bookmark-count">{list.get('total_bookmarks')}</span>
           {
             canAdmin &&
               <button
