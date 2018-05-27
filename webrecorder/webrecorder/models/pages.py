@@ -5,7 +5,7 @@ import hashlib
 # ============================================================================
 class PagesMixin(object):
     PAGES_KEY = 'c:{coll}:p'
-    PAGE_BOOKMARKS_KEY = 'c:{coll}:pb'
+    PAGE_BOOKMARKS_KEY = 'c:{coll}:p_to_b'
 
     def __init__(self, **kwargs):
         super(PagesMixin, self).__init__(**kwargs)
@@ -159,6 +159,7 @@ class PagesMixin(object):
             all_pages = [page['id'] for page in all_pages]
 
         all_bookmarks = self.redis.hgetall(key)
+        # cached, load json and filter by rec_id, if needed
         if all_bookmarks:
             bookmarks = {n: json.loads(v) for n, v in all_bookmarks.items()
                          if not rec_id or n in all_pages}
@@ -169,13 +170,11 @@ class PagesMixin(object):
 
         all_bookmarks = {}
 
+        # bin all bookmarks by page
         for blist in all_lists:
             for bk in blist.get_bookmarks():
                 page_id = bk.get('page_id')
                 if not page_id:
-                    continue
-
-                if rec_id and not page_id in all_pages:
                     continue
 
                 if page_id not in all_bookmarks:
