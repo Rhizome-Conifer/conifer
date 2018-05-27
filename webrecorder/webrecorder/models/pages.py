@@ -5,7 +5,7 @@ import hashlib
 # ============================================================================
 class PagesMixin(object):
     PAGES_KEY = 'c:{coll}:p'
-    PAGE_BOOKMARKS_KEY = 'c:{coll}:p:{page}:b'
+    PAGE_BOOKMARKS_KEY = 'c:{coll}:pb'
 
     def __init__(self, **kwargs):
         super(PagesMixin, self).__init__(**kwargs)
@@ -38,16 +38,17 @@ class PagesMixin(object):
         return hashlib.md5(page_attrs).hexdigest()[:10]
 
     def delete_page(self, pid):
-        page_bookmarks_key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
-        page_bookmarks = self.redis.hgetall(page_bookmarks_key)
-
+        all_page_bookmarks = self.get_all_page_bookmarks()
+        page_bookmarks = all_page_bookmarks.get(pid, {})
         for bid, list_id in page_bookmarks.items():
             blist = self.get_list(list_id)
             if blist:
                 blist.remove_bookmark(bid)
 
         self.redis.hdel(self.pages_key, pid)
-        self.redis.delete(page_bookmarks_key)
+
+        page_bookmarks_key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
+        self.redis.hdel(page_bookmarks_key, pid)
 
     def page_exists(self, pid):
         return self.redis.hexists(self.pages_key, pid)
@@ -125,36 +126,47 @@ class PagesMixin(object):
         return id_map
 
     def add_page_bookmark(self, pid, bid, list_id):
-        key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
-        self.redis.hset(key, bid, list_id)
+        key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
+        if not self.redis.exists(key):
+            return
+
+        res = self.redis.hget(key, pid)
+        try:
+            data = json.loads(res)
+            data[bid] = list_id
+            self.redis.hset(key, pid, json.dumps(data))
+        except:
+            print('Error Updating page->bookmark table')
 
     def remove_page_bookmark(self, pid, bid):
-        key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=pid)
-        self.redis.hdel(key, bid)
+        key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
+        if not self.redis.exists(key):
+            return
 
-    def get_page_bookmarks2(self, rec_id=None):
-        bookmarks = {}
+        res = self.redis.hget(key, pid)
+        try:
+            data = json.loads(res)
+            data.pop(bid, '')
+            self.redis.hset(key, pid, json.dumps(data))
+        except:
+            print('Error Updating page->bookmark table')
 
-        if not rec_id:
-            page_iter = self.redis.scan_iter(match=self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page='*'),
-                                             count=100)
-            page_iter = [(key, key.split(':')[3]) for key in page_iter]
-
-        else:
-            page_iter = [(self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id, page=page['id']), page['id']) for page in self.list_rec_pages_by_id(rec_id)]
-
-        for key, pid in page_iter:
-            bookmarks[pid] = self.redis.hgetall(key)
-
-        return bookmarks
-
-    def get_page_bookmarks(self, rec_id=None):
+    def get_all_page_bookmarks(self, rec_id=None):
+        key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
         all_pages = None
         if rec_id:
             all_pages = self.list_rec_pages_by_id(rec_id)
             all_pages = [page['id'] for page in all_pages]
 
+        all_bookmarks = self.redis.hgetall(key)
+        if all_bookmarks:
+            bookmarks = {n: json.loads(v) for n, v in all_bookmarks.items()
+                         if not rec_id or n in all_pages}
+
+            return bookmarks
+
         all_lists = self.get_lists()
+
         all_bookmarks = {}
 
         for blist in all_lists:
@@ -171,6 +183,22 @@ class PagesMixin(object):
                 else:
                     all_bookmarks[page_id][bk['id']] = blist.my_id
 
-        return all_bookmarks
+        if not all_bookmarks:
+            return {}
+
+        filtered_bookmarks = {}
+
+        # json encode and cache all bookmarks
+        # return only bookmarks filtered by recording
+        for page, bookmark in all_bookmarks.items():
+            if not rec_id or page in all_pages:
+                filtered_bookmarks[page] = bookmark
+
+            all_bookmarks[page] = json.dumps(bookmark)
+
+        self.redis.hmset(key, all_bookmarks)
+        self.redis.expire(key, self.COLL_CDXJ_TTL)
+
+        return filtered_bookmarks
 
 

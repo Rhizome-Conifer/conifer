@@ -475,6 +475,7 @@ class TestListsAnonUserAPI(FullStackTests):
         res = self._add_bookmark('1003', title='An Example 2', url='http://example.com/испытание/test',
                                  page_id=self.ID_1)
 
+        # all
         res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}'))
 
         assert res.json == {'page_bookmarks': {self.ID_1: {'111': '1003', '101': '1002'}}}
@@ -488,6 +489,16 @@ class TestListsAnonUserAPI(FullStackTests):
         res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}&rec=rec-none'))
 
         assert res.json == {'page_bookmarks': {}}
+
+        # all again (test cached)
+        res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}'))
+
+        assert res.json == {'page_bookmarks': {self.ID_1: {'111': '1003', '101': '1002'}}}
+
+        # filter by rec again
+        res = self.testapp.get(self._format('/api/v1/collection/temp/page_bookmarks?user={user}&rec=rec'))
+
+        assert res.json == {'page_bookmarks': {self.ID_1: {'111': '1003', '101': '1002'}}}
 
     def test_coll_info_with_lists(self):
         res = self.testapp.get(self._format('/api/v1/collection/temp?user={user}'))
