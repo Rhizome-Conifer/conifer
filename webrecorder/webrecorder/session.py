@@ -347,6 +347,10 @@ class RedisSessionMiddleware(CookieGuard):
                 # set redis duration
                 pi.expire(session.key, duration)
 
+        elif set_cookie:
+            # extend redis duration if extending cookie!
+            self.redis.expire(session.key, duration)
+
         if not set_cookie:
             return
 
