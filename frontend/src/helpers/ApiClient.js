@@ -14,7 +14,7 @@ function formatUrl(path) {
 }
 
 export default class ApiClient {
-  constructor(req) {
+  constructor(req, res) {
     // eslint-disable-next-line no-return-assign
     methods.forEach(method =>
       ApiClient.prototype[method] = (path, { params, data } = {}, dataType = false) => new Promise((resolve, reject) => {
@@ -47,8 +47,14 @@ export default class ApiClient {
           request.send(data);
         }
         // eslint-disable-next-line no-confusing-arrow
-        request.end((err, res) => {
-          const { body } = res;
+        request.end((err, response) => {
+          const { body } = response;
+
+          // if api sets session cookie, ensure its passed back to browser
+          const cookie = response.get('Set-Cookie');
+          if (cookie) {
+            res.set('Set-Cookie', cookie);
+          }
 
           return err || !body || body.hasOwnProperty('error') ?
             reject(body || err) :
