@@ -22,7 +22,7 @@
 
         h4 {
             text-transform: uppercase;
-            color: $mid-gray;
+            color: $gray600;
             font-size: 1rem;
             font-weight: 300;
             margin-bottom: 0.5rem;
@@ -43,7 +43,7 @@
 
             h2 {
                 font-size: 1.6rem;
-                color: $dark-gray;
+                color: $body-gray;
                 margin-top: 0.95rem;
                 margin-bottom: 2rem;
                 line-height: 1.2em;
@@ -60,7 +60,7 @@
                 height: 1.2rem;
 
                 path {
-                    fill: $mid-gray;
+                    fill: $gray600;
                 }
             }
 
@@ -82,10 +82,10 @@
 
                     .value {
                         word-wrap: break-word;
-                        color: $mid-gray;
+                        color: $gray600;
 
                         a {
-                          color: $mid-gray;
+                          color: $gray600;
                           font-size: 1.15rem;
                         }
                     }
@@ -94,7 +94,7 @@
         }
 
         .bookmark-cap + .page-metadata {
-            border-top: solid .1rem $light-gray;
+            border-top: solid .1rem $gray500;
         }
     }
 }

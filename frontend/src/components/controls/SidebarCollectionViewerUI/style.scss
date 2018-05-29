@@ -61,7 +61,7 @@
                     align-items: center;
 
                     svg {
-                        fill: $mid-gray;
+                        fill: $gray600;
                     }
 
                     .selected-item {
@@ -74,7 +74,7 @@
                         width: 100%;
                         margin: 0 .5rem;
                         text-decoration: none;
-                        color: $mid-gray;
+                        color: $gray600;
                         font-weight: 500;
                         font-size: 1.6rem;
                         white-space: nowrap;
@@ -101,21 +101,21 @@
                         }
 
                         a, button {
-                            color: $dark-gray;
+                            color: $body-gray;
                         }
                     }
                 }
 
 
                 &.selected {
-                    color: $dark-gray;
+                    color: $body-gray;
 
                     &:before {
                         background-color: $blue;
                     }
 
                     a:visited, a:link, a:hover {
-                        color: $dark-gray;
+                        color: $body-gray;
                     }
                 }
 
