@@ -13,6 +13,8 @@
 
     &:not(.is-public) {
         & > div {
+            transition: width 165ms ease-in-out,
+                        background-color $quickShift ease-in-out;
             background-color: $gray400;
         }
 
@@ -37,6 +39,10 @@
         overflow:hidden;
         font-size: 1rem;
         text-transform: uppercase;
+
+        span {
+            vertical-align: middle;
+        }
     }
 
     & > div:last-of-type {

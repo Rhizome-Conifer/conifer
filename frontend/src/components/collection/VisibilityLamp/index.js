@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
@@ -7,7 +7,7 @@ import { doubleRAF } from 'helpers/utils';
 import './style.scss';
 
 
-class VisibilityLamp extends Component {
+class VisibilityLamp extends PureComponent {
   static propTypes = {
     callback: PropTypes.func,
     isPublic: PropTypes.bool,
@@ -86,7 +86,7 @@ class VisibilityLamp extends Component {
         title={help}>
         <div />
         <div ref={(obj) => { this.bulb = obj; }} className="bulb" style={{ width }}>
-          {isPublic ? 'Public' : 'Private'}
+          <span>{isPublic ? 'Public' : 'Private'}</span>
         </div>
         <div />
       </div>
