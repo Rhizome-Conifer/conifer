@@ -4,6 +4,8 @@ import classNames from 'classnames';
 
 import { doubleRAF } from 'helpers/utils';
 
+import { LoaderIcon } from 'components/icons';
+
 import './style.scss';
 
 
@@ -18,7 +20,9 @@ class VisibilityLamp extends PureComponent {
     super(props);
 
     this.handle = null;
+    this.editHandle = null;
     this.state = {
+      editing: false,
       over: false,
       width: 'auto'
     };
@@ -34,8 +38,10 @@ class VisibilityLamp extends PureComponent {
 
   componentDidUpdate(prevProps) {
     if (this.props.isPublic !== prevProps.isPublic) {
+      clearTimeout(this.editHandle);
       this.setState({
-        width: 'auto'
+        width: 'auto',
+        editing: false
       });
 
       doubleRAF(() => {
@@ -50,6 +56,7 @@ class VisibilityLamp extends PureComponent {
 
   componentWillUnmount() {
     clearTimeout(this.handle);
+    clearTimeout(this.editHandle);
   }
 
   showStatus = () => {
@@ -70,9 +77,16 @@ class VisibilityLamp extends PureComponent {
     }, 30);
   }
 
+  toggle = () => {
+    clearTimeout(this.editHandle);
+    // show loader if it's taking a while
+    this.editHandle = setTimeout(() => this.setState({ editing: true }), 150);
+    this.props.callback();
+  }
+
   render() {
     const { isPublic, label } = this.props;
-    const { width } = this.state;
+    const { editing, width } = this.state;
 
     const help = isPublic ? `set ${label} public` : `set ${label} private`;
 
@@ -80,13 +94,17 @@ class VisibilityLamp extends PureComponent {
       <div
         aria-label={help}
         className={classNames('visibility-lamp', { 'is-public': isPublic })}
-        onClick={this.props.callback}
+        onClick={this.toggle}
         onMouseOver={this.showStatus}
         onMouseOut={this.hideStatus}
         title={help}>
         <div />
         <div ref={(obj) => { this.bulb = obj; }} className="bulb" style={{ width }}>
-          <span>{isPublic ? 'Public' : 'Private'}</span>
+          {
+            editing ?
+              <LoaderIcon /> :
+              <span>{isPublic ? 'Public' : 'Private'}</span>
+          }
         </div>
         <div />
       </div>

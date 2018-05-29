@@ -200,7 +200,6 @@
                 &.targeted {
                     .wrapper {
                         background-color: $gray300;
-                        color: #FFF;
                     }
                 }
 
@@ -241,6 +240,10 @@
                     border: solid .1rem #747474;
                     border-width: .1rem 0;
                     color: #000;
+
+                    svg path {
+                        fill: #000;
+                    }
                 }
 
                 div:last-of-type {

@@ -40,6 +40,19 @@
         font-size: 1rem;
         text-transform: uppercase;
 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        svg {
+            width: 1rem;
+            height: 1rem;
+
+            path {
+                fill: #FFF;
+            }
+        }
+
         span {
             vertical-align: middle;
         }
