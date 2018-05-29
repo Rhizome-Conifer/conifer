@@ -16,17 +16,15 @@
             color: white;
             background: $brightGreen;
             border: $brightGreen;
-
             svg g {
               fill: white;
             }
         }
     }
 
-    svg {
+    svg{
         width: 1.3rem;
         height: 1.3rem;
         margin-right: 0.2rem;
     }
-
 }
