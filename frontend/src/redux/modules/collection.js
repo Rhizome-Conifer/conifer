@@ -1,6 +1,10 @@
 import { apiPath } from 'config';
 import { fromJS } from 'immutable';
 
+const BK_COUNT = 'wr/coll/BK_COUNT';
+const BK_COUNT_SUCCESS = 'wr/coll/BK_COUNT_SUCCESS';
+const BK_COUNT_FAIL = 'wr/coll/BK_COUNT_FAIL';
+
 const COLL_LOAD = 'wr/coll/COLL_LOAD';
 const COLL_LOAD_SUCCESS = 'wr/coll/COLL_LOAD_SUCCESS';
 const COLL_LOAD_FAIL = 'wr/coll/COLL_LOAD_FAIL';
@@ -40,6 +44,10 @@ const initialState = fromJS({
 
 export default function collection(state = initialState, action = {}) {
   switch (action.type) {
+    case BK_COUNT_SUCCESS: {
+      const idx = state.get('lists').findIndex(l => l.get('id') === action.list);
+      return state.setIn(['lists', idx, 'total_bookmarks'], action.result.list.total_bookmarks);
+    }
     case COLL_LOAD:
       return state.set('loading', true);
     case COLL_EDIT_SUCCESS:
@@ -227,5 +235,15 @@ export function setSort(sortBy) {
   return {
     type: COLL_SET_SORT,
     sortBy
+  };
+}
+
+export function getBookmarkCount(user, coll, list) {
+  return {
+    types: [BK_COUNT, BK_COUNT_SUCCESS, BK_COUNT_FAIL],
+    list,
+    promise: client => client.get(`${apiPath}/list/${list}`, {
+      params: { user, coll, include_bookmarks: 'none' }
+    })
   };
 }

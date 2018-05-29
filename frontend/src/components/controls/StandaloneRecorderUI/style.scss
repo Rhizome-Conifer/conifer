@@ -94,6 +94,28 @@
         align-items: center;
     }
 
+    .rb-dropdown {
+       .dropdown {
+           width: 100%;
+
+           #cnt-button {
+               display: flex;
+               justify-content: space-between;
+               align-items: center;
+               width: 100%;
+               border-width: .1rem;
+           }
+
+           .dropdown-menu {
+               width: 100%;
+
+               .container {
+                   width: 100%;
+               }
+           }
+       }
+    }
+
     textarea {
         width: 100%;
         padding: .5rem;

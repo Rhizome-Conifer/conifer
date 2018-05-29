@@ -113,6 +113,11 @@
                     display: flex;
                     justify-content: flex-start;
                     align-items: center;
+                    position: relative;
+
+                    &.editable {
+                        padding-right: 1.9rem;
+                    }
 
                     svg {
                         fill: $mid-gray;
@@ -130,21 +135,17 @@
                         text-overflow: ellipsis;
                     }
 
-                    .visiblity-toggle {
-                        transition: background $midShift ease-in-out;
-                        content: ' ';
-                        padding: .7rem;
-                        border-radius: 50%;
-                        border: none;
-                        background: $gray400;
-                        margin-right: .5rem;
+                    .bookmark-count {
+                        font-feature-settings: 'tnum';
+                        margin: 0 .5rem;
 
-                        &:focus {
-                            outline: none;
+                        &:before {
+                            content: '(';
+                            padding-right: .1rem;
                         }
-
-                        &.public {
-                            background: $brightGreen;
+                        &:after {
+                            content: ')';
+                            padding-left: .1rem;
                         }
                     }
                 }
@@ -199,7 +200,6 @@
                 &.targeted {
                     .wrapper {
                         background-color: $gray300;
-                        color: #FFF;
                     }
                 }
 
@@ -223,6 +223,41 @@
 
                 &.all-pages .wrapper svg {
                     vertical-align: middle;
+                }
+            }
+        }
+
+        &.private-coll {
+            .visibility-lamp.is-public {
+                div:first-of-type {
+                    background-color: #FFF;
+                    border: solid .1rem #747474;
+                    border-width: .1rem 0 .1rem .1rem;
+                }
+
+                .bulb {
+                    background-color: #FFF;
+                    border: solid .1rem #747474;
+                    border-width: .1rem 0;
+                    color: #000;
+
+                    svg path {
+                        fill: #000;
+                    }
+                }
+
+                div:last-of-type {
+                    background: #FFF;
+                    border: solid .1rem #747474;
+                    border-width: .1rem .1rem .1rem 0;
+                }
+            }
+
+            ul li :hover {
+                .visibility-lamp.is-public {
+                    div:first-of-type, .bulb, div:last-of-type {
+                        background: $gray300;
+                    }
                 }
             }
         }

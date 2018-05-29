@@ -152,10 +152,11 @@ class CollectionListUI extends Component {
                             <SizeFormat bytes={coll.get('size')} />
                           </Col>
                           <Col xs={1}>
-                            { coll.get('public') &&
-                              <span title="Public Collection &mdash; Visible to Everyone">
-                                <GlobeIcon />
-                              </span>
+                            {
+                              canAdmin && coll.get('public') &&
+                                <span title="Public Collection &mdash; Visible to Everyone">
+                                  <GlobeIcon />
+                                </span>
                             }
                           </Col>
                         </Row>

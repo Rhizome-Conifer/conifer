@@ -35,7 +35,10 @@ class ListsController(BaseController):
 
             self.access.assert_can_read_list(blist)
 
-            return {'list': blist.serialize(check_slug=list_id)}
+            include_bookmarks = request.query.include_bookmarks or 'all'
+
+            return {'list': blist.serialize(check_slug=list_id,
+                                            include_bookmarks=include_bookmarks)}
 
         @self.app.post('/api/v1/list/<list_id>')
         def update_list(list_id):

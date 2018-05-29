@@ -71,7 +71,6 @@ class InlineEditor extends PureComponent {
     }
   }
 
-
   componentDidUpdate(lastProps, lastState) {
     if (!this.props.readOnly) {
       if (lastProps.success && !this.props.success) {
@@ -102,7 +101,8 @@ class InlineEditor extends PureComponent {
     }
   }
 
-  toggleEditMode = () => {
+  toggleEditMode = (evt) => {
+    evt.stopPropagation();
     const { editMode } = this.state;
 
     if (!this.context.canAdmin || this.props.readOnly) {
