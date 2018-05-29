@@ -99,8 +99,7 @@ metadata:
 
 # Default Descriptions
 
-coll_desc: |
-    *This collection doesn't yet have a description.*
+coll_desc: ''
 
 user_desc: |
     ## {0} archive
@@ -115,12 +114,11 @@ default_coll:
     desc: |
         *This is your first collection!*
 
-        Each collection contains _recordings_, which are sessions of your encounters with the web.
+        Each collection contains pages you’ve captured using Webrecorder.
 
-        Attached to a recording are _bookmarks_. They serve as pointers into the recorded material.
+        To add to this collection you can capture more pages.
 
-        Move recordings in between collections and show or hide bookmarks to curate your archive of the dynamic web.
-
+        You can make lists and add text to provide information about one or more pages in your collection.
 
 upload_coll:
     id: 'uploaded-collection'

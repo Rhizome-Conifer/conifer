@@ -325,7 +325,7 @@ class TestUpload(FullStackTests):
         assert res.json['collection']
         collection = res.json['collection']
 
-        assert "This collection doesn't yet have" in collection['desc']
+        assert collection['desc'] == ''
         assert collection['id'] == 'temporary-collection'
         assert collection['slug'] == 'temporary-collection'
         assert collection['title'] == 'Temporary Collection'
