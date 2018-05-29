@@ -99,7 +99,7 @@ class StandaloneRecorderUI extends Component {
 
   render() {
     const { isAnon } = this.context;
-    const { activeCollection, spaceUtilization } = this.props;
+    const { activeCollection, extractable, spaceUtilization } = this.props;
     const { advOpen, initialOpen, url } = this.state;
 
     const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
@@ -110,15 +110,16 @@ class StandaloneRecorderUI extends Component {
 
     return (
       <form className="start-recording-homepage clearfix" onSubmit={this.startRecording}>
-        <div className="col-md-8 col-md-offset-2 input-group">
-          <div className="input-group-btn rb-dropdown">
-            <RemoteBrowserSelect />
-          </div>
+        <div className={classNames('col-md-8 col-md-offset-2', { 'input-group': extractable })}>
           <FormControl type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to record" title={isOutOfSpace ? 'Out of space' : 'Enter URL to record'} required disabled={isOutOfSpace} />
           <label htmlFor="url" className="control-label sr-only">Url</label>
           <ExtractWidget
             toCollection={activeCollection.title}
             url={url} />
+        </div>
+
+        <div className="col-md-8 col-md-offset-2 top-buffer rb-dropdown">
+          <RemoteBrowserSelect />
         </div>
 
         <div className="col-md-8 col-md-offset-2 top-buffer">
@@ -143,7 +144,7 @@ class StandaloneRecorderUI extends Component {
             <textarea rows={5} ref={(o) => { this.textarea = o; }} onFocus={this.handleFocus} name="sessionNotes" placeholder={defaultRecDesc} value={this.state.sessionNotes} onChange={this.handleInput} />
           </Collapsible>
           <Button type="submit" disabled={isOutOfSpace}>
-            Collect
+            Start
           </Button>
         </div>
       </form>
