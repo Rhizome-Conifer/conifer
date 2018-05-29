@@ -221,7 +221,7 @@ class TestUpload(FullStackTests):
             assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
-        self.sleep_try(0.1, 5.0, assert_finished)
+        self.sleep_try(0.2, 10.0, assert_finished)
 
     def test_logged_in_replay(self):
         res = self.testapp.get('/test/default-collection-2/mp_/http://httpbin.org/get?food=bar')
@@ -311,7 +311,7 @@ class TestUpload(FullStackTests):
             assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
-        self.sleep_try(0.1, 5.0, assert_finished)
+        self.sleep_try(0.2, 10.0, assert_finished)
 
     def test_replay_2(self):
         res = self.testapp.get('/test/temporary-collection/mp_/http://example.com/')
@@ -360,7 +360,7 @@ class TestUpload(FullStackTests):
             assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
-        self.sleep_try(0.1, 5.0, assert_finished)
+        self.sleep_try(0.2, 10.0, assert_finished)
 
     def test_coll_info_replay_3(self):
         res = self.testapp.get('/api/v1/collection/default-collection?user=test')
