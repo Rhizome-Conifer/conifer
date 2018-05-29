@@ -127,8 +127,16 @@ class CollsController(BaseController):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
             rec = request.query.get('rec')
+            if rec:
+                recording = collection.get_recording(rec)
+                if not recording:
+                    return {'page_bookmarks': {}}
 
-            return {'page_bookmarks': collection.get_all_page_bookmarks(rec)}
+                rec_pages = collection.list_rec_pages(recording)
+            else:
+                rec_pages = None
+
+            return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
 
         # Create Collection
         @self.app.get('/_create')

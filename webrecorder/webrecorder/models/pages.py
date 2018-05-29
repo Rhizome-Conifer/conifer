@@ -37,8 +37,7 @@ class PagesMixin(object):
         page_attrs = (page['url'] + page['timestamp'] + page.get('rec', '') + page.get('browser', '')).encode('utf-8')
         return hashlib.md5(page_attrs).hexdigest()[:10]
 
-    def delete_page(self, pid):
-        all_page_bookmarks = self.get_all_page_bookmarks()
+    def delete_page(self, pid, all_page_bookmarks):
         page_bookmarks = all_page_bookmarks.get(pid, {})
         for bid, list_id in page_bookmarks.items():
             blist = self.get_list(list_id)
@@ -77,9 +76,8 @@ class PagesMixin(object):
         return pages
 
     def list_rec_pages(self, recording):
-        return self.list_rec_pages_by_id(recording.my_id)
+        rec_id = recording.my_id
 
-    def list_rec_pages_by_id(self, rec_id):
         if not self._pages_cache:
             self._pages_cache = self.list_pages()
 
@@ -97,8 +95,10 @@ class PagesMixin(object):
 
         rec_pages = self.list_rec_pages(recording)
 
+        all_page_bookmarks = self.get_all_page_bookmarks(rec_pages)
+
         for n in rec_pages:
-            self.delete_page(n['id'])
+            self.delete_page(n['id'], all_page_bookmarks)
 
     def import_pages(self, pagelist, recording):
         if not pagelist:
@@ -151,18 +151,16 @@ class PagesMixin(object):
         except:
             print('Error Updating page->bookmark table')
 
-    def get_all_page_bookmarks(self, rec_id=None):
+    def get_all_page_bookmarks(self, filter_pages=None):
         key = self.PAGE_BOOKMARKS_KEY.format(coll=self.my_id)
-        all_pages = None
-        if rec_id:
-            all_pages = self.list_rec_pages_by_id(rec_id)
-            all_pages = [page['id'] for page in all_pages]
+        filter_pages = filter_pages or []
+        filter_pages = [page['id'] for page in filter_pages]
 
         all_bookmarks = self.redis.hgetall(key)
         # cached, load json and filter by rec_id, if needed
         if all_bookmarks:
             bookmarks = {n: json.loads(v) for n, v in all_bookmarks.items()
-                         if not rec_id or n in all_pages}
+                         if not filter_pages or n in filter_pages}
 
             return bookmarks
 
@@ -190,7 +188,7 @@ class PagesMixin(object):
         # json encode and cache all bookmarks
         # return only bookmarks filtered by recording
         for page, bookmark in all_bookmarks.items():
-            if not rec_id or page in all_pages:
+            if not filter_pages or page in filter_pages:
                 filtered_bookmarks[page] = bookmark
 
             all_bookmarks[page] = json.dumps(bookmark)
