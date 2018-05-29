@@ -5,14 +5,22 @@
 
     .is-private {
         font-style: italic;
+        color: $gray600;
+
+        svg path {
+            fill: $gray600;
+        }
     }
 
     .dropdown-toggle {
+        color: #000;
+
         svg {
             vertical-align: top;
         }
 
         &.is-public {
+            font-weight: 600;
             background: $brightGreen;
         }
     }

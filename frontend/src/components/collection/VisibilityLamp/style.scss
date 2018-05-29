@@ -1,0 +1,47 @@
+@import 'src/vars';
+
+.visibility-lamp {
+    position: absolute;
+    right: 0;
+    display: flex;
+    margin-right: .5rem;
+    cursor: pointer;
+
+    & > div {
+        transition: width 165ms ease-in-out;
+    }
+
+    &:not(.is-public) {
+        & > div {
+            background-color: $gray400;
+        }
+
+        &:hover > div {
+            background-color: $mid-gray;
+        }
+    }
+
+    &.is-public > div {
+        background-color: $green;
+    }
+
+    & > div:first-of-type {
+        width: .7rem;
+        height: 1.4rem;
+        border-radius: .7rem 0 0 .7rem;
+    }
+
+    .bulb {
+        color: #FFF;
+        height: 1.4rem;
+        overflow:hidden;
+        font-size: 1rem;
+        text-transform: uppercase;
+    }
+
+    & > div:last-of-type {
+        width: .7rem;
+        height: 1.4rem;
+        border-radius: 0 .7rem .7rem 0;
+    }
+}

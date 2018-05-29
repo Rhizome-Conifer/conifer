@@ -11,6 +11,7 @@ import { getCollectionLink } from 'helpers/utils';
 import Modal from 'components/Modal';
 import SidebarHeader from 'components/SidebarHeader';
 import Truncate from 'components/Truncate';
+import VisibilityLamp from 'components/collection/VisibilityLamp';
 import WYSIWYG from 'components/WYSIWYG';
 import { AllPagesIcon, CheckIcon, PlusIcon, WarcIcon, XIcon } from 'components/icons';
 
@@ -235,7 +236,7 @@ class ListsUI extends Component {
           trigger={header}
           onOpen={this.open}
           onClose={this.close}>
-          <div className="lists-body">
+          <div className={classNames('lists-body', { 'private-coll': !collection.get('public') })}>
             <header className="lists-header">
               <h4><span>Lists</span> ({publicListCount} Public)</h4>
               {
@@ -251,15 +252,14 @@ class ListsUI extends Component {
                 (publicIndex || canAdmin) &&
                   <React.Fragment>
                     <li className={classNames('all-pages', { selected: !activeListSlug })}>
-                      <div className="wrapper">
+                      <div className={classNames('wrapper', { editable: canAdmin })}>
                         <Link to={getCollectionLink(collection, true)} title="All pages" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
                         {
                           canAdmin &&
-                            <button
-                              aria-label={publicIndex ? 'set page index public' : 'set page index private'}
-                              onClick={this.toggleIndexVisibility}
-                              className={classNames('visiblity-toggle', { public: publicIndex })}
-                              title="Toggle page index visibility" />
+                            <VisibilityLamp
+                              callback={this.toggleIndexVisibility}
+                              isPublic={publicIndex}
+                              label="page index" />
                         }
                       </div>
                     </li>
