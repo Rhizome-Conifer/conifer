@@ -8,6 +8,7 @@ from webrecorder.utils import redis_pipeline
 from webrecorder.models.base import RedisUniqueComponent, RedisNamedMap
 
 from webrecorder.models.collection import Collection
+from webrecorder.models.stats import Stats
 
 
 # ============================================================================
@@ -127,6 +128,8 @@ class User(RedisUniqueComponent):
 
         self.incr_size(-collection.size)
         new_user.incr_size(collection.size)
+
+        Stats(self.redis).move_temp_to_user_usage(collection)
 
         for recording in collection.get_recordings():
             # will be marked for commit

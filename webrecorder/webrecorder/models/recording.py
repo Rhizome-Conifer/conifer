@@ -13,6 +13,7 @@ from pywb.utils.loaders import BlockLoader
 
 from webrecorder.utils import redis_pipeline
 from webrecorder.models.base import RedisUniqueComponent, RedisUnorderedList
+from webrecorder.models.stats import Stats
 from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_prefix
 from webrecorder.rec.storage import LocalFileStorage
 
@@ -27,8 +28,6 @@ class Recording(RedisUniqueComponent):
 
     OPEN_REC_KEY = 'r:{rec}:open'
 
-    #PAGES_KEY = 'r:{rec}:p'
-
     CDXJ_KEY = 'r:{rec}:cdxj'
 
     RA_KEY = 'r:{rec}:ra'
@@ -41,6 +40,8 @@ class Recording(RedisUniqueComponent):
     COMMIT_WAIT_TEMPL = 'w:{filename}'
 
     INDEX_NAME_TEMPL = 'index-{timestamp}-{random}.cdxj'
+
+    DELETE_RETRY = 'q:delete_retry'
 
     # overridable
     OPEN_REC_TTL = 5400
@@ -113,6 +114,8 @@ class Recording(RedisUniqueComponent):
     def delete_me(self, storage, pages=True):
         res = self.delete_files(storage)
 
+        Stats(self.redis).incr_delete(self)
+
         # if deleting collection, no need to remove pages for each recording
         # they'll be deleted with the collection
         if pages:
@@ -159,6 +162,9 @@ class Recording(RedisUniqueComponent):
 
             if not success:
                 errs.append(v)
+
+                # queue file to retry deletion later
+                self.redis.rpush(self.DELETE_RETRY, v)
             else:
                 self.redis.hdel(coll_warc_key, n)
 
