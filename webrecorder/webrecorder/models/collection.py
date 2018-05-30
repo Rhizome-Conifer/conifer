@@ -315,8 +315,11 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         return get_global_storage(storage_type, self.redis)
 
+    def get_created_iso_date(self):
+        return date.fromtimestamp(int(self['created_at'])).isoformat()
+
     def get_dir_path(self):
-        return date.fromtimestamp(int(self['created_at'])).isoformat() + '/' + self.my_id
+        return self.get_created_iso_date() + '/' + self.my_id
 
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)

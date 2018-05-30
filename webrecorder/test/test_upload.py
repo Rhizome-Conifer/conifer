@@ -221,7 +221,7 @@ class TestUpload(FullStackTests):
             assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
-        self.sleep_try(0.1, 5.0, assert_finished)
+        self.sleep_try(0.2, 10.0, assert_finished)
 
     def test_logged_in_replay(self):
         res = self.testapp.get('/test/default-collection-2/mp_/http://httpbin.org/get?food=bar')
@@ -311,7 +311,7 @@ class TestUpload(FullStackTests):
             assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
-        self.sleep_try(0.1, 5.0, assert_finished)
+        self.sleep_try(0.2, 10.0, assert_finished)
 
     def test_replay_2(self):
         res = self.testapp.get('/test/temporary-collection/mp_/http://example.com/')
@@ -325,7 +325,7 @@ class TestUpload(FullStackTests):
         assert res.json['collection']
         collection = res.json['collection']
 
-        assert "This collection doesn't yet have" in collection['desc']
+        assert collection['desc'] == ''
         assert collection['id'] == 'temporary-collection'
         assert collection['slug'] == 'temporary-collection'
         assert collection['title'] == 'Temporary Collection'
@@ -360,7 +360,7 @@ class TestUpload(FullStackTests):
             assert res.json['done'] == True
             assert res.json['size'] >= res.json['total_size']
 
-        self.sleep_try(0.1, 5.0, assert_finished)
+        self.sleep_try(0.2, 10.0, assert_finished)
 
     def test_coll_info_replay_3(self):
         res = self.testapp.get('/api/v1/collection/default-collection?user=test')
@@ -413,8 +413,8 @@ class TestUpload(FullStackTests):
         assert res.json == {'error': 'not_logged_in'}
 
     def test_stats(self):
-        assert self.redis.hget(Stats.DOWNLOADS_KEY, today_str()) == '1'
-        assert self.redis.hget(Stats.UPLOADS_KEY, today_str()) == '3'
+        assert self.redis.hget(Stats.DOWNLOADS_USER_COUNT_KEY, today_str()) == '1'
+        assert self.redis.hget(Stats.UPLOADS_COUNT_KEY, today_str()) == '3'
 
 
 

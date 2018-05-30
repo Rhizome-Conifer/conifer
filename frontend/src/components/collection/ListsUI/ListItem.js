@@ -6,7 +6,7 @@ import { DragSource, DropTarget } from 'react-dnd';
 
 import { draggableTypes as dt } from 'config';
 
-import { ListIcon } from 'components/icons';
+import VisibilityLamp from 'components/collection/VisibilityLamp';
 
 
 const listSource = {
@@ -118,17 +118,17 @@ class ListItem extends PureComponent {
 
     const item = (
       <li className={classes} key={list.get('id')} style={{ opacity: isDragging ? 0 : 1 }}>
-        <div className="wrapper">
+        <div className={classNames('wrapper', { editable: canAdmin })}>
           <Link to={`/${collUser}/${collId}/list/${list.get('slug')}`} title={list.get('title')}>
             { list.get('title') }
           </Link>
+          <span className="bookmark-count">{list.get('total_bookmarks')}</span>
           {
             canAdmin &&
-              <button
-                aria-label={isPublic ? `set list '${title}' public` : `set list '${title}' private`}
-                onClick={this.editVisibility}
-                className={classNames('visiblity-toggle', { public: isPublic })}
-                title="Toggle list visibility" />
+              <VisibilityLamp
+                callback={this.editVisibility}
+                isPublic={isPublic}
+                label={`list '${title}'`} />
           }
         </div>
       </li>

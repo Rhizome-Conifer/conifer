@@ -55,8 +55,8 @@ class RecsController(BaseController):
             user, collection, recording = self.load_recording(rec)
 
             errs = collection.remove_recording(recording, delete=True)
-            if errs:
-                return errs
+            if errs.get('error'):
+                return self._raise_error(400, errs['error'])
             else:
                 return {'deleted_id': rec}
 

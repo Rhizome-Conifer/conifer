@@ -45,6 +45,11 @@ class TestWebRecCollsAPI(FullStackTests):
         assert coll['public'] == False
         assert coll['public_index'] == False
 
+    def test_get_anon_coll_wrong_user(self):
+        res = self.testapp.get('/api/v1/collection/temp?user=temp-ABC', status=404)
+
+        assert res.json['error'] == 'no_such_user'
+
     def test_list_anon_collections(self):
         res = self.testapp.get('/api/v1/collections?user={user}'.format(user=self.anon_user))
 

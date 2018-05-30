@@ -109,6 +109,6 @@ class TestExtractContent(FullStackTests):
         assert self.redis.exists(Stats.SOURCES_KEY.format('ia'))
         assert int(self.redis.hget(Stats.SOURCES_KEY.format('ia'), today_str())) > 0
 
-        assert not self.redis.exists(Stats.PATCH_USAGE_KEY)
+        assert not self.redis.exists(Stats.PATCH_TEMP_KEY)
 
 

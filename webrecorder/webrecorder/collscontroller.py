@@ -76,8 +76,8 @@ class CollsController(BaseController):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
             errs = user.remove_collection(collection, delete=True)
-            if errs:
-                return errs
+            if errs.get('error'):
+                return self._raise_error(400, errs['error'])
             else:
                 return {'deleted_id': coll_name}
 
@@ -127,8 +127,16 @@ class CollsController(BaseController):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
             rec = request.query.get('rec')
+            if rec:
+                recording = collection.get_recording(rec)
+                if not recording:
+                    return {'page_bookmarks': {}}
 
-            return {'page_bookmarks': collection.get_page_bookmarks(rec)}
+                rec_pages = collection.list_rec_pages(recording)
+            else:
+                rec_pages = None
+
+            return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
 
         # Create Collection
         @self.app.get('/_create')

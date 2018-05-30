@@ -54,7 +54,7 @@ class BaseStorageCommit(FullStackTests):
 
         assert '"food": "bar"' in res.text, res.text
 
-        self.sleep_try(0.1, 1.0, self.assert_exists(REC_CDXJ, True))
+        self.sleep_try(0.3, 10.0, self.assert_exists(REC_CDXJ, True))
 
     def test_record_2_temp(self):
         res = self.testapp.get('/_new/default-collection/rec/record/mp_/http://httpbin.org/get?food=bar')
@@ -64,7 +64,7 @@ class BaseStorageCommit(FullStackTests):
 
         assert '"food": "bar"' in res.text, res.text
 
-        self.sleep_try(0.1, 1.0, self.assert_exists(REC_CDXJ, True))
+        self.sleep_try(0.5, 10.0, self.assert_exists(REC_CDXJ, True))
 
     def test_delete_rec(self):
         user_dir = os.path.join(self.warcs_dir, 'test')

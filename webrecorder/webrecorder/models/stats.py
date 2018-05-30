@@ -7,19 +7,30 @@ from pywb.warcserver.index.cdxobject import CDXObject
 
 # ============================================================================
 class Stats(object):
-    USER_USAGE_KEY = 'st:user-usage'
-    TEMP_USAGE_KEY = 'st:temp-usage'
-    PATCH_USAGE_KEY = 'st:patch-usage'
-
     TEMP_PREFIX = 'temp-'
 
-    BROWSERS_KEY = 'st:br:{0}'
+    ALL_CAPTURE_USER_KEY = 'st:all-capture-user'
+    ALL_CAPTURE_TEMP_KEY = 'st:all-capture-temp'
 
-    DOWNLOADS_KEY = 'st:downloads'
+    PATCH_USER_KEY = 'st:patch-user'
+    PATCH_TEMP_KEY = 'st:patch-temp'
+
+    DELETE_USER_KEY = 'st:delete-user'
+    DELETE_TEMP_KEY = 'st:delete-temp'
+
+    DOWNLOADS_USER_COUNT_KEY = 'st:download-user-count'
+    DOWNLOADS_USER_SIZE_KEY = 'st:download-user-size'
+
+    DOWNLOADS_TEMP_COUNT_KEY = 'st:download-temp-count'
+    DOWNLOADS_TEMP_SIZE_KEY = 'st:download-temp-size'
+
     DOWNLOADS_PROP = 'num_downloads'
 
-    UPLOADS_KEY = 'st:uploads'
+    UPLOADS_COUNT_KEY = 'st:upload-count'
+    UPLOADS_SIZE_KEY = 'st:upload-size'
     UPLOADS_PROP = 'num_uploads'
+
+    BROWSERS_KEY = 'st:br:{0}'
 
     SOURCES_KEY = 'st:ra:{0}'
 
@@ -66,9 +77,9 @@ class Stats(object):
 
             # write size to usage hashes
             if username.startswith(self.TEMP_PREFIX):
-                key = self.TEMP_USAGE_KEY
+                key = self.ALL_CAPTURE_TEMP_KEY
             else:
-                key = self.USER_USAGE_KEY
+                key = self.ALL_CAPTURE_USER_KEY
 
             if key:
                 pi.hincrby(key, today, size)
@@ -89,17 +100,52 @@ class Stats(object):
                         pass
 
                 if is_patch:
-                    pi.hincrby(self.PATCH_USAGE_KEY, today, size)
+                    if username.startswith(self.TEMP_PREFIX):
+                        key = self.PATCH_TEMP_KEY
+                    else:
+                        key = self.PATCH_USER_KEY
+
+                    pi.hincrby(key, today, size)
 
     def incr_browser(self, browser_id):
         browser_key = self.BROWSERS_KEY.format(browser_id)
         self.redis.hincrby(browser_key, today_str(), 1)
 
     def incr_download(self, collection):
+        user = collection.get_owner()
+        if user.name.startswith(self.TEMP_PREFIX):
+            count_key = self.DOWNLOADS_TEMP_COUNT_KEY
+            size_key = self.DOWNLOADS_TEMP_SIZE_KEY
+        else:
+            count_key = self.DOWNLOADS_USER_COUNT_KEY
+            size_key = self.DOWNLOADS_USER_SIZE_KEY
+
         collection.incr_key(self.DOWNLOADS_PROP, 1)
-        self.redis.hincrby(self.DOWNLOADS_KEY, today_str(), 1)
+        today = today_str()
+        self.redis.hincrby(count_key, today, 1)
+        self.redis.hincrby(size_key, today, collection.size)
 
-    def incr_upload(self, user):
+    def incr_delete(self, recording):
+        try:
+            user = recording.get_owner().get_owner()
+
+            if user.name.startswith(self.TEMP_PREFIX):
+                key = self.DELETE_TEMP_KEY
+            else:
+                key = self.DELETE_USER_KEY
+
+            self.redis.hincrby(key, today_str(), recording.size)
+        except Exception as e:
+            print('Error Counting Delete: ' + str(e))
+
+    def incr_upload(self, user, size):
         user.incr_key(self.UPLOADS_PROP, 1)
-        self.redis.hincrby(self.UPLOADS_KEY, today_str(), 1)
+        today = today_str()
+        self.redis.hincrby(self.UPLOADS_COUNT_KEY, today, 1)
+        self.redis.hincrby(self.UPLOADS_SIZE_KEY, today, size)
 
+    def move_temp_to_user_usage(self, collection):
+        date_str = collection.get_created_iso_date()
+        size = collection.size
+        self.redis.hincrby(self.ALL_CAPTURE_TEMP_KEY, date_str, -size)
+        self.redis.hincrby(self.ALL_CAPTURE_USER_KEY, date_str, size)

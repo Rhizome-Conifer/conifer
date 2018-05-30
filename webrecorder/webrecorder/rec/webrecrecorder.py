@@ -137,13 +137,9 @@ class WebRecRecorder(object):
                                    writer,
                                    skip_filters=skip_filters,
                                    #accept_colls=self.accept_colls,
-                                   create_buff_func=self.create_buffer)
+                                   create_buff_func=writer.create_write_buffer)
 
         self.recorder = recorder_app
-
-    def create_buffer(self, params, name):
-        info_key = res_template(self.info_keys['rec'], params)
-        return TempWriteBuffer(self.redis, info_key, name, params['url'])
 
     # Messaging ===============
     def msg_listen_loop(self):
@@ -331,8 +327,15 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
         self.user_key = config['info_key_templ']['user']
 
-    def is_rec_open(self, params):
+    def create_write_buffer(self, params, name):
+        info_key = res_template(self.info_key, params)
         open_key = res_template(self.open_rec_key, params)
+        params['_open_key'] = open_key
+        return TempWriteBuffer(self.redis, info_key, open_key, self.open_rec_ttl, name, params['url'])
+
+    def is_rec_open(self, params):
+        open_key = params['_open_key']
+        #open_key = res_template(self.open_rec_key, params)
 
         # update ttl for open recroding key, if it exists
         # if not, abort opening new warc file here
@@ -394,18 +397,24 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
 # ============================================================================
 class TempWriteBuffer(tempfile.SpooledTemporaryFile):
-    def __init__(self, redis, info_key, class_name, url):
+    def __init__(self, redis, info_key, open_key, open_rec_ttl, class_name, url):
         super(TempWriteBuffer, self).__init__(max_size=512*1024)
         self.redis = redis
         self.info_key = info_key
-        self.redis.hincrby(self.info_key, 'pending_count', 1)
+        self.open_key = open_key
+        self.open_rec_ttl = open_rec_ttl
+        self.class_name = class_name
+        if self.redis.expire(self.open_key, self.open_rec_ttl):
+            self.redis.hincrby(self.info_key, 'pending_count', 1)
+
         self._wsize = 0
 
     def write(self, buff):
         super(TempWriteBuffer, self).write(buff)
         length = len(buff)
         self._wsize += length
-        self.redis.hincrby(self.info_key, 'pending_size', length)
+        if self.redis.expire(self.open_key, self.open_rec_ttl):
+            self.redis.hincrby(self.info_key, 'pending_size', length)
 
     def close(self):
         try:
@@ -413,7 +422,8 @@ class TempWriteBuffer(tempfile.SpooledTemporaryFile):
         except:
             traceback.print_exc()
 
-        self.redis.hincrby(self.info_key, 'pending_size', -self._wsize)
-        self.redis.hincrby(self.info_key, 'pending_count', -1)
+        if self.redis.exists(self.open_key):
+            self.redis.hincrby(self.info_key, 'pending_size', -self._wsize)
+            self.redis.hincrby(self.info_key, 'pending_count', -1)
 
 

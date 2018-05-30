@@ -44,12 +44,19 @@ class TempChecker(object):
 
         if sesh == 'commit-wait':
             try:
+                if not os.path.isdir(temp_dir):
+                    print('Remove Session For Already Deleted Dir: ' + temp_dir)
+                    self.sesh_redis.delete(temp_key)
+                    return True
+
                 print('Removing if empty: ' + temp_dir)
                 os.rmdir(temp_dir)
                 #shutil.rmtree(temp_dir)
                 print('Deleted empty dir: ' + temp_dir)
+
+                self.sesh_redis.delete(temp_key)
+
             except Exception as e:
-                #print(e)
                 print('Waiting for commit')
                 return False
 

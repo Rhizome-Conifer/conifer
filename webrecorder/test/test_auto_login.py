@@ -151,7 +151,7 @@ class TestAutoLogin(FullStackTests):
         assert coll['public_index'] == False
         assert coll['public'] == False
         assert coll['title'] == 'Another Coll'
-        assert "This collection doesn't yet have a description" in coll['desc']
+        assert coll['desc'] == ''
 
         assert len(coll['pages']) == 2
 
