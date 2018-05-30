@@ -7,6 +7,7 @@ export NewCollection from './NewCollection';
 export NewPasswordUI from './NewPasswordUI';
 export PasswordResetUI from './PasswordResetUI';
 export TempUsageUI from './TempUsageUI';
+export TempUserAlertUI from './TempUserAlertUI';
 export TermsAndPolicies from './TermsAndPolicies';
 export UploadUI from './UploadUI';
 export UserManagementUI from './UserManagementUI';

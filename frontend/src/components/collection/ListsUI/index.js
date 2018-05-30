@@ -5,15 +5,13 @@ import Collapsible from 'react-collapsible';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { defaultCollDesc, draggableTypes } from 'config';
+import { draggableTypes } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
 import Modal from 'components/Modal';
 import SidebarHeader from 'components/SidebarHeader';
-import Truncate from 'components/Truncate';
 import VisibilityLamp from 'components/collection/VisibilityLamp';
-import WYSIWYG from 'components/WYSIWYG';
-import { AllPagesIcon, CheckIcon, PlusIcon, WarcIcon, XIcon } from 'components/icons';
+import { AllPagesIcon, CheckIcon, PlusIcon, XIcon } from 'components/icons';
 
 import ListItem from './ListItem';
 import EditItem from './EditItem';
@@ -207,7 +205,7 @@ class ListsUI extends Component {
   }
 
   render() {
-    const { canAdmin } = this.context;
+    const { canAdmin, isAnon } = this.context;
     const { activeListSlug, collection, list, publicIndex } = this.props;
     const { created, editModal, edited, editId, isCreating, lists, title } = this.state;
 
@@ -255,7 +253,7 @@ class ListsUI extends Component {
                       <div className={classNames('wrapper', { editable: canAdmin })}>
                         <Link to={getCollectionLink(collection, true)} title="All pages" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
                         {
-                          canAdmin &&
+                          canAdmin && !isAnon &&
                             <VisibilityLamp
                               callback={this.toggleIndexVisibility}
                               isPublic={publicIndex}

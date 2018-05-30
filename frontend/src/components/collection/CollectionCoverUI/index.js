@@ -5,6 +5,9 @@ import { Link } from 'react-router-dom';
 
 import { defaultCollDesc } from 'config';
 import { getCollectionLink, getListLink } from 'helpers/utils';
+import { collection as collectionErr } from 'helpers/userMessaging';
+
+import { Temp404 } from 'containers';
 
 import Capstone from 'components/collection/Capstone';
 import HttpStatus from 'components/HttpStatus';
@@ -18,7 +21,8 @@ import './style.scss';
 
 class CollectionCoverUI extends Component {
   static contextTypes = {
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
@@ -44,11 +48,9 @@ class CollectionCoverUI extends Component {
     const { collection, match: { params: { coll } } } = this.props;
 
     if (collection.get('error')) {
-      return (
-        <HttpStatus>
-          {collection.getIn(['error', 'error_message'])}
-        </HttpStatus>
-      );
+      return this.context.isAnon ?
+        <Temp404 /> :
+        <HttpStatus>{collectionErr[collection.getIn(['error', 'error'])]}</HttpStatus>;
     } else if (collection.get('loaded') && !collection.get('slug_matched') && coll !== collection.get('slug')) {
       return (
         <RedirectWithStatus to={getCollectionLink(collection)} status={301} />

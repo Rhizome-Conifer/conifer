@@ -1,0 +1,23 @@
+
+
+.wr-delete-modal {
+    label {
+        display: block;
+        margin-top: 2.5rem;
+    }
+
+    button {
+        svg {
+            margin-right: .5rem;
+            vertical-align: text-top;
+
+            path {
+                fill: #FFF;
+            }
+        }
+    }
+
+    input {
+        width: 100%;
+    }
+}

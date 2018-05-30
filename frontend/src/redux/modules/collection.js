@@ -48,6 +48,23 @@ export default function collection(state = initialState, action = {}) {
       const idx = state.get('lists').findIndex(l => l.get('id') === action.list);
       return state.setIn(['lists', idx, 'total_bookmarks'], action.result.list.total_bookmarks);
     }
+    case COLL_DELETE:
+      return state.merge({
+        edited: false,
+        editing: true,
+        editError: null
+      });
+    case COLL_DELETE_SUCCESS:
+      return state.merge({
+        edited: true,
+        editing: false
+      });
+    case COLL_DELETE_FAIL:
+      return state.merge({
+        edited: false,
+        editing: false,
+        editError: action.error.error
+      });
     case COLL_LOAD:
       return state.set('loading', true);
     case COLL_EDIT_SUCCESS:

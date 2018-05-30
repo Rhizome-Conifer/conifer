@@ -10,6 +10,7 @@ import { getCollectionLink } from 'helpers/utils';
 import { Upload } from 'containers';
 
 import HttpStatus from 'components/HttpStatus';
+import RedirectWithStatus from 'components/RedirectWithStatus';
 import SizeFormat from 'components/SizeFormat';
 import { NewCollection } from 'components/siteComponents';
 import { GlobeIcon } from 'components/icons';
@@ -85,6 +86,10 @@ class CollectionListUI extends Component {
           {collections.getIn(['error', 'error_message'])}
         </HttpStatus>
       );
+    }
+
+    if (collections.get('loaded') && isAnon) {
+      return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp`} status={301} />;
     }
 
     const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;

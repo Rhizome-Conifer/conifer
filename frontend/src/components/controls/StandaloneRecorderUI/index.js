@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
-import { Button, FormControl } from 'react-bootstrap';
+import { Button, FormControl, HelpBlock } from 'react-bootstrap';
 
 import { appHost, defaultRecDesc } from 'config';
 import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
@@ -37,6 +37,7 @@ class StandaloneRecorderUI extends Component {
       advOpen: hasRB,
       initialOpen: hasRB,
       sessionNotes: '',
+      setColl: false,
       url: ''
     };
   }
@@ -59,6 +60,11 @@ class StandaloneRecorderUI extends Component {
     const { sessionNotes, url } = this.state;
 
     if (!url) {
+      return false;
+    }
+
+    if (!activeCollection.id) {
+      this.setState({ setColl: true });
       return false;
     }
 
@@ -127,6 +133,12 @@ class StandaloneRecorderUI extends Component {
             isAnon ?
               <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span></Button> :
               <CollectionDropdown label={false} />
+          }
+          {
+            this.state.setColl &&
+              <HelpBlock style={{ color: 'red' }}>
+                Choose a collection
+              </HelpBlock>
           }
         </div>
 

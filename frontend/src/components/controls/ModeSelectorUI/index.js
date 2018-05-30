@@ -195,16 +195,17 @@ class ModeSelectorUI extends PureComponent {
                     </ul>
                 }
 
-                <div className="divider" role="separator" />
-
-                <ul className="row wr-mode" onClick={this.onStaticCopy} role="button" title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
-                  <li className="col-xs-3">
-                    <SnapshotIcon />
-                  </li>
-                  <li className="col-xs-9">
-                    <h5>Static Copy</h5>
-                  </li>
-                </ul>
+                {/*
+                  <div className="divider" role="separator" />
+                  <ul className="row wr-mode" onClick={this.onStaticCopy} role="button" title="A special recording that contains an exact, static copy of the document as currently displayed. Scripting is removed, so interaction with the copy is limited">
+                    <li className="col-xs-3">
+                      <SnapshotIcon />
+                    </li>
+                    <li className="col-xs-9">
+                      <h5>Static Copy</h5>
+                    </li>
+                  </ul>
+                */}
               </div>
             </div>
           </div>

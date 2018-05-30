@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { connect } from 'react-redux';
-import { Collapse } from 'react-bootstrap';
 
 import { homepageAnnouncement } from 'config';
 
@@ -18,23 +17,23 @@ class Home extends Component {
 
   static propTypes = {
     auth: PropTypes.object,
-    user: PropTypes.object,
     collections: PropTypes.array,
     showModalCB: PropTypes.func,
-    tempUser: PropTypes.object
+    tempUser: PropTypes.object,
+    user: PropTypes.object
+
   };
 
-  constructor(props) {
-    super(props);
+  shouldComponentUpdate(nextProps) {
+    if (this.props.tempUser.get('loading')) {
+      return false;
+    }
 
-    this.state = {
-      introVideoOpen: false
-    };
+    return true;
   }
 
   render() {
     const { auth, showModalCB, tempUser } = this.props;
-    const { introVideoOpen } = this.state;
 
     return (
       <React.Fragment>
@@ -48,11 +47,11 @@ class Home extends Component {
           <h4 className="text-center">Collect & Revisit the Web</h4>
         </div>
         {
-          auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0 && tempUser &&
+          auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0 && tempUser.get('user') &&
             <HomepageMessage
               auth={auth}
               showModal={showModalCB}
-              tempUser={tempUser} />
+              tempUser={tempUser.get('user')} />
         }
         <div className="row top-buffer-lg bottom-buffer-lg">
           <StandaloneRecorder />
@@ -143,33 +142,16 @@ class Home extends Component {
             <p><small>We're working on a more detailed explanation of how it all works. For now, email us at <a href="mailto:support@webrecorder.io" target="_blank">support@webrecorder.io</a> if you have any questions. </small></p>
           </div>
         </div>
-
-        <div className="tutorial col-xs-10 col-xs-push-1">
-          <button onClick={() => this.setState({ introVideoOpen: !introVideoOpen })}>
-            {
-              introVideoOpen ?
-                <span className="glyphicon glyphicon-triangle-bottom" /> :
-                <span className="glyphicon glyphicon-triangle-right" />
-            }
-            &nbsp;Watch Webrecorder Introductory Video
-          </button>
-          <Collapse in={introVideoOpen}>
-            <div>
-              <iframe width="854" height="480" src="https://www.youtube.com/embed/n3SqusABXEk" allowFullScreen />
-            </div>
-          </Collapse>
-        </div>
       </React.Fragment>
     );
   }
 }
 
-const mapStateToProps = (outerState) => {
-  const state = outerState.app;
+const mapStateToProps = ({ app }) => {
   return {
-    auth: state.get('auth'),
-    user: state.get('user'),
-    tempUser: state.getIn(['tempUser', 'user'])
+    auth: app.get('auth'),
+    tempUser: app.get('tempUser'),
+    user: app.get('user')
   };
 };
 

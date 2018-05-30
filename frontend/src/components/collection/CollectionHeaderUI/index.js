@@ -133,10 +133,13 @@ class CollectionHeaderUI extends Component {
     const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>
         <Button className="rounded" onClick={this.newCapture}><PlusIcon /> New Capture</Button>
-        <PublicSwitch
-          callback={this.setPublic}
-          isPublic={isPublic}
-          label="Collection" />
+        {
+          !isAnon &&
+            <PublicSwitch
+              callback={this.setPublic}
+              isPublic={isPublic}
+              label="Collection" />
+        }
         {
           !condensed &&
             <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
