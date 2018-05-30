@@ -23,6 +23,7 @@ import { inStorage, setStorage } from 'helpers/utils';
 import Analytics from 'components/Analytics';
 import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
 import { Footer } from 'components/siteComponents';
+import { InfoIcon } from 'components/icons';
 
 import 'shared/fonts/fonts.scss';
 import './style.scss';
@@ -211,8 +212,8 @@ export class App extends Component { // eslint-disable-line
           error ?
             <div>
               <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
-                <Panel bsStyle="danger">
-                  <Panel.Heading>Oops!</Panel.Heading>
+                <Panel bsStyle="danger" className="error-panel">
+                  <Panel.Heading><InfoIcon /> Oops!</Panel.Heading>
                   <Panel.Body>
                     <p>Oops, the page encountered an error.</p>
                     {

@@ -35,14 +35,22 @@
         border: none;
         background: inherit;
         cursor: initial;
-    }
 
-    .glyphicon-info-sign {
-        transition: color $midShift ease-in-out;
-        vertical-align: text-top;
+        display: flex;
+        align-items: center;
 
-        &:hover {
-            color: rgb(89,158,230);
+        & > svg {
+            width: 1.4rem;
+            height: 1.4rem;
+            vertical-align: baseline;
+
+            path {
+                transition: fill $midShift ease-in-out;
+            }
+        }
+
+        &:hover svg path {
+            fill: $blue;
         }
     }
 
@@ -54,8 +62,8 @@
         left: calc(-250px + (40px + 6px + 7px));
     }
 
-    &.open .glyphicon-info-sign {
-        color: rgb(89,158,230);
+    &.open .dropdown-toggle svg path {
+        fill: $blue;
     }
 
     .ra-replay-info-label {
@@ -88,16 +96,20 @@
         }
     }
 
-    .glyphicon-remove-circle {
-        transition: color $midShift ease-in-out;
+    .remove-circle {
         position: absolute;
         right: 0;
         top: 0;
-        padding: 1rem;
-        cursor: pointer;
+        padding: .5rem 1.5rem;
 
-        &:hover {
-            color: red;
+        svg {
+            path {
+                transition: fill $midShift ease-in-out;
+            }
+        }
+
+        &:hover svg path {
+            fill: red;
         }
     }
 

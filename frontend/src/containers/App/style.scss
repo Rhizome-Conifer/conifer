@@ -42,3 +42,15 @@ section {
     z-index: 500;
     box-shadow: .2rem .2rem .8rem rgba(0,0,0,0.4);
 }
+
+.error-panel {
+    svg {
+        width: 1.2rem;
+        height: 1.2rem;
+        vertical-align: baseline;
+
+        path {
+            fill: $warning;
+        }
+    }
+}
