@@ -55,7 +55,7 @@ class SidebarCollectionViewerUI extends Component {
             <WYSIWYG
               readOnly
               key={collection.get('id')}
-              initial={collection.get('desc') || defaultCollDesc} />
+              initial={collection.get('desc')} />
           </Truncate>
           <header className="lists-header">
             <h4>Lists ({lists.size})</h4>

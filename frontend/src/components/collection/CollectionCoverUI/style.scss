@@ -43,6 +43,12 @@
             li {
                 margin-bottom: 5rem;
 
+                .wr-editor {
+                    .DraftEditor-editorContainer {
+                        max-height: inherit;
+                    }
+                }
+
                 & > a {
                     transition: color $quickShift ease-in-out;
                     text-decoration: none;
@@ -75,23 +81,21 @@
                 }
 
                 .desc {
-                    // background-color: pink;
                     padding: 1rem 4.5rem 0 4.5rem;
 
                     div + .list-link {
                         display: inline-block;
                         margin-top: 0.2rem;
                     }
+
                     .list-link {
                       &:link, &:visited {
                           color: $gray600;
                       }
+
                       &:hover, &:active {
                           color: $blue;
                       }
-                    }
-                    .wr-truncate {
-                      display: block;
                     }
                 }
             }

@@ -77,7 +77,8 @@ class CollectionCoverUI extends Component {
         <div className="description">
           <WYSIWYG
             readOnly
-            initial={collection.get('desc') || defaultCollDesc} />
+            placeholder={defaultCollDesc}
+            initial={collection.get('desc')} />
         </div>
         {
           lists &&
