@@ -80,7 +80,7 @@ class WYSIWYG extends Component {
 
     this.state = {
       renderable: false,
-      editorState: createValueFromString(props.initial || props.placeholder, this.method),
+      editorState: createValueFromString(this.getText(), this.method),
       markdownEdit: false,
       localEditMode: false
     };
@@ -104,7 +104,8 @@ class WYSIWYG extends Component {
         this.toggleEditMode();
       }
 
-      this.setState({ editorState: createValueFromString(nextProps.initial || nextProps.placeholder, this.method) });
+      const text = nextProps.readOnly ? nextProps.initial : nextProps.initial || nextProps.placeholder;
+      this.setState({ editorState: createValueFromString(text, this.method) });
     }
   }
 
@@ -148,11 +149,16 @@ class WYSIWYG extends Component {
     }
   }
 
+  getText = () => {
+    const { initial, placeholder, readOnly } = this.props;
+    return readOnly ? initial : initial || placeholder;
+  }
+
   cancel = (evt) => {
     evt.stopPropagation();
 
     this.setState({
-      editorState: createValueFromString(this.props.initial || this.props.placeholder, this.method)
+      editorState: createValueFromString(this.getText(), this.method)
     });
 
     if (this.props.externalEditButton) {
@@ -167,7 +173,8 @@ class WYSIWYG extends Component {
 
     const { onSave } = this.props;
     if (onSave) {
-      onSave(this.state.editorState.toString(this.method));
+      const content = this.state.editorState.toString(this.method);
+      onSave(content.replace(/\u200B|\n$/g,''));
     }
   }
 

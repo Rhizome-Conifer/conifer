@@ -44,12 +44,9 @@ const initialData = [
     promise: ({ match: { params: { coll, user } }, store: { dispatch, getState } }) => {
       const state = getState();
 
-      // if switching to list view, prevent reloading collection
-      if ((!isCollLoaded(state) || state.app.getIn(['collection', 'id']) !== coll)) {
-        return dispatch(loadColl(user, coll));
-      }
-
-      return undefined;
+      //if ((!isCollLoaded(state) || state.app.getIn(['collection', 'id']) !== coll)) {
+      return dispatch(loadColl(user, coll));
+      //}
     }
   },
 ];

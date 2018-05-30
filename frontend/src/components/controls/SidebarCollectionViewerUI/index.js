@@ -93,8 +93,8 @@ class SidebarCollectionViewerUI extends Component {
                     <div className="wrapper">
                       {
                         !activeList ?
-                          <button className="borderless selected-item" onClick={this.returnToItem}><AllPagesIcon /> See all pages in this collection</button> :
-                          <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`} title="Browse this collection" className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
+                          <button className="borderless selected-item" onClick={this.returnToItem}><AllPagesIcon /> All Pages in Collection</button> :
+                          <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`} title="Browse this collection" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
                       }
                     </div>
                   </li>
