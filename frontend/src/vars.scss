@@ -7,21 +7,19 @@ $sans: "HKGrotesk";
 
 /* colors */
 $collTrigger: rgb(0, 57, 229);
-$blue: #0232F5;
+$blue: #0000ee;
 $blue-deselect: #B4C1F5;
 $dark-blue: #0129C4;
 $bookmarkListDefault: rgb(100,100,100);
-$brightGreen: #B8E986;
-$bright-green-highlight: #A2D66E;
-$green: #3ABB13;
+$brightGreen: #45A109;
+$bright-green-highlight: #56BB13;
 $buttonHover: #ececec;
-$light-gray: #CECECE;
 $gray200: #F6F6F6;
 $gray300: #EEEEEE;
 $gray400: #E0E0E0;
-$mid-gray: #7B7B7B;
+$gray500: #CECECE;
 $gray600: #6E6E6E;
-$dark-gray: #3E3E3E;
+$body-gray: #3E3E3E;
 $header: #373944;
 $link: #337ab7;
 $linkHover: #74B9F3;
@@ -31,14 +29,14 @@ $mgmt-gray: #979797;
 $sidebarBg: #FFF;
 $slate: #8F9294;
 $success-color: #7ED321;
-$tableHeaderBg: #D8D8D8;
+$tableHeaderBg: #E0E0E0; //gray400
 $tr-selected: #BABAC4;
 $tr-highlight-selected: #0A0A97;
 $white: #FFF;
 $yellow: #FFF900;
 $warning: #d9534f;
 
-$table-zebra: #F1F1F1;
+$table-zebra: #F6F6F6; //gray200
 
 $sidebarHeaderBg: #EDEDED;
 $sidebarHeaderLabel: #6E6E6E;

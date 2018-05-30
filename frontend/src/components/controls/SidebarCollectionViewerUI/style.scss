@@ -20,7 +20,7 @@
         }
 
         .collection-header {
-            border: solid .2rem $blue;
+            border: solid .2rem $gray500;
             border-width: 0 0 .2rem 0;
             margin-bottom: 1rem;
 
@@ -30,9 +30,14 @@
         }
 
         .lists-header {
-            border: solid .2rem $mgmt-gray;
-            border-width: .2rem 0 0 0;
+            border: solid .1rem $gray500;
+            border-width: .1rem 0 0 0;
             margin-top: 1rem;
+
+            h4 {
+              font-size: 1.2rem;
+              margin-top: 2rem;
+            }
         }
 
         ul {
@@ -61,7 +66,7 @@
                     align-items: center;
 
                     svg {
-                        fill: $mid-gray;
+                        fill: $gray600;
                     }
 
                     .selected-item {
@@ -72,11 +77,12 @@
                     a, .selected-item {
                         display: block;
                         width: 100%;
+                        padding: 0.3rem 0;
                         margin: 0 .5rem;
                         text-decoration: none;
-                        color: $mid-gray;
+                        color: $gray600;
                         font-weight: 500;
-                        font-size: 1.6rem;
+                        font-size: 1.4rem;
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
@@ -101,21 +107,21 @@
                         }
 
                         a, button {
-                            color: $dark-gray;
+                            color: $body-gray;
                         }
                     }
                 }
 
 
                 &.selected {
-                    color: $dark-gray;
+                    color: $body-gray;
 
                     &:before {
                         background-color: $blue;
                     }
 
                     a:visited, a:link, a:hover {
-                        color: $dark-gray;
+                        color: $body-gray;
                     }
                 }
 

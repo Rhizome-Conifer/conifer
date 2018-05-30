@@ -15,7 +15,7 @@
 .wr-header-btn {
     border: none;
     background: transparent;
-    color: $mid-gray;
+    color: $gray600;
     padding: 0 1rem;
 
     &:hover {
@@ -94,7 +94,7 @@
 .header-webrecorder a:visited,
 .navbar-user-links>ul>li>a:link,
 .navbar-user-links>ul>li>a:visited {
-    color: $mid-gray;
+    color: $gray600;
 }
 
 .header-webrecorder a:focus,
@@ -103,13 +103,13 @@
 .navbar-user-links>ul>li>a:hover {
     text-decoration: underline;
     background-color: inherit;
-    color: $mid-gray;
+    color: $gray600;
 }
 
 .header-webrecorder a:active,
 .navbar-user-links>ul>li>a:active {
     outline: 0;
-    color: $mid-gray;
+    color: $gray600;
 }
 
 .navbar-user-links {

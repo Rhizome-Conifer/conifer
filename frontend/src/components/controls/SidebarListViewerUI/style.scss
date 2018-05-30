@@ -23,22 +23,30 @@
     }
 
     .list-header {
-        border: solid .2rem $blue;
-        border-width: 0 0 .2rem 0;
+        border: solid .1rem $gray500;
+        border-width: 0 0 .1rem 0;
         padding: 0 1rem;
         max-height: 30rem;
         overflow: auto;
 
         h4 {
             display: flex;
-            font-size: 1.2rem;
+            font-size: 1.6rem;
             font-weight: 400;
+            line-height: 2.2rem;
+            margin: 1rem 0 0.1rem 0;
 
             & > svg {
+                width: 1.5rem;
+                height: 1.5rem;
                 flex-shrink: 0;
-                margin-right: 1rem;
-                vertical-align: bottom;
+                margin-right: 1.5rem;
+                align-self: center;
+                g {
+                  fill: $gray600;
+                }
             }
+
         }
     }
 

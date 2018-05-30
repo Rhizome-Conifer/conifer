@@ -7,9 +7,8 @@
 
     h1 {
         max-width: 75vw;
-        margin: 0 0 2.5rem 0;
+        margin: 0 0 2.2rem 0;
         font-weight: 400;
-        color: $blue;
     }
 
     .description {
@@ -26,6 +25,7 @@
             margin: 5rem auto 4rem auto;
             text-align: center;
             font-weight: 600;
+            color: $gray600;
         }
 
         ul.lists {
@@ -43,13 +43,16 @@
                     .list-title {
                         display: flex;
                         align-items: flex-start;
-                        border: solid 0 $blue;
-                        border-width: 0 0 .4rem 0;
+                        border: solid 0 $gray500;
+                        border-width: 0 0 .2rem 0;
                         padding: 0 1.5rem 1rem 1.5rem;
 
                         svg {
                             vertical-align: bottom;
                             margin-right: 1.5rem;
+                            g {
+                              fill: $gray600;
+                            }
                         }
 
                         h3 {
@@ -64,12 +67,23 @@
                 }
 
                 .desc {
-                    width: 80%;
-                    margin: .5rem 9% 0 9%;
+                    // background-color: pink;
+                    padding: 1rem 4.5rem 0 4.5rem;
 
                     div + .list-link {
                         display: inline-block;
-                        margin-top: 1.5rem;
+                        margin-top: 0.2rem;
+                    }
+                    .list-link {
+                      &:link, &:visited {
+                          color: $gray600;
+                      }
+                      &:hover, &:active {
+                          color: $blue;
+                      }
+                    }
+                    .wr-truncate {
+                      display: block;
                     }
                 }
             }
@@ -88,7 +102,7 @@
         text-decoration: none;
 
         &:link, &:visited {
-            color: $mid-gray;
+            color: $gray600;
         }
 
         &:hover, &:active {

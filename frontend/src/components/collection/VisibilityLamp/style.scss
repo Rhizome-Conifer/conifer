@@ -19,12 +19,12 @@
         }
 
         &:hover > div {
-            background-color: $mid-gray;
+            background-color: $gray600;
         }
     }
 
     &.is-public > div {
-        background-color: $green;
+        background-color: $brightGreen;
     }
 
     & > div:first-of-type {

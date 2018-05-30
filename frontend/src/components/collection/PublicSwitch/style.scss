@@ -20,13 +20,19 @@
         }
 
         &.is-public {
+            color: white;
             font-weight: 600;
             background: $brightGreen;
+            border: $brightGreen;
+            svg g {
+              fill: white;
+            }
         }
     }
 
-    svg {
-        width: 1.2rem;
-        height: 1.2rem;
+    svg{
+        width: 1.3rem;
+        height: 1.3rem;
+        margin-right: 0.2rem;
     }
 }

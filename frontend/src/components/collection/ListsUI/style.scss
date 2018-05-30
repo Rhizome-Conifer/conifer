@@ -26,7 +26,7 @@
         h4 {
             display: inline;
             font-size: 1.2rem;
-            color: $mid-gray;
+            color: $gray600;
             font-weight: 300;
             margin: 0 0 0 1.5rem;
 
@@ -39,7 +39,7 @@
             font-size: 1.2rem;
             margin-left: auto;
             font-weight: 500;
-            color: $mid-gray;
+            color: $gray600;
             text-decoration: underline;
         }
     }
@@ -120,7 +120,7 @@
                     }
 
                     svg {
-                        fill: $mid-gray;
+                        fill: $gray600;
                     }
 
                     a {
@@ -128,7 +128,7 @@
                         width: 100%;
                         margin: 0 .5rem;
                         text-decoration: none;
-                        color: $mid-gray;
+                        color: $gray600;
                         font-weight: 500;
                         white-space: nowrap;
                         overflow: hidden;
@@ -152,8 +152,8 @@
 
                &:not(.all-pages) .wrapper:before {
                     content: '';
-                    width: 1.8rem;
-                    height: 1.8rem;
+                    width: 1.4rem;
+                    height: 1.2rem;
                     background-image: url('../../../shared/images/private-list.svg');
                     background-size: contain;
                     background-repeat: no-repeat;
@@ -169,7 +169,7 @@
                         }
 
                         a {
-                            color: $dark-gray;
+                            color: $body-gray;
                         }
                     }
                 }
@@ -204,14 +204,14 @@
                 }
 
                 &.selected {
-                    color: $dark-gray;
+                    color: $body-gray;
 
                     &:before {
                         background-color: $blue;
                     }
 
                     a:visited, a:link, a:hover {
-                        color: $dark-gray;
+                        color: $body-gray;
                     }
                 }
 

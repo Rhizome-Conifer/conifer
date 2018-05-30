@@ -99,7 +99,7 @@ class CollectionCoverUI extends Component {
                                   initial={list.get('desc')} />
                               </Truncate>
                           }
-                          <Link to={loc} className="list-link">view list &raquo;</Link>
+                          <Link to={loc} className="list-link">View list &raquo;</Link>
                         </div>
                       </li>
                     );

@@ -183,6 +183,8 @@ a {
 
 .no-shadow {
   box-shadow: none;
+  border: 0 solid $gray400;
+  border-width: 0 0 0.1rem 0;
 }
 
 .button-link {
@@ -199,7 +201,7 @@ a {
 }
 
 .rounded {
-  color: $mid-gray;
+  color: $gray600;
   border-radius: 2.7rem;
   padding: 0.7rem 3rem;
   font-size: 1.15rem;
