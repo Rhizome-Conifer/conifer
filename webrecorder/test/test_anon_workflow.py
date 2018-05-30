@@ -18,6 +18,8 @@ from pywb.indexer.cdxindexer import write_cdx_index
 from re import sub
 from six.moves.urllib.parse import urlsplit, quote
 
+from webrecorder.models.stats import Stats
+
 from webrecorder.session import Session
 
 
@@ -36,15 +38,17 @@ class TestTempContent(FullStackTests):
         'u:{user}:colls',
         'h:defaults',
         'h:roles',
-        'st:temp-usage',
+        Stats.ALL_CAPTURE_TEMP_KEY,
     ]
 
     POST_DEL_KEYS = [
         'h:defaults',
         'h:roles',
-        'st:temp-usage',
-        'st:downloads',
-    ]
+        Stats.ALL_CAPTURE_TEMP_KEY,
+        Stats.DELETE_TEMP_KEY,
+        Stats.DOWNLOADS_TEMP_SIZE_KEY,
+        Stats.DOWNLOADS_TEMP_COUNT_KEY,
+     ]
 
     PAGE_STATS = {'rec': 'r:{rec}:<sesh_id>:stats:{url}',
                   'coll': 'c:{coll}:<sesh_id>:stats:{url}'
@@ -69,6 +73,7 @@ class TestTempContent(FullStackTests):
 
         cls.dyn_stats = []
         cls.downloaded = False
+        cls.deleted = False
 
         cls.temp_coll = None
 
@@ -83,6 +88,10 @@ class TestTempContent(FullStackTests):
     @classmethod
     def set_downloaded(cls):
         cls.downloaded = True
+
+    @classmethod
+    def set_deleted(cls):
+        cls.deleted = True
 
     def _get_redis_keys(self, keylist, user, coll, rec):
         keylist = [key.format(user=user, coll=coll, rec=rec) for key in keylist]
@@ -114,7 +123,11 @@ class TestTempContent(FullStackTests):
             #exp_keys.append('c:{coll}:warc'.format(user=user, coll=coll))
 
         if self.downloaded:
-            exp_keys.append('st:downloads')
+            exp_keys.append(Stats.DOWNLOADS_TEMP_COUNT_KEY)
+            exp_keys.append(Stats.DOWNLOADS_TEMP_SIZE_KEY)
+
+        if self.deleted:
+            exp_keys.append(Stats.DELETE_TEMP_KEY)
 
         if check_stats:
             self._check_dyn_stats(exp_keys)
@@ -593,6 +606,8 @@ class TestTempContent(FullStackTests):
         assert res.json == {'deleted_id': 'emmyem-test-recording'}
 
         user = self.anon_user
+
+        self.set_deleted()
 
         res = self.testapp.get('/api/v1/collection/temp?user={user}'.format(user=self.anon_user))
         recs = res.json['collection']['recordings']

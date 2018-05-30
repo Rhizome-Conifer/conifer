@@ -76,8 +76,8 @@ class CollsController(BaseController):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
             errs = user.remove_collection(collection, delete=True)
-            if errs:
-                return errs
+            if errs.get('error'):
+                return self._raise_error(400, errs['error'])
             else:
                 return {'deleted_id': coll_name}
 

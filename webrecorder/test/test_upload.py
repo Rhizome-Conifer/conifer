@@ -413,8 +413,8 @@ class TestUpload(FullStackTests):
         assert res.json == {'error': 'not_logged_in'}
 
     def test_stats(self):
-        assert self.redis.hget(Stats.DOWNLOADS_KEY, today_str()) == '1'
-        assert self.redis.hget(Stats.UPLOADS_KEY, today_str()) == '3'
+        assert self.redis.hget(Stats.DOWNLOADS_USER_COUNT_KEY, today_str()) == '1'
+        assert self.redis.hget(Stats.UPLOADS_COUNT_KEY, today_str()) == '3'
 
 
 

@@ -62,5 +62,5 @@ class TestPatchContent(FullStackTests):
         assert self.redis.exists(Stats.SOURCES_KEY.format('ia'))
         assert int(self.redis.hget(Stats.SOURCES_KEY.format('ia'), today_str())) > 0
 
-        assert int(self.redis.hget(Stats.PATCH_USAGE_KEY, today_str())) > 0
+        assert int(self.redis.hget(Stats.PATCH_TEMP_KEY, today_str())) > 0
 

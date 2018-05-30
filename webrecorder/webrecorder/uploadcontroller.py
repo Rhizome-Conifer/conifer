@@ -40,7 +40,7 @@ class UploadController(BaseController):
             if 'error' in res:
                 return self._raise_error(400, res['error'])
 
-            Stats(self.redis).incr_upload(user)
+            Stats(self.redis).incr_upload(user, expected_size)
             return res
 
         @self.app.get('/_upload/<upload_id>')
