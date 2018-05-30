@@ -473,7 +473,7 @@ class RedisUnorderedList(object):
 
 # ============================================================================
 class BaseAccess(object):
-    def can_read_coll(self, collection):
+    def can_read_coll(self, collection, allow_superuser=True):
         return True
 
     def can_write_coll(self, collection):

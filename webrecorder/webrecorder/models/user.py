@@ -13,6 +13,8 @@ from webrecorder.models.stats import Stats
 
 # ============================================================================
 class User(RedisUniqueComponent):
+    TEMP_PREFIX = 'temp-'
+
     MY_TYPE = 'user'
     INFO_KEY = 'u:{user}:info'
     ALL_KEYS = 'u:{user}:*'
@@ -42,6 +44,8 @@ class User(RedisUniqueComponent):
 
         cls.URL_SKIP_KEY = config['skip_key_templ']
         cls.SKIP_KEY_SECS = int(config['skip_key_secs'])
+
+        cls.TEMP_PREFIX = config['temp_prefix']
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -105,7 +109,7 @@ class User(RedisUniqueComponent):
         collections = []
         for collection in all_collections:
             collection.owner = self
-            if self.access.can_read_coll(collection):
+            if self.access.can_read_coll(collection, allow_superuser=False):
                 if load:
                     collection.load()
                 collections.append(collection)
@@ -152,6 +156,8 @@ class User(RedisUniqueComponent):
         return {}
 
     def delete_me(self):
+        self.access.assert_is_curr_user(self)
+
         for collection in self.get_collections(load=False):
             collection.delete_me()
 
@@ -349,19 +355,23 @@ class UserTable(object):
         self.access_func = access_func
         self.users_key = users_key or self.USERS_KEY
 
-    def get_user(self, name):
+    def make_user(self, name):
         return User(my_id=name,
                     redis=self.redis,
                     access=self.access_func())
 
     def __contains__(self, name):
-        return self.redis.sismember(self.users_key, name)
+        return self.redis.sismember(self.users_key, name) or self._anon_user_exists(name)
+
+    def _anon_user_exists(self, name):
+        return (name.startswith(User.TEMP_PREFIX) and
+                self.redis.exists(User.INFO_KEY.format(user=name)))
 
     def __setitem__(self, name, obj):
         if not isinstance(obj, dict):
             raise Exception('Must assign a dict')
 
-        user = self.get_user(name)
+        user = self.make_user(name)
         user.access.assert_is_curr_user(user)
         user.data.update(obj)
 
@@ -370,29 +380,30 @@ class UserTable(object):
             pi.sadd(self.users_key, name)
 
     def __delitem__(self, name):
-        user = self.get_user(name)
+        user = self.make_user(name)
         user.delete_me()
 
         self.redis.srem(self.users_key, name)
 
     def __getitem__(self, name):
-        user = self.get_user(name)
-        if not self.redis.sismember(self.users_key, name):
-            if not user.is_anon():
-                raise Exception('No Such User: ' + name)
+        if not name in self:
+            raise Exception('No Such User: ' + name)
 
-        return user
+        return self.make_user(name)
 
     def __iter__(self):
+        # iterate only through actual users, not temp users
         keys = self.redis.smembers(self.users_key)
         return iter(keys)
 
     def __len__(self):
+        # iterate only through actual users, not temp users
         return self.redis.scard(self.users_key)
 
     def items(self):
+        # iterate only through actual users, not temp users
         for key in self:
-            user = self.get_user(key)
+            user = self.make_user(key)
             yield user.name, user
 
     iteritems = items

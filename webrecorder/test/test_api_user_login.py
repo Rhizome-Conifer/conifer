@@ -24,6 +24,11 @@ class TestApiUserLogin(FullStackTests):
 
         assert set(user.keys()) == {'id', 'username', 'created_at', 'updated_at', 'space_utilization', 'ttl', 'max_size', 'size', 'timespan', 'collections'}
 
+    def test_api_wrong_temp_user_info(self):
+        res = self.testapp.get('/api/v1/user/temp-ABC', status=404)
+
+        assert res.json == {'error': 'no_such_user'}
+
     def test_api_register_fail_mismatch_password(self):
         # mismatch password
         params = {'email': 'test@example.com',

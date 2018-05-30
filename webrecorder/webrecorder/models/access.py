@@ -73,15 +73,15 @@ class SessionAccessCache(BaseAccess):
 
         return collection.get_prop(self.WRITE_PREFIX + self.session_user.my_id) != None
 
-    def check_read_access_public(self, collection):
+    def check_read_access_public(self, collection, allow_superuser=True):
         if not collection:
             return False
 
         if collection.is_public():
             return 'public'
 
-        # if superuser, can read
-        if self.is_superuser():
+        # if superuser is allowed, then can read
+        if allow_superuser and self.is_superuser():
             return True
 
         if self.is_coll_owner(collection):
@@ -92,8 +92,8 @@ class SessionAccessCache(BaseAccess):
 
         return collection.get_prop(self.READ_PREFIX + self.session_user.my_id) != None
 
-    def can_read_coll(self, collection):
-        return bool(self.check_read_access_public(collection))
+    def can_read_coll(self, collection, allow_superuser=True):
+        return bool(self.check_read_access_public(collection, allow_superuser=allow_superuser))
 
     def assert_can_read_coll(self, collection):
         if not self.can_read_coll(collection):
