@@ -2,6 +2,8 @@ import React from 'react';
 import Helmet from 'react-helmet';
 import { Link } from 'react-router-dom';
 
+import { supportEmail } from 'config';
+
 import './style.scss';
 
 
@@ -73,7 +75,7 @@ function FAQ() {
 
           <h4 className="q">Is Webrecorder free to use?</h4>
           <p className="a">
-            Generally, yes! Webrecorder is a free and open-source software (under the Apache License). Check out the details <a href="https://github.com/webrecorder/webrecorder" target="_blank">here</a>. That said, specific use-cases and integrations may require additional support or storage that will come at a cost. <a href="mailto:support@webrecorder.io">(Email us for details.)</a>
+            Generally, yes! Webrecorder is a free and open-source software (under the Apache License). Check out the details <a href="https://github.com/webrecorder/webrecorder" target="_blank">here</a>. That said, specific use-cases and integrations may require additional support or storage that will come at a cost. <a href={`mailto:${supportEmail}`}>(Email us for details.)</a>
           </p>
 
           <h4 className="q">There has to be some tiny print, right?</h4>

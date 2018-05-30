@@ -63,7 +63,7 @@ class StandaloneRecorderUI extends Component {
       return false;
     }
 
-    if (!activeCollection.id) {
+    if (!this.context.isAnon && !activeCollection.id) {
       this.setState({ setColl: true });
       return false;
     }
@@ -111,7 +111,7 @@ class StandaloneRecorderUI extends Component {
     const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
 
     const advOptions = (
-      <div><span className={classNames('caret', { 'caret-flip': advOpen })} /> Show session settings</div>
+      <div><span className={classNames('caret', { 'caret-flip': advOpen })} /> Session settings</div>
     );
 
     return (

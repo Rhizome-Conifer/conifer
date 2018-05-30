@@ -91,12 +91,12 @@ const userRoutes = [
 const controllerRoutes = [
   {
     path: `${userPath}/:coll/$new`,
-    name: 'new recording',
-    footer: false,
+    breadcrumb: 'New Capture',
     classOverride: '',
     component: NewRecording,
     exact: true,
-    breadcrumb: 'New Capture'
+    footer: false,
+    name: 'new recording'
   },
   {
     // record with remote browser id
@@ -188,6 +188,7 @@ const controllerRoutes = [
 const infoRoutes = [
   {
     path: '/_faq',
+    breadcrumb: 'About',
     component: FAQ,
     exact: true,
     footer: true,
@@ -195,6 +196,7 @@ const infoRoutes = [
   },
   {
     path: '/_policies',
+    breadcrumb: 'Terms and Policies',
     component: TermsAndPolicies,
     exact: true,
     footer: true,
@@ -202,6 +204,7 @@ const infoRoutes = [
   },
   {
     path: '/_documentation',
+    breadcrumb: 'User Guide',
     component: HowTo,
     exact: true,
     footer: true,
@@ -220,6 +223,7 @@ export default [
   },
   {
     path: '/_register',
+    breadcrumb: 'Register',
     component: UserSignup,
     exact: true,
     footer: true,
@@ -227,6 +231,7 @@ export default [
   },
   {
     path: '/_valreg/:registration',
+    breadcrumb: 'Registering',
     component: RegisterAccount,
     exact: true,
     footer: true,
@@ -234,6 +239,7 @@ export default [
   },
   {
     path: '/_forgot',
+    breadcrumb: 'Password Reset',
     component: PasswordReset,
     exact: true,
     footer: true,
@@ -241,6 +247,7 @@ export default [
   },
   {
     path: '/_resetpassword/:resetCode',
+    breadcrumb: 'Password Reset',
     component: NewPassword,
     exact: true,
     footer: true,
@@ -248,6 +255,7 @@ export default [
   },
   {
     path: '/_logout',
+    breadcrumb: 'Logging out..',
     component: Logout,
     exact: true,
     footer: true,

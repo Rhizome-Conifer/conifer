@@ -17,7 +17,8 @@ import './style.scss';
 
 class ListHeaderUI extends PureComponent {
   static contextTypes = {
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
@@ -54,7 +55,7 @@ class ListHeaderUI extends PureComponent {
   }
 
   render() {
-    const { canAdmin } = this.context;
+    const { canAdmin, isAnon } = this.context;
     const { collection, list } = this.props;
     const bkCount = list.get('bookmarks').size;
     const bookmarks = `${bkCount} Page${bkCount === 1 ? '' : 's'}`;
@@ -84,10 +85,13 @@ class ListHeaderUI extends PureComponent {
           Created by <Link to={`/${user}`}>{user}</Link>, with {bookmarks} from the collection <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link>
         </div>
         <div className="function-row">
-          <PublicSwitch
-            callback={this.setPublic}
-            isPublic={list.get('public')}
-            label="List" />
+          {
+            canAdmin && !isAnon &&
+              <PublicSwitch
+                callback={this.setPublic}
+                isPublic={list.get('public')}
+                label="List" />
+          }
           <Button onClick={this.startReplay} className="rounded">VIEW PAGES</Button>
         </div>
       </div>

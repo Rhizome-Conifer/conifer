@@ -150,7 +150,10 @@ class CollectionHeaderUI extends Component {
           <MenuItem onClick={this.togglePublicView}>See Public View</MenuItem>
           <MenuItem divider />
           <MenuItem onClick={this.manageCollection}>Manage Collection Contents</MenuItem>
-          <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>
+          {
+            !isAnon &&
+              <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>
+          }
           <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
           <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
           {/* TODO:

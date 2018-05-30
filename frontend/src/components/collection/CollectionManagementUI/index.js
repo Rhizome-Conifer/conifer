@@ -18,7 +18,8 @@ import './style.scss';
 
 class CollectionManagementUI extends Component {
   static contextTypes = {
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
@@ -87,9 +88,12 @@ class CollectionManagementUI extends Component {
                 <Button onClick={this.downloadAction}>
                   <DownloadIcon /> Download Collection
                 </Button>
-                <Upload fromCollection={collection.get('id')} classes="btn btn-default">
-                  <WarcIcon /> Upload to Collection
-                </Upload>
+                {
+                  !this.context.isAnon &&
+                    <Upload fromCollection={collection.get('id')} classes="btn btn-default">
+                      <WarcIcon /> Upload to Collection
+                    </Upload>
+                }
               </div>
             </div>
           </div>

@@ -1,4 +1,6 @@
 
+import { supportEmail } from 'config';
+
 export default {
   collection: {
     duplicate_name: 'A collection with this name already exists.',
@@ -13,7 +15,7 @@ export default {
   },
   registration: {
     already_registered: 'This account has already been registerd',
-    'invalid other': 'Error encountered, please contact support@webrecorder.io'
+    'invalid other': `Error encountered, please contact ${supportEmail}`
   },
   upload: {
     coll_not_found: 'Collection not found.',

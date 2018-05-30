@@ -79,6 +79,7 @@ class CollectionListUI extends Component {
     const { auth, collections, orderedCollections, match: { params }, user } = this.props;
     const { showModal } = this.state;
     const userParam = params.user;
+    const canAdmin = auth.getIn(['user', 'username']) === userParam;
 
     if (collections.get('error')) {
       return (
@@ -88,11 +89,10 @@ class CollectionListUI extends Component {
       );
     }
 
-    if (collections.get('loaded') && isAnon) {
+    if (collections.get('loaded') && isAnon && canAdmin) {
       return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp`} status={301} />;
     }
 
-    const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;
     const spaceUsed = user.getIn(['space_utilization', 'used']);
     const totalSpace = user.getIn(['space_utilization', 'total']);
     const remaining = spaceUsed / totalSpace;

@@ -23,3 +23,12 @@ section {
         margin-bottom: .5rem;
     }
 }
+
+.stalled-alert {
+    position: fixed;
+    width: 40rem;
+    top: calc(25vh);
+    left: calc(50vw - 20rem);
+    z-index: 500;
+    box-shadow: .2rem .2rem .8rem rgba(0,0,0,0.4);
+}
