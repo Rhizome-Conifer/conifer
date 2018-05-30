@@ -14,7 +14,7 @@ function HowTo() {
         <h3>Quick Start</h3>
         <div className="documentation">
           <ol className="instructions">
-            <li>Enter a URL in the box in the center of the screen labeled ‘URL to record’.</li>
+            <li>Enter a URL in the box in the center of the screen labeled ‘URL to capture’.</li>
             <li>Press the ‘record’ button (on the right side of the box where you entered the URL).</li>
             <li>Interact with the web page that loads so Webrecorder can capture the content displayed on this page. To collect audio or video from a page be sure to press ‘play’ so the file will load into the browser.</li>
             <li>Continue to browse the pages you would like to capture. Each page you visit will be included in your recording session - you will be collecting the contents of each page you visit but will not automatically obtain pages that are linked to on the pages you collect (hyperlinks).</li>

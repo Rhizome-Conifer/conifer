@@ -22,8 +22,8 @@ class LoginForm extends Component {
     super(props);
 
     this.state = {
-      moveTemp: false,
-      toColl: '',
+      moveTemp: true,
+      toColl: 'New Collection',
       username: '',
       password: ''
     };
@@ -49,11 +49,8 @@ class LoginForm extends Component {
   }
 
   handleChange = (evt) => {
-    if (evt.target.type === 'checkbox') {
-      if (evt.target.name in this.state)
-        this.setState({ [evt.target.name]: !this.state[evt.target.name] });
-      else
-        this.setState({ [evt.target.name]: true });
+    if (evt.target.type === 'radio') {
+      this.setState({ [evt.target.name]: evt.target.value === 'yes' });
     } else {
       this.setState({ [evt.target.name]: evt.target.value });
     }
@@ -80,7 +77,7 @@ class LoginForm extends Component {
             <FormGroup
               key="username">
               <label htmlFor="username" className="sr-only">Username</label>
-              <FormControl onChange={this.handleChange} value={username} type="text" id="username" name="username" className="form-control" placeholder="username" required data-error="This is not a valid username. If you forgot your username, please use the 'Forgot password or username' link to reset it." autoFocus />
+              <FormControl onChange={this.handleChange} value={username} type="text" id="username" name="username" className="form-control" placeholder="username" required autoFocus />
               <div className="help-block with-errors" />
             </FormGroup>
 

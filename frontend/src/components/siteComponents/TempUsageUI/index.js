@@ -15,6 +15,10 @@ class TempUsageUI extends Component {
     toColl: PropTypes.string
   };
 
+  focusInput = () => {
+    this.input.setSelectionRange(0, this.props.toColl.length);
+  }
+
   linkClick = () => {
     this.props.hideModal();
   }
@@ -28,22 +32,26 @@ class TempUsageUI extends Component {
     return (
       <div className="alert alert-info" role="alert">
         <div className="form-group">
-          <h5>You have temporarily recorded <Link to={collLink} onClick={this.linkClick}><b><SizeFormat bytes={usage} /></b></Link>.<br />Would you like to import this collection into your account?</h5>
+          <h5>You have captured <Link to={collLink} onClick={this.linkClick}><b><SizeFormat bytes={usage} /></b></Link> in <Link to={collLink} onClick={this.linkClick}><b>{recCount} session{recCount === 1 ? '' : 's'}</b></Link> in your temporary collection.</h5>
           <div className="form-group temp-move-coll">
-            <input id="coll-move" type="checkbox" name="moveTemp" onChange={handleInput} checked={moveTemp} />
-            <label htmlFor="coll-move">&nbsp;&nbsp;Yes, import <Link to={collLink} onClick={this.linkClick}><b>{recCount} recording{recCount === 1 ? '' : 's'}</b></Link> into my account.</label>
+            <input id="coll-leave" type="radio" name="moveTemp" onChange={handleInput} value="no" checked={!moveTemp} />
+            <label htmlFor="coll-leave">&nbsp;&nbsp;Discard the temporary collection</label><br />
+
+            <input id="coll-move" type="radio" name="moveTemp" onChange={handleInput} value="yes" checked={moveTemp} />
+            <label htmlFor="coll-move">&nbsp;&nbsp;Add the temporary collection to my account with the name:</label>
           </div>
         </div>
 
         <div className="form-group">
           <label htmlFor="collection_name">Collection Name:</label>
           <input
-            type="text"
-            name="toColl"
             className="to-coll form-control"
+            name="toColl"
             onChange={handleInput}
-            value={toColl}
-            placeholder="New Collection Name" />
+            onFocus={this.focusInput}
+            ref={(o) => { this.input = o; }}
+            type="text"
+            value={toColl} />
           <div className="help-block with-errors" />
         </div>
       </div>

@@ -45,7 +45,7 @@ class SidebarCollectionViewerUI extends Component {
           {
             (canAdmin || publicIndex) &&
               <nav>
-                <Link to={getCollectionLink(collection, true)}>catalog view <CatalogIcon /></Link>
+                <Link to={getCollectionLink(collection, true)}>Collection Index <CatalogIcon /></Link>
               </nav>
           }
           <header className="collection-header">

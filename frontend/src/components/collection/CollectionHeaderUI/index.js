@@ -87,7 +87,7 @@ class CollectionHeaderUI extends Component {
     editCollection(collection.get('owner'), collection.get('id'), { desc });
   }
 
-  newCapture = () => {
+  newSession = () => {
     const { collection, history } = this.props;
     history.push(`${getCollectionLink(collection)}/$new`);
   }
@@ -132,7 +132,7 @@ class CollectionHeaderUI extends Component {
 
     const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>
-        <Button className="rounded" onClick={this.newCapture}><PlusIcon /> New Capture</Button>
+        <Button className="rounded" onClick={this.newSession}><PlusIcon /> New Session</Button>
         {
           !isAnon &&
             <PublicSwitch
@@ -145,11 +145,11 @@ class CollectionHeaderUI extends Component {
             <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
         }
         <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
-          <MenuItem onClick={this.newCapture}>New Capture</MenuItem>
+          <MenuItem onClick={this.newSession}>New Session</MenuItem>
           <MenuItem divider />
           <MenuItem onClick={this.togglePublicView}>See Public View</MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={this.manageCollection}>Manage Collection Contents</MenuItem>
+          <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
           {
             !isAnon &&
               <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>

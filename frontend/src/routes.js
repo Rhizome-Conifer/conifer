@@ -91,7 +91,7 @@ const userRoutes = [
 const controllerRoutes = [
   {
     path: `${userPath}/:coll/$new`,
-    breadcrumb: 'New Capture',
+    breadcrumb: 'New Session',
     classOverride: '',
     component: NewRecording,
     exact: true,

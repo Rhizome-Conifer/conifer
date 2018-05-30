@@ -119,12 +119,12 @@ class ModeSelectorUI extends PureComponent {
 
     switch(currMode) {
       case 'record':
-        modeMessage = 'Recording';
+        modeMessage = 'Capturing';
         modeMarkup = <span className="btn-content"><span className="glyphicon glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       case 'replay':
       case 'replay-coll':
-        modeMessage = 'Replaying';
+        modeMessage = 'Browsing';
         modeMarkup = <span className="btn-content"><span className="glyphicon glyphicon-play-circle" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       case 'patch':
@@ -161,7 +161,7 @@ class ModeSelectorUI extends PureComponent {
                     <span className="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true" />
                   </li>
                   <li className="col-xs-9">
-                    <h5>{ isReplay ? 'Currently Replaying' : 'Replay this URL' }</h5>
+                    <h5>{ isReplay ? 'Currently Browsing' : 'Browser this URL' }</h5>
                   </li>
                 </ul>
 
@@ -179,7 +179,7 @@ class ModeSelectorUI extends PureComponent {
                     <span className="glyphicon glyphicon-dot-sm glyphicon-recording-status wr-mode-icon" aria-hidden="true" />
                   </li>
                   <li className="col-xs-9">
-                    <h5>{ isRecord ? 'Currently Recording' : 'Record this URL again' }</h5>
+                    <h5>{ isRecord ? 'Currently Capturing' : 'Capture this URL again' }</h5>
                   </li>
                 </ul>
 
