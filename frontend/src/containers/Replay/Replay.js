@@ -141,7 +141,7 @@ class Replay extends Component {
     }
 
     // list access
-    if (params.listSlug && (list.get('error') || (!list.get('slug_matched') && params.list !== list.get('slug')))) {
+    if (params.listSlug && (list.get('error') || (!list.get('slug_matched') && params.listSlug !== list.get('slug')))) {
       if (list.get('loaded') && !list.get('slug_matched')) {
         return (
           <RedirectWithStatus
