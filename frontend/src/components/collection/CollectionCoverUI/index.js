@@ -66,6 +66,12 @@ class CollectionCoverUI extends Component {
         <Helmet>
           <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
         </Helmet>
+        {
+          this.context.canAdmin && !this.context.isAnon && !collection.get('public') &&
+          <div className="visibility-warning">
+            You need to <Link to={getCollectionLink(collection, true)}>set your collection to public</Link> to enable public users to see your collection.
+          </div>
+        }
         <Capstone user={collection.get('owner')} />
         <h1>{collection.get('title')}</h1>
         <div className="description">

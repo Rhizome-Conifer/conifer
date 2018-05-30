@@ -5,6 +5,14 @@
     flex-direction: column;
     align-items: center;
 
+    .visibility-warning {
+        background: $listsYellow;
+        padding: 2rem 0;
+        text-align: center;
+        width: 100%;
+        font-size: 1.6rem;
+    }
+
     h1 {
         max-width: 75vw;
         margin: 0 0 2.2rem 0;

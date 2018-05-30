@@ -48,6 +48,7 @@ const userRoutes = [
   {
     path: `${userPath}/:coll`,
     breadcrumb: collDetailBreadcrumb,
+    classOverride: '',
     component: CollectionCover,
     exact: true,
     footer: true,
