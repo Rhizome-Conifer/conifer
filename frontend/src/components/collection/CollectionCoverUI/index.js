@@ -45,7 +45,7 @@ class CollectionCoverUI extends Component {
   }
 
   render() {
-    const { collection, match: { params: { coll } } } = this.props;
+    const { collection, history, match: { params: { coll } } } = this.props;
 
     if (collection.get('error')) {
       return this.context.isAnon ?
@@ -82,6 +82,7 @@ class CollectionCoverUI extends Component {
                   lists.map((list) => {
                     const bk = list.getIn(['bookmarks', '0']);
                     const loc = `${getListLink(collection, list)}/b${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
+                    const bkCount = list.get('total_bookmarks');
                     return (
                       <li key={list.get('id')}>
                         <Link to={loc}>
@@ -95,13 +96,13 @@ class CollectionCoverUI extends Component {
                         <div className="desc">
                           {
                             list.get('desc') &&
-                              <Truncate height={75}>
+                              <Truncate height={1000}>
                                 <WYSIWYG
                                   readOnly
                                   initial={list.get('desc')} />
                               </Truncate>
                           }
-                          <Link to={loc} className="list-link">View list &raquo;</Link>
+                          <button onClick={() => history.push(getListLink(collection, list))} className="rounded list-link">View list ({`${bkCount} Bookmark${bkCount === 1 ? '' : 's'}`}) &raquo;</button>
                         </div>
                       </li>
                     );
