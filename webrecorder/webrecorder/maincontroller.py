@@ -184,7 +184,7 @@ class MainController(BaseController):
             u = context.get('user', '')
             if not u:
                 u = context.get('curr_user', '')
-            return self.user_manager.all_users.get_user(u)
+            return self.user_manager.all_users.make_user(u)
 
         def get_browsers():
             return self.browser_mgr.get_browsers()

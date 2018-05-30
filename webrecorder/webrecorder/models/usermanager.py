@@ -314,13 +314,6 @@ class UserManager(object):
 
         return user, collection, recording
 
-    def get_valid_anon_user(self, username):
-        user = self.all_users.get_user(username)
-        if user.is_anon():
-            return user
-        else:
-            return None
-
     def update_password(self, curr_password, password, confirm):
         username = self.access.session_user.name
 
@@ -461,7 +454,7 @@ class UserManager(object):
     def create_new_user(self, username, init_info=None):
         init_info = init_info or {}
 
-        user = self.all_users.get_user(username)
+        user = self.all_users.make_user(username)
         user.create_new()
 
         first_coll = None
