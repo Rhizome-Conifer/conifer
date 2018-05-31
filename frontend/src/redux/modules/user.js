@@ -48,8 +48,6 @@ export default function user(state = initialState, action = {}) {
         loaded: true,
         accessed: action.accessed,
         error: null,
-
-        activeCollection: collections ? collections[0].id : null,
         collections,
         space_utilization,
         username
@@ -61,9 +59,12 @@ export default function user(state = initialState, action = {}) {
         loaded: false,
         error: action.error
       });
+    case USER_LOAD_COLLECTIONS:
+      return state.set('loading', true);
     case USER_LOAD_COLLECTIONS_SUCCESS:
       return state.merge({
-        collections: action.result.collections
+        collections: action.result.collections,
+        loading: false
       });
     case ADD_NEW_COLLECTION:
       return state.merge({

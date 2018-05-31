@@ -306,6 +306,13 @@ export const getRemoteArchiveStats = createSelector(
   }
 );
 
+
+export const sortedCollections = createSelector(
+  [getUserCollections],
+  colls => colls.sortBy(c => c.get('updated_at')).reverse()
+);
+
+
 export const splitPagesBySession = createSelector(
   [getRecordings, getPages],
   (recordings, pages) => {

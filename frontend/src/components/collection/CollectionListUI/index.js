@@ -151,7 +151,7 @@ class CollectionListUI extends Component {
                           </Col>
                           <Col xs={1}>
                             {
-                              canAdmin && coll.get('public') &&
+                              coll.get('public') &&
                                 <span title="Public Collection &mdash; Visible to Everyone">
                                   <GlobeIcon />
                                 </span>
