@@ -24,6 +24,9 @@ export default class ApiClient {
           request.query(params);
         }
 
+        // add  x-requested-with header
+        request.set({ 'x-requested-with': 'XMLHttpRequest' });
+
         if (__SERVER__) {
           if (req.get('cookie')) {
             request.set('cookie', req.get('cookie'));
