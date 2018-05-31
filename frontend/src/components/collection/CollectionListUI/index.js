@@ -56,7 +56,7 @@ class CollectionListUI extends Component {
     // if incoming prop has a newCollection object and we are currently creating
     // a collection, reroute to new collection
     if (creatingCollection && newCollection && prevNewCollection !== newCollection) {
-      history.push(`/${user}/${newCollection}/pages`);
+      history.push(`/${user}/${newCollection}/index`);
     }
   }
 
@@ -150,9 +150,15 @@ class CollectionListUI extends Component {
                     return (
                       <li className="left-buffer list-group-item" key={coll.get('id')}>
                         <Row>
-                          <Col xs={9}>
-                            <Link to={getCollectionLink(coll, canAdmin)} className="collection-title">{coll.get('title')}</Link>
+                          <Col xs={canAdmin ? 7 : 9}>
+                            <Link to={getCollectionLink(coll)} className="collection-title">{coll.get('title')}</Link>
                           </Col>
+                          {
+                            canAdmin &&
+                              <Col xs={2}>
+                                <Link to={getCollectionLink(coll, true)} className="index-link">Page Index</Link>
+                              </Col>
+                          }
                           <Col xs={2}>
                             <SizeFormat bytes={coll.get('size')} />
                           </Col>

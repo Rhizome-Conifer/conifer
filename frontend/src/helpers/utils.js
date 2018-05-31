@@ -91,8 +91,8 @@ export function fixMalformedUrls(url) {
 }
 
 
-export function getCollectionLink(coll, pages = false) {
-  return `/${coll.get('owner')}/${coll.get('slug')}${pages ? '/pages' : ''}`;
+export function getCollectionLink(coll, index = false) {
+  return `/${coll.get('owner')}/${coll.get('slug')}${index ? '/index' : ''}`;
 }
 
 

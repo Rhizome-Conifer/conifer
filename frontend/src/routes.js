@@ -1,5 +1,5 @@
 import HttpStatus from 'components/HttpStatus';
-import { FAQ, HowTo, TermsAndPolicies } from 'components/siteComponents';
+import { FAQ, TermsAndPolicies } from 'components/siteComponents';
 import {
   collDetailBreadcrumb,
   collList,
@@ -53,13 +53,13 @@ const userRoutes = [
     exact: true,
     footer: true,
     getLocation: ({ user, coll }) => {
-      return `/${user}/${coll}/pages`;
+      return `/${user}/${coll}/index`;
     },
     name: 'collectionCover'
   },
   {
-    path: `${userPath}/:coll/pages`,
-    breadcrumb: 'Pages',
+    path: `${userPath}/:coll/index`,
+    breadcrumb: 'Collection Index',
     classOverride: 'direction-override',
     component: CollectionDetail,
     exact: true,
@@ -117,7 +117,7 @@ const controllerRoutes = [
     component: Record,
     exact: true,
     footer: false,
-    getLocation: ({ user, coll, rec }) => `/${user}/${coll}/pages?filter=${rec}`,
+    getLocation: ({ user, coll, rec }) => `/${user}/${coll}/index?filter=${rec}`,
     name: 'record'
   },
   {
@@ -202,14 +202,6 @@ const infoRoutes = [
     exact: true,
     footer: true,
     name: 'Terms & Policies'
-  },
-  {
-    path: '/_documentation',
-    breadcrumb: 'User Guide',
-    component: HowTo,
-    exact: true,
-    footer: true,
-    name: 'User Guide'
   }
 ];
 

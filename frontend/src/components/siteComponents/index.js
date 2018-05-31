@@ -2,7 +2,6 @@ export FAQ from './FAQ';
 export Footer from './Footer';
 export HomepageAnnouncement from './HomepageAnnouncement';
 export HomepageMessage from './HomepageMessage';
-export HowTo from './HowTo';
 export NewCollection from './NewCollection';
 export NewPasswordUI from './NewPasswordUI';
 export PasswordResetUI from './PasswordResetUI';

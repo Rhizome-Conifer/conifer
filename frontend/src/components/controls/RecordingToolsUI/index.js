@@ -83,7 +83,7 @@ class RecordingToolsUI extends Component {
 
   catalogView = () => {
     const { match: { params: { user, coll } } } = this.props;
-    this.props.history.push(`/${user}/${coll}/pages`);
+    this.props.history.push(`/${user}/${coll}/index`);
   }
 
   toggleAutoscroll = () => {

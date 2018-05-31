@@ -24,7 +24,7 @@ function Footer() {
             </a>
             <a href={`mailto:${supportEmail}`} className="divider contact"><MailIcon />Contact</a>
             <Link to="/_faq" className="divider">About</Link>
-            <Link to="/_documentation" className="divider">User Guide</Link>
+            <a href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank" className="divider">User Guide</a>
             <a href="https://webrecorder.github.io" target="_blank" className="divider">Blog</a>
             <Link to="/_policies" className="divider">Terms & Policies</Link>
           </div>

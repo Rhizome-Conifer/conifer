@@ -142,12 +142,12 @@ class CollectionHeaderUI extends Component {
         }
         {
           !condensed &&
-            <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
+            <Button className="rounded" onClick={this.togglePublicView}>Cover</Button>
         }
         <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
           <MenuItem onClick={this.newSession}>New Session</MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={this.togglePublicView}>See Public View</MenuItem>
+          <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
           <MenuItem divider />
           <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
           {
@@ -161,7 +161,7 @@ class CollectionHeaderUI extends Component {
           <MenuItem>Edit Collection Info</MenuItem>
           */}
           <MenuItem divider />
-          <MenuItem onClick={this.howTo}>Help</MenuItem>
+          <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</MenuItem>
         </DropdownButton>
       </div>
     );

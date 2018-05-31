@@ -146,7 +146,7 @@ class UploadUI extends PureComponent {
     if (this.state.targetColl !== 'chosen') {
       this.props.dispatch(incrementCollCount(1));
     }
-    this.context.router.history.push(`/${user}/${coll}/pages`);
+    this.context.router.history.push(`/${user}/${coll}/index`);
   }
 
   indexing = (data) => {
