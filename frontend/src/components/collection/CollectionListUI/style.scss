@@ -38,5 +38,17 @@
             position: relative;
             padding: .8rem;
         }
+
+        .index-link {
+            text-decoration: underline;
+
+            &:link, &:visited {
+                color: #000;
+            }
+
+            &:hover {
+                color: $blue;
+            }
+        }
     }
 }

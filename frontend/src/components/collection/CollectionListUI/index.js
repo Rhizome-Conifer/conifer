@@ -10,6 +10,7 @@ import { getCollectionLink } from 'helpers/utils';
 import { Upload } from 'containers';
 
 import HttpStatus from 'components/HttpStatus';
+import RedirectWithStatus from 'components/RedirectWithStatus';
 import SizeFormat from 'components/SizeFormat';
 import { NewCollection } from 'components/siteComponents';
 import { GlobeIcon } from 'components/icons';
@@ -55,7 +56,7 @@ class CollectionListUI extends Component {
     // if incoming prop has a newCollection object and we are currently creating
     // a collection, reroute to new collection
     if (creatingCollection && newCollection && prevNewCollection !== newCollection) {
-      history.push(`/${user}/${newCollection}/pages`);
+      history.push(`/${user}/${newCollection}/index`);
     }
   }
 
@@ -78,6 +79,7 @@ class CollectionListUI extends Component {
     const { auth, collections, orderedCollections, match: { params }, user } = this.props;
     const { showModal } = this.state;
     const userParam = params.user;
+    const canAdmin = auth.getIn(['user', 'username']) === userParam;
 
     if (collections.get('error')) {
       return (
@@ -87,7 +89,10 @@ class CollectionListUI extends Component {
       );
     }
 
-    const canAdmin = auth.getIn(['user', 'username']) === userParam; // && !anon;
+    if (collections.get('loaded') && isAnon && canAdmin) {
+      return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp`} status={301} />;
+    }
+
     const spaceUsed = user.getIn(['space_utilization', 'used']);
     const totalSpace = user.getIn(['space_utilization', 'total']);
     const remaining = spaceUsed / totalSpace;
@@ -145,9 +150,15 @@ class CollectionListUI extends Component {
                     return (
                       <li className="left-buffer list-group-item" key={coll.get('id')}>
                         <Row>
-                          <Col xs={9}>
-                            <Link to={getCollectionLink(coll, canAdmin)} className="collection-title">{coll.get('title')}</Link>
+                          <Col xs={canAdmin ? 7 : 9}>
+                            <Link to={getCollectionLink(coll)} className="collection-title">{coll.get('title')}</Link>
                           </Col>
+                          {
+                            canAdmin &&
+                              <Col xs={2}>
+                                <Link to={getCollectionLink(coll, true)} className="index-link">Page Index</Link>
+                              </Col>
+                          }
                           <Col xs={2}>
                             <SizeFormat bytes={coll.get('size')} />
                           </Col>

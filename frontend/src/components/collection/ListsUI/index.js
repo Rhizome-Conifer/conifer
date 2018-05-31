@@ -5,15 +5,13 @@ import Collapsible from 'react-collapsible';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-import { defaultCollDesc, draggableTypes } from 'config';
+import { draggableTypes } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
 import Modal from 'components/Modal';
 import SidebarHeader from 'components/SidebarHeader';
-import Truncate from 'components/Truncate';
 import VisibilityLamp from 'components/collection/VisibilityLamp';
-import WYSIWYG from 'components/WYSIWYG';
-import { AllPagesIcon, CheckIcon, PlusIcon, WarcIcon, XIcon } from 'components/icons';
+import { AllPagesIcon, CheckIcon, PlusIcon, XIcon } from 'components/icons';
 
 import ListItem from './ListItem';
 import EditItem from './EditItem';
@@ -25,8 +23,7 @@ class ListsUI extends Component {
 
   static contextTypes = {
     asPublic: PropTypes.bool,
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
+    canAdmin: PropTypes.bool
   };
 
   static propTypes = {

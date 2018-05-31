@@ -6,7 +6,7 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import Column from 'react-virtualized/dist/commonjs/Table/Column';
 import Table from 'react-virtualized/dist/commonjs/Table';
 import Helmet from 'react-helmet';
-import { fromJS, List } from 'immutable';
+import { List } from 'immutable';
 import { Button } from 'react-bootstrap';
 
 import config from 'config';
@@ -14,8 +14,8 @@ import config from 'config';
 import { setSort } from 'redux/modules/collection';
 import { getCollectionLink, getListLink, getStorage, inStorage, setStorage, range } from 'helpers/utils';
 
-import { CollectionFilters, CollectionHeader,
-         InspectorPanel, Lists, ListHeader, Sidebar } from 'containers';
+import { CollectionFilters, CollectionHeader, InspectorPanel,
+         Lists, ListHeader, Sidebar, Temp404, TempUserAlert } from 'containers';
 
 import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
@@ -369,26 +369,19 @@ class CollectionDetailUI extends Component {
   }
 
   render() {
-    const { canAdmin } = this.context;
+    const { canAdmin, isAnon } = this.context;
     const { pages, browsers, collection, list, match: { params }, publicIndex } = this.props;
     const { listBookmarks, selectedPageIdx, sortedBookmarks } = this.state;
     const activeList = Boolean(params.list);
-
-    // don't render until loaded
-    if (!collection.get('loaded')) {
-      return null;
-    }
 
     const pageIndexAccess = !canAdmin && !collection.get('public_index') && !activeList;
     const listIndexAccess = !canAdmin && activeList && !list.get('loaded');
     const collRedirect = collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug');
 
     if (collection.get('error') || pageIndexAccess || listIndexAccess) {
-      return (
-        <HttpStatus>
-          {collection.getIn(['error', 'error_message'])}
-        </HttpStatus>
-      );
+      return isAnon ?
+        <Temp404 /> :
+        <HttpStatus>{collection.getIn(['error', 'error_message'])}</HttpStatus>;
     } else if (collRedirect) {
       const toUrl = activeList ? getListLink(collection, list) : getCollectionLink(collection, true);
       return <RedirectWithStatus to={toUrl} status={301} />;
@@ -406,6 +399,11 @@ class CollectionDetailUI extends Component {
           }
         </HttpStatus>
       );
+    }
+
+    // don't render until loaded
+    if (!collection.get('loaded')) {
+      return null;
     }
 
     const activeListSlug = params.list;
@@ -491,6 +489,11 @@ class CollectionDetailUI extends Component {
         <CustomDragLayer
           pages={objects}
           pageSelection={selectedPageIdx} />
+
+        {
+          isAnon &&
+            <TempUserAlert />
+        }
 
         {
           activeList ?

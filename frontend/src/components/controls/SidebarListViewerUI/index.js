@@ -148,8 +148,8 @@ class SidebarListViewer extends Component {
       <div className="bookmark-list">
         <SidebarHeader label="Collection Navigator" />
         <nav>
-          <button onClick={this.returnToCollection} className="borderless">&larr; collection main</button>
-          <Link to={getListLink(collection, list)}>catalog view <CatalogIcon /></Link>
+          <button onClick={this.returnToCollection} className="borderless">&larr; all lists</button>
+          <Link to={getListLink(collection, list)}>Collection Index <CatalogIcon /></Link>
         </nav>
         <header className="list-header">
           <h4>

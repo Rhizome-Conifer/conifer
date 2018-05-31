@@ -66,11 +66,13 @@ export default function list(state = initialState, action = {}) {
           return 0;
         })
       );
-    case LIST_EDIT_SUCCESS:
+    case LIST_EDIT_SUCCESS: {
+      const edits = action.id === state.get('id') ? action.data : {};
       return state.merge({
         edited: true,
-        ...action.data
+        ...edits
       });
+    }
     case LIST_EDITED_RESET:
       return state.set('edited', false);
     case LIST_LOAD:
@@ -133,7 +135,8 @@ export function edit(user, coll, id, data) {
       params: { user, coll },
       data
     }),
-    data
+    data,
+    id
   };
 }
 

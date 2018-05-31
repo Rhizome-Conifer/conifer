@@ -83,7 +83,7 @@ class RecordingToolsUI extends Component {
 
   catalogView = () => {
     const { match: { params: { user, coll } } } = this.props;
-    this.props.history.push(`/${user}/${coll}/pages`);
+    this.props.history.push(`/${user}/${coll}/index`);
   }
 
   toggleAutoscroll = () => {
@@ -122,7 +122,7 @@ class RecordingToolsUI extends Component {
         {
           canAdmin && !isNew &&
             <DropdownButton pullRight noCaret id="tool-dropdown" title={<span className="glyphicon glyphicon-option-vertical" aria-hidden="true" />}>
-              <MenuItem onClick={this.catalogView}>Go to catalog view</MenuItem>
+              <MenuItem onClick={this.catalogView}>Collection Index</MenuItem>
               {
                 currMode.includes('replay') &&
                   <React.Fragment>

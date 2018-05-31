@@ -4,6 +4,7 @@ import Helmet from 'react-helmet';
 import { Alert, ControlLabel, FormControl, FormGroup,
          HelpBlock, Panel, ProgressBar } from 'react-bootstrap';
 
+import { supportEmail } from 'config';
 import { passwordPassRegex } from 'helpers/utils';
 
 import HttpStatus from 'components/HttpStatus';
@@ -119,7 +120,7 @@ class UserSettingsUI extends Component {
             <span>Space Used: </span>
             <SizeFormat bytes={usedSpace} />
             <ProgressBar now={(usedSpace / totalSpace) * 100} bsStyle="success" />
-            Please <a href="mailto:support@webrecorder.io">contact us</a> if you would like to request additional space.
+            Please <a href={`mailto:${supportEmail}`}>contact us</a> if you would like to request additional space.
           </Panel.Body>
         </Panel>
 

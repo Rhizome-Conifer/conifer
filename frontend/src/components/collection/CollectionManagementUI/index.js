@@ -11,14 +11,15 @@ import { DeleteCollection, SessionCollapsible, Upload } from 'containers';
 import HttpStatus from 'components/HttpStatus';
 import SizeFormat from 'components/SizeFormat';
 import TimeFormat from 'components/TimeFormat';
-import { DownloadIcon, TrashIcon, WarcIcon } from 'components/icons';
+import { DownloadIcon, TrashIcon, UploadIcon, WarcIcon } from 'components/icons';
 
 import './style.scss';
 
 
 class CollectionManagementUI extends Component {
   static contextTypes = {
-    canAdmin: PropTypes.bool
+    canAdmin: PropTypes.bool,
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
@@ -66,8 +67,8 @@ class CollectionManagementUI extends Component {
           <title>{`${collection.get('title')} Management`}</title>
         </Helmet>
         <div className="extra-info">
-          <h4>Manage Collection Content</h4>
-          <p>Remove content from collection by <strong>deleting capture sessions</strong>. Add content by <strong>uploading warcs</strong>.</p>
+          <h4>Manage Sessions</h4>
+          <p>Remove content from collection by <strong>deleting sessions</strong>. Add content by <strong>uploading warcs</strong>.</p>
           <span className="note">Please note that it is not possible to delete individual pages.</span>
         </div>
         <header>
@@ -78,18 +79,21 @@ class CollectionManagementUI extends Component {
               <h2>{collection.get('title')}</h2>
               <span className="created-at">Created on <TimeFormat iso={collection.get('created_at')} /></span>
               <div className="coll-info">
-                <strong>{recordings.size}</strong> capture sessions over approximately <strong><TimeFormat seconds={collection.get('timespan')} /></strong> containing <strong>{collection.get('pages').size} pages</strong>. Total capture time is <strong><TimeFormat seconds={collection.get('duration')} /></strong> and total data size is <strong><SizeFormat bytes={collection.get('size')} /></strong>.
+                <strong>{recordings.size}</strong> sessions over approximately <strong><TimeFormat seconds={collection.get('timespan')} /></strong> containing <strong>{collection.get('pages').size} pages</strong>. Total capture time is <strong><TimeFormat seconds={collection.get('duration')} /></strong> and total data size is <strong><SizeFormat bytes={collection.get('size')} /></strong>.
               </div>
               <div className="function-row">
                 <DeleteCollection>
                   <TrashIcon /> Delete Entire Collection
                 </DeleteCollection>
                 <Button onClick={this.downloadAction}>
-                  <DownloadIcon /> Download Collection
+                  <DownloadIcon /> Download Collection as WARC
                 </Button>
-                <Upload fromCollection={collection.get('id')} classes="btn btn-default">
-                  <WarcIcon /> Upload to Collection
-                </Upload>
+                {
+                  !this.context.isAnon &&
+                    <Upload fromCollection={collection.get('id')} classes="btn btn-default">
+                      <UploadIcon /> Upload WARC to Collection
+                    </Upload>
+                }
               </div>
             </div>
           </div>

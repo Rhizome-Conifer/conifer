@@ -87,7 +87,7 @@ class CollectionHeaderUI extends Component {
     editCollection(collection.get('owner'), collection.get('id'), { desc });
   }
 
-  newCapture = () => {
+  newSession = () => {
     const { collection, history } = this.props;
     history.push(`${getCollectionLink(collection)}/$new`);
   }
@@ -132,22 +132,28 @@ class CollectionHeaderUI extends Component {
 
     const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>
-        <Button className="rounded" onClick={this.newCapture}><PlusIcon /> New Capture</Button>
-        <PublicSwitch
-          callback={this.setPublic}
-          isPublic={isPublic}
-          label="Collection" />
+        <Button className="rounded" onClick={this.newSession}><PlusIcon /> New Session</Button>
+        {
+          !isAnon &&
+            <PublicSwitch
+              callback={this.setPublic}
+              isPublic={isPublic}
+              label="Collection" />
+        }
         {
           !condensed &&
-            <Button className="rounded" onClick={this.togglePublicView}>See Public View</Button>
+            <Button className="rounded" onClick={this.togglePublicView}>Cover</Button>
         }
         <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
-          <MenuItem onClick={this.newCapture}>New Capture</MenuItem>
+          <MenuItem onClick={this.newSession}>New Session</MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={this.togglePublicView}>See Public View</MenuItem>
+          <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={this.manageCollection}>Manage Collection Contents</MenuItem>
-          <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>
+          <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
+          {
+            !isAnon &&
+              <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>
+          }
           <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
           <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
           {/* TODO:
@@ -155,7 +161,7 @@ class CollectionHeaderUI extends Component {
           <MenuItem>Edit Collection Info</MenuItem>
           */}
           <MenuItem divider />
-          <MenuItem onClick={this.howTo}>Help</MenuItem>
+          <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</MenuItem>
         </DropdownButton>
       </div>
     );

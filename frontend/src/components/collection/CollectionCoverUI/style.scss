@@ -5,6 +5,14 @@
     flex-direction: column;
     align-items: center;
 
+    .visibility-warning {
+        background: $listsYellow;
+        padding: 2rem 0;
+        text-align: center;
+        width: 100%;
+        font-size: 1.6rem;
+    }
+
     h1 {
         max-width: 75vw;
         margin: 0 0 2.2rem 0;
@@ -34,6 +42,12 @@
 
             li {
                 margin-bottom: 5rem;
+
+                .wr-editor {
+                    .DraftEditor-editorContainer {
+                        max-height: inherit;
+                    }
+                }
 
                 & > a {
                     transition: color $quickShift ease-in-out;
@@ -67,23 +81,21 @@
                 }
 
                 .desc {
-                    // background-color: pink;
                     padding: 1rem 4.5rem 0 4.5rem;
 
                     div + .list-link {
                         display: inline-block;
                         margin-top: 0.2rem;
                     }
+
                     .list-link {
                       &:link, &:visited {
                           color: $gray600;
                       }
+
                       &:hover, &:active {
                           color: $blue;
                       }
-                    }
-                    .wr-truncate {
-                      display: block;
                     }
                 }
             }

@@ -6,7 +6,7 @@ import matchPath from 'react-router-dom/matchPath';
 import PropTypes from 'prop-types';
 import Raven from 'raven-js';
 import renderRoutes from 'react-router-config/renderRoutes';
-import { Alert, Button } from 'react-bootstrap';
+import { Alert, Button, Panel } from 'react-bootstrap';
 import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
@@ -45,7 +45,8 @@ export class App extends Component { // eslint-disable-line
   constructor(props) {
     super(props);
 
-    this.state = { error: null, showAlert: true };
+    this.handle = null;
+    this.state = { error: null, showAlert: true, stalled: false };
   }
 
   getChildContext() {
@@ -63,6 +64,7 @@ export class App extends Component { // eslint-disable-line
 
   componentWillReceiveProps(nextProps) {
     if (this.props.loaded && !nextProps.loaded) {
+      this.handle = setTimeout(() => this.setState({ stalled: true }), 7500);
       this.setState({ lastMatch: this.state.match });
     }
 
@@ -78,6 +80,8 @@ export class App extends Component { // eslint-disable-line
   componentDidUpdate(prevProps) {
     // restore scroll postion
     if (this.props.location !== prevProps.location) {
+      clearTimeout(this.handle);
+
       if (window) {
         window.scrollTo(0, 0);
       }
@@ -87,6 +91,10 @@ export class App extends Component { // eslint-disable-line
         this.setState({ error: null, info: null });
       }
     }
+  }
+
+  componentWIllUnmount() {
+    clearTimeout(this.handle);
   }
 
   dismissAlert = () => this.setState({ showAlert: false })
@@ -157,22 +165,28 @@ export class App extends Component { // eslint-disable-line
             </Alert>
         }
         {
+          this.state.stalled &&
+            <Panel className="stalled-alert" bsStyle="warning">
+              <Panel.Heading>Oops, this request seems to be taking a long time..</Panel.Heading>
+              <Panel.Body>
+                Please refresh the page and try again. If the problem persists, contact <a href={`mailto:${config.supportEmail}`}>support</a>.
+              </Panel.Body>
+            </Panel>
+        }
+        {
           error ?
             <div>
               <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
-                <div className="panel panel-danger">
-                  <div className="panel-heading">
-                    <span className="glyphicon glyphicon-exclamation-sign" aria-hidden="true" />
-                    <strong className="left-buffer">Oop!</strong>
-                  </div>
-                  <div className="panel-body">
+                <Panel bsStyle="danger">
+                  <Panel.Heading>Oops!</Panel.Heading>
+                  <Panel.Body>
                     <p>Oops, the page encountered an error.</p>
                     {
                       config.ravenConfig &&
                         <Button onClick={() => Raven.lastEventId() && Raven.showReportDialog()}>Submit a bug report</Button>
                     }
-                  </div>
-                </div>
+                  </Panel.Body>
+                </Panel>
               </div>
             </div> :
             <section className={containerClasses}>

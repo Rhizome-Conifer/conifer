@@ -1,7 +1,10 @@
 import React from 'react';
 import Helmet from 'react-helmet';
 
+import { supportEmail } from 'config';
+
 import './style.scss';
+
 
 function TermsAndPolicies() {
   return (
@@ -203,7 +206,7 @@ function TermsAndPolicies() {
 
               <li>
                 <b>How do I contact Webrecorder?</b>
-                <p>If you have any questions regarding this Privacy Policy, you can contact us by sending an email to <a href="mailto:support@webrecorder.io">support@webrecorder.io</a></p>
+                <p>If you have any questions regarding this Privacy Policy, you can contact us by sending an email to <a href={`mailto:${supportEmail}`}>{supportEmail}</a></p>
               </li>
             </ul>
             <p className="section-updated">This Privacy Policy was last updated August 8, 2016</p>
@@ -223,11 +226,11 @@ function TermsAndPolicies() {
               <li>A statement that the information in the notification is accurate, and under penalty of perjury, that the complaining party is authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.</li>
             </ol>
 
-            <p>Webrecorder’s designated agent for notice for claims of copyright infringement is Kaela Noel, who can be reached as follows:</p>
+            <p>Webrecorder’s designated agent for notice for claims of copyright infringement is Lauren Studebaker, who can be reached as follows:</p>
             <ul>
               <li>By mail: Rhizome, 235 Bowery, New York, NY 10002</li>
               <li>By phone: 212-219-1288 x302</li>
-              <li>By email: kaela.noel(at)rhizome.org</li>
+              <li>By email: lauren.studebaker(at)rhizome.org</li>
             </ul>
 
             <p>Note: the above contact information is provided exclusively for notifying Webrecorder that your copyrighted material may have been infringed. All other inquiries, (e.g., requests for technical assistance or customer service, reports of email abuse, and piracy reports), will not receive a response through this process and should be directed to the appropriate entity via email or by phone.</p>

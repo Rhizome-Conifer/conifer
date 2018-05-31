@@ -45,7 +45,7 @@ class SidebarCollectionViewerUI extends Component {
           {
             (canAdmin || publicIndex) &&
               <nav>
-                <Link to={getCollectionLink(collection, true)}>catalog view <CatalogIcon /></Link>
+                <Link to={getCollectionLink(collection, true)}>Collection Index <CatalogIcon /></Link>
               </nav>
           }
           <header className="collection-header">
@@ -55,7 +55,7 @@ class SidebarCollectionViewerUI extends Component {
             <WYSIWYG
               readOnly
               key={collection.get('id')}
-              initial={collection.get('desc') || defaultCollDesc} />
+              initial={collection.get('desc')} />
           </Truncate>
           <header className="lists-header">
             <h4>Lists ({lists.size})</h4>
@@ -93,8 +93,8 @@ class SidebarCollectionViewerUI extends Component {
                     <div className="wrapper">
                       {
                         !activeList ?
-                          <button className="borderless selected-item" onClick={this.returnToItem}><AllPagesIcon /> See all pages in this collection</button> :
-                          <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`} title="Browse this collection" className="button-link"><AllPagesIcon /> See all pages in this collection</Link>
+                          <button className="borderless selected-item" onClick={this.returnToItem}><AllPagesIcon /> All Pages in Collection</button> :
+                          <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`} title="Browse this collection" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
                       }
                     </div>
                   </li>

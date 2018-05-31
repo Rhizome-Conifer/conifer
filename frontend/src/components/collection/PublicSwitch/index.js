@@ -27,8 +27,8 @@ class PublicSwitch extends PureComponent {
     return (
       <div className="wr-coll-visibility">
         <DropdownButton noCaret id="visibility-menu" className={classNames('rounded', { 'is-public': isPublic })} title={button}>
-          <MenuItem onClick={this.setPublic} disabled={isPublic}><GlobeIcon /> Set {label} Public</MenuItem>
-          <MenuItem onClick={this.setPrivate} disabled={!isPublic}><LockIcon /> Set {label} Private</MenuItem>
+          <MenuItem onClick={!isPublic ? this.setPublic : undefined} disabled={isPublic}><GlobeIcon /> Set {label} Public</MenuItem>
+          <MenuItem onClick={isPublic ? this.setPrivate : undefined} disabled={!isPublic}><LockIcon /> Set {label} Private</MenuItem>
         </DropdownButton>
       </div>
     );

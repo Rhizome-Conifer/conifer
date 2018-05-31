@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
-import { Button, FormControl } from 'react-bootstrap';
+import { Button, FormControl, HelpBlock } from 'react-bootstrap';
 
 import { appHost, defaultRecDesc } from 'config';
 import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
@@ -37,6 +37,7 @@ class StandaloneRecorderUI extends Component {
       advOpen: hasRB,
       initialOpen: hasRB,
       sessionNotes: '',
+      setColl: false,
       url: ''
     };
   }
@@ -59,6 +60,11 @@ class StandaloneRecorderUI extends Component {
     const { sessionNotes, url } = this.state;
 
     if (!url) {
+      return false;
+    }
+
+    if (!this.context.isAnon && !activeCollection.id) {
+      this.setState({ setColl: true });
       return false;
     }
 
@@ -105,13 +111,13 @@ class StandaloneRecorderUI extends Component {
     const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
 
     const advOptions = (
-      <div><span className={classNames('caret', { 'caret-flip': advOpen })} /> Show session settings</div>
+      <div><span className={classNames('caret', { 'caret-flip': advOpen })} /> Session settings</div>
     );
 
     return (
       <form className="start-recording-homepage clearfix" onSubmit={this.startRecording}>
         <div className={classNames('col-md-8 col-md-offset-2', { 'input-group': extractable })}>
-          <FormControl type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to record" title={isOutOfSpace ? 'Out of space' : 'Enter URL to record'} required disabled={isOutOfSpace} />
+          <FormControl type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to capture" title={isOutOfSpace ? 'Out of space' : 'Enter URL to capture'} required disabled={isOutOfSpace} />
           <label htmlFor="url" className="control-label sr-only">Url</label>
           <ExtractWidget
             toCollection={activeCollection.title}
@@ -127,6 +133,12 @@ class StandaloneRecorderUI extends Component {
             isAnon ?
               <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span></Button> :
               <CollectionDropdown label={false} />
+          }
+          {
+            this.state.setColl &&
+              <HelpBlock style={{ color: 'red' }}>
+                Choose a collection
+              </HelpBlock>
           }
         </div>
 

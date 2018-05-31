@@ -84,10 +84,13 @@ class ListHeaderUI extends PureComponent {
           Created by <Link to={`/${user}`}>{user}</Link>, with {bookmarks} from the collection <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link>
         </div>
         <div className="function-row">
-          <PublicSwitch
-            callback={this.setPublic}
-            isPublic={list.get('public')}
-            label="List" />
+          {
+            canAdmin &&
+              <PublicSwitch
+                callback={this.setPublic}
+                isPublic={list.get('public')}
+                label="List" />
+          }
           <Button onClick={this.startReplay} className="rounded">VIEW PAGES</Button>
         </div>
       </div>

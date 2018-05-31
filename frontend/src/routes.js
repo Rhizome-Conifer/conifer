@@ -1,5 +1,5 @@
 import HttpStatus from 'components/HttpStatus';
-import { FAQ, HowTo, TermsAndPolicies } from 'components/siteComponents';
+import { FAQ, TermsAndPolicies } from 'components/siteComponents';
 import {
   collDetailBreadcrumb,
   collList,
@@ -48,17 +48,18 @@ const userRoutes = [
   {
     path: `${userPath}/:coll`,
     breadcrumb: collDetailBreadcrumb,
+    classOverride: '',
     component: CollectionCover,
     exact: true,
     footer: true,
     getLocation: ({ user, coll }) => {
-      return `/${user}/${coll}/pages`;
+      return `/${user}/${coll}/index`;
     },
     name: 'collectionCover'
   },
   {
-    path: `${userPath}/:coll/pages`,
-    breadcrumb: 'Pages',
+    path: `${userPath}/:coll/index`,
+    breadcrumb: 'Collection Index',
     classOverride: 'direction-override',
     component: CollectionDetail,
     exact: true,
@@ -91,12 +92,12 @@ const userRoutes = [
 const controllerRoutes = [
   {
     path: `${userPath}/:coll/$new`,
-    name: 'new recording',
-    footer: false,
+    breadcrumb: 'New Session',
     classOverride: '',
     component: NewRecording,
     exact: true,
-    breadcrumb: 'New Capture'
+    footer: false,
+    name: 'new recording'
   },
   {
     // record with remote browser id
@@ -116,7 +117,7 @@ const controllerRoutes = [
     component: Record,
     exact: true,
     footer: false,
-    getLocation: ({ user, coll, rec }) => `/${user}/${coll}/pages?filter=${rec}`,
+    getLocation: ({ user, coll, rec }) => `/${user}/${coll}/index?filter=${rec}`,
     name: 'record'
   },
   {
@@ -188,6 +189,7 @@ const controllerRoutes = [
 const infoRoutes = [
   {
     path: '/_faq',
+    breadcrumb: 'About',
     component: FAQ,
     exact: true,
     footer: true,
@@ -195,17 +197,11 @@ const infoRoutes = [
   },
   {
     path: '/_policies',
+    breadcrumb: 'Terms and Policies',
     component: TermsAndPolicies,
     exact: true,
     footer: true,
     name: 'Terms & Policies'
-  },
-  {
-    path: '/_documentation',
-    component: HowTo,
-    exact: true,
-    footer: true,
-    name: 'User Guide'
   }
 ];
 
@@ -220,6 +216,7 @@ export default [
   },
   {
     path: '/_register',
+    breadcrumb: 'Register',
     component: UserSignup,
     exact: true,
     footer: true,
@@ -227,6 +224,7 @@ export default [
   },
   {
     path: '/_valreg/:registration',
+    breadcrumb: 'Registering',
     component: RegisterAccount,
     exact: true,
     footer: true,
@@ -234,6 +232,7 @@ export default [
   },
   {
     path: '/_forgot',
+    breadcrumb: 'Password Reset',
     component: PasswordReset,
     exact: true,
     footer: true,
@@ -241,6 +240,7 @@ export default [
   },
   {
     path: '/_resetpassword/:resetCode',
+    breadcrumb: 'Password Reset',
     component: NewPassword,
     exact: true,
     footer: true,
@@ -248,6 +248,7 @@ export default [
   },
   {
     path: '/_logout',
+    breadcrumb: 'Logging out..',
     component: Logout,
     exact: true,
     footer: true,

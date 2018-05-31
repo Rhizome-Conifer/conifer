@@ -31,7 +31,7 @@ class UserSignup extends Component {
     super(props);
 
     this.state = {
-      moveTemp: false,
+      moveTemp: true,
       toColl: 'New Collection',
       username: '',
       name: '',
@@ -73,11 +73,8 @@ class UserSignup extends Component {
   }
 
   handleChange = (evt) => {
-    if (evt.target.type === 'checkbox') {
-      if (evt.target.name in this.state)
-        this.setState({ [evt.target.name]: !this.state[evt.target.name] });
-      else
-        this.setState({ [evt.target.name]: true });
+    if (evt.target.type === 'radio') {
+      this.setState({ [evt.target.name]: evt.target.value === 'yes' });
     } else {
       this.setState({ [evt.target.name]: evt.target.value });
     }

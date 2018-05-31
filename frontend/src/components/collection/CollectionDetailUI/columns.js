@@ -4,7 +4,7 @@ import defaultHeaderRenderer from 'react-virtualized/dist/commonjs/Table/default
 import { DropTarget, DragSource } from 'react-dnd';
 
 import { draggableTypes, untitledEntry } from 'config';
-import { capitalize, getCollectionLink, getListLink, remoteBrowserMod } from 'helpers/utils';
+import { capitalize, getCollectionLink, getListLink, remoteBrowserMod, stopPropagation } from 'helpers/utils';
 
 import RemoveWidget from 'components/RemoveWidget';
 import TimeFormat from 'components/TimeFormat';
@@ -43,6 +43,7 @@ export function LinkRenderer({ cellData, rowData, columnData: { collection, list
   return (
     <Link
       to={linkTo}
+      onClick={evt => stopPropagation(evt)}
       title={rowData.get('title')}>
       {cellData || untitledEntry}
     </Link>
@@ -64,7 +65,7 @@ export function RowIndexRenderer({ cellData, rowIndex }) {
 export function SessionRenderer({ cellData, columnData: { activeList, canAdmin, collLink }, rowData }) {
   const recording = activeList ? rowData.getIn(['page', 'rec']) : cellData;
   return canAdmin ?
-    <Link to={`${collLink}/management?session=${recording}`} className="session-link">{recording}</Link> :
+    <Link to={`${collLink}/management?session=${recording}`} onClick={evt => stopPropagation(evt)} className="session-link">{recording}</Link> :
     <span>{recording}</span>;
 }
 

@@ -62,7 +62,7 @@ class InspectorPanelUI extends PureComponent {
 
     return (
       <div className="wr-inspector">
-        <SidebarHeader label="Inspector" />
+        <SidebarHeader label="Metadata" />
         <div className="inspector-body">
           {
             multiSelect ?

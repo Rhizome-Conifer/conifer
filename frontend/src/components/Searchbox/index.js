@@ -41,8 +41,8 @@ class Searchbox extends PureComponent {
     const { indexing } = this.state;
 
     return (
-      <InputGroup bsClass="input-group search-box" title={indexing ? 'Indexing...' : 'Search'}>
-        <FormControl bsSize="sm" onChange={search} value={searchText} disabled={indexing} placeholder={placeholder || 'Search'} name="filter" />
+      <InputGroup bsClass="input-group search-box" title={indexing ? 'Indexing...' : 'Filter'}>
+        <FormControl bsSize="sm" onChange={search} value={searchText} disabled={indexing} placeholder={placeholder || 'Filter'} name="filter" />
         <InputGroup.Button>
           {
             searchText ?

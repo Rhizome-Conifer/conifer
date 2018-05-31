@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import config from 'config';
+
+import { apiPath, supportEmail } from 'config';
 
 
 class RegisterAccount extends Component {
@@ -22,7 +23,7 @@ class RegisterAccount extends Component {
   componentDidMount() {
     const { match } = this.props;
     const reg = match.params.registration;
-    const validateApi = `${config.apiPath}/auth/validate`;
+    const validateApi = `${apiPath}/auth/validate`;
     document.cookie = `valreg=${reg}; Max-Age=60; Path=${validateApi}`;
 
     const data = new FormData();
@@ -53,7 +54,7 @@ class RegisterAccount extends Component {
           error ?
             <React.Fragment>
               <h2>Error Validating Registration</h2>
-              <p>Please try the link again or contact <a href="mailto:support@webrecorder.io">support@webrecorder.io</a> if the problem persists.</p>
+              <p>Please try the link again or contact <a href={`mailto:${supportEmail}`}>{supportEmail}</a> if the problem persists.</p>
             </React.Fragment> :
             <h2>Validating Registration...</h2>
         }

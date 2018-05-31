@@ -4,26 +4,35 @@ import { withRouter } from 'react-router';
 
 import { incrementCollCount } from 'redux/modules/auth';
 import { deleteCollection } from 'redux/modules/collection';
-import { deleteUserCollection } from 'redux/modules/user';
+import { deleteUserCollection, deleteUser } from 'redux/modules/user';
 
 import DeleteCollectionUI from 'components/collection/DeleteCollectionUI';
 
 
 const mapStateToProps = ({ app }) => {
   return {
-    collection: app.get('collection')
+    collection: app.get('collection'),
+    deleting: app.getIn(['collection', 'editing']),
+    error: app.getIn(['collection', 'editError']),
+    user: app.getIn(['auth', 'user'])
   };
 };
 
 const mapDispatchToProps = (dispatch, { history }) => {
   return {
-    deleteColl: (user, coll) => {
+    deleteColl: (user, coll, isAnon = false) => {
       dispatch(deleteCollection(user, coll))
         .then((res) => {
           if (res.hasOwnProperty('deleted_id')) {
-            dispatch(incrementCollCount(-1));
-            dispatch(deleteUserCollection(res.deleted_id));
-            history.push(`/${user}`);
+            if (isAnon && user.startsWith('temp-')) {
+              // if anon user, delete user along with collection
+              dispatch(deleteUser(user))
+                .then(() => { window.location = '/'; });
+            } else {
+              dispatch(incrementCollCount(-1));
+              dispatch(deleteUserCollection(res.deleted_id));
+              history.push(`/${user}`);
+            }
           }
         }, () => {});
     }
