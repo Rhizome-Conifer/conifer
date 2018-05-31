@@ -3,7 +3,7 @@ import { supportEmail } from 'config';
 
 export default {
   collection: {
-    duplicate_name: 'A collection with this name already exists.',
+    duplicate_name: 'A collection with the supplied name already exists.',
     no_such_collection: 'Collection not found.',
     no_such_user: 'User not found',
     no_user_specified: 'Invalid request',
@@ -13,8 +13,12 @@ export default {
     invalid_order: 'Error saving order.',
     no_such_list: 'No list found.'
   },
+  login: {
+    duplicate_name: 'A collection with the supplied name already exists.'
+  },
   registration: {
     already_registered: 'This account has already been registerd',
+    duplicate_name: 'A collection with the supplied name already exists.',
     'invalid other': `Error encountered, please contact ${supportEmail}`
   },
   upload: {

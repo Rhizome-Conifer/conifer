@@ -15,11 +15,12 @@ import './style.scss';
 
 class UserSignup extends Component {
   static propTypes = {
+    auth: PropTypes.object,
     available: PropTypes.bool,
     cb: PropTypes.func,
     checkUser: PropTypes.func,
     checkedUsername: PropTypes.string,
-    result: PropTypes.object,
+    result: PropTypes.string,
     errors: PropTypes.object,
     success: PropTypes.bool,
     userCheck: PropTypes.bool,
@@ -44,6 +45,7 @@ class UserSignup extends Component {
 
   save = (evt) => {
     evt.preventDefault();
+    const { auth } = this.props;
     const { announce_mailer, username, name, full_name,
             email, password, confirmpassword, moveTemp, toColl } = this.state;
 
@@ -54,7 +56,7 @@ class UserSignup extends Component {
     if (username && this.validateUsername() === 'success' &&
        password && confirmpassword && this.validatePassword() === null && email) {
       // core fields to send to server
-      let data = { username, email, password, confirmpassword, moveTemp, toColl };
+      let data = { username, email, password, confirmpassword };
 
       if (announce_mailer) {
         data = { ...data, announce_mailer };
@@ -66,6 +68,11 @@ class UserSignup extends Component {
 
       if (full_name) {
         data = { ...data, full_name };
+      }
+
+      // check for anon usage
+      if (auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0) {
+        data = { ...data, moveTemp, toColl };
       }
 
       this.props.cb(data);
@@ -167,7 +174,7 @@ class UserSignup extends Component {
         {
           (success || errors) &&
             <Alert
-              className="top-buffer"
+              className="top-buffer signup-alert"
               bsStyle={errors ? 'danger' : 'success'}>
               {
                 errors &&

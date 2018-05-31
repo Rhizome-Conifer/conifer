@@ -9,11 +9,18 @@ class TempUsageUI extends Component {
   static propTypes = {
     handleInput: PropTypes.func,
     hideModal: PropTypes.func,
+    loadUsage: PropTypes.func,
     moveTemp: PropTypes.bool,
     tempCollName: PropTypes.string,
     tempUser: PropTypes.object,
     toColl: PropTypes.string
   };
+
+  componentWillMount() {
+    const { tempUser } = this.props;
+    // get latest stats
+    this.props.loadUsage(tempUser.get('username'));
+  }
 
   focusInput = () => {
     this.input.setSelectionRange(0, this.props.toColl.length);

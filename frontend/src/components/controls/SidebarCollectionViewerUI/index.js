@@ -62,6 +62,21 @@ class SidebarCollectionViewerUI extends Component {
           </header>
           <ul>
             {
+              (publicIndex || canAdmin) && pg &&
+                <React.Fragment>
+                  <li className={classNames('all-pages', { selected: !activeList })}>
+                    <div className="wrapper">
+                      {
+                        !activeList ?
+                          <button className="borderless selected-item" onClick={this.returnToItem}><AllPagesIcon /> All Pages in Collection</button> :
+                          <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`} title="Browse this collection" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
+                      }
+                    </div>
+                  </li>
+                  <li className="divider" />
+                </React.Fragment>
+            }
+            {
               lists.map((list) => {
                 const selected = activeList === list.get('slug');
                 const classes = classNames({ selected, 'is-public': list.get('public') });
@@ -84,21 +99,6 @@ class SidebarCollectionViewerUI extends Component {
                   </li>
                 );
               })
-            }
-            {
-              (publicIndex || canAdmin) && pg &&
-                <React.Fragment>
-                  <li className="divider" />
-                  <li className={classNames('all-pages', { selected: !activeList })}>
-                    <div className="wrapper">
-                      {
-                        !activeList ?
-                          <button className="borderless selected-item" onClick={this.returnToItem}><AllPagesIcon /> All Pages in Collection</button> :
-                          <Link to={`${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`} title="Browse this collection" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
-                      }
-                    </div>
-                  </li>
-                </React.Fragment>
             }
           </ul>
         </div>

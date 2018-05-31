@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
 
 import { appHost, product } from 'config';
-import { apiFetch, remoteBrowserMod } from 'helpers/utils';
+import { apiFetch } from 'helpers/utils';
 
 import BugReport from 'containers/BugReport';
 import Modal from 'components/Modal';
@@ -12,7 +12,7 @@ import ShareWidget from 'containers/ShareWidget';
 import './style.scss';
 
 
-class RecordingToolsUI extends Component {
+class RecordingToolsUI extends PureComponent {
 
   static propTypes = {
     activeBrowser: PropTypes.string,

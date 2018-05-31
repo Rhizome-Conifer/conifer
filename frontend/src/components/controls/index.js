@@ -11,8 +11,6 @@ export RemoteBrowserSelectUI from './RemoteBrowserSelectUI';
 export RecordUI from './RecordUI';
 export RecordURLBar from './RecordURLBar';
 export RemoteBrowserUI from './RemoteBrowserUI';
-export ReplayArrowButton from './ReplayArrowButton';
-export ReplayPageDisplay from './ReplayPageDisplay';
 export ReplayUI from './ReplayUI';
 export ReplayURLBar from './ReplayURLBar';
 export ShareWidgetUI from './ShareWidgetUI';

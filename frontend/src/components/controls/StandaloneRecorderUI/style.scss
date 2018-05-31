@@ -122,25 +122,6 @@
     }
 }
 
-@media (min-width: 544px) and (max-width: 767px) {
-    .start-recording-homepage .container {
-        width: 544px;
-    }
-}
-@media (min-width: 768) and (max-width: 99.1rem) {
-    .start-recording-homepage .container {
-        width: 768px;
-    }
-}
-@media (min-width: 992px) and (max-width: 1199px) {
-    .start-recording-homepage .container {
-        /* grid width * column fraction + grid gutter * 2 */
-        width: calc(992px * 0.6 + 30px);
-    }
-}
-@media (min-width: 1200px) {
-    .start-recording-homepage .container {
-        /* grid width * column fraction + grid gutter * 2 */
-        width: calc(1200px * 0.6 + 30px);
-    }
+.main-bar .container {
+    width: 65vw;
 }
