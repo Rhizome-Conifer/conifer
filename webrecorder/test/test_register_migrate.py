@@ -50,7 +50,7 @@ class TestRegisterMigrate(FullStackTests):
         anon_dir = os.path.join(self.warcs_dir, user)
         assert len(os.listdir(anon_dir)) == 1
 
-    def test_register(self):
+    def _test_register(self):
         res = self.testapp.get('/_register')
         res.charset = 'utf-8'
 
@@ -82,7 +82,7 @@ class TestRegisterMigrate(FullStackTests):
                      'check your e-mail to complete the registration!'}
 
 
-    def test_val_user_reg_page(self):
+    def _test_val_user_reg_page(self):
         res = self.testapp.get('/_valreg/' + self.val_reg)
         assert self.val_reg in res.body.decode('utf-8')
 
@@ -177,19 +177,20 @@ class TestRegisterMigrate(FullStackTests):
         assert '/someuser/test-migrate/' in res.text
         assert '/http://httpbin.org/get?food=bar' in res.text
 
-    def test_logged_in_create_coll_page(self):
+    def _test_logged_in_create_coll_page(self):
         res = self.testapp.get('/_create')
         #assert 'https://webrecorder.io/someuser/' in res.text
         assert 'New Collection' in res.text
 
     def test_logged_in_create_coll(self):
         params = {'title': 'New Coll',
-                  'public': 'on'
+                  'public': True,
                  }
 
-        res = self.testapp.post('/_create', params=params)
+        res = self.testapp.post_json('/api/v1/collections?user=someuser', params=params)
 
-        res.headers['Location'] == 'http://localhost:80/'
+        #res.headers['Location'] == 'http://localhost:80/'
+        assert res.json['collection']['slug'] == 'new-coll'
 
         res = self.testapp.get('/someuser/new-coll')
 
@@ -202,19 +203,21 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_logged_in_create_coll_dupe_name_error(self):
         params = {'title': 'New Coll',
-                  'public': 'on'
+                  'public': True,
                  }
 
-        res = self.testapp.post('/_create', params=params, status=400)
+        res = self.testapp.post_json('/api/v1/collections?user=someuser', params=params, status=400)
+
+        assert res.json['error'] == 'duplicate_name'
 
     def test_logged_in_create_coll_new_name(self):
         params = {'title': 'New Coll 2',
-                  'public': 'on'
+                  'public': True
                  }
 
-        res = self.testapp.post('/_create', params=params)
+        res = self.testapp.post_json('/api/v1/collections?user=someuser', params=params)
 
-        res.headers['Location'] == 'http://localhost:80/'
+        assert res.json['collection']['slug'] == 'new-coll-2'
 
         res = self.testapp.get('/someuser/new-coll-2')
 
@@ -227,12 +230,12 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_logged_in_create_coll_and_rename_to_dupe_name(self):
         params = {'title': 'Other Coll',
-                  'public': 'off'
+                  'public': False
                  }
 
-        res = self.testapp.post('/_create', params=params)
+        res = self.testapp.post_json('/api/v1/collections?user=someuser', params=params)
 
-        res.headers['Location'] == 'http://localhost:80/'
+        assert res.json['collection']['slug'] == 'other-coll'
 
         res = self.testapp.get('/someuser/other-coll')
 
@@ -393,8 +396,8 @@ class TestRegisterMigrate(FullStackTests):
         assert '"rec": "test"' in res.text
 
     def test_logout_1(self):
-        res = self.testapp.get('/_logout')
-        assert res.headers['Location'] == 'http://localhost:80/'
+        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_logged_out_user_info(self):
@@ -501,7 +504,7 @@ class TestRegisterMigrate(FullStackTests):
 
         assert '"food": "bar"' in res.text, res.text
 
-    def test_delete_coll_invalid_csrf(self):
+    def _test_delete_coll_invalid_csrf(self):
         # no csrf token, should result in 403
         res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', status=403)
 
@@ -526,12 +529,15 @@ class TestRegisterMigrate(FullStackTests):
         assert len(os.listdir(st_warcs_dir)) == 1
         assert len(os.listdir(st_index_dir)) == 1
 
-        params = {'csrf': csrf_token}
-        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
+        # TODO: readd csrf?
+        #params = {'csrf': csrf_token}
+        #res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
+        res = self.testapp.delete('/api/v1/collection/test-coll?user=someuser')
+        assert res.json == {'deleted_id': 'test-coll'}
 
         assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'new-coll-2'}
 
-        assert res.headers['Location'] == 'http://localhost:80/someuser'
+        #assert res.headers['Location'] == 'http://localhost:80/someuser'
 
         def assert_delete_warcs():
             assert len(os.listdir(user_dir)) == 2
@@ -556,17 +562,15 @@ class TestRegisterMigrate(FullStackTests):
         params = {'username': 'testauto',
                   'password': 'Test12345'}
 
-        res = self.testapp.post('/_login', params=params)
+        res = self.testapp.post_json('/api/v1/auth/login', params=params, status=403)
 
-        assert res.headers['Location'] == 'http://localhost:80/'
+        assert res.json['error'] == 'already_logged_in'
+
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
-        res = res.follow()
-        assert 'You are already logged' in res.text
-
     def test_logout_2(self):
-        res = self.testapp.get('/_logout')
-        assert res.headers['Location'] == 'http://localhost:80/'
+        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_login_another(self):
@@ -609,13 +613,15 @@ class TestRegisterMigrate(FullStackTests):
         assert res.json == {'error': 'no_such_collection'}
 
     def test_logout_3(self):
-        res = self.testapp.get('/_logout')
-        assert res.headers['Location'] == 'http://localhost:80/'
+        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_login_3(self):
         params = {'username': 'someuser',
-                  'password': 'Password1'}
+                  'password': 'Password1',
+                  'remember_me': True
+                 }
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
@@ -627,16 +633,17 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_delete_user_wrong_user(self):
-        res = self.testapp.get('/_settings')
+        #res = self.testapp.get('/_settings')
 
-        csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
+        #csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
 
         # wrong user!
-        params = {'csrf': csrf_token}
-        res = self.testapp.post('/testauto/$delete', params=params)
-        assert res.headers['Location'] == 'http://localhost:80/testauto'
+        #params = {'csrf': csrf_token}
+        res = self.testapp.delete('/api/v1/user/testauto', status=404)
 
-    def test_delete_user_wrong_csrf(self):
+        assert res.json['error'] == 'not_found'
+
+    def _test_delete_user_wrong_csrf(self):
         # right user, invalid csrf
         params = {'csrf': 'xyz'}
         res = self.testapp.post('/someuser/$delete', params=params, status=403)
@@ -644,19 +651,23 @@ class TestRegisterMigrate(FullStackTests):
 
 
     def test_delete_user(self):
-        res = self.testapp.get('/_settings')
+        #res = self.testapp.get('/_settings')
 
-        csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
+        #csrf_token = re.search('name="csrf" value="([^\"]+)"', res.text).group(1)
 
         user_dir = os.path.join(self.warcs_dir, 'someuser')
 
         st_warcs_dir = os.path.join(self.storage_today, 'warcs')
         st_index_dir = os.path.join(self.storage_today, 'indexes')
 
-        params = {'csrf': csrf_token}
-        res = self.testapp.post('/someuser/$delete', params=params)
+        #params = {'csrf': csrf_token}
+        res = self.testapp.delete('/api/v1/user/someuser')
 
-        assert res.headers['Location'] == 'http://localhost:80/'
+        #TODO: make more consistent return
+        assert res.json['deleted_user'] == 'someuser'
+
+        #assert res.json['deleted_id'] == 'someuser'
+        #assert res.headers['Location'] == 'http://localhost:80/'
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
         assert not self.redis.exists('u:someuser:info')
@@ -675,11 +686,11 @@ class TestRegisterMigrate(FullStackTests):
                   'password': 'Password1'}
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
-        assert res.json == {"error": "Invalid Login. Please Try Again"}
+        assert res.json == {"error": 'invalid_login'}
 
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
-    def test_user_settings_error(self):
+    def _test_user_settings_error(self):
         res = self.testapp.get('/_settings', status=404)
 
 

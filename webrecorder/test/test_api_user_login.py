@@ -87,7 +87,7 @@ class TestApiUserLogin(FullStackTests):
 
         # no cookie, error
         res = self.testapp.post('/api/v1/auth/validate', params=params, status=400)
-        assert res.json == {'error': 'invalid cookie'}
+        assert res.json == {'error': 'invalid_code'}
 
     def test_api_val_reg_fail_code_mismatch(self):
         params = {'reg': 'foo'}
@@ -95,7 +95,7 @@ class TestApiUserLogin(FullStackTests):
 
         # no cookie, error
         res = self.testapp.post('/api/v1/auth/validate', headers=headers, params=params, status=400)
-        assert res.json == {'error': 'invalid cookie'}
+        assert res.json == {'error': 'invalid_code'}
 
     def test_check_username_avail(self):
         # still available until registration validated
@@ -175,7 +175,7 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
-        assert res.json == {'error': 'Invalid Login. Please Try Again'}
+        assert res.json == {'error': 'invalid_login'}
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_login_fail_wrong_user(self):
@@ -184,7 +184,7 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
-        assert res.json == {'error': 'Invalid Login. Please Try Again'}
+        assert res.json == {'error': 'invalid_login'}
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_load_auth_not_logged_in(self):

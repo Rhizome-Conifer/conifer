@@ -399,8 +399,8 @@ class TestUpload(FullStackTests):
         assert len(res.json['collection']['recordings']) == 3
 
     def test_logout_1(self):
-        res = self.testapp.get('/_logout')
-        assert res.headers['Location'] == 'http://localhost:80/'
+        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_replay_error_logged_out(self):

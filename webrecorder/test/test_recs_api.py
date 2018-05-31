@@ -166,15 +166,15 @@ class TestWebRecRecAPI(FullStackTests):
 
     def test_error_no_such_rec(self):
         res = self._anon_get('/api/v1/recording/blah@$?user={user}&coll=temp', status=404)
-        assert res.json == {'error': 'recording_not_found'}
+        assert res.json == {'error': 'no_such_recording'}
 
     def test_error_no_such_rec_pages(self):
         res = self._anon_get('/api/v1/recording/my-rec3/pages?user={user}&coll=temp', status=404)
-        assert res.json == {'error': 'recording_not_found'}
+        assert res.json == {'error': 'no_such_recording'}
 
         page = {'title': 'Example', 'url': 'http://example.com/foo/bar', 'timestamp': '2015010203000000'}
         res = self._anon_post('/api/v1/recording/my-rec3/pages?user={user}&coll=temp', params=page, status=404)
-        assert res.json == {'error': 'recording_not_found'}
+        assert res.json == {'error': 'no_such_recording'}
 
     def test_error_missing_user_coll(self):
         res = self._anon_post('/api/v1/recordings', params={'title': 'Recording'}, status=400)

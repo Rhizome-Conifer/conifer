@@ -21,7 +21,7 @@ from webrecorder.webreccork import ValidationException, AuthException
 from webrecorder.models.base import BaseAccess, DupeNameException
 from webrecorder.models.user import User, UserTable
 
-from webrecorder.utils import load_wr_config, sanitize_title
+from webrecorder.utils import load_wr_config, sanitize_title, get_bool
 from webrecorder.webreccork import WebRecCork
 from webrecorder.redisutils import RedisTable
 
@@ -168,11 +168,11 @@ class UserManager(object):
         to_coll = sanitize_title(to_coll_title)
 
         if not to_coll:
-            raise ValidationException('Invalid new collection name, please pick a different name')
+            raise ValidationException('invalid_coll_name')
 
 
         if not self.access.session_user.is_anon():
-            raise ValidationException('Import from non-temporary user attempted')
+            raise ValidationException('invalid_user_import')
 
         return {'from_user': self.access.session_user.name,
                 'to_coll': to_coll,
@@ -183,7 +183,7 @@ class UserManager(object):
         cookie_validate = 'valreg=' + reg_code
 
         if cookie_validate not in cookie:
-            return {'error': 'invalid cookie'}
+            return {'error': 'invalid_code'}
 
         try:
             user, first_coll = self.create_user_from_reg(reg_code)
@@ -197,7 +197,7 @@ class UserManager(object):
         except Exception as e:
             import traceback
             traceback.print_exc()
-            return {'error': 'invalid other'}
+            return {'error': 'invalid_code'}
 
     def login_user(self, input_data):
         """Authenticate users"""
@@ -213,14 +213,15 @@ class UserManager(object):
         # and then check for available space
         # if not enough space, don't continue with login
         if not self.cork.is_authenticate(username, password):
-            return {'error': 'Invalid Login. Please Try Again'}
+            return {'error': 'invalid_login'}
 
 
         if move_info:
             if not self.has_space_for_new_collection(username,
                                                      move_info['from_user'],
                                                     'temp'):
-                return {'error': 'Sorry, not enough space to import this Temporary Collection into your account.'}
+                #return {'error': 'Sorry, not enough space to import this Temporary Collection into your account.'}
+                return {'error': 'out_of_space'}
 
         user = self.all_users[username]
         new_collection = None
@@ -229,9 +230,10 @@ class UserManager(object):
             if move_info:
                 new_collection = self.move_temp_coll(user, move_info)
         except DupeNameException as de:
-            return {'error': 'Collection "{0}" already exists'.format(move_info['to_title'])}
+            return {'error': 'duplicate_name'}
+            #return {'error': 'Collection "{0}" already exists'.format(move_info['to_title'])}
 
-        remember_me = (input_data.get('remember_me') == '1')
+        remember_me = get_bool(input_data.get('remember_me'))
 
         # login session and access system
         self.access.log_in(username, remember_me)

@@ -87,7 +87,7 @@ class ContentController(BaseController, RewriterApp):
             sesh = self.get_session()
 
             if sesh.is_new() and self.is_content_request():
-                return {'error': 'Invalid request'}
+                self._raise_error(403, 'invalid_browser_request')
 
             browser_id = request.query['browser']
 
@@ -113,7 +113,7 @@ class ContentController(BaseController, RewriterApp):
             recording = collection.get_recording(rec)
 
             if not collection:
-                return {'error': 'Invalid Collection Specified'}
+                self._raise_error(404, 'no_such_collection')
 
             if mode == 'extract':
                 # Extract from All, Patch from None
@@ -137,13 +137,13 @@ class ContentController(BaseController, RewriterApp):
 
             if mode in self.MODIFY_MODES:
                 if not recording:
-                    return {'error': 'Invalid Recording Specified'}
+                    return self._raise_error(404, 'no_such_recording')
 
                 #rec = recording.my_id
             elif mode in ('replay', 'replay-coll'):
                 rec = '*'
             else:
-                return {'error': 'Invalid Mode Specified'}
+                return self._raise_error(400, 'invalid_mode')
 
 
             browser_can_write = '1' if self.access.can_write_coll(collection) else '0'
@@ -172,8 +172,8 @@ class ContentController(BaseController, RewriterApp):
 
             data = self.browser_mgr.request_new_browser(kwargs)
 
-            if 'error' in data:
-                self._raise_error(400, data['error'])
+            if 'error_message' in data:
+                self._raise_error(400, data['error_message'])
 
             return data
 

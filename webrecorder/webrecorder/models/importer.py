@@ -510,7 +510,7 @@ class UploadImporter(BaseImporter):
 
             #else:
             #status = 'Collection {0} not found'.format(force_coll_name)
-            return {'error': 'coll_not_found'}
+            return {'error': 'no_such_collection'}
 
         temp_file = SpooledTemporaryFile(max_size=BLOCK_SIZE)
 
@@ -525,7 +525,7 @@ class UploadImporter(BaseImporter):
 
         total_size = temp_file.tell()
         if total_size != expected_size:
-            return {'error': 'size mismatch: expected {0}, got {1}'.format(expected_size, total_size)}
+            return {'error': 'incomplete_upload', 'expected': expected_size, 'actual': total_size}
 
         upload_id, upload_key = self._init_upload_status(user, total_size, 1, filename=filename)
 

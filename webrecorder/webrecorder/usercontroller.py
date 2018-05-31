@@ -245,8 +245,8 @@ class UserController(BaseController):
             return {}
 
         # User Account Settings
-        @self.app.get('/_settings')
-        @self.jinja2_view('account.html')
+        #@self.app.get('/_settings')
+        #@self.jinja2_view('account.html')
         def account_settings():
             self.access.assert_is_logged_in()
 
@@ -258,7 +258,7 @@ class UserController(BaseController):
                    }
 
         # Delete User Account
-        @self.app.post('/<username>/$delete')
+        #@self.app.post('/<username>/$delete')
         def delete_user(username):
             self.validate_csrf()
             if self.user_manager.delete_user(username):

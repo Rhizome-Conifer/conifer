@@ -149,9 +149,9 @@ class TestBrowserInit(FullStackTests):
         }
 
         with patch('webrecorder.browsermanager.BrowserManager._api_new_browser', mock_new_browser('ip:test3')):
-            res = self.testapp.get('/api/v1/create_remote_browser', params=params)
+            res = self.testapp.get('/api/v1/create_remote_browser', params=params, status=400)
 
-        assert res.json['error']
+        assert res.json['error'] == 'invalid_mode'
 
     def test_create_browser_error_no_rec(self):
         params = {
@@ -166,9 +166,9 @@ class TestBrowserInit(FullStackTests):
         }
 
         with patch('webrecorder.browsermanager.BrowserManager._api_new_browser', mock_new_browser('ip:test3')):
-            res = self.testapp.get('/api/v1/create_remote_browser', params=params)
+            res = self.testapp.get('/api/v1/create_remote_browser', params=params, status=404)
 
-        assert res.json['error']
+        assert res.json['error'] == 'no_such_recording'
 
     def test_browser_stats(self):
         assert self.redis.keys(Stats.BROWSERS_KEY.format('*')) == [Stats.BROWSERS_KEY.format('chrome:60')]

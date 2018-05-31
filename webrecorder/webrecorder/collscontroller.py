@@ -30,7 +30,7 @@ class CollsController(BaseController):
 
             if self.access.is_anon(user):
                 if coll_name != 'temp':
-                    self._raise_error(400, 'invalid_anon_coll_name')
+                    self._raise_error(400, 'invalid_temp_coll_name')
 
                 if user.has_collection(coll_name):
                     self._raise_error(400, 'duplicate_name')
@@ -139,13 +139,13 @@ class CollsController(BaseController):
             return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
 
         # Create Collection
-        @self.app.get('/_create')
-        @self.jinja2_view('create_collection.html')
+        #@self.app.get('/_create')
+        #@self.jinja2_view('create_collection.html')
         def create_coll_view():
             self.access.assert_is_logged_in()
             return {}
 
-        @self.app.post('/_create')
+        #@self.app.post('/_create')
         def create_coll_post():
             title = self.post_get('title')
             if not title:
@@ -177,7 +177,7 @@ class CollsController(BaseController):
 
             self.redirect(redir_to)
 
-        @self.app.post(['/_delete_coll'])
+        #@self.app.post(['/_delete_coll'])
         def delete_collection_post():
             self.validate_csrf()
             user, collection = self.load_user_coll()
