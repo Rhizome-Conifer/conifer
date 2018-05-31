@@ -50,7 +50,6 @@ class CollectionDetailUI extends Component {
     dispatch: PropTypes.func,
     list: PropTypes.object,
     match: PropTypes.object,
-    orderedIds: PropTypes.object,
     pages: PropTypes.object,
     publicIndex: PropTypes.bool,
     removeBookmark: PropTypes.func,

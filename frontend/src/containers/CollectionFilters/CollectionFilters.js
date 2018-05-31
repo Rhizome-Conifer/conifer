@@ -5,7 +5,7 @@ import { createSearchAction } from 'redux-search';
 import { bulkAddTo } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
 
-import { getSearchText } from 'redux/selectors';
+import { getSearchText } from 'redux/selectors/search';
 
 import CollectionFiltersUI from 'components/collection/CollectionFiltersUI';
 

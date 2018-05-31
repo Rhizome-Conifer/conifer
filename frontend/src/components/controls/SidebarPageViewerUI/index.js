@@ -13,7 +13,6 @@ import { getCollectionLink } from 'helpers/utils';
 import { updateUrlAndTimestamp } from 'redux/modules/controls';
 import { setBrowser } from 'redux/modules/remoteBrowsers';
 
-import Searchbox from 'components/Searchbox';
 import SidebarHeader from 'components/SidebarHeader';
 import { CatalogIcon, WarcIcon } from 'components/icons';
 
@@ -31,7 +30,6 @@ class SidebarPageViewer extends Component {
     collection: PropTypes.object,
     pages: PropTypes.object,
     dispatch: PropTypes.func,
-    orderedIds: PropTypes.object,
     searchPages: PropTypes.func,
     searchText: PropTypes.string,
     setInspector: PropTypes.func,
@@ -97,7 +95,7 @@ class SidebarPageViewer extends Component {
   returnToCollection = () => this.props.showNavigator(true)
 
   render() {
-    const { activePage, collection, orderedIds, pages, searchText } = this.props;
+    const { activePage, collection, pages, searchText } = this.props;
 
     return (
       <div className="page-list">
@@ -115,12 +113,6 @@ class SidebarPageViewer extends Component {
             <h5>{`${collection.get('title')} (${pages.size})`}</h5>
           </div>
         </header>
-        {/*
-        <Searchbox
-          search={this.search}
-          searchText={searchText}
-          placeholder="search for pages in index" />
-        */}
         <div className="pages">
           <AutoSizer>
             {
@@ -152,9 +144,6 @@ class SidebarPageViewer extends Component {
                             width={25}
                             flexShrink={1}
                             className="row-index-container"
-                            columnData={{
-                              orderedIds
-                            }}
                             cellRenderer={PageIndex}
                           />
                           <Column

@@ -1,29 +1,30 @@
 import { createSelector } from 'reselect';
 import { List } from 'immutable';
-import { getSearchSelectors } from 'redux-search';
+
 import { columnMappings } from 'config';
 
 import { rts, truncate } from 'helpers/utils';
 
-
-const getActiveRemoteBrowserId = state => state.getIn(['remoteBrowsers', 'activeBrowser']) || null;
-const getActiveBookmarkId = state => (state.app ? state.app : state).getIn(['controls', 'activeBookmarkId']);
-const getArchives = state => state.getIn(['controls', 'archives']);
-const getCollections = state => state.getIn(['collections', 'collections']);
-const getColumn = state => (state.app ? state.app : state).getIn(['pageQuery', 'column']);
-const getQuery = state => (state.app ? state.app : state).getIn(['pageQuery', 'query']);
-const getListBookmarks = state => (state.app ? state.app : state).getIn(['list', 'bookmarks']);
-const getPages = state => (state.app ? state.app : state).getIn(['collection', 'pages']);
-const getRecordings = state => state.getIn(['collection', 'recordings']);
-const getRemoteBrowsers = state => state.getIn(['remoteBrowsers', 'browsers']);
-const getSize = state => state.getIn(['infoStats', 'size']);
-const getStats = state => state.getIn(['infoStats', 'stats']);
-const getTimestamp = state => (state.app ? state.app : state).getIn(['controls', 'timestamp']);
-const getUrl = state => (state.app ? state.app : state).getIn(['controls', 'url']);
-const getUserCollections = state => state.getIn(['user', 'collections']);
-const selectedCollection = state => state.getIn(['user', 'activeCollection']);
-const userSortBy = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'sort']);
-const userSortDir = state => (state.app ? state.app : state).getIn(['collection', 'sortBy', 'dir']);
+import {
+  getArchives,
+  getActiveBookmarkId,
+  getActiveRemoteBrowserId,
+  getCollections,
+  getColumn,
+  getListBookmarks,
+  getPages,
+  getQuery,
+  getRecordings,
+  getRemoteBrowsers,
+  getSize,
+  getStats,
+  getTimestamp,
+  getUrl,
+  getUserCollections,
+  selectedCollection,
+  userSortBy,
+  userSortDir,
+} from './access';
 
 
 const sortFn = (a, b, by = null) => {
@@ -36,55 +37,6 @@ const sortFn = (a, b, by = null) => {
   }
   return 0;
 };
-
-
-// redux-search
-const { text, result } = getSearchSelectors({
-  resourceName: 'collection.pages',
-  resourceSelector: (resourceName, state) => {
-    return state.app.getIn(resourceName.split('.'));
-  }
-});
-
-
-export const getSearchText = createSelector(
-  [text],
-  searchText => searchText
-);
-
-
-export const tsOrderedPageSearchResults = createSelector(
-  [result, getPages, text],
-  (pageIds, pageObjs, searchText) => {
-    const pages = List(pageIds.map(id => pageObjs.get(id)));
-    const pageFeed = pages.sortBy(o => o.get('timestamp')).reverse();
-
-    return {
-      pageFeed,
-      searchText
-    };
-  }
-);
-
-
-export const pageSearchResults = createSelector(
-  [result, getPages, userSortBy, userSortDir, text],
-  (pageIds, pageObjs, sort, dir, searchText) => {
-    const pages = List(pageIds.map(id => pageObjs.get(id)));
-    const pageFeed = pages.sortBy(o => o.get(sort));
-
-    if (dir === 'DESC') {
-      return {
-        pageFeed: pageFeed.reverse(),
-        searchText
-      };
-    }
-    return {
-      pageFeed,
-      searchText
-    };
-  }
-);
 
 
 export const getActiveCollection = createSelector(
@@ -199,18 +151,17 @@ const sortedSearch = (sortedPages, timestamp, url) => {
 
 
 export const getActivePageIdx = createSelector(
-  [tsOrderedPageSearchResults, getTimestamp, getUrl],
-  (pageSearch, ts, url) => {
-    const pages = pageSearch.pageFeed;
+  [timestampOrderedPages, getTimestamp, getUrl],
+  (pages, ts, url) => {
     return sortedSearch(pages, ts, url);
   }
 );
 
 
 export const getActivePage = createSelector(
-  [tsOrderedPageSearchResults, getActivePageIdx],
-  (pageSearch, pgIdx) => {
-    return pageSearch.pageFeed.get(pgIdx);
+  [timestampOrderedPages, getActivePageIdx],
+  (pages, pgIdx) => {
+    return pages.get(pgIdx);
   }
 );
 
