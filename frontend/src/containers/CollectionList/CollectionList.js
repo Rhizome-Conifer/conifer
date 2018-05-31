@@ -36,7 +36,7 @@ const mapStateToProps = ({ app }) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch, { history }) => {
   return {
     createNewCollection: (user, collTitle, makePublic) => {
       dispatch(createCollection(user, collTitle, makePublic))
@@ -46,6 +46,7 @@ const mapDispatchToProps = (dispatch) => {
               incrementCollCount(1),
               addUserCollection(res.collection)
             ]));
+            history.push(`/${user}/${res.collection.slug}/index`);
           }
         }, () => {});
     }

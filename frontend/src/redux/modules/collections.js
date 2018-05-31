@@ -10,6 +10,7 @@ const CREATE_COLL_SUCCESS = 'wr/coll/CREATE_COLL_SUCCESS';
 const CREATE_COLL_FAIL = 'wr/coll/CREATE_COLL_FAIL';
 
 const initialState = fromJS({
+  creationErorr: null,
   loading: false,
   loaded: false,
   error: null,
@@ -39,16 +40,20 @@ export default function collections(state = initialState, action = {}) {
       });
 
     case CREATE_COLL:
-      return state.set('creatingCollection', true);
+      return state.merge({
+        creatingCollection: true,
+        creationErorr: null
+      });
     case CREATE_COLL_SUCCESS:
       return state.merge({
         newCollection: action.result.collection.id,
         creatingCollection: false,
+        creationErorr: null,
         // nullify collections cache
         accessed: null
       });
     case CREATE_COLL_FAIL:
-      return state.set('error', action.error.error);
+      return state.set('creationErorr', action.error.error);
 
     default:
       return state;

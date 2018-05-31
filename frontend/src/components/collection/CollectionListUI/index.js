@@ -47,19 +47,6 @@ class CollectionListUI extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { collections, history, match: { params: { user } } } = this.props;
-    const creatingCollection = collections.get('creatingCollection');
-    const prevNewCollection = collections.get('newCollection');
-    const newCollection = nextProps.collections.get('newCollection');
-
-    // if incoming prop has a newCollection object and we are currently creating
-    // a collection, reroute to new collection
-    if (creatingCollection && newCollection && prevNewCollection !== newCollection) {
-      history.push(`/${user}/${newCollection}/index`);
-    }
-  }
-
   createCollection = (collTitle, isPublic) => {
     const { createNewCollection, match: { params: { user } } } = this.props;
 
@@ -184,7 +171,7 @@ class CollectionListUI extends Component {
           visible={showModal}
           createCollection={this.createCollection}
           creatingCollection={collections.get('creatingCollection')}
-          error={collections.get('error')} />
+          error={collections.get('creationErorr')} />
 
       </React.Fragment>
     );

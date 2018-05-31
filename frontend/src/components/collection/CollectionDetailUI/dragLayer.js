@@ -87,7 +87,7 @@ class CustomDragLayer extends Component {
     }
 
     return (
-      <div className="drag-preview rounded" style={getItemStyles(this.props)}>
+      <div className="drag-preview" style={getItemStyles(this.props)}>
         + {this.state.count}
       </div>
     );
