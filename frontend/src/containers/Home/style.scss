@@ -4,6 +4,10 @@
     font-family: $serif;
     text-align: center;
     font-size: 5.2rem;
+
+    @media (max-width: $mobile) {
+        font-size: 3.2rem;
+    }
 }
 
 .tutorial {
@@ -36,6 +40,10 @@
     background-color: #F3F3F3;
     padding: 6rem;
 
+    @media (max-width: $mobile) {
+        padding: 2rem;
+    }
+
     & > h2 {
         margin: 0 0 2rem 0;
     }
@@ -45,6 +53,10 @@
     padding: 6rem;
     border-bottom: 1px solid #eee;
     margin-bottom: 6rem;
+
+    @media (max-width: $mobile) {
+        padding: 2rem;
+    }
 
     ul {
         list-style: none;

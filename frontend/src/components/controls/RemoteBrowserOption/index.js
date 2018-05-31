@@ -19,15 +19,15 @@ function RemoteBrowserOption(props) {
 
   return (
     <ul className={classes} onClick={click} role="button" data-native="true">
-      <li className="col-xs-2">
+      <li className="col-sm-2 col-xs-4">
         { browser.get('id') &&
           <img src={`/api/browsers/browsers/${browser.get('id')}/icon`} role="presentation" />
         }
         <span>{ browser.get('name') }</span>
       </li>
-      <li className="col-xs-2">{ browser.get('version') ? `v${browser.get('version')}` : '-' }</li>
-      <li className="col-xs-2">{ browser.get('release') ? browser.get('release') : '-' }</li>
-      <li className="col-xs-2">{ browser.get('os') ? browser.get('os') : '-' }</li>
+      <li className="col-sm-2 col-xs-4">{ browser.get('version') ? `v${browser.get('version')}` : '-' }</li>
+      <li className="col-xs-2 hidden-xs">{ browser.get('release') ? browser.get('release') : '-' }</li>
+      <li className="col-xs-2 hidden-xs">{ browser.get('os') ? browser.get('os') : '-' }</li>
       <li className="col-xs-4">{ browser.get('caps') ? browser.get('caps') : '-' }</li>
     </ul>
   );

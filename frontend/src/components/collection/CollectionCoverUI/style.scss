@@ -23,10 +23,18 @@
         max-width: 35vw;
         font-size: 1.4rem;
         line-height: 1.5;
+
+        @media (max-width: $mobile) {
+            max-width: 75vw;
+        }
     }
 
     .lists-container {
         width: 45vw;
+
+        @media (max-width: $mobile) {
+            width: 85vw;
+        }
 
         .lists-header {
             width: 80%;

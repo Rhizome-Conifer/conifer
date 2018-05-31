@@ -132,7 +132,7 @@ class CollectionHeaderUI extends Component {
 
     const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>
-        <Button className="rounded" onClick={this.newSession}><PlusIcon /> New Session</Button>
+        <Button className="rounded" onClick={this.newSession}><PlusIcon /><span className="hidden-xs"> New Session</span></Button>
         {
           !isAnon &&
             <PublicSwitch

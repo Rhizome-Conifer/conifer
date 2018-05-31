@@ -37,7 +37,7 @@ function Footer() {
         </div>
         {
           announceMailingList &&
-            <div className="row">
+            <div className="row hidden-xs">
               <div className="col-xs-12">
                 <form method="post" id="email-signup" className="navbar-form mc-embedded-subscribe-form" action={announceMailingList}>
                   <div className="form-group-sm">

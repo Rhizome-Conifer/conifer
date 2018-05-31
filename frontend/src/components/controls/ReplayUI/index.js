@@ -22,7 +22,8 @@ class ReplayUI extends Component {
 
   static contextTypes = {
     canAdmin: PropTypes.bool,
-    currMode: PropTypes.string
+    currMode: PropTypes.string,
+    isMobile: PropTypes.bool
   };
 
   toggleSidebar = () => {
@@ -30,21 +31,21 @@ class ReplayUI extends Component {
   }
 
   render() {
-    const { canAdmin, currMode } = this.context;
+    const { canAdmin, currMode, isMobile } = this.context;
 
     const isWrite = ['extract', 'extract_only', 'patch', 'record'].includes(currMode);
 
     return (
       <div role="presentation" className="container-fluid wr-controls navbar-default">
         {
-          currMode.includes('replay') &&
+          currMode.includes('replay') && !isMobile &&
             <Button className="sidebar-toggle" onClick={this.toggleSidebar}>
               <InfoIcon />
             </Button>
         }
 
         {
-          canAdmin &&
+          canAdmin && !isMobile &&
             <ModeSelector />
         }
 
@@ -59,7 +60,10 @@ class ReplayUI extends Component {
             <ReplayURLBar {...this.props} />
         }
 
-        <RecordingTools />
+        {
+          !isMobile &&
+            <RecordingTools />
+        }
       </div>
     );
   }

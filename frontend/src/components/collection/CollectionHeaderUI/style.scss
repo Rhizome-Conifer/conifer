@@ -110,9 +110,15 @@ header.wr-collection-header {
             }
         }
 
+        .desc-container {
+            .wr-editor {
+                min-width: 32rem;
+            }
 
-        .wr-editor {
-            min-width: 32rem;
+            @media (max-width: $mobile) {
+                width: 85vw;
+                margin: 0 7.5vw;
+            }
         }
 
         // .wr-editor {
@@ -170,11 +176,19 @@ header.wr-collection-header {
                 h1 {
                     font-size: 2.4rem;
                     margin: 0 0 0 1.5rem;
+
+                    @media (max-width: $mobile) {
+                        font-size: 1.9rem;
+                    }
                 }
 
                 & > svg {
                     width: 2rem;
                     height: 2rem;
+
+                    @media (max-width: $mobile) {
+                        display: none;
+                    }
                 }
             }
         }

@@ -26,7 +26,7 @@ import { IFrame, ReplayUI } from 'components/controls';
 
 class Replay extends Component {
   static contextTypes = {
-    product: PropTypes.string
+    isMobile: PropTypes.bool
   };
 
   static propTypes = {
@@ -123,7 +123,6 @@ class Replay extends Component {
   render() {
     const { activeBookmarkId, activeBrowser, collection, dispatch, list,
             match: { params }, recording, reqId, timestamp, url } = this.props;
-    const { product } = this.context;
 
     // coll access
     if (collection.get('error')) {
@@ -175,7 +174,7 @@ class Replay extends Component {
       <SidebarListViewer showNavigator={this.showCollectionNav} /> :
       <SidebarPageViewer showNavigator={this.showCollectionNav} />;
 
-    const title = `Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${product}`;
+    const title = `Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${config.product}`;
 
     return (
       <React.Fragment>
@@ -195,18 +194,21 @@ class Replay extends Component {
           toggle={this.props.toggleSidebar}
           url={url} />
         <div className="iframe-container">
-          <Sidebar storageKey="replaySidebar">
-            <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
-              {
-                this.state.collectionNav ?
-                  (<SidebarCollectionViewer
-                    activeList={listSlug}
-                    showNavigator={this.showCollectionNav} />) :
-                  navigator
-              }
-            </Resizable>
-            <InspectorPanel />
-          </Sidebar>
+          {
+            !this.context.isMobile &&
+              <Sidebar storageKey="replaySidebar">
+                <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
+                  {
+                    this.state.collectionNav ?
+                      (<SidebarCollectionViewer
+                        activeList={listSlug}
+                        showNavigator={this.showCollectionNav} />) :
+                      navigator
+                  }
+                </Resizable>
+                <InspectorPanel />
+              </Sidebar>
+          }
           {
             activeBrowser ?
               <RemoteBrowser
