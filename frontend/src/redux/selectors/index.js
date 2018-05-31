@@ -307,9 +307,14 @@ export const getRemoteArchiveStats = createSelector(
 );
 
 
-export const sortedCollections = createSelector(
+export const sortCollsByUpdateAt = createSelector(
   [getUserCollections],
   colls => colls.sortBy(c => c.get('updated_at')).reverse()
+);
+
+export const sortCollsByAlpha = createSelector(
+  [getUserCollections],
+  colls => colls.sortBy(c => c.get('title').toLowerCase())
 );
 
 

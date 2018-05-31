@@ -5,7 +5,7 @@ import { incrementCollCount } from 'redux/modules/auth';
 import { createCollection } from 'redux/modules/collections';
 import { addUserCollection, loadCollections, selectCollection } from 'redux/modules/user';
 
-import { getActiveCollection, sortedCollections } from 'redux/selectors';
+import { getActiveCollection, sortCollsByAlpha, sortCollsByUpdateAt } from 'redux/selectors';
 
 import CollectionDropdownUI from 'components/collection/CollectionDropdownUI';
 
@@ -13,7 +13,8 @@ import CollectionDropdownUI from 'components/collection/CollectionDropdownUI';
 const mapStateToProps = ({ app }) => {
   return {
     activeCollection: getActiveCollection(app),
-    collections: sortedCollections(app),
+    collections: sortCollsByAlpha(app),
+    mostRecent: sortCollsByUpdateAt(app).getIn([0, 'id']),
     creatingCollection: app.getIn(['collections', 'creatingCollection']),
     collectionError: app.getIn(['collections', 'error']),
     loading: app.getIn(['user', 'loading']),

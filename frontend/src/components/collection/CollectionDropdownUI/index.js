@@ -24,6 +24,7 @@ class CollectionDropdownUI extends Component {
     ]),
     loading: PropTypes.bool,
     loadUserCollections: PropTypes.func,
+    mostRecent: PropTypes.string,
     newCollection: PropTypes.string,
     setCollection: PropTypes.func,
     user: PropTypes.object,
@@ -41,6 +42,8 @@ class CollectionDropdownUI extends Component {
     // prepouplate collection
     if (props.fromCollection) {
       props.setCollection(props.fromCollection);
+    } else if (props.mostRecent) {
+      props.setCollection(props.mostRecent);
     }
 
     this.state = { showModal: false };
@@ -66,12 +69,12 @@ class CollectionDropdownUI extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { activeCollection, collections, fromCollection, setCollection } = this.props;
+    const { activeCollection, fromCollection, mostRecent, setCollection } = this.props;
 
-    if (!fromCollection && !this.props.loading && prevProps.loading && activeCollection !== collections.getIn([0, 'id'])) {
-      setCollection(collections.getIn([0, 'id']));
+    if (!fromCollection && !this.props.loading && prevProps.loading && activeCollection !== mostRecent) {
+      setCollection(mostRecent);
     } else if (fromCollection && fromCollection !== prevProps.fromCollection) {
-      this.props.setColl(fromCollection);
+      setCollection(fromCollection);
     }
   }
 
