@@ -23,8 +23,7 @@ class ListsUI extends Component {
 
   static contextTypes = {
     asPublic: PropTypes.bool,
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
+    canAdmin: PropTypes.bool
   };
 
   static propTypes = {
@@ -205,7 +204,7 @@ class ListsUI extends Component {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
+    const { canAdmin } = this.context;
     const { activeListSlug, collection, list, publicIndex } = this.props;
     const { created, editModal, edited, editId, isCreating, lists, title } = this.state;
 
@@ -253,7 +252,7 @@ class ListsUI extends Component {
                       <div className={classNames('wrapper', { editable: canAdmin })}>
                         <Link to={getCollectionLink(collection, true)} title="All pages" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
                         {
-                          canAdmin && !isAnon &&
+                          canAdmin &&
                             <VisibilityLamp
                               callback={this.toggleIndexVisibility}
                               isPublic={publicIndex}

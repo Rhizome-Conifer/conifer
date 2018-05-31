@@ -43,7 +43,7 @@ class TempUserAlertUI extends PureComponent {
   render() {
     const { tempUser, showLoginModal } = this.props;
 
-    if (!this.state.show) {
+    if (!this.state.show || !tempUser) {
       return null;
     }
 

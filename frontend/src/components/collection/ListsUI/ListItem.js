@@ -86,8 +86,7 @@ function dragCollect(connect, monitor) {
 
 class ListItem extends PureComponent {
   static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
+    canAdmin: PropTypes.bool
   };
 
   static propTypes = {
@@ -110,7 +109,7 @@ class ListItem extends PureComponent {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
+    const { canAdmin } = this.context;
     const { collId, collUser, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
 
     const title = list.get('title');
@@ -125,7 +124,7 @@ class ListItem extends PureComponent {
           </Link>
           <span className="bookmark-count">{list.get('total_bookmarks')}</span>
           {
-            canAdmin && !isAnon &&
+            canAdmin &&
               <VisibilityLamp
                 callback={this.editVisibility}
                 isPublic={isPublic}

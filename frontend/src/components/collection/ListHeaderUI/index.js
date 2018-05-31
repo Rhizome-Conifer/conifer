@@ -17,8 +17,7 @@ import './style.scss';
 
 class ListHeaderUI extends PureComponent {
   static contextTypes = {
-    canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
+    canAdmin: PropTypes.bool
   };
 
   static propTypes = {
@@ -55,7 +54,7 @@ class ListHeaderUI extends PureComponent {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
+    const { canAdmin } = this.context;
     const { collection, list } = this.props;
     const bkCount = list.get('bookmarks').size;
     const bookmarks = `${bkCount} Page${bkCount === 1 ? '' : 's'}`;
@@ -86,7 +85,7 @@ class ListHeaderUI extends PureComponent {
         </div>
         <div className="function-row">
           {
-            canAdmin && !isAnon &&
+            canAdmin &&
               <PublicSwitch
                 callback={this.setPublic}
                 isPublic={list.get('public')}
