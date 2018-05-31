@@ -52,7 +52,7 @@ export function auth(state = initialState, action = {}) {
     case LOGIN_FAIL:
       return state.merge({
         loggingIn: false,
-        loginError: action.error
+        loginError: action.error.error
       });
     case LOGOUT:
       return state.set('loggingOut', true);

@@ -4,6 +4,7 @@ import Toggle from 'react-toggle';
 import { Alert, ControlLabel, FormGroup, FormControl } from 'react-bootstrap';
 
 import { defaultCollectionTitle } from 'config';
+import { collection } from 'helpers/userMessaging';
 
 import Modal from 'components/Modal';
 
@@ -64,7 +65,7 @@ class NewCollection extends Component {
           {
             error &&
               <Alert bsStyle="danger">
-                { error }
+                { collection[error] || 'Error encountered' }
               </Alert>
           }
           <FormGroup bsClass="form-group col-xs-5" validationState={this.titleValidation()}>

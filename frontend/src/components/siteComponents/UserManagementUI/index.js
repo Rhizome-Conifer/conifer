@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { fromJS } from 'immutable';
 import { Link } from 'react-router-dom';
 
 import { product } from 'config';
@@ -12,11 +11,6 @@ import './style.scss';
 
 
 class UserManagementUI extends Component {
-
-  static contextTypes = {
-    router: PropTypes.object
-  };
-
   static propTypes = {
     anonCTA: PropTypes.bool,
     auth: PropTypes.object,
@@ -26,13 +20,6 @@ class UserManagementUI extends Component {
     open: PropTypes.bool,
     showModal: PropTypes.func,
   };
-
-  static defaultProps = fromJS({
-    auth: {
-      username: null,
-      role: null
-    }
-  });
 
   constructor(options) {
     super(options);

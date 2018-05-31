@@ -5,6 +5,7 @@ import { Alert, Button, Col, Form, FormGroup,
          FormControl, Row } from 'react-bootstrap';
 
 import { guestSessionTimeout, product, userRegex } from 'config';
+import { login } from 'helpers/userMessaging';
 
 import { TempUsage } from 'containers';
 
@@ -24,6 +25,7 @@ class LoginForm extends Component {
     this.state = {
       moveTemp: true,
       toColl: 'New Collection',
+      remember_me: false,
       username: '',
       password: ''
     };
@@ -31,14 +33,21 @@ class LoginForm extends Component {
 
   save = (evt) => {
     evt.preventDefault();
+    const { auth } = this.props;
+    const { moveTemp, password, toColl, username } = this.state;
 
-    const stateData = this.state;
+    let data = { username, password };
 
-    if (stateData.hasOwnProperty('remember_me')) {
-      stateData.remember_me = String(Number(stateData.remember_me));
+    if (this.state.remember_me) {
+      data.remember_me = '1';
     }
 
-    this.props.cb(stateData);
+    // check for anon usage
+    if (auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0) {
+      data = { ...data, moveTemp, toColl };
+    }
+
+    this.props.cb(data);
   }
 
   validateUsername = () => {
@@ -70,7 +79,9 @@ class LoginForm extends Component {
           {
             error &&
               <Alert bsStyle="danger" >
-                Invalid Login. Please Try Again
+                {
+                  login[auth.get('loginError')] || <span>Invalid Login. Please Try Again</span>
+                }
               </Alert>
           }
           <Form id="loginform" onSubmit={this.save}>

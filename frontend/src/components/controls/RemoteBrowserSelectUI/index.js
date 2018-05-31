@@ -1,17 +1,16 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { fromJS } from 'immutable';
 import { DropdownButton } from 'react-bootstrap';
 
-import { appHost } from 'config';
-import { apiFetch, remoteBrowserMod } from 'helpers/utils';
+import { remoteBrowserMod } from 'helpers/utils';
 
 import { RemoteBrowserOption } from 'components/controls';
 
 import 'shared/scss/dropdown.scss';
 
 
-class RemoteBrowserSelectUI extends Component {
+class RemoteBrowserSelectUI extends PureComponent {
 
   static propTypes = {
     accessed: PropTypes.number,
