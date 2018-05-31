@@ -45,6 +45,7 @@ class CollectionDetailUI extends Component {
     browsers: PropTypes.object,
     clearInspector: PropTypes.func,
     clearQuery: PropTypes.func,
+    clearSearch: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     list: PropTypes.object,
@@ -145,6 +146,13 @@ class CollectionDetailUI extends Component {
     }
 
     return true;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.loaded && !prevProps.loaded) {
+      this.props.clearQuery();
+      this.props.clearSearch();
+    }
   }
 
   componentWillUnmount() {

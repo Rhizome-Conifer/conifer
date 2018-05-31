@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import querystring from 'querystring';
 import { asyncConnect } from 'redux-connect';
+import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
 import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl } from 'redux/modules/collection';
@@ -127,6 +128,7 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
   return {
     clearInspector: () => dispatch(clear()),
     clearQuery: () => dispatch(setQueryMode(false)),
+    clearSearch: () => dispatch(createSearchAction('collection.pages')('')),
     setMultiInspector: count => dispatch(multiSelect(count)),
     setPageInspector: fields => dispatch(selectPage(fields)),
     setBookmarkInspector: bk => dispatch(selectBookmark(bk)),
