@@ -33,7 +33,7 @@ SETTINGS = '/_settings'
 
 
 # ============================================================================
-class LoginController(BaseController):
+class LoginController(BaseController):  #pragma: no cover
     def __init__(self, *args, **kwargs):
         super(LoginController, self).__init__(*args, **kwargs)
         config = kwargs['config']

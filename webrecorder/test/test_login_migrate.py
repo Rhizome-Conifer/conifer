@@ -78,7 +78,7 @@ class TestLoginMigrate(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
-        assert res.json == {'error': 'Invalid new collection name, please pick a different name'}
+        assert res.json == {'error': 'invalid_coll_name'}
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
@@ -95,7 +95,7 @@ class TestLoginMigrate(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
-        assert res.json == {'error':  'Collection "default-collection" already exists'}
+        assert res.json == {'error':  'duplicate_name'}
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
@@ -173,8 +173,9 @@ class TestLoginMigrate(FullStackTests):
             assert self.storage_today in result[key]
 
     def test_logout_1(self):
-        res = self.testapp.get('/_logout')
-        assert res.headers['Location'] == 'http://localhost:80/'
+        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        assert res.json['success']
+
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_logged_out_error(self):

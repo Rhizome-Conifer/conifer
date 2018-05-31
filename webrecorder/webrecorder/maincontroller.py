@@ -25,7 +25,7 @@ from webrecorder.websockcontroller import WebsockController
 from webrecorder.recscontroller import RecsController
 from webrecorder.collscontroller import CollsController
 from webrecorder.listscontroller import ListsController
-from webrecorder.logincontroller import LoginController
+#from webrecorder.logincontroller import LoginController
 from webrecorder.bugreportcontroller import BugReportController
 from webrecorder.usercontroller import UserController
 from webrecorder.downloadcontroller import DownloadController
@@ -52,7 +52,7 @@ class MainController(BaseController):
     ALL_CONTROLLERS = [DownloadController,
                        UploadController,
                        AppController,
-                       LoginController,
+                       #LoginController,
                        UserController,
                        AdminController,
                        BugReportController,

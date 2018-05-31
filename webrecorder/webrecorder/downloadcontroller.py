@@ -99,8 +99,7 @@ class DownloadController(BaseController):
         user, collection = self.user_manager.get_user_coll(user, coll_name)
 
         if not collection:
-            self._raise_error(404, 'Collection not found',
-                              id=coll_name)
+            self._raise_error(404, 'no_such_collection')
 
         self.access.assert_can_write_coll(collection)
 

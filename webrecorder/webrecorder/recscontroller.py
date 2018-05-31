@@ -36,7 +36,7 @@ class RecsController(BaseController):
             if recording:
                 return {'recording': recording.serialize()}
             else:
-                self._raise_error(404, 'recording_not_found')
+                self._raise_error(404, 'no_such_recording')
 
         @self.app.post('/api/v1/recording/<rec>')
         def update_rec_desc(rec):
@@ -79,7 +79,7 @@ class RecsController(BaseController):
                 #self.flash_message(msg, 'success')
                 return {'coll_id': new_coll_name, 'rec_id': new_rec}
             else:
-                self._raise_error(400, 'error_move_recording')
+                self._raise_error(400, 'move_error')
 
         @self.app.post('/api/v1/recording/<rec>/copy/<new_coll_name>')
         def copy_recording(rec, new_coll_name):
@@ -148,7 +148,7 @@ class RecsController(BaseController):
 
         # LOGGED-IN ADD TO REC
         # DELETE REC
-        @self.app.post('/_delete_rec/<rec>')
+        #@self.app.post('/_delete_rec/<rec>')
         def delete_rec_post(rec):
             self.validate_csrf()
             user, collection, recording = self.load_recording(rec, api=False)
@@ -180,10 +180,10 @@ class RecsController(BaseController):
     def load_recording(self, rec, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)
         if not user or not collection:
-            self._raise_error(404, 'recording_not_found')
+            self._raise_error(404, 'no_such_recording')
 
         recording = collection.get_recording(rec)
         if not recording:
-            self._raise_error(404, 'recording_not_found')
+            self._raise_error(404, 'no_such_recording')
 
         return user, collection, recording
