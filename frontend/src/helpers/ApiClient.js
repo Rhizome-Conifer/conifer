@@ -3,6 +3,7 @@ import config from '../config';
 
 const methods = ['get', 'post', 'put', 'patch', 'del'];
 
+
 function formatUrl(path) {
   const adjustedPath = path[0] !== '/' ? `/${path}` : path;
   if (__SERVER__) {
@@ -12,6 +13,7 @@ function formatUrl(path) {
   // client side use current host
   return `${adjustedPath}`;
 }
+
 
 export default class ApiClient {
   constructor(req, res) {
@@ -53,10 +55,12 @@ export default class ApiClient {
         request.end((err, response) => {
           const { body } = response;
 
-          // if api sets session cookie, ensure its passed back to browser
-          const cookie = response.get('Set-Cookie');
-          if (cookie) {
-            res.set('Set-Cookie', cookie);
+          if (__SERVER__) {
+            // if api sets session cookie, ensure its passed back to browser
+            const cookie = response.get('Set-Cookie');
+            if (cookie) {
+              res.set('Set-Cookie', cookie);
+            }
           }
 
           return err || !body || body.hasOwnProperty('error') ?

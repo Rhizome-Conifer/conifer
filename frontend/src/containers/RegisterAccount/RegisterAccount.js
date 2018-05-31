@@ -32,6 +32,7 @@ class RegisterAccount extends Component {
     // call user registration endpoint
     fetch(validateApi, {
       credentials: 'same-origin',
+      headers: new Headers({ 'x-requested-with': 'XMLHttpRequest' }),
       method: 'POST',
       body: data
     }).then(res => res.json())

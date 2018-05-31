@@ -13,7 +13,10 @@ export function apiFetch(path, data, opts = {}) {
   const options = Object.assign({
     credentials: 'same-origin',
     body: JSON.stringify(data),
-    headers: new Headers({ 'Content-Type': 'application/json' })
+    headers: new Headers({
+      'Content-Type': 'application/json',
+      'x-requested-with': 'XMLHttpRequest'
+    })
   }, opts);
 
   return fetch(`${config.apiPath}${path}`, options);

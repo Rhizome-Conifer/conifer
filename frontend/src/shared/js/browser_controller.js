@@ -251,7 +251,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         var init_url = init_params.api_prefix + "/init_browser?" + toQueryString(req_params);
 
         // expects json response
-        fetch(init_url)
+        fetch(init_url, {headers: new Headers({'x-requested-with': 'XMLHttpRequest'})})
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 waiting_for_container = false;

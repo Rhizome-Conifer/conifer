@@ -155,7 +155,7 @@ class UploadUI extends PureComponent {
     const url = `/_upload/${data.upload_id}?user=${data.user}`;
 
     this.interval = setInterval(() => {
-      fetch(url)
+      fetch(url, { headers: new Headers({ 'x-requested-with': 'XMLHttpRequest' }) })
         .then(res => res.json())
         .then(this.indexResponse);
     }, 75);

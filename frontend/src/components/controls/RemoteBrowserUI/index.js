@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import WebSocketHandler from 'helpers/ws';
 import { deleteStorage, getStorage, setStorage } from 'helpers/utils';
+
 import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
 import CBrowser from 'shared/js/browser_controller';
@@ -238,7 +239,7 @@ class RemoteBrowserUI extends Component {
     });
 
     const url = `/_message?message=${message}&msg_type=warning`;
-    fetch(url).then((res) => {
+    fetch(url, { headers: new Headers({ 'x-requested-with': 'XMLHttpRequest' }) }).then((res) => {
       if (currMode === 'patch') {
         // RouteTo.replayRecording(user, coll, cbrowserMod(), url);
       } else {
