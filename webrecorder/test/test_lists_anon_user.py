@@ -5,6 +5,8 @@ import time
 from mock import patch
 
 from webrecorder.models.list_bookmarks import BookmarkList
+from webrecorder.models.stats import Stats
+from webrecorder.utils import today_str
 
 
 # ============================================================================
@@ -613,4 +615,14 @@ class TestListsAnonUserAPI(FullStackTests):
 
         assert len(self.redis.keys('l:*')) == 0
         assert len(self.redis.keys('b:*')) == 0
+
+    # Stats
+    # ========================================================================
+    def test_stats(self):
+        assert self.redis.hget(Stats.BOOKMARK_ADD_KEY, today_str()) == '11'
+        assert self.redis.hget(Stats.BOOKMARK_MOD_KEY, today_str()) == '1'
+
+        # only includes explicit deletions or from list deletion
+        assert self.redis.hget(Stats.BOOKMARK_DEL_KEY, today_str()) == '3'
+
 

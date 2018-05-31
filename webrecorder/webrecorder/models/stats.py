@@ -9,6 +9,8 @@ from pywb.warcserver.index.cdxobject import CDXObject
 class Stats(object):
     TEMP_PREFIX = 'temp-'
 
+    TEMP_MOVE_KEY = 'st:temp-moves'
+
     ALL_CAPTURE_USER_KEY = 'st:all-capture-user'
     ALL_CAPTURE_TEMP_KEY = 'st:all-capture-temp'
 
@@ -29,6 +31,10 @@ class Stats(object):
     UPLOADS_COUNT_KEY = 'st:upload-count'
     UPLOADS_SIZE_KEY = 'st:upload-size'
     UPLOADS_PROP = 'num_uploads'
+
+    BOOKMARK_ADD_KEY = 'st:bookmark-add'
+    BOOKMARK_MOD_KEY = 'st:bookmark-mod'
+    BOOKMARK_DEL_KEY = 'st:bookmark-del'
 
     BROWSERS_KEY = 'st:br:{0}'
 
@@ -144,8 +150,19 @@ class Stats(object):
         self.redis.hincrby(self.UPLOADS_COUNT_KEY, today, 1)
         self.redis.hincrby(self.UPLOADS_SIZE_KEY, today, size)
 
+    def incr_bookmark_add(self):
+        self.redis.hincrby(self.BOOKMARK_ADD_KEY, today_str(), 1)
+
+    def incr_bookmark_mod(self):
+        self.redis.hincrby(self.BOOKMARK_MOD_KEY, today_str(), 1)
+
+    def incr_bookmark_del(self):
+        self.redis.hincrby(self.BOOKMARK_DEL_KEY, today_str(), 1)
+
     def move_temp_to_user_usage(self, collection):
         date_str = collection.get_created_iso_date()
         size = collection.size
-        self.redis.hincrby(self.ALL_CAPTURE_TEMP_KEY, date_str, -size)
-        self.redis.hincrby(self.ALL_CAPTURE_USER_KEY, date_str, size)
+        with redis_pipeline(self.redis) as pi:
+            pi.hincrby(self.TEMP_MOVE_KEY, today_str(), 1)
+            pi.hincrby(self.ALL_CAPTURE_TEMP_KEY, date_str, -size)
+            pi.hincrby(self.ALL_CAPTURE_USER_KEY, date_str, size)
