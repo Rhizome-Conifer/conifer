@@ -14,6 +14,7 @@ import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
+import { OnBoarding } from 'components/siteComponents';
 import { ListIcon } from 'components/icons';
 
 import './style.scss';
@@ -57,8 +58,6 @@ class CollectionCoverUI extends Component {
       );
     }
 
-    const user = collection.get('owner');
-    const collId = collection.get('id');
     const lists = collection.get('lists') ? collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size) : [];
 
     return (
@@ -66,6 +65,7 @@ class CollectionCoverUI extends Component {
         <Helmet>
           <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
         </Helmet>
+        <OnBoarding />
         {
           this.context.canAdmin && !this.context.isAnon && !collection.get('public') &&
           <div className="visibility-warning">
