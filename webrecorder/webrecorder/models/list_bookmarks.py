@@ -1,5 +1,7 @@
 from webrecorder.models.base import RedisUniqueComponent, RedisOrderedList
 from webrecorder.utils import get_bool, redis_pipeline, get_new_id
+from webrecorder.models.stats import Stats
+
 import json
 
 
@@ -58,6 +60,8 @@ class BookmarkList(RedisUniqueComponent):
 
         self.redis.hset(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid, json.dumps(bookmark))
 
+        Stats(self.redis).incr_bookmark_add()
+
         if page_id:
             collection.add_page_bookmark(page_id, bid, self.my_id)
             self.load_pages([bookmark])
@@ -112,6 +116,9 @@ class BookmarkList(RedisUniqueComponent):
                 bookmark[prop] = props[prop]
 
         self.redis.hset(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid, json.dumps(bookmark))
+
+        Stats(self.redis).incr_bookmark_mod()
+
         return bookmark
 
     def remove_bookmark(self, bid):
@@ -127,7 +134,11 @@ class BookmarkList(RedisUniqueComponent):
         if page_id:
             self.get_owner().remove_page_bookmark(page_id, bid)
 
-        return self.redis.hdel(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid) == 1
+        if self.redis.hdel(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid) == 1:
+            Stats(self.redis).incr_bookmark_del()
+            return True
+        else:
+            return False
 
     def reorder_bookmarks(self, new_order):
         return self.bookmark_order.reorder_objects(new_order)

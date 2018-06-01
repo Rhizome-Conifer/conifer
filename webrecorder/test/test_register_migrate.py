@@ -8,6 +8,9 @@ from pywb.recorder.multifilewarcwriter import MultiFileWARCWriter
 from webrecorder.models.usermanager import CLIUserManager
 from webrecorder.rec.storage import get_storage
 
+from webrecorder.models.stats import Stats
+from webrecorder.utils import today_str
+
 import re
 import os
 import time
@@ -680,6 +683,21 @@ class TestRegisterMigrate(FullStackTests):
             assert not os.path.isdir(st_index_dir)
 
         self.sleep_try(0.3, 10.0, assert_delete)
+
+    def test_stats(self):
+        today = today_str()
+        assert self.redis.hget(Stats.TEMP_MOVE_KEY, today) == '1'
+
+        keys = set(self.redis.keys('st:*'))
+        assert keys == {
+            Stats.TEMP_MOVE_KEY,
+            Stats.ALL_CAPTURE_TEMP_KEY,
+            Stats.ALL_CAPTURE_USER_KEY,
+            Stats.REPLAY_USER_KEY,
+            Stats.DOWNLOADS_USER_COUNT_KEY,
+            Stats.DOWNLOADS_USER_SIZE_KEY,
+            Stats.DELETE_USER_KEY
+        }
 
     def test_login_4_no_such_user(self):
         params = {'username': 'someuser',

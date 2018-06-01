@@ -862,15 +862,21 @@ class ContentController(BaseController, RewriterApp):
                 'inv_sources': kwargs.get('inv_sources'),
                }
 
-    def _add_custom_params(self, cdx, resp_headers, kwargs):
+    def _add_custom_params(self, cdx, resp_headers, kwargs, record):
         try:
-            self._add_stats(cdx, resp_headers, kwargs)
+            self._add_stats(cdx, resp_headers, kwargs, record)
         except:
             import traceback
             traceback.print_exc()
 
-    def _add_stats(self, cdx, resp_headers, kwargs):
+    def _add_stats(self, cdx, resp_headers, kwargs, record):
         type_ = kwargs['type']
+
+        if type_ == 'replay-coll':
+            content_len = record.rec_headers.get_header('Content-Length')
+            if content_len is not None:
+                Stats(self.redis).incr_replay(int(content_len), kwargs['user'])
+
         if type_ in ('record', 'live'):
             return
 

@@ -2,6 +2,9 @@ from .testutils import BaseWRTests, FullStackTests
 from webrecorder.models.usermanager import CLIUserManager
 from webrecorder.utils import sanitize_title
 
+from webrecorder.models.stats import Stats
+from webrecorder.utils import today_str
+
 
 # ============================================================================
 class TestListsAPIAccess(FullStackTests):
@@ -235,4 +238,6 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.post_json('/api/v1/list/{0}?user=another&coll=some-coll'.format(self.priv_list_pub_coll), status=404, params={'title': 'Foo'})
         res = self.testapp.post_json('/api/v1/list/{0}?user=another&coll=some-coll'.format(self.pub_list_pub_coll), status=404, params={'title': 'Foo'})
 
+    def test_stats(self):
+        assert self.redis.hget(Stats.BOOKMARK_ADD_KEY, today_str()) == '8'
 

@@ -6,6 +6,10 @@ import time
 
 from webrecorder.models.usermanager import CLIUserManager
 from webrecorder.rec.storage import get_storage
+
+from webrecorder.models.stats import Stats
+from webrecorder.utils import today_str
+
 from mock import patch
 
 
@@ -218,5 +222,8 @@ class TestLoginMigrate(FullStackTests):
 
         with patch('webrecorder.rec.tempchecker.TempChecker.USER_DIR_IDLE_TIME', 1.0) as p:
             self.sleep_try(0.5, 10.0, assert_user_dir_removed)
+
+    def test_stats(self):
+        assert self.redis.hget(Stats.TEMP_MOVE_KEY, today_str()) == '1'
 
 
