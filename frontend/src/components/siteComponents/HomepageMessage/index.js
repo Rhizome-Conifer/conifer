@@ -16,7 +16,7 @@ function HomepageMessage(props) {
       <div className="col-md-6 col-md-offset-3">
         <div className="panel panel-info">
           <div className="panel-heading">
-            You have a <b><Link to={`/${username}/temp`}>Temporary Collection</Link></b> with {recCount} recording{recCount === 1 ? '' : 's'}, expiring in <b><TempUserTimer ttl={tempUser.get('ttl')} accessed={tempUser.get('accessed')} /></b>
+            You have a <b><Link to={`/${username}/temp/index`}>Temporary Collection</Link></b> with {recCount} recording{recCount === 1 ? '' : 's'}, expiring in <b><TempUserTimer ttl={tempUser.get('ttl')} accessed={tempUser.get('accessed')} /></b>
           </div>
           <div className="panel-body">
             <div className="top-buffer-md">
@@ -25,7 +25,7 @@ function HomepageMessage(props) {
                   <Link to="/_register"><strong>Sign Up</strong></Link> or <button className="button-link" onClick={showModalCB}>Login</button> to keep your collection and give it a permanent address.
                 </li>
                 <li>
-                  Continue recording by entering another URL below and clicking <b>Record</b>
+                  Continue capturing by entering another URL below and clicking <b>Record</b>
                 </li>
               </ul>
             </div>
