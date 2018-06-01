@@ -28,10 +28,11 @@ export default function createStore(client, data) {
           });
         }
       }
-    },
-    resourceSelector: (resourceName, state) => {
-      return state.app.getIn(resourceName.split('.'));
     }
+    // manually index in CollectionFiltersUI
+    // resourceSelector: (resourceName, state) => {
+    //   return state.app.getIn(resourceName.split('.'));
+    // }
   });
 
   let finalCreateStore;

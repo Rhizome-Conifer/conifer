@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
+import { indexResource } from 'redux-search/dist/commonjs/actions';
 
 import { columns } from 'config';
 
@@ -37,6 +38,7 @@ class CollectionFiltersUI extends Component {
   constructor(props) {
     super(props);
 
+    this.indexed = false;
     this.state = {
       addToListModal: false,
       checkedLists: {},
@@ -98,6 +100,32 @@ class CollectionFiltersUI extends Component {
     dispatch(searchPages(''));
   }
 
+
+  startIndex = () => {
+    const { collection, dispatch, searchPages } = this.props;
+
+    if (this.indexed) {
+      return;
+    }
+
+    this.indexed = true;
+
+    dispatch(
+      indexResource({
+        resourceName: 'collection.pages',
+        fieldNamesOrIndexFunction: ({ resources, indexDocument }) => {
+          resources.forEach((pg) => {
+            const id = pg.get('id');
+            indexDocument(id, pg.get('title') || '');
+            indexDocument(id, pg.get('url').split('?')[0]);
+          });
+        },
+        resources: collection.get('pages')
+      })
+    );
+    dispatch(searchPages(''));
+  }
+
   render() {
     const { canAdmin, isAnon } = this.context;
     const { collection } = this.props;
@@ -111,6 +139,7 @@ class CollectionFiltersUI extends Component {
               <Searchbox
                 search={this.search}
                 clear={this.clearSearch}
+                index={this.startIndex}
                 searchText={this.props.searchText}
                 isIndexing={this.props.isIndexing} />
           }

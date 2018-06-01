@@ -13,7 +13,6 @@ import {
 const { text, result } = getSearchSelectors({
   resourceName: 'collection.pages',
   resourceSelector: (resourceName, state) => {
-    console.log('indexing...');
     return state.app.getIn(resourceName.split('.'));
   }
 });
