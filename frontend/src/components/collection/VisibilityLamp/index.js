@@ -104,7 +104,7 @@ class VisibilityLamp extends PureComponent {
     const { isPublic, label } = this.props;
     const { indicator, width } = this.state;
 
-    const help = isPublic ? `set ${label} public` : `set ${label} private`;
+    const help = isPublic ? `set ${label} private` : `set ${label} public`;
 
     return (
       <div

@@ -30,6 +30,12 @@
         }
     }
 
+    .dropdown-menu {
+        .disabled svg path {
+            fill: #777777;
+        }
+    }
+
     svg{
         width: 1.3rem;
         height: 1.3rem;
