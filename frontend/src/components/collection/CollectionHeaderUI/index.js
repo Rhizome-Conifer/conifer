@@ -170,7 +170,7 @@ class CollectionHeaderUI extends Component {
           <MenuItem divider />
           {
             onboardingLink &&
-              <MenuItem onClick={this.showOnboarding}>&#127881; New Features Introduction</MenuItem>
+              <MenuItem onClick={this.showOnboarding}>&#127881; Tour New Features</MenuItem>
           }
           <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</MenuItem>
         </DropdownButton>
