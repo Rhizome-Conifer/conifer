@@ -53,6 +53,8 @@ app.use((req, res) => {
   loadOnServer({ store, location, routes: baseRoute }).then(() => {
     const context = {};
 
+    global.navigator = { userAgent: req.headers['user-agent'] };
+
     const component = (
       <Provider store={store} key="provider">
         <StaticRouter location={location} context={context}>
@@ -72,7 +74,6 @@ app.use((req, res) => {
       res.redirect(context.status || 301, context.url);
     } else {
       res.status(context.status || 200);
-      global.navigator = { userAgent: req.headers['user-agent'] };
       res.send(`<!doctype html>\n ${outputHtml}`);
     }
   });

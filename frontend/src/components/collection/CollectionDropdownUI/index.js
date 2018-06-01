@@ -17,30 +17,47 @@ class CollectionDropdownUI extends Component {
     collectionError: PropTypes.string,
     creatingCollection: PropTypes.bool,
     createNewCollection: PropTypes.func,
+    fromCollection: PropTypes.string,
     label: PropTypes.oneOfType([
       PropTypes.bool,
       PropTypes.string
     ]),
+    loading: PropTypes.bool,
     loadUserCollections: PropTypes.func,
+    mostRecent: PropTypes.string,
     newCollection: PropTypes.string,
     setCollection: PropTypes.func,
     user: PropTypes.object,
   };
 
   static defaultProps = {
-    collections: List(),
     canCreateCollection: true,
+    collections: List(),
     label: 'Add to collection:&emsp;'
   };
 
   constructor(props) {
     super(props);
 
+    // prepouplate collection
+    if (props.fromCollection) {
+      props.setCollection(props.fromCollection);
+    } else if (props.mostRecent) {
+      props.setCollection(props.mostRecent);
+    }
+
     this.state = { showModal: false };
   }
 
+  componentWillMount() {
+    const { loadUserCollections, user } = this.props;
+    if (user) {
+      loadUserCollections(user.get('username'));
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
-    const { creatingCollection, loadUserCollections, user } = this.props;
+    const { creatingCollection } = this.props;
     const { newCollection } = nextProps;
 
     // if incoming prop has a newCollection object and we are currently creating
@@ -48,6 +65,16 @@ class CollectionDropdownUI extends Component {
     if (creatingCollection && this.props.newCollection !== newCollection) {
       this.collectionChoice(newCollection);
       this.close();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    const { activeCollection, fromCollection, mostRecent, setCollection } = this.props;
+
+    if (!fromCollection && !this.props.loading && prevProps.loading && activeCollection !== mostRecent) {
+      setCollection(mostRecent);
+    } else if (fromCollection && fromCollection !== prevProps.fromCollection) {
+      setCollection(fromCollection);
     }
   }
 
@@ -73,8 +100,7 @@ class CollectionDropdownUI extends Component {
   }
 
   render() {
-    const { activeCollection, canCreateCollection, collections,
-            collectionError, creatingCollection, label, user } = this.props;
+    const { activeCollection, canCreateCollection, collections, collectionError, creatingCollection, label, user } = this.props;
     const { showModal } = this.state;
 
     const buttonTitle = activeCollection.title ? <span><WarcIcon /> {activeCollection.title}</span> : 'Add to Collection...';

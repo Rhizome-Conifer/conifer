@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import querystring from 'querystring';
 import { asyncConnect } from 'redux-connect';
+import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
 import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl } from 'redux/modules/collection';
@@ -9,8 +10,9 @@ import { clear, multiSelect, selectBookmark, selectPage } from 'redux/modules/in
 import { load as loadList, removeBookmark, bookmarkSort } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
 import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
-import { getQueryPages, getOrderedPages, pageSearchResults,
-         timestampOrderedIds } from 'redux/selectors';
+
+import { getQueryPages, getOrderedPages } from 'redux/selectors';
+import { pageSearchResults } from 'redux/selectors/search';
 
 import CollectionDetailUI from 'components/collection/CollectionDetailUI';
 
@@ -117,8 +119,8 @@ const mapStateToProps = (outerState) => {
     browsers: app.get('remoteBrowsers'),
     loaded: reduxAsyncConnect.loaded,
     pages,
-    orderedIds: timestampOrderedIds(app),
     publicIndex: app.getIn(['collection', 'public_index']),
+    searchText,
     list: app.get('list')
   };
 };
@@ -127,6 +129,7 @@ const mapDispatchToProps = (dispatch, { match: { params: { user, coll } } }) => 
   return {
     clearInspector: () => dispatch(clear()),
     clearQuery: () => dispatch(setQueryMode(false)),
+    clearSearch: () => dispatch(createSearchAction('collection.pages')('')),
     setMultiInspector: count => dispatch(multiSelect(count)),
     setPageInspector: fields => dispatch(selectPage(fields)),
     setBookmarkInspector: bk => dispatch(selectBookmark(bk)),

@@ -18,22 +18,32 @@ class Searchbox extends PureComponent {
   };
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    if (nextProps.isIndexing && !prevState.indexing) {
-      // ignore isIndexing prop switches after first one
-      return null;
+    if ((nextProps.isIndexing && !prevState.hasIndexed) || (!nextProps.isIndexing && prevState.indexing)) {
+      return {
+        indexing: nextProps.isIndexing,
+        hasIndexed: true
+      };
     }
 
-    return {
-      indexing: nextProps.isIndexing
-    };
+    return null;
   }
 
   constructor(props) {
     super(props);
 
     this.state = {
-      indexing: true
+      indexing: false,
+      hasIndexed: false
     };
+  }
+
+  handleChange = (evt) => {
+    // noop while indexing
+    if (this.state.indexing) {
+      return;
+    }
+
+    this.props.search(evt);
   }
 
   render() {
@@ -42,7 +52,7 @@ class Searchbox extends PureComponent {
 
     return (
       <InputGroup bsClass="input-group search-box" title={indexing ? 'Indexing...' : 'Filter'}>
-        <FormControl bsSize="sm" onChange={search} value={searchText} disabled={indexing} placeholder={placeholder || 'Filter'} name="filter" />
+        <FormControl bsSize="sm" onChange={this.handleChange} onFocus={this.props.index} value={searchText} placeholder={indexing ? 'Indexing...' : placeholder || 'Filter'} name="filter" />
         <InputGroup.Button>
           {
             searchText ?

@@ -91,7 +91,7 @@ class SidebarListViewer extends Component {
   }
 
   onKeyNavigate = ({ scrollToRow }) => {
-    const { bookmarks, collection, list } = this.props;
+    const { bookmarks } = this.props;
     const page = bookmarks.get(scrollToRow);
 
     // TODO: race condition when keying quickly, old iframe change updates and makes current deselected
@@ -108,10 +108,17 @@ class SidebarListViewer extends Component {
   }
 
   onSelectRow = ({ index, rowData }) => {
-    const { collection, list } = this.props;
+    const { bookmarks } = this.props;
+    const page = bookmarks.get(index);
     this.setState({ navigated: false });
-    const tsMod = remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/');
-    this.context.router.history.push(`${getListLink(collection, list)}/b${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
+    //const tsMod = remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'), '/');
+    //this.context.router.history.push(`${getListLink(collection, list)}/b${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
+
+    this.props.dispatch(batchActions([
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
+      setBrowser(page.get('browser') || null),
+      setBookmarkId(page.get('id'))
+    ]));
   }
 
   getRowClass = ({ index }) => {

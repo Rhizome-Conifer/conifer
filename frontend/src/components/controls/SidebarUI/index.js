@@ -10,7 +10,6 @@ import './style.scss';
 
 
 class SidebarUI extends Component {
-
   static propTypes = {
     children: PropTypes.node,
     expanded: PropTypes.bool,

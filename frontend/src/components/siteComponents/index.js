@@ -4,6 +4,7 @@ export HomepageAnnouncement from './HomepageAnnouncement';
 export HomepageMessage from './HomepageMessage';
 export NewCollection from './NewCollection';
 export NewPasswordUI from './NewPasswordUI';
+export OnBoarding from './OnBoarding';
 export PasswordResetUI from './PasswordResetUI';
 export TempUsageUI from './TempUsageUI';
 export TempUserAlertUI from './TempUserAlertUI';

@@ -161,7 +161,7 @@ class ModeSelectorUI extends PureComponent {
                     <span className="glyphicon glyphicon-play-circle wr-mode-icon" aria-hidden="true" />
                   </li>
                   <li className="col-xs-9">
-                    <h5>{ isReplay ? 'Currently Browsing' : 'Browser this URL' }</h5>
+                    <h5>{ isReplay ? 'Currently Browsing' : 'Browse this URL' }</h5>
                   </li>
                 </ul>
 

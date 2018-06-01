@@ -14,6 +14,7 @@ import InlineEditor from 'components/InlineEditor';
 import PublicSwitch from 'components/collection/PublicSwitch';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
+import { OnBoarding } from 'components/siteComponents';
 import { MoreIcon, PlusIcon, WarcIcon } from 'components/icons';
 
 import './style.scss';
@@ -43,7 +44,8 @@ class CollectionHeaderUI extends Component {
       animated: false,
       condensed: false,
       height: 'auto',
-      zIndex: 20
+      zIndex: 20,
+      onBoarding: false
     };
   }
 
@@ -107,6 +109,10 @@ class CollectionHeaderUI extends Component {
     history.push('/_documentation');
   }
 
+  showOnboarding = () => {
+    this.setState({ onBoarding: true });
+  }
+
   togglePublicView = () => {
     const { collection, history } = this.props;
     history.push(getCollectionLink(collection));
@@ -122,7 +128,7 @@ class CollectionHeaderUI extends Component {
   render() {
     const { canAdmin, isAnon } = this.context;
     const { collection, collEdited } = this.props;
-    const { condensed, height, zIndex } = this.state;
+    const { condensed, height, onBoarding, zIndex } = this.state;
 
     const containerClasses = classNames('wr-collection-header', {
       condensed
@@ -132,7 +138,7 @@ class CollectionHeaderUI extends Component {
 
     const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>
-        <Button className="rounded" onClick={this.newSession}><PlusIcon /> New Session</Button>
+        <Button className="rounded" onClick={this.newSession}><PlusIcon /><span className="hidden-xs"> New Session</span></Button>
         {
           !isAnon &&
             <PublicSwitch
@@ -161,6 +167,7 @@ class CollectionHeaderUI extends Component {
           <MenuItem>Edit Collection Info</MenuItem>
           */}
           <MenuItem divider />
+          <MenuItem onClick={this.showOnboarding}>&#127881; New Features Introduction</MenuItem>
           <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</MenuItem>
         </DropdownButton>
       </div>
@@ -172,6 +179,7 @@ class CollectionHeaderUI extends Component {
         ref={(obj) => { this.container = obj; }}
         style={{ height, zIndex }}
         onClick={this.expandHeader}>
+        <OnBoarding open={onBoarding} />
         <CSSTransitionGroup
           component="div"
           transitionName="condense"

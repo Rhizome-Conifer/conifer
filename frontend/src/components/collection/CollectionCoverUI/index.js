@@ -14,6 +14,7 @@ import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
+import { OnBoarding } from 'components/siteComponents';
 import { ListIcon } from 'components/icons';
 
 import './style.scss';
@@ -57,8 +58,6 @@ class CollectionCoverUI extends Component {
       );
     }
 
-    const user = collection.get('owner');
-    const collId = collection.get('id');
     const lists = collection.get('lists') ? collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size) : [];
 
     return (
@@ -66,10 +65,11 @@ class CollectionCoverUI extends Component {
         <Helmet>
           <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
         </Helmet>
+        <OnBoarding />
         {
           this.context.canAdmin && !this.context.isAnon && !collection.get('public') &&
           <div className="visibility-warning">
-            You need to <Link to={getCollectionLink(collection, true)}>set your collection to public</Link> to enable public users to see your collection.
+            Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
           </div>
         }
         <Capstone user={collection.get('owner')} />

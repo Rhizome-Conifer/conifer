@@ -23,7 +23,6 @@ class UploadUI extends PureComponent {
     classes: PropTypes.string,
     dispatch: PropTypes.func,
     fromCollection: PropTypes.string,
-    setColl: PropTypes.func,
     wrapper: PropTypes.func
   };
 
@@ -33,10 +32,6 @@ class UploadUI extends PureComponent {
 
   constructor(props) {
     super(props);
-
-    if (props.activeCollection !== props.fromCollection) {
-      this.props.setColl(props.fromCollection);
-    }
 
     this.xhr = null;
     this.interval = null;
@@ -51,13 +46,6 @@ class UploadUI extends PureComponent {
       targetColl: props.fromCollection ? 'chosen' : 'auto'
     };
     this.state = this.initialState;
-  }
-
-  componentDidUpdate(prevProps) {
-    const { fromCollection } = this.props;
-    if (fromCollection !== prevProps.fromCollection) {
-      this.props.setColl(fromCollection);
-    }
   }
 
   triggerFile = () => {
@@ -155,7 +143,7 @@ class UploadUI extends PureComponent {
     const url = `/_upload/${data.upload_id}?user=${data.user}`;
 
     this.interval = setInterval(() => {
-      fetch(url)
+      fetch(url, { headers: new Headers({ 'x-requested-with': 'XMLHttpRequest' }) })
         .then(res => res.json())
         .then(this.indexResponse);
     }, 75);
@@ -238,6 +226,7 @@ class UploadUI extends PureComponent {
             <label htmlFor="target-chosen">Add to existing collection:&emsp;</label>
             <CollectionDropdown
               canCreateCollection={false}
+              fromCollection={this.props.fromCollection}
               label="" />
           </div>
 

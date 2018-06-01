@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { Navbar } from 'react-bootstrap';
 
 import { product } from 'config';
 
@@ -73,8 +74,8 @@ class UserManagementUI extends Component {
     const isAnon = auth.getIn(['user', 'anon']);
 
     return (
-      <div className="navbar-user-links navbar-right">
-        <ul className="nav">
+      <React.Fragment>
+        <ul className="navbar-user-links">
           { !auth.get('loaded') || !username || isAnon ?
             <React.Fragment>
               <li className="navbar-right">
@@ -87,6 +88,7 @@ class UserManagementUI extends Component {
             <li className="navbar-text navbar-right">
               <Link to="/_logout" className="wr-header-btn" title="Logout">
                 <span className="glyphicon glyphicon-log-out" title="Logout" />
+                <span className="visible-xs">Log out</span>
               </Link>
             </li>
           }
@@ -103,7 +105,7 @@ class UserManagementUI extends Component {
           {
             (isAnon === false || (isAnon && collCount > 0)) &&
               <li className="navbar-text navbar-right">
-                <Link to={isAnon ? `/${username}/temp` : `/${username}`} >
+                <Link to={isAnon ? `/${username}/temp/index` : `/${username}`} >
                   {
                     isAnon ?
                       <React.Fragment>Temporary Collection</React.Fragment> :
@@ -113,14 +115,14 @@ class UserManagementUI extends Component {
               </li>
           }
 
-          {
+          {/*
             auth.getIn(['user', 'role']) === 'admin' &&
               <li className="navbar-text navbar-right">
                 <Link to="/admin/">
                   <span className="glyphicon glyphicon-wrench right-buffer-sm" />admin
                 </Link>
               </li>
-          }
+          */}
         </ul>
         <Modal
           dialogClassName="wr-login-modal"
@@ -128,7 +130,7 @@ class UserManagementUI extends Component {
           body={form}
           visible={open}
           closeCb={this.closeLogin} />
-      </div>
+      </React.Fragment>
     );
   }
 }

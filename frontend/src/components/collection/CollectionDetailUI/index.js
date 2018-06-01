@@ -36,7 +36,8 @@ import './style.scss';
 class CollectionDetailUI extends Component {
   static contextTypes = {
     canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
+    isAnon: PropTypes.bool,
+    isMobile: PropTypes.bool
   };
 
   static propTypes = {
@@ -44,11 +45,11 @@ class CollectionDetailUI extends Component {
     browsers: PropTypes.object,
     clearInspector: PropTypes.func,
     clearQuery: PropTypes.func,
+    clearSearch: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     list: PropTypes.object,
     match: PropTypes.object,
-    orderedIds: PropTypes.object,
     pages: PropTypes.object,
     publicIndex: PropTypes.bool,
     removeBookmark: PropTypes.func,
@@ -77,7 +78,7 @@ class CollectionDetailUI extends Component {
 
     this.columns = config.columns;
     this.initialState = {
-      columns: config.defaultColumns,
+      columns: context.isMobile ? ['timestamp', 'url'] : config.defaultColumns,
       headerEditor: false,
       listBookmarks: props.list.get('bookmarks'),
       sortedBookmarks: props.list.get('bookmarks'),
@@ -88,7 +89,7 @@ class CollectionDetailUI extends Component {
 
     const activeList = Boolean(props.match.params.list);
 
-    if (activeList && context.canAdmin) {
+    if (activeList && context.canAdmin && !context.isMobile) {
       this.initialState.columns = ['remove', ...this.initialState.columns];
     }
 
@@ -100,7 +101,11 @@ class CollectionDetailUI extends Component {
   }
 
   componentDidMount() {
-    const { canAdmin } = this.context;
+    const { canAdmin, isMobile } = this.context;
+
+    if (isMobile) {
+      return false;
+    }
 
     if (inStorage('columnOrder')) {
       try {
@@ -140,6 +145,15 @@ class CollectionDetailUI extends Component {
     }
 
     return true;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.loaded && !prevProps.loaded) {
+      this.props.clearQuery();
+      if (this.props.searchText) {
+        this.props.clearSearch();
+      }
+    }
   }
 
   componentWillUnmount() {

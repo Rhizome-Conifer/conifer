@@ -107,11 +107,11 @@ class RemoteBrowserSelectUI extends PureComponent {
         onToggle={this.getRemoteBrowsers}>
         <div className="container">
           <ul className="row">
-            <li className="col-xs-2"><h6 className="dropdown-header">browser</h6></li>
-            <li className="col-xs-2"><h6 className="dropdown-header">version</h6></li>
-            <li className="col-xs-2"><h6 className="dropdown-header">release</h6></li>
-            <li className="col-xs-2"><h6 className="dropdown-header">OS</h6></li>
-            <li className="col-xs-4"><h6 className="dropdown-header">capabilities</h6></li>
+            <li className="col-sm-2 col-xs-4"><h6 className="dropdown-header">browser</h6></li>
+            <li className="col-sm-2 col-xs-4"><h6 className="dropdown-header">version</h6></li>
+            <li className="col-sm-2"><h6 className="dropdown-header hidden-xs">release</h6></li>
+            <li className="col-sm-2"><h6 className="dropdown-header hidden-xs">OS</h6></li>
+            <li className="col-sm-4 col-xs-4"><h6 className="dropdown-header">capabilities</h6></li>
           </ul>
           { loading &&
             <div>loading options..</div>

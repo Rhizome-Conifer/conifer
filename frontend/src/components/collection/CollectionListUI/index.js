@@ -77,7 +77,7 @@ class CollectionListUI extends Component {
     }
 
     if (collections.get('loaded') && isAnon && canAdmin) {
-      return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp`} status={301} />;
+      return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp/index`} status={301} />;
     }
 
     const spaceUsed = user.getIn(['space_utilization', 'used']);
@@ -151,7 +151,7 @@ class CollectionListUI extends Component {
                           </Col>
                           <Col xs={1}>
                             {
-                              canAdmin && coll.get('public') &&
+                              coll.get('public') &&
                                 <span title="Public Collection &mdash; Visible to Everyone">
                                   <GlobeIcon />
                                 </span>

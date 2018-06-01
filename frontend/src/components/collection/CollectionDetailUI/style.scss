@@ -26,7 +26,7 @@
     pointer-events: none;
     position: fixed;
     z-index: 100;
-    font-size: 2rem;
+    font-size: 1.8rem;
     background: #FFF;
     padding: 0 .8rem;
     border: solid .4rem $success-color;
@@ -56,16 +56,11 @@
 .wr-coll-detail {
     padding: 0rem .5rem 0 0;
     flex-grow: 1;
-    // position: absolute;
-    // top:0;
-    // bottom:0;
-    // height: calc(100vh - 2.2rem);
     width: 100%;
 
     display: grid;
     grid-template-rows: auto 4rem 1fr;
     grid-template-columns: auto 1fr;
-    grid-column-gap: 1.5rem;
     grid-template-areas:
         "header header"
         "sidebar utilities"
@@ -103,6 +98,7 @@
         grid-area: utilities;
         background: #FFF;
         z-index: 10;
+        margin-left: 1.5rem;
 
         nav {
             height: 100%;
@@ -130,6 +126,8 @@
         grid-area: table;
         position: relative;
         padding-right: 1.5rem;
+        padding-left: 1.5rem;
+        background: #FFF;
 
         .table-header-menu {
             position: absolute;

@@ -24,6 +24,16 @@ section {
     }
 }
 
+.mobile-alert {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+    margin:0;
+    border-radius: 0;
+    border-width: .1rem 0 0 0;
+}
+
 .stalled-alert {
     position: fixed;
     width: 40rem;
@@ -31,4 +41,16 @@ section {
     left: calc(50vw - 20rem);
     z-index: 500;
     box-shadow: .2rem .2rem .8rem rgba(0,0,0,0.4);
+}
+
+.error-panel {
+    svg {
+        width: 1.2rem;
+        height: 1.2rem;
+        vertical-align: baseline;
+
+        path {
+            fill: $warning;
+        }
+    }
 }

@@ -6,8 +6,8 @@ import { buildDate } from 'helpers/utils';
 import { Collection } from 'components/icons';
 
 
-export function PageIndex({ cellData, columnData: { orderedIds } }) {
-  return <div className="row-index">{orderedIds.indexOf(cellData) + 1}</div>;
+export function PageIndex({ cellData, rowIndex }) {
+  return <div className="row-index">{rowIndex + 1}</div>;
 }
 
 

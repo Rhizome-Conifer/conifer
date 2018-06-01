@@ -6,7 +6,7 @@ import matchPath from 'react-router-dom/matchPath';
 import PropTypes from 'prop-types';
 import Raven from 'raven-js';
 import renderRoutes from 'react-router-config/renderRoutes';
-import { Alert, Button, Panel } from 'react-bootstrap';
+import { Alert, Button, Navbar, Panel } from 'react-bootstrap';
 import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
@@ -18,10 +18,12 @@ import { load as loadTemp } from 'redux/modules/tempUser';
 import { UserManagement } from 'containers';
 
 import config from 'config';
+import { inStorage, setStorage } from 'helpers/utils';
 
 import Analytics from 'components/Analytics';
 import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
 import { Footer } from 'components/siteComponents';
+import { InfoIcon } from 'components/icons';
 
 import 'shared/fonts/fonts.scss';
 import './style.scss';
@@ -39,27 +41,45 @@ export class App extends Component { // eslint-disable-line
   }
 
   static childContextTypes = {
-    isAnon: PropTypes.bool
+    isAnon: PropTypes.bool,
+    isMobile: PropTypes.bool
   }
 
   constructor(props) {
     super(props);
+    const ua = global.navigator ? global.navigator.userAgent : '';
 
     this.handle = null;
-    this.state = { error: null, showAlert: true, stalled: false };
+    this.isMobile = Boolean(ua.match(/Mobile|Android|BlackBerry/));
+    this.state = {
+      error: null,
+      mobileAlert: true,
+      outOfSpaceAlert: true,
+      stalled: false
+    };
   }
 
   getChildContext() {
     const { auth } = this.props;
+    const ua = global.navigator ? global.navigator.userAgent : '';
 
     return {
-      isAnon: auth.getIn(['user', 'anon'])
+      isAnon: auth.getIn(['user', 'anon']),
+      isMobile: this.isMobile
     };
   }
 
   componentWillMount() {
     // set initial route
     this.setState({ match: this.getActiveRoute(this.props.location.pathname) });
+  }
+
+  componentDidMount() {
+    if (this.isMobile) {
+      if (inStorage('mobileNotice', window.sessionStorage)) {
+        this.setState({ mobileAlert: false });
+      }
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -93,11 +113,16 @@ export class App extends Component { // eslint-disable-line
     }
   }
 
-  componentWIllUnmount() {
+  componentWillUnmount() {
     clearTimeout(this.handle);
   }
 
-  dismissAlert = () => this.setState({ showAlert: false })
+  dismissSpaceAlert = () => this.setState({ outOfSpaceAlert: false })
+
+  dismissMobileAlert = () => {
+    this.setState({ mobileAlert: false });
+    setStorage('mobileNotice', false, window.sessionStorage);
+  }
 
   getActiveRoute = (url) => {
     const { route: { routes } } = this.props;
@@ -118,7 +143,7 @@ export class App extends Component { // eslint-disable-line
 
   render() {
     const { loaded, location: { pathname, search }, spaceUtilization } = this.props;
-    const { error, info, lastMatch, match, showAlert } = this.state;
+    const { error, info, lastMatch, match } = this.state;
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
     const classOverride = match.classOverride;
@@ -127,10 +152,11 @@ export class App extends Component { // eslint-disable-line
 
     const containerClasses = classNames('wr-content', [!loaded ? lastClassOverride : classOverride], {
       container: !loaded ? typeof lastClassOverride === 'undefined' : typeof classOverride === 'undefined',
-      loading: !loaded
+      loading: !loaded,
+      'is-mobile': this.isMobile
     });
 
-    const navbarClasses = classNames('navbar navbar-default navbar-static-top', {
+    const navbarClasses = classNames('header-webrecorder', {
       'no-shadow': typeof match.noShadow !== 'undefined' ? match.noShadow : false
     });
 
@@ -146,15 +172,18 @@ export class App extends Component { // eslint-disable-line
         }
         <Helmet {...config.app.head} />
         <header>
-          <div className={navbarClasses}>
-            <nav className="container-fluid header-webrecorder">
+          <Navbar staticTop fluid collapseOnSelect className={navbarClasses}>
+            <Navbar.Header>
               <BreadcrumbsUI url={pathname} />
+              <Navbar.Toggle />
+            </Navbar.Header>
+            <Navbar.Collapse>
               <UserManagement />
-            </nav>
-          </div>
+            </Navbar.Collapse>
+          </Navbar>
         </header>
         {
-          isOutOfSpace && showAlert &&
+          isOutOfSpace && this.state.outOfSpaceAlert &&
             <Alert bsStyle="warning" className="oos-alert" onDismiss={this.dismissAlert}>
               <p><b>Your account is out of space.</b> This means you can't record anything right now.</p>
               To be able to record again, you can:
@@ -174,11 +203,17 @@ export class App extends Component { // eslint-disable-line
             </Panel>
         }
         {
+          this.isMobile && this.state.mobileAlert &&
+            <Alert className="mobile-alert" onDismiss={this.dismissMobileAlert}>
+              Please note: Webrecorder doesn't currently support mobile devices.
+            </Alert>
+        }
+        {
           error ?
             <div>
               <div className="container col-md-4 col-md-offset-4 top-buffer-lg">
-                <Panel bsStyle="danger">
-                  <Panel.Heading>Oops!</Panel.Heading>
+                <Panel bsStyle="danger" className="error-panel">
+                  <Panel.Heading><InfoIcon /> Oops!</Panel.Heading>
                   <Panel.Body>
                     <p>Oops, the page encountered an error.</p>
                     {

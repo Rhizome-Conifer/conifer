@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
 import OutsideClick from 'components/OutsideClick';
+import { InfoIcon, XIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -25,8 +26,12 @@ class InfoWidgetUI extends Component {
     this.setState({ open: !this.state.open });
   }
 
-  close = () => {
-    if (!this.state.open) return;
+  close = (evt) => {
+    evt.preventDefault();
+
+    if (!this.state.open) {
+      return;
+    }
 
     this.setState({ open: false });
   }
@@ -43,10 +48,12 @@ class InfoWidgetUI extends Component {
     return (
       <OutsideClick classes={widgetClass} handleClick={this.close}>
         <button className="dropdown-toggle" onClick={this.toggle} type="button" id="replayInfo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-          <span className="glyphicon glyphicon-info-sign" />
+          <InfoIcon />
         </button>
         <div className="dropdown-menu arrow_box">
-          <span onClick={this.close} role="button" className="glyphicon glyphicon-remove-circle" />
+          <button className="borderless remove-circle" onClick={this.close}>
+            <XIcon />
+          </button>
           <span className="ra-replay-info-label">Now Viewing Collection</span>
           <h5>{ collection.get('title')}</h5>
           <div className="ra-recording-block">
