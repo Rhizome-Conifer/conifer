@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Overlay as BSOverlay, Tooltip } from 'react-bootstrap';
+import { Button, Popover } from 'react-bootstrap';
+
+import { list as listErr } from 'helpers/userMessaging';
+import { stopPropagation } from 'helpers/utils';
 
 import Overlay from 'components/Overlay';
 import OutsideClick from 'components/OutsideClick';
-import { TrashIcon } from 'components/icons';
+import { LoaderIcon, TrashIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -16,20 +19,23 @@ class RemoveWidget extends Component {
     callback: PropTypes.func,
     classes: PropTypes.string,
     children: PropTypes.node,
-    withConfirmation: PropTypes.bool,
-    message: PropTypes.string,
+    error: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.string
+    ]),
+    isDeleting: PropTypes.bool,
     placement: PropTypes.string,
-    usePortal: PropTypes.bool,
-    scrollCheck: PropTypes.string
+    scrollCheck: PropTypes.string,
+    withConfirmation: PropTypes.bool,
   };
 
   static defaultProps = {
     borderless: true,
     classes: '',
-    withConfirmation: true,
-    message: 'Confirm Delete',
+    error: null,
+    isDeleting: false,
     placement: 'bottom',
-    usePortal: false
+    withConfirmation: true
   };
 
   constructor(props) {
@@ -40,17 +46,30 @@ class RemoveWidget extends Component {
     };
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    if ((this.state.confirmRemove && nextProps.isDeleting !== this.props.isDeleting) ||
+        this.state.confirmRemove !== nextState.confirmRemove) {
+      return true;
+    }
+
+    return false;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!this.props.isDeleting && prevProps.isDeleting) {
+      this.setState({ confirmRemove: false });
+    }
+  }
+
   removeClick = (evt) => {
     evt.stopPropagation();
 
     if (!this.props.withConfirmation || this.state.confirmRemove) {
-      this.setState({ confirmRemove: false });
       if (!this.props.callback) {
         console.log('No RemoveWidget callback provided');
         return;
       }
 
-      this.setState({ confirmRemove: false });
       this.props.callback();
     } else {
       this.setState({ confirmRemove: true });
@@ -65,27 +84,35 @@ class RemoveWidget extends Component {
   }
 
   render() {
-    const { borderless, children, classes, placement, message } = this.props;
+    const { borderless, children, classes, error, isDeleting, placement } = this.props;
+
     return (
-      <OutsideClick handleClick={this.outsideClickCheck} scrollCheck={this.props.scrollCheck} inlineBlock>
-        <div className="wr-remove-widget" style={{ position: 'relative' }} onClick={this.removeClick}>
+      <React.Fragment>
+        <div className="wr-remove-widget" style={{ position: 'relative' }}>
           <button
-            ref={(obj) => { this.target = obj; }}
             className={classNames('remove-widget-icon', [classes], { borderless })}
+            onClick={this.removeClick}
+            ref={(obj) => { this.target = obj; }}
             type="button">
             { children || <TrashIcon />}
           </button>
-          {
-            this.props.usePortal ?
-              <Overlay target={() => this.target} placement={placement} show={this.state.confirmRemove}>
-                <Tooltip placement={placement} className="in" id="confirm-remove">{ message }</Tooltip>
-              </Overlay> :
-              <BSOverlay container={this} placement={placement} target={this.target} show={this.state.confirmRemove}>
-                <Tooltip placement={placement} id="confirm-remove">{ message }</Tooltip>
-              </BSOverlay>
-          }
+          <Overlay target={() => this.target} placement={placement} show={this.state.confirmRemove}>
+            <Popover id="wr-popover-delete" placement={placement} onClick={stopPropagation}>
+              <OutsideClick handleClick={this.outsideClickCheck} scrollCheck={this.props.scrollCheck}>
+                {
+                  error ?
+                    <p className="rm-error">{listErr[error] || 'Error Encountered'}</p> :
+                    <p>Are you sure you want to delete this item?</p>
+                }
+                <div className="action-row">
+                  <Button onClick={this.outsideClickCheck} disabled={error || isDeleting}>Cancel</Button>
+                  <Button bsStyle="danger" disabled={error || isDeleting} onClick={this.removeClick}>{isDeleting ? <LoaderIcon /> : 'OK'}</Button>
+                </div>
+              </OutsideClick>
+            </Popover>
+          </Overlay>
         </div>
-      </OutsideClick>
+      </React.Fragment>
     );
   }
 }

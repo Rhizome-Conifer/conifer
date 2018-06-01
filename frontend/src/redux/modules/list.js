@@ -45,6 +45,10 @@ const BOOKMARK_REMOVE_FAIL = 'wr/list/BOOKMARK_REMOVE_FAIL';
 const initialState = fromJS({
   bookmarks: [],
   bkEdited: false,
+  bkDeleting: false,
+  bkDeleteError: null,
+  deleting: false,
+  deleteError: null,
   edited: false,
   loading: false,
   loaded: false,
@@ -54,6 +58,15 @@ const initialState = fromJS({
 
 export default function list(state = initialState, action = {}) {
   switch (action.type) {
+    case BOOKMARK_REMOVE:
+      return state.set('bkDeleting', true);
+    case BOOKMARK_REMOVE_SUCCESS:
+      return state.set('bkDeleting', false);
+    case BOOKMARK_REMOVE_FAIL:
+      return state.merge({
+        bkDeleting: false,
+        bkDeleteError: action.error.error
+      });
     case BOOKMARK_REORDER_SUCCESS:
       return state.set(
         'bookmarks',
@@ -73,6 +86,15 @@ export default function list(state = initialState, action = {}) {
         ...edits
       });
     }
+    case LIST_REMOVE:
+      return state.set('deleting', true);
+    case LIST_REMOVE_SUCCESS:
+      return state.set('deleting', false);
+    case LIST_REMOVE_FAIL:
+      return state.merge({
+        deleting: false,
+        deleteError: action.error.error
+      });
     case LIST_EDITED_RESET:
       return state.set('edited', false);
     case LIST_LOAD:

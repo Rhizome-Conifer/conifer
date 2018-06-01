@@ -115,13 +115,15 @@ const mapStateToProps = (outerState) => {
 
   return {
     auth: app.get('auth'),
-    collection: app.get('collection'),
     browsers: app.get('remoteBrowsers'),
+    bkDeleting: app.getIn(['list', 'bkDeleting']),
+    bkDeleteError: app.getIn(['list', 'bkDeleteError']),
+    collection: app.get('collection'),
+    list: app.get('list'),
     loaded: reduxAsyncConnect.loaded,
     pages,
     publicIndex: app.getIn(['collection', 'public_index']),
-    searchText,
-    list: app.get('list')
+    searchText
   };
 };
 

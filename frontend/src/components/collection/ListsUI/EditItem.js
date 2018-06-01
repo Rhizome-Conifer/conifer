@@ -7,11 +7,16 @@ import { CheckIcon, PencilIcon } from 'components/icons';
 
 class EditItem extends Component {
   static propTypes = {
-    list: PropTypes.object,
+    deleteError: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.string
+    ]),
+    deleteListCallback: PropTypes.func,
     edited: PropTypes.bool,
     editListCallback: PropTypes.func,
-    deleteListCallback: PropTypes.func,
-    editSuccess: PropTypes.bool
+    editSuccess: PropTypes.bool,
+    isDeleting: PropTypes.bool,
+    list: PropTypes.object,
   };
 
   constructor(props) {
@@ -55,7 +60,7 @@ class EditItem extends Component {
 
     return (
       <li>
-        <RemoveWidget usePortal callback={this.confirmDelete} placement="left" scrollCheck=".lists-modal-list" />
+        <RemoveWidget callback={this.confirmDelete} error={this.props.deleteError} isDeleting={this.props.isDeleting} placement="left" scrollCheck=".lists-modal-list" />
         <input name="title" className="borderless-input" onBlur={this.editListItem} onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
         {
           edited ?

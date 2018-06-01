@@ -51,9 +51,16 @@ export function LinkRenderer({ cellData, rowData, columnData: { collection, list
 }
 
 
-export function RemoveRenderer({ rowData, columnData: { listId, removeCallback } }) {
+export function RemoveRenderer({ rowData, columnData: { bkDeleting, bkDeleteError, listId, removeCallback } }) {
   const removeClick = () => removeCallback(listId, rowData.get('id'));
-  return <RemoveWidget usePortal callback={removeClick} placement="right" scrollCheck=".ReactVirtualized__Grid" />;
+  return (
+    <RemoveWidget
+      error={bkDeleteError}
+      isDeleting={bkDeleting}
+      callback={removeClick}
+      placement="right"
+      scrollCheck=".ReactVirtualized__Grid" />
+  );
 }
 
 
