@@ -29,7 +29,7 @@ class BaseController(object):
     def init_routes(self):
         raise NotImplemented()
 
-    def redir_host(self, host=None, path=None):
+    def redir_host(self, host=None, path=None, status=None):
         if not host:
             host = self.app_host
 
@@ -43,7 +43,7 @@ class BaseController(object):
                 path += '?' + request.query_string
 
         url += path
-        return bottle_redirect(url)
+        return bottle_redirect(url, code=status)
 
     def validate_csrf(self):
         csrf = request.forms.getunicode('csrf')

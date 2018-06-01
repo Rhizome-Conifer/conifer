@@ -128,7 +128,7 @@ class TestApiUserLogin(FullStackTests):
         assert res.json == {'error': 'already_registered'}
 
     def test_api_logout(self):
-        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        res = self.testapp.post('/api/v1/auth/logout', status=200)
         assert res.json['success']
 
         assert self.testapp.cookies.get('__test_sesh', '') == ''
@@ -181,6 +181,14 @@ class TestApiUserLogin(FullStackTests):
     def test_login_fail_wrong_user(self):
         params = {'username': 'someuser2',
                   'password': 'Password2'}
+
+        res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
+
+        assert res.json == {'error': 'invalid_login'}
+        assert self.testapp.cookies.get('__test_sesh', '') == ''
+
+    def test_login_fail_no_params(self):
+        params = {'foo': 'bar'}
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params, status=401)
 
@@ -250,7 +258,7 @@ class TestApiUserLogin(FullStackTests):
         assert res.json == {'success': True}
 
     def test_logout_2(self):
-        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        res = self.testapp.post('/api/v1/auth/logout', status=200)
         assert res.json['success']
 
         assert self.testapp.cookies.get('__test_sesh', '') == ''

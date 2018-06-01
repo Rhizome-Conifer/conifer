@@ -9,6 +9,8 @@ from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
 from webrecorder.utils import get_bool
 
+from urllib.parse import urlencode
+
 
 # ============================================================================
 class UserController(BaseController):
@@ -44,6 +46,12 @@ class UserController(BaseController):
 
         return user
 
+    def check_clear_session_redirect(self, data):
+        if self.content_host and self.app_host != self.content_host:
+            param_str = urlencode({'json': json.dumps(data)})
+            self.redir_host(self.content_host, '/_clear_session?' + param_str, status=303)
+
+
     def init_routes(self):
         # USER CHECKS
         @self.app.get('/api/v1/auth/check_username/<username>')
@@ -76,7 +84,7 @@ class UserController(BaseController):
         # REGISTRATION
         @self.app.post('/api/v1/auth/register')
         def api_register_user():
-            data = request.json
+            data = request.json or {}
 
             msg, redir_extra = self.user_manager.register_user(data, self.get_host())
 
@@ -108,25 +116,30 @@ class UserController(BaseController):
             if not self.access.is_anon():
                 return self._raise_error(403, 'already_logged_in')
 
-            result = self.user_manager.login_user(request.json)
+            result = self.user_manager.login_user(request.json or {})
 
             if 'success' in result:
                 data = self.load_auth()
                 if result.get('new_coll_name'):
                     data['new_coll_name'] = result['new_coll_name']
 
+                self.check_clear_session_redirect(data)
                 return data
 
             #self._raise_error(401, result.get('error', ''))
             response.status = 401
             return result
 
-        @self.app.get('/api/v1/auth/logout')
+        @self.app.post('/api/v1/auth/logout')
         def logout():
             self.get_user_or_raise()
 
             self.user_manager.logout()
-            return {'success': 'logged_out'}
+
+            data = {'success': 'logged_out'}
+            self.check_clear_session_redirect(data)
+
+            return data
 
         # PASSWORD
         @self.app.post('/api/v1/auth/password/reset_request')
@@ -206,11 +219,22 @@ class UserController(BaseController):
             #self.validate_csrf()
             try:
                 assert(self.user_manager.delete_user(username))
-                return {'deleted_user': username}
             except:
                 #return {'error_message': 'Could not delete user: ' + username}
                 return self._raise_error(400, 'error_deleting')
 
+            data = {'deleted_user': username}
+            self.check_clear_session_redirect(data)
+            return data
+
+        @self.app.post('/api/v1/user/<username>/desc')
+        def update_desc(username):
+            """legacy, eventually move to the patch endpoint"""
+            desc = request.body.read().decode('utf-8')
+            user = self.get_user(user=username)
+
+            user['desc'] = desc
+            return {}
 
         # OLD VIEWS BELOW
         # ====================================================================
@@ -234,15 +258,6 @@ class UserController(BaseController):
                 result['user_info']['desc'] = self.default_user_desc.format(user)
 
             return result
-
-        @self.app.post('/api/v1/user/<username>/desc')
-        def update_desc(username):
-            """legacy, eventually move to the patch endpoint"""
-            desc = request.body.read().decode('utf-8')
-            user = self.get_user(user=username)
-
-            user['desc'] = desc
-            return {}
 
         # User Account Settings
         #@self.app.get('/_settings')

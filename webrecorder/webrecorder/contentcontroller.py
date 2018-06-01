@@ -1,5 +1,7 @@
 import re
 import os
+import json
+
 from six.moves.urllib.parse import quote, unquote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
@@ -69,7 +71,7 @@ class ContentController(BaseController, RewriterApp):
 
     def get_csp_header(self):
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
-        if self.content_host != self.app_host:
+        if self.app_host and self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
 
         csp += "; form-action 'self'"
@@ -356,7 +358,7 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
 
         # Session redir
-        @self.app.route(['/_set_session'])
+        @self.app.get(['/_set_session'])
         def set_sesh():
             sesh = self.get_session()
 
@@ -367,7 +369,7 @@ class ContentController(BaseController, RewriterApp):
 
             else:
                 url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
-                response.headers['Access-Control-Allow-Origin'] = url
+                self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
                 redirect(url + '/_set_session?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
@@ -375,35 +377,60 @@ class ContentController(BaseController, RewriterApp):
         # OPTIONS
         @self.app.route('/_set_session', method='OPTIONS')
         def set_sesh_options():
-            expected_origin = request.environ['wsgi.url_scheme'] + '://' + self.content_host + '/'
-            origin = request.environ.get('HTTP_ORIGIN')
-            # ensure origin is the content host origin
-            if origin != expected_origin:
-                return ''
-
-            host = request.environ.get('HTTP_HOST')
-            # ensure host is the app host
-            if host != self.app_host:
-                return ''
-
-            response.headers['Access-Control-Allow-Origin'] = origin
-
-            methods = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
-            if methods:
-                response.headers['Access-Control-Allow-Methods'] = methods
-
-            headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
-            if headers:
-                response.headers['Access-Control-Allow-Headers'] = headers
-
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            self.set_options_headers(self.content_host, self.app_host)
             return ''
 
-        @self.app.route(['/_clear_session'])
+        @self.app.route('/_clear_session', method='OPTIONS')
+        def set_clear_options():
+            self.set_options_headers(self.app_host, self.content_host)
+            return ''
+
+        # CLEAR CONTENT SESSION
+        @self.app.get(['/_clear_session'])
         def clear_sesh():
-            sesh = self.get_session()
-            sesh.delete()
-            return self.redir_host(None, request.query.getunicode('path', '/'))
+            self.set_options_headers(self.app_host, self.content_host)
+            response.headers['Cache-Control'] = 'no-cache'
+
+            if not self.is_content_request():
+                self._raise_error(400, 'invalid_request')
+
+            try:
+                res = json.loads(request.query.getunicode('json'))
+                # delete session (will updated cookie)
+                self.get_session().delete()
+                return res
+
+            except Exception as e:
+                self._raise_error(400, 'invalid_request')
+
+    def set_options_headers(self, origin_host, target_host):
+        origin = request.environ.get('HTTP_ORIGIN')
+
+        if origin_host:
+            expected_origin = request.environ['wsgi.url_scheme'] + '://' + origin_host
+
+            # ensure origin is the content host origin
+            if origin != expected_origin:
+                return False
+
+        host = request.environ.get('HTTP_HOST')
+        # ensure host is the app host
+        if target_host and host != target_host:
+            return False
+
+        response.headers['Access-Control-Allow-Origin'] = origin
+
+        methods = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
+        if methods:
+            response.headers['Access-Control-Allow-Methods'] = methods
+
+        headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
+        if headers:
+            response.headers['Access-Control-Allow-Headers'] = headers
+
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Max-Age'] = '1800'
+        return True
 
     def do_proxy(self, url):
         info = self.browser_mgr.init_cont_browser_sesh()

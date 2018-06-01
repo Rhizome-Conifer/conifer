@@ -106,7 +106,7 @@ class TestListsAPIAccess(FullStackTests):
         assert res.json['collection']['recordings'] == []
 
     def test_logout_login_user_2(self):
-        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        res = self.testapp.post('/api/v1/auth/logout', status=200)
 
         params = {'username': 'another',
                   'password': 'TestTest456',
@@ -178,7 +178,7 @@ class TestListsAPIAccess(FullStackTests):
         res = self.testapp.get('/api/v1/lists?user=test&coll=some-coll', status=404)
 
     def test_public_list_private_coll_error_logged_out(self):
-        res = self.testapp.get('/api/v1/auth/logout')
+        res = self.testapp.post('/api/v1/auth/logout')
 
         res = self.testapp.get('/api/v1/lists?user=test&coll=some-coll', status=404)
 
