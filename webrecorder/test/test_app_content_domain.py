@@ -117,35 +117,67 @@ class TestAppContentDomain(FullStackTests):
         assert res.status_code == 302
         assert res.headers['Location'] == 'http://app-host/{user}/temp/'.format(user=self.anon_user)
 
-    def test_options_allow_content_domain_set_session(self):
+    def test_options_set_session_allow_content_domain(self):
         res = self.testapp.options('/_set_session?path=/{user}/temp/http://httpbin.org/'.format(user=self.anon_user),
                                    headers={'Host': 'app-host',
-                                            'Origin': 'http://content-host/',
+                                            'Origin': 'http://content-host',
                                             'Access-Control-Request-Headers': 'x-pywb-requested-with',
                                             'Access-Control-Request-Method': 'GET'})
 
-        assert res.headers['Access-Control-Allow-Origin'] == 'http://content-host/'
+        assert res.headers['Access-Control-Allow-Origin'] == 'http://content-host'
         assert res.headers['Access-Control-Allow-Methods'] == 'GET'
         assert res.headers['Access-Control-Allow-Headers'] == 'x-pywb-requested-with'
         assert res.headers['Access-Control-Allow-Credentials'] == 'true'
 
-    def test_options_dont_allow_wrong_host(self):
+    def test_options_set_session_dont_allow_wrong_host(self):
         res = self.testapp.options('/_set_session?path=/{user}/temp/http://httpbin.org/'.format(user=self.anon_user),
                                    headers={'Host': 'content-host',
-                                            'Origin': 'http://content-host/',
+                                            'Origin': 'http://content-host',
                                             'Access-Control-Request-Headers': 'x-pywb-requested-with',
                                             'Access-Control-Request-Method': 'GET'})
 
         assert 'Access-Control-Allow-Origin' not in res.headers
 
-    def test_options_dont_allow_wrong_origin(self):
+    def test_options_set_session_dont_allow_wrong_origin(self):
         res = self.testapp.options('/_set_session?path=/{user}/temp/http://httpbin.org/'.format(user=self.anon_user),
                                    headers={'Host': 'app-host',
-                                            'Origin': 'http://wrong-host/',
+                                            'Origin': 'http://wrong-host',
                                             'Access-Control-Request-Headers': 'x-pywb-requested-with',
                                             'Access-Control-Request-Method': 'GET'})
 
         assert 'Access-Control-Allow-Origin' not in res.headers
+
+    def test_options_clear_session_allow_content_domain(self):
+        res = self.testapp.options('/_clear_session?json={"foo":"bar"}',
+                                   headers={'Host': 'content-host',
+                                            'Origin': 'http://app-host',
+                                            'Access-Control-Request-Headers': 'x-pywb-requested-with',
+                                            'Access-Control-Request-Method': 'GET'})
+
+        assert res.headers['Access-Control-Allow-Origin'] == 'http://app-host'
+        assert res.headers['Access-Control-Allow-Methods'] == 'GET'
+        assert res.headers['Access-Control-Allow-Headers'] == 'x-pywb-requested-with'
+        assert res.headers['Access-Control-Allow-Credentials'] == 'true'
+
+    def test_options_clear_session_dont_allow_wrong_host(self):
+        res = self.testapp.options('/_clear_session?json={"foo":"bar"}',
+                                   headers={'Host': 'app-host',
+                                            'Origin': 'http://content-host',
+                                            'Access-Control-Request-Headers': 'x-pywb-requested-with',
+                                            'Access-Control-Request-Method': 'GET'})
+
+        assert 'Access-Control-Allow-Origin' not in res.headers
+
+    def test_options_clear_session_dont_allow_wrong_origin(self):
+        res = self.testapp.options('/_clear_session?json={"foo":"bar"}',
+                                   headers={'Host': 'content-host',
+                                            'Origin': 'http://wrong-host',
+                                            'Access-Control-Request-Headers': 'x-pywb-requested-with',
+                                            'Access-Control-Request-Method': 'GET'})
+
+        assert 'Access-Control-Allow-Origin' not in res.headers
+
+
 
     def test_delete_temp_user(self):
         # ensure cookies cleared on content domain also
@@ -179,13 +211,16 @@ class TestAppContentDomain(FullStackTests):
                                      headers={'Host': 'app-host'}, status=303)
 
         # adding header to use content-host not content-host:80
-        res = res.follow(headers={'Host': 'content-host'})
+        res = res.follow(headers={'Host': 'content-host', 'Origin': 'http://app-host'})
 
         assert res.json == {'anon': False, 'coll_count': 1, 'role': 'archivist', 'username': 'test'}
 
         assert len(self.testapp.cookies) == 1
 
         assert self.testapp.cookies['__test_sesh'] != ''
+
+        assert res.headers['Access-Control-Allow-Origin'] == 'http://app-host'
+        assert res.headers['Access-Control-Allow-Credentials'] == 'true'
 
 
     def test_logout(self):
@@ -203,12 +238,15 @@ class TestAppContentDomain(FullStackTests):
         res = self.testapp.post_json('/api/v1/auth/logout', headers={'Host': 'app-host'}, status=303)
 
         # adding header to use content-host not content-host:80
-        res = res.follow(headers={'Host': 'content-host'})
+        res = res.follow(headers={'Host': 'content-host', 'Origin': 'http://app-host'})
 
         assert res.json['success'] == 'logged_out'
 
         assert len(self.testapp.cookies) == 0
         assert '__test_sesh' not in self.testapp.cookies
+
+        assert res.headers['Access-Control-Allow-Origin'] == 'http://app-host'
+        assert res.headers['Access-Control-Allow-Credentials'] == 'true'
 
     def test_content_clear_session(self):
         # wrong host

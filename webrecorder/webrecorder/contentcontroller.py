@@ -71,7 +71,7 @@ class ContentController(BaseController, RewriterApp):
 
     def get_csp_header(self):
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
-        if self.content_host != self.app_host:
+        if self.app_host and self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
 
         csp += "; form-action 'self'"
@@ -358,7 +358,7 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
 
         # Session redir
-        @self.app.route(['/_set_session'])
+        @self.app.get(['/_set_session'])
         def set_sesh():
             sesh = self.get_session()
 
