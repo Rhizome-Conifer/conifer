@@ -1,6 +1,10 @@
 from .testutils import FullStackTests
 import os
 import re
+import json
+
+from urllib.parse import urlencode
+from webrecorder.models.usermanager import CLIUserManager
 
 
 # ============================================================================
@@ -19,6 +23,7 @@ class TestAppContentDomain(FullStackTests):
         os.environ['APP_HOST'] = 'app-host'
         kwargs['init_anon'] = False
         super(TestAppContentDomain, cls).setup_class(**kwargs)
+        cls.manager = CLIUserManager()
 
     @classmethod
     def teardown_class(cls, *args, **kwargs):
@@ -26,14 +31,14 @@ class TestAppContentDomain(FullStackTests):
         os.environ['CONTENT_HOST'] = ''
         os.environ['APP_HOST'] = ''
 
-    def app_get(self, url):
+    def app_get(self, url, status=None):
         url = url.format(user=self.anon_user)
         headers = {'Host': 'app-host'}
-        return self.testapp.get(url, headers={'Host': 'app-host'})
+        return self.testapp.get(url, headers={'Host': 'app-host'}, status=status)
 
-    def content_get(self, url):
+    def content_get(self, url, status=None):
         url = url.format(user=self.anon_user)
-        return self.testapp.get(url, headers={'Host': 'content-host'})
+        return self.testapp.get(url, headers={'Host': 'content-host'}, status=status)
 
     def test_home_page_redir_to_app(self):
         res = self.content_get('/')
@@ -42,7 +47,10 @@ class TestAppContentDomain(FullStackTests):
 
     def test_record_app_top_frame(self):
         self.set_uuids('Recording', ['rec'])
+
         res = self.app_get('/_new/temp/rec/record/http://httpbin.org/get?food=bar')
+        assert self.testapp.cookies['__test_sesh'] in res.headers['Set-Cookie']
+
         res = self.app_get(res.headers['Location'])
         assert res.status_code == 200
 
@@ -139,4 +147,77 @@ class TestAppContentDomain(FullStackTests):
 
         assert 'Access-Control-Allow-Origin' not in res.headers
 
+    def test_delete_temp_user(self):
+        # ensure cookies cleared on content domain also
 
+        assert len(self.testapp.cookies) == 1
+        res = self.testapp.delete('/api/v1/user/{user}'.format(user=self.anon_user),
+                                  headers={'Host': 'app-host'}, status=303)
+
+        # counts as 1 cookie still
+        assert len(self.testapp.cookies) == 1
+
+        redirect_url  = 'http://content-host/_clear_session?' + urlencode({'json': json.dumps({'deleted_user': self.anon_user})})
+        assert res.headers['Location'] == redirect_url
+
+        # adding header to use content-host not content-host:80
+        res = res.follow(headers={'Host': 'content-host'})
+
+        assert res.json['deleted_user'] == self.anon_user
+
+        assert res.headers['Set-Cookie']
+
+        assert len(self.testapp.cookies) == 0
+
+    def test_create_login(self):
+        self.manager.create_user('test@example.com', 'test', 'TestTest123', 'archivist', 'Test')
+
+        assert len(self.testapp.cookies) == 0
+
+        res = self.testapp.post_json('/api/v1/auth/login',
+                                     params={'username': 'test', 'password': 'TestTest123'},
+                                     headers={'Host': 'app-host'}, status=303)
+
+        # adding header to use content-host not content-host:80
+        res = res.follow(headers={'Host': 'content-host'})
+
+        assert res.json == {'anon': False, 'coll_count': 1, 'role': 'archivist', 'username': 'test'}
+
+        assert len(self.testapp.cookies) == 1
+
+        assert self.testapp.cookies['__test_sesh'] != ''
+
+
+    def test_logout(self):
+        assert len(self.testapp.cookies) == 1
+
+        # wrong domain, 403
+        res = self.testapp.post_json('/api/v1/auth/logout', status=403)
+
+        # content domain, also wrong, 403
+        res = self.testapp.post_json('/api/v1/auth/logout', headers={'Host': 'content-host'}, status=403)
+
+
+        assert len(self.testapp.cookies) == 1
+
+        res = self.testapp.post_json('/api/v1/auth/logout', headers={'Host': 'app-host'}, status=303)
+
+        # adding header to use content-host not content-host:80
+        res = res.follow(headers={'Host': 'content-host'})
+
+        assert res.json['success'] == 'logged_out'
+
+        assert len(self.testapp.cookies) == 0
+        assert '__test_sesh' not in self.testapp.cookies
+
+    def test_content_clear_session(self):
+        # wrong host
+        self.app_get('/_clear_session', status=400)
+
+        # no json block, correct host
+        self.content_get('/_clear_session?json=xyz', status=400)
+
+        # clear session ok
+        res = self.content_get('/_clear_session?json=%7B%22foo%22%3A%20%22bar%22%7D', status=200)
+
+        assert res.json == {'foo': 'bar'}

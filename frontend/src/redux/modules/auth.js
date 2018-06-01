@@ -109,6 +109,6 @@ export function incrementCollCount(incr) {
 export function logout() {
   return {
     types: [LOGOUT, LOGOUT_SUCCESS, LOGOUT_FAIL],
-    promise: client => client.get(`${config.apiPath}/auth/logout`)
+    promise: client => client.post(`${config.apiPath}/auth/logout`)
   };
 }

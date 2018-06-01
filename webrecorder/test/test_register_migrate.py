@@ -399,7 +399,7 @@ class TestRegisterMigrate(FullStackTests):
         assert '"rec": "test"' in res.text
 
     def test_logout_1(self):
-        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        res = self.testapp.post('/api/v1/auth/logout', status=200)
         assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
@@ -572,7 +572,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_logout_2(self):
-        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        res = self.testapp.post('/api/v1/auth/logout', status=200)
         assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
@@ -616,7 +616,7 @@ class TestRegisterMigrate(FullStackTests):
         assert res.json == {'error': 'no_such_collection'}
 
     def test_logout_3(self):
-        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        res = self.testapp.post('/api/v1/auth/logout', status=200)
         assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 

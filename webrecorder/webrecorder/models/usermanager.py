@@ -201,8 +201,8 @@ class UserManager(object):
 
     def login_user(self, input_data):
         """Authenticate users"""
-        username = input_data.get('username')
-        password = input_data.get('password')
+        username = input_data.get('username', '')
+        password = input_data.get('password', '')
 
         try:
             move_info = self.get_move_temp_info(input_data)

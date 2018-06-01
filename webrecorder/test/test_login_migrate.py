@@ -177,7 +177,7 @@ class TestLoginMigrate(FullStackTests):
             assert self.storage_today in result[key]
 
     def test_logout_1(self):
-        res = self.testapp.get('/api/v1/auth/logout', status=200)
+        res = self.testapp.post('/api/v1/auth/logout', status=200)
         assert res.json['success']
 
         assert self.testapp.cookies.get('__test_sesh', '') == ''

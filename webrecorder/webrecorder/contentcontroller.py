@@ -1,5 +1,7 @@
 import re
 import os
+import json
+
 from six.moves.urllib.parse import quote, unquote
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
@@ -399,11 +401,20 @@ class ContentController(BaseController, RewriterApp):
             response.headers['Access-Control-Allow-Credentials'] = 'true'
             return ''
 
-        @self.app.route(['/_clear_session'])
+        # CLEAR CONTENT SESSION
+        @self.app.get(['/_clear_session'])
         def clear_sesh():
-            sesh = self.get_session()
-            sesh.delete()
-            return self.redir_host(None, request.query.getunicode('path', '/'))
+            if not self.is_content_request():
+                self._raise_error(400, 'invalid_request')
+
+            try:
+                res = json.loads(request.query.getunicode('json'))
+                # delete session (will updated cookie)
+                self.get_session().delete()
+                return res
+
+            except Exception as e:
+                self._raise_error(400, 'invalid_request')
 
     def do_proxy(self, url):
         info = self.browser_mgr.init_cont_browser_sesh()
