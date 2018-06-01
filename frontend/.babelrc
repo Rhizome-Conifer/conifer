@@ -4,6 +4,7 @@
     [
       "env",
       {
+          "useBuiltIns": true,
           "targets": {
               "browsers": ["last 2 versions", "ie >= 11"]
           }
@@ -16,6 +17,13 @@
     "transform-runtime",
     "add-module-exports",
     "transform-decorators-legacy",
-    "react-hot-loader/babel"
+    "react-hot-loader/babel",
+    "transform-react-remove-prop-types",
+    ["transform-imports", {
+      "react-bootstrap": {
+        "transform": "react-bootstrap/lib/${member}",
+        "preventFullImport": true
+      }
+    }]
   ]
 }
