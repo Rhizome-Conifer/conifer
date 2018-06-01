@@ -26,6 +26,8 @@ const preloadData = [
 
 const mapStateToProps = ({ app }) => {
   return {
+    deleting: app.getIn(['user', 'deleting']),
+    deleteError: app.getIn(['user', 'deleteError']),
     user: app.get('user')
   };
 };
@@ -34,7 +36,7 @@ const mapDispatchToProps = (dispatch, props) => {
   return {
     updatePass: (currPass, newPass, newPass2) => dispatch(updatePassword(currPass, newPass, newPass2)),
     deleteUser: (user) => {
-      // TODO: Test this
+      // TODO: add Tests
       return dispatch(deleteUser(user)).then(() => props.history.push('/_logout'));
     }
   };

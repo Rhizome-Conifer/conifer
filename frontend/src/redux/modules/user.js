@@ -5,15 +5,15 @@ import config from 'config';
 const USER_DELETE = 'wr/user/DELETE';
 const USER_DELETE_SUCCESS = 'wr/user/DELETE_SUCCESS';
 const USER_DELETE_FAIL = 'wr/user/DELETE_FAIL';
-const USER_DELETE_TOKEN = 'wr/user/DELETE_TOKEN';
-const USER_DELETE_TOKEN_SUCCESS = 'wr/user/DELETE_TOKEN_SUCCESS';
-const USER_DELETE_TOKEN_FAIL = 'wr/user/DELETE_TOKEN_FAIL';
+
 const USER_LOAD = 'wr/user/LOAD';
 const USER_LOAD_SUCCESS = 'wr/user/LOAD_SUCCESS';
 const USER_LOAD_FAIL = 'wr/user/LOAD_FAIL';
+
 const USER_LOAD_COLLECTIONS = 'wr/user/USER_LOAD_COLLECTIONS';
 const USER_LOAD_COLLECTIONS_SUCCESS = 'wr/user/USER_LOAD_COLLECTIONS_SUCCESS';
 const USER_LOAD_COLLECTIONS_FAIL = 'wr/user/USER_LOAD_COLLECTIONS_FAIL';
+
 const USER_PASS = 'wr/user/PASS';
 const USER_PASS_SUCCESS = 'wr/user/PASS_SUCCESS';
 const USER_PASS_FAIL = 'wr/user/PASS_FAIL';
@@ -22,18 +22,31 @@ const ADD_NEW_COLLECTION = 'wr/user/ADD_NEW_COLLECTION';
 const SELECT_COLLECTION = 'wr/user/SELECT_COLLECTION';
 const COLLECTION_DELETION = 'wr/user/COLLECTION_DELETION';
 
+
 const initialState = fromJS({
+  accessed: null,
+  activeCollection: null,
+  collections: [],
+  deleting: false,
+  deleteErorr: null,
+  error: null,
   loading: false,
   loaded: false,
-  accessed: null,
-  error: null,
-  activeCollection: null,
-  space_utilization: {},
-  collections: []
+  space_utilization: {}
 });
+
 
 export default function user(state = initialState, action = {}) {
   switch (action.type) {
+    case USER_DELETE:
+      return state.set('deleting', true);
+    case USER_DELETE_SUCCESS:
+      return state.set('deleting', false);
+    case USER_DELETE_FAIL:
+      return state.merge({
+        deleting: false,
+        deleteErorr: action.error.error
+      });
     case USER_LOAD:
       return state.set('loading', true);
     case USER_LOAD_SUCCESS: {
@@ -89,13 +102,6 @@ export default function user(state = initialState, action = {}) {
   }
 }
 
-// TODO: eval csrf
-export function getDeleteToken(user) {
-  return {
-    types: [USER_DELETE_TOKEN, USER_DELETE_TOKEN_SUCCESS, USER_DELETE_TOKEN_FAIL],
-    promise: client => client.get(`${config.apiPath}/delete_token`)
-  };
-}
 
 export function deleteUser(user) {
   return {
@@ -104,10 +110,12 @@ export function deleteUser(user) {
   };
 }
 
+
 export function isLoaded({ app }) {
   return app.get('user') &&
          app.getIn(['user', 'loaded']);
 }
+
 
 export function load(username) {
   return {
@@ -118,6 +126,7 @@ export function load(username) {
     })
   };
 }
+
 
 export function loadCollections(user) {
   return {
@@ -132,12 +141,14 @@ export function loadCollections(user) {
   };
 }
 
+
 export function addUserCollection(coll) {
   return {
     type: ADD_NEW_COLLECTION,
     coll
   };
 }
+
 
 export function selectCollection(id) {
   return {
@@ -146,12 +157,14 @@ export function selectCollection(id) {
   };
 }
 
+
 export function deleteUserCollection(id) {
   return {
     type: COLLECTION_DELETION,
     id
   };
 }
+
 
 export function updatePassword(currPass, newPass, newPass2) {
   return {

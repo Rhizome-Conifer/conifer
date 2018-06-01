@@ -10,6 +10,7 @@ import { passwordPassRegex } from 'helpers/utils';
 import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
 import SizeFormat from 'components/SizeFormat';
+import { LoaderIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -17,6 +18,11 @@ import './style.scss';
 class UserSettingsUI extends Component {
   static propTypes = {
     collSum: PropTypes.number,
+    deleting: PropTypes.bool,
+    deleteError: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.object
+    ]),
     deleteUser: PropTypes.func,
     match: PropTypes.object,
     updatePass: PropTypes.func,
@@ -27,6 +33,7 @@ class UserSettingsUI extends Component {
     super(props);
 
     this.state = {
+      confirmUser: '',
       currPassword: '',
       password: '',
       password2: '',
@@ -44,8 +51,12 @@ class UserSettingsUI extends Component {
     }
   }
 
+  handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
+
   sendDelete = (evt) => {
-    this.props.deleteUser(this.props.user.get('username'));
+    if (this.validateConfirmDelete() === 'success') {
+      this.props.deleteUser(this.props.user.get('username'));
+    }
   }
 
   send = (evt) => {
@@ -79,8 +90,23 @@ class UserSettingsUI extends Component {
   toggleDelete = evt => this.setState({ showModal: !this.state.showModal })
   closeDeleteModal = evt => this.setState({ showModal: false })
 
+  validateConfirmDelete = (evt) => {
+    const { user } = this.props;
+    const { confirmUser } = this.state;
+
+    if (!confirmUser) {
+      return null;
+    }
+
+    if (!user.get('username').match(new RegExp(`^${confirmUser}$`, 'i'))) {
+      return 'error';
+    }
+
+    return 'success';
+  }
+
   render() {
-    const { match: { params }, user } = this.props;
+    const { deleting, match: { params }, user } = this.props;
     const { currPassword, password, password2, showModal } = this.state;
 
     if (user.get('username') !== params.user) {
@@ -95,15 +121,35 @@ class UserSettingsUI extends Component {
 
     const confirmDeleteBody = (
       <div>
-        Are you sure you want to delete the <b>{username}</b> account?
-        If you continue, <b>all archived data in all collections will be permanently deleted.</b>
-        You will need to re-register to use the service again.
+        <p>
+          Are you sure you want to delete the <b>{username}</b> account?
+          If you continue, <b>all archived data in all collections will be permanently deleted.</b>
+          You will need to re-register to use the service again.
+        </p>
+        <FormGroup validationState={this.validateConfirmDelete()}>
+          <ControlLabel>Type your username to confirm:</ControlLabel>
+          <FormControl
+            autoFocus
+            disabled={deleting}
+            id="confirm-delete"
+            name="confirmUser"
+            onChange={this.handleChange}
+            placeholder={user.get('username')}
+            type="text"
+            value={this.state.confirmUser} />
+        </FormGroup>
       </div>
     );
     const confirmDeleteFooter = (
       <div>
-        <button onClick={this.closeDeleteModal} type="button" className="btn btn-default" >Cancel</button>
-        <button onClick={this.sendDelete} className="btn btn-danger btn-ok" >Confirm Delete</button>
+        <button onClick={this.closeDeleteModal} disabled={deleting} type="button" className="btn btn-default">Cancel</button>
+        <button onClick={this.sendDelete} disabled={deleting || this.validateConfirmDelete() !== 'success'} className="btn btn-danger btn-ok" >
+          {
+            deleting &&
+              <LoaderIcon />
+          }
+          Confirm Delete
+        </button>
       </div>
     );
 
@@ -208,11 +254,12 @@ class UserSettingsUI extends Component {
           </Panel.Body>
         </Panel>
         <Modal
-          header="Confirm Delete Account?"
           body={confirmDeleteBody}
+          closeCb={this.closeDeleteModal}
+          dialogClassName="wr-delete-modal"
           footer={confirmDeleteFooter}
-          visible={showModal}
-          closeCb={this.closeDeleteModal} />
+          header="Confirm Delete Account?"
+          visible={showModal} />
       </div>
     );
   }
