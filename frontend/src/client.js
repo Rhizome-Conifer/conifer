@@ -2,7 +2,6 @@ import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Raven from 'raven-js';
-import ReactGA from 'react-ga';
 import { AppContainer } from 'react-hot-loader';
 import { Provider } from 'react-redux';
 
@@ -27,11 +26,6 @@ const store = createStore(client, window.__data);
 // error reporting
 if (config.ravenConfig) {
   Raven.config(config.ravenConfig).install();
-}
-
-// analytics
-if (config.gaId) {
-  ReactGA.initialize(config.gaId);
 }
 
 const renderApp = (renderProps) => {

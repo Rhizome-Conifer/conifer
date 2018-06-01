@@ -20,7 +20,6 @@ import { UserManagement } from 'containers';
 import config from 'config';
 import { inStorage, setStorage } from 'helpers/utils';
 
-import Analytics from 'components/Analytics';
 import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
 import { Footer } from 'components/siteComponents';
 import { InfoIcon } from 'components/icons';
@@ -166,10 +165,6 @@ export class App extends Component { // eslint-disable-line
 
     return (
       <React.Fragment>
-        {
-          config.gaId &&
-            <Analytics pathname={pathname + search} />
-        }
         <Helmet {...config.app.head} />
         <header>
           <Navbar staticTop fluid collapseOnSelect className={navbarClasses}>
