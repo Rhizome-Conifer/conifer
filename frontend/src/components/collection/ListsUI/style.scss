@@ -177,7 +177,6 @@
                 &.movable:hover {
                     .wrapper {
                         &:before {
-                            background-image: url('../../../shared/images/handle.svg');
                             cursor: move;
                         }
                     }

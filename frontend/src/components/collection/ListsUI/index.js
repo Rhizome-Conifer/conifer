@@ -32,13 +32,16 @@ class ListsUI extends Component {
     bulkAddToList: PropTypes.func,
     collection: PropTypes.object,
     collapsibleToggle: PropTypes.func,
+    deleting: PropTypes.bool,
+    deleteError: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.string
+    ]),
     createList: PropTypes.func,
     deleteList: PropTypes.func,
     editColl: PropTypes.func,
     editList: PropTypes.func,
     history: PropTypes.object,
-    loaded: PropTypes.bool,
-    loading: PropTypes.bool,
     lists: PropTypes.object,
     list: PropTypes.object,
     pages: PropTypes.object,
@@ -302,11 +305,13 @@ class ListsUI extends Component {
                 {
                   lists.map(listObj => (
                     <EditItem
-                      key={listObj.get('id')}
-                      list={listObj}
+                      deleteListCallback={this.sendDeleteList}
+                      deleteError={this.props.deleteError}
                       edited={edited && listObj.get('id') === editId}
                       editListCallback={this.sendEditList}
-                      deleteListCallback={this.sendDeleteList} />
+                      isDeleting={this.props.deleting}
+                      key={listObj.get('id')}
+                      list={listObj} />
                   ))
                 }
               </ul>

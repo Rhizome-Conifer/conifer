@@ -15,8 +15,8 @@ import ListsUI from 'components/collection/ListsUI';
 const mapStateToProps = ({ app }) => {
   return {
     collection: app.get('collection'),
-    loaded: app.getIn(['lists', 'loaded']),
-    loading: app.getIn(['lists', 'loading']),
+    deleting: app.getIn(['list', 'deleting']),
+    deleteError: app.getIn(['list', 'deleteError']),
     lists: app.getIn(['collection', 'lists']),
     list: app.get('list'),
     publicIndex: app.getIn(['collection', 'public_index']),

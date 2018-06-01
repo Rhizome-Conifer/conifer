@@ -43,6 +43,11 @@ class CollectionDetailUI extends Component {
   static propTypes = {
     auth: PropTypes.object,
     browsers: PropTypes.object,
+    bkDeleting: PropTypes.bool,
+    bkDeleteError: PropTypes.oneOfType([
+      PropTypes.object,
+      PropTypes.string
+    ]),
     clearInspector: PropTypes.func,
     clearQuery: PropTypes.func,
     clearSearch: PropTypes.func,
@@ -444,6 +449,8 @@ class CollectionDetailUI extends Component {
       remove: {
         cellRenderer: RemoveRenderer,
         columnData: {
+          bkDeleting: this.props.bkDeleting,
+          bkDeleteError: this.props.bkDeleteError,
           listId: activeList ? list.get('id') : null,
           removeCallback: this.props.removeBookmark
         },

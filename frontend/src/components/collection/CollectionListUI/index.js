@@ -143,7 +143,7 @@ class CollectionListUI extends Component {
                           {
                             canAdmin &&
                               <Col xs={2}>
-                                <Link to={getCollectionLink(coll, true)} className="index-link">Page Index</Link>
+                                <Link to={getCollectionLink(coll, true)} className="index-link">Collection Index</Link>
                               </Col>
                           }
                           <Col xs={2}>

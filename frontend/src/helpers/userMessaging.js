@@ -37,7 +37,7 @@ export default {
     no_such_bookmark: 'Bookmark not found',
   },
   login: {
-    invalid_login: "Invalid Login. Please Try Again.",
+    invalid_login: 'Invalid Login. Please Try Again.',
     duplicate_name: 'A collection with the supplied name already exists.',
     out_of_space: 'Sorry, not enough space to import this Temporary Collection into your account.',
     invalid_coll_name: 'The collection name entered is not valid'

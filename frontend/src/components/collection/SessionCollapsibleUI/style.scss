@@ -1,24 +1,6 @@
 @import 'src/vars';
 
 
-#wr-rec-delete {
-    max-width: 40rem;
-
-    h4 {
-        font-weight: 300;
-    }
-
-    .warning {
-        color: $warning;
-        margin: 1rem 0;
-    }
-
-    .action-row {
-        display: flex;
-        justify-content: space-between;
-    }
-}
-
 .wr-coll-session {
     display: flex;
     position: relative;
@@ -27,16 +9,6 @@
 
     &:nth-child(2) {
         border-width: .1rem 0 .1rem 0;
-    }
-
-    .wr-loader {
-        vertical-align: middle;
-        width: 1.8rem;
-        height: 1.8rem;
-
-        path {
-            fill: #FFF;
-        }
     }
 
     .Collapsible {

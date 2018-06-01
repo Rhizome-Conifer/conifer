@@ -278,6 +278,9 @@ a {
   display: flex;
   flex-direction: column;
 
+  // don't slide-in onboarding modal
+  transform: translate(0, 0) !important;
+
   .modal-content {
     flex-grow: 1;
     display: flex;
@@ -298,4 +301,33 @@ a {
 
     }
   }
+}
+
+#wr-popover-delete {
+    max-width: 40rem;
+    min-width: 20rem;
+
+    h4 {
+        font-weight: 300;
+    }
+
+    .warning {
+        color: $warning;
+        margin: 1rem 0;
+    }
+
+    .action-row {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .wr-loader {
+        vertical-align: middle;
+        width: 1.8rem;
+        height: 1.8rem;
+
+        path {
+            fill: #FFF;
+        }
+    }
 }

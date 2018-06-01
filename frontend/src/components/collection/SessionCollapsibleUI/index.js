@@ -177,7 +177,7 @@ class SessionCollapsibleUI extends PureComponent {
           </div>
         </Collapsible>
         <Overlay shouldUpdatePosition target={this.state.open || expand ? this.expanded : this.collapsed} container={this} show={this.state.deletePopover} placement="right">
-          <Popover id="wr-rec-delete" placement="right">
+          <Popover id="wr-popover-delete" placement="right">
             <OutsideClick handleClick={this.closeDeletePopover}>
               {
                 loadingRecBK ?

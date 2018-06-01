@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
+import { onboardingLink } from 'config';
 import { inStorage, getStorage, setStorage } from 'helpers/utils';
 
 import Modal from 'components/Modal';
@@ -63,8 +64,12 @@ class OnBoarding extends PureComponent {
 
   render() {
     return (
-      <Modal header="New Features Introduction" dialogClassName="on-boarding" visible={this.state.show} closeCb={this.closeOnboarding}>
-        <iframe src="https://s3.amazonaws.com/wr-demo-assets/on-boarding/index.html" />
+      <Modal
+        closeCb={this.closeOnboarding}
+        dialogClassName="on-boarding"
+        header="Introducing New Features"
+        visible={this.state.show}>
+        <iframe src={onboardingLink} />
       </Modal>
     );
   }

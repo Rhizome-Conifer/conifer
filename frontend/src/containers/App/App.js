@@ -184,7 +184,7 @@ export class App extends Component { // eslint-disable-line
         </header>
         {
           isOutOfSpace && this.state.outOfSpaceAlert &&
-            <Alert bsStyle="warning" className="oos-alert" onDismiss={this.dismissAlert}>
+            <Alert bsStyle="warning" className="oos-alert" onDismiss={this.dismissSpaceAlert}>
               <p><b>Your account is out of space.</b> This means you can't record anything right now.</p>
               To be able to record again, you can:
               <ul>
