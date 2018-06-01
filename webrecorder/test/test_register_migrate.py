@@ -685,7 +685,19 @@ class TestRegisterMigrate(FullStackTests):
         self.sleep_try(0.3, 10.0, assert_delete)
 
     def test_stats(self):
-        assert self.redis.hget(Stats.TEMP_MOVE_KEY, today_str()) == '1'
+        today = today_str()
+        assert self.redis.hget(Stats.TEMP_MOVE_KEY, today) == '1'
+
+        keys = set(self.redis.keys('st:*'))
+        assert keys == {
+            Stats.TEMP_MOVE_KEY,
+            Stats.ALL_CAPTURE_TEMP_KEY,
+            Stats.ALL_CAPTURE_USER_KEY,
+            Stats.REPLAY_USER_KEY,
+            Stats.DOWNLOADS_USER_COUNT_KEY,
+            Stats.DOWNLOADS_USER_SIZE_KEY,
+            Stats.DELETE_USER_KEY
+        }
 
     def test_login_4_no_such_user(self):
         params = {'username': 'someuser',

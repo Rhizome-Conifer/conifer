@@ -14,6 +14,9 @@ class Stats(object):
     ALL_CAPTURE_USER_KEY = 'st:all-capture-user'
     ALL_CAPTURE_TEMP_KEY = 'st:all-capture-temp'
 
+    REPLAY_USER_KEY = 'st:replay-user'
+    REPLAY_TEMP_KEY = 'st:replay-temp'
+
     PATCH_USER_KEY = 'st:patch-user'
     PATCH_TEMP_KEY = 'st:patch-temp'
 
@@ -158,6 +161,14 @@ class Stats(object):
 
     def incr_bookmark_del(self):
         self.redis.hincrby(self.BOOKMARK_DEL_KEY, today_str(), 1)
+
+    def incr_replay(self, size, username):
+        if username.startswith(self.TEMP_PREFIX):
+            key = self.REPLAY_TEMP_KEY
+        else:
+            key = self.REPLAY_USER_KEY
+
+        self.redis.hincrby(key, today_str(), size)
 
     def move_temp_to_user_usage(self, collection):
         date_str = collection.get_created_iso_date()

@@ -45,6 +45,7 @@ class TestTempContent(FullStackTests):
         'h:defaults',
         'h:roles',
         Stats.ALL_CAPTURE_TEMP_KEY,
+        Stats.REPLAY_TEMP_KEY,
         Stats.DELETE_TEMP_KEY,
         Stats.DOWNLOADS_TEMP_SIZE_KEY,
         Stats.DOWNLOADS_TEMP_COUNT_KEY,
@@ -120,7 +121,7 @@ class TestTempContent(FullStackTests):
 
         if replay_coll:
             exp_keys.append('c:{coll}:cdxj'.format(user=user, coll=coll))
-            #exp_keys.append('c:{coll}:warc'.format(user=user, coll=coll))
+            exp_keys.append(Stats.REPLAY_TEMP_KEY)
 
         if self.downloaded:
             exp_keys.append(Stats.DOWNLOADS_TEMP_COUNT_KEY)
