@@ -404,15 +404,18 @@ class ContentController(BaseController, RewriterApp):
                 self._raise_error(400, 'invalid_request')
 
     def set_options_headers(self, origin_host, target_host):
-        expected_origin = request.environ['wsgi.url_scheme'] + '://' + origin_host
         origin = request.environ.get('HTTP_ORIGIN')
-        # ensure origin is the content host origin
-        if origin != expected_origin:
-            return False
+
+        if origin_host:
+            expected_origin = request.environ['wsgi.url_scheme'] + '://' + origin_host
+
+            # ensure origin is the content host origin
+            if origin != expected_origin:
+                return False
 
         host = request.environ.get('HTTP_HOST')
         # ensure host is the app host
-        if host != target_host:
+        if target_host and host != target_host:
             return False
 
         response.headers['Access-Control-Allow-Origin'] = origin
