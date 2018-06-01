@@ -150,7 +150,9 @@ class CollectionDetailUI extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.loaded && !prevProps.loaded) {
       this.props.clearQuery();
-      this.props.clearSearch();
+      if (this.props.searchText) {
+        this.props.clearSearch();
+      }
     }
   }
 

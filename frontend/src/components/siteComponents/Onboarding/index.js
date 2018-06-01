@@ -63,7 +63,7 @@ class OnBoarding extends PureComponent {
 
   render() {
     return (
-      <Modal header="Introducing new features" dialogClassName="on-boarding" visible={this.state.show} closeCb={this.closeOnboarding}>
+      <Modal header="New Features Introduction" dialogClassName="on-boarding" visible={this.state.show} closeCb={this.closeOnboarding}>
         <iframe src="https://s3.amazonaws.com/wr-demo-assets/on-boarding/index.html" />
       </Modal>
     );
