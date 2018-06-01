@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { defaultCollDesc } from 'config';
+import { defaultCollDesc, onboardingLink } from 'config';
 import { getCollectionLink, getListLink } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';
 
@@ -46,10 +46,10 @@ class CollectionCoverUI extends Component {
   }
 
   render() {
-    const { collection, history, match: { params: { coll } } } = this.props;
+    const { collection, history, match: { params: { user, coll } } } = this.props;
 
     if (collection.get('error')) {
-      return this.context.isAnon ?
+      return user.startsWith('temp-') ?
         <Temp404 /> :
         <HttpStatus>{collectionErr[collection.getIn(['error', 'error'])]}</HttpStatus>;
     } else if (collection.get('loaded') && !collection.get('slug_matched') && coll !== collection.get('slug')) {
@@ -65,7 +65,10 @@ class CollectionCoverUI extends Component {
         <Helmet>
           <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
         </Helmet>
-        <OnBoarding />
+        {
+          onboardingLink &&
+            <OnBoarding />
+        }
         {
           this.context.canAdmin && !this.context.isAnon && !collection.get('public') &&
           <div className="visibility-warning">
@@ -120,7 +123,7 @@ class CollectionCoverUI extends Component {
         }
         {
           (this.context.canAdmin || collection.get('public_index')) &&
-            <Link className="browse" to={this.collectionLink()}>Browse Entire Collection</Link>
+            <Link className="browse" to={this.collectionLink()}>Collection Index</Link>
         }
       </div>
     );

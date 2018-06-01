@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
 import { CSSTransitionGroup } from 'react-transition-group';
 
-import { defaultCollDesc } from 'config';
+import { defaultCollDesc, onboardingLink } from 'config';
 import { doubleRAF, getCollectionLink, stopPropagation } from 'helpers/utils';
 
 import { DeleteCollection, Upload } from 'containers';
@@ -111,6 +111,7 @@ class CollectionHeaderUI extends Component {
 
   showOnboarding = () => {
     this.setState({ onBoarding: true });
+    doubleRAF(() => this.setState({ onBoarding: false }));
   }
 
   togglePublicView = () => {
@@ -167,7 +168,10 @@ class CollectionHeaderUI extends Component {
           <MenuItem>Edit Collection Info</MenuItem>
           */}
           <MenuItem divider />
-          <MenuItem onClick={this.showOnboarding}>&#127881; New Features Introduction</MenuItem>
+          {
+            onboardingLink &&
+              <MenuItem onClick={this.showOnboarding}>&#127881; New Features Introduction</MenuItem>
+          }
           <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</MenuItem>
         </DropdownButton>
       </div>
@@ -179,7 +183,10 @@ class CollectionHeaderUI extends Component {
         ref={(obj) => { this.container = obj; }}
         style={{ height, zIndex }}
         onClick={this.expandHeader}>
-        <OnBoarding open={onBoarding} />
+        {
+          onboardingLink &&
+            <OnBoarding open={onBoarding} />
+        }
         <CSSTransitionGroup
           component="div"
           transitionName="condense"

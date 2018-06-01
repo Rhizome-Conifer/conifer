@@ -278,6 +278,9 @@ a {
   display: flex;
   flex-direction: column;
 
+  // don't slide-in onboarding modal
+  transform: translate(0, 0) !important;
+
   .modal-content {
     flex-grow: 1;
     display: flex;
