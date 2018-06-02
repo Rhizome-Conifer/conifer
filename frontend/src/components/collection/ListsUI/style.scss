@@ -226,40 +226,40 @@
             }
         }
 
-        &.private-coll {
-            .visibility-lamp.is-public {
-                div:first-of-type {
-                    background-color: #FFF;
-                    border: solid .1rem #747474;
-                    border-width: .1rem 0 .1rem .1rem;
-                }
+        // &.private-coll {
+        //     .visibility-lamp.is-public {
+        //         div:first-of-type {
+        //             background-color: #FFF;
+        //             border: solid .1rem #747474;
+        //             border-width: .1rem 0 .1rem .1rem;
+        //         }
 
-                .bulb {
-                    background-color: #FFF;
-                    border: solid .1rem #747474;
-                    border-width: .1rem 0;
-                    color: #000;
+        //         .bulb {
+        //             background-color: #FFF;
+        //             border: solid .1rem #747474;
+        //             border-width: .1rem 0;
+        //             color: #000;
 
-                    svg path {
-                        fill: #000;
-                    }
-                }
+        //             svg path {
+        //                 fill: #000;
+        //             }
+        //         }
 
-                div:last-of-type {
-                    background: #FFF;
-                    border: solid .1rem #747474;
-                    border-width: .1rem .1rem .1rem 0;
-                }
-            }
+        //         div:last-of-type {
+        //             background: #FFF;
+        //             border: solid .1rem #747474;
+        //             border-width: .1rem .1rem .1rem 0;
+        //         }
+        //     }
 
-            ul li :hover {
-                .visibility-lamp.is-public {
-                    div:first-of-type, .bulb, div:last-of-type {
-                        background: $gray300;
-                    }
-                }
-            }
-        }
+        //     ul li :hover {
+        //         .visibility-lamp.is-public {
+        //             div:first-of-type, .bulb, div:last-of-type {
+        //                 background: $gray300;
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
 

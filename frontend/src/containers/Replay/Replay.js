@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
-import ReactGA from 'react-ga';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 
@@ -71,17 +70,6 @@ class Replay extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (config.gaId && this.props.loaded) {
-      const { activeBrowser, match: { params }, timestamp, url } = nextProps;
-      const tsMod = remoteBrowserMod(activeBrowser, timestamp);
-      const nextUrl = params.listSlug ?
-        `/${params.user}/${params.coll}/list/${params.listSlug}/b${params.bookmarkId}/${tsMod}/${url}` :
-        `/${params.user}/${params.coll}/${tsMod}/${url}`;
-
-      ReactGA.set({ page: nextUrl });
-      ReactGA.pageview(nextUrl);
-    }
-
     const { match: { params: { listSlug } } } = this.props;
     if (listSlug !== nextProps.match.params.listSlug && this.state.collectionNav) {
       this.setState({ collectionNav: false });
