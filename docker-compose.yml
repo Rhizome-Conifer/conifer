@@ -106,7 +106,9 @@ services:
             - CLUSTER_NAME=wr_users
             - NETWORK_NAME=webrecorder_browsers
 
-            - CONTAINER_EXPIRE_SECS=1200
+            - AUDIO_TYPE=opus
+
+            - CONTAINER_EXPIRE_SECS=3600
             - IDLE_TIMEOUT=120
 
         depends_on:
