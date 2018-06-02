@@ -646,7 +646,7 @@ export default function CBrowser(reqid, target_div, init_params) {
                 return;
             }
 
-            buffer = buffQ.shift();
+            var buffer = buffQ.shift();
 
             if (!firstBuffer) {
                 firstBuffer = buffer;

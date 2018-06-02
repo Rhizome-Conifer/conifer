@@ -75,7 +75,7 @@ class WebsockController(BaseController):
         rec = info['rec']
         coll_name = info['coll_name']
 
-        user = self.user_manager.all_users.get_user(user)
+        user = self.user_manager.all_users.make_user(user)
         collection = user.get_collection_by_id(coll, coll_name)
         recording = collection.get_recording(rec)
 

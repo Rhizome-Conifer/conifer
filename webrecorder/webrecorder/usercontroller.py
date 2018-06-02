@@ -236,6 +236,12 @@ class UserController(BaseController):
             user['desc'] = desc
             return {}
 
+
+        @self.app.route(['/api/<anything:path>', '/api'])
+        def api_fallthrough(anything):
+            return self._raise_error(404, 'not_found')
+
+
         # OLD VIEWS BELOW
         # ====================================================================
         @self.app.get(['/<username>', '/<username>/'])
