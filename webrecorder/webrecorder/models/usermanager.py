@@ -299,12 +299,6 @@ class UserManager(object):
     def access(self):
         return self._get_access()
 
-    def _raise_error(self, code, message='not_found'):
-        result = {'error': message}
-        response.status = code
-
-        raise HTTPError(code, message, exception=result)
-
     def get_roles(self):
         return [x for x in self.cork._store.roles]
 
