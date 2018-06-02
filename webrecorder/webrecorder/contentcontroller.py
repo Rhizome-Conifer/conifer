@@ -601,6 +601,10 @@ class ContentController(BaseController, RewriterApp):
 
         the_user, collection, recording = self.user_manager.get_user_coll_rec(user, coll_name, rec_name)
 
+        if not the_user:
+            msg = 'not_found' if user == 'api' else 'no_such_user'
+            self._raise_error(404, msg)
+
         coll = collection.my_id if collection else None
         rec = recording.my_id if recording else None
 

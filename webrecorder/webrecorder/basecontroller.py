@@ -64,7 +64,8 @@ class BaseController(object):
         try:
             user = self.user_manager.all_users[user]
         except Exception as e:
-            self._raise_error(404, 'no_such_user')
+            msg = 'not_found' if user == 'api' else 'no_such_user'
+            self._raise_error(404, msg)
 
         return user
 
