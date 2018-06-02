@@ -25,7 +25,7 @@ function HomepageMessage(props) {
                   <Link to="/_register"><strong>Sign Up</strong></Link> or <button className="button-link" onClick={showModalCB}>Login</button> to keep your collection and give it a permanent address.
                 </li>
                 <li>
-                  Continue capturing by entering another URL below and clicking <b>Record</b>
+                  Continue capturing by entering another URL below and clicking <b>Start</b>
                 </li>
               </ul>
             </div>
