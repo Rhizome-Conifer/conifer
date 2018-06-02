@@ -375,7 +375,7 @@ class RedisSessionMiddleware(CookieGuard):
 
     def _delete_session_cookie(self, environ, headers, name):
         expires = strftime("%a, %d-%b-%Y %T GMT", gmtime(10))
-        value = '{0}=deleted; Path=/; HttpOnly; Expires={1};'.format(name, expires)
+        value = '{0}=deleted; Path=/; HttpOnly; Expires={1}'.format(name, expires)
 
         scheme = environ.get('wsgi.url_scheme', '')
         if scheme.lower() == 'https':
