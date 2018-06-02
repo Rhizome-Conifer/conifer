@@ -7,6 +7,7 @@ from warcio.timeutils import datetime_to_http_date
 import base64
 import pickle
 import redis
+from time import strftime, gmtime
 
 from webrecorder.cookieguard import CookieGuard
 from webrecorder.utils import redis_pipeline
@@ -293,7 +294,7 @@ class RedisSessionMiddleware(CookieGuard):
         session = environ['webrec.session']
 
         if session.should_delete:
-            self._delete_cookie(headers, self.sesh_key)
+            self._delete_session_cookie(environ, headers, self.sesh_key)
             self.redis.delete(session.key)
         else:
             if session.should_renew:
@@ -367,6 +368,16 @@ class RedisSessionMiddleware(CookieGuard):
                              duration)
 
         scheme = session.environ.get('wsgi.url_scheme', '')
+        if scheme.lower() == 'https':
+            value += '; Secure'
+
+        headers.append(('Set-Cookie', value))
+
+    def _delete_session_cookie(self, environ, headers, name):
+        expires = strftime("%a, %d-%b-%Y %T GMT", gmtime(10))
+        value = '{0}=deleted; Path=/; HttpOnly; Expires={1}'.format(name, expires)
+
+        scheme = environ.get('wsgi.url_scheme', '')
         if scheme.lower() == 'https':
             value += '; Secure'
 

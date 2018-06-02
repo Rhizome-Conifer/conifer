@@ -197,7 +197,7 @@ class TestAppContentDomain(FullStackTests):
 
         assert res.json['deleted_user'] == self.anon_user
 
-        assert res.headers['Set-Cookie']
+        assert 'HttpOnly' in res.headers['Set-Cookie']
 
         assert len(self.testapp.cookies) == 0
 
