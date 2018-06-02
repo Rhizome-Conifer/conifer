@@ -42,6 +42,7 @@ class RemoteBrowserUI extends Component {
     };
 
     this.pywbParams = {
+      audio: 1,
       static_prefix: '/static/',
       api_prefix: '/api/browsers',
       clipboard: '#clipboard',
