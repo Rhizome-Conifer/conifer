@@ -121,20 +121,20 @@ const controllerRoutes = [
     name: 'record'
   },
   {
-    path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?/:splat(.*)`,
-    classOverride: '',
-    component: Patch,
-    exact: true,
-    footer: false,
-    name: 'patch'
-  },
-  {
     path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
     classOverride: '',
     component: Patch,
     exact: true,
     footer: false,
     name: 'rb patch'
+  },
+  {
+    path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?/:splat(.*)`,
+    classOverride: '',
+    component: Patch,
+    exact: true,
+    footer: false,
+    name: 'patch'
   },
   {
     path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,

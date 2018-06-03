@@ -1,37 +1,27 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { Button } from 'react-bootstrap';
 import { indexResource } from 'redux-search/dist/commonjs/actions';
 
 import { columns } from 'config';
 
 import { QueryBox } from 'containers';
 
-import Modal from 'components/Modal';
 import Searchbox from 'components/Searchbox';
 
 
-class CollectionFiltersUI extends Component {
+class CollectionFiltersUI extends PureComponent {
   static contextTypes = {
     canAdmin: PropTypes.bool
   };
 
   static propTypes = {
-    addPagesToLists: PropTypes.func,
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     isIndexing: PropTypes.bool,
-    openAddToList: PropTypes.func,
-    pages: PropTypes.object,
     querying: PropTypes.bool,
     search: PropTypes.func,
     searchText: PropTypes.string,
     searchPages: PropTypes.func,
-    selectedPageIdx: PropTypes.oneOfType([
-      PropTypes.number,
-      PropTypes.array
-    ]),
     setPageQuery: PropTypes.func
   };
 
@@ -39,47 +29,7 @@ class CollectionFiltersUI extends Component {
     super(props);
 
     this.indexed = false;
-    this.state = {
-      addToListModal: false,
-      checkedLists: {},
-    };
   }
-
-  addToList = () => {
-    const { checkedLists } = this.state;
-    const { collection, pages, selectedPageIdx } = this.props;
-
-    if (!checkedLists || Object.entries(checkedLists).length === 0 || !selectedPageIdx) {
-      return;
-    }
-
-    const selectedLists = Object.entries(checkedLists).filter(l => l[1]);
-    const lists = selectedLists.map(obj => obj[0]);
-
-    const pagesToAdd = [];
-
-    if (typeof selectedPageIdx === 'object') {
-      for(const pgIdx of selectedPageIdx) {
-        pagesToAdd.push(pages.get(pgIdx).toJS());
-      }
-    } else {
-      pagesToAdd.push(pages.get(selectedPageIdx).toJS());
-    }
-
-    this.props.addPagesToLists(collection.get('owner'), collection.get('id'), pagesToAdd, lists);
-    this.closeAddToList();
-  }
-
-  listCheckbox = (evt) => {
-    const { checkedLists } = this.state;
-
-    checkedLists[evt.target.name] = evt.target.checked;
-
-    this.setState({ checkedLists });
-  }
-
-  openAddToList = () => this.setState({ addToListModal: true })
-  closeAddToList = () => this.setState({ addToListModal: false })
 
   search = (evt) => {
     const { dispatch, searchPages, setPageQuery } = this.props;
@@ -99,7 +49,6 @@ class CollectionFiltersUI extends Component {
     const { dispatch, searchPages } = this.props;
     dispatch(searchPages(''));
   }
-
 
   startIndex = () => {
     const { collection, dispatch, searchPages } = this.props;
@@ -127,9 +76,6 @@ class CollectionFiltersUI extends Component {
   }
 
   render() {
-    const { canAdmin, isAnon } = this.context;
-    const { collection } = this.props;
-
     return (
       <div className="wr-coll-utilities">
         <nav>
@@ -142,38 +88,6 @@ class CollectionFiltersUI extends Component {
                 index={this.startIndex}
                 searchText={this.props.searchText}
                 isIndexing={this.props.isIndexing} />
-          }
-          {/*
-            !isAnon && canAdmin && this.props.selectedPageIdx !== null &&
-              <Button bsSize="xs" onClick={this.openAddToList}>Add selection to lists</Button>
-          */}
-          {
-            canAdmin &&
-              <Modal
-                visible={this.state.addToListModal}
-                closeCb={this.closeAddToList}
-                dialogClassName="add-to-lists-modal"
-                header={<h4>Add to ...</h4>}
-                footer={
-                  <React.Fragment>
-                    <Button disabled style={{ marginRight: 5 }}>Create new list</Button>
-                    <Button onClick={this.addToList} bsStyle="success">Save</Button>
-                  </React.Fragment>
-                }>
-                <ul>
-                  {
-                    collection.get('lists').map((listObj) => {
-                      const id = listObj.get('id');
-                      return (
-                        <li key={id}>
-                          <input type="checkbox" onChange={this.listCheckbox} name={id} id={`add-to-list-${id}`} checked={this.state.checkedLists[id] || false} />
-                          <label htmlFor={`add-to-list-${id}`}>{listObj.get('title')}</label>
-                        </li>
-                      );
-                    })
-                  }
-                </ul>
-              </Modal>
           }
         </nav>
       </div>

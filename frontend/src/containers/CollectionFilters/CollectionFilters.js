@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { createSearchAction } from 'redux-search';
 
-import { bulkAddTo } from 'redux/modules/list';
 import { setQueryMode } from 'redux/modules/pageQuery';
 
 import { getSearchText } from 'redux/selectors/search';
@@ -25,14 +24,6 @@ const mapStateToProps = (outerState) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    addPagesToLists: (user, coll, pages, lists) => {
-      const bookmarkPromises = [];
-      for (const list of lists) {
-        dispatch(bulkAddTo(user, coll, list, pages));
-      }
-
-      return Promise.all(bookmarkPromises);
-    },
     searchPages: createSearchAction('collection.pages'),
     setPageQuery: coll => dispatch(setQueryMode(true, coll)),
     dispatch
