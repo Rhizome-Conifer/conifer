@@ -90,7 +90,7 @@ class TestAppContentDomain(FullStackTests):
         res = self.content_get('/{user}/temp/mp_/http://httpbin.org/get?food=bar')
         assert '"food": "bar"' in res.text
 
-        csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: app-host/_set_session; form-action 'self'"
+        csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: app-host/_set_session; frame-ancestors app-host; form-action 'self'"
         assert res.headers['Content-Security-Policy'] == csp
 
     def test_redir_to_content_frame(self):

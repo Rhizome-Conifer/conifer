@@ -224,6 +224,7 @@ class TestLoginMigrate(FullStackTests):
             self.sleep_try(0.5, 10.0, assert_user_dir_removed)
 
     def test_stats(self):
-        assert self.redis.hget(Stats.TEMP_MOVE_KEY, today_str()) == '1'
-
+        today = today_str()
+        assert int(self.redis.hget(Stats.TEMP_MOVE_COUNT_KEY, today)) == 1
+        assert int(self.redis.hget(Stats.TEMP_MOVE_SIZE_KEY, today)) > 0
 

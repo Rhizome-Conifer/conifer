@@ -73,6 +73,7 @@ class ContentController(BaseController, RewriterApp):
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
         if self.app_host and self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
+            csp += '; frame-ancestors ' + self.app_host
 
         csp += "; form-action 'self'"
         return csp
