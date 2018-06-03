@@ -398,7 +398,7 @@ class CollectionDetailUI extends Component {
     const collRedirect = collection.get('loaded') && !collection.get('slug_matched') && params.coll !== collection.get('slug');
 
     if (collection.get('error') || pageIndexAccess || listIndexAccess) {
-      return isAnon ?
+      return params.user.startsWith('temp-') ?
         <Temp404 /> :
         <HttpStatus>{collection.getIn(['error', 'error_message'])}</HttpStatus>;
     } else if (collRedirect) {
@@ -512,7 +512,7 @@ class CollectionDetailUI extends Component {
           pageSelection={selectedPageIdx} />
 
         {
-          isAnon &&
+          isAnon && canAdmin &&
             <TempUserAlert />
         }
 
@@ -540,9 +540,7 @@ class CollectionDetailUI extends Component {
 
         {
           !activeList &&
-            <CollectionFilters
-              pages={pages}
-              selectedPageIdx={selectedPageIdx} />
+            <CollectionFilters />
         }
 
         <OutsideClick classes="wr-coll-detail-table" handleClick={this.deselect}>

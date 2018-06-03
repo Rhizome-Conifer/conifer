@@ -87,6 +87,7 @@ class InspectorPanelUI extends PureComponent {
                         clickToEdit
                         initial={bk.get('desc')}
                         placeholder="Add annotation"
+                        readOnly={!canAdmin}
                         onSave={this.editBookmarkDesc}
                         success={bkEdited} />
                     </header>
