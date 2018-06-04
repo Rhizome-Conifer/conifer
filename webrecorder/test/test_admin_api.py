@@ -1,7 +1,10 @@
 from .testutils import FullStackTests
 
 from webrecorder.models.usermanager import CLIUserManager
+from webrecorder.utils import today_str
 
+
+# ============================================================================
 class TestAdminAPI(FullStackTests):
     @classmethod
     def setup_class(cls):
@@ -131,5 +134,65 @@ class TestAdminAPI(FullStackTests):
         assert res.json['user']['name'] == 'Test User'
         assert res.json['user']['desc'] == 'Custom Desc'
 
+    def test_api_stats_search(self):
+        res = self.testapp.post('/api/v1/stats/search')
 
+        assert isinstance(res.json, list)
+        assert 'All Capture Logged In' in res.json
+        assert 'All Capture Temp' in res.json
+        assert 'Temp Table' in res.json
+        assert 'User Table' in res.json
+
+    def test_api_stats_query_timeseries(self):
+        params = {'range': {'from': today_str(),
+                            'to': today_str()
+                           },
+                  'targets': [{'target': 'All Capture Logged In', 'type': 'timeserie'},
+                              {'target': 'All Capture Temp', 'type': 'timeserie'},
+                              {'target': 'not_found', 'type': 'timeserie'},
+                             ]
+                 }
+
+        res = self.testapp.post_json('/api/v1/stats/query', params=params)
+
+        assert isinstance(res.json, list)
+        assert len(res.json) == 3
+
+    def test_api_stats_query_users(self):
+        params = {'range': {'from': today_str(),
+                            'to': today_str()
+                           },
+                  'targets': [{'target': 'User Table', 'type': 'table'},
+                             ]
+                 }
+
+        res = self.testapp.post_json('/api/v1/stats/query', params=params)
+
+        assert isinstance(res.json, list)
+        assert len(res.json) == 1
+        data = res.json[0]
+
+        assert len(data['rows']) == 3
+
+        assert set(data[0] for data in data['rows']) == {'test', 'another', 'adminuser'}
+
+    def test_api_stats_query_temps(self):
+        params = {'range': {'from': today_str(),
+                            'to': today_str()
+                           },
+                  'targets': [{'target': 'Temp Table', 'type': 'table'},
+                              {'target': 'not found', 'type': 'table'},
+                             ]
+                 }
+
+        res = self.testapp.post_json('/api/v1/stats/query', params=params)
+
+        assert isinstance(res.json, list)
+        assert len(res.json) == 2
+        assert res.json[1] == {}
+        data = res.json[0]
+
+        assert len(data['rows']) == 1
+
+        assert set(data[0] for data in data['rows']) == {self.anon_user}
 

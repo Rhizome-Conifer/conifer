@@ -7,15 +7,48 @@ import re
 
 from operator import itemgetter
 
-from bottle import request, HTTPError
+from bottle import request, HTTPError, response
 from datetime import datetime
 from re import sub
 
 from webrecorder.basecontroller import BaseController
+from webrecorder.models import Stats
+
+from datetime import datetime, timedelta
 
 
 # ============================================================================
 class AdminController(BaseController):
+    STATS_LABELS = {
+        'All Capture Logged In': Stats.ALL_CAPTURE_USER_KEY,
+        'All Capture Temp': Stats.ALL_CAPTURE_TEMP_KEY,
+
+        'Replay Logged In': Stats.REPLAY_USER_KEY,
+        'Replay Temp': Stats.REPLAY_TEMP_KEY,
+
+        'Patch Logged In': Stats.REPLAY_TEMP_KEY,
+        'Patch Temp': Stats.PATCH_TEMP_KEY,
+
+        'Delete Logged In': Stats.DELETE_USER_KEY,
+        'Delete Temp': Stats.DELETE_TEMP_KEY,
+
+        'Num Downloads Logged In': Stats.DOWNLOADS_USER_COUNT_KEY,
+        'Downloaded Size Logged In': Stats.DOWNLOADS_USER_SIZE_KEY,
+
+        'Num Downloads Temp': Stats.DOWNLOADS_TEMP_COUNT_KEY,
+        'Downloaded Size Temp': Stats.DOWNLOADS_TEMP_SIZE_KEY,
+
+        'Num Uploads': Stats.UPLOADS_COUNT_KEY,
+        'Uploaded Size': Stats.UPLOADS_SIZE_KEY,
+
+        'Bookmarks Added': Stats.BOOKMARK_ADD_KEY,
+        'Bookmarks Changed': Stats.BOOKMARK_MOD_KEY,
+        'Bookmarks Deleted': Stats.BOOKMARK_DEL_KEY,
+    }
+
+    USER_TABLE = 'User Table'
+    TEMP_TABLE = 'Temp Table'
+
     def __init__(self, *args, **kwargs):
         super(AdminController, self).__init__(*args, **kwargs)
         config = kwargs['config']
@@ -27,6 +60,25 @@ class AdminController(BaseController):
         self.tags_key = config['tags_key']
         self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
 
+        self.init_all_stats()
+
+    def init_all_stats(self):
+        self.all_stats = {}
+
+        for name, key in self.STATS_LABELS.items():
+            self.all_stats[name] = key
+
+        for key in self.redis.scan_iter(Stats.BROWSERS_KEY.format('*')):
+            name = 'Browser ' + key[len(Stats.BROWSERS_KEY.format('')):]
+            self.all_stats[name] = key
+
+        for key in self.redis.scan_iter(Stats.SOURCES_KEY.format('*')):
+            name = 'Sources ' + key[len(Stats.SOURCES_KEY.format('')):]
+            self.all_stats[name] = key
+
+        self.all_stats[self.USER_TABLE] = self.USER_TABLE
+        self.all_stats[self.TEMP_TABLE] = self.TEMP_TABLE
+
     def admin_view(self, function):
         def check_access(*args, **kwargs):
             if not self.access.is_superuser():
@@ -35,6 +87,130 @@ class AdminController(BaseController):
             return function(*args, **kwargs)
 
         return check_access
+
+    def grafana_time_stats(self, req):
+        req = request.json or {}
+        from_var = req['range']['from'][:10]
+        to_var = req['range']['to'][:10]
+
+        from_dt = datetime.strptime(from_var, '%Y-%m-%d')
+        to_dt = datetime.strptime(to_var, '%Y-%m-%d')
+        td = timedelta(days=1)
+
+        dates = []
+        timestamps = []
+
+        while from_dt <= to_dt:
+            dates.append(from_dt.date().isoformat())
+            timestamps.append(from_dt.timestamp() * 1000)
+            from_dt += td
+
+        resp = [self.load_series(target, dates, timestamps) for target in req['targets']]
+
+        return resp
+
+    def load_series(self, target, dates, timestamps):
+        if target['type'] == 'timeserie':
+            return self.load_time_series(target['target'], dates, timestamps)
+
+        elif target['type'] == 'table':
+            if target['target'] == self.USER_TABLE:
+                return self.load_user_table()
+            elif target['target'] == self.TEMP_TABLE:
+                return self.load_temp_table()
+
+        return {}
+
+    def load_time_series(self, key, dates, timestamps):
+        datapoints = []
+
+        redis_key = self.all_stats.get(key, 'st:' + key)
+
+        if dates:
+            results = self.redis.hmget(redis_key, dates)
+        else:
+            results = []
+
+        for count, ts in zip(results, timestamps):
+            count = int(count or 0)
+            datapoints.append((count, ts))
+
+        return {'target': key,
+                'datapoints': datapoints
+               }
+
+    def load_temp_table(self):
+        columns = [
+            {'text': 'Id', 'type': 'string'},
+            {'text': 'Size', 'type': 'number'},
+            {'text': 'Creation Date', 'type': 'time'},
+            {'text': 'Updated Date', 'type': 'time'},
+        ]
+
+        column_keys = ['size', 'created_at', 'updated_at']
+
+        users = []
+
+        for user_key in self.redis.scan_iter('u:temp-*:info', count=100):
+            user_data = self.redis.hmget(user_key, column_keys)
+            user_data.insert(0, user_key.split(':')[1])
+            user_data[1] = int(user_data[1])
+            user_data[2] = self.parse_iso_or_ts(user_data[2])
+            user_data[3] = self.parse_iso_or_ts(user_data[3])
+
+            users.append(user_data)
+
+        return {'columns': columns,
+                'rows': users,
+                'type': 'table'
+               }
+
+    def load_user_table(self):
+        columns = [
+            {'text': 'Id', 'type': 'string'},
+            {'text': 'Size', 'type': 'number'},
+            {'text': 'Max Size', 'type': 'number'},
+            {'text': 'Last Login Date', 'type': 'time'},
+            {'text': 'Creation Date', 'type': 'time'},
+            {'text': 'Updated Date', 'type': 'time'},
+            {'text': 'Role', 'type': 'string'},
+            {'text': 'Email', 'type': 'string'},
+        ]
+        column_keys = ['size', 'max_size', 'last_login', 'creation_date', 'updated_at', 'role', 'email_addr']
+
+        users = []
+
+        for user_key in self.redis.scan_iter('u:*:info', count=100):
+            if user_key.startswith('u:temp-'):
+                continue
+
+            user_data = self.redis.hmget(user_key, column_keys)
+
+            user_data.insert(0, user_key.split(':')[1])
+            user_data[1] = int(user_data[1])
+            user_data[2] = int(user_data[2])
+            user_data[3] = self.parse_iso_or_ts(user_data[3])
+            user_data[4] = self.parse_iso_or_ts(user_data[4])
+            user_data[5] = self.parse_iso_or_ts(user_data[5])
+
+            users.append(user_data)
+
+        return {'columns': columns,
+                'rows': users,
+                'type': 'table'
+               }
+
+    @classmethod
+    def parse_iso_or_ts(self, value):
+        try:
+            return int(value) * 1000
+        except:
+            pass
+
+        try:
+            return int(datetime.strptime(value[:19], '%Y-%m-%d %H:%M:%S').timestamp()) * 1000
+        except:
+            return 0
 
     def init_routes(self):
         @self.app.get('/api/v1/admin/defaults')
@@ -196,3 +372,33 @@ class AdminController(BaseController):
                 return {'errors': errs}
 
             return {'user': user.serialize(compute_size_allotment=True)}
+
+        # Grafana Stats APIs
+        @self.app.get('/api/v1/stats/')
+        @self.admin_view
+        def stats_ping():
+            return {}
+
+        @self.app.post('/api/v1/stats/search')
+        @self.admin_view
+        def stats_search():
+            stats = sorted(list(self.all_stats.keys()))
+
+            response.content_type = 'application/json'
+            return json.dumps(stats)
+
+        @self.app.post('/api/v1/stats/query')
+        @self.admin_view
+        def stats_query():
+            stats = self.grafana_time_stats(request.json)
+            response.content_type = 'application/json'
+            return json.dumps(stats)
+
+
+        @self.app.post('/api/v1/stats/annotations')
+        @self.admin_view
+        def stats_annotations():
+            return []
+
+
+
