@@ -56,6 +56,8 @@
     .bookmarks {
         position: relative;
         flex-grow: 1;
+        // sidebar handle buffer
+        margin-right: .4rem;
 
         &:before, &:after {
             content: '';

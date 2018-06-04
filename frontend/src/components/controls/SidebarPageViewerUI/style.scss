@@ -10,7 +10,9 @@
     .pages {
         position: relative;
         flex-grow: 1;
-        margin-bottom: 1rem;
+
+        // sidebar handle buffer
+        margin: 0 .4rem 1rem 0;
 
         &:before, &:after {
             content: '';

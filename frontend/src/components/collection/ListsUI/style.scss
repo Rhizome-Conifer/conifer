@@ -9,6 +9,9 @@
 
     .wr-coll-sidebar__contentOuter {
         overflow: auto !important;
+
+        // sidebar handle buffer
+        margin-right: .4rem;
     }
 
     .sidebar-header {
