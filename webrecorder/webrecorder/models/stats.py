@@ -9,7 +9,8 @@ from pywb.warcserver.index.cdxobject import CDXObject
 class Stats(object):
     TEMP_PREFIX = 'temp-'
 
-    TEMP_MOVE_KEY = 'st:temp-moves'
+    TEMP_MOVE_COUNT_KEY = 'st:temp-moves'
+    TEMP_MOVE_SIZE_KEY = 'st:temp-moves-size'
 
     ALL_CAPTURE_USER_KEY = 'st:all-capture-user'
     ALL_CAPTURE_TEMP_KEY = 'st:all-capture-temp'
@@ -171,9 +172,11 @@ class Stats(object):
         self.redis.hincrby(key, today_str(), size)
 
     def move_temp_to_user_usage(self, collection):
+        today = today_str()
         date_str = collection.get_created_iso_date()
         size = collection.size
         with redis_pipeline(self.redis) as pi:
-            pi.hincrby(self.TEMP_MOVE_KEY, today_str(), 1)
-            pi.hincrby(self.ALL_CAPTURE_TEMP_KEY, date_str, -size)
+            pi.hincrby(self.TEMP_MOVE_COUNT_KEY, today, 1)
+            pi.hincrby(self.TEMP_MOVE_SIZE_KEY, today, size)
             pi.hincrby(self.ALL_CAPTURE_USER_KEY, date_str, size)
+            pi.hincrby(self.ALL_CAPTURE_TEMP_KEY, date_str, -size)

@@ -395,10 +395,9 @@ class ContentController(BaseController, RewriterApp):
                 self._raise_error(400, 'invalid_request')
 
             try:
-                res = json.loads(request.query.getunicode('json'))
                 # delete session (will updated cookie)
                 self.get_session().delete()
-                return res
+                return {'success': 'logged_out'}
 
             except Exception as e:
                 self._raise_error(400, 'invalid_request')

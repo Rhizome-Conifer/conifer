@@ -686,11 +686,13 @@ class TestRegisterMigrate(FullStackTests):
 
     def test_stats(self):
         today = today_str()
-        assert self.redis.hget(Stats.TEMP_MOVE_KEY, today) == '1'
+        assert int(self.redis.hget(Stats.TEMP_MOVE_COUNT_KEY, today)) == 1
+        assert int(self.redis.hget(Stats.TEMP_MOVE_SIZE_KEY, today)) > 0
 
         keys = set(self.redis.keys('st:*'))
         assert keys == {
-            Stats.TEMP_MOVE_KEY,
+            Stats.TEMP_MOVE_COUNT_KEY,
+            Stats.TEMP_MOVE_SIZE_KEY,
             Stats.ALL_CAPTURE_TEMP_KEY,
             Stats.ALL_CAPTURE_USER_KEY,
             Stats.REPLAY_USER_KEY,
