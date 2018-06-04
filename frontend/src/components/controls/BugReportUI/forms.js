@@ -14,7 +14,10 @@ class ReportBugForm extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      desc: '',
+      email: ''
+    };
   }
 
   componentDidMount() {

@@ -14,11 +14,11 @@ class BugReportUI extends Component {
     closeBugReport: PropTypes.func,
     openBugReport: PropTypes.func,
     showModal: PropTypes.bool,
-    submit: PropTypes.func,
+    sendBugReport: PropTypes.func,
   };
 
   submitWrapper = (data) => {
-    this.props.submit(data);
+    this.props.sendBugReport(data);
     this.props.closeBugReport();
   }
 
