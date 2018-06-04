@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Alert } from 'react-bootstrap';
 
 import WebSocketHandler from 'helpers/ws';
-import { deleteStorage, getStorage, setStorage } from 'helpers/utils';
+import { deleteStorage, getStorage, remoteBrowserMod, setStorage } from 'helpers/utils';
 
 import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
@@ -21,6 +22,7 @@ class RemoteBrowserUI extends Component {
     autoscroll: PropTypes.bool,
     clipboard: PropTypes.bool,
     dispatch: PropTypes.func,
+    history: PropTypes.object,
     inactiveTime: PropTypes.number,
     params: PropTypes.object,
     rb: PropTypes.string,
@@ -34,8 +36,10 @@ class RemoteBrowserUI extends Component {
   constructor(props) {
     super(props);
 
+    this.reloadHandle = null;
     this.state = {
       countdownLabel: false,
+      dismissCountdown: false,
       coutdown: '',
       message: '',
       messageSet: false
@@ -143,6 +147,8 @@ class RemoteBrowserUI extends Component {
     if (this.socket) {
       this.socket.close();
     }
+
+    clearTimeout(this.reloadHandle);
   }
 
   onCountdown = (seconds, countdownText) => {
@@ -151,6 +157,10 @@ class RemoteBrowserUI extends Component {
         countdownLabel: true,
         countdown: countdownText
       });
+    }
+
+    if (seconds <= 60 && this.state.dismissCountdown) {
+      this.setState({ dismissCountdown: false });
     }
 
     if (seconds <= 0) {
@@ -210,7 +220,7 @@ class RemoteBrowserUI extends Component {
 
   recreateBrowser = () => {
     const { currMode } = this.context;
-    const { params: { user, coll, rec } } = this.props;
+    const { history, params: { user, coll, rec }, rb, timestamp, url } = this.props;
     let message;
 
     if (currMode === 'record') {
@@ -218,10 +228,10 @@ class RemoteBrowserUI extends Component {
         return;
       }
 
-      const collUrl = `/${user}/${coll}`;
+      const collUrl = `/${user}/${coll}/`;
       message = (
-        `Sorry, the remote browser recording session has expired.<br />` +
-        `You can <a href="${collUrl}/${rec}">view the recording</a> or <a href="${collUrl}/$new">create a new recording</a>`
+          `Sorry, the remote browser recording session has expired.<br />
+          You can <a href="${collUrl}index?query=session:${rec}">view the recording</a> or <a href="${collUrl}$new">create a new recording</a>`
       );
 
       this.setState({
@@ -229,33 +239,46 @@ class RemoteBrowserUI extends Component {
         messageSet: true
       });
 
-      // TODO: set in global state
-      window.containerExpired = true;
       return;
     }
 
-    message = 'The remote browser session has expired, requesting a new browser';
+    message = `The remote browser session has expired, ${currMode === 'patch' ? 'transitioning to replay' : 'requesting a new browser'}`;
     this.setState({
       message
     });
 
-    const url = `/_message?message=${message}&msg_type=warning`;
-    fetch(url, { headers: new Headers({ 'x-requested-with': 'XMLHttpRequest' }) }).then((res) => {
+
+    this.reloadHandle = setTimeout(() => {
       if (currMode === 'patch') {
-        // RouteTo.replayRecording(user, coll, cbrowserMod(), url);
+        history.push(`/${user}/${coll}/${remoteBrowserMod(rb, timestamp, '/')}${url}`);
       } else {
-        // TODO: better way?
         window.location.reload();
       }
-    });
+    }, 5000);
   }
+
+  hideCountdown = () => this.setState({ dismissCountdown: true })
 
   render() {
     const { sidebarResize } = this.props;
+    const { countdown, countdownLabel, dismissCountdown, message } = this.state;
+
     return (
       <React.Fragment>
-        <div id="message" className="browser" />
-        <div id="browser" className="browser" style={sidebarResize ? { pointerEvents: 'none' } : {}} />
+        {
+          message &&
+            <Alert className="rb-message">
+              <div dangerouslySetInnerHTML={{ __html: message }} />
+            </Alert>
+        }
+        {
+          !message && countdownLabel && !dismissCountdown &&
+            <Alert bsStyle="warning" className="rb-countdown" onDismiss={this.hideCountdown}>
+              Browser Time Left: <b>{countdown}</b>
+            </Alert>
+        }
+        <div id="message" key="msg" className="browser" />
+        <div id="browser" key="browser" className="browser" style={sidebarResize ? { pointerEvents: 'none' } : {}} />
       </React.Fragment>
     );
   }
