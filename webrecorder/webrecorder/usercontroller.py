@@ -46,12 +46,6 @@ class UserController(BaseController):
 
         return user
 
-    def check_clear_session_redirect(self, data):
-        if self.content_host and self.app_host != self.content_host:
-            param_str = urlencode({'json': json.dumps(data)})
-            self.redir_host(self.content_host, '/_clear_session?' + param_str, status=303)
-
-
     def init_routes(self):
         # USER CHECKS
         @self.app.get('/api/v1/auth/check_username/<username>')
@@ -123,7 +117,6 @@ class UserController(BaseController):
                 if result.get('new_coll_name'):
                     data['new_coll_name'] = result['new_coll_name']
 
-                self.check_clear_session_redirect(data)
                 return data
 
             #self._raise_error(401, result.get('error', ''))
@@ -137,7 +130,6 @@ class UserController(BaseController):
             self.user_manager.logout()
 
             data = {'success': 'logged_out'}
-            self.check_clear_session_redirect(data)
 
             return data
 
@@ -224,7 +216,6 @@ class UserController(BaseController):
                 return self._raise_error(400, 'error_deleting')
 
             data = {'deleted_user': username}
-            self.check_clear_session_redirect(data)
             return data
 
         @self.app.post('/api/v1/user/<username>/desc')

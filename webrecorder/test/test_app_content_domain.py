@@ -177,51 +177,31 @@ class TestAppContentDomain(FullStackTests):
 
         assert 'Access-Control-Allow-Origin' not in res.headers
 
-
-
     def test_delete_temp_user(self):
         # ensure cookies cleared on content domain also
 
         assert len(self.testapp.cookies) == 1
         res = self.testapp.delete('/api/v1/user/{user}'.format(user=self.anon_user),
-                                  headers={'Host': 'app-host'}, status=303)
+                                  headers={'Host': 'app-host'})
+
+        assert res.json['deleted_user'] == self.anon_user
 
         # counts as 1 cookie still
         assert len(self.testapp.cookies) == 1
 
-        redirect_url  = 'http://content-host/_clear_session?' + urlencode({'json': json.dumps({'deleted_user': self.anon_user})})
-        assert res.headers['Location'] == redirect_url
 
-        # adding header to use content-host not content-host:80
-        res = res.follow(headers={'Host': 'content-host'})
-
-        assert res.json['deleted_user'] == self.anon_user
-
-        assert 'HttpOnly' in res.headers['Set-Cookie']
-
-        assert len(self.testapp.cookies) == 0
-
-    def test_create_login(self):
+    def test_create_and_login(self):
         self.manager.create_user('test@example.com', 'test', 'TestTest123', 'archivist', 'Test')
-
-        assert len(self.testapp.cookies) == 0
 
         res = self.testapp.post_json('/api/v1/auth/login',
                                      params={'username': 'test', 'password': 'TestTest123'},
-                                     headers={'Host': 'app-host'}, status=303)
-
-        # adding header to use content-host not content-host:80
-        res = res.follow(headers={'Host': 'content-host', 'Origin': 'http://app-host'})
+                                     headers={'Host': 'app-host'})
 
         assert res.json == {'anon': False, 'coll_count': 1, 'role': 'archivist', 'username': 'test'}
 
         assert len(self.testapp.cookies) == 1
 
         assert self.testapp.cookies['__test_sesh'] != ''
-
-        assert res.headers['Access-Control-Allow-Origin'] == 'http://app-host'
-        assert res.headers['Access-Control-Allow-Credentials'] == 'true'
-
 
     def test_logout(self):
         assert len(self.testapp.cookies) == 1
@@ -232,30 +212,31 @@ class TestAppContentDomain(FullStackTests):
         # content domain, also wrong, 403
         res = self.testapp.post_json('/api/v1/auth/logout', headers={'Host': 'content-host'}, status=403)
 
+        res = self.testapp.post_json('/api/v1/auth/logout', headers={'Host': 'app-host'})
 
+        assert res.json == {'success': 'logged_out'}
+
+        # content domain cookies still remains
         assert len(self.testapp.cookies) == 1
-
-        res = self.testapp.post_json('/api/v1/auth/logout', headers={'Host': 'app-host'}, status=303)
-
-        # adding header to use content-host not content-host:80
-        res = res.follow(headers={'Host': 'content-host', 'Origin': 'http://app-host'})
-
-        assert res.json['success'] == 'logged_out'
-
-        assert len(self.testapp.cookies) == 0
-        assert '__test_sesh' not in self.testapp.cookies
-
-        assert res.headers['Access-Control-Allow-Origin'] == 'http://app-host'
-        assert res.headers['Access-Control-Allow-Credentials'] == 'true'
 
     def test_content_clear_session(self):
         # wrong host
         self.app_get('/_clear_session', status=400)
 
-        # no json block, correct host
-        self.content_get('/_clear_session?json=xyz', status=400)
+        headers = {'Host': 'content-host',
+                   'Origin': 'http://app-host'
+                  }
 
         # clear session ok
-        res = self.content_get('/_clear_session?json=%7B%22foo%22%3A%20%22bar%22%7D', status=200)
+        res = self.testapp.get('/_clear_session', headers=headers)
 
-        assert res.json == {'foo': 'bar'}
+        assert res.json == {'success': 'logged_out'}
+
+        assert len(self.testapp.cookies) == 0
+        assert 'HttpOnly' in res.headers['Set-Cookie']
+        assert '__test_sesh' not in self.testapp.cookies
+
+        assert res.headers['Access-Control-Allow-Origin'] == 'http://app-host'
+        assert res.headers['Access-Control-Allow-Credentials'] == 'true'
+
+
