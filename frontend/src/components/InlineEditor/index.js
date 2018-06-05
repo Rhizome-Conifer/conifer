@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
 
+import { collection as collectionErrors } from 'helpers/userMessaging';
+
 import { CheckIcon, PencilIcon, XIcon } from 'components/icons';
 
 import './style.scss';
@@ -168,7 +170,7 @@ class InlineEditor extends PureComponent {
                   {
                     (error || this.state.error) &&
                     <div className="help-spanner">
-                      <HelpBlock>{ error || this.state.error }</HelpBlock>
+                      <HelpBlock>{ error ? collectionErrors[error] || 'Error encountered' : this.state.error }</HelpBlock>
                     </div>
                   }
                 </div>
