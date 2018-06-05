@@ -259,7 +259,12 @@ class UserManager(object):
     def get_user_email(self, user):
         if not user:
             return ''
-        user_data = self.all_users[user]
+
+        try:
+            user_data = self.all_users[user]
+        except:
+            user_data = None
+
         if user_data:
             return user_data.get('email_addr', '')
         else:

@@ -5,7 +5,7 @@ from werkzeug.useragents import UserAgent
 
 
 
-template = """
+DNLR_TEMPLATE = """
 Test in New Recording: **[{actual_url}]({record_url})**
 
 User Reported Url: **[{url}]({url})**
@@ -25,6 +25,23 @@ Additional Info:
 Specific Issues:
 
 """
+
+
+UI_TEMPLATE = """
+
+Report Source Url: **[{url}]({url})**
+
+Time: **{time}**
+
+Browser: **{ua_platform} {ua_browser} {ua_version}**
+
+Contact Email: {email}
+
+Issue Description:
+{desc}
+
+"""
+
 
 
 # ============================================================================
@@ -156,13 +173,26 @@ class GitHubIssueImporter(object):
         else:
             report['email'] = ''
 
-        if not report.get('state'):
-            report['state'] = '-'
+        state = report.get('state')
 
-        if report.get('desc'):
-            labels.append('has-additional-info')
+        # UI Bug Report
+        if state == 'ui-report':
+            labels.append('ui-report')
 
-        body = template.format(**report)
+            body = UI_TEMPLATE.format(**report)
+
+            title = '[UI Report] ' + report['url']
+
+        else:
+            if not report.get('state'):
+                report['state'] = '-'
+
+            if report.get('desc'):
+                labels.append('has-additional-info')
+
+            body = DNLR_TEMPLATE.format(**report)
+
+            title = report['actual_url'][:255]
 
         for prop in self.PROP_LABELS.keys():
             if report.get(prop):
@@ -170,8 +200,9 @@ class GitHubIssueImporter(object):
                 labels.append(prop)
 
         issue = {'body': body,
-                 'title': report['actual_url'][:255],
-                 'labels': labels}
+                 'title': title,
+                 'labels': labels,
+                }
 
         return issue
 

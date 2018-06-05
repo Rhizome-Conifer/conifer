@@ -17,23 +17,29 @@ class TestBugReport(BaseWRTests):
 
         super(TestBugReport, cls).setup_class()
 
-    def test_bug_report(self):
+    def test_dnlr_bug_report(self):
         params = {
                   'url': 'http://example.com/',
                   'desc': 'Test Desc',
                   'leak': True,
+                  'email': 'test@example.com',
+                  'state': 'record',
+                 }
+
+        headers = {'User-Agent': self.UA_1}
+
+        res = self.testapp.post_json('/api/v1/report/dnlr', params=params, headers=headers)
+
+    def test_ui_bug_report(self):
+        params = {
+                  'url': 'http://example.com/',
+                  'desc': 'UI Bug Report Desc',
                   'email': 'test@example.com'
                  }
 
         headers = {'User-Agent': self.UA_1}
 
-        def add_bug_report(self, report):
-            assert report['user_email'] == ''
-            assert report['leak'] == True
-            assert report['desc'] == 'Test Desc'
-            assert report['email'] == 'test@example.com'
-
-        res = self.testapp.post_json('/api/v1/report/dnlr', params=params, headers=headers)
+        res = self.testapp.post_json('/api/v1/report/ui', params=params, headers=headers)
 
 
 # ============================================================================
@@ -42,13 +48,22 @@ class GitHubAPIOverride(object):
         pass
 
     def add_issue(self, issue):
-        assert issue['title'] == 'http://example.com/'
-        assert issue['labels']
+        if not issue['title'].startswith('[UI Report]'):
+            assert issue['title'] == 'http://example.com/'
+            assert 'User Reported Url' in issue['body']
+            assert '- Live Web leak' in issue['body']
+            assert 'State: **record**' in issue['body'], issue['body']
+            assert set(issue['labels']) == {'macos', 'chrome', 'chrome-66', 'has-email', 'leak', 'has-additional-info'}
+
+        else:
+            assert 'Report Source Url' in issue['body']
+            assert 'UI Bug Report Desc\n' in issue['body'], issue['body']
+            assert set(issue['labels']) == {'macos', 'chrome', 'chrome-66', 'has-email', 'ui-report'}
 
     def get_label(self, label):
         pass
 
     def add_label(self, label, color):
-        assert label in {'macos', 'chrome', 'chrome-66', 'has-email', 'has-additional-info', 'leak'}
+        assert label in {'macos', 'chrome', 'chrome-66', 'has-email', 'has-additional-info', 'leak', 'ui-report'}
 
 

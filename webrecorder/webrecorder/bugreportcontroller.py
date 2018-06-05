@@ -34,7 +34,16 @@ class BugReportController(BaseController):
         @self.app.post('/api/v1/report/dnlr')
         def report_issues():
             useragent = request.headers.get('User-Agent')
-            self.do_report(request.json, useragent)
+            data = request.json or {}
+            self.do_report(data, useragent)
+            return {}
+
+        @self.app.post('/api/v1/report/ui')
+        def report_issues():
+            useragent = request.headers.get('User-Agent')
+            data = request.json or {}
+            data['state'] = 'ui-report'
+            self.do_report(data, useragent)
             return {}
 
     def do_report(self, params, ua=''):
