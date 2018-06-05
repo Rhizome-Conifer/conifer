@@ -7,6 +7,10 @@ import { CheckboxField } from './fields';
 
 
 class ReportBugForm extends Component {
+  static contextTypes = {
+    currMode: PropTypes.string
+  };
+
   static propTypes = {
     cb: PropTypes.func,
   };
@@ -27,7 +31,7 @@ class ReportBugForm extends Component {
   save = (evt) => {
     evt.preventDefault();
 
-    this.props.cb(this.state);
+    this.props.cb({ ...this.state, state: this.context.currMode });
   }
 
   handleChange = (evt) => {
