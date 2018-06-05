@@ -11,12 +11,21 @@ class Temp404UI extends PureComponent {
   static propTypes = {
     children: PropTypes.node,
     showLoginModal: PropTypes.func,
+    set404: PropTypes.func,
     status: PropTypes.number
   };
 
   static defaultProps = {
     status: 404,
   };
+
+  componentWillMount() {
+    this.props.set404(true);
+  }
+
+  componentWillUnmount() {
+    this.props.set404(false);
+  }
 
   render() {
     const { children, status, showLoginModal } = this.props;

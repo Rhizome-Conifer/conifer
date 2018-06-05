@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { FormControl, FormGroup, Button } from 'react-bootstrap';
+import { ControlLabel, FormControl, FormGroup, Button } from 'react-bootstrap';
 
 import { product } from 'config';
 
@@ -29,7 +29,9 @@ class UserManagementUI extends Component {
     super(options);
 
     this.state = {
-      formError: null
+      desc: '',
+      formError: null,
+      email: ''
     };
   }
 
@@ -65,10 +67,9 @@ class UserManagementUI extends Component {
   }
 
   sendBugReport = () => {
-    const { desc } = this.state;
-
+    const { desc, email } = this.state;
     if (desc) {
-      this.props.sendUIReport({ desc });
+      this.props.sendUIReport({ desc, email, url: window.location.href });
       this.toggleBugModal();
     }
   }
@@ -155,6 +156,10 @@ class UserManagementUI extends Component {
               <p>Spot something off? Let us know what's happening:</p>
               <FormGroup>
                 <FormControl componentClass="textarea" name="desc" placeholder="When I click the 'save' button when editing my collection description, nothing happens." onChange={this.handleInput} value={this.state.bugReport} />
+              </FormGroup>
+              <FormGroup>
+                <ControlLabel>Email to notify in response to this issue: (optional)</ControlLabel>
+                <FormControl name="email" placeholder="me@example.com" onChange={this.handleInput} value={this.state.email} />
               </FormGroup>
             </Modal>
           </li>

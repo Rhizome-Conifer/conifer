@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { defaultRecordingTitle } from 'config';
 
 
 export const collList = ({ match }) => match.params.user;

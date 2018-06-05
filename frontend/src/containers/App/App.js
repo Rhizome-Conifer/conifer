@@ -169,7 +169,7 @@ export class App extends Component { // eslint-disable-line
         <header>
           <Navbar staticTop fluid collapseOnSelect className={navbarClasses}>
             <Navbar.Header>
-              <BreadcrumbsUI url={pathname} />
+              <BreadcrumbsUI is404={this.props.is404} url={pathname} />
               <Navbar.Toggle />
             </Navbar.Header>
             <Navbar.Collapse>
@@ -255,6 +255,7 @@ const initalData = [
 const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
   return {
     auth: app.get('auth'),
+    is404: app.getIn(['controls', 'is404']),
     loaded,
     spaceUtilization: app.getIn(['user', 'space_utilization'])
   };

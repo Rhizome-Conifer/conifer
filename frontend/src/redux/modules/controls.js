@@ -12,6 +12,7 @@ const SET_URL = 'wr/ctrls/SET_URL';
 const SET_TS = 'wr/ctrls/SET_TS';
 const SET_URL_TS = 'wr/ctrls/SET_URL_TS';
 const SET_BK_ID = 'wr/ctrls/SET_BK_ID';
+const SET_404 = 'wr/ctrls/SET_404';
 
 const GET_ARCHIVES = 'wr/ctrls/ARCHIVES';
 const GET_ARCHIVES_SUCCESS = 'wr/ctrls/ARCHIVES_SUCCESS';
@@ -27,7 +28,8 @@ const initialState = fromJS({
   archivesLoading: false,
   archivesAccessed: null,
   archives: [],
-  archiveSources: []
+  archiveSources: [],
+  is404: false
 });
 
 export default function controls(state = initialState, action = {}) {
@@ -47,6 +49,8 @@ export default function controls(state = initialState, action = {}) {
         archivesLoading: false,
         error: action.error
       });
+    case SET_404:
+      return state.set('is404', action.bool);
     case SET_AUTOSCROLL:
       return state.set('autoscroll', action.bool);
     case SET_BK_ID:
@@ -138,6 +142,14 @@ export function setActiveSources(sources) {
   return {
     type: SET_SOURCES,
     sources
+  };
+}
+
+
+export function set404(bool) {
+  return {
+    type: SET_404,
+    bool
   };
 }
 
