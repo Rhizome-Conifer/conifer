@@ -4,6 +4,14 @@
     margin-right: 1rem;
 }
 
+.custom-report {
+    padding: 0;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
 .wr-header-btn {
     border: none;
     background: transparent;
