@@ -4,6 +4,7 @@ import classNames from 'classnames';
 import { Button } from 'react-bootstrap';
 
 import { product } from 'config';
+import { upload as uploadErrors } from 'helpers/userMessaging';
 
 import { incrementCollCount } from 'redux/modules/auth';
 
@@ -162,7 +163,7 @@ class UploadUI extends PureComponent {
 
     this.setState({
       canCancel: true,
-      status: data.error || 'Error Encountered'
+      status: uploadErrors[data.error] || 'Error Encountered'
     });
   }
 
@@ -237,7 +238,10 @@ class UploadUI extends PureComponent {
                   <div className="progress" style={{ width: `${progress || 0}%` }} />
                   <div className="progress-readout">{ `${progress || 0}%` }</div>
                 </div>
-                { status && <p dangerouslySetInnerHTML={{ __html: status }} /> }
+                {
+                  status &&
+                    <p>{status}</p>
+                }
               </React.Fragment>
           }
         </Modal>

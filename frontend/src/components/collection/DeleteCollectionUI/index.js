@@ -45,7 +45,7 @@ class DeleteCollectionUI extends Component {
     const { collection, user } = this.props;
     const { confirmDelete } = this.state;
 
-    if (collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
+    if (this.validateConfirmDelete() === 'success') {
       this.handle = setTimeout(() => this.setState({ indicator: true }), 300);
       this.props.deleteColl(collection.get('owner'), collection.get('id'), user.get('anon'));
     }
@@ -59,7 +59,7 @@ class DeleteCollectionUI extends Component {
       return null;
     }
 
-    if (confirmDelete && !collection.get('title').match(new RegExp(`^${confirmDelete}$`, 'i'))) {
+    if (confirmDelete && collection.get('title').toLowerCase() !== confirmDelete.toLowerCase()) {
       return 'error';
     }
 

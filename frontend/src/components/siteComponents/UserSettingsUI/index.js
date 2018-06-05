@@ -98,7 +98,7 @@ class UserSettingsUI extends Component {
       return null;
     }
 
-    if (!user.get('username').match(new RegExp(`^${confirmUser}$`, 'i'))) {
+    if (user.get('username').toLowerCase() !== confirmUser.toLowerCase()) {
       return 'error';
     }
 
