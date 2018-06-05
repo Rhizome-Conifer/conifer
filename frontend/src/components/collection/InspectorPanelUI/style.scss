@@ -5,6 +5,12 @@
     display: flex;
     flex-direction: column;
 
+    // FF targeted fix for flex child taking content height and not
+    // remaining container height breaking inner scroll
+    @-moz-document url-prefix() {
+        overflow: auto;
+    }
+
     .sidebar-header {
         margin-bottom: 0;
     }
@@ -15,6 +21,9 @@
         flex-grow: 1;
         height: 100%;
         overflow: auto;
+
+        // resize handle buffer
+        margin-right: .4rem;
 
         & > h5 {
             padding: 1.5rem;

@@ -3,8 +3,7 @@ import { FAQ, TermsAndPolicies } from 'components/siteComponents';
 import {
   collDetailBreadcrumb,
   collList,
-  listDetailBreadcrumb,
-  recBookmark
+  listDetailBreadcrumb
 } from 'components/siteComponents/BreadcrumbsUI/breadcrumbs';
 import {
   CollectionCover,
@@ -102,7 +101,7 @@ const controllerRoutes = [
   {
     // record with remote browser id
     path: `${userPath}/:coll/:rec/record/$br::br/:splat(.*)`,
-    breadcrumb: recBookmark,
+    breadcrumb: 'Recording',
     classOverride: '',
     component: Record,
     exact: true,
@@ -111,8 +110,8 @@ const controllerRoutes = [
     name: 'rb record'
   },
   {
-    path: `${userPath}/:coll/:rec/record/:splat(.*)`,
-    breadcrumb: 'Recording Session',
+    path: `${userPath}/:coll/:rec/record/:splat([^$].*)`,
+    breadcrumb: 'Recording',
     classOverride: '',
     component: Record,
     exact: true,
@@ -122,6 +121,7 @@ const controllerRoutes = [
   },
   {
     path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    breadcrumb: 'Patching',
     classOverride: '',
     component: Patch,
     exact: true,
@@ -129,7 +129,8 @@ const controllerRoutes = [
     name: 'rb patch'
   },
   {
-    path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?/:splat(.*)`,
+    path: `${userPath}/:coll/:rec/patch/:ts([0-9]+)?/:splat([^$|^\\d].*)`,
+    breadcrumb: 'Patching',
     classOverride: '',
     component: Patch,
     exact: true,
@@ -138,6 +139,7 @@ const controllerRoutes = [
   },
   {
     path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    breadcrumb: 'Extracting',
     classOverride: '',
     component: Extract,
     exact: true,
@@ -145,7 +147,8 @@ const controllerRoutes = [
     name: 'rb extract'
   },
   {
-    path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?/:splat(.*)`,
+    path: `${userPath}/:coll/:rec/:extractMode(extract|extract_only)::archiveId:collId([:0-9]+)?/:ts([0-9]+)?/:splat([^$|^\\d].*)`,
+    breadcrumb: 'Extracting',
     classOverride: '',
     component: Extract,
     exact: true,
@@ -182,7 +185,7 @@ const controllerRoutes = [
     component: Replay,
     exact: true,
     footer: false,
-    name: 'replay'
+    name: 'replay',
   }
 ];
 

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Button, ControlLabel, Form,
          FormControl, FormGroup } from 'react-bootstrap';
@@ -6,7 +6,11 @@ import { Button, ControlLabel, Form,
 import { CheckboxField } from './fields';
 
 
-class ReportBugForm extends Component {
+class ReportBugForm extends PureComponent {
+  static contextTypes = {
+    currMode: PropTypes.string
+  };
+
   static propTypes = {
     cb: PropTypes.func,
   };
@@ -14,17 +18,20 @@ class ReportBugForm extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
-  }
-
-  componentDidMount() {
-    this.setState({ url: window.location.href });
+    this.state = {
+      desc: '',
+      email: ''
+    };
   }
 
   save = (evt) => {
     evt.preventDefault();
 
-    this.props.cb(this.state);
+    this.props.cb({
+      ...this.state,
+      state: this.context.currMode,
+      url: window.location.href
+    });
   }
 
   handleChange = (evt) => {

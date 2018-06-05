@@ -39,6 +39,7 @@ export default function CBrowser(reqid, target_div, init_params) {
     var resizeTimeout;
     var vnc_pass = "secret";
 
+    var countdownTimer = null;
     var end_time = undefined;
     var cid = undefined;
 
@@ -90,7 +91,7 @@ export default function CBrowser(reqid, target_div, init_params) {
 
         // Countdown updater
         if (init_params.on_countdown) {
-            setInterval(update_countdown, 1000);
+            countdownTimer = setInterval(update_countdown, 1000);
         }
 
         init_html();
@@ -107,6 +108,9 @@ export default function CBrowser(reqid, target_div, init_params) {
         _screen.removeEventListener('mouseleave', lose_focus);
         _screen.removeEventListener('mouseenter', grab_focus);
         cnvs.removeEventListener('click', grab_focus);
+
+        // clear countdown clock
+        clearInterval(countdownTimer);
 
         for (var i = 0; i < controllerScripts.length; i++) {
             try {
@@ -178,6 +182,9 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function init_html() {
+        // ensure container is emptied of previous browsers
+        target_div_obj.innerHTML = '';
+
         var msgDiv = document.createElement('div');
         msgDiv.setAttribute('id', 'browserMsg');
         msgDiv.setAttribute('class', 'loading');

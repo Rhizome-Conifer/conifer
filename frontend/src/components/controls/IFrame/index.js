@@ -6,7 +6,7 @@ import config from 'config';
 import { updateTimestamp, updateUrl } from 'redux/modules/controls';
 
 import { setTitle } from 'helpers/utils';
-import { showModal } from 'redux/modules/bugReport';
+import { toggleModal } from 'redux/modules/bugReport';
 
 import './style.scss';
 
@@ -180,7 +180,7 @@ class IFrame extends Component {
         this.addNewPage(state, false);
         break;
       case 'bug-report':
-        this.props.dispatch(showModal());
+        this.props.dispatch(toggleModal(true));
         break;
       default:
         break;

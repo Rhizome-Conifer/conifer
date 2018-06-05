@@ -7,10 +7,9 @@ import { load } from 'redux/modules/tempUser';
 import { TempUsageUI } from 'components/siteComponents';
 
 
-const mapStateToProps = ({ app }, ownProps) => {
+const mapStateToProps = ({ app }) => {
   return {
-    tempUser: app.getIn(['tempUser', 'user']),
-    ...ownProps
+    tempUser: app.getIn(['tempUser', 'user'])
   };
 };
 

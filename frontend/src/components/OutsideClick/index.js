@@ -13,9 +13,14 @@ class OutsideClick extends Component {
   static propTypes = {
     children: PropTypes.node.isRequired,
     classes: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+    disabled: PropTypes.bool,
     handleClick: PropTypes.func,
     inlineBlock: PropTypes.bool,
     scrollCheck: PropTypes.string
+  };
+
+  static defaultProps = {
+    disabled: false
   };
 
   constructor(props) {
@@ -28,6 +33,26 @@ class OutsideClick extends Component {
   }
 
   componentDidMount() {
+    if (!this.props.disabled) {
+      this.bindListeners();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!this.props.disabled && prevProps.disabled) {
+      this.bindListeners();
+    } else if (this.props.disabled && !prevProps.disabled) {
+      this.removeListeners();
+    }
+  }
+
+  componentWillUnmount() {
+    if (!this.props.disabled) {
+      this.removeListeners();
+    }
+  }
+
+  bindListeners = () => {
     document.addEventListener('click', this.checkClick, false);
     document.addEventListener('keyup', this.checkKey);
 
@@ -36,7 +61,7 @@ class OutsideClick extends Component {
     }
   }
 
-  componentWillUnmount() {
+  removeListeners = () => {
     document.removeEventListener('click', this.checkClick, false);
     document.removeEventListener('keyup', this.checkKey);
 

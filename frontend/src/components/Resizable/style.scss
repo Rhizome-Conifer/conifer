@@ -10,7 +10,7 @@ $buffer: .8rem;
         user-select: none;
 
         &.x {
-            padding: 0 $buffer;
+            padding: 0 $buffer 0 $buffer/2;
             top: 0;
             bottom: 0;
             right: -$buffer;

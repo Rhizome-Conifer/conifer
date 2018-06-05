@@ -5,9 +5,8 @@ import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
 import { appHost, product } from 'config';
 import { apiFetch } from 'helpers/utils';
 
-import BugReport from 'containers/BugReport';
 import Modal from 'components/Modal';
-import ShareWidget from 'containers/ShareWidget';
+import { BugReport, ShareWidget } from 'containers';
 
 import './style.scss';
 

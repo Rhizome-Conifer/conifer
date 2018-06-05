@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Navbar } from 'react-bootstrap';
+import { ControlLabel, FormControl, FormGroup, Button } from 'react-bootstrap';
 
 import { product } from 'config';
 
@@ -19,14 +19,19 @@ class UserManagementUI extends Component {
     loginFn: PropTypes.func.isRequired,
     next: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     open: PropTypes.bool,
+    sendUIReport: PropTypes.func,
     showModal: PropTypes.func,
+    toggleBugModal: PropTypes.func,
+    uiBug: PropTypes.bool
   };
 
   constructor(options) {
     super(options);
 
     this.state = {
-      formError: null
+      desc: '',
+      formError: null,
+      email: ''
     };
   }
 
@@ -52,9 +57,25 @@ class UserManagementUI extends Component {
     this.setState({ formError: false });
   }
 
+  handleInput = (evt) => {
+    this.setState({ [evt.target.name]: evt.target.value });
+  }
+
   save = (data) => {
     this.setState({ formError: false });
     this.props.loginFn(data);
+  }
+
+  sendBugReport = () => {
+    const { desc, email } = this.state;
+    if (desc) {
+      this.props.sendUIReport({ desc, email, url: window.location.href });
+      this.toggleBugModal();
+    }
+  }
+
+  toggleBugModal = () => {
+    this.props.toggleBugModal(!this.props.uiBug);
   }
 
   render() {
@@ -123,6 +144,25 @@ class UserManagementUI extends Component {
                 </Link>
               </li>
           */}
+
+          <li className="navbar-text navbar-right">
+            <button onClick={this.toggleBugModal} className="borderless custom-report">Submit a bug</button>
+            <Modal
+              dialogClassName="ui-bug-modal"
+              header="Submit a UI bug"
+              visible={this.props.uiBug}
+              closeCb={this.toggleBugModal}
+              footer={<React.Fragment><Button onClick={this.toggleBugModal}>Cancel</Button><Button bsStyle="primary" onClick={this.sendBugReport}>Submit</Button></React.Fragment>}>
+              <p>Spot something off? Let us know what's happening:</p>
+              <FormGroup>
+                <FormControl componentClass="textarea" name="desc" placeholder="When I click the 'save' button when editing my collection description, nothing happens." onChange={this.handleInput} value={this.state.bugReport} />
+              </FormGroup>
+              <FormGroup>
+                <ControlLabel>Email to notify in response to this issue: (optional)</ControlLabel>
+                <FormControl name="email" placeholder="me@example.com" onChange={this.handleInput} value={this.state.email} />
+              </FormGroup>
+            </Modal>
+          </li>
         </ul>
         <Modal
           dialogClassName="wr-login-modal"

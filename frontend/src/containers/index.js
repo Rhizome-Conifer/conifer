@@ -1,3 +1,4 @@
+export BugReport from './BugReport/BugReport';
 export CollectionCover from './CollectionCover/CollectionCover';
 export CollectionDropdown from './CollectionDropdown/CollectionDropdown';
 export CollectionDetail from './CollectionDetail/CollectionDetail';
@@ -28,6 +29,7 @@ export RemoteBrowser from './RemoteBrowser/RemoteBrowser';
 export RegisterAccount from './RegisterAccount/RegisterAccount';
 export Replay from './Replay/Replay';
 export SessionCollapsible from './SessionCollapsible/SessionCollapsible';
+export ShareWidget from './ShareWidget/ShareWidget';
 export Sidebar from './Sidebar/Sidebar';
 export SidebarCollectionViewer from './SidebarCollectionViewer/SidebarCollectionViewer';
 export SidebarListViewer from './SidebarListViewer/SidebarListViewer';

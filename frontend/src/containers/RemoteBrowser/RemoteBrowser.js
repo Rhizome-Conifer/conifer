@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import { RemoteBrowserUI } from 'components/controls';
 
@@ -15,6 +16,6 @@ const mapStateToProps = ({ app }) => {
   };
 };
 
-export default connect(
+export default withRouter(connect(
   mapStateToProps
-)(RemoteBrowserUI);
+)(RemoteBrowserUI));

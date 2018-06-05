@@ -46,7 +46,7 @@ class InfoWidgetUI extends Component {
     });
 
     return (
-      <OutsideClick classes={widgetClass} handleClick={this.close}>
+      <OutsideClick disabled={!open} classes={widgetClass} handleClick={this.close}>
         <button className="dropdown-toggle" onClick={this.toggle} type="button" id="replayInfo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
           <InfoIcon />
         </button>

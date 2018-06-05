@@ -18,8 +18,10 @@ class TempUsageUI extends Component {
 
   componentWillMount() {
     const { tempUser } = this.props;
-    // get latest stats
-    this.props.loadUsage(tempUser.get('username'));
+    if (tempUser) {
+      // get latest stats
+      this.props.loadUsage(tempUser.get('username'));
+    }
   }
 
   focusInput = () => {
@@ -32,6 +34,12 @@ class TempUsageUI extends Component {
 
   render() {
     const { handleInput, moveTemp, tempUser, toColl } = this.props;
+
+    // check if tempUser exists
+    if (!tempUser) {
+      return null;
+    }
+
     const recCount = tempUser.get('rec_count');
     const usage = tempUser.getIn(['space_utilization', 'used']);
     const collLink = `/${tempUser.get('username')}/temp`;

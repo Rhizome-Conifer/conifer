@@ -8,7 +8,9 @@
 
     .overflow-wrapper {
         overflow: auto;
-        padding: 0 1.5rem;
+        padding: 0 1.1rem 0 1.5rem;
+        // sidebar handle buffer
+        margin-right: .4rem;
 
         & > nav {
             display: flex;

@@ -14,8 +14,9 @@ class BreadcrumbsUI extends PureComponent {
   };
 
   static propTypes = {
-    url: PropTypes.string,
-    breadcrumbs: PropTypes.array
+    breadcrumbs: PropTypes.array,
+    is404: PropTypes.bool,
+    url: PropTypes.string
   };
 
   render() {
@@ -24,7 +25,7 @@ class BreadcrumbsUI extends PureComponent {
     return (
       <ol className="wr-breadcrumb">
         {
-          this.context.isMobile ?
+          this.context.isMobile || this.props.is404 ?
             <NavLink to="/">Webrecorder</NavLink> :
             breadcrumbs.map(({ breadcrumb, path, match, getLocation }) => (
               <li key={path}>
