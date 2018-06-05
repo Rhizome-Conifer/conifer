@@ -24,7 +24,8 @@ class CollectionHeaderUI extends Component {
 
   static contextTypes = {
     canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
+    isAnon: PropTypes.bool,
+    isMobile: PropTypes.bool
   };
 
   static propTypes = {
@@ -169,7 +170,7 @@ class CollectionHeaderUI extends Component {
           */}
           <MenuItem divider />
           {
-            onboardingLink &&
+            onboardingLink && !this.context.isMobile &&
               <MenuItem onClick={this.showOnboarding}>&#127881; Tour New Features</MenuItem>
           }
           <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</MenuItem>
@@ -184,7 +185,7 @@ class CollectionHeaderUI extends Component {
         style={{ height, zIndex }}
         onClick={this.expandHeader}>
         {
-          onboardingLink &&
+          onboardingLink && !this.context.isMobile &&
             <OnBoarding open={onBoarding} />
         }
         <CSSTransitionGroup
