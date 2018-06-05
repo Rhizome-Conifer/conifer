@@ -121,6 +121,7 @@ class MainController(BaseController):
                       content_app=content_app,
                       cork=cork,
                       redis=self.redis,
+                      session_redis=session_redis,
                       config=config)
 
         # Init Core app controllers

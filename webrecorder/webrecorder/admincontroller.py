@@ -12,7 +12,7 @@ from datetime import datetime
 from re import sub
 
 from webrecorder.basecontroller import BaseController
-from webrecorder.models import Stats
+from webrecorder.models import Stats, User
 
 from datetime import datetime, timedelta
 
@@ -44,10 +44,17 @@ class AdminController(BaseController):
         'Bookmarks Added': Stats.BOOKMARK_ADD_KEY,
         'Bookmarks Changed': Stats.BOOKMARK_MOD_KEY,
         'Bookmarks Deleted': Stats.BOOKMARK_DEL_KEY,
+
+        'Num Temp Collections Added': Stats.TEMP_MOVE_COUNT_KEY,
+        'Temp Collection Size Added': Stats.TEMP_MOVE_SIZE_KEY,
     }
 
     USER_TABLE = 'User Table'
     TEMP_TABLE = 'Temp Table'
+
+    ACTIVE_SESSIONS = 'Active Sessions'
+    USER_LOGINS = 'User Logins'
+    PUBLIC_COLLS = 'Collections Public'
 
     def __init__(self, *args, **kwargs):
         super(AdminController, self).__init__(*args, **kwargs)
@@ -56,9 +63,15 @@ class AdminController(BaseController):
         self.default_user_desc = config['user_desc']
         self.user_usage_key = config['user_usage_key']
         self.temp_usage_key = config['temp_usage_key']
-        self.temp_user_key = config['temp_prefix']
+        #self.temp_user_key = config['temp_prefix']
         self.tags_key = config['tags_key']
+
+        self.temp_user_key = 'u:{0}'.format(User.TEMP_PREFIX)
+        self.temp_user_search = 'u:{0}*:info'.format(User.TEMP_PREFIX)
+
         self.announce_list = os.environ.get('ANNOUNCE_MAILING_LIST_ENDPOINT', False)
+
+        self.session_redis = kwargs.get('session_redis')
 
         self.init_all_stats()
 
@@ -78,6 +91,9 @@ class AdminController(BaseController):
 
         self.all_stats[self.USER_TABLE] = self.USER_TABLE
         self.all_stats[self.TEMP_TABLE] = self.TEMP_TABLE
+
+        self.all_stats[self.USER_LOGINS] = self.USER_LOGINS
+        self.all_stats[self.ACTIVE_SESSIONS] = self.ACTIVE_SESSIONS
 
     def admin_view(self, function):
         def check_access(*args, **kwargs):
@@ -111,7 +127,14 @@ class AdminController(BaseController):
 
     def load_series(self, target, dates, timestamps):
         if target['type'] == 'timeserie':
-            return self.load_time_series(target['target'], dates, timestamps)
+            name = target.get('target', '')
+            if name == self.ACTIVE_SESSIONS:
+                return self.load_active_sessions(name)
+
+            elif name == self.USER_LOGINS:
+                return self.load_user_logins(name, dates, timestamps)
+
+            return self.load_time_series(name, dates, timestamps)
 
         elif target['type'] == 'table':
             if target['target'] == self.USER_TABLE:
@@ -151,7 +174,7 @@ class AdminController(BaseController):
 
         users = []
 
-        for user_key in self.redis.scan_iter('u:temp-*:info', count=100):
+        for user_key in self.redis.scan_iter(self.temp_user_search, count=100):
             user_data = self.redis.hmget(user_key, column_keys)
             user_data.insert(0, user_key.split(':')[1])
             user_data[1] = int(user_data[1])
@@ -181,7 +204,7 @@ class AdminController(BaseController):
         users = []
 
         for user_key in self.redis.scan_iter('u:*:info', count=100):
-            if user_key.startswith('u:temp-'):
+            if user_key.startswith(self.temp_user_key):
                 continue
 
             user_data = self.redis.hmget(user_key, column_keys)
@@ -199,6 +222,45 @@ class AdminController(BaseController):
                 'rows': users,
                 'type': 'table'
                }
+
+    def load_active_sessions(self, key):
+        ts = int(datetime.utcnow().timestamp()) * 1000
+
+        num_sessions = sum(1 for i in self.session_redis.scan_iter('sesh:*', count=10))
+
+        datapoints = [[num_sessions, ts]]
+
+        return {'target': key,
+                'datapoints': datapoints
+               }
+
+    def load_user_logins(self, key, dates, timestamps):
+        date_bucket = {}
+
+        for user_key in self.redis.scan_iter('u:*:info', count=100):
+            if user_key.startswith(self.temp_user_key):
+                continue
+
+            user_login = self.redis.hget(user_key, 'last_login')
+
+            try:
+                dt = datetime.utcfromtimestamp(int(user_login or 0))
+            except ValueError:
+                dt = datetime.strptime(user_login[:19], '%Y-%m-%d %H:%M:%S')
+
+            dt = dt.date()
+
+            date_bucket[dt.isoformat()] = date_bucket.get(dt, 0) + 1
+
+        datapoints = []
+        for dt, ts in zip(dates, timestamps):
+            count = date_bucket.get(dt, 0)
+            datapoints.append((count, ts))
+
+        return {'target': key,
+                'datapoints': datapoints
+               }
+
 
     @classmethod
     def parse_iso_or_ts(self, value):
@@ -323,7 +385,7 @@ class AdminController(BaseController):
         def temp_users():
             """ Resource returning active temp users
             """
-            temp_user_keys = list(self.redis.scan_iter('u:{0}*:info'.format(self.temp_user_key)))
+            temp_user_keys = list(self.redis.scan_iter(self.temp_user_search))
 
             temp_user_data = []
 

@@ -3,6 +3,8 @@ from .testutils import FullStackTests
 from webrecorder.models.usermanager import CLIUserManager
 from webrecorder.utils import today_str
 
+from webrecorder.admincontroller import AdminController
+
 
 # ============================================================================
 class TestAdminAPI(FullStackTests):
@@ -158,6 +160,26 @@ class TestAdminAPI(FullStackTests):
         assert isinstance(res.json, list)
         assert len(res.json) == 3
 
+    def test_api_stats_query_custom_timeseries(self):
+        params = {'range': {'from': today_str(),
+                            'to': today_str()
+                           },
+                  'targets': [{'target': AdminController.USER_LOGINS, 'type': 'timeserie'},
+                              {'target': AdminController.ACTIVE_SESSIONS, 'type': 'timeserie'},
+                             ]
+                 }
+
+        res = self.testapp.post_json('/api/v1/stats/query', params=params)
+
+        assert isinstance(res.json, list)
+        assert len(res.json) == 2
+
+        # 1 user logins
+        assert res.json[0]['datapoints'][0][0] == 1
+
+        # 1 active session
+        assert res.json[1]['datapoints'][0][0] == 1
+
     def test_api_stats_query_users(self):
         params = {'range': {'from': today_str(),
                             'to': today_str()
@@ -195,4 +217,5 @@ class TestAdminAPI(FullStackTests):
         assert len(data['rows']) == 1
 
         assert set(data[0] for data in data['rows']) == {self.anon_user}
+
 
