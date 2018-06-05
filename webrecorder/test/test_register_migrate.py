@@ -472,6 +472,21 @@ class TestRegisterMigrate(FullStackTests):
 
         assert '"food": "bar"' in res.text, res.text
 
+    def test_rename_coll_invalid_name(self):
+        # empty title
+        params = {'title': ''}
+        res = self.testapp.post_json('/api/v1/collection/test-migrate?user=someuser', params=params, status=400)
+
+        assert res.json['error'] == 'invalid_coll_name'
+
+        # title that results in empty slug
+        params = {'title': '@$%'}
+        res = self.testapp.post_json('/api/v1/collection/test-migrate?user=someuser', params=params, status=400)
+
+        assert res.json['error'] == 'invalid_coll_name'
+
+        assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-migrate', 'new-coll-2'}
+
     def test_rename_coll(self):
         params = {'title': 'Test Coll'}
         res = self.testapp.post_json('/api/v1/collection/test-migrate?user=someuser', params=params)
