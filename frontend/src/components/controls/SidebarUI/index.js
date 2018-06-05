@@ -12,6 +12,7 @@ import './style.scss';
 class SidebarUI extends Component {
   static propTypes = {
     children: PropTypes.node,
+    defaultExpanded: PropTypes.bool,
     expanded: PropTypes.bool,
     resizing: PropTypes.bool,
     setSidebarResizing: PropTypes.func,
@@ -20,6 +21,7 @@ class SidebarUI extends Component {
   };
 
   static defaultProps = {
+    defaultExpanded: true,
     storageKey: 'sidebarDisplay'
   };
 
@@ -31,10 +33,9 @@ class SidebarUI extends Component {
   }
 
   componentDidMount() {
-    const { storageKey, toggleSidebar } = this.props;
+    const { defaultExpanded, storageKey, toggleSidebar } = this.props;
 
-    // expanded by default
-    let expanded = true;
+    let expanded = defaultExpanded;
     if (inStorage(storageKey)) {
       try {
         expanded = JSON.parse(getStorage(storageKey));

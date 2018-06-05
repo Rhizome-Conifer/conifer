@@ -184,7 +184,7 @@ class Replay extends Component {
         <div className="iframe-container">
           {
             !this.context.isMobile &&
-              <Sidebar storageKey="replaySidebar">
+              <Sidebar defaultExpanded={Boolean(listSlug)} storageKey={listSlug ? 'listReplaySidebar' : 'pageReplaySidebar'}>
                 <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
                   {
                     this.state.collectionNav ?

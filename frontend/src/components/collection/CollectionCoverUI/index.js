@@ -23,7 +23,8 @@ import './style.scss';
 class CollectionCoverUI extends Component {
   static contextTypes = {
     canAdmin: PropTypes.bool,
-    isAnon: PropTypes.bool
+    isAnon: PropTypes.bool,
+    isMobile: PropTypes.bool
   };
 
   static propTypes = {
@@ -66,7 +67,7 @@ class CollectionCoverUI extends Component {
           <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
         </Helmet>
         {
-          onboardingLink &&
+          onboardingLink && !this.context.isMobile &&
             <OnBoarding />
         }
         {
