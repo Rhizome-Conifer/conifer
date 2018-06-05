@@ -13,7 +13,7 @@ section {
     flex-grow: 1;
 }
 
-.oos-alert {
+.not-logged-in, .oos-alert {
     position: absolute;
     z-index: 1000;
     top: 4.5rem;
