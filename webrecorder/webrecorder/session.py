@@ -361,7 +361,11 @@ class RedisSessionMiddleware(CookieGuard):
         sesh_cookie = self.id_to_signed_cookie(session['id'],
                                                session.is_restricted)
 
-        value = '{0}={1}; Path=/; HttpOnly; max-age={3}'
+        value = '{0}={1}; Path=/; HttpOnly'
+
+        if not session.curr_user or session.dura_type != 'short':
+            value += ';  max-age={3}'
+
         value = value.format(self.sesh_key,
                              sesh_cookie,
                              datetime_to_http_date(expires),
