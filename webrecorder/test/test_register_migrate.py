@@ -451,6 +451,8 @@ class TestRegisterMigrate(FullStackTests):
                             'role': 'archivist',
                             'username': 'someuser'}
 
+        assert 'max-age=' not in res.headers['Set-Cookie'].lower()
+
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def _test_rename_rec(self):
@@ -509,12 +511,23 @@ class TestRegisterMigrate(FullStackTests):
 
         assert '"food": "bar"' in res.text, res.text
 
+    def test_rename_coll_title_only(self):
+        params = {'title': '!@Test Coll@!'}
+        res = self.testapp.post_json('/api/v1/collection/test-migrate?user=someuser', params=params)
+
+        assert res.json['collection']['id'] == 'test-coll'
+        assert res.json['collection']['slug'] == 'test-coll'
+        assert res.json['collection']['title'] == '!@Test Coll@!'
+
+        assert set(self.redis.hkeys('u:someuser:colls')) == {'new-coll-3', 'new-coll', 'test-coll', 'new-coll-2'}
+
     def test_orig_slug_after_rename(self):
         res = self.testapp.get('/api/v1/collection/test-migrate?user=someuser')
 
         assert res.json['collection']['id'] == 'test-coll'
         assert res.json['collection']['slug'] == 'test-coll'
-        assert res.json['collection']['title'] == 'Test Coll'
+        assert res.json['collection']['title'] == '!@Test Coll@!'
+        #assert res.json['collection']['title'] == 'Test Coll'
         assert res.json['collection']['slug_matched'] == False
 
         res = self.testapp.get('/someuser/test-migrate/mp_/http://httpbin.org/get?food=bar')
@@ -602,6 +615,8 @@ class TestRegisterMigrate(FullStackTests):
                             'role': 'archivist',
                             'username': 'testauto'}
 
+        assert 'max-age=' not in res.headers['Set-Cookie'].lower()
+
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_different_user_default_coll(self):
@@ -635,7 +650,7 @@ class TestRegisterMigrate(FullStackTests):
         assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
-    def test_login_3(self):
+    def test_login_3_remember_me(self):
         params = {'username': 'someuser',
                   'password': 'Password1',
                   'remember_me': True
@@ -647,6 +662,8 @@ class TestRegisterMigrate(FullStackTests):
                             'coll_count': 3,
                             'role': 'archivist',
                             'username': 'someuser'}
+
+        assert 'max-age=' in res.headers['Set-Cookie'].lower()
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 

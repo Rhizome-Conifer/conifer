@@ -278,8 +278,13 @@ class RedisNamedMap(object):
             return self.redis.hget(redir_map, obj_name)
 
     def rename(self, obj, new_name, allow_dupe=True):
+        # new_name can't be empty
         if not new_name:
             return None
+
+        # if same name, nothing to rename
+        if new_name == obj.name:
+            return new_name
 
         new_name = self.reserve_obj_name(new_name, allow_dupe=allow_dupe)
 
