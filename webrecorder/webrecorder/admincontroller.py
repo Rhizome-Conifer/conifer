@@ -55,13 +55,13 @@ class AdminController(BaseController):
 
     ACTIVE_SESSIONS = 'Active Sessions'
 
-    USER_LOGINS = 'User Logins'
-    USER_LOGINS_100 = 'User Logins (>=100MB)'
-    USER_LOGINS_1000 = 'User Logins (>=1GB)'
+    USER_LOGINS = 'User-Logins-Any'
+    USER_LOGINS_100 = 'User-Logins-100MB'
+    USER_LOGINS_1000 = 'User-Logins-1GB'
 
     PUBLIC_COLLS = 'Collections Public'
 
-    CACHE_TTL = 60
+    CACHE_TTL = 600
     CACHE_USER_TABLE = 'stc:users'
 
     def __init__(self, *args, **kwargs):
