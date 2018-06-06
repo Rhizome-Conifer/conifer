@@ -138,6 +138,9 @@ class CollectionHeaderUI extends Component {
 
     const isPublic = collection.get('public');
 
+    const collTitle = collection.get('title');
+    const titleCapped = collTitle.length > 9 ? `${collTitle.split(' ').splice(0, 9).join(' ')}...` : collTitle;
+
     const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>
         <Button className="rounded" onClick={this.newSession}><PlusIcon /><span className="hidden-xs"> New Session</span></Button>
@@ -200,12 +203,12 @@ class CollectionHeaderUI extends Component {
                   <div className="coll-title">
                     <WarcIcon />
                     <InlineEditor
+                      error={this.props.collEditError}
                       initial={collection.get('title')}
                       onSave={this.editCollTitle}
                       readOnly={isAnon || !canAdmin}
-                      success={collEdited}
-                      error={this.props.collEditError}>
-                      <h1>{collection.get('title')}</h1>
+                      success={collEdited}>
+                      <h1 title={collTitle}>{titleCapped}</h1>
                     </InlineEditor>
                   </div>
                 </div>

@@ -98,6 +98,8 @@ header.wr-collection-header {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                max-width: 80vw;
+                text-align: center;
 
                 h1 {
                     display: inline-block;
@@ -172,6 +174,8 @@ header.wr-collection-header {
 
             .coll-title {
                 text-align: center;
+                display: flex;
+                align-items: center;
 
                 h1 {
                     font-size: 2.4rem;
@@ -183,6 +187,7 @@ header.wr-collection-header {
                 }
 
                 & > svg {
+                    flex-shrink: 0;
                     width: 2rem;
                     height: 2rem;
 

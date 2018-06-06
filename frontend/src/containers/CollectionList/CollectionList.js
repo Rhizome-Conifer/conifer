@@ -6,7 +6,7 @@ import { incrementCollCount } from 'redux/modules/auth';
 import { isLoaded as areCollsLoaded, load as loadCollections,
          createCollection } from 'redux/modules/collections';
 import { addUserCollection } from 'redux/modules/user';
-import { sortCollsByCreatedAt } from 'redux/selectors';
+import { sortCollsByAlpha } from 'redux/selectors';
 
 import CollectionListUI from 'components/collection/CollectionListUI';
 
@@ -31,7 +31,7 @@ const mapStateToProps = ({ app }) => {
   return {
     auth: app.get('auth'),
     collections: app.get('collections'),
-    orderedCollections: app.getIn(['collections', 'loaded']) ? sortCollsByCreatedAt(app) : null,
+    orderedCollections: app.getIn(['collections', 'loaded']) ? sortCollsByAlpha(app) : null,
     user: app.get('user')
   };
 };
