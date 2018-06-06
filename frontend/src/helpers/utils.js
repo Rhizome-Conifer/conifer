@@ -104,9 +104,10 @@ export function getListLink(coll, list) {
 }
 
 
-export function getStorage(key, device = window.localStorage) {
+export function getStorage(key, device = null) {
   try {
-    return device.getItem(`${config.storageKey}${key}`);
+    const storageDevice = device || window.localStorage;
+    return storageDevice.getItem(`${config.storageKey}${key}`);
   } catch (e) {
     console.log(`Failed getting ${key} in ${device}`);
   }
@@ -114,9 +115,10 @@ export function getStorage(key, device = window.localStorage) {
 }
 
 
-export function inStorage(key, device = window.localStorage) {
+export function inStorage(key, device = null) {
   try {
-    return Object.prototype.hasOwnProperty.call(device, `${config.storageKey}${key}`);
+    const storageDevice = device || window.localStorage;
+    return Object.prototype.hasOwnProperty.call(storageDevice, `${config.storageKey}${key}`);
   } catch (e) {
     console.log(`Failed checking ${device} for key ${key}`);
     return false;
@@ -221,9 +223,10 @@ export function rts(val) {
 }
 
 
-export function setStorage(key, value, device = window.localStorage) {
+export function setStorage(key, value, device = null) {
   try {
-    device.setItem(`${config.storageKey}${key}`, value);
+    const storageDevice = device || window.localStorage;
+    storageDevice.setItem(`${config.storageKey}${key}`, value);
   } catch (e) {
     console.log(`Failed setting ${key}=${value} in ${device}`);
   }
