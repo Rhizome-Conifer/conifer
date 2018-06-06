@@ -139,7 +139,7 @@ class CollectionHeaderUI extends Component {
     const isPublic = collection.get('public');
 
     const collTitle = collection.get('title');
-    const titleCapped = collTitle.length > 9 ? `${collTitle.split(' ').splice(0, 9).join(' ')}...` : collTitle;
+    const titleCapped = collTitle.split(' ').length > 9 ? `${collTitle.split(' ').splice(0, 9).join(' ')}...` : collTitle;
 
     const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>
