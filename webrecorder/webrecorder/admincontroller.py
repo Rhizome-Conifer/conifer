@@ -101,6 +101,9 @@ class AdminController(BaseController):
         self.all_stats[self.TEMP_TABLE] = self.TEMP_TABLE
 
         self.all_stats[self.USER_LOGINS] = self.USER_LOGINS
+        self.all_stats[self.USER_LOGINS_100] = self.USER_LOGINS_100
+        self.all_stats[self.USER_LOGINS_1000] = self.USER_LOGINS_1000
+
         self.all_stats[self.ACTIVE_SESSIONS] = self.ACTIVE_SESSIONS
 
     def admin_view(self, function):
