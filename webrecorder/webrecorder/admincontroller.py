@@ -49,12 +49,20 @@ class AdminController(BaseController):
         'Temp Collection Size Added': Stats.TEMP_MOVE_SIZE_KEY,
     }
 
+    # Custom Stats
     USER_TABLE = 'User Table'
     TEMP_TABLE = 'Temp Table'
 
     ACTIVE_SESSIONS = 'Active Sessions'
+
     USER_LOGINS = 'User Logins'
+    USER_LOGINS_100 = 'User Logins (>=100MB)'
+    USER_LOGINS_1000 = 'User Logins (>=1GB)'
+
     PUBLIC_COLLS = 'Collections Public'
+
+    CACHE_TTL = 60
+    CACHE_USER_TABLE = 'stc:users'
 
     def __init__(self, *args, **kwargs):
         super(AdminController, self).__init__(*args, **kwargs)
@@ -134,6 +142,12 @@ class AdminController(BaseController):
             elif name == self.USER_LOGINS:
                 return self.load_user_logins(name, dates, timestamps)
 
+            elif name == self.USER_LOGINS_100:
+                return self.load_user_logins(name, dates, timestamps, 100000000)
+
+            elif name == self.USER_LOGINS_1000:
+                return self.load_user_logins(name, dates, timestamps, 1000000000)
+
             return self.load_time_series(name, dates, timestamps)
 
         elif target['type'] == 'table':
@@ -188,17 +202,11 @@ class AdminController(BaseController):
                 'type': 'table'
                }
 
-    def load_user_table(self):
-        columns = [
-            {'text': 'Id', 'type': 'string'},
-            {'text': 'Size', 'type': 'number'},
-            {'text': 'Max Size', 'type': 'number'},
-            {'text': 'Last Login Date', 'type': 'time'},
-            {'text': 'Creation Date', 'type': 'time'},
-            {'text': 'Updated Date', 'type': 'time'},
-            {'text': 'Role', 'type': 'string'},
-            {'text': 'Email', 'type': 'string'},
-        ]
+    def fetch_user_table(self):
+        users = self.redis.get(self.CACHE_USER_TABLE)
+        if users:
+            return json.loads(users)
+
         column_keys = ['size', 'max_size', 'last_login', 'creation_date', 'updated_at', 'role', 'email_addr']
 
         users = []
@@ -218,8 +226,24 @@ class AdminController(BaseController):
 
             users.append(user_data)
 
+        self.redis.setex(self.CACHE_USER_TABLE, self.CACHE_TTL, json.dumps(users))
+
+        return users
+
+    def load_user_table(self):
+        columns = [
+            {'text': 'Id', 'type': 'string'},
+            {'text': 'Size', 'type': 'number'},
+            {'text': 'Max Size', 'type': 'number'},
+            {'text': 'Last Login Date', 'type': 'time'},
+            {'text': 'Creation Date', 'type': 'time'},
+            {'text': 'Updated Date', 'type': 'time'},
+            {'text': 'Role', 'type': 'string'},
+            {'text': 'Email', 'type': 'string'},
+        ]
+
         return {'columns': columns,
-                'rows': users,
+                'rows': self.fetch_user_table(),
                 'type': 'table'
                }
 
@@ -234,23 +258,17 @@ class AdminController(BaseController):
                 'datapoints': datapoints
                }
 
-    def load_user_logins(self, key, dates, timestamps):
+    def load_user_logins(self, key, dates, timestamps, size_threshold=None):
         date_bucket = {}
 
-        for user_key in self.redis.scan_iter('u:*:info', count=100):
-            if user_key.startswith(self.temp_user_key):
+        for user_data in self.fetch_user_table():
+            if size_threshold is not None and user_data[1] < size_threshold:
                 continue
 
-            user_login = self.redis.hget(user_key, 'last_login')
+            dt = datetime.utcfromtimestamp(user_data[3] / 1000)
+            dt = dt.date().isoformat()
 
-            try:
-                dt = datetime.utcfromtimestamp(int(user_login or 0))
-            except ValueError:
-                dt = datetime.strptime(user_login[:19], '%Y-%m-%d %H:%M:%S')
-
-            dt = dt.date()
-
-            date_bucket[dt.isoformat()] = date_bucket.get(dt, 0) + 1
+            date_bucket[dt] = date_bucket.get(dt, 0) + 1
 
         datapoints = []
         for dt, ts in zip(dates, timestamps):
@@ -260,7 +278,6 @@ class AdminController(BaseController):
         return {'target': key,
                 'datapoints': datapoints
                }
-
 
     @classmethod
     def parse_iso_or_ts(self, value):
