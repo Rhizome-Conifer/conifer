@@ -48,6 +48,10 @@ class TestAdminAPI(FullStackTests):
         assert res.json['username'] == 'adminuser'
         assert self.testapp.cookies['__test_sesh'] != ''
 
+    def test_make_coll_public(self):
+        params = {'public': True}
+        res = self.testapp.post_json('/api/v1/collection/default-collection?user=adminuser', params=params)
+
     def test_api_roles(self):
         res = self.testapp.get('/api/v1/admin/user_roles')
         assert set(res.json['roles']) == {'admin',
@@ -245,4 +249,14 @@ class TestAdminAPI(FullStackTests):
 
         assert isinstance(res.json, list)
         assert len(res.json) == 3
+
+        colls = res.json[0]['rows']
+
+        # one public coll
+        assert len(colls) == 1
+
+        for coll in colls:
+            assert coll[0] == 'default-collection'
+            assert coll[1] == 'Default Collection'
+            assert coll[3] == 'adminuser'
 

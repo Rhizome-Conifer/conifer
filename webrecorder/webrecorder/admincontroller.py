@@ -4,6 +4,7 @@ import time
 import redis
 import os
 import re
+import gevent
 
 from operator import itemgetter
 
@@ -93,11 +94,10 @@ class AdminController(BaseController):
 
         self.session_redis = kwargs.get('session_redis')
 
-        self.init_all_stats()
+        self.all_stats = {}
+        gevent.spawn(self.init_all_stats)
 
     def init_all_stats(self):
-        self.all_stats = {}
-
         for name, key in self.STATS_LABELS.items():
             self.all_stats[name] = key
 
@@ -247,7 +247,7 @@ class AdminController(BaseController):
         if users:
             return json.loads(users)
 
-        column_keys = ['size', 'max_size', 'last_login', 'creation_date', 'updated_at', 'role', 'email_addr']
+        column_keys = ['size', 'max_size', 'last_login', 'created_at', 'updated_at', 'role', 'email_addr']
 
         users = []
 
@@ -311,21 +311,20 @@ class AdminController(BaseController):
 
     # COLL TABLE
     def fetch_coll_table(self):
-        colls = self.redis.get(self.CACHE_USER_TABLE)
+        colls = self.redis.get(self.CACHE_COLL_TABLE)
         if colls:
             return json.loads(colls)
 
-        column_keys = ['size', 'owner', 'title', 'creation_at', 'updated_at', 'public']
+        column_keys = ['slug', 'title', 'size', 'owner', 'created_at', 'updated_at', 'public']
 
         colls = []
 
         for coll_key in self.redis.scan_iter('c:*:info', count=100):
             coll_data = self.redis.hmget(coll_key, column_keys)
 
-            coll_data.insert(0, coll_key.split(':')[1])
-            coll_data[1] = int(coll_data[1])
-            user_data[4] = self.parse_iso_or_ts(user_data[4])
-            user_data[5] = self.parse_iso_or_ts(user_data[5])
+            coll_data[2] = int(coll_data[2])
+            coll_data[4] = self.parse_iso_or_ts(coll_data[4])
+            coll_data[5] = self.parse_iso_or_ts(coll_data[5])
 
             colls.append(coll_data)
 
@@ -335,16 +334,16 @@ class AdminController(BaseController):
 
     def load_coll_table(self):
         columns = [
-            {'text': 'Id', 'type': 'string'},
+            {'text': 'Slug', 'type': 'string'},
+            {'text': 'Title', 'type': 'string'},
             {'text': 'Size', 'type': 'number'},
             {'text': 'Owner', 'type': 'string'},
-            {'text': 'Title', 'type': 'string'},
             {'text': 'Creation Date', 'type': 'time'},
             {'text': 'Updated Date', 'type': 'time'},
             {'text': 'Public', 'type': 'string'},
         ]
 
-        public_colls = [row for row in self.fetch_coll_table() if row[6]]
+        public_colls = [row for row in self.fetch_coll_table() if row[6] == '1']
 
         return {'columns': columns,
                 'rows': public_colls,
@@ -364,7 +363,7 @@ class AdminController(BaseController):
             dt = datetime.fromtimestamp(coll_data[index] / 1000)
             dt = dt.date().isoformat()
 
-            date_bucket[dt] = date_bucket.get(dt, 0) + coll_data[1]
+            date_bucket[dt] = date_bucket.get(dt, 0) + coll_data[2]
 
         datapoints = []
         for dt, ts in zip(dates, timestamps):
