@@ -3,7 +3,7 @@ from .testutils import FullStackTests
 from webrecorder.models.usermanager import CLIUserManager
 from webrecorder.utils import today_str
 
-from webrecorder.admincontroller import AdminController
+from webrecorder.admincontroller import *
 
 
 # ============================================================================
@@ -165,9 +165,9 @@ class TestAdminAPI(FullStackTests):
                             'to': today_str()
                            },
                   'targets': [
-                              {'target': AdminController.USER_LOGINS, 'type': 'timeserie'},
-                              {'target': AdminController.USER_LOGINS_100, 'type': 'timeserie'},
-                              {'target': AdminController.ACTIVE_SESSIONS, 'type': 'timeserie'},
+                              {'target': USER_LOGINS, 'type': 'timeserie'},
+                              {'target': USER_LOGINS_100, 'type': 'timeserie'},
+                              {'target': ACTIVE_SESSIONS, 'type': 'timeserie'},
                              ]
                  }
 
@@ -192,19 +192,23 @@ class TestAdminAPI(FullStackTests):
         params = {'range': {'from': today_str(),
                             'to': today_str()
                            },
-                  'targets': [{'target': 'User Table', 'type': 'table'},
+                  'targets': [{'target': USER_TABLE, 'type': 'table'},
+                              {'target': TOTAL_USERS, 'type': 'timeserie'}
                              ]
                  }
 
         res = self.testapp.post_json('/api/v1/stats/query', params=params)
 
         assert isinstance(res.json, list)
-        assert len(res.json) == 1
+        assert len(res.json) == 2
         data = res.json[0]
 
         assert len(data['rows']) == 3
 
         assert set(data[0] for data in data['rows']) == {'test', 'another', 'adminuser'}
+
+        # total query
+        assert res.json[1]['datapoints'][0][0] == 3
 
     def test_api_stats_query_temps(self):
         params = {'range': {'from': today_str(),
@@ -226,4 +230,19 @@ class TestAdminAPI(FullStackTests):
 
         assert set(data[0] for data in data['rows']) == {self.anon_user}
 
+    def test_api_stats_query_colls(self):
+        params = {'range': {'from': today_str(),
+                            'to': today_str()
+                           },
+                  'targets': [
+                              {'target': COLL_TABLE, 'type': 'table'},
+                              {'target': COLL_SIZES_CREATED, 'type': 'timeserie'},
+                              {'target': COLL_SIZES_UPDATED, 'type': 'timeserie'},
+                             ]
+                 }
+
+        res = self.testapp.post_json('/api/v1/stats/query', params=params)
+
+        assert isinstance(res.json, list)
+        assert len(res.json) == 3
 

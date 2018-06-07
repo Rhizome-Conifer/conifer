@@ -17,6 +17,22 @@ from webrecorder.models import Stats, User
 from datetime import datetime, timedelta
 
 
+# Custom Stats
+USER_TABLE = 'User Table'
+COLL_TABLE = 'Collections Public'
+TEMP_TABLE = 'Temp Table'
+
+ACTIVE_SESSIONS = 'Active Sessions'
+TOTAL_USERS = 'Total Users'
+
+USER_LOGINS = 'User-Logins-Any'
+USER_LOGINS_100 = 'User-Logins-100MB'
+USER_LOGINS_1000 = 'User-Logins-1GB'
+
+COLL_SIZES_CREATED = 'Collections Created'
+COLL_SIZES_UPDATED = 'Collections Updated'
+
+
 # ============================================================================
 class AdminController(BaseController):
     STATS_LABELS = {
@@ -26,7 +42,7 @@ class AdminController(BaseController):
         'Replay Logged In': Stats.REPLAY_USER_KEY,
         'Replay Temp': Stats.REPLAY_TEMP_KEY,
 
-        'Patch Logged In': Stats.REPLAY_TEMP_KEY,
+        'Patch Logged In': Stats.PATCH_USER_KEY,
         'Patch Temp': Stats.PATCH_TEMP_KEY,
 
         'Delete Logged In': Stats.DELETE_USER_KEY,
@@ -49,20 +65,16 @@ class AdminController(BaseController):
         'Temp Collection Size Added': Stats.TEMP_MOVE_SIZE_KEY,
     }
 
-    # Custom Stats
-    USER_TABLE = 'User Table'
-    TEMP_TABLE = 'Temp Table'
-
-    ACTIVE_SESSIONS = 'Active Sessions'
-
-    USER_LOGINS = 'User-Logins-Any'
-    USER_LOGINS_100 = 'User-Logins-100MB'
-    USER_LOGINS_1000 = 'User-Logins-1GB'
-
-    PUBLIC_COLLS = 'Collections Public'
+    CUSTOM_STATS = [
+                    USER_TABLE, COLL_TABLE, TEMP_TABLE,
+                    ACTIVE_SESSIONS, TOTAL_USERS,
+                    USER_LOGINS, USER_LOGINS_100, USER_LOGINS_1000,
+                    COLL_SIZES_CREATED, COLL_SIZES_UPDATED
+                   ]
 
     CACHE_TTL = 600
     CACHE_USER_TABLE = 'stc:users'
+    CACHE_COLL_TABLE = 'stc:colls'
 
     def __init__(self, *args, **kwargs):
         super(AdminController, self).__init__(*args, **kwargs)
@@ -97,14 +109,8 @@ class AdminController(BaseController):
             name = 'Sources ' + key[len(Stats.SOURCES_KEY.format('')):]
             self.all_stats[name] = key
 
-        self.all_stats[self.USER_TABLE] = self.USER_TABLE
-        self.all_stats[self.TEMP_TABLE] = self.TEMP_TABLE
-
-        self.all_stats[self.USER_LOGINS] = self.USER_LOGINS
-        self.all_stats[self.USER_LOGINS_100] = self.USER_LOGINS_100
-        self.all_stats[self.USER_LOGINS_1000] = self.USER_LOGINS_1000
-
-        self.all_stats[self.ACTIVE_SESSIONS] = self.ACTIVE_SESSIONS
+        for key in self.CUSTOM_STATS:
+            self.all_stats[key] = key
 
     def admin_view(self, function):
         def check_access(*args, **kwargs):
@@ -137,27 +143,35 @@ class AdminController(BaseController):
         return resp
 
     def load_series(self, target, dates, timestamps):
+        name = target.get('target', '')
         if target['type'] == 'timeserie':
-            name = target.get('target', '')
-            if name == self.ACTIVE_SESSIONS:
+            if name == ACTIVE_SESSIONS:
                 return self.load_active_sessions(name)
 
-            elif name == self.USER_LOGINS:
+            elif name == TOTAL_USERS:
+                return self.load_total_users(name)
+
+            elif name == USER_LOGINS:
                 return self.load_user_logins(name, dates, timestamps)
 
-            elif name == self.USER_LOGINS_100:
+            elif name == USER_LOGINS_100:
                 return self.load_user_logins(name, dates, timestamps, 100000000)
 
-            elif name == self.USER_LOGINS_1000:
+            elif name == USER_LOGINS_1000:
                 return self.load_user_logins(name, dates, timestamps, 1000000000)
+
+            elif name == COLL_SIZES_CREATED or name == COLL_SIZES_UPDATED:
+                return self.load_coll_series_by_size(name, dates, timestamps)
 
             return self.load_time_series(name, dates, timestamps)
 
         elif target['type'] == 'table':
-            if target['target'] == self.USER_TABLE:
+            if name == USER_TABLE:
                 return self.load_user_table()
-            elif target['target'] == self.TEMP_TABLE:
+            elif name == TEMP_TABLE:
                 return self.load_temp_table()
+            elif name == COLL_TABLE:
+                return self.load_coll_table()
 
         return {}
 
@@ -205,6 +219,29 @@ class AdminController(BaseController):
                 'type': 'table'
                }
 
+    def load_total_users(self, key):
+        ts = int(datetime.utcnow().timestamp()) * 1000
+
+        num_users = self.redis.scard('s:users')
+
+        datapoints = [[num_users, ts]]
+
+        return {'target': key,
+                'datapoints': datapoints
+               }
+
+    def load_active_sessions(self, key):
+        ts = int(datetime.utcnow().timestamp()) * 1000
+
+        num_sessions = sum(1 for i in self.session_redis.scan_iter('sesh:*', count=10))
+
+        datapoints = [[num_sessions, ts]]
+
+        return {'target': key,
+                'datapoints': datapoints
+               }
+
+    # USER TABLE
     def fetch_user_table(self):
         users = self.redis.get(self.CACHE_USER_TABLE)
         if users:
@@ -250,17 +287,6 @@ class AdminController(BaseController):
                 'type': 'table'
                }
 
-    def load_active_sessions(self, key):
-        ts = int(datetime.utcnow().timestamp()) * 1000
-
-        num_sessions = sum(1 for i in self.session_redis.scan_iter('sesh:*', count=10))
-
-        datapoints = [[num_sessions, ts]]
-
-        return {'target': key,
-                'datapoints': datapoints
-               }
-
     def load_user_logins(self, key, dates, timestamps, size_threshold=None):
         date_bucket = {}
 
@@ -268,10 +294,77 @@ class AdminController(BaseController):
             if size_threshold is not None and user_data[1] < size_threshold:
                 continue
 
-            dt = datetime.utcfromtimestamp(user_data[3] / 1000)
+            # note: ts should already be utc!
+            dt = datetime.fromtimestamp(user_data[3] / 1000)
             dt = dt.date().isoformat()
 
             date_bucket[dt] = date_bucket.get(dt, 0) + 1
+
+        datapoints = []
+        for dt, ts in zip(dates, timestamps):
+            count = date_bucket.get(dt, 0)
+            datapoints.append((count, ts))
+
+        return {'target': key,
+                'datapoints': datapoints
+               }
+
+    # COLL TABLE
+    def fetch_coll_table(self):
+        colls = self.redis.get(self.CACHE_USER_TABLE)
+        if colls:
+            return json.loads(colls)
+
+        column_keys = ['size', 'owner', 'title', 'creation_at', 'updated_at', 'public']
+
+        colls = []
+
+        for coll_key in self.redis.scan_iter('c:*:info', count=100):
+            coll_data = self.redis.hmget(coll_key, column_keys)
+
+            coll_data.insert(0, coll_key.split(':')[1])
+            coll_data[1] = int(coll_data[1])
+            user_data[4] = self.parse_iso_or_ts(user_data[4])
+            user_data[5] = self.parse_iso_or_ts(user_data[5])
+
+            colls.append(coll_data)
+
+        self.redis.setex(self.CACHE_COLL_TABLE, self.CACHE_TTL, json.dumps(colls))
+
+        return colls
+
+    def load_coll_table(self):
+        columns = [
+            {'text': 'Id', 'type': 'string'},
+            {'text': 'Size', 'type': 'number'},
+            {'text': 'Owner', 'type': 'string'},
+            {'text': 'Title', 'type': 'string'},
+            {'text': 'Creation Date', 'type': 'time'},
+            {'text': 'Updated Date', 'type': 'time'},
+            {'text': 'Public', 'type': 'string'},
+        ]
+
+        public_colls = [row for row in self.fetch_coll_table() if row[6]]
+
+        return {'columns': columns,
+                'rows': public_colls,
+                'type': 'table'
+               }
+
+    def load_coll_series_by_size(self, key, dates, timestamps):
+        date_bucket = {}
+
+        if key == COLL_SIZES_CREATED:
+            index = 4
+        else:
+            index = 5
+
+        for coll_data in self.fetch_coll_table():
+            # note: ts should already be utc!
+            dt = datetime.fromtimestamp(coll_data[index] / 1000)
+            dt = dt.date().isoformat()
+
+            date_bucket[dt] = date_bucket.get(dt, 0) + coll_data[1]
 
         datapoints = []
         for dt, ts in zip(dates, timestamps):

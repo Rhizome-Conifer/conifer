@@ -1,7 +1,6 @@
 import os
-import datetime
+from datetime import datetime
 import json
-import time
 
 from webrecorder.utils import redis_pipeline
 
@@ -245,7 +244,7 @@ class User(RedisUniqueComponent):
         return data
 
     def update_last_login(self):
-        self.set_prop('last_login', int(time.time()))
+        self.set_prop('last_login', int(datetime.utcnow().timestamp()))
 
     def __eq__(self, obj):
         if obj and (self.my_id == obj.my_id) and isinstance(obj, User):
@@ -261,7 +260,7 @@ class User(RedisUniqueComponent):
             return False
 
         rate_key = self.RATE_LIMIT_KEY.format(ip=ip, H='')
-        h = int(datetime.datetime.utcnow().strftime('%H'))
+        h = int(datetime.utcnow().strftime('%H'))
 
         if ip in self.rate_restricted_ips:
             limit_hours = self.rate_limit_restricted_hours

@@ -315,7 +315,7 @@ class BaseImporter(ImportStatusChecker):
                 page_id = bookmark_data.get('page_id')
                 if page_id:
                     bookmark_data['page_id'] = page_id_map.get(page_id)
-                bookmark = blist.create_bookmark(bookmark_data)
+                bookmark = blist.create_bookmark(bookmark_data, incr_stats=False)
 
     def detect_pages(self, coll, rec):
         key = self.cdxj_key.format(coll=coll, rec=rec)
