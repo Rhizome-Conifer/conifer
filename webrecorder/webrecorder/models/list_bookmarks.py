@@ -38,7 +38,7 @@ class BookmarkList(RedisUniqueComponent):
 
         return list_id
 
-    def create_bookmark(self, props):
+    def create_bookmark(self, props, incr_stats=True):
         collection = self.get_owner()
         self.access.assert_can_write_coll(collection)
 
@@ -60,7 +60,8 @@ class BookmarkList(RedisUniqueComponent):
 
         self.redis.hset(self.BOOK_CONTENT_KEY.format(blist=self.my_id), bid, json.dumps(bookmark))
 
-        Stats(self.redis).incr_bookmark_add()
+        if incr_stats:
+            Stats(self.redis).incr_bookmark_add()
 
         if page_id:
             collection.add_page_bookmark(page_id, bid, self.my_id)

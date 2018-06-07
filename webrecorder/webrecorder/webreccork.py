@@ -1,5 +1,4 @@
 from cork import Cork, AAAException, AuthException
-from datetime import datetime
 import os
 
 from webrecorder.redisutils import RedisTable
@@ -28,7 +27,7 @@ class WebRecCork(Cork):
 
     def do_login(self, username):
         self._setup_cookie(username)
-        self._store.users[username]['last_login'] = str(datetime.utcnow())
+        self._store.users[username].update_last_login()
         self._store.save_users()
 
     def is_authenticate(self, username, password):
@@ -71,8 +70,8 @@ class WebRecCork(Cork):
             'email_addr': data['email_addr'],
             'reg_data': data['desc'],
             'creation_date': data['creation_date'],
-            'last_login': str(datetime.utcnow())
         }
+        self._store.users[username].update_last_login()
         self._store.save_users()
         return username, data['desc']
 
