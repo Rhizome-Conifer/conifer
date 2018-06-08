@@ -26,6 +26,20 @@ const devConfig = {
     ]
   },
 
+  module: {
+    rules: [
+      {
+        enforce: 'pre',
+        test: /\.(js|jsx)?$/,
+        exclude: /node_modules/,
+        loader: 'eslint-loader',
+        options: {
+          quiet: true
+        }
+      }
+    ]
+  },
+
   output: {
     publicPath: `http://${host}:${port}${baseConfig.output.publicPath}`
   },
