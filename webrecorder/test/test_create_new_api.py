@@ -27,8 +27,10 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         assert res.json['username']
         username = res.json['username']
 
-        res = self.testapp.get('/api/v1/user/' + username, status=302)
-        assert res.headers['Location'] == 'http://app-host/api/v1/user/' + username
+        #res = self.testapp.get('/api/v1/user/' + username, status=302)
+        #assert res.headers['Location'] == 'http://app-host/api/v1/user/' + username
+        res = self.testapp.get('/api/v1/user/' + username, status=403)
+        assert res.json == {'error': 'unauthorized'}
 
     def test_init_anon(self):
         res = self.testapp.get('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
