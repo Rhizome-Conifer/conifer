@@ -117,7 +117,8 @@ export default function list(state = initialState, action = {}) {
         loading: false,
         loaded: true,
         error: null,
-        ...action.result.list
+        ...action.result.list,
+        bookmarks: fromJS(action.result.list.bookmarks)
       });
     case LIST_LOAD_FAIL:
       return state.merge(action.error);

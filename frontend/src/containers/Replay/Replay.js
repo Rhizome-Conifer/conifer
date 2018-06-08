@@ -8,20 +8,20 @@ import { batchActions } from 'redux-batched-actions';
 import { getCollectionLink, remoteBrowserMod, truncate } from 'helpers/utils';
 import config from 'config';
 
-import { getActivePage } from 'redux/selectors';
-import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, setBookmarkId, setList, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
-import { resetStats } from 'redux/modules/infoStats';
-import { listLoaded, load as loadList } from 'redux/modules/list';
-import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
-import { toggle as toggleSidebar } from 'redux/modules/sidebar';
+import { getActivePage } from 'store/selectors';
+import { isLoaded, load as loadColl } from 'store/modules/collection';
+import { getArchives, setBookmarkId, setList, updateUrl, updateUrlAndTimestamp } from 'store/modules/controls';
+import { resetStats } from 'store/modules/infoStats';
+import { listLoaded, load as loadList } from 'store/modules/list';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
+import { toggle as toggleSidebar } from 'store/modules/sidebar';
 
 import EmbedFooter from 'components/EmbedFooter';
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import Resizable from 'components/Resizable';
-import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer,
-         SidebarCollectionViewer, SidebarPageViewer } from 'containers';
+import Webview from 'components/player/Webview';
+import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer, SidebarCollectionViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
 
@@ -119,8 +119,18 @@ class Replay extends Component {
   }
 
   render() {
-    const { activeBookmarkId, activeBrowser, appSettings, collection,
-            dispatch, list, match: { params }, recording, timestamp, url } = this.props;
+    const {
+      activeBookmarkId,
+      activeBrowser,
+      appSettings,
+      collection,
+      dispatch,
+      list,
+      match: { params },
+      recording,
+      timestamp,
+      url
+    } = this.props;
 
     // coll access
     if (collection.get('error')) {
@@ -157,7 +167,7 @@ class Replay extends Component {
     }
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp);
-    const listSlug = params.listSlug;
+    const { listSlug } = params;
     const bkId = params.bookmarkId;
 
     const shareUrl = listSlug ?

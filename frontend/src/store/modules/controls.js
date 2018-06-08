@@ -43,7 +43,7 @@ export default function controls(state = initialState, action = {}) {
       return state.merge({
         archivesLoading: false,
         archivesAccessed: action.accessed,
-        archives: action.result
+        archives: fromJS(action.result)
       });
     case GET_ARCHIVES_FAIL:
       return state.merge({
@@ -60,7 +60,7 @@ export default function controls(state = initialState, action = {}) {
       return state.set('mode', action.mode);
     case SET_EXTRACTABLE:
       return state.merge({
-        extractable: action.extractable
+        extractable: fromJS(action.extractable)
       });
     case SET_SOURCES:
       return state.set('archiveSources', action.sources);

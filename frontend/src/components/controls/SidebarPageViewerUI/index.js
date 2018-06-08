@@ -10,8 +10,8 @@ import { batchActions } from 'redux-batched-actions';
 import { untitledEntry } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
-import { updateUrlAndTimestamp } from 'redux/modules/controls';
-import { setBrowser } from 'redux/modules/remoteBrowsers';
+import { updateUrlAndTimestamp } from 'store/modules/controls';
+import { setBrowser } from 'store/modules/remoteBrowsers';
 
 import SidebarHeader from 'components/SidebarHeader';
 import { CatalogIcon, WarcIcon } from 'components/icons';
@@ -101,7 +101,7 @@ class SidebarPageViewer extends Component {
       <div className="page-list">
         <SidebarHeader label="Collection Navigator" />
         <nav>
-          <button onClick={this.returnToCollection} className="borderless">&larr; all lists</button>
+          <button onClick={this.returnToCollection} className="borderless" type="button">&larr; all lists</button>
           {
             (this.context.canAdmin || collection.get('public_index')) &&
               <Link to={getCollectionLink(collection, true)}>Collection Index <CatalogIcon /></Link>

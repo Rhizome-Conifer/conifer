@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { login } from 'redux/modules/auth';
-import { reportBug, toggleModal } from 'redux/modules/bugReport';
-import { showModal } from 'redux/modules/userLogin';
+import { login } from 'store/modules/auth';
+import { reportBug, toggleModal } from 'store/modules/bugReport';
+import { showModal } from 'store/modules/userLogin';
 
 import { UserManagementUI } from 'components/siteComponents';
 

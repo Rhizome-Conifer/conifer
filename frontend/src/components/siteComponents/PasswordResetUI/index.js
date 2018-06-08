@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { Alert, Button, ControlLabel, Form,
-         FormControl, FormGroup } from 'react-bootstrap';
+import { Alert, Button, ControlLabel, Form, FormControl, FormGroup } from 'react-bootstrap';
 
 import './style.scss';
 

@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { showModal } from 'redux/modules/userLogin';
+import { showModal } from 'store/modules/userLogin';
 
-import { getActiveCollection } from 'redux/selectors';
+import { getActiveCollection } from 'store/selectors';
 
 import { StandaloneRecorderUI } from 'components/controls';
 

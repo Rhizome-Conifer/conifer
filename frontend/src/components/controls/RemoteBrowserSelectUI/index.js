@@ -93,10 +93,12 @@ class RemoteBrowserSelectUI extends PureComponent {
     const activeBrowserEle = browsers ? browsers.find(b => b.get('id') === instanceContext) : null;
 
     const btn = activeBrowserEle ?
-      (<span className="btn-content">
-        <img src={`/api/browsers/browsers/${activeBrowserEle.get('id')}/icon`} alt="Browser Icon" />{ ` ${activeBrowserEle.get('name')} v${activeBrowserEle.get('version')}` }
-      </span>) :
-      <span className="btn-content">{active ? 'Current Browser' : 'Use Current Browser'}</span>;
+      (
+        <span className="btn-content">
+          <img src={`/api/browsers/browsers/${activeBrowserEle.get('id')}/icon`} alt="Browser Icon" />{ ` ${activeBrowserEle.get('name')} v${activeBrowserEle.get('version')}` }
+        </span>
+      ) :
+      (<span className="btn-content">{active ? 'Current Browser' : 'Use Current Browser'}</span>);
 
     return (
       <DropdownButton

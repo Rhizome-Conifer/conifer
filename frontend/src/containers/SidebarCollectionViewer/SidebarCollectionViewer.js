@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { timestampOrderedPages } from 'redux/selectors';
+import { timestampOrderedPages } from 'store/selectors';
 
 import { SidebarCollectionViewerUI } from 'components/controls';
 

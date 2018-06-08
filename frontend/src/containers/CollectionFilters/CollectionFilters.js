@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { createSearchAction } from 'redux-search';
 
-import { setQueryMode } from 'redux/modules/pageQuery';
+import { setQueryMode } from 'store/modules/pageQuery';
 
-import { getSearchText } from 'redux/selectors/search';
+import { getSearchText } from 'store/selectors/search';
 
 import CollectionFiltersUI from 'components/collection/CollectionFiltersUI';
 

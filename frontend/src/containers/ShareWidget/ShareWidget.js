@@ -5,14 +5,13 @@ import { withRouter } from 'react-router';
 
 import { appHost } from 'config';
 import { remoteBrowserMod } from 'helpers/utils';
-import { edit } from 'redux/modules/collection';
-import { showModal } from 'redux/modules/userLogin';
+import { edit } from 'store/modules/collection';
+import { showModal } from 'store/modules/userLogin';
 
 import { ShareWidgetUI } from 'components/controls';
 
 
 class ShareWidget extends Component {
-
   static propTypes = {
     activeBrowser: PropTypes.string,
     activeBookmarkId: PropTypes.string,
@@ -26,8 +25,16 @@ class ShareWidget extends Component {
   }
 
   render() {
-    const { activeBrowser, activeBookmarkId, activeList, collection,
-            match: { params: { user, coll } }, showLoginModal, timestamp, url } = this.props;
+    const {
+      activeBrowser,
+      activeBookmarkId,
+      activeList,
+      collection,
+      match: { params: { user, coll } },
+      showLoginModal,
+      timestamp,
+      url
+    } = this.props;
 
     const tsMod = remoteBrowserMod(activeBrowser, timestamp, '/');
     const listFrag = activeList ? `list/${activeList}/b${activeBookmarkId}/` : '';

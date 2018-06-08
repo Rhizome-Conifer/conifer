@@ -2,21 +2,20 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
-import { load as loadColl } from 'redux/modules/collection';
-import { getOrderedRecordings } from 'redux/selectors';
+import { load as loadColl } from 'store/modules/collection';
+import { getOrderedRecordings } from 'store/selectors';
 
 import CollectionManagementUI from 'components/collection/CollectionManagementUI';
 
 
 class CollectionManagement extends Component {
-
   static propTypes = {
     auth: PropTypes.object,
     match: PropTypes.object,
     history: PropTypes.object
   };
 
-    // TODO move to HOC
+  // TODO move to HOC
   static childContextTypes = {
     canAdmin: PropTypes.bool
   };

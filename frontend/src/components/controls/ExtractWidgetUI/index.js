@@ -69,7 +69,8 @@ class ExtractWidgetUI extends Component {
             <li className="mnt-label">
               {archiveName}
               { (stats && stats.length > 1) || (stats && stats.length === 1 && stats[0].id !== extractable.get('id')) ? ` + ${stats.length} ` : ''}
-              <span className="caret" /></li>
+              <span className="caret" />
+            </li>
           </ul>
         </button>
         <div className="dropdown-menu" aria-labelledby="timePicker">
@@ -119,7 +120,7 @@ class ExtractWidgetUI extends Component {
                 </ul>
               </div> :
               <div className={archiveToggleClasses}>
-                <div className="checkbox-block" role="button" onClick={this.toggleSources}>
+                <div className="checkbox-block" role="button" onClick={this.toggleSources} tabIndex={0}>
                   <input
                     key="sourcesCheckbox"
                     id="all-archives"

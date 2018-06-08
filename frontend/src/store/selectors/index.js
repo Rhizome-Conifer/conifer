@@ -278,10 +278,12 @@ export const splitPagesBySession = createSelector(
       return recs;
     }
 
+    /* eslint-disable */
     for(const rec of recordings) {
       const r = rec.get('id');
       recs[r] = pages.filter(p => p.get('rec') === r).toList();
     }
+    /* eslint-enable */
     return recs;
   }
 );

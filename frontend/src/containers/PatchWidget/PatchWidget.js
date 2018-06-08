@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { getRemoteArchiveStats } from 'redux/selectors';
+import { getRemoteArchiveStats } from 'store/selectors';
 
 import { PatchWidgetUI } from 'components/controls';
 

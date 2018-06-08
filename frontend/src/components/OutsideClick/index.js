@@ -72,8 +72,9 @@ class OutsideClick extends Component {
 
   checkKey = (evt) => {
     // escape key
-    if (evt.keyCode === 27)
+    if (evt.keyCode === 27) {
       this.props.handleClick(evt);
+    }
   }
 
   checkClick = (evt) => {

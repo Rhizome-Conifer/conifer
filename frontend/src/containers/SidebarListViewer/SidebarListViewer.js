@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 
 import { saveDelay } from 'config';
 
-import { clear, selectBookmark } from 'redux/modules/inspector';
-import { resetEditState, edit } from 'redux/modules/list';
+import { clear, selectBookmark } from 'store/modules/inspector';
+import { resetEditState, edit } from 'store/modules/list';
 
 import { SidebarListViewerUI } from 'components/controls';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { checkUser, sendSignup } from 'redux/modules/userSignup';
+import { checkUser, sendSignup } from 'store/modules/userSignup';
 import { UserSignup } from 'components/siteComponents';
 
 

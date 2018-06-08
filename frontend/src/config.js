@@ -1,6 +1,3 @@
-/* eslint-disable */
-require('babel-polyfill');
-
 /**
  * For local settings override, create `config.local.js` in the same directory
  * as this file..
@@ -33,7 +30,7 @@ const hostScheme = process.env.SCHEME ? process.env.SCHEME : 'http';
 const contentHost = process.env.CONTENT_HOST ? process.env.CONTENT_HOST : `localhost:8092`;
 
 
-module.exports = Object.assign({
+export default Object.assign({
   announceMailingList: process.env.ANNOUNCE_MAILING_LIST,
   apiProxy: false,
   apiPath: '/api/v1',
@@ -92,7 +89,7 @@ module.exports = Object.assign({
         { property: 'og:locale', content: 'en_US' },
         { property: 'og:title', content: 'Webrecorder' },
         { property: 'og:description', content: 'Create high-fidelity, interactive web archives of any web site you browse.' },
-        { property: 'og:image', content: `${hostScheme}://${appHost}/static/webrecorder-social.png`, width: '1200', height: '630'}
+        { property: 'og:image', content: `${hostScheme}://${appHost}/static/webrecorder-social.png`, width: '1200', height: '630' }
       ]
     }
   },

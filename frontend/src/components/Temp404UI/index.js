@@ -39,7 +39,7 @@ class Temp404UI extends PureComponent {
           <Panel.Heading>Temporary Collection Not Found</Panel.Heading>
           <Panel.Body>
             <p>Sorry, this link is to a temporary collection, which is no longer available.</p>
-            <p><Link to="/_register">Sign Up</Link> or <button className="button-link" onClick={showLoginModal}>Login</button> to keep a shareable permanent collctions on webrecorder.io</p>
+            <p><Link to="/_register">Sign Up</Link> or <button className="button-link" type="button" onClick={showLoginModal}>Login</button> to keep a shareable permanent collctions on webrecorder.io</p>
           </Panel.Body>
         </Panel>
       </SetStatus>

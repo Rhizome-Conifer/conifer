@@ -12,7 +12,8 @@ export const collDetailBreadcrumb = connect(
     return {
       collection: app.get('collection')
     };
-  })(collDetail);
+  }
+)(collDetail);
 
 
 const listDetail = ({ list }) => { return list ? list.get('title') : null; };
@@ -21,4 +22,5 @@ export const listDetailBreadcrumb = connect(
     return {
       list: list && app.getIn(['list', 'loaded']) ? app.get('list') : null
     };
-  })(listDetail);
+  }
+)(listDetail);

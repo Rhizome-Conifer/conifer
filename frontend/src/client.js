@@ -1,4 +1,4 @@
-import 'babel-polyfill';
+import '@babel/polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Raven from 'raven-js';
@@ -7,7 +7,7 @@ import { Provider } from 'react-redux';
 
 import config from 'config';
 
-import createStore from './redux/create';
+import createStore from './store/create';
 import ApiClient from './helpers/ApiClient';
 import baseRoute from './baseRoute';
 import Root from './root';

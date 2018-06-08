@@ -64,8 +64,8 @@ class EditItem extends Component {
         <input name="title" className="borderless-input" onBlur={this.editListItem} onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} />
         {
           edited ?
-            <button className="borderless"><CheckIcon success /></button> :
-            <button className="borderless" onClick={this.editListItem} disabled={!hasChanges} title="Save edit"><PencilIcon /></button>
+            <button className="borderless" type="button"><CheckIcon success /></button> :
+            <button className="borderless" onClick={this.editListItem} disabled={!hasChanges} title="Save edit" type="button"><PencilIcon /></button>
         }
       </li>
     );

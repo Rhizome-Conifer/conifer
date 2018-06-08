@@ -1,10 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { addUserCollection, incrementCollCount, loadCollections, selectCollection } from 'redux/modules/auth';
-import { createCollection } from 'redux/modules/collections';
+import { addUserCollection, incrementCollCount, loadCollections, selectCollection } from 'store/modules/auth';
+import { createCollection } from 'store/modules/collections';
 
-import { getActiveCollection, sortUserCollsByAlpha, sortUserCollsByUpdateAt } from 'redux/selectors';
+import { getActiveCollection, sortUserCollsByAlpha, sortUserCollsByUpdateAt } from 'store/selectors';
 
 import CollectionDropdownUI from 'components/collection/CollectionDropdownUI';
 

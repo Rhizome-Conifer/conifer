@@ -12,7 +12,6 @@ import './style.scss';
 
 
 class WYSIWYG extends Component {
-
   static contextTypes = {
     canAdmin: PropTypes.bool
   };
@@ -248,8 +247,8 @@ class WYSIWYG extends Component {
         {
           _editMode && !contentSync &&
             <div className="editor-button-row">
-              <Button onClick={this.cancel} className="rounded">Cancel</Button>
-              <Button bsStyle={this.props.success ? 'success' : 'default'} className="rounded" onClick={this.save}>
+              <Button onClick={this.cancel} className="rounded" type="button">Cancel</Button>
+              <Button bsStyle={this.props.success ? 'success' : 'default'} className="rounded" onClick={this.save} type="button">
                 { this.props.success ? 'Saved..' : 'Save' }
               </Button>
             </div>
@@ -257,7 +256,7 @@ class WYSIWYG extends Component {
         {
           _editMode && this.state.markdownEdit &&
             <React.Fragment>
-              <button onClick={this.toggleMarkdownMode} className="close-markdown borderless">
+              <button onClick={this.toggleMarkdownMode} className="close-markdown borderless" type="button">
                 <XIcon />
               </button>
               <textarea

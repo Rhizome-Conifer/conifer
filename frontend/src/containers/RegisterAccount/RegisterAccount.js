@@ -7,7 +7,7 @@ import { withRouter } from 'react-router';
 import { apiPath, supportEmail } from 'config';
 import { apiFetch } from 'helpers/utils';
 
-import { showModal } from 'redux/modules/userLogin';
+import { showModal } from 'store/modules/userLogin';
 
 import './style.scss';
 
@@ -81,14 +81,14 @@ class RegisterAccount extends Component {
           finished && error === 'already_registered' &&
             <React.Fragment>
               <h3>This user has already been verified.</h3>
-              <button onClick={this.props.toggleLogin} className="rounded">Login</button>
+              <button onClick={this.props.toggleLogin} className="rounded" type="button">Login</button>
             </React.Fragment>
         }
         {
           finished && success &&
             <React.Fragment>
               <h3>Thank you {this.state.username}, your email is now verified.</h3>
-              <button onClick={this.goHome} className="rounded">Proceed to Homepage</button>
+              <button onClick={this.goHome} className="rounded" type="button">Proceed to Homepage</button>
             </React.Fragment>
         }
       </div>

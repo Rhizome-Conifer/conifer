@@ -12,7 +12,6 @@ import './style.scss';
 
 
 class RecordingToolsUI extends PureComponent {
-
   static propTypes = {
     activeBrowser: PropTypes.string,
     autoscroll: PropTypes.bool,
@@ -94,8 +93,11 @@ class RecordingToolsUI extends PureComponent {
   }
 
   openClipboard = () => this.props.toggleClipboard(true)
+
   closeClipboard = () => this.props.toggleClipboard(false)
+
   _open = () => this.setState({ clipboardOpen: true })
+
   _close = () => this.setState({ clipboardOpen: false })
 
   render() {

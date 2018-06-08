@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
-import { isLoaded, load as loadColl } from 'redux/modules/collection';
+import { isLoaded, load as loadColl } from 'store/modules/collection';
 import { truncate } from 'helpers/utils';
 
 import { NewRecordingUI } from 'components/controls';
@@ -65,7 +65,7 @@ const mapStateToProps = ({ app }) => {
     collection: app.get('collection'),
     extractable: app.getIn(['controls', 'extractable']),
     remoteBrowserSelected: app.getIn(['remoteBrowsers', 'selectedBrowser']),
-    spaceUtilization: app.getIn(['user', 'space_utilization'])
+    spaceUtilization: app.getIn(['auth', 'user', 'space_utilization'])
   };
 };
 

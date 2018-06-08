@@ -49,12 +49,15 @@ class InspectorPanelUI extends PureComponent {
   }
 
   editBookmarkTitle = title => this.saveEdit({ title })
+
   editBookmarkDesc = desc => this.saveEdit({ desc })
 
   render() {
     const { canAdmin } = this.context;
-    const { bkEdited, browsers, collection, list, multiSelect,
-            selectedPage, selectedBk } = this.props;
+    const {
+      bkEdited, browsers, collection, list, multiSelect,
+      selectedPage, selectedBk
+    } = this.props;
 
     const bk = selectedBk ? list.get('bookmarks').find(o => o.get('id') === selectedBk) : false;
     const pg = bk ? bk.get('page') : collection.getIn(['pages', selectedPage]);

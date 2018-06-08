@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { setNewPassword } from 'redux/modules/passwordReset';
-import { showModal } from 'redux/modules/userLogin';
+import { setNewPassword } from 'store/modules/passwordReset';
+import { showModal } from 'store/modules/userLogin';
 
 import { NewPasswordUI } from 'components/siteComponents';
 

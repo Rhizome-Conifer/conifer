@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { resetPassword } from 'redux/modules/passwordReset';
+import { resetPassword } from 'store/modules/passwordReset';
 import { PasswordResetUI } from 'components/siteComponents';
 
 

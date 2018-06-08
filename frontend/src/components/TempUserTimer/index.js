@@ -18,8 +18,7 @@ class TempUserTimer extends Component {
 
     this.state = {
       min: String(min).padStart(2, '0'),
-      sec: String(sec).padStart(2, '0'),
-      ttl
+      sec: String(sec).padStart(2, '0')
     };
   }
 

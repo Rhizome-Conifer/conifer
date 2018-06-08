@@ -5,20 +5,19 @@ import { asyncConnect } from 'redux-connect';
 import { createSearchAction } from 'redux-search';
 import { Map } from 'immutable';
 
-import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl } from 'redux/modules/collection';
-import { clear, multiSelect, selectBookmark, selectPage } from 'redux/modules/inspector';
-import { load as loadList, removeBookmark, bookmarkSort } from 'redux/modules/list';
-import { setQueryMode } from 'redux/modules/pageQuery';
-import { isLoaded as isRBLoaded, load as loadRB } from 'redux/modules/remoteBrowsers';
+import { isLoaded as isCollLoaded, getBookmarkCount, load as loadColl } from 'store/modules/collection';
+import { clear, multiSelect, selectBookmark, selectPage } from 'store/modules/inspector';
+import { load as loadList, removeBookmark, bookmarkSort } from 'store/modules/list';
+import { setQueryMode } from 'store/modules/pageQuery';
+import { isLoaded as isRBLoaded, load as loadRB } from 'store/modules/remoteBrowsers';
 
-import { getQueryPages, getOrderedPages } from 'redux/selectors';
-import { pageSearchResults } from 'redux/selectors/search';
+import { getQueryPages, getOrderedPages } from 'store/selectors';
+import { pageSearchResults } from 'store/selectors/search';
 
 import CollectionDetailUI from 'components/collection/CollectionDetailUI';
 
 
 class CollectionDetail extends Component {
-
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,

@@ -47,7 +47,7 @@ export default function recordings(state = initialState, action = {}) {
       return state.merge({
         loadingRecBK: false,
         loadedRecBK: true,
-        recordingBookmarks: action.result.page_bookmarks
+        recordingBookmarks: fromJS(action.result.page_bookmarks)
       });
     case REC_DELETE:
       return state.merge({
@@ -80,7 +80,7 @@ export default function recordings(state = initialState, action = {}) {
       return state.merge({
         loading: false,
         loaded: true,
-        recording: action.result.recording
+        recording: fromJS(action.result.recording)
       });
     case REC_LOAD_FAIL:
       return state.merge({
@@ -89,12 +89,12 @@ export default function recordings(state = initialState, action = {}) {
         error: action.error
       });
     case RECS_LOAD:
-      return state.merge('loading': true);
+      return state.set('loading', true);
     case RECS_LOAD_SUCCESS:
       return state.merge({
         loading: false,
         loaded: true,
-        recordings: action.result.recordings
+        recordings: fromJS(action.result.recordings)
       });
     case RECS_LOAD_FAIL:
       return state.merge({

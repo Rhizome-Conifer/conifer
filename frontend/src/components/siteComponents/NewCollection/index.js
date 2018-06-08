@@ -81,7 +81,7 @@ class NewCollection extends Component {
               onChange={this.togglePublic} />
           </span>
 
-          <button className="btn btn-lg btn-primary btn-block" onClick={this.submit} disabled={creatingCollection && !error}>Create</button>
+          <button className="btn btn-lg btn-primary btn-block" onClick={this.submit} disabled={creatingCollection && !error} type="button">Create</button>
         </form>
       </Modal>
     );

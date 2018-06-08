@@ -96,7 +96,8 @@ export function TitleRenderer({ cellData, rowData, columnData: { collection, lis
     <Link
       to={linkTo}
       onClick={evt => stopPropagation(evt)}
-      title={rowData.get('title')}>{ cellData || untitledEntry } </Link>
+      title={rowData.get('title')}>{ cellData || untitledEntry }
+    </Link>
   );
 }
 

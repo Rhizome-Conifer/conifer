@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
-import { timestampOrderedPages } from 'redux/selectors';
+import { timestampOrderedPages } from 'store/selectors';
 
-import { isLoaded as isCollLoaded, load as loadColl } from 'redux/modules/collection';
+import { isLoaded as isCollLoaded, load as loadColl } from 'store/modules/collection';
 
 import CollectionCoverUI from 'components/collection/CollectionCoverUI';
 

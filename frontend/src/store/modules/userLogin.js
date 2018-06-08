@@ -29,4 +29,3 @@ export function showModal(bool, cta = false, next = null) {
     next
   };
 }
-

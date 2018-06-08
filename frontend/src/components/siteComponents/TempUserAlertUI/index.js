@@ -50,7 +50,7 @@ class TempUserAlertUI extends PureComponent {
     return (
       <Alert className="temp-user-alert" onDismiss={this.hide}>
         Note: This collection is accessible only to you and will expire in <strong><TempUserTimer ttl={auth.getIn(['user', 'ttl'])} accessed={auth.get('accessed')} /></strong><br />
-        To create permanent, shareable collections <Link to="/_register"><strong>Sign Up</strong></Link> or <button className="button-link" onClick={showLoginModal}>Login</button>
+        To create permanent, shareable collections <Link to="/_register"><strong>Sign Up</strong></Link> or <button className="button-link" onClick={showLoginModal} type="button">Login</button>
       </Alert>
     );
   }

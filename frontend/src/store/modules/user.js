@@ -33,7 +33,8 @@ export default function user(state = initialState, action = {}) {
         loading: false,
         loaded: true,
         error: null,
-        ...action.result.user
+        ...action.result.user,
+        space_utilization: fromJS(action.result.user.space_utilization)
       });
     case USER_LOAD_FAIL:
       return state.merge({

@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { getActiveCollection, getRemoteArchiveStats } from 'redux/selectors';
-import { getArchives, setExtractable,
-         setAllSourcesOption } from 'redux/modules/controls';
+import { getActiveCollection, getRemoteArchiveStats } from 'store/selectors';
+import { getArchives, setExtractable, setAllSourcesOption } from 'store/modules/controls';
 
 import { ExtractWidgetUI } from 'components/controls';
 
@@ -70,7 +69,7 @@ class ExtractWidget extends Component {
       let targetColl = null;
 
       if (archive.get('parse_collection')) {
-        targetColl = targetUrl.split('/', 1)[0];
+        targetColl = targetUrl.split('/', 1)[0]; // eslint-disable-line
         targetUrl = targetUrl.substr(targetColl.length + 1);
       }
 
@@ -100,8 +99,15 @@ class ExtractWidget extends Component {
   }
 
   render() {
-    const { active, extractable, includeButton,
-            stats, toCollection, url, useAllSources } = this.props;
+    const {
+      active,
+      extractable,
+      includeButton,
+      stats,
+      toCollection,
+      url,
+      useAllSources
+    } = this.props;
 
     return (
       extractable &&
@@ -115,7 +121,7 @@ class ExtractWidget extends Component {
             url={url} />
           {
             includeButton &&
-              <button className="btn btn-default" type="submit" role="button" aria-label="Extract">
+              <button className="btn btn-default" type="submit" aria-label="Extract">
                 <span className="glyphicon glyphicon-save" aria-hidden="true" /><span className="hidden-xs"> extract</span>
               </button>
           }

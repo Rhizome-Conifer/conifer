@@ -1,8 +1,8 @@
 import React from 'react';
 import { asyncConnect } from 'redux-connect';
 
-import { deleteUser, load as loadAuth, loadRoles, updatePassword } from 'redux/modules/auth';
-import { load as loadUser, updateUser } from 'redux/modules/user';
+import { deleteUser, load as loadAuth, loadRoles, updatePassword } from 'store/modules/auth';
+import { load as loadUser, updateUser } from 'store/modules/user';
 
 import { UserSettingsUI } from 'components/siteComponents';
 

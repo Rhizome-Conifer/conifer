@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ControlLabel, FormControl,
-         FormGroup, HelpBlock } from 'react-bootstrap';
+import { Button, ControlLabel, FormControl, FormGroup, HelpBlock } from 'react-bootstrap';
 
 import { getCollectionLink } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { saveDelay } from 'config';
 
-import { editBookmark, load, resetBookmarkEdit } from 'redux/modules/list';
+import { editBookmark, load, resetBookmarkEdit } from 'store/modules/list';
 
 import InspectorPanelUI from 'components/collection/InspectorPanelUI';
 

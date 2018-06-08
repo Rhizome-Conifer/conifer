@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { logout as doLogout } from 'redux/modules/auth';
+import { logout as doLogout } from 'store/modules/auth';
 
 
 class Logout extends Component {

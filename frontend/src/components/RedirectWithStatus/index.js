@@ -1,6 +1,6 @@
 import React from 'react';
-import Route from 'react-router-dom/Route';
-import Redirect from 'react-router-dom/Redirect';
+import { Route } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 
 
 const RedirectWithStatus = ({ from, to, status }) => (
