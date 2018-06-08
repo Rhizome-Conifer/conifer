@@ -157,6 +157,9 @@ class MainController(BaseController):
         else:
             opts['ca_file_cache'] = './proxy-certs/webrecorder-ca.pem'
 
+        # disable CONNECT keepalive for now
+        opts['keepalive_max'] = -1
+
         return opts
 
     def init_jinja_env(self, config):
