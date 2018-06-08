@@ -1,7 +1,18 @@
 #!/usr/bin/env node
-require('./server.babel'); // babel registration (runtime transpilation for node)
-var path = require('path');
-var rootDir = path.resolve(__dirname, '..');
+require('babel-register')({
+  ignore: /node_modules\/(?!(react-rte))/
+});
+
+// ignore css imports within react-rte
+require.extensions['.css'] = () => {
+  return;
+};
+
+const server = require('universal-webpack/server');
+const settings = require('../webpack/universal-webpack-settings');
+const wpConfig = require('../webpack/webpack.config');
+
+
 /**
  * Define isomorphic constants.
  */
@@ -11,19 +22,4 @@ global.__DISABLE_SSR__ = process.env.DISABLE_SSR ? process.env.DISABLE_SSR === '
 global.__PLAYER__ = false;
 global.__DEVELOPMENT__ = process.env.NODE_ENV !== 'production';
 
-if (__DEVELOPMENT__) {
-  if (!require('piping')({
-    hook: true,
-    ignore: /(\/\.|~$|\.json|\.scss$)/i
-  })) {
-    return;
-  }
-}
-
-// https://github.com/halt-hammerzeit/webpack-isomorphic-tools
-var WebpackIsomorphicTools = require('webpack-isomorphic-tools');
-global.webpackIsomorphicTools = new WebpackIsomorphicTools(require('../webpack/webpack-isomorphic-tools'))
-  // .development(__DEVELOPMENT__)
-  .server(rootDir, function() {
-    require('../src/server');
-  });
+server(wpConfig, settings);

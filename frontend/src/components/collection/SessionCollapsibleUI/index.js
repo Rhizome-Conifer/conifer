@@ -11,7 +11,7 @@ import { Button, Overlay, Popover } from 'react-bootstrap';
 import { defaultRecDesc } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
-import { getRecordingBookmarks } from 'redux/modules/recordings';
+import { getRecordingBookmarks } from 'store/modules/recordings';
 
 import OutsideClick from 'components/OutsideClick';
 import SizeFormat from 'components/SizeFormat';

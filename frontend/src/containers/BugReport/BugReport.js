@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { reportBug, toggleModal } from 'redux/modules/bugReport';
+import { reportBug, toggleModal } from 'store/modules/bugReport';
 
 import { BugReportUI } from 'components/controls';
 

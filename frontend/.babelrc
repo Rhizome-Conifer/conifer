@@ -1,4 +1,5 @@
 {
+  "compact": true,
   "presets": [
     "react",
     [
@@ -12,7 +13,6 @@
     ],
     "stage-0"
   ],
-
   "plugins": [
     "add-module-exports",
     "transform-decorators-legacy",

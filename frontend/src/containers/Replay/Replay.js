@@ -8,13 +8,13 @@ import { batchActions } from 'redux-batched-actions';
 import { getCollectionLink, remoteBrowserMod, truncate } from 'helpers/utils';
 import config from 'config';
 
-import { getActivePage } from 'redux/selectors';
-import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, setBookmarkId, setList, updateUrl, updateUrlAndTimestamp } from 'redux/modules/controls';
-import { resetStats } from 'redux/modules/infoStats';
-import { listLoaded, load as loadList } from 'redux/modules/list';
-import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
-import { toggle as toggleSidebar } from 'redux/modules/sidebar';
+import { getActivePage } from 'store/selectors';
+import { isLoaded, load as loadColl } from 'store/modules/collection';
+import { getArchives, setBookmarkId, setList, updateUrl, updateUrlAndTimestamp } from 'store/modules/controls';
+import { resetStats } from 'store/modules/infoStats';
+import { listLoaded, load as loadList } from 'store/modules/list';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
+import { toggle as toggleSidebar } from 'store/modules/sidebar';
 
 import EmbedFooter from 'components/EmbedFooter';
 import HttpStatus from 'components/HttpStatus';

@@ -11,8 +11,8 @@ import { batchActions } from 'redux-batched-actions';
 import { defaultListDesc, untitledEntry } from 'config';
 import { getListLink, remoteBrowserMod } from 'helpers/utils';
 
-import { setBookmarkId, updateUrlAndTimestamp } from 'redux/modules/controls';
-import { setBrowser } from 'redux/modules/remoteBrowsers';
+import { setBookmarkId, updateUrlAndTimestamp } from 'store/modules/controls';
+import { setBrowser } from 'store/modules/remoteBrowsers';
 
 import InlineEditor from 'components/InlineEditor';
 import SidebarHeader from 'components/SidebarHeader';

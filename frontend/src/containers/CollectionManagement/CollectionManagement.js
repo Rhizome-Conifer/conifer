@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { asyncConnect } from 'redux-connect';
 
-import { load as loadColl } from 'redux/modules/collection';
-import { getOrderedRecordings } from 'redux/selectors';
+import { load as loadColl } from 'store/modules/collection';
+import { getOrderedRecordings } from 'store/selectors';
 
 import CollectionManagementUI from 'components/collection/CollectionManagementUI';
 

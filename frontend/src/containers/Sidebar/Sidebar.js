@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { sidebarResize, toggle } from 'redux/modules/sidebar';
+import { sidebarResize, toggle } from 'store/modules/sidebar';
 
 import { SidebarUI } from 'components/controls';
 

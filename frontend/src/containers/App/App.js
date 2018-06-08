@@ -10,8 +10,7 @@ import { Alert, Button, Navbar, Panel } from 'react-bootstrap';
 import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
-import { isLoaded as isAuthLoaded,
-         load as loadAuth } from 'redux/modules/auth';
+import { isLoaded as isAuthLoaded, load as loadAuth } from 'redux/modules/auth';
 
 import { UserManagement } from 'containers';
 

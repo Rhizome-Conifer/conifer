@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getRemoteArchiveStats } from 'redux/selectors';
+import { getRemoteArchiveStats } from 'store/selectors';
 
 import { InfoWidgetUI } from 'components/controls';
 

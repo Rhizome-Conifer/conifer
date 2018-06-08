@@ -2,8 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { deleteUserCollection, deleteUser, incrementCollCount } from 'redux/modules/auth';
-import { deleteCollection } from 'redux/modules/collection';
+import { deleteUserCollection, deleteUser, incrementCollCount } from 'store/modules/auth';
+import { deleteCollection } from 'store/modules/collection';
 
 import DeleteCollectionUI from 'components/collection/DeleteCollectionUI';
 

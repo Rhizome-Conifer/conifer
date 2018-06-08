@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { getActiveCollection, getRemoteArchiveStats } from 'redux/selectors';
+import { getActiveCollection, getRemoteArchiveStats } from 'store/selectors';
 import { getArchives, setExtractable,
-         setAllSourcesOption } from 'redux/modules/controls';
+         setAllSourcesOption } from 'store/modules/controls';
 
 import { ExtractWidgetUI } from 'components/controls';
 

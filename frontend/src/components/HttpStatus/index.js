@@ -4,7 +4,7 @@ import Helmet from 'react-helmet';
 import { Panel } from 'react-bootstrap';
 import { connect } from 'react-redux';
 
-import { set404 } from 'redux/modules/controls';
+import { set404 } from 'store/modules/controls';
 
 import SetStatus from 'components/SetStatus';
 

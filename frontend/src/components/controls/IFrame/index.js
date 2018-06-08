@@ -4,10 +4,10 @@ import PropTypes from 'prop-types';
 import config from 'config';
 import WebSocketHandler from 'helpers/ws';
 
-import { updateTimestamp, updateUrl } from 'redux/modules/controls';
+import { updateTimestamp, updateUrl } from 'store/modules/controls';
 
 import { apiFetch, setTitle } from 'helpers/utils';
-import { toggleModal } from 'redux/modules/bugReport';
+import { toggleModal } from 'store/modules/bugReport';
 
 import './style.scss';
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { set404 as set404Callback } from 'redux/modules/controls';
-import { showModal } from 'redux/modules/userLogin';
+import { set404 as set404Callback } from 'store/modules/controls';
+import { showModal } from 'store/modules/userLogin';
 
 import Temp404UI from 'components/Temp404UI';
 

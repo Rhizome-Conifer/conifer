@@ -6,8 +6,8 @@ import { saveDelay } from 'config';
 
 import { edit as editCollection, loadLists, load as loadColl,
          resetEditState as resetCollEditState, sortLists,
-         getBookmarkCount } from 'redux/modules/collection';
-import { addTo, bulkAddTo, create, deleteList, edit, resetEditState } from 'redux/modules/list';
+         getBookmarkCount } from 'store/modules/collection';
+import { addTo, bulkAddTo, create, deleteList, edit, resetEditState } from 'store/modules/list';
 
 import ListsUI from 'components/collection/ListsUI';
 

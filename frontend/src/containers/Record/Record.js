@@ -5,10 +5,10 @@ import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
 
-import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, updateUrl } from 'redux/modules/controls';
-import { loadRecording } from 'redux/modules/recordings';
-import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
+import { isLoaded, load as loadColl } from 'store/modules/collection';
+import { getArchives, updateUrl } from 'store/modules/controls';
+import { loadRecording } from 'store/modules/recordings';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';

@@ -6,7 +6,7 @@ import { Button } from 'react-bootstrap';
 import { product } from 'config';
 import { upload as uploadErrors } from 'helpers/userMessaging';
 
-import { incrementCollCount } from 'redux/modules/auth';
+import { incrementCollCount } from 'store/modules/auth';
 
 import { CollectionDropdown } from 'containers';
 import Modal from 'components/Modal';

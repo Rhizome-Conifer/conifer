@@ -10,8 +10,8 @@ import { batchActions } from 'redux-batched-actions';
 import { untitledEntry } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
-import { updateUrlAndTimestamp } from 'redux/modules/controls';
-import { setBrowser } from 'redux/modules/remoteBrowsers';
+import { updateUrlAndTimestamp } from 'store/modules/controls';
+import { setBrowser } from 'store/modules/remoteBrowsers';
 
 import SidebarHeader from 'components/SidebarHeader';
 import { CatalogIcon, WarcIcon } from 'components/icons';

@@ -4,8 +4,8 @@ import { withRouter } from 'react-router';
 
 import { saveDelay } from 'config';
 
-import { load as loadColl } from 'redux/modules/collection';
-import { edit as editList, resetEditState } from 'redux/modules/list';
+import { load as loadColl } from 'store/modules/collection';
+import { edit as editList, resetEditState } from 'store/modules/list';
 
 import ListHeaderUI from 'components/collection/ListHeaderUI';
 

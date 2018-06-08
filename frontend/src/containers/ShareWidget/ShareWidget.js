@@ -5,8 +5,8 @@ import { withRouter } from 'react-router';
 
 import { appHost } from 'config';
 import { remoteBrowserMod } from 'helpers/utils';
-import { edit } from 'redux/modules/collection';
-import { showModal } from 'redux/modules/userLogin';
+import { edit } from 'store/modules/collection';
+import { showModal } from 'store/modules/userLogin';
 
 import { ShareWidgetUI } from 'components/controls';
 

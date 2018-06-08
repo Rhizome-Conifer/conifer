@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fromJS } from 'immutable';
 
-import { load, selectBrowser } from 'redux/modules/remoteBrowsers';
+import { load, selectBrowser } from 'store/modules/remoteBrowsers';
 
 import { RemoteBrowserSelectUI } from 'components/controls';
 

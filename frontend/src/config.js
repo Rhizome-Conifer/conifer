@@ -1,6 +1,3 @@
-/* eslint-disable */
-require('babel-polyfill');
-
 /**
  * For local settings override, create `config.local.js` in the same directory
  * as this file..
@@ -33,7 +30,7 @@ const hostScheme = process.env.SCHEME ? process.env.SCHEME : 'http';
 const contentHost = process.env.CONTENT_HOST ? process.env.CONTENT_HOST : `localhost:8092`;
 
 
-module.exports = Object.assign({
+export default Object.assign({
   announceMailingList: process.env.ANNOUNCE_MAILING_LIST,
   apiProxy: false,
   apiPath: '/api/v1',

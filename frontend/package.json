@@ -6,6 +6,7 @@
     "fsevents": "*"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "chalk": "2.4.1",
     "enzyme": "^3.3.0",
     "enzyme-adapter-react-16": "^1.1.1",
@@ -16,8 +17,14 @@
     "eslint-plugin-jsx-a11y": "^2.2.2",
     "eslint-plugin-react": "7.7.0",
     "jest": "23.4.1",
+    "jest": "15.1.1",
+    "nodemon": "^1.15.0",
+    "npm-delay": "^1.0.4",
+    "npm-run-all": "^4.1.2",
     "redux-devtools": "^3.4.0",
-    "webpack-bundle-size-analyzer": "^2.7.0"
+    "speed-measure-webpack-plugin": "^1.2.2",
+    "webpack-bundle-size-analyzer": "^2.7.0",
+    "webpack-merge": "^4.1.1"
   },
   "dependencies": {
     "@babel/core": "7.1.0",
@@ -43,7 +50,6 @@
     "classnames": "^2.2.6",
     "clean-webpack-plugin": "^0.1.19",
     "compression": "^1.6.0",
-    "concurrently": "^3.1.0",
     "copy-webpack-plugin": "^4.5.2",
     "css-loader": "0.24.0",
     "express": "^4.16.3",
@@ -91,7 +97,8 @@
     "strip-loader": "^0.1.2",
     "style-loader": "0.13.1",
     "superagent": "^3.3.2",
-    "uglifyjs-webpack-plugin": "^1.3.0",
+    "uglifyjs-webpack-plugin": "^1.2.5",
+    "universal-webpack": "^0.6.6",
     "url-loader": "0.5.7",
     "webpack": "3.12.0",
     "webpack-dev-middleware": "^2.0.6",
@@ -103,25 +110,26 @@
     "node": ">=6.9"
   },
   "scripts": {
-    "analyze": "NODE_ENV=\"production\" webpack --config ./webpack/prod.config.js --json | webpack-bundle-size-analyzer",
-    "build": "better-npm-run build",
+    "analyze": "NODE_ENV=\"production\" webpack --config ./webpack/webpack.config.client.production.babel.js --json | webpack-bundle-size-analyzer",
     "build-player-dev": "better-npm-run build-player-dev",
     "build-player": "better-npm-run build-player",
-    "docker-dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-docker-dev\"",
-    "docker-prod": "concurrently --kill-others \"npm run start-docker-prod\"",
+    "delay": "node ./node_modules/npm-delay 30000",
+    "dev:server:prepare": "universal-webpack --settings ./webpack/universal-webpack-settings.json prepare",
+    "docker-dev": "run-p docker-dev:client:build dev:server:prepare docker-dev:server:build docker-dev:server:delay",
+    "docker-prod": "run-s prod:client:build prod:server:build start-docker-prod",
+    "docker-dev:client:build": "babel-node webpack/webpack-dev-server.js",
+    "docker-dev:server:build": "webpack --config ./webpack/webpack.config.server.development.babel.js --watch --colors --display-error-details",
+    "docker-dev:server:delay": "run-s delay docker-dev:server:start",
+    "docker-dev:server:start": "better-npm-run start-docker-dev",
+    "prod:client:build": "webpack --config ./webpack/webpack.config.client.production.babel.js --colors --display-error-details",
+    "prod:server:build": "webpack --config ./webpack/webpack.config.server.production.babel.js --colors --display-error-details",
     "start-docker-dev": "better-npm-run start-docker-dev",
     "start-docker-prod": "better-npm-run start-docker-prod",
-    "stats": "NODE_ENV=\"production\" webpack --config ./webpack/prod.config.js --json --profile > stats.json",
-    "test": "jest --watch --env=jsdom",
-    "watch-client": "better-npm-run watch-client"
+    "stats": "NODE_ENV=\"production\" webpack --config ./webpack/webpack.config.client.production.babel.js --json --profile > stats.json",
+    "test": "jest --watch --env=jsdom"
   },
   "betterScripts": {
-    "build": {
-      "command": "webpack --verbose --colors --display-error-details --config webpack/prod.config.js",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    },
+
     "build-player-dev": {
       "command": "webpack --watch --verbose --colors --display-error-details --config webpack/player.config.js",
       "env": {
@@ -135,21 +143,15 @@
       }
     },
     "start-docker-dev": {
-      "command": "node ./bin/server.js",
+      "command": "nodemon ./bin/server.js --watch ./static",
       "env": {
-        "NODE_PATH": "./src"
+        "NODE_ENV": "development"
       }
     },
     "start-docker-prod": {
       "command": "pm2 start ./bin/server.js -i 0 --no-daemon --name 'frontend'",
       "env": {
-        "NODE_PATH": "./src"
-      }
-    },
-    "watch-client": {
-      "command": "node webpack/webpack-dev-server.js",
-      "env": {
-        "NODE_PATH": "./src"
+        "NODE_ENV": "production"
       }
     }
   },

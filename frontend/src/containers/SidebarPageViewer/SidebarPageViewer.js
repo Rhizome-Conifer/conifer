@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { selectPage } from 'redux/modules/inspector';
-import { getActivePageIdx, timestampOrderedPages } from 'redux/selectors';
+import { selectPage } from 'store/modules/inspector';
+import { getActivePageIdx, timestampOrderedPages } from 'store/selectors';
 
 import { SidebarPageViewerUI } from 'components/controls';
 

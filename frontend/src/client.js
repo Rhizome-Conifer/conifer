@@ -7,7 +7,7 @@ import { Provider } from 'react-redux';
 
 import config from 'config';
 
-import createStore from './redux/create';
+import createStore from './store/create';
 import ApiClient from './helpers/ApiClient';
 import baseRoute from './baseRoute';
 import Root from './root';

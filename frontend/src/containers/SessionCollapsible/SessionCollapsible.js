@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 
 import { saveDelay } from 'config';
 
-import { load as loadColl } from 'redux/modules/collection';
-import { deleteRecording, edit, resetEditState } from 'redux/modules/recordings';
-import { getOrderedRecordings, splitPagesBySession } from 'redux/selectors';
+import { load as loadColl } from 'store/modules/collection';
+import { deleteRecording, edit, resetEditState } from 'store/modules/recordings';
+import { getOrderedRecordings, splitPagesBySession } from 'store/selectors';
 
 import SessionCollapsibleUI from 'components/collection/SessionCollapsibleUI';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { showModal } from 'redux/modules/userLogin';
+import { showModal } from 'store/modules/userLogin';
 
 import { TempUserAlertUI } from 'components/siteComponents';
 

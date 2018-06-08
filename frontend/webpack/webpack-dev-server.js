@@ -1,31 +1,32 @@
-/* eslint-disable */
-var Express = require('express');
-var webpack = require('webpack');
+import Express from 'express';
+import webpack from 'webpack';
 
-var webpackConfig = require('./dev.config');
-var compiler = webpack(webpackConfig);
+import webpackConfig from './webpack.config.client.development';
+
+
+const compiler = webpack(webpackConfig);
 
 const host = process.env.APP_HOST || '127.0.0.1';
 const port = (Number(process.env.FRONTEND_PORT) + 1) || 8096;
 
-var serverOptions = {
-  contentBase: 'http://' + host + ':' + port,
+const serverOptions = {
+  contentBase: `http://${host}:${port}`,
   quiet: true,
   noInfo: true,
   hot: true,
   inline: true,
   lazy: false,
   publicPath: webpackConfig.output.publicPath,
-  headers: {'Access-Control-Allow-Origin': '*'},
-  stats: {colors: true}
+  headers: { 'Access-Control-Allow-Origin': '*' },
+  stats: { colors: true }
 };
 
-var app = new Express();
+const app = new Express();
 
 app.use(require('webpack-dev-middleware')(compiler, serverOptions));
 app.use(require('webpack-hot-middleware')(compiler));
 
-app.listen(port, function onAppListening(err) {
+app.listen(port, (err) => {
   if (err) {
     console.error(err);
   } else {

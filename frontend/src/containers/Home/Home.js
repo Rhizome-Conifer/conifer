@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 
 import { homepageAnnouncement, supportEmail } from 'config';
 
-import { showModal } from 'redux/modules/userLogin';
+import { showModal } from 'store/modules/userLogin';
 
 import { HomepageAnnouncement, HomepageMessage } from 'components/siteComponents';
 import { StandaloneRecorder } from 'containers';

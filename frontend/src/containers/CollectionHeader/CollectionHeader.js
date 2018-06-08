@@ -4,10 +4,9 @@ import { withRouter } from 'react-router';
 
 import { saveDelay } from 'config';
 
-
-import { loadCollections } from 'redux/modules/auth';
+import { loadCollections } from 'store/modules/auth';
 import { resetEditState as resetCollEditState, edit as editCollDesc,
-         shareToDat, unshareFromDat } from 'redux/modules/collection';
+         shareToDat, unshareFromDat } from 'store/modules/collection';
 
 import CollectionHeaderUI from 'components/collection/CollectionHeaderUI';
 

@@ -5,7 +5,7 @@ import { Alert } from 'react-bootstrap';
 import WebSocketHandler from 'helpers/ws';
 import { deleteStorage, getStorage, remoteBrowserMod, setStorage } from 'helpers/utils';
 
-import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
+import { createRemoteBrowser } from 'store/modules/remoteBrowsers';
 
 import './style.scss';
 

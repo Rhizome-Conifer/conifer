@@ -4,10 +4,10 @@ import { asyncConnect } from 'redux-connect';
 
 import config from 'config';
 
-import { isLoaded, load as loadColl } from 'redux/modules/collection';
-import { getArchives, updateUrlAndTimestamp } from 'redux/modules/controls';
-import { resetStats } from 'redux/modules/infoStats';
-import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
+import { isLoaded, load as loadColl } from 'store/modules/collection';
+import { getArchives, updateUrlAndTimestamp } from 'store/modules/controls';
+import { resetStats } from 'store/modules/infoStats';
+import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'store/modules/remoteBrowsers';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';

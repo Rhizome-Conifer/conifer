@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { changeQueryColumn, setQuery, setQueryMode } from 'redux/modules/pageQuery';
+import { changeQueryColumn, setQuery, setQueryMode } from 'store/modules/pageQuery';
 
 import QueryBoxUI from 'components/QueryBoxUI';
 

@@ -2,8 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { setAutoscroll } from 'redux/modules/controls';
-import { toggleClipboard } from 'redux/modules/toolBin';
+import { setAutoscroll } from 'store/modules/controls';
+import { toggleClipboard } from 'store/modules/toolBin';
 
 import { RecordingToolsUI } from 'components/controls';
 
