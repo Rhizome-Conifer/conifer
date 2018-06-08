@@ -60,9 +60,10 @@ export function capitalize(str) {
 }
 
 
-export function deleteStorage(key, device = window.localStorage) {
+export function deleteStorage(key, device = null) {
   try {
-    return device.removeItem(`${config.storageKey}${key}`);
+    const storageDevice = device || window.localStorage;
+    return storageDevice.removeItem(`${config.storageKey}${key}`);
   } catch (e) {
     console.log(`Failed deleting ${key} in ${device}`);
   }
