@@ -9,7 +9,7 @@ import { remoteBrowserMod } from 'helpers/utils';
 
 class WebSocketHandler {
   constructor(params, currMode, dispatch, remoteBrowser = false, reqId = null, host = '') {
-    const { user, coll, rec, splat, ts, br } = params;
+    const { user, coll, rec, splat, br } = params;
 
     this.startMsg = undefined;
     this.currMode = currMode;
@@ -23,7 +23,6 @@ class WebSocketHandler {
     this.params = params;
     this.host = host || window.location.host;
 
-    this.isProxy = false;
     this.isRemoteBrowser = remoteBrowser;
     this.br = br;
     this.reqId = reqId;
@@ -74,7 +73,7 @@ class WebSocketHandler {
     return this.ws.close();
   }
 
-  hasWS = _ => this.useWS;
+  hasWS = () => this.useWS;
 
   wsOpened = () => {
     this.useWS = true;
@@ -84,7 +83,7 @@ class WebSocketHandler {
     }
   }
 
-  wsClosed = (evt) => {
+  wsClosed = () => {
     this.useWS = false;
     if (this.errCount < 5) {
       this.errCount += 1;
@@ -98,10 +97,6 @@ class WebSocketHandler {
     switch (msg.ws_type) {
       case 'status':
         this.dispatch(setSizeCounter(msg.size));
-
-        if (this.currMode.indexOf('replay') !== -1) {
-          // setBookmarkStats(msg.numPages);
-        }
 
         if (msg.stats || msg.size) {
           this.dispatch(setStats(msg.stats, msg.size));
@@ -164,31 +159,6 @@ class WebSocketHandler {
           break;
       }
     }
-  }
-
-  /* proxy specific fns */
-  sendLocalMsg = (msg) => {
-    window.dispatchEvent(new CustomEvent('__wb_to_event', { detail: msg }));
-  }
-
-  sendPageMsg = (isAdd) => {
-    const page = {
-      url: window.location.href,
-      timestamp: window.wbinfo.timestamp,
-      title: document.title,
-      browser: window.wbinfo.curr_browser
-    };
-
-    const msg = { page };
-
-    if (isAdd) {
-      msg.ws_type = 'page';
-      msg.visible = !document.hidden;
-    } else {
-      msg.ws_type = 'remote_url';
-    }
-
-    return this.sendMsg(msg);
   }
 
   replaceOuterUrl = (msg, change) => {

@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import WebSocketHandler from 'helpers/ws';
 import config from 'config';
+import WebSocketHandler from 'helpers/ws';
+
 import { updateTimestamp, updateUrl } from 'redux/modules/controls';
 
-import { setTitle } from 'helpers/utils';
+import { apiFetch, setTitle } from 'helpers/utils';
 import { toggleModal } from 'redux/modules/bugReport';
 
 import './style.scss';
@@ -59,8 +60,7 @@ class IFrame extends Component {
       replay_mod: '',
       state: currMode,
       sources: [],
-      inv_sources: '',
-      info: {}
+      inv_sources: ''
     };
 
     this.contentFrame = new ContentFrame({
@@ -116,7 +116,7 @@ class IFrame extends Component {
   }
 
   setDomainCookie = (state) => {
-    const url = window.location.origin;
+    const { params } = this.props;
 
     let cookie = state.cookie.split(';', 1)[0];
     if (!cookie) {
@@ -125,12 +125,16 @@ class IFrame extends Component {
     cookie = cookie.split('=', 2);
 
     if (!this.socket.addCookie(cookie[0], cookie[1], state.domain)) {
-      // TODO: ajax fallback
+      apiFetch('/auth/cookie', {
+        domain: state.domain,
+        name: cookie[0],
+        rec: params.rec || '',
+        value: cookie[1]
+      });
     }
   }
 
   setUrl = (url, noStatsUpdate = false) => {
-    const { currMode } = this.context;
     const rawUrl = decodeURI(url);
 
     if (this.props.url !== rawUrl) {
@@ -189,7 +193,7 @@ class IFrame extends Component {
 
   addNewPage = (state, doAdd = false) => {
     const { currMode } = this.context;
-    const { timestamp } = this.props;
+    const { params, timestamp } = this.props;
 
     // if (state && state.ts && currMode !== 'record' && currMode.indexOf('extract') === -1 && state.ts !== timestamp) {
     //   this.props.dispatch(updateTimestamp(state.ts));
@@ -198,7 +202,6 @@ class IFrame extends Component {
     if (state.is_error) {
       this.setUrl(state.url);
     } else if (['record', 'patch', 'extract', 'extract_only'].includes(currMode)) {
-      const recordingId = window.wbinfo.info.rec_id;
       const attributes = {};
 
       if (state.ts) {
@@ -221,8 +224,7 @@ class IFrame extends Component {
 
       if (doAdd && (attributes.timestamp || currMode !== 'patch')) {
         if (!this.socket.addPage(attributes)) {
-          // TODO: addPage fallback
-          // addPage(recordingId, attributes);
+          apiFetch(`/recording/${params.rec}/pages`, attributes);
         }
       }
     } else if (['replay', 'replay-coll'].includes(currMode)) {
@@ -241,7 +243,9 @@ class IFrame extends Component {
 
   addSkipReq = (state) => {
     if (!this.socket.addSkipReq(state.url)) {
-      // TODO: ajax fallback
+      apiFetch('/auth/skipreq', {
+        url: state.url
+      });
     }
   }
 
