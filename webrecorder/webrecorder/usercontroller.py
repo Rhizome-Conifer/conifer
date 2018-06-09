@@ -32,6 +32,10 @@ class UserController(BaseController):
         }
 
     def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
+        # ensure correct host
+        if self.app_host and request.environ.get('HTTP_HOST') != self.app_host:
+            return self._raise_error(403, 'unauthorized')
+
         # if no username, check if logged in
         if not username:
             if self.access.is_anon():
@@ -227,6 +231,15 @@ class UserController(BaseController):
             user['desc'] = desc
             return {}
 
+        # Skip POST request recording
+        @self.app.post('/api/v1/auth/skipreq')
+        def skip_req():
+            data = request.json or {}
+            url = data.get('url', '')
+            self.access.session_user.mark_skip_url(url)
+            return {'success': True}
+
+
         # OLD VIEWS BELOW
         # ====================================================================
         @self.app.get(['/<username>', '/<username>/'])
@@ -276,11 +289,4 @@ class UserController(BaseController):
             else:
                 self.flash_message('There was an error deleting {0}'.format(username))
                 self.redirect(self.get_path(username))
-
-        # Skip POST request recording
-        @self.app.get('/_skipreq')
-        def skip_req():
-            url = request.query.getunicode('url')
-            self.access.session_user.mark_skip_url(url)
-            return {}
 

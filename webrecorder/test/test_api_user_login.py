@@ -379,6 +379,9 @@ class TestApiUserLogin(FullStackTests):
 
         assert res.json == {}
 
+    def test_skip_req(self):
+        res = self.testapp.post_json('/api/v1/auth/skipreq', params={'url': 'http://example.com/'})
+
     def test_api_user_info_2(self):
         res = self.testapp.get('/api/v1/user/someuser?include_colls=false')
 

@@ -225,16 +225,18 @@ class ContentController(BaseController, RewriterApp):
                    }
 
         # COOKIES
-        @self.app.get(['/<user>/<coll_name>/$add_cookie'], method='POST')
-        def add_cookie(user, coll_name):
+        @self.app.post('/api/v1/auth/cookie')
+        def add_cookie():
             user, collection = self.load_user_coll()
 
-            rec_name = request.query.getunicode('rec', '*')
-            recording = collection.get_collection_by_name(rec_name)
+            data = request.json or {}
 
-            name = request.forms.getunicode('name')
-            value = request.forms.getunicode('value')
-            domain = request.forms.getunicode('domain')
+            rec_name = data.get('rec', '*')
+            recording = collection.get_recording(rec_name)
+
+            name = data.get('name')
+            value = data.get('value')
+            domain = data.get('domain')
 
             if not domain:
                 return self._raise_error(400, 'domain_missing')

@@ -346,9 +346,10 @@ class RedisSessionMiddleware(CookieGuard):
                     self.track_long_term(session, pi)
 
                 # set redis duration
-                pi.expire(session.key, duration)
+                if not session.is_restricted:
+                    pi.expire(session.key, duration)
 
-        elif set_cookie:
+        elif set_cookie and not session.is_restricted:
             # extend redis duration if extending cookie!
             self.redis.expire(session.key, duration)
 
@@ -363,7 +364,11 @@ class RedisSessionMiddleware(CookieGuard):
 
         value = '{0}={1}; Path=/; HttpOnly'
 
-        if not session.curr_user or session.dura_type != 'short':
+        # add max-age only if:
+        # - long duration session
+        # - anonymous session (not restricted)
+        # don't set for restricted session, as cookie only valid as long as top session exists
+        if session.dura_type == 'long' or session.curr_role == 'anon':
             value += ';  max-age={3}'
 
         value = value.format(self.sesh_key,

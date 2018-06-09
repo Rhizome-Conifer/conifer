@@ -10,7 +10,7 @@ session.durations:
         extend: 604800
 
     restricted:
-        total: 1800
+        total: 5400
         extend: 0
 
 # session settings

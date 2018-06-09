@@ -73,6 +73,10 @@ class TestAppContentDomain(FullStackTests):
         content_host_str = 'http://content-host/{user}/temp/rec/record/mp_/http://httpbin.org/get?food=bar'.format(user=self.anon_user)
         assert res.status_code == 302
         assert self.testapp.cookies['__test_sesh'] in res.headers['Set-Cookie']
+
+        # don't set max-age for anonymous content session
+        assert 'max-age' not in res.headers['Set-Cookie']
+
         assert res.headers['Location'] == content_host_str
 
         res = self.content_get(res.headers['Location'])
@@ -202,6 +206,41 @@ class TestAppContentDomain(FullStackTests):
         assert len(self.testapp.cookies) == 1
 
         assert self.testapp.cookies['__test_sesh'] != ''
+
+    def test_record_logged_in_app_top_frame(self):
+        self.set_uuids('Recording', ['rec'])
+
+        res = self.app_get('/_new/default-collection/rec/record/http://httpbin.org/get?food=bar')
+        #assert self.testapp.cookies['__test_sesh'] in res.headers['Set-Cookie']
+
+        res = self.app_get(res.headers['Location'])
+        assert res.status_code == 200
+
+        assert 'wbinfo.app_prefix = decodeURI("http://app-host/test/default-collection/rec/record/");' in res.text
+        assert 'wbinfo.content_prefix = decodeURI("http://content-host/test/default-collection/rec/record/");' in res.text
+
+    def test_record_logged_in_set_session_content_frame(self):
+        res = self.content_get('/test/default-collection/rec/record/mp_/http://httpbin.org/get?food=bar')
+        assert res.status_code == 302
+        assert 'http://app-host/_set_session' in res.headers['Location']
+
+        res = self.app_get(res.headers['Location'])
+        assert res.status_code == 302
+        assert 'http://content-host/_set_session' in res.headers['Location']
+
+        res = self.content_get(res.headers['Location'])
+        content_host_str = 'http://content-host/test/default-collection/rec/record/mp_/http://httpbin.org/get?food=bar'
+        assert res.status_code == 302
+        assert self.testapp.cookies['__test_sesh'] in res.headers['Set-Cookie']
+
+        # no max-age for logged in
+        assert 'max-age' not in res.headers['Set-Cookie']
+
+        assert res.headers['Location'] == content_host_str
+
+        res = self.content_get(res.headers['Location'])
+
+        assert '"food": "bar"' in res.text
 
     def test_logout(self):
         assert len(self.testapp.cookies) == 1
