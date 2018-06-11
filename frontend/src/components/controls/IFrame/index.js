@@ -130,7 +130,7 @@ class IFrame extends Component {
         name: cookie[0],
         rec: params.rec || '',
         value: cookie[1]
-      });
+      }, { method: 'POST' });
     }
   }
 
@@ -224,7 +224,7 @@ class IFrame extends Component {
 
       if (doAdd && (attributes.timestamp || currMode !== 'patch')) {
         if (!this.socket.addPage(attributes)) {
-          apiFetch(`/recording/${params.rec}/pages`, attributes);
+          apiFetch(`/recording/${params.rec}/pages`, attributes, { method: 'POST' });
         }
       }
     } else if (['replay', 'replay-coll'].includes(currMode)) {
@@ -245,7 +245,7 @@ class IFrame extends Component {
     if (!this.socket.addSkipReq(state.url)) {
       apiFetch('/auth/skipreq', {
         url: state.url
-      });
+      }, { method: 'POST' });
     }
   }
 
