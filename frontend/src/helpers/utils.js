@@ -72,6 +72,26 @@ export function deleteStorage(key, device = null) {
 
 
 /**
+ * Event dispatcher with ie support
+ */
+export function dispatchEvent(eventStr) {
+  if (!window) {
+    return;
+  }
+
+  let evt;
+  if (typeof Event === 'function') {
+    evt = new Event(eventStr);
+  } else {
+    evt = document.createEvent('Event');
+    evt.initEvent(eventStr, true, true);
+  }
+
+  window.dispatchEvent(evt);
+}
+
+
+/**
  * Helpful with the need to set the height of an element before a css transition.
  * Prevents browsers from mereging updates into the same frame.
  */
