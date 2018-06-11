@@ -110,7 +110,7 @@
     "node": ">=6.9"
   },
   "scripts": {
-    "analyze": "NODE_ENV=\"production\" webpack --config ./webpack/webpack.config.client.production.babel.js --json | webpack-bundle-size-analyzer",
+    "analyze": "NODE_ENV=\"production\" webpack --config ./webpack/webpack.config.client.production.babel.js --json",
     "build-player-dev": "better-npm-run build-player-dev",
     "build-player": "better-npm-run build-player",
     "delay": "node ./node_modules/npm-delay 30000",
@@ -121,8 +121,8 @@
     "docker-dev:server:build": "webpack --config ./webpack/webpack.config.server.development.babel.js --watch --colors --display-error-details",
     "docker-dev:server:delay": "run-s delay docker-dev:server:start",
     "docker-dev:server:start": "better-npm-run start-docker-dev",
-    "prod:client:build": "webpack --config ./webpack/webpack.config.client.production.babel.js --colors --display-error-details",
-    "prod:server:build": "webpack --config ./webpack/webpack.config.server.production.babel.js --colors --display-error-details",
+    "prod:client:build": "NODE_ENV=\"production\" webpack --config ./webpack/webpack.config.client.production.babel.js --colors --display-error-details",
+    "prod:server:build": "NODE_ENV=\"production\" webpack --config ./webpack/webpack.config.server.production.babel.js --colors --display-error-details",
     "start-docker-dev": "better-npm-run start-docker-dev",
     "start-docker-prod": "better-npm-run start-docker-prod",
     "stats": "NODE_ENV=\"production\" webpack --config ./webpack/webpack.config.client.production.babel.js --json --profile > stats.json",

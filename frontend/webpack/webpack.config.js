@@ -31,7 +31,7 @@ module.exports = smp.wrap({
           {
             loader: 'babel-loader',
             options: {
-              "cacheDirectory": true
+              cacheDirectory: true
             }
           }
         ]
@@ -157,12 +157,12 @@ module.exports = smp.wrap({
 
   plugins: [
     new webpack.EnvironmentPlugin({
-      'APP_HOST': null,
-      'ANNOUNCE_MAILING_LIST': null,
-      'CONTENT_HOST': 8092,
-      'FRONTEND_PORT': 8095,
-      'NODE_ENV': 'development',
-      'SCHEME': 'http'
+      APP_HOST: null,
+      ANNOUNCE_MAILING_LIST: null,
+      CONTENT_HOST: 8092,
+      FRONTEND_PORT: 8095,
+      NODE_ENV: 'development',
+      SCHEME: 'http'
     })
   ]
 });
