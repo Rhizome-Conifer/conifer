@@ -22,7 +22,7 @@ class CollectionListUI extends Component {
   static contextTypes = {
     isAnon: PropTypes.bool,
     router: PropTypes.object
-  }
+  };
 
   static propTypes = {
     auth: PropTypes.object,

@@ -74,8 +74,15 @@ class ExtractWidget extends Component {
         targetUrl = targetUrl.substr(targetColl.length + 1);
       }
 
-      const timestamp = targetUrl.match(/^(\d{4,14})(\w{2}_)?\//)[1];
+      const tsMatch = targetUrl.match(/^(\d{4,14})(\w{2}_)?\//);
+
+      if (!tsMatch) {
+        return setExtractWidget(null);
+      }
+
+      const timestamp = tsMatch[1];
       targetUrl = targetUrl.replace(/\d+(\w+)?\//, '');
+
 
       // enable widget
       setExtractWidget({

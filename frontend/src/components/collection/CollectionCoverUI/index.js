@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { defaultCollDesc, onboardingLink } from 'config';
-import { getCollectionLink, getListLink } from 'helpers/utils';
+import { appHost, defaultCollDesc, onboardingLink, tagline } from 'config';
+import { getCollectionLink, getListLink, truncate } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';
 
 import { Temp404 } from 'containers';
@@ -65,6 +65,10 @@ class CollectionCoverUI extends Component {
       <div className="coll-cover">
         <Helmet>
           <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
+          <meta property="og:url" content={`${appHost}${getCollectionLink(collection)}`} />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content={collection.get('title')} />
+          <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
         </Helmet>
         {
           onboardingLink && !this.context.isMobile &&

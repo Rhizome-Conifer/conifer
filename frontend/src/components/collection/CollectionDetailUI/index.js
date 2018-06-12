@@ -12,7 +12,7 @@ import { Button } from 'react-bootstrap';
 import config from 'config';
 
 import { setSort } from 'redux/modules/collection';
-import { getCollectionLink, getListLink, getStorage, inStorage, setStorage, range } from 'helpers/utils';
+import { getCollectionLink, getListLink, getStorage, inStorage, range, setStorage, truncate } from 'helpers/utils';
 
 import { CollectionFilters, CollectionHeader, InspectorPanel,
          Lists, ListHeader, Sidebar, Temp404, TempUserAlert } from 'containers';
@@ -500,13 +500,23 @@ class CollectionDetailUI extends Component {
 
     return (
       <div className={classNames('wr-coll-detail', { 'with-list': activeList })}>
-        <Helmet>
-          {
-            activeList ?
-              <title>{`${list.get('title')} (List by ${collection.get('owner')})`}</title> :
+        {
+          activeList ?
+            <Helmet>
+              <title>{`${list.get('title')} (List by ${collection.get('owner')})`}</title>
+              <meta property="og:url" content={`${config.appHost}${getListLink(collection, list)}`} />
+              <meta property="og:type" content="website" />
+              <meta property="og:title" content={list.get('title')} />
+              <meta property="og:description" content={list.get('desc') ? truncate(list.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} />
+            </Helmet> :
+            <Helmet>
               <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
-          }
-        </Helmet>
+              <meta property="og:url" content={`${config.appHost}${getCollectionLink(collection, true)}`} />
+              <meta property="og:type" content="website" />
+              <meta property="og:title" content={collection.get('title')} />
+              <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} />
+            </Helmet>
+        }
         <CustomDragLayer
           pages={objects}
           pageSelection={selectedPageIdx} />

@@ -289,10 +289,19 @@ export function throttle(fn, wait) {
 }
 
 
-export function truncate(str, length) {
+/**
+ * Truncate supplied text by regex
+ * @param  {string} str    input string
+ * @param  {int}    count   number of segments to clip by
+ * @param  {RegExp} delimiter   paren wrapped regular expression e.g. `new RegExp(/([.?!])/)`
+ * @return {string}
+ */
+export function truncate(str, count, delimiter = null) {
   if (!str) {
     return str;
   }
 
-  return str.length > length ? `${str.substr(0, length).trim()}...` : str;
+  const by = delimiter || new RegExp(/(.)/);
+  const seg = str.split(by);
+  return seg.length > count * 2 ? `${seg.splice(0, count * 2).join('').trim()}...` : str;
 }
