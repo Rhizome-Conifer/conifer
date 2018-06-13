@@ -5,7 +5,7 @@ const TOGGLE = 'wr/sidebar/TOGGLE';
 
 const initialState = fromJS({
   resizing: false,
-  expanded: true
+  expanded: false
 });
 
 

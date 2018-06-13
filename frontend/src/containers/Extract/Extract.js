@@ -94,6 +94,7 @@ class Extract extends Component {
                 url={url} /> :
               <IFrame
                 appPrefix={appPrefix}
+                auth={this.props.auth}
                 autoscroll={this.props.autoscroll}
                 contentPrefix={contentPrefix}
                 dispatch={dispatch}

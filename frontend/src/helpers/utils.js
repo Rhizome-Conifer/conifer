@@ -72,6 +72,26 @@ export function deleteStorage(key, device = null) {
 
 
 /**
+ * Event dispatcher with ie support
+ */
+export function dispatchEvent(eventStr) {
+  if (!window) {
+    return;
+  }
+
+  let evt;
+  if (typeof Event === 'function') {
+    evt = new Event(eventStr);
+  } else {
+    evt = document.createEvent('Event');
+    evt.initEvent(eventStr, true, true);
+  }
+
+  window.dispatchEvent(evt);
+}
+
+
+/**
  * Helpful with the need to set the height of an element before a css transition.
  * Prevents browsers from mereging updates into the same frame.
  */
@@ -269,10 +289,19 @@ export function throttle(fn, wait) {
 }
 
 
-export function truncate(str, length) {
+/**
+ * Truncate supplied text by regex
+ * @param  {string} str    input string
+ * @param  {int}    count   number of segments to clip by
+ * @param  {RegExp} delimiter   paren wrapped regular expression e.g. `new RegExp(/([.?!])/)`
+ * @return {string}
+ */
+export function truncate(str, count, delimiter = null) {
   if (!str) {
     return str;
   }
 
-  return str.length > length ? `${str.substr(0, length).trim()}...` : str;
+  const by = delimiter || new RegExp(/(.)/);
+  const seg = str.split(by);
+  return seg.length > count * 2 ? `${seg.splice(0, count * 2).join('').trim()}...` : str;
 }

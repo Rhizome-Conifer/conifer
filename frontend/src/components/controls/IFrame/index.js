@@ -16,6 +16,7 @@ class IFrame extends Component {
   static propTypes = {
     activeBookmarkId: PropTypes.string,
     autoscroll: PropTypes.bool,
+    auth: PropTypes.object,
     appPrefix: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
     contentPrefix: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
     dispatch: PropTypes.func,
@@ -116,7 +117,7 @@ class IFrame extends Component {
   }
 
   setDomainCookie = (state) => {
-    const { params } = this.props;
+    const { auth, params } = this.props;
 
     let cookie = state.cookie.split(';', 1)[0];
     if (!cookie) {
@@ -125,7 +126,7 @@ class IFrame extends Component {
     cookie = cookie.split('=', 2);
 
     if (!this.socket.addCookie(cookie[0], cookie[1], state.domain)) {
-      apiFetch('/auth/cookie', {
+      apiFetch(`/auth/cookie?user=${auth.getIn(['user', 'username'])}`, {
         domain: state.domain,
         name: cookie[0],
         rec: params.rec || '',
@@ -224,7 +225,7 @@ class IFrame extends Component {
 
       if (doAdd && (attributes.timestamp || currMode !== 'patch')) {
         if (!this.socket.addPage(attributes)) {
-          apiFetch(`/recording/${params.rec}/pages`, attributes, { method: 'POST' });
+          apiFetch(`/recording/${params.rec}/pages?user=${params.user}&coll=${params.coll}`, attributes, { method: 'POST' });
         }
       }
     } else if (['replay', 'replay-coll'].includes(currMode)) {

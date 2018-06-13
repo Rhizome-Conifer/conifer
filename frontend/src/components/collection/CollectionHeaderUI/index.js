@@ -5,7 +5,7 @@ import { Button, DropdownButton, MenuItem } from 'react-bootstrap';
 import { CSSTransitionGroup } from 'react-transition-group';
 
 import { defaultCollDesc, onboardingLink } from 'config';
-import { doubleRAF, getCollectionLink, stopPropagation } from 'helpers/utils';
+import { doubleRAF, getCollectionLink, stopPropagation, truncate } from 'helpers/utils';
 
 import { DeleteCollection, Upload } from 'containers';
 
@@ -139,7 +139,7 @@ class CollectionHeaderUI extends Component {
     const isPublic = collection.get('public');
 
     const collTitle = collection.get('title');
-    const titleCapped = collTitle.split(' ').length > 9 ? `${collTitle.split(' ').splice(0, 9).join(' ')}...` : collTitle;
+    const titleCapped = truncate(collTitle, 9, new RegExp(/(\s)/));
 
     const menu = canAdmin && (
       <div className="utility-row" onClick={stopPropagation}>

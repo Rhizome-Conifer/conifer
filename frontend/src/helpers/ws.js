@@ -139,7 +139,7 @@ class WebSocketHandler {
   }
 
   syncOuterFrameState = (evt) => {
-    if (evt && evt.state) {
+    if (evt && evt.state && this.hasWS()) {
       const { state } = evt;
       this.lastPopUrl = state.url;
 

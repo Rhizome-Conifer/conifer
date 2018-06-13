@@ -4,7 +4,7 @@ import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 
-import { getCollectionLink, remoteBrowserMod } from 'helpers/utils';
+import { getCollectionLink, remoteBrowserMod, truncate } from 'helpers/utils';
 import config from 'config';
 
 import { getActivePage } from 'redux/selectors';
@@ -36,6 +36,7 @@ class Replay extends Component {
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     expanded: PropTypes.bool,
+    list: PropTypes.object,
     loaded: PropTypes.bool,
     match: PropTypes.object,
     recording: PropTypes.string,
@@ -162,7 +163,10 @@ class Replay extends Component {
       <SidebarListViewer showNavigator={this.showCollectionNav} /> :
       <SidebarPageViewer showNavigator={this.showCollectionNav} />;
 
-    const title = `Archived page from the &ldquo;${collection.get('title')}&rdquo; Collection on ${config.product}`;
+    const title = listSlug ? `Archived page from the “${list.get('title')}” List on ${config.product}` : `Archived page from the “${collection.get('title')}” Collection on ${config.product}`;
+    const desc = listSlug ?
+      <meta property="og:description" content={list.get('desc') ? truncate(list.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} /> :
+      <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} />;
 
     return (
       <React.Fragment>
@@ -171,9 +175,8 @@ class Replay extends Component {
           <meta property="og:url" content={shareUrl} />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={title} />
-          <meta name="og:description" content={collection.get('desc') ? collection.getIn(['collection', 'desc']) : 'Create high-fidelity, interactive web archives of any web site you browse.'} />
+          {desc}
         </Helmet>
-
         <ReplayUI
           activeBrowser={activeBrowser}
           params={params}
@@ -209,6 +212,7 @@ class Replay extends Component {
                 url={url} /> :
               <IFrame
                 activeBookmarkId={activeBookmarkId}
+                auth={this.props.auth}
                 autoscroll={this.props.autoscroll}
                 appPrefix={this.getAppPrefix}
                 contentPrefix={this.getContentPrefix}

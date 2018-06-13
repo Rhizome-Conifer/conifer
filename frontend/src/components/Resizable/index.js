@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 
-import { inStorage, getStorage, setStorage } from 'helpers/utils';
+import { dispatchEvent, inStorage, getStorage, setStorage } from 'helpers/utils';
 
 import './style.scss';
 
@@ -141,7 +141,7 @@ class Resizable extends Component {
     }
 
     // Trigger window resize for remote browser manager
-    window.dispatchEvent(new Event('resize'));
+    dispatchEvent('resize');
 
     setStorage((storageKey || 'userSidebarWidth'), JSON.stringify({ width, height }));
   }

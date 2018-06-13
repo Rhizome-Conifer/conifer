@@ -1,10 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { truncate } from 'helpers/utils';
+
 
 export const collList = ({ match }) => match.params.user;
 
-const collDetail = ({ collection }) => { return collection.get('loaded') ? collection.get('title') : null };
+const collDetail = ({ collection }) => { return collection.get('loaded') ? truncate(collection.get('title'), 55) : null };
 export const collDetailBreadcrumb = connect(
   ({ app }) => {
     return {

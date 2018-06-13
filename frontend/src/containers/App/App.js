@@ -60,7 +60,6 @@ export class App extends Component { // eslint-disable-line
 
   getChildContext() {
     const { auth } = this.props;
-    const ua = global.navigator ? global.navigator.userAgent : '';
 
     return {
       isAnon: auth.getIn(['user', 'anon']),

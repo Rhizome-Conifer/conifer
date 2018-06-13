@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 
-import { inStorage, getStorage, setStorage } from 'helpers/utils';
+import { dispatchEvent, inStorage, getStorage, setStorage } from 'helpers/utils';
 
 import Resizable from 'components/Resizable';
 
@@ -55,7 +55,7 @@ class SidebarUI extends Component {
 
     if (prevProps.expanded !== expanded) {
       setStorage(storageKey, expanded);
-      window.dispatchEvent(new Event('resize'));
+      dispatchEvent('resize');
     }
   }
 
