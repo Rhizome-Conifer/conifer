@@ -1,5 +1,7 @@
 # Webrecorder Project
 
+[![Join the chat at https://gitter.im/webrecorder/webrecorder](https://badges.gitter.im/webrecorder/webrecorder.svg)](https://gitter.im/webrecorder/webrecorder?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 *This version corresponds to the service deployed at https://webrecorder.io/*
 
 *If you are interested in contributing to Webrecorder, or have any general questions, please contact us at support@webrecorder.io*
