@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { List } from 'immutable';
-import { DropdownButton, MenuItem } from 'react-bootstrap';
+import { Dropdown, MenuItem } from 'react-bootstrap';
+
+import { doubleRAF } from 'helpers/utils';
 
 import { NewCollection } from 'components/siteComponents';
 import { WarcIcon } from 'components/icons';
@@ -46,7 +48,11 @@ class CollectionDropdownUI extends Component {
       props.setCollection(props.mostRecent);
     }
 
-    this.state = { showModal: false };
+    this.state = {
+      collections: props.collections,
+      filter: '',
+      showModal: false
+    };
   }
 
   componentWillMount() {
@@ -56,25 +62,27 @@ class CollectionDropdownUI extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { creatingCollection } = this.props;
-    const { newCollection } = nextProps;
-
-    // if incoming prop has a newCollection object and we are currently creating
-    // a collection, close the modal and select the new collection
-    if (creatingCollection && this.props.newCollection !== newCollection) {
-      this.collectionChoice(newCollection);
-      this.close();
-    }
-  }
-
   componentDidUpdate(prevProps) {
-    const { activeCollection, fromCollection, mostRecent, setCollection } = this.props;
+    const { activeCollection, collections, fromCollection, mostRecent, newCollection, setCollection } = this.props;
+    const { filter } = this.state;
 
     if (!fromCollection && !this.props.loading && prevProps.loading && activeCollection !== mostRecent) {
       setCollection(mostRecent);
     } else if (fromCollection && fromCollection !== prevProps.fromCollection) {
       setCollection(fromCollection);
+    }
+
+    // if incoming prop has a newCollection object and we are currently creating
+    // a collection, close the modal and select the new collection
+    if (prevProps.creatingCollection && prevProps.newCollection !== newCollection) {
+      this.collectionChoice(newCollection);
+      this.close();
+    }
+
+    if (collections !== prevProps.collections) {
+      this.setState({
+        collections: !filter ? collections : collections.filter(c => c.get('title').toLowerCase().startsWith(filter))
+      });
     }
   }
 
@@ -85,25 +93,52 @@ class CollectionDropdownUI extends Component {
     }
   }
 
-  createCollection = (collTitle, isPublic) => {
-    const { createNewCollection, user } = this.props;
-
-    createNewCollection(user.get('username'), collTitle, isPublic);
-  }
-
-  toggle = () => {
-    this.setState({ showModal: !this.state.showModal });
+  captureClick = (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
   }
 
   close = () => {
     this.setState({ showModal: false });
   }
 
+  createCollection = (collTitle, isPublic) => {
+    const { createNewCollection, user } = this.props;
+
+    createNewCollection(user.get('username'), collTitle, isPublic);
+  }
+
+  dropdownToggle = (isOpen) => {
+    if (isOpen) {
+      doubleRAF(() => {
+        this.filterInput.focus();
+
+        if (this.state.filter) {
+          this.filterInput.setSelectionRange(0, this.state.filter.length);
+        }
+      });
+    }
+  }
+
+  filterCollections = (evt) => {
+    evt.preventDefault();
+    evt.stopPropagation();
+    const { collections } = this.props;
+
+    this.setState({
+      [evt.target.name]: evt.target.value,
+      collections: !evt.target.value ? collections : collections.filter(c => c.get('title').toLowerCase().startsWith(evt.target.value))
+    });
+  }
+
+  toggle = () => {
+    this.setState({ showModal: !this.state.showModal });
+  }
+
   render() {
-    const { activeCollection, canCreateCollection, collections, collectionError, creatingCollection, label, user } = this.props;
+    const { activeCollection, canCreateCollection, collectionError, creatingCollection, label, user } = this.props;
     const { showModal } = this.state;
 
-    const buttonTitle = activeCollection.title ? <span><WarcIcon /> {activeCollection.title}</span> : 'Add to Collection...';
 
     return (
       <div className="wr-collection-menu">
@@ -114,31 +149,59 @@ class CollectionDropdownUI extends Component {
                 label &&
                   <label className="left-buffer" htmlFor="wr-collection-dropdown" dangerouslySetInnerHTML={{ __html: label }} />
               }
-              <DropdownButton title={buttonTitle} id="wr-collection-dropdown" onSelect={this.collectionChoice}>
-                {
-                  canCreateCollection &&
-                    <React.Fragment>
-                      <MenuItem onClick={this.toggle}>+ Create new collection</MenuItem>
-                      <MenuItem divider />
-                    </React.Fragment>
-                }
-                {
-                  collections.map((coll) => {
-                    const id = coll.get('id');
-                    const title = coll.get('title');
+              <Dropdown
+                id="wr-collection-dropdown"
+                onSelect={this.collectionChoice}
+                onToggle={this.dropdownToggle}>
+                <Dropdown.Toggle>
+                  {activeCollection.title ? <span><WarcIcon /> {activeCollection.title}</span> : 'Add to Collection...'}
+                </Dropdown.Toggle>
 
-                    return (
-                      <MenuItem
-                        key={id}
-                        eventKey={id}
-                        className={title.length > 50 ? 'make-wrap' : ''}
-                        active={activeCollection.id === id}>
-                        <WarcIcon /> { title }
+                <Dropdown.Menu>
+                  {
+                    canCreateCollection &&
+                      <MenuItem key="new-collection" onClick={this.toggle}>+ Create new collection</MenuItem>
+                  }
+                  {
+                    <MenuItem key="filter">
+                      <input
+                        autoFocus
+                        autoComplete="off"
+                        className="form-control"
+                        name="filter"
+                        onChange={this.filterCollections}
+                        onClick={this.captureClick}
+                        placeholder="Filter collections..."
+                        ref={(obj) => { this.filterInput = obj; }}
+                        type="text"
+                        value={this.state.filter} />
+                    </MenuItem>
+                  }
+                  <MenuItem key="divider" divider />
+                  {
+                    this.state.collections.map((coll) => {
+                      const id = coll.get('id');
+                      const title = coll.get('title');
+
+                      return (
+                        <MenuItem
+                          key={id}
+                          eventKey={id}
+                          className={title.length > 50 ? 'make-wrap' : ''}
+                          active={activeCollection.id === id}>
+                          <WarcIcon /> { title }
+                        </MenuItem>
+                      );
+                    })
+                  }
+                  {
+                    this.state.collections.size === 0 &&
+                      <MenuItem disabled>
+                        No collections found...
                       </MenuItem>
-                    );
-                  })
-                }
-              </DropdownButton>
+                  }
+                </Dropdown.Menu>
+              </Dropdown>
             </React.Fragment>
         }
         <NewCollection

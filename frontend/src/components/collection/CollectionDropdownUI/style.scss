@@ -30,6 +30,11 @@
         li {
             a {
                 padding: 1rem 1rem;
+
+                &:focus {
+                    outline: none;
+                }
+
             }
 
             &.active {
