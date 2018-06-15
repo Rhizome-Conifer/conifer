@@ -133,7 +133,7 @@ export function create(user, coll, title) {
   return {
     types: [LIST_CREATE, LIST_CREATE_SUCCESS, LIST_CREATE_FAIL],
     promise: client => client.post(`${apiPath}/lists`, {
-      params: { user, coll },
+      params: { user, coll: decodeURIComponent(coll) },
       data: { title }
     })
   };
@@ -144,7 +144,7 @@ export function load(user, coll, id) {
   return {
     types: [LIST_LOAD, LIST_LOAD_SUCCESS, LIST_LOAD_FAIL],
     promise: client => client.get(`${apiPath}/list/${id}`, {
-      params: { user, coll }
+      params: { user, coll: decodeURIComponent(coll) }
     })
   };
 }
@@ -154,7 +154,7 @@ export function edit(user, coll, id, data) {
   return {
     types: [LIST_EDIT, LIST_EDIT_SUCCESS, LIST_EDIT_FAIL],
     promise: client => client.post(`${apiPath}/list/${id}`, {
-      params: { user, coll },
+      params: { user, coll: decodeURIComponent(coll) },
       data
     }),
     data,
@@ -172,7 +172,7 @@ export function addTo(user, coll, listId, page) {
   return {
     types: [LIST_ADD, LIST_ADD_SUCCESS, LIST_ADD_FAIL],
     promise: client => client.post(`${apiPath}/list/${listId}/bookmarks`, {
-      params: { user, coll },
+      params: { user, coll: decodeURIComponent(coll) },
       data: page
     })
   };
@@ -190,7 +190,7 @@ export function bulkAddTo(user, coll, listId, pages) {
   return {
     types: [BULK_ADD, BULK_ADD_SUCCESS, BULK_ADD_FAIL],
     promise: client => client.post(`${apiPath}/list/${listId}/bulk_bookmarks`, {
-      params: { user, coll },
+      params: { user, coll: decodeURIComponent(coll) },
       data: pages
     })
   };
@@ -201,7 +201,7 @@ export function editBookmark(user, coll, list, bkId, data) {
   return {
     types: [BOOKMARK_EDIT, BOOKMARK_EDIT_SUCCESS, BOOKMARK_EDIT_FAIL],
     promise: client => client.post(`${apiPath}/bookmark/${bkId}`, {
-      params: { user, coll, list },
+      params: { user, coll: decodeURIComponent(coll), list },
       data: {
         ...data
       }
@@ -219,7 +219,7 @@ export function removeBookmark(user, coll, listId, bookmarkId) {
   return {
     types: [BOOKMARK_REMOVE, BOOKMARK_REMOVE_SUCCESS, BOOKMARK_REMOVE_FAIL],
     promise: client => client.del(`${apiPath}/bookmark/${bookmarkId}`, {
-      params: { user, coll, list: listId }
+      params: { user, coll: decodeURIComponent(coll), list: listId }
     })
   };
 }
@@ -235,7 +235,7 @@ export function bookmarkSort(user, coll, id, order) {
     types: [BOOKMARK_REORDER, BOOKMARK_REORDER_SUCCESS, BOOKMARK_REORDER_FAIL],
     order,
     promise: client => client.post(`${apiPath}/list/${id}/bookmarks/reorder`, {
-      params: { user, coll },
+      params: { user, coll: decodeURIComponent(coll) },
       data: {
         order
       }
@@ -248,7 +248,7 @@ export function deleteList(user, coll, id) {
   return {
     types: [LIST_REMOVE, LIST_REMOVE_SUCCESS, LIST_REMOVE_FAIL],
     promise: client => client.del(`${apiPath}/list/${id}`, {
-      params: { user, coll }
+      params: { user, coll: decodeURIComponent(coll) }
     })
   };
 }

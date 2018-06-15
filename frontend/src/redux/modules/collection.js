@@ -206,7 +206,7 @@ export function loadLists(user, coll, withBookmarks = 'first') {
   return {
     types: [LISTS_LOAD, LISTS_LOAD_SUCCESS, LISTS_LOAD_FAIL],
     promise: client => client.get(`${apiPath}/lists`, {
-      params: { user, coll, include_bookmarks: withBookmarks }
+      params: { user, coll: decodeURIComponent(coll), include_bookmarks: withBookmarks }
     })
   };
 }
@@ -217,7 +217,7 @@ export function sortLists(user, coll, order) {
     types: [LISTS_REORDER, LISTS_REORDER_SUCCESS, LISTS_REORDER_FAIL],
     order,
     promise: client => client.post(`${apiPath}/lists/reorder`, {
-      params: { user, coll },
+      params: { user, coll: decodeURIComponent(coll) },
       data: {
         order
       }
@@ -260,7 +260,7 @@ export function getBookmarkCount(user, coll, list) {
     types: [BK_COUNT, BK_COUNT_SUCCESS, BK_COUNT_FAIL],
     list,
     promise: client => client.get(`${apiPath}/list/${list}`, {
-      params: { user, coll, include_bookmarks: 'none' }
+      params: { user, coll: decodeURIComponent(coll), include_bookmarks: 'none' }
     })
   };
 }

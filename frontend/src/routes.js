@@ -156,7 +156,7 @@ const controllerRoutes = [
     name: 'extract'
   },
   {
-    path: `${userPath}/:coll/list/:listSlug([a-zA-Z0-9-_]+)/b:bookmarkId([0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    path: `${userPath}/:coll/list/:listSlug/b:bookmarkId([0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
     classOverride: '',
     component: Replay,
     exact: true,
@@ -164,7 +164,7 @@ const controllerRoutes = [
     name: 'list rb replay'
   },
   {
-    path: `${userPath}/:coll/list/:listSlug([a-zA-Z0-_9-]+)/b:bookmarkId([0-9]+)/:ts([0-9]+)?/:splat(.*)`,
+    path: `${userPath}/:coll/list/:listSlug/b:bookmarkId([0-9]+)/:ts([0-9]+)?/:splat(.*)`,
     classOverride: '',
     component: Replay,
     exact: true,

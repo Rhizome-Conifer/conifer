@@ -14,16 +14,6 @@
         // sidebar handle buffer
         margin: 0 .4rem 1rem 0;
 
-        &:before, &:after {
-            content: '';
-            position: absolute;
-            left: 0;
-            width: calc(100% - 1rem);
-            height: 3rem;
-            z-index: 5;
-            //pointer-events: none;
-        }
-
         .row-index-container {
             align-self: flex-start;
             margin-top: .5rem;
@@ -33,16 +23,6 @@
                 color: #B2B2B2;
             }
         }
-
-        // &:before {
-        //     top: 0;
-        //     background: linear-gradient(0deg, rgba(255,255,255,0), #FFF 85%);
-        // }
-
-        // &:after {
-        //     bottom: 0;
-        //     background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
-        // }
     }
 
     nav {

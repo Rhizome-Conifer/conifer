@@ -112,7 +112,7 @@ export function collRecordings(user, coll) {
   return {
     types: [RECS_LOAD, RECS_LOAD_SUCCESS, RECS_LOAD_FAIL],
     promise: client => client.get(`${apiPath}/recordings`, {
-      params: { user, coll }
+      params: { user, coll: decodeURIComponent(coll) }
     })
   };
 }
@@ -122,7 +122,7 @@ export function loadRecording(user, coll, rec) {
   return {
     types: [REC_LOAD, REC_LOAD_SUCCESS, REC_LOAD_FAIL],
     promise: client => client.get(`${apiPath}/recording/${rec}`, {
-      params: { user, coll }
+      params: { user, coll: decodeURIComponent(coll) }
     })
   };
 }
@@ -132,7 +132,7 @@ export function edit(user, coll, rec, data) {
   return {
     types: [REC_EDIT, REC_EDIT_SUCCESS, REC_EDIT_FAIL],
     promise: client => client.post(`${apiPath}/recording/${rec}`, {
-      params: { user, coll },
+      params: { user, coll: decodeURIComponent(coll) },
       data
     }),
     data
@@ -159,7 +159,7 @@ export function deleteRecording(user, coll, rec) {
   return {
     types: [REC_DELETE, REC_DELETE_SUCCESS, REC_DELETE_FAIL],
     promise: client => client.del(`${apiPath}/recording/${rec}`, {
-      params: { user, coll }
+      params: { user, coll: decodeURIComponent(coll) }
     })
   };
 }

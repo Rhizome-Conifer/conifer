@@ -70,7 +70,7 @@ export function createRemoteBrowser(browser, user, coll, rec, mode, timestamp, u
   return {
     types: [RB_CREATE_BROWSER, RB_CREATE_BROWSER_SUCCESS, RB_CREATE_BROWSER_FAILURE],
     promise: client => client.get(`${config.apiPath}/create_remote_browser`, {
-      params: { browser, user, coll, rec, mode, timestamp, url }
+      params: { browser, user, coll: decodeURIComponent(coll), rec, mode, timestamp, url }
     })
   };
 }
