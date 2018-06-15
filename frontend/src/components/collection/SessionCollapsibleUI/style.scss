@@ -52,7 +52,7 @@
 
                 .function-row {
                     transition: opacity $quickShift ease-in-out;
-                    opacity: 0;
+                    opacity: 0.6;
                     display: flex;
 
                     .delete-action {
@@ -93,6 +93,10 @@
                     background: $blue;
                 }
             }
+        }
+
+        .Collapsible__trigger.is-open .collapsible .function-row {
+            opacity: 0;
         }
 
         &.popover-open .Collapsible__trigger header {
@@ -155,7 +159,7 @@
 
                 .functions {
                     transition: opacity $quickShift ease-in-out;
-                    opacity: 0;
+                    opacity: 0.6;
 
                     button {
                         width: 100%;
