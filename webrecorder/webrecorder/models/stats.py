@@ -24,6 +24,8 @@ class Stats(object):
     DELETE_USER_KEY = 'st:delete-user'
     DELETE_TEMP_KEY = 'st:delete-temp'
 
+    DELETE_PROP = 'size_deleted'
+
     DOWNLOADS_USER_COUNT_KEY = 'st:download-user-count'
     DOWNLOADS_USER_SIZE_KEY = 'st:download-user-size'
 
@@ -145,6 +147,8 @@ class Stats(object):
                 key = self.DELETE_USER_KEY
 
             self.redis.hincrby(key, today_str(), recording.size)
+            user.incr_key(self.DELETE_PROP, recording.size)
+
         except Exception as e:
             print('Error Counting Delete: ' + str(e))
 

@@ -295,7 +295,7 @@ class AdminController(BaseController):
                 continue
 
             # note: ts should already be utc!
-            dt = datetime.fromtimestamp(user_data[3] / 1000)
+            dt = datetime.fromtimestamp(user_data[5] / 1000)
             dt = dt.date().isoformat()
 
             date_bucket[dt] = date_bucket.get(dt, 0) + 1

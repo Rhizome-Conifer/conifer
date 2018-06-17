@@ -6,6 +6,7 @@ import json
 import time
 
 from webrecorder.models.stats import Stats
+from webrecorder.models.user import User
 from webrecorder.models.base import RedisUniqueComponent
 from webrecorder.utils import today_str
 
@@ -416,6 +417,7 @@ class TestUpload(FullStackTests):
         assert self.redis.hget(Stats.DOWNLOADS_USER_COUNT_KEY, today_str()) == '1'
         assert self.redis.hget(Stats.UPLOADS_COUNT_KEY, today_str()) == '3'
 
+        assert self.redis.hget(User.INFO_KEY.format(user='test'), Stats.UPLOADS_PROP) == '3'
 
 
 
