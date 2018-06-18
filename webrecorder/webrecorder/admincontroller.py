@@ -247,7 +247,7 @@ class AdminController(BaseController):
         if users:
             return json.loads(users)
 
-        column_keys = ['size', 'max_size', 'last_login', 'created_at', 'updated_at', 'role', 'email_addr']
+        column_keys = ['size', 'max_size', 'last_login', 'created_at', 'updated_at', 'role', 'email_addr', 'percent']
 
         users = []
 
@@ -263,6 +263,7 @@ class AdminController(BaseController):
             user_data[3] = self.parse_iso_or_ts(user_data[3])
             user_data[4] = self.parse_iso_or_ts(user_data[4])
             user_data[5] = self.parse_iso_or_ts(user_data[5])
+            user_data[8] = 100.0 * user_data[1] / user_data[2]
 
             users.append(user_data)
 
@@ -280,6 +281,7 @@ class AdminController(BaseController):
             {'text': 'Updated Date', 'type': 'time'},
             {'text': 'Role', 'type': 'string'},
             {'text': 'Email', 'type': 'string'},
+            {'text': 'Percent', 'type': 'number'},
         ]
 
         return {'columns': columns,
