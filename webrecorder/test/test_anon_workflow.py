@@ -18,6 +18,7 @@ from pywb.indexer.cdxindexer import write_cdx_index
 from re import sub
 from six.moves.urllib.parse import urlsplit, quote
 
+from webrecorder.models.user import User
 from webrecorder.models.stats import Stats
 
 from webrecorder.session import Session
@@ -647,6 +648,9 @@ class TestTempContent(FullStackTests):
         res = self.testapp.delete('/api/v1/recording/recording-session?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'recording-session'}
+
+
+        assert int(self.redis.hget(User.INFO_KEY.format(user=self.anon_user), Stats.DELETE_PROP)) > 0
 
     def test_anon_patch_redirect_and_delete(self):
         self.set_uuids('Recording', ['patch'])

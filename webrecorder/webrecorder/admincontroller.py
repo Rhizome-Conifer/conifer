@@ -251,7 +251,7 @@ class AdminController(BaseController):
 
         users = []
 
-        for user_key in self.redis.scan_iter('u:*:info', count=100):
+        for user_key in self.redis.scan_iter(User.INFO_KEY.format(user='*'), count=100):
             if user_key.startswith(self.temp_user_key):
                 continue
 
@@ -260,9 +260,10 @@ class AdminController(BaseController):
             user_data.insert(0, user_key.split(':')[1])
             user_data[1] = int(user_data[1])
             user_data[2] = int(user_data[2])
-            user_data[3] = self.parse_iso_or_ts(user_data[3])
+            user_data.insert(3, 100.0 * user_data[1] / user_data[2])
             user_data[4] = self.parse_iso_or_ts(user_data[4])
             user_data[5] = self.parse_iso_or_ts(user_data[5])
+            user_data[6] = self.parse_iso_or_ts(user_data[6])
 
             users.append(user_data)
 
@@ -275,6 +276,7 @@ class AdminController(BaseController):
             {'text': 'Id', 'type': 'string'},
             {'text': 'Size', 'type': 'number'},
             {'text': 'Max Size', 'type': 'number'},
+            {'text': 'Percent', 'type': 'number'},
             {'text': 'Last Login Date', 'type': 'time'},
             {'text': 'Creation Date', 'type': 'time'},
             {'text': 'Updated Date', 'type': 'time'},
@@ -295,7 +297,7 @@ class AdminController(BaseController):
                 continue
 
             # note: ts should already be utc!
-            dt = datetime.fromtimestamp(user_data[3] / 1000)
+            dt = datetime.fromtimestamp(user_data[6] / 1000)
             dt = dt.date().isoformat()
 
             date_bucket[dt] = date_bucket.get(dt, 0) + 1
