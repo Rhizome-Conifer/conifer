@@ -9,6 +9,8 @@ from datetime import date
 from pywb.utils.loaders import load
 from warcio.timeutils import timestamp20_now
 
+from pywb.warcserver.index.cdxobject import CDXObject
+
 from webrecorder.utils import sanitize_title
 from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent, RedisNamedMap
 from webrecorder.models.recording import Recording
@@ -320,6 +322,44 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
     def get_dir_path(self):
         return self.get_created_iso_date() + '/' + self.my_id
+
+    def add_cdxj(self, cdxj_text):
+        if not self.is_external():
+            return 0
+
+        coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)
+        count = 0
+
+        for line in cdxj_text.split(b'\n'):
+            if not line:
+                continue
+
+            try:
+                cdx = CDXObject(line)
+                self.redis.zadd(coll_cdxj_key, 0, str(cdx))
+                count += 1
+            except:
+                pass
+
+        #self.redis.expire(coll_cdxj_key, self.COLL_CDXJ_TTL)
+        return count
+
+    def add_warcs(self, warc_map):
+        if not self.is_external():
+            return 0
+
+        warc_key = Recording.COLL_WARC_KEY.format(coll=self.my_id)
+
+        if warc_map:
+            self.redis.hmset(warc_key, warc_map)
+
+        return len(warc_map)
+
+    def is_external(self):
+        return self.get_bool_prop('external')
+
+    def set_external(self, external):
+        self.set_bool_prop('external', external)
 
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)

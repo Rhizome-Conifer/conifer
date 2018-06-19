@@ -65,6 +65,27 @@ class TestWebRecCollsAPI(FullStackTests):
         assert 'lists' not in colls[0]
         #assert colls[0]['download_url'] == 'http://localhost:80/{user}/temp/$download'.format(user=self.anon_user)
 
+    def test_error_no_title(self):
+        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user), status=400)
+
+        assert res.json['error'] == 'invalid_coll_name'
+
+    def test_error_invalid_temp_title(self):
+        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user),
+                                     params={'title': 'new'}, status=400)
+
+        assert res.json['error'] == 'invalid_temp_coll_name'
+
+    def test_error_external_not_allowed(self):
+        params = {'external': True,
+                  'title': 'temp'
+                 }
+
+        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user), params=params,
+                                     status=403)
+
+        assert res.json == {'error': 'external_not_allowed'}
+
     def test_error_no_such_coll(self):
         res = self.testapp.get('/api/v1/collection/blah@$?user={user}'.format(user=self.anon_user), status=404)
         assert res.json == {'error': 'no_such_collection'}

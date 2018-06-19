@@ -1,5 +1,6 @@
 from bottle import request, response
 from six.moves.urllib.parse import quote
+import os
 
 from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
@@ -14,30 +15,49 @@ class CollsController(BaseController):
         super(CollsController, self).__init__(*args, **kwargs)
         config = kwargs['config']
 
+        self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
+
+
     def init_routes(self):
         @self.app.post('/api/v1/collections')
         def create_collection():
             user = self.get_user(api=True, redir_check=False)
 
-            title = request.json.get('title')
+            data = request.json or {}
+
+            title = data.get('title', '')
 
             coll_name = self.sanitize_title(title)
 
             if not coll_name:
                 self._raise_error(400, 'invalid_coll_name')
 
-            is_public = request.json.get('public')
+            is_public = data.get('public', False)
 
-            if self.access.is_anon(user):
+            is_external = data.get('external', False)
+
+            is_anon = self.access.is_anon(user)
+
+            if is_external:
+                if not self.allow_external:
+                    self._raise_error(403, 'external_not_allowed')
+
+                if not is_anon:
+                    self._raise_error(400, 'not_valid_for_external')
+
+            elif is_anon:
                 if coll_name != 'temp':
                     self._raise_error(400, 'invalid_temp_coll_name')
 
-                if user.has_collection(coll_name):
-                    self._raise_error(400, 'duplicate_name')
+            if user.has_collection(coll_name):
+                self._raise_error(400, 'duplicate_name')
 
             try:
                 collection = user.create_collection(coll_name, title=title,
                                                     desc='', public=is_public)
+
+                if is_external:
+                    collection.set_external(True)
 
                 self.flash_message('Created collection <b>{0}</b>!'.format(collection.get_prop('title')), 'success')
                 resp = {'collection': collection.serialize()}
@@ -80,6 +100,34 @@ class CollsController(BaseController):
                 return self._raise_error(400, errs['error'])
             else:
                 return {'deleted_id': coll_name}
+
+        @self.app.put('/api/v1/collection/<coll_name>/warc')
+        def add_external_warc(coll_name):
+            if not self.allow_external:
+                self._raise_error(403, 'external_not_allowed')
+
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            if not collection.is_external():
+                self._raise_error(400, 'external_only')
+
+            num_added = collection.add_warcs(request.json.get('warcs', {}))
+
+            return {'success': num_added}
+
+        @self.app.put('/api/v1/collection/<coll_name>/cdx')
+        def add_external_cdxj(coll_name):
+            if not self.allow_external:
+                self._raise_error(403, 'external_not_allowed')
+
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            if not collection.is_external():
+                self._raise_error(400, 'external_only')
+
+            num_added = collection.add_cdxj(request.body.read())
+
+            return {'success': num_added}
 
         @self.app.post('/api/v1/collection/<coll_name>')
         def update_collection(coll_name):
