@@ -99,12 +99,12 @@ class ContentController(BaseController, RewriterApp):
 
             data = request.query
 
-            coll_name = data.get('coll', '')
+            coll_name = data.getunicode('coll', '')
             rec = data.get('rec', '')
 
             mode = data.get('mode', '')
 
-            url = data.get('url', '')
+            url = data.getunicode('url', '')
             timestamp = data.get('timestamp', '')
 
             sources = ''
