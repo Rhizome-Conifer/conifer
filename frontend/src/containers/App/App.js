@@ -177,8 +177,8 @@ export class App extends Component {
     }
   }
 
-  showLogin = () => {
-    this.props.dispatch(showModal(true));
+  refresh = () => {
+    window.location.reload();
   }
 
   componentDidCatch(error, info) {
@@ -254,7 +254,7 @@ export class App extends Component {
         {
           this.state.loginStateAlert &&
             <Alert className="not-logged-in" onDismiss={this.dismissLoginAlert}>
-              You have been logged out. Please <button className="button-link" onClick={this.showLogin}>log in</button> to continue.
+              Please <button className="button-link" onClick={this.refresh}>reload the page</button>. Session has ended.
             </Alert>
         }
         {

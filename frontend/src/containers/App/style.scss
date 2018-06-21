@@ -13,7 +13,18 @@ section {
     flex-grow: 1;
 }
 
-.not-logged-in, .oos-alert {
+.not-logged-in {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: $yellow;
+    margin: 0;
+    z-index: 1000;
+    border: none;
+}
+
+.oos-alert {
     position: absolute;
     z-index: 1000;
     top: 4.5rem;
