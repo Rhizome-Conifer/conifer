@@ -14,8 +14,6 @@ import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
 import { load as loadTemp } from 'redux/modules/tempUser';
 import { load as loadUser } from 'redux/modules/user';
-import { showModal } from 'redux/modules/userLogin';
-
 
 import { UserManagement } from 'containers';
 
