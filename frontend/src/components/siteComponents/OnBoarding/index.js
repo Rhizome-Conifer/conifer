@@ -44,7 +44,7 @@ class OnBoarding extends PureComponent {
         console.log('Wrong `onBoarding` storage value.', e);
       }
     } else {
-      setTimeout(() => this.setState({ show: true }), 1500);
+      this.handle = setTimeout(() => this.setState({ show: true }), 1500);
     }
 
     window.addEventListener('message', this.closeOnboarding);

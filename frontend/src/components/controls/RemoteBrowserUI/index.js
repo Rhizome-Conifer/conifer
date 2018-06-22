@@ -78,7 +78,7 @@ class RemoteBrowserUI extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { autoscroll, clipboard, dispatch, params, rb, rec, reqId, timestamp, url } = this.props;
+    const { autoscroll, clipboard, dispatch, params, rb, reqId, timestamp, url } = this.props;
     const { currMode } = this.context;
 
     // bidirectional clipboard
@@ -94,7 +94,7 @@ class RemoteBrowserUI extends Component {
       this.socket.doAutoscroll();
     }
 
-    if (nextProps.reqId !== reqId && nextProps.rb === rb) {
+    if (nextProps.reqId !== reqId) {
       // new reqId for browser, initialize and save
       this.connectToRemoteBrowser(nextProps.reqId, nextProps.inactiveTime);
 
@@ -116,7 +116,7 @@ class RemoteBrowserUI extends Component {
 
       // write to storage for later reuse
       setStorage('reqId', data, window.sessionStorage);
-    } else if (nextProps.rb !== rb) {
+    } else if (nextProps.rb !== rb || url !== nextProps.url || timestamp !== nextProps.timestamp) {
       // TODO: Disable browser reuse for now
       // remote browser change request, load from storage or create a new one
       const reqFromStorage = false; // this.getReqFromStorage(nextProps.rb);
@@ -132,7 +132,7 @@ class RemoteBrowserUI extends Component {
 
       // generate remote browser
       if (!reqFromStorage) {
-        dispatch(createRemoteBrowser(nextProps.rb, params.user, params.coll, rec, currMode, timestamp, url));
+        dispatch(createRemoteBrowser(nextProps.rb, params.user, params.coll, nextProps.rec, currMode, nextProps.timestamp, nextProps.url));
       } else {
         this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
       }

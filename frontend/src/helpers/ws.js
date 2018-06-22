@@ -22,6 +22,7 @@ class WebSocketHandler {
     this.lastPopUrl = undefined;
     this.params = params;
     this.host = host || window.location.host;
+    this.retryHandle = null;
 
     this.isRemoteBrowser = remoteBrowser;
     this.br = br;
@@ -66,6 +67,8 @@ class WebSocketHandler {
     this.ws.removeEventListener('close', this.wsClosed);
     this.ws.removeEventListener('error', this.wsClosed);
 
+    clearTimeout(this.retryHandle);
+
     if (this.isRemoteBrowser) {
       window.removeEventListener('popstate', this.syncOuterFrameState);
     }
@@ -87,7 +90,7 @@ class WebSocketHandler {
     this.useWS = false;
     if (this.errCount < 5) {
       this.errCount += 1;
-      setTimeout(this.initWS, 2000);
+      this.retryHandle = setTimeout(this.initWS, 2000);
     }
   }
 

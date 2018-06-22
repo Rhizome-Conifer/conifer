@@ -24,6 +24,8 @@ function loadScript(src) {
 }
 
 export default function CBrowser(reqid, target_div, init_params) {
+    var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+
     var cmd_host = undefined;
     var vnc_host = undefined;
 
@@ -63,6 +65,8 @@ export default function CBrowser(reqid, target_div, init_params) {
     var clipEvents = ['paste'];
     var target_div_obj = document.querySelector(target_div);
 
+    // setTimeout handles
+    var timers = [];
 
     function start() {
         if (!window.INCLUDE_URI) {
@@ -100,6 +104,11 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
     function close() {
+        if (controller) {
+            // cancel fetch requests
+            controller.abort();
+        }
+
         var cnvs = canvas();
         var _screen = screen();
         // ensure focus is freed
@@ -109,8 +118,11 @@ export default function CBrowser(reqid, target_div, init_params) {
         _screen.removeEventListener('mouseenter', grab_focus);
         cnvs.removeEventListener('click', grab_focus);
 
-        // clear countdown clock
+        // clear intervals and timers
         clearInterval(countdownTimer);
+        for (var i = 0; i < timers.length; i++) {
+            clearTimeout(timers[i]);
+        }
 
         for (var i = 0; i < controllerScripts.length; i++) {
             try {
@@ -257,8 +269,14 @@ export default function CBrowser(reqid, target_div, init_params) {
 
         var init_url = init_params.api_prefix + "/init_browser?" + toQueryString(req_params);
 
+        var options = { headers: new Headers({'x-requested-with': 'XMLHttpRequest'}) };
+
+        if (controller) {
+            options.signal = controller.signal;
+        }
+
         // expects json response
-        fetch(init_url, {headers: new Headers({'x-requested-with': 'XMLHttpRequest'})})
+        fetch(init_url, options)
             .then(function (res) { return res.json(); })
             .then(function (data) {
                 waiting_for_container = false;
@@ -268,11 +286,16 @@ export default function CBrowser(reqid, target_div, init_params) {
                 console.log('fetch error', err);
                 waiting_for_container = false;
 
+                // user canceled
+                if (err.name === 'AbortError') {
+                    return;
+                }
+
                 if (!err || err.status !== 404) {
                     getMsgDiv().innerHTML = 'Reconnection to Remote Browser...';
 
                     if(retryCount++ < maxRetry) {
-                        setTimeout(init_browser, 1000);
+                        timers.push(setTimeout(init_browser, 1000));
                     }
 
                     return;
@@ -308,7 +331,7 @@ export default function CBrowser(reqid, target_div, init_params) {
                 init_params.on_event("init", data);
             }
 
-            setTimeout(try_init_vnc, 1000);
+            timers.push(setTimeout(try_init_vnc, 1000));
 
         } else if (data.queue != undefined) {
             var msg = "Waiting for empty slot... ";
@@ -319,7 +342,7 @@ export default function CBrowser(reqid, target_div, init_params) {
             }
             getMsgDiv().innerHTML = msg;
 
-            setTimeout(init_browser, 3000);
+            timers.push(setTimeout(init_browser, 3000));
         } else if (data.error_message && init_params.on_event) {
             init_params.on_event("error", data.error_message);
         }
@@ -335,7 +358,7 @@ export default function CBrowser(reqid, target_div, init_params) {
 
         if (fail_count <= num_vnc_retries) {
             getMsgDiv().innerHTML = "Retrying to connect to remote browser...";
-            setTimeout(init_browser, 500);
+            timers.push(setTimeout(init_browser, 1000));
         } else {
             if (init_params.on_event) {
                 init_params.on_event("fail");
@@ -591,6 +614,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         var source = undefined;
         var err_count = 0;
         var initing = false;
+        var retry = 0;
 
         var ws_url = get_ws_url(browser_info);
 
@@ -602,15 +626,17 @@ export default function CBrowser(reqid, target_div, init_params) {
 
             initing = true;
 
-            var ms = new MediaSource();
-            ms.addEventListener("sourceopen", openSource);
-            ms.addEventListener("error", restart);
+            if ('MediaSource' in window) {
+                var ms = new MediaSource();
+                ms.addEventListener("sourceopen", openSource);
+                ms.addEventListener("error", restart);
 
-            var sound = new Audio();
-            sound.src = URL.createObjectURL(ms);
-            sound.autoplay = true;
-            sound.load();
-            sound.play();
+                var sound = new Audio();
+                sound.src = URL.createObjectURL(ms);
+                sound.autoplay = true;
+                sound.load();
+                sound.play();
+            }
         }
 
         function openSource() {
@@ -642,7 +668,7 @@ export default function CBrowser(reqid, target_div, init_params) {
             source = undefined;
 
             if (err_count == 0) {
-                setTimeout(createSource, 500);
+                timers.push(setTimeout(createSource, 1000));
             }
 
             err_count++;
@@ -711,7 +737,9 @@ export default function CBrowser(reqid, target_div, init_params) {
 
         function ws_error(e) {
             //console.log(e);
-            setTimeout(init_ws, 500);
+            if (retry++ < 10) {
+                timers.push(setTimeout(init_ws, 1000));
+            }
         }
 
         init_ws();
@@ -727,6 +755,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         var circ_buff = new Float32Array(4096 * 8);
         var circ_buff_write_ptr = 0;
         var circ_buff_read_ptr = 0;
+        var retry = 0;
 
         var ws_url = get_ws_url(browser_info);
 
@@ -803,7 +832,9 @@ export default function CBrowser(reqid, target_div, init_params) {
         }
 
         function ws_error(event) {
-            setTimeout(init_ws, 500);
+            if (retry++ < 10) {
+                timers.push(setTimeout(init_ws, 1000));
+            }
         }
 
         init_ws();
