@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import Collapsible from 'react-collapsible';
-import { Button, FormControl, HelpBlock } from 'react-bootstrap';
+import { Button, FormControl, HelpBlock, Row } from 'react-bootstrap';
 
 import { appHost, defaultRecDesc } from 'config';
 import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
@@ -124,22 +124,29 @@ class StandaloneRecorderUI extends Component {
             url={url} />
         </div>
 
-        <div className="col-md-8 col-md-offset-2 top-buffer rb-dropdown">
-          <RemoteBrowserSelect />
+        <div className="col-md-8 col-md-offset-2 top-buffer">
+          <Row>
+            <p className="col-md-2 standalone-dropdown-label">Add to collection </p>
+            <div className="col-md-10">
+              {
+                isAnon ?
+                  <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span></Button> :
+                  <CollectionDropdown label={false} />
+              }
+              {
+                this.state.setColl &&
+                  <HelpBlock style={{ color: 'red' }}>
+                    Choose a collection
+                  </HelpBlock>
+              }
+            </div>
+          </Row>
         </div>
 
-        <div className="col-md-8 col-md-offset-2 top-buffer">
-          {
-            isAnon ?
-              <Button onClick={this.triggerLogin} className="anon-button"><span>Login to add to Collection...</span></Button> :
-              <CollectionDropdown label={false} />
-          }
-          {
-            this.state.setColl &&
-              <HelpBlock style={{ color: 'red' }}>
-                Choose a collection
-              </HelpBlock>
-          }
+        <div className="col-md-8 col-md-offset-2 top-buffer rb-dropdown">
+          <Row>
+            <p className="col-md-2 standalone-dropdown-label">Select browser</p><div className="col-md-10"><RemoteBrowserSelect /></div>
+          </Row>
         </div>
 
         <div className="col-md-8 col-md-offset-2 top-buffer">

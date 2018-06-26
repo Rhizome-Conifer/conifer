@@ -1,10 +1,14 @@
 @import 'src/vars';
 
+.standalone-dropdown-label{
+    margin:0.5em 0;
+    padding-right:0;
+}
+
 .rb-dropdown, .extract-selector, .patch-selector  {
     // .container {
     //     width: 60vw;
     // }
-
     #cnt-button {
         border-width: .1rem 0 .1rem .1rem;
     }
