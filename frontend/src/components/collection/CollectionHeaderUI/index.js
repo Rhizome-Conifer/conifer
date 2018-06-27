@@ -130,6 +130,7 @@ class CollectionHeaderUI extends Component {
     const containerClasses = classNames('wr-collection-header');
     const isPublic = collection.get('public');
     const collTitle = collection.get('title');
+
     const titleCapped = truncate(collTitle, 9, truncWord);
     const allowDat = JSON.parse(process.env.ALLOW_DAT);
 

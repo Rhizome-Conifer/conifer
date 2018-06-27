@@ -22,6 +22,7 @@ class Modal extends Component {
 
     return (
       <BSModal
+        role="dialog"
         show={visible}
         onHide={closeCb}
         dialogClassName={dialogClassName}

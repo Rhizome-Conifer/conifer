@@ -6,9 +6,9 @@
     <defs>
         <polygon id="path-1" points="0.0005 31.7746 32.579 31.7746 32.579 -3.55271368e-15 0.0005 -3.55271368e-15"></polygon>
     </defs>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g id="02_Collections-View" transform="translate(-1088.000000, -63.000000)">
-            <g id="Page-1" transform="translate(1088.000000, 63.000000)">
+            <g transform="translate(1088.000000, 63.000000)">
                 <mask id="mask-2" fill="white">
                     <use xlink:href="#path-1"></use>
                 </mask>

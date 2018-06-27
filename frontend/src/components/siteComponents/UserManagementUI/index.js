@@ -159,11 +159,11 @@ class UserManagementUI extends Component {
               footer={<React.Fragment><Button onClick={this.toggleBugModal}>Cancel</Button><Button bsStyle="primary" onClick={this.sendBugReport}>Submit</Button></React.Fragment>}>
               <p>Spot something off? Let us know what's happening:</p>
               <FormGroup>
-                <FormControl componentClass="textarea" name="desc" placeholder="When I click the 'save' button when editing my collection description, nothing happens." onChange={this.handleInput} value={this.state.bugReport} />
+                <FormControl aria-label="description" componentClass="textarea" name="desc" placeholder="When I click the 'save' button when editing my collection description, nothing happens." onChange={this.handleInput} value={this.state.bugReport} />
               </FormGroup>
               <FormGroup>
                 <ControlLabel>Email to notify in response to this issue: (optional)</ControlLabel>
-                <FormControl name="email" placeholder="me@example.com" onChange={this.handleInput} value={this.state.email} />
+                <FormControl aria-label="email" name="email" placeholder="me@example.com" onChange={this.handleInput} value={this.state.email} />
               </FormGroup>
             </Modal>
           </li>

@@ -200,6 +200,7 @@ class UserSignup extends Component {
             <FormGroup validationState={this.validateUsername()}>
               <ControlLabel>Choose a username for your archive</ControlLabel>
               <FormControl
+                aria-label="username"
                 type="text"
                 name="username"
                 placeholder="Username"
@@ -222,6 +223,7 @@ class UserSignup extends Component {
             <FormGroup>
               <ControlLabel srOnly>Name:</ControlLabel>
               <FormControl
+                aria-label="name"
                 type="name"
                 name="name"
                 placeholder="Your Name (Optional)"
@@ -232,6 +234,7 @@ class UserSignup extends Component {
             <FormGroup validationState={this.validateEmail()}>
               <ControlLabel srOnly>Email:</ControlLabel>
               <FormControl
+                aria-label="email"
                 type="email"
                 name="email"
                 placeholder="Your Email"
@@ -243,6 +246,7 @@ class UserSignup extends Component {
             <FormGroup validationState={this.validatePassword()}>
               <ControlLabel srOnly>Password</ControlLabel>
               <FormControl
+                aria-label="password"
                 type="password"
                 name="password"
                 placeholder="Password"
@@ -257,6 +261,7 @@ class UserSignup extends Component {
             <FormGroup validationState={this.validatePassword()}>
               <ControlLabel srOnly>Password</ControlLabel>
               <FormControl
+                aria-label="confirm password"
                 type="password"
                 name="confirmpassword"
                 placeholder="Confirm Password"
