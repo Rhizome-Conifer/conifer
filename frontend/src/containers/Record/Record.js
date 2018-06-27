@@ -26,7 +26,6 @@ class Record extends Component {
     collection: PropTypes.object,
     dispatch: PropTypes.func,
     match: PropTypes.object,
-    reqId: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string
   };
@@ -62,7 +61,7 @@ class Record extends Component {
   // }
 
   render() {
-    const { activeBrowser, dispatch, match: { params }, reqId, timestamp, url } = this.props;
+    const { activeBrowser, dispatch, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const appPrefix = `${config.appHost}/${user}/${coll}/${rec}/record/`;
@@ -82,12 +81,9 @@ class Record extends Component {
           {
             activeBrowser ?
               <RemoteBrowser
-                dispatch={dispatch}
-                mode={this.mode}
                 params={params}
                 rb={activeBrowser}
                 rec={rec}
-                recId={reqId}
                 url={url} /> :
               <IFrame
                 appPrefix={appPrefix}
@@ -166,7 +162,6 @@ const mapStateToProps = ({ app }) => {
     autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
     collection: app.get('collection'),
-    reqId: app.getIn(['remoteBrowsers', 'reqId']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

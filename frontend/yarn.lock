@@ -4540,9 +4540,9 @@ js-tokens@^3.0.0, js-tokens@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.2.tgz#9866df395102130e38f7f996bceb65443209c25b"
 
-js-worker-search@^1.2.0:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/js-worker-search/-/js-worker-search-1.2.1.tgz#c3a8b826ef90d1ed40ed4d202c992e182e370a6f"
+js-worker-search@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/js-worker-search/-/js-worker-search-1.3.0.tgz#c3738fbb0699cddbde0c517dcfb81fc834f52d27"
   dependencies:
     flow-bin "^0.50.0"
     uuid "^2.0.1"
@@ -6878,12 +6878,12 @@ redux-immutable@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/redux-immutable/-/redux-immutable-4.0.0.tgz#3a1a32df66366462b63691f0e1dc35e472bbc9f3"
 
-redux-search@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/redux-search/-/redux-search-2.4.0.tgz#da21448b2d0c6508324cf4f93f66f6c6170df00d"
+redux-search@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/redux-search/-/redux-search-2.4.1.tgz#d15ee0bc45baba37aeb518ef8730854a3d329533"
   dependencies:
     babel-runtime "^6.11.6"
-    js-worker-search "^1.2.0"
+    js-worker-search "^1.3.0"
     redux "^3.0.4"
 
 redux@^3.0.4, redux@^3.7.1:

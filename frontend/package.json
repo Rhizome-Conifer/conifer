@@ -82,7 +82,7 @@
     "redux-batched-actions": "^0.2.1",
     "redux-connect": "^7.0.0",
     "redux-immutable": "^4.0.0",
-    "redux-search": "^2.4.0",
+    "redux-search": "^2.4.1",
     "reselect": "^3.0.1",
     "resolve-url-loader": "^2.2.1",
     "sass-loader": "^4.0.2",

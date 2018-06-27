@@ -40,7 +40,6 @@ class Replay extends Component {
     loaded: PropTypes.bool,
     match: PropTypes.object,
     recording: PropTypes.string,
-    reqId: PropTypes.string,
     sidebarResize: PropTypes.bool,
     timestamp: PropTypes.string,
     toggleSidebar: PropTypes.func,
@@ -111,7 +110,7 @@ class Replay extends Component {
 
   render() {
     const { activeBookmarkId, activeBrowser, collection, dispatch, list,
-            match: { params }, recording, reqId, timestamp, url } = this.props;
+            match: { params }, recording, timestamp, url } = this.props;
 
     // coll access
     if (collection.get('error')) {
@@ -203,11 +202,9 @@ class Replay extends Component {
           {
             activeBrowser ?
               <RemoteBrowser
-                dispatch={dispatch}
                 params={params}
                 rb={activeBrowser}
                 rec={recording}
-                reqId={reqId}
                 timestamp={timestamp}
                 url={url} /> :
               <IFrame
@@ -302,7 +299,6 @@ const mapStateToProps = (outerState) => {
     list: app.get('list'),
     loaded,
     recording: activePage ? activePage.get('rec') : null,
-    reqId: app.getIn(['remoteBrowsers', 'reqId']),
     sidebarResize: app.getIn(['sidebar', 'resizing']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])

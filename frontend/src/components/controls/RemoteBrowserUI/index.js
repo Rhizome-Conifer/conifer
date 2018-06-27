@@ -21,6 +21,7 @@ class RemoteBrowserUI extends Component {
   static propTypes = {
     autoscroll: PropTypes.bool,
     clipboard: PropTypes.bool,
+    contentFrameUpdate: PropTypes.bool,
     dispatch: PropTypes.func,
     history: PropTypes.object,
     inactiveTime: PropTypes.number,
@@ -77,12 +78,13 @@ class RemoteBrowserUI extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { autoscroll, clipboard, dispatch, params, rb, rec, reqId, timestamp, url } = this.props;
+  componentDidUpdate(prevProps) {
+    const { autoscroll, clipboard, dispatch, inactiveTime, contentFrameUpdate,
+            params, rb, rec, reqId, timestamp, url } = this.props;
     const { currMode } = this.context;
 
     // bidirectional clipboard
-    if (clipboard !== nextProps.clipboard && this.cb) {
+    if (clipboard !== prevProps.clipboard && this.cb) {
       if (clipboard) {
         this.cb.destroy_clipboard();
       } else {
@@ -90,36 +92,36 @@ class RemoteBrowserUI extends Component {
       }
     }
 
-    if (autoscroll !== nextProps.autoscroll && this.socket) {
+    // autoscroll check
+    if (autoscroll !== prevProps.autoscroll && this.socket) {
       this.socket.doAutoscroll();
     }
 
-    if (nextProps.reqId !== reqId && nextProps.rb === rb) {
+
+    if (reqId !== prevProps.reqId) {
       // new reqId for browser, initialize and save
-      this.connectToRemoteBrowser(nextProps.reqId, nextProps.inactiveTime);
+      this.connectToRemoteBrowser(reqId, inactiveTime);
 
-      // get any existing local browser sessions
-      let existingData;
-      try {
-        existingData = JSON.parse(getStorage('reqId', window.sessionStorage) || '{}');
-      } catch (e) {
-        existingData = {};
-      }
-      const data = JSON.stringify({
-        ...existingData,
-        [rb]: {
-          reqId: nextProps.reqId,
-          accessed: Date.now(),
-          inactiveTime: nextProps.inactiveTime
-        }
-      });
-
+      // TODO: reuse remote browsers
+      // let existingData;
+      // try {
+      //   existingData = JSON.parse(getStorage('reqId', window.sessionStorage) || '{}');
+      // } catch (e) {
+      //   existingData = {};
+      // }
+      // const data = JSON.stringify({
+      //   ...existingData,
+      //   [rb]: {
+      //     reqId: nextProps.reqId,
+      //     accessed: Date.now(),
+      //     inactiveTime: nextProps.inactiveTime
+      //   }
+      // });
       // write to storage for later reuse
-      setStorage('reqId', data, window.sessionStorage);
-    } else if (nextProps.rb !== rb) {
+      //setStorage('reqId', data, window.sessionStorage);
+    } else if (rb !== prevProps.rb || (!contentFrameUpdate && currMode.includes('replay') && (url !== prevProps.url || timestamp !== prevProps.timestamp))) {
       // TODO: Disable browser reuse for now
-      // remote browser change request, load from storage or create a new one
-      const reqFromStorage = false; // this.getReqFromStorage(nextProps.rb);
+      //const reqFromStorage = this.getReqFromStorage(nextProps.rb);
 
       // close current connections
       if (this.cb) {
@@ -131,11 +133,7 @@ class RemoteBrowserUI extends Component {
       }
 
       // generate remote browser
-      if (!reqFromStorage) {
-        dispatch(createRemoteBrowser(nextProps.rb, params.user, params.coll, rec, currMode, timestamp, url));
-      } else {
-        this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
-      }
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, timestamp, url));
     }
   }
 

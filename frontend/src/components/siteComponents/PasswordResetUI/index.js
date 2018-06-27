@@ -28,7 +28,7 @@ class ResetPasswordUI extends Component {
     evt.preventDefault();
     const { email, username } = this.state;
 
-    if (email && username) {
+    if (email || username) {
       this.props.cb(this.state);
     } else {
       this.setState({ error: true });
@@ -71,12 +71,12 @@ class ResetPasswordUI extends Component {
             <Alert bsStyle={errors ? 'danger' : 'success'}>
               {
                 errors ?
-                  <span>Username/email address pair not found.</span> :
+                  <span>Username or email address not found.</span> :
                   <span>A password reset e-mail has been sent to your e-mail!</span>
               }
             </Alert>
         }
-        <div className={classNames('col-sm-6 col-md-6 col-md-offset-3 pw-reset', { success })}>
+        <div className={classNames('col-sm-6 col-md-6 col-md-offset-3 pw-reset-form', { success })}>
           <Form onSubmit={this.save}>
             <h3>Password Recovery</h3>
             <h4>Please enter either your e-mail address and/or username to request a password reset.</h4>
@@ -91,6 +91,8 @@ class ResetPasswordUI extends Component {
                 onChange={this.handleChange}
                 autoFocus />
             </FormGroup>
+
+            <div className="form-option"><span /><span className="opt">OR</span><span /></div>
 
             <FormGroup validationState={this.validateItem('email')}>
               <ControlLabel>Email</ControlLabel>
