@@ -97,7 +97,7 @@ class SidebarListViewer extends Component {
     // TODO: race condition when keying quickly, old iframe change updates and makes current deselected
     this.setState({ navigated: false });
     this.props.dispatch(batchActions([
-      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry, false),
       setBrowser(page.get('browser') || null),
       setBookmarkId(page.get('id'))
     ]));
@@ -115,7 +115,7 @@ class SidebarListViewer extends Component {
     //this.context.router.history.push(`${getListLink(collection, list)}/b${rowData.get('id')}/${tsMod}${rowData.get('url')}`);
 
     this.props.dispatch(batchActions([
-      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry, false),
       setBrowser(page.get('browser') || null),
       setBookmarkId(page.get('id'))
     ]));

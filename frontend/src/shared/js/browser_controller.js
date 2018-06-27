@@ -67,6 +67,7 @@ export default function CBrowser(reqid, target_div, init_params) {
 
     // setTimeout handles
     var timers = [];
+    var retryHandle = null;
 
     function start() {
         if (!window.INCLUDE_URI) {
@@ -103,6 +104,16 @@ export default function CBrowser(reqid, target_div, init_params) {
         setup_browser();
     }
 
+    function clearTimers() {
+        // clear intervals and timers
+        clearInterval(countdownTimer);
+        clearTimeout(retryHandle);
+        for (const timer of timers) {
+            clearTimeout(timer);
+        }
+        timers = [];
+    }
+
     function close() {
         if (controller) {
             // cancel fetch requests
@@ -118,11 +129,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         _screen.removeEventListener('mouseenter', grab_focus);
         cnvs.removeEventListener('click', grab_focus);
 
-        // clear intervals and timers
-        clearInterval(countdownTimer);
-        for (var i = 0; i < timers.length; i++) {
-            clearTimeout(timers[i]);
-        }
+        clearTimers();
 
         for (var i = 0; i < controllerScripts.length; i++) {
             try {
@@ -738,7 +745,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         function ws_error(e) {
             //console.log(e);
             if (retry++ < 10) {
-                timers.push(setTimeout(init_ws, 1000));
+                timers.push(setTimeout(init_ws, 5000));
             }
         }
 
@@ -833,7 +840,8 @@ export default function CBrowser(reqid, target_div, init_params) {
 
         function ws_error(event) {
             if (retry++ < 10) {
-                timers.push(setTimeout(init_ws, 1000));
+                clearTimeout(retryHandle);
+                retryHandle = setTimeout(init_ws, 5000);
             }
         }
 
