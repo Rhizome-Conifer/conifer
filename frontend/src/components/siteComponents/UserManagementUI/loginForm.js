@@ -88,13 +88,13 @@ class LoginForm extends Component {
             <FormGroup
               key="username">
               <label htmlFor="username" className="sr-only">Username</label>
-              <FormControl onChange={this.handleChange} value={username} type="text" id="username" name="username" className="form-control" placeholder="username" required autoFocus />
+              <FormControl aria-label="username" onChange={this.handleChange} value={username} type="text" id="username" name="username" className="form-control" placeholder="username" required autoFocus />
               <div className="help-block with-errors" />
             </FormGroup>
 
             <FormGroup key="password">
               <label htmlFor="inputPassword" className="sr-only">Password</label>
-              <FormControl onChange={this.handleChange} value={password} type="password" id="password" name="password" className="form-control" placeholder="Password" required />
+              <FormControl aria-label="password" onChange={this.handleChange} value={password} type="password" id="password" name="password" className="form-control" placeholder="Password" required />
             </FormGroup>
 
             <FormGroup key="remember">

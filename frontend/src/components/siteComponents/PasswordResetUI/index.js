@@ -84,6 +84,7 @@ class ResetPasswordUI extends Component {
             <FormGroup validationState={this.validateItem('username')}>
               <ControlLabel>Username</ControlLabel>
               <FormControl
+                aria-label="username"
                 type="text"
                 name="username"
                 placeholder="Username"
@@ -95,6 +96,7 @@ class ResetPasswordUI extends Component {
             <FormGroup validationState={this.validateItem('email')}>
               <ControlLabel>Email</ControlLabel>
               <FormControl
+                aria-label="email"
                 type="email"
                 name="email"
                 placeholder="Email"
