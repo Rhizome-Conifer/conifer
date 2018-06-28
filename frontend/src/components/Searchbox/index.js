@@ -56,8 +56,8 @@ class Searchbox extends PureComponent {
         <InputGroup.Button>
           {
             searchText ?
-              <Button bsSize="sm" onClick={clear}><XIcon /></Button> :
-              <Button bsSize="sm" disabled={indexing}>{indexing ? <LoaderIcon /> : <SearchIcon />}</Button>
+              <Button aria-label="clear" bsSize="sm" onClick={clear}><XIcon /></Button> :
+              <Button aria-label="search" bsSize="sm" disabled={indexing}>{indexing ? <LoaderIcon /> : <SearchIcon />}</Button>
 
           }
         </InputGroup.Button>

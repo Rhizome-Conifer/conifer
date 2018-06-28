@@ -188,8 +188,8 @@ class UploadUI extends PureComponent {
 
     const modalFooter = (
       <React.Fragment>
-        <Button onClick={this.close} disabled={this.canCancel}>Cancel</Button>
-        <Button onClick={this.submitUpload} disabled={isUploading} bsStyle="success">Upload</Button>
+        <Button aria-label="cancel" onClick={this.close} disabled={this.canCancel}>Cancel</Button>
+        <Button aria-label="upload" onClick={this.submitUpload} disabled={isUploading} bsStyle="success">Upload</Button>
       </React.Fragment>
     );
 
@@ -210,7 +210,7 @@ class UploadUI extends PureComponent {
           <div className="input-group">
             <input type="text" id="upload-file" value={file && file.name} name="upload-file-text" className="form-control" placeholder="Click Pick File to select a web archive file" required readOnly style={{ backgroundColor: 'white' }} />
             <span className="input-group-btn">
-              <button type="button" className="btn btn-default" onClick={this.triggerFile}>
+              <button aria-label="pick file..." type="button" className="btn btn-default" onClick={this.triggerFile}>
                 <span className="glyphicon glyphicon-file glyphicon-button" />Pick File...
               </button>
             </span>

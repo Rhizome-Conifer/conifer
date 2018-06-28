@@ -243,7 +243,7 @@ class ListsUI extends Component {
                 canAdmin &&
                   <React.Fragment>
                     <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
-                    <button onClick={this.openEditModal} className="borderless"><PlusIcon /></button>
+                    <button aria-label="edit/add lists" onClick={this.openEditModal} className="borderless"><PlusIcon /></button>
                   </React.Fragment>
               }
             </header>
