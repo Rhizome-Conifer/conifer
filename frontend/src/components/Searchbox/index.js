@@ -52,7 +52,7 @@ class Searchbox extends PureComponent {
 
     return (
       <InputGroup bsClass="input-group search-box" title={indexing ? 'Indexing...' : 'Filter'}>
-        <FormControl bsSize="sm" onChange={this.handleChange} onFocus={this.props.index} value={searchText} placeholder={indexing ? 'Indexing...' : placeholder || 'Filter'} name="filter" />
+        <FormControl aria-label="filter" bsSize="sm" onChange={this.handleChange} onFocus={this.props.index} value={searchText} placeholder={indexing ? 'Indexing...' : placeholder || 'Filter'} name="filter" />
         <InputGroup.Button>
           {
             searchText ?
