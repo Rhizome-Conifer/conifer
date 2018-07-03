@@ -154,7 +154,7 @@ class UserSettingsUI extends Component {
     );
 
     return (
-      <div className="row top-buffer col-xs-10 col-xs-push-1">
+      <div className="row top-buffer col-xs-10 col-xs-push-1 space-block">
         <Helmet>
           <title>{`${username}'s Account Settings`}</title>
         </Helmet>
@@ -164,7 +164,7 @@ class UserSettingsUI extends Component {
           </Panel.Heading>
           <Panel.Body>
             <span>Space Used: </span>
-            <SizeFormat bytes={usedSpace} />
+            <SizeFormat bytes={usedSpace} /> <em>of <SizeFormat bytes={totalSpace} /></em>
             <ProgressBar now={(usedSpace / totalSpace) * 100} bsStyle="success" />
             Please <a href={`mailto:${supportEmail}`}>contact us</a> if you would like to request additional space.
           </Panel.Body>
