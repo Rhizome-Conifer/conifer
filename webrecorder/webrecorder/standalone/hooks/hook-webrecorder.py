@@ -1,7 +1,7 @@
 from PyInstaller.utils.hooks import collect_data_files, copy_metadata
 import os
 
-from webrecorder.standalone.assetsutils import build
+from webrecorder.standalone.assetsutils import build_all
 from webrecorder.standalone.versionbuild import get_version_str
 
 def rename(old, new, t):
@@ -11,7 +11,7 @@ def rename(old, new, t):
 # Build webassets bundle
 curr_path = os.path.dirname(__file__)
 assets_path = os.path.abspath(os.path.join(curr_path, '..', '..', 'config', 'assets.yaml'))
-build(assets_path)
+build_all(assets_path)
 
 datas = []
 
