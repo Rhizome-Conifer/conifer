@@ -174,6 +174,7 @@ class CollectionDropdownUI extends Component {
                         placeholder="Filter collections..."
                         ref={(obj) => { this.filterInput = obj; }}
                         type="text"
+                        aria-label="filter collections"
                         value={this.state.filter} />
                     </MenuItem>
                   }

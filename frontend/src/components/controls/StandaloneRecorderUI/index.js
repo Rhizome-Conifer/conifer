@@ -117,7 +117,7 @@ class StandaloneRecorderUI extends Component {
     return (
       <form className="start-recording-homepage clearfix" onSubmit={this.startRecording}>
         <div className={classNames('col-md-8 col-md-offset-2', { 'input-group': extractable })}>
-          <FormControl aria-label="url" type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to capture" title={isOutOfSpace ? 'Out of space' : 'Enter URL to capture'} required disabled={isOutOfSpace} />
+          <FormControl id="url" aria-label="url" type="text" name="url" onChange={this.handleInput} style={{ height: '33px' }} value={url} placeholder="URL to capture" title={isOutOfSpace ? 'Out of space' : 'Enter URL to capture'} required disabled={isOutOfSpace} />
           <label htmlFor="url" aria-label="url" className="control-label sr-only">Url</label>
           <ExtractWidget
             toCollection={activeCollection.title}
