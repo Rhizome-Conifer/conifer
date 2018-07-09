@@ -95,6 +95,7 @@ class NewRecordingUI extends Component {
                 <input
                   autoFocus
                   required
+                  aria-label="url-input"
                   className="url-input-recorder form-control"
                   disabled={isOutOfSpace}
                   name="url"
