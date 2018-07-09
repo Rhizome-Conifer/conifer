@@ -4,7 +4,7 @@ import React from 'react';
 function Download() {
   return (
     <svg width="8px" height="8px" viewBox="0 0 21 21" version="1.1" xmlns="http://www.w3.org/2000/svg">
-      <g id="Symbols" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
+      <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
         <g id="A-session---Selected" transform="translate(-258.000000, -35.000000)" fill="#7B7B7B">
           <g id="A-session---Expanded-+-Selected">
             <g id="BUTTONS">
