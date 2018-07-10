@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
-import { Alert, ControlLabel, FormControl, FormGroup,
-         HelpBlock, Panel, ProgressBar } from 'react-bootstrap';
+import { Alert, Button, Col, ControlLabel, FormControl, FormGroup,
+         HelpBlock, InputGroup, Panel, ProgressBar, Row } from 'react-bootstrap';
 
 import { supportEmail } from 'config';
 import { passwordPassRegex } from 'helpers/utils';
@@ -17,6 +17,7 @@ import './style.scss';
 
 class UserSettingsUI extends Component {
   static propTypes = {
+    auth: PropTypes.object,
     collSum: PropTypes.number,
     deleting: PropTypes.bool,
     deleteError: PropTypes.oneOfType([
@@ -26,29 +27,40 @@ class UserSettingsUI extends Component {
     deleteUser: PropTypes.func,
     match: PropTypes.object,
     updatePass: PropTypes.func,
+    updateUser: PropTypes.func,
     user: PropTypes.object
+  };
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (nextProps.match.params.user !== prevState.user) {
+      return {
+        allotment: '',
+        user: nextProps.match.params.user
+      };
+    }
+
+    if (nextProps.user && nextProps.user.get('passUpdate')) {
+      return {
+        currPassword: '',
+        password: '',
+        password2: ''
+      };
+    }
+
+    return null;
   }
 
   constructor(props) {
     super(props);
 
     this.state = {
+      allotment: '',
       confirmUser: '',
       currPassword: '',
       password: '',
       password2: '',
       showModal: false
     };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.passUpdate) {
-      this.setState({
-        currPassword: '',
-        password: '',
-        password2: ''
-      });
-    }
   }
 
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
@@ -90,6 +102,26 @@ class UserSettingsUI extends Component {
   toggleDelete = evt => this.setState({ showModal: !this.state.showModal })
   closeDeleteModal = evt => this.setState({ showModal: false })
 
+  updateUserAllotment = () => {
+    const { match: { params: { user } }, updateUser } = this.props;
+    const { allotment } = this.state;
+
+    if (allotment && this.validateAllotment() === null) {
+      updateUser(user, { max_size: parseFloat(allotment) * 1000000000 });
+    }
+  }
+
+  validateAllotment = () => {
+    const { user } = this.props;
+    const { allotment } = this.state;
+
+    if (allotment && parseFloat(allotment) * 1000000000 <= user.getIn(['space_utilization', 'used'])) {
+      return 'error';
+    }
+
+    return null;
+  }
+
   validateConfirmDelete = (evt) => {
     const { user } = this.props;
     const { confirmUser } = this.state;
@@ -106,10 +138,14 @@ class UserSettingsUI extends Component {
   }
 
   render() {
-    const { deleting, match: { params }, user } = this.props;
+    const { auth, deleting, user } = this.props;
     const { currPassword, password, password2, showModal } = this.state;
 
-    if (user.get('username') !== params.user) {
+    const username = user.get('username');
+    const canAdmin = auth.get('username') === username;
+    const superuser = auth.get('role') === 'admin';
+
+    if (!superuser && !canAdmin) {
       return <HttpStatus />;
     }
 
@@ -117,7 +153,6 @@ class UserSettingsUI extends Component {
     const totalSpace = user.getIn(['space_utilization', 'total']);
     const passUpdate = user.get('passUpdate');
     const passUpdateFail = user.get('passUpdateFail');
-    const username = user.get('username');
 
     const confirmDeleteBody = (
       <div>
@@ -167,6 +202,27 @@ class UserSettingsUI extends Component {
             <SizeFormat bytes={usedSpace} /> <em>of <SizeFormat bytes={totalSpace} /></em>
             <ProgressBar now={(usedSpace / totalSpace) * 100} bsStyle="success" />
             Please <a href={`mailto:${supportEmail}`}>contact us</a> if you would like to request additional space.
+            {
+              superuser &&
+                <FormGroup validationState={this.validateAllotment()} className="top-buffer-md">
+                  <ControlLabel>Update Space Allotment</ControlLabel>
+                  <Row>
+                    <Col xs={3}>
+                      <InputGroup>
+                        <FormControl
+                          id="increaseSpace"
+                          name="allotment"
+                          onChange={this.handleChange}
+                          placeholder={totalSpace / 1000000000}
+                          type="text"
+                          value={this.state.allotment} />
+                        <InputGroup.Addon>GB</InputGroup.Addon>
+                      </InputGroup>
+                    </Col>
+                  </Row>
+                  <Button className="top-buffer-md" bsStyle="primary" bsSize="sm" onClick={this.updateUserAllotment}>Update Allotment</Button>
+                </FormGroup>
+            }
           </Panel.Body>
         </Panel>
 
@@ -206,7 +262,6 @@ class UserSettingsUI extends Component {
                   <div className="help-block with-errors" />
                 </div>
 
-
                 <FormGroup validationState={this.validatePassword()}>
                   <ControlLabel>New Password</ControlLabel>
                   <FormControl
@@ -232,8 +287,7 @@ class UserSettingsUI extends Component {
                       <HelpBlock>Password confirmation does not match</HelpBlock>
                   }
                 </FormGroup>
-
-                <button className="btn btn-primary btn-sm" type="submit">Change Password</button>
+                <Button bsStyle="primary" bsSize="sm" disabled={!canAdmin} type="submit">Change Password</Button>
               </form>
             </div>
           </Panel.Body>
@@ -248,7 +302,7 @@ class UserSettingsUI extends Component {
               <div>
                 <b>Permanently delete this account and all archived data for this user</b>
                 <p>This action can not be undone!</p>
-                <button className="btn btn-sm btn-danger" onClick={this.toggleDelete}>Delete Account</button>
+                <Button bsStyle="danger" bsSize="sm" disabled={!canAdmin} onClick={this.toggleDelete}>Delete Account</Button>
               </div>
             </div>
           </Panel.Body>

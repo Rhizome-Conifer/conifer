@@ -1,31 +1,22 @@
 import React from 'react';
 import { asyncConnect } from 'redux-connect';
 
-import { isLoaded as isAuthLoaded } from 'redux/modules/auth';
-import { load as loadUser,
-         isLoaded as isUserLoaded,
-         updatePassword,
-         deleteUser } from 'redux/modules/user';
+import { deleteUser, load as loadUser, updatePassword, updateUser } from 'redux/modules/user';
 
 import { UserSettingsUI } from 'components/siteComponents';
 
 
 const preloadData = [
   {
-    promise: ({ store: { dispatch, getState } }) => {
-      const state = getState();
-
-      if (isAuthLoaded(state) && !isUserLoaded(state)) {
-        return dispatch(loadUser(state.app.getIn(['auth', 'user', 'username'])));
-      }
-
-      return undefined;
+    promise: ({ match: { params: { user } }, store: { dispatch } }) => {
+      return dispatch(loadUser(user));
     }
   }
 ];
 
 const mapStateToProps = ({ app }) => {
   return {
+    auth: app.getIn(['auth', 'user']),
     deleting: app.getIn(['user', 'deleting']),
     deleteError: app.getIn(['user', 'deleteError']),
     user: app.get('user')
@@ -34,11 +25,12 @@ const mapStateToProps = ({ app }) => {
 
 const mapDispatchToProps = (dispatch, props) => {
   return {
-    updatePass: (currPass, newPass, newPass2) => dispatch(updatePassword(currPass, newPass, newPass2)),
     deleteUser: (user) => {
       // TODO: add Tests
       return dispatch(deleteUser(user)).then(() => props.history.push('/_logout'));
-    }
+    },
+    updatePass: (currPass, newPass, newPass2) => dispatch(updatePassword(currPass, newPass, newPass2)),
+    updateUser: (user, data) => dispatch(updateUser(user, data))
   };
 };
 
