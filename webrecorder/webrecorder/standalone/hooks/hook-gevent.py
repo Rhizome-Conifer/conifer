@@ -1,3 +1,6 @@
+# custom hooks for gevent 1.3
+# adapted from https://github.com/pyinstaller/pyinstaller/pull/3534
+# (can be removed if above PR is merged into pyinstaller)
 hiddenimports = [
         'gevent.__greenlet_primitives',
         'gevent.__hub_local',
