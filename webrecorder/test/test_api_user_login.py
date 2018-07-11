@@ -375,9 +375,12 @@ class TestApiUserLogin(FullStackTests):
         assert self.ISO_DT_RX.match(user['last_login'])
 
     def test_update_user_desc(self):
-        res = self.testapp.post('/api/v1/user/someuser/desc', params='New Description')
+        params = {'desc': 'New Description',
+                  'display_name': 'Some User',
+                  'display_url': 'http://someuser.example.com/'}
 
-        assert res.json == {}
+        res = self.testapp.post_json('/api/v1/user/someuser', params=params)
+        assert res.json == {'success': True}
 
     def test_skip_req(self):
         res = self.testapp.post_json('/api/v1/auth/skipreq', params={'url': 'http://example.com/'})
@@ -389,6 +392,8 @@ class TestApiUserLogin(FullStackTests):
 
         assert user['username'] == 'someuser'
         assert user['desc'] == 'New Description'
+        assert user['display_name'] == 'Some User'
+        assert user['display_url'] == 'http://someuser.example.com/'
 
         # collections not included
         assert 'collections' not in user
