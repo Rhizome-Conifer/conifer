@@ -10,12 +10,18 @@ from webrecorder.utils import get_bool
 
 # ============================================================================
 class CollsController(BaseController):
+    API_TAG = 'Collections'
+
     def __init__(self, *args, **kwargs):
         super(CollsController, self).__init__(*args, **kwargs)
         config = kwargs['config']
 
     def init_routes(self):
         @self.app.post('/api/v1/collections')
+        @self.api(query=['user'],
+                  json=['title', 'public'],
+                  resp='collection')
+
         def create_collection():
             user = self.get_user(api=True, redir_check=False)
 
@@ -53,6 +59,8 @@ class CollsController(BaseController):
             return resp
 
         @self.app.get('/api/v1/collections')
+        @self.api(query=['user', 'include_recordings', 'include_lists', 'include_pages'],
+                  resp=['collection'])
         def get_collections():
             user = self.get_user(api=True, redir_check=False)
 
@@ -66,12 +74,16 @@ class CollsController(BaseController):
             return {'collections': [coll.serialize(**kwargs) for coll in collections]}
 
         @self.app.get('/api/v1/collection/<coll_name>')
+        @self.api(query=['user'],
+                  resp='collection')
         def get_collection(coll_name):
             user = self.get_user(api=True, redir_check=False)
 
             return self.get_collection_info(coll_name, user=user)
 
         @self.app.delete('/api/v1/collection/<coll_name>')
+        @self.api(query=['user'],
+                  resp='deleted')
         def delete_collection(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
@@ -82,6 +94,8 @@ class CollsController(BaseController):
                 return {'deleted_id': coll_name}
 
         @self.app.post('/api/v1/collection/<coll_name>')
+        @self.api(json=['title', 'desc', 'public', 'public_index'],
+                  resp='collection')
         def update_collection(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
@@ -126,6 +140,7 @@ class CollsController(BaseController):
             return {'collection': collection.serialize()}
 
         @self.app.get('/api/v1/collection/<coll_name>/page_bookmarks')
+        @self.api(resp='bookmarks')
         def get_page_bookmarks(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 

@@ -7,8 +7,13 @@ from webrecorder.models import User, Collection, Recording
 
 # ============================================================================
 class RecsController(BaseController):
+    API_TAG = 'Recordings'
+
     def init_routes(self):
         @self.app.post('/api/v1/recordings')
+        @self.api(query=['user', 'coll'],
+                  json=['title', 'desc'],
+                  resp='recording')
         def create_recording():
             user, collection = self.load_user_coll()
 
@@ -22,6 +27,8 @@ class RecsController(BaseController):
             return {'recording': recording.serialize()}
 
         @self.app.get('/api/v1/recordings')
+        @self.api(query=['user', 'coll'],
+                  resp=['recording'])
         def get_recordings():
             user, collection = self.load_user_coll()
 
@@ -30,6 +37,8 @@ class RecsController(BaseController):
             return {'recordings': [rec.serialize() for rec in recs]}
 
         @self.app.get('/api/v1/recording/<rec>')
+        @self.api(query=['user', 'coll'],
+                  resp='recording')
         def get_recording(rec):
             user, collection, recording = self.load_recording(rec)
 
@@ -39,18 +48,25 @@ class RecsController(BaseController):
                 self._raise_error(404, 'no_such_recording')
 
         @self.app.post('/api/v1/recording/<rec>')
+        @self.api(query=['user', 'coll'],
+                  json=['desc'],
+                  resp='recording')
         def update_rec_desc(rec):
             user, collection, recording = self.load_recording(rec)
 
             user.access.assert_can_write_coll(collection)
 
-            desc = request.json.get('desc', '')
+            data = request.json or {}
+
+            desc = data.get('desc', '')
 
             recording['desc'] = desc
 
             return {'recording': recording.serialize()}
 
         @self.app.delete('/api/v1/recording/<rec>')
+        @self.api(query=['user', 'coll'],
+                  resp='deleted')
         def delete_recording(rec):
             user, collection, recording = self.load_recording(rec)
 
@@ -61,6 +77,8 @@ class RecsController(BaseController):
                 return {'deleted_id': rec}
 
         @self.app.post('/api/v1/recording/<rec>/move/<new_coll_name>')
+        @self.api(query=['user', 'coll'],
+                  resp='rec_move')
         def move_recording(rec, new_coll_name):
             user, collection, recording = self.load_recording(rec)
 
@@ -82,6 +100,8 @@ class RecsController(BaseController):
                 self._raise_error(400, 'move_error')
 
         @self.app.post('/api/v1/recording/<rec>/copy/<new_coll_name>')
+        @self.api(query=['user', 'coll'],
+                  resp='recording')
         def copy_recording(rec, new_coll_name):
             user, collection, recording = self.load_recording(rec)
 
@@ -100,6 +120,8 @@ class RecsController(BaseController):
                 return self._raise_error(400, 'copy_error')
 
         @self.app.post('/api/v1/recording/<rec>/pages')
+        @self.api(query=['user', 'coll'],
+                  resp='page_id')
         def add_page(rec):
             user, collection, recording = self.load_recording(rec)
 
@@ -108,16 +130,9 @@ class RecsController(BaseController):
             page_id = collection.add_page(page_data, recording)
             return {'page_id': page_id}
 
-        @self.app.post('/api/v1/recording/<rec>/page')
-        def modify_page(rec):
-            user, collection, recording = self.load_recording(rec)
-
-            page_data = request.json
-
-            res = recording.modify_page(page_data)
-            return {'page-data': page_data, 'recording-id': rec}
-
         @self.app.get('/api/v1/recording/<rec>/pages')
+        @self.api(query=['user', 'coll'],
+                  resp='pages')
         def list_pages(rec):
             user, collection, recording = self.load_recording(rec)
 
@@ -125,12 +140,16 @@ class RecsController(BaseController):
             return {'pages': pages}
 
         @self.app.get('/api/v1/recording/<rec>/num_pages')
+        @self.api(query=['user', 'coll'],
+                  resp='count_pages')
         def get_num_pages(rec):
             user, collection, recording = self.load_recording(rec)
 
             return {'count': recording.count_pages() }
 
         @self.app.delete('/api/v1/recording/<rec>/pages')
+        @self.api(query=['user', 'coll'],
+                  resp='deleted')
         def delete_page(rec):
             user, collection, recording = self.load_recording(rec)
 

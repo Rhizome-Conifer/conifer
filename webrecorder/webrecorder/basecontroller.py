@@ -8,9 +8,13 @@ from six.moves.urllib.parse import quote
 from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
 from webrecorder.models import User
 
+from webrecorder.apiutils import api_decorator, wr_api_spec
+
 
 # ============================================================================
 class BaseController(object):
+    API_TAG = ''
+
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']
         self.jinja_env = kwargs['jinja_env']
@@ -18,11 +22,15 @@ class BaseController(object):
         self.config = kwargs['config']
         self.redis = kwargs['redis']
 
+        self.api = api_decorator
+
         self.app_host = os.environ['APP_HOST']
         self.content_host = os.environ['CONTENT_HOST']
         self.cache_template = self.config.get('cache_template')
 
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
+
+        wr_api_spec.set_curr_tag(self.API_TAG)
 
         self.init_routes()
 
