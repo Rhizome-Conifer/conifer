@@ -1,18 +1,18 @@
 from bottle import request, response
 from six.moves.urllib.parse import quote
 
-from webrecorder.basecontroller import BaseController
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.models import User, Collection, Recording
 
 
 # ============================================================================
 class RecsController(BaseController):
-    API_TAG = 'Recordings'
-
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Recordings')
+
         @self.app.post('/api/v1/recordings')
         @self.api(query=['user', 'coll'],
-                  json=['title', 'desc'],
+                  req=['title', 'desc'],
                   resp='recording')
         def create_recording():
             user, collection = self.load_user_coll()
@@ -28,7 +28,7 @@ class RecsController(BaseController):
 
         @self.app.get('/api/v1/recordings')
         @self.api(query=['user', 'coll'],
-                  resp=['recording'])
+                  resp='recordings')
         def get_recordings():
             user, collection = self.load_user_coll()
 
@@ -49,7 +49,7 @@ class RecsController(BaseController):
 
         @self.app.post('/api/v1/recording/<rec>')
         @self.api(query=['user', 'coll'],
-                  json=['desc'],
+                  req=['desc'],
                   resp='recording')
         def update_rec_desc(rec):
             user, collection, recording = self.load_recording(rec)
@@ -88,13 +88,9 @@ class RecsController(BaseController):
 
             user.access.assert_can_admin_coll(new_collection)
 
-            #new_rec = collection.move(recording, new_collection, allow_dupe=True)
             new_rec = collection.move_recording(recording, new_collection)
 
             if new_rec:
-                #msg = 'Recording <b>{0}</b> moved to collection <a href="{1}"><b>{2}</b></a>'
-                #msg = msg.format(rec, self.get_path(user.name, new_coll_name), new_coll_name)
-                #self.flash_message(msg, 'success')
                 return {'coll_id': new_coll_name, 'rec_id': new_rec}
             else:
                 self._raise_error(400, 'move_error')
@@ -121,11 +117,12 @@ class RecsController(BaseController):
 
         @self.app.post('/api/v1/recording/<rec>/pages')
         @self.api(query=['user', 'coll'],
+                  req=['url', 'timestamp', 'title', 'browser'],
                   resp='page_id')
         def add_page(rec):
             user, collection, recording = self.load_recording(rec)
 
-            page_data = request.json
+            page_data = request.json or {}
 
             page_id = collection.add_page(page_data, recording)
             return {'page_id': page_id}
@@ -157,44 +154,6 @@ class RecsController(BaseController):
             ts = request.json.get('timestamp')
 
             return recording.delete_page(url, ts)
-
-        # LOGGED-IN NEW REC
-        @self.app.get(['/<user>/<coll_name>/$new', '/<user>/<coll_name>/$new/'])
-        @self.jinja2_view('new_recording.html')
-        def new_recording(user, coll_name):
-
-            return self.get_rec_info_for_new(user, coll_name, None, 'new_recording')
-
-        # LOGGED-IN ADD TO REC
-        # DELETE REC
-        #@self.app.post('/_delete_rec/<rec>')
-        def delete_rec_post(rec):
-            self.validate_csrf()
-            user, collection, recording = self.load_recording(rec, api=False)
-            success = False
-            try:
-                success = collection.delete_recording(recording)
-            except Exception as e:
-                print(e)
-
-            if success:
-                self.flash_message('Recording {0} has been deleted!'.format(rec), 'success')
-                self.redirect(self.get_path(user.name, collection.name))
-            else:
-                self.flash_message('There was an error deleting {0}'.format(rec))
-                self.redirect(self.get_path(user.name, collection.name, rec))
-
-    def get_rec_info_for_new(self, user, coll_name, rec, action):
-        result = {'curr_mode': 'new', 'action': action}
-        result['user'] = user
-
-        user, collection = self.load_user_coll(user=user, coll_name=coll_name)
-
-        result['coll'] = coll_name
-
-        result['coll_title'] = quote(collection.get_prop('title'))
-
-        return result
 
     def load_recording(self, rec, user=None, coll_name=None):
         user, collection = self.load_user_coll(user=user, coll_name=coll_name)

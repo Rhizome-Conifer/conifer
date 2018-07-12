@@ -24,7 +24,7 @@ class TestAdminAPI(FullStackTests):
         assert res.json == {'error': 'not_found'}
 
     def test_no_auth_client_archives(self):
-        res = self.testapp.get('/api/v1/client_archives/')
+        res = self.testapp.get('/api/v1/client_archives')
 
         assert len(list(res.json.keys())) == 25
 

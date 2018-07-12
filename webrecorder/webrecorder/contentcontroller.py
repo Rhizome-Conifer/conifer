@@ -12,7 +12,7 @@ from pywb.rewrite.cookies import CookieTracker
 
 from pywb.apps.rewriterapp import RewriterApp, UpstreamException
 
-from webrecorder.basecontroller import BaseController
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.load.wamloader import WAMLoader
 from webrecorder.utils import get_bool
 
@@ -78,11 +78,15 @@ class ContentController(BaseController, RewriterApp):
         return csp
 
     def init_routes(self):
-        @self.app.get(['/api/v1/client_archives', '/api/v1/client_archives/'])
+        wr_api_spec.set_curr_tag('External Archives')
+
+        @self.app.get('/api/v1/client_archives')
         def get_client_archives():
             return self.client_archives
 
-        @self.app.get(['/api/v1/create_remote_browser', '/api/v1/create_remote_browser/'])
+        wr_api_spec.set_curr_tag('Browsers')
+
+        @self.app.get('/api/v1/create_remote_browser')
         def create_browser():
             """ Api to launch remote browser instances
             """
@@ -179,6 +183,25 @@ class ContentController(BaseController, RewriterApp):
 
             return data
 
+        # UPDATE REMOTE BROWSER CONFIG
+        @self.app.get('/api/v1/update_remote_browser/<reqid>')
+        def update_remote_browser(reqid):
+            user, collection = self.load_user_coll(api=True)
+
+            timestamp = request.query.getunicode('timestamp')
+            type_ = request.query.getunicode('type')
+
+            # if switching mode, need to have write access
+            # for timestamp, only read access
+            if type_:
+                self.access.assert_can_write_coll(collection)
+            else:
+                self.access.assert_can_read_coll(collection)
+
+            return self.browser_mgr.update_remote_browser(reqid,
+                                                          type_=type_,
+                                                          timestamp=timestamp)
+
         # REDIRECTS
         @self.app.route('/record/<wb_url:path>', method='ANY')
         def redir_new_temp_rec(wb_url):
@@ -193,6 +216,8 @@ class ContentController(BaseController, RewriterApp):
             return self.do_create_new_and_redir(coll_name, rec_title, wb_url, 'record')
 
         # API NEW
+        wr_api_spec.set_curr_tag('Recordings')
+
         @self.app.post('/api/v1/new')
         def api_create_new():
             self.redir_host()
@@ -225,6 +250,8 @@ class ContentController(BaseController, RewriterApp):
                    }
 
         # COOKIES
+        wr_api_spec.set_curr_tag('Cookies')
+
         @self.app.post('/api/v1/auth/cookie')
         def add_cookie():
             user, collection = self.load_user_coll()
@@ -245,24 +272,6 @@ class ContentController(BaseController, RewriterApp):
 
             return {'success': domain}
 
-        # UPDATE REMOTE BROWSER CONFIG
-        @self.app.get('/api/v1/update_remote_browser/<reqid>')
-        def update_remote_browser(reqid):
-            user, collection = self.load_user_coll(api=True)
-
-            timestamp = request.query.getunicode('timestamp')
-            type_ = request.query.getunicode('type')
-
-            # if switching mode, need to have write access
-            # for timestamp, only read access
-            if type_:
-                self.access.assert_can_write_coll(collection)
-            else:
-                self.access.assert_can_read_coll(collection)
-
-            return self.browser_mgr.update_remote_browser(reqid,
-                                                          type_=type_,
-                                                          timestamp=timestamp)
         # PROXY
         @self.app.route('/_proxy/<url:path>', method='ANY')
         def do_proxy(url):

@@ -1,7 +1,7 @@
 from bottle import request, response
 from six.moves.urllib.parse import quote
 
-from webrecorder.basecontroller import BaseController
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.webreccork import ValidationException
 
 from webrecorder.models.base import DupeNameException
@@ -10,16 +10,16 @@ from webrecorder.utils import get_bool
 
 # ============================================================================
 class CollsController(BaseController):
-    API_TAG = 'Collections'
-
     def __init__(self, *args, **kwargs):
         super(CollsController, self).__init__(*args, **kwargs)
         config = kwargs['config']
 
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Collections')
+
         @self.app.post('/api/v1/collections')
         @self.api(query=['user'],
-                  json=['title', 'public'],
+                  req=['title', 'public'],
                   resp='collection')
 
         def create_collection():
@@ -60,7 +60,7 @@ class CollsController(BaseController):
 
         @self.app.get('/api/v1/collections')
         @self.api(query=['user', 'include_recordings', 'include_lists', 'include_pages'],
-                  resp=['collection'])
+                  resp='collections')
         def get_collections():
             user = self.get_user(api=True, redir_check=False)
 
@@ -94,7 +94,8 @@ class CollsController(BaseController):
                 return {'deleted_id': coll_name}
 
         @self.app.post('/api/v1/collection/<coll_name>')
-        @self.api(json=['title', 'desc', 'public', 'public_index'],
+        @self.api(query=['user'],
+                  req=['title', 'desc', 'public', 'public_index'],
                   resp='collection')
         def update_collection(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
@@ -130,17 +131,11 @@ class CollsController(BaseController):
             if 'public_index' in data:
                 collection.set_bool_prop('public_index', data['public_index'])
 
-            if 'featured_list' in data:
-                blist = collection.get_list(data['featured_list'])
-                if not blist:
-                    self._raise_error(400, 'no_such_list')
-
-                collection['featured_list'] = data['featured_list']
-
             return {'collection': collection.serialize()}
 
         @self.app.get('/api/v1/collection/<coll_name>/page_bookmarks')
-        @self.api(resp='bookmarks')
+        @self.api(query=['user'],
+                  resp='bookmarks')
         def get_page_bookmarks(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
@@ -155,74 +150,6 @@ class CollsController(BaseController):
                 rec_pages = None
 
             return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
-
-        # Create Collection
-        #@self.app.get('/_create')
-        #@self.jinja2_view('create_collection.html')
-        def create_coll_view():
-            self.access.assert_is_logged_in()
-            return {}
-
-        #@self.app.post('/_create')
-        def create_coll_post():
-            title = self.post_get('title')
-            if not title:
-                self.flash_message('Title is required')
-                self.redirect('/_create')
-
-            is_public = self.post_get('public') == 'on'
-
-            coll_name = self.sanitize_title(title)
-
-            try:
-                if not coll_name:
-                    raise ValidationException('invalid_name')
-
-                user = self.access.session_user
-                user.create_collection(coll_name, title=title, desc='', public=is_public)
-
-                self.flash_message('Created collection <b>{0}</b>!'.format(title), 'success')
-                redir_to = self.get_redir_back('/_create')
-
-            except DupeNameException as de:
-                self._raise_error(400, 'duplicate_name')
-
-            except Exception as ve:
-                import traceback
-                traceback.print_exc()
-                self.flash_message(str(ve))
-                redir_to = '/_create'
-
-            self.redirect(redir_to)
-
-        #@self.app.post(['/_delete_coll'])
-        def delete_collection_post():
-            self.validate_csrf()
-            user, collection = self.load_user_coll()
-
-            success = None
-            try:
-                success = user.remove_collection(collection, delete=True)
-            except Exception as e:
-                print(e)
-
-            if success == {}:
-                self.flash_message('Collection {0} has been deleted!'.format(collection.name), 'success')
-
-                # if anon user/temp collection, delete user and redirect to homepage
-                if self.access.is_anon(user):
-                    self.get_session().delete()
-
-                    if self.content_host:
-                        self.redir_host(self.content_host, '/_clear_session?path=/')
-                    else:
-                        self.redirect('/')
-                else:
-                    self.redirect(self.get_path(user.name))
-
-            else:
-                self.flash_message('There was an error deleting {0}'.format(collection.name))
-                self.redirect(self.get_path(user.name, collection.name))
 
         # Collection view (all recordings)
         @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])

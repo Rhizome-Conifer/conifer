@@ -13,8 +13,6 @@ from webrecorder.apiutils import api_decorator, wr_api_spec
 
 # ============================================================================
 class BaseController(object):
-    API_TAG = ''
-
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']
         self.jinja_env = kwargs['jinja_env']
@@ -29,8 +27,6 @@ class BaseController(object):
         self.cache_template = self.config.get('cache_template')
 
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
-
-        wr_api_spec.set_curr_tag(self.API_TAG)
 
         self.init_routes()
 
