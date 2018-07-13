@@ -36,6 +36,7 @@ class UploadUI extends PureComponent {
 
     this.xhr = null;
     this.interval = null;
+    this.fileObj = null;
     this.initialState = {
       open: false,
       file: '',
@@ -54,7 +55,8 @@ class UploadUI extends PureComponent {
   }
 
   filePicker = (evt) => {
-    this.setState({ file: evt.target.files[0] });
+    this.fileObj = evt.target.files[0];
+    this.setState({ file: this.fileObj.name });
   }
 
   handleInput = (evt) => {
@@ -73,7 +75,7 @@ class UploadUI extends PureComponent {
 
     this.xhr = new XMLHttpRequest();
     const target = targetColl === 'chosen' ? activeCollection : '';
-    const url = `/_upload?force-coll=${target}&filename=${file.name}`;
+    const url = `/_upload?force-coll=${target}&filename=${file}`;
 
     this.xhr.upload.addEventListener('progress', this.uploadProgress);
     this.xhr.addEventListener('load', this.uploadSuccess);
@@ -87,13 +89,13 @@ class UploadUI extends PureComponent {
       status: 'Uploading...'
     });
 
-    this.xhr.send(file);
+    this.xhr.send(this.fileObj);
 
     return this.xhr;
   }
 
   uploadProgress = (evt) => {
-    const progress = Math.round((50.0 * event.loaded) / event.total);
+    const progress = Math.round((50.0 * evt.loaded) / evt.total);
 
     if (evt.loaded >= evt.total) {
       this.setState({ canCancel: false, progress });
@@ -173,6 +175,10 @@ class UploadUI extends PureComponent {
       this.xhr.abort();
     }
 
+    this.xhr.upload.removeEventListener('progress', this.uploadProgress);
+    this.xhr.removeEventListener('load', this.uploadSuccess);
+    this.xhr.removeEventListener('loadend', this.uploadComplete);
+
     this.setState(this.initialState);
   }
 
@@ -188,7 +194,7 @@ class UploadUI extends PureComponent {
 
     const modalFooter = (
       <React.Fragment>
-        <Button onClick={this.close} disabled={this.canCancel}>Cancel</Button>
+        <Button onClick={this.close} disabled={!this.state.canCancel}>Cancel</Button>
         <Button onClick={this.submitUpload} disabled={isUploading} bsStyle="success">Upload</Button>
       </React.Fragment>
     );
@@ -208,7 +214,7 @@ class UploadUI extends PureComponent {
           <label htmlFor="upload-file">WARC/ARC file to upload: </label>
 
           <div className="input-group">
-            <input type="text" id="upload-file" value={file && file.name} name="upload-file-text" className="form-control" placeholder="Click Pick File to select a web archive file" required readOnly style={{ backgroundColor: 'white' }} />
+            <input type="text" id="upload-file" value={file} name="upload-file-text" className="form-control" placeholder="Click Pick File to select a web archive file" required readOnly style={{ backgroundColor: 'white' }} />
             <span className="input-group-btn">
               <button type="button" className="btn btn-default" onClick={this.triggerFile}>
                 <span className="glyphicon glyphicon-file glyphicon-button" />Pick File...

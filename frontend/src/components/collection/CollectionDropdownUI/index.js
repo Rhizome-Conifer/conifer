@@ -81,7 +81,7 @@ class CollectionDropdownUI extends Component {
 
     if (collections !== prevProps.collections) {
       this.setState({
-        collections: !filter ? collections : collections.filter(c => c.get('title').toLowerCase().startsWith(filter))
+        collections: !filter ? collections : collections.filter(c => c.get('title').toLowerCase().indexOf(filter) !== -1)
       });
     }
   }
@@ -127,7 +127,7 @@ class CollectionDropdownUI extends Component {
 
     this.setState({
       [evt.target.name]: evt.target.value,
-      collections: !evt.target.value ? collections : collections.filter(c => c.get('title').toLowerCase().startsWith(evt.target.value))
+      collections: !evt.target.value ? collections : collections.filter(c => c.get('title').toLowerCase().indexOf(evt.target.value) !== -1)
     });
   }
 
