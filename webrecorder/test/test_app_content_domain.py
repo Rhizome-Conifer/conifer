@@ -201,7 +201,11 @@ class TestAppContentDomain(FullStackTests):
                                      params={'username': 'test', 'password': 'TestTest123'},
                                      headers={'Host': 'app-host'})
 
-        assert res.json == {'anon': False, 'coll_count': 1, 'role': 'archivist', 'username': 'test'}
+        user = res.json['user']
+        assert user['anon'] == False
+        assert user['num_collections'] == 1
+        assert user['role'] == 'archivist'
+        assert user['username'] == 'test'
 
         assert len(self.testapp.cookies) == 1
 

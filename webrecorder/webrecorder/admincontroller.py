@@ -494,7 +494,7 @@ class AdminController(BaseController):
                            key=sort_by,
                            reverse=reverse)
 
-            return {'users': [self.user_manager.all_users[user].serialize(compute_size_allotment=True) for user in users]}
+            return {'users': [self.user_manager.all_users[user].serialize() for user in users]}
 
         @self.app.get('/api/v1/admin/temp-users')
         @self.admin_view
@@ -512,7 +512,7 @@ class AdminController(BaseController):
                 if not user or not user.get_prop('created_at'):
                     continue
 
-                temp_user_data.append(user.serialize(compute_size_allotment=True))
+                temp_user_data.append(user.serialize())
 
             return {'users': temp_user_data}
 
@@ -549,7 +549,7 @@ class AdminController(BaseController):
             if errs:
                 return {'errors': errs}
 
-            return {'user': user.serialize(compute_size_allotment=True)}
+            return {'user': user.serialize()}
 
         # Grafana Stats APIs
         wr_api_spec.set_curr_tag('Stats')

@@ -72,11 +72,10 @@ class TestUpload(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
-        assert res.json == {'anon': False,
-                            'coll_count': 1,
-                            'role': 'archivist',
-                            'username': 'test',
-                           }
+        assert res.json['user']['anon'] == False
+        assert res.json['user']['num_collections'] == 1
+        assert res.json['user']['role'] == 'archivist'
+        assert res.json['user']['username'] == 'test'
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 

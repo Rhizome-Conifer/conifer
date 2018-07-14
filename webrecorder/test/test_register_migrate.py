@@ -446,10 +446,10 @@ class TestRegisterMigrate(FullStackTests):
                   'password': 'Password1'}
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
-        assert res.json == {'anon': False,
-                            'coll_count': 4,
-                            'role': 'archivist',
-                            'username': 'someuser'}
+        assert res.json['user']['anon'] == False
+        assert res.json['user']['num_collections'] == 4
+        assert res.json['user']['role'] == 'archivist'
+        assert res.json['user']['username'] == 'someuser'
 
         assert 'max-age=' not in res.headers['Set-Cookie'].lower()
 
@@ -610,10 +610,9 @@ class TestRegisterMigrate(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
-        assert res.json == {'anon': False,
-                            'coll_count': 1,
-                            'role': 'archivist',
-                            'username': 'testauto'}
+        assert res.json['user']['num_collections'] == 1
+        assert res.json['user']['role'] == 'archivist'
+        assert res.json['user']['username'] == 'testauto'
 
         assert 'max-age=' not in res.headers['Set-Cookie'].lower()
 
@@ -658,10 +657,9 @@ class TestRegisterMigrate(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
-        assert res.json == {'anon': False,
-                            'coll_count': 3,
-                            'role': 'archivist',
-                            'username': 'someuser'}
+        assert res.json['user']['num_collections'] == 3
+        assert res.json['user']['role'] == 'archivist'
+        assert res.json['user']['username'] == 'someuser'
 
         assert 'max-age=' in res.headers['Set-Cookie'].lower()
 

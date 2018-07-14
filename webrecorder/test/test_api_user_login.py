@@ -8,13 +8,12 @@ import re
 class TestApiUserLogin(FullStackTests):
     val_reg = ''
 
-    def test_api_temp_user_info(self):
-        res = self.testapp.get('/api/v1/user/{user}'.format(user=self.anon_user))
+    def test_api_curr_user_temp_info(self):
+        res = self.testapp.get('/api/v1/auth/curr_user')
 
         user = res.json['user']
 
         assert user['username'] == self.anon_user
-        assert user['id'] == self.anon_user
         assert user['space_utilization'] == {'available': 1000000000.0,
                                              'total': 1000000000.0,
                                              'used': 0.0}
@@ -22,7 +21,18 @@ class TestApiUserLogin(FullStackTests):
         assert self.ISO_DT_RX.match(user['created_at'])
         assert self.ISO_DT_RX.match(user['updated_at'])
 
-        assert set(user.keys()) == {'id', 'username', 'created_at', 'updated_at', 'space_utilization', 'ttl', 'max_size', 'size', 'timespan', 'collections'}
+        assert set(user.keys()) == {'num_collections',
+                                    'username', 'created_at', 'updated_at', 'timespan',
+                                    'space_utilization', 'anon', 'ttl', 'role', 'size', 'max_size'}
+
+    def test_api_anon_user_temp_info(self):
+        res = self.testapp.get('/api/v1/user/{user}'.format(user=self.anon_user))
+
+        user = res.json['user']
+
+        assert set(user.keys()) == {'collections',
+                                    'username', 'created_at', 'updated_at', 'timespan',
+                                    'space_utilization', 'anon', 'ttl', 'role', 'size', 'max_size'}
 
     def test_api_wrong_temp_user_info(self):
         res = self.testapp.get('/api/v1/user/temp-ABC', status=404)
@@ -101,7 +111,7 @@ class TestApiUserLogin(FullStackTests):
         # still available until registration validated
         res = self.testapp.get('/api/v1/auth/check_username/someuser')
 
-        assert res.json == {'available': True}
+        assert res.json == {'success': True}
 
     def test_api_val_reg_success(self):
         params = {'reg': self.val_reg}
@@ -196,12 +206,15 @@ class TestApiUserLogin(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_load_auth_not_logged_in(self):
-        res = self.testapp.get('/api/v1/auth')
+        res = self.testapp.get('/api/v1/auth/curr_user')
 
-        assert res.json['role'] == None
-        assert res.json['username'].startswith('temp-')
-        assert res.json['anon'] == True
-        assert res.json['coll_count'] == 0
+        user = res.json['user']
+
+        assert user['role'] == 'anon'
+        assert user['username'].startswith('temp-')
+        assert user['anon'] == True
+        assert user['num_collections'] == 0
+
 
     def test_login(self):
         params = {'username': 'someuser',
@@ -209,10 +222,12 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
-        assert res.json == {'role': 'archivist',
-                            'username': 'someuser',
-                            'coll_count': 1,
-                            'anon': False}
+        assert res.json['user']['role'] == 'archivist'
+        assert res.json['user']['username'] == 'someuser'
+        assert res.json['user']['num_collections'] == 1
+        assert res.json['user']['anon'] == False
+
+        assert all(x in res.json['user'] for x in ['created_at', 'updated_at', 'timespan', 'space_utilization'])
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
@@ -225,17 +240,17 @@ class TestApiUserLogin(FullStackTests):
         assert res.json == {'error': 'already_logged_in'}
 
     def test_load_auth_logged_in(self):
-        res = self.testapp.get('/api/v1/auth')
+        res = self.testapp.get('/api/v1/auth/curr_user')
 
-        assert res.json == {'role': 'archivist',
-                            'username': 'someuser',
-                            'coll_count': 1,
-                            'anon': False}
+        assert res.json['user']['role'] == 'archivist'
+        assert res.json['user']['username'] == 'someuser'
+        assert res.json['user']['num_collections'] == 1
+        assert res.json['user']['anon'] == False
 
     def test_check_username_not_avail(self):
-        res = self.testapp.get('/api/v1/auth/check_username/someuser')
+        res = self.testapp.get('/api/v1/auth/check_username/someuser', status=400)
 
-        assert res.json == {'available': False}
+        assert res.json == {'error': 'not_available'}
 
     def test_update_password_fail(self):
         params = {'currPass': 'Password1',
@@ -335,7 +350,7 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
-        assert res.json['username'] == 'someuser'
+        assert res.json['user']['username'] == 'someuser'
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
@@ -355,9 +370,9 @@ class TestApiUserLogin(FullStackTests):
         user = res.json['user']
 
         assert user['created_at'] != ''
-        assert user['email'] == 'test@example.com'
+        #assert user['email'] == 'test@example.com'
         assert user['last_login'] != ''
-        assert user['name'] == ''
+        #assert user['name'] == ''
         assert user['role'] == 'archivist'
         assert user['username'] == 'someuser'
         assert user['space_utilization'] == {'available': 1000000000.0,
@@ -409,12 +424,12 @@ class TestApiUserLogin(FullStackTests):
         assert res.json == {'deleted_user': 'someuser'}
 
     def test_load_auth_not_logged_in_2(self):
-        res = self.testapp.get('/api/v1/auth')
+        res = self.testapp.get('/api/v1/auth/curr_user')
 
-        assert res.json['role'] == None
-        assert res.json['username'].startswith('temp-')
-        assert res.json['anon'] == True
-        assert res.json['coll_count'] == 0
+        assert res.json['user']['role'] == 'anon'
+        assert res.json['user']['username'].startswith('temp-')
+        assert res.json['user']['anon'] == True
+        assert res.json['user']['num_collections'] == 0
 
     def test_openapi_spec(self):
         assert self.testapp.get('/api/v1', status=200).content_type == 'text/yaml'
