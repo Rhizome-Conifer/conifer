@@ -63,7 +63,7 @@ class TestAutoLogin(FullStackTests):
 
     def test_api_curr_user(self):
         res = self.testapp.get('/api/v1/auth/curr_user')
-        assert res.json == {'curr_user': 'test'}
+        assert res.json['user']['username'] == 'test'
 
     def test_get_collection(self):
         res = self.testapp.get('/api/v1/collection/default-collection?user=test')

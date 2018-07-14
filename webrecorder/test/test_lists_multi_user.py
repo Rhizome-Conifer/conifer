@@ -76,12 +76,13 @@ class TestListsAPIAccess(FullStackTests):
         return list_id
 
     def test_login_first_user(self):
-        params = {'username': 'test',
+        params = {
+                  'username': 'test',
                   'password': 'TestTest123',
                  }
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
-        assert res.json['username'] == 'test'
+        assert res.json['user']['username'] == 'test'
         assert self.testapp.cookies['__test_sesh'] != ''
 
     def test_create_all_user_1(self):
@@ -113,7 +114,7 @@ class TestListsAPIAccess(FullStackTests):
                  }
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
-        assert res.json['username'] == 'another'
+        assert res.json['user']['username'] == 'another'
         assert self.testapp.cookies['__test_sesh'] != ''
 
     def test_create_all_user_2(self):
@@ -157,7 +158,7 @@ class TestListsAPIAccess(FullStackTests):
 
     def test_no_lists_user_info(self):
         # wrong user
-        res = self.testapp.get('/api/v1/user/test', status=404)
+        res = self.testapp.get('/api/v1/user/test2', status=404)
 
         res = self.testapp.get('/api/v1/user/another')
 
@@ -202,7 +203,7 @@ class TestListsAPIAccess(FullStackTests):
                  }
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
-        assert res.json['username'] == 'test'
+        assert res.json['user']['username'] == 'test'
         assert self.testapp.cookies['__test_sesh'] != ''
 
     def test_public_lists_only_logged_in_diff_user(self):

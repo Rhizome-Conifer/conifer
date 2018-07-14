@@ -45,7 +45,7 @@ class TestAdminAPI(FullStackTests):
                  }
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
-        assert res.json['username'] == 'adminuser'
+        assert res.json['user']['username'] == 'adminuser'
         assert self.testapp.cookies['__test_sesh'] != ''
 
     def test_make_coll_public(self):
