@@ -239,11 +239,11 @@ class User(RedisUniqueComponent):
         if not full:
             return data
 
-        data['role'] = self.curr_role
         data['space_utilization'] = self.get_space_usage()
 
         if self.is_anon():
             data['anon'] = True
+            data['role'] = 'anon'
             data['ttl'] = self.access.get_anon_ttl()
             collection = self.get_collection_by_name('temp')
             if collection:
@@ -251,6 +251,7 @@ class User(RedisUniqueComponent):
 
         else:
             data['anon'] = False
+            data['role'] = self['role']
             last_login = self.get_prop('last_login')
             if last_login:
                 data['last_login'] = self.to_iso_date(last_login)
@@ -296,10 +297,6 @@ class User(RedisUniqueComponent):
 
     def is_owner(self, owner):
         return self == owner
-
-    @property
-    def curr_role(self):
-        return self['role']
 
 
 # ============================================================================

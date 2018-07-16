@@ -81,8 +81,7 @@ class TestAdminAPI(FullStackTests):
     def test_api_temp_users(self):
         res = self.testapp.get('/api/v1/admin/temp-users')
         assert [user['username'] for user in res.json['users']] == [self.anon_user]
-        assert [user.get('role') for user in res.json['users']] == [None]
-        assert [user.get('name') for user in res.json['users']] == [None]
+        assert [user.get('role') for user in res.json['users']] == ['anon']
         assert [user['max_size'] for user in res.json['users']] == ['1000000000']
 
     def test_api_create_user_errors(self):
