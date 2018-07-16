@@ -213,7 +213,7 @@ class MainController(BaseController):
             return self.content_host
 
         def get_num_collections():
-            count = self.access.session_user.num_collections()
+            count = self.access.session_user.num_total_collections()
             return count
 
         def get_archives():

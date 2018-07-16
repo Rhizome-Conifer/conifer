@@ -118,7 +118,7 @@ class User(RedisUniqueComponent):
 
         return collections
 
-    def num_collections(self):
+    def num_total_collections(self):
         return self.colls.num_objects()
 
     def move(self, collection, new_name, new_user):
@@ -226,14 +226,14 @@ class User(RedisUniqueComponent):
             if prop in all_data:
                 data[prop] = all_data[prop]
 
+        colls = self.get_collections()
+        data['num_collections'] = len(colls)
+
         if include_colls:
-            colls = self.get_collections()
             data['collections'] = [coll.serialize(
                                     include_recordings=False,
                                     include_pages=False,
                                     include_lists=False) for coll in colls]
-        else:
-            data['num_collections'] = self.num_collections()
 
         # if not owner or superuser, return here, otherwise add additional properties
         if not full:

@@ -33,7 +33,7 @@ class TestApiUserLogin(FullStackTests):
         user = res.json['user']
         assert user['role'] == 'anon'
 
-        assert set(user.keys()) == {'collections',
+        assert set(user.keys()) == {'num_collections',
                                     'username', 'created_at', 'updated_at', 'timespan',
                                     'space_utilization', 'anon', 'ttl', 'role', 'size', 'max_size'}
 
@@ -250,6 +250,23 @@ class TestApiUserLogin(FullStackTests):
         assert res.json['user']['num_collections'] == 1
         assert res.json['user']['anon'] == False
 
+    def test_api_with_collections(self):
+        res = self.testapp.get('/api/v1/auth/curr_user?include_colls=true'.format(user=self.anon_user))
+
+        user = res.json['user']
+        assert user['role'] == 'archivist'
+        assert user['username'] == 'someuser'
+        assert user['num_collections'] == 1
+        assert len(user['collections']) == 1
+
+        res = self.testapp.get('/api/v1/user/someuser?include_colls=true'.format(user=self.anon_user))
+
+        user = res.json['user']
+        assert user['role'] == 'archivist'
+        assert user['username'] == 'someuser'
+        assert user['num_collections'] == 1
+        assert len(user['collections']) == 1
+
     def test_check_username_not_avail(self):
         res = self.testapp.get('/api/v1/auth/check_username/someuser', status=400)
 
@@ -368,7 +385,7 @@ class TestApiUserLogin(FullStackTests):
         assert res.json == {'error': 'already_logged_in'}
 
     def test_api_user_info(self):
-        res = self.testapp.get('/api/v1/user/someuser')
+        res = self.testapp.get('/api/v1/user/someuser?include_colls=true')
 
         user = res.json['user']
 
