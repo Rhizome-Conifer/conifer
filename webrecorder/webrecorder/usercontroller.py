@@ -20,6 +20,16 @@ class UserController(BaseController):
 
         self.default_user_desc = config['user_desc']
 
+    def load_user(self, username=None):
+        include_colls = get_bool(request.query.get('include_colls', False))
+
+        if username:
+            user = self.get_user(user=username)
+        else:
+            user = self.access.init_session_user(persist=True)
+
+        return {'user': user.serialize(include_colls=include_colls)}
+
     def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
         # ensure correct host
         if self.app_host and request.environ.get('HTTP_HOST') != self.app_host:
@@ -57,9 +67,8 @@ class UserController(BaseController):
 
         # GET CURRENT USER
         @self.app.get('/api/v1/auth/curr_user')
-        def load_auth():
-            user = self.access.init_session_user(persist=True)
-            return {'user': user.serialize()}
+        def load_user():
+            return self.load_user()
 
         # REGISTRATION
         @self.app.post('/api/v1/auth/register')
@@ -191,13 +200,7 @@ class UserController(BaseController):
         @self.app.get('/api/v1/user/<username>')
         def api_get_user(username):
             """API enpoint to return user info"""
-            include_colls = get_bool(request.query.get('include_colls', True))
-
-            user = self.get_user(user=username)
-
-            user_data = user.serialize(include_colls=include_colls)
-
-            return {'user': user_data}
+            return self.load_user(username)
 
         @self.app.delete('/api/v1/user/<username>')
         def api_delete_user(username):

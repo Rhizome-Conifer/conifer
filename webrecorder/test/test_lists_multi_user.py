@@ -160,7 +160,7 @@ class TestListsAPIAccess(FullStackTests):
         # wrong user
         res = self.testapp.get('/api/v1/user/test2', status=404)
 
-        res = self.testapp.get('/api/v1/user/another')
+        res = self.testapp.get('/api/v1/user/another?include_colls=true')
 
         assert len(res.json['user']['collections']) == 2
         for coll in res.json['user']['collections']:
