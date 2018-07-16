@@ -13,6 +13,8 @@ class TestApiUserLogin(FullStackTests):
 
         user = res.json['user']
 
+        assert user['role'] == 'anon'
+
         assert user['username'] == self.anon_user
         assert user['space_utilization'] == {'available': 1000000000.0,
                                              'total': 1000000000.0,
@@ -29,6 +31,7 @@ class TestApiUserLogin(FullStackTests):
         res = self.testapp.get('/api/v1/user/{user}'.format(user=self.anon_user))
 
         user = res.json['user']
+        assert user['role'] == 'anon'
 
         assert set(user.keys()) == {'collections',
                                     'username', 'created_at', 'updated_at', 'timespan',
