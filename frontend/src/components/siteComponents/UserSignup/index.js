@@ -15,7 +15,6 @@ import './style.scss';
 
 class UserSignup extends Component {
   static propTypes = {
-    auth: PropTypes.object,
     available: PropTypes.bool,
     cb: PropTypes.func,
     checkUser: PropTypes.func,
@@ -23,8 +22,8 @@ class UserSignup extends Component {
     result: PropTypes.string,
     errors: PropTypes.object,
     success: PropTypes.bool,
-    userCheck: PropTypes.bool,
     user: PropTypes.object,
+    userCheck: PropTypes.bool,
     validUsername: PropTypes.bool
   };
 
@@ -45,7 +44,7 @@ class UserSignup extends Component {
 
   save = (evt) => {
     evt.preventDefault();
-    const { auth } = this.props;
+    const { user } = this.props;
     const { announce_mailer, username, name, full_name,
             email, password, confirmpassword, moveTemp, toColl } = this.state;
 
@@ -71,7 +70,7 @@ class UserSignup extends Component {
       }
 
       // check for anon usage
-      if (auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0) {
+      if (user.get('anon') && user.get('num_collections') > 0) {
         data = { ...data, moveTemp, toColl };
       }
 
@@ -290,7 +289,7 @@ class UserSignup extends Component {
             </FormGroup>
 
             {
-              user.get('anon') && user.get('coll_count') > 0 &&
+              user.get('anon') && user.get('num_collections') > 0 &&
               <TempUsage
                 handleInput={this.handleChange}
                 moveTemp={moveTemp}

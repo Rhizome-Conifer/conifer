@@ -43,7 +43,7 @@ class LoginForm extends Component {
     }
 
     // check for anon usage
-    if (auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0) {
+    if (auth.getIn(['user', 'anon']) && auth.getIn(['user', 'num_collections']) > 0) {
       data = { ...data, moveTemp, toColl };
     }
 
@@ -104,7 +104,7 @@ class LoginForm extends Component {
               <Link to="/_forgot" onClick={closeLogin} style={{ float: 'right' }}>Forgot password or username?</Link>
             </FormGroup>
             {
-              auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0 &&
+              auth.getIn(['user', 'anon']) && auth.getIn(['user', 'num_collections']) > 0 &&
                 <TempUsage
                   handleInput={this.handleChange}
                   moveTemp={moveTemp}

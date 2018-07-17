@@ -2,10 +2,9 @@ import React from 'react';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 
-import { incrementCollCount } from 'redux/modules/auth';
+import { addUserCollection, incrementCollCount } from 'redux/modules/auth';
 import { isLoaded as areCollsLoaded, load as loadCollections,
          createCollection } from 'redux/modules/collections';
-import { addUserCollection } from 'redux/modules/user';
 import { sortCollsByAlpha } from 'redux/selectors';
 
 import CollectionListUI from 'components/collection/CollectionListUI';

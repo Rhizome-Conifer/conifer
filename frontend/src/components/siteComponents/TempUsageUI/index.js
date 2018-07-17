@@ -20,7 +20,7 @@ class TempUsageUI extends Component {
     const { tempUser } = this.props;
     if (tempUser) {
       // get latest stats
-      this.props.loadUsage(tempUser.get('username'));
+      this.props.loadUsage();
     }
   }
 
@@ -40,7 +40,7 @@ class TempUsageUI extends Component {
       return null;
     }
 
-    const recCount = tempUser.get('rec_count');
+    const recCount = tempUser.get('num_recordings');
     const usage = tempUser.getIn(['space_utilization', 'used']);
     const collLink = `/${tempUser.get('username')}/temp`;
 

@@ -8,7 +8,7 @@ import { TempUserAlertUI } from 'components/siteComponents';
 
 const mapStateToProps = ({ app }) => {
   return {
-    tempUser: app.getIn(['tempUser', 'user'])
+    auth: app.get('auth')
   };
 };
 

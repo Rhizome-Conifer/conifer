@@ -6,17 +6,18 @@ import TempUserTimer from 'components/TempUserTimer';
 
 
 function HomepageMessage(props) {
-  const { auth, showModal, tempUser } = props;
-  const username = auth.getIn(['user', 'username']);
+  const { auth, showModal } = props;
+  const user = auth.get('user');
+  const username = user.get('username');
   const showModalCB = () => showModal(true);
-  const recCount = tempUser.get('rec_count');
+  const recCount = user.get('num_recordings');
 
   return (
     <div className="row wr-hp-message">
       <div className="col-md-6 col-md-offset-3">
         <div className="panel panel-info">
           <div className="panel-heading">
-            You have a <b><Link to={`/${username}/temp/index`}>Temporary Collection</Link></b> with {recCount} recording{recCount === 1 ? '' : 's'}, expiring in <b><TempUserTimer ttl={tempUser.get('ttl')} accessed={tempUser.get('accessed')} /></b>
+            You have a <b><Link to={`/${username}/temp/index`}>Temporary Collection</Link></b> with {recCount} recording{recCount === 1 ? '' : 's'}, expiring in <b><TempUserTimer ttl={user.get('ttl')} accessed={auth.get('accessed')} /></b>
           </div>
           <div className="panel-body">
             <div className="top-buffer-md">
@@ -38,8 +39,7 @@ function HomepageMessage(props) {
 
 HomepageMessage.propTypes = {
   auth: PropTypes.object,
-  showModal: PropTypes.func,
-  tempUser: PropTypes.object
+  showModal: PropTypes.func
 };
 
 export default HomepageMessage;

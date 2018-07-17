@@ -17,7 +17,6 @@ import pageQuery from './modules/pageQuery';
 import recordings from './modules/recordings';
 import remoteBrowsers from './modules/remoteBrowsers';
 import sidebar from './modules/sidebar';
-import tempUser from './modules/tempUser';
 import toolBin from './modules/toolBin';
 import user from './modules/user';
 import userLogin from './modules/userLogin';
@@ -38,7 +37,6 @@ const makeAppReducer = () => combineImmutableReduers({
   recordings,
   remoteBrowsers,
   sidebar,
-  tempUser,
   toolBin,
   user,
   userLogin,
