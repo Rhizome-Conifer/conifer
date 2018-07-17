@@ -79,9 +79,9 @@ class BaseController(object):
         if not coll_name:
             self._raise_error(400, 'no_collection_specified')
 
-        if self.access.is_anon(user):
-            if coll_name != 'temp':
-                self._raise_error(404, 'no_such_collection')
+        #if self.access.is_anon(user):
+        #    if coll_name != 'temp':
+        #        self._raise_error(404, 'no_such_collection')
 
         collection = user.get_collection_by_name(coll_name)
         if not collection:
