@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
-import { Alert, Button, Col, ControlLabel, FormControl, FormGroup,
-         HelpBlock, InputGroup, Panel, ProgressBar, Row } from 'react-bootstrap';
+import { Alert, Button, Col, ControlLabel, Dropdown, FormControl, FormGroup,
+         HelpBlock, InputGroup, MenuItem, Panel, ProgressBar, Row } from 'react-bootstrap';
 
 import { supportEmail } from 'config';
 import { passwordPassRegex } from 'helpers/utils';
@@ -25,6 +25,7 @@ class UserSettingsUI extends Component {
       PropTypes.object
     ]),
     deleteUser: PropTypes.func,
+    loadUserRoles: PropTypes.func,
     match: PropTypes.object,
     updatePass: PropTypes.func,
     updateUser: PropTypes.func,
@@ -39,7 +40,7 @@ class UserSettingsUI extends Component {
       };
     }
 
-    if (nextProps.user && nextProps.user.get('passUpdate')) {
+    if (nextProps.auth && nextProps.auth.get('passUpdate')) {
       return {
         currPassword: '',
         password: '',
@@ -59,15 +60,23 @@ class UserSettingsUI extends Component {
       currPassword: '',
       password: '',
       password2: '',
+      role: null,
       showModal: false
     };
+  }
+
+  componentDidMount() {
+    const { auth } = this.props;
+    if (auth.getIn(['user', 'role']) === 'admin') {
+      this.props.loadUserRoles();
+    }
   }
 
   handleChange = evt => this.setState({ [evt.target.name]: evt.target.value })
 
   sendDelete = (evt) => {
     if (this.validateConfirmDelete() === 'success') {
-      this.props.deleteUser(this.props.user.get('username'));
+      this.props.deleteUser(this.props.auth.getIn(['user', 'username']));
     }
   }
 
@@ -102,6 +111,16 @@ class UserSettingsUI extends Component {
   toggleDelete = evt => this.setState({ showModal: !this.state.showModal })
   closeDeleteModal = evt => this.setState({ showModal: false })
 
+  setRole = (role) => {
+    this.setState({ role });
+  }
+
+  saveRole = () => {
+    const { match: { params: { user } }, updateUser } = this.props;
+    const { role } = this.state;
+    updateUser(user, { role });
+  }
+
   updateUserAllotment = () => {
     const { match: { params: { user } }, updateUser } = this.props;
     const { allotment } = this.state;
@@ -123,14 +142,14 @@ class UserSettingsUI extends Component {
   }
 
   validateConfirmDelete = (evt) => {
-    const { user } = this.props;
+    const { auth } = this.props;
     const { confirmUser } = this.state;
 
     if (!confirmUser) {
       return null;
     }
 
-    if (user.get('username').toLowerCase() !== confirmUser.toLowerCase()) {
+    if (auth.getIn(['user', 'username']).toLowerCase() !== confirmUser.toLowerCase()) {
       return 'error';
     }
 
@@ -138,12 +157,12 @@ class UserSettingsUI extends Component {
   }
 
   render() {
-    const { auth, deleting, user } = this.props;
+    const { auth, deleting, match: { params }, user } = this.props;
     const { currPassword, password, password2, showModal } = this.state;
 
-    const username = user.get('username');
-    const canAdmin = auth.get('username') === username;
-    const superuser = auth.get('role') === 'admin';
+    const username = params.user;
+    const canAdmin = username === auth.getIn(['user', 'username']);
+    const superuser = auth.getIn(['user', 'role']) === 'admin';
 
     if (!superuser && !canAdmin) {
       return <HttpStatus />;
@@ -151,8 +170,8 @@ class UserSettingsUI extends Component {
 
     const usedSpace = user.getIn(['space_utilization', 'used']);
     const totalSpace = user.getIn(['space_utilization', 'total']);
-    const passUpdate = user.get('passUpdate');
-    const passUpdateFail = user.get('passUpdateFail');
+    const passUpdate = auth.get('passUpdate');
+    const passUpdateFail = auth.get('passUpdateFail');
 
     const confirmDeleteBody = (
       <div>
@@ -169,7 +188,7 @@ class UserSettingsUI extends Component {
             id="confirm-delete"
             name="confirmUser"
             onChange={this.handleChange}
-            placeholder={user.get('username')}
+            placeholder={username}
             type="text"
             value={this.state.confirmUser} />
         </FormGroup>
@@ -225,6 +244,29 @@ class UserSettingsUI extends Component {
             }
           </Panel.Body>
         </Panel>
+
+        {
+          superuser && auth.get('roles') &&
+            <Panel>
+              <Panel.Heading>
+                <Panel.Title>Update User Role</Panel.Title>
+              </Panel.Heading>
+              <Panel.Body>
+                <h5>Current Role: {user.get('role')}</h5>
+                <div>
+                  <Dropdown id="roleDropdown" onSelect={this.setRole}>
+                    <Dropdown.Toggle>{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      {
+                        auth.get('roles').map(role => <MenuItem eventKey={role}>{role}</MenuItem>)
+                      }
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </div>
+                <Button className="top-buffer-md" bsStyle="primary" bsSize="sm" onClick={this.saveRole}>Update Role</Button>
+              </Panel.Body>
+            </Panel>
+        }
 
         <Panel className="top-buffer">
           <Panel.Heading className="pw-reset">

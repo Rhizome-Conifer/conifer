@@ -19,13 +19,10 @@ class Home extends Component {
     auth: PropTypes.object,
     collections: PropTypes.array,
     showModalCB: PropTypes.func,
-    tempUser: PropTypes.object,
-    user: PropTypes.object
-
   };
 
   shouldComponentUpdate(nextProps) {
-    if (this.props.tempUser.get('loading')) {
+    if (this.props.auth.get('loading')) {
       return false;
     }
 
@@ -33,7 +30,8 @@ class Home extends Component {
   }
 
   render() {
-    const { auth, showModalCB, tempUser } = this.props;
+    const { auth, showModalCB } = this.props;
+    const user = auth.get('user');
 
     return (
       <React.Fragment>
@@ -47,11 +45,10 @@ class Home extends Component {
           <h4 className="text-center">Collect & Revisit the Web</h4>
         </div>
         {
-          auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0 && tempUser.get('user') &&
+          user.get('anon') && user.get('num_collections') > 0 &&
             <HomepageMessage
               auth={auth}
-              showModal={showModalCB}
-              tempUser={tempUser.get('user')} />
+              showModal={showModalCB} />
         }
         <div className="row top-buffer-lg bottom-buffer-lg">
           <StandaloneRecorder />
@@ -149,9 +146,7 @@ class Home extends Component {
 
 const mapStateToProps = ({ app }) => {
   return {
-    auth: app.get('auth'),
-    tempUser: app.get('tempUser'),
-    user: app.get('user')
+    auth: app.get('auth')
   };
 };
 

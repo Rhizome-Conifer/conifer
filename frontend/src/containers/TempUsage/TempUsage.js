@@ -2,21 +2,21 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { showModal } from 'redux/modules/userLogin';
-import { load } from 'redux/modules/tempUser';
+import { load } from 'redux/modules/auth';
 
 import { TempUsageUI } from 'components/siteComponents';
 
 
 const mapStateToProps = ({ app }) => {
   return {
-    tempUser: app.getIn(['tempUser', 'user'])
+    tempUser: app.getIn(['auth', 'user'])
   };
 };
 
 const mapDispatchToProps = (dispatch) => {
   return {
     hideModal: () => dispatch(showModal(false)),
-    loadUsage: u => dispatch(load(u))
+    loadUsage: () => dispatch(load())
   };
 };
 

@@ -4,9 +4,9 @@ import { withRouter } from 'react-router';
 
 import { saveDelay } from 'config';
 
+import { loadCollections } from 'redux/modules/auth';
 import { resetEditState as resetCollEditState,
          edit as editCollDesc } from 'redux/modules/collection';
-import { loadCollections } from 'redux/modules/user';
 
 import CollectionHeaderUI from 'components/collection/CollectionHeaderUI';
 

@@ -105,10 +105,12 @@ class UserController(BaseController):
             if not self.access.is_anon():
                 return self._raise_error(403, 'already_logged_in')
 
+            include_colls = get_bool(request.query.get('include_colls', False))
+
             result = self.user_manager.login_user(request.json or {})
 
             if 'success' in result:
-                data = {'user': self.access.session_user.serialize()}
+                data = {'user': self.access.session_user.serialize(include_colls)}
                 if result.get('new_coll_name'):
                     data['new_coll_name'] = result['new_coll_name']
 

@@ -38,7 +38,11 @@ class UserManagementUI extends Component {
   componentWillReceiveProps(nextProps) {
     if (this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
       if (!nextProps.auth.get('loginError')) {
-        this.closeLogin();
+        //this.closeLogin();
+        if (this.state.formError) {
+          this.setState({ formError: false });
+        }
+
         this.props.history.push(
           this.props.next !== null ? this.props.next : `/${nextProps.auth.getIn(['user', 'username'])}`
         );
@@ -82,7 +86,7 @@ class UserManagementUI extends Component {
     const { anonCTA, auth, open } = this.props;
     const { formError } = this.state;
 
-    const collCount = auth.getIn(['user', 'coll_count']);
+    const collCount = auth.getIn(['user', 'num_collections']);
     const form = (
       <LoginForm
         anonCTA={anonCTA}

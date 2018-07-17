@@ -80,8 +80,8 @@ class CollectionListUI extends Component {
       return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp/index`} status={301} />;
     }
 
-    const spaceUsed = user.getIn(['space_utilization', 'used']);
-    const totalSpace = user.getIn(['space_utilization', 'total']);
+    const spaceUsed = auth.getIn(['user', 'space_utilization', 'used']);
+    const totalSpace = user.getIn(['user', 'space_utilization', 'total']);
     const remaining = spaceUsed / totalSpace;
 
     let progressState = 'success';

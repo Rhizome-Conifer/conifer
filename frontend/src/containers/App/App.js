@@ -12,8 +12,6 @@ import { DragDropContext } from 'react-dnd';
 
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
-import { load as loadTemp } from 'redux/modules/tempUser';
-import { load as loadUser } from 'redux/modules/user';
 
 import { UserManagement } from 'containers';
 
@@ -164,11 +162,11 @@ export class App extends Component {
         .then((data) => {
           const user = auth.get('user');
           if (user.get('anon')) {
-            if (user.get('coll_count') > 0 && user.get('username') !== data.curr_user) {
+            if (user.get('num_collections') > 0 && user.get('username') !== data.user.username) {
               this.setState({ loginStateAlert: true });
               this.props.dispatch(loadAuth());
             }
-          } else if (user.get('username') !== data.curr_user) {
+          } else if (user.get('username') !== data.user.username) {
             this.setState({ loginStateAlert: true });
           }
         });
@@ -291,12 +289,7 @@ const initalData = [
       const state = getState();
 
       if (!isAuthLoaded(state)) {
-        return dispatch(loadAuth()).then(
-          (auth) => {
-            if (auth.anon && auth.coll_count === 0) return undefined;
-            return auth.anon ? dispatch(loadTemp(auth.username)) : dispatch(loadUser(auth.username));
-          }
-        );
+        return dispatch(loadAuth());
       }
 
       return undefined;
@@ -309,7 +302,7 @@ const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
     auth: app.get('auth'),
     is404: app.getIn(['controls', 'is404']),
     loaded,
-    spaceUtilization: app.getIn(['user', 'space_utilization'])
+    spaceUtilization: app.getIn(['auth', 'user', 'space_utilization'])
   };
 };
 

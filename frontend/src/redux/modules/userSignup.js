@@ -35,19 +35,19 @@ export default function userSignup(state = initialState, action = {}) {
       });
     case USERNAME_CHECK:
       return state.merge({
-        userCheck: false,
-        userCheckError: null
+        userCheck: false
       });
     case USERNAME_CHECK_SUCCESS:
       return state.merge({
-        userCheck: true,
+        available: action.result.success,
         checkedUsername: action.username,
-        available: action.result.available,
-        userCheckError: null
+        userCheck: true
       });
     case USERNAME_CHECK_ERROR:
       return state.merge({
-        userCheckError: action.result
+        available: false,
+        checkedUsername: action.username,
+        userCheck: true
       });
     default:
       return state;

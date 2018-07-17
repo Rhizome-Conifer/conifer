@@ -14,6 +14,7 @@ import './style.scss';
 class CollectionDropdownUI extends Component {
   static propTypes = {
     activeCollection: PropTypes.object,
+    auth: PropTypes.object,
     canCreateCollection: PropTypes.bool,
     collections: PropTypes.object,
     collectionError: PropTypes.string,
@@ -28,8 +29,7 @@ class CollectionDropdownUI extends Component {
     loadUserCollections: PropTypes.func,
     mostRecent: PropTypes.string,
     newCollection: PropTypes.string,
-    setCollection: PropTypes.func,
-    user: PropTypes.object,
+    setCollection: PropTypes.func
   };
 
   static defaultProps = {
@@ -56,9 +56,9 @@ class CollectionDropdownUI extends Component {
   }
 
   componentWillMount() {
-    const { loadUserCollections, user } = this.props;
-    if (user) {
-      loadUserCollections(user.get('username'));
+    const { loadUserCollections, auth } = this.props;
+    if (!auth.getIn(['user', 'anon']) && Date.now() - auth.get('accessed') > 2 * 60 * 1000) {
+      loadUserCollections(auth.getIn(['user', 'username']));
     }
   }
 
@@ -103,9 +103,9 @@ class CollectionDropdownUI extends Component {
   }
 
   createCollection = (collTitle, isPublic) => {
-    const { createNewCollection, user } = this.props;
+    const { auth, createNewCollection } = this.props;
 
-    createNewCollection(user.get('username'), collTitle, isPublic);
+    createNewCollection(auth.getIn(['user', 'username']), collTitle, isPublic);
   }
 
   dropdownToggle = (isOpen) => {
@@ -138,9 +138,9 @@ class CollectionDropdownUI extends Component {
   }
 
   render() {
-    const { activeCollection, canCreateCollection, collectionError, creatingCollection, label, user } = this.props;
+    const { auth, activeCollection, canCreateCollection, collectionError, creatingCollection, label } = this.props;
     const { showModal } = this.state;
-
+    const user = auth.get('user');
 
     return (
       <div className="wr-collection-menu">
