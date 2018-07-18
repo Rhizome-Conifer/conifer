@@ -111,10 +111,12 @@ class CollectionDropdownUI extends Component {
   dropdownToggle = (isOpen) => {
     if (isOpen) {
       doubleRAF(() => {
-        this.filterInput.focus();
+        if (this.filterInput) {
+          this.filterInput.focus();
 
-        if (this.state.filter) {
-          this.filterInput.setSelectionRange(0, this.state.filter.length);
+          if (this.state.filter) {
+            this.filterInput.setSelectionRange(0, this.state.filter.length);
+          }
         }
       });
     }
