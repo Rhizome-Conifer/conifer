@@ -27,6 +27,8 @@ class DatShare(object):
             spawn_once(self.dat_check, worker=1)
 
     def dat_check(self):
+        sleep_time = 30
+
         while True:
             try:
                 res = requests.get(self.dat_url + '/numDats')
@@ -34,19 +36,22 @@ class DatShare(object):
                 curr_dats = res.json()['num']
             except:
                 print('Error reaching dat-share')
+                gevent.sleep(sleep_time)
                 continue
 
             if curr_dats != self.num_shared_dats:
-                print('Actual: {0} != Expected: {1}'.format(curr_dats, self.num_shared_dats))
+                print('Result: {0} != Expected: {1}'.format(curr_dats, self.num_shared_dats))
                 self.readd_all()
 
-            gevent.sleep(30)
+            gevent.sleep(sleep_time)
+
 
     def readd_all(self):
         dat_dirs = self.redis.hvals(self.DAT_COLLS)
         res = None
         try:
             data = {'dirs': dat_dirs}
+            print('Sync:', data)
             res = requests.post(self.dat_url + '/sync', json=data)
             res.raise_for_status()
         except Exception as e:
@@ -90,7 +95,7 @@ class DatShare(object):
             dat_res = res.json()
 
             if share:
-                collection.set_prop(self.DAT_PROP, dat_res['dat'])
+                collection.set_prop(self.DAT_PROP, dat_res['datKey'])
                 collection.set_prop(self.DAT_COMMITTED_AT, collection._get_now())
 
                 self.redis.hset(self.DAT_COLLS,
@@ -105,6 +110,7 @@ class DatShare(object):
             self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
 
         except Exception as e:
+            print(res.text)
             return {'error': str(e)}
 
         return dat_res

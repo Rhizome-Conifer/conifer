@@ -48,7 +48,6 @@ services:
         environment:
             - PORT=3282
             - ROOT_DIR=/data/storage
-            - DB_DIR=/data/dat/
 
         ports:
             - "3282:3282/tcp"
