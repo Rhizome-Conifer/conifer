@@ -738,7 +738,7 @@ class ContentController(BaseController, RewriterApp):
                 'inv_sources': kwargs.get('inv_sources'),
                }
 
-    def _add_custom_params(self, cdx, resp_headers, kwargs):
+    def _add_custom_params(self, cdx, resp_headers, kwargs, record):
         try:
             self._add_stats(cdx, resp_headers, kwargs)
         except:
