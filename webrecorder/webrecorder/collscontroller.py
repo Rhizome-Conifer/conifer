@@ -6,6 +6,7 @@ from webrecorder.basecontroller import BaseController
 from webrecorder.webreccork import ValidationException
 
 from webrecorder.models.base import DupeNameException
+from webrecorder.models.datshare import DatShare
 from webrecorder.utils import get_bool
 
 
@@ -17,6 +18,7 @@ class CollsController(BaseController):
 
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
 
+        self.dat_share = DatShare()
 
     def init_routes(self):
         @self.app.post('/api/v1/collections')
@@ -189,6 +191,27 @@ class CollsController(BaseController):
 
             return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
 
+        # DAT
+        @self.app.post('/api/v1/collection/<coll_name>/dat/share')
+        def dat_share(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            result = self.dat_share(user, collection, share=True)
+            if 'error' in result:
+                self._raise_error(400, result['error'])
+
+            return result
+
+        @self.app.post('/api/v1/collection/<coll_name>/dat/unshare')
+        def dat_share(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            result = self.dat_share(user, collection, share=False)
+            if 'error' in result:
+                self._raise_error(400, result['error'])
+
+            return result
+
         # Create Collection
         #@self.app.get('/_create')
         #@self.jinja2_view('create_collection.html')
@@ -296,3 +319,4 @@ class CollsController(BaseController):
         result['size_remaining'] = user.get_size_remaining()
 
         return result
+
