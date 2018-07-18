@@ -42,10 +42,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
     COLL_CDXJ_TTL = 1800
 
-    DAT_PROP = 'dat_key'
-    DAT_COMMITTED_AT = 'dat_committed_at'
-    DAT_COLLS = 's:dat_colls'
-
     def __init__(self, **kwargs):
         super(Collection, self).__init__(**kwargs)
         self.recs = RedisUnorderedList(self.RECS_KEY, self)
@@ -312,7 +308,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         if not self.delete_object():
             errs['error'] = 'not_found'
 
-        self.dat_unshare(remove=True)
+        DatShare.dat_share(self, share=False)
 
         return errs
 
@@ -367,23 +363,6 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
     def set_external(self, external):
         self.set_bool_prop('external', external)
-
-    def dat_share(self, dat_key):
-        self.set_prop(self.DAT_PROP, dat_key)
-        self.set_prop(self.DAT_COMMITTED_AT, self._get_now())
-
-        self.redis.sadd(self.DAT_COLLS, self.my_id)
-
-    def dat_unshare(self, remove=False):
-        dat_key = self.get_prop(self.DAT_PROP)
-
-        if dat_key:
-            self.redis.srem(self.DAT_COLLS, self.my_id)
-            self.set_prop(self.DAT_PROP, '')
-
-            # TODO: better way to ensure dat removal?
-            if remove:
-                DatShare().remove_only(self)
 
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)

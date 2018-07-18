@@ -100,6 +100,23 @@ def today_str():
 
 
 # ============================================================================
+def spawn_once(*args, **kwargs):
+    try:
+        import uwsgi
+        from uwsgidecorators import postfork
+
+        worker_id = kwargs.pop('worker')
+        mule_id = kwargs.pop('mule', 0)
+
+        @postfork
+        def listen_loop():
+            if (mule_id is None or uwsgi.mule_id() == mule_id) and (worker_id is None or uwsgi.worker_id() == worker_id):
+                gevent.spawn(*args, **kwargs)
+    except:
+        gevent.spawn(*args, **kwargs)
+
+
+# ============================================================================
 @contextmanager
 def redis_pipeline(redis_obj):
     p = redis_obj.pipeline(transaction=False)

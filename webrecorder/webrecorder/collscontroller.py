@@ -18,8 +18,6 @@ class CollsController(BaseController):
 
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
 
-        self.dat_share = DatShare()
-
     def init_routes(self):
         @self.app.post('/api/v1/collections')
         def create_collection():
@@ -193,20 +191,20 @@ class CollsController(BaseController):
 
         # DAT
         @self.app.post('/api/v1/collection/<coll_name>/dat/share')
-        def dat_share(coll_name):
+        def dat_do_share(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            result = self.dat_share(user, collection, share=True)
+            result = DatShare.dat_share(collection, share=True, author=user.name)
             if 'error' in result:
                 self._raise_error(400, result['error'])
 
             return result
 
         @self.app.post('/api/v1/collection/<coll_name>/dat/unshare')
-        def dat_share(coll_name):
+        def dat_do_unshare(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            result = self.dat_share(user, collection, share=False)
+            result = DatShare.dat_share(collection, share=False)
             if 'error' in result:
                 self._raise_error(400, result['error'])
 

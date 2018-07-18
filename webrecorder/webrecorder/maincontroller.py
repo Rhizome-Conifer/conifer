@@ -40,6 +40,8 @@ from webrecorder.session import Session, RedisSessionMiddleware
 
 from webrecorder.models.access import SessionAccessCache
 from webrecorder.models.usermanager import UserManager
+from webrecorder.models.datshare import DatShare
+
 from webrecorder.rec.storage import storagepaths
 
 from webrecorder.basecontroller import BaseController
@@ -106,6 +108,9 @@ class MainController(BaseController):
 
         # Init Browser Mgr
         browser_mgr = BrowserManager(config, browser_redis, user_manager)
+
+        # Init Dat Share
+        DatShare.dat_share = DatShare(self.redis)
 
         # Init Content Loader/Rewriter
         content_app = ContentController(app=bottle_app,
