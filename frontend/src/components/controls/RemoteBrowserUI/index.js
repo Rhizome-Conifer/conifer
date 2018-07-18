@@ -85,7 +85,7 @@ class RemoteBrowserUI extends Component {
 
     // bidirectional clipboard
     if (clipboard !== prevProps.clipboard && this.cb) {
-      if (clipboard) {
+      if (!clipboard) {
         this.cb.destroy_clipboard();
       } else {
         this.cb.init_clipboard();

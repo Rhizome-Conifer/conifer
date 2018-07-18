@@ -13,6 +13,10 @@ import './style.scss';
 
 
 class DeleteCollectionUI extends Component {
+  static contextTypes = {
+    isAnon: PropTypes.bool
+  };
+
   static propTypes = {
     children: PropTypes.node,
     collection: PropTypes.object,
@@ -45,7 +49,7 @@ class DeleteCollectionUI extends Component {
     const { collection, user } = this.props;
     const { confirmDelete } = this.state;
 
-    if (this.validateConfirmDelete() === 'success') {
+    if (this.validateConfirmDelete() === 'success' || this.context.isAnon) {
       this.handle = setTimeout(() => this.setState({ indicator: true }), 300);
       this.props.deleteColl(collection.get('owner'), collection.get('id'), user.get('anon'));
     }
@@ -67,6 +71,7 @@ class DeleteCollectionUI extends Component {
   }
 
   render() {
+    const { isAnon } = this.context;
     const { collection, deleting, error, wrapper } = this.props;
 
     const Wrapper = wrapper || Button;
@@ -84,7 +89,7 @@ class DeleteCollectionUI extends Component {
           footer={
             <React.Fragment>
               <Button onClick={!deleting ? this.toggleDeleteModal : undefined} disabled={deleting} style={{ marginRight: 5 }}>Cancel</Button>
-              <Button onClick={!deleting ? this.deleteCollection : undefined} disabled={deleting || this.validateConfirmDelete() !== 'success'} bsStyle="danger">
+              <Button onClick={!deleting ? this.deleteCollection : undefined} disabled={!isAnon && (deleting || this.validateConfirmDelete() !== 'success')} bsStyle="danger">
                 {
                   deleting && this.state.indicator &&
                     <LoaderIcon />
@@ -96,18 +101,21 @@ class DeleteCollectionUI extends Component {
           <p>Are you sure you want to delete the collection <b>{collection.get('title')}</b> {getCollectionLink(collection)}?</p>
           <p>If you confirm, <b>all recordings will be permanently deleted</b>.</p>
           <p>Be sure to download the collection first if you would like to keep any data.</p>
-          <FormGroup validationState={this.validateConfirmDelete()}>
-            <ControlLabel>Type the collection title to confirm:</ControlLabel>
-            <FormControl
-              autoFocus
-              disabled={deleting}
-              id="confirm-delete"
-              name="confirmDelete"
-              onChange={this.handleChange}
-              placeholder={collection.get('title')}
-              type="text"
-              value={this.state.confirmDelete} />
-          </FormGroup>
+          {
+            !isAnon &&
+              <FormGroup validationState={this.validateConfirmDelete()}>
+                <ControlLabel>Type the collection title to confirm:</ControlLabel>
+                <FormControl
+                  autoFocus
+                  disabled={deleting}
+                  id="confirm-delete"
+                  name="confirmDelete"
+                  onChange={this.handleChange}
+                  placeholder={collection.get('title')}
+                  type="text"
+                  value={this.state.confirmDelete} />
+              </FormGroup>
+          }
           {
             error &&
               <HelpBlock style={{ color: 'red' }}>{ collectionErr[error] || 'Error encountered' }</HelpBlock>

@@ -52,7 +52,7 @@ const userRoutes = [
     exact: true,
     footer: true,
     getLocation: ({ user, coll }) => {
-      return `/${user}/${coll}/index`;
+      return `/${user}/${coll}`;
     },
     name: 'collectionCover'
   },
