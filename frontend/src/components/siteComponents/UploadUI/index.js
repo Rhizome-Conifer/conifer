@@ -172,12 +172,11 @@ class UploadUI extends PureComponent {
   open = () => this.setState({ open: true })
   close = () => {
     if (this.state.isUploading && this.xhr && this.state.canCancel) {
+      this.xhr.upload.removeEventListener('progress', this.uploadProgress);
+      this.xhr.removeEventListener('load', this.uploadSuccess);
+      this.xhr.removeEventListener('loadend', this.uploadComplete);
       this.xhr.abort();
     }
-
-    this.xhr.upload.removeEventListener('progress', this.uploadProgress);
-    this.xhr.removeEventListener('load', this.uploadSuccess);
-    this.xhr.removeEventListener('loadend', this.uploadComplete);
 
     this.setState(this.initialState);
   }
