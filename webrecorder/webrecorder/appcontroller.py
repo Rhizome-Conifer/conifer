@@ -122,7 +122,7 @@ class AppController(BaseController):
         Session.temp_prefix = config['temp_prefix']
         # Init Core app controllers
         for controller_type in self.ALL_CONTROLLERS:
-            _ = controller_type(
+            controller_type(
                 app=bottle_app,
                 jinja_env=jinja_env,
                 manager=manager,
@@ -522,7 +522,8 @@ class AppController(BaseController):
             :rtype: str
             """
             trunc_value = (
-                '?<span class="truncate-expand" aria-role="button" title="Click to expand" onclick="this.innerHTML=\'' +
+                '?<span class="truncate-expand" aria-role="button" ' +
+                'title="Click to expand" onclick="this.innerHTML=\'' +
                 value.split('?')[-1] +
                 '\'; this.classList.add(\'open\');">...</span>'
             )
@@ -650,6 +651,11 @@ class AppController(BaseController):
 
         @self.bottle_app.route('/_message')
         def flash_message():
+            """Bind to request URL displaying message.
+
+            :returns: response
+            :rtype: dict
+            """
             message = request.query.getunicode('message', '')
             msg_type = request.query.getunicode('msg_type', '')
             self.flash_message(message, msg_type)
@@ -658,10 +664,20 @@ class AppController(BaseController):
         @self.bottle_app.route('/_policies')
         @self.jinja2_view('policies.html')
         def policies():
+            """Cause a redirect to the policies.
+
+            :returns: response
+            :rtype: dict
+            """
             return {}
 
         @self.bottle_app.route('/<:re:.*>', method='ANY')
         def fallthrough():
+            """Bind to request URL in HTTP referer.
+
+            :returns: response
+            :rtype: dict
+            """
             self._check_refer_redirect()
 
     def make_err_handler(self, default_err_handler):
@@ -677,16 +693,13 @@ class AppController(BaseController):
             return res
 
         def err_handler(out):
-            if (isinstance(out.exception, dict) and
-                hasattr(out, 'json_err')):
+            if (isinstance(out.exception, dict) and hasattr(out, 'json_err')):
                 return json_error(out.exception)
             else:
                 if out.status_code == 404:
                     start_path = request.environ.get('SCRIPT_NAME')
                     if not start_path:
                         start_path = request.environ.get('PATH_INFO')
-                    #else:
-                    #    url = request.environ.get('PATH_INFO', '')[1:]
 
                     if start_path.startswith('/' + self.manager.temp_prefix):
                         res = error_view(out, is_temp=True)
@@ -699,7 +712,6 @@ class AppController(BaseController):
                     print(out.traceback)
 
                 return error_view(out)
-                #return default_err_handler(out)
 
         return err_handler
 
