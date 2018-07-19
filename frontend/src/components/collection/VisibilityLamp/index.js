@@ -87,7 +87,9 @@ class VisibilityLamp extends PureComponent {
     }, 30);
   }
 
-  toggle = () => {
+  toggle = (evt) => {
+    evt.stopPropagation();
+
     if (this.state.editing) {
       return;
     }

@@ -1,0 +1,32 @@
+
+
+.wr-edit-modal {
+    .modal-header {
+        border: none;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: space-between;
+        border: none;
+
+        &:before, &:after {
+            content: none;
+        }
+
+        .btn-success {
+            border-radius: 2.7rem;
+            padding: 0.7rem 3rem;
+            font-size: 1.15rem;
+
+            svg {
+                vertical-align: text-bottom;
+                margin-right: .5rem;
+
+                path {
+                    fill: #FFF;
+                }
+            }
+        }
+    }
+}

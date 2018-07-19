@@ -68,7 +68,7 @@ var webpackConfig = module.exports = {
                       '>1%',
                       'last 4 versions',
                       'Firefox ESR',
-                      'not ie < 9',
+                      'ie >= 10',
                     ]
                   })
                 ]

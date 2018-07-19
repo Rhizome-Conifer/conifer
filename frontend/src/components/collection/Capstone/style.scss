@@ -1,10 +1,11 @@
+@import 'src/vars';
 
 .capstone {
     display: flex;
     justify-content: center;
     align-items: baseline;
     margin: 4rem 0;
-    color: #7e7e7e;
+    color: $gray500;
 
     h4 {
         margin: 0 0.5rem 0 0;
@@ -20,7 +21,7 @@
 
     a {
         &:link, &:visited, &:active, &:hover {
-          color: #7e7e7e;
+          color: $gray500;
           font-weight: 400;
           font-size: 1.2rem;
           text-decoration: underline;

@@ -49,6 +49,7 @@ const initialState = fromJS({
   bkDeleteError: null,
   deleting: false,
   deleteError: null,
+  editing: false,
   edited: false,
   loading: false,
   loaded: false,
@@ -79,11 +80,19 @@ export default function list(state = initialState, action = {}) {
           return 0;
         })
       );
+    case LIST_EDIT:
+      return state.set('editing', true);
     case LIST_EDIT_SUCCESS: {
       const edits = action.id === state.get('id') ? action.data : {};
       return state.merge({
+        editing: false,
         edited: true,
         ...edits
+      });
+    }
+    case LIST_EDIT_FAIL: {
+      return state.merge({
+        error: action.error.error
       });
     }
     case LIST_REMOVE:

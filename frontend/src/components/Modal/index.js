@@ -7,12 +7,13 @@ import { Modal as BSModal } from 'react-bootstrap';
 class Modal extends Component {
 
   static propTypes = {
-    header: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     body: PropTypes.element,
-    footer: PropTypes.element,
-    visible: PropTypes.bool,
     closeCb: PropTypes.func,
-    dialogClassName: PropTypes.string
+    dialogClassName: PropTypes.string,
+    footer: PropTypes.element,
+    header: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+    propsPass: PropTypes.object,
+    visible: PropTypes.bool
   }
 
   render() {

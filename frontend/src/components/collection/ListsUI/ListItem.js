@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 import { DragSource, DropTarget } from 'react-dnd';
+import { withRouter } from 'react-router';
 
 import { draggableTypes as dt } from 'config';
 
@@ -96,6 +97,7 @@ class ListItem extends PureComponent {
     connectDragSource: PropTypes.func,
     connectDropTarget: PropTypes.func,
     editList: PropTypes.func,
+    history: PropTypes.object,
     id: PropTypes.string,
     isDragging: PropTypes.bool,
     isOver: PropTypes.bool,
@@ -108,6 +110,11 @@ class ListItem extends PureComponent {
     this.props.editList(list.get('id'), { public: !list.get('public') });
   }
 
+  navigate = () => {
+    const { collId, collUser, history, list } = this.props;
+    history.push(`/${collUser}/${collId}/list/${list.get('slug')}`);
+  }
+
   render() {
     const { canAdmin } = this.context;
     const { collId, collUser, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
@@ -118,10 +125,10 @@ class ListItem extends PureComponent {
 
     const item = (
       <li className={classes} key={list.get('id')} style={{ opacity: isDragging ? 0 : 1 }}>
-        <div className={classNames('wrapper', { editable: canAdmin })}>
-          <Link to={`/${collUser}/${collId}/list/${list.get('slug')}`} title={list.get('title')}>
+        <div className={classNames('wrapper', { editable: canAdmin })} onClick={this.navigate}>
+          <span className="title" title={list.get('title')}>
             { list.get('title') }
-          </Link>
+          </span>
           <span className="bookmark-count">{list.get('total_bookmarks')}</span>
           {
             canAdmin &&
@@ -142,8 +149,8 @@ class ListItem extends PureComponent {
   }
 }
 
-export default DropTarget(
+export default withRouter(DropTarget(
   [dt.BOOKMARK_ITEM, dt.PAGE_ITEM, dt.LIST],
   listTarget,
   dropCollect
-)(DragSource(dt.LIST, listSource, dragCollect)(ListItem));
+)(DragSource(dt.LIST, listSource, dragCollect)(ListItem)));

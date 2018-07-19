@@ -33,6 +33,7 @@ const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
 
 export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
+  editing: false,
   edited: false,
   editError: null,
   error: null,
@@ -65,6 +66,8 @@ export default function collection(state = initialState, action = {}) {
         editing: false,
         editError: action.error.error
       });
+    case COLL_EDIT:
+      return state.set('editing', true);
     case COLL_LOAD:
       return state.set('loading', true);
     case COLL_EDIT_SUCCESS:
@@ -98,8 +101,10 @@ export default function collection(state = initialState, action = {}) {
       let editState = {};
       if (action.type === COLL_EDIT_SUCCESS) {
         editState = {
+          editing: false,
           edited: true,
-          editError: null
+          editError: null,
+          slug_matched: true
         };
       }
 
@@ -108,8 +113,6 @@ export default function collection(state = initialState, action = {}) {
         loaded: true,
         accessed: action.accessed,
         error: null,
-        ...editState,
-
         pages: pgs,
         created_at,
         desc,
@@ -126,7 +129,9 @@ export default function collection(state = initialState, action = {}) {
         slug_matched,
         timespan,
         title,
-        updated_at
+        updated_at,
+
+        ...editState
       });
     }
     case COLL_LOAD_FAIL:

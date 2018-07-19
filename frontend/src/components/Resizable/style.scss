@@ -3,6 +3,7 @@ $buffer: .8rem;
 
 .wr-resizeable {
     position: relative;
+    flex-shrink: 0;
 
     .resizable-handle {
         position: absolute;

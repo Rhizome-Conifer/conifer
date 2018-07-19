@@ -1,21 +1,16 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { Button } from 'react-bootstrap';
+import classNames from 'classnames';
+import Collapsible from 'react-collapsible';
 
-import { defaultListDesc } from 'config';
-import { getCollectionLink, getListLink } from 'helpers/utils';
-
-import InlineEditor from 'components/InlineEditor';
-import PublicSwitch from 'components/collection/PublicSwitch';
-import Truncate from 'components/Truncate';
+import EditModal from 'components/collection/EditModal';
 import WYSIWYG from 'components/WYSIWYG';
-import { ListIcon } from 'components/icons';
+import { CarotIcon, ListIcon } from 'components/icons';
 
 import './style.scss';
 
 
-class ListHeaderUI extends PureComponent {
+class ListHeaderUI extends Component {
   static contextTypes = {
     canAdmin: PropTypes.bool
   };
@@ -23,76 +18,83 @@ class ListHeaderUI extends PureComponent {
   static propTypes = {
     collection: PropTypes.object,
     editList: PropTypes.func,
-    history: PropTypes.object,
     list: PropTypes.object,
+    listEditing: PropTypes.bool,
     listEdited: PropTypes.bool,
+    listError: PropTypes.bool,
     location: PropTypes.object
   };
 
-  editListTitle = (title) => {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      editModal: false,
+      showDesc: false
+    };
+  }
+
+  editList = (data) => {
     const { collection, editList, list } = this.props;
-    editList(collection.get('owner'), collection.get('id'), list.get('id'), { title });
+    editList(collection.get('owner'), collection.get('id'), list.get('id'), data);
   }
 
-  editDesc = (desc) => {
-    const { collection, list, editList } = this.props;
-    editList(collection.get('owner'), collection.get('id'), list.get('id'), { desc });
+  editModal = () => {
+    this.setState({ editModal: !this.state.editModal });
   }
 
-  setPublic = (bool) => {
-    const { collection, editList, list } = this.props;
-    editList(collection.get('owner'), collection.get('id'), list.get('id'), { public: bool });
-  }
-
-  startReplay = () => {
-    const { collection, history, list } = this.props;
-    const first = list.getIn(['bookmarks', 0]);
-
-    if (first) {
-      history.push(`${getListLink(collection, list)}/b${first.get('id')}/${first.get('timestamp')}/${first.get('url')}`);
-    }
-  }
+  closeDesc = () => this.setState({ showDesc: false })
+  openDesc = () => this.setState({ showDesc: true })
 
   render() {
     const { canAdmin } = this.context;
-    const { collection, list } = this.props;
-    const bkCount = list.get('bookmarks').size;
-    const bookmarks = `${bkCount} Page${bkCount === 1 ? '' : 's'}`;
-    const user = collection.get('owner');
+    const { list } = this.props;
+    const { showDesc } = this.state;
+
+    const trigger = (
+      <div><CarotIcon flip={showDesc} /> {showDesc ? 'Hide' : 'Show'} Description</div>
+    );
 
     return (
       <div className="wr-list-header">
-        <span className="banner"><ListIcon /> LIST</span>
-        <div className="heading-container">
-          <InlineEditor
-            initial={list.get('title')}
-            onSave={this.editListTitle}
-            readOnly={!canAdmin}
-            success={this.props.listEdited}>
-            <h1>{list.get('title')}</h1>
-          </InlineEditor>
+        <div className={classNames('banner')}>
+          <ListIcon />
+          <h2 role={canAdmin ? 'button' : 'presentation'} className={classNames({ 'click-highlight': canAdmin })} onClick={canAdmin ? this.editModal : undefined}>{list.get('title')}</h2>
         </div>
-        <Truncate height={75} propPass="clickToEdit">
-          <WYSIWYG
-            initial={list.get('desc')}
-            key={list.get('id')}
-            onSave={this.editDesc}
-            placeholder={defaultListDesc}
-            success={this.props.listEdited} />
-        </Truncate>
-        <div className="creator">
-          Created by <Link to={`/${user}`}>{user}</Link>, with {bookmarks} from the collection <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link>
-        </div>
-        <div className="function-row">
-          {
-            canAdmin &&
-              <PublicSwitch
-                callback={this.setPublic}
-                isPublic={list.get('public')}
-                label="List" />
-          }
-          <Button onClick={this.startReplay} className="rounded">VIEW PAGES</Button>
-        </div>
+
+        {
+          (list.get('desc') || canAdmin) &&
+            <Collapsible
+              lazyRender
+              easing="ease-in-out"
+              onClose={this.closeDesc}
+              onOpen={this.openDesc}
+              overflowWhenOpen="visible"
+              transitionTime={300}
+              trigger={trigger}>
+              <div role={canAdmin ? 'button' : 'presentation'} className={classNames({ 'click-highlight': canAdmin })} onClick={canAdmin ? this.editModal : undefined}>
+                <WYSIWYG
+                  readOnly
+                  initial={list.get('desc') || '\\+ Add Description'}
+                  key={list.get('id')} />
+              </div>
+            </Collapsible>
+        }
+
+        {
+          canAdmin &&
+            <EditModal
+              closeCb={this.editModal}
+              desc={list.get('desc')}
+              editing={this.props.listEditing}
+              edited={this.props.listEdited}
+              editCallback={this.editList}
+              error={this.props.listError}
+              label="List"
+              name={list.get('title')}
+              open={this.state.editModal}
+              propsPass={{ key: 'listModal' }} />
+        }
       </div>
     );
   }
