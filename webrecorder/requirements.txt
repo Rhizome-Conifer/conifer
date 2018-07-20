@@ -1,6 +1,7 @@
 bottle==0.12.13
 bottle-cork
 boto3
+redislite
 youtube_dl
 itsdangerous
 requests>=2.9.1

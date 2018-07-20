@@ -690,7 +690,9 @@ class ContentController(BaseController, RewriterApp):
                 # force creation of new recording as this one is closed
                 self._raise_error(400, 'recording_not_open')
 
-            collection.access.assert_can_write_coll(collection)
+            # skip access check if proxy mode for webrecorder.proxy redirect: TODO: review!
+            if 'wsgiprox.proxy_host' not in request.environ:
+                collection.access.assert_can_write_coll(collection)
 
             if the_user.is_out_of_space():
                 self._raise_error(402, 'out_of_space')
