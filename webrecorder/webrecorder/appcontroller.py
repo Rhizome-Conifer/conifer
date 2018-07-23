@@ -119,7 +119,7 @@ class AppController(BaseController):
             self.browser_redis, self.browser_mgr, config
         )
         # Init Sesion temp_prefix
-        Session.temp_prefix = config['temp_prefix']
+        Session.TEMP_PREFIX = config['temp_prefix']
         # Init Core app controllers
         for controller_type in self.ALL_CONTROLLERS:
             controller_type(

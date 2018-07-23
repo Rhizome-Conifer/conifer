@@ -1,21 +1,26 @@
+# standard library imports
 import os
-from os.path import expandvars
-from datetime import timedelta, datetime
-
-from warcio.timeutils import datetime_to_http_date
-
 import base64
 import pickle
+from datetime import datetime, timedelta
+from os.path import expandvars
+
+# third party imports
 import redis
+from itsdangerous import BadSignature, URLSafeTimedSerializer
 
-from webrecorder.cookieguard import CookieGuard
+# library specific imports
+from warcio.timeutils import datetime_to_http_date
 from webrecorder.utils import redis_pipeline
-from itsdangerous import URLSafeTimedSerializer, BadSignature
+from webrecorder.cookieguard import CookieGuard
 
 
-# ============================================================================
 class Session(object):
-    temp_prefix = ''
+    """Session manager.
+
+    :cvar str TEMP_PREFIX: temp prefix
+    """
+    TEMP_PREFIX = ''
 
     def __init__(self, cork, environ, key, sesh, ttl, is_restricted):
         self.environ = environ
@@ -136,7 +141,7 @@ class Session(object):
         if not self.is_new():
             return
 
-        if user.startswith(self.temp_prefix):
+        if user.startswith(self.TEMP_PREFIX):
             self._sesh['anon'] = user
             self._anon = user
             self.curr_role = 'anon'
@@ -178,7 +183,7 @@ class Session(object):
 
     @staticmethod
     def make_anon_user():
-        return Session.temp_prefix + base64.b32encode(os.urandom(5)).decode('utf-8')
+        return Session.TEMP_PREFIX + base64.b32encode(os.urandom(5)).decode('utf-8')
 
 
 # ============================================================================
@@ -226,6 +231,7 @@ class RedisSessionMiddleware(CookieGuard):
 
             except Exception as e:
                 import traceback
+
                 traceback.print_exc()
                 print('Invalid Session, Creating New')
 

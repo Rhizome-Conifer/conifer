@@ -561,7 +561,7 @@ class TestTempContent(FullStackTests):
         path_parts = parts.path.split('/', 2)
         assert self.anon_user == path_parts[1]
 
-        assert self.anon_user.startswith(Session.temp_prefix)
+        assert self.anon_user.startswith(Session.TEMP_PREFIX)
         assert parts.path.endswith('/temp/recording-session/record/mp_/http://example.com/')
 
         # Delete this recording
@@ -577,7 +577,7 @@ class TestTempContent(FullStackTests):
         path_parts = parts.path.split('/', 2)
         assert self.anon_user == path_parts[1]
 
-        assert self.anon_user.startswith(Session.temp_prefix)
+        assert self.anon_user.startswith(Session.TEMP_PREFIX)
 
         assert res.headers['Location'].endswith('/temp/patch/patch/http://example.com/?patch=test')
 
