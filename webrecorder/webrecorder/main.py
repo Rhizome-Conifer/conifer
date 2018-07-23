@@ -1,16 +1,12 @@
-# third party imports
-from bottle import run
-from gevent import monkey
+from gevent import monkey; monkey.patch_all()
 
-
-monkey.patch_all()
-
-
-# library specific imports
+#from app import init
 from webrecorder.appcontroller import AppController
+from bottle import run
 
 
-APPLICATION = AppController().app
+# ============================================================================
+application = AppController().app
 
 if __name__ == "__main__":
-    run(app=APPLICATION, port=8088)
+    run(app=application, port=8088)
