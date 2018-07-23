@@ -222,14 +222,22 @@ class UserController(BaseController):
             data = {'deleted_user': username}
             return data
 
-        @self.app.post('/api/v1/user/<username>/desc')
+        @self.app.post('/api/v1/user/<username>')
         def update_desc(username):
-            """legacy, eventually move to the patch endpoint"""
-            desc = request.body.read().decode('utf-8')
             user = self.get_user(user=username)
 
-            user['desc'] = desc
-            return {}
+            data = request.json or {}
+
+            if 'desc' in data:
+                user['desc'] = data['desc']
+
+            if 'display_name' in data:
+                user['display_name'] = data['display_name'][:150]
+
+            if 'display_url' in data:
+                user['display_url'] = data['display_url'][:500]
+
+            return {'success': True}
 
         # Skip POST request recording
         @self.app.post('/api/v1/auth/skipreq')

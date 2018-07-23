@@ -2,6 +2,7 @@
     var ws;
     var useWS = false;
     var errCount = 0;
+    var reinitWait = null;
 
     var user;
     var coll;
@@ -31,6 +32,8 @@
     }
 
     var initWS = function() {
+        reinitWait = null;
+
         var url = window.location.protocol == "https:" ? "wss://" : "ws://";
         //var url = "ws://";
         url += host + "/_client_ws_cont?";
@@ -47,7 +50,7 @@
             ws.addEventListener("open", ws_openned);
             ws.addEventListener("message", ws_received);
             ws.addEventListener("close", ws_closed);
-            ws.addEventListener("error", ws_closed);
+            ws.addEventListener("error", ws_errored);
         } catch (e) {
             useWS = false;
         }
@@ -62,14 +65,29 @@
         }
     }
 
-    function ws_closed() {
+    function ws_errored() {
         useWS = false;
+
+        if (reinitWait != null) {
+          return;
+        }
+
         if (errCount < 5) {
             errCount += 1;
-            setTimeout(initWS, 2000);
+            reinitWait = setTimeout(initWS, 2000);
         }
     }
- 
+
+    function ws_closed() {
+        useWS = false;
+
+        if (reinitWait != null) {
+          return;
+        }
+
+        reinitWait = setTimeout(initWS, 5000);
+    }
+
     function addCookie(name, value, domain) {
         var msg = {"ws_type": "addcookie",
                    "name": name,

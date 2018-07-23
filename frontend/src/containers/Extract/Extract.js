@@ -31,7 +31,6 @@ class Extract extends Component {
     dispatch: PropTypes.func,
     extractable: PropTypes.object,
     match: PropTypes.object,
-    reqId: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string
   };
@@ -64,8 +63,7 @@ class Extract extends Component {
   }
 
   render() {
-    const { activeBrowser, activeCollection, dispatch, extractable, match: { params },
-            reqId, timestamp, url } = this.props;
+    const { activeBrowser, activeCollection, dispatch, extractable, match: { params }, timestamp, url } = this.props;
     const { user, coll, rec } = params;
 
     const archId = extractable.get('id');
@@ -85,12 +83,9 @@ class Extract extends Component {
           {
             activeBrowser ?
               <RemoteBrowser
-                dispatch={dispatch}
-                mode={this.mode}
                 params={params}
                 rb={activeBrowser}
                 rec={rec}
-                recId={reqId}
                 url={url} /> :
               <IFrame
                 appPrefix={appPrefix}
@@ -177,7 +172,6 @@ const mapStateToProps = ({ app }) => {
     autoscroll: app.getIn(['controls', 'autoscroll']),
     collection: app.get('collection'),
     extractable: app.getIn(['controls', 'extractable']),
-    reqId: app.getIn(['remoteBrowsers', 'reqId']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

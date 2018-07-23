@@ -65,7 +65,7 @@ class SidebarPageViewer extends Component {
     // this.props.dispatch(updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry));
     // TODO: add change to history ?
     this.props.dispatch(batchActions([
-      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry),
+      updateUrlAndTimestamp(page.get('url'), page.get('timestamp'), page.get('title') || untitledEntry, false),
       setBrowser(page.get('browser') || null)
     ]));
   }
@@ -74,7 +74,7 @@ class SidebarPageViewer extends Component {
     // this.props.dispatch(updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry));
     // TODO: add change to history ?
     this.props.dispatch(batchActions([
-      updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry),
+      updateUrlAndTimestamp(rowData.get('url'), rowData.get('timestamp'), rowData.get('title') || untitledEntry, false),
       setBrowser(rowData.get('browser') || null)
     ]));
   }

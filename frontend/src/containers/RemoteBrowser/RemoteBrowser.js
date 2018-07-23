@@ -10,6 +10,7 @@ const mapStateToProps = ({ app }) => {
   return {
     autoscroll: app.getIn(['controls', 'autoscroll']),
     clipboard: app.getIn(['toolBin', 'clipboard']),
+    contentFrameUpdate: app.getIn(['controls', 'contentFrameUpdate']),
     inactiveTime: remoteBrowsers.get('inactiveTime'),
     reqId: remoteBrowsers.get('reqId'),
     sidebarResize: app.getIn(['sidebar', 'resizing'])

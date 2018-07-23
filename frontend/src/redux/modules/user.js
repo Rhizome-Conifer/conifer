@@ -1,5 +1,5 @@
 import { fromJS } from 'immutable';
-import config from 'config';
+import { apiPath } from 'config';
 
 
 const USER_DELETE = 'wr/user/DELETE';
@@ -18,6 +18,10 @@ const USER_PASS = 'wr/user/PASS';
 const USER_PASS_SUCCESS = 'wr/user/PASS_SUCCESS';
 const USER_PASS_FAIL = 'wr/user/PASS_FAIL';
 
+const USER_UPDATE = 'wr/user/UPDATE';
+const USER_UPDATE_SUCCESS = 'wr/user/UPDATE_SUCCESS';
+const USER_UPDATE_FAIL = 'wr/user/UPDATE_FAIL';
+
 const ADD_NEW_COLLECTION = 'wr/user/ADD_NEW_COLLECTION';
 const SELECT_COLLECTION = 'wr/user/SELECT_COLLECTION';
 const COLLECTION_DELETION = 'wr/user/COLLECTION_DELETION';
@@ -32,6 +36,8 @@ const initialState = fromJS({
   error: null,
   loading: false,
   loaded: false,
+  passUpdate: false,
+  passUpdateFail: null,
   space_utilization: {}
 });
 
@@ -97,6 +103,10 @@ export default function user(state = initialState, action = {}) {
       });
     case USER_PASS_FAIL:
       return state.set('passUpdateFail', action.error.error);
+    case USER_UPDATE_SUCCESS:
+      return state.merge({
+        space_utilization: action.result.user.space_utilization
+      });
     default:
       return state;
   }
@@ -106,7 +116,7 @@ export default function user(state = initialState, action = {}) {
 export function deleteUser(user) {
   return {
     types: [USER_DELETE, USER_DELETE_SUCCESS, USER_DELETE_FAIL],
-    promise: client => client.del(`${config.apiPath}/user/${user}`)
+    promise: client => client.del(`${apiPath}/user/${user}`)
   };
 }
 
@@ -121,7 +131,7 @@ export function load(username) {
   return {
     types: [USER_LOAD, USER_LOAD_SUCCESS, USER_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${config.apiPath}/user/${username}`, {
+    promise: client => client.get(`${apiPath}/user/${username}`, {
       params: { include_colls: true }
     })
   };
@@ -131,7 +141,7 @@ export function load(username) {
 export function loadCollections(user) {
   return {
     types: [USER_LOAD_COLLECTIONS, USER_LOAD_COLLECTIONS_SUCCESS, USER_LOAD_COLLECTIONS_FAIL],
-    promise: client => client.get(`${config.apiPath}/collections`, {
+    promise: client => client.get(`${apiPath}/collections`, {
       params: {
         user,
         include_recordings: false,
@@ -169,12 +179,22 @@ export function deleteUserCollection(id) {
 export function updatePassword(currPass, newPass, newPass2) {
   return {
     types: [USER_PASS, USER_PASS_SUCCESS, USER_PASS_FAIL],
-    promise: client => client.post(`${config.apiPath}/auth/password/update`, {
+    promise: client => client.post(`${apiPath}/auth/password/update`, {
       data: {
         currPass,
         newPass,
         newPass2
       }
+    })
+  };
+}
+
+
+export function updateUser(user, data) {
+  return {
+    types: [USER_UPDATE, USER_UPDATE_SUCCESS, USER_UPDATE_FAIL],
+    promise: client => client.put(`${apiPath}/admin/user/${user}`, {
+      data
     })
   };
 }

@@ -57,6 +57,8 @@ class ListsUI extends Component {
   constructor(props, { asPublic }) {
     super(props);
 
+    this.createHandle = null;
+    this.editHandle = null;
     const lists = asPublic ? props.lists.filter(l => l.get('public')) : props.lists;
     this.state = {
       editModal: false,
@@ -75,17 +77,22 @@ class ListsUI extends Component {
 
     if (isCreating && !created && this.props.lists !== nextProps.lists) {
       this.setState({ title: '', isCreating: false, created: true });
-      setTimeout(() => { this.setState({ created: false, isCreating: false }); }, 3000);
+      this.createHandle = setTimeout(() => { this.setState({ created: false, isCreating: false }); }, 3000);
     }
 
     if (isEditing && !edited && this.props.lists !== nextProps.lists) {
       this.setState({ isEditing: false, edited: true });
-      setTimeout(() => { this.setState({ edited: false, isEditing: false, editId: null }); }, 5000);
+      this.editHandle = setTimeout(() => { this.setState({ edited: false, isEditing: false, editId: null }); }, 5000);
     }
 
     if (nextProps.lists !== this.props.lists) {
       this.setState({ lists: nextProps.lists });
     }
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.createHandle);
+    clearTimeout(this.editHandle);
   }
 
   handleInput = (evt) => {

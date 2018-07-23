@@ -29,6 +29,7 @@ const initialState = fromJS({
   archivesAccessed: null,
   archives: [],
   archiveSources: [],
+  contentFrameUpdate: true,
   is404: false
 });
 
@@ -73,7 +74,8 @@ export default function controls(state = initialState, action = {}) {
       return state.merge({
         url: action.url,
         timestamp: action.ts,
-        title: action.title
+        title: action.title,
+        contentFrameUpdate: action.internal
       });
     default:
       return state;
@@ -162,12 +164,13 @@ export function updateUrl(url) {
 }
 
 
-export function updateUrlAndTimestamp(url, ts, title) {
+export function updateUrlAndTimestamp(url, ts, title = '', internal = true) {
   return {
     type: SET_URL_TS,
-    url,
+    internal,
+    title,
     ts,
-    title
+    url
   };
 }
 

@@ -218,13 +218,14 @@ class TestS3Storage(BaseStorageCommit):
         parts = urlsplit(root)
 
         cls.bucket = parts.netloc
-        cls.root_path = parts.path
 
+        # don't include starting /
+        cls.root_path = parts.path[1:]
 
         # attempt to write empty object to s3, if no write access, then skip all the tests
         try:
             cls.s3 = boto3.client('s3')
-            cls.s3.put_object(Bucket=cls.bucket, Key=root + 'empty')
+            cls.s3.put_object(Bucket=cls.bucket, Key=cls.root_path + 'empty')
         except:
             pytest.skip('Skipping S3 Storage Tests, No S3 Write Access')
 
@@ -237,7 +238,7 @@ class TestS3Storage(BaseStorageCommit):
     def teardown_class(cls):
         # Delete temp object
         try:
-            cls.s3.delete_object(Bucket=cls.bucket, Key=root + 'empty')
+            cls.s3.delete_object(Bucket=cls.bucket, Key=cls.root_path + 'empty')
         except:
             pass
 
@@ -247,12 +248,12 @@ class TestS3Storage(BaseStorageCommit):
 
     def _list_keys(self):
         return [obj['Key'] for obj in self.s3.list_objects(Bucket=self.bucket,
-                                                           Prefix=self.root_path[1:]).get('Contents', []) if obj['Size'] > 0]
+                                                           Prefix=self.root_path).get('Contents', []) if obj['Size'] > 0]
 
     def assert_in_store(self, coll_id):
         def check():
             today = today_str()
-            storage_dir = os.environ['S3_ROOT'] + '/' + today
+            storage_dir = os.environ['S3_ROOT'] + today
 
             keys = self._list_keys()
             assert len(keys) == 2
