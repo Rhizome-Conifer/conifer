@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from os.path import expandvars
 
 # third party imports
-import redis
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 # library specific imports
@@ -19,10 +18,36 @@ class Session(object):
     """Session manager.
 
     :cvar str TEMP_PREFIX: temp prefix
+
+    :ivar environ: n.s.
+    :ivar dict _sesh: session data
+    :ivar str key: Redis key
+    :ivar curr_user: current user
+    :type curr_user: str or None
+    :ivar curr_role: current role
+    :type curr_role: str or None
+    :ivar bool should_delete: n.s.
+    :ivar bool should_save: n.s.
+    :ivar bool should_renew: n.s.
+    :ivar bool should_copy_cookie: n.s.
+    :ivar bool is_restricted: toggle restricted session
+    :ivar str dura_type: session duration
+    :ivar int ttl: session TTL
+    :ivar _anon: toggle anonymous session
+    :type _anon: bool or None
     """
     TEMP_PREFIX = ''
 
     def __init__(self, cork, environ, key, sesh, ttl, is_restricted):
+        """Initialize session manager.
+
+        :param cork: n.s.
+        :param environ: n.s.
+        :param str key: Redis key
+        :param dict sesh: session data
+        :param int ttl: session TTL
+        :param bool is_restricted: toggle restricted session
+        """
         self.environ = environ
         self._sesh = sesh
         self.key = key
@@ -75,18 +100,37 @@ class Session(object):
         self.template_params = params
 
     def is_new(self):
+        """Determine whether session is new, i.e., session TTL is set
+        to initial value.
+
+        :returns: whether session is new
+        :rtype: bool
+        """
         return self.ttl == -2
 
     def get_id(self):
+        """Get session ID.
+
+        :returns: session ID
+        :rtype: str
+        """
         if self.is_new():
             self.save()
-
         return self._sesh['id']
 
     def get_csrf(self):
+        """Get CSRF token.
+
+        :returns: CSRF token
+        :rtype: str
+        """
         return self._sesh.get('csrf', '')
 
     def set_id(self, id):
+        """Set session ID.
+
+        :param str id: session ID
+        """
         self._sesh['id'] = id
         self.is_restricted = True
         self.dura_type = 'restricted'
@@ -95,9 +139,11 @@ class Session(object):
         self.should_save = False
 
     def save(self):
+        """Earmark session for being saved."""
         self.should_save = True
 
     def delete(self):
+        """Earmark session for being deleted."""
         self.should_delete = True
         self.environ['webrec.delete_all_cookies'] = 'all'
 
@@ -109,13 +155,30 @@ class Session(object):
         self.should_save = True
 
     def get(self, name, value=None):
+        """Get session data.
+
+        :param str name: key
+        :param str value: default value
+
+        :returns: value
+        """
         return self._sesh.get(name, value)
 
     def set_anon(self):
+        """Set anonymous user (iff current user is not set)."""
         if not self.curr_user:
             self['anon'] = self.anon_user
 
     def is_anon(self, user=None):
+        """Determine whether current user or given user
+        is anonymous user.
+
+        :param user: user
+        :type: str or None
+
+        :returns: whether current user or given user is anonymous user
+        :rtype: bool
+        """
         if self.curr_user:
             return False
 
@@ -129,6 +192,10 @@ class Session(object):
         return True
 
     def logged_in(self, extend_long=False):
+        """Change session settings (user has logged in).
+
+        :param bool extend_long: wheter to extend session duration
+        """
         if extend_long:
             self.dura_type = 'long'
             self._sesh['is_long'] = True
@@ -138,6 +205,10 @@ class Session(object):
         self.environ['webrec.delete_all_cookies'] = 'non_sesh'
 
     def set_restricted_user(self, user):
+        """Change user role.
+
+        :param str user: user
+        """
         if not self.is_new():
             return
 
@@ -155,6 +226,11 @@ class Session(object):
 
     @property
     def anon_user(self):
+        """Get anonymous user.
+
+        :returns: anonymous user ID
+        :rtype: str
+        """
         if self._anon:
             return self._anon
 
@@ -165,9 +241,19 @@ class Session(object):
         return self._anon
 
     def flash_message(self, msg, msg_type='danger'):
+        """Set message.
+
+        :param str msg: message
+        :param str msg_type: message type
+        """
         self['message'] = msg_type + ':' + msg
 
     def pop_message(self):
+        """Get message.
+
+        :returns: message and message type
+        :rtype: str and str
+        """
         msg_type = ''
         if not self._sesh:
             return '', msg_type
@@ -183,13 +269,22 @@ class Session(object):
 
     @staticmethod
     def make_anon_user():
-        return Session.TEMP_PREFIX + base64.b32encode(os.urandom(5)).decode('utf-8')
+        """Get anonymous user ID.
+
+        :returns: anonoymous user ID
+        :rtype: str
+        """
+        anon = (
+            Session.TEMP_PREFIX +
+            base64.b32encode(os.urandom(5)).decode("utf-8")
+        )
+        return anon
 
 
 # ============================================================================
 class RedisSessionMiddleware(CookieGuard):
     def __init__(self, app, cork, redis, session_opts):
-        super(RedisSessionMiddleware, self).__init__(app, session_opts['session.key'])
+        super().__init__(app, session_opts['session.key'])
         self.redis = redis
         self.cork = cork
 
@@ -229,7 +324,7 @@ class RedisSessionMiddleware(CookieGuard):
                             data['csrf'] = self.make_id()
                             force_save = True
 
-            except Exception as e:
+            except Exception:
                 import traceback
 
                 traceback.print_exc()
@@ -239,9 +334,10 @@ class RedisSessionMiddleware(CookieGuard):
         if data is None:
             sesh_id, redis_key = self.make_id_and_key()
 
-            data = {'id': sesh_id,
-                    'csrf': self.make_id()
-                   }
+            data = {
+                'id': sesh_id,
+                'csrf': self.make_id()
+            }
 
             # auto-login as designated user for each new session
             if self.auto_login_user:
@@ -392,11 +488,12 @@ class RedisSessionMiddleware(CookieGuard):
 
         try:
             return serial.loads(sesh_cookie)
-        except BadSignature as b:
+        except BadSignature:
             return None
 
     def id_to_signed_cookie(self, sesh_id, is_restricted):
-        return URLSafeTimedSerializer(self.secret_key).dumps([sesh_id, is_restricted])
+        urlsafetimedserializer = URLSafeTimedSerializer(self.secret_key)
+        return urlsafetimedserializer.dumps([sesh_id, is_restricted])
 
     def make_id(self):
         return base64.b64encode(os.urandom(20)).decode('utf-8')
@@ -406,5 +503,3 @@ class RedisSessionMiddleware(CookieGuard):
         redis_key = self.key_template.format(sesh_id)
 
         return sesh_id, redis_key
-
-
