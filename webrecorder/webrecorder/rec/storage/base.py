@@ -10,7 +10,12 @@ class BaseStorage(object):
         return self.storage_root + collection.get_dir_path()
 
     def get_target_url(self, collection, obj_type, filename):
-        return self.get_collection_url(collection) + '/' + obj_type + '/' + filename
+        url = self.get_collection_url(collection) + '/'
+        if obj_type:
+            url += obj_type + '/'
+
+        url += filename
+        return url
 
     def init_collection(self, collection):
         return True

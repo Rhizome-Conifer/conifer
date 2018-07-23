@@ -7,17 +7,19 @@ import os
 from datetime import date
 
 from pywb.utils.loaders import load
-from warcio.timeutils import timestamp20_now
+from warcio.timeutils import timestamp20_now, timestamp_now
 
 from pywb.warcserver.index.cdxobject import CDXObject
 
-from webrecorder.utils import sanitize_title
+from webrecorder.utils import sanitize_title, get_new_id
 from webrecorder.models.base import RedisUnorderedList, RedisOrderedList, RedisUniqueComponent, RedisNamedMap
 from webrecorder.models.recording import Recording
 from webrecorder.models.pages import PagesMixin
 from webrecorder.models.datshare import DatShare
 from webrecorder.models.list_bookmarks import BookmarkList
 from webrecorder.rec.storage import get_storage as get_global_storage
+
+from webrecorder.rec.storage.storagepaths import strip_prefix, add_local_store_prefix
 
 
 # ============================================================================
@@ -34,7 +36,13 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
     COLL_CDXJ_KEY = 'c:{coll}:cdxj'
 
+    CLOSE_WAIT_KEY = 'c:{coll}:wait:{id}'
+
+    COMMIT_WAIT_KEY = 'w:{filename}'
+
     INDEX_FILE_KEY = '@index_file'
+
+    COMMIT_WAIT_SECS = 30
 
     DEFAULT_COLL_DESC = ''
 
@@ -56,6 +64,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
         cls.DEFAULT_STORE_TYPE = os.environ.get('DEFAULT_STORAGE', 'local')
 
         cls.DEFAULT_COLL_DESC = config['coll_desc']
+
+        cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
 
     def create_recording(self, **kwargs):
         self.access.assert_can_admin_coll(self)
@@ -214,13 +224,51 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         return [key_pattern.replace('*', rec) for rec in recs]
 
+    def commit_all(self, commit_id=None):
+        # see if pending commits have been finished
+        if commit_id:
+            commit_key = self.CLOSE_WAIT_KEY.format(coll=self.my_id, id=commit_id)
+            open_rec_ids = self.redis.smembers(commit_key)
+            still_waiting = False
+            for rec_id in open_rec_ids:
+                recording = self.get_recording(rec_id)
+                if recording.is_fully_committed():
+                    continue
+
+                still_waiting = True
+
+            if not still_waiting:
+                self.redis.delete(commit_key)
+                return None
+
+            return commit_id
+
+        open_recs = []
+
+        for recording in self.get_recordings():
+            if not recording.is_open():
+                continue
+
+            recording.set_closed()
+            open_recs.append(recording)
+
+        if not open_recs:
+            return None
+
+        commit_id = get_new_id(5)
+        commit_key = self.CLOSE_WAIT_KEY.format(coll=self.my_id, id=commit_id)
+        open_keys = [recording.my_id for recording in open_recs]
+        self.redis.sadd(commit_key, *open_keys)
+        return commit_id
+
     def serialize(self, include_recordings=True,
                         include_lists=True,
                         include_rec_pages=False,
                         include_pages=True,
                         include_bookmarks='first',
                         convert_date=True,
-                        check_slug=False):
+                        check_slug=False,
+                        include_files=False):
 
         data = super(Collection, self).serialize(convert_date=convert_date)
         data['id'] = self.name
@@ -236,7 +284,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
             duration = 0
             for recording in recordings:
-                rec_data = recording.serialize(include_pages=include_rec_pages)
+                rec_data = recording.serialize(include_pages=include_rec_pages,
+                                               include_files=include_files)
                 rec_serialized.append(rec_data)
                 duration += rec_data.get('duration', 0)
 
@@ -260,8 +309,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
             if is_owner or data['public_index']:
                 data['pages'] = self.list_pages()
 
-        if not is_owner:
-            self.data.pop('downloads', '')
+        data.pop('num_downloads', '')
 
         return data
 
@@ -308,7 +356,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         if not self.delete_object():
             errs['error'] = 'not_found'
 
-        DatShare.dat_share(self, share=False)
+        DatShare.dat_share.unshare(self)
 
         return errs
 
@@ -321,7 +369,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
         return get_global_storage(storage_type, self.redis)
 
     def get_created_iso_date(self):
-        return date.fromtimestamp(int(self['created_at'])).isoformat()
+        try:
+            dt_str = date.fromtimestamp(int(self['created_at'])).isoformat()
+        except:
+            dt_str = self['created_at'][:10]
+
+        return dt_str
 
     def get_dir_path(self):
         return self.get_created_iso_date() + '/' + self.my_id
@@ -363,6 +416,65 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
     def set_external(self, external):
         self.set_bool_prop('external', external)
+
+    def commit_file(self, filename, full_filename, obj_type,
+                    update_key=None, update_prop=None, direct_delete=False):
+
+        user = self.get_owner()
+        storage = self.get_storage()
+
+        if not storage:
+            return True
+
+        orig_full_filename = full_filename
+        full_filename = strip_prefix(full_filename)
+
+        # not a local filename
+        if '://' in full_filename and not full_filename.startswith('local'):
+            return True
+
+        if not os.path.isfile(full_filename):
+            return True
+
+        commit_wait = self.COMMIT_WAIT_KEY.format(filename=full_filename)
+
+        if self.redis.set(commit_wait, '1', ex=self.COMMIT_WAIT_SECS, nx=True):
+            if not storage.upload_file(user, self, None,
+                                       filename, full_filename, obj_type):
+
+                self.redis.delete(commit_wait)
+                return False
+
+        # already uploaded, see if it is accessible
+        # if so, finalize and delete original
+        remote_url = storage.get_upload_url(filename)
+        if not remote_url:
+            print('Not yet available: {0}'.format(full_filename))
+            return False
+
+        print('Committed {0} -> {1}'.format(full_filename, remote_url))
+        if update_key:
+            update_prop = update_prop or filename
+            self.redis.hset(update_key, update_prop, remote_url)
+
+        # just in case, if remote_url is actually same as original (local file double-commit?), just return
+        if remote_url == orig_full_filename:
+            return True
+
+        # if direct delete, call os.remove directly
+        # used for CDXJ files which are not owned by a writer
+        if direct_delete:
+            try:
+                os.remove(full_filename)
+            except Exception as e:
+                print(e)
+                return True
+        else:
+        # for WARCs, send handle_delete to ensure writer can close the file
+             if self.redis.publish('handle_delete_file', full_filename) < 1:
+                print('No Delete Listener!')
+
+        return True
 
     def sync_coll_index(self, exists=False, do_async=False):
         coll_cdxj_key = self.COLL_CDXJ_KEY.format(coll=self.my_id)

@@ -194,7 +194,11 @@ class CollsController(BaseController):
         def dat_do_share(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            result = DatShare.dat_share(collection, share=True, author=user.name)
+            try:
+                result = DatShare.dat_share.share(collection)
+            except Exception as e:
+                result = {'error': 'api_error', 'details': str(e)}
+
             if 'error' in result:
                 self._raise_error(400, result['error'])
 
@@ -204,11 +208,27 @@ class CollsController(BaseController):
         def dat_do_unshare(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
-            result = DatShare.dat_share(collection, share=False)
+            try:
+                result = DatShare.dat_share.unshare(collection)
+            except Exception as e:
+                result = {'error': 'api_error', 'details': str(e)}
+
             if 'error' in result:
                 self._raise_error(400, result['error'])
 
             return result
+
+        @self.app.post('/api/v1/collection/<coll_name>/commit')
+        def commit_file(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            data = request.json or {}
+
+            res = collection.commit_all(data.get('commit_id'))
+            if not res:
+                return {'success': True}
+            else:
+                return {'commit_id': res}
 
         # Create Collection
         #@self.app.get('/_create')

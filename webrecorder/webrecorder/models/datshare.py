@@ -1,8 +1,12 @@
 import os
 import requests
 import gevent
+import json
+import yaml
 
 from webrecorder.utils import get_bool, spawn_once
+from collections import OrderedDict
+from tempfile import NamedTemporaryFile
 
 
 # ============================================================================
@@ -24,96 +28,151 @@ class DatShare(object):
         self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
 
         if self.dat_enabled:
-            spawn_once(self.dat_check, worker=1)
+            spawn_once(self.dat_sync_check_loop, worker=1)
 
-    def dat_check(self):
-        sleep_time = 30
+    def init_dat(self, collection):
+        res = self.dat_share_api('/init', collection)
+        return res['datKey']
 
-        while True:
-            try:
-                res = requests.get(self.dat_url + '/numDats')
-                res.raise_for_status()
-                curr_dats = res.json()['num']
-            except:
-                print('Error reaching dat-share')
-                gevent.sleep(sleep_time)
-                continue
+    def write_dat_json(self, collection, dat_key, author=''):
+        if not dat_key:
+            dat_key = self.init_dat(collection)
 
-            if curr_dats != self.num_shared_dats:
-                print('Result: {0} != Expected: {1}'.format(curr_dats, self.num_shared_dats))
-                self.readd_all()
+        props = [('url', 'dat://' + dat_key),
+                 ('title', collection.get_prop('title')),
+                 ('desc', collection.get_prop('desc')),
+                 ('author', author)
+                ]
 
-            gevent.sleep(sleep_time)
+        with NamedTemporaryFile('wt', delete=False) as fh:
+            fh.write(json.dumps(OrderedDict(props), indent=2, sort_keys=False))
 
+        return fh.name
 
-    def readd_all(self):
-        dat_dirs = self.redis.hvals(self.DAT_COLLS)
+    def write_metadata_file(self, collection):
+        data = {'collection': collection.serialize(include_bookmarks='all-serialize',
+                                                   include_files=True)}
+
+        with NamedTemporaryFile('wt', delete=False) as fh:
+            yaml.dump(data, fh, default_flow_style=False)
+
+        return fh.name
+
+    def dat_share_api(self, cmd, collection=None, data=None):
         res = None
         try:
-            data = {'dirs': dat_dirs}
-            print('Sync:', data)
-            res = requests.post(self.dat_url + '/sync', json=data)
+            if not data:
+                data = {'collDir': collection.get_dir_path()}
+            res = requests.post(self.dat_url + cmd, json=data)
             res.raise_for_status()
+            return res.json()
         except Exception as e:
             print(e)
-            print('Error bulkShare')
+            print('API Error: ' + cmd)
             if res:
                 print(res.text)
 
+            return None
 
-    def __call__(self, collection, share=True, author=None):
-        collection.access.assert_can_admin_coll(collection)
-
+    def unshare(self, collection):
         if not self.dat_enabled:
             return {'error': 'not_supported'}
+
+        collection.access.assert_can_admin_coll(collection)
 
         if collection.is_external():
             return {'error': 'external_not_allowed'}
 
-        data = {'collDir': collection.get_dir_path()}
+        if not self.is_sharing(collection):
+            return {'success': True}
 
-        if share:
-            cmd = '/share'
+        res = self.dat_share_api('/unshare', collection)
 
-            metadata = {'title': collection.get_prop('title')}
+        if res['success'] == True:
+            self._mark_unshare(collection)
 
-            desc = collection.get_prop('desc')
-            if desc:
-                metadata['description'] = desc
+        return res
 
-            if author:
-                metadata['author'] = author
+    def share(self, collection):
+        if not self.dat_enabled:
+            return {'error': 'not_supported'}
 
-            data['metadata'] = metadata
+        collection.access.assert_can_admin_coll(collection)
 
-        else:
-            cmd = '/unshare'
+        if collection.is_external():
+            return {'error': 'external_not_allowed'}
 
+        dat_key = collection.get_prop(self.DAT_PROP)
+        dat_updated = collection.get_prop(self.DAT_COMMITTED_AT)
+
+        if dat_key and dat_updated and self.is_sharing(collection):
+            dat_updated = int(dat_updated)
+            last_updated = int(collection.get_prop('updated_at'))
+
+            if last_updated <= dat_updated:
+                return {'error': 'already_updated'}
+
+        user = collection.get_owner()
+        author = user.get_prop('name') or user.name
+
+        datjson_file = self.write_dat_json(collection, dat_key, author)
+        metadata_file = self.write_metadata_file(collection)
+
+        while True:
+            done_datjson = collection.commit_file('dat.json', datjson_file, '')
+            done_meta = collection.commit_file('metadata.yaml', metadata_file, 'metadata')
+
+            if done_datjson and done_meta:
+                break
+
+            print('Waiting for dat.json, metadata commit...')
+            time.sleep(10)
+
+        res = self.dat_share_api('/share', collection)
+
+        collection.set_prop(self.DAT_PROP, res['datKey'])
+        collection.set_prop(self.DAT_COMMITTED_AT, collection._get_now())
+
+        self._mark_share(collection)
+
+        return res
+
+    def _mark_share(self, collection):
+        self.redis.hset(self.DAT_COLLS,
+                        collection.my_id,
+                        collection.get_dir_path())
+
+        self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
+
+    def _mark_unshare(self, collection):
+        self.redis.hdel(self.DAT_COLLS, collection.my_id)
+        self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
+
+    def is_sharing(self, collection):
+        return self.redis.hexists(self.DAT_COLLS, collection.my_id)
+
+    def dat_sync_check_loop(self):
+        sleep_time = int(os.environ.get('DAT_SYNC_CHECK_TIME', '30'))
+        print('Running Dat Sync Check every {0} seconds'.format(sleep_time))
+
+        while True:
+            self.dat_sync()
+            gevent.sleep(sleep_time)
+
+    def dat_sync(self):
         try:
-            res = requests.post(self.dat_url + cmd, json=data)
+            res = requests.get(self.dat_url + '/numDats')
             res.raise_for_status()
-            dat_res = res.json()
+            curr_dats = res.json()['num']
+        except:
+            print('Error reaching dat-share')
+            return
 
-            if share:
-                collection.set_prop(self.DAT_PROP, dat_res['datKey'])
-                collection.set_prop(self.DAT_COMMITTED_AT, collection._get_now())
-
-                self.redis.hset(self.DAT_COLLS,
-                                collection.my_id,
-                                collection.get_dir_path())
-
-            else:
-                collection.set_prop(self.DAT_PROP, '')
-
-                self.redis.hdel(self.DAT_COLLS, collection.my_id)
-
-            self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
-
-        except Exception as e:
-            print(res.text)
-            return {'error': str(e)}
-
-        return dat_res
+        if curr_dats != self.num_shared_dats:
+            print('Result: {0} != Expected: {1}'.format(curr_dats, self.num_shared_dats))
+            dat_dirs = self.redis.hvals(self.DAT_COLLS)
+            print('Resyncing: ', dat_dirs)
+            self.dat_share_api('/sync', data={'dirs': dat_dirs})
 
 
 # ============================================================================

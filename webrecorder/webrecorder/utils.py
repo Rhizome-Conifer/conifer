@@ -54,8 +54,8 @@ def init_props(config):
 
 
 # ============================================================================
-def get_new_id(max_len=None):
-    res = base64.b32encode(os.urandom(10)).decode('utf-8').lower()
+def get_new_id(max_len=None, size=10):
+    res = base64.b32encode(os.urandom(size)).decode('utf-8').lower()
     if max_len:
         res = res[:max_len]
     return res
@@ -101,12 +101,12 @@ def today_str():
 
 # ============================================================================
 def spawn_once(*args, **kwargs):
+    worker_id = kwargs.pop('worker', '')
+    mule_id = kwargs.pop('mule', 0)
+
     try:
         import uwsgi
         from uwsgidecorators import postfork
-
-        worker_id = kwargs.pop('worker')
-        mule_id = kwargs.pop('mule', 0)
 
         @postfork
         def listen_loop():

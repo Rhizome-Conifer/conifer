@@ -37,16 +37,12 @@ class Recording(RedisUniqueComponent):
 
     INDEX_FILE_KEY = '@index_file'
 
-    COMMIT_WAIT_TEMPL = 'w:{filename}'
-
     INDEX_NAME_TEMPL = 'index-{timestamp}-{random}.cdxj'
 
     DELETE_RETRY = 'q:delete_retry'
 
     # overridable
     OPEN_REC_TTL = 5400
-
-    COMMIT_WAIT_SECS = 30
 
     @classmethod
     def init_props(cls, config):
@@ -56,7 +52,6 @@ class Recording(RedisUniqueComponent):
         cls.CDXJ_KEY = config.get('cdxj_key_templ', cls.CDXJ_KEY)
         #cls.INDEX_NAME_TEMPL = config['index_name_templ']
 
-        cls.COMMIT_WAIT_SECS = int(config['commit_wait_secs'])
         #cls.COMMIT_WAIT_TEMPL = config['commit_wait_templ']
 
     @property
@@ -99,7 +94,23 @@ class Recording(RedisUniqueComponent):
         open_rec_key = self.OPEN_REC_KEY.format(rec=self.my_id)
         self.redis.delete(open_rec_key)
 
-    def serialize(self, include_pages=False, convert_date=True):
+    def is_fully_committed(self):
+        if self.is_data_pending():
+            return False
+
+        cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
+        return self.redis.exists(cdxj_key) == False
+
+    def is_data_pending(self):
+        count = self.get_prop('pending_count')
+        return count is not None and count != '0'
+
+    def serialize(self,
+                  include_pages=False,
+                  convert_date=True,
+                  export_filter=False,
+                  include_files=False):
+
         data = super(Recording, self).serialize(include_duration=True,
                                                 convert_date=convert_date)
 
@@ -109,6 +120,18 @@ class Recording(RedisUniqueComponent):
         # add any remote archive sources
         ra_key = self.RA_KEY.format(rec=self.my_id)
         data['ra_sources'] = list(self.redis.smembers(ra_key))
+
+        if include_files:
+            files = {}
+            files['warcs'] = [n for n, v in self.iter_all_files(include_index=False)]
+            index_file = self.get_prop(self.INDEX_FILE_KEY)
+            if index_file:
+                files['indexes'] = [os.path.basename(index_file)]
+
+            data['files'] = files
+
+        data.pop(self.INDEX_FILE_KEY, '')
+
         return data
 
     def delete_me(self, storage, pages=True):
@@ -239,71 +262,17 @@ class Recording(RedisUniqueComponent):
         all_done = True
 
         if storage:
-            all_done = self.commit_file(user, collection, storage,
-                                        cdxj_filename, full_cdxj_filename, 'indexes',
+            all_done = collection.commit_file(cdxj_filename, full_cdxj_filename, 'indexes',
                                         info_key, self.INDEX_FILE_KEY, direct_delete=True)
 
             for warc_filename, warc_full_filename in self.iter_all_files():
-                done = self.commit_file(user, collection, storage,
-                                        warc_filename, warc_full_filename, 'warcs',
-                                        warc_key)
+                done = collection.commit_file(warc_filename, warc_full_filename, 'warcs', warc_key)
 
                 all_done = all_done and done
 
         if all_done:
             print('Deleting Redis Key: ' + cdxj_key)
             self.redis.delete(cdxj_key)
-
-    def commit_file(self, user, collection, storage,
-                    filename, full_filename, obj_type,
-                    update_key, update_prop=None, direct_delete=False):
-
-        if not storage:
-            return False
-
-        full_filename = strip_prefix(full_filename)
-
-        # not a local filename
-        if '://' in full_filename and not full_filename.startswith('local'):
-            return False
-
-        if not os.path.isfile(full_filename):
-            return False
-
-        commit_wait = self.COMMIT_WAIT_TEMPL.format(filename=full_filename)
-
-        if self.redis.set(commit_wait, 1, ex=self.COMMIT_WAIT_SECS, nx=True):
-            if not storage.upload_file(user, collection, self,
-                                       filename, full_filename, obj_type):
-
-                self.redis.delete(commit_wait)
-                return False
-
-        # already uploaded, see if it is accessible
-        # if so, finalize and delete original
-        remote_url = storage.get_upload_url(filename)
-        if not remote_url:
-            print('Not yet available: {0}'.format(full_filename))
-            return False
-
-        print('Committed {0} -> {1}'.format(full_filename, remote_url))
-        update_prop = update_prop or filename
-        self.redis.hset(update_key, update_prop, remote_url)
-
-        # if direct delete, call os.remove directly
-        # used for CDXJ files which are not owned by a writer
-        if direct_delete:
-            try:
-                os.remove(full_filename)
-            except Exception as e:
-                print(e)
-                return True
-        else:
-        # for WARCs, send handle_delete to ensure writer can close the file
-             if self.redis.publish('handle_delete_file', full_filename) < 1:
-                print('No Delete Listener!')
-
-        return True
 
     def _copy_prop(self, source, name):
         prop = source.get_prop(name)

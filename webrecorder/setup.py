@@ -109,6 +109,7 @@ setup(
         'pytest-cov',
         'fakeredis',
         'mock',
+        'responses',
         'httpbin==0.5.0'
        ],
     cmdclass={'test': PyTest,
