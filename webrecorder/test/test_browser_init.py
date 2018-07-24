@@ -7,6 +7,7 @@ from mock import patch
 
 from webrecorder.utils import today_str
 from webrecorder.models.stats import Stats
+from webrecorder.browsermanager import BrowserManager
 
 
 # ============================================================================
@@ -33,9 +34,16 @@ class TestBrowserInit(FullStackTests):
     @classmethod
     def setup_class(cls):
         with patch('webrecorder.browsermanager.BrowserManager.load_all_browsers', mock_load_all_browsers):
+            os.environ['NO_REMOTE_BROWSERS'] = '0'
             super(TestBrowserInit, cls).setup_class()
 
         cls.browser_redis = FakeStrictRedis.from_url(os.environ['REDIS_BROWSER_URL'], decode_responses=True)
+
+    @classmethod
+    def teardown_class(cls):
+        os.environ.pop('NO_REMOTE_BROWSERS', '')
+        BrowserManager.running = False
+        super(TestBrowserInit, cls).teardown_class()
 
     def test_create_coll_and_rec(self):
         res = self._anon_post('/api/v1/collections?user={user}', params={'title': 'temp'})

@@ -3,6 +3,7 @@ import gevent
 from bottle import request
 
 from webrecorder.models.stats import Stats
+from webrecorder.utils import get_bool
 
 import socket
 import os
@@ -10,6 +11,8 @@ import os
 
 # ============================================================================
 class BrowserManager(object):
+    running = True
+
     def __init__(self, config, browser_redis, user_manager):
         self.browser_redis = browser_redis
 
@@ -17,8 +20,9 @@ class BrowserManager(object):
         self.browser_list_url = config['browser_list_url']
         self.browsers = {}
 
-        if not os.environ.get('NO_REMOTE_BROWSERS'):
+        if not get_bool(os.environ.get('NO_REMOTE_BROWSERS')):
             self.load_all_browsers()
+
             gevent.spawn(self.browser_load_loop)
 
         self.user_manager = user_manager
@@ -37,7 +41,7 @@ class BrowserManager(object):
         return self.browsers
 
     def browser_load_loop(self):
-        while True:
+        while self.running:
             gevent.sleep(300)
             self.load_all_browsers()
 

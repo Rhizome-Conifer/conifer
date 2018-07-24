@@ -15,7 +15,7 @@ from pkg_resources import resource_filename
 from six.moves.urllib.parse import urlsplit, urljoin, unquote
 
 from pywb.rewrite.templateview import JinjaEnv
-from webrecorder.utils import load_wr_config, init_logging
+from webrecorder.utils import load_wr_config, init_logging, spawn_once
 
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.admincontroller import AdminController
@@ -49,7 +49,6 @@ from webrecorder.basecontroller import BaseController
 from wsgiprox.wsgiprox import WSGIProxMiddleware
 
 from webrecorder.standalone.assetsutils import default_build
-import gevent
 
 
 # ============================================================================
@@ -76,7 +75,7 @@ class MainController(BaseController):
             self.static_root = os.path.join(sys._MEIPASS, 'webrecorder', 'static/')
         else:
             self.static_root = resource_filename('webrecorder', 'static/')
-            gevent.spawn(default_build, force_build=False)
+            spawn_once(default_build, worker=1, force_build=False)
 
         bottle_app = Bottle()
         self.bottle_app = bottle_app

@@ -18,7 +18,7 @@ class DatShare(object):
     def __init__(self, redis):
         self.redis = redis
 
-        self.dat_enabled = get_bool(os.environ.get('ALLOW_DAT', True))
+        self.dat_enabled = get_bool(os.environ.get('ALLOW_DAT', False))
         self.dat_host = os.environ.get('DAT_SHARE_HOST', 'dat')
         self.dat_port = int(os.environ.get('DAT_SHARE_PORT', 3000))
 
@@ -26,6 +26,8 @@ class DatShare(object):
                                                              dat_port=self.dat_port)
 
         self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
+
+        self.running = True
 
         if self.dat_enabled:
             spawn_once(self.dat_sync_check_loop, worker=1)
@@ -83,6 +85,9 @@ class DatShare(object):
         if collection.is_external():
             return {'error': 'external_not_allowed'}
 
+        if collection.get_owner().is_anon():
+            return {'error': 'not_logged_in'}
+
         if not self.is_sharing(collection):
             return {'success': True}
 
@@ -102,6 +107,11 @@ class DatShare(object):
         if collection.is_external():
             return {'error': 'external_not_allowed'}
 
+        user = collection.get_owner()
+
+        if user.is_anon():
+            return {'error': 'not_logged_in'}
+
         dat_key = collection.get_prop(self.DAT_PROP)
         dat_updated = collection.get_prop(self.DAT_COMMITTED_AT)
 
@@ -112,13 +122,12 @@ class DatShare(object):
             if last_updated <= dat_updated:
                 return {'error': 'already_updated'}
 
-        user = collection.get_owner()
         author = user.get_prop('name') or user.name
 
         datjson_file = self.write_dat_json(collection, dat_key, author)
         metadata_file = self.write_metadata_file(collection)
 
-        while True:
+        while self.running:
             done_datjson = collection.commit_file('dat.json', datjson_file, '')
             done_meta = collection.commit_file('metadata.yaml', metadata_file, 'metadata')
 

@@ -19,14 +19,12 @@ class TestDatShare(FullStackTests):
 
     @classmethod
     def setup_class(cls):
-        os.environ['AUTO_LOGIN_USER'] = 'test'
         os.environ['ALLOW_DAT'] = '1'
-        os.environ['DAT_SYNC_CHECK_TIME'] = '30'
 
         super(TestDatShare, cls).setup_class(storage_worker=True)
 
         cls.manager = CLIUserManager()
-        cls.set_uuids('Collection', count(int(cls.COLL_ID)))
+        cls.set_uuids('Collection', count(int(cls.COLL_ID) - 1))
 
         cls.dat_info = {'datKey': get_new_id(size=20),
                         'discoveryKey': get_new_id(size=20)
@@ -36,10 +34,30 @@ class TestDatShare(FullStackTests):
     def teardown_class(cls):
         super(TestDatShare, cls).teardown_class()
         os.environ.pop('ALLOW_DAT', '')
-        os.environ.pop('AUTO_LOGIN_USER', '')
+        DatShare.dat_share.running = False
 
-    def test_create_user_def_coll(self):
+    def test_init_coll_and_user(self):
+        res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'temp'})
+        assert res.json['collection']
+
         self.manager.create_user('test@example.com', 'test', 'TestTest123', 'archivist', 'Test')
+
+        today = today_str()
+        TestDatShare.coll_store_dir = today + '/' + self.COLL_ID
+
+    def test_not_allowed_anon(self):
+        params = {'collDir': self.warcs_dir}
+        res = self.testapp.post_json('/api/v1/collection/temp/dat/share?user={user}'.format(user=self.anon_user), params=params, status=400)
+
+        assert res.json == {'error': 'not_logged_in'}
+
+    def test_login(self):
+        params = {'username': 'test',
+                  'password': 'TestTest123'}
+
+        res = self.testapp.post_json('/api/v1/auth/login', params=params)
+        assert res.json['username'] == 'test'
+
         res = self.testapp.get('/test/default-collection')
         res.charset = 'utf-8'
         assert '"test"' in res.text
@@ -70,7 +88,7 @@ class TestDatShare(FullStackTests):
         responses.add(responses.POST, 'http://dat:3000/share', status=200,
                       json=self.dat_info)
 
-        params = {'collDir': self.warcs_dir}
+        params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params)
         assert res.json == self.dat_info
 
@@ -79,10 +97,9 @@ class TestDatShare(FullStackTests):
         assert responses.calls[1].request.url == 'http://dat:3000/share'
 
         today = today_str()
-        storage_dir = os.path.join(self.storage_dir, today, self.COLL_ID)
 
         # test dat.json
-        with open(os.path.join(storage_dir, 'dat.json'), 'rt') as fh:
+        with open(os.path.join(self.storage_dir, today, self.COLL_ID, 'dat.json'), 'rt') as fh:
             datjson = json.loads(fh.read())
 
         assert datjson['url'] == 'dat://' + self.dat_info['datKey']
@@ -91,7 +108,7 @@ class TestDatShare(FullStackTests):
         assert datjson['desc'].startswith('*This is your first collection')
 
         # test metadata.yaml
-        with open(os.path.join(storage_dir, 'metadata', 'metadata.yaml'), 'rt') as fh:
+        with open(os.path.join(self.storage_dir, today, self.COLL_ID, 'metadata', 'metadata.yaml'), 'rt') as fh:
             metadata = yaml.load(fh.read())
 
         assert metadata['collection']
@@ -101,7 +118,7 @@ class TestDatShare(FullStackTests):
 
     @responses.activate
     def test_dat_already_shared(self):
-        params = {'collDir': self.warcs_dir}
+        params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params, status=400)
 
         assert res.json == {'error': 'already_updated'}
@@ -113,7 +130,7 @@ class TestDatShare(FullStackTests):
         responses.add(responses.POST, 'http://dat:3000/unshare', status=200,
                       json={'success': True})
 
-        params = {'collDir': self.warcs_dir}
+        params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/unshare?user=test', params=params)
         assert res.json == {'success': True}
 
@@ -122,7 +139,7 @@ class TestDatShare(FullStackTests):
 
     @responses.activate
     def test_dat_unshare_not_sharing(self):
-        params = {'collDir': self.warcs_dir}
+        params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/unshare?user=test', params=params)
         assert res.json == {'success': True}
 
@@ -133,7 +150,7 @@ class TestDatShare(FullStackTests):
         responses.add(responses.POST, 'http://dat:3000/share', status=400,
                       json={'error': 'unknown'})
 
-        params = {'collDir': self.warcs_dir}
+        params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params,
                                      status=400)
 
@@ -147,7 +164,7 @@ class TestDatShare(FullStackTests):
         responses.add(responses.POST, 'http://dat:3000/share', status=200,
                       json=self.dat_info)
 
-        params = {'collDir': self.warcs_dir}
+        params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params)
         assert res.json == self.dat_info
 
@@ -180,7 +197,7 @@ class TestDatShare(FullStackTests):
         assert responses.calls[1].request.url == 'http://dat:3000/sync'
 
         body = json.loads(responses.calls[1].request.body.decode('utf-8'))
-        assert body == {'dirs': [today_str() + '/' + self.COLL_ID]}
+        assert body == {'dirs': [self.coll_store_dir]}
 
 
     @responses.activate
@@ -195,16 +212,13 @@ class TestDatShare(FullStackTests):
         assert responses.calls[0].request.url == 'http://dat:3000/unshare'
 
         body = json.loads(responses.calls[0].request.body.decode('utf-8'))
-        assert body == {'collDir': today_str() + '/' + self.COLL_ID}
+        assert body == {'collDir': self.coll_store_dir}
 
         assert self.redis.hlen(DatShare.DAT_COLLS) == 0
 
     def test_ensure_coll_delete(self):
-        today = today_str()
-        storage_dir = os.path.join(self.storage_dir, today, self.COLL_ID)
-
         def wait_for_del():
-            assert not os.path.isdir(storage_dir)
+            assert not os.path.isdir(self.coll_store_dir)
 
         self.sleep_try(0.1, 2.0, wait_for_del)
 
