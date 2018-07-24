@@ -478,6 +478,10 @@ class CollectionDetailUI extends Component {
       title: {
         cellRenderer: TitleRenderer,
         className: 'page-title',
+        columnData: {
+          collection,
+          list: activeList ? list : null
+        },
         dataKey: 'title',
         flexGrow: 1,
         key: 'title',
