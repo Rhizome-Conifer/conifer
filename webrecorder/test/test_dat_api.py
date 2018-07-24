@@ -32,9 +32,9 @@ class TestDatShare(FullStackTests):
 
     @classmethod
     def teardown_class(cls):
-        super(TestDatShare, cls).teardown_class()
         os.environ.pop('ALLOW_DAT', '')
-        DatShare.dat_share.running = False
+        DatShare.dat_share.close()
+        super(TestDatShare, cls).teardown_class()
 
     def test_init_coll_and_user(self):
         res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user), params={'title': 'temp'})

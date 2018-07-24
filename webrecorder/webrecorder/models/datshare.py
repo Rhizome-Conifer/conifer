@@ -32,6 +32,9 @@ class DatShare(object):
         if self.dat_enabled:
             spawn_once(self.dat_sync_check_loop, worker=1)
 
+    def close(self):
+        self.running = False
+
     def init_dat(self, collection):
         res = self.dat_share_api('/init', collection)
         return res['datKey']
@@ -135,7 +138,7 @@ class DatShare(object):
                 break
 
             print('Waiting for dat.json, metadata commit...')
-            time.sleep(10)
+            gevent.sleep(10)
 
         res = self.dat_share_api('/share', collection)
 
@@ -164,7 +167,7 @@ class DatShare(object):
         sleep_time = int(os.environ.get('DAT_SYNC_CHECK_TIME', '30'))
         print('Running Dat Sync Check every {0} seconds'.format(sleep_time))
 
-        while True:
+        while self.running:
             self.dat_sync()
             gevent.sleep(sleep_time)
 

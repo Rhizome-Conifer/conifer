@@ -291,6 +291,7 @@ class Recording(RedisUniqueComponent):
         self._copy_prop(source, 'title')
         self._copy_prop(source, 'desc')
         self._copy_prop(source, 'rec_type')
+        self._copy_prop(source, 'recorded_at')
         #self._copy_prop(source, 'patch_rec')
 
         collection = self.get_owner()
