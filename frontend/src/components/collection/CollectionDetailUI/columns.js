@@ -82,8 +82,16 @@ export function TimestampRenderer({ cellData }) {
 }
 
 
-export function TitleRenderer({ cellData }) {
-  return <span>{ cellData || untitledEntry }</span>;
+export function TitleRenderer({ cellData, rowData, columnData: { collection, list } }) {
+  const linkTo = list ?
+    `${getListLink(collection, list)}/b${rowData.get('id')}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}` :
+    `${getCollectionLink(collection)}/${remoteBrowserMod(rowData.get('browser'), rowData.get('timestamp'))}/${rowData.get('url')}`;
+  return (
+    <Link
+      to={linkTo}
+      onClick={evt => stopPropagation(evt)}
+      title={rowData.get('title')}>{ cellData || untitledEntry } </Link>
+  );
 }
 
 
