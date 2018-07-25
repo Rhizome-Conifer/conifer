@@ -33,7 +33,7 @@ class BaseTestPlayer(BaseTestClass):
 
     @classmethod
     def get_player_cmd(cls):
-        return ['--no-browser', cls.warc_path]
+        return ['--no-browser', '-p', '0', cls.warc_path]
 
     @classmethod
     def teardown_class(cls):
@@ -85,6 +85,31 @@ class BaseTestPlayer(BaseTestClass):
 
 # ============================================================================
 class TestPlayer(BaseTestPlayer):
+    def test_wait_for_init(self):
+        def assert_finished():
+            res = self.session.get(self.app_host + '/_upload/@INIT?user=local')
+            assert res.json()['done'] == True
+            assert res.json()['size'] >= res.json()['total_size']
+
+        count = 0
+        while True:
+            try:
+                assert_finished()
+                break
+            except AssertionError:
+                if count >= 25:
+                    raise
+
+                count += 1
+                time.sleep(0.2)
+
+    def test_coll_is_public(self):
+        res = self.session.get(self.app_host + '/api/v1/collection/collection?user=local')
+        collection = res.json()['collection']
+        print(collection)
+        assert collection['public'] == True
+        assert collection['public_index'] == True
+
     def test_proxy_home_redirect_to_coll(self):
         res = self.session.get(self.app_host + '/', allow_redirects=True)
 
@@ -176,7 +201,7 @@ class TestCacheingPlayer(BaseTestPlayer):
 
     @classmethod
     def get_player_cmd(cls):
-        return ['--no-browser', cls.warc_path, '--cache-dir', '_warc_cache']
+        return ['--no-browser', '-p', '0', cls.warc_path, '--cache-dir', '_warc_cache']
 
     def test_cache_create(self):
         assert os.path.isfile(self.cache_path)
