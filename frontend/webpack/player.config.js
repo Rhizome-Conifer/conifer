@@ -40,7 +40,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx)?$/,
-        exclude: /node_modules\/webrecorder-frontend\/node_modules\/(?!(react-rte))/,
+        exclude: /node_modules\/(?!(react-rte))/,
         use: [
           strip.loader('debug'),
           'babel-loader'
