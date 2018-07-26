@@ -83,11 +83,11 @@ export default function controls(state = initialState, action = {}) {
 }
 
 
-export function getArchives() {
+export function getArchives(host = '') {
   return {
     types: [GET_ARCHIVES, GET_ARCHIVES_SUCCESS, GET_ARCHIVES_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${config.apiPath}/client_archives`)
+    promise: client => client.get(`${host}${config.apiPath}/client_archives`)
   };
 }
 

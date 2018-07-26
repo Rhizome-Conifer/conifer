@@ -5,11 +5,16 @@ const methods = ['get', 'post', 'put', 'patch', 'del'];
 
 
 function formatUrl(path) {
+  if (__PLAYER__) {
+    return path;
+  }
+
   const adjustedPath = path[0] !== '/' ? `/${path}` : path;
   if (__SERVER__) {
     // on the server use internal network
     return `http://${config.internalApiHost}:${config.internalApiPort}${adjustedPath}`;
   }
+
   // client side use current host
   return `${adjustedPath}`;
 }

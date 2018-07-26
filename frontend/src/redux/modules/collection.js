@@ -254,11 +254,11 @@ export function isLoaded({ app }) {
 }
 
 
-export function load(user, coll) {
+export function load(user, coll, host = '') {
   return {
     types: [COLL_LOAD, COLL_LOAD_SUCCESS, COLL_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get(`${apiPath}/collection/${coll}`, {
+    promise: client => client.get(`${host}${apiPath}/collection/${coll}`, {
       params: { user }
     })
   };

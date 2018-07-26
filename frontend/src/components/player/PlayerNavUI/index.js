@@ -1,0 +1,117 @@
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import { Link } from 'react-router-dom';
+
+import { openFile } from 'helpers/playerUtils';
+
+import { PlayerCloseIcon, FileOpenIcon, HelpIcon } from 'components/icons';
+// import { PlayerURLBar } from 'containers';
+
+import './style.scss';
+
+
+class PlayerNavUI extends Component {
+
+  static propTypes = {
+    collectionLoaded: PropTypes.bool,
+    canGoBackward: PropTypes.bool,
+    canGoForward: PropTypes.bool,
+    history: PropTypes.object,
+    route: PropTypes.object
+  };
+
+  triggerBack = () => {
+    if (this.props.canGoBackward) {
+      window.dispatchEvent(new Event('wr-go-back'));
+    }
+  }
+
+  triggerForward = () => {
+    if (this.props.canGoForward) {
+      window.dispatchEvent(new Event('wr-go-forward'));
+    }
+  }
+
+  triggerRefresh = () => {
+    window.dispatchEvent(new Event('wr-refresh'));
+  }
+
+  sendOpenFile = () => {
+    openFile(this.props.history);
+  }
+
+  goToHelp = () => {
+    this.props.history.push('/help');
+  }
+
+  render() {
+    const { canGoBackward, canGoForward, collectionLoaded, route } = this.props;
+
+    const indexUrl = collectionLoaded ? '/local/collection/' : '/';
+    const isLanding = route && route.name === 'landing';
+    const isReplay = route && route.name === 'replay';
+    const isHelp = route && route.name === 'help';
+
+    const fwdClass = classNames('button arrow', {
+      inactive: !canGoForward,
+      off: false
+    });
+    const backClass = classNames('button arrow', {
+      inactive: !canGoBackward,
+      off: false
+    });
+
+    return (
+      <nav className={`topBar ${route && route.name}`}>
+        <div className="logos">
+          <Link to={indexUrl} className="button home-btn">
+            <img className="wrLogoImg" src={require('shared/images/WebRecorder_Logo-Only.png')} alt="webrecorder logo" /><br />
+            <img className="wrLogoPlayerTxt" src={require('shared/images/PLAYER_text.png')} alt="webrecorder logo" />
+          </Link>
+          {
+            isLanding &&
+              <Link to={indexUrl} className="button home-btn">
+                <img className="wrLogoImgTxt" src={require('shared/images/Webrecorder_Player_logo_text.png')} alt="webrecorder logo" />
+              </Link>
+          }
+        </div>
+
+        {
+          isReplay &&
+            <div className="browser-nav">
+              <button id="back" onClick={this.triggerBack} className={backClass} title="Click to go back">
+                <object data={require('shared/images/Back_Arrow.svg')} type="image/svg+xml" aria-label="navigate back" />
+              </button>
+              <button id="forward" onClick={this.triggerForward} className={fwdClass} title="Click to go forward">
+                <object id="forwardArrow" data={require('shared/images/Back_Arrow.svg')} type="image/svg+xml" aria-label="navigate forward" />
+              </button>
+              <button id="refresh" onClick={this.triggerRefresh} className="button arrow" title="Refresh replay window">
+                <object data={require('shared/images/Refresh.svg')} type="image/svg+xml" aria-label="refresh" />
+              </button>
+
+              {/*<PlayerURLBar />*/}
+            </div>
+        }
+
+        <div className="player-functions">
+          <button onClick={this.sendOpenFile} className="button grow" title="Open file">
+            <FileOpenIcon />
+          </button>
+
+          {
+            isHelp ?
+              <button id="help" onClick={this.props.history.goBack} className="button grow" title="Help">
+                <PlayerCloseIcon />
+              </button> :
+              <button id="help" onClick={this.goToHelp} className="button grow" title="Help">
+                <HelpIcon />
+              </button>
+          }
+        </div>
+      </nav>
+    );
+  }
+}
+
+export default PlayerNavUI;
