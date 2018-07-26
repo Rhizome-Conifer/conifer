@@ -75,7 +75,10 @@ class MainController(BaseController):
             self.static_root = os.path.join(sys._MEIPASS, 'webrecorder', 'static/')
         else:
             self.static_root = resource_filename('webrecorder', 'static/')
-            spawn_once(default_build, worker=1, force_build=False)
+
+            # only launch if running in place, not from installed package
+            if '.egg' not in __file__:
+                spawn_once(default_build, worker=1, force_build=False)
 
         bottle_app = APIBottle()
         self.bottle_app = bottle_app
