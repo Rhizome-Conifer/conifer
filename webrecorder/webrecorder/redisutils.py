@@ -38,8 +38,8 @@ class RedisTable(object):
         :param values: map
         :type: RedisHashTable or n.s.
 
-        :returns: 0 in case of success or 1 in case of failure
-        :rtype: int
+        :returns: '0' in case of success or '1' in case of failure
+        :rtype: str
         """
         if isinstance(values, RedisHashTable):
             values = values.thedict
@@ -51,8 +51,8 @@ class RedisTable(object):
 
         :param str name: key (Redis hash)
 
-        :returns: 0 in case of success or 1 in case of failure
-        :rtype: int
+        :returns: '0' in case of success or '1' in case of failure
+        :rtype: str
         """
         return self.redis.hdel(self.key, name)
 
