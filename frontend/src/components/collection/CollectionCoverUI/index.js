@@ -123,7 +123,7 @@ class CollectionCoverUI extends Component {
         }
         {
           (this.context.canAdmin || collection.get('public_index')) &&
-            <Link className="browse" to={this.collectionLink()}>Collection Index</Link>
+            <Link className="browse" to={this.collectionLink()}>{ this.context.canAdmin ? 'Collection Index' : 'Browse Collection' }</Link>
         }
       </div>
     );
