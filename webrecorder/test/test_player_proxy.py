@@ -209,7 +209,7 @@ class TestCacheingPlayer(BaseTestPlayer):
         with gzip.open(self.cache_path, 'rt') as fh:
             cache = json.loads(fh.read())
 
-        assert cache['version'] == '1'
+        assert cache['version'] == '2'
 
 
 
