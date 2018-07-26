@@ -189,6 +189,10 @@ class RedisUniqueComponent(object):
         except:
             return dt
 
+        # default date: fix for Windows on py3.6
+        if dt <= 0:
+            dt = 86400
+
         #return datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S.%f')
         dt = datetime.fromtimestamp(dt).isoformat()
         if no_T:

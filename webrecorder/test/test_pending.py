@@ -22,7 +22,7 @@ class TestPending(FullStackTests):
             assert int(self.redis.hget('r:rec:info', 'pending_count')) == 2
             assert int(self.redis.hget('r:rec:info', 'pending_size')) > 0
 
-        self.sleep_try(0.2, 4.0, assert_pending)
+        self.sleep_try(0.2, 10.0, assert_pending)
 
         gevent.joinall([ge_req])
 
@@ -52,7 +52,7 @@ class TestPending(FullStackTests):
             assert int(self.redis.hget('r:rec-a:info', 'pending_count')) == 1
             assert int(self.redis.hget('r:rec-a:info', 'pending_size')) > 0
 
-        self.sleep_try(0.2, 3.0, assert_pending)
+        self.sleep_try(0.2, 10.0, assert_pending)
 
         res = self.testapp.delete('/api/v1/recording/rec-a?user={user}&coll=temp'.format(user=self.anon_user))
 
@@ -84,7 +84,7 @@ class TestPending(FullStackTests):
             assert int(self.redis.hget('r:rec-a:info', 'pending_count')) == 2
             assert int(self.redis.hget('r:rec-a:info', 'pending_size')) > 0
 
-        self.sleep_try(0.2, 4.0, assert_pending)
+        self.sleep_try(0.2, 10.0, assert_pending)
 
         res = self.testapp.delete('/api/v1/recording/rec-a?user={user}&coll=temp'.format(user=self.anon_user))
 
@@ -121,7 +121,7 @@ class TestPending(FullStackTests):
 
         ge_reqs = [gevent.spawn(wait_for_res, res) for x in range(0, 5)]
 
-        self.sleep_try(0.2, 4.0, assert_pending)
+        self.sleep_try(0.2, 10.0, assert_pending)
 
         gevent.joinall(ge_reqs)
 
@@ -140,7 +140,7 @@ class TestPending(FullStackTests):
 
         ge_reqs = [gevent.spawn(wait_for_res_uniq, res, str(x)) for x in range(0, 5)]
 
-        self.sleep_try(0.2, 4.0, assert_pending)
+        self.sleep_try(0.2, 10.0, assert_pending)
 
         gevent.joinall(ge_reqs)
 
@@ -165,7 +165,7 @@ class TestPending(FullStackTests):
             anon_dir = os.path.join(self.warcs_dir, self.anon_user)
             assert len(os.listdir(anon_dir)) == 1
 
-        self.sleep_try(0.2, 5.0, assert_deleted)
+        self.sleep_try(0.2, 10.0, assert_deleted)
 
     def test_record_multiple_delete(self):
         url = 'http://httpbin.org/drip'
@@ -191,7 +191,7 @@ class TestPending(FullStackTests):
             assert int(self.redis.hget('r:rec-b:info', 'pending_count')) > 0
             assert int(self.redis.hget('r:rec-b:info', 'pending_size')) > 0
 
-        self.sleep_try(0.2, 4.0, assert_pending)
+        self.sleep_try(0.2, 10.0, assert_pending)
 
         # DELETE WHILE PENDING
         res = self.testapp.delete('/api/v1/recording/rec-b?user={user}&coll=temp'.format(user=self.anon_user))

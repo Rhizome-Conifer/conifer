@@ -31,21 +31,16 @@ COLL_CDXJ = 'c:100:cdxj'
 
 
 # ============================================================================
-class TestCDXJCache(FullStackTests):
+class BaseCDXJCache(FullStackTests):
     @classmethod
-    def setup_class(cls):
-        super(TestCDXJCache, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
-                                              storage_worker=True)
+    def setup_class(cls, *args, **kwargs):
+        super(BaseCDXJCache, cls).setup_class(*args, **kwargs)
 
         cls.set_uuids('Recording', count(500))
         cls.set_uuids('Collection', count(100))
 
-        #cls.redis.set('n:recs:count', 499)
-        #cls.redis.set('n:colls:count', 99)
-
-    @classmethod
-    def teardown_class(cls):
-        super(TestCDXJCache, cls).teardown_class()
+        global load_counter
+        load_counter = 0
 
     def assert_exists(self, key, exists):
         def func():
@@ -77,14 +72,12 @@ class TestCDXJCache(FullStackTests):
 
         self.sleep_try(0.1, 2.0, assert_cdx)
 
-    def test_expire_cdxj(self):
+    def test_expire_or_commit_cdxj(self):
         assert self.redis.exists(REC_OPEN)
 
         assert len(self.runner.rec_serv.server.application.wr.writer.fh_cache) == 1
 
-        self.sleep_try(0.5, 5.0, self.assert_exists(REC_OPEN, False))
-
-        self.sleep_try(0.1, 5.0, self.assert_exists(REC_CDXJ, False))
+        self.do_expire_or_commit()
 
         def assert_files_closed():
             assert len(self.runner.rec_serv.server.application.wr.writer.fh_cache) == 0
@@ -114,7 +107,8 @@ class TestCDXJCache(FullStackTests):
         self.sleep_try(0.1, 0.5, self.assert_exists(COLL_CDXJ, True))
 
         assert len(self.redis.zrange(COLL_CDXJ, 0, -1)) == 2
-        self.sleep_try(1.0, 1.0, self.assert_exists(COLL_CDXJ, False))
+
+        self.do_expire_coll_cdxj()
 
     @patch('webrecorder.models.collection.load', slow_load)
     def test_sync_avoid_double_load(self):
@@ -170,6 +164,47 @@ class TestCDXJCache(FullStackTests):
     def test_user_timespan(self):
         res = self.testapp.get('/api/v1/user/' + self.anon_user)
         # modified after delete, should have taken more than 2 seconds to get here
-        assert res.json['user']['timespan'] > 2
+        assert res.json['user']['timespan'] > self.min_timespan
+
+
+# ============================================================================
+class TestCDXJCache(BaseCDXJCache):
+    @classmethod
+    def setup_class(cls):
+        super(TestCDXJCache, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
+                                              storage_worker=True)
+        cls.min_timespan = 2
+
+    def do_expire_or_commit(self):
+        self.sleep_try(0.5, 5.0, self.assert_exists(REC_OPEN, False))
+
+        self.sleep_try(0.1, 5.0, self.assert_exists(REC_CDXJ, False))
+
+    def do_expire_coll_cdxj(self):
+        self.sleep_try(1.0, 1.0, self.assert_exists(COLL_CDXJ, False))
+
+
+# ============================================================================
+class TestCDXJCacheCommit(BaseCDXJCache):
+    @classmethod
+    def setup_class(cls):
+        super(TestCDXJCacheCommit, cls).setup_class(storage_worker=True)
+        cls.min_timespan = 1
+
+    def do_expire_or_commit(self):
+        self.params = {}
+
+        def assert_committed():
+            res = self.testapp.post_json('/api/v1/collection/temp/commit?user={user}'.format(user=self.anon_user), params=self.params)
+            self.params = res.json
+            assert self.params['success'] == True
+
+        self.sleep_try(0.2, 10.0, assert_committed)
+
+        assert self.redis.exists(REC_OPEN) == False
+        assert self.redis.exists(REC_CDXJ) == False
+
+    def do_expire_coll_cdxj(self):
+        self.redis.delete(COLL_CDXJ)
 
 

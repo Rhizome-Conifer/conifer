@@ -6,6 +6,7 @@ from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.webreccork import ValidationException
 
 from webrecorder.models.base import DupeNameException
+from webrecorder.models.datshare import DatShare
 from webrecorder.utils import get_bool
 
 
@@ -16,7 +17,6 @@ class CollsController(BaseController):
         config = kwargs['config']
 
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
-
 
     def init_routes(self):
         wr_api_spec.set_curr_tag('Collections')
@@ -199,6 +199,48 @@ class CollsController(BaseController):
 
             return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
 
+        # DAT
+        @self.app.post('/api/v1/collection/<coll_name>/dat/share')
+        def dat_do_share(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            try:
+                result = DatShare.dat_share.share(collection)
+            except Exception as e:
+                result = {'error': 'api_error', 'details': str(e)}
+
+            if 'error' in result:
+                self._raise_error(400, result['error'])
+
+            return result
+
+        @self.app.post('/api/v1/collection/<coll_name>/dat/unshare')
+        def dat_do_unshare(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            try:
+                result = DatShare.dat_share.unshare(collection)
+            except Exception as e:
+                result = {'error': 'api_error', 'details': str(e)}
+
+            if 'error' in result:
+                self._raise_error(400, result['error'])
+
+            return result
+
+        @self.app.post('/api/v1/collection/<coll_name>/commit')
+        def commit_file(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            data = request.json or {}
+
+            res = collection.commit_all(data.get('commit_id'))
+            if not res:
+                return {'success': True}
+            else:
+                return {'commit_id': res}
+
+        # LEGACY ENDPOINTS (to remove)
         # Collection view (all recordings)
         @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])
         @self.jinja2_view('collection_info.html')
@@ -238,3 +280,4 @@ class CollsController(BaseController):
         result['size_remaining'] = user.get_size_remaining()
 
         return result
+

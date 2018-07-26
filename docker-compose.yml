@@ -13,6 +13,7 @@ services:
             - recorder
             - redis
             - shepherd
+            - dat
 
         volumes:
             - ./webrecorder/:/code/
@@ -41,6 +42,20 @@ services:
 
         ports:
             - 8096:8096 # for HMR on dev
+
+    dat:
+        image: webrecorder/dat-share
+        environment:
+            - PORT=3282
+            - ROOT_DIR=/data/storage
+
+        ports:
+            - "3282:3282/tcp"
+            - "3282:3282/udp"
+
+        volumes:
+            - ./data:/data
+            - ./data/dat/secret_keys:/root/.dat/secret_keys
 
     recorder:
         build: ./webrecorder
@@ -117,6 +132,7 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
 
+
     redis:
         build: ./redis
 
@@ -137,6 +153,7 @@ services:
         environment:
             - "maildomain=localhost"
             - "smtp_user=test:archive"
+
 
 networks:
     default:

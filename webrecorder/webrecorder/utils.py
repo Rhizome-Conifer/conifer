@@ -54,8 +54,8 @@ def init_props(config):
 
 
 # ============================================================================
-def get_new_id(max_len=None):
-    res = base64.b32encode(os.urandom(10)).decode('utf-8').lower()
+def get_new_id(max_len=None, size=10):
+    res = base64.b32encode(os.urandom(size)).decode('utf-8').lower()
     if max_len:
         res = res[:max_len]
     return res
@@ -97,6 +97,23 @@ def get_bool(value):
 # ============================================================================
 def today_str():
     return datetime.datetime.utcnow().date().isoformat()
+
+
+# ============================================================================
+def spawn_once(*args, **kwargs):
+    worker_id = kwargs.pop('worker', '')
+    mule_id = kwargs.pop('mule', 0)
+
+    try:
+        import uwsgi
+        from uwsgidecorators import postfork
+
+        @postfork
+        def listen_loop():
+            if (mule_id is None or uwsgi.mule_id() == mule_id) and (worker_id is None or uwsgi.worker_id() == worker_id):
+                gevent.spawn(*args, **kwargs)
+    except:
+        gevent.spawn(*args, **kwargs)
 
 
 # ============================================================================

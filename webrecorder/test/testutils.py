@@ -69,6 +69,8 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         cls.set_nx_env('EMAIL_SENDER', 'test@localhost')
         cls.set_nx_env('EMAIL_SMTP_URL', 'smtp://webrectest@mail.localhost:test@localhost:25')
 
+        cls.set_nx_env('NO_REMOTE_BROWSERS', '1')
+
         def load_wr_config():
             config = load_overlay_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
             config['dyn_stats_key_templ'] = {
