@@ -1,17 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import BrowserRouter from 'react-router-dom/BrowserRouter';
+import { MemoryRouter } from 'react-router';
 import { ReduxAsyncConnect } from 'redux-connect';
 
 
 function Root(props) {
   const { client, routes } = props;
 
-  return (
-    <BrowserRouter>
-      <ReduxAsyncConnect routes={routes} helpers={{ client }} />
-    </BrowserRouter>
-  );
+  return __PLAYER__ ?
+    (
+      <MemoryRouter>
+        <ReduxAsyncConnect routes={routes} helpers={{ client }} />
+      </MemoryRouter>
+    ) :
+    (
+      <BrowserRouter>
+        <ReduxAsyncConnect routes={routes} helpers={{ client }} />
+      </BrowserRouter>
+    );
 }
 
 Root.propTypes = {

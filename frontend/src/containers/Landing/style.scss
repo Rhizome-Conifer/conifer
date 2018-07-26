@@ -1,0 +1,73 @@
+@import 'src/vars';
+
+
+#landingContainer {
+  flex-grow: 1;
+  padding-top: 9rem;
+  background: #ECECEC;
+  width: 100%;
+  height: 100%;
+  background-image: url('../../shared/images/Bg.png');
+  background-repeat: repeat;
+  animation: fadeIn 0.7s 1 normal;
+}
+
+#loadingGif {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20vh;
+  animation: spin 2s linear infinite;
+}
+
+.bigOpen {
+  text-align: center;
+  margin-top: 20vh;
+
+  button {
+    background-color: $blue;
+    position: relative;
+    cursor: pointer;
+
+    &:hover {
+      top: .1rem;
+    }
+
+    &:active {
+      transition: all 0 ease;
+      box-shadow: inset 0 .5rem 0 0 #0326B8;
+      top: .3rem;
+    }
+  }
+}
+
+object {
+  pointer-events: none
+}
+
+#loadWarc {
+  margin: 2rem 8rem;
+  width: 10rem;
+}
+
+.projectByRhizome {
+  position:fixed;
+  width: 100%;
+  bottom: 15%;
+
+  p {
+    width: 22rem;
+    margin: 0 auto;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: .9rem;
+    letter-spacing: 1;
+    font-family: sans-serif;
+  }
+
+  img {
+    display: block;
+    margin: 1rem auto;
+    width: 22rem;
+  }
+}

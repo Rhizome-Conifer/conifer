@@ -94,6 +94,9 @@ export function TitleRenderer({ cellData, rowData, columnData: { collection, lis
   );
 }
 
+export function DefaultHeader(props) {
+  return defaultHeaderRenderer(props);
+}
 
 const headerSource = {
   beginDrag({ dataKey, columnData: { index } }) {
