@@ -183,9 +183,10 @@ export default function CBrowser(reqid, target_div, init_params) {
         grab_focus();
         hasClipboard = false;
 
-        for (var i = 0; i < clipEvents.length; i++) {
-            document.querySelector(init_params.clipboard).removeEventListener(clipEvents[i], clipHandler);
-        }
+        // clipboard DOM node is removed before destroy fires, so listeners should be removed automatically
+        // for (var i = 0; i < clipEvents.length; i++) {
+        //     document.querySelector(init_params.clipboard).removeEventListener(clipEvents[i], clipHandler);
+        // }
     }
 
     function canvas() {

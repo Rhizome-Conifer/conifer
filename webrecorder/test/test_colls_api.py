@@ -6,6 +6,7 @@ from .testutils import FullStackTests
 
 # ============================================================================
 class TestWebRecCollsAPI(FullStackTests):
+    @classmethod
     def setup_class(cls):
         super(TestWebRecCollsAPI, cls).setup_class()
 

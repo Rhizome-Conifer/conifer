@@ -178,7 +178,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         else:
             return len(self.get_lists())
 
-    def init_new(self, slug, title, desc='', public=False):
+    def init_new(self, slug, title, desc='', public=False, public_index=False):
         coll = self._create_new_id()
 
         key = self.INFO_KEY.format(coll=coll)
@@ -187,7 +187,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
                      'size': 0,
                      'desc': desc,
                      'public': self._from_bool(public),
-                     'public_index': False,
+                     'public_index': self._from_bool(public_index),
                     }
 
         self._init_new()

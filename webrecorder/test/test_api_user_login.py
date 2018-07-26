@@ -416,6 +416,9 @@ class TestApiUserLogin(FullStackTests):
         assert res.json['anon'] == True
         assert res.json['coll_count'] == 0
 
+    def test_openapi_spec(self):
+        assert self.testapp.get('/api/v1', status=200).content_type == 'text/yaml'
+
     def test_invalid_api(self):
         # unknown api
         assert self.testapp.options('/api/v1/no-such-api/foo', status=404).json == {'error': 'not_found'}
@@ -423,7 +426,6 @@ class TestApiUserLogin(FullStackTests):
 
         assert self.testapp.get('/api/v1/no-such-api/foo', status=404).json == {'error': 'not_found'}
         assert self.testapp.get('/api/v1/no-such-api', status=404).json == {'error': 'not_found'}
-        assert self.testapp.get('/api/v1', status=404).json == {'error': 'not_found'}
         assert self.testapp.get('/api/', status=404).json == {'error': 'not_found'}
         assert self.testapp.get('/api', status=404).json == {'error': 'not_found'}
 

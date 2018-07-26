@@ -310,6 +310,7 @@ class BaseImporter(ImportStatusChecker):
 
         for list_data in lists:
             bookmarks = list_data.pop('bookmarks', [])
+            self.process_list_data(list_data)
             blist = collection.create_bookmark_list(list_data)
             for bookmark_data in bookmarks:
                 page_id = bookmark_data.get('page_id')
@@ -553,8 +554,8 @@ class UploadImporter(BaseImporter):
     def _get_upload_id(self):
         return base64.b32encode(os.urandom(5)).decode('utf-8')
 
-    def is_public(self, info):
-        return info.get('public', False)
+    def process_list_data(self, list_data):
+        pass
 
     def _add_split_padding(self, diff, upload_key):
         self.redis.hincrby(upload_key, 'size', diff * 2)
@@ -567,13 +568,15 @@ class UploadImporter(BaseImporter):
 
     def make_collection(self, user, filename, info):
         desc = info.get('desc', '').format(filename=filename)
-        public = self.is_public(info)
+        public = info.get('public', False)
+        public_index = info.get('public_index', False)
 
         info['id'] = sanitize_title(info['title'])
         collection = user.create_collection(info['id'],
                                        title=info['title'],
                                        desc=desc,
                                        public=public,
+                                       public_index=public_index,
                                        allow_dupe=True)
 
         info['id'] = collection.name
@@ -666,8 +669,14 @@ class InplaceImporter(BaseImporter):
     def _get_upload_id(self):
         return self.upload_id
 
-    def is_public(self, info):
-        return True
+    def process_coll_data(self, coll_data):
+        if coll_data:
+            coll_data['public'] = True
+            coll_data['public_index'] = True
+
+    def process_list_data(self, list_data):
+        if list_data:
+            list_data['public'] = True
 
     def _add_split_padding(self, diff, upload_key):
         self.redis.hincrby(upload_key, 'size', diff)
@@ -686,5 +695,10 @@ class InplaceImporter(BaseImporter):
 
         self.the_collection.set_prop('title', info['title'], update_ts=False)
         self.the_collection.set_prop('desc', info['desc'], update_ts=False)
+
+        # ensure player collection & index are public
+        self.the_collection.set_bool_prop('public_index', True)
+        self.the_collection.set_bool_prop('public', True)
+
         return self.the_collection
 

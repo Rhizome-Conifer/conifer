@@ -12,7 +12,7 @@ from bottle import request, HTTPError, response
 from datetime import datetime
 from re import sub
 
-from webrecorder.basecontroller import BaseController
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.models import Stats, User
 
 from datetime import datetime, timedelta
@@ -389,6 +389,8 @@ class AdminController(BaseController):
             return 0
 
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Admin')
+
         @self.app.get('/api/v1/admin/defaults')
         @self.admin_view
         def get_defaults():
@@ -550,6 +552,8 @@ class AdminController(BaseController):
             return {'user': user.serialize(compute_size_allotment=True)}
 
         # Grafana Stats APIs
+        wr_api_spec.set_curr_tag('Stats')
+
         @self.app.get('/api/v1/stats/')
         @self.admin_view
         def stats_ping():

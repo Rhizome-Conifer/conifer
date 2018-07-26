@@ -5,6 +5,8 @@ import webtest
 import json
 import time
 
+import requests
+
 from webrecorder.models.stats import Stats
 from webrecorder.models.user import User
 from webrecorder.models.base import RedisUniqueComponent
@@ -12,6 +14,8 @@ from webrecorder.utils import today_str
 
 from webrecorder.models.usermanager import CLIUserManager
 from warcio import ArchiveIterator
+
+from webrecorder.standalone.webrecorder_player import webrecorder_player
 
 
 # ============================================================================
@@ -34,6 +38,23 @@ class TestUpload(FullStackTests):
         cls.warc = None
 
         cls.test_upload_warc = os.path.join(cls.get_curr_dir(), 'warcs', 'test_3_15_upload.warc.gz')
+
+        cls.env_backup = dict(os.environ)
+        cls.player = None
+        cls.player_filename = None
+
+    @classmethod
+    def teardown_class(cls):
+        if cls.player:
+            cls.player.app_serv.stop()
+
+        if cls.player_filename:
+            os.remove(cls.player_filename)
+
+        os.environ.clear()
+        os.environ.update(cls.env_backup)
+
+        super(TestUpload, cls).teardown_class()
 
     def test_upload_anon(self):
         with open(self.test_upload_warc, 'rb') as fh:
@@ -131,6 +152,13 @@ class TestUpload(FullStackTests):
         res = self.testapp.post_json('/api/v1/list/%s/bookmarks?user=test&coll=default-collection' % list_id, params=page)
 
         bookmark = res.json['bookmark']
+
+    def test_toggle_public_index(self):
+        params = {'public_index': True}
+
+        res = self.testapp.post_json('/api/v1/collection/default-collection?user=test', params=params)
+
+        assert res.json['collection']['public_index'] == True
 
     def test_logged_in_download_coll(self):
         res = self.testapp.get('/test/default-collection/$download')
@@ -240,6 +268,9 @@ class TestUpload(FullStackTests):
         assert collection['id'] == 'default-collection-2'
         assert collection['title'] == 'Default Collection'
         assert collection['slug'] == 'default-collection-2'
+        assert collection['public_index'] == True
+        assert collection['public'] == False
+        assert len(collection['pages']) == 2
 
         for field in TestUpload.timestamps.keys():
             if field == 'recorded_at':
@@ -375,8 +406,6 @@ class TestUpload(FullStackTests):
 
         assert len(collection['pages']) == 3
 
-        print(collection['pages'])
-
         assert {'id': self.ID_2,
                 'rec': 'upload-rec-2',
                 'timestamp': '20180306181354',
@@ -419,5 +448,34 @@ class TestUpload(FullStackTests):
 
         assert self.redis.hget(User.INFO_KEY.format(user='test'), Stats.UPLOADS_PROP) == '3'
 
+    def test_player_upload(self):
+        TestUpload.player_filename = os.path.join(self.warcs_dir, 'sample.warc.gz')
+
+        with open(self.player_filename, 'wb') as fh:
+            self.warc.seek(0)
+            fh.write(self.warc.read())
+            fh.flush()
+
+        TestUpload.player = webrecorder_player(['--no-browser', '-p', '0', self.player_filename], embed=True)
+
+        port = TestUpload.player.app_serv.port
+
+        def assert_finished():
+            res = requests.get('http://localhost:{0}/_upload/@INIT?user=local'.format(port))
+            assert res.json()['done'] == True
+            assert res.json()['size'] >= res.json()['total_size']
+
+        self.sleep_try(0.5, 3.0, assert_finished)
+
+        res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
+        data = res.json()
+        collection = data['collection']
+        assert collection['id'] == 'collection'
+        assert collection['public'] == True
+        assert collection['public_index'] == True
+        assert collection['title'] == 'Default Collection'
+
+        assert len(collection['pages']) == 2
+        assert len(collection['lists']) == 2
 
 

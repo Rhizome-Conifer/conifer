@@ -1,4 +1,4 @@
-from webrecorder.basecontroller import BaseController
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from bottle import request, response
 
 from webrecorder.utils import get_bool
@@ -8,11 +8,15 @@ from webrecorder.utils import get_bool
 class ListsController(BaseController):
     def init_routes(self):
         # LISTS
+        wr_api_spec.set_curr_tag('Lists')
+
         @self.app.get('/api/v1/lists')
+        @self.api(query=['user', 'coll', 'include_bookmarks'],
+                  resp='lists')
         def get_lists():
             user, collection = self.load_user_coll()
 
-            include_bookmarks = request.query.include_bookmarks or 'all'
+            include_bookmarks = request.query.getunicode('include_bookmarks') or 'all'
 
             lists = collection.get_lists()
 
@@ -22,6 +26,10 @@ class ListsController(BaseController):
             }
 
         @self.app.post('/api/v1/lists')
+        @self.api(query=['user', 'coll', 'include_bookmarks'],
+                  req_desc='List properties',
+                  req=['title', 'desc', 'public', 'before_id'],
+                  resp='list')
         def add_list():
             user, collection = self.load_user_coll()
 
@@ -30,17 +38,23 @@ class ListsController(BaseController):
             return {'list': blist.serialize()}
 
         @self.app.get('/api/v1/list/<list_id>')
+        @self.api(query=['user', 'coll', 'include_bookmarks'],
+                  resp='list')
         def get_list(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
             self.access.assert_can_read_list(blist)
 
-            include_bookmarks = request.query.include_bookmarks or 'all'
+            include_bookmarks = request.query.getunicode('include_bookmarks') or 'all'
 
             return {'list': blist.serialize(check_slug=list_id,
                                             include_bookmarks=include_bookmarks)}
 
         @self.app.post('/api/v1/list/<list_id>')
+        @self.api(query=['user', 'coll'],
+                  req_desc='Update List properties',
+                  req=['title', 'desc', 'public'],
+                  resp='list')
         def update_list(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
@@ -49,6 +63,8 @@ class ListsController(BaseController):
             return {'list': blist.serialize()}
 
         @self.app.delete('/api/v1/list/<list_id>')
+        @self.api(query=['user', 'coll'],
+                  resp='deleted')
         def delete_list(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
@@ -58,6 +74,9 @@ class ListsController(BaseController):
                 self._raise_error(400, 'error_deleting')
 
         @self.app.post('/api/v1/list/<list_id>/move')
+        @self.api(query=['user', 'coll'],
+                  req=['before_id'],
+                  resp='success')
         def move_list_before(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
@@ -69,22 +88,32 @@ class ListsController(BaseController):
                 before = None
 
             collection.move_list_before(blist, before)
-            return {'success': 'list_moved'}
+            return {'success': True}
 
         @self.app.post('/api/v1/lists/reorder')
+        @self.api(query=['user', 'coll'],
+                  req_desc='An array of existing list ids in a new order',
+                  req=['order'],
+                  resp='success')
         def reorder_lists():
             user, collection = self.load_user_coll()
 
             new_order = request.json.get('order', [])
 
             if collection.lists.reorder_objects(new_order):
-                return {'success': 'reordered'}
+                return {'success': True}
             else:
                 return self._raise_error(400, 'invalid_order')
 
 
         #BOOKMARKS
+        wr_api_spec.set_curr_tag('Bookmarks')
+
         @self.app.post('/api/v1/list/<list_id>/bookmarks')
+        @self.api(query=['user', 'coll'],
+                  req_desc='Bookmark properties',
+                  req=['title', 'url', 'timestamp', 'browser', 'desc', 'page_id', 'before_id'],
+                  resp='bookmark')
         def create_bookmark(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
@@ -95,6 +124,10 @@ class ListsController(BaseController):
                 return self._raise_error(400, 'invalid_page')
 
         @self.app.post('/api/v1/list/<list_id>/bulk_bookmarks')
+        @self.api(query=['user', 'coll'],
+                  req_desc='List of Bookmarks',
+                  req={'type': 'array', 'item_type': ['title', 'url', 'timestamp', 'browser', 'desc', 'page_id', 'before_id']},
+                  resp='list')
         def create_bookmarks(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
@@ -106,6 +139,8 @@ class ListsController(BaseController):
             return {'list': blist.serialize()}
 
         @self.app.get('/api/v1/list/<list_id>/bookmarks')
+        @self.api(query=['user', 'coll'],
+                  resp='bookmarks')
         def get_bookmarks(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
@@ -114,6 +149,8 @@ class ListsController(BaseController):
             return {'bookmarks': bookmarks}
 
         @self.app.get('/api/v1/bookmark/<bid>')
+        @self.api(query=['user', 'coll', 'list'],
+                  resp='bookmark')
         def get_bookmark(bid):
             user, collection, blist = self.load_user_coll_list()
 
@@ -121,6 +158,10 @@ class ListsController(BaseController):
             return {'bookmark': bookmark}
 
         @self.app.post('/api/v1/bookmark/<bid>')
+        @self.api(query=['user', 'coll', 'list'],
+                  req_desc='Bookmark properties',
+                  req=['title', 'url', 'timestamp', 'browser', 'desc', 'page_id', 'before_id'],
+                  resp='bookmark')
         def update_bookmark(bid):
             user, collection, blist = self.load_user_coll_list()
 
@@ -129,6 +170,8 @@ class ListsController(BaseController):
             return {'bookmark': bookmark}
 
         @self.app.delete('/api/v1/bookmark/<bid>')
+        @self.api(query=['user', 'coll', 'list'],
+                  resp='deleted')
         def delete_bookmark(bid):
             user, collection, blist = self.load_user_coll_list()
             if blist.remove_bookmark(bid):
@@ -137,13 +180,17 @@ class ListsController(BaseController):
                 self._raise_error(404, 'no_such_bookmark')
 
         @self.app.post('/api/v1/list/<list_id>/bookmarks/reorder')
+        @self.api(query=['user', 'coll'],
+                  req_desc='An array of existing bookmark ids in a new order',
+                  req=['order'],
+                  resp='success')
         def reorder_bookmarks(list_id):
             user, collection, blist = self.load_user_coll_list(list_id)
 
             new_order = request.json.get('order', [])
 
             if blist.reorder_bookmarks(new_order):
-                return {'success': 'reordered'}
+                return {'success': True}
             else:
                 self._raise_error(400, 'invalid_order')
 

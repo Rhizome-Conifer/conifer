@@ -1,4 +1,4 @@
-from webrecorder.basecontroller import BaseController
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.gh_reporter import GitHubIssueImporter
 from werkzeug.useragents import UserAgent
 from bottle import request
@@ -31,6 +31,8 @@ class BugReportController(BaseController):
             self.issue_handler = self.redis_issue_handler
 
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Bug Reporting')
+
         @self.app.post('/api/v1/report/dnlr')
         def report_issues():
             useragent = request.headers.get('User-Agent')

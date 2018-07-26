@@ -4,7 +4,7 @@ import redis
 
 from bottle import request, response
 
-from webrecorder.basecontroller import BaseController
+from webrecorder.basecontroller import BaseController, wr_api_spec
 
 from webrecorder.webreccork import ValidationException
 from webrecorder.utils import get_bool
@@ -51,6 +51,8 @@ class UserController(BaseController):
         return user
 
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Auth')
+
         # USER CHECKS
         @self.app.get('/api/v1/auth/check_username/<username>')
         def test_username(username):
@@ -194,6 +196,18 @@ class UserController(BaseController):
             except ValidationException as ve:
                 return self._raise_error(403, str(ve))
 
+        # Skip POST request recording
+        @self.app.post('/api/v1/auth/skipreq')
+        def skip_req():
+            data = request.json or {}
+            url = data.get('url', '')
+            self.access.session_user.mark_skip_url(url)
+            return {'success': True}
+
+
+        # USER API
+        wr_api_spec.set_curr_tag('Users')
+
         @self.app.get('/api/v1/user/<username>')
         def api_get_user(username):
             """API enpoint to return user info"""
@@ -215,6 +229,7 @@ class UserController(BaseController):
             #self.validate_csrf()
             try:
                 assert(self.user_manager.delete_user(username))
+                request.environ['webrec.delete_all_cookies'] = 'all'
             except:
                 #return {'error_message': 'Could not delete user: ' + username}
                 return self._raise_error(400, 'error_deleting')
@@ -223,7 +238,7 @@ class UserController(BaseController):
             return data
 
         @self.app.post('/api/v1/user/<username>')
-        def update_desc(username):
+        def update_user(username):
             user = self.get_user(user=username)
 
             data = request.json or {}
@@ -237,14 +252,6 @@ class UserController(BaseController):
             if 'display_url' in data:
                 user['display_url'] = data['display_url'][:500]
 
-            return {'success': True}
-
-        # Skip POST request recording
-        @self.app.post('/api/v1/auth/skipreq')
-        def skip_req():
-            data = request.json or {}
-            url = data.get('url', '')
-            self.access.session_user.mark_skip_url(url)
             return {'success': True}
 
 
@@ -270,31 +277,4 @@ class UserController(BaseController):
                 result['user_info']['desc'] = self.default_user_desc.format(user)
 
             return result
-
-        # User Account Settings
-        #@self.app.get('/_settings')
-        #@self.jinja2_view('account.html')
-        def account_settings():
-            self.access.assert_is_logged_in()
-
-            user = self.access.session_user
-
-            return {'user': user.name,
-                    'user_info': user.serialize(),
-                    'num_coll': user.num_collections(),
-                   }
-
-        # Delete User Account
-        #@self.app.post('/<username>/$delete')
-        def delete_user(username):
-            self.validate_csrf()
-            if self.user_manager.delete_user(username):
-                self.flash_message('The user {0} has been permanently deleted!'.format(username), 'success')
-
-                request.environ['webrec.delete_all_cookies'] = 'all'
-                self.user_manager.logout()
-                self.redirect('/')
-            else:
-                self.flash_message('There was an error deleting {0}'.format(username))
-                self.redirect(self.get_path(username))
 
