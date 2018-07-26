@@ -1,9 +1,16 @@
+# standard library imports
 from time import strftime, gmtime
 
 
-# ============================================================================
 class CookieGuard(object):
+    """Cookie manager."""
+
     def __init__(self, app, sesh_key):
+        """Initialize cookie manager.
+
+        :param Bottle app: bottle application
+        :param str sesh_key: session ID
+        """
         self.app = app
         self.sesh_key = sesh_key
 
@@ -73,5 +80,3 @@ class CookieGuard(object):
 
             return value
         return ''
-
-

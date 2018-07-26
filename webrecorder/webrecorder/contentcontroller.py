@@ -1,29 +1,42 @@
-import re
+# standard library imports
 import os
+import re
+
+# third party imports
 from six.moves.urllib.parse import quote, unquote
+from bottle import (
+    Bottle, HTTPError, HTTPResponse, redirect, request, response
+)
 
-from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
-
-from pywb.utils.loaders import load_yaml_config
+# library specific imports
 from pywb.rewrite.wburl import WbUrl
 from pywb.rewrite.cookies import CookieTracker
-
+from pywb.utils.loaders import load_yaml_config
 from pywb.apps.rewriterapp import RewriterApp, UpstreamException
-
+from webrecorder.utils import get_bool
 from webrecorder.basecontroller import BaseController
 from webrecorder.load.wamloader import WAMLoader
-from webrecorder.utils import get_bool
 
 
-# ============================================================================
 class ContentController(BaseController, RewriterApp):
+    """Content controller.
+
+    :cvar str DEF_REC_NAME: default record name
+    :cvar SRE_Pattern WB_URL_RX: URL regular expression
+    :cvar tuple MODIFY_MODES: Webrecorder modes
+    """
     DEF_REC_NAME = 'Recording Session'
-
     WB_URL_RX = re.compile('(([\d*]*)([a-z]+_|[$][a-z0-9:.-]+)?/)?([a-zA-Z]+:)?//.*')
-
     MODIFY_MODES = ('record', 'patch', 'extract')
 
     def __init__(self, app, jinja_env, config, redis):
+        """Initialize content controller.
+
+        :param Bottle app: bottle app
+        :param jinja_env: n.s.
+        :param config: n.s.
+        :param StrictRedis redis: Redis interface
+        """
         BaseController.__init__(self, app, jinja_env, None, config)
 
         config['csp-header'] = self.get_csp_header()
@@ -61,6 +74,11 @@ class ContentController(BaseController, RewriterApp):
             self.client_archives[pk] = info
 
     def get_csp_header(self):
+        """Get Content Security Policy header.
+
+        :returns: Content Security Policy header
+        :rtype: str
+        """
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
         if self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
@@ -743,6 +761,7 @@ class ContentController(BaseController, RewriterApp):
             self._add_stats(cdx, resp_headers, kwargs)
         except:
             import traceback
+
             traceback.print_exc()
 
     def _add_stats(self, cdx, resp_headers, kwargs):

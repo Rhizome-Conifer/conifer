@@ -1,74 +1,80 @@
-import six
-import time
-import redis
-import re
-import json
+# standard library imports
 import os
+import re
+import six
+import json
+import time
 import base64
 import hashlib
-import gevent
 import logging
-
 from datetime import datetime
 
-from bottle import template, request, HTTPError
-
-from webrecorder.webreccork import ValidationException
-from webrecorder.redisutils import RedisTable
-from webrecorder.webreccork import WebRecCork
-from webrecorder.session import Session
-
-from cork import AAAException
-
-from six.moves.urllib.parse import quote
+# third party imports
+import requests
 from six.moves import range
+from six.moves.urllib.parse import quote
+import redis
+from cork import AAAException
+from bottle import HTTPError, request, template
 
+# library specific imports
+from warcio.timeutils import timestamp_now
+from pywb.utils.loaders import load
 from pywb.utils.canonicalize import calc_search_range
 from pywb.warcserver.index.cdxobject import CDXObject
-
-from pywb.utils.loaders import load
-
-from warcio.timeutils import timestamp_now
-
 from webrecorder.utils import load_wr_config, redis_pipeline
+from webrecorder.session import Session
+from webrecorder.redisutils import RedisTable
+from webrecorder.webreccork import ValidationException, WebRecCork
 
-import requests
 
-
-# ============================================================================
 class LoginManagerMixin(object):
+    """Login manager.
+
+    :cvar SRE_Pattern USER_RX: username regular expression
+    :cvar list RESTRICTED_NAMES: list of forbidden usernames
+    :cvar SRE_Pattern PASS_RX: password regular expression
+
+    :ivar int default_max_size: default maximum size
+    :ivar int default_max_anon_size: default maximum size (anonymous user)
+    :ivar int default_max_coll: default maximum number of collections
+    """
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,30}$')
-
-    RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager',
-                        'guest', 'settings', 'profile', 'api', 'anon',
-                        'anonymous', 'register', 'join', 'download', 'live', 'embed']
-
+    RESTRICTED_NAMES = [
+        'login', 'logout', 'user', 'admin', 'manager',
+        'guest', 'settings', 'profile', 'api', 'anon',
+        'anonymous', 'register', 'join', 'download', 'live', 'embed'
+    ]
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
     def __init__(self, config):
-        super(LoginManagerMixin, self).__init__(config)
+        """Initialize login manager.
+
+        :param dict config: configuration
+        """
+        super().__init__(config)
         try:
             self.default_max_size = int(config['default_max_size'])
             self.default_max_anon_size = int(config['default_max_anon_size'])
             self.default_max_coll = int(config['default_max_coll'])
-
             if not self.redis.exists('h:defaults'):
-                self.redis.hset('h:defaults', 'max_size', self.default_max_size)
-                self.redis.hset('h:defaults', 'max_anon_size', self.default_max_anon_size)
-                self.redis.hset('h:defaults', 'max_coll', self.default_max_coll)
+                self.redis.hset(
+                    'h:defaults', 'max_size', self.default_max_size
+                )
+                self.redis.hset(
+                    'h:defaults', 'max_anon_size', self.default_max_anon_size
+                )
+                self.redis.hset(
+                    'h:defaults', 'max_coll', self.default_max_coll
+                )
         except Exception as e:
             print('WARNING: Unable to init defaults: ' + str(e))
-
         self.user_key = config['info_key_templ']['user']
         self.user_skip_key = config['skip_key_templ']
         self.skip_key_secs = int(config['skip_key_secs'])
-
         self.rename_url_templ = config['url_templates']['rename']
-
         self.default_coll = config['default_coll']
-
         self.temp_prefix = config['temp_prefix']
-
         mailing_list = os.environ.get('MAILING_LIST', '').lower()
         self.mailing_list = mailing_list in ('true', '1', 'yes')
         self.default_list_endpoint = os.environ.get('MAILING_LIST_ENDPOINT', '')
@@ -84,7 +90,6 @@ class LoginManagerMixin(object):
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
         self.rate_limit_restricted_max = int(os.environ.get('RATE_LIMIT_RESTRICTED_MAX', self.rate_limit_max))
         self.rate_limit_restricted_hours = int(os.environ.get('RATE_LIMIT_RESTRICTED_HOURS', self.rate_limit_hours))
-
         self.rate_restricted_ips = os.environ.get('RATE_LIMIT_RESTRICTED_IPS', '').split(',')
 
     def add_to_mailing_list(self, username, email, name, list_endpoint=None):
@@ -145,12 +150,26 @@ class LoginManagerMixin(object):
                 print('Removing from mailing list failed:', e)
 
     def get_session(self):
+        """Get session ID.
+
+        :returns: session ID
+        :rtype: str
+        """
         return request.environ['webrec.session']
 
     def get_users(self):
+        """Get current users.
+
+        :returns: Redis hash interface
+        :rtype: RedisTable
+        """
         return RedisTable(self.redis, 'h:users')
 
     def create_user(self, reg):
+        """Add user.
+
+        :param str reg: registration ID
+        """
         try:
             user, init_info = self.cork.validate_registration(reg)
         except AAAException as a:
@@ -517,26 +536,44 @@ class LoginManagerMixin(object):
         return (new_size <= size_remaining)
 
 
-# ============================================================================
 class AccessManagerMixin(object):
+    """Access manager.
+
+    :cvar str READ_PREFIX: readable key prefix
+    :cvar str WRITE_PREFIX: readable/writeable key prefix
+    :cvar str PUBLIC: n.s.
+
+    :ivar admin_view: decorator to be used for authentication/authorization
+    :ivar auth_view: decorator to be used for authentication/authorization
+    :ivar beta_user: decorator to be used for authentication/authorization
+    """
     READ_PREFIX = 'r:'
     WRITE_PREFIX = 'w:'
     PUBLIC = '@public'
 
     def __init__(self, *args, **kwargs):
-        super(AccessManagerMixin, self).__init__(*args, **kwargs)
+        """Initialize access manager."""
+        super().__init__(*args, **kwargs)
 
         # custom cork auth decorators
-        self.admin_view = self.cork.make_auth_decorator(role='admin',
-                                                        fixed_role=True,
-                                                        fail_redirect='/_login')
-        self.auth_view = self.cork.make_auth_decorator(role='archivist',
-                                                       fail_redirect='/_login')
-        self.beta_user = self.cork.make_auth_decorator(role='beta-archivist',
-                                                       fail_redirect='/_login')
+        self.admin_view = self.cork.make_auth_decorator(
+            role='admin', fixed_role=True, fail_redirect='/_login'
+        )
+        self.auth_view = self.cork.make_auth_decorator(
+            role='archivist', fail_redirect='/_login'
+        )
+        self.beta_user = self.cork.make_auth_decorator(
+            role='beta-archivist', fail_redirect='/_login'
+        )
 
     def is_anon(self, user):
-        #return not user or user == '@anon' or user.startswith('anon/')
+        """Determine whether the given user is anonymous user.
+
+        :param str user: user
+
+        :returns: whether given user is anonymous user
+        :rtype: bool
+        """
         if not user:
             return False
 
@@ -545,10 +582,23 @@ class AccessManagerMixin(object):
         return sesh.is_anon(user)
 
     def get_curr_user(self):
+        """Get current user.
+
+        :returns: current user
+        :rtype: str or None
+        """
         sesh = self.get_session()
         return sesh.curr_user
 
     def _check_write_access(self, user, coll):
+        """Determine whether given user has write access to given collection.
+
+        :param str user: user
+        :param str coll: collection
+
+        :returns: write access right
+        :rtype: bool
+        """
         # anon access
         if self.is_anon(user) and coll == 'temp':
             return True
@@ -566,6 +616,14 @@ class AccessManagerMixin(object):
         return False
 
     def _check_read_access_public(self, user, coll):
+        """Determine whether given user has read access to given collection.
+
+        :param str user: user
+        :param str coll: collection
+
+        :returns: read access right
+        :rtype: str or bool
+        """
         if self.is_public(user, coll):
             return 'public'
 
@@ -586,11 +644,28 @@ class AccessManagerMixin(object):
         return False
 
     def is_public(self, user, coll):
+        """Determine whether given collection of given user is public.
+
+        :param str user: user
+        :param str coll: collection
+
+        :returns: whether collection is public
+        :rtype: bool
+        """
         key = self.coll_info_key.format(user=user, coll=coll)
         res = self.redis.hget(key, self.READ_PREFIX + self.PUBLIC)
         return res == '1'
 
     def set_public(self, user, coll, is_public):
+        """Set given collection of given user to public.
+
+        :param str user: user
+        :param str coll: collection
+        :param bool is_public: whether collection is public
+
+        :returns: True in case of success and False in case of failure
+        :rtype: bool
+        """
         if not self.is_superuser() and not self.can_admin_coll(user, coll):
             return False
 
@@ -604,21 +679,50 @@ class AccessManagerMixin(object):
         return True
 
     def can_read_coll(self, user, coll):
+        """Determine whether given user has read access to given collection.
+
+        :param str user: user
+        :param str coll: collection
+
+        :returns: read access right
+        :rtype: bool
+        """
         return bool(self._check_read_access_public(user, coll))
 
     def can_write_coll(self, user, coll):
+        """Determine whether given user has write access to given collection.
+
+        :param str user: user
+        :param str coll: collection
+
+        :returns: write access right
+        :rtype: bool
+        """
         return self._check_write_access(user, coll)
 
     def is_extractable(self, user, coll):
-        if not self.can_read_coll(user, coll):
-            return False
+        """Determine whether given user has right to copy given collection.
 
-        # for now, no extractable view
+        :param str user: user
+        :param str coll: collection
+
+        :returns: right to copy
+        :rtype: bool
+        """
         return False
 
     # for now, equivalent to is_owner(), but a different
     # permission, and may change
     def can_admin_coll(self, user, coll):
+        """Determine whether given user has right to administrate given
+        collection.
+
+        :param str user: user
+        :param str coll: collection
+
+        :returns: right to administrate
+        :rtype: bool
+        """
         sesh = self.get_session()
         if sesh.is_restricted:
             return False
@@ -629,7 +733,10 @@ class AccessManagerMixin(object):
         return self.is_owner(user)
 
     def can_tag(self):
-        """Same as `is_beta` for now, with the potential to break off
+        """Determine whether the logged-in user has the right to tag.
+
+        :returns: right to tag
+        :rtype: bool
         """
         try:
             self.cork.require(role='beta-archivist')
@@ -638,6 +745,11 @@ class AccessManagerMixin(object):
             return False
 
     def is_beta(self):
+        """Determine whether the logged-in user is 'beta-archivist'.
+
+        :returns: whether user is 'beta-archivist'
+        :rtype: bool
+        """
         try:
             self.cork.require(role='beta-archivist')
             return True
@@ -645,8 +757,10 @@ class AccessManagerMixin(object):
             return False
 
     def is_superuser(self):
-        """Test if logged in user has 100 level `admin` privledges.
-           Named `superuser` to prevent confusion with `can_admin`
+        """Determine whether the logged-in user is 'admin'.
+
+        :returns: whether user is 'admin'
+        :rtype: bool
         """
         sesh = self.get_session()
         return sesh.curr_role == 'admin'
@@ -746,8 +860,14 @@ class PageManagerMixin(object):
 
 # ============================================================================
 class RecManagerMixin(object):
+    """Record mananger."""
+
     def __init__(self, config):
-        super(RecManagerMixin, self).__init__(config)
+        """Initialize record manager.
+
+        :param dict config: configuration
+        """
+        super().__init__(config)
         self.rec_info_key = config['info_key_templ']['rec']
         self.rec_list_key = config['rec_list_key_templ']
 
@@ -764,6 +884,15 @@ class RecManagerMixin(object):
         self.dyn_ref_templ = config['dyn_ref_templ']
 
     def get_recording(self, user, coll, rec):
+        """Get record.
+
+        :param str user: user
+        :param str coll: collection
+        :param str rec: record ID
+
+        :returns: record
+        :rtype: dict
+        """
         self.assert_can_read(user, coll)
 
         key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
@@ -771,11 +900,29 @@ class RecManagerMixin(object):
         return self._fill_recording(user, coll, self.redis.hgetall(key))
 
     def get_recording_title(self, user, coll, rec):
+        """Get record title.
+
+        :param str user: user
+        :param str coll: collection
+        :param str rec: record ID
+
+        :returns: record title
+        :rtype: str
+        """
         self.assert_can_read(user, coll)
         key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
         return self.redis.hget(key, 'title')
 
     def _fill_recording(self, user, coll, data):
+        """Get record.
+
+        :param str user: user
+        :param str coll: collection
+        :param dict data: Redis hash
+
+        :returns: record
+        :rtype: dict
+        """
         result = self._format_info(data)
 
         if not result:
@@ -799,12 +946,18 @@ class RecManagerMixin(object):
         sources_key = self.ra_key.format(user=user, coll=coll, rec=rec)
         result['ra_sources'] = list(self.redis.smembers(sources_key))
 
-        #if result.get('pending_size') and result.get('size'):
-        #    result['size'] = int(result['size']) + int(result['pending_size'])
         return result
 
     def has_recording(self, user, coll, rec):
-        #self.assert_can_read(user, coll)
+        """Determine whether the given user has the given recording.
+
+        :param str user: user
+        :param str coll: collection
+        :param str rec: record ID
+
+        :returns: whether user has recording
+        :rtype: bool
+        """
         if not self.can_read_coll(user, coll):
             return False
 
@@ -814,11 +967,33 @@ class RecManagerMixin(object):
         return self.redis.hget(key, 'id') != None
 
     def is_recording_open(self, user, coll, rec):
+        """Set TTL of given record.
+
+        :param str user: user
+        :param str coll: collection
+        :param str rec: record ID
+
+        :returns: '1' in case of success or '0' in case of failure
+        :rtype: str
+        """
         key = self.open_rec_key.format(user=user, coll=coll, rec=rec)
         return self.redis.expire(key, self.open_rec_ttl)
 
-    def create_recording(self, user, coll, rec, rec_title, coll_title='',
-                         no_dupe=False, rec_type=None, ra_list=None):
+    def create_recording(
+            self, user, coll, rec, rec_title,
+            coll_title='', no_dupe=False, rec_type=None, ra_list=None
+    ):
+        """Create recording.
+
+        :param str user: user
+        :param str coll: collection
+        :param str rec: record ID
+        :param str rec_title: recording title
+        :param str coll_title: collection title
+        :param bool no_dupe: toggle duplicates on/off
+        :param rec_type: n.s.
+        :param ra_list: remote archives
+        """
 
         self.assert_can_write(user, coll)
 
@@ -870,9 +1045,20 @@ class RecManagerMixin(object):
 
         return self.get_recording(user, coll, rec)
 
-    def set_recording_timestamps(self, user, coll, rec,
-                                 created_at, updated_at):
+    def set_recording_timestamps(
+            self, user, coll, rec, created_at, updated_at
+    ):
+        """Set record timestamps.
 
+        :param str user: user
+        :param str coll: collection
+        :param str rec: record ID
+        :param int created_at: timestamp
+        :param int updated_at: timestamp
+
+        :returns: True in case of success or False in case of failure
+        :rtype: bool
+        """
         self.assert_can_write(user, coll)
 
         key = self.rec_info_key.format(user=user, coll=coll, rec=rec)
@@ -890,6 +1076,15 @@ class RecManagerMixin(object):
         return True
 
     def _get_rec_keys(self, user, coll, key_templ):
+        """Get record IDs in the given collection of the given user.
+
+        :param str user: user
+        :param str coll: collection
+        :param str key_templ: format string
+
+        :returns: record IDs
+        :rtype: list
+        """
         self.assert_can_read(user, coll)
 
         key_pattern = key_templ.format(user=user, coll=coll, rec='*')
@@ -900,6 +1095,14 @@ class RecManagerMixin(object):
         return [key_pattern.replace('*', rec) for rec in recs]
 
     def get_recordings(self, user, coll):
+        """Get records in the given collection of the given user.
+
+        :param str user: user
+        :param str coll: collection
+
+        :returns: records
+        :rtype: list
+        """
         keys = self._get_rec_keys(user, coll, self.rec_info_key)
 
         pi = self.redis.pipeline(transaction=False)
@@ -917,6 +1120,15 @@ class RecManagerMixin(object):
         return all_rec_list
 
     def delete_recording(self, user, coll, rec):
+        """Delete given record.
+
+        :param str user: user
+        :param str coll: collection
+        :param str rec: record ID
+
+        :return: response
+        :rtype: bool
+        """
         self.assert_can_admin(user, coll)
 
         res = self._send_delete('rec', user, coll, rec)
@@ -926,6 +1138,14 @@ class RecManagerMixin(object):
         return res
 
     def track_remote_archive(self, pi, user, coll, rec, source_id):
+        """Add remote archive.
+
+        :param pi: Redis pipeline
+        :param str user: user
+        :param str coll: collection
+        :param str rec: record ID
+        :param str source_id: record ID (remote archive)
+        """
 
         ra_key = self.ra_key.format(user=user,
                                     coll=coll,
@@ -1184,10 +1404,15 @@ class RecManagerMixin(object):
         return last_cdx['timestamp']
 
 
-# ============================================================================
 class CollManagerMixin(object):
+    """Collection manager."""
+
     def __init__(self, config):
-        super(CollManagerMixin, self).__init__(config)
+        """Initialize collection manager.
+
+        :param dict config: configuration
+        """
+        super().__init__(config)
 
         self.coll_info_key = config['info_key_templ']['coll']
         self.coll_list_key = config['coll_list_key_templ']
@@ -1225,10 +1450,6 @@ class CollManagerMixin(object):
         coll = result.get('id')
         if not coll:
             return None
-            #if include_recs:
-            #    result['title'] = ''
-            #    result['recordings'] = []
-            #return result
 
         path = self.download_paths['coll']
         path = path.format(host=self.get_host(),
@@ -1501,7 +1722,17 @@ class DeleteManagerMixin(object):
 
 # ============================================================================
 class Base(object):
+    """Manager base class (in the sense of method definition).
+
+    :ivar dict download_paths: path to downloaded files
+    :ivar tuple INT_KEYS: keys of values to convert to int
+    """
+
     def __init__(self, config):
+        """Initialize manager base class.
+
+        :param dict config: configuration
+        """
         self.download_paths = config['download_paths']
         self.INT_KEYS = ('size', 'created_at', 'updated_at')
 
@@ -1542,9 +1773,6 @@ class Base(object):
 
         info['size_remaining'] = self.get_size_remaining(user)
 
-        #if self.is_anon(user):
-        #    info['user'] = '@anon'
-        #else:
         info['user'] = user
 
         return info
@@ -1567,10 +1795,32 @@ class Base(object):
 
 
 # ============================================================================
-class RedisDataManager(AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
-                       LoginManagerMixin, PageManagerMixin, RecManagerMixin,
-                       Base):
-    def __init__(self, redis, cork, content_app, browser_redis, browser_mgr, config):
+class RedisDataManager(
+        AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
+        LoginManagerMixin, PageManagerMixin, RecManagerMixin, Base
+):
+    """Redis data manager.
+
+    :ivar StrictRedis redis: Redis interface
+    :ivar WebRecCork cork: Cork interface
+    :ivar dict config: configuration
+    :ivar Bottle content_app: bottle application
+    :ivar browser_redis: n.s.
+    :ivar browser_mgr: n.s.
+    """
+    def __init__(
+            self, redis, cork, content_app,
+            browser_redis, browser_mgr, config
+    ):
+        """Initialize Redis data manager.
+
+        :param StrictRedis redis: Redis interface
+        :param WebRecCork cork: Cork interface
+        :param Bottle content_app: bottle application
+        :param browser_redis: n.s.
+        :param browser_mgr: n.s.
+        :param dict config: configuration
+        """
         self.redis = redis
         self.cork = cork
         self.config = config
@@ -1583,11 +1833,11 @@ class RedisDataManager(AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
         self.browser_redis = browser_redis
         self.browser_mgr = browser_mgr
 
-        super(RedisDataManager, self).__init__(config)
+        super().__init__(config)
 
 
-# ============================================================================
 class CLIRedisDataManager(RedisDataManager):
+    """Comand-line Redis manager."""
     def can_read_coll(self, user, coll):
         return True
 
@@ -1616,8 +1866,12 @@ class CLIRedisDataManager(RedisDataManager):
         return 'http://localhost'
 
 
-# ============================================================================
 def init_manager_for_cli():
+    """Webrecorder initialization (command-line interface)
+
+    :returns: command-line Redis manager
+    :rtype: CLIRedisDataManager
+    """
     config = load_wr_config()
 
     # Init Redis

@@ -1,15 +1,37 @@
-from bottle import request, HTTPError, redirect as bottle_redirect
-from functools import wraps
-from six.moves.urllib.parse import quote
-from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
-
-import re
+# standard library imports
 import os
+import re
+from functools import wraps
+
+# third party imports
+from six.moves.urllib.parse import quote
+from bottle import HTTPError, redirect as bottle_redirect, request
+
+# library specific imports
+from webrecorder.utils import get_bool, sanitize_tag, sanitize_title
 
 
-# ============================================================================
 class BaseController(object):
+    """Controller (base class).
+
+    :ivar Bottle app: bottle application
+    :ivar jinja_env: n.s.
+    :ivar manager: n.s.
+    :ivar dict config: n.s.
+    :ivar str app_host: application host
+    :ivar str content_host: content host
+    :ivar cache_template: n.s.
+    :ivar bool anon_disabled: whether anonymous recording is enabled
+    """
+
     def __init__(self, app, jinja_env, manager, config):
+        """Initialize controller.
+
+        :param Bottle app: bottle application
+        :param Environment jinja_env: Jinja2 environment
+        :param manager: n.s.
+        :param dict config: n.s.
+        """
         self.app = app
         self.jinja_env = jinja_env
         self.manager = manager
@@ -23,9 +45,10 @@ class BaseController(object):
         self.init_routes()
 
     def init_routes(self):
-        raise NotImplemented()
+        raise NotImplementedError
 
     def redir_host(self, host=None, path=None):
+        """Cause a 303 or 302 redirect to the application host."""
         if not host:
             host = self.app_host
 
@@ -42,12 +65,22 @@ class BaseController(object):
         return bottle_redirect(url)
 
     def validate_csrf(self):
+        """Check CSRF token."""
         csrf = request.forms.getunicode('csrf')
         sesh_csrf = self.get_session().get_csrf()
         if not sesh_csrf or csrf != sesh_csrf:
             self._raise_error(403, 'Invalid CSRF Token')
 
     def get_user(self, api=False, redir_check=True):
+        """Get user.
+
+        :param bool api: n.s.
+        :param bool redir_check: whether to cause a redirect to the application
+        host
+
+        :returns: user
+        :rtype: str
+        """
         if redir_check:
             self.redir_host()
         user = request.query.getunicode('user')
@@ -67,6 +100,14 @@ class BaseController(object):
         return user
 
     def get_user_coll(self, api=False, redir_check=True):
+        """Get user and collection.
+
+        :param bool api: n.s.
+        :param bool redir_check: n.s.
+
+        :returns: user and collection
+        :rtype: str and str
+        """
         user = self.get_user(api=api, redir_check=redir_check)
 
         coll = request.query.getunicode('coll')
@@ -84,6 +125,12 @@ class BaseController(object):
         return user, coll
 
     def _raise_error(self, code, message, api=False, **kwargs):
+        """Raise HTTP error.
+
+        :param int code: status code
+        :param str message: body
+        :param bool api: n.s.
+        """
         result = {'error_message': message}
         result.update(kwargs)
 
@@ -96,9 +143,21 @@ class BaseController(object):
         raise err
 
     def get_session(self):
+        """Get session.
+
+        :returns: session
+        :rtype: Session
+        """
         return request.environ['webrec.session']
 
     def fill_anon_info(self, resp):
+        """Update response w/ anonymous user information.
+
+        :param dict resp: response
+
+        :returns: success or failure
+        :rtype: bool
+        """
         sesh = self.get_session()
 
         resp['anon_disabled'] = self.anon_disabled
@@ -115,9 +174,25 @@ class BaseController(object):
         return False
 
     def flash_message(self, *args, **kwargs):
+        """Set message.
+
+        :returns: None
+        :rtype: None
+        """
         return self.get_session().flash_message(*args, **kwargs)
 
     def get_path(self, user, coll=None, rec=None):
+        """Get path to user and/or collections and recordings.
+
+        :param str user: user
+        :param coll: collection
+        :type: None or str
+        :param rec: recording
+        :type: None or str
+
+        :returns: path
+        :rtype: str
+        """
         base = '/' + user
 
         if coll:
@@ -132,12 +207,28 @@ class BaseController(object):
         return base
 
     def get_redir_back(self, skip, default='/'):
+        """Get redirect.
+
+        :param str skip: path causing redirect to default directory
+        :param str default: default directory
+
+        :returns: redirect
+        :rtype: str
+        """
         redir_to = request.headers.get('Referer', default)
         if redir_to.endswith(skip):
             redir_to = default
         return redir_to
 
     def post_get(self, name, default=''):
+        """Get value from POST response.
+
+        :param str name: key
+        :param str default: default value
+
+        :returns: value
+        :rtype: str
+        """
         res = request.POST.get(name, default).strip()
         if not res:
             res = default
@@ -147,6 +238,10 @@ class BaseController(object):
         return self.manager.get_host()
 
     def redirect(self, url):
+        """Cause redirect to URL.
+
+        :param str url: URL
+        """
         if url.startswith('/'):
             url = self.get_host() + quote(url, safe='+ /!:%?$=&#')
 
@@ -173,9 +268,23 @@ class BaseController(object):
         return decorator
 
     def sanitize_tag(self, tag):
+        """Sanitize tag.
+
+        :param str tag: tag
+
+        :returns: sanitized tag
+        :rtype: str
+        """
         return sanitize_tag(tag)
 
     def sanitize_title(self, title):
+        """Sanitize title.
+
+        :param str title: title
+
+        :returns: sanitized title
+        :rtype: str
+        """
         return sanitize_title(title)
 
     def get_view_user(self, user):
@@ -191,4 +300,3 @@ class BaseController(object):
             classes.append('cbrowser')
 
         return ' '.join(classes).strip()
-

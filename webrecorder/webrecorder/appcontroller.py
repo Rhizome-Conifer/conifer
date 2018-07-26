@@ -163,7 +163,8 @@ class AppController(BaseController):
 
         :param dict config: configuration
 
-        :returns: Jinja environment
+        :returns: Jinja2 environment
+        :rtype: Environment
         """
         assets_path = os.path.expandvars(config['assets_path'])
         packages = [os.environ.get('WR_TEMPLATE_PKG', 'webrecorder'), 'pywb']

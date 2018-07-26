@@ -281,9 +281,24 @@ class Session(object):
         return anon
 
 
-# ============================================================================
 class RedisSessionMiddleware(CookieGuard):
+    """Redis session manager.
+
+    :ivar StrictRedis redis: Redis interface
+    :ivar cork: n.s.
+    :ivar str auto_login_user: automatic login username
+    :ivar str secret_key: secret key
+    :ivar str key_template: format string session key
+    """
+
     def __init__(self, app, cork, redis, session_opts):
+        """Initialize Redis session manager.
+
+        :param Bottle app: bottle application
+        :param cork: n.s.
+        :param StrictRedis redis: Redis interface
+        :param dict session_opts: session settings
+        """
         super().__init__(app, session_opts['session.key'])
         self.redis = redis
         self.cork = cork
@@ -298,6 +313,10 @@ class RedisSessionMiddleware(CookieGuard):
         self.durations = session_opts['session.durations']
 
     def init_session(self, environ):
+        """Initialize session.
+
+        :param dict environ: environment variables
+        """
         data = None
         ttl = -2
         is_restricted = False
@@ -496,10 +515,19 @@ class RedisSessionMiddleware(CookieGuard):
         return urlsafetimedserializer.dumps([sesh_id, is_restricted])
 
     def make_id(self):
+        """Get session ID.
+
+        :returns: session ID
+        :rtype: str
+        """
         return base64.b64encode(os.urandom(20)).decode('utf-8')
 
     def make_id_and_key(self):
+        """Get session ID and corresponding Redis key.
+
+        :returns: session ID and Redis key
+        :rtype: str and str
+        """
         sesh_id = self.make_id()
         redis_key = self.key_template.format(sesh_id)
-
         return sesh_id, redis_key
