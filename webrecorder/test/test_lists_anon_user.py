@@ -165,7 +165,7 @@ class TestListsAnonUserAPI(FullStackTests):
         params = {'before_id': '1003'}
         res = self.testapp.post_json(self._format('/api/v1/list/1001/move?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'success': 'list_moved'}
+        assert res.json == {'success': True}
 
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
 
@@ -180,7 +180,7 @@ class TestListsAnonUserAPI(FullStackTests):
 
         res = self.testapp.post_json(self._format('/api/v1/list/1002/move?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'success': 'list_moved'}
+        assert res.json == {'success': True}
 
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
 
@@ -215,7 +215,7 @@ class TestListsAnonUserAPI(FullStackTests):
         params = {'order': ['1002', '1001', '1003']}
         res = self.testapp.post_json(self._format('/api/v1/lists/reorder?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'success': 'reordered'}
+        assert res.json == {'success': True}
 
         res = self.testapp.get(self._format('/api/v1/lists?user={user}&coll=temp'))
 
@@ -404,7 +404,7 @@ class TestListsAnonUserAPI(FullStackTests):
         params = {'order': ['103', '104', '105', '106', '101']}
         res = self.testapp.post_json(self._format('/api/v1/list/1002/bookmarks/reorder?user={user}&coll=temp'), params=params)
 
-        assert res.json == {'success': 'reordered'}
+        assert res.json == {'success': True}
 
         # verify order
         res = self.testapp.get(self._format('/api/v1/list/1002/bookmarks?user={user}&coll=temp'))

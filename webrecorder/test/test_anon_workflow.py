@@ -433,14 +433,6 @@ class TestTempContent(FullStackTests):
         #assert info['rec_id'] == 'emmyem-test-recording'
         #assert info['rec_title'] == '%3Cem%3EMy%3C/em%3E test recording'
 
-    def test_anon_new_recording(self):
-        res = self._get_anon('/temp/$new')
-        res.charset = 'utf-8'
-
-        assert '<iframe' not in res.text
-
-        assert 'Temporary%20Collection' in res.text
-
     def test_anon_user_info_redirect(self):
         res = self._get_anon('')
         assert res.status_code == 302

@@ -8,3 +8,5 @@ werkzeug
 gevent-websocket
 har2warc
 fakeredis
+apispec
+

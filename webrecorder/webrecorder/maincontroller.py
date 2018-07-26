@@ -1,4 +1,4 @@
-from bottle import Bottle, debug, JSONPlugin, request, response, static_file
+from bottle import debug, request, response, static_file
 
 import logging
 import json
@@ -17,7 +17,7 @@ from six.moves.urllib.parse import urlsplit, urljoin, unquote
 from pywb.rewrite.templateview import JinjaEnv
 from webrecorder.utils import load_wr_config, init_logging
 
-from webrecorder.apiutils import CustomJSONEncoder
+from webrecorder.apiutils import APIBottle, wr_api_spec
 from webrecorder.admincontroller import AdminController
 from webrecorder.contentcontroller import ContentController
 from webrecorder.snapshotcontroller import SnapshotController
@@ -76,11 +76,11 @@ class MainController(BaseController):
             self.static_root = resource_filename('webrecorder', 'static/')
             gevent.spawn(default_build, force_build=False)
 
-        bottle_app = Bottle()
+        bottle_app = APIBottle()
         self.bottle_app = bottle_app
 
         # JSON encoding for datetime objects
-        self.bottle_app.install(JSONPlugin(json_dumps=lambda s: json.dumps(s, cls=CustomJSONEncoder)))
+        # self.bottle_app.install(JSONPlugin(json_dumps=lambda s: json.dumps(s, cls=CustomJSONEncoder)))
 
         config = load_wr_config()
 
@@ -153,6 +153,8 @@ class MainController(BaseController):
 
         self.browser_mgr = browser_mgr
         self.content_app = content_app
+
+        wr_api_spec.build_api_spec()
 
     def _get_proxy_options(self):
         opts = {'ca_name': 'Webrecorder HTTPS Proxy CA'}
@@ -369,6 +371,11 @@ class MainController(BaseController):
             msg_type = request.query.getunicode('msg_type', '')
             self.flash_message(message, msg_type)
             return {}
+
+        @self.bottle_app.route('/api/v1')
+        def get_api_spec():
+            response.content_type = 'text/yaml'
+            return wr_api_spec.get_api_spec_yaml()
 
         @self.bottle_app.route('/<:re:.*>', method='ANY')
         def fallthrough():

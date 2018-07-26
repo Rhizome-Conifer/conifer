@@ -8,6 +8,8 @@ from six.moves.urllib.parse import quote
 from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
 from webrecorder.models import User
 
+from webrecorder.apiutils import api_decorator, wr_api_spec
+
 
 # ============================================================================
 class BaseController(object):
@@ -17,6 +19,8 @@ class BaseController(object):
         self.user_manager = kwargs['user_manager']
         self.config = kwargs['config']
         self.redis = kwargs['redis']
+
+        self.api = api_decorator
 
         self.app_host = os.environ['APP_HOST']
         self.content_host = os.environ['CONTENT_HOST']
