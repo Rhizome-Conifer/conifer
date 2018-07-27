@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { basename } from 'path';
 import { Link } from 'react-router-dom';
 
 import { openFile } from 'helpers/playerUtils';
@@ -18,7 +19,8 @@ class PlayerNavUI extends Component {
     canGoBackward: PropTypes.bool,
     canGoForward: PropTypes.bool,
     history: PropTypes.object,
-    route: PropTypes.object
+    route: PropTypes.object,
+    source: PropTypes.string
   };
 
   triggerBack = () => {
@@ -46,11 +48,11 @@ class PlayerNavUI extends Component {
   }
 
   render() {
-    const { canGoBackward, canGoForward, collectionLoaded, route } = this.props;
+    const { canGoBackward, canGoForward, collectionLoaded, route, source } = this.props;
 
     const indexUrl = collectionLoaded ? '/local/collection/' : '/';
     const isLanding = route && route.name === 'landing';
-    const isReplay = route && route.name === 'replay';
+    const isReplay = route && route.name.indexOf('replay') !== -1;
     const isHelp = route && route.name === 'help';
 
     const fwdClass = classNames('button arrow', {
@@ -61,6 +63,8 @@ class PlayerNavUI extends Component {
       inactive: !canGoBackward,
       off: false
     });
+
+    const format = source && (source.startsWith('dat://') ? `${source.substr(0, 30)}...` : `file:${process.platform === 'win32' ? '\\' : '//'}${basename(source)}`);
 
     return (
       <nav className={`topBar ${route && route.name}`}>
@@ -91,6 +95,13 @@ class PlayerNavUI extends Component {
               </button>
 
               {/*<PlayerURLBar />*/}
+            </div>
+        }
+
+        {
+          source &&
+            <div className="source">
+              {format}
             </div>
         }
 
