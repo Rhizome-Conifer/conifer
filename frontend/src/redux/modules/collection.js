@@ -14,6 +14,18 @@ const COLL_EDIT_SUCCESS = 'wr/coll/COLL_EDIT_SUCCESS';
 const COLL_EDIT_FAIL = 'wr/coll/COLL_EDIT_FAIL';
 const RESET_EDIT_STATE = 'wr/coll/RESET_EDIT_STATE';
 
+const COLL_SET_SORT = 'wr/coll/COLL_SET_SORT';
+const COLL_SET_PUBLIC = 'wr/coll/SET_PUBLIC';
+const COLL_SET_PUBLIC_SUCCESS = 'wr/coll/SET_PUBLIC_SUCCESS';
+const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
+
+const DAT_SHARE = 'wr/coll/DAT_SHARE';
+const DAT_SHARE_SUCCESS = 'wr/coll/DAT_SHARE_SUCCESS';
+const DAT_SHARE_FAIL = 'wr/coll/DAT_SHARE_FAIL';
+const DAT_UNSHARE = 'wr/coll/DAT_UNSHARE';
+const DAT_UNSHARE_SUCCESS = 'wr/coll/DAT_UNSHARE_SUCCESS';
+const DAT_UNSHARE_FAIL = 'wr/coll/DAT_UNSHARE_FAIL';
+
 const COLL_DELETE = 'wr/coll/COLL_DELETE';
 const COLL_DELETE_SUCCESS = 'wr/coll/COLL_DELETE_SUCCESS';
 const COLL_DELETE_FAIL = 'wr/coll/COLL_DELETE_FAIL';
@@ -26,14 +38,11 @@ const LISTS_REORDER = 'wr/coll/LISTS_REORDER';
 const LISTS_REORDER_SUCCESS = 'wr/coll/LISTS_REORDER_SUCCESS';
 const LISTS_REORDER_FAIL = 'wr/coll/LISTS_REORDER_FAIL';
 
-const COLL_SET_SORT = 'wr/coll/COLL_SET_SORT';
-const COLL_SET_PUBLIC = 'wr/coll/SET_PUBLIC';
-const COLL_SET_PUBLIC_SUCCESS = 'wr/coll/SET_PUBLIC_SUCCESS';
-const COLL_SET_PUBLIC_FAIL = 'wr/coll/SET_PUBLIC_FAIL';
-
 export const defaultSort = { sort: 'timestamp', dir: 'DESC' };
 const initialState = fromJS({
   editing: false,
+  datProcessing: false,
+  datError: null,
   edited: false,
   editError: null,
   error: null,
@@ -75,6 +84,9 @@ export default function collection(state = initialState, action = {}) {
       const {
         collection: {
           created_at,
+          dat_updated_at,
+          dat_key,
+          dat_share,
           desc,
           duration,
           featured_list,
@@ -115,6 +127,9 @@ export default function collection(state = initialState, action = {}) {
         error: null,
         pages: pgs,
         created_at,
+        dat_updated_at,
+        dat_key,
+        dat_share,
         desc,
         duration,
         id,
@@ -147,7 +162,25 @@ export default function collection(state = initialState, action = {}) {
       return state.merge({
         sortBy: action.sortBy
       });
-
+    case DAT_SHARE:
+      return state.set('datProcessing', true);
+    case DAT_SHARE_SUCCESS:
+      return state.merge({
+        datProcessing: false,
+        ...action.result
+      });
+    case DAT_SHARE_FAIL:
+      return state.merge({
+        datProcessing: false,
+        datError: action.error
+      });
+    case DAT_UNSHARE:
+      return state.set('datProcessing', true);
+    case DAT_UNSHARE_SUCCESS:
+      return state.merge({
+        datProcessing: false,
+        dat_share: false
+      });
     case LISTS_LOAD_SUCCESS:
       return state.merge({
         lists: action.result.lists
@@ -181,15 +214,43 @@ export default function collection(state = initialState, action = {}) {
 }
 
 
+export function deleteCollection(user, coll) {
+  return {
+    types: [COLL_DELETE, COLL_DELETE_SUCCESS, COLL_DELETE_FAIL],
+    promise: client => client.del(`${apiPath}/collection/${coll}`, {
+      params: { user }
+    })
+  };
+}
+
+
+export function edit(user, coll, data) {
+  return {
+    types: [COLL_EDIT, COLL_EDIT_SUCCESS, COLL_EDIT_FAIL],
+    promise: client => client.post(`${apiPath}/collection/${coll}`, {
+      params: { user },
+      data
+    }),
+    data
+  };
+}
+
+
+export function getBookmarkCount(user, coll, list) {
+  return {
+    types: [BK_COUNT, BK_COUNT_SUCCESS, BK_COUNT_FAIL],
+    list,
+    promise: client => client.get(`${apiPath}/list/${list}`, {
+      params: { user, coll: decodeURIComponent(coll), include_bookmarks: 'none' }
+    })
+  };
+}
+
+
 export function isLoaded({ app }) {
   return app.get('collection') &&
          app.getIn(['collection', 'loaded']) &&
          Date.now() - app.getIn(['collection', 'accessed']) < 15 * 60 * 1000;
-}
-
-
-export function resetEditState() {
-  return { type: RESET_EDIT_STATE };
 }
 
 
@@ -217,6 +278,29 @@ export function loadLists(user, coll, withBookmarks = 'first') {
 }
 
 
+export function resetEditState() {
+  return { type: RESET_EDIT_STATE };
+}
+
+
+export function shareToDat(user, coll) {
+  return {
+    types: [DAT_SHARE, DAT_SHARE_SUCCESS, DAT_SHARE_FAIL],
+    promise: client => client.post(`${apiPath}/collection/${coll}/dat/share`, {
+      params: { user }
+    })
+  };
+}
+
+
+export function setSort(sortBy) {
+  return {
+    type: COLL_SET_SORT,
+    sortBy
+  };
+}
+
+
 export function sortLists(user, coll, order) {
   return {
     types: [LISTS_REORDER, LISTS_REORDER_SUCCESS, LISTS_REORDER_FAIL],
@@ -231,41 +315,11 @@ export function sortLists(user, coll, order) {
 }
 
 
-export function edit(user, coll, data) {
+export function unshareFromDat(user, coll) {
   return {
-    types: [COLL_EDIT, COLL_EDIT_SUCCESS, COLL_EDIT_FAIL],
-    promise: client => client.post(`${apiPath}/collection/${coll}`, {
-      params: { user },
-      data
-    }),
-    data
-  };
-}
-
-
-export function deleteCollection(user, coll) {
-  return {
-    types: [COLL_DELETE, COLL_DELETE_SUCCESS, COLL_DELETE_FAIL],
-    promise: client => client.del(`${apiPath}/collection/${coll}`, {
+    types: [DAT_UNSHARE, DAT_UNSHARE_SUCCESS, DAT_UNSHARE_FAIL],
+    promise: client => client.post(`${apiPath}/collection/${coll}/dat/unshare`, {
       params: { user }
-    })
-  };
-}
-
-
-export function setSort(sortBy) {
-  return {
-    type: COLL_SET_SORT,
-    sortBy
-  };
-}
-
-export function getBookmarkCount(user, coll, list) {
-  return {
-    types: [BK_COUNT, BK_COUNT_SUCCESS, BK_COUNT_FAIL],
-    list,
-    promise: client => client.get(`${apiPath}/list/${list}`, {
-      params: { user, coll: decodeURIComponent(coll), include_bookmarks: 'none' }
     })
   };
 }

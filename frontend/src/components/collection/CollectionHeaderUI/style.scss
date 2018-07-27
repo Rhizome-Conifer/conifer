@@ -1,8 +1,81 @@
 @import 'src/vars';
 
+.rectangular {
+    border-radius: 0;
+    text-align: center;
+    display: block;
+    margin: 2rem auto 1rem;
+    min-width: 25rem;
+    font-size: 1.4rem;
+}
+
+.dat-modal {
+    .dat-info {
+        margin-bottom: 1.5rem;
+
+        .dat-current {
+            color: $brightGreen;
+            margin-top: .5rem;
+        }
+        .dat-current.update-dat{
+            color: $warning;
+            display: inline-block;
+            width: 75%;
+            vertical-align: middle;
+        }
+        button {
+            margin-top: 2rem;
+        }
+
+        .clipboard {
+            vertical-align: top;
+            margin-right: 0.4rem;
+        }
+        input[name="datUrl"] {
+            width: 75%;
+            display: inline-block;
+            height: 30px;
+            background: $white;
+        }
+        .rounded {
+            display: inline-block;
+            margin-top:0;
+            margin-bottom:0.5rem;
+            margin-left: 1rem;
+            padding: 0.6rem 1.5rem;
+            vertical-align: top;
+        }
+        .rounded.copy-dat {
+            padding: 0.6rem 1.4rem;
+        }
+    }
+
+    .loading-dat {
+        h4 {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .dat-note {
+            font-size: 1.2rem;
+            text-align: center;
+        }
+    }
+}
+
 header.wr-collection-header {
     padding: 1rem 2rem;
     border-bottom: solid .1rem $mgmt-gray;
+
+    .dat-shared {
+        background: $brightGreen;
+        color: $white;
+        font-weight: 600;
+
+        svg{
+            vertical-align: top;
+        }
+    }
 
     .overview {
         .heading-row {
@@ -84,6 +157,20 @@ header.wr-collection-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+    }
+}
+
+@media(max-width:768px){
+    .dat-modal{
+        .dat-info{
+            input[name="datUrl"]{
+                width: 65%;
+            }
+
+            .dat-current.update-dat{
+                width: 65%;
+            }
         }
     }
 }

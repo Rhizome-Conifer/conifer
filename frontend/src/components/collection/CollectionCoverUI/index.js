@@ -38,11 +38,6 @@ class CollectionCoverUI extends Component {
     const { canAdmin } = this.context;
     const { collection, orderdPages } = this.props;
 
-    if (!canAdmin && orderdPages.size) {
-      const pg = orderdPages.get(0);
-      return `${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`;
-    }
-
     return getCollectionLink(collection, true);
   }
 

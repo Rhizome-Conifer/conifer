@@ -107,8 +107,7 @@ class CollectionListUI extends Component {
           <title>{`${displayName}'s Collections`}</title>
         </Helmet>
         <Row>
-
-          <Col xs={12} sm={3} className="collection-description page-archive">
+          <Col xs={12} sm={3} className="collection-description">
             <InlineEditor
               canAdmin={canAdmin}
               initial={displayName}
@@ -161,7 +160,6 @@ class CollectionListUI extends Component {
               </Col>
             </Row>
             {
-
               collections && collections.get('loaded') &&
                 <Row>
                   <ul className="list-group collection-list">

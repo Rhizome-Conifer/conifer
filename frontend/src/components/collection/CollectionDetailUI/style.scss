@@ -281,3 +281,9 @@
         }
     }
 }
+
+@media(max-width: 768px){
+    .table-header-modal {
+        max-width: 90vw;
+    }
+}

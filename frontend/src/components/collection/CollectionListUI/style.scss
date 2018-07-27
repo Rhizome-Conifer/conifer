@@ -8,65 +8,68 @@
     }
 }
 
-.wr-add-list {
-    svg {
-        transition: fill $quickShift ease-in-out;
-        polygon {
-            fill: $success-color;
-        }
-    }
-}
-.collection-time{
+.collection-time {
     font-size:1.2rem;
     color: $gray550;
     padding: 1.4rem 0 0 0;
     text-align: center;
 }
+
 a:link.collection-title, a:visited.collection-title, .collection-title {
     font-size: 2rem;
     color: $gray600;
 }
-a.collection-title:hover{
+
+a.collection-title:hover {
     text-decoration: none;
 }
-.collections-index-nav{
+
+.collections-index-nav {
     margin: 1rem 0;
-    .btn-default:hover{
+
+    .btn-default:hover {
         background: rgba(0,0,0,0);
     }
-    svg{
+
+    svg {
         width: 1.5rem;
         height: 1.5rem;
         vertical-align: sub;
 
-        path,polygon{
+        path,polygon {
             fill: $gray600;
             stroke: $gray600;
         }
     }
 }
+
 .collection-description {
     margin-top:4.5rem;
 
+    .collection-username {
+        font-size: 1.8rem;
+        color: $gray550;
+        margin: 0 auto;
+    }
 
-    .wr-editor{
+    .wr-editor {
         color: $gray550;
         max-width: 35rem;
 
-        *{
+        * {
             max-width: 35rem;
         }
 
-        .public-DraftEditor-content{
+        .public-DraftEditor-content {
             font-size: 1.2rem;
         }
     }
 
-    .wr-inline-editor{
+    .wr-inline-editor {
         line-height: 1;
         color: $gray550;
 
-        .glyphicon{
+        .glyphicon {
             color: $gray500;
         }
     }
@@ -75,45 +78,44 @@ a.collection-title:hover{
         margin: 1.5rem 0;
         word-break: break-all;
         display: flex;
-        svg{
+
+        svg {
             margin-right: 0.3rem;
             color: $gray500;
         }
+
         span {
             word-wrap: break-word;
             color:$gray500;
         }
-        a{
+
+        a {
             text-decoration: none;
         }
     }
 
 
-    h2{
+    h2 {
         color: #000;
         font-weight: normal;
         margin-bottom: 0;
         font-size: 3.4rem;
     }
 }
-.collection-username{
-    font-size: 1.8rem;
-    color: $gray550;
-    margin: 0 auto;
-}
+
 .collection-list {
     margin: 1rem 0;
-    .btn-default:hover{
+
+    .btn-default:hover {
         background: rgba(0,0,0,0);
     }
+
     li {
-        .borderless.show-more{
-            display: none;
-        }
-        .wr-editor-instance{
-            background: rgba(0,0,0,0);
-        }
-        span.is-private{
+        margin: 0;
+        border:none;
+        border-radius: 0;
+
+        .visibility-button {
             background: $gray500;
             color: $white;
             font-size: 1.2rem;
@@ -121,71 +123,45 @@ a.collection-title:hover{
             border-radius: 0.7rem;
             margin-top: 1rem;
             display: inline-block;
-        }
-        span.is-public{
-            background: $brightGreen;
-            color: $white;
-            font-size: 1.2rem;
-            padding: 0.3rem 0.8rem;
-            border-radius: 0.7rem;
-            margin-top: 1rem;
-            display: inline-block;
-        }
 
-        &:nth-of-type(odd){
-            background-color: $table-zebra;
-            .wr-truncate:after {
-               background: linear-gradient(180deg, rgba(255, 255, 255, 0), $table-zebra 85%);
+            &.is-public {
+                background: $brightGreen;
             }
         }
-        margin: 0;
-        border:none;
-        border-radius: 0;
+
+        &:nth-of-type(odd) {
+            background-color: $table-zebra;
+        }
 
         p {
             padding: .8rem 0rem 0rem;
             margin-bottom: 5px;
         }
-        .collection-list-description{
+
+        .collection-list-description {
             color: $gray550;
             font-size: 1.2rem;
             margin-bottom: 1.4rem;
             padding:0;
         }
-        .rounded{
+
+        .rounded {
             font-size: 1.2rem;
             padding: 0.6rem 2rem;
-        }
-        .rounded.expandable-button{
-            padding: 0.6rem 1.6rem;
-            margin-left: 0.6rem;
-            svg{
-                margin-bottom:2px;
-            }
-        }
-        .expandable-text{
-            display: inline-block;
-            height: 1.6rem;
-            padding-left: 0.4rem;
-            padding-right: 0.2rem;
-            vertical-align: bottom;
-            font-size: 1.2rem;
             color: $gray550;
+            text-decoration: none;
+        }
+
+        .rounded + .rounded {
+            margin-left: .6rem;
         }
 
         a {
             display: inline-block;
             position: relative;
         }
-        .rounded.dropdown-toggle {
-            border-radius: 0.5rem;
-            padding:0.5rem 0.7rem;
-            text-transform: uppercase;
-            svg{
-                display: none;
-            }
-        }
-        .collection-list-size span{
+
+        .collection-list-size span {
             font-size: 1.2rem;
             color: $gray550;
             padding: 1.4rem 0 0 0;
@@ -195,83 +171,56 @@ a.collection-title:hover{
                 white-space: nowrap;
             }
         }
-        .wr-coll-visibility{
-            padding: 2rem 0;
-        }
+
         .collection-delete-action {
-        	button{
+        	button:last-of-type {
                 background: rgba(0,0,0,0);
                 border: none;
                 padding:1.5rem 0 0;
                 float:right;
-                svg{
+
+                svg {
 	                width:15px;
 	                height:15px;
-                    &:hover + .tooltip.top{
+                    &:hover + .tooltip.top {
                         display: block;
                     }
 	            }
         	}
         }
-        .tooltip.top{
+
+        .tooltip.top {
             position: absolute;
             right: -8px;
             top: -25px;
             display: none;
-            .tooltip-arrow{
+            .tooltip-arrow {
                 border-top-color: $gray600;
             }
-            .tooltip-inner{
+            .tooltip-inner {
                 background: $gray600;
             }
         }
-
     }
-    .index-link {
-        text-decoration: underline;
-
-
-        &:link, &:visited {
-            color: #000;
-        }
-
-        &:hover {
-            color: $blue;
-        }
-    }
-
-    .list-group-item:last-child, .list-group-item:first-child{
-        border-radius: 0;
-    }
-
 }
 
 @media (min-width: 768px){
-    .collection-description .wr-editor{
-        max-width: 20rem;
-        *{
-            max-width: 20rem;
-        }
-    }
-    .collection-list li{
-        .collection-list-size span{
+    .collection-list li {
+        .collection-list-size span {
             padding: 2rem 0;
         }
-        .collection-time{
+        .collection-time {
             padding: 2rem 0;
         }
-        span.is-private{
-           margin-top: 1.8rem;
-        }
-        span.is-public{
+        .visibility-button {
            margin-top: 1.8rem;
         }
         .collection-delete-action {
-            button{
+            button:last-of-type {
                 padding:2.2rem 0 0;
             }
         }
-        .collection-list-description{
+        .collection-list-description {
             margin-bottom: 0;
             padding:0;
         }
@@ -281,25 +230,22 @@ a.collection-title:hover{
     .collection-description .wr-coll-meta {
         margin-top: 3.5rem;
     }
-    .collection-list li.has-description{
-        .collection-list-size span{
+    .collection-list li.has-description {
+        .collection-list-size span {
             padding: 0.7rem 0;
         }
-        .collection-time{
+        .collection-time {
             padding: 0.7rem 0;
         }
-        span.is-private{
-            margin-top: 0.3rem;
-        }
-        span.is-public{
+        .visibility-button {
             margin-top: 0.3rem;
         }
         .collection-delete-action {
-            button{
+            button:last-of-type {
                 padding:0.7rem 0;
             }
         }
-        .collection-list-description{
+        .collection-list-description {
             margin-bottom: 1.5rem;
             padding: .8rem 0rem 0rem;
         }

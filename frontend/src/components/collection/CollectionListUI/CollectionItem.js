@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import removeMd from 'remove-markdown';
+import classNames from 'classnames';
 import { Link } from 'react-router-dom';
 import { Button, Col, Row, Tooltip } from 'react-bootstrap';
 
@@ -9,7 +10,6 @@ import { buildDate, getCollectionLink, truncate } from 'helpers/utils';
 import SizeFormat from 'components/SizeFormat';
 import { DeleteCollection } from 'containers';
 import { TrashIcon, PlusIcon } from 'components/icons';
-import classNames from 'classnames';
 
 class CollectionItem extends PureComponent {
   static propTypes = {
@@ -25,39 +25,45 @@ class CollectionItem extends PureComponent {
     history: PropTypes.string
   };
 
+  goToCover = () => {
+    const { collection, history } = this.props;
+    history.push(getCollectionLink(collection));
+  }
+
   newSession = () => {
     const { collection, history } = this.props;
     history.push(`${getCollectionLink(collection)}/$new`);
   }
 
-  setPublic = (bool) => {
+  toggleVisibility = () => {
     const { collection } = this.props;
-    this.props.editCollection(collection.get('owner'), collection.get('id'), { public: bool });
+    this.props.editCollection(collection.get('owner'), collection.get('id'), { public: !collection.get('public') });
   }
 
   render() {
     const { canAdmin, collection } = this.props;
-    const pubButton = collection.get('public') ? <span><span className="is-public"> PUBLIC </span></span> : <span className="is-private"><span> PRIVATE </span></span>;
     const descClasses = classNames('left-buffer list-group-item', { 'has-description': collection.get('desc') });
 
     return (
       <li className={descClasses} key={collection.get('id')}>
         <Row>
           <Col sm={12} md={7}>
-            {canAdmin ? <Link className="collection-title" to={`${getCollectionLink(collection)}/index`}>{collection.get('title')}</Link> : <span className="collection-title">{collection.get('title')}</span>}
+            {
+              canAdmin ?
+                <Link className="collection-title" to={`${getCollectionLink(collection)}/index`}>{collection.get('title')}</Link> :
+                <span className="collection-title">{collection.get('title')}</span>
+            }
             <p className="collection-list-description">
               {
                 truncate(removeMd(collection.get('desc'), { useImgAltText: false }), 3, new RegExp(/([.!?])/))
               }
             </p>
-            <Link to={getCollectionLink(collection)}>
-              <Button className="rounded">
-                View Cover Page
-              </Button>
-            </Link>
+            <Button className="rounded" onClick={this.goToCover}>
+              View Cover Page
+            </Button>
             {
               canAdmin &&
-              <Button className="rounded expandable-button" onClick={this.newSession}><PlusIcon /><div className="expandable-text">New Session</div></Button>
+                <Button className="rounded" onClick={this.newSession}><PlusIcon /> New Session</Button>
             }
           </Col>
           <Col xs={6} md={1} className="collection-list-size">
@@ -69,16 +75,17 @@ class CollectionItem extends PureComponent {
           <Col className="collection-delete-action col-xs-offset-7 col-md-offset-0" xs={5} md={2}>
             {
               canAdmin &&
-                pubButton
-            }
-            {
-              canAdmin &&
-                <DeleteCollection collection={collection}>
-                  <TrashIcon />
-                  <Tooltip placement="top" className="in" id="tooltip-top">
-                    DELETE
-                  </Tooltip>
-                </DeleteCollection>
+                <React.Fragment>
+                  <button className={classNames('visibility-button', { 'is-public': collection.get('public') })} onClick={this.toggleVisibility} title={`Click to set ${collection.get('public') ? 'private' : 'public'}`}>
+                    { collection.get('public') ? 'PUBLIC' : 'PRIVATE' }
+                  </button>
+                  <DeleteCollection collection={collection}>
+                    <TrashIcon />
+                    <Tooltip placement="top" className="in" id="tooltip-top">
+                      DELETE
+                    </Tooltip>
+                  </DeleteCollection>
+                </React.Fragment>
             }
           </Col>
         </Row>
