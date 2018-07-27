@@ -181,14 +181,15 @@ class BaseImporter(ImportStatusChecker):
                 if diff > 0:
                     self._add_split_padding(diff, upload_key)
 
-                self.set_date_prop(info['recording'], info, 'created_at')
-                self.set_date_prop(info['recording'], info, 'recorded_at')
-                self.set_date_prop(info['recording'], info, 'updated_at')
+                recording = info['recording']
+                recording.set_date_prop('created_at', info)
+                recording.set_date_prop('recorded_at', info)
+                recording.set_date_prop('updated_at', info)
 
             self.import_lists(first_coll, page_id_map)
 
-            self.set_date_prop(first_coll, first_coll.data, 'created_at', '_created_at')
-            self.set_date_prop(first_coll, first_coll.data, 'updated_at', '_updated_at')
+            first_coll.set_date_prop('created_at', first_coll.data, '_created_at')
+            first_coll.set_date_prop('updated_at', first_coll.data, '_updated_at')
 
         except:
             traceback.print_exc()
@@ -455,16 +456,6 @@ class BaseImporter(ImportStatusChecker):
 
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
         return warcinfo if valid else None
-
-    def set_date_prop(self, obj, info, ts_prop, src_prop=None):
-        try:
-            src_prop = src_prop or ts_prop
-            value = info.get(src_prop)
-            obj.set_prop(ts_prop, int(value), update_ts=False)
-
-        except (ValueError, TypeError):
-            pass
-
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         raise NotImplemented()

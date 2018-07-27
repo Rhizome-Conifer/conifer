@@ -112,8 +112,13 @@ class TestDatShare(FullStackTests):
             metadata = yaml.load(fh.read())
 
         assert metadata['collection']
-        assert 'pages' in metadata['collection']
+
+        # pages in recordings
+        assert 'pages' not in metadata['collection']
         assert 'recordings' in metadata['collection']
+        for recording in metadata['collection']['recordings']:
+            assert 'pages' in recording
+
         assert 'lists' in metadata['collection']
 
     @responses.activate
@@ -124,6 +129,20 @@ class TestDatShare(FullStackTests):
         assert res.json == {'error': 'already_updated'}
 
         assert len(responses.calls) == 0
+
+    @responses.activate
+    def test_dat_already_shared_always_update(self):
+        responses.add(responses.POST, 'http://dat:3000/share', status=200,
+                      json=self.dat_info)
+
+        params = {'collDir': self.coll_store_dir, 'always_update': True}
+        res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params, status=200)
+
+        expected = self.dat_info.copy()
+        expected['already_shared'] = True
+        assert res.json == expected
+
+        assert len(responses.calls) == 1
 
     @responses.activate
     def test_dat_unshare(self):

@@ -59,6 +59,20 @@ class RedisUniqueComponent(object):
     def get_bool_prop(self, prop, default_val=False):
         return get_bool(self.get_prop(prop, default_val=False))
 
+    def set_date_prop(self, ts_prop, info, src_prop=None):
+        try:
+            src_prop = src_prop or ts_prop
+            value = info.get(src_prop)
+            try:
+                value = int(value)
+            except ValueError:
+                value = int(datetime.strptime(value, '%Y-%m-%dT%H:%M:%S').timestamp())
+
+            self.set_prop(ts_prop, value, update_ts=False)
+
+        except (ValueError, TypeError) as e:
+            pass
+
     def is_public(self):
         return self.get_bool_prop('public')
 
@@ -193,7 +207,6 @@ class RedisUniqueComponent(object):
         if dt <= 0:
             dt = 86400
 
-        #return datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S.%f')
         dt = datetime.fromtimestamp(dt).isoformat()
         if no_T:
             dt = dt.replace('T', ' ')

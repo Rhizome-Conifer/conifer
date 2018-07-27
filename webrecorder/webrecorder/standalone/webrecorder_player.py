@@ -1,6 +1,7 @@
 import gevent
 import base64
 import os
+import yaml
 
 from webrecorder.standalone.standalone import StandaloneRunner
 from webrecorder.rec.webrecrecorder import WebRecRecorder
@@ -25,6 +26,7 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     def __init__(self, argres):
         self.inputs = argres.inputs
+        self.coll_dir = argres.coll_dir
         self.serializer = None
 
         super(WebrecPlayerRunner, self).__init__(argres)
@@ -38,47 +40,84 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     def _patch_redis(self, cache_dir):
         redis.StrictRedis = fakeredis.FakeStrictRedis
+
         if not cache_dir:
             return
 
-        cache_dir = os.path.join(os.path.dirname(self.inputs[0]), cache_dir)
-        try:
-            os.makedirs(cache_dir)
-        except OSError:
-            pass
+        if self.inputs:
+            cache_dir = os.path.join(os.path.dirname(self.inputs[0]), cache_dir)
+            try:
+                os.makedirs(cache_dir)
+            except OSError:
+                pass
 
-        name = os.path.basename(self.inputs[0]).replace('.warc.gz', '-cache.json.gz')
-        cache_db = os.path.join(cache_dir, name)
+            name = os.path.basename(self.inputs[0]).replace('.warc.gz', '-cache.json.gz')
+            cache_db = os.path.join(cache_dir, name)
 
-        self.serializer = FakeRedisSerializer(cache_db, self.inputs)
+            self.serializer = FakeRedisSerializer(cache_db, self.inputs)
 
     def admin_init(self):
-        if self.load_cache():
-            return
+        if self.coll_dir:
+            self.load_coll_dir()
 
-        pool = ThreadPool(maxsize=1)
-        pool.spawn(self.safe_auto_load_warcs)
+        if self.inputs:
+            if self.load_cache():
+                return
+
+            pool = ThreadPool(maxsize=1)
+            pool.spawn(self.safe_auto_load_warcs)
+
+    def load_coll_dir(self):
+        metadata_file = os.path.join(self.coll_dir, 'metadata', 'metadata.yaml')
+        try:
+            user_manager, user = self._init_user_manager()
+
+            with open(metadata_file) as fh:
+                data = yaml.load(fh.read())
+
+            coll = data['collection']
+
+            logging.debug('Begin Import of: ' + metadata_file)
+
+            collection = user.create_collection('collection',
+                                                title=coll['title'],
+                                                desc=coll['desc'],
+                                                public=True,
+                                                public_index=True)
+
+            collection.import_serialized(coll, self.coll_dir)
+
+            self._init_browser_redis(user, collection)
+
+            logging.debug('Imported Collection from ' + self.coll_dir)
+
+        except Exception as e:
+            logging.debug('Could not load from {0}: {1}'.format(metadata_file, e))
+            if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+                traceback.print_exc()
 
     def load_cache(self):
         if not self.serializer:
             logging.debug('No Serializer, indexing')
             return False
 
+        if not self.inputs:
+            logging.debug('Not Loading WARCs')
+
         if self.serializer.load_db():
-            logging.debug('Index Loaded from Cache, Skipping')
+            logging.debug('Index Loaded from Cache, Skipping Reindex')
             return True
         else:
-            logging.debug('Index Not Loaded from cache, reindexing')
+            logging.debug('Index Not Loaded from cache, Reindexing')
             return False
 
-    def save_cache(self):
+    def save_cache(self, user_manager, user):
         if not self.serializer:
             return
 
         try:
-            user_manager = CLIUserManager()
-
-            user = user_manager.all_users['local']
+            #user_manager = CLIUserManager()
+            #user = user_manager.all_users['local']
 
             status_checker = ImportStatusChecker(user_manager.redis)
 
@@ -103,13 +142,7 @@ class WebrecPlayerRunner(StandaloneRunner):
             traceback.print_exc()
 
     def auto_load_warcs(self):
-        manager = CLIUserManager()
-        user, _ = manager.create_user(
-                    email='test@localhost',
-                    username='local',
-                    passwd='LocalUser1',
-                    role='public-archivist',
-                    name='local')
+        manager, user = self._init_user_manager()
 
         indexer = WebRecRecorder.make_wr_indexer(manager.config)
 
@@ -122,8 +155,24 @@ class WebrecPlayerRunner(StandaloneRunner):
 
         uploader.multifile_upload(user, files)
 
+        self._init_browser_redis(user, uploader.the_collection)
+
+        self.save_cache(manager, user)
+
+    def _init_user_manager(self):
+        user_manager = CLIUserManager()
+        user, _ = user_manager.create_user(
+                email='test@localhost',
+                username='local',
+                passwd='LocalUser1',
+                role='public-archivist',
+                name='local')
+
+        return user_manager, user
+
+    def _init_browser_redis(self, user, collection):
         local_info=dict(user=user.name,
-                        coll=uploader.the_collection.my_id,
+                        coll=collection.my_id,
                         rec='0',
                         type='replay-coll',
                         browser='',
@@ -132,8 +181,6 @@ class WebrecPlayerRunner(StandaloneRunner):
         browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
         browser_redis.hmset('ip:127.0.0.1', local_info)
         browser_redis.hset('req:@INIT', 'ip', '127.0.0.1')
-
-        self.save_cache();
 
     def init_env(self):
         super(WebrecPlayerRunner, self).init_env()
@@ -155,10 +202,14 @@ class WebrecPlayerRunner(StandaloneRunner):
 
     @classmethod
     def add_args(cls, parser):
-        parser.add_argument('inputs', nargs='+',
-                            help='web archive (.warc.gz, .warc, .arc.gz, .arc or .har files)')
+        parser.add_argument('inputs', nargs='*',
+                            help='web archive file (.warc.gz, .warc, .arc.gz, .arc or .har)')
 
-        parser.add_argument('--cache-dir')
+        parser.add_argument('--coll-dir',
+                            help='init from existing Webrecorder collection directory')
+
+        parser.add_argument('--cache-dir',
+                            help='Writable directory to cache state (including CDXJ index) to avoid reindexing on load')
 
 
 # ============================================================================
