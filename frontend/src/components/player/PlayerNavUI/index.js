@@ -50,7 +50,7 @@ class PlayerNavUI extends Component {
   render() {
     const { canGoBackward, canGoForward, collectionLoaded, route, source } = this.props;
 
-    const indexUrl = collectionLoaded ? '/local/collection/' : '/';
+    const indexUrl = '/'; //collectionLoaded ? '/local/collection/' : '/';
     const isLanding = route && route.name === 'landing';
     const isReplay = route && route.name.indexOf('replay') !== -1;
     const isHelp = route && route.name === 'help';
