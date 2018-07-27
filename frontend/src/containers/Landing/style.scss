@@ -20,6 +20,25 @@
   animation: spin 2s linear infinite;
 }
 
+
+.dat-url {
+  width: 45vw;
+  margin: 3.5rem auto 0 auto;
+
+  .dat-input {
+    display: flex;
+
+    input {
+      border-radius: .3rem 0 0 .3rem;
+    }
+
+    button {
+      border-left-width: 0;
+      border-radius: 0 .3rem .3rem 0;
+    }
+  }
+}
+
 .bigOpen {
   text-align: center;
   margin-top: 20vh;

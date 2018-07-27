@@ -19,6 +19,12 @@ nav.topBar {
   color: #e8e8e8;
   border-bottom: .4rem solid $blue;
 
+  .source {
+    color: #000;
+    flex-grow: 1;
+    text-align: center;
+  }
+
   &.replay {
 
     position: relative;
@@ -148,8 +154,6 @@ nav.topBar {
     display: flex;
     align-items: center;
 
-    width: 100%;
-    height: 100%;
     margin: 0 1.5rem;
   }
 
