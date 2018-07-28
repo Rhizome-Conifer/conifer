@@ -56,6 +56,8 @@ class DatShare(object):
 
     def write_metadata_file(self, collection):
         data = {'collection': collection.serialize(include_bookmarks='all-serialize',
+                                                   include_pages=False,
+                                                   include_rec_pages=True,
                                                    include_files=True)}
 
         with NamedTemporaryFile('wt', delete=False) as fh:
@@ -101,7 +103,7 @@ class DatShare(object):
 
         return res
 
-    def share(self, collection):
+    def share(self, collection, always_update=False):
         if not self.dat_enabled:
             return {'error': 'not_supported'}
 
@@ -118,12 +120,16 @@ class DatShare(object):
         dat_key = collection.get_prop(self.DAT_PROP)
         dat_updated = collection.get_prop(self.DAT_COMMITTED_AT)
 
+        already_shared = False
+
         if dat_key and dat_updated and self.is_sharing(collection):
             dat_updated = int(dat_updated)
             last_updated = int(collection.get_prop('updated_at'))
 
             if last_updated <= dat_updated:
-                return {'error': 'already_updated'}
+                already_shared = True
+                if not always_update:
+                    return {'error': 'already_updated'}
 
         author = user.get_prop('name') or user.name
 
@@ -146,6 +152,9 @@ class DatShare(object):
         collection.set_prop(self.DAT_COMMITTED_AT, collection._get_now())
 
         self._mark_share(collection)
+
+        if already_shared:
+            res['already_shared'] = True
 
         return res
 

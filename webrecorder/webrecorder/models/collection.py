@@ -261,6 +261,71 @@ class Collection(PagesMixin, RedisUniqueComponent):
         self.redis.sadd(commit_key, *open_keys)
         return commit_id
 
+    def import_serialized(self, data, coll_dir):
+        page_id_map = {}
+
+        self.set_external(True)
+
+        for rec_data in data['recordings']:
+            # CREATE RECORDING
+            recording = self.create_recording(title=data.get('title'),
+                                              desc=data.get('desc'),
+                                              rec_type=data.get('rec_type'),
+                                              ra_list=data.get('ra'))
+
+            # Files
+            files = rec_data.get('files')
+
+            # WARCS
+            if files:
+                for filename in files.get('warcs', []):
+                    full_filename = os.path.join(coll_dir, 'warcs', filename)
+
+                    rec_warc_key = recording.REC_WARC_KEY.format(rec=recording.my_id)
+                    coll_warc_key = recording.COLL_WARC_KEY.format(coll=self.my_id)
+
+                    self.redis.hset(coll_warc_key, filename, full_filename)
+                    self.redis.sadd(rec_warc_key, filename)
+
+                # CDX
+                index_files = files.get('indexes', [])
+                if index_files:
+                    index_filename = os.path.join(coll_dir, 'indexes', index_files[0])
+
+                    with open(index_filename, 'rb') as fh:
+                        self.add_cdxj(fh.read())
+
+                    recording.set_prop(recording.INDEX_FILE_KEY, index_filename)
+
+            # PAGES
+            pages = rec_data.get('pages')
+            if pages:
+                page_id_map.update(self.import_pages(pages, recording))
+
+            self.set_date_prop('created_at', rec_data)
+            self.set_date_prop('recorded_at', rec_data, 'updated_at')
+            self.set_date_prop('updated_at', rec_data)
+
+        # props
+        self.set_date_prop('created_at', data)
+        self.set_date_prop('updated_at', data)
+
+        # LISTS
+        lists = data.get('lists')
+        if not lists:
+            return
+
+        for list_data in lists:
+            bookmarks = list_data.pop('bookmarks', [])
+            list_data['public'] = True
+            blist = self.create_bookmark_list(list_data)
+            for bookmark_data in bookmarks:
+                page_id = bookmark_data.get('page_id')
+                if page_id:
+                    bookmark_data['page_id'] = page_id_map.get(page_id)
+                bookmark = blist.create_bookmark(bookmark_data, incr_stats=False)
+
+
     def serialize(self, include_recordings=True,
                         include_lists=True,
                         include_rec_pages=False,

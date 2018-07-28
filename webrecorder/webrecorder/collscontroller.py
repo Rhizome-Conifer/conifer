@@ -205,7 +205,8 @@ class CollsController(BaseController):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
             try:
-                result = DatShare.dat_share.share(collection)
+                data = request.json or {}
+                result = DatShare.dat_share.share(collection, data.get('always_update', False))
             except Exception as e:
                 result = {'error': 'api_error', 'details': str(e)}
 
