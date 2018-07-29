@@ -24,6 +24,8 @@ class RecsController(BaseController):
 
             recording = collection.create_recording(title=title, desc=desc)
 
+            collection.mark_updated()
+
             return {'recording': recording.serialize()}
 
         @self.app.get('/api/v1/recordings')
@@ -62,6 +64,7 @@ class RecsController(BaseController):
 
             recording['desc'] = desc
 
+            recording.mark_updated()
             return {'recording': recording.serialize()}
 
         @self.app.delete('/api/v1/recording/<rec>')
@@ -91,6 +94,8 @@ class RecsController(BaseController):
             new_rec = collection.move_recording(recording, new_collection)
 
             if new_rec:
+                collection.mark_updated()
+                new_collection.mark_updated()
                 return {'coll_id': new_coll_name, 'rec_id': new_rec}
             else:
                 self._raise_error(400, 'move_error')
@@ -111,6 +116,7 @@ class RecsController(BaseController):
             new_rec = new_collection.create_recording()
 
             if new_rec.copy_data_from_recording(recording):
+                new_rec.mark_updated()
                 return {'recording': new_rec.serialize()}
             else:
                 return self._raise_error(400, 'copy_error')
@@ -125,6 +131,7 @@ class RecsController(BaseController):
             page_data = request.json or {}
 
             page_id = collection.add_page(page_data, recording)
+            recording.mark_updated()
             return {'page_id': page_id}
 
         @self.app.get('/api/v1/recording/<rec>/pages')

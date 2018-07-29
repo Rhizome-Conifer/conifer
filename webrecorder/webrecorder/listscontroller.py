@@ -35,6 +35,8 @@ class ListsController(BaseController):
 
             blist = collection.create_bookmark_list(request.json)
 
+            collection.mark_updated()
+
             return {'list': blist.serialize()}
 
         @self.app.get('/api/v1/list/<list_id>')
@@ -60,6 +62,7 @@ class ListsController(BaseController):
 
             blist.update(request.json)
 
+            blist.mark_updated()
             return {'list': blist.serialize()}
 
         @self.app.delete('/api/v1/list/<list_id>')
@@ -69,6 +72,7 @@ class ListsController(BaseController):
             user, collection, blist = self.load_user_coll_list(list_id)
 
             if collection.remove_list(blist):
+                collection.mark_updated()
                 return {'deleted_id': list_id}
             else:
                 self._raise_error(400, 'error_deleting')
@@ -87,6 +91,7 @@ class ListsController(BaseController):
             else:
                 before = None
 
+            blist.mark_updated()
             collection.move_list_before(blist, before)
             return {'success': True}
 
@@ -101,6 +106,7 @@ class ListsController(BaseController):
             new_order = request.json.get('order', [])
 
             if collection.lists.reorder_objects(new_order):
+                collection.mark_updated()
                 return {'success': True}
             else:
                 return self._raise_error(400, 'invalid_order')
@@ -119,6 +125,7 @@ class ListsController(BaseController):
 
             bookmark = blist.create_bookmark(request.json)
             if bookmark:
+                blist.mark_updated()
                 return {'bookmark': bookmark}
             else:
                 return self._raise_error(400, 'invalid_page')
@@ -136,6 +143,7 @@ class ListsController(BaseController):
             for bookmark_data in bookmark_list:
                 bookmark = blist.create_bookmark(bookmark_data)
 
+            blist.mark_updated()
             return {'list': blist.serialize()}
 
         @self.app.get('/api/v1/list/<list_id>/bookmarks')
@@ -167,6 +175,7 @@ class ListsController(BaseController):
 
             bookmark = blist.update_bookmark(bid, request.json)
 
+            blist.mark_updated()
             return {'bookmark': bookmark}
 
         @self.app.delete('/api/v1/bookmark/<bid>')
@@ -175,6 +184,7 @@ class ListsController(BaseController):
         def delete_bookmark(bid):
             user, collection, blist = self.load_user_coll_list()
             if blist.remove_bookmark(bid):
+                blist.mark_updated()
                 return {'deleted_id': bid}
             else:
                 self._raise_error(404, 'no_such_bookmark')
@@ -190,6 +200,7 @@ class ListsController(BaseController):
             new_order = request.json.get('order', [])
 
             if blist.reorder_bookmarks(new_order):
+                blist.mark_updated()
                 return {'success': True}
             else:
                 self._raise_error(400, 'invalid_order')

@@ -246,10 +246,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
         open_recs = []
 
         for recording in self.get_recordings():
-            if not recording.is_open():
+            if recording.is_open():
+                recording.set_closed()
+
+            elif recording.is_fully_committed():
                 continue
 
-            recording.set_closed()
             open_recs.append(recording)
 
         if not open_recs:
@@ -259,6 +261,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         commit_key = self.CLOSE_WAIT_KEY.format(coll=self.my_id, id=commit_id)
         open_keys = [recording.my_id for recording in open_recs]
         self.redis.sadd(commit_key, *open_keys)
+        self.redis.expire(commit_key, 200)
         return commit_id
 
     def import_serialized(self, data, coll_dir):

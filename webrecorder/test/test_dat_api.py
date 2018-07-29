@@ -145,6 +145,39 @@ class TestDatShare(FullStackTests):
         assert len(responses.calls) == 1
 
     @responses.activate
+    def test_dat_list_create_updated_at(self):
+        responses.add(responses.POST, 'http://dat:3000/share', status=200,
+                      json=self.dat_info)
+
+        # No update needed
+        params = {'collDir': self.coll_store_dir}
+        res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params, status=400)
+
+        assert res.json == {'error': 'already_updated'}
+        assert len(responses.calls) == 0
+
+        params = {'title': 'List Name',
+                  'description': 'List Desc'
+                 }
+
+        time.sleep(1.0)
+
+        # create list
+        res = self.testapp.post_json('/api/v1/lists?user=test&coll=default-collection', params=params)
+        assert res.json['list']
+
+        # no commit needed
+        res = self.testapp.post_json('/api/v1/collection/default-collection/commit?user=test')
+        assert res.json == {'success': True}
+
+        # metadata updated, dat also updated
+        res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params, status=200)
+
+        assert res.json == self.dat_info
+
+        assert len(responses.calls) == 1
+
+    @responses.activate
     def test_dat_unshare(self):
         responses.add(responses.POST, 'http://dat:3000/unshare', status=200,
                       json={'success': True})

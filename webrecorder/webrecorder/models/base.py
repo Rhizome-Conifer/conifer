@@ -155,9 +155,12 @@ class RedisUniqueComponent(object):
         self.data[attr] = value
         self.redis.hset(self.info_key, attr, value)
 
-        # auto-update updated_at
-        if update_ts and attr != 'updated_at':
-            self.set_prop('updated_at', self._get_now())
+    def mark_updated(self, ts=None):
+        ts = ts or self._get_now()
+        self.set_prop('updated_at', ts)
+        owner = self.get_owner()
+        if owner:
+            owner.mark_updated(ts)
 
     def __getitem__(self, name):
         return self.get_prop(name)
