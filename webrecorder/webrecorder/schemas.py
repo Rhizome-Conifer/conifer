@@ -1,10 +1,13 @@
+# standard library imports
 import json
-
 from datetime import datetime
 
-from marshmallow import (Schema, fields, validate, ValidationError,
-                         validates_schema)
+# third party imports
+from marshmallow import (
+    fields, Schema, validates_schema, ValidationError
+)
 
+# library specific imports
 from webrecorder.redisman import RedisDataManager as RDM
 
 
@@ -13,13 +16,28 @@ public_key = RDM.READ_PREFIX + RDM.PUBLIC
 
 
 class BaseSchema(Schema):
+    """Base schema."""
 
     class Meta:
+        """Metadata schema.
+
+        :cvar bool ordered: n.s.
+        """
         ordered = True
 
 
 class UserSchema(BaseSchema):
-    """Schema to describe a webrecorder user."""
+    """Webrecorder user schema.
+
+    :cvar String username: username
+    :cvar Email email: e-mail address
+    :cvar Function name: n.s.
+    :cvar DateTime created: user registration date
+    :cvar DateTime last_login: last login date
+    :cvar String role: user role
+    :cvar Nested space_utilization: n.s.
+    :cvar Nested collections: n.s.
+    """
     username = fields.String(required=True)
     email = fields.Email(required=True, load_from='email_addr')
     name = fields.Function(deserialize=lambda x: json.loads(x).get('name', ''),
@@ -32,32 +50,52 @@ class UserSchema(BaseSchema):
     collections = fields.Nested('CollectionSchema', many=True)
 
     class Meta(BaseSchema.Meta):
+        """User metadata schema.
+
+        :cvar str dateformat: date format string
+        """
         dateformat = '%Y-%m-%d %H:%M:%S.%f'
 
 
 class TempUserSchema(BaseSchema):
+    """Temporal user schema.
+
+    :cvar String username: username
+    :cvar Function created: n.s.
+    :cvar DateTime removal: n.s.
+    :cvar Nested space_utilization: n.s.
+    """
     username = fields.String(required=True)
-    created = fields.Function(deserialize=lambda x: datetime.fromtimestamp(int(x)),
-                              load_from='created_at')
+    created = fields.Function(
+        deserialize=lambda x: datetime.fromtimestamp(int(x)),
+        load_from='created_at'
+    )
     removal = fields.DateTime()
 
     space_utilization = fields.Nested('SpaceUtilization')
 
 
 class UserUpdateSchema(UserSchema):
-    """Schema describing available fields for update in the admin panel."""
+    """User update schema.
+
+    :cvar Number max_size: maximum size
+    """
     max_size = fields.Number()
 
 
 class NewUserSchema(UserSchema):
-    """Thin extension of `UserSchema` including username and
-       password validation.
+    """User schema (includes username and password validation).
+
+    :cvar String password: password
     """
     password = fields.String()
 
     @validates_schema
     def custom_validation(self, data):
-        """Custom validation for user signup"""
+        """Username and password validation.
+
+        :param dict data: input
+        """
 
         if 'password' not in data:
             raise ValidationError('`password` is a required field.')
@@ -67,19 +105,36 @@ class NewUserSchema(UserSchema):
                                   'long with lowercase, uppercase, and either '
                                   'digits or symbols.')
 
-        if not RDM.USER_RX.match(data['username']) or data['username'] in RDM.RESTRICTED_NAMES:
+        if (
+                not RDM.USER_RX.match(data['username']) or
+                data['username'] in RDM.RESTRICTED_NAMES
+        ):
             raise ValidationError('Invalid username..')
 
 
 class SpaceUtilization(BaseSchema):
-    """Schema describing user disk space utilization."""
+    """User disk space schema.
+
+    :cvar Number available: available disk space
+    :cvar Number total: total disk space
+    :cvar Number used: disk space in use
+    """
     available = fields.Number()
     total = fields.Number()
     used = fields.Number()
 
 
 class CollectionSchema(BaseSchema):
-    """Schema describing a user's collection"""
+    """User collection schema.
+
+    :cvar String id: collection ID
+    :cvar String title: collection title
+    :cvar String description: collection description
+    :cvar Url download_url: collection URL
+    :cvar Number size: collection size
+    :cvar Boolean public: whether the collection is public or not
+    :cvar Nested recordings: collection records
+    """
     id = fields.String(required=True)
     title = fields.String(required=True)
     created = fields.Number(load_from='created_at')
@@ -92,7 +147,16 @@ class CollectionSchema(BaseSchema):
 
 
 class RecordingSchema(BaseSchema):
-    """Schema describing a recording within a collection"""
+    """Record schema.
+
+    :cvar String id: record ID
+    :cvar String title: record title
+    :cvar Number size: record size
+    :cvar Url download_url: record URL
+    :cvar String description: record description
+    :cvar Number updated: record update date
+    :cvar Nested pages: record pages
+    """
     id = fields.String(required=True)
     title = fields.String()
     size = fields.Number()
@@ -105,7 +169,13 @@ class RecordingSchema(BaseSchema):
 
 
 class PageSchema(BaseSchema):
-    """Schema describing a page within a recording"""
+    """Page schema.
+
+    :cvar String title: page title
+    :cvar Url url: page URL
+    :cvar Number timestamp: page date
+    :cvar String browser_id: browser ID
+    """
     title = fields.String()
     url = fields.Url()
     timestamp = fields.Number()
