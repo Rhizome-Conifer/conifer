@@ -42,12 +42,13 @@ class AppController(BaseController):
     :ivar StrictRedis redis: Redis interface
     :ivar StrictRedis browser_redis: Redis interface
     :ivar StrictRedis session_redis: Redis interface
-    :ivar init_upload_id: n.s.
-    :ivar init_upload_user: n.s.
-    :ivar init_upload_coll: n.s.
+    :ivar str init_upload_id: upload ID
+    :ivar str init_upload_user: upload username
+    :ivar str init_upload_coll: upload collection title
     :ivar ContentController content_app: content controller
     :ivar BrowserManager browser_manager: browser manager
-    :ivar cork: n.s.
+    :ivar WebRecCork cork: Webrecorder authentication, authorization
+    and accounting
     """
     ALL_CONTROLLERS = [
         DownloadController,
@@ -67,6 +68,7 @@ class AppController(BaseController):
         :param str redis_url: Redis URL
         """
         self._init_logging()
+        # TODO sys does not have attribute 'frozen'
         if getattr(sys, 'frozen', False):
             self.static_root = os.path.join(
                 sys._MEIPASS, 'webrecorder', 'static/'
@@ -159,7 +161,7 @@ class AppController(BaseController):
         return opts
 
     def init_jinja_env(self, config):
-        """Initialize Jinja environment.
+        """Initialize Jinja2 environment.
 
         :param dict config: configuration
 

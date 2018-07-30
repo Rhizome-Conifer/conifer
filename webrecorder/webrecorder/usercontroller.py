@@ -1,23 +1,25 @@
-
+# standard library imports
+import re
 import json
 import time
-import redis
-import re
-
+from re import sub
+from datetime import datetime, timedelta
 from operator import itemgetter
 
-from bottle import request, HTTPError
-from datetime import datetime, timedelta
-from re import sub
+# third party imports
+import redis
 
+from bottle import HTTPError, request
+
+# library specific imports
+from webrecorder.schemas import (CollectionSchema, NewUserSchema,
+                                 TempUserSchema, UserSchema, UserUpdateSchema)
 from webrecorder.apiutils import CustomJSONEncoder
 from webrecorder.basecontroller import BaseController
-from webrecorder.schemas import (CollectionSchema, NewUserSchema, TempUserSchema,
-                                 UserSchema, UserUpdateSchema)
 
 
-# ============================================================================
 class UserController(BaseController):
+    """User manager."""
     def __init__(self, app, jinja_env, manager, config):
         super(UserController, self).__init__(app, jinja_env, manager, config)
         self.default_user_desc = config['user_desc']

@@ -5,7 +5,7 @@ import re
 # third party imports
 from six.moves.urllib.parse import quote, unquote
 from bottle import (
-    Bottle, HTTPError, HTTPResponse, redirect, request, response
+    HTTPError, HTTPResponse, redirect, request, response
 )
 
 # library specific imports
@@ -832,4 +832,3 @@ class ContentController(BaseController, RewriterApp):
             return data
 
         return browser_embed(inject_data)
-
