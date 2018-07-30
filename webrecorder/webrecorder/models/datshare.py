@@ -25,8 +25,6 @@ class DatShare(object):
         self.dat_url = 'http://{dat_host}:{dat_port}'.format(dat_host=self.dat_host,
                                                              dat_port=self.dat_port)
 
-        self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
-
         self.running = True
 
         if self.dat_enabled:
@@ -163,11 +161,8 @@ class DatShare(object):
                         collection.my_id,
                         collection.get_dir_path())
 
-        self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
-
     def _mark_unshare(self, collection):
         self.redis.hdel(self.DAT_COLLS, collection.my_id)
-        self.num_shared_dats = self.redis.hlen(self.DAT_COLLS)
 
     def is_sharing(self, collection):
         return self.redis.hexists(self.DAT_COLLS, collection.my_id)
@@ -189,8 +184,10 @@ class DatShare(object):
             print('Error reaching dat-share')
             return
 
-        if curr_dats != self.num_shared_dats:
-            print('Result: {0} != Expected: {1}'.format(curr_dats, self.num_shared_dats))
+        num_shared_dats = self.redis.hlen(self.DAT_COLLS)
+
+        if curr_dats != num_shared_dats:
+            print('Result: {0} != Expected: {1}'.format(curr_dats, num_shared_dats))
             dat_dirs = self.redis.hvals(self.DAT_COLLS)
             print('Resyncing: ', dat_dirs)
             self.dat_share_api('/sync', data={'dirs': dat_dirs})

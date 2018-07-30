@@ -248,6 +248,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         for recording in self.get_recordings():
             if recording.is_open():
                 recording.set_closed()
+                recording.commit_to_storage()
 
             elif recording.is_fully_committed():
                 continue

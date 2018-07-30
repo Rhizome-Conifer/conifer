@@ -67,7 +67,7 @@ class CollsController(BaseController):
 
                 user.mark_updated()
 
-                #self.flash_message('Created collection <b>{0}</b>!'.format(collection.get_prop('title')), 'success')
+                self.flash_message('Created collection <b>{0}</b>!'.format(collection.get_prop('title')), 'success')
                 resp = {'collection': collection.serialize()}
 
             except DupeNameException as de:
