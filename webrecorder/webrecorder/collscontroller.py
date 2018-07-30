@@ -65,6 +65,8 @@ class CollsController(BaseController):
                 if is_external:
                     collection.set_external(True)
 
+                user.mark_updated()
+
                 self.flash_message('Created collection <b>{0}</b>!'.format(collection.get_prop('title')), 'success')
                 resp = {'collection': collection.serialize()}
 
@@ -179,6 +181,7 @@ class CollsController(BaseController):
             if 'public_index' in data:
                 collection.set_bool_prop('public_index', data['public_index'])
 
+            collection.mark_updated()
             return {'collection': collection.serialize()}
 
         @self.app.get('/api/v1/collection/<coll_name>/page_bookmarks')

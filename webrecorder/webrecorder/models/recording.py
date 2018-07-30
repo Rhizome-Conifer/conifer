@@ -35,6 +35,8 @@ class Recording(RedisUniqueComponent):
     REC_WARC_KEY = 'r:{rec}:wk'
     COLL_WARC_KEY = 'c:{coll}:warc'
 
+    COMMIT_LOCK_KEY = 'r:{rec}:lock'
+
     INDEX_FILE_KEY = '@index_file'
 
     INDEX_NAME_TEMPL = 'index-{timestamp}-{random}.cdxj'
@@ -242,14 +244,16 @@ class Recording(RedisUniqueComponent):
 
         return cdxj_filename, full_filename
 
-    def commit_to_storage(self):
+    def commit_to_storage(self, storage=None):
+        commit_lock = self.COMMIT_LOCK_KEY.format(rec=self.my_id)
+        if not self.redis.setnx(commit_lock, '1'):
+            return
+
         collection = self.get_owner()
         user = collection.get_owner()
 
-        if not user.is_anon():
+        if not storage and not user.is_anon():
             storage = collection.get_storage()
-        else:
-            storage = None
 
         info_key = self.INFO_KEY.format(rec=self.my_id)
         cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
@@ -273,6 +277,8 @@ class Recording(RedisUniqueComponent):
         if all_done:
             print('Deleting Redis Key: ' + cdxj_key)
             self.redis.delete(cdxj_key)
+
+        self.redis.delete(commit_lock)
 
     def _copy_prop(self, source, name):
         prop = source.get_prop(name)
