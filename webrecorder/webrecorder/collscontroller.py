@@ -18,6 +18,8 @@ class CollsController(BaseController):
 
         self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
 
+        self.cork = kwargs['cork']
+
     def init_routes(self):
         wr_api_spec.set_curr_tag('Collections')
 
@@ -122,6 +124,8 @@ class CollsController(BaseController):
 
             user, collection = self.load_user_coll(coll_name=coll_name)
 
+            self.access.assert_can_admin_coll(collection)
+
             if not collection.is_external():
                 self._raise_error(400, 'external_only')
 
@@ -135,6 +139,8 @@ class CollsController(BaseController):
                 self._raise_error(403, 'external_not_allowed')
 
             user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_admin_coll(collection)
 
             if not collection.is_external():
                 self._raise_error(400, 'external_only')
@@ -207,6 +213,14 @@ class CollsController(BaseController):
         def dat_do_share(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
+            self.access.assert_can_admin_coll(collection)
+
+            # BETA only
+            try:
+                self.cork.require(role='beta-archivist')
+            except:
+                self._raise_error(400, 'not_allowed')
+
             try:
                 data = request.json or {}
                 result = DatShare.dat_share.share(collection, data.get('always_update', False))
@@ -222,6 +236,14 @@ class CollsController(BaseController):
         def dat_do_unshare(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
 
+            self.access.assert_can_admin_coll(collection)
+
+            # BETA only
+            try:
+                self.cork.require(role='beta-archivist')
+            except:
+                self._raise_error(400, 'not_allowed')
+
             try:
                 result = DatShare.dat_share.unshare(collection)
             except Exception as e:
@@ -235,6 +257,8 @@ class CollsController(BaseController):
         @self.app.post('/api/v1/collection/<coll_name>/commit')
         def commit_file(coll_name):
             user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_admin_coll(collection)
 
             data = request.json or {}
 

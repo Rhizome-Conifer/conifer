@@ -374,6 +374,12 @@ class Collection(PagesMixin, RedisUniqueComponent):
         data['public'] = self.is_public()
         data['public_index'] = self.get_bool_prop('public_index', False)
 
+        if DatShare.DAT_SHARE in data:
+            data[DatShare.DAT_SHARE] = self.get_bool_prop(DatShare.DAT_SHARE, False)
+
+        if DatShare.DAT_UPDATED_AT in data:
+            data[DatShare.DAT_UPDATED_AT] = self.to_iso_date(data[DatShare.DAT_UPDATED_AT])
+
         if include_pages:
             if is_owner or data['public_index']:
                 data['pages'] = self.list_pages()

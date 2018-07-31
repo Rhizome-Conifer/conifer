@@ -49,7 +49,7 @@ class TestDatShare(FullStackTests):
         params = {'collDir': self.warcs_dir}
         res = self.testapp.post_json('/api/v1/collection/temp/dat/share?user={user}'.format(user=self.anon_user), params=params, status=400)
 
-        assert res.json == {'error': 'not_logged_in'}
+        assert res.json == {'error': 'not_allowed'}
 
     def test_login(self):
         params = {'username': 'test',
@@ -79,6 +79,19 @@ class TestDatShare(FullStackTests):
             assert self.params['success'] == True
 
         self.sleep_try(0.2, 10.0, assert_committed)
+
+    def test_not_allowed_default_user(self):
+        params = {'collDir': self.warcs_dir}
+        res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params, status=400)
+
+        assert res.json == {'error': 'not_allowed'}
+
+    def test_set_role(self):
+        user = self.manager.all_users['test']
+        user['role'] = 'beta-archivist'
+
+        res = self.testapp.get('/api/v1/user/test')
+        assert res.json['user']['role'] == 'beta-archivist'
 
     @responses.activate
     def test_dat_share(self):
@@ -120,6 +133,13 @@ class TestDatShare(FullStackTests):
             assert 'pages' in recording
 
         assert 'lists' in metadata['collection']
+
+    def test_coll_info_with_dat(self):
+        res = self.testapp.get('/api/v1/collection/default-collection?user=test')
+
+        assert res.json['collection']['dat_key'] == self.dat_info['datKey']
+        assert res.json['collection']['dat_updated_at'] >= res.json['collection']['updated_at']
+        assert res.json['collection']['dat_share'] == True
 
     @responses.activate
     def test_dat_already_shared(self):
@@ -196,6 +216,13 @@ class TestDatShare(FullStackTests):
         assert res.json == {'success': True}
 
         assert len(responses.calls) == 0
+
+    def test_coll_info_without_dat(self):
+        res = self.testapp.get('/api/v1/collection/default-collection?user=test')
+
+        assert res.json['collection']['dat_key'] == self.dat_info['datKey']
+        assert res.json['collection']['dat_updated_at'] <= res.json['collection']['updated_at']
+        assert res.json['collection']['dat_share'] == False
 
     @responses.activate
     def test_dat_reshare_upstream_api_error(self):

@@ -11,8 +11,9 @@ from tempfile import NamedTemporaryFile
 
 # ============================================================================
 class DatShare(object):
-    DAT_PROP = 'dat_key'
-    DAT_COMMITTED_AT = 'dat_committed_at'
+    DAT_KEY_PROP = 'dat_key'
+    DAT_SHARE = 'dat_share'
+    DAT_UPDATED_AT = 'dat_updated_at'
     DAT_COLLS = 'h:dat_colls'
 
     def __init__(self, redis):
@@ -115,8 +116,8 @@ class DatShare(object):
         if user.is_anon():
             return {'error': 'not_logged_in'}
 
-        dat_key = collection.get_prop(self.DAT_PROP)
-        dat_updated = collection.get_prop(self.DAT_COMMITTED_AT)
+        dat_key = collection.get_prop(self.DAT_KEY_PROP)
+        dat_updated = collection.get_prop(self.DAT_UPDATED_AT)
 
         already_shared = False
 
@@ -146,8 +147,8 @@ class DatShare(object):
 
         res = self.dat_share_api('/share', collection)
 
-        collection.set_prop(self.DAT_PROP, res['datKey'])
-        collection.set_prop(self.DAT_COMMITTED_AT, collection._get_now())
+        collection.set_prop(self.DAT_KEY_PROP, res['datKey'])
+        collection.set_prop(self.DAT_UPDATED_AT, collection._get_now())
 
         self._mark_share(collection)
 
@@ -161,8 +162,12 @@ class DatShare(object):
                         collection.my_id,
                         collection.get_dir_path())
 
+        collection.set_bool_prop(self.DAT_SHARE, True)
+
     def _mark_unshare(self, collection):
         self.redis.hdel(self.DAT_COLLS, collection.my_id)
+
+        collection.set_bool_prop(self.DAT_SHARE, False)
 
     def is_sharing(self, collection):
         return self.redis.hexists(self.DAT_COLLS, collection.my_id)
