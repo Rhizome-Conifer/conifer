@@ -3,6 +3,7 @@ import requests
 import gevent
 import json
 import yaml
+from datetime import datetime
 
 from webrecorder.utils import get_bool, spawn_once
 from collections import OrderedDict
@@ -92,15 +93,22 @@ class DatShare(object):
         if collection.get_owner().is_anon():
             return {'error': 'not_logged_in'}
 
-        if not self.is_sharing(collection):
-            return {'success': True}
+        dat_key = collection.get_prop(self.DAT_KEY_PROP)
+        dat_updated_at = collection.get_prop(self.DAT_UPDATED_AT)
 
-        res = self.dat_share_api('/unshare', collection)
+        if self.is_sharing(collection):
+            res = self.dat_share_api('/unshare', collection)
 
-        if res['success'] == True:
-            self._mark_unshare(collection)
+            if res['success'] == True:
+                self._mark_unshare(collection)
 
-        return res
+        if dat_updated_at:
+            dat_updated_at = collection.to_iso_date(dat_updated_at)
+
+        return {'dat_key': dat_key,
+                'dat_updated_at': dat_updated_at,
+                'dat_share': collection.get_bool_prop('dat_share')
+               }
 
     def share(self, collection, always_update=False):
         if not self.dat_enabled:
@@ -119,14 +127,11 @@ class DatShare(object):
         dat_key = collection.get_prop(self.DAT_KEY_PROP)
         dat_updated = collection.get_prop(self.DAT_UPDATED_AT)
 
-        already_shared = False
-
         if dat_key and dat_updated and self.is_sharing(collection):
             dat_updated = int(dat_updated)
             last_updated = int(collection.get_prop('updated_at'))
 
             if last_updated <= dat_updated:
-                already_shared = True
                 if not always_update:
                     return {'error': 'already_updated'}
 
@@ -147,15 +152,17 @@ class DatShare(object):
 
         res = self.dat_share_api('/share', collection)
 
+        now = datetime.utcnow()
+
         collection.set_prop(self.DAT_KEY_PROP, res['datKey'])
-        collection.set_prop(self.DAT_UPDATED_AT, collection._get_now())
+        collection.set_prop(self.DAT_UPDATED_AT, int(now.timestamp()))
 
         self._mark_share(collection)
 
-        if already_shared:
-            res['already_shared'] = True
-
-        return res
+        return {'dat_key': res['datKey'],
+                'dat_updated_at': now.isoformat(),
+                'dat_share': True
+               }
 
     def _mark_share(self, collection):
         self.redis.hset(self.DAT_COLLS,

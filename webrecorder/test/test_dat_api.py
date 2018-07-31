@@ -5,6 +5,8 @@ import time
 import json
 import yaml
 
+from datetime import datetime
+
 from webrecorder.models.usermanager import CLIUserManager
 from webrecorder.models.datshare import DatShare
 from webrecorder.utils import get_new_id, today_str
@@ -103,7 +105,9 @@ class TestDatShare(FullStackTests):
 
         params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params)
-        assert res.json == self.dat_info
+        assert res.json['dat_key'] == self.dat_info['datKey']
+        assert res.json['dat_updated_at'] <= datetime.utcnow().isoformat()
+        assert res.json['dat_share'] == True
 
         assert len(responses.calls) == 2
         assert responses.calls[0].request.url == 'http://dat:3000/init'
@@ -158,9 +162,9 @@ class TestDatShare(FullStackTests):
         params = {'collDir': self.coll_store_dir, 'always_update': True}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params, status=200)
 
-        expected = self.dat_info.copy()
-        expected['already_shared'] = True
-        assert res.json == expected
+        assert res.json['dat_key'] == self.dat_info['datKey']
+        assert res.json['dat_updated_at'] <= datetime.utcnow().isoformat()
+        assert res.json['dat_share'] == True
 
         assert len(responses.calls) == 1
 
@@ -193,7 +197,7 @@ class TestDatShare(FullStackTests):
         # metadata updated, dat also updated
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params, status=200)
 
-        assert res.json == self.dat_info
+        assert res.json['dat_key'] == self.dat_info['datKey']
 
         assert len(responses.calls) == 1
 
@@ -204,7 +208,10 @@ class TestDatShare(FullStackTests):
 
         params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/unshare?user=test', params=params)
-        assert res.json == {'success': True}
+
+        assert res.json['dat_key'] == self.dat_info['datKey']
+        assert res.json['dat_updated_at'] <= datetime.utcnow().isoformat()
+        assert res.json['dat_share'] == False
 
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == 'http://dat:3000/unshare'
@@ -213,7 +220,10 @@ class TestDatShare(FullStackTests):
     def test_dat_unshare_not_sharing(self):
         params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/unshare?user=test', params=params)
-        assert res.json == {'success': True}
+
+        assert res.json['dat_key'] == self.dat_info['datKey']
+        assert res.json['dat_updated_at'] <= datetime.utcnow().isoformat()
+        assert res.json['dat_share'] == False
 
         assert len(responses.calls) == 0
 
@@ -245,7 +255,10 @@ class TestDatShare(FullStackTests):
 
         params = {'collDir': self.coll_store_dir}
         res = self.testapp.post_json('/api/v1/collection/default-collection/dat/share?user=test', params=params)
-        assert res.json == self.dat_info
+
+        assert res.json['dat_key'] == self.dat_info['datKey']
+        assert res.json['dat_updated_at'] <= datetime.utcnow().isoformat()
+        assert res.json['dat_share'] == True
 
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == 'http://dat:3000/share'
@@ -259,7 +272,6 @@ class TestDatShare(FullStackTests):
 
         assert len(responses.calls) == 1
         assert responses.calls[0].request.url == 'http://dat:3000/numDats'
-
 
     @responses.activate
     def test_dat_sync_check_sync_needed(self):
@@ -277,7 +289,6 @@ class TestDatShare(FullStackTests):
 
         body = json.loads(responses.calls[1].request.body.decode('utf-8'))
         assert body == {'dirs': [self.coll_store_dir]}
-
 
     @responses.activate
     def test_dat_unshare_on_coll_delete(self):
