@@ -27,7 +27,10 @@ class ModeSelectorUI extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.state = { open: false };
+    this.state = {
+      open: false,
+      flickerTime: 200,
+    };
   }
 
   onStop = (evt) => {
@@ -105,7 +108,7 @@ class ModeSelectorUI extends PureComponent {
   };
 
   blinkAnimation = () => {
-    setInterval(this.blinkIt, 200);
+    setInterval(this.blinkIt, this.flickerTime);
   }
 
   close = () => {
