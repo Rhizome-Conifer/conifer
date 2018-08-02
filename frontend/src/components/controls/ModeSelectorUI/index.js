@@ -96,6 +96,18 @@ class ModeSelectorUI extends PureComponent {
 
   }
 
+  blinkIt = () => {
+    if (!document.querySelector('.Blink').classList.contains('off')) {
+      document.querySelector('.Blink').classList.add('off');
+    } else {
+      document.querySelector('.Blink').classList.remove('off');
+    }
+  };
+
+  blinkAnimation = () => {
+    setInterval(this.blinkIt, 200);
+  }
+
   close = () => {
     if (this.state.open) {
       this.setState({ open: false });
@@ -120,7 +132,7 @@ class ModeSelectorUI extends PureComponent {
     switch(currMode) {
       case 'record':
         modeMessage = 'Capturing';
-        modeMarkup = <span className="btn-content"><span className="glyphicon glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><span onLoad={this.blinkAnimation()} className="glyphicon glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       case 'replay':
       case 'replay-coll':
@@ -134,7 +146,7 @@ class ModeSelectorUI extends PureComponent {
       case 'extract':
       case 'extract_only':
         modeMessage = 'Extracting';
-        modeMarkup = <span className="btn-content"><span className="glyphicon glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><span onLoad={this.blinkAnimation()} className="glyphicon glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       default:
         break;

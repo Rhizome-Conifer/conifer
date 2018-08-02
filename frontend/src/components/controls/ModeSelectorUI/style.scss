@@ -12,8 +12,11 @@
 }
 
 .Blink {
-    animation: blinker 1.5s cubic-bezier(.5, 0, 1, 1) infinite alternate;
     color: darkred;
+    transition: 0.1s;
+}
+.Blink.off{
+    opacity: 0;
 }
 
 .wr-mode-selector.open > .dropdown-menu {
