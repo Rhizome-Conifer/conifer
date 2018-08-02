@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { batchActions } from 'redux-batched-actions';
-import { Button, FormControl} from 'react-bootstrap';
+import { Button, FormControl, ProgressBar } from 'react-bootstrap';
 
 import { setHost, setSource } from 'redux/modules/appSettings';
 import { rts } from 'helpers/utils';
@@ -26,12 +26,16 @@ class Landing extends Component {
 
     this.state = {
       datUrl: '',
-      initializing: false
+      initializing: false,
+      progress: 0,
+      source: ''
     };
   }
 
   componentDidMount() {
-    ipcRenderer.once('initializing', () => this.setState({ initializing: true }));
+    ipcRenderer.once('initializing', (evt, { src }) => {
+      this.setState({ initializing: true, source: src });
+    });
     ipcRenderer.once('indexing', (evt, data) => {
       this.props.dispatch(batchActions([
         setHost(rts(data.host)),
@@ -40,6 +44,16 @@ class Landing extends Component {
 
       this.props.history.push(data.source.startsWith('dat') ? '/local/collection' : '/indexing');
     });
+
+    ipcRenderer.on('indexProgress', this.setProgress);
+  }
+
+  componentWillUnmount() {
+    ipcRenderer.removeListener('indexProgress', this.setProgress);
+  }
+
+  setProgress = (evt, data) => {
+    this.setState({ progress: data.perct });
   }
 
   handleInput = (evt) => {
@@ -59,13 +73,19 @@ class Landing extends Component {
   }
 
   render() {
-    const { initializing } = this.state;
+    const { initializing, progress, source } = this.state;
+    const loadIndicator = source === 'dat' ?
+      (<div className="dat-container">
+        <h4>Downloading from peer-to-peer Dat network:</h4>
+        <ProgressBar now={this.state.progress} label={`${progress}%`} bsStyle="success" />
+      </div>) :
+      <img src={require('shared/images/loading.svg')} id="loadingGif" alt="loading" />
 
     return (
       <div id="landingContainer">
         {
           initializing ?
-            <img src={require('shared/images/loading.svg')} id="loadingGif" alt="loading" /> :
+            loadIndicator :
             <React.Fragment>
               <div className="bigOpen">
                 <button onClick={openFile}>
