@@ -6,18 +6,6 @@
     align-items: center;
 }
 
-@keyframes blinker {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-
-.Blink {
-    color: darkred;
-    transition: 0.1s;
-}
-.Blink.off{
-    opacity: 0;
-}
 
 .wr-mode-selector.open > .dropdown-menu {
     opacity: 1;

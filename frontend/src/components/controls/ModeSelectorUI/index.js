@@ -8,6 +8,7 @@ import { apiFetch, remoteBrowserMod } from 'helpers/utils';
 
 import OutsideClick from 'components/OutsideClick';
 import { PatchIcon, SnapshotIcon } from 'components/icons';
+import Blinker from 'components/Blinker';
 
 import './style.scss';
 
@@ -135,7 +136,7 @@ class ModeSelectorUI extends PureComponent {
     switch(currMode) {
       case 'record':
         modeMessage = 'Capturing';
-        modeMarkup = <span className="btn-content"><span onLoad={this.blinkAnimation()} className="glyphicon glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><Blinker /> <span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       case 'replay':
       case 'replay-coll':
@@ -149,7 +150,7 @@ class ModeSelectorUI extends PureComponent {
       case 'extract':
       case 'extract_only':
         modeMessage = 'Extracting';
-        modeMarkup = <span className="btn-content"><span onLoad={this.blinkAnimation()} className="glyphicon glyphicon-dot-sm glyphicon-recording-status Blink" aria-hidden="true" /> <span className="hidden-xs">{ modeMessage }</span></span>;
+        modeMarkup = <span className="btn-content"><Blinker /> <span className="hidden-xs">{ modeMessage }</span></span>;
         break;
       default:
         break;
