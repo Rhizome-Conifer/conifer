@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import { CSSTransitionGroup } from 'react-transition-group';
 
 
 import './style.scss';
@@ -13,7 +12,7 @@ class Blinker extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { blink: true };
+    this.state = { blink: false };
   }
 
   componentDidUpdate(prevProps, prevState) {
