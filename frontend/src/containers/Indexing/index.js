@@ -68,7 +68,7 @@ class Indexing extends Component {
         <div className="progress-window">
           <h1>Please wait while the archive is indexed...</h1>
           <h3>Now Indexing: { file }</h3>
-          <div className="progress-bar">
+          <div className="indexing-bar">
             <div className="progress" style={{ width: `${progress || 0}%` }} />
             <div className="progress-readout">{ `${progress || 0}%` }</div>
           </div>

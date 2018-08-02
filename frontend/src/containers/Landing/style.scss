@@ -10,6 +10,11 @@
   background-image: url('../../shared/images/Bg.png');
   background-repeat: repeat;
   animation: fadeIn 0.7s 1 normal;
+
+  .dat-container {
+    width: 50vw;
+    margin: 25vh auto 0 auto;
+  }
 }
 
 #loadingGif {
