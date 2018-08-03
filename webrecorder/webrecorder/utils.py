@@ -101,7 +101,7 @@ def today_str():
 
 # ============================================================================
 def spawn_once(*args, **kwargs):
-    worker_id = kwargs.pop('worker', '')
+    worker_id = kwargs.pop('worker', None)
     mule_id = kwargs.pop('mule', 0)
 
     try:

@@ -17,6 +17,8 @@ class DatShare(object):
     DAT_UPDATED_AT = 'dat_updated_at'
     DAT_COLLS = 'h:dat_colls'
 
+    dat_share = None
+
     def __init__(self, redis):
         self.redis = redis
 
@@ -203,9 +205,5 @@ class DatShare(object):
             dat_dirs = self.redis.hvals(self.DAT_COLLS)
             print('Resyncing: ', dat_dirs)
             self.dat_share_api('/sync', data={'dirs': dat_dirs})
-
-
-# ============================================================================
-dat_share = None
 
 

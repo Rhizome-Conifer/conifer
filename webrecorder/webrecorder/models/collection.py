@@ -431,7 +431,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
         if not self.delete_object():
             errs['error'] = 'not_found'
 
-        DatShare.dat_share.unshare(self)
+        if DatShare.dat_share:
+            DatShare.dat_share.unshare(self)
 
         return errs
 
