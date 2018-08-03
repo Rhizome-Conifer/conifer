@@ -1,11 +1,10 @@
 @import 'src/vars';
 
-.blink{
+.blink {
 	animation: blinker 0.8s alternate infinite;
-
 }
 
-.glyphicon-dot-sm{
+.glyphicon-dot-sm {
 	color: $warning;
 }
 

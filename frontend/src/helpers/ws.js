@@ -1,5 +1,4 @@
 import { updateUrlAndTimestamp } from 'redux/modules/controls';
-import { setSizeCounter } from 'redux/modules/sizeCounter';
 import { setStats } from 'redux/modules/infoStats';
 
 import config from 'config';
@@ -99,10 +98,8 @@ class WebSocketHandler {
 
     switch (msg.ws_type) {
       case 'status':
-        this.dispatch(setSizeCounter(msg.size));
-
-        if (msg.stats || msg.size) {
-          this.dispatch(setStats(msg.stats, msg.size));
+        if (msg.stats || msg.size || msg.pending_size) {
+          this.dispatch(setStats(msg.stats, msg.size || 0, msg.pending_size || 0));
         }
         break;
       case 'remote_url': {

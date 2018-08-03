@@ -8,7 +8,7 @@ import { apiFetch, remoteBrowserMod } from 'helpers/utils';
 
 import OutsideClick from 'components/OutsideClick';
 import { PatchIcon, SnapshotIcon } from 'components/icons';
-import Blinker from 'components/Blinker';
+import { Blinker } from 'containers';
 
 import './style.scss';
 
