@@ -24,13 +24,11 @@ class Searchbox extends PureComponent {
         hasIndexed: true
       };
     }
-
     return null;
   }
 
   constructor(props) {
     super(props);
-
     this.state = {
       indexing: false,
       hasIndexed: false
@@ -58,7 +56,6 @@ class Searchbox extends PureComponent {
             searchText ?
               <Button bsSize="sm" onClick={clear}><XIcon /></Button> :
               <Button bsSize="sm" disabled={indexing}>{indexing ? <LoaderIcon /> : <SearchIcon />}</Button>
-
           }
         </InputGroup.Button>
       </InputGroup>

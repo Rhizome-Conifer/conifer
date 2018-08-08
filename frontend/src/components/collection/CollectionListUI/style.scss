@@ -1,54 +1,245 @@
 @import 'src/vars';
 
 .wr-coll-meta {
-    margin: 1.5rem 0;
+    margin-top: 0rem;
 
     button + button {
         margin-left: .5rem;
     }
 }
+.collection-description .wr-editor{
+    max-width: 20rem;
+}
 
 .wr-add-list {
     svg {
         transition: fill $quickShift ease-in-out;
-
         polygon {
             fill: $success-color;
         }
     }
 }
-
-.collection-title {
-    font-size: 2rem;
+.collection-time{
+    font-size:1.2rem;
+    color: $gray550;
+    padding: 1.4rem 0 0 0;
+    text-align: center;
 }
-
+a:link.collection-title, a:visited.collection-title, .collection-title {
+    font-size: 2rem;
+    color: $gray600;
+}
+a.collection-title:hover{
+    text-decoration: none;
+}
+.collections-index-nav{
+    margin: 1rem 0;
+    .btn-default:hover{
+        background: rgba(0,0,0,0);
+    }
+}
+.collection-description {
+    margin-top:2.5rem;
+    h2{
+        color: $gray600;
+        font-weight: normal;
+    }
+}
+.collection-username{
+    color: $gray550;
+}
 .collection-list {
-
+    margin: 1rem 0;
+    .btn-default:hover{
+        background: rgba(0,0,0,0);
+    }
     li {
-        margin: 0;
+        .borderless.show-more{
+            display: none;
+        }
+        .wr-editor-instance{
+            background: rgba(0,0,0,0);
+        }
+        span.is-private{
+            background: $gray500;
+            color: $white;
+            font-size: 1.2rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.7rem;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+        span.is-public{
+            background: $brightGreen;
+            color: $white;
+            font-size: 1.2rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.7rem;
+            margin-top: 1rem;
+            display: inline-block;
+        }
 
-        &:hover {
-            text-decoration: underline;
-            background-color: #eee;
-            cursor: pointer;
+        &:nth-of-type(odd){
+            background-color: $table-zebra;
+            .wr-truncate:after {
+               background: linear-gradient(180deg, rgba(255, 255, 255, 0), $table-zebra 85%);
+            }
+        }
+        margin: 0;
+        border:none;
+        border-radius: 0;
+
+        p {
+            padding: .8rem 0rem 0rem;
+            margin-bottom: 5px;
+        }
+        .collection-list-description{
+            color: $gray550;
+            font-size: 1.2rem;
+            margin-bottom: 1.4rem;
+            padding:0;
+        }
+        .rounded{
+            font-size: 1.2rem;
+            padding: 0.6rem 2rem;
+        }
+        .rounded.expandable-button{
+            padding: 0.6rem 0.8rem;
+            margin-left: 0.6rem;
+            svg{
+                margin-bottom:2px;
+            }
+        }
+        .expandable-text{
+            display: inline-block;
+            height: 1.6rem;
+            padding-left: 0.4rem;
+            padding-right: 0.2rem;
+            vertical-align: bottom;
+            font-size: 1.2rem;
+            color: $gray550;
         }
 
         a {
-            display: block;
+            display: inline-block;
             position: relative;
-            padding: .8rem;
+        }
+        .rounded.dropdown-toggle {
+            border-radius: 0.5rem;
+            padding:0.5rem 0.7rem;
+            text-transform: uppercase;
+            svg{
+                display: none;
+            }
+        }
+        .collection-list-size span{
+            font-size: 1.2rem;
+            color: $gray550;
+            padding: 1.4rem 0 0 0;
+            display: inline-block;
+        }
+        .wr-coll-visibility{
+            padding: 2rem 0;
+        }
+        .collection-delete-action {
+        	button{
+                background: rgba(0,0,0,0);
+                border: none;
+                padding:1.5rem 0 0;
+                float:right;
+                svg{
+	                width:15px;
+	                height:15px;
+                    &:hover + .tooltip.top{
+                        display: block;
+                    }
+	            }
+        	}
+        }
+        .tooltip.top{
+            position: absolute;
+            right: -8px;
+            top: -25px;
+            display: none;
+            .tooltip-arrow{
+                border-top-color: $gray600;
+            }
+            .tooltip-inner{
+                background: $gray600;
+            }
         }
 
-        .index-link {
-            text-decoration: underline;
+    }
+    .index-link {
+        text-decoration: underline;
 
-            &:link, &:visited {
-                color: #000;
-            }
 
-            &:hover {
-                color: $blue;
+        &:link, &:visited {
+            color: #000;
+        }
+
+        &:hover {
+            color: $blue;
+        }
+    }
+
+    .list-group-item:last-child, .list-group-item:first-child{
+        border-radius: 0;
+    }
+
+}
+
+@media (min-width: 768px){
+    .collection-list li{
+        .collection-list-size span{
+            padding: 2rem 0;
+        }
+        .collection-time{
+            padding: 2rem 0;
+        }
+        span.is-private{
+           margin-top: 1.8rem;
+        }
+        span.is-public{
+           margin-top: 1.8rem;
+        }
+        .collection-delete-action {
+            button{
+                padding:2.2rem 0 0;
             }
+        }
+        .collection-list-description{
+            margin-bottom: 0;
+            padding:0;
+        }
+    }
+
+
+    .collection-description .wr-coll-meta {
+        margin-top: 3.5rem;
+    }
+    .collection-list li.has-description{
+        .collection-list-size span{
+            padding: 0.7rem 0;
+        }
+        .collection-time{
+            padding: 0.7rem 0;
+        }
+        span.is-private{
+            margin-top: 0.3rem;
+        }
+        span.is-public{
+            margin-top: 0.3rem;
+        }
+        .collection-delete-action {
+            button{
+                padding:0.7rem 0;
+            }
+        }
+        .collection-list-description{
+            margin-bottom: 1.5rem;
+            padding: .8rem 0rem 0rem;
         }
     }
 }
+

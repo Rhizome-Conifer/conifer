@@ -6,6 +6,11 @@ const USER_LOAD = 'wr/user/LOAD';
 const USER_LOAD_SUCCESS = 'wr/user/LOAD_SUCCESS';
 const USER_LOAD_FAIL = 'wr/user/LOAD_FAIL';
 
+const RESET_EDIT_STATE = 'wr/user/RESET_EDIT_STATE';
+const USER_EDIT = 'wr/user/EDIT';
+const USER_EDIT_SUCCESS = 'wr/user/EDIT_SUCCESS';
+const USER_EDIT_FAIL = 'wr/user/EDIT_FAIL';
+
 const USER_UPDATE = 'wr/user/UPDATE';
 const USER_UPDATE_SUCCESS = 'wr/user/UPDATE_SUCCESS';
 const USER_UPDATE_FAIL = 'wr/user/UPDATE_FAIL';
@@ -13,8 +18,9 @@ const USER_UPDATE_FAIL = 'wr/user/UPDATE_FAIL';
 
 const initialState = fromJS({
   error: null,
-  loading: false,
-  loaded: false
+  edited: false,
+  loaded: false,
+  loading: false
 });
 
 
@@ -39,6 +45,10 @@ export default function user(state = initialState, action = {}) {
       return state.merge({
         ...action.result.user
       });
+    case USER_EDIT_SUCCESS:
+      return state.set('edited', true);
+    case RESET_EDIT_STATE:
+      return state.set('edited', false);
     default:
       return state;
   }
@@ -60,6 +70,18 @@ export function load(username, include_colls = true) {
   };
 }
 
+export function resetEditState() {
+  return { type: RESET_EDIT_STATE };
+}
+
+export function edit(username, data) {
+  return {
+    types: [USER_EDIT, USER_EDIT_SUCCESS, USER_EDIT_FAIL],
+    promise: client => client.post(`${apiPath}/user/${username}`, {
+      data
+    })
+  };
+}
 
 export function updateUser(username, data) {
   return {

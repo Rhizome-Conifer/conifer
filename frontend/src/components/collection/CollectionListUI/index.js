@@ -2,34 +2,33 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import { fromJS } from 'immutable';
-import { Link } from 'react-router-dom';
-import { Button, Col, ProgressBar, Row } from 'react-bootstrap';
-
-import { getCollectionLink } from 'helpers/utils';
-
-import { Upload } from 'containers';
+import { Button, Col, Row } from 'react-bootstrap';
 
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
-import SizeFormat from 'components/SizeFormat';
+import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
-import { GlobeIcon } from 'components/icons';
+import { Upload } from 'containers';
 
+import CollectionItem from './CollectionItem';
 import './style.scss';
 
 
 class CollectionListUI extends Component {
   static contextTypes = {
-    isAnon: PropTypes.bool,
-    router: PropTypes.object
+    isAnon: PropTypes.bool
   };
 
   static propTypes = {
     auth: PropTypes.object,
     collections: PropTypes.object,
     createNewCollection: PropTypes.func,
+    edited: PropTypes.bool,
+    editCollection: PropTypes.func,
+    editUser: PropTypes.func,
     orderedCollections: PropTypes.object,
     match: PropTypes.object,
+    history: PropTypes.object,
     user: PropTypes.object
   };
 
@@ -43,27 +42,31 @@ class CollectionListUI extends Component {
     this.state = {
       showModal: false,
       isPublic: false,
-      collTitle: 'New Collection'
+      collTitle: 'New Collection',
     };
   }
 
   createCollection = (collTitle, isPublic) => {
     const { createNewCollection, match: { params: { user } } } = this.props;
-
     createNewCollection(user, collTitle, isPublic);
   }
 
-  toggle = (evt) => {
+  toggle = () => {
     this.setState({ showModal: !this.state.showModal });
   }
 
-  close = (evt) => {
+  close = () => {
     this.setState({ showModal: false });
+  }
+
+  updateUser = (description) => {
+    const { editUser, match: { params: { user } } } = this.props;
+    editUser(user, { desc: description });
   }
 
   render() {
     const { isAnon } = this.context;
-    const { auth, collections, orderedCollections, match: { params }, user } = this.props;
+    const { auth, collections, editCollection, history, orderedCollections, match: { params }, user } = this.props;
     const { showModal } = this.state;
     const userParam = params.user;
     const canAdmin = auth.getIn(['user', 'username']) === userParam;
@@ -80,99 +83,70 @@ class CollectionListUI extends Component {
       return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp/index`} status={301} />;
     }
 
-    const spaceUsed = auth.getIn(['user', 'space_utilization', 'used']);
-    const totalSpace = user.getIn(['user', 'space_utilization', 'total']);
-    const remaining = spaceUsed / totalSpace;
-
-    let progressState = 'success';
-    if (remaining >= 0.75) {
-      if (remaining < 0.9) {
-        progressState = 'warning';
-      } else {
-        progressState = 'danger';
-      }
-    }
-
     return (
       <React.Fragment>
         <Helmet>
           <title>{`${userParam}'s Collections`}</title>
         </Helmet>
-        <Row className="collection-description page-archive">
-          <Col xs={12}>
-            <h2>{ userParam } Archive</h2>
-            <p>Available collections are listed below.</p>
-          </Col>
-        </Row>
         <Row>
-          <Col xs={6} className="wr-coll-meta">
+
+          <Col xs={12} sm={3} className="collection-description page-archive">
+            <h2>{ userParam }</h2>
+            <p className="collection-username">{ userParam }</p>
+            <WYSIWYG
+              key={user.get('id')}
+              initial={user.get('desc') || ''}
+              onSave={this.updateUser}
+              placeholder={'Add a description'}
+              clickToEdit
+              readOnly={isAnon || !canAdmin}
+              success={this.props.edited} />
+          </Col>
+          <Col xs={12} sm={9} className="wr-coll-meta">
+
+            <Row>
+              <Col xs={12} className="collections-index-nav">
+                {
+                  !isAnon && canAdmin &&
+                    <React.Fragment>
+                      <Button onClick={this.toggle} className="rounded">
+                        <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
+                      </Button>
+                      <Upload classes="rounded">
+                        <span className="glyphicon glyphicon-upload" /> Upload
+                      </Upload>
+                    </React.Fragment>
+                }
+              </Col>
+            </Row>
             {
-              !isAnon && canAdmin &&
-                <React.Fragment>
-                  <Button onClick={this.toggle} bsStyle="primary" bsSize="small">
-                    <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
-                  </Button>
-                  <Upload classes="btn btn-sm btn-success">
-                    <span className="glyphicon glyphicon-upload" /> Upload
-                  </Upload>
-                </React.Fragment>
+
+              collections && collections.get('loaded') &&
+                <Row>
+                  <ul className="list-group collection-list">
+                    {
+                      orderedCollections.map((coll) => {
+                        return (
+                          <CollectionItem
+                            key={coll.get('id')}
+                            canAdmin={canAdmin}
+                            collection={coll}
+                            editCollection={editCollection}
+                            history={history} />
+                        );
+                      })
+                    }
+                  </ul>
+                </Row>
             }
           </Col>
-          {
-            !isAnon && canAdmin &&
-              <Col xs={2} className="pull-right">
-                <strong>Space Used: </strong>
-                <SizeFormat bytes={spaceUsed} />
-                <ProgressBar now={(remaining) * 100} bsStyle={progressState} />
-              </Col>
-          }
         </Row>
-
-        {
-          collections && collections.get('loaded') &&
-            <Row>
-              <ul className="list-group collection-list">
-                {
-                  orderedCollections.map((coll) => {
-                    return (
-                      <li className="left-buffer list-group-item" key={coll.get('id')}>
-                        <Row>
-                          <Col xs={canAdmin ? 7 : 9}>
-                            <Link to={getCollectionLink(coll)} className="collection-title">{coll.get('title')}</Link>
-                          </Col>
-                          {
-                            canAdmin &&
-                              <Col xs={2}>
-                                <Link to={getCollectionLink(coll, true)} className="index-link">Collection Index</Link>
-                              </Col>
-                          }
-                          <Col xs={2}>
-                            <SizeFormat bytes={coll.get('size')} />
-                          </Col>
-                          <Col xs={1}>
-                            {
-                              coll.get('public') &&
-                                <span title="Public Collection &mdash; Visible to Everyone">
-                                  <GlobeIcon />
-                                </span>
-                            }
-                          </Col>
-                        </Row>
-                      </li>
-                    );
-                  })
-                }
-              </ul>
-            </Row>
-        }
-
         <NewCollection
           close={this.close}
           visible={showModal}
           createCollection={this.createCollection}
           creatingCollection={collections.get('creatingCollection')}
           error={collections.get('creationErorr')} />
-
       </React.Fragment>
     );
   }

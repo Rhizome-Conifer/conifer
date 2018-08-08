@@ -118,13 +118,6 @@ class CollectionHeaderUI extends Component {
   togglePublicView = () => {
     const { collection, history } = this.props;
     history.push(getCollectionLink(collection));
-    // const { location: { pathname, search }} = this.props;
-    // const asPublic = search && search.indexOf('asPublic') !== -1;
-    // if (asPublic) {
-    //   window.location = `${pathname}${search.replace(/(\?|\&)asPublic/, '')}`;
-    // } else {
-    //   window.location = `${pathname}${search}${search.indexOf('?') !== -1 ? '&' : '?'}asPublic`;
-    // }
   }
 
   render() {
