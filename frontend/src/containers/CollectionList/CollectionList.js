@@ -15,14 +15,14 @@ import { saveDelay } from 'config';
 
 const preloadCollections = [
   {
-    promise: ({ match: { params: { user } }, store: { dispatch} }) => {
+    promise: ({ match: { params: { user } }, store: { dispatch } }) => {
       return dispatch(loadCollections(user));
     }
   },
   {
     promise: ({ match: { params }, store: { dispatch } }) => {
       const { user } = params;
-      return dispatch(loadUser(user));
+      return dispatch(loadUser(user, false));
     }
   }
 ];
@@ -58,7 +58,7 @@ const mapDispatchToProps = (dispatch, { history }) => {
     editUser: (user, data) => {
       dispatch(editUser(user, data))
         .then(res => setTimeout(() => dispatch(resetEditState()), saveDelay))
-        .then(() => dispatch(loadUser(user)));
+        .then(() => dispatch(loadUser(user, false)));
     }
 
   };

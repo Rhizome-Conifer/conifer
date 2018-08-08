@@ -196,6 +196,7 @@ class CollectionHeaderUI extends Component {
                   <div className="coll-title">
                     <WarcIcon />
                     <InlineEditor
+                      canAdmin={canAdmin}
                       error={this.props.collEditError}
                       initial={collection.get('title')}
                       onSave={this.editCollTitle}
@@ -214,6 +215,7 @@ class CollectionHeaderUI extends Component {
                   <Capstone user={collection.get('owner')} />
                   <div className="heading-container">
                     <InlineEditor
+                      canAdmin={canAdmin}
                       initial={collection.get('title')}
                       onSave={this.editCollTitle}
                       success={collEdited}

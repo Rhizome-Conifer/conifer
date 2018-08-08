@@ -1,15 +1,14 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import removeMd from 'remove-markdown';
 import { Link } from 'react-router-dom';
 import { Button, Col, Row, Tooltip } from 'react-bootstrap';
 
-import { getCollectionLink, buildDate } from 'helpers/utils';
+import { buildDate, getCollectionLink, truncate } from 'helpers/utils';
 
 import SizeFormat from 'components/SizeFormat';
 import { DeleteCollection } from 'containers';
 import { TrashIcon, PlusIcon } from 'components/icons';
-import Truncate from 'components/Truncate';
-import WYSIWYG from 'components/WYSIWYG';
 import classNames from 'classnames';
 
 class CollectionItem extends PureComponent {
@@ -25,7 +24,6 @@ class CollectionItem extends PureComponent {
     selected: PropTypes.bool,
     history: PropTypes.string
   };
-
 
   newSession = () => {
     const { collection, history } = this.props;
@@ -47,13 +45,11 @@ class CollectionItem extends PureComponent {
         <Row>
           <Col sm={12} md={7}>
             {canAdmin ? <Link className="collection-title" to={`${getCollectionLink(collection)}/index`}>{collection.get('title')}</Link> : <span className="collection-title">{collection.get('title')}</span>}
-            <Truncate className="desc-container" height={100} >
-              <div className="collection-list-description">
-                <WYSIWYG
-                  readOnly
-                  initial={collection.get('desc')} />
-              </div>
-            </Truncate>
+            <p className="collection-list-description">
+              {
+                truncate(removeMd(collection.get('desc'), { useImgAltText: false }), 3, new RegExp(/([.!?])/))
+              }
+            </p>
             <Link to={getCollectionLink(collection)}>
               <Button className="rounded">
                 View Cover Page

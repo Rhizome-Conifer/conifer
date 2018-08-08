@@ -65,6 +65,7 @@ class ListHeaderUI extends PureComponent {
         <span className="banner"><ListIcon /> LIST</span>
         <div className="heading-container">
           <InlineEditor
+            canAdmin={canAdmin}
             initial={list.get('title')}
             onSave={this.editListTitle}
             readOnly={!canAdmin}

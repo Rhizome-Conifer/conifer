@@ -44,6 +44,16 @@ a.collection-title:hover{
 }
 .collection-description {
     margin-top:2.5rem;
+
+    .glyphicon-link {
+        margin-right: .5rem;
+    }
+
+    h6 {
+        display: inline-block;
+        word-wrap: break-word;
+    }
+
     h2{
         color: $gray600;
         font-weight: normal;

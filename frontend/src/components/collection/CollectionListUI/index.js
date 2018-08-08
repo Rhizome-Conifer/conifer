@@ -5,6 +5,7 @@ import { fromJS } from 'immutable';
 import { Button, Col, Row } from 'react-bootstrap';
 
 import HttpStatus from 'components/HttpStatus';
+import InlineEditor from 'components/InlineEditor';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
@@ -52,6 +53,16 @@ class CollectionListUI extends Component {
     createNewCollection(user, collTitle, isPublic);
   }
 
+  editName = (display_name) => {
+    const { editUser, match: { params: { user } } } = this.props;
+    editUser(user, { display_name });
+  }
+
+  editURL = (display_url) => {
+    const { editUser, match: { params: { user } } } = this.props;
+    editUser(user, { display_url });
+  }
+
   toggle = () => {
     this.setState({ showModal: !this.state.showModal });
   }
@@ -70,6 +81,7 @@ class CollectionListUI extends Component {
     const { auth, collections, editCollection, history, orderedCollections, match: { params }, user } = this.props;
     const { showModal } = this.state;
     const userParam = params.user;
+    const displayName = user.get('display_name') || userParam;
     const canAdmin = auth.getIn(['user', 'username']) === userParam;
 
     if (collections.get('error')) {
@@ -87,13 +99,31 @@ class CollectionListUI extends Component {
     return (
       <React.Fragment>
         <Helmet>
-          <title>{`${userParam}'s Collections`}</title>
+          <title>{`${displayName}'s Collections`}</title>
         </Helmet>
         <Row>
 
           <Col xs={12} sm={3} className="collection-description page-archive">
-            <h2>{ userParam }</h2>
+            <InlineEditor
+              canAdmin={canAdmin}
+              initial={displayName}
+              onSave={this.editName}
+              readOnly={isAnon || !canAdmin}
+              success={this.props.edited}>
+              <h2>{displayName}</h2>
+            </InlineEditor>
             <p className="collection-username">{ userParam }</p>
+            {
+              (user.get('display_url') || canAdmin) &&
+                <InlineEditor
+                  canAdmin={canAdmin}
+                  initial={user.get('display_url') || ''}
+                  onSave={this.editURL}
+                  readOnly={isAnon || !canAdmin}
+                  success={this.props.edited}>
+                  <h6><span className="glyphicon glyphicon-link" />{user.get('display_url')}</h6>
+                </InlineEditor>
+            }
             <WYSIWYG
               key={user.get('id')}
               initial={user.get('desc') || ''}

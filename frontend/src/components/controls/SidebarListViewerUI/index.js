@@ -163,6 +163,7 @@ class SidebarListViewer extends Component {
             <ListIcon />
             <InlineEditor
               blockDisplay
+              canAdmin={this.context.canAdmin}
               initial={list.get('title')}
               onSave={this.editListTitle}
               success={listEdited}>
