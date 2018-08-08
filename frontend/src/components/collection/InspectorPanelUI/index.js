@@ -59,7 +59,7 @@ class InspectorPanelUI extends PureComponent {
     const bk = selectedBk ? list.get('bookmarks').find(o => o.get('id') === selectedBk) : false;
     const pg = bk ? bk.get('page') : collection.getIn(['pages', selectedPage]);
     const selectedIndex = selectedBk ? list.get('bookmarks').findIndex(o => o.get('id') === selectedBk) : null;
-    const descPresent = (bk && bk.get('desc')) ? bk.get('desc').trim() : '';
+
     return (
       <div className="wr-inspector">
         <SidebarHeader label="Metadata" />
@@ -82,14 +82,19 @@ class InspectorPanelUI extends PureComponent {
                         <h2>{bk.get('title')}</h2>
                       </InlineEditor>
 
-                      <h4>{((descPresent.length < 1) && !canAdmin) ? '' : 'Description'}</h4>
-                      <WYSIWYG
-                        clickToEdit
-                        initial={bk.get('desc')}
-                        placeholder="Add annotation"
-                        readOnly={!canAdmin}
-                        onSave={this.editBookmarkDesc}
-                        success={bkEdited} />
+                      {
+                        (bk.get('desc') || canAdmin) &&
+                          <React.Fragment>
+                            <h4>Description</h4>
+                            <WYSIWYG
+                              clickToEdit
+                              initial={bk.get('desc')}
+                              placeholder="Add annotation"
+                              readOnly={!canAdmin}
+                              onSave={this.editBookmarkDesc}
+                              success={bkEdited} />
+                          </React.Fragment>
+                      }
                     </header>
                 }
                 {
