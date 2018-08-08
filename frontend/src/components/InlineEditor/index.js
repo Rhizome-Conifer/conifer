@@ -11,12 +11,9 @@ import './style.scss';
 
 
 class InlineEditor extends PureComponent {
-  static contextTypes = {
-    canAdmin: PropTypes.bool
-  };
-
   static propTypes = {
     blockDisplay: PropTypes.bool,
+    canAdmin: PropTypes.bool,
     canBeEmpty: PropTypes.bool,
     error: PropTypes.string,
     initial: PropTypes.string,
@@ -107,7 +104,7 @@ class InlineEditor extends PureComponent {
     evt.stopPropagation();
     const { editMode } = this.state;
 
-    if (!this.context.canAdmin || this.props.readOnly) {
+    if (!this.props.canAdmin || this.props.readOnly) {
       return;
     }
 
@@ -146,8 +143,7 @@ class InlineEditor extends PureComponent {
   }
 
   render() {
-    const { canAdmin } = this.context;
-    const { blockDisplay, error, label, readOnly } = this.props;
+    const { blockDisplay, canAdmin, error, label, readOnly } = this.props;
 
     return (
       <div className={classNames('wr-inline-editor', { 'block-display': blockDisplay })} ref={(o) => { this.container = o; }}>

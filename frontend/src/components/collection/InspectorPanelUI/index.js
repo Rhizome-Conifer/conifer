@@ -75,6 +75,7 @@ class InspectorPanelUI extends PureComponent {
 
                       <InlineEditor
                         blockDisplay
+                        canAdmin={canAdmin}
                         initial={bk.get('title') || untitledEntry}
                         onSave={this.editBookmarkTitle}
                         readOnly={!canAdmin}
