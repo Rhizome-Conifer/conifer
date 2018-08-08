@@ -9,6 +9,7 @@ import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
 import { Upload } from 'containers';
+import { UploadIcon } from 'components/icons';
 
 import CollectionItem from './CollectionItem';
 import './style.scss';
@@ -113,7 +114,7 @@ class CollectionListUI extends Component {
                         <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
                       </Button>
                       <Upload classes="rounded">
-                        <span className="glyphicon glyphicon-upload" /> Upload
+                        <UploadIcon /> Upload
                       </Upload>
                     </React.Fragment>
                 }
