@@ -3,25 +3,26 @@ import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
 
 import { addUserCollection, incrementCollCount } from 'redux/modules/auth';
-import { isLoaded as areCollsLoaded, load as loadCollections,
-         createCollection } from 'redux/modules/collections';
+import { load as loadCollections, createCollection } from 'redux/modules/collections';
+
+import { edit } from 'redux/modules/collection';
+import { load as loadUser, edit as editUser, resetEditState } from 'redux/modules/user';
 import { sortCollsByAlpha } from 'redux/selectors';
 
 import CollectionListUI from 'components/collection/CollectionListUI';
 
+import { saveDelay } from 'config';
 
 const preloadCollections = [
   {
-    promise: ({ match: { params }, store: { dispatch, getState } }) => {
-      const state = getState();
-      const collections = state.app.get('collections');
-      const { user } = params;
-
-      // if (!areCollsLoaded(state) || collections.get('owner') !== user) {
+    promise: ({ match: { params: { user } }, store: { dispatch} }) => {
       return dispatch(loadCollections(user));
-      // }
-
-      // return undefined;
+    }
+  },
+  {
+    promise: ({ match: { params }, store: { dispatch } }) => {
+      const { user } = params;
+      return dispatch(loadUser(user));
     }
   }
 ];
@@ -30,6 +31,7 @@ const mapStateToProps = ({ app }) => {
   return {
     auth: app.get('auth'),
     collections: app.get('collections'),
+    edited: app.getIn(['user', 'edited']),
     orderedCollections: app.getIn(['collections', 'loaded']) ? sortCollsByAlpha(app) : null,
     user: app.get('user')
   };
@@ -48,7 +50,17 @@ const mapDispatchToProps = (dispatch, { history }) => {
             history.push(`/${user}/${res.collection.slug}/index`);
           }
         }, () => {});
+    },
+    editCollection: (user, coll, data) => {
+      dispatch(edit(user, coll, data))
+        .then(res => dispatch(loadCollections(user)));
+    },
+    editUser: (user, data) => {
+      dispatch(editUser(user, data))
+        .then(res => setTimeout(() => dispatch(resetEditState()), saveDelay))
+        .then(() => dispatch(loadUser(user)));
     }
+
   };
 };
 

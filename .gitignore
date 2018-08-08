@@ -52,6 +52,7 @@ nosetests.xml
 
 # webrecorder specific
 wr.env
+wr.env-e
 webrecorder/keys/
 data/
 git_hash.py
