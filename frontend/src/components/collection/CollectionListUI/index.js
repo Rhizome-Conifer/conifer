@@ -12,7 +12,7 @@ import RedirectWithStatus from 'components/RedirectWithStatus';
 import WYSIWYG from 'components/WYSIWYG';
 import { NewCollection } from 'components/siteComponents';
 import { Upload } from 'containers';
-import { UploadIcon } from 'components/icons';
+import { UploadIcon, LinkIcon } from 'components/icons';
 
 import CollectionItem from './CollectionItem';
 import './style.scss';
@@ -127,7 +127,7 @@ class CollectionListUI extends Component {
                   readOnly={isAnon || !canAdmin}
                   success={this.props.edited}>
                   <div className="user-link">
-                    <a target="_blank" onClick={stopPropagation} href={userLink}><span className="glyphicon glyphicon-link" /></a>
+                    <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon className="glyphicon glyphicon-link" /></a>
                     <span>{user.get('display_url')}</span>
                   </div>
                 </InlineEditor>

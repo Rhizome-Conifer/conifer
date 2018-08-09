@@ -14,6 +14,7 @@ export GlobeIcon from './Globe';
 export HandleIcon from './Handle';
 export HelpIcon from './Help';
 export InfoIcon from './Info';
+export LinkIcon from './Link';
 export ListIcon from './List';
 export LoaderIcon from './Loader';
 export LockIcon from './Lock';
