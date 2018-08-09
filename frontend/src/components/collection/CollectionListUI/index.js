@@ -127,7 +127,7 @@ class CollectionListUI extends Component {
                   readOnly={isAnon || !canAdmin}
                   success={this.props.edited}>
                   <div className="user-link">
-                    <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon className="glyphicon glyphicon-link" /></a>
+                    <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon /></a>
                     <span>{user.get('display_url')}</span>
                   </div>
                 </InlineEditor>
