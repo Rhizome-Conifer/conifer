@@ -9,6 +9,10 @@
 }
 .collection-description .wr-editor{
     color: $gray550;
+    max-width: 35rem;
+    *{
+        max-width: 35rem;
+    }
     .public-DraftEditor-content{
         font-size: 1.2rem;
     }
@@ -221,6 +225,9 @@ a.collection-title:hover{
 @media (min-width: 768px){
     .collection-description .wr-editor{
         max-width: 20rem;
+        *{
+            max-width: 20rem;
+        }
     }
     .collection-list li{
         .collection-list-size span{
