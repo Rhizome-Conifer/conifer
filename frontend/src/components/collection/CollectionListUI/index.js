@@ -4,6 +4,8 @@ import Helmet from 'react-helmet';
 import { fromJS } from 'immutable';
 import { Button, Col, Row } from 'react-bootstrap';
 
+import { stopPropagation } from 'helpers/utils';
+
 import HttpStatus from 'components/HttpStatus';
 import InlineEditor from 'components/InlineEditor';
 import RedirectWithStatus from 'components/RedirectWithStatus';
@@ -84,7 +86,7 @@ class CollectionListUI extends Component {
     const displayName = user.get('display_name') || userParam;
     const canAdmin = auth.getIn(['user', 'username']) === userParam;
 
-    const userLink = !user.get('display_url').match(/^[a-zA-Z]+:\/\//) ? 'http://' + user.get('display_url') : user.get('display_url');
+    const userLink = user.get('display_url') && (!user.get('display_url').match(/^[a-zA-Z]+:\/\//) ? `http://${user.get('display_url')}` : user.get('display_url'));
 
 
     if (collections.get('error')) {
@@ -124,7 +126,10 @@ class CollectionListUI extends Component {
                   onSave={this.editURL}
                   readOnly={isAnon || !canAdmin}
                   success={this.props.edited}>
-                  <h6><a target="_blank" href={userLink}><span className="glyphicon glyphicon-link" /></a>{user.get('display_url')}</h6>
+                  <div className="user-link">
+                    <a target="_blank" onClick={stopPropagation} href={userLink}><span className="glyphicon glyphicon-link" /></a>
+                    <span>{user.get('display_url')}</span>
+                  </div>
                 </InlineEditor>
             }
             <WYSIWYG

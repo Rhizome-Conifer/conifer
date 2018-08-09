@@ -1,31 +1,10 @@
 @import 'src/vars';
 
 .wr-coll-meta {
-    margin-top: 0rem;
+    margin-top: 5rem;
 
     button + button {
         margin-left: .5rem;
-    }
-}
-.collection-description .wr-editor{
-    color: $gray550;
-    max-width: 35rem;
-    *{
-        max-width: 35rem;
-    }
-    .public-DraftEditor-content{
-        font-size: 1.2rem;
-    }
-}
-.collection-description .wr-inline-editor{
-    margin-bottom:5px !important;
-    line-height: 1;
-    color: $gray550;
-    h6{
-        font-weight: 200;
-    }
-    .glyphicon{
-        color: $gray500;
     }
 }
 
@@ -61,23 +40,55 @@ a.collection-title:hover{
     }
 }
 .collection-description {
-    margin-top:2.5rem;
+    margin-top:4.5rem;
+
+
+    .wr-editor{
+        color: $gray550;
+        max-width: 35rem;
+
+        *{
+            max-width: 35rem;
+        }
+
+        .public-DraftEditor-content{
+            font-size: 1.2rem;
+        }
+    }
+
+    .wr-inline-editor{
+        line-height: 1;
+        color: $gray550;
+
+        .glyphicon{
+            color: $gray500;
+        }
+    }
+
+    .user-link {
+        margin: 1.5rem 0;
+        word-break: break-all;
+        display: flex;
+
+        span {
+            word-wrap: break-word;
+        }
+    }
 
     .glyphicon-link {
         margin-right: .5rem;
-    }
-
-    h6 {
-        display: inline-block;
-        word-wrap: break-word;
+        color: $gray500;
     }
 
     h2{
-        color: $gray600;
+        color: #000;
         font-weight: normal;
+        margin-bottom: 0;
+        font-size: 3.4rem;
     }
 }
 .collection-username{
+    font-size: 1.8rem;
     color: $gray550;
     margin: 0 auto;
 }
@@ -170,6 +181,10 @@ a.collection-title:hover{
             color: $gray550;
             padding: 1.4rem 0 0 0;
             display: inline-block;
+
+            @media (min-width: 1200px) {
+                white-space: nowrap;
+            }
         }
         .wr-coll-visibility{
             padding: 2rem 0;
