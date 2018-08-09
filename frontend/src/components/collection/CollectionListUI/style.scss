@@ -8,7 +8,21 @@
     }
 }
 .collection-description .wr-editor{
-    max-width: 20rem;
+    color: $gray550;
+    .public-DraftEditor-content{
+        font-size: 1.2rem;
+    }
+}
+.collection-description .wr-inline-editor{
+    margin-bottom:5px !important;
+    line-height: 1;
+    color: $gray550;
+    h6{
+        font-weight: 200;
+    }
+    .glyphicon{
+        color: $gray500;
+    }
 }
 
 .wr-add-list {
@@ -61,6 +75,7 @@ a.collection-title:hover{
 }
 .collection-username{
     color: $gray550;
+    margin: 0 auto;
 }
 .collection-list {
     margin: 1rem 0;
@@ -204,6 +219,9 @@ a.collection-title:hover{
 }
 
 @media (min-width: 768px){
+    .collection-description .wr-editor{
+        max-width: 20rem;
+    }
     .collection-list li{
         .collection-list-size span{
             padding: 2rem 0;
