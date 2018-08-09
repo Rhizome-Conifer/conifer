@@ -73,7 +73,7 @@ class CollectionItem extends PureComponent {
             }
             {
               canAdmin &&
-                <DeleteCollection>
+                <DeleteCollection collection={collection}>
                   <TrashIcon />
                   <Tooltip placement="top" className="in" id="tooltip-top">
                     DELETE

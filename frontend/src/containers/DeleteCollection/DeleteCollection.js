@@ -8,9 +8,9 @@ import { deleteCollection } from 'redux/modules/collection';
 import DeleteCollectionUI from 'components/collection/DeleteCollectionUI';
 
 
-const mapStateToProps = ({ app }) => {
+const mapStateToProps = ({ app }, props) => {
   return {
-    collection: app.get('collection'),
+    collection: props.collection || app.get('collection'),
     deleting: app.getIn(['collection', 'editing']),
     error: app.getIn(['collection', 'editError']),
     user: app.getIn(['auth', 'user'])
