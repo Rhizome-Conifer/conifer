@@ -84,6 +84,9 @@ class CollectionListUI extends Component {
     const displayName = user.get('display_name') || userParam;
     const canAdmin = auth.getIn(['user', 'username']) === userParam;
 
+    const userLink = !user.get('display_url').match(/^[a-zA-Z]+:\/\//) ? 'http://' + user.get('display_url') : user.get('display_url');
+
+
     if (collections.get('error')) {
       return (
         <HttpStatus>
@@ -121,7 +124,7 @@ class CollectionListUI extends Component {
                   onSave={this.editURL}
                   readOnly={isAnon || !canAdmin}
                   success={this.props.edited}>
-                  <h6><span className="glyphicon glyphicon-link" />{user.get('display_url')}</h6>
+                  <h6><a target="_blank" href={userLink}><span className="glyphicon glyphicon-link" /></a>{user.get('display_url')}</h6>
                 </InlineEditor>
             }
             <WYSIWYG
