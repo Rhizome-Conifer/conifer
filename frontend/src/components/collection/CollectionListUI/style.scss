@@ -69,16 +69,15 @@ a.collection-title:hover{
         margin: 1.5rem 0;
         word-break: break-all;
         display: flex;
-
+        svg{
+            margin-right: 0.3rem;
+            color: $gray500;
+        }
         span {
             word-wrap: break-word;
         }
     }
 
-    .glyphicon-link {
-        margin-right: .5rem;
-        color: $gray500;
-    }
 
     h2{
         color: #000;
