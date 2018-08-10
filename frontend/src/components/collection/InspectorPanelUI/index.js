@@ -82,14 +82,19 @@ class InspectorPanelUI extends PureComponent {
                         <h2>{bk.get('title')}</h2>
                       </InlineEditor>
 
-                      <h4>Description</h4>
-                      <WYSIWYG
-                        clickToEdit
-                        initial={bk.get('desc')}
-                        placeholder="Add annotation"
-                        readOnly={!canAdmin}
-                        onSave={this.editBookmarkDesc}
-                        success={bkEdited} />
+                      {
+                        (bk.get('desc') || canAdmin) &&
+                          <React.Fragment>
+                            <h4>Description</h4>
+                            <WYSIWYG
+                              clickToEdit
+                              initial={bk.get('desc')}
+                              placeholder="Add annotation"
+                              readOnly={!canAdmin}
+                              onSave={this.editBookmarkDesc}
+                              success={bkEdited} />
+                          </React.Fragment>
+                      }
                     </header>
                 }
                 {
