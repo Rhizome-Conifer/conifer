@@ -107,7 +107,7 @@ class RecordingToolsUI extends PureComponent {
     const modalFooter = <Button onClick={this._close}>Close</Button>;
 
     return (
-      <div className="recording-actions text-center">
+      <div className="recording-actions text-center hidden-xs">
         <Modal
           visible={this.state.clipboardOpen}
           header={<h4>Remote Browser Clipboard</h4>}

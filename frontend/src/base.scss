@@ -302,7 +302,10 @@ a {
     }
   }
 }
-
+.navbar-user-links li.navbar-right{
+  margin-left:0.5rem;
+  text-align: center;
+}
 #wr-popover-delete {
     max-width: 40rem;
     min-width: 20rem;
