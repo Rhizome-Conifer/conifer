@@ -1,6 +1,9 @@
 @import 'src/vars';
 .wr-coll-sidebar .lists-body ul li.all-pages .wrapper .visibility-lamp svg{
     vertical-align: top;
+    g > g{
+            fill: $gray500;
+        }
 }
 .private-coll{
     .visibility-lamp{
@@ -80,6 +83,8 @@
     .svg{
         display: inline-block;
         vertical-align: top;
+
+
     }
     .bulb {
         height: 1.4rem;
@@ -101,7 +106,7 @@
         }
 
         span {
-            padding-right: 0.7rem;
+            padding-right: 0.4rem;
             vertical-align: middle;
         }
     }

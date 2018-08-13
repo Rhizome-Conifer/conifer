@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import { doubleRAF } from 'helpers/utils';
 
-import { LoaderIcon, VisibilityLockIcon } from 'components/icons';
+import { LoaderIcon, LockIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -126,7 +126,7 @@ class VisibilityLamp extends PureComponent {
           </div>
           {
               !isPublic ?
-                <VisibilityLockIcon /> :
+                <LockIcon /> :
                 <div className="lamp" />
             }
         </div>
