@@ -1,13 +1,10 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import { Button } from 'react-bootstrap';
 
 import { defaultListDesc } from 'config';
-import { getCollectionLink, getListLink } from 'helpers/utils';
+import { getListLink } from 'helpers/utils';
 
 import InlineEditor from 'components/InlineEditor';
-import PublicSwitch from 'components/collection/PublicSwitch';
 import Truncate from 'components/Truncate';
 import WYSIWYG from 'components/WYSIWYG';
 import { ListIcon } from 'components/icons';
@@ -55,10 +52,7 @@ class ListHeaderUI extends PureComponent {
 
   render() {
     const { canAdmin } = this.context;
-    const { collection, list } = this.props;
-    const bkCount = list.get('bookmarks').size;
-    const bookmarks = `${bkCount} Page${bkCount === 1 ? '' : 's'}`;
-    const user = collection.get('owner');
+    const {list } = this.props;
 
     return (
       <div className="wr-list-header">
@@ -80,19 +74,6 @@ class ListHeaderUI extends PureComponent {
             placeholder={defaultListDesc}
             success={this.props.listEdited} />
         </Truncate>
-        <div className="creator">
-          Created by <Link to={`/${user}`}>{user}</Link>, with {bookmarks} from the collection <Link to={getCollectionLink(collection)}>{collection.get('title')}</Link>
-        </div>
-        <div className="function-row">
-          {
-            canAdmin &&
-              <PublicSwitch
-                callback={this.setPublic}
-                isPublic={list.get('public')}
-                label="List" />
-          }
-          <Button onClick={this.startReplay} className="rounded">VIEW PAGES</Button>
-        </div>
       </div>
     );
   }

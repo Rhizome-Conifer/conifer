@@ -1,72 +1,24 @@
 @import 'src/vars';
 
-// transition speed
-$movement: -75px;
-$opacity: 200ms;
-$transform: 250ms;
-
-
 header.wr-collection-header {
-    transition: height 400ms ease-in-out;
-    grid-area: header;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 1rem 0;
+    padding: 1rem 2rem;
     position: relative;
     border-bottom: solid .1rem $mgmt-gray;
-    transform: translateZ(0);
-
-    & > div {
-        width: 100%;
-    }
-
-    .utility-row {
-        button#coll-menu {
-          width: 3.2rem;
-          height: 3.2rem;
-          padding: 0;
-
-          svg {
-            width: 1.4rem;
-            height: .6rem;
-          }
-        }
-    }
 
     .overview {
-        &.condense-enter {
-            opacity: 0;
-
-            &.condense-enter-active {
-                transition: opacity $opacity ease-in-out;
-                opacity: 1;
-            }
-        }
-
-        &.condense-leave {
-            opacity: 1;
-            transform: translateY(0px);
-
-            &.condense-leave-active {
-                transition: opacity $opacity ease-in-out,
-                            transform $transform ease-in-out;
-                opacity: 0;
-                transform: translateY($movement);
-            }
-        }
-
         .heading-row {
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 2.5rem;
             width: 100%;
 
             .capstone {
-                margin: 2rem 0 0.6rem 0;
+                margin: .5rem 0;
             }
 
             &.is-public {
@@ -75,134 +27,44 @@ header.wr-collection-header {
                 }
             }
 
-            .access-switch {
-                display: flex;
-                align-items: center;
-                margin-right: 1rem;
+            h1 {
+                display: inline-block;
+                font-family: $sans;
+                margin: 0;
+                font-size: 2.2rem;
+                font-weight: 400;
+                color: black;
             }
 
-            .utility-row {
-                margin-top: 1.5rem;
+            .desc {
+                position: relative;
+                white-space: nowrap;
+                width: 100%;
+                overflow: hidden;
+                font-size: 1.4rem;
 
-                & > *:not(:first-child) {
-                    margin-left: .5rem;
-                }
-
-                .dropdown-menu > li > a{
-                  margin: 0;
-                  padding: 1rem 2rem;
-                }
-            }
-
-            .heading-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                max-width: 80vw;
-                text-align: center;
-
-                h1 {
-                    display: inline-block;
-                    font-family: $sans;
-                    margin: 2rem 0 0 0;
-                    font-size: 3.2rem;
-                    font-weight: 300;
-                    color: black;
+                &:after {
+                    content: '';
+                    position: absolute;
+                    right: 0;
+                    width: 6rem;
+                    height: 100%;
+                    background: linear-gradient(90deg, rgba(255, 255, 255, 0), #FFF 100%, #FFF);
                 }
             }
         }
 
-        .desc-container {
-            .wr-editor {
-                min-width: 32rem;
+
+        .menu-row {
+            display: flex;
+            justify-content: flex-start;
+            margin: 1.5rem 0;
+
+            .new-session {
+                padding: .7rem 1.2rem;
             }
 
-            @media (max-width: $mobile) {
-                width: 85vw;
-                margin: 0 7.5vw;
-            }
-        }
-
-        // .wr-editor {
-        //     width: 60rem;
-        //     @media (max-width: 600px) {
-        //         width: 90vw;
-        //     }
-        // }
-    }
-
-    .collection-bar {
-        width: 100%;
-        height: 7.4rem;
-        position: absolute;
-        top: 0;
-
-        display: grid;
-        align-items: center;
-        grid-template-columns: 1fr 1fr 1fr;
-        grid-template-areas: "blank title utility";
-        background: #FFF;
-        z-index: 20;
-
-        &.condense-enter {
-            opacity: 0;
-            transform: translateY($movement);
-
-            &.condense-enter-active {
-                transition: opacity $opacity ease-in-out,
-                            transform $transform ease-in-out;
-                opacity: 1;
-                transform: translateY(0px);
-            }
-        }
-
-        &.condense-leave {
-            opacity: 1;
-            transform: translateY(0px);
-
-            &.condense-leave-active {
-                transition: opacity $opacity ease-in-out,
-                            transform $transform ease-in-out;
-                opacity: 0;
-                transform: translateY($movement);
-            }
-        }
-
-        .bar-heading {
-            grid-area: title;
-            justify-self: center;
-
-            .coll-title {
-                text-align: center;
-                display: flex;
-                align-items: center;
-
-                h1 {
-                    font-size: 2.4rem;
-                    margin: 0 0 0 1.5rem;
-
-                    @media (max-width: $mobile) {
-                        font-size: 1.9rem;
-                    }
-                }
-
-                & > svg {
-                    flex-shrink: 0;
-                    width: 2rem;
-                    height: 2rem;
-
-                    @media (max-width: $mobile) {
-                        display: none;
-                    }
-                }
-            }
-        }
-
-        .utility-row {
-            grid-area: utility;
-            justify-self: end;
-
-            & > * {
+            & > *:not(:first-child) {
                 margin-left: .5rem;
             }
 
@@ -210,20 +72,23 @@ header.wr-collection-header {
               margin: 0;
               padding: 1rem 2rem;
             }
-        }
 
-        @media (max-width: 1060px) {
-            grid-template-columns: 1fr 1fr;
-            grid-template-areas: "title utility";
+            button#coll-menu {
+              width: 3.2rem;
+              height: 3.2rem;
+              padding: 0;
 
-            .bar-heading {
-                justify-self: start;
-                margin-left: 1rem;
+              svg {
+                width: 1.4rem;
+                height: .6rem;
+              }
             }
         }
-    }
 
-    &.condensed {
-        height: 7.5rem !important;
+        .access-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     }
 }

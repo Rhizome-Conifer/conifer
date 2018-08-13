@@ -88,7 +88,6 @@ class CollectionDetailUI extends Component {
       listBookmarks: props.list.get('bookmarks'),
       sortedBookmarks: props.list.get('bookmarks'),
       overrideHeight: null,
-      scrolled: false,
       selectedPageIdx: null
     };
 
@@ -325,16 +324,6 @@ class CollectionDetailUI extends Component {
     setStorage('columnOrder', JSON.stringify(this.state.columns));
   }
 
-  scrollHandler = ({ clientHeight, scrollHeight, scrollTop }) => {
-    if (scrollHeight > clientHeight * 1.25) {
-      if (scrollTop > 5 && !this.state.scrolled) {
-        this.setState({ scrolled: true });
-      } else if (scrollTop < 5 && this.state.scrolled) {
-        this.setState({ scrolled: false });
-      }
-    }
-  }
-
   toggleHeaderModal = () => {
     this.setState({ headerEditor: !this.state.headerEditor });
   }
@@ -501,7 +490,6 @@ class CollectionDetailUI extends Component {
       }
     };
 
-
     return (
       <div className={classNames('wr-coll-detail', { 'with-list': activeList })}>
         {
@@ -530,12 +518,6 @@ class CollectionDetailUI extends Component {
             <TempUserAlert />
         }
 
-        {
-          activeList ?
-            <ListHeader /> :
-            <CollectionHeader condensed={this.state.scrolled} />
-        }
-
         <Sidebar storageKey="collSidebar">
           <Resizable
             axis="y"
@@ -543,6 +525,7 @@ class CollectionDetailUI extends Component {
             minHeight={200}
             storageKey="collNavigator"
             overrideHeight={this.state.overrideHeight}>
+            <CollectionHeader />
             <Lists
               activeListSlug={activeListSlug}
               collapsibleToggle={this.collapsibleToggle}
@@ -552,102 +535,108 @@ class CollectionDetailUI extends Component {
           <InspectorPanel />
         </Sidebar>
 
-        {
-          !activeList &&
-            <CollectionFilters />
-        }
 
-        <OutsideClick classes="wr-coll-detail-table" handleClick={this.deselect}>
+        <div className="table-container">
           {
-            canAdmin &&
-              <React.Fragment>
-                <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
-                  {/* TODO: placeholder icon */}
-                  <span style={{ display: 'inline-block', fontWeight: 'bold', transform: 'rotateZ(90deg)' }}>...</span>
-                </Button>
-                <Modal
-                  visible={this.state.headerEditor}
-                  closeCb={this.toggleHeaderModal}
-                  dialogClassName="table-header-modal"
-                  header={<h4>Edit Table Columns</h4>}
-                  footer={<Button onClick={this.toggleHeaderModal}>Close</Button>}>
-                  <ul>
-                    {
-                      this.columns.map((coll) => {
-                        return (
-                          <li key={coll}>
-                            <input type="checkbox" onChange={this.toggleColumn} name={coll} id={`add-to-list-${coll}`} checked={this.state.columns.includes(coll) || false} />
-                            <label htmlFor={`add-to-list-${coll}`}>{config.columnLabels[coll] || coll}</label>
-                          </li>
-                        );
-                      })
-                    }
-                  </ul>
-                </Modal>
-              </React.Fragment>
+            activeList ?
+              <ListHeader /> :
+              <div className="collection-header">
+                <h2>Pages</h2>
+                <CollectionFilters />
+              </div>
           }
-          <AutoSizer>
+
+          <OutsideClick classes="wr-coll-detail-table" handleClick={this.deselect}>
             {
-              ({ height, width }) => (
-                <ArrowKeyStepper
-                  rowCount={displayObjects.size}
-                  columnCount={1}
-                  mode="cells"
-                  scrollToRow={typeof selectedPageIdx === 'number' ? selectedPageIdx : 0}
-                  onScrollToChange={this.onKeyNavigate}>
-                  {
-                    ({ onSectionRendered, scrollToRow }) => {
-                      return (
-                        <Table
-                          width={width}
-                          height={height}
-                          rowCount={displayObjects.size}
-                          headerHeight={25}
-                          rowHeight={40}
-                          rowGetter={({ index }) => displayObjects.get(index)}
-                          rowClassName={this.testRowHighlight}
-                          onRowClick={this.onSelectRow}
-                          onRowsRendered={({ startIndex, stopIndex }) => {
-                            onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
-                          }}
-                          onScroll={this.scrollHandler}
-                          rowRenderer={this.customRowRenderer}
-                          sort={activeList ? null : this.sort}
-                          sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
-                          sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
-                          {
-                            this.state.columns.map((c, idx) => {
-                              let props = columnDefs[c];
-                              let collData = {};
-
-                              if (props.hasOwnProperty('columnData')) {
-                                props = Object.assign({}, props);
-                                collData = props.columnData;
-                                delete props.columnData;
-                              }
-
-                              if (!props.label) {
-                                props.label = config.columnLabels[[c]] || c;
-                              }
-
-                              return (
-                                <Column
-                                  headerRenderer={this.customHeaderRenderer}
-                                  index={idx}
-                                  columnData={{ ...collData, index: idx }}
-                                  {...props} />
-                              );
-                            })
-                          }
-                        </Table>
-                      );
-                    }
-                  }
-                </ArrowKeyStepper>
-              )
+              canAdmin &&
+                <React.Fragment>
+                  <Button onClick={this.toggleHeaderModal} className="table-header-menu borderless" bsSize="xs">
+                    {/* TODO: placeholder icon */}
+                    <span style={{ display: 'inline-block', fontWeight: 'bold', transform: 'rotateZ(90deg)' }}>...</span>
+                  </Button>
+                  <Modal
+                    visible={this.state.headerEditor}
+                    closeCb={this.toggleHeaderModal}
+                    dialogClassName="table-header-modal"
+                    header={<h4>Edit Table Columns</h4>}
+                    footer={<Button onClick={this.toggleHeaderModal}>Close</Button>}>
+                    <ul>
+                      {
+                        this.columns.map((coll) => {
+                          return (
+                            <li key={coll}>
+                              <input type="checkbox" onChange={this.toggleColumn} name={coll} id={`add-to-list-${coll}`} checked={this.state.columns.includes(coll) || false} />
+                              <label htmlFor={`add-to-list-${coll}`}>{config.columnLabels[coll] || coll}</label>
+                            </li>
+                          );
+                        })
+                      }
+                    </ul>
+                  </Modal>
+                </React.Fragment>
             }
-          </AutoSizer>
-        </OutsideClick>
+            <AutoSizer>
+              {
+                ({ height, width }) => (
+                  <ArrowKeyStepper
+                    rowCount={displayObjects.size}
+                    columnCount={1}
+                    mode="cells"
+                    scrollToRow={typeof selectedPageIdx === 'number' ? selectedPageIdx : 0}
+                    onScrollToChange={this.onKeyNavigate}>
+                    {
+                      ({ onSectionRendered, scrollToRow }) => {
+                        return (
+                          <Table
+                            width={width}
+                            height={height}
+                            rowCount={displayObjects.size}
+                            headerHeight={25}
+                            rowHeight={40}
+                            rowGetter={({ index }) => displayObjects.get(index)}
+                            rowClassName={this.testRowHighlight}
+                            onRowClick={this.onSelectRow}
+                            onRowsRendered={({ startIndex, stopIndex }) => {
+                              onSectionRendered({ rowStartIndex: startIndex, rowStopIndex: stopIndex })
+                            }}
+                            rowRenderer={this.customRowRenderer}
+                            sort={activeList ? null : this.sort}
+                            sortBy={activeList ? '' : collection.getIn(['sortBy', 'sort'])}
+                            sortDirection={activeList ? null : collection.getIn(['sortBy', 'dir'])}>
+                            {
+                              this.state.columns.map((c, idx) => {
+                                let props = columnDefs[c];
+                                let collData = {};
+
+                                if (props.hasOwnProperty('columnData')) {
+                                  props = Object.assign({}, props);
+                                  collData = props.columnData;
+                                  delete props.columnData;
+                                }
+
+                                if (!props.label) {
+                                  props.label = config.columnLabels[[c]] || c;
+                                }
+
+                                return (
+                                  <Column
+                                    headerRenderer={this.customHeaderRenderer}
+                                    index={idx}
+                                    columnData={{ ...collData, index: idx }}
+                                    {...props} />
+                                );
+                              })
+                            }
+                          </Table>
+                        );
+                      }
+                    }
+                  </ArrowKeyStepper>
+                )
+              }
+            </AutoSizer>
+          </OutsideClick>
+        </div>
       </div>
     );
   }

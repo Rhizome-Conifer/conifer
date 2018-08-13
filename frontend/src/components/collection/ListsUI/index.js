@@ -67,8 +67,7 @@ class ListsUI extends Component {
       created: false,
       isEditing: false,
       edited: false,
-      lists,
-      minimized: false
+      lists
     };
   }
 
@@ -163,10 +162,6 @@ class ListsUI extends Component {
     this.props.sortLists(collection.get('owner'), collection.get('id'), order);
   }
 
-  minimize = () => {
-    this.setState({ minimized: !this.state.minimized });
-  }
-
   pageDropCallback = (page, list, itemType) => {
     const { collection, pages, pageSelection } = this.props;
     const selType = typeof pageSelection;
@@ -204,8 +199,6 @@ class ListsUI extends Component {
     }
   }
 
-  close = () => this.props.collapsibleToggle(false);
-  open = () => this.props.collapsibleToggle(true);
   goToIndex = () => {
     const { collection } = this.props;
     if (this.context.canAdmin || collection.get('public_index')) {
@@ -225,24 +218,9 @@ class ListsUI extends Component {
 
     const publicListCount = lists.filter(l => l.get('public')).size;
 
-    const header = (
-      <SidebarHeader
-        collapsible
-        label="Collection Navigator"
-        callback={this.minimize}
-        closed={this.state.minimized} />
-    );
-
     return (
       <React.Fragment>
-        <Collapsible
-          open
-          transitionTime={300}
-          easing="ease-in-out"
-          classParentString="wr-coll-sidebar"
-          trigger={header}
-          onOpen={this.open}
-          onClose={this.close}>
+        <div className="wr-coll-sidebar">
           <div className={classNames('lists-body', { 'private-coll': !collection.get('public') })}>
             <header className="lists-header">
               <h4><span>Lists</span> ({publicListCount} Public)</h4>
@@ -260,7 +238,7 @@ class ListsUI extends Component {
                   <React.Fragment>
                     <li className={classNames('all-pages', { selected: !activeListSlug })}>
                       <div className={classNames('wrapper', { editable: canAdmin })}>
-                        <Link to={getCollectionLink(collection, true)} title="All pages" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
+                        <Link to={getCollectionLink(collection, true)} title="All pages" className="button-link"><AllPagesIcon /> Pages ({collection.get('pages').size})</Link>
                         {
                           canAdmin &&
                             <VisibilityLamp
@@ -290,7 +268,7 @@ class ListsUI extends Component {
               }
             </ul>
           </div>
-        </Collapsible>
+        </div>
         {
           /* lists edit modal */
           canAdmin &&

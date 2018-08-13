@@ -76,6 +76,8 @@ module.exports = Object.assign({
   storageKey: 'wr__',
   supportEmail: 'support@webrecorder.io',
   tagline: 'Create high-fidelity, interactive web archives of any web site you browse.',
+  truncSentence: new RegExp(/([.!?])/),
+  truncWord: new RegExp(/(\s)/),
   untitledEntry: 'Untitled Document',
   userRegex: new RegExp(/[A-Za-z0-9][\w-]{2,15}/),
   app: {
