@@ -93,6 +93,7 @@ class ListItem extends PureComponent {
   static propTypes = {
     addToList: PropTypes.func,
     collId: PropTypes.string,
+    collPublic: PropTypes.bool,
     collUser: PropTypes.string,
     connectDragSource: PropTypes.func,
     connectDropTarget: PropTypes.func,
@@ -117,7 +118,7 @@ class ListItem extends PureComponent {
 
   render() {
     const { canAdmin } = this.context;
-    const { collId, collUser, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
+    const { collId, collPublic, collUser, connectDragSource, connectDropTarget, isOver, isDragging, list, selected } = this.props;
 
     const title = list.get('title');
     const isPublic = list.get('public');
@@ -134,6 +135,7 @@ class ListItem extends PureComponent {
             canAdmin &&
               <VisibilityLamp
                 callback={this.editVisibility}
+                collPublic={collPublic}
                 isPublic={isPublic}
                 label={`list '${title}'`} />
           }

@@ -258,6 +258,7 @@ class ListsUI extends Component {
                   <ListItem
                     dropCallback={this.pageDropCallback}
                     collId={collection.get('id')}
+                    collPublic={collection.get('public')}
                     collUser={collection.get('owner')}
                     editList={this.sendEditList}
                     index={idx}

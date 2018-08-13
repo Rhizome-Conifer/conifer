@@ -1,5 +1,22 @@
 @import 'src/vars';
-
+.wr-coll-sidebar .lists-body ul li.all-pages .wrapper .visibility-lamp svg{
+    vertical-align: top;
+}
+.private-coll{
+    .visibility-lamp{
+        &.is-public{
+            &:hover > div {
+                border: 1px solid $gray500;
+            }
+            .bulb{
+                color: $gray500;
+            }
+            .lamp{
+                background: $gray500;
+            }
+        }
+    }
+}
 .visibility-lamp {
     position: absolute;
     right: 0;
@@ -12,37 +29,66 @@
         transition: width 165ms ease-in-out;
     }
 
+    &:hover > div{
+        background: $white;
+    }
+
     &:not(.is-public) {
         & > div {
-            transition: width 165ms ease-in-out,
+
+            transition: 165ms ease-in-out,
                         background-color $quickShift ease-in-out;
-            background-color: $gray400;
+            // background-color: $gray400;;
+
         }
 
         &:hover > div {
-            background-color: $gray600;
+            // background-color: $gray600;
+            border:1px solid $gray500;
+        }
+        .bulb{
+            color: $gray500;
+            svg{
+
+            }
         }
     }
 
-    &.is-public > div {
-        background-color: $brightGreen;
+    &.is-public{
+        &:hover > div {
+            border: 1px solid $brightGreen;
+        }
+        .bulb{
+            color: $brightGreen;
+        }
     }
-
-    & > div:first-of-type {
-        width: .7rem;
-        height: 1.4rem;
-        border-radius: .7rem 0 0 .7rem;
+    .lamp{
+         background: $brightGreen;
+         border-radius: 1.4rem;
+         width: 1.4rem;
+         height: 1.4rem;
+         display: inline-block;
+        }
+    & > div{
+        min-width: 2.4rem;
+        text-align: center;
+        height: 2.4rem;
+        padding: 0.4rem;
+        border-radius: 2.4rem;
+        border: 1px solid rgba(0,0,0,0);
     }
-
+    .svg{
+        display: inline-block;
+        vertical-align: top;
+    }
     .bulb {
-        color: #FFF;
         height: 1.4rem;
         overflow:hidden;
         font-size: 1rem;
         text-transform: uppercase;
-
-        display: flex;
-        justify-content: center;
+        display: inline-block;
+        text-align: left;
+        justify-content: left;
         align-items: center;
 
         svg {
@@ -55,13 +101,8 @@
         }
 
         span {
+            padding-right: 0.7rem;
             vertical-align: middle;
         }
-    }
-
-    & > div:last-of-type {
-        width: .7rem;
-        height: 1.4rem;
-        border-radius: 0 .7rem .7rem 0;
     }
 }

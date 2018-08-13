@@ -30,6 +30,7 @@ export TrashIcon from './Trash';
 export TwitterIcon from './Twitter';
 export UploadIcon from './Upload';
 export UserIcon from './User';
+export VisibilityLockIcon from './VisibilityLock'
 export WarcIcon from './Warc';
 export WrBrowser from './WrBrowser';
 export XIcon from './X';

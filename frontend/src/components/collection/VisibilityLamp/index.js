@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import { doubleRAF } from 'helpers/utils';
 
-import { LoaderIcon } from 'components/icons';
+import { LoaderIcon, VisibilityLockIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -103,9 +103,9 @@ class VisibilityLamp extends PureComponent {
   }
 
   render() {
-    const { isPublic, label } = this.props;
+    const { collPublic, isPublic, label } = this.props;
     const { indicator, width } = this.state;
-
+    const staged = collPublic ? 'Public' : 'Staged';
     const help = isPublic ? `set ${label} private` : `set ${label} public`;
 
     return (
@@ -116,15 +116,20 @@ class VisibilityLamp extends PureComponent {
         onMouseOver={this.showStatus}
         onMouseOut={this.hideStatus}
         title={help}>
-        <div />
-        <div ref={(obj) => { this.bulb = obj; }} className="bulb" style={{ width }}>
+        <div>
+          <div ref={(obj) => { this.bulb = obj; }} className="bulb" style={{ width }}>
+            {
+              indicator ?
+                <LoaderIcon /> :
+                <span>{isPublic ? staged : 'Private'}</span>
+            }
+          </div>
           {
-            indicator ?
-              <LoaderIcon /> :
-              <span>{isPublic ? 'Public' : 'Private'}</span>
-          }
+              !isPublic ?
+                <VisibilityLockIcon /> :
+                <div className="lamp" />
+            }
         </div>
-        <div />
       </div>
     );
   }
