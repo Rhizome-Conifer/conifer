@@ -168,6 +168,8 @@ class WebRecCork(Cork):
             cork.create_role('public-archivist', 25)
         if 'mounts-archivist' not in roles:
             cork.create_role('mounts-archivist', 60)
+        if 'opendachs' not in roles:
+            cork.create_role('opendachs', 0)
 
 
 class RedisCorkBackend(object):
