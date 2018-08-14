@@ -9,7 +9,7 @@
     border-width: 0 0 .1rem 0;
     cursor: pointer;
     .Collapsible__contentInner{
-        padding:1.5rem;
+        padding:0 1.5rem;
     }
     .Collapsible__trigger {
         display: inline-block;
@@ -18,7 +18,7 @@
         font-weight: 300;
         width: 95%;
         padding: 1.5rem 1rem 1rem 1rem;
-        margin: 0 0 0.5rem 0.5rem;
+        margin: 0 0 0rem 0.5rem;
         letter-spacing: 0.65pt;
         &.is-open{
             &:after{

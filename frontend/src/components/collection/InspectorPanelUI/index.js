@@ -102,7 +102,7 @@ class InspectorPanelUI extends PureComponent {
                   pg ?
                     <div className="page-metadata">
                       <Collapsible trigger="Page Properties" >
-                        <h4><InfoIcon /> Page Properties</h4>
+
                         <ul>
                           <li>
                             <h5>Page Title</h5>
