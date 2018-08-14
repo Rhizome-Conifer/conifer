@@ -6,17 +6,31 @@
     background: $sidebarHeaderBg;
     padding: 1.5rem 1rem 1rem 1rem;
     margin-bottom: .5rem;
-    border: solid .1rem #CECECE;
+    border: solid .1rem $gray600;
     border-width: 0 0 .1rem 0;
     cursor: pointer;
-    span {
+    .Collapsible__trigger {
         display: inline-block;
         color: $sidebarHeaderLabel;
         font-size: 1.15rem;
         font-weight: 300;
+        width: 95%;
         margin: 0 0 0.5rem 0.5rem;
         letter-spacing: 0.65pt;
+        &.is-open{
+            &:after{
+              transform: rotate(180deg);
+            }
+        }
+        &:after{
+            transition: 0.2s;
+            content: '\25BC';
+            float:right;
+            font-size: 1rem;
+            color: $gray600;
+        }
     }
+
 }
 
 .wr-inspector {
