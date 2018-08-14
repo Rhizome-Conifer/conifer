@@ -1,7 +1,6 @@
 # standard library imports
 import os
 import re
-import six
 import json
 import time
 import base64
@@ -77,10 +76,13 @@ class LoginManagerMixin(object):
         self.temp_prefix = config['temp_prefix']
         mailing_list = os.environ.get('MAILING_LIST', '').lower()
         self.mailing_list = mailing_list in ('true', '1', 'yes')
-        self.default_list_endpoint = os.environ.get('MAILING_LIST_ENDPOINT', '')
+        self.default_list_endpoint = os.environ.get(
+            'MAILING_LIST_ENDPOINT', ''
+        )
         self.list_key = os.environ.get('MAILING_LIST_KEY', '')
         self.list_removal_endpoint = os.path.expandvars(
-                                        os.environ.get('MAILING_LIST_REMOVAL', ''))
+            os.environ.get('MAILING_LIST_REMOVAL', '')
+        )
         self.payload = os.environ.get('MAILING_LIST_PAYLOAD', '')
         self.remove_on_delete = (os.environ.get('REMOVE_ON_DELETE', '')
                                  in ('true', '1', 'yes'))
@@ -88,13 +90,24 @@ class LoginManagerMixin(object):
         self.rate_limit_key = config['rate_limit_key']
         self.rate_limit_max = int(os.environ.get('RATE_LIMIT_MAX', 0))
         self.rate_limit_hours = int(os.environ.get('RATE_LIMIT_HOURS', 0))
-        self.rate_limit_restricted_max = int(os.environ.get('RATE_LIMIT_RESTRICTED_MAX', self.rate_limit_max))
-        self.rate_limit_restricted_hours = int(os.environ.get('RATE_LIMIT_RESTRICTED_HOURS', self.rate_limit_hours))
-        self.rate_restricted_ips = os.environ.get('RATE_LIMIT_RESTRICTED_IPS', '').split(',')
+        self.rate_limit_restricted_max = int(
+            os.environ.get('RATE_LIMIT_RESTRICTED_MAX', self.rate_limit_max)
+        )
+        self.rate_limit_restricted_hours = int(
+            os.environ.get(
+                'RATE_LIMIT_RESTRICTED_HOURS', self.rate_limit_hours
+            )
+        )
+        self.rate_restricted_ips = os.environ.get(
+            'RATE_LIMIT_RESTRICTED_IPS', ''
+        ).split(',')
 
     def add_to_mailing_list(self, username, email, name, list_endpoint=None):
         """3rd party mailing list subscription"""
-        if not (list_endpoint or self.default_list_endpoint) or not self.list_key:
+        if (
+                not (list_endpoint or self.default_list_endpoint)
+                or not self.list_key
+        ):
             print('MAILING_LIST is turned on, but required fields are '
                   'missing.')
             return
@@ -1725,7 +1738,7 @@ class Base(object):
     """Manager base class (in the sense of method definition).
 
     :ivar dict download_paths: path to downloaded files
-    :ivar tuple INT_KEYS: keys of values to convert to int
+    :ivar tuple INT_KEYS: keys of values to cast to int
     """
 
     def __init__(self, config):
@@ -1737,6 +1750,15 @@ class Base(object):
         self.INT_KEYS = ('size', 'created_at', 'updated_at')
 
     def get_content_inject_info(self, user, coll, rec):
+        """Get content information.
+
+        :param str user: username
+        :param str collection: collection name
+        :param str record: record name
+
+        :returns: content information
+        :rtype: dict
+        """
         info = {}
 
         coll_key = self.coll_info_key.format(user=user, coll=coll)
@@ -1778,6 +1800,13 @@ class Base(object):
         return info
 
     def _format_info(self, result):
+        """Cast values to int.
+
+        :param dict result: dict containing values
+
+        :returns: result
+        :rtype: dict containing cast values
+        """
         if not result:
             return {}
 
@@ -1785,16 +1814,27 @@ class Base(object):
         return result
 
     def _to_int(self, result):
+        """Cast values to int.
+
+        :param dict result: dict containing values
+
+        :returns: result
+        :rtype: dict containing cast values
+        """
         for x in self.INT_KEYS:
             if x in result:
                 result[x] = int(result[x])
         return result
 
     def get_host(self):
+        """Get host.
+
+        :returns: host
+        :rtype: str
+        """
         return request.urlparts.scheme + '://' + request.urlparts.netloc
 
 
-# ============================================================================
 class RedisDataManager(
         AccessManagerMixin, CollManagerMixin, DeleteManagerMixin,
         LoginManagerMixin, PageManagerMixin, RecManagerMixin, Base

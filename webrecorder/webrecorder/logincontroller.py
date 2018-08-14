@@ -1,15 +1,18 @@
+# standard library imports
 import os
 import json
 
-from bottle import request
 from os.path import expandvars
 
+# third party imports
+from six.moves.urllib.parse import quote
+from bottle import request
+
+# library specific imports
 from webrecorder.webreccork import ValidationException
 from webrecorder.basecontroller import BaseController
-from six.moves.urllib.parse import quote
 
 
-# ============================================================================
 LOGIN_PATH = '/_login'
 LOGIN_MODAL_PATH = '/_login_modal'
 
@@ -31,7 +34,6 @@ UPDATE_PASS_PATH = '/_updatepassword'
 SETTINGS = '/_settings'
 
 
-# ============================================================================
 class LoginController(BaseController):
     def __init__(self, *args, **kwargs):
         config = kwargs.get('config')
@@ -104,6 +106,7 @@ class LoginController(BaseController):
                         self.flash_message('Collection <b>{0}</b> created!'.format(new_title), 'success')
                 except:
                     import traceback
+
                     traceback.print_exc()
 
             remember_me = (self.post_get('remember_me') == '1')
@@ -309,6 +312,7 @@ class LoginController(BaseController):
 
             except Exception as e:
                 import traceback
+
                 traceback.print_exc()
                 self.flash_message('Sorry, this is not a valid registration code. Please try again.')
                 redir_to = REGISTER_PATH

@@ -1,6 +1,5 @@
 # standard library imports
 import os
-import re
 from functools import wraps
 
 # third party imports
@@ -15,12 +14,12 @@ class BaseController(object):
     """Controller (base class).
 
     :ivar Bottle app: bottle application
-    :ivar jinja_env: n.s.
+    :ivar jinja_env: Jinja2 environment
     :ivar manager: n.s.
-    :ivar dict config: n.s.
+    :ivar dict config: Webrecorder configuration
     :ivar str app_host: application host
     :ivar str content_host: content host
-    :ivar cache_template: n.s.
+    :ivar cache_template: Redis key template
     :ivar bool anon_disabled: whether anonymous recording is enabled
     """
 
@@ -30,7 +29,7 @@ class BaseController(object):
         :param Bottle app: bottle application
         :param Environment jinja_env: Jinja2 environment
         :param manager: n.s.
-        :param dict config: n.s.
+        :param dict config: Webrecorder configuration
         """
         self.app = app
         self.jinja_env = jinja_env
@@ -48,7 +47,11 @@ class BaseController(object):
         raise NotImplementedError
 
     def redir_host(self, host=None, path=None):
-        """Cause a 303 or 302 redirect to the application host."""
+        """Cause a 303 or 302 redirect to the application host.
+
+        :param str host: host
+        :param str path: path
+        """
         if not host:
             host = self.app_host
 
@@ -57,7 +60,10 @@ class BaseController(object):
 
         url = request.environ['wsgi.url_scheme'] + '://' + host
         if not path:
-            path = request.environ.get('SCRIPT_NAME', '') + request.environ['PATH_INFO']
+            path = (
+                request.environ.get('SCRIPT_NAME', '') +
+                request.environ['PATH_INFO']
+            )
             if request.query_string:
                 path += '?' + request.query_string
 
@@ -85,8 +91,9 @@ class BaseController(object):
             self.redir_host()
         user = request.query.getunicode('user')
         if not user:
-            self._raise_error(400, 'User must be specified',
-                              api=api)
+            self._raise_error(
+                400, 'User must be specified', api=api
+            )
 
         if user == '$temp':
             return self.manager.get_anon_user(True)
@@ -129,7 +136,7 @@ class BaseController(object):
 
         :param int code: status code
         :param str message: body
-        :param bool api: n.s.
+        :param bool api: toggle json_err attribute on/off
         """
         result = {'error_message': message}
         result.update(kwargs)
@@ -235,6 +242,11 @@ class BaseController(object):
         return res
 
     def get_host(self):
+        """Get host.
+
+        :returns: host
+        :rtype: str
+        """
         return self.manager.get_host()
 
     def redirect(self, url):
@@ -248,7 +260,13 @@ class BaseController(object):
         return bottle_redirect(url)
 
     def jinja2_view(self, template_name, refresh_cookie=True):
+        """Decorator factory.
+
+        :param str template_name: template
+        :param bool refresh_cookie: toggle refresh on/off
+        """
         def decorator(view_func):
+            #: @wraps preserves attributes such as __name__ and __doc__
             @wraps(view_func)
             def wrapper(*args, **kwargs):
                 resp = view_func(*args, **kwargs)
@@ -258,7 +276,9 @@ class BaseController(object):
                     if ctx_params:
                         resp.update(ctx_params)
 
-                    template = self.jinja_env.jinja_env.get_or_select_template(template_name)
+                    template = self.jinja_env.jinja_env.get_or_select_template(
+                        template_name
+                    )
                     return template.render(**resp)
                 else:
                     return resp
@@ -288,9 +308,24 @@ class BaseController(object):
         return sanitize_title(title)
 
     def get_view_user(self, user):
+        """Get user.
+
+        :param str user: user
+
+        :returns: user
+        :rtype: str
+        """
         return user
 
     def get_body_class(self, context, action):
+        """Get class(es).
+
+        :param Context context: active context
+        :param str action: action
+
+        :returns: class(es)
+        :rtype: str
+        """
         classes = []
 
         if action in ["add_to_recording", "new_recording"]:

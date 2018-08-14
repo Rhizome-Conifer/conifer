@@ -1,17 +1,31 @@
+# standard library imports
 import json
+
+# third party imports
 import requests
-
-from bottle import request, response
 from six.moves.urllib.parse import quote
+from bottle import request, response
 
-from webrecorder.basecontroller import BaseController
+# library specific imports
 from webrecorder.webreccork import ValidationException
+from webrecorder.basecontroller import BaseController
 
 
-# ============================================================================
 class CollsController(BaseController):
+    """Collection controller.
+
+    :ivar str default_coll_desc: collection description
+    """
+
     def __init__(self, app, jinja_env, manager, config):
-        super(CollsController, self).__init__(app, jinja_env, manager, config)
+        """Initialize collection controller.
+
+        :param Bottle app: bottle application
+        :param Environment jinja_env: Jinja2 environment
+        :param manager: n.s.
+        :param dict config: Webrecorder configuration
+        """
+        super().__init__(app, jinja_env, manager, config)
         self.default_coll_desc = config['coll_desc']
 
     def init_routes(self):

@@ -1,3 +1,4 @@
+
 import requests
 import gevent
 from bottle import request
@@ -6,7 +7,6 @@ import socket
 import os
 
 
-# ============================================================================
 class BrowserManager(object):
     def __init__(self, config, browser_redis, content_app):
         self.browser_redis = browser_redis
@@ -165,7 +165,9 @@ class BrowserManager(object):
         except:
             return {'error_message': 'Not a writable browser'}
 
-        self.fill_upstream_url(container_data, container_data.get('request_ts'))
+        self.fill_upstream_url(
+            container_data, container_data.get('request_ts')
+        )
 
         self.browser_redis.hmset('ip:' + ip, container_data)
 

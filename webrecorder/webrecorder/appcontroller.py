@@ -68,7 +68,6 @@ class AppController(BaseController):
         :param str redis_url: Redis URL
         """
         self._init_logging()
-        # TODO sys does not have attribute 'frozen'
         if getattr(sys, 'frozen', False):
             self.static_root = os.path.join(
                 sys._MEIPASS, 'webrecorder', 'static/'
