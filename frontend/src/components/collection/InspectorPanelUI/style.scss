@@ -19,11 +19,10 @@
         letter-spacing: 0.65pt;
         &.is-open{
             &:after{
-              transform: rotate(180deg);
+              transform: scaleY(-1);
             }
         }
         &:after{
-            transition: 0.2s;
             content: '\25BC';
             float:right;
             font-size: 1rem;
