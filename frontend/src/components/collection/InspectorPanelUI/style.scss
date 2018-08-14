@@ -4,7 +4,6 @@
     // display: flex;
     // justify-content: space-between;
     background: $sidebarHeaderBg;
-    padding: 1.5rem 1rem 1rem 1rem;
     margin-bottom: .5rem;
     border: solid .1rem $gray600;
     border-width: 0 0 .1rem 0;
@@ -15,6 +14,7 @@
         font-size: 1.15rem;
         font-weight: 300;
         width: 95%;
+        padding: 1.5rem 1rem 1rem 1rem;
         margin: 0 0 0.5rem 0.5rem;
         letter-spacing: 0.65pt;
         &.is-open{
