@@ -78,6 +78,13 @@ def create_user(
             pipeline.hset(key, "created_at", int(time.time()))
             pipeline.hset(key, "name", "OpenDACHS ticket")
             pipeline.hsetnx(key, "size", 0)
+        manager.create_collection(
+            username,
+            coll=manager.default_coll["id"],
+            coll_title=manager.default_coll["title"],
+            desc=manager.default_coll["desc"].format(username),
+            public=False
+        )
     except Exception as exception:
         raise RuntimeError("failed to create user\t: {}".format(exception))
     return
