@@ -8,6 +8,9 @@
     border: solid .1rem $gray600;
     border-width: 0 0 .1rem 0;
     cursor: pointer;
+    .Collapsible__contentInner{
+        padding:1.5rem;
+    }
     .Collapsible__trigger {
         display: inline-block;
         color: $sidebarHeaderLabel;
@@ -95,7 +98,6 @@
 
         .page-metadata {
             background: $gray200;
-            padding: 1.5rem;
             flex-grow: 1;
 
             h4 > svg {
