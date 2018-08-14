@@ -31,7 +31,9 @@
     }
 
 }
-
+.wr-resizeable .resizable-handle.y{
+    padding: 0.8rem 0 0.3rem 0rem;
+}
 .wr-inspector {
     flex-grow: 1;
     display: flex;
