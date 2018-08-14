@@ -119,7 +119,7 @@
                     position: relative;
 
                     &.editable {
-                        padding-right: 1.9rem;
+                        padding-right: 2.4rem;
                     }
 
                     svg {
@@ -140,11 +140,12 @@
                     .bookmark-count {
                         font-feature-settings: 'tnum';
                         margin: 0 .5rem;
-                        margin-left: -5.7rem;
+
                         &:before {
                             content: '(';
                             padding-right: .1rem;
                         }
+
                         &:after {
                             content: ')';
                             padding-left: .1rem;

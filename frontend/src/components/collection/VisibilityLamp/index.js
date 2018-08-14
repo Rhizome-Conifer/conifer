@@ -12,6 +12,7 @@ import './style.scss';
 class VisibilityLamp extends PureComponent {
   static propTypes = {
     callback: PropTypes.func,
+    collPublic: PropTypes.bool,
     isPublic: PropTypes.bool,
     label: PropTypes.string
   };
@@ -25,6 +26,7 @@ class VisibilityLamp extends PureComponent {
       editing: false,
       exited: false,
       indicator: false,
+      open: false,
       width: 'auto'
     };
   }
@@ -53,6 +55,7 @@ class VisibilityLamp extends PureComponent {
         this.setState({
           origWidth: bcr.width,
           width: this.state.exited ? 0 : bcr.width,
+          open: !this.state.exited,
           exited: false
         });
       });
@@ -68,6 +71,7 @@ class VisibilityLamp extends PureComponent {
     clearTimeout(this.handle);
     this.handle = setTimeout(() => {
       this.setState({
+        open: true,
         width: this.state.origWidth
       });
     }, 30);
@@ -82,6 +86,7 @@ class VisibilityLamp extends PureComponent {
     clearTimeout(this.handle);
     this.handle = setTimeout(() => {
       this.setState({
+        open: false,
         width: 0
       });
     }, 30);
@@ -111,25 +116,23 @@ class VisibilityLamp extends PureComponent {
     return (
       <div
         aria-label={help}
-        className={classNames('visibility-lamp', { 'is-public': isPublic })}
+        className={classNames('visibility-lamp', { 'is-public': isPublic, open: this.state.open || this.state.exited })}
         onClick={this.toggle}
         onMouseOver={this.showStatus}
         onMouseOut={this.hideStatus}
         title={help}>
-        <div>
-          <div ref={(obj) => { this.bulb = obj; }} className="bulb" style={{ width }}>
-            {
-              indicator ?
-                <LoaderIcon /> :
-                <span>{isPublic ? staged : 'Private'}</span>
-            }
-          </div>
+        <div ref={(obj) => { this.bulb = obj; }} className="bulb" style={{ width }}>
           {
-              !isPublic ?
-                <LockIcon /> :
-                <div className="lamp" />
-            }
+            indicator ?
+              <LoaderIcon /> :
+              <span>{isPublic ? staged : 'Private'}</span>
+          }
         </div>
+        {
+          !isPublic ?
+            <LockIcon /> :
+            <div className="lamp" />
+        }
       </div>
     );
   }

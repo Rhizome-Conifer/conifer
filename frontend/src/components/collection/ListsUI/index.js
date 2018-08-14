@@ -235,6 +235,7 @@ class ListsUI extends Component {
                         canAdmin &&
                           <VisibilityLamp
                             callback={this.toggleIndexVisibility}
+                            collPublic={collection.get('public')}
                             isPublic={publicIndex}
                             label="page index" />
                       }

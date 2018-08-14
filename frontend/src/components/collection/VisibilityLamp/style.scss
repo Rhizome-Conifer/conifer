@@ -1,25 +1,32 @@
 @import 'src/vars';
-.wr-coll-sidebar .lists-body ul li.all-pages .wrapper .visibility-lamp svg{
+
+.wr-coll-sidebar .lists-body ul li .wrapper .visibility-lamp svg {
     vertical-align: top;
-    g > g{
-            fill: $gray500;
-        }
+    g > g {
+        fill: $gray500;
+    }
 }
-.private-coll{
-    .visibility-lamp{
-        &.is-public{
-            &:hover > div {
+
+.wr-coll-sidebar .lists-body ul li.all-pages .wrapper .visibility-lamp svg {
+    vertical-align: top;
+}
+
+.private-coll {
+    .visibility-lamp {
+        &.is-public {
+            &.open {
                 border: 1px solid $gray500;
             }
-            .bulb{
+            .bulb {
                 color: $gray500;
             }
-            .lamp{
+            .lamp {
                 background: $gray500;
             }
         }
     }
 }
+
 .visibility-lamp {
     position: absolute;
     right: 0;
@@ -28,71 +35,71 @@
     margin-right: .5rem;
     cursor: pointer;
 
-    & > div {
-        transition: width 165ms ease-in-out;
-    }
+    transition: background $quickShift ease-in-out;
+    min-width: 2.4rem;
+    text-align: center;
+    height: 2.4rem;
+    padding: 0.4rem;
+    border-radius: 2.4rem;
+    border: 1px solid rgba(0,0,0,0);
 
-    &:hover > div{
+    &.open {
         background: $white;
     }
 
     &:not(.is-public) {
-        & > div {
-
-            transition: 165ms ease-in-out,
-                        background-color $quickShift ease-in-out;
-            // background-color: $gray400;;
-
-        }
-
-        &:hover > div {
-            // background-color: $gray600;
+        &.open {
             border:1px solid $gray500;
-        }
-        .bulb{
-            color: $gray500;
-            svg{
 
+            .bulb > span {
+                opacity: 1;
             }
+        }
+
+        .bulb {
+            color: $gray500;
         }
     }
 
-    &.is-public{
-        &:hover > div {
+    &.is-public {
+        &.open {
             border: 1px solid $brightGreen;
+
+            .bulb > span {
+                opacity: 1;
+            }
         }
-        .bulb{
+
+        .bulb {
             color: $brightGreen;
         }
     }
-    .lamp{
+
+    .lamp {
          background: $brightGreen;
          border-radius: 1.4rem;
          width: 1.4rem;
          height: 1.4rem;
          display: inline-block;
-        }
-    & > div{
-        min-width: 2.4rem;
-        text-align: center;
-        height: 2.4rem;
-        padding: 0.4rem;
-        border-radius: 2.4rem;
-        border: 1px solid rgba(0,0,0,0);
     }
-    .svg{
+
+    & > div{
+
+    }
+
+    .svg {
         display: inline-block;
         vertical-align: top;
-
-
     }
+
     .bulb {
+        transition: width $midShift ease-in-out;
         height: 1.4rem;
         overflow:hidden;
         font-size: 1rem;
         text-transform: uppercase;
         display: inline-block;
-        text-align: left;
+        text-align: center;
         justify-content: left;
         align-items: center;
 
@@ -105,9 +112,16 @@
             }
         }
 
+        .wr-loader {
+            path {
+                fill: #000;
+            }
+        }
+
         span {
+            transition: opacity $midShift ease-in-out;
             padding-right: 0.4rem;
-            vertical-align: middle;
+            opacity: 0;
         }
     }
 }
