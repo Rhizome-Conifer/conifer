@@ -813,7 +813,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         this.queue = function(buffer) {
             if (this.buffSize > 20000) {
                 if (this.buffCount > 0) {
-                    res = this.buffQ.shift();
+                    var res = this.buffQ.shift();
                     this.buffSize -= res.length;
                     console.log("dropping old buffers");
                 } else {
