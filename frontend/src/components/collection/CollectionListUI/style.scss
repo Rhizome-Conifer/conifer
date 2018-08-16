@@ -4,7 +4,7 @@
     margin-top: 5rem;
 
     button + button {
-        margin-left: .5rem;
+        margin-left: 1.6rem;
     }
 }
 
@@ -35,8 +35,14 @@ a.collection-title:hover{
         background: rgba(0,0,0,0);
     }
     svg{
-        width: 1.4rem;
-        height: 1.4rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        vertical-align: sub;
+
+        path,polygon{
+            fill: $gray600;
+            stroke: $gray600;
+        }
     }
 }
 .collection-description {
@@ -75,6 +81,7 @@ a.collection-title:hover{
         }
         span {
             word-wrap: break-word;
+            color:$gray500;
         }
     }
 
@@ -147,7 +154,7 @@ a.collection-title:hover{
             padding: 0.6rem 2rem;
         }
         .rounded.expandable-button{
-            padding: 0.6rem 0.8rem;
+            padding: 0.6rem 1.6rem;
             margin-left: 0.6rem;
             svg{
                 margin-bottom:2px;
