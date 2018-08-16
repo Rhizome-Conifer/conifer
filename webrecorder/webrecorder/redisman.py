@@ -559,6 +559,7 @@ class AccessManagerMixin(object):
     :ivar admin_view: decorator to be used for authentication/authorization
     :ivar auth_view: decorator to be used for authentication/authorization
     :ivar beta_user: decorator to be used for authentication/authorization
+    :ivar opendachs: decorator to be used for authentication/authorization
     """
     READ_PREFIX = 'r:'
     WRITE_PREFIX = 'w:'
@@ -577,6 +578,9 @@ class AccessManagerMixin(object):
         )
         self.beta_user = self.cork.make_auth_decorator(
             role='beta-archivist', fail_redirect='/_login'
+        )
+        self.opendachs = self.cork.make_auth_decorator(
+            role='opendachs', fail_redirect='/_login'
         )
 
     def is_anon(self, user):
@@ -795,7 +799,7 @@ class AccessManagerMixin(object):
 
     def assert_logged_in(self):
         try:
-            self.cork.require(role='archivist')
+            self.cork.require(role='opendachs')
         except Exception:
             raise HTTPError(404, 'Not Logged In')
 
