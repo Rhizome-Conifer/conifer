@@ -536,7 +536,7 @@ class AdminController(BaseController):
                 role=data['role'],
                 passwd=data['password'],
                 passwd2=data['password'],
-                name=data.get('name', ''))
+                name=data.get('full_name', ''))
 
             # validate
             if errs:

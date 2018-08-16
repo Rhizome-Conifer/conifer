@@ -411,7 +411,7 @@ class TestApiUserLogin(FullStackTests):
 
     def test_update_user_desc(self):
         params = {'desc': 'New Description',
-                  'display_name': 'Some User',
+                  'full_name': 'Some User',
                   'display_url': 'http://someuser.example.com/'}
 
         res = self.testapp.post_json('/api/v1/user/someuser', params=params)
@@ -427,7 +427,7 @@ class TestApiUserLogin(FullStackTests):
 
         assert user['username'] == 'someuser'
         assert user['desc'] == 'New Description'
-        assert user['display_name'] == 'Some User'
+        assert user['full_name'] == 'Some User'
         assert user['display_url'] == 'http://someuser.example.com/'
 
         # collections not included
