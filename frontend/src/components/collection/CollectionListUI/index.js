@@ -122,13 +122,14 @@ class CollectionListUI extends Component {
               (user.get('display_url') || canAdmin) &&
                 <InlineEditor
                   canAdmin={canAdmin}
-                  initial={user.get('display_url') || ''}
+                  initial={user.get('display_url') || 'Add website...'}
+                  placeholder={'Add website...'}
                   onSave={this.editURL}
                   readOnly={isAnon || !canAdmin}
                   success={this.props.edited}>
                   <div className="user-link">
                     <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon /></a>
-                    <span>{user.get('display_url')}</span>
+                    <span>{user.get('display_url') || 'Add website...'}</span>
                   </div>
                 </InlineEditor>
             }
@@ -136,7 +137,7 @@ class CollectionListUI extends Component {
               key={user.get('id')}
               initial={user.get('desc') || ''}
               onSave={this.updateUser}
-              placeholder={'Add a description'}
+              placeholder={'Add a description...'}
               clickToEdit
               readOnly={isAnon || !canAdmin}
               success={this.props.edited} />
