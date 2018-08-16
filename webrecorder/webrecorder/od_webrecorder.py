@@ -34,7 +34,7 @@ from webrecorder.redisman import init_manager_for_cli
 
 def create_user(
         username, password, email_addr,
-        role="opendachs", desc="OpenDACHS ticket account"
+        role="opendachs", desc='{"name": "Ticket"}'
 ):
     """Create user.
 
@@ -69,22 +69,20 @@ def create_user(
         }
         manager.cork._store.save_users()
         key = manager.user_key.format(user=username)
-        max_size = manager.redis.hmget(
-            "h:defaults", ["max_size"]
-        )
         with redis_pipeline(manager.redis) as pipeline:
-            pipeline.hset(key, "max_size", max_size)
+            pipeline.hset(key, "max_size", manager.default_max_size)
             pipeline.hset(key, "max_coll", 1)
             pipeline.hset(key, "created_at", int(time.time()))
-            pipeline.hset(key, "name", "OpenDACHS ticket")
+            pipeline.hset(key, "name", "Ticket")
             pipeline.hsetnx(key, "size", 0)
-        manager.create_collection(
-            username,
-            coll=manager.default_coll["id"],
-            coll_title=manager.default_coll["title"],
-            desc=manager.default_coll["desc"].format(username),
-            public=False
-        )
+        if manager.default_coll:
+            manager.create_collection(
+                username,
+                coll=manager.default_coll["id"],
+                coll_title=manager.default_coll["title"],
+                desc=manager.default_coll["desc"].format(username),
+                public=False
+            )
     except Exception as exception:
         raise RuntimeError("failed to create user\t: {}".format(exception))
     return
