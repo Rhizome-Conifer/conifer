@@ -29,8 +29,8 @@ class User(RedisUniqueComponent):
     URL_SKIP_KEY = 'us:{user}:s:{url}'
     SKIP_KEY_SECS = 330
 
-    SERIALIZE_PROPS = ['desc', 'display_name', 'display_url']
-    SERIALIZE_FULL_PROPS = SERIALIZE_PROPS + ['name', 'role', 'last_login', 'updated_at', 'created_at', 'timespan', 'size', 'max_size']
+    SERIALIZE_PROPS = ['desc', 'display_url']
+    SERIALIZE_FULL_PROPS = SERIALIZE_PROPS + ['role', 'last_login', 'updated_at', 'created_at', 'timespan', 'size', 'max_size']
 
     @classmethod
     def init_props(cls, config):
@@ -220,7 +220,12 @@ class User(RedisUniqueComponent):
         all_data = super(User, self).serialize(include_duration=full)
 
         data = {'username': self.name}
+
         allowed_props = self.SERIALIZE_PROPS if not full else self.SERIALIZE_FULL_PROPS
+
+        full_name = all_data.get('name')
+        if full_name:
+            data['full_name'] = full_name
 
         for prop in allowed_props:
             if prop in all_data:
