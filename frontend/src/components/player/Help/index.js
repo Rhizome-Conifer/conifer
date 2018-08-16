@@ -28,7 +28,7 @@ class Help extends Component {
   }
 
   handleVersionResponse = (evt, arg) => {
-    this.setState({ version: arg.version });
+    this.setState({ version: arg.config.version });
   }
 
   render() {
