@@ -58,7 +58,7 @@ class TestDatShare(FullStackTests):
                   'password': 'TestTest123'}
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
-        assert res.json['username'] == 'test'
+        assert res.json['user']['username'] == 'test'
 
         res = self.testapp.get('/test/default-collection')
         res.charset = 'utf-8'
