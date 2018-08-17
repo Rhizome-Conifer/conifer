@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 
 import './style.scss';
 
@@ -15,7 +16,12 @@ class Help extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { version: null };
+    this.state = {
+      version: null,
+      stdout: null,
+      showDebug: true,
+      debugHeight: null,
+    };
   }
 
   componentWillMount() {
@@ -28,11 +34,20 @@ class Help extends Component {
   }
 
   handleVersionResponse = (evt, arg) => {
-    this.setState({ version: arg.config.version });
+    const { version } = arg.config;
+    const { stdout } = arg;
+    this.setState({ version, stdout });
+    console.log(arg)
+    setTimeout(this.update, 100);
+  }
+
+
+  update = () => {
+    this.setState({ debugHeight: this.debugBin.getBoundingClientRect().height, showDebug: false });
   }
 
   render() {
-    const { version } = this.state;
+    const { debugHeight, showDebug, stdout, version } = this.state;
 
     return (
       <div className="help-container" key="help">
@@ -62,7 +77,12 @@ class Help extends Component {
 
           <h5>Version Info</h5>
           <p id="stack-version" dangerouslySetInnerHTML={{ __html: version || 'Loading...' }} />
-
+          <h5 className="debug-heading">Additional Debug Info</h5>
+          <div
+            className={classNames('stdout-debug', 'open')}
+            ref={(obj) => { this.debugBin = obj; }}>
+            <p dangerouslySetInnerHTML={{ __html: stdout || 'No additional info' }} />
+          </div>
           <div className="support">
             <hr />
             <p>Major support for the Webrecorder initiative is provided by <a href="https://mellon.org/grants/grants-database/grants/rhizome-communications-inc/41500666/" target="_blank">The Andrew W. Mellon Foundation.</a></p>
