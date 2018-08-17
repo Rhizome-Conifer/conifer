@@ -37,9 +37,13 @@ class Help extends Component {
     const { version } = arg.config;
     const { stdout } = arg;
     this.setState({ version, stdout });
+
     setTimeout(this.update, 100);
   }
 
+  toggleDebug = () => {
+    this.setState({ showDebug: !this.state.showDebug})
+  }
 
   update = () => {
     this.setState({ debugHeight: this.debugBin.getBoundingClientRect().height, showDebug: false });
@@ -77,9 +81,11 @@ class Help extends Component {
           <h5>Version Info</h5>
           <p id="stack-version" dangerouslySetInnerHTML={{ __html: version || 'Loading...' }} />
           <h5 className="debug-heading">Additional Debug Info</h5>
+          <button className="debug-toggle" onClick={this.toggleDebug}>{ showDebug ? 'collapse' : 'expand' }</button>
           <div
-            className={classNames('stdout-debug', 'open')}
-            ref={(obj) => { this.debugBin = obj; }}>
+            className={classNames('stdout-debug', { open: showDebug })}
+            ref={(obj) => { this.debugBin = obj; }}
+            style={isNaN(debugHeight) ? {} : { height: showDebug ? debugHeight : 0 }}>
             <p dangerouslySetInnerHTML={{ __html: stdout || 'No additional info' }} />
           </div>
           <div className="support">

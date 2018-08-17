@@ -73,4 +73,45 @@
   .support p {
     font-size: 1.3rem;
   }
+    .debug-heading {
+    display: inline-block;
+  }
+
+  .debug-toggle {
+    transition: border-color 125ms ease-in-out,
+                color 125ms ease-in-out;
+    background: none;
+    border: solid 1px black;
+    color: black;
+    margin-left: 1rem;
+    border-radius: .3rem;
+    vertical-align: text-bottom;
+    padding: 0 .5rem;
+
+    &:hover {
+      color: blue;
+      border-color: blue;
+    }
+  }
+
+  .stdout-debug {
+    transition: height 300ms ease-in-out;
+    background-color: rgb(240,240,240);
+    max-height: 50rem;
+    margin-top: 1rem;
+
+    &.open {
+      overflow: auto;
+    }
+
+    &:not(.open) {
+      overflow: hidden;
+    }
+
+    & > p {
+      margin: 0;
+      padding: 1.5rem;
+    }
+  }
+
 }
