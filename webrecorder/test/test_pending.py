@@ -6,6 +6,16 @@ import gevent
 
 # ============================================================================
 class TestPending(FullStackTests):
+    def get_pending_count(self, rec):
+        key = 'r:{0}:_pc'.format(rec)
+        assert self.redis.ttl(key) > 0
+        return int(self.redis.get(key))
+
+    def get_pending_size(self, rec):
+        key = 'r:{0}:_ps'.format(rec)
+        assert self.redis.ttl(key) > 0
+        return int(self.redis.get(key))
+
     def test_record_check_pending_1(self):
         self.set_uuids('Recording', ['rec'])
         url = 'http://httpbin.org/drip'
@@ -19,8 +29,8 @@ class TestPending(FullStackTests):
         ge_req = gevent.spawn(wait_for_res, res)
 
         def assert_pending():
-            assert int(self.redis.hget('r:rec:info', 'pending_count')) == 2
-            assert int(self.redis.hget('r:rec:info', 'pending_size')) > 0
+            assert self.get_pending_count('rec') == 2
+            assert self.get_pending_size('rec') > 0
 
         self.sleep_try(0.2, 10.0, assert_pending)
 
@@ -29,12 +39,16 @@ class TestPending(FullStackTests):
         res = ge_req.value
 
         # pending size and count should be 0
-        assert int(self.redis.hget('r:rec:info', 'pending_count')) == 0
-        assert int(self.redis.hget('r:rec:info', 'pending_size')) == 0
+        assert self.get_pending_count('rec') == 0
+        assert self.get_pending_size('rec') == 0
+
         TestPending.size = int(self.redis.hget('r:rec:info', 'size'))
         assert TestPending.size > 0
 
     def test_record_delete_while_pending_request(self):
+        anon_dir = os.path.join(self.warcs_dir, self.anon_user)
+        assert len(os.listdir(anon_dir)) == 1
+
         self.set_uuids('Recording', ['rec-a'])
         url = 'http://httpbin.org/delay/2'
         res = self.testapp.get('/_new/temp/rec-a/record/mp_/' + url)
@@ -49,10 +63,16 @@ class TestPending(FullStackTests):
 
         def assert_pending():
             # waiting for request, pending_count max of 1
-            assert int(self.redis.hget('r:rec-a:info', 'pending_count')) == 1
-            assert int(self.redis.hget('r:rec-a:info', 'pending_size')) > 0
+            assert self.get_pending_count('rec-a') == 1
+            assert self.get_pending_size('rec-a') > 0
 
         self.sleep_try(0.2, 10.0, assert_pending)
+
+        # warc written
+        def assert_written():
+            assert len(os.listdir(anon_dir)) == 2
+
+        self.sleep_try(0.2, 10.0, assert_written)
 
         res = self.testapp.delete('/api/v1/recording/rec-a?user={user}&coll=temp'.format(user=self.anon_user))
 
@@ -66,6 +86,15 @@ class TestPending(FullStackTests):
 
         # rec info should be empty, as recording has been deleted
         assert self.redis.hgetall('r:rec-a:info') == {}
+        assert not self.redis.exists('r:rec-a:_pc')
+        assert not self.redis.exists('r:rec-a:_ps')
+
+        def assert_deleted():
+            assert self.redis.hgetall('r:rec-a:info') == {}
+            assert len(os.listdir(anon_dir)) == 1
+
+        self.sleep_try(0.2, 10.0, assert_deleted)
+
 
     def test_record_delete_while_pending_response(self):
         self.set_uuids('Recording', ['rec-a'])
@@ -81,8 +110,8 @@ class TestPending(FullStackTests):
 
         def assert_pending():
             # waiting for response, pending count includes request
-            assert int(self.redis.hget('r:rec-a:info', 'pending_count')) == 2
-            assert int(self.redis.hget('r:rec-a:info', 'pending_size')) > 0
+            assert self.get_pending_count('rec-a') == 2
+            assert self.get_pending_size('rec-a') > 0
 
         self.sleep_try(0.2, 10.0, assert_pending)
 
@@ -111,8 +140,8 @@ class TestPending(FullStackTests):
         assert res.json['rec_name'] != ''
 
         def assert_pending():
-            assert int(self.redis.hget('r:rec-a:info', 'pending_count')) > 0
-            assert int(self.redis.hget('r:rec-a:info', 'pending_size')) > 0
+            assert self.get_pending_count('rec-a') > 0
+            assert self.get_pending_size('rec-a') > 0
 
         # SAME URL (DEDUP)
         def wait_for_res(res):
@@ -126,8 +155,8 @@ class TestPending(FullStackTests):
         gevent.joinall(ge_reqs)
 
         # pending size & count should be empty
-        assert int(self.redis.hget('r:rec-a:info', 'pending_count')) == 0
-        assert int(self.redis.hget('r:rec-a:info', 'pending_size')) == 0
+        assert self.get_pending_count('rec-a') == 0
+        assert self.get_pending_size('rec-a') == 0
 
         # assert 1 cdxj entry (deduped)
         assert int(self.redis.zcard('r:rec-a:cdxj')) == 1
@@ -145,8 +174,8 @@ class TestPending(FullStackTests):
         gevent.joinall(ge_reqs)
 
         # pending size & count should be empty
-        assert int(self.redis.hget('r:rec-a:info', 'pending_count')) == 0
-        assert int(self.redis.hget('r:rec-a:info', 'pending_size')) == 0
+        assert self.get_pending_count('rec-a') == 0
+        assert self.get_pending_size('rec-a') == 0
 
         # assert 6 cdxj entries
         assert int(self.redis.zcard('r:rec-a:cdxj')) == 6
@@ -163,6 +192,7 @@ class TestPending(FullStackTests):
         def assert_deleted():
             assert self.redis.hgetall('r:rec-a:info') == {}
             anon_dir = os.path.join(self.warcs_dir, self.anon_user)
+            # 2 recordings previously, should only have 1 left
             assert len(os.listdir(anon_dir)) == 1
 
         self.sleep_try(0.2, 10.0, assert_deleted)
@@ -188,8 +218,8 @@ class TestPending(FullStackTests):
         ge_reqs = [gevent.spawn(wait_for_res_uniq, res, str(x)) for x in range(0, 5)]
 
         def assert_pending():
-            assert int(self.redis.hget('r:rec-b:info', 'pending_count')) > 0
-            assert int(self.redis.hget('r:rec-b:info', 'pending_size')) > 0
+            assert self.get_pending_count('rec-b') > 0
+            assert self.get_pending_size('rec-b') > 0
 
         self.sleep_try(0.2, 10.0, assert_pending)
 
@@ -206,6 +236,8 @@ class TestPending(FullStackTests):
 
         # assert no pending data
         assert self.redis.hgetall('r:rec-b:info') == {}
+        assert not self.redis.exists('r:rec-b:_pc')
+        assert not self.redis.exists('r:rec-b:_ps')
 
     def test_user_and_coll_size(self):
         coll, rec = self.get_coll_rec(self.anon_user, 'temp', '')

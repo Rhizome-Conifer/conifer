@@ -32,6 +32,10 @@ class Recording(RedisUniqueComponent):
 
     RA_KEY = 'r:{rec}:ra'
 
+    PENDING_SIZE_KEY = 'r:{rec}:_ps'
+    PENDING_COUNT_KEY = 'r:{rec}:_pc'
+    PENDING_TTL = 90
+
     REC_WARC_KEY = 'r:{rec}:wk'
     COLL_WARC_KEY = 'c:{coll}:warc'
 
@@ -97,15 +101,46 @@ class Recording(RedisUniqueComponent):
         self.redis.delete(open_rec_key)
 
     def is_fully_committed(self):
-        if self.is_data_pending():
+        if self.get_pending_count() > 0:
             return False
 
         cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
         return self.redis.exists(cdxj_key) == False
 
-    def is_data_pending(self):
-        count = self.get_prop('pending_count')
-        return count is not None and count != '0'
+    def get_pending_count(self):
+        pending_count = self.PENDING_COUNT_KEY.format(rec=self.my_id)
+        return int(self.redis.get(pending_count) or 0)
+
+    def get_pending_size(self):
+        pending_size = self.PENDING_SIZE_KEY.format(rec=self.my_id)
+        return int(self.redis.get(pending_size) or 0)
+
+    def inc_pending_count(self):
+        if not self.is_open(extend=False):
+            return
+
+        pending_count = self.PENDING_COUNT_KEY.format(rec=self.my_id)
+        self.redis.incrby(pending_count, 1)
+        self.redis.expire(pending_count, self.PENDING_TTL)
+
+    def inc_pending_size(self, size):
+        if not self.is_open(extend=False):
+            return
+
+        pending_size = self.PENDING_SIZE_KEY.format(rec=self.my_id)
+        self.redis.incrby(pending_size, size)
+        self.redis.expire(pending_size, self.PENDING_TTL)
+
+    def dec_pending_count_and_size(self, size):
+        # return if rec no longer exists (deleted while transfer is pending)
+        if not self.redis.exists(self.info_key):
+            return
+
+        pending_count = self.PENDING_COUNT_KEY.format(rec=self.my_id)
+        self.redis.incrby(pending_count, -1)
+
+        pending_size = self.PENDING_SIZE_KEY.format(rec=self.my_id)
+        self.redis.incrby(pending_size, -size)
 
     def serialize(self,
                   include_pages=False,

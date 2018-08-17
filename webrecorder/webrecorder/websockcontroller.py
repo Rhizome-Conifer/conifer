@@ -272,6 +272,9 @@ class BaseWebSockHandler(object):
             result = {'ws_type': 'status'}
             result['size'] = size
 
+            if self.recording:
+                result['pending_size'] = self.recording.get_pending_size()
+
             #result['numPages'] = obj.count_pages()
 
             if self.stats_urls:
