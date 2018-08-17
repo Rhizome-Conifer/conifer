@@ -37,7 +37,6 @@ class Help extends Component {
     const { version } = arg.config;
     const { stdout } = arg;
     this.setState({ version, stdout });
-    console.log(arg)
     setTimeout(this.update, 100);
   }
 
