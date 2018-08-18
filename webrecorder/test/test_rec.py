@@ -72,6 +72,8 @@ class TestWebRecRecorder(FullStackTests):
             'r:REC:cdxj',
             'r:REC:info',
             'r:REC:open',
+            'r:REC:_ps',
+            'r:REC:_pc',
             'c:COLL:info',
             'c:COLL:warc',
             'u:USER:info'
@@ -94,13 +96,17 @@ class TestWebRecRecorder(FullStackTests):
 
         assert set(keys) == set([
             'r:REC:wk',
-            'r:REC2:wk',
             'r:REC:cdxj',
-            'r:REC2:cdxj',
             'r:REC:info',
             'r:REC:open',
+            'r:REC:_ps',
+            'r:REC:_pc',
+            'r:REC2:wk',
+            'r:REC2:cdxj',
             'r:REC2:info',
             'r:REC2:open',
+            'r:REC2:_ps',
+            'r:REC2:_pc',
             'c:COLL:info',
             'c:COLL:warc',
             'u:USER:info'

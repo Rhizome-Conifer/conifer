@@ -329,7 +329,8 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
         self.user_key = config['info_key_templ']['user']
 
     def create_write_buffer(self, params, name):
-        recording = Recording(my_id=params['param.rec'],
+        rec_id = params.get('param.recorder.rec') or params.get('param.rec')
+        recording = Recording(my_id=rec_id,
                               redis=self.redis,
                               access=BaseAccess())
 

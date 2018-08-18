@@ -253,40 +253,36 @@ class BaseWebSockHandler(object):
                 self._publish(from_browser, msg)
 
     def get_status(self):
+        size = self.recording.size if self.recording else self.collection.size
+
+        if size is None:
+            result = {'ws_type': 'error', 'error': 'not_found'}
+            return json.dumps(result)
+
+        result = {'ws_type': 'status'}
+        result['size'] = size
+
         if self.recording:
-            obj = self.recording
-        else:
-            obj = self.collection
+            pending_size = self.recording.get_pending_size()
 
-        size = obj.size
-
-        if size is not None:
             # if extracting, also add the size from patch recording, if any
-            if self.recording and self.type_ == 'extract':
+            if self.type_ == 'extract':
                 patch_recording = self.recording.get_patch_recording()
                 if patch_recording:
                     patch_size = patch_recording.size
+                    pending_size += patch_recording.get_pending_size()
                     if patch_size is not None:
                         size += patch_size
 
-            result = {'ws_type': 'status'}
-            result['size'] = size
+            result['pending_size'] = pending_size
 
-            if self.recording:
-                result['pending_size'] = self.recording.get_pending_size()
-
-            #result['numPages'] = obj.count_pages()
-
-            if self.stats_urls:
-                result['stats'] = self.dyn_stats.get_dyn_stats(
-                                    self.user,
-                                    self.collection,
-                                    self.recording,
-                                    self.sesh_id,
-                                    self.stats_urls)
-
-        else:
-            result = {'ws_type': 'error', 'error': 'not_found'}
+        if self.stats_urls:
+            result['stats'] = self.dyn_stats.get_dyn_stats(
+                                self.user,
+                                self.collection,
+                                self.recording,
+                                self.sesh_id,
+                                self.stats_urls)
 
         return json.dumps(result)
 
