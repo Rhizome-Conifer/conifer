@@ -111,7 +111,7 @@ setup(
         'mock',
         'responses',
         'httpbin==0.5.0',
-        'websocket'
+        'websocket-client'
        ],
     cmdclass={'test': PyTest,
               'install': Install},
