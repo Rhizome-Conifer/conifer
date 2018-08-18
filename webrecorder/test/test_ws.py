@@ -58,9 +58,12 @@ class TestWS(FullStackTests):
     def test_ws_record_update(self):
         res = self.get_url('/{user}/temp/rec/record/mp_/httpbin.org/get?foo=bar'.format(user=self.anon_user))
 
-        msg = json.loads(self.ws.recv())
+        def assert_size():
+            msg = json.loads(self.ws.recv())
 
-        assert msg['size'] > 0
+            assert msg['size'] > 0
+
+        self.sleep_try(0.2, 10.0, assert_size)
 
     def test_ws_record_update_pending(self):
         def long_req():
@@ -110,9 +113,17 @@ class TestWS(FullStackTests):
         ex_ws = websocket.WebSocket()
         ex_ws.connect('ws://localhost:{0}/_client_ws?user={user}&coll=temp&rec=ex&type=extract&url=http://geocities.com/'.format(self.app_port, user=self.anon_user))
 
-        msg = json.loads(ex_ws.recv())
+        def assert_size():
+            msg = json.loads(ex_ws.recv())
 
-        assert msg['size'] > 0
-        assert msg['pending_size'] == 0
-        assert msg['stats'] == {'ia': 1}
-        assert msg['ws_type'] == 'status'
+            assert msg['size'] > 0
+            assert msg['pending_size'] == 0
+            assert msg['stats'] == {'ia': 1}
+            assert msg['ws_type'] == 'status'
+
+
+        self.sleep_try(0.2, 10.0, assert_size)
+
+        ex_ws.close()
+        self.ws.close()
+
