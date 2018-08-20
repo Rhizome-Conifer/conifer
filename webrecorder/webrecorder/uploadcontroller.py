@@ -1,28 +1,31 @@
-from webrecorder.basecontroller import BaseController
-from tempfile import SpooledTemporaryFile, NamedTemporaryFile
+# standard library imports
+import os
+import json
+import atexit
+import base64
+import logging
+import requests
+from tempfile import NamedTemporaryFile, SpooledTemporaryFile
+
+# third party imports
+import traceback
+
+
+import redis
+import gevent
+
 from bottle import request
 
-from warcio.archiveiterator import ArchiveIterator
-from warcio.limitreader import LimitReader
-
+# library specific imports
 from har2warc.har2warc import HarParser
-from warcio.warcwriter import BufferWARCWriter, WARCWriter
-
 from pywb.warcserver.index.cdxobject import CDXObject
+from warcio.warcwriter import BufferWARCWriter, WARCWriter
+from warcio.limitreader import LimitReader
+from warcio.archiveiterator import ArchiveIterator
+from webrecorder.utils import (CacheingLimitReader, redis_pipeline,
+from webrecorder.basecontroller import BaseController
 
-import traceback
-import json
-import requests
-import atexit
 
-import base64
-import os
-import gevent
-import redis
-
-from webrecorder.utils import SizeTrackingReader, CacheingLimitReader, redis_pipeline
-
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +33,6 @@ BLOCK_SIZE = 16384 * 8
 EMPTY_DIGEST = '3I42H3S6NNFQ2MSVX7XZKYAYSCX5QBYJ'
 
 
-# ============================================================================
 class UploadController(BaseController):
     def __init__(self, app, jinja_env, manager, config):
         super(UploadController, self).__init__(app, jinja_env, manager, config)
@@ -217,6 +219,7 @@ class UploadController(BaseController):
 
         except:
             import traceback
+
             traceback.print_exc()
 
         finally:
