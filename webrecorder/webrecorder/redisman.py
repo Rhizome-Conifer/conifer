@@ -240,6 +240,10 @@ class LoginManagerMixin(object):
         return user, first_coll
 
     def _create_anon_user(self, user):
+        """Create anonymous user.
+
+        :param str user: username
+        """
         max_size = self.redis.hget('h:defaults', 'max_anon_size')
         if not max_size:
             max_size = self.default_max_anon_size
@@ -254,11 +258,25 @@ class LoginManagerMixin(object):
             pi.hsetnx(key, 'size', '0')
 
     def get_user_info(self, user):
+        """Get user information.
+
+        :param str user: username
+
+        :returns: user information
+        :rtype: dict
+        """
         key = self.user_key.format(user=user)
         result = self._format_info(self.redis.hgetall(key))
         return result
 
     def has_user(self, user):
+        """Determine whether user is known.
+
+        :param str user: username
+
+        :returns: whether user is known
+        :rtype: bool
+        """
         return self.cork.user(user) is not None
 
     def get_anon_user(self, save_sesh=True):
