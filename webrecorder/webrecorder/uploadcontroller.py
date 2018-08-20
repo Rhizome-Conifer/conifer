@@ -9,11 +9,8 @@ from tempfile import NamedTemporaryFile, SpooledTemporaryFile
 
 # third party imports
 import traceback
-
-
 import redis
 import gevent
-
 from bottle import request
 
 # library specific imports
@@ -22,7 +19,9 @@ from pywb.warcserver.index.cdxobject import CDXObject
 from warcio.warcwriter import BufferWARCWriter, WARCWriter
 from warcio.limitreader import LimitReader
 from warcio.archiveiterator import ArchiveIterator
-from webrecorder.utils import (CacheingLimitReader, redis_pipeline,
+from webrecorder.utils import (
+    CacheingLimitReader, redis_pipeline, SizeTrackingReader
+)
 from webrecorder.basecontroller import BaseController
 
 
