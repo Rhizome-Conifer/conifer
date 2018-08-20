@@ -33,7 +33,7 @@ from webrecorder.redisman import init_manager_for_cli
 
 
 def create_user(
-        username, password, email_addr,
+        username, password, email_addr, url,
         role="opendachs", desc='{"name": "Ticket"}'
 ):
     """Create user.
@@ -83,6 +83,18 @@ def create_user(
                 desc=manager.default_coll["desc"].format(username),
                 public=False
             )
+            manager.create_recording(
+                username,
+                manager.default_coll["id"],
+                "test",
+                manager.default_coll["title"]
+            )
+            manager.add_page(
+                username,
+                manager.default_coll["id"],
+                "test",
+                {"url": url, "timestamp": str(datetime.utcnow())}
+            )
     except Exception as exception:
         raise RuntimeError("failed to create user\t: {}".format(exception))
     return
@@ -119,6 +131,7 @@ def get_argument_parser():
         create.add_argument("username", help="username")
         create.add_argument("password", help="password")
         create.add_argument("email_addr", help="email address")
+        create.add_argument("url", help="URL")
         create.add_argument("--role", default="opendachs", help="role")
         create.add_argument(
             "--desc",
@@ -139,7 +152,7 @@ def main():
         args = argument_parser.parse_args()
         if args.subparser == "create":
             create_user(
-                args.username, args.password, args.email_addr,
+                args.username, args.password, args.email_addr, args.url,
                 role=args.role, desc=args.desc
             )
         elif args.subparser == "delete":
