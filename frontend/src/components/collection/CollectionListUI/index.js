@@ -128,8 +128,9 @@ class CollectionListUI extends Component {
                   readOnly={isAnon || !canAdmin}
                   success={this.props.edited}>
                   <div className="user-link">
-                    <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon /></a>
-                    <span>{user.get('display_url') || 'Add website...'}</span>
+                    <a target="_blank" onClick={stopPropagation} href={userLink}><LinkIcon />
+                      <span>{user.get('display_url') || 'Add website...'}</span>
+                    </a>
                   </div>
                 </InlineEditor>
             }
