@@ -396,6 +396,13 @@ class ContentController(BaseController, RewriterApp):
         return mode, new_url
 
     def do_create_new_and_redir(self, coll, rec, wb_url, mode):
+        """Create new record and cause 303 or 302 redirect.
+
+        :param str coll: collection
+        :param str rec: record
+        :param str wb_url: Webrecorder URL
+        :param str mode: mode
+        """
         if mode == 'record':
             result = self.check_remote_archive(wb_url, mode)
             if result:
@@ -448,6 +455,17 @@ class ContentController(BaseController, RewriterApp):
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
     def _create_new_rec(self, user, coll, title, mode, no_dupe=False):
+        """Create new record.
+
+        :param str user: username
+        :param str coll: collection
+        :param str title: title
+        :param str mode: mode
+        :param bool no_dupe: toggle duplicates on/off
+
+        :returns: record ID
+        :rtype: str
+        """
         rec = self.sanitize_title(title)
         rec_type = 'patch' if mode == 'patch' else None
         result = self.manager.create_recording(user, coll, rec, title,
