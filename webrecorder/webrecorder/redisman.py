@@ -1008,7 +1008,8 @@ class RecManagerMixin(object):
         :param str rec_title: recording title
         :param str coll_title: collection title
         :param bool no_dupe: toggle duplicates on/off
-        :param rec_type: n.s.
+        :param rec_type: record type
+        :type: str or None
         :param ra_list: remote archives
         """
 
