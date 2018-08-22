@@ -4,10 +4,10 @@ import json
 import atexit
 import base64
 import logging
-import requests
 from tempfile import NamedTemporaryFile, SpooledTemporaryFile
 
 # third party imports
+import requests
 import traceback
 import redis
 import gevent
@@ -311,8 +311,6 @@ class UploadController(BaseController):
                 actual_recording = self.manager.create_recording(user,
                                               collection['id'],
                                               recording['id'],
-                                              recording['title'],
-                                              collection['title'],
                                               rec_type=recording.get('rec_type'),
                                               ra_list=recording.get('ra'))
 
