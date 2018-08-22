@@ -20,6 +20,7 @@ from webrecorder.load.wamloader import WAMLoader
 import webrecorder.rec.storage.storagepaths as storagepaths
 from webrecorder.rec.storage.local import DirectLocalFileStorage
 
+from webrecorder.models.base import BaseAccess
 from webrecorder.models import Recording, Collection, Stats
 
 import redis
@@ -328,23 +329,14 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
         self.user_key = config['info_key_templ']['user']
 
     def create_write_buffer(self, params, name):
-        info_key = res_template(self.info_key, params)
-        open_key = res_template(self.open_rec_key, params)
-        params['_open_key'] = open_key
-        return TempWriteBuffer(self.redis, info_key, open_key, self.open_rec_ttl, name, params['url'])
+        rec_id = params.get('param.recorder.rec') or params.get('param.rec')
+        recording = Recording(my_id=rec_id,
+                              redis=self.redis,
+                              access=BaseAccess())
 
-    def is_rec_open(self, params):
-        open_key = params['_open_key']
-        #open_key = res_template(self.open_rec_key, params)
+        params['recording'] = recording
 
-        # update ttl for open recroding key, if it exists
-        # if not, abort opening new warc file here
-        if not self.redis.expire(open_key, self.open_rec_ttl):
-            # if expire fails, recording not open!
-            logging.debug('Writing skipped, recording not open for write: ' + open_key)
-            return False
-
-        return True
+        return TempWriteBuffer(recording, name, params['url'])
 
     def write_stream_to_file(self, params, stream):
         upload_id = params.get('param.upid')
@@ -361,7 +353,8 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
         return self._write_to_file(params, write_callback)
 
     def _is_write_resp(self, resp, params):
-        if not self.is_rec_open(params):
+        if not params['recording'].is_open():
+            logging.debug('Writing skipped, recording not open for write')
             return False
 
         user_key = res_template(self.user_key, params)
@@ -397,15 +390,12 @@ class SkipCheckingMultiFileWARCWriter(MultiFileWARCWriter):
 
 # ============================================================================
 class TempWriteBuffer(tempfile.SpooledTemporaryFile):
-    def __init__(self, redis, info_key, open_key, open_rec_ttl, class_name, url):
+    def __init__(self, recording, class_name, url):
         super(TempWriteBuffer, self).__init__(max_size=512*1024)
-        self.redis = redis
-        self.info_key = info_key
-        self.open_key = open_key
-        self.open_rec_ttl = open_rec_ttl
+        self.recording = recording
         self.class_name = class_name
-        if self.redis.expire(self.open_key, self.open_rec_ttl):
-            self.redis.hincrby(self.info_key, 'pending_count', 1)
+
+        self.recording.inc_pending_count()
 
         self._wsize = 0
 
@@ -413,8 +403,8 @@ class TempWriteBuffer(tempfile.SpooledTemporaryFile):
         super(TempWriteBuffer, self).write(buff)
         length = len(buff)
         self._wsize += length
-        if self.redis.expire(self.open_key, self.open_rec_ttl):
-            self.redis.hincrby(self.info_key, 'pending_size', length)
+
+        self.recording.inc_pending_size(length)
 
     def close(self):
         try:
@@ -422,8 +412,6 @@ class TempWriteBuffer(tempfile.SpooledTemporaryFile):
         except:
             traceback.print_exc()
 
-        if self.redis.exists(self.open_key):
-            self.redis.hincrby(self.info_key, 'pending_size', -self._wsize)
-            self.redis.hincrby(self.info_key, 'pending_count', -1)
+        self.recording.dec_pending_count_and_size(self._wsize)
 
 

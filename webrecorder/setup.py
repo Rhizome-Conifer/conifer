@@ -110,7 +110,8 @@ setup(
         'fakeredis',
         'mock',
         'responses',
-        'httpbin==0.5.0'
+        'httpbin==0.5.0',
+        'websocket-client'
        ],
     cmdclass={'test': PyTest,
               'install': Install},

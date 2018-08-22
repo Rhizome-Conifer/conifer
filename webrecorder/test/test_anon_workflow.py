@@ -31,6 +31,8 @@ class TestTempContent(FullStackTests):
         'r:{rec}:open',
         'r:{rec}:info',
         'r:{rec}:wk',
+        'r:{rec}:_ps',
+        'r:{rec}:_pc',
         'c:{coll}:warc',
         'c:{coll}:p',
         'c:{coll}:info',
