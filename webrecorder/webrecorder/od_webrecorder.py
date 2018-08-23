@@ -29,15 +29,15 @@ import time
 import base64
 import argparse
 import tempfile
-import requests
-
 from datetime import datetime
 
+
 # third party imports
+import requests
 from warcio.archiveiterator import ArchiveIterator
 from warcio.limitreader import LimitReader
 from pywb.warcserver.index.cdxobject import CDXObject
-from webrecorder.utils import CachingLimitReader, redis_pipeline
+from webrecorder.utils import redis_pipeline
 from webrecorder.redisman import init_manager_for_cli
 
 # library specific imports
@@ -66,7 +66,6 @@ def sanitize(string):
     try:
         alpha_num = re.compile(r"[^\w-]")
         reserved = re.compile(r"^([\d]+([\w]{2}_)?|([\w]{2}_))$")
-        string.endswith
         string = string.lower().strip()
         string = string.replace(" ", "-")
         string = alpha_num.sub("", string)
@@ -89,10 +88,10 @@ def _parse_warcinfo(record):
     try:
         warcinfo = {}
         tmp = record.raw_stream.read(record.length).decode("utf-8")
-        for line in tmp.rstrip().split("\n"):
-            k, v = tuple(line.split(":", 1))
+        for line in tmp.rstrip().split(sep="\n"):
+            k, v = tuple(line.split(sep=":", maxsplit=1))
             if k == "json-metadata":
-                warcinfo["json-metadata"] = json.loads(v)
+                warcinfo[k] = json.loads(v)
             else:
                 warcinfo[k] = v.strip()
     except Exception as exception:
@@ -104,25 +103,18 @@ def _parse_warcinfo(record):
         return {}
 
 
-def _parse_warc(caching_limit_reader, size, fp):
+def _parse_warc(fp, size):
     """Parse WARC archive.
 
-    :param CachingLimitReader caching_limit_reader: WARC archive
-    :param int size: file size
     :param fp: file object
+    :param int size: file size
 
     :returns: WARC archive information
     :rtype: list
     """
     try:
         info = []
-        archive_iterator = ArchiveIterator(
-            caching_limit_reader,
-            no_record_parse=True,
-            verify_http=True,
-            block_size=16384*8
-        )
-        curr = {}
+        archive_iterator = ArchiveIterator(fp, no_record_parse=True)
         warcinfo = {}
         metadata = {}
         first = True
@@ -130,21 +122,17 @@ def _parse_warc(caching_limit_reader, size, fp):
             if record.rec_type == "warcinfo":
                 warcinfo = _parse_warcinfo(record)
             archive_iterator.read_to_end(record)
-            if curr:
-                curr = {}
             if warcinfo:
-                if metadata and metadata["offset"]:
+                if metadata and metadata.get("offset"):
                     metadata["length"] = (
                         archive_iterator.member_info[0] - metadata["offset"]
                     )
                     info.append(metadata)
                 metadata = warcinfo.get("json-metadata")
-                metadata["offset"] = 0
                 if "title" not in metadata:
                     metadata["title"] = "Uploaded record"
                 if "type" not in metadata:
                     metadata["type"] = "recording"
-                curr = metadata
             elif first:
                 metadata = {
                     "title": "Uploaded record",
@@ -152,13 +140,13 @@ def _parse_warc(caching_limit_reader, size, fp):
                     "offset": 0
                 }
             first = False
-        if metadata and metadata["offset"]:
+        if metadata and metadata.get("offset"):
             metadata["length"] = (fp.tell() - metadata["offset"])
             info.append(metadata)
         if fp.tell() < size:
             while True:
-                buff = fp.read(8192)
-                if not buff:
+                buf = fp.read(size=8192)
+                if not buf:
                     break
     except Exception as exception:
         msg = "failed to parse WARC archive\t: {}".format(exception)
@@ -166,18 +154,12 @@ def _parse_warc(caching_limit_reader, size, fp):
     return info
 
 
-def _get_archive(
-        username, collection, info, fp, filename, total_size, num_records
-):
+def _get_archive(username, collection, info):
     """Get archive.
 
     :param str username: username
     :param dict collection: collection
     :param list info: WARC info
-    :param fp: file object
-    :param str filename: filename
-    :param int total_size: total size
-    :param int num_records: number of records
 
     :returns: archive
     :rtype: tuple
@@ -187,22 +169,19 @@ def _get_archive(
         records = []
         for metadata in info:
             if metadata["type"] == "recording":
-                metadata["id"] = sanitize(metadata["title"])
                 recording = manager.create_recording(
                     username,
                     collection["id"],
-                    metadata["id"],
+                    sanitize(metadata["title"]),
                     metadata["title"],
                     collection["title"],
                     rec_type=metadata.get("rec_type"),
                     ra_list=metadata.get("ra")
                 )
-                metadata["id"] = recording["id"]
-                metadata["title"] = recording["title"]
                 records.append(
                     {
                         "coll": collection["id"],
-                        "rec": metadata["id"],
+                        "rec": recording["id"],
                         "offset": metadata["offset"],
                         "length": metadata["length"],
                         "pages": metadata.get("pages")
@@ -211,7 +190,7 @@ def _get_archive(
                 manager.set_recording_timestamps(
                     username,
                     collection["id"],
-                    metadata["id"],
+                    recording["id"],
                     metadata.get("created_at"),
                     metadata.get("updated at")
                 )
@@ -221,11 +200,10 @@ def _get_archive(
     return (collection, records)
 
 
-def _put(key, filename, fp, username, coll, rec, offset, length):
+def _put(key, fp, username, coll, rec, offset, length):
     """Make PUT request.
 
     :param str key: key
-    :param str filename: filename
     :param fp: file object
     :param str username: username
     :param str coll: collection ID
@@ -246,29 +224,38 @@ def _put(key, filename, fp, username, coll, rec, offset, length):
 
 
 def _is_page(cdxobject):
-    """Determine whether the CDX file is a page.
+    """Determine whether the CDX line is a page.
 
-    :param CDXObject cdxobject: CDX file
+    :param CDXObject cdxobject: CDX line
 
-    :returns: whether the CDX file is a page
+    :returns: whether the CDX line is a page
     :rtype: bool
     """
-    if (
-            not cdxobject["url"].startswith(("http://", "https://")) or
-            cdxobject["url"].endswith("/robots.txt")
-    ):
-        return False
-    if (
-            cdxobject.get("status", "-") in ["-", "200"] and
-            cdxobject["mime"] in ["text/html", "text/plain"] and
-            cdxobject["digest"] != EMPTY_DIGEST
-    ):
-        if cdxobject["status"] == "200":
-            splits = cdxobject["url"].split("?", 1)
-            if len(splits) > 1 and len(splits[1]) > len(splits[0]):
-                return False
-        return True
-    return False
+    try:
+        url = cdxobject["url"]
+        toggle = (
+            url.startswith("http://", "https://") and
+            not url.endswith("robots.txt")
+        )
+        if toggle:
+            status = cdxobject.get("status")
+            if not status or status == "200":
+                mime = cdxobject["mime"]
+                digest = cdxobject["digest"]
+                if (
+                        status and
+                        mime in ["text/html", "text/plain"] and
+                        digest != EMPTY_DIGEST
+                ):
+                    splits = url.split(sep="?", maxsplit=1)
+                    if len(splits) > 1 and len(splits[1]) > len(splits[0]):
+                        toggle = False
+            else:
+                toggle = False
+    except Exception as exception:
+        msg = "failed to determine whether the CDX line is a page\t: {}"
+        raise RuntimeError(msg.format(exception))
+    return toggle
 
 
 def _find_pages(username, coll, rec):
@@ -301,11 +288,10 @@ def _find_pages(username, coll, rec):
     return pages
 
 
-def _run(key, filename, fp, username, records, total_size):
+def _run(key, fp, username, records, total_size):
     """Run.
 
     :param str key: Redis key
-    :param str filename: filename
     :param fp: file object
     :param str username: username
     :param list records: records
@@ -318,7 +304,6 @@ def _run(key, filename, fp, username, records, total_size):
             if record["length"] > 0:
                 _put(
                     key,
-                    filename,
                     fp,
                     username,
                     record["coll"],
@@ -328,7 +313,7 @@ def _run(key, filename, fp, username, records, total_size):
                 )
             pages = record.get("pages")
             if not pages:
-                pages = _find_pages()
+                pages = _find_pages(username, record["coll"], record["rec"])
             if pages:
                 manager.import_pages(
                     username, record["coll"], record["rec"], pages
@@ -351,11 +336,10 @@ def _run(key, filename, fp, username, records, total_size):
     return
 
 
-def _upload(fp, id_, key, info, filename, username, collection, total_size):
+def _upload(fp, key, info, filename, username, collection, total_size):
     """Upload file.
 
     :param fp: file object
-    :param str id_: ID
     :param str key: Redis key
     :param list info: WARC info
     :param str filename: filename
@@ -365,17 +349,14 @@ def _upload(fp, id_, key, info, filename, username, collection, total_size):
     """
     try:
         manager = init_manager_for_cli()
-        num_records = len(info) - 1
-        archive = _get_archive(
-            username, collection, info, fp, filename, total_size, num_records
-        )
+        archive = _get_archive(username, collection, info)
         with redis_pipeline(manager.redis) as pipeline:
             pipeline.hset(key, "coll", archive[0]["id"])
             pipeline.hset(key, "coll_title", archive[0]["title"])
             pipeline.hset(key, "filename", filename)
         if not archive[1]:
             raise ValueError("empty archive")
-        _run(key, filename, fp, username, archive[1], total_size)
+        _run(key, fp, username, archive[1], total_size)
     except Exception as exception:
         msg = "failed to upload WARC archive\t: {}".format(exception)
         raise RuntimeError(msg)
@@ -400,8 +381,7 @@ def upload(username, filename, collection):
                 raise RuntimeError(msg)
         tmp = tempfile.SpooledTemporaryFile(max_size=16384*8)
         fp = open(filename, mode="rb")
-        caching_limit_reader = CachingLimitReader(fp, size, tmp)
-        info = _parse_warc(caching_limit_reader, size, fp)
+        info = _parse_warc(fp, size)
         total_size = tmp.tell()
         id_ = base64.b32encode(os.urandom(5)).decode("utf-8")
         key = UPLOAD_KEY.format(user=username, upid=id_)
@@ -411,7 +391,7 @@ def upload(username, filename, collection):
             pipeline.hset(key, "filename", filename)
             pipeline.hset(key, "total_files", 1)
             pipeline.hset(key, "files", 1)
-        _upload(fp, id_, key, info, filename, username, collection, total_size)
+        _upload(fp, key, info, filename, username, collection, total_size)
     except RuntimeError:
         raise
     except Exception as exception:
@@ -424,7 +404,7 @@ def upload(username, filename, collection):
 
 
 def create_user(
-        username, password, email_addr,
+        username, password, email_addr, filename,
         role="opendachs", desc='{"name": "Ticket"}'
 ):
     """Create user.
@@ -473,6 +453,7 @@ def create_user(
             desc=manager.default_coll["desc"].format(username),
             public=False
         )
+        upload(username, filename, collection)
     except Exception as exception:
         raise RuntimeError("failed to create user\t: {}".format(exception))
     return
@@ -509,6 +490,7 @@ def get_argument_parser():
         create.add_argument("username", help="username")
         create.add_argument("password", help="password")
         create.add_argument("email_addr", help="email address")
+        create.add_argument("filename", help="filename")
         create.add_argument("--role", default="opendachs", help="role")
         create.add_argument(
             "--desc",
@@ -529,7 +511,7 @@ def main():
         args = argument_parser.parse_args()
         if args.subparser == "create":
             create_user(
-                args.username, args.password, args.email_addr,
+                args.username, args.password, args.email_addr, args.filename,
                 role=args.role, desc=args.desc
             )
         elif args.subparser == "delete":
