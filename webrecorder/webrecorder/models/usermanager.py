@@ -74,11 +74,8 @@ class UserManager(object):
         redir_extra = ''
 
         username = input_data.get('username', '')
-        name = input_data.get('name', '')
+        full_name = input_data.get('full_name', '')
         email = input_data.get('email', '')
-
-        if 'full_name' in input_data:
-            msg['invalid'] = 'Invalid signup'
 
         if 'username' not in input_data:
             msg['username'] = 'Missing Username'
@@ -117,7 +114,7 @@ class UserManager(object):
 
 
         try:
-            desc = {'name': input_data.get('name', '')}
+            desc = {'name': full_name}
 
             if move_info:
                 desc['move_info'] = move_info

@@ -231,7 +231,7 @@ class UserController(BaseController):
                 user['desc'] = data['desc']
 
             if 'full_name' in data:
-                user['name'] = data['full_name'][:150]
+                user['full_name'] = data['full_name'][:150]
 
             if 'display_url' in data:
                 user['display_url'] = data['display_url'][:500]
