@@ -86,6 +86,7 @@ class TestApiUserLogin(FullStackTests):
         params = {'email': 'test@example.com',
                   'username': 'someuser',
                   'password': 'Password1',
+                  'full_name': 'Some User',
                   'confirmpassword': 'Password1'
                  }
 
@@ -247,6 +248,7 @@ class TestApiUserLogin(FullStackTests):
 
         assert res.json['user']['role'] == 'archivist'
         assert res.json['user']['username'] == 'someuser'
+        assert res.json['user']['full_name'] == 'Some User'
         assert res.json['user']['num_collections'] == 1
         assert res.json['user']['anon'] == False
 
@@ -256,6 +258,7 @@ class TestApiUserLogin(FullStackTests):
         user = res.json['user']
         assert user['role'] == 'archivist'
         assert user['username'] == 'someuser'
+        assert user['full_name'] == 'Some User'
         assert user['num_collections'] == 1
         assert len(user['collections']) == 1
 
@@ -264,6 +267,7 @@ class TestApiUserLogin(FullStackTests):
         user = res.json['user']
         assert user['role'] == 'archivist'
         assert user['username'] == 'someuser'
+        assert user['full_name'] == 'Some User'
         assert user['num_collections'] == 1
         assert len(user['collections']) == 1
 

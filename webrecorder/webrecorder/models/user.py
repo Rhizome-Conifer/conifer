@@ -29,7 +29,7 @@ class User(RedisUniqueComponent):
     URL_SKIP_KEY = 'us:{user}:s:{url}'
     SKIP_KEY_SECS = 330
 
-    SERIALIZE_PROPS = ['desc', 'display_url']
+    SERIALIZE_PROPS = ['desc', 'display_url', 'full_name']
     SERIALIZE_FULL_PROPS = SERIALIZE_PROPS + ['role', 'last_login', 'updated_at', 'created_at', 'timespan', 'size', 'max_size']
 
     @classmethod
@@ -222,10 +222,6 @@ class User(RedisUniqueComponent):
         data = {'username': self.name}
 
         allowed_props = self.SERIALIZE_PROPS if not full else self.SERIALIZE_FULL_PROPS
-
-        full_name = all_data.get('name')
-        if full_name:
-            data['full_name'] = full_name
 
         for prop in allowed_props:
             if prop in all_data:

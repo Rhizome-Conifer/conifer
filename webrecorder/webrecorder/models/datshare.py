@@ -137,7 +137,7 @@ class DatShare(object):
                 if not always_update:
                     return {'error': 'already_updated'}
 
-        author = user.get_prop('name') or user.name
+        author = user.get_prop('full_name') or user.name
 
         datjson_file = self.write_dat_json(collection, dat_key, author)
         metadata_file = self.write_metadata_file(collection)
