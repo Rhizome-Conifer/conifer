@@ -529,8 +529,7 @@ class UserManager(object):
             'role': role,
             'hash': self.cork._hash(username, passwd).decode('ascii'),
             'email_addr': email,
-            #'desc': '{{"name":"{name}"}}'.format(name=name),
-            'name': name,
+            'full_name': name,
             'creation_date': str(datetime.utcnow()),
             'last_login': str(datetime.utcnow()),
         }
