@@ -372,7 +372,7 @@ def upload(username, filename, collection):
     """
     try:
         manager = init_manager_for_cli()
-        size = int(os.path.getsize(filename).strip("L"))
+        size = os.path.getsize(filename)
         if size == 0:
             raise RuntimeError("failed to upload file\t: file size is 0")
         else:
