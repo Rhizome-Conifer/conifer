@@ -8,7 +8,7 @@ This repository represents the hosted service running on https://webrecorder.io/
 
 This README refers to the 4.x version of Webrecorder, released in June, 2018. The release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture)
 
-*See [Migration Info](#migrating-from-earlier-versions) below for migrating from a 3.x installation*
+*See [Migration Info](migrating-4.0.md) below for migrating from a 3.x installation*
 
 *If you have any questions or issues specifically with https://webrecorder.io/ service, please contact us directly at support@webrecorder.io*
 
@@ -71,6 +71,8 @@ To run Webrecorder (ideally behind https) on different domains, the `APP_HOST` a
 For best results, the two domains should be two subdomains, to avoid third party issues while providing a separation between
 the application and the archived content.
 
+The `SCHEME` env var should also be set to `SCEME=https` when deploying via https.
+
 #### Storage
 
 Webrecorder uses the `./data/` directory for local storage, or an external backend (currently supports s3).
@@ -95,6 +97,10 @@ the persistent Redis instance. (Redis persists data to `./data/dump.rdb`)
 
 Webrecorder can send confirmation and lost password emails. By default, a local SMTP server is run in Docker, however, this can be configured to use a remote server by changing `EMAIL_SMTP_URL` and `EMAIL_SMTP_SENDER` environment settings.
 
+#### Frontend Options
+
+The react frontend includes a number of additional options, useful for debugging react. Setting `NODE_ENV=development` will switch react to development mode and enable React debugging on port 8096.
+
 
 ### Administration tool
 
@@ -118,23 +124,9 @@ See `docker exec -it webrecorder_app_1 python -m webrecorder.admin --help` for f
 
 ### Restarting Webrecorder
 
-When making changes to Webrecorder, running `docker-compose build; docker-compose up -d` will restart all of the containers.
+When making changes to Webrecorder, running `docker-compose build; docker-compose up -d` will build and restart all of the containers.
 
-To restart only the Webrecorder container, use the `./rebuild.sh` script.
-
-## Migrating from Earlier Versions
-
-The Webrecorder 4.x branch introduced signficant changes to the data model.
-
-A migration script is provided which will migrate a local Webrecorder 3.x installation to 4.x.
-
-To use, run:
-
-*TODO*
-
-Note: this process will create a copy of the Redis data in Redis DB 2. The old data will not be deleted automatically.
-WARCs stored under `./data/warcs` will be moved to `./data/storage`.
-
+To fully recreate Webrecorder, deleting old containers (bot not the data!) use the `./recreate.sh` script.
 
 ## Webrecorder Architecture
 
