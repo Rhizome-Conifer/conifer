@@ -8,7 +8,7 @@ This repository represents the hosted service running on https://webrecorder.io/
 
 This README refers to the 4.x version of Webrecorder, released in June, 2018. The release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture)
 
-*See [Migration Info](migrating-4.0.md) below for migrating from a 3.x installation*
+*If you have an existing Webrecorder installation, see [Migration Info](migrating-4.0.md) for how to migrate to the latest version*
 
 *If you have any questions or issues specifically with https://webrecorder.io/ service, please contact us directly at support@webrecorder.io*
 
