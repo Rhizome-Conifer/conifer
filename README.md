@@ -6,15 +6,15 @@ and disseminating archived content.
 
 This repository represents the hosted service running on https://webrecorder.io/ and can be deployed using Docker.
 
-This README refers to the 4.x version of Webrecorder, released in June, 2018. The release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture)
+This README refers to the 4.x version of Webrecorder, released in June, 2018. The release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture).
 
-**Users with Existing Installations**: If you have a previous Webrecorder installation (version 3.x), see [Migration Info](migrating-4.0.md) for how to migrate to the latest version*
+**Users with Existing Installations**: If you have a previous Webrecorder installation (version 3.x), see [Migration Info](migrating-4.0.md) for how to migrate to the latest version
 
 *If you have any questions or issues specifically with https://webrecorder.io/ service, please contact us directly at support@webrecorder.io*
 
 ## Using Webrecorder and related tools
 
-Webrecorder and related tools are designed to make web archiving more portable and decentralized, as well as to serve users and developers of all skill levels and requirements. The following options are available for end users and developers.
+Webrecorder and related tools are designed to make web archiving more portable and decentralized, as well as to serve users and developers of all skill levels and requirements. The following options are available for both end users and developers.
 
 
 ### Hosted Service
@@ -54,12 +54,12 @@ Webrecorder can be run on any system that has [Docker](https://docs.docker.com/i
 
 Point your browser to `http://localhost:8089/` to access the locally running Webrecorder instance.
 
-(Note: you may see a Webrecorder maintenance message briefly the frontend container is starting up for the first time. Refresh the page after a few seconds to see the Webrecorder home page).
+(Note: you may see a Webrecorder maintenance message briefly while Webrecorder is starting up for the first time. Refresh the page after a few seconds to see the Webrecorder home page).
 
 
 ### Configuration
 
-Webrecorder configured from two files: `wr.env`, and less-commonly change system settings in `wr.yaml`.
+Webrecorder configured from two files: `wr.env`, and less-commonly changed system settings in `wr.yaml`.
 
 The `wr.env` file contains numerous user-specific options for customization. In particular, the following options may be useful:
 
@@ -71,11 +71,11 @@ To run Webrecorder (ideally behind https) on different domains, the `APP_HOST` a
 
 For best results, the two domains should be two subdomains, to avoid third party issues while providing a separation between the application and the archived content.
 
-The `SCHEME` env var should also be set to `SCEME=https` when deploying via https.
+The `SCHEME` env var should also be set to `SCHEME=https` when deploying via https.
 
 #### Storage
 
-Webrecorder uses the `./data/` directory for local storage, or an external backend (currently supports s3).
+Webrecorder uses the `./data/` directory for local storage, or an external backend, currently supporting s3.
 
 The `DEFAULT_STORAGE` option in `wr.env` configures storage options, which can be `DEFAULT_STORAGE=local` or `DEFAULT_STORAGE=s3`
 
