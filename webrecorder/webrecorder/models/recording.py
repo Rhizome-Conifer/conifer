@@ -237,9 +237,9 @@ class Recording(RedisUniqueComponent):
         ra_key = self.RA_KEY.format(rec=self.my_id)
         pi.sadd(ra_key, source_id)
 
-    def set_patch_recording(self, patch_recording):
+    def set_patch_recording(self, patch_recording, update_ts=True):
         if patch_recording:
-            self.set_prop('patch_rec', patch_recording.my_id)
+            self.set_prop('patch_rec', patch_recording.my_id, update_ts=update_ts)
 
     def get_patch_recording(self):
         patch_rec = self.get_prop('patch_rec')
