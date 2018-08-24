@@ -23,8 +23,7 @@ Using our hosted version of Webrecorder at https://webrecorder.io/, users can cr
 
 ### Offline Browsing
 
-The hosted service can also be used anonymously, and the archived content (WARC files) downloaded after each use.
-We also provide a OSX/Windows/Linux Electron application, [Webrecorder Player](https://github.com/webrecorder/webrecorderplayer-electron) that can browse any WARC created by Webrecorder (or other web archiving tools) locally on the desktop. Once downloaded from Webrecorder, the player can be used to browse the content, even offline.
+The hosted service can also be used anonymously, and the archived content (WARC files) downloaded after each use. We also provide a OSX/Windows/Linux Electron application, [Webrecorder Player](https://github.com/webrecorder/webrecorderplayer-electron) that can browse any WARC created by Webrecorder (or other web archiving tools) locally on the desktop. Once downloaded from Webrecorder, the player can be used to browse the content, even offline.
 
 ### Preconfigured Deployment
 
@@ -36,8 +35,7 @@ To deploy only the Webrecorder system in this repository, [follow the instructio
 
 ### Deploying pywb
 
-Finally, for users interested in the core replay system and very simple recording capabilities, deploying [pywb](https://github.com/webrecorder/pywb) may also make sense. Webrecorder is built on top of pywb, and the core functionality
-is provided in pywb as a standalone Python application. See the [pywb reference manual](http://pywb.readthedocs.org/)
+Finally, for users interested in the core replay system and very simple recording capabilities, deploying [pywb](https://github.com/webrecorder/pywb) may also make sense. Webrecorder is built on top of pywb, and the core functionality is provided in pywb as a standalone Python application. See the [pywb reference manual](http://pywb.readthedocs.org/)
 pywb can be deployed natively or in a Docker container as well.
 
 ## Running Locally
@@ -46,7 +44,7 @@ Webrecorder can be run on any system that has [Docker](https://docs.docker.com/i
 
 1). `git clone https://github.com/webrecorder/webrecorder`
 
-2).  `cd webrecorder; bash init-default.sh`.
+2). `cd webrecorder; bash init-default.sh`.
 
 3). `docker-compose build`
 
@@ -68,8 +66,7 @@ By default, Webrecorder assumes its running on localhost/single domain, but on d
 
 To run Webrecorder (ideally behind https) on different domains, the `APP_HOST` and `CONTENT_HOST` env vars should be set.
 
-For best results, the two domains should be two subdomains, to avoid third party issues while providing a separation between
-the application and the archived content.
+For best results, the two domains should be two subdomains, to avoid third party issues while providing a separation between the application and the archived content.
 
 The `SCHEME` env var should also be set to `SCEME=https` when deploying via https.
 
@@ -79,8 +76,7 @@ Webrecorder uses the `./data/` directory for local storage, or an external backe
 
 The `DEFAULT_STORAGE` option in `wr.env` configures storage options, which can be `DEFAULT_STORAGE=local` or `DEFAULT_STORAGE=s3`
 
-Webrecorder uses a temporary storage directory, for recording and temporary collections, and moves data
-into a 'permanent' storage when recording is complete.
+Webrecorder uses a temporary storage directory, for recording and temporary collections, and moves data into a 'permanent' storage when recording is complete.
 
 The temporary storage directory is: `WARCS_DIR=./data/warcs`. All active recording happens into this directory.
 
@@ -90,7 +86,7 @@ When using s3, the STORAGE_DIR is not used, and data is placed into `S3_ROOT` wh
 
 Additional s3 auth environment settings must also be set in `wr.env` or externally.
 
-All 'web archiving data' (WARC and CDXJ files) are stored in the file system, while all other Webrecorder data is stored in 
+All 'web archiving data' (WARC and CDXJ files) are stored in the file system, while all other Webrecorder data is stored in
 the persistent Redis instance. (Redis persists data to `./data/dump.rdb`)
 
 #### Mail
@@ -99,7 +95,7 @@ Webrecorder can send confirmation and lost password emails. By default, a local 
 
 #### Frontend Options
 
-The react frontend includes a number of additional options, useful for debugging react. Setting `NODE_ENV=development` will switch react to development mode and enable React debugging on port 8096.
+The react frontend includes a number of additional options, useful for debugging react. Setting `NODE_ENV=development` will switch react to development mode with hot reloading on port 8096.
 
 
 ### Administration tool
@@ -124,9 +120,11 @@ See `docker exec -it webrecorder_app_1 python -m webrecorder.admin --help` for f
 
 ### Restarting Webrecorder
 
-When making changes to Webrecorder, running `docker-compose build; docker-compose up -d` will build and restart all of the containers.
+When making changes to the Webrecorder backend app, running `docker-compose kill app; docker-compose up -d app` will stop and restart the container.
 
-To fully recreate Webrecorder, deleting old containers (bot not the data!) use the `./recreate.sh` script.
+To integrate changes to the frontend app, either set `NODE_ENV` to `development` and utilize hot reloading, or run `docker-compose kill frontend; docker-compose up -d frontend` with `NODE_ENV=production`.
+
+To fully recreate Webrecorder, deleting old containers (but not the data!) use the `./recreate.sh` script.
 
 ## Webrecorder Architecture
 
@@ -136,11 +134,10 @@ This repository contains the Docker Compose setup for Webrecorder, and is the ex
   - `app` -- The API and data model and rewriting system are found in this container.
   - `recorder` -- The WARC writer is found in this container.
   - `warcserver` -- The WARC loading and lookup is found in this container.
-  
+
   The backend containers run different tools from [pywb](https://github.com/webrecorder/pywb), the core web archive replay toolkit library.
-  
-- `/frontend` - A React-based frontend application, running in Node.js. The frontend a modern interface for Webrecorder
-and uses the backend api. All user access goes through frontend (after nginx).
+
+- `/frontend` - A React-based frontend application, running in Node.js. The frontend is a modern interface for Webrecorder and uses the backend api. All user access goes through frontend (after nginx).
 
 - `/nginx` - A custom nginx deployment to provide routing and caching.
 
