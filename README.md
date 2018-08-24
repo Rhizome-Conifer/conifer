@@ -1,25 +1,24 @@
 # Webrecorder Project
+### *Web archiving for All!*
 
 Webrecorder provides an integrated platform for creating high-fidelity web archives while browsing, sharing,
 and disseminating archived content.
 
-This repository represents the hosted service deployed on https://webrecorder.io/ and can be deployed fully using Docker.
-
-*If you have any questions or issues with the hosted service or issues, please contact us directly at support@webrecorder.io*
-
-## History
-
-Webrecorder has gone through several iterations, beginning in 2014.
+This repository represents the hosted service running on https://webrecorder.io/ and can be deployed using Docker.
 
 Webrecorder is a project of Rhizome, developed with generous support from the Mellon Foundation.
 
-This README corresponds to the 4.x release of Webrecorder, released in June, 2018.
+This README corresponds to the 4.x release of Webrecorder, originally introduced in June, 2018.
 
-*See [migration info](#migration-info) for migrating from a 3.x installation*
+This release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture)
 
-## Web Archiving For All! Using Webrecorder (and related tools)
+*See [Migration Info](#migrating-from-earlier-versions) below for migrating from a 3.x installation*
 
-Webrecorder and related tools are  designed to make web archiving more portable and decentralized, as well as to serve users and developers of all skill levels and requirements. The following options are available for end users and developers.
+*If you have any questions or issues specifically with https://webrecorder.io/ service, please contact us directly at support@webrecorder.io*
+
+## Using Webrecorder and related tools
+
+Webrecorder and related tools are designed to make web archiving more portable and decentralized, as well as to serve users and developers of all skill levels and requirements. The following options are available for end users and developers.
 
 
 ### Hosted Service
