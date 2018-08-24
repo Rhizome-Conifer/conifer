@@ -12,31 +12,32 @@ This README refers to the 4.x version of Webrecorder, released in June, 2018. Th
 
 *If you have any questions or issues specifically with https://webrecorder.io/ service, please contact us directly at support@webrecorder.io*
 
-## Using Webrecorder and related tools
+## Using Webrecorder Platform
 
-Webrecorder and related tools are designed to make web archiving more portable and decentralized, as well as to serve users and developers of all skill levels and requirements. The following options are available for both end users and developers.
+Webrecorder and related tools are designed to make web archiving more portable and decentralized, as well as to serve users and developers with a broad range of skill levels and requirements. Here are a few ways that Webrecorder can be used, ranked in rough order of increasing in technical expertise necessary.
 
-
-### Hosted Service
+### 1. Hosted Service
 
 Using our hosted version of Webrecorder at https://webrecorder.io/, users can create a free account and create their own personal web archives. Archived web content will be available online, either publicly or privately, under each user account, and can also be downloaded by the owner at any time.
 
-### Offline Browsing
+### 2. Offline Browsing
 
 The hosted service can also be used anonymously, and the archived content (WARC files) downloaded after each use. We also provide a OSX/Windows/Linux Electron application, [Webrecorder Player](https://github.com/webrecorder/webrecorderplayer-electron) that can browse any WARC created by Webrecorder (or other web archiving tools) locally on the desktop. Once downloaded from Webrecorder, the player can be used to browse the content, even offline.
 
-### Preconfigured Deployment
+### 3. Preconfigured Deployment
 
 To deploy the full version of Webrecorder with Ansible and Linux machine, the [Webrecorder Deploy](https://github.com/webrecorder/webrecorder-deploy) workbook can be used to install this repository, configure nginx and other dependencies, such as SSL (via Lets Encrypt). The workbook is used for the https://webrecorder.io/ deployment.
 
-### Manual Local Deployment
+### 4. Full Webrecorder Local Deployment
 
-To deploy only the Webrecorder system in this repository, [follow the instructions](#running-locally) below on local deployment. Docker with Compose will be required.
+The Webrecorder system in this repository can be deployed directly by [following the instructions below](#running-locally).
+Webrecorder runs entirely in Docker and also requires Docker Compose. The rest of this README covers the Webrecorder local deployment options.
 
-### Deploying pywb
+### 5. Standalone Pywb Deployment
 
-Finally, for users interested in the core replay system and very simple recording capabilities, deploying [pywb](https://github.com/webrecorder/pywb) may also make sense. Webrecorder is built on top of pywb, and the core functionality is provided in pywb as a standalone Python application. See the [pywb reference manual](http://pywb.readthedocs.org/)
-pywb can be deployed natively or in a Docker container as well.
+Finally, for users interested in the core replay system and very basic recording capabilities, deploying [pywb](https://github.com/webrecorder/pywb) may also make sense. Webrecorder is built on top of pywb, and the core recording and replay functionality is provided by pywb as a standalone Python library (and comes with a Docker image as well).
+
+See [the full pywb reference manual](http://pywb.readthedocs.org/) for further information on using and deploying pywb.
 
 ## Running Locally
 
