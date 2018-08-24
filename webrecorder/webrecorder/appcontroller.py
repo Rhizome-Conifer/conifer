@@ -40,6 +40,11 @@ class AppController(BaseController):
         def faq():
             return {}
 
+        @self.app.get('/_documentation')
+        @self.jinja2_view('howtoguide.html')
+        def documentation():
+            return {}
+
         @self.app.get('/_policies')
         @self.jinja2_view('policies.html')
         def policies():

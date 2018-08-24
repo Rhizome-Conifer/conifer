@@ -363,6 +363,22 @@ a#collapse-vid-toggle[aria-expanded=tru] .glyphicon-triangle-bottom {
 }
 
 /*
+ * Documentation
+ *
+ */
+
+.documentation ol.instructions{
+  margin-bottom: 60px;
+}
+.documentation ol.instructions li{
+  padding-bottom: 20px;
+}
+
+.documentation span.keyword {
+  font-weight: bold;
+}
+
+/*
  * FAQ
  *
  */
