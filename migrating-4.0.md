@@ -14,16 +14,20 @@ The migration can be performed as follows:
 
 3) Update `REDIS_BASE_URL` in `wr.env` to redis://redis/2 to use a blank new Redis DB
 
-4) Recreate Webrecorder containers via `./rebuild.sh`, which will remove old containers, build new ones.
+4) Add `STORAGE_ROOT=/data/storage/` to wr.env
 
-5) Run `docker exec -it webrecorder_app_1 python ./migration_scripts/migrate4.0.py --new-redis=redis://redis/2`
+5) Recreate Webrecorder containers via `./rebuild.sh`, which will remove old containers, build new ones.
 
-This process will create a copy of the Redis data in Redis DB 2. To use a different Redis DB or a remote Redis, specify
-a different `redis://` url.
+6) Run `docker exec -it webrecorder_app_1 python ./migration_scripts/migrate4.0.py --new-redis=redis://redis/2`
+
+This process will create a copy of the Redis data in Redis DB 2.
+
+To use a different Redis DB or a remote Redis, specify a different `redis://` url.
 
 The old data will not be deleted automatically. The existing Redis DB (usually DB 1) will still be in place, and existing WARCs 
-under `./data/warcs` will not be deleted. All the WARC data will be copied to `./data/storage` and organized by collections to match
-the new data model and directory layout.
+under `./data/warcs` will not be deleted.
+
+All the WARC and CDXJ data will be copied to `./data/storage` (specified via `STORAGE_ROOT` env var) and organized by collections to match the new data model and directory layout.
 
 For more migration options, including migrating data on S3, you can run:
 
