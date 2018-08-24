@@ -6,11 +6,7 @@ and disseminating archived content.
 
 This repository represents the hosted service running on https://webrecorder.io/ and can be deployed using Docker.
 
-Webrecorder is a project of Rhizome, developed with generous support from the Mellon Foundation.
-
-This README corresponds to the 4.x release of Webrecorder, originally introduced in June, 2018.
-
-This release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture)
+This README refers to the 4.x version of Webrecorder, released in June, 2018. The release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture)
 
 *See [Migration Info](#migrating-from-earlier-versions) below for migrating from a 3.x installation*
 
@@ -185,7 +181,7 @@ The remote browser system uses https://github.com/oldweb-today/ repositories, in
 
 ### Contact
 
-Webrecorder is a project of [Rhizome](https://rhizome.org)
+Webrecorder is a project of [Rhizome](https://rhizome.org), developed with generous support from the Mellon Foundation.
 
 For any questions/concerns regarding the project or https://webrecorder.io/ you can:
 
