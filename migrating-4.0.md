@@ -16,7 +16,7 @@ The migration can be performed as follows:
 
 4) Add `STORAGE_ROOT=/data/storage/` to wr.env
 
-5) Recreate Webrecorder containers via `./rebuild.sh`, which will remove old containers, build new ones.
+5) Recreate Webrecorder containers via `./recreate.sh`, which will remove old containers, build new ones.
 
 6) Run `docker exec -it webrecorder_app_1 python ./migration_scripts/migrate4.0.py --new-redis=redis://redis/2`
 
