@@ -55,9 +55,9 @@ class CollectionListUI extends Component {
     createNewCollection(user, collTitle, isPublic);
   }
 
-  editName = (display_name) => {
+  editName = (full_name) => {
     const { editUser, match: { params: { user } } } = this.props;
-    editUser(user, { display_name });
+    editUser(user, { full_name });
   }
 
   editURL = (display_url) => {
@@ -83,7 +83,7 @@ class CollectionListUI extends Component {
     const { auth, collections, editCollection, history, orderedCollections, match: { params }, user } = this.props;
     const { showModal } = this.state;
     const userParam = params.user;
-    const displayName = user.get('display_name') || userParam;
+    const displayName = user.get('full_name') || userParam;
     const canAdmin = auth.getIn(['user', 'username']) === userParam;
 
     const userLink = user.get('display_url') && (!user.get('display_url').match(/^[a-zA-Z]+:\/\//) ? `http://${user.get('display_url')}` : user.get('display_url'));

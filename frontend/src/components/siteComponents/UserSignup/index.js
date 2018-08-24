@@ -45,7 +45,7 @@ class UserSignup extends Component {
   save = (evt) => {
     evt.preventDefault();
     const { user } = this.props;
-    const { announce_mailer, username, name, full_name,
+    const { announce_mailer, username, name,
             email, password, confirmpassword, moveTemp, toColl } = this.state;
 
     if (!password || !confirmpassword) {
@@ -62,11 +62,7 @@ class UserSignup extends Component {
       }
 
       if (name) {
-        data = { ...data, name };
-      }
-
-      if (full_name) {
-        data = { ...data, full_name };
+        data = { ...data, full_name: name };
       }
 
       // check for anon usage
@@ -231,13 +227,6 @@ class UserSignup extends Component {
                 placeholder="Your Name (Optional)"
                 value={name}
                 onChange={this.handleChange} />
-            </FormGroup>
-
-            <FormGroup style={{ display: 'none' }}>
-              <ControlLabel srOnly>Name:</ControlLabel>
-              <FormControl
-                type="text"
-                name="full_name" />
             </FormGroup>
 
             <FormGroup validationState={this.validateEmail()}>
