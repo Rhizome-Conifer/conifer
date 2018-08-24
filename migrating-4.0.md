@@ -20,17 +20,32 @@ The migration can be performed as follows:
 
 6) Run `docker exec -it webrecorder_app_1 python ./migration_scripts/migrate4.0.py --new-redis=redis://redis/2`
 
-This process will create a copy of the Redis data in Redis DB 2.
+### What Migration Script Does
 
-To use a different Redis DB or a remote Redis, specify a different `redis://` url.
+The migration script will do the following:
 
-The old data will not be deleted automatically. The existing Redis DB (usually DB 1) will still be in place, and existing WARCs 
-under `./data/warcs` will not be deleted.
+- All user, collections, recordings are copied into the new Redis DB (DB 2 per settings above)
+  To use a different Redis DB or a remote Redis, specify a different `redis://` url.
+  
+- All WARC and CDX data is copied to `./data/storage` (specified via `STORAGE_ROOT` env var) and organized by collections to match the new data model and directory layout.
 
-All the WARC and CDXJ data will be copied to `./data/storage` (specified via `STORAGE_ROOT` env var) and organized by collections to match the new data model and directory layout.
+- A new public list is created for all non-hidden Webrecorder 3.x bookmarks. Hidden bookmarks are still pages, but are not added to a list.
 
-For more migration options, including migrating data on S3, you can run:
+- Old Data (usually in DB 1) is not deleted and existing WARCs under `./data/warcs` are not deleted. These can be deleted manually after migration has been performed successfully.
+
+### Other Options -- Download and Upload
+
+WARCs downloaded from Webrecorder 3.x will still be compatible and can be uploaded into Webrecorder 4.x.
+
+If migrating just a single or a few collections, it may make sense to create a fresh Webrecorder 4.x and upload WARCs collections individually.
+
+### Advanced Options
+
+The migration script also allows for migrating a single user, or a single collection.
+The script also supports migrating via S3 copy if the source and target are using `DEFAULT_STORAGE=s3`
+
+For more infomation on these migration options, see:
 
 `docker exec -it webrecorder_app_1 python ./migration_scripts/migrate4.0.py -h`
 
-Please open an issue or contact us for additional questions about migration.
+Please feel free to open an issue or contact us for additional questions about migration.
