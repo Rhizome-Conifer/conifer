@@ -22,8 +22,8 @@ class BaseController(object):
 
         self.api = api_decorator
 
-        self.app_host = os.environ['APP_HOST']
-        self.content_host = os.environ['CONTENT_HOST']
+        self.app_host = os.environ.get('APP_HOST', '')
+        self.content_host = os.environ.get('CONTENT_HOST', '')
         self.cache_template = self.config.get('cache_template')
 
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))

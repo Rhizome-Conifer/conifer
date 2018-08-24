@@ -1,0 +1,96 @@
+{% extends "main_bootstrap.html" %}
+
+{% block title %} | Webrecorder FAQ {% endblock %}
+
+{% block body %}
+    {% include 'header.html' %}
+
+    <div class="container wr-content documentation">
+
+        <div class="row">
+            <div class="col-xs-9 col-xs-push-1 col-sm-6 col-sm-push-3">
+                <h3 class="instrTitles">Quick Start</h3>
+                <p class='instructions'>
+                    <ol class="instructions">
+                      <li>Enter a URL in the box in the center of the screen labeled ‘URL to record’.</li>
+                      <li>Press the ‘record’ button (on the right side of the box where you entered the URL).</li>
+                      <li>Interact with the web page that loads so Webrecorder can capture the content displayed on this page. To collect audio or video from a page be sure to press ‘play’ so the file will load into the browser.</li>
+                      <li>Continue to browse the pages you would like to capture. Each page you visit will be included in your recording session - you will be collecting the contents of each page you visit but will not automatically obtain pages that are linked to on the pages you collect (hyperlinks).</li>
+                      <li>To end your recording hover over the ‘Recording’ button in the upper left corner of the screen so it changes to read ‘Stop’ then click that button.</li>
+                      <li>Your capture (recording) will then be browsable in replay mode. Note the capture (recording) will not ‘replay’ like a linear recording but instead be an interactive copy of the pages you have collected.</li>
+                      <li>If you are a logged-in user, this collection will be saved to your account. You can also log in to your account to save the collection after you create it. If you have not logged in you can still download your collection for a limited time (approximately 90 minutes from when you stop your recording session).</li>
+                    </ol>
+                </p>
+
+                <h3 class="instrTitles">Browse (access/review collection)</h3>
+                <p class='instructions'>
+                  <ol class="instructions">
+                    <li>Select the collection you want to browse.</li>
+                    <li>From the pages list, click on the page in the collection you want to review.</li>
+                    <li>You can navigate within your collection by clicking on the arrow button in the upper right section of the screen to view each page you captured one by one. If you collected pages that link to each other you can use hyperlinks between those two pages to move from one page to the next.</li>
+                  </ol>
+                </p>
+
+                <h3 class="instrTitles">Basic Collection Building</h3>
+                <p class='instructions'>
+                  <ol class="instructions">
+                    <li>Plan what you want to collect in a collection. Note: you cannot delete or modify the individual pages in your collection––adding or deleting from a collection can only occur session-by-session.</li>
+                    <li>Start a collection: enter a name for the collection.</li>
+                    <li>Start a collecting session by entering a URL for a page you want to add to your collection. Enter a URL in the box in the center of the screen labeled ‘URL to record.’</li>
+                    <li>Press the ‘record’ button (on the right side of the box where you entered the URL).</li>
+                    <li>Interact with the web page that loads so Webrecorder can capture the content displayed on this page. To collect audio or video from a page, be sure to press ‘play’ so the file will load into the browser.</li>
+                    <li>Continue to browse the pages you would like to capture. Each page you visit will be included in your recording session––you will be collecting the contents of each page you visit but will not automatically obtain pages that are linked to on the pages you collect (hyperlinks).</li>
+                    <li>To end your recording, hover over the ‘Recording’ button in the upper left corner of the screen so it changes to ‘Stop’ then click that button.</li>
+                    <li>Your capture (recording) will then be browsable in replay mode. Note that the capture (recording) will not ‘replay’ like a linear recording but instead be an interactive copy of the pages you have collected.</li>
+                    <li>If you are a logged-in user this collection will be saved to your account. You can also log in to your account to save the collection after you   create it. If you have not logged in you can still download your collection for a limited time (approximately 90 minutes from when you stop your recording session).</li>
+                    <li>Build your collection with additional sessions by repeating the steps above. Again, note, adding or deleting from a collection happens session-by session––you cannot delete or modify individual pages or resources.</li>
+                  </ol>
+                </p>
+
+                <h3 class="instrTitles">Making a Patch (adding to already collected data)</h3>
+                  <ol class="instructions">
+                    <li>If there is missing content when you review a capture (recording), you will see a message indicating the resource cannot be found. You can often go back to the original page (or a copy in an open web archive) to patch this missing data into the page in your collection.</li>
+                    To start a patching session, click on the button labeled ‘Try to patch’.</li>
+                    <li>Once you start a patch session, the targeted page will load and Webrecorder will try to retrieve the missing content from the live web, or from a public web archive if you have specified one.</li>
+                    <li>When you end the patch session, Webrecorder will save this additional data to your collection.</li>
+                    <li>If the patch session is successful when you browse the archived page in your collection the previously missing content should be present.</li>
+                  </ol>
+
+                <h3 class="instrTitles">Adding to a Collection and Deleting Sessions</h3>
+                  <ol class="instructions">
+                    <li>Adding or deleting from a collection happens session by session. You cannot delete or modify individual pages or resources.</li>
+                    <li>To delete a session, select the session name from the list on the left side of your screen and click on the trashcan icon.</li>
+                    <li>You can add to a collection by initializing a new collecting session, starting a patch session (if filling in missing content on a previously collected page) or by uploading a WARC file.</li>
+                  </ol>
+
+                <h3 class="instrTitles">Managing Collection Privacy</h3>
+                  <ol class="instructions">
+                    <li>Collections are private by default. You can make a collection public via the privacy settings. A public collection can be viewed by anyone.</li>
+                    <li>To make a collection public click on the button below “Collection Public?’ so it turns to ‘yes’ (it is in the upper right corner of the screen).</li>
+                  </ol>
+
+                <h3 class="instrTitles">Exporting a Collection</h3>
+                  <ol class="instructions">
+                    <li>You can download your collection as a WARC file by clicking the ‘Download Collection’ button near the top left section of your screen.</li>
+                    <li>To open a WARC file and view it offline, you can use <b><a href="https://github.com/webrecorder/webrecorderplayer-electron/" target="_blank">Webrecorder Player</a></b>, a free, open source software that can be <a href="https://github.com/webrecorder/webrecorderplayer-electron/" target="_blank">downloaded from GitHub</a>.</li>
+                  </ol>
+                <h2>Glossary</h2>
+                <p><span class="keyword">Capture (record)</span> - acquiring (collecting) web pages including all features, content and elements (i.e. HTML, CSS, JavaScript, Flash, embedded media, etc)</p>
+                <p><span class="keyword">Collection</span> - named grouping of one or more pages</p>
+                <p><span class="keyword">Native browser</span> - the web browser through which you are accessing the web (and Webrecorder). By default Webrecorder works through the native browser you are using to view web pages but you can choose to instead use a different preconfigured (remote) browser by selecting one from the list in the menu to the left of the box where you enter a URL when you begin a collecting session</p>
+                <p><span class="keyword">Network traffic</span> - communications traveling over a network (e.g. requests and responses between a web browser and server)</p>
+                <p><span class="keyword">Page</span> - web page, which is identified by a URL (sometimes more than one URL is associated with a page but this is not assumed in defining this unit); a page is a foundational unit and can include HTML, CSS, JavaScript, Flash, embedded media, etc</p>
+                <p><span class="keyword">Patch (session)</span> - insertion of missing resources are added to page(s) in a collection</p>
+                <p><span class="keyword">Private</span> - collection that is only visible to the owner/creator of the collection when they are logged in to their account</p>
+                <p><span class="keyword">Public</span> - collection that is shared and discoverable via a user’s account page or by sharing a link</p>
+                <p><span class="keyword">Reconstruction</span> - reassembly of resources (i.e. HTML, JavaScript, embedded media) to recreate a captured page</p>
+                <p><span class="keyword">Preconfigured (remote) browser</span> - a version of a web browser that is self contained and fixed with the default settings assigned to it (preconfigured). A preconfigured browser can be used to capture elements of web pages that might not be able to be rendered by web browsers in the future, such as Flash. To use a preconfigured (remote) browser, select one from the list in the menu to the left of the box where you enter a URL when you begin a collecting session</p>
+                <p><span class="keyword">Render</span> - to communicate and reassemble resources to make a archived page browsable</p>
+                <p><span class="keyword">Session</span> - period in which web content is captured; sessions are a defining unit for captures (sessions can be deleted but pages or resources within a session cannot be deleted)</p>
+
+            </div>
+        </div>
+    </div>
+
+    {% include 'footer.html' %}
+{% endblock %}

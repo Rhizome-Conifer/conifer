@@ -52,7 +52,10 @@ Webrecorder can be run on any system that has [Docker](https://docs.docker.com/i
 
 (The `init-default.sh` is a convenience script that copies [wr_sample.env](webrecorder/webrecorder/config/wr_sample.env) -> `wr.env` and creates keys for session encryption.)
 
-Point your browser to port `http://localhost:8089/` to access Webrecorder.
+Point your browser to `http://localhost:8089/` to access the locally running Webrecorder instance.
+
+(Note: you may see a Webrecorder maintenance message briefly the frontend container is starting up for the first time. Refresh the page after a few seconds to see the Webrecorder home page).
+
 
 ### Configuration
 

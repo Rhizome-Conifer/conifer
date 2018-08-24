@@ -3,6 +3,7 @@ $(function() {
     var params = {}
     params.static_prefix = "/static/browsers/";
     params.api_prefix = "/api/browsers";
+    params.audio = 1;
 
     if (!window.location.port) {
         params.proxy_ws = "_websockify?port=";
