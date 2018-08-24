@@ -8,7 +8,7 @@ This repository represents the hosted service running on https://webrecorder.io/
 
 This README refers to the 4.x version of Webrecorder, released in June, 2018. The release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture)
 
-*If you have an existing Webrecorder installation, see [Migration Info](migrating-4.0.md) for how to migrate to the latest version*
+**Users with Existing Installations**: If you have a previous Webrecorder installation (version 3.x), see [Migration Info](migrating-4.0.md) for how to migrate to the latest version*
 
 *If you have any questions or issues specifically with https://webrecorder.io/ service, please contact us directly at support@webrecorder.io*
 
@@ -88,7 +88,7 @@ The permanent storage directory is either `STORAGE_DIR=./data/storage` for local
 
 When using s3, the STORAGE_DIR is not used, and data is placed into `S3_ROOT` which is an `s3://` bucket prefix url.
 
-Additional s3 auth enviornment settings must also be set in `wr.env` or externally.
+Additional s3 auth environment settings must also be set in `wr.env` or externally.
 
 All 'web archiving data' (WARC and CDXJ files) are stored in the file system, while all other Webrecorder data is stored in 
 the persistent Redis instance. (Redis persists data to `./data/dump.rdb`)
@@ -142,7 +142,7 @@ This repository contains the Docker Compose setup for Webrecorder, and is the ex
 - `/frontend` - A React-based frontend application, running in Node.js. The frontend a modern interface for Webrecorder
 and uses the backend api. All user access goes through frontend (after nginx).
 
-- `/nginx` - A custom nginx deployment to provide routing and cacheing.
+- `/nginx` - A custom nginx deployment to provide routing and caching.
 
 - `redis` - A Redis instance that stores all of the Webrecorder state (other than WARC and CDXJ).
 
