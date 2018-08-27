@@ -454,7 +454,7 @@ def create_user(
             pipeline.hsetnx(key, "size", 0)
         collection = manager.create_collection(
             username,
-            coll=manager.default_coll["id"],
+            coll="opendachs",
             coll_title=manager.default_coll["title"],
             desc=manager.default_coll["desc"].format(username),
             public=False
