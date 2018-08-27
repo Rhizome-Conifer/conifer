@@ -169,10 +169,12 @@ def _get_archive(username, collection, info):
         records = []
         for metadata in info:
             if metadata["type"] == "recording":
+                rec = sanitize(metadata["title"])
+                assert collection["id"] == "opendachs", collection["id"]
                 recording = manager.create_recording(
                     username,
                     collection["id"],
-                    sanitize(metadata["title"]),
+                    rec,
                     metadata["title"],
                     collection["title"],
                     rec_type=metadata.get("rec_type"),
@@ -181,7 +183,7 @@ def _get_archive(username, collection, info):
                 records.append(
                     {
                         "coll": collection["id"],
-                        "rec": recording["id"],
+                        "rec": rec,
                         "offset": metadata["offset"],
                         "length": metadata["length"],
                         "pages": metadata.get("pages")
@@ -455,7 +457,7 @@ def create_user(
         collection = manager.create_collection(
             username,
             coll="opendachs",
-            coll_title=manager.default_coll["title"],
+            coll_title="OpenDACHS ticket",
             desc=manager.default_coll["desc"].format(username),
             public=False
         )
