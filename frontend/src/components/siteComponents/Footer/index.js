@@ -16,10 +16,10 @@ function Footer() {
       <div className="container top-buffer bottom-buffer">
         <div className="row">
           <div className="col-xs-12 col-sm-8 project-info">
-            <a href="https://github.com/webrecorder/webrecorder" target="_blank">
+            <a href="https://github.com/webrecorder/webrecorder" aria-label="Github" target="_blank">
               <GithubIcon />
             </a>
-            <a href="https://twitter.com/webrecorder_io" target="_blank">
+            <a href="https://twitter.com/webrecorder_io" aria-label="Twitter" target="_blank">
               <TwitterIcon />
             </a>
             <a href={`mailto:${supportEmail}`} className="divider contact"><MailIcon />Contact</a>

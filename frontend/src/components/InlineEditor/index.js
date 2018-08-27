@@ -174,15 +174,15 @@ class InlineEditor extends PureComponent {
                     </div>
                   }
                 </div>
-                <Button onClick={this._save} bsStyle={this.validation(true)}><CheckIcon /></Button>
-                <Button onClick={this.toggleEditMode}><XIcon /></Button>
+                <Button aria-label="save" onClick={this._save} bsStyle={this.validation(true)}><CheckIcon /></Button>
+                <Button aria-label="toggle edit mode" onClick={this.toggleEditMode}><XIcon /></Button>
               </FormGroup>
             </div> :
             <div key="childWrapper" onClick={this.toggleEditMode} ref={(obj) => { this.childContainer = obj; }} className="child-container">
               {this.props.children}
               {
                 canAdmin && !readOnly &&
-                  <Button className="wr-inline-edit-button borderless"><PencilIcon /></Button>
+                  <Button aria-label="edit" className="wr-inline-edit-button borderless"><PencilIcon /></Button>
               }
             </div>
           }

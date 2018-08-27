@@ -153,19 +153,19 @@ class CollectionHeaderUI extends Component {
         }
         {
           !condensed &&
-            <Button className="rounded" onClick={this.togglePublicView}>Cover</Button>
+            <Button aria-label="cover" className="rounded" onClick={this.togglePublicView}>Cover</Button>
         }
-        <DropdownButton pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
-          <MenuItem onClick={this.newSession}>New Session</MenuItem>
+        <DropdownButton aria-label="drop down menu" pullRight={condensed} id="coll-menu" noCaret className="rounded" title={<MoreIcon />}>
+          <MenuItem aria-label="new session" onClick={this.newSession}>New Session</MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
+          <MenuItem aria-label="cover" onClick={this.togglePublicView}>Cover</MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
+          <MenuItem aria-label="manage session" onClick={this.manageCollection}>Manage Sessions</MenuItem>
           {
             !isAnon &&
               <Upload classes="" fromCollection={collection.get('id')} wrapper={MenuItem}>Upload To Collection</Upload>
           }
-          <MenuItem onClick={this.downloadCollection}>Download Collection</MenuItem>
+          <MenuItem aria-label="download collection" onClick={this.downloadCollection}>Download Collection</MenuItem>
           <DeleteCollection wrapper={MenuItem}>Delete Collection</DeleteCollection>
           {/* TODO:
           <MenuItem divider />

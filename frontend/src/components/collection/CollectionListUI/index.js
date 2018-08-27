@@ -109,7 +109,7 @@ class CollectionListUI extends Component {
             {
               !isAnon && canAdmin &&
                 <React.Fragment>
-                  <Button onClick={this.toggle} bsStyle="primary" bsSize="small">
+                  <Button aria-label="new collection" onClick={this.toggle} bsStyle="primary" bsSize="small">
                     <span className="glyphicon glyphicon-plus glyphicon-button" /> New Collection
                   </Button>
                   <Upload classes="btn btn-sm btn-success">

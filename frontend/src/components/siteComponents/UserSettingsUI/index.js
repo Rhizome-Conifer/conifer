@@ -164,6 +164,7 @@ class UserSettingsUI extends Component {
         <FormGroup validationState={this.validateConfirmDelete()}>
           <ControlLabel>Type your username to confirm:</ControlLabel>
           <FormControl
+            aria-label="confirm user"
             autoFocus
             disabled={deleting}
             id="confirm-delete"
@@ -265,6 +266,7 @@ class UserSettingsUI extends Component {
                 <FormGroup validationState={this.validatePassword()}>
                   <ControlLabel>New Password</ControlLabel>
                   <FormControl
+                    aria-label="password"
                     type="password"
                     name="password"
                     value={password}
@@ -278,6 +280,7 @@ class UserSettingsUI extends Component {
                 <FormGroup validationState={this.validatePassword()}>
                   <ControlLabel>Confirm New Password</ControlLabel>
                   <FormControl
+                    aria-label="confirm password"
                     type="password"
                     name="password2"
                     value={password2}

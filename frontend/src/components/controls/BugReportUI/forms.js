@@ -65,6 +65,7 @@ class ReportBugForm extends PureComponent {
         }
         <FormGroup id="formControlTextarea">
           <FormControl
+            aria-label="additional info (optional)"
             name="desc"
             onChange={this.handleChange}
             componentClass="textarea"
@@ -74,6 +75,7 @@ class ReportBugForm extends PureComponent {
         <FormGroup>
           <ControlLabel>Email to notify when this issue is fixed: (optional)</ControlLabel>
           <FormControl
+            aria-label="email (optional)"
             id="bugEmail"
             type="email"
             name="email"

@@ -213,7 +213,7 @@ export class App extends Component {
       <React.Fragment>
         <Helmet {...config.app.head} />
         <header>
-          <Navbar staticTop fluid collapseOnSelect className={navbarClasses}>
+          <Navbar staticTop fluid collapseOnSelect className={navbarClasses} role="navigation">
             <Navbar.Header>
               <BreadcrumbsUI is404={this.props.is404} url={pathname} />
               <Navbar.Toggle />
@@ -271,7 +271,7 @@ export class App extends Component {
                 </Panel>
               </div>
             </div> :
-            <section className={containerClasses}>
+            <section role="main" className={containerClasses}>
               {renderRoutes(this.props.route.routes)}
             </section>
         }
