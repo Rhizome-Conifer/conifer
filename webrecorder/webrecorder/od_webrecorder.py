@@ -140,7 +140,7 @@ def _parse_warc(fp, size):
                     "offset": 0
                 }
             first = False
-        if metadata and metadata.get("offset"):
+        if metadata and metadata.get("offset") >= 0:
             metadata["length"] = (fp.tell() - metadata["offset"])
             info.append(metadata)
         if fp.tell() < size:
@@ -215,7 +215,13 @@ def _put(key, fp, username, coll, rec, offset, length):
         fp.seek(offset)
         limit_reader = LimitReader(fp, length)
         headers = {"Content-Length": str(length)}
-        url = URL.format(user=username, coll=coll, rec=rec, upid=key)
+        url = URL.format(
+            record_host="http://recorder:8010",
+            user=username,
+            coll=coll,
+            rec=rec,
+            upid=key
+        )
         requests.put(url, headers=headers, data=limit_reader)
     except Exception as exception:
         msg = "failed to make PUT request\t: {}".format(exception)
@@ -312,6 +318,7 @@ def _run(key, fp, username, records, total_size):
                     record["length"]
                 )
             pages = record.get("pages")
+            raise SystemExit(record)
             if not pages:
                 pages = _find_pages(username, record["coll"], record["rec"])
             if pages:
