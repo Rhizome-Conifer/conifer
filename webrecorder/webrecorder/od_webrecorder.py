@@ -318,7 +318,6 @@ def _run(key, fp, username, records, total_size):
                     record["length"]
                 )
             pages = record.get("pages")
-            raise SystemExit(record)
             if not pages:
                 pages = _find_pages(username, record["coll"], record["rec"])
             if pages:
