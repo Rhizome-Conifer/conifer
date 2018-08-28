@@ -30,6 +30,7 @@ import base64
 import argparse
 import tempfile
 from datetime import datetime
+from io import BytesIO
 
 
 # third party imports
@@ -37,6 +38,7 @@ import requests
 from warcio.archiveiterator import ArchiveIterator
 from warcio.limitreader import LimitReader
 from pywb.warcserver.index.cdxobject import CDXObject
+from pywb.indexer.cdxindexer import write_cdx_index
 from webrecorder.utils import redis_pipeline
 from webrecorder.redisman import init_manager_for_cli
 
@@ -170,7 +172,6 @@ def _get_archive(username, collection, info):
         for metadata in info:
             if metadata["type"] == "recording":
                 rec = sanitize(metadata["title"])
-                assert collection["id"] == "opendachs", collection["id"]
                 recording = manager.create_recording(
                     username,
                     collection["id"],
@@ -192,7 +193,7 @@ def _get_archive(username, collection, info):
                 manager.set_recording_timestamps(
                     username,
                     collection["id"],
-                    recording["id"],
+                    rec,
                     metadata.get("created_at"),
                     metadata.get("updated at")
                 )
@@ -218,7 +219,6 @@ def _put(key, fp, username, coll, rec, offset, length):
         limit_reader = LimitReader(fp, length)
         headers = {"Content-Length": str(length)}
         url = URL.format(
-            record_host="http://recorder:8010",
             user=username,
             coll=coll,
             rec=rec,
@@ -263,10 +263,10 @@ def _is_page(cdxobject):
     except Exception as exception:
         msg = "failed to determine whether the CDX line is a page\t: {}"
         raise RuntimeError(msg.format(exception))
-    return toggle
+    return True
 
 
-def _find_pages(username, coll, rec):
+def _find_pages(username, coll, rec, fp, filename):
     """Find pages.
 
     :param str username: username
@@ -279,6 +279,12 @@ def _find_pages(username, coll, rec):
     try:
         manager = init_manager_for_cli()
         key = CDXJ_KEY.format(user=username, coll=coll, rec=rec)
+        cdxout = BytesIO()
+        write_cdx_index(cdxout, fp, filename, cdxj=True, append_post=True)
+        cdx_list = cdxout.getvalue().rstrip().split(b'\n')
+        for cdx in cdx_list:
+            if cdx:
+                manager.redis.zadd(key, 0, cdx)
         pages = []
         for value in manager.redis.zrange(key, 0, -1):
             cdxobject = CDXObject(value.encode("udf-8"))
