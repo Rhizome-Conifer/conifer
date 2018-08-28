@@ -17,7 +17,7 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./webrecorder/proxy-certs:/code/proxy-certs
-            - ./../opendachs/tmp:/tmp
+            - ~/opendachs/tmp:/tmp
 
         networks:
             - default
@@ -37,6 +37,7 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
+            - ~/opendachs/tmp:/tmp
 
     warcserver:
         build: ./webrecorder
@@ -51,6 +52,7 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
+            - ~/opendachs/tmp:/tmp
 
     nginx:
         build: ./nginx
