@@ -6,7 +6,7 @@ import { UploadUI } from 'components/siteComponents';
 
 const mapStateToProps = ({ app }) => {
   return {
-    activeCollection: app.getIn(['auth', 'user', 'activeCollection'])
+    activeCollection: app.getIn(['auth', 'activeCollection'])
   };
 };
 

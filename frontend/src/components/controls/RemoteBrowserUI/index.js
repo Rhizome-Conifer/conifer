@@ -34,8 +34,23 @@ class RemoteBrowserUI extends Component {
     url: PropTypes.string
   }
 
-  constructor(props) {
+  constructor(props, context) {
     super(props);
+
+    if (context.currMode.startsWith('extract')) {
+      const { archiveId, collId } = props.params;
+      this.currMode = `${context.currMode}`;
+
+      if (archiveId) {
+        this.currMode = `${this.currMode}:${archiveId}`;
+      }
+
+      if (collId) {
+        this.currMode = `${this.currMode}:${collId}`;
+      }
+    } else {
+      this.currMode = context.currMode;
+    }
 
     this.reloadHandle = null;
     this.state = {
@@ -59,7 +74,6 @@ class RemoteBrowserUI extends Component {
 
   componentDidMount() {
     const { dispatch, params, rb, rec, timestamp, url } = this.props;
-    const { currMode } = this.context;
 
     if (!window.location.port) {
       this.pywbParams.proxy_ws = '_websockify?port=';
@@ -72,7 +86,7 @@ class RemoteBrowserUI extends Component {
 
     // generate remote browser
     if (!reqFromStorage) {
-      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, timestamp, url));
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, this.currMode, timestamp, url));
     } else {
       this.connectToRemoteBrowser(reqFromStorage.reqId, reqFromStorage.inactiveTime);
     }
@@ -81,7 +95,6 @@ class RemoteBrowserUI extends Component {
   componentDidUpdate(prevProps) {
     const { autoscroll, clipboard, dispatch, inactiveTime, contentFrameUpdate,
             params, rb, rec, reqId, timestamp, url } = this.props;
-    const { currMode } = this.context;
 
     // bidirectional clipboard
     if (clipboard !== prevProps.clipboard && this.cb) {
@@ -119,7 +132,7 @@ class RemoteBrowserUI extends Component {
       // });
       // write to storage for later reuse
       //setStorage('reqId', data, window.sessionStorage);
-    } else if (rb !== prevProps.rb || (!contentFrameUpdate && currMode.includes('replay') && (url !== prevProps.url || timestamp !== prevProps.timestamp))) {
+    } else if (rb !== prevProps.rb || (!contentFrameUpdate && this.currMode.includes('replay') && (url !== prevProps.url || timestamp !== prevProps.timestamp))) {
       // TODO: Disable browser reuse for now
       //const reqFromStorage = this.getReqFromStorage(nextProps.rb);
 
@@ -133,7 +146,7 @@ class RemoteBrowserUI extends Component {
       }
 
       // generate remote browser
-      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, timestamp, url));
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, this.currMode, timestamp, url));
     }
   }
 
@@ -168,7 +181,6 @@ class RemoteBrowserUI extends Component {
 
   onEvent = (type, data) => {
     const { dispatch, rb, params, rec, timestamp, url } = this.props;
-    const { currMode } = this.context;
 
     if (type === 'connect') {
       this.setState({ message: '' });
@@ -180,7 +192,7 @@ class RemoteBrowserUI extends Component {
       this.recreateBrowser();
     } else if (type === 'error') {
       deleteStorage('reqId', window.sessionStorage);
-      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, currMode, timestamp, url));
+      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, this.currMode, timestamp, url));
     }
   }
 

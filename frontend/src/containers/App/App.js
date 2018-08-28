@@ -40,6 +40,7 @@ export class App extends Component {
 
   static childContextTypes = {
     isAnon: PropTypes.bool,
+    isEmbed: PropTypes.bool,
     isMobile: PropTypes.bool
   }
 
@@ -63,7 +64,8 @@ export class App extends Component {
 
     return {
       isAnon: auth.getIn(['user', 'anon']),
-      isMobile: this.isMobile
+      isEmbed: this.state.match.embed || false,
+      isMobile: this.isMobile,
     };
   }
 
@@ -190,6 +192,7 @@ export class App extends Component {
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
     const classOverride = match.classOverride;
+    const isEmbed = match.embed;
     const lastClassOverride = lastMatch ? lastMatch.classOverride : classOverride;
     const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
 
@@ -210,17 +213,20 @@ export class App extends Component {
     return (
       <React.Fragment>
         <Helmet {...config.app.head} />
-        <header>
-          <Navbar staticTop fluid collapseOnSelect className={navbarClasses} role="navigation">
-            <Navbar.Header>
-              <BreadcrumbsUI is404={this.props.is404} url={pathname} />
-              <Navbar.Toggle />
-            </Navbar.Header>
-            <Navbar.Collapse>
-              <UserManagement />
-            </Navbar.Collapse>
-          </Navbar>
-        </header>
+        {
+          !isEmbed &&
+            <header>
+              <Navbar staticTop fluid collapseOnSelect className={navbarClasses} role="navigation">
+                <Navbar.Header>
+                  <BreadcrumbsUI is404={this.props.is404} url={pathname} />
+                  <Navbar.Toggle />
+                </Navbar.Header>
+                <Navbar.Collapse>
+                  <UserManagement />
+                </Navbar.Collapse>
+              </Navbar>
+            </header>
+        }
         {
           isOutOfSpace && this.state.outOfSpaceAlert &&
             <Alert bsStyle="warning" className="oos-alert" onDismiss={this.dismissSpaceAlert}>

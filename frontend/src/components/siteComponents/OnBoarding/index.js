@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 import { onboardingLink } from 'config';
-import { inStorage, getStorage, setStorage } from 'helpers/utils';
 
 import Modal from 'components/Modal';
 
@@ -36,17 +35,6 @@ class OnBoarding extends PureComponent {
   }
 
   componentDidMount() {
-    if (inStorage('onBoarding')) {
-      try {
-        const show = JSON.parse(getStorage('onBoarding'));
-        this.setState({ show });
-      } catch (e) {
-        console.log('Wrong `onBoarding` storage value.', e);
-      }
-    } else {
-      this.handle = setTimeout(() => this.setState({ show: true }), 1500);
-    }
-
     window.addEventListener('message', this.closeOnboarding);
   }
 
@@ -59,7 +47,6 @@ class OnBoarding extends PureComponent {
     this.setState({
       show: false
     });
-    setStorage('onBoarding', false);
   }
 
   render() {

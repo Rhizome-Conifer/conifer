@@ -143,7 +143,7 @@ export function create(user, coll, title) {
     types: [LIST_CREATE, LIST_CREATE_SUCCESS, LIST_CREATE_FAIL],
     promise: client => client.post(`${apiPath}/lists`, {
       params: { user, coll: decodeURIComponent(coll) },
-      data: { title }
+      data: { title, public: true }
     })
   };
 }

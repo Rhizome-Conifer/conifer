@@ -71,6 +71,7 @@ module.exports = Object.assign({
   passwordRegex: new RegExp(/(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}/),
   port: process.env.FRONTEND_PORT || 8095,
   product: 'Webrecorder',
+  productLink: 'https://webrecorder.io',
   ravenConfig: null,
   saveDelay: 1000,
   storageKey: 'wr__',

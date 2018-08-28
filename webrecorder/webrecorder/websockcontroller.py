@@ -266,7 +266,7 @@ class BaseWebSockHandler(object):
             pending_size = self.recording.get_pending_size()
 
             # if extracting, also add the size from patch recording, if any
-            if self.type_ == 'extract':
+            if self.type_.startswith('extract'):
                 patch_recording = self.recording.get_patch_recording()
                 if patch_recording:
                     patch_size = patch_recording.size

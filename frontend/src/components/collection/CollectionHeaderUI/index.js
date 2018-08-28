@@ -149,6 +149,7 @@ class CollectionHeaderUI extends Component {
               edited={this.props.collEdited}
               editCallback={this.editCollection}
               error={this.props.collEditError}
+              key={collection.get('id')}
               label="Collection"
               name={collection.get('title')}
               open={this.state.editModal}

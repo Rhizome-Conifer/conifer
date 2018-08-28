@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import classNames from 'classnames';
 import Helmet from 'react-helmet';
 import { asyncConnect } from 'redux-connect';
 import { batchActions } from 'redux-batched-actions';
@@ -15,6 +16,7 @@ import { listLoaded, load as loadList } from 'redux/modules/list';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 import { toggle as toggleSidebar } from 'redux/modules/sidebar';
 
+import EmbedFooter from 'components/EmbedFooter';
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import Resizable from 'components/Resizable';
@@ -25,6 +27,7 @@ import { IFrame, ReplayUI } from 'components/controls';
 
 class Replay extends Component {
   static contextTypes = {
+    isEmbed: PropTypes.bool,
     isMobile: PropTypes.bool
   };
 
@@ -176,16 +179,19 @@ class Replay extends Component {
           <meta property="og:title" content={title} />
           {desc}
         </Helmet>
-        <ReplayUI
-          activeBrowser={activeBrowser}
-          params={params}
-          timestamp={timestamp}
-          sidebarExpanded={this.props.expanded}
-          toggle={this.props.toggleSidebar}
-          url={url} />
-        <div className="iframe-container">
+        {
+          !this.context.isEmbed &&
+            <ReplayUI
+              activeBrowser={activeBrowser}
+              params={params}
+              timestamp={timestamp}
+              sidebarExpanded={this.props.expanded}
+              toggle={this.props.toggleSidebar}
+              url={url} />
+        }
+        <div className={classNames('iframe-container', { embed: this.context.isEmbed && params.embed !== '_embed_noborder' })}>
           {
-            !this.context.isMobile &&
+            !this.context.isMobile && !this.context.isEmbed &&
               <Sidebar defaultExpanded={Boolean(listSlug)} storageKey={listSlug ? 'listReplaySidebar' : 'pageReplaySidebar'}>
                 <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
                   {
@@ -218,6 +224,10 @@ class Replay extends Component {
                 passEvents={this.props.sidebarResize}
                 timestamp={timestamp}
                 url={url} />
+          }
+          {
+            this.context.isEmbed && params.embed !== '_embed_noborder' &&
+              <EmbedFooter timestamp={timestamp} />
           }
         </div>
       </React.Fragment>

@@ -23,8 +23,8 @@ const preloadData = [
 const mapStateToProps = ({ app }) => {
   return {
     auth: app.get('auth'),
-    deleting: app.getIn(['auth', 'user', 'deleting']),
-    deleteError: app.getIn(['auth', 'user', 'deleteError']),
+    deleting: app.getIn(['auth', 'deleting']),
+    deleteError: app.getIn(['auth', 'deleteError']),
     user: app.get('user')
   };
 };

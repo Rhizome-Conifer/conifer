@@ -36,6 +36,10 @@
     flex-grow: 1;
     display: flex;
 
+    &.embed {
+        flex-direction: column;
+    }
+
     .wr-sidebar {
         z-index: 100;
     }

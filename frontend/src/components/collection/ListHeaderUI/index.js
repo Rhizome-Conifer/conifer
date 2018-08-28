@@ -90,6 +90,7 @@ class ListHeaderUI extends Component {
               edited={this.props.listEdited}
               editCallback={this.editList}
               error={this.props.listError}
+              key={list.get('id')}
               label="List"
               name={list.get('title')}
               open={this.state.editModal}

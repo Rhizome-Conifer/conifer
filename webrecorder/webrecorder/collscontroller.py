@@ -25,7 +25,7 @@ class CollsController(BaseController):
 
         @self.app.post('/api/v1/collections')
         @self.api(query=['user'],
-                  req=['title', 'public'],
+                  req=['title', 'public', 'public_index'],
                   resp='collection')
 
         def create_collection():
@@ -41,6 +41,8 @@ class CollsController(BaseController):
                 self._raise_error(400, 'invalid_coll_name')
 
             is_public = data.get('public', False)
+
+            is_public_index = data.get('public_index', False)
 
             is_external = data.get('external', False)
 
@@ -62,7 +64,8 @@ class CollsController(BaseController):
 
             try:
                 collection = user.create_collection(coll_name, title=title,
-                                                    desc='', public=is_public)
+                                                    desc='', public=is_public,
+                                                    public_index=is_public_index)
 
                 if is_external:
                     collection.set_external(True)

@@ -13,7 +13,7 @@ import WYSIWYG from 'components/WYSIWYG';
 import './style.scss';
 
 
-class CollectionEditModal extends Component {
+class EditModal extends Component {
   static propTypes = {
     collection: PropTypes.object,
     closeCb: PropTypes.func,
@@ -31,17 +31,6 @@ class CollectionEditModal extends Component {
   static defaultProps = {
     readOnlyName: false
   };
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    if (!nextProps.editing && (nextProps.name !== prevState.name || nextProps.desc !== prevState.desc)) {
-      return {
-        name: nextProps.name,
-        desc: nextProps.desc
-      };
-    }
-
-    return null;
-  }
 
   constructor(props) {
     super(props);
@@ -147,4 +136,4 @@ class CollectionEditModal extends Component {
   }
 }
 
-export default CollectionEditModal;
+export default EditModal;
