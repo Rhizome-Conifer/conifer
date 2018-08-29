@@ -176,7 +176,6 @@ class BaseController(object):
         return res
 
     def get_host(self):
-<<<<<<< ours
         """Get host.
 
         :returns: host
