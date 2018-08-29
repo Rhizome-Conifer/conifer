@@ -1,28 +1,32 @@
 # Webrecorder Project
 ### *Web archiving for All!*
 
-Webrecorder provides an integrated platform for creating high-fidelity web archives while browsing, sharing,
-and disseminating archived content.
+Webrecorder provides an integrated platform for: creating high-fidelity web archives while browsing web pages, providing access to archived content, and sharing collections.
 
-This repository represents the hosted service running on https://webrecorder.io/ and can be deployed using Docker.
+This repository represents the hosted service running on https://webrecorder.io/, which can also be [deployed locally using Docker](#running-locally)
 
-This README refers to the 4.x version of Webrecorder, released in June, 2018. The release included [a new React based frontend and curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/) and a introduced a [separate backend and frontend architecture](#webrecorder-architecture).
+This README refers to the 4.x version of Webrecorder, released in June, 2018.
 
-**Users with Existing Installations**: If you have a previous Webrecorder installation (version 3.x), see [Migration Info](migrating-4.0.md) for how to migrate to the latest version
+The release included [a significant architectural and UI redesign, including new curatorial features](https://rhizome.org/editorial/2018/jun/05/a-major-new-release-for-webrecorder/). Webrecorder now includes a [separate API-based backend and a React-powered frontend architecture](#webrecorder-architecture).
 
-*If you have any questions or issues specifically with https://webrecorder.io/ service, please contact us directly at support@webrecorder.io*
+**Users with Existing Installations**: If you have a previous Webrecorder installation (version 3.x), see [Migration Info](migrating-4.0.md) for instructions on how to migrate to the latest version.
+
+*If you have any questions about how to use Webrecorder, please see our use guide at https://guide.webrecorder.io/*
+
+*If you have a question about your account on the hosted service (https://webrecorder.io/), please contact us directly at support@webrecorder.io*
 
 ## Using Webrecorder Platform
 
-Webrecorder and related tools are designed to make web archiving more portable and decentralized, as well as to serve users and developers with a broad range of skill levels and requirements. Here are a few ways that Webrecorder can be used, ranked in rough order of increasing in technical expertise necessary.
+Webrecorder and related tools are designed to make web archiving more portable and decentralized, as well as to serve users and developers with a broad range of skill levels and requirements. Here are a few ways that Webrecorder can be used (starting with what probably requires the least technical expertise).
 
 ### 1. Hosted Service
 
-Using our hosted version of Webrecorder at https://webrecorder.io/, users can create a free account and create their own personal web archives. Archived web content will be available online, either publicly or privately, under each user account, and can also be downloaded by the owner at any time.
+Using our hosted version of Webrecorder at https://webrecorder.io/, users can sign up for a free account and create their own personal collections of web archives. Archived web content will be available online, either publicly or only privately, under each user account, and can be downloaded by the account owner at any time. Downloaded web archives are available as a WARC file (WARC is the ISO standard file format for web archives). The hosted service can also be used anonymously and the archived content collected can be downloaded as a WARC file at the end of a temporary session. 
 
 ### 2. Offline Browsing
 
-The hosted service can also be used anonymously, and the archived content (WARC files) downloaded after each use. We also provide a OSX/Windows/Linux Electron application, [Webrecorder Player](https://github.com/webrecorder/webrecorderplayer-electron) that can browse any WARC created by Webrecorder (or other web archiving tools) locally on the desktop. Once downloaded from Webrecorder, the player can be used to browse the content, even offline.
+We also provide a OSX/Windows/Linux Electron application, [Webrecorder Player](https://github.com/webrecorder/webrecorderplayer-electron) that can browse any WARC created by Webrecorder (or other web archiving tools) locally on the desktop. Any WARCs downloaded from https://webrecorder.io/ can be browsed with Webrecorder Player, even offline.
+
 
 ### 3. Preconfigured Deployment
 
@@ -33,9 +37,9 @@ To deploy the full version of Webrecorder with Ansible and Linux machine, the [W
 The Webrecorder system in this repository can be deployed directly by [following the instructions below](#running-locally).
 Webrecorder runs entirely in Docker and also requires Docker Compose. The rest of this README covers the Webrecorder local deployment options.
 
-### 5. Standalone Pywb Deployment
+### 5. Standalone Python Wayback (pywb) Deployment
 
-Finally, for users interested in the core replay system and very basic recording capabilities, deploying [pywb](https://github.com/webrecorder/pywb) may also make sense. Webrecorder is built on top of pywb, and the core recording and replay functionality is provided by pywb as a standalone Python library (and comes with a Docker image as well).
+Finally, for users interested in the core replay system and very basic recording capabilities, deploying [pywb](https://github.com/webrecorder/pywb) could also make sense. Webrecorder is built on top of pywb (Python Wayback/Python Web Archive Toolkit), and the core recording and replay functionality is provided by pywb as a standalone Python library (and comes with a Docker image as well).
 
 See [the full pywb reference manual](http://pywb.readthedocs.org/) for further information on using and deploying pywb.
 
@@ -174,16 +178,17 @@ The remote browser system uses https://github.com/oldweb-today/ repositories, in
 
 ### Contact
 
-Webrecorder is a project of [Rhizome](https://rhizome.org), developed with generous support from the Mellon Foundation.
+Webrecorder is a project of [Rhizome](https://rhizome.org), developed with generous support from the Andrew W. Mellon Foundation.
 
-For any questions/concerns regarding the project or https://webrecorder.io/ you can:
+For more info on using Webrecorder, you can consult our user guide at: https://guide.webrecorder.io/
+
+For any general questions/concerns regarding the project or https://webrecorder.io/ you can:
 
 * Open [issues](https://github.com/webrecorder/webrecorder/issues) on GitHub
 
 * Tweet to us at https://twitter.com/webrecorder_io
 
 * Contact us at support@webrecorder.io
-
 
 ### License
 
