@@ -61,6 +61,22 @@ Point your browser to `http://localhost:8089/` to access the locally running Web
 
 (Note: you may see a Webrecorder maintenance message briefly while Webrecorder is starting up for the first time. Refresh the page after a few seconds to see the Webrecorder home page).
 
+### Installing Remote Browsers
+
+The remote browsers available with Webrecorder are optional, and can be installed as needed.
+
+Remote browsers are just Docker images which start with `oldweb-today/`, and part of
+[oldweb-today](https://github.com/oldweb-today/) organization on GitHub.
+Installing the browsers can be as simple as running `docker pull` on each image.
+
+To install all of the officially supported browsers, run [install-browsers.sh](install-browsers.sh)
+
+For example, to install a version of Chrome 60 and Firefox 49, run:
+
+```
+docker pull oldwebtoday/chrome:60
+docker pull oldwebtoday/firefox:49
+```
 
 ### Configuration
 
