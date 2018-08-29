@@ -1,0 +1,118 @@
+@import 'src/vars';
+
+.wr-editor {
+    min-height: 2.5rem;
+    max-width: 59rem;
+    position: relative;
+
+    &.click-to-edit:not(.open) {
+        display: flex;
+        align-items: center;
+    }
+
+    & > div {
+        border: none;
+    }
+
+    .wr-editor-instance {
+        &.read-only {
+            border: none;
+
+            .public-DraftEditor-content {
+                min-height: inherit;
+                padding: 0;
+            }
+        }
+    }
+
+    .markdown-button {
+        &.active {
+            background: #d8d8d8;
+        }
+
+        & > span {
+            background-image: url('../../shared/images/markdown-mark.svg');
+            background-size: 2.2rem;
+            background-repeat: no-repeat;
+        }
+    }
+
+    .close-markdown {
+        transition: fill $quickShift ease-in-out;
+        position: absolute;
+        right: .5rem;
+        top: .5rem;
+        z-index: 105;
+
+        &:hover {
+            fill: red;
+        }
+    }
+
+    .markdown-editor {
+        position: absolute;
+        top: .5rem;
+        left: .5rem;
+        width: calc(100% - 1rem);
+        height: calc(100% - 5rem);
+        border: none;
+        resize: none;
+        background: #FFF;
+        z-index: 100;
+        padding: 1rem 2rem 1rem 1rem;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .public-DraftEditor-content {
+        min-height: 12.5rem;
+        font-family: $sans;
+        font-size: 1.4rem;
+    }
+
+    .DraftEditor-editorContainer {
+        max-height: 30rem;
+        overflow: auto;
+    }
+
+    .editor-button-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+        text-transform: uppercase;
+
+        & > button:last-of-type {
+            margin-left: .5rem;
+        }
+    }
+
+    .click-indicator {
+        transition: opacity $quickShift ease-in-out;
+        margin-left: 1rem;
+        cursor: pointer;
+        opacity: 0;
+
+        svg {
+            width: 1.4rem;
+            height: 1.4rem;
+        }
+    }
+
+    &:hover .click-indicator {
+        opacity: 1;
+    }
+
+    .toggle-btn-row {
+        display: flex;
+        justify-content: center;
+        margin-top: .5rem;
+
+        .wr-edit-button {
+            transition: opacity $midShift ease-in-out;
+            text-transform: uppercase;
+            padding: 0.4rem 2rem;
+        }
+    }
+}

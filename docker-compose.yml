@@ -3,7 +3,7 @@ version: '2'
 services:
     app:
         build: ./webrecorder
-        command: uwsgi /code/apps/frontend.ini
+        command: uwsgi /code/apps/apiapp.ini
 
         env_file:
             - ./wr.env
@@ -13,15 +13,50 @@ services:
             - recorder
             - redis
             - shepherd
+            - dat
 
         volumes:
             - ./webrecorder/:/code/
             - ./webrecorder/proxy-certs:/code/proxy-certs
             - ~/opendachs/tmp:/tmp
+            - ./data:/data
 
         networks:
             - default
             - browsers
+
+    frontend:
+        build:
+            context: ./frontend
+
+        env_file:
+            - ./wr.env
+
+        command: sh run.sh
+
+        depends_on:
+            - app
+
+        volumes:
+            - ./frontend/:/code/
+            - /code/node_modules
+
+        ports:
+            - 8096:8096 # for HMR on dev
+
+    dat:
+        image: webrecorder/dat-share
+        environment:
+            - PORT=3282
+            - ROOT_DIR=/data/storage
+
+        ports:
+            - "3282:3282/tcp"
+            - "3282:3282/udp"
+
+        volumes:
+            - ./data:/data
+            - ./data/dat/secret_keys:/root/.dat/secret_keys
 
     recorder:
         build: ./webrecorder
@@ -59,13 +94,16 @@ services:
         image: webrecorder/nginx
         depends_on:
             - app
+            - frontend
 
         volumes:
             - ./data:/data
             - ./webrecorder/:/code/
+            - ./frontend/:/frontend/
 
         ports:
-            - "8089:80"
+            - 8089:80
+            - 8092:81
 
     shepherd:
         image: oldwebtoday/shepherd
@@ -87,7 +125,7 @@ services:
             - NETWORK_NAME=webrecorder_browsers
             - AUDIO_TYPE=opus
 
-            - CONTAINER_EXPIRE_SECS=1200
+            - CONTAINER_EXPIRE_SECS=3600
             - IDLE_TIMEOUT=120
 
         depends_on:
@@ -103,8 +141,8 @@ services:
             - ./wr.env
 
         ports:
-                - "127.0.0.1:6379:6379"
-  
+                - 127.0.0.1:6379:6379
+
         volumes:
             - ./data:/data
 

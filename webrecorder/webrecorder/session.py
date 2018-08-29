@@ -1,20 +1,21 @@
-# standard library imports
 import os
+from os.path import expandvars
+from datetime import timedelta, datetime
+
+from warcio.timeutils import datetime_to_http_date
+
 import base64
 import pickle
-from datetime import datetime, timedelta
-from os.path import expandvars
+import redis
+from time import strftime, gmtime
 
-# third party imports
-from itsdangerous import BadSignature, URLSafeTimedSerializer
-
-# library specific imports
-from warcio.timeutils import datetime_to_http_date
-from webrecorder.utils import redis_pipeline
 from webrecorder.cookieguard import CookieGuard
+from webrecorder.utils import redis_pipeline
+from itsdangerous import URLSafeTimedSerializer, BadSignature
 
 
 class Session(object):
+<<<<<<< HEAD
     """Session manager.
 
     :cvar str TEMP_PREFIX: temp prefix
@@ -36,13 +37,15 @@ class Session(object):
     :ivar _anon: toggle anonymous session
     :type _anon: bool or None
     """
-    TEMP_PREFIX = ''
+    TEMP_KEY = 't:{0}'
+    temp_prefix = ''
 
-    def __init__(self, cork, environ, key, sesh, ttl, is_restricted):
+    def __init__(self, cork, environ, redis, key, sesh, ttl, is_restricted):
         """Initialize session manager.
 
         :param cork: n.s.
         :param environ: n.s.
+        :param StrictRedis redis: Redis interface
         :param str key: Redis key
         :param dict sesh: session data
         :param int ttl: session TTL
@@ -50,9 +53,9 @@ class Session(object):
         """
         self.environ = environ
         self._sesh = sesh
+        self.redis = redis
         self.key = key
 
-        self.curr_user = None
         self.curr_role = None
 
         self.should_delete = False
@@ -76,7 +79,6 @@ class Session(object):
             if self._anon:
                 self.curr_role = 'anon'
             else:
-                self.curr_user = self._sesh.get('username')
                 if self.curr_user:
                     self.curr_role = cork.user(self.curr_user).role
 
@@ -85,7 +87,6 @@ class Session(object):
 
         except Exception as e:
             print(e)
-            self.curr_user = None
             self.curr_role = None
             self.delete()
 
@@ -170,6 +171,7 @@ class Session(object):
             self['anon'] = self.anon_user
 
     def is_anon(self, user=None):
+<<<<<<< HEAD
         """Determine whether current user or given user
         is anonymous user.
 
@@ -179,11 +181,11 @@ class Session(object):
         :returns: whether current user or given user is anonymous user
         :rtype: bool
         """
-        if self.curr_user:
-            return False
-
         anon = self._sesh.get('anon')
         if not anon:
+            return False
+
+        if self._sesh.get('username'):
             return False
 
         if user:
@@ -191,17 +193,29 @@ class Session(object):
 
         return True
 
-    def logged_in(self, extend_long=False):
-        """Change session settings (user has logged in).
+    def set_anon_commit_wait(self):
+        anon = self._sesh.get('anon')
+        if anon:
+            self.redis.set(self.TEMP_KEY.format(anon), 'commit-wait')
 
-        :param bool extend_long: wheter to extend session duration
-        """
+    @property
+    def curr_user(self):
+        if 'anon' in self._sesh:
+            return None
+
+        return self._sesh.get('username')
+
+    def log_in(self, username, extend_long=False):
         if extend_long:
             self.dura_type = 'long'
             self._sesh['is_long'] = True
 
+        self._sesh.pop('anon', '')
+        self._sesh['username'] = username
+
         self.should_renew = True
         self.should_save = True
+
         self.environ['webrec.delete_all_cookies'] = 'non_sesh'
 
     def set_restricted_user(self, user):
@@ -212,13 +226,12 @@ class Session(object):
         if not self.is_new():
             return
 
-        if user.startswith(self.TEMP_PREFIX):
+        if user.startswith(self.temp_prefix):
             self._sesh['anon'] = user
             self._anon = user
             self.curr_role = 'anon'
         else:
             self._sesh['username'] = user
-            self.curr_user = user
             self.curr_role = 'archivist'
 
         self.should_save = False
@@ -274,14 +287,11 @@ class Session(object):
         :returns: anonoymous user ID
         :rtype: str
         """
-        anon = (
-            Session.TEMP_PREFIX +
-            base64.b32encode(os.urandom(5)).decode("utf-8")
-        )
-        return anon
+        return Session.temp_prefix + base64.b32encode(os.urandom(5)).decode('utf-8')
 
 
 class RedisSessionMiddleware(CookieGuard):
+<<<<<<< HEAD
     """Redis session manager.
 
     :ivar StrictRedis redis: Redis interface
@@ -291,16 +301,10 @@ class RedisSessionMiddleware(CookieGuard):
     :ivar str key_template: format string session key
     """
 
-    def __init__(self, app, cork, redis, session_opts):
-        """Initialize Redis session manager.
-
-        :param Bottle app: bottle application
-        :param cork: n.s.
-        :param StrictRedis redis: Redis interface
-        :param dict session_opts: session settings
-        """
-        super().__init__(app, session_opts['session.key'])
+    def __init__(self, app, cork, redis, session_opts, access_cls=None, access_redis=None):
+        super(RedisSessionMiddleware, self).__init__(app, session_opts['session.key'])
         self.redis = redis
+        self.access_redis = access_redis
         self.cork = cork
 
         self.auto_login_user = os.environ.get('AUTO_LOGIN_USER')
@@ -311,6 +315,8 @@ class RedisSessionMiddleware(CookieGuard):
         self.long_sessions_key = session_opts['session.long_sessions_key']
 
         self.durations = session_opts['session.durations']
+
+        self.access_cls = access_cls
 
     def init_session(self, environ):
         """Initialize session.
@@ -364,6 +370,7 @@ class RedisSessionMiddleware(CookieGuard):
 
         session = Session(self.cork,
                           environ,
+                          self.redis,
                           redis_key,
                           data,
                           ttl,
@@ -376,13 +383,16 @@ class RedisSessionMiddleware(CookieGuard):
             session.template_params['anon_ttl'] = ttl
 
             anon_user = session['anon']
-            self.redis.set('t:' + anon_user, sesh_id)
+            self.redis.set(Session.TEMP_KEY.format(anon_user), sesh_id)
 
         if self.auto_login_user:
             session.template_params['auto_login'] = True
 
         environ['webrec.template_params'] = session.template_params
         environ['webrec.session'] = session
+        if self.access_cls:
+            environ['webrec.access'] = self.access_cls(session=session,
+                                                       redis=self.access_redis)
 
     def prepare_response(self, environ, headers):
         if 'wsgiprox.proxy_host' in environ:
@@ -393,7 +403,7 @@ class RedisSessionMiddleware(CookieGuard):
         session = environ['webrec.session']
 
         if session.should_delete:
-            self._delete_cookie(headers, self.sesh_key)
+            self._delete_session_cookie(environ, headers, self.sesh_key)
             self.redis.delete(session.key)
         else:
             if session.should_renew:
@@ -445,7 +455,12 @@ class RedisSessionMiddleware(CookieGuard):
                     self.track_long_term(session, pi)
 
                 # set redis duration
-                pi.expire(session.key, duration)
+                if not session.is_restricted:
+                    pi.expire(session.key, duration)
+
+        elif set_cookie and not session.is_restricted:
+            # extend redis duration if extending cookie!
+            self.redis.expire(session.key, duration)
 
         if not set_cookie:
             return
@@ -456,13 +471,31 @@ class RedisSessionMiddleware(CookieGuard):
         sesh_cookie = self.id_to_signed_cookie(session['id'],
                                                session.is_restricted)
 
-        value = '{0}={1}; Path=/; HttpOnly; max-age={3}'
+        value = '{0}={1}; Path=/; HttpOnly'
+
+        # add max-age only if:
+        # - long duration session
+        # - anonymous session (not restricted)
+        # don't set for restricted session, as cookie only valid as long as top session exists
+        if session.dura_type == 'long' or session.curr_role == 'anon':
+            value += ';  max-age={3}'
+
         value = value.format(self.sesh_key,
                              sesh_cookie,
                              datetime_to_http_date(expires),
                              duration)
 
         scheme = session.environ.get('wsgi.url_scheme', '')
+        if scheme.lower() == 'https':
+            value += '; Secure'
+
+        headers.append(('Set-Cookie', value))
+
+    def _delete_session_cookie(self, environ, headers, name):
+        expires = strftime("%a, %d-%b-%Y %T GMT", gmtime(10))
+        value = '{0}=deleted; Path=/; HttpOnly; Expires={1}'.format(name, expires)
+
+        scheme = environ.get('wsgi.url_scheme', '')
         if scheme.lower() == 'https':
             value += '; Secure'
 
@@ -511,8 +544,7 @@ class RedisSessionMiddleware(CookieGuard):
             return None
 
     def id_to_signed_cookie(self, sesh_id, is_restricted):
-        urlsafetimedserializer = URLSafeTimedSerializer(self.secret_key)
-        return urlsafetimedserializer.dumps([sesh_id, is_restricted])
+        return URLSafeTimedSerializer(self.secret_key).dumps([sesh_id, is_restricted])
 
     def make_id(self):
         """Get session ID.

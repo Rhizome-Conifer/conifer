@@ -5,6 +5,7 @@ from pywb.rewrite.templateview import PkgResResolver
 from webassets import Bundle
 from webassets.ext.jinja2 import AssetsExtension
 from webassets.bundle import wrap
+from webassets.loaders import YAMLLoader
 
 
 # ==================================================================
@@ -28,10 +29,21 @@ class FixedBundle(Bundle):
 
 
 # ==================================================================
-def build(assets_path):
+def build_all(assets_path):
     argv = ['-c', assets_path, 'build']
 
     PkgSupportParser().main(argv)
+
+
+# ==================================================================
+def build_if_needed(assets_path):
+    env = YAMLLoader(assets_path).load_environment()
+    env.resolver = PkgResResolver()
+
+    for bundle in env:
+        if env.updater.needs_rebuild(bundle, env):
+            print('Updating {0}'.format(bundle.output))
+            bundle.urls()
 
 
 # ==================================================================
@@ -39,10 +51,15 @@ def patch_bundle():
     AssetsExtension.BundleClass = FixedBundle
 
 
-def default_build():
+# ==================================================================
+def default_build(force_build=True):
     curr_path = os.path.dirname(__file__)
     assets_path = os.path.abspath(os.path.join(curr_path, '..', 'config', 'assets.yaml'))
-    build(assets_path)
+
+    if force_build:
+        build_all(assets_path)
+    else:
+        build_if_needed(assets_path)
 
 
 # ==================================================================

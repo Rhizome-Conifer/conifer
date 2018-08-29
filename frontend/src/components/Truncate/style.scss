@@ -1,0 +1,63 @@
+@import 'src/vars';
+
+.wr-truncate {
+    transition: height $slowShift ease-in-out;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: .5rem;
+
+    &:not(.expanded) > *:not(.show-more) {
+        pointer-events: none;
+    }
+
+    &:after {
+        transition: opacity $quickShift ease-in-out;
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 8rem;
+        z-index: 5;
+        pointer-events: none;
+        background: linear-gradient(180deg, rgba(255,255,255,0), #FFF 85%);
+        opacity: 0;
+    }
+
+    &:not(.expanded):after {
+        opacity: 1;
+    }
+
+    .show-more {
+        transition: color $quickShift ease-in-out;
+        position: absolute;
+        bottom: 0;
+        text-transform: uppercase;
+        z-index: 50;
+
+        &:hover {
+            color: $blue;
+        }
+    }
+
+    .show-less {
+        transition: background $quickShift ease-in-out,
+                    color $quickShift ease-in-out;
+        margin-top: 1.5rem;
+        text-transform: uppercase;
+        border: solid .1rem #ccc;
+        border-radius: 2.7rem;
+        background: none;
+        font-size: 1.2rem;
+        padding: .5rem 1rem;
+
+        &:hover {
+            border-color: none;
+            background: $blue;
+            color: #FFF;
+        }
+    }
+}

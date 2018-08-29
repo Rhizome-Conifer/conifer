@@ -1,0 +1,10 @@
+@import 'src/vars';
+
+.wr-handle {
+    transition: transform $slowShift ease-in-out;
+    transform: rotateZ(-180deg);
+
+    &.closed {
+        transform: rotateZ(-90deg);
+    }
+}

@@ -1,0 +1,71 @@
+@import 'src/vars';
+
+.wr-list-header {
+    .alert {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+    }
+
+    .wr-truncate {
+        max-width: 59rem;
+    }
+
+    .banner {
+        display: inline-block;
+        margin: 1.5rem 0 0 -1.5rem;
+        padding: .5rem 3.5rem;
+        font-size: 1.2rem;
+
+        svg {
+          vertical-align: top;
+          width: 1.2rem;
+          margin-right: 0.6rem;
+        }
+    }
+
+    .heading-container {
+        padding-left: 1.5rem;
+        margin: 2rem 0 1rem 0;
+
+        h1 {
+            font-weight: 300;
+            margin: 0;
+            max-width: 60vw;
+        }
+    }
+
+    .wr-editor {
+        min-width: 32rem;
+        padding-left: 1.5rem;
+        align-self: flex-start;
+    }
+
+    .creator {
+        padding-left: 1.5rem;
+        margin: 1.5rem 0;
+        color: $gray600;
+        font-size: 1.2rem;
+        font-weight: 300;
+
+        a {
+            &:link, &:visited {
+                color: #000;
+                font-weight: 400;
+                text-decoration: none;
+            }
+
+            &:hover {
+                color: $blue;
+            }
+        }
+    }
+
+    .function-row {
+        padding-left: 1.5rem;
+
+        button {
+            margin-right: 1rem;
+        }
+    }
+}

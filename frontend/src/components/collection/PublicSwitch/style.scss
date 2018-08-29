@@ -1,0 +1,44 @@
+@import 'src/vars';
+
+.wr-coll-visibility {
+    display: inline-block;
+
+    .is-private {
+        font-style: italic;
+        color: $gray600;
+
+        svg path {
+            fill: $gray600;
+        }
+    }
+
+    .dropdown-toggle {
+        color: #000;
+
+        svg {
+            vertical-align: top;
+        }
+
+        &.is-public {
+            color: white;
+            font-weight: 600;
+            background: $brightGreen;
+            border: $brightGreen;
+            svg g {
+              fill: white;
+            }
+        }
+    }
+
+    .dropdown-menu {
+        .disabled svg path {
+            fill: #777777;
+        }
+    }
+
+    svg{
+        width: 1.3rem;
+        height: 1.3rem;
+        margin-right: 0.2rem;
+    }
+}

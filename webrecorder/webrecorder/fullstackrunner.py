@@ -28,8 +28,8 @@ class FullStackRunner(object):
             return record_init()
 
         def app():
-            from webrecorder.appcontroller import AppController
-            app = AppController().app
+            from webrecorder.maincontroller import MainController
+            app = MainController().app
             return app
 
         self.warc_serv = self.init_server(warc_port, warcserver, 'WARCSERVER_HOST')
@@ -44,7 +44,8 @@ class FullStackRunner(object):
         # try closing writer
         try:
             if self.rec_serv:
-                self.rec_serv.server.application.wr.writer.close()
+                self.rec_serv.server.application.wr.close()
+                #self.rec_serv.server.application.wr.writer.close()
         except Exception as e:
             traceback.print_exc()
 

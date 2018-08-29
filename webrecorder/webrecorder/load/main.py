@@ -17,6 +17,8 @@ from webrecorder.utils import load_wr_config, init_logging
 
 from webrecorder.load.wamsourceloader import WAMSourceLoader
 
+from webrecorder.models import Recording, Collection
+
 import os
 import json
 
@@ -35,13 +37,18 @@ class WRWarcServer(object):
 
         redis_base = os.environ['REDIS_BASE_URL'] + '/'
 
-        rec_url = redis_base + config['cdxj_key_templ']
-        coll_url = redis_base + config['coll_cdxj_key_templ']
-        warc_url = redis_base + config['warc_key_templ']
-        rec_list_key = config['rec_list_key_templ']
+        #rec_url = redis_base + config['cdxj_key_templ']
+        #coll_url = redis_base + config['coll_cdxj_key_templ']
+        #warc_url = redis_base + config['coll_warc_key_templ']
+        #rec_map_key = config['rec_map_key_templ']
+        rec_url = redis_base + Recording.CDXJ_KEY
+        coll_url = redis_base + Collection.COLL_CDXJ_KEY
+        warc_url = redis_base + Recording.COLL_WARC_KEY
+        rec_map_key = Collection.RECS_KEY
+
 
         redis_resolver = RedisResolver(redis_url=warc_url,
-                                       member_key_templ=rec_list_key)
+                                       member_key_templ=rec_map_key)
         redis = redis_resolver.redis
         warc_resolvers = [redis_resolver]
 

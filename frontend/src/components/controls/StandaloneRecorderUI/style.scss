@@ -1,0 +1,131 @@
+@import 'src/vars';
+
+.standalone-dropdown-label{
+    margin:0.5em 0;
+    padding-right:0;
+}
+
+.rb-dropdown, .extract-selector, .patch-selector  {
+    // .container {
+    //     width: 60vw;
+    // }
+    #cnt-button {
+        border-width: .1rem 0 .1rem .1rem;
+    }
+
+    .rb-dropdown .dropdown-toggle {
+        background-image: none;
+        background-color: #F8F8F8;
+    }
+
+    .rb-dropdown .open > .dropdown-toggle, .rb-dropdown .dropdown-toggle:active,
+    .rb-dropdown .dropdown-toggle.active, .rb-dropdown .dropdown-toggle:hover {
+        background-color: #F7F7F7;
+    }
+
+    .dropdown-header {
+        padding: .5rem 0;
+    }
+
+    ul {
+        margin: 0;
+        padding: 0;
+
+        li {
+            list-style-type: none;
+        }
+    }
+
+    h6 {
+        margin: 0;
+        font-size: 1.6rem;
+        color: #353535;
+        font-weight: bold;
+    }
+
+    .row {
+        padding: 1rem 0;
+        margin: 0 -1.5rem 0 -1.5rem;
+
+        &:first-child {
+            padding: .5rem 0;
+        }
+    }
+
+    .btn img {
+        margin-right: .5rem;
+    }
+}
+
+.record-action button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left-width: 0;
+}
+
+.start-recording-homepage {
+    button[type='submit'] {
+        float: right;
+        margin-top: 1.5rem;
+        background: $blue;
+        color: #FFF;
+        padding: 1rem 2rem;
+    }
+
+    .Collapsible__trigger {
+        cursor: pointer;
+    }
+
+    h4 {
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .input-group {
+        padding: 0 1.5rem;
+    }
+
+    .wr-editor {
+        width: 100%;
+        max-width: inherit;
+        margin-bottom: 1.5rem;
+    }
+
+    .anon-button {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .rb-dropdown {
+       .dropdown {
+           width: 100%;
+
+           #cnt-button {
+               display: flex;
+               justify-content: space-between;
+               align-items: center;
+               width: 100%;
+               border-width: .1rem;
+           }
+
+           .dropdown-menu {
+               width: 100%;
+
+               .container {
+                   width: 100%;
+               }
+           }
+       }
+    }
+
+    textarea {
+        width: 100%;
+        padding: .5rem;
+    }
+}
+
+.main-bar .container {
+    width: 65vw;
+}

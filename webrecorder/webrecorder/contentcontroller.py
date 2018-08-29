@@ -1,56 +1,50 @@
-# standard library imports
-import os
 import re
+import os
+import json
 
-# third party imports
 from six.moves.urllib.parse import quote, unquote
-from bottle import (
-    HTTPError, HTTPResponse, redirect, request, response
-)
 
-# library specific imports
+from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
+
+from pywb.utils.loaders import load_yaml_config
 from pywb.rewrite.wburl import WbUrl
 from pywb.rewrite.cookies import CookieTracker
-from pywb.utils.loaders import load_yaml_config
+
 from pywb.apps.rewriterapp import RewriterApp, UpstreamException
-from webrecorder.utils import get_bool
-from webrecorder.basecontroller import BaseController
+
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.load.wamloader import WAMLoader
+from webrecorder.utils import get_bool
+
+from webrecorder.models.dynstats import DynStats
+from webrecorder.models.stats import Stats
+
 
 
 class ContentController(BaseController, RewriterApp):
-    """Content controller.
-
-    :cvar str DEF_REC_NAME: default record name
-    :cvar SRE_Pattern WB_URL_RX: URL regular expression
-    :cvar tuple MODIFY_MODES: Webrecorder modes
-    """
     DEF_REC_NAME = 'Recording Session'
+
     WB_URL_RX = re.compile('(([\d*]*)([a-z]+_|[$][a-z0-9:.-]+)?/)?([a-zA-Z]+:)?//.*')
+
     MODIFY_MODES = ('record', 'patch', 'extract')
 
-    def __init__(self, app, jinja_env, config, redis):
-        """Initialize content controller.
+    def __init__(self, *args, **kwargs):
+        BaseController.__init__(self, *args, **kwargs)
 
-        :param Bottle app: bottle app
-        :param jinja_env: n.s.
-        :param config: n.s.
-        :param StrictRedis redis: Redis interface
-        """
-        BaseController.__init__(self, app, jinja_env, None, config)
+        config = kwargs['config']
 
         config['csp-header'] = self.get_csp_header()
 
+        self.browser_mgr = kwargs['browser_mgr']
+
         RewriterApp.__init__(self,
                              framed_replay=True,
-                             jinja_env=jinja_env,
+                             jinja_env=kwargs['jinja_env'],
                              config=config)
 
         self.paths = config['url_templates']
 
-        self.cookie_key_templ = config['cookie_key_templ']
-
-        self.cookie_tracker = CookieTracker(redis)
+        self.cookie_tracker = CookieTracker(self.redis)
 
         self.record_host = os.environ['RECORD_HOST']
         self.live_host = os.environ['WARCSERVER_HOST']
@@ -60,6 +54,8 @@ class ContentController(BaseController, RewriterApp):
 
         self.wam_loader = WAMLoader()
         self._init_client_archive_info()
+
+        self.dyn_stats = DynStats(self.redis, config)
 
     def _init_client_archive_info(self):
         self.client_archives = {}
@@ -80,93 +76,122 @@ class ContentController(BaseController, RewriterApp):
         :rtype: str
         """
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
-        if self.content_host != self.app_host:
+        if self.app_host and self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
 
         csp += "; form-action 'self'"
         return csp
 
     def init_routes(self):
-        @self.app.get(['/api/v1/client_archives', '/api/v1/client_archives/'])
+        wr_api_spec.set_curr_tag('External Archives')
+
+        @self.app.get('/api/v1/client_archives')
         def get_client_archives():
             return self.client_archives
 
-        # REDIRECTS
-        @self.app.route('/record/<wb_url:path>', method='ANY')
-        def redir_new_temp_rec(wb_url):
-            coll = 'temp'
-            rec = self.DEF_REC_NAME
-            wb_url = self.add_query(wb_url)
-            return self.do_create_new_and_redir(coll, rec, wb_url, 'record')
+        wr_api_spec.set_curr_tag('Browsers')
 
-        @self.app.route('/$record/<coll>/<rec>/<wb_url:path>', method='ANY')
-        def redir_new_record(coll, rec, wb_url):
-            wb_url = self.add_query(wb_url)
-            return self.do_create_new_and_redir(coll, rec, wb_url, 'record')
+        @self.app.get('/api/v1/create_remote_browser')
+        def create_browser():
+            """ Api to launch remote browser instances
+            """
+            sesh = self.get_session()
 
-        # TAGS
-        @self.app.get(['/_tags/', '/_tags/<tags:re:([\w,-]+)>'])
-        @self.jinja2_view('paging_display.html')
-        def tag_display(tags=None):
-            if not self.manager.is_beta():
-                raise HTTPError(404)
+            if sesh.is_new() and self.is_content_request():
+                self._raise_error(403, 'invalid_browser_request')
 
-            tags = tags.split(',') if tags else self.manager.get_available_tags()
-            items = {}
-            keys = []
+            browser_id = request.query['browser']
 
-            active_tags = self.manager.get_available_tags()
+            Stats(self.redis).incr_browser(browser_id)
 
-            for tag in tags:
-                if tag in active_tags:
-                    keys.append(tag)
-                    items[tag] = self.manager.get_pages_for_tag(tag)
+            user = self.get_user(redir_check=False)
 
-            return {'data': items, 'keys': keys}
+            data = request.query
 
-        # COLLECTIONS
-        @self.app.get(['/_display/<user>', '/_display/<user>/<collections:re:([\w,-]+)>'])
-        @self.jinja2_view('paging_display.html')
-        def collection_display(user, collections=None):
-            if not self.manager.is_beta():
-                raise HTTPError(404)
+            coll_name = data.getunicode('coll', '')
+            rec = data.get('rec', '')
 
-            user_collections = [c['id'] for c in self.manager.get_collections(user)]
-            colls = collections.split(',') if collections else user_collections
-            items = {}
-            keys = []
+            mode = data.get('mode', '')
 
-            for coll in colls:
-                if coll in user_collections:
-                    keys.append(coll)
-                    items[coll] = self.manager.list_coll_pages(user, coll)
+            url = data.getunicode('url', '')
+            timestamp = data.get('timestamp', '')
 
-            return {'data': items, 'keys': keys}
+            sources = ''
+            inv_sources = ''
+            patch_rec = ''
 
-        # COOKIES
-        @self.app.get(['/<user>/<coll>/$add_cookie'], method='POST')
-        def add_cookie(user, coll):
-            if not self.manager.has_collection(user, coll):
-                self._raise_error(404, 'Collection not found',
-                                  api=True, id=coll)
+            collection = user.get_collection_by_name(coll_name)
+            recording = collection.get_recording(rec)
 
-            rec = request.query.getunicode('rec', '*')
+            if not collection:
+                self._raise_error(404, 'no_such_collection')
 
-            name = request.forms.getunicode('name')
-            value = request.forms.getunicode('value')
-            domain = request.forms.getunicode('domain')
+            if mode == 'extract':
+                # Extract from All, Patch from None
+                sources = '*'
+                inv_sources = '*'
+            elif mode.startswith('extract:'):
+                # Extract from One, Patch from all but one
+                sources = mode.split(':', 1)[1]
+                inv_sources = sources
+                # load patch recording also
+                #patch_recording = collection.get_recording(recording['patch_rec'])
+                if recording:
+                    patch_rec = recording.get_prop('patch_rec')
 
-            if not domain:
-                return {'error_message': 'no domain'}
+                mode = 'extract'
+            elif mode.startswith('extract_only:'):
+                # Extract from one only, no patching
+                sources = mode.split(':', 1)[1]
+                inv_sources = '*'
+                mode = 'extract'
 
-            self.add_cookie(user, coll, rec, name, value, domain)
+            if mode in self.MODIFY_MODES:
+                if not recording:
+                    return self._raise_error(404, 'no_such_recording')
 
-            return {'success': domain}
+                #rec = recording.my_id
+            elif mode in ('replay', 'replay-coll'):
+                rec = '*'
+            else:
+                return self._raise_error(400, 'invalid_mode')
+
+
+            browser_can_write = '1' if self.access.can_write_coll(collection) else '0'
+
+            # build kwargs
+            kwargs = dict(user=user.name,
+                          id=sesh.get_id(),
+                          coll=collection.my_id,
+                          rec=rec,
+                          coll_name=quote(coll_name),
+                          #rec_name=quote(rec_name, safe='/*'),
+
+                          type=mode,
+                          sources=sources,
+                          inv_sources=inv_sources,
+                          patch_rec=patch_rec,
+
+                          remote_ip=self._get_remote_ip(),
+                          ip=self._get_remote_ip(),
+
+                          browser=browser_id,
+                          url=url,
+                          request_ts=timestamp,
+
+                          browser_can_write=browser_can_write)
+
+            data = self.browser_mgr.request_new_browser(kwargs)
+
+            if 'error_message' in data:
+                self._raise_error(400, data['error_message'])
+
+            return data
 
         # UPDATE REMOTE BROWSER CONFIG
         @self.app.get('/api/v1/update_remote_browser/<reqid>')
         def update_remote_browser(reqid):
-            user, coll = self.get_user_coll(api=True)
+            user, collection = self.load_user_coll(api=True)
 
             timestamp = request.query.getunicode('timestamp')
             type_ = request.query.getunicode('type')
@@ -174,13 +199,84 @@ class ContentController(BaseController, RewriterApp):
             # if switching mode, need to have write access
             # for timestamp, only read access
             if type_:
-                self.manager.assert_can_write(user, coll)
+                self.access.assert_can_write_coll(collection)
             else:
-                self.manager.assert_can_read(user, coll)
+                self.access.assert_can_read_coll(collection)
 
-            return self.manager.browser_mgr.update_remote_browser(reqid,
-                                                                  type_=type_,
-                                                                  timestamp=timestamp)
+            return self.browser_mgr.update_remote_browser(reqid,
+                                                          type_=type_,
+                                                          timestamp=timestamp)
+
+        # REDIRECTS
+        @self.app.route('/record/<wb_url:path>', method='ANY')
+        def redir_new_temp_rec(wb_url):
+            coll_name = 'temp'
+            rec_title = self.DEF_REC_NAME
+            wb_url = self.add_query(wb_url)
+            return self.do_create_new_and_redir(coll_name, rec_title, wb_url, 'record')
+
+        @self.app.route('/$record/<coll_name>/<rec_title>/<wb_url:path>', method='ANY')
+        def redir_new_record(coll_name, rec_title, wb_url):
+            wb_url = self.add_query(wb_url)
+            return self.do_create_new_and_redir(coll_name, rec_title, wb_url, 'record')
+
+        # API NEW
+        wr_api_spec.set_curr_tag('Recordings')
+
+        @self.app.post('/api/v1/new')
+        def api_create_new():
+            self.redir_host()
+
+            url = request.json.get('url')
+            coll = request.json.get('coll')
+            mode = request.json.get('mode')
+
+            desc = request.json.get('desc', '')
+
+            browser = request.json.get('browser')
+            is_content = request.json.get('is_content') and not browser
+            timestamp = request.json.get('timestamp')
+
+            wb_url = self.construct_wburl(url, timestamp, browser, is_content)
+
+            host = self.content_host if is_content else self.app_host
+            if not host:
+                host = request.urlparts.netloc
+
+            full_url = request.environ['wsgi.url_scheme'] + '://' + host
+
+            url, rec, patch_rec = self.do_create_new(coll, '', wb_url, mode, desc=desc)
+
+            full_url += url
+
+            return {'url': full_url,
+                    'rec_name': rec,
+                    'patch_rec_name': patch_rec
+                   }
+
+        # COOKIES
+        wr_api_spec.set_curr_tag('Cookies')
+
+        @self.app.post('/api/v1/auth/cookie')
+        def add_cookie():
+            user, collection = self.load_user_coll()
+
+            data = request.json or {}
+
+            rec_name = data.get('rec', '*')
+            recording = collection.get_recording(rec_name)
+
+            name = data.get('name')
+            value = data.get('value')
+            domain = data.get('domain')
+
+            if not domain:
+                return self._raise_error(400, 'domain_missing')
+
+            self.add_cookie(user, collection, recording, name, value, domain)
+
+            return {'success': domain}
+
         # PROXY
         @self.app.route('/_proxy/<url:path>', method='ANY')
         def do_proxy(url):
@@ -214,7 +310,7 @@ class ContentController(BaseController, RewriterApp):
 
         # CONTENT ROUTES
         # Record
-        @self.app.route('/<user>/<coll>/<rec:path>/record/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<rec>/record/<wb_url:path>', method='ANY')
         def do_record(user, coll, rec, wb_url):
             request.path_shift(4)
 
@@ -228,7 +324,7 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_routing(wb_url, user, coll, rec, type='patch', redir_route='patch')
 
         # Extract
-        @self.app.route('/<user>/<coll>/<rec:path>/extract\:<archive>/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<rec>/extract\:<archive>/<wb_url:path>', method='ANY')
         def do_extract_patch_archive(user, coll, rec, wb_url, archive):
             request.path_shift(4)
 
@@ -237,7 +333,7 @@ class ContentController(BaseController, RewriterApp):
                                        inv_sources=archive,
                                        redir_route='extract:' + archive)
 
-        @self.app.route('/<user>/<coll>/<rec:path>/extract_only\:<archive>/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<rec>/extract_only\:<archive>/<wb_url:path>', method='ANY')
         def do_extract_only_archive(user, coll, rec, wb_url, archive):
             request.path_shift(4)
 
@@ -246,7 +342,7 @@ class ContentController(BaseController, RewriterApp):
                                        inv_sources='*',
                                        redir_route='extract_only:' + archive)
 
-        @self.app.route('/<user>/<coll>/<rec:path>/extract/<wb_url:path>', method='ANY')
+        @self.app.route('/<user>/<coll>/<rec>/extract/<wb_url:path>', method='ANY')
         def do_extract_all(user, coll, rec, wb_url):
             request.path_shift(4)
 
@@ -255,7 +351,15 @@ class ContentController(BaseController, RewriterApp):
                                        inv_sources='*',
                                        redir_route='extract')
 
-        # Replay
+        # REPLAY
+        # Replay List
+        @self.app.route('/<user>/<coll>/list/<list_id>/<bk_id>/<wb_url:path>', method='ANY')
+        def do_replay_rec(user, coll, list_id, bk_id, wb_url):
+            request.path_shift(5)
+
+            return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
+
+        # Replay Recording
         @self.app.route('/<user>/<coll>/<rec>/replay/<wb_url:path>', method='ANY')
         def do_replay_rec(user, coll, rec, wb_url):
             request.path_shift(4)
@@ -270,7 +374,7 @@ class ContentController(BaseController, RewriterApp):
             return self.handle_routing(wb_url, user, coll, '*', type='replay-coll')
 
         # Session redir
-        @self.app.route(['/_set_session'])
+        @self.app.get(['/_set_session'])
         def set_sesh():
             sesh = self.get_session()
 
@@ -281,7 +385,7 @@ class ContentController(BaseController, RewriterApp):
 
             else:
                 url = request.environ['wsgi.url_scheme'] + '://' + self.content_host
-                response.headers['Access-Control-Allow-Origin'] = url
+                self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
                 redirect(url + '/_set_session?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
@@ -289,51 +393,73 @@ class ContentController(BaseController, RewriterApp):
         # OPTIONS
         @self.app.route('/_set_session', method='OPTIONS')
         def set_sesh_options():
-            expected_origin = request.environ['wsgi.url_scheme'] + '://' + self.content_host + '/'
-            origin = request.environ.get('HTTP_ORIGIN')
-            # ensure origin is the content host origin
-            if origin != expected_origin:
-                return ''
-
-            host = request.environ.get('HTTP_HOST')
-            # ensure host is the app host
-            if host != self.app_host:
-                return ''
-
-            response.headers['Access-Control-Allow-Origin'] = origin
-
-            methods = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
-            if methods:
-                response.headers['Access-Control-Allow-Methods'] = methods
-
-            headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
-            if headers:
-                response.headers['Access-Control-Allow-Headers'] = headers
-
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            self.set_options_headers(self.content_host, self.app_host)
             return ''
 
-        @self.app.route(['/_clear_session'])
+        @self.app.route('/_clear_session', method='OPTIONS')
+        def set_clear_options():
+            self.set_options_headers(self.app_host, self.content_host)
+            return ''
+
+        # CLEAR CONTENT SESSION
+        @self.app.get(['/_clear_session'])
         def clear_sesh():
-            sesh = self.get_session()
-            sesh.delete()
-            return self.redir_host(None, request.query.getunicode('path', '/'))
+            self.set_options_headers(self.app_host, self.content_host)
+            response.headers['Cache-Control'] = 'no-cache'
+
+            if not self.is_content_request():
+                self._raise_error(400, 'invalid_request')
+
+            try:
+                # delete session (will updated cookie)
+                self.get_session().delete()
+                return {'success': 'logged_out'}
+
+            except Exception as e:
+                self._raise_error(400, 'invalid_request')
+
+    def set_options_headers(self, origin_host, target_host):
+        origin = request.environ.get('HTTP_ORIGIN')
+
+        if origin_host:
+            expected_origin = request.environ['wsgi.url_scheme'] + '://' + origin_host
+
+            # ensure origin is the content host origin
+            if origin != expected_origin:
+                return False
+
+        host = request.environ.get('HTTP_HOST')
+        # ensure host is the app host
+        if target_host and host != target_host:
+            return False
+
+        response.headers['Access-Control-Allow-Origin'] = origin
+
+        methods = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
+        if methods:
+            response.headers['Access-Control-Allow-Methods'] = methods
+
+        headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
+        if headers:
+            response.headers['Access-Control-Allow-Headers'] = headers
+
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Max-Age'] = '1800'
+        return True
 
     def do_proxy(self, url):
-        info = self.manager.browser_mgr.init_cont_browser_sesh()
+        info = self.browser_mgr.init_cont_browser_sesh()
         if not info:
-            return {'error_message': 'conn not from valid containerized browser'}
+            return self._raise_error(400, 'invalid_connection_source')
 
         try:
             kwargs = info
-            kwargs['coll_orig'] = kwargs['coll']
-            kwargs['coll'] = quote(kwargs['coll'])
-            kwargs['rec_orig'] = kwargs['rec']
-            kwargs['rec'] = quote(kwargs['rec'], '/*')
+            user = info['the_user']
+            collection = info['collection']
+            recording = info['recording']
 
             if kwargs['type'] == 'replay-coll':
-                self.manager.sync_coll_index(kwargs['user'], kwargs['coll_orig'], exists=False,
-                                             do_async=False)
+                collection.sync_coll_index(exists=False,  do_async=False)
 
             url = self.add_query(url)
 
@@ -345,8 +471,8 @@ class ContentController(BaseController, RewriterApp):
             remote_ip = info.get('remote_ip')
 
             if remote_ip and info['type'] in self.MODIFY_MODES:
-                if self.manager.is_rate_limited(info['user'], remote_ip):
-                    raise HTTPError(402, 'Rate Limit')
+                if user.is_rate_limited(remote_ip):
+                    self._raise_error(402, 'rate_limit_exceeded')
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
@@ -357,6 +483,9 @@ class ContentController(BaseController, RewriterApp):
             return resp
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()
+
             @self.jinja2_view('content_error.html')
             def handle_error(status_code, err_body, environ):
                 response.status = status_code
@@ -395,53 +524,54 @@ class ContentController(BaseController, RewriterApp):
 
         return mode, new_url
 
-    def do_create_new_and_redir(self, coll, rec, wb_url, mode):
-        """Create new record and cause 303 or 302 redirect.
+    def do_create_new_and_redir(self, coll_name, rec_name, wb_url, mode):
+        new_url, _, _2 = self.do_create_new(coll_name, rec_name, wb_url, mode)
+        return self.redirect(new_url)
 
-        :param str coll: collection
-        :param str rec: record
-        :param str wb_url: Webrecorder URL
-        :param str mode: mode
-        """
+    def do_create_new(self, coll_name, rec_title, wb_url, mode, desc=''):
         if mode == 'record':
             result = self.check_remote_archive(wb_url, mode)
             if result:
                 mode, wb_url = result
 
-        rec_title = rec
+        user = self.access.init_session_user()
 
-        user = self.manager.get_curr_user()
-
-        if not user:
+        if user.is_anon():
             if self.anon_disabled:
                 self.flash_message('Sorry, anonymous recording is not available.')
                 self.redirect('/')
                 return
 
-            user = self.manager.get_anon_user(True)
-            coll = 'temp'
+            coll_name = 'temp'
             coll_title = 'Temporary Collection'
 
         else:
-            coll_title = coll
-            coll = self.sanitize_title(coll_title)
+            coll_title = coll_name
+            coll_name = self.sanitize_title(coll_title)
 
-        if not self.manager.has_collection(user, coll):
-            self.manager.create_collection(user, coll, coll_title)
+        collection = user.get_collection_by_name(coll_name)
+        if not collection:
+            collection = user.create_collection(coll_name, title=coll_title)
 
-        rec = self._create_new_rec(user, coll, rec_title, mode)
+        recording = self._create_new_rec(collection, rec_title, mode, desc=desc)
 
         if mode.startswith('extract:'):
-            patch_rec = self._create_new_rec(user, coll,
-                                             self.patch_of_name(rec_title),
-                                             'patch')
+            patch_recording = self._create_new_rec(collection,
+                                                   self.patch_of_name(recording['title']),
+                                                   'patch')
 
-        new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
-                                                             coll=coll,
-                                                             rec=rec,
+            recording.set_patch_recording(patch_recording)
+
+            patch_rec_name = patch_recording.my_id
+        else:
+            patch_rec_name = ''
+
+        new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user.my_id,
+                                                             coll=collection.name,
+                                                             rec=recording.name,
                                                              mode=mode,
                                                              url=wb_url)
-        return self.redirect(new_url)
+        return new_url, recording.my_id, patch_rec_name
 
     def is_content_request(self):
         if not self.content_host:
@@ -454,33 +584,17 @@ class ContentController(BaseController, RewriterApp):
         full_path = self.add_query(full_path)
         self.redir_host(None, '/_set_session?path=' + quote(full_path))
 
-    def _create_new_rec(self, user, coll, title, mode, no_dupe=False):
-        """Create new record.
-
-        :param str user: username
-        :param str coll: collection
-        :param str title: title
-        :param str mode: mode
-        :param bool no_dupe: toggle duplicates on/off
-
-        :returns: record ID
-        :rtype: str
-        """
-        rec = self.sanitize_title(title)
+    def _create_new_rec(self, collection, title, mode, desc=''):
+        #rec_name = self.sanitize_title(title) if title else ''
         rec_type = 'patch' if mode == 'patch' else None
-        result = self.manager.create_recording(user, coll, rec, title,
-                                               rec_type=rec_type,
-                                               no_dupe=no_dupe)
-        rec = result['id']
-        return rec
+        return collection.create_recording(title=title,
+                                           desc=desc,
+                                           rec_type=rec_type)
 
-    def patch_of_name(self, name, is_id=False):
-        if not is_id:
-            return 'Patch of ' + name
-        else:
-            return 'patch-of-' + name
+    def patch_of_name(self, name):
+        return 'Patch of ' + name
 
-    def handle_routing(self, wb_url, user, coll, rec, type,
+    def handle_routing(self, wb_url, user, coll_name, rec_name, type,
                        is_embed=False,
                        is_display=False,
                        sources='',
@@ -489,7 +603,7 @@ class ContentController(BaseController, RewriterApp):
 
         wb_url = self.add_query(wb_url)
         if user == '_new' and redir_route:
-            return self.do_create_new_and_redir(coll, rec, wb_url, redir_route)
+            return self.do_create_new_and_redir(coll_name, rec_name, wb_url, redir_route)
 
         sesh = self.get_session()
 
@@ -498,49 +612,64 @@ class ContentController(BaseController, RewriterApp):
 
         remote_ip = None
         frontend_cache_header = None
-        patch_rec = ''
+        patch_recording = None
+
+        the_user, collection, recording = self.user_manager.get_user_coll_rec(user, coll_name, rec_name)
+
+        if not the_user:
+            msg = 'not_found' if user == 'api' else 'no_such_user'
+            self._raise_error(404, msg)
+
+        coll = collection.my_id if collection else None
+        rec = recording.my_id if recording else None
 
         if type in self.MODIFY_MODES:
-            if not self.manager.has_recording(user, coll, rec):
-                self._redir_if_sanitized(self.sanitize_title(rec),
-                                         rec,
+            if not recording:
+                self._redir_if_sanitized(self.sanitize_title(rec_name),
+                                         rec_name,
                                          wb_url)
 
                 # don't auto create recording for inner frame w/o accessing outer frame
-                raise HTTPError(404, 'No Such Recording')
+                self._raise_error(404, 'no_such_recording')
 
-            elif not self.manager.is_recording_open(user, coll, rec):
+            elif not recording.is_open():
                 # force creation of new recording as this one is closed
-                raise HTTPError(404, 'Recording not open')
+                self._raise_error(400, 'recording_not_open')
 
-            self.manager.assert_can_write(user, coll)
+            collection.access.assert_can_write_coll(collection)
 
-            if self.manager.is_out_of_space(user):
-                raise HTTPError(402, 'Out of Space')
+            if the_user.is_out_of_space():
+                self._raise_error(402, 'out_of_space')
 
             remote_ip = self._get_remote_ip()
 
-            if self.manager.is_rate_limited(user, remote_ip):
-                raise HTTPError(402, 'Rate Limit')
+            if the_user.is_rate_limited(remote_ip):
+                self._raise_error(402, 'rate_limit_exceeded')
 
             if inv_sources and inv_sources != '*':
-                patch_rec = self.patch_of_name(rec, True)
+                #patch_rec_name = self.patch_of_name(rec, True)
+                patch_recording = recording.get_patch_recording()
+                #patch_recording = collection.get_recording_by_name(patch_rec_name)
 
         if type == 'replay-coll':
-            res = self.manager.has_collection_is_public(user, coll)
-            if not res:
-                self._redir_if_sanitized(self.sanitize_title(coll),
-                                         coll,
+            if not collection:
+                self._redir_if_sanitized(self.sanitize_title(coll_name),
+                                         coll_name,
                                          wb_url)
 
-                raise HTTPError(404, 'No Such Collection')
 
-            if res != 'public':
+                self._raise_error(404, 'no_such_collection')
+
+            access = self.access.check_read_access_public(collection)
+            if not access:
+                self._raise_error(404, 'no_such_collection')
+
+            if access != 'public':
                 frontend_cache_header = ('Cache-Control', 'private')
 
         elif type == 'replay':
-            if not self.manager.has_recording(user, coll, rec):
-                raise HTTPError(404, 'No Such Recording')
+            if not recording:
+                self._raise_error(404, 'no_such_recording')
 
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'], safe='/:')
 
@@ -555,33 +684,40 @@ class ContentController(BaseController, RewriterApp):
             if result:
                 mode, wb_url = result
                 new_url = '/{user}/{coll}/{rec}/{mode}/{url}'.format(user=user,
-                                                                     coll=coll,
-                                                                     rec=rec,
+                                                                     coll=coll_name,
+                                                                     rec=rec_name,
                                                                      mode=mode,
                                                                      url=wb_url)
                 return self.redirect(new_url)
 
         elif type == 'replay-coll' and not is_top_frame:
-            self.manager.sync_coll_index(user, coll, exists=False,
-                                         do_async=False)
+            collection.sync_coll_index(exists=False, do_async=False)
 
         kwargs = dict(user=user,
-                      coll_orig=coll,
                       id=sesh.get_id(),
-                      rec_orig=rec,
-                      coll=quote(coll),
-                      rec=quote(rec, safe='/*'),
+                      coll=coll,
+                      rec=rec,
+                      coll_name=quote(coll_name),
+                      rec_name=quote(rec_name, safe='/*'),
+
+                      the_user=the_user,
+                      collection=collection,
+                      recording=recording,
+                      patch_recording=patch_recording,
+
                       type=type,
                       sources=sources,
                       inv_sources=inv_sources,
-                      patch_rec=patch_rec,
+                      patch_rec=patch_recording.my_id if patch_recording else None,
                       ip=remote_ip,
                       is_embed=is_embed,
                       is_display=is_display)
 
         # top-frame replay but through a proxy, redirect to original
         if is_top_frame and 'wsgiprox.proxy_host' in request.environ:
-            self.manager.browser_mgr.update_local_browser(wb_url_obj, kwargs)
+            kwargs['url'] = wb_url_obj.url
+            kwargs['request_ts'] = wb_url_obj.timestamp
+            self.browser_mgr.update_local_browser(kwargs)
             return redirect(wb_url_obj.url)
 
         try:
@@ -605,9 +741,9 @@ class ContentController(BaseController, RewriterApp):
                 return {'url': url,
                         'status': status_code,
                         'error': err_info.get('error'),
-                        'user': self.get_view_user(user),
-                        'coll': coll,
-                        'rec': rec,
+                        'user': user,
+                        'coll': coll_name,
+                        'rec': rec_name,
                         'type': type,
                         'app_host': self.app_host,
                        }
@@ -672,18 +808,18 @@ class ContentController(BaseController, RewriterApp):
         return url
 
     def get_cookie_key(self, kwargs):
-        sesh = self.get_session()
-        id = sesh.get_id()
-        kwargs['id'] = id
-        if kwargs.get('rec') == '*':
-            kwargs['rec'] = '<all>'
+        sesh_id = self.get_session().get_id()
+        return self.dyn_stats.get_cookie_key(kwargs['the_user'],
+                                             kwargs['collection'],
+                                             kwargs['recording'],
+                                             sesh_id=sesh_id)
 
-        return self.cookie_key_templ.format(**kwargs)
-
-    def add_cookie(self, user, coll, rec, name, value, domain):
-        key = self.get_cookie_key(dict(user=user,
-                                       coll=coll,
-                                       rec=rec))
+    def add_cookie(self, user, collection, recording, name, value, domain):
+        sesh_id = self.get_session().get_id()
+        key = self.dyn_stats.get_cookie_key(user,
+                                            collection,
+                                            recording,
+                                            sesh_id=sesh_id)
 
         self.cookie_tracker.add_cookie(key, domain, name, value)
 
@@ -697,10 +833,10 @@ class ContentController(BaseController, RewriterApp):
     def get_base_url(self, wb_url, kwargs):
         # for proxy mode, 'upstream_url' already provided
         # just use that
-        base_url = kwargs.get('upstream_url')
-        if base_url:
-            base_url = base_url.format(**kwargs)
-            return base_url
+        #base_url = kwargs.get('upstream_url')
+        #if base_url:
+        #    base_url = base_url.format(**kwargs)
+        #    return base_url
 
         type = kwargs['type']
 
@@ -717,14 +853,6 @@ class ContentController(BaseController, RewriterApp):
             rec = cdx['source'].split(':', 1)[0]
 
         cdx['rec'] = rec
-
-    def get_query_params(self, wb_url, kwargs):
-        collection = self.manager.get_collection(kwargs['user'], kwargs['coll_orig'])
-        kwargs['rec_titles'] = dict((rec['id'], rec['title']) for rec in collection['recordings'])
-
-        kwargs['user'] = self.get_view_user(kwargs['user'])
-        kwargs['coll_title'] = collection.get('title', '')
-        return kwargs
 
     def get_host_prefix(self, environ):
         if self.content_host and 'wsgiprox.proxy_host' not in environ:
@@ -754,36 +882,48 @@ class ContentController(BaseController, RewriterApp):
         # disable until can guarantee cookie is not changed!
         #self.get_session().update_expires()
 
-        info = self.manager.get_content_inject_info(kwargs['user'],
-                                                    kwargs['coll_orig'],
-                                                    kwargs['rec_orig'])
+        info = self.get_content_inject_info(kwargs['the_user'],
+                                            kwargs['collection'],
+                                            kwargs['recording'])
 
         return {'info': info,
                 'curr_mode': type,
-                'user': self.get_view_user(kwargs['user']),
+
+                'user': kwargs['user'],
+
                 'coll': kwargs['coll'],
-                'coll_orig': kwargs['coll_orig'],
-                'rec': kwargs['rec'],
-                'rec_orig': kwargs['rec_orig'],
+                'coll_name': kwargs['coll_name'],
                 'coll_title': info.get('coll_title', ''),
+
+                'rec': kwargs['rec'],
+                'rec_name': kwargs['rec_name'],
                 'rec_title': info.get('rec_title', ''),
+
                 'is_embed': kwargs.get('is_embed'),
                 'is_display': kwargs.get('is_display'),
+
                 'top_prefix': top_prefix,
+
                 'sources': kwargs.get('sources'),
                 'inv_sources': kwargs.get('inv_sources'),
                }
 
     def _add_custom_params(self, cdx, resp_headers, kwargs, record=None):
         try:
-            self._add_stats(cdx, resp_headers, kwargs)
+            self._add_stats(cdx, resp_headers, kwargs, record)
         except:
             import traceback
 
             traceback.print_exc()
 
-    def _add_stats(self, cdx, resp_headers, kwargs):
+    def _add_stats(self, cdx, resp_headers, kwargs, record):
         type_ = kwargs['type']
+
+        if type_ == 'replay-coll':
+            content_len = record.rec_headers.get_header('Content-Length')
+            if content_len is not None:
+                Stats(self.redis).incr_replay(int(content_len), kwargs['user'])
+
         if type_ in ('record', 'live'):
             return
 
@@ -802,6 +942,7 @@ class ContentController(BaseController, RewriterApp):
             source = orig_source
 
         ra_rec = None
+        ra_recording = None
 
         # set source in recording-key
         if type_ in self.MODIFY_MODES:
@@ -809,7 +950,15 @@ class ContentController(BaseController, RewriterApp):
 
             if not skip and source not in ('live', 'replay'):
                 ra_rec = unquote(resp_headers.get('Recorder-Rec', ''))
-                ra_rec = ra_rec or kwargs['rec_orig']
+                ra_rec = ra_rec or kwargs['rec']
+
+                recording = kwargs.get('recording')
+                patch_recording = kwargs.get('patch_recording')
+
+                if recording and ra_rec == recording.my_id:
+                    ra_recording = recording
+                elif patch_recording and ra_rec == patch_recording.my_id:
+                    ra_recording = patch_recording
 
         url = cdx.get('url')
         referrer = request.environ.get('HTTP_REFERER')
@@ -820,7 +969,7 @@ class ContentController(BaseController, RewriterApp):
             request.environ.get('HTTP_HOST') in referrer):
             referrer = url
 
-        self.manager.update_dyn_stats(url, kwargs, referrer, source, ra_rec)
+        self.dyn_stats.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser
@@ -833,12 +982,16 @@ class ContentController(BaseController, RewriterApp):
         #handle cbrowsers
         browser_id = wb_url.mod.split(':', 1)[1]
 
-        kwargs['browser_can_write'] = '1' if self.manager.can_write_coll(kwargs['user'], kwargs['coll']) else '0'
+        kwargs['browser_can_write'] = '1' if self.access.can_write_coll(kwargs['collection']) else '0'
 
         kwargs['remote_ip'] = self._get_remote_ip()
 
+        kwargs['url'] = wb_url.url
+        kwargs['timestamp'] = wb_url.timestamp
+        kwargs['browser'] = browser_id
+
         # container redis info
-        inject_data = self.manager.browser_mgr.request_new_browser(browser_id, wb_url, kwargs)
+        inject_data = self.browser_mgr.request_new_browser(kwargs)
         if 'error_message' in inject_data:
             self._raise_error(400, inject_data['error_message'])
 
@@ -850,3 +1003,39 @@ class ContentController(BaseController, RewriterApp):
             return data
 
         return browser_embed(inject_data)
+
+    def get_content_inject_info(self, user, collection, recording):
+        info = {}
+
+        # recording
+        if recording:
+            info['rec_id'] = recording.my_id
+            #info['rec_title'] = quote(recording.get_title(), safe='/ ')
+            info['size'] = recording.size
+
+        else:
+            info['size'] = collection.size
+
+        # collection
+        info['coll_id'] = collection.name
+        info['coll_title'] = quote(collection.get_prop('title', collection.name), safe='/ ')
+
+        info['coll_desc'] = quote(collection.get_prop('desc', ''))
+
+        info['size_remaining'] = user.get_size_remaining()
+
+        return info
+
+    def construct_wburl(self, url, ts, browser, is_content):
+        prefix = ts or ''
+
+        if browser:
+            prefix += '$br:' + browser
+        elif is_content:
+            prefix += 'mp_'
+
+        if prefix:
+            return prefix + '/' + url
+        else:
+            return url
+

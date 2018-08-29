@@ -1,0 +1,194 @@
+@import 'src/vars';
+
+
+.wr-coll-session {
+    display: flex;
+    position: relative;
+    border: solid .1rem $mgmt-gray;
+    border-width: 0 0 .1rem 0;
+
+    &:nth-child(2) {
+        border-width: .1rem 0 .1rem 0;
+    }
+
+    .Collapsible {
+        flex-grow: 1;
+
+
+        .Collapsible__trigger {
+            header {
+                transition: background $quickShift ease-in-out;
+                display: flex;
+                position: relative;
+                align-items: center;
+                padding: 1rem 1rem 1rem 2rem;
+
+                &:before {
+                    transition: background $quickShift ease-in-out;
+                    content: '';
+                    display: block;
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 1.5rem;
+                }
+
+                &.collapsible {
+                    cursor: pointer;
+
+                    h2 {
+                        margin-left: 2.5rem;
+                        flex-grow: 0;
+                        width: 25%;
+                    }
+
+                    & > span {
+                        width: 25%;
+                        flex-grow: 1;
+                        text-align: center;
+                    }
+                }
+
+                .function-row {
+                    transition: opacity $quickShift ease-in-out;
+                    opacity: 0.6;
+                    display: flex;
+
+                    .delete-action {
+                        svg {
+                            width: .8rem;
+                            height: .8rem;
+                        }
+                    }
+
+                    button {
+                        background: none;
+                        border-radius: .3rem;
+                        margin-left: .5rem;
+                        border: solid .1rem #CCC;
+                    }
+                }
+
+                .badge {
+                    background-color: #0039e5;
+                    font-family: sans-serif;
+                }
+
+                h2 {
+                    transition: color $quickShift ease-in-out;
+                    font-size: 1.4rem;
+                    margin: 0;
+                }
+            }
+
+            &:not(.is-open):hover header {
+                background: #F5F5F5;
+
+                .function-row {
+                    opacity: 1;
+                }
+
+                &:before {
+                    background: $blue;
+                }
+            }
+        }
+
+        .Collapsible__trigger.is-open .collapsible .function-row {
+            opacity: 0;
+        }
+
+        &.popover-open .Collapsible__trigger header {
+            .function-row {
+                opacity: 1;
+            }
+        }
+
+        .Collapsible__contentInner {
+            display: flex;
+            justify-content: space-around;
+            min-height: 20rem;
+            padding: 1.5rem 1.5rem 3rem 1.5rem;
+
+            h4 {
+                margin: 0 0 .5rem 0;
+                font-size: 1.3rem;
+                font-weight: 400;
+            }
+
+            &:hover {
+                .function-coll .functions {
+                    opacity: 1;
+                }
+            }
+
+            .function-coll {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 10rem;
+
+                .date-header {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    margin-bottom: 2.5rem;
+
+                    .dom {
+                        font-size: 2.9rem;
+                        line-height: 2.9rem;
+                        margin-bottom: .5rem;
+                    }
+
+                    .mon {
+                        font-size: 1.9rem;
+                        line-height: 1.9rem;
+                    }
+
+                    .dow {
+                        font-size: 1.5rem;
+                        line-height: 1.5rem;
+                        text-transform: uppercase;
+                    }
+
+                    .semi {
+                        font-weight: 600;
+                    }
+                }
+
+                .functions {
+                    transition: opacity $quickShift ease-in-out;
+                    opacity: 0.6;
+
+                    button {
+                        width: 100%;
+
+                        &:first-of-type {
+                            margin: 0 0 .5rem 0;
+                        }
+                    }
+                }
+            }
+
+            &.popover-open {
+                .functions {
+                    opacity: 1;
+                }
+            }
+
+            .session-notes {
+                margin: 0 2.5rem;
+                width: 25%;
+            }
+
+            .session-pages {
+                flex-grow: 1;
+            }
+
+            .ReactVirtualized__Grid {
+                border: solid 1px #333;
+            }
+        }
+    }
+}

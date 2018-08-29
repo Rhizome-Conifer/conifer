@@ -1,0 +1,21 @@
+@import 'src/vars';
+
+.sidebar-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    background: $sidebarHeaderBg;
+    padding: 1.5rem 1rem 1rem 1rem;
+    margin-bottom: .5rem;
+    border: solid .1rem #CECECE;
+    border-width: 0 0 .1rem 0;
+
+    h4 {
+        display: inline-block;
+        color: $sidebarHeaderLabel;
+        font-size: 1.15rem;
+        font-weight: 300;
+        margin: 0 0 0 0.5rem;
+        letter-spacing: 0.65pt;
+    }
+}

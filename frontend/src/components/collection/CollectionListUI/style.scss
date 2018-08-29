@@ -1,0 +1,54 @@
+@import 'src/vars';
+
+.wr-coll-meta {
+    margin: 1.5rem 0;
+
+    button + button {
+        margin-left: .5rem;
+    }
+}
+
+.wr-add-list {
+    svg {
+        transition: fill $quickShift ease-in-out;
+
+        polygon {
+            fill: $success-color;
+        }
+    }
+}
+
+.collection-title {
+    font-size: 2rem;
+}
+
+.collection-list {
+
+    li {
+        margin: 0;
+
+        &:hover {
+            text-decoration: underline;
+            background-color: #eee;
+            cursor: pointer;
+        }
+
+        a {
+            display: block;
+            position: relative;
+            padding: .8rem;
+        }
+
+        .index-link {
+            text-decoration: underline;
+
+            &:link, &:visited {
+                color: #000;
+            }
+
+            &:hover {
+                color: $blue;
+            }
+        }
+    }
+}

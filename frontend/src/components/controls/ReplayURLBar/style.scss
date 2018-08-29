@@ -1,0 +1,76 @@
+@import 'src/vars';
+
+#page-display {
+    width: auto;
+    float: none;
+    display: inline-block;
+    vertical-align: bottom;
+    text-align: center;
+    border-width: .1rem 0 .1rem .1rem;
+    border-radius: 0;
+    font-feature-settings: "tnum";
+    background: #FFF;
+}
+
+.main-bar {
+    width: 100%;
+    flex-grow: 1;
+   -ms-flex: 30%;
+
+   & > form > .input-group {
+    width: 100%;
+   }
+}
+
+.wr-app-url {
+    position: relative;
+
+    .replay-date > span {
+        margin-left: .5rem;
+    }
+
+    .form-control {
+        border-radius:0;
+        float: none;
+    }
+
+    .main-replay-date {
+        font-style: normal;
+        color: #555;
+        margin: 0;
+        float: none;
+    }
+}
+
+.wr-replay-info {
+    display: flex;
+    display: -ms-flexbox;
+    align-items: center;
+    -ms-flex-align: center;
+    position: absolute;
+    right: 0;
+    top: .4rem;
+    height: calc(100% - .8rem);
+    z-index: 10;
+    padding-left: 4rem;
+    margin-right: 1rem;
+
+    background: linear-gradient(90deg, rgba(255,255,255,0), #FFF 15%, #FFF);
+}
+
+@media(max-width:768px){
+    .wr-controls:not(.public) .main-bar{
+        flex-basis: 50%;
+    }
+    .main-bar {
+        display: inline-block;
+        width: 50%;
+       //  flex-grow: 1;
+       // -ms-flex: 30%;
+
+       & > form > .input-group {
+        width: 100%;
+       }
+    }
+
+}

@@ -43,7 +43,7 @@
                 {% set is_disabled_class = "disabled" %}
             {% endif %}
             <div class="access-switch" style="float:right;">
-                {% set is_public = collection['r:@public'] %}
+                {% set is_public = collection['public'] %}
                 {% include 'public_private_switch.html' %}
             </div>
         {% endif %}

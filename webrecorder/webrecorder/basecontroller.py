@@ -1,44 +1,22 @@
-# standard library imports
+import re
 import os
+
+from bottle import request, HTTPError, redirect as bottle_redirect, response
 from functools import wraps
-
-# third party imports
 from six.moves.urllib.parse import quote
-from bottle import HTTPError, redirect as bottle_redirect, request
 
-# library specific imports
-from webrecorder.utils import get_bool, sanitize_tag, sanitize_title
+from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
+from webrecorder.models import User
+
+from webrecorder.apiutils import api_decorator, wr_api_spec
 
 
 class BaseController(object):
-    """Controller (base class).
-
-    :ivar Bottle app: bottle application
-    :ivar jinja_env: Jinja2 environment
-    :ivar manager: n.s.
-    :ivar dict config: Webrecorder configuration
-    :ivar str app_host: application host
-    :ivar str content_host: content host
-    :ivar cache_template: Redis key template
-    :ivar bool anon_disabled: whether anonymous recording is enabled
-    """
-
-    def __init__(self, app, jinja_env, manager, config):
-        """Initialize controller.
-
-        :param Bottle app: bottle application
-        :param Environment jinja_env: Jinja2 environment
-        :param manager: n.s.
-        :param dict config: Webrecorder configuration
-        """
-        self.app = app
-        self.jinja_env = jinja_env
-        self.manager = manager
-        self.config = config
-
-        self.app_host = os.environ['APP_HOST']
-        self.content_host = os.environ['CONTENT_HOST']
-        self.cache_template = config.get('cache_template')
+    def __init__(self, *args, **kwargs):
+        self.app = kwargs['app']
+        self.jinja_env = kwargs['jinja_env']
+        self.user_manager = kwargs['user_manager']
+        self.config = kwargs['config']
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
 
         self.init_routes()
@@ -46,12 +24,7 @@ class BaseController(object):
     def init_routes(self):
         raise NotImplementedError
 
-    def redir_host(self, host=None, path=None):
-        """Cause a 303 or 302 redirect to the application host.
-
-        :param str host: host
-        :param str path: path
-        """
+    def redir_host(self, host=None, path=None, status=None):
         if not host:
             host = self.app_host
 
@@ -60,94 +33,58 @@ class BaseController(object):
 
         url = request.environ['wsgi.url_scheme'] + '://' + host
         if not path:
-            path = (
-                request.environ.get('SCRIPT_NAME', '') +
-                request.environ['PATH_INFO']
-            )
+            path = request.environ.get('SCRIPT_NAME', '') + request.environ['PATH_INFO']
             if request.query_string:
                 path += '?' + request.query_string
 
         url += path
-        return bottle_redirect(url)
+        return bottle_redirect(url, code=status)
 
     def validate_csrf(self):
         """Check CSRF token."""
         csrf = request.forms.getunicode('csrf')
         sesh_csrf = self.get_session().get_csrf()
         if not sesh_csrf or csrf != sesh_csrf:
-            self._raise_error(403, 'Invalid CSRF Token')
+            self._raise_error(403, 'invalid_csrf_token')
 
-    def get_user(self, api=False, redir_check=True):
-        """Get user.
-
-        :param bool api: n.s.
-        :param bool redir_check: whether to cause a redirect to the application
-        host
-
-        :returns: user
-        :rtype: str
-        """
+    def get_user(self, api=True, redir_check=True, user=None):
         if redir_check:
             self.redir_host()
-        user = request.query.getunicode('user')
+
         if not user:
-            self._raise_error(
-                400, 'User must be specified', api=api
-            )
+            user = request.query.getunicode('user')
 
-        if user == '$temp':
-            return self.manager.get_anon_user(True)
+        if not user:
+            self._raise_error(400, 'no_user_specified')
 
-        if self.manager.is_anon(user):
-            return user
-
-        if not self.manager.has_user(user):
-            self._raise_error(404, 'No such user', api=api)
+        try:
+            user = self.user_manager.all_users[user]
+        except Exception as e:
+            msg = 'not_found' if user == 'api' else 'no_such_user'
+            self._raise_error(404, msg)
 
         return user
 
-    def get_user_coll(self, api=False, redir_check=True):
-        """Get user and collection.
+    def load_user_coll(self, api=True, redir_check=True, user=None, coll_name=None):
+        if not isinstance(user, User):
+            user = self.get_user(api=api, redir_check=redir_check, user=user)
 
-        :param bool api: n.s.
-        :param bool redir_check: n.s.
+        if not coll_name:
+            coll_name = request.query.getunicode('coll')
 
-        :returns: user and collection
-        :rtype: str and str
-        """
-        user = self.get_user(api=api, redir_check=redir_check)
+        if not coll_name:
+            self._raise_error(400, 'no_collection_specified')
 
-        coll = request.query.getunicode('coll')
-        if not coll:
-            self._raise_error(400, 'Collection must be specified',
-                              api=api)
+        collection = user.get_collection_by_name(coll_name)
+        if not collection:
+            self._raise_error(404, 'no_such_collection')
+        return user, collection
 
-        if self.manager.is_anon(user):
-            if coll != 'temp':
-                self._raise_error(404, 'No such collection', api=api)
+    def _raise_error(self, code, message='not_found'):
+        result = {'error': message}
+        response.status = code
 
-        elif not self.manager.has_collection(user, coll):
-            self._raise_error(404, 'No such collection', api=api)
-
-        return user, coll
-
-    def _raise_error(self, code, message, api=False, **kwargs):
-        """Raise HTTP error.
-
-        :param int code: status code
-        :param str message: body
-        :param bool api: toggle json_err attribute on/off
-        """
-        result = {'error_message': message}
-        result.update(kwargs)
-
-        if request.forms:
-            result['request_data'] = dict(request.forms.decode())
-
-        err = HTTPError(code, message, exception=result)
-        if api:
-            err.json_err = True
-        raise err
+        raise HTTPError(code, message, exception=result)
 
     def get_session(self):
         """Get session.
@@ -158,6 +95,7 @@ class BaseController(object):
         return request.environ['webrec.session']
 
     def fill_anon_info(self, resp):
+<<<<<<< ours
         """Update response w/ anonymous user information.
 
         :param dict resp: response
@@ -165,17 +103,14 @@ class BaseController(object):
         :returns: success or failure
         :rtype: bool
         """
-        sesh = self.get_session()
-
         resp['anon_disabled'] = self.anon_disabled
 
-        if sesh.is_anon():
-            anon_user = sesh.anon_user
-            anon_coll = self.manager.get_collection(anon_user, 'temp')
+        if self.access.session_user.is_anon():
+            anon_coll = self.access.session_user.get_collection_by_name('temp')
             if anon_coll:
-                resp['anon_user'] = anon_user
-                resp['anon_size'] = anon_coll['size']
-                resp['anon_recordings'] = len(anon_coll['recordings'])
+                resp['anon_user'] = self.access.session_user.name
+                resp['anon_size'] = anon_coll.size
+                resp['anon_recordings'] = anon_coll.num_recordings()
                 return True
 
         return False
@@ -242,12 +177,13 @@ class BaseController(object):
         return res
 
     def get_host(self):
+<<<<<<< ours
         """Get host.
 
         :returns: host
         :rtype: str
         """
-        return self.manager.get_host()
+        return request.urlparts.scheme + '://' + request.urlparts.netloc
 
     def redirect(self, url):
         """Cause redirect to URL.
@@ -307,16 +243,6 @@ class BaseController(object):
         """
         return sanitize_title(title)
 
-    def get_view_user(self, user):
-        """Get user.
-
-        :param str user: user
-
-        :returns: user
-        :rtype: str
-        """
-        return user
-
     def get_body_class(self, context, action):
         """Get class(es).
 
@@ -335,3 +261,8 @@ class BaseController(object):
             classes.append('cbrowser')
 
         return ' '.join(classes).strip()
+
+    @property
+    def access(self):
+        return request.environ['webrec.access']
+

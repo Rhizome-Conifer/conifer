@@ -7,6 +7,8 @@ from pywb.utils.io import StreamIter, chunk_encode_iter
 from webrecorder.basecontroller import BaseController
 from webrecorder import __version__
 
+from webrecorder.models.stats import Stats
+
 from bottle import response
 from six.moves.urllib.parse import quote
 from six import iteritems
@@ -16,14 +18,16 @@ import json
 
 # ============================================================================
 class DownloadController(BaseController):
-    COPY_FIELDS = ['title', 'desc', 'size', 'updated_at', 'created_at']
+    COPY_FIELDS = ('title', 'desc', 'size', 'updated_at', 'created_at', 'recorded_at', 'pages', 'lists',
+                   'public', 'public_index')
 
-    def __init__(self, app, jinja_env, manager, config):
-        super(DownloadController, self).__init__(app, jinja_env, manager, config)
+    DEFAULT_REC_TITLE = 'Session from {0}'
+
+    def __init__(self, *args, **kwargs):
+        super(DownloadController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
         self.paths = config['url_templates']
         self.download_filename = config['download_paths']['filename']
-        self.warc_key_templ = config['warc_key_templ']
-        self.index_file_key = config['info_index_key']
 
         self.download_chunk_encoded = config['download_chunk_encoded']
 
@@ -40,16 +44,20 @@ class DownloadController(BaseController):
 
             return self.handle_download(user, coll, '*')
 
-    def create_warcinfo(self, creator, title, metadata, source, filename):
-        for name, value in iteritems(source):
-            if name in self.COPY_FIELDS:
-                metadata[name] = value
+    def create_warcinfo(self, creator, name, metadata, source, serialized, filename):
+        for key, value in iteritems(serialized):
+            if key in self.COPY_FIELDS:
+                metadata[key] = value
+
+        if not metadata.get('title'):
+            metadata['title'] = self.DEFAULT_REC_TITLE.format(source.to_iso_date(metadata['created_at'], no_T=True))
+            metadata['auto_title'] = True
 
         info = OrderedDict([
                 ('software', 'Webrecorder Platform v' + __version__),
                 ('format', 'WARC File Format 1.0'),
-                ('creator', creator),
-                ('isPartOf', title),
+                ('creator', creator.name),
+                ('isPartOf', name),
                 ('json-metadata', json.dumps(metadata)),
                ])
 
@@ -61,38 +69,54 @@ class DownloadController(BaseController):
         metadata = {}
         metadata['type'] = 'collection'
 
-        title = quote(collection['title'])
-        return self.create_warcinfo(user, title, metadata, collection, filename)
+        isPartOf_name = quote(collection.name)
+        serialized = collection.serialize(include_recordings=False,
+                                          include_lists=True,
+                                          include_bookmarks='all-serialize',
+                                          include_rec_pages=False,
+                                          include_pages=False,
+                                          convert_date=False)
+
+        return self.create_warcinfo(user, isPartOf_name, metadata, collection, serialized, filename)
 
     def create_rec_warcinfo(self, user, collection, recording, filename=''):
         metadata = {}
-        metadata['pages'] = self.manager.list_pages(user,
-                                                    collection['id'],
-                                                    recording['id'])
+        #metadata['pages'] = collection.list_rec_pages(recording)
         metadata['type'] = 'recording'
-        if recording.get('rec_type'):
-            metadata['rec_type'] = recording['rec_type']
+        #metadata['id'] = recording.my_id
+        rec_type = recording.get_prop('rec_type')
+        if rec_type:
+            metadata['rec_type'] = rec_type
 
-        title = quote(collection['title']) + '/' + quote(recording['title'])
-        return self.create_warcinfo(user, title, metadata, recording, filename)
+        isPartOf_name = quote(collection.name) + '/' + quote(recording.name)
 
-    def handle_download(self, user, coll, rec):
-        self.manager.assert_can_write(user, coll)
+        serialized = recording.serialize(include_pages=True,
+                                         convert_date=False)
 
-        collection = self.manager.get_collection(user, coll, rec)
+        return self.create_warcinfo(user, isPartOf_name, metadata, recording, serialized, filename)
+
+    def handle_download(self, user, coll_name, recs):
+        user, collection = self.user_manager.get_user_coll(user, coll_name)
+
         if not collection:
-            self._raise_error(404, 'Collection not found',
-                              id=coll)
+            self._raise_error(404, 'no_such_collection')
+
+        self.access.assert_can_write_coll(collection)
+
+        #collection['uid'] = coll
+        collection.load()
+
+        Stats(self.redis).incr_download(collection)
 
         now = timestamp_now()
 
-        name = collection['id']
-        if rec != '*':
-            rec_list = rec.split(',')
+        name = coll_name
+        if recs != '*':
+            rec_list = recs.split(',')
             if len(rec_list) == 1:
-                name = rec
+                name = recs
             else:
-                name += '-' + rec
+                name += '-' + recs
         else:
             rec_list = None
 
@@ -103,8 +127,8 @@ class DownloadController(BaseController):
         coll_info = self.create_coll_warcinfo(user, collection, filename)
 
         def iter_infos():
-            for recording in collection['recordings']:
-                if rec_list and recording['id'] not in rec_list:
+            for recording in collection.get_recordings(load=True):
+                if rec_list and recording.name not in rec_list:
                     continue
 
                 warcinfo = self.create_rec_warcinfo(user,
@@ -113,7 +137,7 @@ class DownloadController(BaseController):
                                                     filename)
 
                 size = len(warcinfo)
-                size += recording['size']
+                size += recording.size
                 yield recording, warcinfo, size
 
         def read_all(infos):
@@ -122,7 +146,7 @@ class DownloadController(BaseController):
             for recording, warcinfo, _ in infos:
                 yield warcinfo
 
-                for warc_path in self._iter_all_warcs(user, coll, recording['id']):
+                for n, warc_path in recording.iter_all_files():
                     try:
                         fh = loader.load(warc_path)
                     except:
@@ -149,15 +173,3 @@ class DownloadController(BaseController):
             response.headers['Transfer-Encoding'] = 'chunked'
 
             return read_all(iter_infos())
-
-    def _iter_all_warcs(self, user, coll, rec):
-        warc_key = self.warc_key_templ.format(user=user, coll=coll, rec=rec)
-        allwarcs = self.manager.redis.hgetall(warc_key)
-
-        for n, v in iteritems(allwarcs):
-            if n == self.index_file_key:
-                continue
-
-            yield v
-
-

@@ -1,294 +1,311 @@
-# standard library imports
-import json
-
-# third party imports
-import requests
-from six.moves.urllib.parse import quote
 from bottle import request, response
+from six.moves.urllib.parse import quote
+import os
 
-# library specific imports
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.webreccork import ValidationException
-from webrecorder.basecontroller import BaseController
+
+from webrecorder.models.base import DupeNameException
+from webrecorder.models.datshare import DatShare
+from webrecorder.utils import get_bool
 
 
+# ============================================================================
 class CollsController(BaseController):
-    """Collection controller.
+    def __init__(self, *args, **kwargs):
+        super(CollsController, self).__init__(*args, **kwargs)
+        config = kwargs['config']
 
-    :ivar str default_coll_desc: collection description
-    """
+        self.allow_external = get_bool(os.environ.get('ALLOW_EXTERNAL', False))
 
-    def __init__(self, app, jinja_env, manager, config):
-        """Initialize collection controller.
-
-        :param Bottle app: bottle application
-        :param Environment jinja_env: Jinja2 environment
-        :param manager: n.s.
-        :param dict config: Webrecorder configuration
-        """
-        super().__init__(app, jinja_env, manager, config)
-        self.default_coll_desc = config['coll_desc']
+        self.cork = kwargs['cork']
 
     def init_routes(self):
+        wr_api_spec.set_curr_tag('Collections')
+
         @self.app.post('/api/v1/collections')
+        @self.api(query=['user'],
+                  req=['title', 'public'],
+                  resp='collection')
+
         def create_collection():
-            user = self.get_user(api=True)
+            user = self.get_user(api=True, redir_check=False)
 
-            title = request.forms.getunicode('title')
+            data = request.json or {}
 
-            coll = self.sanitize_title(title)
+            title = data.get('title', '')
 
-            if not coll:
-                return {'error_message': 'Invalid Collection Name'}
+            coll_name = self.sanitize_title(title)
 
-            is_public = self.post_get('public') == 'on'
+            if not coll_name:
+                self._raise_error(400, 'invalid_coll_name')
 
-            if self.manager.is_anon(user):
-                if coll != 'temp':
-                    return {'error_message': 'Only temp collection available'}
+            is_public = data.get('public', False)
 
-                if self.manager.has_collection(user, coll):
-                    return {'error_message': 'Temp collection already exists'}
+            is_external = data.get('external', False)
+
+            is_anon = self.access.is_anon(user)
+
+            if is_external:
+                if not self.allow_external:
+                    self._raise_error(403, 'external_not_allowed')
+
+                if not is_anon:
+                    self._raise_error(400, 'not_valid_for_external')
+
+            elif is_anon:
+                if coll_name != 'temp':
+                    self._raise_error(400, 'invalid_temp_coll_name')
+
+            if user.has_collection(coll_name):
+                self._raise_error(400, 'duplicate_name')
 
             try:
-                collection = self.manager.create_collection(user, coll, title,
-                                                            desc='', public=is_public)
-                self.flash_message('Created collection <b>{0}</b>!'.format(collection['title']), 'success')
-                resp = {'collection': collection}
+                collection = user.create_collection(coll_name, title=title,
+                                                    desc='', public=is_public)
+
+                if is_external:
+                    collection.set_external(True)
+
+                user.mark_updated()
+
+                self.flash_message('Created collection <b>{0}</b>!'.format(collection.get_prop('title')), 'success')
+                resp = {'collection': collection.serialize()}
+
+            except DupeNameException as de:
+                self._raise_error(400, 'duplicate_name')
+
             except Exception as ve:
+                print(ve)
                 self.flash_message(str(ve))
-                resp = {'error_message': str(ve)}
+                self._raise_error(400, 'duplicate_name')
 
             return resp
 
         @self.app.get('/api/v1/collections')
+        @self.api(query=['user', 'include_recordings', 'include_lists', 'include_pages'],
+                  resp='collections')
         def get_collections():
-            user = self.get_user(api=True)
+            user = self.get_user(api=True, redir_check=False)
 
-            coll_list = self.manager.get_collections(user)
+            kwargs = {'include_recordings': get_bool(request.query.get('include_recordings')),
+                      'include_lists': get_bool(request.query.get('include_lists')),
+                      'include_pages': get_bool(request.query.get('include_pages')),
+                     }
 
-            return {'collections': coll_list}
+            collections = user.get_collections()
 
-        @self.app.get('/api/v1/collections/<coll>')
-        def get_collection(coll):
-            user = self.get_user(api=True)
+            return {'collections': [coll.serialize(**kwargs) for coll in collections]}
 
-            return self.get_collection_info(user, coll)
+        @self.app.get('/api/v1/collection/<coll_name>')
+        @self.api(query=['user'],
+                  resp='collection')
+        def get_collection(coll_name):
+            user = self.get_user(api=True, redir_check=False)
 
-        @self.app.delete('/api/v1/collections/<coll>')
-        def delete_collection(coll):
-            user = self.get_user(api=True)
+            return self.get_collection_info(coll_name, user=user)
 
-            self._ensure_coll_exists(user, coll)
+        @self.app.delete('/api/v1/collection/<coll_name>')
+        @self.api(query=['user'],
+                  resp='deleted')
+        def delete_collection(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
 
-            self.manager.delete_collection(user, coll)
+            errs = user.remove_collection(collection, delete=True)
+            if errs.get('error'):
+                return self._raise_error(400, errs['error'])
+            else:
+                return {'deleted_id': coll_name}
 
-            return {'deleted_id': coll}
+        @self.app.put('/api/v1/collection/<coll_name>/warc')
+        def add_external_warc(coll_name):
+            if not self.allow_external:
+                self._raise_error(403, 'external_not_allowed')
 
-        @self.app.post('/api/v1/collections/<coll>/rename/<new_coll_title>')
-        def rename_collection(coll, new_coll_title):
-            user = self.get_user(api=True)
+            user, collection = self.load_user_coll(coll_name=coll_name)
 
-            self._ensure_coll_exists(user, coll)
+            self.access.assert_can_admin_coll(collection)
 
-            new_coll = self.sanitize_title(new_coll_title)
+            if not collection.is_external():
+                self._raise_error(400, 'external_only')
 
-            if coll == new_coll:
-                self.manager.set_coll_prop(user, coll, 'title', new_coll_title)
-                return {'rec_id': '*', 'coll_id': new_coll, 'title': new_coll_title}
+            num_added = collection.add_warcs(request.json.get('warcs', {}))
 
-            #if self.manager.has_collection(user, new_coll):
-            #    err_msg = 'collection "{0}" already exists'.format(new_coll)
-            #    return {'error_message': err_msg}
+            return {'success': num_added}
 
-            res = self.manager.rename(user=user,
-                                      coll=coll,
-                                      new_coll=new_coll,
-                                      title=new_coll_title)
+        @self.app.put('/api/v1/collection/<coll_name>/cdx')
+        def add_external_cdxj(coll_name):
+            if not self.allow_external:
+                self._raise_error(403, 'external_not_allowed')
 
-            return res
+            user, collection = self.load_user_coll(coll_name=coll_name)
 
-        @self.app.get('/api/v1/collections/<coll>/is_public')
-        def is_public(coll):
-            user = self.get_user(api=True)
-            self._ensure_coll_exists(user, coll)
+            self.access.assert_can_admin_coll(collection)
 
-            # check ownership
-            if not self.manager.can_admin_coll(user, coll):
-                self._raise_error(404, 'Collection not found', api=True)
+            if not collection.is_external():
+                self._raise_error(400, 'external_only')
 
-            return {'is_public': self.manager.is_public(user, coll)}
+            num_added = collection.add_cdxj(request.body.read())
 
-        @self.app.post('/api/v1/collections/<coll>/public')
-        def set_public(coll):
-            user = self.get_user(api=True)
-            self._ensure_coll_exists(user, coll)
+            return {'success': num_added}
+
+        @self.app.post('/api/v1/collection/<coll_name>')
+        @self.api(query=['user'],
+                  req=['title', 'desc', 'public', 'public_index'],
+                  resp='collection')
+        def update_collection(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_admin_coll(collection)
+
+            data = request.json or {}
+
+            if 'title' in data:
+                new_coll_title = data['title']
+                new_coll_name = self.sanitize_title(new_coll_title)
+
+                if not new_coll_name:
+                    self._raise_error(400, 'invalid_coll_name')
+
+                try:
+                    new_coll_name = user.colls.rename(collection, new_coll_name, allow_dupe=False)
+                except DupeNameException as de:
+                    self._raise_error(400, 'duplicate_name')
+
+                collection['title'] = new_coll_title
+
+            if 'desc' in data:
+                collection['desc'] = data['desc']
+
 
             # TODO: notify the user if this is a request from the admin panel
-            if self.post_get('notify') == 'true' and self.manager.is_superuser():
-                pass
+            if 'public' in data:
+                #if self.access.is_superuser() and data.get('notify'):
+                #    pass
+                collection.set_public(data['public'])
 
-            public = self.post_get('public') == 'true'
-            self.manager.set_public(user, coll, public)
+            if 'public_index' in data:
+                collection.set_bool_prop('public_index', data['public_index'])
 
-        @self.app.post('/api/v1/collections/<coll>/desc')
-        def update_desc(coll):
-            user = self.get_user(api=True)
-            self._ensure_coll_exists(user, coll)
+            collection.mark_updated()
+            return {'collection': collection.serialize()}
 
-            desc = request.body.read().decode('utf-8')
+        @self.app.get('/api/v1/collection/<coll_name>/page_bookmarks')
+        @self.api(query=['user'],
+                  resp='bookmarks')
+        def get_page_bookmarks(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
 
-            self.manager.set_coll_prop(user, coll, 'desc', desc)
-            return {}
+            rec = request.query.get('rec')
+            if rec:
+                recording = collection.get_recording(rec)
+                if not recording:
+                    return {'page_bookmarks': {}}
 
-        @self.app.get('/api/v1/collections/<coll>/num_pages')
-        def get_num_pages(coll):
-            user = self.get_user(api=True)
-
-            return {'count': self.manager.count_pages(user, coll, rec='*') }
-
-        # Create Collection
-        @self.app.get('/_create')
-        @self.jinja2_view('create_collection.html')
-        def create_coll_view():
-            self.manager.assert_logged_in()
-            return {}
-
-        @self.app.post('/_create')
-        def create_coll_post():
-            title = self.post_get('title')
-            if not title:
-                self.flash_message('Title is required')
-                self.redirect('/_create')
-
-            is_public = self.post_get('public') == 'on'
-
-            coll = self.sanitize_title(title)
-
-            user = self.manager.get_curr_user()
-
-            try:
-                if not coll:
-                    raise ValidationException('Invalid Collection Name')
-
-                #self.manager.add_collection(user, coll_name, title, access)
-                collection = self.manager.create_collection(user, coll, title,
-                                                            desc='', public=is_public)
-                self.flash_message('Created collection <b>{0}</b>!'.format(collection['title']), 'success')
-                redir_to = self.get_redir_back('/_create')
-            except Exception as ve:
-                self.flash_message(str(ve))
-                redir_to = '/_create'
-
-            self.redirect(redir_to)
-
-        @self.app.post(['/_delete_coll'])
-        def delete_collection_post():
-            self.validate_csrf()
-            user, coll = self.get_user_coll(api=False)
-
-            success = False
-            try:
-                success = self.manager.delete_collection(user, coll)
-            except Exception as e:
-                print(e)
-
-            if success:
-                self.flash_message('Collection {0} has been deleted!'.format(coll), 'success')
-
-                # if anon user/temp collection, delete user and redirect to homepage
-                if self.manager.is_anon(user):
-                    self.get_session().delete()
-
-                    if self.content_host:
-                        self.redir_host(self.content_host, '/_clear_session?path=/')
-                    else:
-                        self.redirect('/')
-                else:
-                    self.redirect(self.get_path(user))
-
+                rec_pages = collection.list_rec_pages(recording)
             else:
-                self.flash_message('There was an error deleting {0}'.format(coll))
-                self.redirect(self.get_path(user, coll))
+                rec_pages = None
 
+            return {'page_bookmarks': collection.get_all_page_bookmarks(rec_pages)}
+
+        # DAT
+        @self.app.post('/api/v1/collection/<coll_name>/dat/share')
+        def dat_do_share(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_admin_coll(collection)
+
+            # BETA only
+            try:
+                self.cork.require(role='beta-archivist')
+            except:
+                self._raise_error(400, 'not_allowed')
+
+            try:
+                data = request.json or {}
+                result = DatShare.dat_share.share(collection, data.get('always_update', False))
+            except Exception as e:
+                result = {'error': 'api_error', 'details': str(e)}
+
+            if 'error' in result:
+                self._raise_error(400, result['error'])
+
+            return result
+
+        @self.app.post('/api/v1/collection/<coll_name>/dat/unshare')
+        def dat_do_unshare(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_admin_coll(collection)
+
+            # BETA only
+            try:
+                self.cork.require(role='beta-archivist')
+            except:
+                self._raise_error(400, 'not_allowed')
+
+            try:
+                result = DatShare.dat_share.unshare(collection)
+            except Exception as e:
+                result = {'error': 'api_error', 'details': str(e)}
+
+            if 'error' in result:
+                self._raise_error(400, result['error'])
+
+            return result
+
+        @self.app.post('/api/v1/collection/<coll_name>/commit')
+        def commit_file(coll_name):
+            user, collection = self.load_user_coll(coll_name=coll_name)
+
+            self.access.assert_can_admin_coll(collection)
+
+            data = request.json or {}
+
+            res = collection.commit_all(data.get('commit_id'))
+            if not res:
+                return {'success': True}
+            else:
+                return {'commit_id': res}
+
+        # LEGACY ENDPOINTS (to remove)
         # Collection view (all recordings)
-        @self.app.get(['/<user>/<coll>', '/<user>/<coll>/'])
+        @self.app.get(['/<user>/<coll_name>', '/<user>/<coll_name>/'])
         @self.jinja2_view('collection_info.html')
-        def coll_info(user, coll):
-            return self.get_collection_info_for_view(user, coll)
+        def coll_info(user, coll_name):
+            return self.get_collection_info_for_view(user, coll_name)
 
-        @self.app.get(['/<user>/<coll>/<rec_list:re:([\w,-]+)>', '/<user>/<coll>/<rec_list:re:([\w,-]+)>/'])
+        @self.app.get(['/<user>/<coll_name>/<rec_list:re:([\w,-]+)>', '/<user>/<coll_name>/<rec_list:re:([\w,-]+)>/'])
         @self.jinja2_view('collection_info.html')
-        def coll_info(user, coll, rec_list):
-            rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
-            return self.get_collection_info_for_view(user, coll, rec_list)
+        def coll_info(user, coll_name, rec_list):
+            #rec_list = [self.sanitize_title(title) for title in rec_list.split(',')]
+            return self.get_collection_info_for_view(user, coll_name)
 
-    def get_collection_info_for_view(self, user, coll, rec_list=None):
+    def get_collection_info_for_view(self, user, coll_name):
         self.redir_host()
-        result = self.get_collection_info(user, coll, rec_list)
-        if not result or result.get('error_message'):
-            self._raise_error(404, 'Collection not found')
 
-        return result
+        result = self.get_collection_info(coll_name, user=user, include_pages=True)
 
-    def get_collection_info(self, user, coll, rec_list=None):
-        try:
-            collection = self.manager.get_collection(user, coll)
-            assert(collection)
-        except:
-            response.status = 404
-            return {'error_message': 'Collection not found', 'id': coll}
-
-        result = {'collection': collection}
-
-        if self.manager.get_curr_user() == user:
-            result['collections'] = self.manager.get_collections(self.manager.get_curr_user())
-
-        result['size_remaining'] = self.manager.get_size_remaining(user)
-        result['user'] = self.get_view_user(user)
-        result['coll'] = coll
-        result['bookmarks'] = []
-
-        result['rec_title'] = ''
+        result['coll'] = result['collection']['id']
+        result['coll_name'] = result['coll']
         result['coll_title'] = quote(result['collection']['title'])
 
-        for rec in result['collection']['recordings']:
-           rec['pages'] = self.manager.list_pages(user, coll, rec['id'])
-           result['bookmarks'].extend(rec['pages'])
-
-        if not result['collection'].get('desc'):
-            result['collection']['desc'] = self.default_coll_desc.format(result['coll_title'])
-
-        rec_list = rec_list or []
-        result['rec_list'] = json.dumps(rec_list)
+        #if not result or result.get('error'):
+        #    self._raise_error(404, 'Collection not found')
 
         return result
 
-    def _ensure_coll_exists(self, user, coll):
-        if not self.manager.has_collection(user, coll):
-            self._raise_error(404, 'Collection not found', api=True, id=coll)
+    def get_collection_info(self, coll_name, user=None, include_pages=False):
+        user, collection = self.load_user_coll(user=user, coll_name=coll_name)
 
-    def _get_ait_metadata(self, ait_coll):
-        r = requests.get('https://archive-it.org/collections/{0}.json'.format(ait_coll))
-        data = r.json()
+        result = {'collection': collection.serialize(include_rec_pages=include_pages,
+                                                     include_lists=True,
+                                                     include_recordings=True,
+                                                     include_pages=True,
+                                                     check_slug=coll_name)}
 
-        desc = data['results']['rootEntity']['name']
-        page_data_list = []
+        result['user'] = user.my_id
+        result['size_remaining'] = user.get_size_remaining()
 
-        if not data['results'].get('entities'):
-            return desc, page_data_list
-
-        for json_page in data['results']['entities']:
-            page_data = {}
-            page_data['url'] = json_page['canonicalUrl']
-            page_data['timestamp'] = '*'
-
-            metadata = json_page.get('metadata')
-            if metadata:
-                title = metadata.get('meta_Title')
-                if title:
-                    page_data['title'] = title[0]
-
-            page_data_list.append(page_data)
-
-        return desc, page_data_list
+        return result
 

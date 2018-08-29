@@ -1,0 +1,40 @@
+@import 'src/vars';
+
+.terms-policies {
+
+    h1 {
+        font-family: $serif;
+        font-size: 5.1rem;
+    }
+
+    h1, h3 {
+        color: #434a54;
+    }
+
+    a[name="tos"], a[name="privacy"], a[name="copyright"] {
+        text-decoration: none;
+    }
+
+    .tos-sub {
+        list-style-type: lower-alpha;
+    }
+
+    ol.tos {
+
+        padding-left: 1.6rem;
+    }
+
+    .tos li {
+        margin-top: 1.8rem;
+    }
+
+    .privacy li {
+        list-style-type: none;
+    }
+
+    .section-updated {
+        margin-top: 2rem;
+        margin-bottom: 4rem;
+        font-style: italic;
+    }
+}

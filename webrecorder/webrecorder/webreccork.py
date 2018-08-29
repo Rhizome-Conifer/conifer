@@ -1,12 +1,9 @@
-# standard library imports
+from cork import Cork, AAAException, AuthException
 import os
-from datetime import datetime
 
-# third party imports
-from cork import AAAException, AuthException, Cork
-
-# library specific imports
 from webrecorder.redisutils import RedisTable
+from webrecorder.models.user import UserTable
+from webrecorder.models.base import BaseAccess
 
 
 class WebRecCork(Cork):
@@ -48,7 +45,7 @@ class WebRecCork(Cork):
         :param str username: username
         """
         self._setup_cookie(username)
-        self._store.users[username]['last_login'] = str(datetime.utcnow())
+        self._store.users[username].update_last_login()
         self._store.save_users()
 
     def is_authenticate(self, username, password):
@@ -61,7 +58,13 @@ class WebRecCork(Cork):
         :rtype: bool
         """
         if username in self._store.users:
-            authenticated = self.verify_password(username, password)
+            if hasattr(salted_hash, 'encode'):
+                salted_hash = salted_hash.encode('ascii')
+            authenticated = self._verify_password(
+                username,
+                password,
+                salted_hash,
+            )
         else:
             authenticated = False
         return authenticated
@@ -75,6 +78,7 @@ class WebRecCork(Cork):
         :returns: username and description
         :rtype: str and str
         """
+
         try:
             data = self._store.pending_registrations.pop(registration_code)
         except KeyError:
@@ -89,17 +93,12 @@ class WebRecCork(Cork):
             'role': data['role'],
             'hash': data['hash'],
             'email_addr': data['email_addr'],
-            'desc': data['desc'],
+            'reg_data': data['desc'],
             'creation_date': data['creation_date'],
-            'last_login': str(datetime.utcnow())
         }
+        self._store.users[username].update_last_login()
         self._store.save_users()
         return username, data['desc']
-
-    def _save_session(self):
-        """Save session."""
-        self._beaker_session['anon'] = None
-        self._beaker_session.save()
 
     @staticmethod
     def create_cork(redis, config):
@@ -189,21 +188,18 @@ class RedisCorkBackend(object):
         :param StrictRedis redis: Redis interface
         """
         self.redis = redis
-        self.users = RedisTable(self.redis, 'h:users')
+        self.access = BaseAccess()
+        self.users = UserTable(self.redis, self.get_access)
         self.roles = RedisTable(self.redis, 'h:roles')
         self.pending_registrations = RedisTable(self.redis, 'h:register')
 
-    def save_users(self):
-        """Mock method."""
-        pass
+    def get_access(self):
+        return self.access
 
-    def save_roles(self):
-        """Mock method."""
-        pass
+    def save_users(self): pass
+    def save_roles(self): pass
+    def save_pending_registrations(self): pass
 
-    def save_pending_registrations(self):
-        """Mock method."""
-        pass
 
 
 class ValidationException(Exception):

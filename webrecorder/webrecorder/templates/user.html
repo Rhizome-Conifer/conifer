@@ -20,7 +20,7 @@
 {% block content %}
 
 <div class="row collection-description page-archive" id="about">
-    <div class="col-xs-12" id="home-markdown" data-desc-url="/api/v1/users/{{ user }}/desc" style="display: none">{{ user_info.desc }}</div>
+    <div class="col-xs-12" id="home-markdown" data-desc-url="/api/v1/users/{{ user }}/desc" style="display: none">{{ user_info.description }}</div>
     <div class="col-xs-12" id="home-view"></div>
     {% if is_owner() %}
     <button id="home-edit" type="button" class="edit-description btn btn-default btn-xs icon-button" title="Edit collection description" aria-label="Edit collection description">
@@ -54,7 +54,7 @@
 <div class="row">
     <ul class="list-group collection-list">
         {% for coll in collections | sort(attribute='title') %}
-        {% set is_public = coll['r:@public'] %}
+        {% set is_public = coll['public'] %}
         <li class="left-buffer list-group-item">
             <div class="row">
                 <div class="col-xs-9">

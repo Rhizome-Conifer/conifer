@@ -1,0 +1,23 @@
+@import 'src/vars';
+
+@keyframes indexing {
+    0% { opacity: .75; }
+    50% { opacity: .25; }
+    100% { opacity: .75; }
+}
+
+.search-box {
+    svg {
+        transition: opacity $quickShift ease-in-out;
+        vertical-align: middle;
+    }
+
+    // button {
+    //     &.indexing {
+    //         svg {
+    //             opacity: 0.75;
+    //             animation: indexing 1s infinite;
+    //         }
+    //     }
+    // }
+}

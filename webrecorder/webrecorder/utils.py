@@ -1,18 +1,13 @@
-# standard library imports
-import re
-import logging
-from contextlib import contextmanager
-
-# third party imports
-import gevent
-
-# library specific imports
 from warcio.limitreader import LimitReader
 from pywb.utils.loaders import load_overlay_config
+from contextlib import contextmanager
 
-
-ALPHA_NUM_RX = re.compile('[^\w-]')
-WB_URL_COLLIDE = re.compile('^([\d]+([\w]{2}_)?|([\w]{2}_))$')
+import re
+import gevent
+import logging
+import datetime
+import os
+import base64
 
 
 def init_logging():
@@ -43,10 +38,36 @@ def load_wr_config():
     :returns: Webrecorder configuration
     :rtype: dict
     """
-    config = load_overlay_config(
-        'WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', ''
-    )
+    config = load_overlay_config('WR_CONFIG', 'pkg://webrecorder/config/wr.yaml', 'WR_USER_CONFIG', '')
+
+    init_props(config)
+
     return config
+
+
+# ============================================================================
+def init_props(config):
+    from webrecorder.models import User, Collection, Recording, Stats
+    User.init_props(config)
+    Collection.init_props(config)
+    Recording.init_props(config)
+    Stats.init_props(config)
+
+    import webrecorder.rec.storage.storagepaths as storagepaths
+    storagepaths.init_props(config)
+
+
+# ============================================================================
+def get_new_id(max_len=None, size=10):
+    res = base64.b32encode(os.urandom(size)).decode('utf-8').lower()
+    if max_len:
+        res = res[:max_len]
+    return res
+
+
+ALPHA_NUM_RX = re.compile('[^\w-]')
+
+WB_URL_COLLIDE = re.compile('^([\d]+([\w]{2}_)?|([\w]{2}_))$')
 
 
 def sanitize_tag(tag):
@@ -82,18 +103,34 @@ def sanitize_title(title):
     return id
 
 
-def get_bool(string):
-    """Cast str to bool.
+# ============================================================================
+def get_bool(value):
+    if isinstance(value, str):
+        return value.lower() not in ('0', 'false', 'f', 'off')
 
-    :param str string: str
+    return False if not value else True
 
-    :returns: bool
-    :rtype: bool
-    """
-    if not string:
-        return False
 
-    return string.lower() not in ('0', 'false', 'f', 'off')
+# ============================================================================
+def today_str():
+    return datetime.datetime.utcnow().date().isoformat()
+
+
+# ============================================================================
+def spawn_once(*args, **kwargs):
+    worker_id = kwargs.pop('worker', None)
+    mule_id = kwargs.pop('mule', 0)
+
+    try:
+        import uwsgi
+        from uwsgidecorators import postfork
+
+        @postfork
+        def listen_loop():
+            if (mule_id is None or uwsgi.mule_id() == mule_id) and (worker_id is None or uwsgi.worker_id() == worker_id):
+                gevent.spawn(*args, **kwargs)
+    except:
+        gevent.spawn(*args, **kwargs)
 
 
 @contextmanager

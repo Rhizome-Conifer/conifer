@@ -17,7 +17,17 @@ class TestRateLimits(FullStackTests):
         os.environ['RATE_LIMIT_RESTRICTED_IPS'] = '255.255.255,10.0.0'
         super(TestRateLimits, cls).setup_class()
 
+    @classmethod
+    def teardown_class(cls):
+        super(TestRateLimits, cls).teardown_class()
+        del os.environ['RATE_LIMIT_MAX']
+        del os.environ['RATE_LIMIT_HOURS']
+        del os.environ['RATE_LIMIT_RESTRICTED_HOURS']
+        del os.environ['RATE_LIMIT_RESTRICTED_MAX']
+        del os.environ['RATE_LIMIT_RESTRICTED_IPS']
+
     def test_record_1(self):
+        self.set_uuids('Recording', ['rec'])
         headers = {'X-Real-IP': '127.0.0.1'}
         res = self.testapp.get('/_new/temp/rec/record/mp_/http://httpbin.org/get?food=bar', headers=headers)
         assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar')

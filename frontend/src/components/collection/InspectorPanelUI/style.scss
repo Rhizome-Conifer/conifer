@@ -1,0 +1,109 @@
+@import 'src/vars';
+
+.wr-inspector {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+
+    // FF targeted fix for flex child taking content height and not
+    // remaining container height breaking inner scroll
+    @-moz-document url-prefix() {
+        overflow: auto;
+    }
+
+    .sidebar-header {
+        margin-bottom: 0;
+    }
+
+    .inspector-body {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        height: 100%;
+        overflow: auto;
+
+        // resize handle buffer
+        margin-right: .4rem;
+
+        & > h5 {
+            padding: 1.5rem;
+        }
+
+        h4 {
+            text-transform: uppercase;
+            color: $gray600;
+            font-size: 1rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5pt;
+
+            &:first-of-type {
+                margin-top: 0;
+            }
+
+            svg {
+                vertical-align: bottom;
+                margin-right: 0.6rem;
+            }
+        }
+
+        .bookmark-cap {
+            padding: 1.5rem;
+
+            h2 {
+                font-size: 1.6rem;
+                color: $body-gray;
+                margin-top: 0.95rem;
+                margin-bottom: 2rem;
+                line-height: 1.2em;
+            }
+        }
+
+        .page-metadata {
+            background: $gray200;
+            padding: 1.5rem;
+            flex-grow: 1;
+
+            h4 > svg {
+                width: 1.2rem;
+                height: 1.2rem;
+
+                path {
+                    fill: $gray600;
+                }
+            }
+
+            ul {
+                padding: 0;
+                list-style-type: none;
+
+                li {
+                    margin-bottom: 2.5rem;
+
+                    h5 {
+                        text-transform: uppercase;
+                        color: #B5B5B5;
+                        font-size: 1.1rem;
+                        font-weight: 300;
+                        margin-bottom: 0.5rem;
+                        letter-spacing: 0.5pt;
+                    }
+
+                    .value {
+                        word-wrap: break-word;
+                        color: $gray600;
+
+                        a {
+                          color: $gray600;
+                          font-size: 1.15rem;
+                        }
+                    }
+                }
+            }
+        }
+
+        .bookmark-cap + .page-metadata {
+            border-top: solid .1rem $gray500;
+        }
+    }
+}

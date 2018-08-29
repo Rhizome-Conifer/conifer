@@ -1,0 +1,139 @@
+@import 'src/vars';
+
+.wr-info-widget {
+    transition: opacity $midShift ease-in-out;
+    opacity: 0;
+
+    &.visible {
+        opacity: 1;
+
+        .dropdown-toggle {
+            cursor: pointer;
+        }
+    }
+
+    & > .dropdown-menu {
+        transition: opacity $midShift ease-in-out, transform $midShift ease-in-out;
+        transform: scale(0.98, 0.98);
+
+        top: -9999px;
+        left: -9999px;
+        opacity: 0;
+        display: block;
+        border-radius: 0;
+
+        width: 50rem;
+        padding: 1.5rem;
+        margin-top: 1rem;
+
+        h5 {
+            margin: 0;
+        }
+    }
+
+    .dropdown-toggle {
+        border: none;
+        background: inherit;
+        cursor: initial;
+
+        display: flex;
+        align-items: center;
+
+        & > svg {
+            width: 1.4rem;
+            height: 1.4rem;
+            vertical-align: baseline;
+
+            path {
+                transition: fill $midShift ease-in-out;
+            }
+        }
+
+        &:hover svg path {
+            fill: $blue;
+        }
+    }
+
+    &.open > .dropdown-menu {
+        opacity: 1;
+        transform: scale(1, 1);
+        top: 100%;
+        /* -.5 width - 40px padding, -6px icon padding, -.5 icon width */
+        left: calc(-250px + (40px + 6px + 7px));
+    }
+
+    &.open .dropdown-toggle svg path {
+        fill: $blue;
+    }
+
+    .ra-replay-info-label {
+        color: rgb(153,153,153);
+        font-size: 12px;
+        font-weight: 300;
+        letter-spacing: 1px
+    }
+    .ra-recording-block {
+        margin-top: 15px;
+
+        h5 {
+            display: inline-block;
+        }
+    }
+
+    .ra-resources {
+        border: solid 1px rgb(204,204,204);
+        padding: 5px 10px;
+        margin-top: 15px;
+
+        & > ul {
+            padding: 0;
+            margin-bottom: 0;
+            list-style-type: none;
+
+            li {
+                text-align: left;
+            }
+        }
+    }
+
+    .remove-circle {
+        position: absolute;
+        right: 0;
+        top: 0;
+        padding: .5rem 1.5rem;
+
+        svg {
+            path {
+                transition: fill $midShift ease-in-out;
+            }
+        }
+
+        &:hover svg path {
+            fill: red;
+        }
+    }
+
+    .arrow_box:before, .arrow_box:after {
+        left: 50%;
+    }
+
+    @media (max-width: 1200px) {
+        .arrow_box:before, .arrow_box:after {
+            left: initial;
+            right: 1.8rem;
+        }
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1200px) {
+    .wr-info-widget.open > .dropdown-menu {
+        left: initial;
+        right: 0;
+    }
+}
+@media (max-width: 767px) {
+    .wr-info-widget.open > .dropdown-menu {
+        left: initial;
+        right: -1.9rem;
+    }
+}

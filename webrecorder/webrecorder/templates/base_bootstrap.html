@@ -9,8 +9,8 @@
             window.curr_user = "{{ curr_user if curr_user else '' }}";
             window.curr_mode = "{{ curr_mode }}";
             window.user = "{{ user }}";
-            window.coll = "{{ coll }}";
-            window.rec = "{{ rec }}";
+            window.coll = "{{ coll_name }}";
+            window.rec = "{{ rec_name }}";
             window.browsers = {{ get_browsers() }};
             window.contentHost = "{{ get_content_host() }}";
         </script>

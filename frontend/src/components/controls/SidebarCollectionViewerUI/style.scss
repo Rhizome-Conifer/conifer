@@ -1,0 +1,150 @@
+@import 'src/vars';
+
+.sidebar-coll-navigator {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 1rem;
+
+    .overflow-wrapper {
+        overflow: auto;
+        padding: 0 1.1rem 0 1.5rem;
+        // sidebar handle buffer
+        margin-right: .4rem;
+
+        & > nav {
+            display: flex;
+            justify-content: flex-end;
+
+            svg {
+                vertical-align: middle;
+            }
+        }
+
+        .collection-header {
+            border: solid .2rem $gray500;
+            border-width: 0 0 .2rem 0;
+            margin-bottom: 1rem;
+
+            svg {
+                vertical-align: bottom;
+            }
+        }
+
+        .lists-header {
+            border: solid .1rem $gray500;
+            border-width: .1rem 0 0 0;
+            margin-top: 1rem;
+
+            h4 {
+              font-size: 1.2rem;
+              margin-top: 2rem;
+            }
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0 1rem 0 0;
+
+            li {
+                position: relative;
+                padding-left: .75rem;
+
+                &:before {
+                    transition: background-color $quickShift ease-in-out;
+                    position: absolute;
+                    left: 0;
+                    content: '';
+                    width: .75rem;
+                    height: 100%;
+                }
+
+                .wrapper {
+                    transition: background-color $slowShift ease-in-out;
+                    padding: .4rem 0 .4rem 1rem;
+
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+
+                    svg {
+                        fill: $gray600;
+                    }
+
+                    .selected-item {
+                        padding: 0;
+                        text-align: left;
+                    }
+
+                    a, .selected-item {
+                        display: block;
+                        width: 100%;
+                        padding: 0.3rem 0;
+                        margin: 0 .5rem;
+                        text-decoration: none;
+                        color: $gray600;
+                        font-weight: 500;
+                        font-size: 1.4rem;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+                }
+
+               &:not(.all-pages) .wrapper:before {
+                    content: '';
+                    width: 1.8rem;
+                    height: 1.8rem;
+                    background-image: url('../../../shared/images/private-list.svg');
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                    background-position: 50% 50%;
+                    margin-right: .5rem;
+                }
+
+                &.is-public {
+                    .wrapper {
+                        &:before {
+                            background-image: url('../../../shared/images/public-list.svg');
+                        }
+
+                        a, button {
+                            color: $body-gray;
+                        }
+                    }
+                }
+
+
+                &.selected {
+                    color: $body-gray;
+
+                    &:before {
+                        background-color: $blue;
+                    }
+
+                    a:visited, a:link, a:hover {
+                        color: $body-gray;
+                    }
+                }
+
+                &.divider {
+                    margin: 1rem 0;
+                    background: $mgmt-gray;
+                    height: .1rem;
+                }
+
+                &:not(.divider):hover {
+                    background: $gray300;
+
+                    a {
+                        color: #000;
+                    }
+
+                    .visiblity-toggle.public {
+                        background-color: $bright-green-highlight;
+                    }
+                }
+            }
+        }
+    }
+}

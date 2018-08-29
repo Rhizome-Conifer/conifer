@@ -10,13 +10,17 @@ from webrecorder.rec.worker import Worker
 class TestRecordLimits(FullStackTests):
     @classmethod
     def setup_class(cls):
-        super(TestRecordLimits, cls).setup_class(extra_config_file='test_rollover_config.yaml')
+        super(TestRecordLimits, cls).setup_class(extra_config_file='test_rollover_config.yaml', storage_worker=True)
 
         cls.user_dir = os.path.join(cls.warcs_dir, cls.anon_user)
 
     @classmethod
     def teardown_class(cls):
         super(TestRecordLimits, cls).teardown_class()
+
+    def get_cdx_len(self, coll_name, rec_name):
+        coll, rec = self.get_coll_rec(self.anon_user, coll_name, rec_name)
+        return len(self.redis.zrange('r:{rec}:cdxj'.format(rec=rec), 0, -1))
 
     def _get_info(self, num_warcs=1):
         warcs = os.listdir(self.user_dir)
@@ -31,6 +35,7 @@ class TestRecordLimits(FullStackTests):
         return os.path.join(self.user_dir, warcs[0]), warc_size, user_key, curr_size
 
     def test_record_1(self):
+        self.set_uuids('Recording', ['rec'])
         res = self.testapp.get('/_new/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
         assert res.headers['Location'].endswith('/' + self.anon_user + '/temp/rec/record/mp_/http://httpbin.org/get?food=bar')
         res = res.follow()
@@ -39,7 +44,8 @@ class TestRecordLimits(FullStackTests):
         assert '"food": "bar"' in res.text, res.text
 
         time.sleep(0.0)
-        assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 1
+
+        assert self.get_cdx_len('temp', 'rec') == 1
 
     def test_dont_record_2_chunked(self):
         warc_file, warc_size, user_key, curr_size = self._get_info()
@@ -48,8 +54,8 @@ class TestRecordLimits(FullStackTests):
         res = self.testapp.get('/{user}/temp/rec/record/mp_/http://httpbin.org/stream-bytes/1300'.format(user=self.anon_user))
 
         time.sleep(0.0)
-        assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 1
 
+        assert self.get_cdx_len('temp', 'rec') == 1
     def test_dont_record_will_exceed(self):
         warc_file, warc_size, user_key, curr_size = self._get_info()
 
@@ -64,9 +70,10 @@ class TestRecordLimits(FullStackTests):
 
         assert warc_size == os.path.getsize(warc_file)
 
-        assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 1
+        assert self.get_cdx_len('temp', 'rec') == 1
 
     def test_dont_record_new_rec(self):
+        self.set_uuids('Recording', ['rec-2'])
         warc_file, warc_size, user_key, curr_size = self._get_info()
 
         self.redis.hset(user_key, 'max_size', curr_size + 10)
@@ -83,7 +90,7 @@ class TestRecordLimits(FullStackTests):
 
         assert len(os.listdir(self.user_dir)) == 1
 
-        assert len(self.redis.zrange('r:{user}:temp:rec-2:cdxj'.format(user=self.anon_user), 0, -1)) == 0
+        assert self.get_cdx_len('temp', 'rec-2') == 0
 
     def test_dont_record_at_limit(self):
         warc_file, warc_size, user_key, curr_size = self._get_info()
@@ -106,7 +113,7 @@ class TestRecordLimits(FullStackTests):
 
         assert warc_size < os.path.getsize(warc_file)
 
-        assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 2
+        assert self.get_cdx_len('temp', 'rec') == 2
 
     def test_record_again_rollover(self):
         warc_file, warc_size, user_key, curr_size = self._get_info()
@@ -121,7 +128,7 @@ class TestRecordLimits(FullStackTests):
 
         assert len(os.listdir(self.user_dir)) == 2
 
-        assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 3
+        assert self.get_cdx_len('temp', 'rec') == 3
 
     def test_dont_record_deleted(self):
         warc_file, warc_size, user_key, curr_size = self._get_info(2)
@@ -130,7 +137,7 @@ class TestRecordLimits(FullStackTests):
 
         old_size = int(self.redis.hget(user_key, 'size'))
 
-        res = self.testapp.delete('/api/v1/recordings/rec?user={user}&coll=temp'.format(user=self.anon_user))
+        res = self.testapp.delete('/api/v1/recording/rec?user={user}&coll=temp'.format(user=self.anon_user))
 
         assert res.json == {'deleted_id': 'rec'}
 
@@ -140,7 +147,7 @@ class TestRecordLimits(FullStackTests):
 
         assert 0 == int(self.redis.hget(user_key, 'size'))
 
-        assert len(self.redis.zrange('r:{user}:temp:rec:cdxj'.format(user=self.anon_user), 0, -1)) == 0
+        assert self.get_cdx_len('temp', 'rec') == 0
 
         def assert_deleted():
             assert not os.path.isfile(warc_file)

@@ -1,0 +1,64 @@
+@import 'src/vars';
+
+#wr-tw {
+    display: inline-block;
+    width: 7.6rem;
+    height: 3.7rem;
+    float: left;
+}
+#wr-fb {
+    float: left;
+    margin-left: .5rem;
+}
+
+.wr-tools {
+    margin-top: -4rem;
+    height: 4rem;
+    background: #F3F3F3;
+    display: flex;
+    display: -ms-flexbox;
+    align-items: center;
+    -ms-flex-align: center;
+
+    &.animate {
+        transition: margin-top $slowShift ease-in-out;
+    }
+
+    &.open {
+        margin-top: 0;
+        border-bottom: solid 1px #ccc;
+    }
+
+    .share-container {
+        margin-left: auto;
+    }
+}
+
+.wr-controls.public .recording-actions {
+    position: absolute;
+    top: 0;
+    right: 1.5rem;
+}
+
+.recording-actions {
+    display: flex;
+    justify-content: center;
+
+    & > *:not(:last-child) {
+        margin-right: .5rem;
+    }
+
+    .btn svg {
+        width: 1.6rem;
+        height: 1.6rem;
+        vertical-align: middle;
+    }
+}
+
+@media (max-width: 500px) {
+    .recording-actions {
+        order: 2;
+        -ms-flex-order: 2;
+        margin-left: auto;
+    }
+}

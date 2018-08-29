@@ -70,6 +70,10 @@ bundles:
             - external/bootstrap-switch.css
             - external/bootstrap-markdown.min.css
 
+    wb-frame-js:
+        output: bundle/wb_frame.js
+        contents:
+            - pkg://pywb/static/wb_frame.js
 
     frame-js:
         output: bundle/frame.js

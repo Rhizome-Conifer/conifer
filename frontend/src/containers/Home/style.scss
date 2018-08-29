@@ -1,0 +1,79 @@
+@import 'src/vars';
+
+.main-logo h1 {
+    font-family: $serif;
+    text-align: center;
+    font-size: 5.2rem;
+
+    @media (max-width: $mobile) {
+        font-size: 3.2rem;
+    }
+}
+
+.tutorial {
+    text-align: center;
+    z-index: 99;
+
+    button {
+        text-align: center;
+        border: none;
+        color: $link;
+        background: none;
+
+        &:hover {
+            color: $linkHover;
+        }
+    }
+
+    & > div {
+        margin-top: 1rem;
+    }
+}
+
+.tagline h4 {
+    font-size: 2rem;
+    font-weight: 300;
+    letter-spacing: .1rem;
+}
+
+.intro-blurb {
+    background-color: #F3F3F3;
+    padding: 6rem;
+
+    @media (max-width: $mobile) {
+        padding: 2rem;
+    }
+
+    & > h2 {
+        margin: 0 0 2rem 0;
+    }
+}
+
+.landing-info {
+    padding: 6rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 6rem;
+
+    @media (max-width: $mobile) {
+        padding: 2rem;
+    }
+
+    ul {
+        list-style: none;
+        margin-left: 0;
+        padding-left: 1.8rem;
+
+        li {
+            margin: 2.5rem 0;
+            padding-left: 0;
+            text-indent: -0.8rem;
+
+            &:before {
+                content: "• ";
+                color: #ccc;
+                position: relative;
+                left: -1rem;
+            }
+        }
+    }
+}

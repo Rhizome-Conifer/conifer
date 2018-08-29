@@ -1,0 +1,72 @@
+@import 'src/vars';
+
+.wr-inline-editor {
+    display: inline-block;
+    position: relative;
+
+    &.block-display {
+        display: block;
+    }
+
+    .form-wrapper {
+        min-width: 17.5rem;
+
+        .form-group {
+            display: flex;
+            margin: 0;
+
+            .control-container {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            button {
+                margin-left: .5rem;
+                align-self: flex-start;
+
+                &.btn-danger, &.btn-success {
+                    fill: #FFF;
+                }
+            }
+
+            .help-spanner {
+                position: relative;
+                height: 2rem;
+                margin-top: .5rem;
+
+                .help-block {
+                    position: absolute;
+                    white-space: nowrap;
+                    margin: 0;
+                }
+            }
+        }
+    }
+
+    .child-container {
+        //display: inline-block;
+        display: flex;
+        align-items: center;
+    }
+
+    .wr-inline-edit-button {
+        transition: opacity $midShift ease-in-out;
+        opacity: 0;
+
+        &:hover {
+            background: none;
+        }
+
+        svg {
+            width: 1.4rem;
+            height: 1.4rem;
+        }
+    }
+
+    &:hover {
+        .wr-inline-edit-button {
+            opacity: 1;
+        }
+    }
+}

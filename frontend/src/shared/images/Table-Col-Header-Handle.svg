@@ -1,0 +1,46 @@
+<svg width="7px" height="14px" viewBox="0 0 7 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <rect id="path-1" x="0" y="0" width="2" height="2"></rect>
+        <rect id="path-2" x="0" y="6" width="2" height="2"></rect>
+        <rect id="path-3" x="0" y="12" width="2" height="2"></rect>
+        <rect id="path-4" x="5" y="0" width="2" height="2"></rect>
+        <rect id="path-5" x="5" y="6" width="2" height="2"></rect>
+        <rect id="path-6" x="5" y="12" width="2" height="2"></rect>
+    </defs>
+    <g id="ADM-Collection-Manager" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="02-Collection-Landing-ADD-TO-LIST" transform="translate(-1630.000000, -258.000000)">
+            <g id="Table" transform="translate(394.000000, 254.000000)">
+                <g id="Table-Top-Bar">
+                    <g id="Table-Col-Header-Handle" transform="translate(1236.000000, 4.000000)">
+                        <g>
+                            <g id="Rectangle-2">
+                                <use fill="#D8D8D8" fill-rule="evenodd" xlink:href="#path-1"></use>
+                                <rect stroke="#979797" stroke-width="1" x="0.5" y="0.5" width="1" height="1"></rect>
+                            </g>
+                            <g id="Rectangle-2-Copy">
+                                <use fill="#D8D8D8" fill-rule="evenodd" xlink:href="#path-2"></use>
+                                <rect stroke="#979797" stroke-width="1" x="0.5" y="6.5" width="1" height="1"></rect>
+                            </g>
+                            <g id="Rectangle-2-Copy-2">
+                                <use fill="#D8D8D8" fill-rule="evenodd" xlink:href="#path-3"></use>
+                                <rect stroke="#979797" stroke-width="1" x="0.5" y="12.5" width="1" height="1"></rect>
+                            </g>
+                            <g id="Rectangle-2">
+                                <use fill="#D8D8D8" fill-rule="evenodd" xlink:href="#path-4"></use>
+                                <rect stroke="#979797" stroke-width="1" x="5.5" y="0.5" width="1" height="1"></rect>
+                            </g>
+                            <g id="Rectangle-2-Copy">
+                                <use fill="#D8D8D8" fill-rule="evenodd" xlink:href="#path-5"></use>
+                                <rect stroke="#979797" stroke-width="1" x="5.5" y="6.5" width="1" height="1"></rect>
+                            </g>
+                            <g id="Rectangle-2-Copy-2">
+                                <use fill="#D8D8D8" fill-rule="evenodd" xlink:href="#path-6"></use>
+                                <rect stroke="#979797" stroke-width="1" x="5.5" y="12.5" width="1" height="1"></rect>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

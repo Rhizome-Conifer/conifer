@@ -1,0 +1,16 @@
+# dependencies
+node_modules
+
+config.local.js
+
+# testing
+coverage
+
+# production
+static
+
+# misc
+.DS_Store
+npm-debug.log
+webpack-assets.json
+mocks

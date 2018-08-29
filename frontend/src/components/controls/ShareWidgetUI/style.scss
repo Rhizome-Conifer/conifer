@@ -1,0 +1,70 @@
+@import 'src/vars';
+
+#share-widget .dropdown-menu {
+    padding: 1rem;
+}
+
+.share-container {
+    position: relative;
+
+    &.open .dropdown-menu {
+        opacity: 1;
+        transform: scale(1, 1);
+        top: calc(100% + 1.5rem);
+        left: auto;
+        right: 0;
+    }
+
+    .access-switch {
+        display: flex;
+
+        & > div {
+            margin-left: 1rem;
+        }
+    }
+
+    .share-modal {
+        min-width: 30rem;
+        border-radius: 0;
+
+        .glyphicon-remove-circle {
+            transition: color $midShift ease-in-out;
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 1rem;
+            cursor: pointer;
+
+            &:hover {
+                color: red;
+            }
+        }
+
+        label {
+            display: block;
+            clear: both;
+        }
+
+        input {
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin: 0 4rem 1rem 0;
+        }
+    }
+
+    .shareables {
+        transition: height $midShift ease-out;
+        overflow: hidden;
+
+        &.disabled {
+            height: 0 !important;
+        }
+
+        textarea { overflow: hidden; }
+        textarea, input {
+            width: 100%;
+        }
+    }
+}

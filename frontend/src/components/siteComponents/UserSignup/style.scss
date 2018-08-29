@@ -1,0 +1,16 @@
+@import 'src/vars';
+
+.signup-alert {
+    position: fixed;
+    top: 4rem;
+    z-index: 100;
+}
+
+.wr-signup {
+    opacity: 1;
+    transition: opacity $slowShift ease-in-out;
+
+    &.success {
+        opacity: 0.5;
+    }
+}

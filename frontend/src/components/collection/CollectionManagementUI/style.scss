@@ -1,0 +1,81 @@
+@import 'src/vars';
+
+.wr-coll-mgmt {
+
+    .extra-info {
+        padding: 1.5rem 2.5rem;
+
+        h4 {
+            text-transform: uppercase;
+            color: #6E6E6E;
+        }
+    }
+
+    & > header {
+        padding: 1.5rem 2.5rem;
+        border: solid .1rem $mgmt-gray;
+        border-width: .1rem 0 .1rem 0;
+
+        .mgmt-overview {
+            display: flex;
+
+            & > svg {
+                width: 2.8rem;
+                height: 2.8rem;
+            }
+
+            & > div {
+                margin-left: 1rem;
+            }
+        }
+
+        .coll-info {
+            padding: 1rem 2rem;
+            margin: 1rem 0;
+            background: $gray200;
+        }
+
+        .function-row {
+            button:not(:first-child) {
+                margin-left: 1rem;
+            }
+
+            button {
+                svg {
+                    width: 1.4rem;
+                    height: 1.4rem;
+                }
+            }
+        }
+
+        h2 {
+            font-weight: 400;
+            margin-top: 0;
+        }
+
+        h3 {
+            font-weight: 600;
+        }
+
+        h4 {
+            text-transform: uppercase;
+            font-size: 1.4rem;
+            font-weight: 400;
+        }
+
+        svg {
+            width: 2rem;
+            height: 2rem;
+        }
+    }
+
+    section {
+        .session-head {
+            padding: 2.5rem;
+
+            h3 {
+                margin-top: 0;
+            }
+        }
+    }
+}

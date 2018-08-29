@@ -1,4 +1,4 @@
-from webrecorder.basecontroller import BaseController
+from webrecorder.basecontroller import BaseController, wr_api_spec
 from webrecorder.gh_reporter import GitHubIssueImporter
 from werkzeug.useragents import UserAgent
 from bottle import request
@@ -10,11 +10,11 @@ import json
 
 # ============================================================================
 class BugReportController(BaseController):
-    def __init__(self, app, jinja_env, manager, config):
-        super(BugReportController, self).__init__(app, jinja_env, manager, config)
+    def __init__(self, *args, **kwargs):
+        super(BugReportController, self).__init__(*args, **kwargs)
 
-        self.redis_issue_handler = RedisIssueHandler(manager.redis,
-                                                     manager.cork,
+        self.redis_issue_handler = RedisIssueHandler(self.user_manager.redis,
+                                                     self.user_manager.cork,
                                                      self.get_email_view())
 
         # if GitHub settings provided, use the GitHub Issue Importer
@@ -31,24 +31,35 @@ class BugReportController(BaseController):
             self.issue_handler = self.redis_issue_handler
 
     def init_routes(self):
-        @self.app.post('/_reportissues')
+        wr_api_spec.set_curr_tag('Bug Reporting')
+
+        @self.app.post('/api/v1/report/dnlr')
         def report_issues():
             useragent = request.headers.get('User-Agent')
-            self.do_report(request.POST, useragent)
+            data = request.json or {}
+            self.do_report(data, useragent)
+            return {}
+
+        @self.app.post('/api/v1/report/ui')
+        def report_issues():
+            useragent = request.headers.get('User-Agent')
+            data = request.json or {}
+            data['state'] = 'ui-report'
+            self.do_report(data, useragent)
             return {}
 
     def do_report(self, params, ua=''):
         report = {}
-        for key in params.iterkeys():
-            report[key] = params.getunicode(key)
+        for key in params:
+            report[key] = params.get(key)
 
         now = str(datetime.utcnow())
 
-        user = self.manager.get_curr_user()
-        report['user'] = user
+        user = self.access.session_user
+        report['user'] = user.name
         report['time'] = now
         report['ua'] = ua
-        report['user_email'] = self.manager.get_user_email(user)
+        report['user_email'] = self.user_manager.get_user_email(user.name)
         if not report.get('email'):
             report['email'] = report['user_email']
 
@@ -76,6 +87,7 @@ class BugReportController(BaseController):
             return params
 
         return error_email
+
 
 # ============================================================================
 class RedisIssueHandler(object):

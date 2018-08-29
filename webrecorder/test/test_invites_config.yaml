@@ -1,6 +1,6 @@
 invites_enabled: 'true'
 
-full_warc_prefix: ''
+full_warc_prefix: 'local+file://'
 
 session.secret: 'secret'
    

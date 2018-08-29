@@ -1,0 +1,282 @@
+@import 'src/vars';
+
+.add-to-lists-modal {
+    width: 30vw;
+    max-width: 45rem;
+
+    h4 {
+        margin: 0;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+
+        li {
+            label {
+                margin-left: 1rem;
+            }
+        }
+    }
+}
+
+.drag-preview {
+    pointer-events: none;
+    position: fixed;
+    z-index: 100;
+    font-size: 1.8rem;
+    background: #FFF;
+    padding: 0 .8rem;
+    border: solid .4rem $success-color;
+    font-weight: 600;
+    color: $gray600;
+    border-radius: 2.7rem;
+}
+
+.table-header-modal {
+    max-width: 30vw;
+
+    ul {
+        padding: 0;
+        margin: 0;
+
+        li {
+            list-style-type: none;
+            text-transform: uppercase;
+
+            input {
+                margin-right: 1rem;
+            }
+        }
+    }
+}
+
+.wr-coll-detail {
+    padding: 0rem .5rem 0 0;
+    flex-grow: 1;
+    width: 100%;
+
+    display: grid;
+    grid-template-rows: auto 4rem 1fr;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        "header header"
+        "sidebar utilities"
+        "sidebar table";
+
+    font-family: $sans;
+
+    &.with-list {
+        grid-template-areas:
+            "sidebar header"
+            "sidebar utilities"
+            "sidebar table";
+
+        .wr-coll-detail-table .ReactVirtualized__Table__headerColumn > div {
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.5pt;
+        }
+    }
+
+    .wr-sidebar {
+        grid-area: sidebar;
+        padding: 0;
+
+        @media (max-width: 500px) {
+            display: none;
+        }
+
+        .wr-sidebar-stretch {
+            padding: 0;
+        }
+    }
+
+    .wr-coll-utilities {
+        grid-area: utilities;
+        background: #FFF;
+        z-index: 10;
+        margin-left: 1.5rem;
+
+        nav {
+            height: 100%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+
+            & > * {
+                margin-right: 2.5rem;
+
+                &.glyphicon {
+                    font-size: 1.8rem;
+                }
+            }
+
+            .search-box {
+                width: 50%;
+                max-width: 35rem;
+                min-width: 15rem;
+            }
+        }
+    }
+
+    .wr-coll-detail-table {
+        grid-area: table;
+        position: relative;
+        padding-right: 1.5rem;
+        padding-left: 1.5rem;
+        background: #FFF;
+
+        .table-header-menu {
+            position: absolute;
+            right: -.5rem;
+            top: 0.25rem;
+        }
+
+        .ReactVirtualized__Table__headerRow {
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 0.5pt;
+        }
+
+        .ReactVirtualized__Table__headerColumn {
+            height: 100%;
+
+            &:first-of-type {
+                margin-left: 0;
+            }
+
+            &:last-of-type {
+                margin-right: 0;
+            }
+
+            & > div{
+                display: flex;
+                align-items: center;
+                background: $tableHeaderBg;
+                padding: 0 .5rem 0 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            .header-handle {
+                width: 1rem;
+                height: 100%;
+                margin-right: .75rem;
+                cursor: move;
+                background-image: url('../../../shared/images/Table-Col-Header-Handle.svg');
+                background-repeat: no-repeat;
+                flex-shrink: 0;
+                background-position: .3rem .6rem;
+            }
+        }
+
+        .ReactVirtualized__Table__row {
+            transition: background $tableRowFade ease-in-out,
+                        color $tableRowFade ease-in-out,
+                        fill $tableRowFade ease-in-out;
+            cursor: context-menu;
+            font-size: 1.2rem;
+            position: relative;
+            background: #FFF;
+
+            &:before {
+                transition: background-color $quickShift ease-in-out;
+                position: absolute;
+                left: 0;
+                content: '';
+                width: .75rem;
+                height: 100%;
+            }
+
+            &:focus {
+                outline: none;
+            }
+
+            &.odd {
+                background-color: $table-zebra;
+            }
+
+            .ReactVirtualized__Table__rowColumn {
+                margin-left: 0;
+
+                &:first-of-type {
+                    & > * {
+                        padding: 0 1.25rem;
+                    }
+                }
+
+                .wr-remove-widget {
+                    text-align: left;
+
+                    button {
+                        margin: 0;
+                    }
+                }
+
+                .session-link {
+                    &:link, &:visited {
+                        transition: color $tableRowFade ease-in-out;
+                        color: #333;
+                    }
+                }
+
+                .row-index {
+                    text-align: center;
+                }
+            }
+
+            .page-title {
+                font-size: 1.45rem;
+            }
+
+            svg {
+                & > g {
+                    transition: fill $tableRowFade ease-in-out;
+                }
+            }
+
+            &:hover {
+                &:not(.selected){
+                    &:before {
+                        background: $tr-selected;
+                    }
+                }
+
+                &.selected {
+                    &:before {
+                        background: $tr-highlight-selected;
+                    }
+                }
+            }
+
+            &.selected {
+                background-color: $blue;
+                color: #FFF;
+                fill: #FFF;
+
+                .session-link:link, a:link { color: #FFF; }
+                .session-link:visited, a:visited{ color: #FFF; }
+
+                svg {
+                    & > g {
+                        fill: #FFF;
+                    }
+                }
+            }
+
+            // &:not(.selected):hover {
+            //     background: $blue;
+            // }
+
+            .ReactVirtualized__Table__rowColumn {
+                a {
+                    display: inline-block;
+                    padding: 1rem;
+                }
+            }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-from .testutils import TempDirTests, BaseTestClass, FakeRedisTests
+from .testutils import TempDirTests, BaseTestClass, FakeStrictRedis
 
 from io import BytesIO
 
@@ -20,6 +20,8 @@ from warcio.statusandheaders import StatusAndHeaders
 class BaseTestPlayer(BaseTestClass):
     @classmethod
     def setup_class(cls):
+        cls.env_backup = dict(os.environ)
+
         super(BaseTestPlayer, cls).setup_class()
         cls.session = requests.session()
 
@@ -31,7 +33,7 @@ class BaseTestPlayer(BaseTestClass):
 
     @classmethod
     def get_player_cmd(cls):
-        return ['--no-browser', cls.warc_path]
+        return ['--no-browser', '-p', '0', cls.warc_path]
 
     @classmethod
     def teardown_class(cls):
@@ -39,7 +41,12 @@ class BaseTestPlayer(BaseTestClass):
 
         cls.player.app_serv.stop()
 
+        FakeStrictRedis().flushall()
+
         super(BaseTestPlayer, cls).teardown_class()
+
+        os.environ.clear()
+        os.environ.update(cls.env_backup)
 
     @classmethod
     def create_temp_warc(cls):
@@ -78,6 +85,41 @@ class BaseTestPlayer(BaseTestClass):
 
 # ============================================================================
 class TestPlayer(BaseTestPlayer):
+    def test_wait_for_init(self):
+        def assert_finished():
+            res = self.session.get(self.app_host + '/_upload/@INIT?user=local')
+            assert res.json()['done'] == True
+            assert res.json()['size'] >= res.json()['total_size']
+
+        count = 0
+        while True:
+            try:
+                assert_finished()
+                break
+            except AssertionError:
+                if count >= 25:
+                    raise
+
+                count += 1
+                time.sleep(0.2)
+
+    def test_coll_is_public(self):
+        res = self.session.get(self.app_host + '/api/v1/collection/collection?user=local')
+        collection = res.json()['collection']
+        print(collection)
+        assert collection['public'] == True
+        assert collection['public_index'] == True
+
+    def test_proxy_home_redirect_to_coll(self):
+        res = self.session.get(self.app_host + '/', allow_redirects=True)
+
+        # one redirect
+        assert len(res.history) == 1
+
+        # final url collection
+        assert res.status_code == 200
+        assert res.url.endswith('/local/collection')
+
     # non-proxy replay, Timestamp specified explicitly
     def test_rewrite_replay_latest(self):
         res = self.session.get(self.app_host + '/local/collection/mp_/http://example.com/')
@@ -159,7 +201,7 @@ class TestCacheingPlayer(BaseTestPlayer):
 
     @classmethod
     def get_player_cmd(cls):
-        return ['--no-browser', cls.warc_path, '--cache-dir', '_warc_cache']
+        return ['--no-browser', '-p', '0', cls.warc_path, '--cache-dir', '_warc_cache']
 
     def test_cache_create(self):
         assert os.path.isfile(self.cache_path)
@@ -167,7 +209,7 @@ class TestCacheingPlayer(BaseTestPlayer):
         with gzip.open(self.cache_path, 'rt') as fh:
             cache = json.loads(fh.read())
 
-        assert cache['version'] == '1'
+        assert cache['version'] == '2'
 
 
 

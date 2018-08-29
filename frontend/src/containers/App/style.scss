@@ -1,0 +1,67 @@
+@import 'src/vars';
+
+section {
+    opacity: 1;
+    transition: opacity $slowShift ease-in-out;
+
+    &.loading {
+        opacity: 0.45;
+    }
+}
+
+.container {
+    flex-grow: 1;
+}
+
+.not-logged-in {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: $yellow;
+    margin: 0;
+    z-index: 1000;
+    border: none;
+}
+
+.oos-alert {
+    position: absolute;
+    z-index: 1000;
+    top: 4.5rem;
+    left: 1.5rem;
+
+    p {
+        margin-bottom: .5rem;
+    }
+}
+
+.mobile-alert {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+    margin:0;
+    border-radius: 0;
+    border-width: .1rem 0 0 0;
+}
+
+.stalled-alert {
+    position: fixed;
+    width: 40rem;
+    top: calc(25vh);
+    left: calc(50vw - 20rem);
+    z-index: 500;
+    box-shadow: .2rem .2rem .8rem rgba(0,0,0,0.4);
+}
+
+.error-panel {
+    svg {
+        width: 1.2rem;
+        height: 1.2rem;
+        vertical-align: baseline;
+
+        path {
+            fill: $warning;
+        }
+    }
+}

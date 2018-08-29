@@ -1,0 +1,41 @@
+@import 'src/vars';
+
+.wr-sidebar {
+    position: relative;
+    background: $sidebarBg;
+    //padding: 0 .8rem 0 .5rem;
+    display: flex;
+    flex-direction: column;
+    font-family: $sans;
+
+    &.animate {
+        transition: width 400ms ease-in-out;
+    }
+
+    .wr-sidebar-stretch {
+        display: flex;
+        flex-direction: column;
+
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        //padding-right: 1.5rem;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .ReactVirtualized__Grid__innerScrollContainer:last-of-type {
+        margin-bottom: 1.5rem;
+    }
+
+    .search-box {
+        font-size: 1.2rem;
+    }
+
+    // disable resizable cursor when collapsed
+    &:not(.expanded) {
+        .resizable-handle {
+            cursor: initial;
+        }
+    }
+}
