@@ -95,7 +95,6 @@ class BaseController(object):
         return request.environ['webrec.session']
 
     def fill_anon_info(self, resp):
-<<<<<<< ours
         """Update response w/ anonymous user information.
 
         :param dict resp: response
