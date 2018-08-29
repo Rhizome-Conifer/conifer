@@ -302,7 +302,7 @@ def _find_pages(username, coll, rec, fp, filename):
     return pages
 
 
-def _run(key, fp, username, records, total_size):
+def _run(key, fp, username, records, total_size, filename):
     """Run.
 
     :param str key: Redis key
@@ -327,7 +327,7 @@ def _run(key, fp, username, records, total_size):
                 )
             pages = record.get("pages")
             if not pages:
-                pages = _find_pages(username, record["coll"], record["rec"])
+                pages = _find_pages(username, record["coll"], record["rec"], fp, filename)
             if pages:
                 manager.import_pages(
                     username, record["coll"], record["rec"], pages
@@ -370,7 +370,7 @@ def _upload(fp, key, info, filename, username, collection, total_size):
             pipeline.hset(key, "filename", filename)
         if not archive[1]:
             raise ValueError("empty archive")
-        _run(key, fp, username, archive[1], total_size)
+        _run(key, fp, username, archive[1], total_size, filename)
     except Exception as exception:
         msg = "failed to upload WARC archive\t: {}".format(exception)
         raise RuntimeError(msg)
