@@ -1016,7 +1016,6 @@ class RecManagerMixin(object):
         :returns: record
         :rtype: dict
         """
->>>>>>> theirs
         result = self._format_info(data)
 
         if not result:
