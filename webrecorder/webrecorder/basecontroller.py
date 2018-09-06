@@ -11,18 +11,27 @@ from webrecorder.models import User
 from webrecorder.apiutils import api_decorator, wr_api_spec
 
 
+# ============================================================================
 class BaseController(object):
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']
         self.jinja_env = kwargs['jinja_env']
         self.user_manager = kwargs['user_manager']
         self.config = kwargs['config']
+        self.redis = kwargs['redis']
+
+        self.api = api_decorator
+
+        self.app_host = os.environ.get('APP_HOST', '')
+        self.content_host = os.environ.get('CONTENT_HOST', '')
+        self.cache_template = self.config.get('cache_template')
+
         self.anon_disabled = get_bool(os.environ.get('ANON_DISABLED'))
 
         self.init_routes()
 
     def init_routes(self):
-        raise NotImplementedError
+        raise NotImplemented()
 
     def redir_host(self, host=None, path=None, status=None):
         if not host:
@@ -41,7 +50,6 @@ class BaseController(object):
         return bottle_redirect(url, code=status)
 
     def validate_csrf(self):
-        """Check CSRF token."""
         csrf = request.forms.getunicode('csrf')
         sesh_csrf = self.get_session().get_csrf()
         if not sesh_csrf or csrf != sesh_csrf:
@@ -75,33 +83,27 @@ class BaseController(object):
         if not coll_name:
             self._raise_error(400, 'no_collection_specified')
 
+        #if self.access.is_anon(user):
+        #    if coll_name != 'temp':
+        #        self._raise_error(404, 'no_such_collection')
+
         collection = user.get_collection_by_name(coll_name)
         if not collection:
             self._raise_error(404, 'no_such_collection')
+
         return user, collection
 
     def _raise_error(self, code, message='not_found'):
         result = {'error': message}
+        #result.update(kwargs)
         response.status = code
 
         raise HTTPError(code, message, exception=result)
 
     def get_session(self):
-        """Get session.
-
-        :returns: session
-        :rtype: Session
-        """
         return request.environ['webrec.session']
 
     def fill_anon_info(self, resp):
-        """Update response w/ anonymous user information.
-
-        :param dict resp: response
-
-        :returns: success or failure
-        :rtype: bool
-        """
         resp['anon_disabled'] = self.anon_disabled
 
         if self.access.session_user.is_anon():
@@ -115,25 +117,9 @@ class BaseController(object):
         return False
 
     def flash_message(self, *args, **kwargs):
-        """Set message.
-
-        :returns: None
-        :rtype: None
-        """
         return self.get_session().flash_message(*args, **kwargs)
 
     def get_path(self, user, coll=None, rec=None):
-        """Get path to user and/or collections and recordings.
-
-        :param str user: user
-        :param coll: collection
-        :type: None or str
-        :param rec: recording
-        :type: None or str
-
-        :returns: path
-        :rtype: str
-        """
         base = '/' + user
 
         if coll:
@@ -148,59 +134,28 @@ class BaseController(object):
         return base
 
     def get_redir_back(self, skip, default='/'):
-        """Get redirect.
-
-        :param str skip: path causing redirect to default directory
-        :param str default: default directory
-
-        :returns: redirect
-        :rtype: str
-        """
         redir_to = request.headers.get('Referer', default)
         if redir_to.endswith(skip):
             redir_to = default
         return redir_to
 
     def post_get(self, name, default=''):
-        """Get value from POST response.
-
-        :param str name: key
-        :param str default: default value
-
-        :returns: value
-        :rtype: str
-        """
         res = request.POST.get(name, default).strip()
         if not res:
             res = default
         return res
 
     def get_host(self):
-        """Get host.
-
-        :returns: host
-        :rtype: str
-        """
         return request.urlparts.scheme + '://' + request.urlparts.netloc
 
     def redirect(self, url):
-        """Cause redirect to URL.
-
-        :param str url: URL
-        """
         if url.startswith('/'):
             url = self.get_host() + quote(url, safe='+ /!:%?$=&#')
 
         return bottle_redirect(url)
 
     def jinja2_view(self, template_name, refresh_cookie=True):
-        """Decorator factory.
-
-        :param str template_name: template
-        :param bool refresh_cookie: toggle refresh on/off
-        """
         def decorator(view_func):
-            #: @wraps preserves attributes such as __name__ and __doc__
             @wraps(view_func)
             def wrapper(*args, **kwargs):
                 resp = view_func(*args, **kwargs)
@@ -210,9 +165,7 @@ class BaseController(object):
                     if ctx_params:
                         resp.update(ctx_params)
 
-                    template = self.jinja_env.jinja_env.get_or_select_template(
-                        template_name
-                    )
+                    template = self.jinja_env.jinja_env.get_or_select_template(template_name)
                     return template.render(**resp)
                 else:
                     return resp
@@ -222,34 +175,12 @@ class BaseController(object):
         return decorator
 
     def sanitize_tag(self, tag):
-        """Sanitize tag.
-
-        :param str tag: tag
-
-        :returns: sanitized tag
-        :rtype: str
-        """
         return sanitize_tag(tag)
 
     def sanitize_title(self, title):
-        """Sanitize title.
-
-        :param str title: title
-
-        :returns: sanitized title
-        :rtype: str
-        """
         return sanitize_title(title)
 
     def get_body_class(self, context, action):
-        """Get class(es).
-
-        :param Context context: active context
-        :param str action: action
-
-        :returns: class(es)
-        :rtype: str
-        """
         classes = []
 
         if action in ["add_to_recording", "new_recording"]:
