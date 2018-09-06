@@ -1,4 +1,3 @@
-
 import requests
 import gevent
 from bottle import request
@@ -10,6 +9,7 @@ import socket
 import os
 
 
+# ============================================================================
 class BrowserManager(object):
     running = True
 
