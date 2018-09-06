@@ -408,6 +408,10 @@ class MainController(BaseController):
             if out.status_code == 404 and self._check_refer_redirect():
                 return
 
+            # return html error view for any content errors
+            if self.is_content_request():
+                return error_view(out)
+
             if isinstance(out.exception, dict):
                 return json_error(out.exception)
 

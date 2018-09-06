@@ -568,12 +568,6 @@ class ContentController(BaseController, RewriterApp):
                                                              url=wb_url)
         return new_url, recording.my_id, patch_rec_name
 
-    def is_content_request(self):
-        if not self.content_host:
-            return False
-
-        return request.environ.get('HTTP_HOST') == self.content_host
-
     def redir_set_session(self):
         full_path = request.environ['SCRIPT_NAME'] + request.environ['PATH_INFO']
         full_path = self.add_query(full_path)
@@ -596,7 +590,7 @@ class ContentController(BaseController, RewriterApp):
                        inv_sources='',
                        redir_route=None):
 
-        wb_url = self.add_query(wb_url)
+        wb_url = self._full_url(wb_url)
         if user == '_new' and redir_route:
             return self.do_create_new_and_redir(coll_name, rec_name, wb_url, redir_route)
 
@@ -799,6 +793,19 @@ class ContentController(BaseController, RewriterApp):
     def add_query(self, url):
         if request.query_string:
             url += '?' + request.query_string
+
+        return url
+
+    def _full_url(self, url=''):
+        request_uri = request.environ.get('REQUEST_URI')
+        script_name = request.environ.get('SCRIPT_NAME', '') + '/'
+        if request_uri and script_name and request_uri.startswith(script_name):
+            url = request_uri[len(script_name):]
+        else:
+            if not url:
+                url = environ.request.environ['SCRIPT_NAME'] + environ.request.environ['PATH_INFO']
+
+            url = self.add_query(url)
 
         return url
 
