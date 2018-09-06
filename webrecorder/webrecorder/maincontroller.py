@@ -425,6 +425,15 @@ class MainController(BaseController):
         if not referer:
             return
 
+        if self.access.sesh.is_new():
+            return
+
+        if request.urlparts.path.startswith('/' + self.access.session_user.name):
+            return
+
+        if 'http' in request.urlparts.path or '///' in request.urlparts.path:
+            return
+
         host = request.headers.get('Host')
         if host not in referer:
             return

@@ -137,6 +137,11 @@ bundles:
         contents:
             - pkg://pywb/static/ww_rw.js
 
+    presWorker-js:
+        output: bundle/wombatPreservationWorker.js
+        contents:
+            - pkg://pywb/static/wombatPreservationWorker.js
+
     proxy-js:
         output: bundle/proxy.js
         contents:
