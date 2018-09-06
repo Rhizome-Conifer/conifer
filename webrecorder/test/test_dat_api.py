@@ -231,7 +231,6 @@ class TestDatShare(FullStackTests):
         res = self.testapp.get('/api/v1/collection/default-collection?user=test')
 
         assert res.json['collection']['dat_key'] == self.dat_info['datKey']
-        assert res.json['collection']['dat_updated_at'] <= res.json['collection']['updated_at']
         assert res.json['collection']['dat_share'] == False
 
     @responses.activate
