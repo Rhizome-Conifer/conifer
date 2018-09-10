@@ -13,12 +13,10 @@ services:
             - recorder
             - redis
             - shepherd
-            - dat
 
         volumes:
             - ./webrecorder/:/code/
             - ./webrecorder/proxy-certs:/code/proxy-certs
-            - ~/opendachs/tmp:/tmp
             - ./data:/data
 
         networks:
@@ -44,20 +42,6 @@ services:
         ports:
             - 8096:8096 # for HMR on dev
 
-    dat:
-        image: webrecorder/dat-share
-        environment:
-            - PORT=3282
-            - ROOT_DIR=/data/storage
-
-        ports:
-            - "3282:3282/tcp"
-            - "3282:3282/udp"
-
-        volumes:
-            - ./data:/data
-            - ./data/dat/secret_keys:/root/.dat/secret_keys
-
     recorder:
         build: ./webrecorder
         command: uwsgi /code/apps/rec.ini
@@ -72,7 +56,6 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
-            - ~/opendachs/tmp:/tmp
 
     warcserver:
         build: ./webrecorder
@@ -87,7 +70,6 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
-            - ~/opendachs/tmp:/tmp
 
     nginx:
         build: ./nginx
@@ -123,6 +105,7 @@ services:
 
             - CLUSTER_NAME=wr_users
             - NETWORK_NAME=webrecorder_browsers
+
             - AUDIO_TYPE=opus
 
             - CONTAINER_EXPIRE_SECS=3600
@@ -134,6 +117,7 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
 
+
     redis:
         build: ./redis
 
@@ -141,7 +125,7 @@ services:
             - ./wr.env
 
         ports:
-                - 127.0.0.1:6379:6379
+            - 127.0.0.1:6379:6379
 
         volumes:
             - ./data:/data
@@ -154,6 +138,7 @@ services:
         environment:
             - "maildomain=localhost"
             - "smtp_user=test:archive"
+
 
 networks:
     default:
