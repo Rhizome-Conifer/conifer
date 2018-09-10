@@ -1,7 +1,6 @@
-
-from .user import User, SessionUser
-from .collection import Collection
-from .recording import Recording
-from .list_bookmarks import BookmarkList
+# library specific imports
+from .user import SessionUser, User
 from .stats import Stats
-
+from .recording import Recording
+from .collection import Collection
+from .list_bookmarks import BookmarkList
