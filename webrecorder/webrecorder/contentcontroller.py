@@ -379,8 +379,8 @@ class ContentController(BaseController, RewriterApp):
             sesh = self.get_session()
 
             if self.is_content_request():
-                id = request.query.getunicode('id')
-                sesh.set_id(id)
+                cookie = request.query.getunicode('cookie')
+                sesh.set_id_from_cookie(cookie)
                 return self.redirect(request.query.getunicode('path'))
 
             else:
@@ -388,7 +388,9 @@ class ContentController(BaseController, RewriterApp):
                 self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
-                redirect(url + '/_set_session?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
+                cookie = quote(request.environ.get('webrec.sesh_cookie', ''))
+                url += '/_set_session?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
+                redirect(url)
 
         # OPTIONS
         @self.app.route('/_set_session', method='OPTIONS')
@@ -743,7 +745,7 @@ class ContentController(BaseController, RewriterApp):
 
             @self.jinja2_view('content_error.html')
             def handle_error(error):
-                response.status = status_code
+                response.status = ue.status_code
                 return error
 
             if self.content_error_redirect:
