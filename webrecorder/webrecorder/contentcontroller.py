@@ -2,7 +2,7 @@ import re
 import os
 import json
 
-from six.moves.urllib.parse import quote, unquote
+from six.moves.urllib.parse import quote, unquote, urlencode
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
@@ -77,7 +77,7 @@ class ContentController(BaseController, RewriterApp):
             csp += self.app_host + '/_set_session'
 
         if self.content_error_redirect:
-            csp += ' ' + self.content_error_redirect.split('?', 1)[0]
+            csp += ' ' + self.content_error_redirect
 
         csp += "; form-action 'self'"
         return csp
@@ -749,8 +749,7 @@ class ContentController(BaseController, RewriterApp):
                 return error
 
             if self.content_error_redirect:
-                return redirect(self.content_error_redirect.format_map(err_context))
-
+                return redirect(self.content_error_redirect + '?' + urlencode(err_context))
             else:
                 return handle_error(err_context)
 

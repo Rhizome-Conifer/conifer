@@ -236,6 +236,8 @@ class RedisSessionMiddleware(CookieGuard):
         if not sesh_cookie.startswith(self.sesh_key + '='):
             return
 
+        sesh_cookie = sesh_cookie[len(self.sesh_key) + 1:]
+
         environ['webrec.sesh_cookie'] = sesh_cookie
 
         result = self.signed_cookie_to_id(sesh_cookie)
@@ -442,8 +444,6 @@ class RedisSessionMiddleware(CookieGuard):
             pi.delete(list_key)
 
     def signed_cookie_to_id(self, sesh_cookie):
-        sesh_cookie = sesh_cookie[len(self.sesh_key) + 1:]
-
         serial = URLSafeTimedSerializer(self.secret_key)
 
         try:
