@@ -5,9 +5,7 @@ from webrecorder.models.stats import Stats
 from bottle import request
 
 
-
-
-
+# ============================================================================
 class UploadController(BaseController):
     def __init__(self, *args, **kwargs):
         super(UploadController, self).__init__(*args, **kwargs)
@@ -41,6 +39,7 @@ class UploadController(BaseController):
 
             if 'error' in res:
                 return self._raise_error(400, res['error'])
+
             Stats(self.redis).incr_upload(user, expected_size)
             return res
 
@@ -54,3 +53,4 @@ class UploadController(BaseController):
                 return self._raise_error(400, 'upload_expired')
 
             return props
+

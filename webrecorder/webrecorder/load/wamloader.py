@@ -1,19 +1,13 @@
-# standard library imports
-import os
 import re
 import yaml
+import os
+
+from pywb.utils.loaders import load
 from contextlib import closing
 
-# library specific imports
-from pywb.utils.loaders import load
 
-
+# ============================================================================
 class WAMLoader(object):
-    """Webarchive loader.
-
-    :cvar str DEFAULT_WA_FILE: default Webarchive YAML file
-    :cvar SRE_Pattern STRIP_SCHEME: matches URL scheme
-    """
     DEFAULT_WA_FILE = 'pkg://webrecorder/config/_webarchives.yaml'
 
     STRIP_SCHEME = re.compile(r'https?://')
@@ -78,14 +72,6 @@ class WAMLoader(object):
 
     @classmethod
     def merge_webarchives(cls, webarchives_file=None):
-        """Merge webarchives.
-
-        :param webarchives_file: webarchive file
-        :type: str or None
-
-        :returns: webarchive file
-        :rtype: str
-        """
         webarchives_file = webarchives_file or cls.DEFAULT_WA_FILE
         root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -111,3 +97,4 @@ class WAMLoader(object):
                 out.write('\n...\n')
 
         return webarchives_file
+

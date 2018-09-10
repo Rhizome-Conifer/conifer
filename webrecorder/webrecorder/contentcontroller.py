@@ -20,7 +20,7 @@ from webrecorder.models.dynstats import DynStats
 from webrecorder.models.stats import Stats
 
 
-
+# ============================================================================
 class ContentController(BaseController, RewriterApp):
     DEF_REC_NAME = 'Recording Session'
 
@@ -70,11 +70,6 @@ class ContentController(BaseController, RewriterApp):
             self.client_archives[pk] = info
 
     def get_csp_header(self):
-        """Get Content Security Policy header.
-
-        :returns: Content Security Policy header
-        :rtype: str
-        """
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
         if self.app_host and self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
@@ -908,12 +903,11 @@ class ContentController(BaseController, RewriterApp):
                 'inv_sources': kwargs.get('inv_sources'),
                }
 
-    def _add_custom_params(self, cdx, resp_headers, kwargs, record=None):
+    def _add_custom_params(self, cdx, resp_headers, kwargs, record):
         try:
             self._add_stats(cdx, resp_headers, kwargs, record)
         except:
             import traceback
-
             traceback.print_exc()
 
     def _add_stats(self, cdx, resp_headers, kwargs, record):
@@ -1038,4 +1032,6 @@ class ContentController(BaseController, RewriterApp):
             return prefix + '/' + url
         else:
             return url
+
+
 

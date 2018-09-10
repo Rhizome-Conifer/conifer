@@ -12,6 +12,7 @@ from webrecorder.utils import get_bool
 from urllib.parse import urlencode
 
 
+# ============================================================================
 class UserController(BaseController):
     def __init__(self, *args, **kwargs):
         super(UserController, self).__init__(*args, **kwargs)
