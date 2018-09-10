@@ -18,6 +18,7 @@ services:
             - ./webrecorder/:/code/
             - ./webrecorder/proxy-certs:/code/proxy-certs
             - ./data:/data
+            - ~/opendachs/tmp/warcs
 
         networks:
             - default
@@ -56,6 +57,7 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
+            - ~/opendachs/tmp/warcs
 
     warcserver:
         build: ./webrecorder
@@ -70,6 +72,7 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
+            - ~/opendachs/tmp/warcs
 
     nginx:
         build: ./nginx
@@ -129,6 +132,7 @@ services:
 
         volumes:
             - ./data:/data
+            - ~/opendachs/tmp/warcs
 
     # Postfix (if sending mail locally)
     mailserver:
