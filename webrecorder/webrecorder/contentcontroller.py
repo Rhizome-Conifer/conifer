@@ -33,6 +33,8 @@ class ContentController(BaseController, RewriterApp):
 
         config = kwargs['config']
 
+        self.content_error_redirect = os.environ.get('CONTENT_ERROR_REDIRECT')
+
         config['csp-header'] = self.get_csp_header()
 
         self.browser_mgr = kwargs['browser_mgr']
@@ -73,6 +75,9 @@ class ContentController(BaseController, RewriterApp):
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
         if self.app_host and self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
+
+        if self.content_error_redirect:
+            csp += ' ' + self.content_error_redirect.split('?', 1)[0]
 
         csp += "; form-action 'self'"
         return csp
@@ -724,20 +729,28 @@ class ContentController(BaseController, RewriterApp):
             return resp
 
         except UpstreamException as ue:
-            @self.jinja2_view('content_error.html')
-            def handle_error(status_code, type, url, err_info):
-                response.status = status_code
-                return {'url': url,
-                        'status': status_code,
-                        'error': err_info.get('error'),
-                        'user': user,
-                        'coll': coll_name,
-                        'rec': rec_name,
-                        'type': type,
-                        'app_host': self.app_host,
-                       }
+            err_context = {
+                'url': ue.url,
+                'status': ue.status_code,
+                'error': ue.msg.get('error'),
+                'timestamp': wb_url_obj.timestamp if wb_url_obj else '',
+                'user': user,
+                'coll': coll_name,
+                'rec': rec_name,
+                'type': type,
+                'app_host': self.app_host,
+            }
 
-            return handle_error(ue.status_code, type, ue.url, ue.msg)
+            @self.jinja2_view('content_error.html')
+            def handle_error(error):
+                response.status = status_code
+                return error
+
+            if self.content_error_redirect:
+                return redirect(self.content_error_redirect.format_map(err_context))
+
+            else:
+                return handle_error(err_context)
 
     def check_if_content(self, wb_url, environ, is_top_frame):
         if not wb_url.is_replay():
