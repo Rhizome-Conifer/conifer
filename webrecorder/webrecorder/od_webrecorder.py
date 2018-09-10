@@ -22,6 +22,7 @@
 
 # standard library imports
 import os
+import base64
 import argparse
 
 # third party imports
@@ -31,7 +32,26 @@ import redis
 import webrecorder.utils
 import webrecorder.webreccork
 import webrecorder.models.base
+import webrecorder.models.importer
 import webrecorder.models.usermanager
+import webrecorder.rec.webrecrecorder
+
+
+def get_redis_interface():
+    """Get Redis interface.
+
+    :returns: Redis interface
+    :rtype: StrictRedis
+    """
+    try:
+        redis_base_url = os.environ["REDIS_BASE_URL"]
+        redis_interface = redis.StrictRedis.from_url(
+            redis_base_url, decode_responses=True
+        )
+    except Exception as exception:
+        msg = "failed to get Redis interface:{}".format(exception)
+        raise RuntimeError(msg)
+    return redis_interface
 
 
 def get_user_manager():
@@ -41,20 +61,56 @@ def get_user_manager():
     :rtype: UserManager
     """
     try:
-        redis_base_url = os.environ["REDIS_BASE_URL"]
-        redis = redis.StrictRedis.from_url(
-            redis_base_url, decode_responses=True
-        )
+        redis_interface = get_redis_interface()
         config = webrecorder.utils.load_wr_config()
         cork = webrecorder.webreccork.WebRecCork.create_cork(redis, config)
         user_manager = webrecorder.models.usermanager.UserManager(
-            redis, cork, config
+            redis_interface, cork, config
         )
         user_manager.access = webrecorder.models.base.BaseAccess()
     except Exception as exception:
         msg = "failed to get user manager:{}".format(exception)
         raise RuntimeError(msg)
     return user_manager
+
+
+def get_upload_id():
+    """Get upload ID.
+
+    :returns: upload ID
+    :rtype: str
+    """
+    try:
+        upload_id = base64.b32encode(os.urandom(5)).decode("utf-8")
+    except Exception as exception:
+        msg = "failed to get upload ID:{}".format(exception)
+        raise RuntimeError(msg)
+    return upload_id
+
+
+def import_warc(filename, user):
+    """Import WARC archive.
+
+    :param str filename: filename
+    :param User user: user
+    """
+    try:
+        redis_interface = get_redis_interface()
+        config = webrecorder.utils.load_wr_config()
+        indexer = (
+            webrecorder.rec.webrecrecorder.WebRecRecorder.make_wr_indexer(
+                config
+            )
+        )
+        upload_id = get_upload_id()
+        inplace_importer = webrecorder.models.importer.InplaceImporter(
+            redis_interface, config, user, indexer, upload_id
+        )
+        inplace_importer.multifile_upload(user, [filename])
+    except Exception as exception:
+        msg = "failed to import WARC archive:{}".format(exception)
+        raise RuntimeError(msg)
+    return
 
 
 def create_user(username, password, email_addr, role, desc, filename):
@@ -69,12 +125,13 @@ def create_user(username, password, email_addr, role, desc, filename):
     """
     try:
         user_manager = get_user_manager()
-        err, _ = user_manager.create_user_as_admin(
+        err, (user, collection) = user_manager.create_user_as_admin(
             email_addr, username, password, password, role, desc
         )
         if err is not None:
-            msg = "failed to create user:{}".format(" AND ".join(err))
+            msg = "failed to create user:{}".format(", ".join(err))
             raise RuntimeError(msg)
+        import_warc(filename, user, collection)
     except RuntimeError:
         raise
     except Exception as exception:
