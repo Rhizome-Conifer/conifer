@@ -594,7 +594,8 @@ class UserManager(object):
 
     def delete_user(self, username):
         user = self.all_users[username]
-        if self.access.session_user != user:
+        #: BaseAccess object does not have attribute 'session_user'
+        if hasattr(self.access, "session_user") and self.access.session_user != user:
             if not self.access.is_superuser():
                 return False
 
