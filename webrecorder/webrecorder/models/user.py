@@ -77,7 +77,10 @@ class User(RedisUniqueComponent):
         collection = Collection(redis=self.redis,
                                 access=self.access)
 
-        coll = collection.init_new(coll_name, **kwargs)
+        desc = kwargs.get("desc", "")
+        public = kwargs.get("public", False)
+        public_index = kwargs.get("public_index", False)
+        coll = collection.init_new(coll_name, desc=desc, public=public, public_index=public_index)
 
         self.colls.add_object(coll_name, collection, owner=True)
 
