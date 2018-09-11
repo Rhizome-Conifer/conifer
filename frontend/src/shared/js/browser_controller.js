@@ -328,11 +328,11 @@ export default function CBrowser(reqid, target_div, init_params) {
             vnc_pass = data.vnc_pass;
 
             if (init_params.audio) {
-                if (data.audio == "opus") {
-                    doAudio(data);
-                } else if (data.audio == "raw") {
-                    doAudioRaw(data);
-                }
+                canvas().addEventListener("click", function() {
+                    if (data.audio == "opus") {
+                        doAudio(data);
+                    }
+                });
             }
 
             if (init_params.on_event) {
@@ -598,6 +598,8 @@ export default function CBrowser(reqid, target_div, init_params) {
     }
 
 
+       var audioCount = 0;
+
     function get_ws_url(browser_info) {
         var ws_url;
 
@@ -606,6 +608,7 @@ export default function CBrowser(reqid, target_div, init_params) {
         if (init_params.proxy_ws) {
             var audio_port = browser_info.cmd_host.split(":")[1];
             ws_url += window.location.host + "/" + init_params.proxy_ws + audio_port;
+            ws_url += "&count=" + audioCount++;
         } else {
             ws_url += browser_info.cmd_host + "/audio_ws";
         }
@@ -613,240 +616,300 @@ export default function CBrowser(reqid, target_div, init_params) {
         return ws_url;
     }
 
-    function doAudio(browser_info) {
-        var mime_type = 'audio/webm; codecs="opus"';
-        var audio_ws = undefined;
+    var audioWS = null;
 
-        var buffQ = [];
-        var firstBuffer = undefined;
-        var source = undefined;
-        var err_count = 0;
-        var initing = false;
-        var retry = 0;
+    function WSAudio(ws_url) {
+        var MIME_TYPE = 'audio/webm; codecs="opus"';
 
-        var ws_url = get_ws_url(browser_info);
+        var MAX_BUFFERS = 250;
+        var MIN_START_BUFFERS = 10;
 
-        function createSource() {
-            if (initing) {
+        var MAX_ERRORS = 1;
+
+        this.buffQ = [];
+        this.buffCount = 0;
+
+        this.ws_url = ws_url;
+        this.lastTs = undefined;
+        this.ws = null;
+
+        this.errCount = 0;
+
+        this.initing = false;
+        this.updating = false;
+
+        this.audio = null;
+        this.mediasource = null;
+        this.buffer = null;
+
+        this.buffSize = 0;
+
+        this.initAudio = function() {
+            if (this.initing) {
                 console.log("already initing");
                 return;
             }
 
-            initing = true;
+            this.initing = true;
+            console.log("Init Audio");
 
-            if ('MediaSource' in window) {
-                var ms = new MediaSource();
-                ms.addEventListener("sourceopen", openSource);
-                ms.addEventListener("error", restart);
+            this.mediasource = new MediaSource();
+            this.mediasource.addEventListener("sourceopen", this.sourceOpen.bind(this));
 
-                var sound = new Audio();
-                sound.src = URL.createObjectURL(ms);
-                sound.autoplay = true;
-                sound.load();
-                sound.play();
-            }
+            this.mediasource.addEventListener("error", (function(event) {
+                this.audioError("MediaSource Error", event);
+            }).bind(this));
+
+            this.audio = new Audio();
+            this.audio.src = URL.createObjectURL(this.mediasource);
+            this.audio.autoplay = true;
+            this.audio.load();
+            this.audio.play().catch(function() { });
         }
 
-        function openSource() {
-            var new_source = undefined;
+        this.sourceOpen = function() {
+            if (this.mediasource.sourceBuffers.length) {
+               console.log("source already open");
+               return;
+            }
+
+            var buffer = null;
 
             try {
-                new_source = this.addSourceBuffer(mime_type);
+                buffer = this.mediasource.addSourceBuffer(MIME_TYPE);
             } catch (e) {
-                console.log("Audio Error: " + e);
+                console.log("Opening Source Error: " + e);
                 return;
             }
 
-            new_source.mode = "sequence";
-            new_source.timestampOffset = 0;
-            new_source.addEventListener("error", restart);
-            new_source.addEventListener("updateend", update_next);
-            if (firstBuffer) {
+            buffer.mode = "sequence";
+            //buffer.timestampOffset = 0;
+
+            buffer.addEventListener("error", (function(event) {
+                this.audioError("buffer error: " + (this.buffCount), event);
+            }).bind(this));
+
+            buffer.addEventListener("updateend", this.updateNext.bind(this));
+
+            this.buffer = buffer;
+            this.initing = false;
+
+            this.initWs();
+        };
+
+        this.close = function() {
+            console.log("Closing Audio");
+            try {
+                if (this.mediasource) {
+                    this.mediasource.removeSourceBuffer(this.buffer);
+                    if (this.mediasource.readyState == "open") {
+                        this.mediasource.endOfStream();
+                    }
+                }
+                this.buffer = null;
+
+            } catch(e) {
+                console.log("Error Closing: " + e);
+            }
+            this.mediasource = null;
+
+            try {
+                if (this.audio) {
+                    this.audio.pause();
+                }
+                this.audio = null;
+            } catch (e) {
+                console.log("Error Closing: " + e);
+            }
+
+            if (this.ws) {
                 try {
-                    new_source.appendBuffer(firstBuffer);
-                } catch (e) {
-                    console.log("Audio Error: " + e);
+                    this.ws.close();
+                } catch(e) {}
+
+                this.ws = null;
+            }
+        }
+
+        this.valid = function(lastTs) {
+            if (this.errCount > 0) {
+                return false;
+            }
+
+            if (!this.buffer) {
+                return false;
+            }
+
+            // if ws update hasn't changed
+            if (lastTs && this.lastTs && (this.lastTs <= lastTs)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        this.mergeBuffers = function() {
+            var merged;
+
+            if (this.buffQ.length == 1) {
+                merged = this.buffQ[0];
+            } else {
+                merged = new Uint8Array(this.buffSize);
+
+                var length = this.buffQ.length;
+                var offset = 0;
+
+                for (var i = 0; i < length; i++) {
+                    var curr = this.buffQ[i];
+                    if (curr.length <= 0) {
+                        continue;
+                    }
+                    merged.set(curr, offset);
+                    offset += curr.length;
                 }
             }
-            source = new_source;
-            initing = false;
+
+            this.buffQ = [];
+            this.buffCount++;
+            return merged;
         }
 
-        function restart(e) {
-            source = undefined;
-
-            if (err_count == 0) {
-                timers.push(setTimeout(createSource, 1000));
-            }
-
-            err_count++;
-        }
-
-        function update_next() {
-            if (!buffQ.length || !source) {
+        this.updateNext = function() {
+            if (this.initing || this.updating || (this.errCount >= MAX_ERRORS) || !this.buffQ.length || !this.buffer || this.buffer.updating) {
                 return;
             }
 
-            var buffer = buffQ.shift();
-
-            if (!firstBuffer) {
-                firstBuffer = buffer;
+            if (this.buffCount == 0 && this.buffQ.length < MIN_START_BUFFERS) {
+                return;
             }
+
+            this.updating = true;
 
             try {
-                source.appendBuffer(buffer);
-                err_count = 0;
+                var merged = this.mergeBuffers();
+                this.buffer.appendBuffer(merged);
+                this.buffSize -= merged.length;
+                this.buffSize = 0;
+                this.errCount = 0;
             } catch (e) {
-                console.log(e);
-                restart();
+                this.audioError("Error Adding Buffer: " + e);
+            }
+
+            this.updating = false;
+        }
+
+        this.audioError = function(msg, event) {
+            if (this.audio.error) {
+                console.log(msg);
+                console.log(this.audio.error);
+                //console.log("num processed: " + this.buffCount);
+                this.errCount += 1;
+                if (this.errCount == 1) {
+                    setTimeout(window.restartAudio, 3000);
+                }
             }
         }
 
-        function close_ws() {
-            audio_ws.removeEventListener("open", ws_open);
-            audio_ws.removeEventListener("message", ws_message);
-            audio_ws.removeEventListener('error', ws_error);
-        }
-
-        function init_ws() {
-            audio_ws = new WebSocket(ws_url);
-            audio_ws.binaryType = 'arraybuffer';
-            audio_ws.addEventListener("open", ws_open);
-            audio_ws.addEventListener("message", ws_message);
-            audio_ws.addEventListener('error', ws_error);
-        }
-
-        function ws_open(event) {
-            createSource();
-        }
-
-        function ws_message(event) {
-            //var buffer = new Uint8Array(event.data);
-            var buffer = event.data;
-
-            if (!source) {
-                console.log("no source, dropping audio");
-                if (!initing) {
-                    createSource();
+        this.queue = function(buffer) {
+            if (this.buffSize > 20000) {
+                if (this.buffCount > 0) {
+                    var res = this.buffQ.shift();
+                    this.buffSize -= res.length;
+                    console.log("dropping old buffers");
+                } else {
+                    // don't drop the starting buffers
+                    console.log("dropping new buffers");
+                    this.updateNext();
+                    return;
                 }
+            }
+
+            buffer = new Uint8Array(buffer);
+            this.buffQ.push(buffer);
+            this.buffSize += buffer.length;
+
+            this.updateNext();
+        }
+
+        this.initWs = function() {
+            try {
+                this.ws = new WebSocket(this.ws_url, "binary");
+            } catch (e) {
+                this.audioError("WS Open Failed");
+            }
+
+            this.ws.binaryType = 'arraybuffer';
+            this.ws.addEventListener("open", ws_open);
+            this.ws.addEventListener("close", ws_close);
+            this.ws.addEventListener("message", ws_message);
+            this.ws.addEventListener('error', ws_error);
+        }
+
+        var ws_open = function(event) {
+            if (!audioWS || this != audioWS.ws) {
                 return;
             }
 
-            if (buffQ.length < 5) {
-                buffQ.push(buffer);
-            } else {
-                console.log("dropping audio");
+            this.send("ready");
+        }
+
+        var ws_message = function(event) {
+            if (!audioWS || this != audioWS.ws) {
+                return;
             }
 
-            if (!source.updating) {
-                update_next();
+            if (audioWS.errCount < MAX_ERRORS) {
+                audioWS.queue(event.data);
             }
         }
 
-        function ws_error(e) {
-            //console.log(e);
-            if (retry++ < 10) {
-                timers.push(setTimeout(init_ws, 5000));
+        var ws_error = function() {
+            if (!audioWS || this != audioWS.ws) {
+                return;
             }
+
+            audioWS.audioError("WS Error");
         }
 
-        init_ws();
+        var ws_close = function() {
+            if (!audioWS || this != audioWS.ws) {
+                return;
+            }
+
+            audioWS.audioError("WS Close");
+        }
+
+        this.initAudio();
     }
 
-    function doAudioRaw(data) {
-        var audio_port = data.cmd_host.split(":")[1];
-        var context = undefined;
-        var source = undefined;
-        var script_proc = undefined;
+    var audioInit = false;
+    var browser_info;
 
-
-        var circ_buff = new Float32Array(4096 * 8);
-        var circ_buff_write_ptr = 0;
-        var circ_buff_read_ptr = 0;
-        var retry = 0;
-
-        var ws_url = get_ws_url(browser_info);
-
-        function init_ws() {
-            audio_ws = new WebSocket(ws_url);
-            audio_ws.binaryType = 'arraybuffer';
-            audio_ws.addEventListener("open", ws_open);
-            audio_ws.addEventListener("message", ws_message);
-            audio_ws.addEventListener('error', ws_error);
+    function doAudio(info) {
+        if (audioInit) {
+            return;
         }
 
-        function ws_open(event) {
-            var ctx = (window.AudioContext || window.webkitAudioContext);
-            context = new ctx();
+        browser_info = info;
 
-            script_proc = context.createScriptProcessor(4096, 1, 1);
-            script_proc.addEventListener("audioprocess", process_audio);
+        audioInit = true;
 
-            source = context.createBufferSource();
-            source.connect(script_proc);
-            script_proc.connect(context.destination);
-            //source.start(0);
+        console.log("Initing Audio...");
+
+        window.restartAudio();
+    }
+
+    window.restartAudio = function() {
+        if (audioWS && audioWS.initing) {
+            return;
         }
 
-        function process_audio(event) {
-            var input = event.inputBuffer;
-            var output = event.outputBuffer;
-
-            //if (circ_buff_read_ptr >= circ_buff_write_ptr) {
-            //}
-
-            var data = output.getChannelData(0);
-
-            if ((output.length + circ_buff_read_ptr) <= circ_buff.length) {
-                data.set(circ_buff.slice(circ_buff_read_ptr, circ_buff_read_ptr + output.length));
-            } else {
-                var rem_len = (circ_buff_read_ptr + output.length) - output.length;
-                data.set(circ_buff.slice(circ_buff_read_ptr, circ_buff.length));
-                data.set(circ_buff.slice(0, rem_len), circ_buff.length - circ_buff_read_ptr);
-            }
-            circ_buff_read_ptr = (circ_buff_read_ptr + output.length) % circ_buff.length;
+        if (audioWS) {
+            console.log("Reiniting Audio");
+            audioWS.close();
         }
 
-        function ws_message(event) {
-            if (!source) {
-                return "dropping, no source";
-            }
-
-            var float_array = fillFloatArray(event.data);
-
-            if ((float_array.length + circ_buff_write_ptr) <= circ_buff.length) {
-                circ_buff.set(float_array, circ_buff_write_ptr);
-            } else {
-                var split = circ_buff.length - circ_buff_write_ptr;
-                circ_buff.set(float_array.slice(0, split), circ_buff_write_ptr);
-                circ_buff.set(float_array.slice(split), 0);
-            }
-            circ_buff_write_ptr = (circ_buff_write_ptr + float_array.length) % circ_buff.length;
-        }
-
-        function fillFloatArray(array) {
-            array = new Uint8Array(array);
-            var float_array = new Float32Array(array.length);
-
-            for (var i = 0; i < float_array.length; i++) {
-                float_array[i] = array[i] / 255.0;
-            }
-
-            return float_array;
-
-            //var buffer = context.createBuffer(1, float_array.length, 22050);
-            //buffer.getChannelData(0).set(float_array);
-            //source.buffer = buffer;
-        }
-
-        function ws_error(event) {
-            if (retry++ < 10) {
-                clearTimeout(retryHandle);
-                retryHandle = setTimeout(init_ws, 5000);
-            }
-        }
-
-        init_ws();
+        audioWS = new WSAudio(get_ws_url(browser_info));
     }
 
     start();

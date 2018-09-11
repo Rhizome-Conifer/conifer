@@ -324,6 +324,14 @@ class AdminController(BaseController):
         for coll_key in self.redis.scan_iter('c:*:info', count=100):
             coll_data = self.redis.hmget(coll_key, column_keys)
 
+            # exclude temp user collections
+            try:
+                user = self.user_manager.all_users[coll_data[3]]
+                if user.is_anon():
+                    continue
+            except:
+                continue
+
             coll_data[2] = int(coll_data[2])
             coll_data[4] = self.parse_iso_or_ts(coll_data[4])
             coll_data[5] = self.parse_iso_or_ts(coll_data[5])

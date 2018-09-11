@@ -49,6 +49,12 @@ class BaseController(object):
         url += path
         return bottle_redirect(url, code=status)
 
+    def is_content_request(self):
+        if not self.content_host:
+            return False
+
+        return request.environ.get('HTTP_HOST') == self.content_host
+
     def validate_csrf(self):
         csrf = request.forms.getunicode('csrf')
         sesh_csrf = self.get_session().get_csrf()

@@ -408,6 +408,10 @@ class MainController(BaseController):
             if out.status_code == 404 and self._check_refer_redirect():
                 return
 
+            # return html error view for any content errors
+            if self.is_content_request():
+                return error_view(out)
+
             if isinstance(out.exception, dict):
                 return json_error(out.exception)
 
@@ -419,6 +423,15 @@ class MainController(BaseController):
     def _check_refer_redirect(self):
         referer = request.headers.get('Referer')
         if not referer:
+            return
+
+        if self.access.sesh.is_new():
+            return
+
+        if request.urlparts.path.startswith('/' + self.access.session_user.name):
+            return
+
+        if 'http' in request.urlparts.path or '///' in request.urlparts.path:
             return
 
         host = request.headers.get('Host')
