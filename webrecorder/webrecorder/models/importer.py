@@ -804,7 +804,7 @@ class InplaceImporter(BaseImporter):
 
                 if filename.endswith('.har'):
                     stream, expected_size = self.har2warc(filename, stream)
-                        fh.close()
+                    fh.close()
                     fh = stream
                     atexit.register(lambda: os.remove(stream.name))
 
