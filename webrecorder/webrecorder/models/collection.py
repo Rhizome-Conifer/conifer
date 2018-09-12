@@ -580,7 +580,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         try:
             dt_str = date.fromtimestamp(int(self['created_at'])).isoformat()
         except:
-            dt_str = self['created_at'][:10]
+            dt_str = self['created_at'][:10] if self['created_at'] else ''
 
         return dt_str
 

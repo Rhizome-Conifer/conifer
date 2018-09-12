@@ -460,7 +460,7 @@ class UserManager(object):
                 print('Removing from mailing list failed:', e)
 
     def get_session(self):
-        return request.environ['webrec.session']
+        return request.environ.get('webrec.session')
 
     def create_new_user(self, username, init_info=None):
         init_info = init_info or {}
@@ -605,7 +605,8 @@ class UserManager(object):
         # remove user and from all users table
         del self.all_users[username]
 
-        self.get_session().delete()
+        if self.get_session():
+            self.get_session().delete()
 
         return True
 
