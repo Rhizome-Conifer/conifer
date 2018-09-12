@@ -772,7 +772,7 @@ class InplaceImporter(BaseImporter):
         self.the_collection = user.create_collection(self.upload_coll_info['id'],
                                                      title=self.upload_coll_info['title'],
                                                      desc=self.upload_coll_info['desc'],
-                                                     public=self.upload_coll_info['public'])
+                                                     public=self.upload_coll_info.get('public', False))
 
     def multifile_upload(self, user, files):
         """Import multiple files.
