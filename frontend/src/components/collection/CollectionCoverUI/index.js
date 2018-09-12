@@ -84,7 +84,7 @@ class CollectionCoverUI extends Component {
             initial={collection.get('desc')} />
         </div>
         {
-          lists &&
+          lists.size > 0 &&
             <div className="lists-container">
               <h3 className="lists-header">Lists in this Collection</h3>
               <ul className="lists">

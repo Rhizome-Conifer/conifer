@@ -55,8 +55,10 @@ class UploadUI extends PureComponent {
   }
 
   filePicker = (evt) => {
-    this.fileObj = evt.target.files[0];
-    this.setState({ file: this.fileObj.name });
+    if (evt.target.files.length > 0) {
+      this.fileObj = evt.target.files[0];
+      this.setState({ file: this.fileObj.name });
+    }
   }
 
   handleInput = (evt) => {
