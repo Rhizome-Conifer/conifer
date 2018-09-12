@@ -95,6 +95,7 @@ class Session(object):
     def delete(self):
         self.should_delete = True
         self.environ['webrec.delete_all_cookies'] = 'all'
+        self.redis.delete(self.key)
 
     def __getitem__(self, name):
         return self._sesh[name]
@@ -147,6 +148,7 @@ class Session(object):
         self.should_save = True
 
         self.environ['webrec.delete_all_cookies'] = 'non_sesh'
+        self.redis.delete(self.key)
 
     def set_restricted_user(self, user):
         if not self.is_new():
@@ -295,10 +297,8 @@ class RedisSessionMiddleware(CookieGuard):
 
         if session.should_delete:
             self._delete_session_cookie(environ, headers, self.sesh_key)
-            self.redis.delete(session.key)
         else:
             if session.should_renew:
-                self.redis.delete(session.key)
                 sesh_id, session.key = self.make_id_and_key()
                 session['id'] = sesh_id
 
