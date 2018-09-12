@@ -18,7 +18,7 @@ services:
             - ./webrecorder/:/code/
             - ./webrecorder/proxy-certs:/code/proxy-certs
             - ./data:/data
-            - ~/opendachs/tmp/warcs
+            - ~/opendachs/tmp/warcs:/tmp/warcs
 
         networks:
             - default
