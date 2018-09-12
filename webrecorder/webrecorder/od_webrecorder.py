@@ -37,6 +37,18 @@ import webrecorder.models.usermanager
 import webrecorder.rec.webrecrecorder
 
 
+class ODUserManager(webrecorder.models.usermanager.UserManager):
+    """OpenDACHS user manager."""
+
+    def __init__(self, redis_interface, cork, config):
+        self.base_access = webrecorder.models.base.BaseAccess()
+        super().__init__(redis_interface, cork, config)
+        return
+
+    def _get_access(self):
+        return self.base_access
+
+
 def get_redis_interface():
     """Get Redis interface.
 
@@ -63,11 +75,12 @@ def get_user_manager():
     try:
         redis_interface = get_redis_interface()
         config = webrecorder.utils.load_wr_config()
-        cork = webrecorder.webreccork.WebRecCork.create_cork(redis, config)
-        user_manager = webrecorder.models.usermanager.UserManager(
+        cork = webrecorder.webreccork.WebRecCork.create_cork(
+            redis_interface, config
+        )
+        user_manager = ODUserManager(
             redis_interface, cork, config
         )
-        user_manager.access = webrecorder.models.base.BaseAccess()
     except Exception as exception:
         msg = "failed to get user manager:{}".format(exception)
         raise RuntimeError(msg)
@@ -125,13 +138,16 @@ def create_user(username, password, email_addr, role, desc, filename):
     """
     try:
         user_manager = get_user_manager()
-        err, (user, collection) = user_manager.create_user_as_admin(
+        err, new_user = user_manager.create_user_as_admin(
             email_addr, username, password, password, role, desc
         )
         if err is not None:
             msg = "failed to create user:{}".format(", ".join(err))
             raise RuntimeError(msg)
-        import_warc(filename, user, collection)
+        if new_user is None:
+            msg = "failed to create user"
+            raise RuntimeError
+        import_warc(filename, new_user[0])
     except RuntimeError:
         raise
     except Exception as exception:
