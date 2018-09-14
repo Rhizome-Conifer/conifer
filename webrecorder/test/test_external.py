@@ -34,7 +34,7 @@ class TestExternalColl(FullStackTests):
                   'title': 'external'
                  }
 
-        res = self.testapp.get('/api/v1/auth/curr_user?persist=true', headers={'Host': 'app-host'})
+        res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
         TestExternalColl.anon_user = res.json['user']['username']
 
         res = self.testapp.post_json('/api/v1/collections?user={user}'.format(user=self.anon_user),

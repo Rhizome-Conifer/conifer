@@ -26,9 +26,14 @@ class UserController(BaseController):
         if username:
             user = self.get_user(user=username)
         else:
-            user = self.access.init_session_user(persist=get_bool(request.query.get('persist', False)))
+            user = self.access.session_user
 
         return {'user': user.serialize(include_colls=include_colls)}
+
+    def new_auth(self):
+        user = self.access.init_session_user(persist=True)
+
+        return {'user': user.serialize()}
 
     def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
         # ensure correct host
@@ -69,6 +74,11 @@ class UserController(BaseController):
         @self.app.get('/api/v1/auth/curr_user')
         def load_user():
             return self.load_user()
+
+        # AUTH NEW SESSION
+        @self.app.post('/api/v1/auth/anon_user')
+        def new_auth():
+            return self.new_auth()
 
         # REGISTRATION
         @self.app.post('/api/v1/auth/register')
