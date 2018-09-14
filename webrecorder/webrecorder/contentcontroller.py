@@ -749,7 +749,7 @@ class ContentController(BaseController, RewriterApp):
                 return error
 
             if self.content_error_redirect:
-                return redirect(self.content_error_redirect + '?' + urlencode(err_context))
+                return redirect(self.content_error_redirect + '?' + urlencode(err_context), code=307)
             else:
                 return handle_error(err_context)
 

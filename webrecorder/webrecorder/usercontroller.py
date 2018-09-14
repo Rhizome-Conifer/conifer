@@ -26,7 +26,7 @@ class UserController(BaseController):
         if username:
             user = self.get_user(user=username)
         else:
-            user = self.access.init_session_user(persist=True)
+            user = self.access.init_session_user(persist=get_bool(request.query.get('persist', False)))
 
         return {'user': user.serialize(include_colls=include_colls)}
 

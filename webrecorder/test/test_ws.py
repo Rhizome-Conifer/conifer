@@ -31,7 +31,7 @@ class TestWS(FullStackTests):
                               json=json)
 
     def test_user_cred(self):
-        res = self.get_url('/api/v1/auth/curr_user')
+        res = self.get_url('/api/v1/auth/curr_user?persist=true')
         TestWS.anon_user = res.json()['user']['username']
 
     def test_create_recording(self):
