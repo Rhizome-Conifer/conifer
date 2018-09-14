@@ -29,7 +29,7 @@ export default class BaseHtml extends Component {
           {head.link.toComponent()}
           {head.script.toComponent()}
 
-          <link rel="shortcut icon" href="/static/favicon.png" />
+          <link rel="shortcut icon" href="/static/favicon.png?v=3" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           {/* styles (will be present only in production with webpack extract text plugin) */}
           {Object.keys(assets.styles).map((style, key) => (
