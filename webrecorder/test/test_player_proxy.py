@@ -8,6 +8,7 @@ import os
 import requests
 import gzip
 import json
+import websocket
 
 from tempfile import NamedTemporaryFile
 
@@ -28,7 +29,8 @@ class BaseTestPlayer(BaseTestClass):
         cls.warc_path = cls.create_temp_warc()
 
         cls.player = webrecorder_player(cls.get_player_cmd(), embed=True)
-        cls.app_host = 'http://localhost:' + str(cls.player.app_serv.port)
+        cls.app_port = cls.player.app_serv.port
+        cls.app_host = 'http://localhost:' + str(cls.app_port)
         cls.proxies = {'http': cls.app_host, 'https': cls.app_host}
 
     @classmethod
@@ -106,7 +108,6 @@ class TestPlayer(BaseTestPlayer):
     def test_coll_is_public(self):
         res = self.session.get(self.app_host + '/api/v1/collection/collection?user=local')
         collection = res.json()['collection']
-        print(collection)
         assert collection['public'] == True
         assert collection['public_index'] == True
 
@@ -179,6 +180,11 @@ class TestPlayer(BaseTestPlayer):
         assert res.text == 'Example Domain'
         assert res.url == 'http://example.com/'
         assert res.headers['Memento-Datetime'] == 'Wed, 01 Jan 2014 00:00:00 GMT'
+
+    def test_ws_init(self):
+        ws = websocket.WebSocket()
+        ws.connect('ws://localhost:{0}/_client_ws_cont'.format(self.app_port))
+        ws.close()
 
 
 # ============================================================================

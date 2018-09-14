@@ -23,7 +23,7 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         os.environ['APP_HOST'] = ''
 
     def test_empty_temp_user(self):
-        res = self.testapp.get('/api/v1/auth/curr_user', headers={'Host': 'app-host'})
+        res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
         assert res.json['user']['username']
         username = res.json['user']['username']
 
@@ -31,7 +31,7 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         assert res.headers['Location'] == 'http://app-host/api/v1/user/' + username
 
     def test_init_anon(self):
-        res = self.testapp.get('/api/v1/auth/curr_user', headers={'Host': 'app-host'})
+        res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
         TestCreateNewAPISeparateDomains.anon_user = res.json['user']['username']
 
         assert res.json['user']['username'] == self.anon_user

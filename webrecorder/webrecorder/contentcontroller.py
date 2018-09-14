@@ -2,7 +2,7 @@ import re
 import os
 import json
 
-from six.moves.urllib.parse import quote, unquote
+from six.moves.urllib.parse import quote, unquote, urlencode
 
 from bottle import Bottle, request, HTTPError, response, HTTPResponse, redirect
 
@@ -32,6 +32,8 @@ class ContentController(BaseController, RewriterApp):
         BaseController.__init__(self, *args, **kwargs)
 
         config = kwargs['config']
+
+        self.content_error_redirect = os.environ.get('CONTENT_ERROR_REDIRECT')
 
         config['csp-header'] = self.get_csp_header()
 
@@ -73,6 +75,9 @@ class ContentController(BaseController, RewriterApp):
         csp = "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: blob: mediastream: ws: wss: "
         if self.app_host and self.content_host != self.app_host:
             csp += self.app_host + '/_set_session'
+
+        if self.content_error_redirect:
+            csp += ' ' + self.content_error_redirect
 
         csp += "; form-action 'self'"
         return csp
@@ -374,8 +379,8 @@ class ContentController(BaseController, RewriterApp):
             sesh = self.get_session()
 
             if self.is_content_request():
-                id = request.query.getunicode('id')
-                sesh.set_id(id)
+                cookie = request.query.getunicode('cookie')
+                sesh.set_id_from_cookie(cookie)
                 return self.redirect(request.query.getunicode('path'))
 
             else:
@@ -383,7 +388,9 @@ class ContentController(BaseController, RewriterApp):
                 self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
-                redirect(url + '/_set_session?' + request.environ['QUERY_STRING'] + '&id=' + quote(sesh.get_id()))
+                cookie = quote(request.environ.get('webrec.sesh_cookie', ''))
+                url += '/_set_session?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
+                redirect(url)
 
         # OPTIONS
         @self.app.route('/_set_session', method='OPTIONS')
@@ -724,20 +731,27 @@ class ContentController(BaseController, RewriterApp):
             return resp
 
         except UpstreamException as ue:
-            @self.jinja2_view('content_error.html')
-            def handle_error(status_code, type, url, err_info):
-                response.status = status_code
-                return {'url': url,
-                        'status': status_code,
-                        'error': err_info.get('error'),
-                        'user': user,
-                        'coll': coll_name,
-                        'rec': rec_name,
-                        'type': type,
-                        'app_host': self.app_host,
-                       }
+            err_context = {
+                'url': ue.url,
+                'status': ue.status_code,
+                'error': ue.msg.get('error'),
+                'timestamp': wb_url_obj.timestamp if wb_url_obj else '',
+                'user': user,
+                'coll': coll_name,
+                'rec': rec_name,
+                'type': type,
+                'app_host': self.app_host,
+            }
 
-            return handle_error(ue.status_code, type, ue.url, ue.msg)
+            @self.jinja2_view('content_error.html')
+            def handle_error(error):
+                response.status = ue.status_code
+                return error
+
+            if self.content_error_redirect:
+                return redirect(self.content_error_redirect + '?' + urlencode(err_context), code=307)
+            else:
+                return handle_error(err_context)
 
     def check_if_content(self, wb_url, environ, is_top_frame):
         if not wb_url.is_replay():
