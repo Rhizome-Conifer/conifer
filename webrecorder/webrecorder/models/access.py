@@ -1,3 +1,5 @@
+""":synopsis: Webrecorder session access class."""
+
 # third party imports
 from bottle import HTTPError
 
@@ -13,7 +15,7 @@ class SessionAccessCache(BaseAccess):
     :cvar str WRITE_PREFIX: Redis key prefix (write access)
     :ivar Session sesh: session
     :ivar StrictRedis redis: Redis interface
-    :ivar SessionUser _session_user: user
+    :ivar SessionUser _session_user: logged-in user
     """
     READ_PREFIX = 'r:'
     WRITE_PREFIX = 'w:'
@@ -37,7 +39,7 @@ class SessionAccessCache(BaseAccess):
     def init_session_user(self, persist=True):
         """Initialize session user.
 
-        :param bool persist: whether to presist session user or not
+        :param bool persist: whether to persist session user
 
         :returns: session user
         :rtype: SessionUser
@@ -71,11 +73,11 @@ class SessionAccessCache(BaseAccess):
         self._session_user = None
 
     def is_anon(self, user=None):
-        """Return whether current or given user is anonymous user.
+        """Return whether current (or given) user is anonymous user.
 
-        :param user: user
+        :param User user: user
 
-        :returns: whether current or given user is anonymous user
+        :returns: whether user is anonymous user
         :rtype: bool
         """
         if not user:
@@ -86,7 +88,7 @@ class SessionAccessCache(BaseAccess):
     def is_logged_in_user(self, user):
         """Return whether given user is logged in.
 
-        :param user: user
+        :param User user: user
 
         :returns: whether given user is logged in
         :rtype: bool
@@ -114,7 +116,7 @@ class SessionAccessCache(BaseAccess):
     def is_coll_owner(self, collection):
         """Return whether current user is also owner of given collection.
 
-        :param collection: collection
+        :param Collection collection: collection
 
         :returns: whether current user is owner
         :rtype: bool
@@ -124,9 +126,9 @@ class SessionAccessCache(BaseAccess):
     def check_write_access(self, collection):
         """Return whether current user has right to modify collection.
 
-        :param collection: collection
+        :param Collection collection: collection
 
-        :returns: whether current user has right to modify collection
+        :returns: whether user has right to modify collection
         :rtype: bool
         """
         if not collection:
@@ -144,7 +146,7 @@ class SessionAccessCache(BaseAccess):
         because it is public, user is also owner or optionally
         user is superuser).
 
-        :param collection: collection
+        :param Collection collection: collection
         :param bool allow_superuser: whether superuser has right to read
 
         :returns: whether current user has right to read or whether collection
@@ -172,7 +174,7 @@ class SessionAccessCache(BaseAccess):
     def can_read_coll(self, collection, allow_superuser=True):
         """Return whether current user has right to read collection.
 
-        :param collection: collection
+        :param Collection collection: collection
         :param bool allow_superuser: whether superuser has right to read
 
         :returns: whether current user has right to read collection
@@ -187,7 +189,7 @@ class SessionAccessCache(BaseAccess):
     def assert_can_read_coll(self, collection):
         """Assert current user has right to read collection.
 
-        :param collection: collection
+        :param Collection collection: collection
         """
         if not self.can_read_coll(collection):
             raise HTTPError(404, 'No Read Access')
@@ -195,7 +197,7 @@ class SessionAccessCache(BaseAccess):
     def can_write_coll(self, collection):
         """Return whether current user has right to modify collection.
 
-        :param collection: collection
+        :param Collection collection: collection
 
         :returns: whether current user has right
         :rtype: bool
@@ -205,7 +207,7 @@ class SessionAccessCache(BaseAccess):
     def assert_can_write_coll(self, collection):
         """Assert current user has right to modify collection.
 
-        :param collection: collection
+        :param Collection collection: collection
         """
         if not self.can_write_coll(collection):
             raise HTTPError(404, 'No Write Access')
@@ -215,7 +217,7 @@ class SessionAccessCache(BaseAccess):
     def can_admin_coll(self, collection):
         """Return whether current user has right to administrate collection.
 
-        :param collection: collection
+        :param Collection collection: collection
 
         :returns: whether current user has right
         :rtype: bool
@@ -228,17 +230,17 @@ class SessionAccessCache(BaseAccess):
     def assert_can_admin_coll(self, collection):
         """Assert currrent user has right to administrate collection.
 
-        :param collection: collection
+        :param Collection collection: collection
         """
         if not self.can_admin_coll(collection):
             raise HTTPError(404, 'No Admin Access')
 
     def is_curr_user(self, user):
-        """Return whether given user is current user.
+        """Return whether given user is logged-in user.
 
-        :param user: user
+        :param User user: user
 
-        :returns: whether given user is current user
+        :returns: whether given user is logged-in user
         :rtype: bool
         """
         return self.session_user == user
@@ -246,7 +248,7 @@ class SessionAccessCache(BaseAccess):
     def assert_is_curr_user(self, user):
         """Assert given user is current user or current user is superuser.
 
-        :param user: user
+        :param User user: user
         """
         if not self.is_curr_user(user) and not self.is_superuser():
             raise HTTPError(404, 'Only Valid for Current User')
@@ -280,7 +282,7 @@ class SessionAccessCache(BaseAccess):
     def assert_can_read_list(self, blist):
         """Assert current user has right to read list.
 
-        :param blist: list
+        :param BookmarkList blist: list of bookmarks
         """
         if not self.can_read_list(blist):
             raise HTTPError(404, 'No List Access')
