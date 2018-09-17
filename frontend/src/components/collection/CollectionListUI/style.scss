@@ -17,7 +17,8 @@
 
 a:link.collection-title, a:visited.collection-title, .collection-title {
     font-size: 2rem;
-    color: $gray600;
+    color: $blue;
+    margin-bottom: 0.4rem;
 }
 
 a.collection-title:hover {
@@ -247,7 +248,7 @@ a.collection-title:hover {
         }
         .collection-list-description {
             margin-bottom: 1.5rem;
-            padding: .8rem 0rem 0rem;
+            padding: 0;
         }
     }
 }
