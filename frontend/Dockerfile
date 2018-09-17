@@ -1,4 +1,4 @@
-FROM node:8.2.1
+FROM node:10.6.0
 
 ENV TERM=xterm APP=/code
 

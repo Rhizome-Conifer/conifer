@@ -38,11 +38,6 @@ class CollectionCoverUI extends Component {
     const { canAdmin } = this.context;
     const { collection, orderdPages } = this.props;
 
-    if (!canAdmin && orderdPages.size) {
-      const pg = orderdPages.get(0);
-      return `${getCollectionLink(collection)}/${pg.get('timestamp')}/${pg.get('url')}`;
-    }
-
     return getCollectionLink(collection, true);
   }
 
@@ -89,7 +84,7 @@ class CollectionCoverUI extends Component {
             initial={collection.get('desc')} />
         </div>
         {
-          lists &&
+          lists.size > 0 &&
             <div className="lists-container">
               <h3 className="lists-header">Lists in this Collection</h3>
               <ul className="lists">

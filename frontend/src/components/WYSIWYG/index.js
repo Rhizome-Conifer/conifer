@@ -109,8 +109,8 @@ class WYSIWYG extends Component {
     }
   }
 
-  shouldComponentUpdate() {
-    if (this.state.renderable && this.props.readOnly) {
+  shouldComponentUpdate(nextProps) {
+    if (this.state.renderable && this.props.readOnly && this.props.initial === nextProps.initial) {
       return false;
     }
 
@@ -220,7 +220,9 @@ class WYSIWYG extends Component {
     const _editMode = externalEditButton ? editMode : localEditMode;
 
     return (
-      <div className={classNames('wr-editor', className, { 'click-to-edit': clickToEdit, open: _editMode })} onClick={canAdmin && !readOnly && clickToEdit && !_editMode ? this.enterEditMode : undefined}>
+      <div
+        className={classNames('wr-editor', className, { 'click-to-edit': clickToEdit, open: _editMode, 'no-buttons': contentSync })}
+        onClick={canAdmin && !readOnly && clickToEdit && !_editMode ? this.enterEditMode : undefined}>
         <div>
           {
             renderable &&

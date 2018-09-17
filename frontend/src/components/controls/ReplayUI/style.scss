@@ -36,8 +36,8 @@
     flex-grow: 1;
     display: flex;
 
-    .wr-resizeable {
-        flex-shrink: 0;
+    &.embed {
+        flex-direction: column;
     }
 
     .wr-sidebar {

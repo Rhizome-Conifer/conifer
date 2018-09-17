@@ -88,6 +88,7 @@ class NewPasswordUI extends Component {
               <FormGroup validationState={this.validateItem()}>
                 <ControlLabel>New password</ControlLabel>
                 <FormControl
+                  aria-label="new password"
                   type="password"
                   name="newPass"
                   placeholder="new password"
@@ -103,6 +104,7 @@ class NewPasswordUI extends Component {
               <FormGroup validationState={this.validateItem()}>
                 <ControlLabel>Repeat new password</ControlLabel>
                 <FormControl
+                  aria-label="repeat new password"
                   type="password"
                   name="newPass2"
                   placeholder="repeat new password"

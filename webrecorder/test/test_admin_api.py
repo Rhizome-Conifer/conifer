@@ -45,7 +45,7 @@ class TestAdminAPI(FullStackTests):
                  }
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
-        assert res.json['username'] == 'adminuser'
+        assert res.json['user']['username'] == 'adminuser'
         assert self.testapp.cookies['__test_sesh'] != ''
 
     def test_make_coll_public(self):
@@ -75,14 +75,13 @@ class TestAdminAPI(FullStackTests):
         res = self.testapp.get('/api/v1/admin/users')
         assert [user['username'] for user in res.json['users']] == ['adminuser', 'test']
         assert [user['role'] for user in res.json['users']] == ['admin', 'archivist']
-        assert [user['name'] for user in res.json['users']] == ['Test Admin', 'Test User']
+        assert [user['full_name'] for user in res.json['users']] == ['Test Admin', 'Test User']
         assert [user['max_size'] for user in res.json['users']] == ['1000000000', '1000000000']
 
     def test_api_temp_users(self):
         res = self.testapp.get('/api/v1/admin/temp-users')
         assert [user['username'] for user in res.json['users']] == [self.anon_user]
-        assert [user.get('role') for user in res.json['users']] == [None]
-        assert [user.get('name') for user in res.json['users']] == [None]
+        assert [user.get('role') for user in res.json['users']] == ['anon']
         assert [user['max_size'] for user in res.json['users']] == ['1000000000']
 
     def test_api_create_user_errors(self):
@@ -90,7 +89,7 @@ class TestAdminAPI(FullStackTests):
                   'username': 'test',
                   'password': 'TestTest',
                   'role': 'archivist2',
-                  'name': 'Another User'}
+                  'full_name': 'Another User'}
 
         res = self.testapp.post_json('/api/v1/admin/users', params=params)
 
@@ -105,7 +104,7 @@ class TestAdminAPI(FullStackTests):
                   'username': 'another',
                   'password': 'TestTest789',
                   'role': 'archivist',
-                  'name': 'Another User'}
+                  'full_name': 'Another User'}
 
         res = self.testapp.post_json('/api/v1/admin/users', params=params)
 
@@ -115,7 +114,7 @@ class TestAdminAPI(FullStackTests):
         res = self.testapp.get('/api/v1/admin/users')
         assert [user['username'] for user in res.json['users']] == ['adminuser', 'another', 'test']
         assert [user['role'] for user in res.json['users']] == ['admin', 'archivist', 'archivist']
-        assert [user['name'] for user in res.json['users']] == ['Test Admin', 'Another User', 'Test User']
+        assert [user['full_name'] for user in res.json['users']] == ['Test Admin', 'Another User', 'Test User']
         assert [user['max_size'] for user in res.json['users']] == ['1000000000', '7000000000', '1000000000']
 
     def test_update_user_error_invalid_role_and_size(self):
@@ -137,7 +136,7 @@ class TestAdminAPI(FullStackTests):
 
         assert res.json['user']['space_utilization'] == {'available': 200000000, 'total': 200000000, 'used': 0}
         assert res.json['user']['role'] == 'beta-archivist'
-        assert res.json['user']['name'] == 'Test User'
+        assert res.json['user']['full_name'] == 'Test User'
         assert res.json['user']['desc'] == 'Custom Desc'
 
     def test_api_stats_search(self):

@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 import { doubleRAF } from 'helpers/utils';
 
-import { LoaderIcon } from 'components/icons';
+import { LoaderIcon, LockIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -12,6 +12,7 @@ import './style.scss';
 class VisibilityLamp extends PureComponent {
   static propTypes = {
     callback: PropTypes.func,
+    collPublic: PropTypes.bool,
     isPublic: PropTypes.bool,
     label: PropTypes.string
   };
@@ -25,6 +26,7 @@ class VisibilityLamp extends PureComponent {
       editing: false,
       exited: false,
       indicator: false,
+      open: false,
       width: 'auto'
     };
   }
@@ -53,6 +55,7 @@ class VisibilityLamp extends PureComponent {
         this.setState({
           origWidth: bcr.width,
           width: this.state.exited ? 0 : bcr.width,
+          open: !this.state.exited,
           exited: false
         });
       });
@@ -68,6 +71,7 @@ class VisibilityLamp extends PureComponent {
     clearTimeout(this.handle);
     this.handle = setTimeout(() => {
       this.setState({
+        open: true,
         width: this.state.origWidth
       });
     }, 30);
@@ -82,12 +86,15 @@ class VisibilityLamp extends PureComponent {
     clearTimeout(this.handle);
     this.handle = setTimeout(() => {
       this.setState({
+        open: false,
         width: 0
       });
     }, 30);
   }
 
-  toggle = () => {
+  toggle = (evt) => {
+    evt.stopPropagation();
+
     if (this.state.editing) {
       return;
     }
@@ -101,28 +108,31 @@ class VisibilityLamp extends PureComponent {
   }
 
   render() {
-    const { isPublic, label } = this.props;
+    const { collPublic, isPublic, label } = this.props;
     const { indicator, width } = this.state;
-
+    const staged = collPublic ? 'Public' : 'Staged';
     const help = isPublic ? `set ${label} private` : `set ${label} public`;
 
     return (
       <div
         aria-label={help}
-        className={classNames('visibility-lamp', { 'is-public': isPublic })}
+        className={classNames('visibility-lamp', { 'is-public': isPublic, open: this.state.open || this.state.exited })}
         onClick={this.toggle}
         onMouseOver={this.showStatus}
         onMouseOut={this.hideStatus}
         title={help}>
-        <div />
         <div ref={(obj) => { this.bulb = obj; }} className="bulb" style={{ width }}>
           {
             indicator ?
               <LoaderIcon /> :
-              <span>{isPublic ? 'Public' : 'Private'}</span>
+              <span>{isPublic ? staged : 'Private'}</span>
           }
         </div>
-        <div />
+        {
+          !isPublic ?
+            <LockIcon /> :
+            <div className="lamp" />
+        }
       </div>
     );
   }

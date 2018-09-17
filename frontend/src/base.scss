@@ -14,6 +14,7 @@ html, body {
 body {
   font-size: $font-size-base;
   font-family: $sans;
+  display: flex;
 }
 
 a {
@@ -27,6 +28,7 @@ a {
 }
 
 #app {
+  flex-grow: 1;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -76,6 +78,19 @@ a {
     top: 15vh;
     width: 50vw;
     left: 25vw;
+}
+
+.click-highlight {
+  transition: box-shadow .25s ease-in-out, border-color .25s ease-in-out;
+  border: solid .1rem transparent;
+  border-radius: .5rem;
+  padding: .3rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #E0E3E3;
+    box-shadow: 0 0 .5rem #E0E3E3;
+  }
 }
 
 /*

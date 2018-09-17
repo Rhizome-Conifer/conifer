@@ -38,7 +38,11 @@ class UserManagementUI extends Component {
   componentWillReceiveProps(nextProps) {
     if (this.props.auth.get('loggingIn') && !nextProps.auth.get('loggingIn')) {
       if (!nextProps.auth.get('loginError')) {
-        this.closeLogin();
+        //this.closeLogin();
+        if (this.state.formError) {
+          this.setState({ formError: false });
+        }
+
         this.props.history.push(
           this.props.next !== null ? this.props.next : `/${nextProps.auth.getIn(['user', 'username'])}`
         );
@@ -82,7 +86,7 @@ class UserManagementUI extends Component {
     const { anonCTA, auth, open } = this.props;
     const { formError } = this.state;
 
-    const collCount = auth.getIn(['user', 'coll_count']);
+    const collCount = auth.getIn(['user', 'num_collections']);
     const form = (
       <LoginForm
         anonCTA={anonCTA}
@@ -155,11 +159,11 @@ class UserManagementUI extends Component {
               footer={<React.Fragment><Button onClick={this.toggleBugModal}>Cancel</Button><Button bsStyle="primary" onClick={this.sendBugReport}>Submit</Button></React.Fragment>}>
               <p>Spot something off? Let us know what's happening:</p>
               <FormGroup>
-                <FormControl componentClass="textarea" name="desc" placeholder="When I click the 'save' button when editing my collection description, nothing happens." onChange={this.handleInput} value={this.state.bugReport} />
+                <FormControl aria-label="description" componentClass="textarea" name="desc" placeholder="When I click the 'save' button when editing my collection description, nothing happens." onChange={this.handleInput} value={this.state.bugReport} />
               </FormGroup>
               <FormGroup>
                 <ControlLabel>Email to notify in response to this issue: (optional)</ControlLabel>
-                <FormControl name="email" placeholder="me@example.com" onChange={this.handleInput} value={this.state.email} />
+                <FormControl aria-label="email" name="email" placeholder="me@example.com" onChange={this.handleInput} value={this.state.email} />
               </FormGroup>
             </Modal>
           </li>

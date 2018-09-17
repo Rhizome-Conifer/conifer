@@ -137,7 +137,9 @@ class DatShare(object):
                 if not always_update:
                     return {'error': 'already_updated'}
 
-        author = user.get_prop('name') or user.name
+        author = user.get_prop('full_name') or user.name
+
+        commit_id = collection.commit_all()
 
         datjson_file = self.write_dat_json(collection, dat_key, author)
         metadata_file = self.write_metadata_file(collection)
@@ -146,10 +148,13 @@ class DatShare(object):
             done_datjson = collection.commit_file('dat.json', datjson_file, '')
             done_meta = collection.commit_file('metadata.yaml', metadata_file, 'metadata')
 
-            if done_datjson and done_meta:
+            if commit_id:
+                commit_id = collection.commit_all(commit_id)
+
+            if done_datjson and done_meta and not commit_id:
                 break
 
-            print('Waiting for dat.json, metadata commit...')
+            print('Waiting for collection, dat.json, metadata commit...')
             gevent.sleep(10)
 
         res = self.dat_share_api('/share', collection)

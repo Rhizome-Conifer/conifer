@@ -75,6 +75,7 @@ class Patch extends Component {
                 params={params}
                 rb={activeBrowser}
                 rec={rec}
+                timestamp={timestamp}
                 url={url} /> :
               <IFrame
                 appPrefix={appPrefix}

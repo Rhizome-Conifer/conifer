@@ -12,8 +12,6 @@ import { DragDropContext } from 'react-dnd';
 
 import { isLoaded as isAuthLoaded,
          load as loadAuth } from 'redux/modules/auth';
-import { load as loadTemp } from 'redux/modules/tempUser';
-import { load as loadUser } from 'redux/modules/user';
 
 import { UserManagement } from 'containers';
 
@@ -42,6 +40,7 @@ export class App extends Component {
 
   static childContextTypes = {
     isAnon: PropTypes.bool,
+    isEmbed: PropTypes.bool,
     isMobile: PropTypes.bool
   }
 
@@ -65,7 +64,8 @@ export class App extends Component {
 
     return {
       isAnon: auth.getIn(['user', 'anon']),
-      isMobile: this.isMobile
+      isEmbed: this.state.match.embed || false,
+      isMobile: this.isMobile,
     };
   }
 
@@ -164,11 +164,11 @@ export class App extends Component {
         .then((data) => {
           const user = auth.get('user');
           if (user.get('anon')) {
-            if (user.get('coll_count') > 0 && user.get('username') !== data.curr_user) {
+            if (user.get('num_collections') > 0 && user.get('username') !== data.user.username) {
               this.setState({ loginStateAlert: true });
               this.props.dispatch(loadAuth());
             }
-          } else if (user.get('username') !== data.curr_user) {
+          } else if (user.get('username') !== data.user.username) {
             this.setState({ loginStateAlert: true });
           }
         });
@@ -192,6 +192,7 @@ export class App extends Component {
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
     const classOverride = match.classOverride;
+    const isEmbed = match.embed;
     const lastClassOverride = lastMatch ? lastMatch.classOverride : classOverride;
     const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
 
@@ -212,17 +213,20 @@ export class App extends Component {
     return (
       <React.Fragment>
         <Helmet {...config.app.head} />
-        <header>
-          <Navbar staticTop fluid collapseOnSelect className={navbarClasses}>
-            <Navbar.Header>
-              <BreadcrumbsUI is404={this.props.is404} url={pathname} />
-              <Navbar.Toggle />
-            </Navbar.Header>
-            <Navbar.Collapse>
-              <UserManagement />
-            </Navbar.Collapse>
-          </Navbar>
-        </header>
+        {
+          !isEmbed &&
+            <header>
+              <Navbar staticTop fluid collapseOnSelect className={navbarClasses} role="navigation">
+                <Navbar.Header>
+                  <BreadcrumbsUI is404={this.props.is404} url={pathname} />
+                  <Navbar.Toggle />
+                </Navbar.Header>
+                <Navbar.Collapse>
+                  <UserManagement />
+                </Navbar.Collapse>
+              </Navbar>
+            </header>
+        }
         {
           isOutOfSpace && this.state.outOfSpaceAlert &&
             <Alert bsStyle="warning" className="oos-alert" onDismiss={this.dismissSpaceAlert}>
@@ -271,7 +275,7 @@ export class App extends Component {
                 </Panel>
               </div>
             </div> :
-            <section className={containerClasses}>
+            <section role="main" className={containerClasses}>
               {renderRoutes(this.props.route.routes)}
             </section>
         }
@@ -291,12 +295,7 @@ const initalData = [
       const state = getState();
 
       if (!isAuthLoaded(state)) {
-        return dispatch(loadAuth()).then(
-          (auth) => {
-            if (auth.anon && auth.coll_count === 0) return undefined;
-            return auth.anon ? dispatch(loadTemp(auth.username)) : dispatch(loadUser(auth.username));
-          }
-        );
+        return dispatch(loadAuth());
       }
 
       return undefined;
@@ -309,7 +308,7 @@ const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
     auth: app.get('auth'),
     is404: app.getIn(['controls', 'is404']),
     loaded,
-    spaceUtilization: app.getIn(['user', 'space_utilization'])
+    spaceUtilization: app.getIn(['auth', 'user', 'space_utilization'])
   };
 };
 

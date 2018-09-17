@@ -19,11 +19,12 @@ class Session(object):
     TEMP_KEY = 't:{0}'
     temp_prefix = ''
 
-    def __init__(self, cork, environ, redis, key, sesh, ttl, is_restricted):
+    def __init__(self, cork, environ, redis, key, sesh, ttl, is_restricted, sesh_manager):
         self.environ = environ
         self._sesh = sesh
         self.redis = redis
         self.key = key
+        self.sesh_manager = sesh_manager
 
         self.curr_role = None
 
@@ -81,6 +82,14 @@ class Session(object):
     def get_csrf(self):
         return self._sesh.get('csrf', '')
 
+    def set_id_from_cookie(self, cookie):
+        result = self.sesh_manager.signed_cookie_to_id(cookie)
+        if not result:
+            return
+
+        sesh_id, is_restricted = result
+        self.set_id(sesh_id)
+
     def set_id(self, id):
         self._sesh['id'] = id
         self.is_restricted = True
@@ -95,6 +104,7 @@ class Session(object):
     def delete(self):
         self.should_delete = True
         self.environ['webrec.delete_all_cookies'] = 'all'
+        self.redis.delete(self.key)
 
     def __getitem__(self, name):
         return self._sesh[name]
@@ -147,6 +157,7 @@ class Session(object):
         self.should_save = True
 
         self.environ['webrec.delete_all_cookies'] = 'non_sesh'
+        self.redis.delete(self.key)
 
     def set_restricted_user(self, user):
         if not self.is_new():
@@ -215,33 +226,49 @@ class RedisSessionMiddleware(CookieGuard):
 
         self.access_cls = access_cls
 
+    def _load_session(self, environ):
+        sesh_cookie = self.split_cookie(environ)
+
+        if not sesh_cookie:
+            return
+
+        sesh_cookie = sesh_cookie.strip()
+        if not sesh_cookie.startswith(self.sesh_key + '='):
+            return
+
+        sesh_cookie = sesh_cookie[len(self.sesh_key) + 1:]
+
+        environ['webrec.sesh_cookie'] = sesh_cookie
+
+        result = self.signed_cookie_to_id(sesh_cookie)
+
+        if not result:
+            return
+
+        sesh_id, is_restricted = result
+        redis_key = self.key_template.format(sesh_id)
+
+        result = self.redis.get(redis_key)
+        if not result:
+            return
+
+        data = pickle.loads(base64.b64decode(result))
+        ttl = self.redis.ttl(redis_key)
+
+        return sesh_id, redis_key, data, ttl, is_restricted
+
     def init_session(self, environ):
+        sesh_id = None
+        redis_key = None
         data = None
         ttl = -2
         is_restricted = False
-        force_save = False
 
         if 'wsgiprox.proxy_host' not in environ:
             try:
-                sesh_cookie = self.split_cookie(environ)
-
-                result = self.signed_cookie_to_id(sesh_cookie)
-
+                result = self._load_session(environ)
                 if result:
-                    sesh_id, is_restricted = result
-                    redis_key = self.key_template.format(sesh_id)
-
-                    result = self.redis.get(redis_key)
-                    if result:
-                        data = pickle.loads(base64.b64decode(result))
-                        ttl = self.redis.ttl(redis_key)
-
-                        # no csrf for existing session?
-                        # add and save
-                        if not data.get('csrf'):
-                            data['csrf'] = self.make_id()
-                            force_save = True
-
+                    sesh_id, redis_key, data, ttl, is_restricted = result
             except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -265,10 +292,11 @@ class RedisSessionMiddleware(CookieGuard):
                           redis_key,
                           data,
                           ttl,
-                          is_restricted)
+                          is_restricted,
+                          self)
 
-        if force_save:
-            session.save()
+        #if force_save:
+        #    session.save()
 
         if session.curr_role == 'anon':
             session.template_params['anon_ttl'] = ttl
@@ -295,10 +323,8 @@ class RedisSessionMiddleware(CookieGuard):
 
         if session.should_delete:
             self._delete_session_cookie(environ, headers, self.sesh_key)
-            self.redis.delete(session.key)
         else:
             if session.should_renew:
-                self.redis.delete(session.key)
                 sesh_id, session.key = self.make_id_and_key()
                 session['id'] = sesh_id
 
@@ -418,15 +444,6 @@ class RedisSessionMiddleware(CookieGuard):
             pi.delete(list_key)
 
     def signed_cookie_to_id(self, sesh_cookie):
-        if not sesh_cookie:
-            return None
-
-        sesh_cookie = sesh_cookie.strip()
-        if not sesh_cookie.startswith(self.sesh_key + '='):
-            return None
-
-        sesh_cookie = sesh_cookie[len(self.sesh_key) + 1:]
-
         serial = URLSafeTimedSerializer(self.secret_key)
 
         try:

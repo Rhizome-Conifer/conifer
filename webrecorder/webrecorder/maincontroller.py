@@ -1,4 +1,4 @@
-from bottle import debug, request, response, static_file
+from bottle import debug, request, response, static_file, redirect
 
 import logging
 import json
@@ -12,7 +12,7 @@ import os
 from jinja2 import contextfunction
 from pkg_resources import resource_filename
 
-from six.moves.urllib.parse import urlsplit, urljoin, unquote
+from six.moves.urllib.parse import urlsplit, urljoin, unquote, urlencode
 
 from pywb.rewrite.templateview import JinjaEnv
 from webrecorder.utils import load_wr_config, init_logging, spawn_once
@@ -96,6 +96,8 @@ class MainController(BaseController):
         browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'], decode_responses=True)
 
         session_redis = redis.StrictRedis.from_url(os.environ['REDIS_SESSION_URL'])
+
+        self.content_error_redirect = os.environ.get('CONTENT_ERROR_REDIRECT')
 
         # Init Jinja
         jinja_env = self.init_jinja_env(config)
@@ -213,7 +215,7 @@ class MainController(BaseController):
             return self.content_host
 
         def get_num_collections():
-            count = self.access.session_user.num_collections()
+            count = self.access.session_user.num_total_collections()
             return count
 
         def get_archives():
@@ -410,7 +412,18 @@ class MainController(BaseController):
 
             # return html error view for any content errors
             if self.is_content_request():
-                return error_view(out)
+                if self.content_error_redirect:
+                    err_context = {'status': out.status_code,
+                                   'error': out.body
+                                  }
+
+                    response.status = 303
+                    redirect_url = self.content_error_redirect + '?' + urlencode(err_context)
+                    response.set_header('Location', redirect_url)
+                    return
+
+                else:
+                    return error_view(out)
 
             if isinstance(out.exception, dict):
                 return json_error(out.exception)

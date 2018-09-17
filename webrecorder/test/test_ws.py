@@ -26,13 +26,13 @@ class TestWS(FullStackTests):
     def get_url(self, url):
         return self.sesh.get('http://localhost:{0}'.format(self.app_port) + url)
 
-    def post_json(self, url, json):
+    def post_json(self, url, json=None):
         return self.sesh.post('http://localhost:{0}'.format(self.app_port) + url,
                               json=json)
 
     def test_user_cred(self):
-        res = self.get_url('/api/v1/auth/anon_user')
-        TestWS.anon_user = res.json()['anon_user']
+        res = self.post_json('/api/v1/auth/anon_user')
+        TestWS.anon_user = res.json()['user']['username']
 
     def test_create_recording(self):
         self.set_uuids('Recording', ['rec'])

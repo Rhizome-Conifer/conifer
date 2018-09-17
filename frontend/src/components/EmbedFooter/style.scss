@@ -1,0 +1,14 @@
+@import 'src/vars';
+
+.embed-footer {
+    text-align: center;
+    color: #FFF;
+    background: $blue;
+    padding: .5rem 0;
+
+    a {
+        &:link, &:visited {
+            color: #FFF;
+        }
+    }
+}

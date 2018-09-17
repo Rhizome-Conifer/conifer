@@ -23,8 +23,7 @@
         justify-content: flex-start;
         align-items: center;
         margin: 1rem 0;
-        // scrollbar padding
-        padding-right: 1rem;
+        padding:0;
 
         h4 {
             display: inline;
@@ -99,6 +98,7 @@
             li {
                 position: relative;
                 padding-left: .75rem;
+                cursor: pointer;
 
                 &:before {
                     transition: background-color $quickShift ease-in-out;
@@ -119,17 +119,16 @@
                     position: relative;
 
                     &.editable {
-                        padding-right: 1.9rem;
+                        padding-right: 2.4rem;
                     }
 
                     svg {
                         fill: $gray600;
                     }
 
-                    a {
+                    .title {
                         display: block;
-                        width: 100%;
-                        margin: 0 .5rem;
+                        margin-left: .5rem;
                         text-decoration: none;
                         color: $gray600;
                         font-weight: 500;
@@ -146,6 +145,7 @@
                             content: '(';
                             padding-right: .1rem;
                         }
+
                         &:after {
                             content: ')';
                             padding-left: .1rem;
@@ -171,7 +171,7 @@
                             background-image: url('../../../shared/images/public-list.svg');
                         }
 
-                        a {
+                        .title {
                             color: $body-gray;
                         }
                     }
@@ -185,11 +185,11 @@
                     }
                 }
 
-                &:hover {
+                &:not(.lists-header):hover {
                     background: $gray300;
 
                     .wrapper {
-                        a {
+                        .title {
                             color: #000;
                         }
 
@@ -211,10 +211,6 @@
                     &:before {
                         background-color: $blue;
                     }
-
-                    a:visited, a:link, a:hover {
-                        color: $body-gray;
-                    }
                 }
 
                 &.divider {
@@ -223,8 +219,12 @@
                     height: .1rem;
                 }
 
-                &.all-pages .wrapper svg {
-                    vertical-align: middle;
+                &.all-pages {
+                    margin-top: 1.5rem;
+
+                    .wrapper svg {
+                        vertical-align: middle;
+                    }
                 }
             }
         }

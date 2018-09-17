@@ -43,7 +43,7 @@ class LoginForm extends Component {
     }
 
     // check for anon usage
-    if (auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0) {
+    if (auth.getIn(['user', 'anon']) && auth.getIn(['user', 'num_collections']) > 0) {
       data = { ...data, moveTemp, toColl };
     }
 
@@ -88,13 +88,13 @@ class LoginForm extends Component {
             <FormGroup
               key="username">
               <label htmlFor="username" className="sr-only">Username</label>
-              <FormControl onChange={this.handleChange} value={username} type="text" id="username" name="username" className="form-control" placeholder="username" required autoFocus />
+              <FormControl aria-label="username" onChange={this.handleChange} value={username} type="text" id="username" name="username" className="form-control" placeholder="username" required autoFocus />
               <div className="help-block with-errors" />
             </FormGroup>
 
             <FormGroup key="password">
               <label htmlFor="inputPassword" className="sr-only">Password</label>
-              <FormControl onChange={this.handleChange} value={password} type="password" id="password" name="password" className="form-control" placeholder="Password" required />
+              <FormControl aria-label="password" onChange={this.handleChange} value={password} type="password" id="password" name="password" className="form-control" placeholder="Password" required />
             </FormGroup>
 
             <FormGroup key="remember">
@@ -104,7 +104,7 @@ class LoginForm extends Component {
               <Link to="/_forgot" onClick={closeLogin} style={{ float: 'right' }}>Forgot password or username?</Link>
             </FormGroup>
             {
-              auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0 &&
+              auth.getIn(['user', 'anon']) && auth.getIn(['user', 'num_collections']) > 0 &&
                 <TempUsage
                   handleInput={this.handleChange}
                   moveTemp={moveTemp}

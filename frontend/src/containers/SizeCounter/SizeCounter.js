@@ -5,7 +5,7 @@ import { SizeCounter } from 'components/controls';
 
 
 const mapStateToProps = ({ app }) => {
-  const bytes = app.getIn(['sizeCounter', 'bytes']);
+  const bytes = app.getIn(['infoStats', 'size']);
   return bytes ? { bytes } : {};
 };
 

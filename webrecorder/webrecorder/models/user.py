@@ -29,6 +29,9 @@ class User(RedisUniqueComponent):
     URL_SKIP_KEY = 'us:{user}:s:{url}'
     SKIP_KEY_SECS = 330
 
+    SERIALIZE_PROPS = ['desc', 'display_url', 'full_name']
+    SERIALIZE_FULL_PROPS = SERIALIZE_PROPS + ['role', 'last_login', 'updated_at', 'created_at', 'timespan', 'size', 'max_size']
+
     @classmethod
     def init_props(cls, config):
         cls.MAX_USER_SIZE = int(config['default_max_size'])
@@ -118,7 +121,7 @@ class User(RedisUniqueComponent):
 
         return collections
 
-    def num_collections(self):
+    def num_total_collections(self):
         return self.colls.num_objects()
 
     def move(self, collection, new_name, new_user):
@@ -204,43 +207,56 @@ class User(RedisUniqueComponent):
     def is_anon(self):
         return self.name.startswith('temp-')
 
-    def serialize(self, compute_size_allotment=False,
-                  include_colls=False,
-                  include_recordings=False,
-                  include_lists=False):
+    def get_space_usage(self):
+        total = self.get_size_allotment()
+        avail = self.get_size_remaining()
+        data = {
+            'total': total,
+            'used': total - avail,
+            'available': avail,
+        }
+        return data
 
-        data = super(User, self).serialize()
+    def serialize(self, include_colls=False):
+        full = self.access.is_logged_in_user(self) or self.access.is_superuser()
 
-        # assemble space usage
-        if compute_size_allotment:
-            total = self.get_size_allotment()
-            avail = self.get_size_remaining()
-            data['space_utilization'] = {
-                'total': total,
-                'used': total - avail,
-                'available': avail,
-            }
+        all_data = super(User, self).serialize(include_duration=full)
+
+        data = {'username': self.name}
+
+        allowed_props = self.SERIALIZE_PROPS if not full else self.SERIALIZE_FULL_PROPS
+
+        for prop in allowed_props:
+            if prop in all_data:
+                data[prop] = all_data[prop]
+
+        colls = self.get_collections()
+        data['num_collections'] = len(colls)
 
         if include_colls:
-            colls = self.get_collections()
             data['collections'] = [coll.serialize(
-                                    include_recordings=include_recordings,
-                                    include_lists=include_lists) for coll in colls]
+                                    include_recordings=False,
+                                    include_pages=False,
+                                    include_lists=False) for coll in colls]
 
-        data['username'] = self.name
+        # if not owner or superuser, return here, otherwise add additional properties
+        if not full:
+            return data
+
+        data['space_utilization'] = self.get_space_usage()
 
         if self.is_anon():
+            data['anon'] = True
+            data['role'] = 'anon'
             data['ttl'] = self.access.get_anon_ttl()
             collection = self.get_collection_by_name('temp')
             if collection:
-                data['rec_count'] = collection.num_recordings()
+                data['num_recordings'] = collection.num_recordings()
 
         else:
-            data['email'] = data.pop('email_addr')
-            #desc_data = json.loads(data.pop('desc', '{}'))
-            #data['name'] = desc_data.get('name', '')
-            data['name'] = data.pop('name', '')
-            last_login = data.get('last_login')
+            data['anon'] = False
+            data['role'] = self['role']
+            last_login = self.get_prop('last_login')
             if last_login:
                 data['last_login'] = self.to_iso_date(last_login)
 
@@ -318,16 +334,6 @@ class SessionUser(User):
             return None
         else:
             return self['role']
-
-    def num_collections(self):
-        if self.sesh_type == 'logged-in':
-            return super(SessionUser, self).num_collections()
-
-        elif self.sesh_type == 'anon':
-            return 1
-
-        else:
-            return 0
 
     def _persist_anon_user(self):
         if self.sesh_type != 'transient':

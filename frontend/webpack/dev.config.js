@@ -68,7 +68,7 @@ var webpackConfig = module.exports = {
                       '>1%',
                       'last 4 versions',
                       'Firefox ESR',
-                      'not ie < 9',
+                      'ie >= 10',
                     ]
                   })
                 ]
@@ -150,14 +150,15 @@ var webpackConfig = module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.IgnorePlugin(/webpack-stats\.json$/),
     //new HardSourceWebpackPlugin(),
-    new webpack.EnvironmentPlugin([
-      'NODE_ENV',
-      'APP_HOST',
-      'ANNOUNCE_MAILING_LIST',
-      'FRONTEND_PORT',
-      'CONTENT_HOST',
-      'SCHEME'
-    ]),
+    new webpack.EnvironmentPlugin({
+      'ANNOUNCE_MAILING_LIST': null,
+      'ALLOW_DAT': false,
+      'APP_HOST': 'localhost:8089',
+      'CONTENT_HOST': 'localhost:8092',
+      'FRONTEND_PORT': 8095,
+      'NODE_ENV': 'development',
+      'SCHEME': 'http',
+    }),
     new webpack.DefinePlugin({
       __CLIENT__: true,
       __SERVER__: false,

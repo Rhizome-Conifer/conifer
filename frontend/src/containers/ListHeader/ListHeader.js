@@ -14,16 +14,23 @@ const mapStateToProps = ({ app }) => {
   return {
     collection: app.get('collection'),
     list: app.get('list'),
-    listEdited: app.getIn(['list', 'edited'])
+    listEditing: app.getIn(['list', 'editing']),
+    listEdited: app.getIn(['list', 'edited']),
+    listError: app.getIn(['list', 'error'])
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = (dispatch, { history }) => {
   return {
     editList: (user, coll, listId, data) => {
       dispatch(editList(user, coll, listId, data))
-        .then(() => dispatch(loadColl(user, coll)))
-        .then(() => setTimeout(() => dispatch(resetEditState()), saveDelay), () => {});
+        .then((res) => {
+          if (data.hasOwnProperty('title')) {
+            history.replace(`/${user}/${coll}/list/${res.list.slug}`);
+          }
+          return dispatch(loadColl(user, coll));
+        }, () => {})
+        .then(() => dispatch(resetEditState()), () => {});
     },
     dispatch
   };

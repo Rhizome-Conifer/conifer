@@ -4,8 +4,9 @@ const SET_RESOURCE_STATS = 'wr/infoStats/SET_RESOURCE_STATS';
 const RESET_RESOURCE_STATS = 'wr/infoStats/RESET_RESOURCE_STATS';
 
 const initialState = fromJS({
+  pending_size: 0,
+  size: 0,
   stats: {},
-  size: 0
 });
 
 export default function infoStats(state = initialState, action = {}) {
@@ -19,12 +20,13 @@ export default function infoStats(state = initialState, action = {}) {
   }
 }
 
-export function setStats(stats, size) {
+export function setStats(stats, size, pending_size = 0) {
   return {
     type: SET_RESOURCE_STATS,
     resourceStats: {
       stats,
-      size
+      size,
+      pending_size
     }
   };
 }

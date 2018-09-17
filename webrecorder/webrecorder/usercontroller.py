@@ -20,16 +20,20 @@ class UserController(BaseController):
 
         self.default_user_desc = config['user_desc']
 
-    # utility
-    def load_auth(self):
-        u = self.access.session_user
+    def load_user(self, username=None):
+        include_colls = get_bool(request.query.get('include_colls', False))
 
-        return {
-            'username': u.name,
-            'role': u.curr_role,
-            'anon': u.is_anon(),
-            'coll_count': u.num_collections(),
-        }
+        if username:
+            user = self.get_user(user=username)
+        else:
+            user = self.access.session_user
+
+        return {'user': user.serialize(include_colls=include_colls)}
+
+    def new_auth(self):
+        user = self.access.init_session_user(persist=True)
+
+        return {'user': user.serialize()}
 
     def get_user_or_raise(self, username=None, status=403, msg='unauthorized'):
         # ensure correct host
@@ -57,29 +61,24 @@ class UserController(BaseController):
         @self.app.get('/api/v1/auth/check_username/<username>')
         def test_username(username):
             """async precheck username availability on signup form"""
-            if username in self.user_manager.RESTRICTED_NAMES:
-                return {'available': False}
 
             try:
-                self.user_manager.all_users[username]
-                return {'available': False}
+                if username not in self.user_manager.RESTRICTED_NAMES:
+                    self.user_manager.all_users[username]
             except:
-                return {'available': True}
+                return {'success': True}
 
-        @self.app.get('/api/v1/auth/anon_user')
-        def get_anon_user():
-            sesh_user = self.access.init_session_user(persist=True)
-            return {'anon_user': sesh_user.my_id}
+            return self._raise_error(400, 'not_available')
 
+        # GET CURRENT USER
         @self.app.get('/api/v1/auth/curr_user')
-        def get_curr_user():
-            sesh_user = self.access.session_user
-            return {'curr_user': sesh_user.my_id}
+        def load_user():
+            return self.load_user()
 
-        # AUTH CHECK
-        @self.app.get('/api/v1/auth')
-        def load_auth():
-            return self.load_auth()
+        # AUTH NEW SESSION
+        @self.app.post('/api/v1/auth/anon_user')
+        def new_auth():
+            return self.new_auth()
 
         # REGISTRATION
         @self.app.post('/api/v1/auth/register')
@@ -116,10 +115,12 @@ class UserController(BaseController):
             if not self.access.is_anon():
                 return self._raise_error(403, 'already_logged_in')
 
+            include_colls = get_bool(request.query.get('include_colls', False))
+
             result = self.user_manager.login_user(request.json or {})
 
             if 'success' in result:
-                data = self.load_auth()
+                data = {'user': self.access.session_user.serialize(include_colls)}
                 if result.get('new_coll_name'):
                     data['new_coll_name'] = result['new_coll_name']
 
@@ -211,14 +212,7 @@ class UserController(BaseController):
         @self.app.get('/api/v1/user/<username>')
         def api_get_user(username):
             """API enpoint to return user info"""
-            user = self.get_user_or_raise(username, 404, 'not_found')
-
-            include_colls = get_bool(request.query.get('include_colls', True))
-
-            user_data = user.serialize(compute_size_allotment=True,
-                                       include_colls=include_colls)
-
-            return {'user': user_data}
+            return self.load_user(username)
 
         @self.app.delete('/api/v1/user/<username>')
         def api_delete_user(username):
@@ -246,8 +240,8 @@ class UserController(BaseController):
             if 'desc' in data:
                 user['desc'] = data['desc']
 
-            if 'display_name' in data:
-                user['display_name'] = data['display_name'][:150]
+            if 'full_name' in data:
+                user['full_name'] = data['full_name'][:150]
 
             if 'display_url' in data:
                 user['display_url'] = data['display_url'][:500]

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import Collapsible from 'react-collapsible';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
@@ -9,7 +8,6 @@ import { draggableTypes } from 'config';
 import { getCollectionLink } from 'helpers/utils';
 
 import Modal from 'components/Modal';
-import SidebarHeader from 'components/SidebarHeader';
 import VisibilityLamp from 'components/collection/VisibilityLamp';
 import { AllPagesIcon, CheckIcon, PlusIcon, XIcon } from 'components/icons';
 
@@ -67,8 +65,7 @@ class ListsUI extends Component {
       created: false,
       isEditing: false,
       edited: false,
-      lists,
-      minimized: false
+      lists
     };
   }
 
@@ -95,16 +92,14 @@ class ListsUI extends Component {
     clearTimeout(this.editHandle);
   }
 
-  handleInput = (evt) => {
-    this.setState({
-      [evt.target.name]: evt.target.value
-    });
-  }
+  clearInput = () => this.setState({ title: '' })
 
-  submitCheck = (evt) => {
-    if (evt.key === 'Enter') {
+  closeEditModal = () => {
+    if (this.state.title) {
       this.createList();
     }
+
+    this.setState({ editModal: false });
   }
 
   createList = () => {
@@ -117,54 +112,27 @@ class ListsUI extends Component {
     }
   }
 
-  sendDeleteList = (listId) => {
+  goToIndex = () => {
     const { collection } = this.props;
-    this.props.deleteList(collection.get('owner'), collection.get('id'), listId);
+    if (this.context.canAdmin || collection.get('public_index')) {
+      this.props.history.push(getCollectionLink(collection, true));
+    }
   }
 
-  sendEditList = (listId, data) => {
-    const { collection } = this.props;
-    this.setState({ edited: false, isEditing: true, editId: listId });
-    this.props.editList(collection.get('owner'), collection.get('id'), listId, data);
+  handleInput = (evt) => {
+    this.setState({
+      [evt.target.name]: evt.target.value
+    });
   }
 
-  toggleIndexVisibility = () => {
-    const { collection, editColl, publicIndex } = this.props;
-    editColl(collection.get('owner'), collection.get('id'), { public_index: !publicIndex });
+  navigate = () => {
+    const { collection, history } = this.props;
+    history.push(getCollectionLink(collection, true));
   }
-
-  clearInput = () => this.setState({ title: '' })
 
   openEditModal = (evt) => {
     evt.stopPropagation();
     this.setState({ editModal: true });
-  }
-
-  closeEditModal = () => {
-    if (this.state.title) {
-      this.createList();
-    }
-
-    this.setState({ editModal: false });
-  }
-
-  sortLists = (origIndex, hoverIndex) => {
-    const { lists } = this.state;
-    const o = lists.get(origIndex);
-    const sorted = lists.splice(origIndex, 1)
-                        .splice(hoverIndex, 0, o);
-
-    this.setState({ lists: sorted });
-  }
-
-  saveListSort = () => {
-    const { collection } = this.props;
-    const order = this.state.lists.map(o => o.get('id')).toArray();
-    this.props.sortLists(collection.get('owner'), collection.get('id'), order);
-  }
-
-  minimize = () => {
-    this.setState({ minimized: !this.state.minimized });
   }
 
   pageDropCallback = (page, list, itemType) => {
@@ -204,13 +172,41 @@ class ListsUI extends Component {
     }
   }
 
-  close = () => this.props.collapsibleToggle(false);
-  open = () => this.props.collapsibleToggle(true);
-  goToIndex = () => {
+  saveListSort = () => {
     const { collection } = this.props;
-    if (this.context.canAdmin || collection.get('public_index')) {
-      this.props.history.push(getCollectionLink(collection, true));
+    const order = this.state.lists.map(o => o.get('id')).toArray();
+    this.props.sortLists(collection.get('owner'), collection.get('id'), order);
+  }
+
+  sendDeleteList = (listId) => {
+    const { collection } = this.props;
+    this.props.deleteList(collection.get('owner'), collection.get('id'), listId);
+  }
+
+  sendEditList = (listId, data) => {
+    const { collection } = this.props;
+    this.setState({ edited: false, isEditing: true, editId: listId });
+    this.props.editList(collection.get('owner'), collection.get('id'), listId, data);
+  }
+
+  sortLists = (origIndex, hoverIndex) => {
+    const { lists } = this.state;
+    const o = lists.get(origIndex);
+    const sorted = lists.splice(origIndex, 1)
+                        .splice(hoverIndex, 0, o);
+
+    this.setState({ lists: sorted });
+  }
+
+  submitCheck = (evt) => {
+    if (evt.key === 'Enter') {
+      this.createList();
     }
+  }
+
+  toggleIndexVisibility = () => {
+    const { collection, editColl, publicIndex } = this.props;
+    editColl(collection.get('owner'), collection.get('id'), { public_index: !publicIndex });
   }
 
   render() {
@@ -225,59 +221,45 @@ class ListsUI extends Component {
 
     const publicListCount = lists.filter(l => l.get('public')).size;
 
-    const header = (
-      <SidebarHeader
-        collapsible
-        label="Collection Navigator"
-        callback={this.minimize}
-        closed={this.state.minimized} />
-    );
-
     return (
       <React.Fragment>
-        <Collapsible
-          open
-          transitionTime={300}
-          easing="ease-in-out"
-          classParentString="wr-coll-sidebar"
-          trigger={header}
-          onOpen={this.open}
-          onClose={this.close}>
+        <div className="wr-coll-sidebar">
           <div className={classNames('lists-body', { 'private-coll': !collection.get('public') })}>
-            <header className="lists-header">
-              <h4><span>Lists</span> ({publicListCount} Public)</h4>
-              {
-                canAdmin &&
-                  <React.Fragment>
-                    <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
-                    <button onClick={this.openEditModal} className="borderless"><PlusIcon /></button>
-                  </React.Fragment>
-              }
-            </header>
             <ul>
               {
                 (publicIndex || canAdmin) &&
-                  <React.Fragment>
-                    <li className={classNames('all-pages', { selected: !activeListSlug })}>
-                      <div className={classNames('wrapper', { editable: canAdmin })}>
-                        <Link to={getCollectionLink(collection, true)} title="All pages" className="button-link"><AllPagesIcon /> All Pages in Collection</Link>
-                        {
-                          canAdmin &&
-                            <VisibilityLamp
-                              callback={this.toggleIndexVisibility}
-                              isPublic={publicIndex}
-                              label="page index" />
-                        }
-                      </div>
-                    </li>
-                    <li className="divider" />
-                  </React.Fragment>
+                  <li className={classNames('all-pages', { selected: !activeListSlug })} onClick={this.navigate}>
+                    <div className={classNames('wrapper', { editable: canAdmin })}>
+                      <span className="title" title="All pages"><AllPagesIcon /> Pages ({collection.get('pages').size})</span>
+                      {
+                        canAdmin &&
+                          <VisibilityLamp
+                            callback={this.toggleIndexVisibility}
+                            collPublic={collection.get('public')}
+                            isPublic={publicIndex}
+                            label="page index" />
+                      }
+                    </div>
+                  </li>
               }
+
+              <li className="lists-header">
+                <h4><span>Lists</span> ({publicListCount} Public)</h4>
+                {
+                  canAdmin &&
+                    <React.Fragment>
+                      <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
+                      <button onClick={this.openEditModal} className="borderless"><PlusIcon /></button>
+                    </React.Fragment>
+                }
+              </li>
+
               {
                 lists.map((listObj, idx) => (
                   <ListItem
                     dropCallback={this.pageDropCallback}
                     collId={collection.get('id')}
+                    collPublic={collection.get('public')}
                     collUser={collection.get('owner')}
                     editList={this.sendEditList}
                     index={idx}
@@ -290,7 +272,7 @@ class ListsUI extends Component {
               }
             </ul>
           </div>
-        </Collapsible>
+        </div>
         {
           /* lists edit modal */
           canAdmin &&

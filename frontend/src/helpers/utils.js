@@ -23,8 +23,26 @@ export function apiFetch(path, data, opts = {}) {
 }
 
 
-export function buildDate(dt, gmt) {
+export function buildDate(dt, gmt, humanize) {
   let displayTime;
+  if(humanize) {
+    const ms = new Date().getTime() - new Date(dt);
+    const days = Math.floor(ms / (24 * 60 * 60 * 1000));
+    const months = Math.floor(days / 31);
+    if (months <= 1) {
+      if (days < 1) {
+        return 'less than a day ago';
+      } else if (days === 1) {
+        return '1 day ago';
+      } else if (days > 1) {
+        return `${days} days ago`;
+      }
+    } else if(months >= 12) {
+      return 'over a year ago';
+    } else {
+      return `${months} months ago`;
+    }
+  }
 
   if (dt) {
     let DTString = String(dt);

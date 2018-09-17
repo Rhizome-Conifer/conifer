@@ -23,20 +23,17 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         os.environ['APP_HOST'] = ''
 
     def test_empty_temp_user(self):
-        res = self.testapp.get('/api/v1/auth')
-        assert res.json['username']
-        username = res.json['username']
+        res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
+        assert res.json['user']['username']
+        username = res.json['user']['username']
 
-        #res = self.testapp.get('/api/v1/user/' + username, status=302)
-        #assert res.headers['Location'] == 'http://app-host/api/v1/user/' + username
-        res = self.testapp.get('/api/v1/user/' + username, status=403)
-        assert res.json == {'error': 'unauthorized'}
+        res = self.testapp.get('/api/v1/user/' + username, status=302)
+        assert res.headers['Location'] == 'http://app-host/api/v1/user/' + username
 
     def test_init_anon(self):
-        res = self.testapp.get('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
-        TestCreateNewAPISeparateDomains.anon_user = res.json['anon_user']
+        res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
+        TestCreateNewAPISeparateDomains.anon_user = res.json['user']['username']
 
-        res = self.testapp.get('/api/v1/user/' + self.anon_user, headers={'Host': 'app-host'})
         assert res.json['user']['username'] == self.anon_user
         assert res.json['user']['space_utilization']['used'] == 0
         assert res.json['user']['ttl']
@@ -112,7 +109,7 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
 
     def test_api_temp_user_recs_created(self):
         res = self.testapp.get('/api/v1/user/' + self.anon_user, headers={'Host': 'app-host'})
-        assert res.json['user']['rec_count'] == 5
+        assert res.json['user']['num_recordings'] == 5
 
     def test_api_redir_wrong_host(self):
         params = {'coll': 'temp',

@@ -6,12 +6,12 @@ import { batchActions } from 'redux-batched-actions';
 
 import config from 'config';
 
+import { selectCollection } from 'redux/modules/auth';
 import { isLoaded, load as loadColl } from 'redux/modules/collection';
 import { getArchives, setExtractable, updateUrlAndTimestamp } from 'redux/modules/controls';
 import { resetStats } from 'redux/modules/infoStats';
 import { load as loadBrowsers, isLoaded as isRBLoaded, setBrowser } from 'redux/modules/remoteBrowsers';
 import { getActiveCollection } from 'redux/selectors';
-import { selectCollection } from 'redux/modules/user';
 
 import { RemoteBrowser } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -86,6 +86,7 @@ class Extract extends Component {
                 params={params}
                 rb={activeBrowser}
                 rec={rec}
+                timestamp={timestamp}
                 url={url} /> :
               <IFrame
                 appPrefix={appPrefix}

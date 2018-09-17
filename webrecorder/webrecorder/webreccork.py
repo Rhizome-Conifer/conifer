@@ -1,5 +1,6 @@
 from cork import Cork, AAAException, AuthException
 import os
+import json
 
 from webrecorder.redisutils import RedisTable
 from webrecorder.models.user import UserTable
@@ -63,12 +64,19 @@ class WebRecCork(Cork):
         if username in self._store.users:
             raise AAAException("User is already existing.")
 
+
+        try:
+            full_name = json.loads(data['desc'])['name']
+        except:
+            full_name = ''
+
         # the user data is moved from pending_registrations to _users
         self._store.users[username] = {
             'role': data['role'],
             'hash': data['hash'],
             'email_addr': data['email_addr'],
             'reg_data': data['desc'],
+            'full_name': full_name,
             'creation_date': data['creation_date'],
         }
         self._store.users[username].update_last_login()

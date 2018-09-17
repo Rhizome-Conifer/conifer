@@ -15,7 +15,6 @@ import './style.scss';
 
 class UserSignup extends Component {
   static propTypes = {
-    auth: PropTypes.object,
     available: PropTypes.bool,
     cb: PropTypes.func,
     checkUser: PropTypes.func,
@@ -23,8 +22,8 @@ class UserSignup extends Component {
     result: PropTypes.string,
     errors: PropTypes.object,
     success: PropTypes.bool,
-    userCheck: PropTypes.bool,
     user: PropTypes.object,
+    userCheck: PropTypes.bool,
     validUsername: PropTypes.bool
   };
 
@@ -45,8 +44,8 @@ class UserSignup extends Component {
 
   save = (evt) => {
     evt.preventDefault();
-    const { auth } = this.props;
-    const { announce_mailer, username, name, full_name,
+    const { user } = this.props;
+    const { announce_mailer, username, name,
             email, password, confirmpassword, moveTemp, toColl } = this.state;
 
     if (!password || !confirmpassword) {
@@ -63,15 +62,11 @@ class UserSignup extends Component {
       }
 
       if (name) {
-        data = { ...data, name };
-      }
-
-      if (full_name) {
-        data = { ...data, full_name };
+        data = { ...data, full_name: name };
       }
 
       // check for anon usage
-      if (auth.getIn(['user', 'anon']) && auth.getIn(['user', 'coll_count']) > 0) {
+      if (user.get('anon') && user.get('num_collections') > 0) {
         data = { ...data, moveTemp, toColl };
       }
 
@@ -205,6 +200,7 @@ class UserSignup extends Component {
             <FormGroup validationState={this.validateUsername()}>
               <ControlLabel>Choose a username for your archive</ControlLabel>
               <FormControl
+                aria-label="username"
                 type="text"
                 name="username"
                 placeholder="Username"
@@ -227,6 +223,7 @@ class UserSignup extends Component {
             <FormGroup>
               <ControlLabel srOnly>Name:</ControlLabel>
               <FormControl
+                aria-label="name"
                 type="name"
                 name="name"
                 placeholder="Your Name (Optional)"
@@ -234,16 +231,10 @@ class UserSignup extends Component {
                 onChange={this.handleChange} />
             </FormGroup>
 
-            <FormGroup style={{ display: 'none' }}>
-              <ControlLabel srOnly>Name:</ControlLabel>
-              <FormControl
-                type="text"
-                name="full_name" />
-            </FormGroup>
-
             <FormGroup validationState={this.validateEmail()}>
               <ControlLabel srOnly>Email:</ControlLabel>
               <FormControl
+                aria-label="email"
                 type="email"
                 name="email"
                 placeholder="Your Email"
@@ -255,6 +246,7 @@ class UserSignup extends Component {
             <FormGroup validationState={this.validatePassword()}>
               <ControlLabel srOnly>Password</ControlLabel>
               <FormControl
+                aria-label="password"
                 type="password"
                 name="password"
                 placeholder="Password"
@@ -269,6 +261,7 @@ class UserSignup extends Component {
             <FormGroup validationState={this.validatePassword()}>
               <ControlLabel srOnly>Password</ControlLabel>
               <FormControl
+                aria-label="confirm password"
                 type="password"
                 name="confirmpassword"
                 placeholder="Confirm Password"
@@ -290,7 +283,7 @@ class UserSignup extends Component {
             </FormGroup>
 
             {
-              user.get('anon') && user.get('coll_count') > 0 &&
+              user.get('anon') && user.get('num_collections') > 0 &&
               <TempUsage
                 handleInput={this.handleChange}
                 moveTemp={moveTemp}

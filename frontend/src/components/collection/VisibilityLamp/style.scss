@@ -1,5 +1,32 @@
 @import 'src/vars';
 
+.wr-coll-sidebar .lists-body ul li .wrapper .visibility-lamp svg {
+    vertical-align: top;
+    g > g {
+        fill: $gray500;
+    }
+}
+
+.wr-coll-sidebar .lists-body ul li.all-pages .wrapper .visibility-lamp svg {
+    vertical-align: top;
+}
+
+.private-coll {
+    .visibility-lamp {
+        &.is-public {
+            &.open {
+                border: 1px solid $gray500;
+            }
+            .bulb {
+                color: $gray500;
+            }
+            .lamp {
+                background: $gray500;
+            }
+        }
+    }
+}
+
 .visibility-lamp {
     position: absolute;
     right: 0;
@@ -8,41 +35,72 @@
     margin-right: .5rem;
     cursor: pointer;
 
-    & > div {
-        transition: width 165ms ease-in-out;
+    transition: background $quickShift ease-in-out;
+    min-width: 2.4rem;
+    text-align: center;
+    height: 2.4rem;
+    padding: 0.4rem;
+    border-radius: 2.4rem;
+    border: 1px solid rgba(0,0,0,0);
+
+    &.open {
+        background: $white;
     }
 
     &:not(.is-public) {
-        & > div {
-            transition: width 165ms ease-in-out,
-                        background-color $quickShift ease-in-out;
-            background-color: $gray400;
+        &.open {
+            border:1px solid $gray500;
+
+            .bulb > span {
+                opacity: 1;
+            }
         }
 
-        &:hover > div {
-            background-color: $gray600;
+        .bulb {
+            color: $gray500;
         }
     }
 
-    &.is-public > div {
-        background-color: $brightGreen;
+    &.is-public {
+        &.open {
+            border: 1px solid $brightGreen;
+
+            .bulb > span {
+                opacity: 1;
+            }
+        }
+
+        .bulb {
+            color: $brightGreen;
+        }
     }
 
-    & > div:first-of-type {
-        width: .7rem;
-        height: 1.4rem;
-        border-radius: .7rem 0 0 .7rem;
+    .lamp {
+         background: $brightGreen;
+         border-radius: 1.4rem;
+         width: 1.4rem;
+         height: 1.4rem;
+         display: inline-block;
+    }
+
+    & > div{
+
+    }
+
+    .svg {
+        display: inline-block;
+        vertical-align: top;
     }
 
     .bulb {
-        color: #FFF;
+        transition: width $midShift ease-in-out;
         height: 1.4rem;
         overflow:hidden;
         font-size: 1rem;
         text-transform: uppercase;
-
-        display: flex;
-        justify-content: center;
+        display: inline-block;
+        text-align: center;
+        justify-content: left;
         align-items: center;
 
         svg {
@@ -54,14 +112,16 @@
             }
         }
 
-        span {
-            vertical-align: middle;
+        .wr-loader {
+            path {
+                fill: #000;
+            }
         }
-    }
 
-    & > div:last-of-type {
-        width: .7rem;
-        height: 1.4rem;
-        border-radius: 0 .7rem .7rem 0;
+        span {
+            transition: opacity $midShift ease-in-out;
+            padding-right: 0.4rem;
+            opacity: 0;
+        }
     }
 }

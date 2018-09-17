@@ -156,12 +156,30 @@ const controllerRoutes = [
     name: 'extract'
   },
   {
+    path: `/:embed(_embed|_embed_noborder)${userPath}/:coll/list/:listSlug/b:bookmarkId([0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    classOverride: '',
+    component: Replay,
+    embed: true,
+    exact: true,
+    footer: false,
+    name: 'list rb replay embed'
+  },
+  {
     path: `${userPath}/:coll/list/:listSlug/b:bookmarkId([0-9]+)/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
     classOverride: '',
     component: Replay,
     exact: true,
     footer: false,
     name: 'list rb replay'
+  },
+  {
+    path: `/:embed(_embed|_embed_noborder)${userPath}/:coll/list/:listSlug/b:bookmarkId([0-9]+)/:ts([0-9]+)?/:splat(.*)`,
+    classOverride: '',
+    component: Replay,
+    embed: true,
+    exact: true,
+    footer: false,
+    name: 'list replay embed'
   },
   {
     path: `${userPath}/:coll/list/:listSlug/b:bookmarkId([0-9]+)/:ts([0-9]+)?/:splat(.*)`,
@@ -172,12 +190,30 @@ const controllerRoutes = [
     name: 'list replay'
   },
   {
+    path: `/:embed(_embed|_embed_noborder)${userPath}/:coll/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
+    classOverride: '',
+    component: Replay,
+    embed: true,
+    exact: true,
+    footer: false,
+    name: 'rb replay embed'
+  },
+  {
     path: `${userPath}/:coll/:ts([0-9]+)?$br::br([a-z0-9-:]+)/:splat(.*)`,
     classOverride: '',
     component: Replay,
     exact: true,
     footer: false,
     name: 'rb replay'
+  },
+  {
+    path: `/:embed(_embed|_embed_noborder)${userPath}/:coll/:ts([0-9]+)?/:splat(.*)`,
+    classOverride: '',
+    component: Replay,
+    embed: true,
+    exact: true,
+    footer: false,
+    name: 'replay embed',
   },
   {
     path: `${userPath}/:coll/:ts([0-9]+)?/:splat(.*)`,

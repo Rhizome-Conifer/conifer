@@ -16,10 +16,10 @@ function Footer() {
       <div className="container top-buffer bottom-buffer">
         <div className="row">
           <div className="col-xs-12 col-sm-8 project-info">
-            <a href="https://github.com/webrecorder/webrecorder" target="_blank">
+            <a href="https://github.com/webrecorder/webrecorder" aria-label="Github" target="_blank">
               <GithubIcon />
             </a>
-            <a href="https://twitter.com/webrecorder_io" target="_blank">
+            <a href="https://twitter.com/webrecorder_io" aria-label="Twitter" target="_blank">
               <TwitterIcon />
             </a>
             <a href={`mailto:${supportEmail}`} className="divider contact"><MailIcon />Contact</a>
@@ -45,7 +45,7 @@ function Footer() {
                     <button type="submit" className="btn btn-default btn-sm">Get Updates</button>
                   </div>
                   <div style={{ position: 'absolute', left: '-5000px' }} aria-hidden="true">
-                    <input type="text" name="b_a1487b13ca8ed17d052f71f12_7f979630a1" tabIndex="-1" value="" />
+                    <input type="text" name="b_a1487b13ca8ed17d052f71f12_7f979630a1" tabIndex="-1" defaultValue="" />
                   </div>
                 </form>
               </div>

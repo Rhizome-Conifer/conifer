@@ -66,6 +66,10 @@
         }
     }
 
+    &.no-buttons .markdown-editor {
+        height: calc(100% - 1rem);
+    }
+
     .public-DraftEditor-content {
         min-height: 12.5rem;
         font-family: $sans;

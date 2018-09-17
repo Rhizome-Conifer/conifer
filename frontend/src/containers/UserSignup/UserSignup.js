@@ -9,7 +9,6 @@ const mapStateToProps = ({ app }) => {
   const userSignup = app.get('userSignup');
 
   return {
-    auth: app.get('auth'),
     available: userSignup.get('available'),
     checkedUsername: userSignup.get('checkedUsername'),
     errors: userSignup.get('errors'),
