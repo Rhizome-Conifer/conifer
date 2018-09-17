@@ -74,6 +74,8 @@ class Landing extends Component {
 
   render() {
     const { initializing, progress, source } = this.state;
+
+    const allowDat = JSON.parse(process.env.ALLOW_DAT);
     const loadIndicator = source === 'dat' ?
       (<div className="dat-container">
         <h4>Downloading from peer-to-peer Dat network:</h4>
@@ -92,13 +94,16 @@ class Landing extends Component {
                   <object id="loadWarc" data={require('shared/images/Load_WARC.svg')} type="image/svg+xml">load</object>
                 </button>
               </div>
-              <div className="dat-url">
-                Or via dat:
-                <div className="dat-input">
-                  <FormControl type="text" name="datUrl" onChange={this.handleInput} onKeyPress={this.submitCheck} value={this.state.datUrl} placeholder="Enter a dat:// url" />
-                  <Button bsStyle="primary" onClick={this.syncDat}>Sync</Button>
-                </div>
-              </div>
+              {
+                allowDat &&
+                  <div className="dat-url">
+                    Or via dat:
+                    <div className="dat-input">
+                      <FormControl type="text" name="datUrl" onChange={this.handleInput} onKeyPress={this.submitCheck} value={this.state.datUrl} placeholder="Enter a dat:// url" />
+                      <Button bsStyle="primary" onClick={this.syncDat}>Sync</Button>
+                    </div>
+                  </div>
+              }
             </React.Fragment>
         }
 
