@@ -24,27 +24,6 @@ import userLogin from './modules/userLogin';
 import userSignup from './modules/userSignup';
 
 
-<<<<<<< HEAD
-const makeAppReducer = () => combineImmutableReduers({
-  auth,
-  bugReport,
-  collection,
-  collections,
-  controls,
-  infoStats,
-  inspector,
-  list,
-  pageQuery,
-  passwordReset,
-  recordings,
-  remoteBrowsers,
-  sidebar,
-  toolBin,
-  user,
-  userLogin,
-  userSignup
-});
-=======
 const makeAppReducer = () => {
   const reducers = {
     auth,
@@ -60,8 +39,6 @@ const makeAppReducer = () => {
     recordings,
     remoteBrowsers,
     sidebar,
-    sizeCounter,
-    tempUser,
     toolBin,
     user,
     userLogin,
@@ -74,7 +51,7 @@ const makeAppReducer = () => {
 
   return combineImmutableReduers(reducers);
 };
->>>>>>> Integrate player components, global switch
+
 
 const appReducer = combineReducers({
   search: searchReducer,
