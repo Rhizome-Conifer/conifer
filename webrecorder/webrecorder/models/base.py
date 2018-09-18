@@ -1,3 +1,8 @@
+"""
+:synopsis: Interface classes to Redis components, such as, e.g., ordered lists.
+"""
+
+
 # standard library imports
 from datetime import datetime
 
@@ -6,22 +11,22 @@ from webrecorder.utils import get_bool, get_new_id
 
 
 class DupeNameException(Exception):
-    """Raised when name already exists."""
+    """Raised when field name already exists and duplicates are not allowed."""
     pass
 
 
 class RedisUniqueComponent(object):
-    """Redis building block.
+    """Interface to Redis component.
 
     :cvar tuple INT_KEYS: Redis keys
-    :cvar None INFO_KEY: building block information
-    :cvar None MY_TYPE: type of building block
-    :cvar None ALL_KEYS: building block key pattern
-    :cvar None OWNER_CLS: n.s.
-    :cvar None ID_LEN: n.s.
+    :cvar None INFO_KEY: component information
+    :cvar None MY_TYPE: type of component
+    :cvar None ALL_KEYS: component key template
+    :cvar None OWNER_CLS: class of owner
+    :cvar None ID_LEN: component ID length
 
     :ivar StrictRedis redis: Redis interface
-    :ivar access: n.s.
+    :ivar SessionAccessCache access: Webrecorder session access
     :ivar str my_id: component ID
     :ivar info_key: Redis component key
     :type: str or None
@@ -40,12 +45,12 @@ class RedisUniqueComponent(object):
     ID_LEN = None
 
     def __init__(self, **kwargs):
-        """Initialize Redis building block.
+        """Initialize Redis component.
 
         :param StrictRedis redis: Redis interface
-        :param access: n.s.
+        :param SessionAccessCache access: Webrecorder session access
         :param str my_id: component ID
-        :param load: n.s.
+        :param bool load: whether to load Redis entries
         """
         self.redis = kwargs['redis']
         self.my_id = kwargs.get('my_id', '')
@@ -67,22 +72,14 @@ class RedisUniqueComponent(object):
 
     @property
     def size(self):
-        """Return size property attribute.
-
-        :returns: size property attribute
-        :rtype: int
-        """
+        """Read-only property size."""
         return self.get_prop(
             'size', force_type=int, default_val=0, force_update=True
         )
 
     @property
     def name(self):
-        """Return name property attribute.
-
-        :returns: name property attribute
-        :rtype: str
-        """
+        """Read-only property name."""
         return self.get_prop('slug')
 
     def incr_key(self, key, value):
@@ -111,12 +108,12 @@ class RedisUniqueComponent(object):
         self.set_prop(prop, self._from_bool(value))
 
     def get_bool_prop(self, prop, default_val=False):
-        """Get boolean property.
+        """Get boolean value of property.
 
-        :param str prop: property
+        :param str prop: name of property
         :param bool default_val: default value
 
-        :returns: property (cast)
+        :returns: boolean value of property
         :rtype: bool
         """
         return get_bool(self.get_prop(prop, default_val=False))
@@ -145,9 +142,9 @@ class RedisUniqueComponent(object):
             pass
 
     def is_public(self):
-        """Return whether Redis building block is public.
+        """Return whether Redis component is public.
 
-        :returns: whether Redis building block is public
+        :returns: whether Redis component is public
         :rtype: bool
         """
         return self.get_bool_prop('public')
@@ -166,13 +163,17 @@ class RedisUniqueComponent(object):
         self.loaded = True
 
     def _format_keys(self):
-        """Cast Redis building block values to int."""
+        """Cast values of loaded entries to int."""
         for key in self.INT_KEYS:
             if key in self.data:
                 self.data[key] = int(self.data[key])
 
     def _create_new_id(self):
-        """Create new unique ID."""
+        """Create new unique ID.
+
+        :returns: unique ID
+        :rtype: str
+        """
         while True:
             id_ = self.get_new_id(self.ID_LEN)
             info_key = self.INFO_KEY.format_map({self.MY_TYPE: id_})
@@ -195,9 +196,9 @@ class RedisUniqueComponent(object):
         return int(datetime.utcnow().timestamp())
 
     def _init_new(self, pi=None):
-        """Initialize new Redis building block.
+        """Initialize new Redis component.
 
-        :param pi: Redis interface or Redis pipeline
+        :param pi: Redis interface
         :type: StrictRedis or None
         """
         now = self._get_now()
@@ -208,9 +209,9 @@ class RedisUniqueComponent(object):
         self.commit(pi)
 
     def commit(self, pi=None):
-        """Commit to Redis database.
+        """Insert (modified) entries into Redis database.
 
-        :param pi: Redis interface or Redis pipeline
+        :param pi: Redis interface
         :type: StrictRedis or None
         """
         pi = pi or self.redis
@@ -257,8 +258,8 @@ class RedisUniqueComponent(object):
 
         :param str attr: attribute name
         :param default_val: default value
-        :param type force_type: force cast
-        :param bool force_update: force local update
+        :param type force_type: type to cast to
+        :param bool force_update: force update from Redis database
 
         :returns: attribute value or default value
         """
@@ -273,7 +274,7 @@ class RedisUniqueComponent(object):
         return self.data.get(attr, default_val)
 
     def set_prop(self, attr, value, update_ts=True):
-        """Set property.
+        """Set property (local and in Redis database).
 
         :param str attr: attribute name
         :param str value: attribute value
@@ -283,7 +284,7 @@ class RedisUniqueComponent(object):
         self.redis.hset(self.info_key, attr, value)
 
     def mark_updated(self, ts=None):
-        """Update Redis building block's owner.
+        """Update Redis component's owner.
 
         :param ts: timestamp
         :type: int or None
@@ -322,9 +323,9 @@ class RedisUniqueComponent(object):
         return self.get_prop(name, default_val)
 
     def delete_object(self):
-        """Delete Redis building block.
+        """Delete Redis component.
 
-        :returns: whether Redis building block has been deleted
+        :returns: whether Redis component has been deleted
         :rtype: bool
         """
         deleted = False
@@ -338,7 +339,7 @@ class RedisUniqueComponent(object):
         return deleted
 
     def get_owner(self):
-        """Get Redis building block's owner.
+        """Get Redis component's owner.
 
         :returns: owner
         """
@@ -356,11 +357,14 @@ class RedisUniqueComponent(object):
         return self.owner
 
     def __eq__(self, obj):
-        """Return whether current building block equals given block.
+        """Return whether two Redis components are equal.
+
+        Two Redis components are considered to be equal iff they
+        share the same ID and type.
 
         :param RedisUniqueComponent obj: Redis building block
 
-        :returns: whether current Redis building block equals given block
+        :returns: whether two Redis components are equal
         :rtype: bool
         """
         return obj and (self.my_id == obj.my_id) and type(self) == type(obj)
@@ -416,19 +420,20 @@ class RedisUniqueComponent(object):
 class RedisNamedMap(object):
     """Redis hash interface.
 
-    :ivar str hashmap_key: hash Redis key
-    :ivar redirmap_key: hash Redis key
+    :ivar str hashmap_key: Redis hash key
+    :ivar redirmap_key: Redis hash key
     :type: str or None
-    :ivar RedisUniqueComponent comp: Redis building block
+    :ivar RedisUniqueComponent comp: Redis component
     :ivar StrictRedis redis: Redis interface
     """
 
     def __init__(self, hashmap_key, comp, redirmap_key=None):
         """Initialize named map.
 
-        :param str hashmap_key: Redis key
-        :param RedisUniqueComponent comp: Redis building block
-        :param str redirmap_key: Redis key
+        :param str hashmap_key: Redis hash key
+        :param RedisUniqueComponent comp: Redis component
+        :param redirmap_key: Redis hash key
+        :type: str or None
         """
         self.hashmap_key = hashmap_key
         self.redirmap_key = redirmap_key
@@ -438,7 +443,7 @@ class RedisNamedMap(object):
     def remove_object(self, obj):
         """Delete field from Redis hash.
 
-        :param RedisUniqueComponent obj: Redis building block
+        :param RedisUniqueComponent obj: Redis component
 
         :returns: number of deleted fields
         :rtype: int
@@ -452,7 +457,7 @@ class RedisNamedMap(object):
         return res
 
     def reserve_obj_name(self, name, allow_dupe=False):
-        """Reserve name.
+        """Reserve field name.
 
         :param str name: field name
         :param bool allow_dupe: whether to allow duplicates
@@ -482,8 +487,8 @@ class RedisNamedMap(object):
         """Add object to Redis hash.
 
         :param str name: field name
-        :param RedisUniqueComponent obj: Redis building block
-        :param bool owner: set the building block's owner
+        :param RedisUniqueComponent obj: Redis component
+        :param bool owner: whether to set component's owner
         """
         comp_map = self.get_comp_map()
 
@@ -500,30 +505,34 @@ class RedisNamedMap(object):
             obj['owner'] = self.comp.my_id
 
     def get_comp_map(self):
-        """Return Redis building block hash key.
+        """Return Redis component hash key.
 
-        :returns: building block hash key
+        :returns: Redis component hash key
         :rtype: str
         """
-        return self.hashmap_key.format_map({self.comp.MY_TYPE: self.comp.my_id})
+        return self.hashmap_key.format_map(
+            {self.comp.MY_TYPE: self.comp.my_id}
+        )
 
     def get_redir_map(self):
-        """Return Redis building block hash key (redirect).
+        """Return Redis component hash key.
 
-        :returns building block hash key
+        :returns Redis component hash key
         :rtype: str or None
         """
         if not self.redirmap_key:
             return None
 
-        return self.redirmap_key.format_map({self.comp.MY_TYPE: self.comp.my_id})
+        return self.redirmap_key.format_map(
+            {self.comp.MY_TYPE: self.comp.my_id}
+        )
 
     def name_to_id(self, obj_name):
-        """Get Redis building block ID from building block name.
+        """Get Redis component ID.
 
-        :param str obj_name: Redis building block name
+        :param str obj_name: Redis component name
 
-        :returns: building block ID
+        :returns: Redis component ID
         :rtype: str
         """
         comp_map = self.get_comp_map()
@@ -540,12 +549,12 @@ class RedisNamedMap(object):
     def rename(self, obj, new_name, allow_dupe=True):
         """Rename Redis hash field.
 
-        :param RedisUniqueComponent obj: Redis building block
+        :param RedisUniqueComponent obj: Redis component
         :param str new_name: new Redis hash field name
         :param bool allow_dupe: whether to allow duplicates
 
-        :returns: new hash field name
-        :rtype: str
+        :returns: new hash field name or None
+        :rtype: str or None
         """
         # new_name can't be empty
         if not new_name:
@@ -566,7 +575,6 @@ class RedisNamedMap(object):
         self.redis.hset(comp_map, new_name, obj.my_id)
 
         old_name = obj.name
-        #obj.name = new_name
         obj.set_prop('slug', new_name)
 
         redir_map = self.get_redir_map()
@@ -584,28 +592,29 @@ class RedisNamedMap(object):
         return int(self.redis.hlen(self.get_comp_map()))
 
     def get_objects(self, cls):
-        """Return Redis building blocks in Redis hash.
+        """Return Redis components in Redis hash.
 
         :param class cls: RedisUniqueComponent
 
-        :returns: list of Redis building blocks
+        :returns: list of Redis components
         :rtype: list
         """
         all_objs = self.redis.hgetall(self.get_comp_map())
         obj_list = [cls(my_id=val,
                         name=name,
                         redis=self.redis,
-                        access=self.comp.access) for name, val in all_objs.items()]
+                        access=self.comp.access)
+                    for name, val in all_objs.items()]
 
         return obj_list
 
 
 class RedisOrderedList(object):
-    """Redis ordered list interface.
+    """Redis sorted set interface.
 
     :cvar int SCORE_UNIT: default score
-    :ivar str ordered_list_key_templ: ordered list Redis key template
-    :ivar RedisUniqueComponent comp: Redis building block
+    :ivar str ordered_list_key_templ: sorted set Redis key template
+    :ivar RedisUniqueComponent comp: Redis component
     :ivar StrictRedis redis: Redis interface
     """
     SCORE_UNIT = 1024
@@ -613,8 +622,8 @@ class RedisOrderedList(object):
     def __init__(self, ordered_list_key, comp):
         """Initialize Redis ordered list interface.
 
-        :param str ordered_list_key: ordered list key template
-        :param RedisUniqueComponent comp: Redis building block
+        :param str ordered_list_key: sorted set key template
+        :param RedisUniqueComponent comp: Redis component
         """
         self.ordered_list_key_templ = ordered_list_key
         self.comp = comp
@@ -622,18 +631,20 @@ class RedisOrderedList(object):
 
     @property
     def _ordered_list_key(self):
-        """Read-only attribute ordered list key."""
-        return self.ordered_list_key_templ.format_map({self.comp.MY_TYPE: self.comp.my_id})
+        """Read-only property _ordered_list_key."""
+        return self.ordered_list_key_templ.format_map(
+            {self.comp.MY_TYPE: self.comp.my_id}
+        )
 
     def get_ordered_objects(self, cls, load=True, start=0, end=-1):
-        """Return ordered list elements.
+        """Return sorted set elements.
 
-        :param class cls: Redis building block class
+        :param class cls: Redis component class
         :param bool load: whether to load Redis entries
         :param int start: start index
-        :param int end: end index
+        :param int end: stop index
 
-        :returns: ordered list elements
+        :returns: sorted set elements
         :rtype: list
         """
         all_objs = self.get_ordered_keys(start, end)
@@ -653,24 +664,25 @@ class RedisOrderedList(object):
         return obj_list
 
     def insert_ordered_object(self, obj, before_obj, owner=True):
-        """Insert building block into ordered list.
+        """Insert component into sorted set.
 
-        :param RedisUniqueComponent obj: Redis building block
-        :param RedisUniqueComponent before_obj: insert before Redis building
-        block
-        :param bool owner: set building blocks owner
+        :param RedisUniqueComponent obj: Redis component
+        :param RedisUniqueComponent before_obj: subsequent Redis component
+        :param bool owner: whether to set component's owner
         """
-        self.insert_ordered_id(obj.my_id, before_obj.my_id if before_obj else None)
+        self.insert_ordered_id(
+            obj.my_id, before_obj.my_id if before_obj else None
+        )
 
         if owner:
             obj.owner = self.comp
             obj['owner'] = self.comp.my_id
 
     def insert_ordered_id(self, id, before_id=None):
-        """Insert building block ID into ordered list.
+        """Insert component ID into sorted set.
 
-        :param str id: building block ID
-        :param before_id: insert before building block ID
+        :param str id: component ID
+        :param before_id: subsequent component ID
         :type: str or None
         """
         key = self._ordered_list_key
@@ -682,7 +694,10 @@ class RedisOrderedList(object):
             before_score = self.redis.zscore(key, before_id)
 
         if before_score is not None:
-            res = self.redis.zrevrangebyscore(key, '(' + str(before_score), 0, start=0, num=1, withscores=True)
+            res = self.redis.zrevrangebyscore(
+                key, '(' + str(before_score), 0,
+                start=0, num=1, withscores=True
+            )
             # insert before before_id, possibly at the beginning
             after_score = res[0][1] if res else 0
             new_score = (before_score + after_score) / 2.0
@@ -702,17 +717,17 @@ class RedisOrderedList(object):
         self.redis.zadd(key, new_score, id)
 
     def contains_id(self, obj_id):
-        """Return whether ordered list contains building block ID.
+        """Return whether sorted set contains component ID.
 
-        :param str obj_id: building block ID
+        :param str obj_id: component ID
 
-        :returns: whether ordered list constains building block ID
+        :returns: whether sorted set constains component ID
         :rtype: bool
         """
         return self.redis.zscore(self._ordered_list_key, obj_id) is not None
 
     def num_ordered_objects(self):
-        """Return number of elements in ordered list.
+        """Return number of elements in sorted set.
 
         :returns: number of elements
         :rtype: int
@@ -720,9 +735,9 @@ class RedisOrderedList(object):
         return self.redis.zcard(self._ordered_list_key)
 
     def remove_ordered_object(self, obj):
-        """Remove element from ordered list.
+        """Remove element from sorted set.
 
-        :param RedisUniqueComponent obj: Redis building block
+        :param RedisUniqueComponent obj: Redis component
 
         :returns: numer of elements removed
         :rtype: int
@@ -730,9 +745,9 @@ class RedisOrderedList(object):
         return self.remove_ordered_id(obj.my_id)
 
     def remove_ordered_id(self, id):
-        """Remove building block ID from ordered list.
+        """Remove component ID from sorted set.
 
-        :param str id: building block ID
+        :param str id: component ID
 
         :returns: number of elements removed
         :rtype: int
@@ -740,20 +755,20 @@ class RedisOrderedList(object):
         return self.redis.zrem(self._ordered_list_key, id)
 
     def get_ordered_keys(self, start=0, end=-1):
-        """Return elements in ordered list.
+        """Return elements in sorted set.
 
         :param int start: start index
-        :param int end: end index
+        :param int end: stop index
 
-        :returns: list of building block IDs
+        :returns: list of component IDs
         :rtype: list
         """
         return self.redis.zrange(self._ordered_list_key, start, end)
 
     def reorder_objects(self, new_order):
-        """Reorder ordered list.
+        """Reorder sorted set.
 
-        :param list new_order: list of building block IDs
+        :param list new_order: list of component IDs
 
         :returns: whether successful or not
         :rtype: bool
@@ -785,17 +800,17 @@ class RedisOrderedList(object):
 
 
 class RedisUnorderedList(object):
-    """Redis unordered list interface.
+    """Redis set interface.
 
-    :ivar str list_key_templ: unordered list Redis key template
-    :ivar RedisUniqueComponent comp: Redis building block
+    :ivar str list_key_templ: Redis set key template
+    :ivar RedisUniqueComponent comp: Redis component
     :ivar StrictRedis redis: Redis interface
     """
 
     def __init__(self, list_key, comp):
-        """Initialize Redis unordered list interface.
+        """Initialize Redis set interface.
 
-        :param str list_key: unordered list Redis key template
+        :param str list_key: Redis set key template
         :param RedisUniqueComponent comp: Redis building block
         """
         self.list_key_templ = list_key
@@ -804,16 +819,18 @@ class RedisUnorderedList(object):
 
     @property
     def _list_key(self):
-        """Read-only attribute unordered list key."""
-        return self.list_key_templ.format_map({self.comp.MY_TYPE: self.comp.my_id})
+        """Read-only attribute _list_key."""
+        return self.list_key_templ.format_map(
+            {self.comp.MY_TYPE: self.comp.my_id}
+        )
 
     def get_objects(self, cls, load=True):
-        """Return unordered list elements.
+        """Return set elements.
 
         :param class cls: Redis building block class
         :param bool load: whether to load Redis entries
 
-        :returns: unordered list elements
+        :returns: set elements
         :rtype: list
         """
         all_objs = self.get_keys()
@@ -834,10 +851,10 @@ class RedisUnorderedList(object):
         return obj_list
 
     def add_object(self, obj, owner=True):
-        """Add element to unordered list.
+        """Add element to set.
 
-        :param RedisUniqueComponent obj: Redis building block
-        :param bool owner: set building block's owner
+        :param RedisUniqueComponent obj: Redis component
+        :param bool owner: whether to set component's owner
         """
         self.redis.sadd(self._list_key, obj.my_id)
 
@@ -846,11 +863,11 @@ class RedisUnorderedList(object):
             obj['owner'] = self.comp.my_id
 
     def contains_id(self, obj_id):
-        """Return whether building block ID is in unordered list.
+        """Return whether component ID is in set.
 
-        :param str obj_id: building block ID
+        :param str obj_id: component ID
 
-        :returns: whether building block ID is in unordered list (1 or 0)
+        :returns: whether component is in set (1 or 0) or None
         :rtype: int or None
         """
         if not obj_id or obj_id == '*':
@@ -859,7 +876,7 @@ class RedisUnorderedList(object):
         return self.redis.sismember(self._list_key, obj_id)
 
     def num_objects(self):
-        """Return number of elements in unordered list.
+        """Return number of elements in set.
 
         :returns: number of elements
         :rtype: int
@@ -867,19 +884,19 @@ class RedisUnorderedList(object):
         return self.redis.scard(self._list_key)
 
     def remove_object(self, obj):
-        """Remove object from unordered list.
+        """Remove Redis component from set.
 
-        :param RedisUniqueComponent obj: Redis building block
+        :param RedisUniqueComponent obj: Redis component
 
-        :returns: number of elements removed from unordered list
+        :returns: number of elements removed from set
         :rtype: int
         """
         return self.redis.srem(self._list_key, obj.my_id)
 
     def get_keys(self):
-        """Return elements in unordered list.
+        """Return component IDs in set.
 
-        :returns: elements in unordered list
+        :returns: component IDs in set
         :rtype: list
         """
         return self.redis.smembers(self._list_key)
@@ -891,8 +908,8 @@ class BaseAccess(object):
     def can_read_coll(self, collection, allow_superuser=True):
         """Return whether collection can be read.
 
-        :param collection: collection
-        :param bool allow_superuser: whether superuser read access is allowed
+        :param Collection collection: collection
+        :param bool allow_superuser: collection can be read by superuser
 
         :returns: whether collection can be read
         :rtype: bool
@@ -902,7 +919,7 @@ class BaseAccess(object):
     def can_write_coll(self, collection):
         """Return whether collection can be modified.
 
-        :param collection: collection
+        :param Collection collection: collection
 
         :returns: whether collection can be modified
         :rtype: bool
@@ -912,7 +929,7 @@ class BaseAccess(object):
     def can_admin_coll(self, collection):
         """Return whether collection can be administrated.
 
-        :param collection: collection
+        :param Collection collection: collection
 
         :returns: whether collection can be modified
         :rtype: bool
@@ -922,7 +939,7 @@ class BaseAccess(object):
     def assert_can_read_coll(self, collection):
         """Assert that collection can be read.
 
-        :param collection: collection
+        :param Collection collection: collection
 
         :returns: whether collection can be read
         :rtype: bool
@@ -932,9 +949,9 @@ class BaseAccess(object):
     def assert_can_write_coll(self, collection):
         """Assert that collection can be modified.
 
-        :param collection: collection
+        :param Collection collection: collection
 
-        :returns: whether collectino can be modified
+        :returns: whether collection can be modified
         :rtype: bool
         """
         return True
@@ -942,7 +959,7 @@ class BaseAccess(object):
     def assert_can_admin_coll(self, collection):
         """Assert that collection can be administrated.
 
-        :param collection: collection
+        :param Collection collection: collection
 
         :returns: whether collection can be administrated
         :rtype: bool
@@ -950,11 +967,11 @@ class BaseAccess(object):
         return True
 
     def assert_is_curr_user(self, user):
-        """Assert that given user is current user.
+        """Assert that given user is logged-in user.
 
-        :param user: user
+        :param User user: user
 
-        :returns: whether given user is current user
+        :returns: whether given user is logged-in user
         :rtype: bool
         """
         return True
