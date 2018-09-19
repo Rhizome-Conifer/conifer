@@ -70,13 +70,13 @@ class PlayerNavUI extends Component {
       <nav className={`topBar ${route && route.name}`}>
         <div className="logos">
           <Link to={indexUrl} className="button home-btn">
-            <img className="wrLogoImg" src={require('shared/images/WebRecorder_Logo-Only.png')} alt="webrecorder logo" /><br />
-            <img className="wrLogoPlayerTxt" src={require('shared/images/PLAYER_text.png')} alt="webrecorder logo" />
+            <img className="wrLogoImg" src={require('shared/images/webrecorder_logo_solo.png')} alt="webrecorder logo" /><br />
+            <img className="wrLogoPlayerTxt" src={require('shared/images/player_text.png')} alt="webrecorder logo" />
           </Link>
           {
             isLanding &&
               <Link to={indexUrl} className="button home-btn">
-                <img className="wrLogoImgTxt" src={require('shared/images/Webrecorder_Player_logo_text.png')} alt="webrecorder logo" />
+                <img className="wrLogoImgTxt" src={require('shared/images/webrecorder_player_logo_text.png')} alt="webrecorder logo" />
               </Link>
           }
         </div>

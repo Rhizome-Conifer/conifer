@@ -253,7 +253,7 @@ class CollectionHeaderUI extends Component {
           <div className="access-row">
             <Link to={getCollectionLink(collection)}>Collection Cover</Link>
             {
-              !isAnon &&
+              !isAnon && canAdmin &&
                 <PublicSwitch
                   callback={this.setPublic}
                   isPublic={isPublic}
