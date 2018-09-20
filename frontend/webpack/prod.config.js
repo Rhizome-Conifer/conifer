@@ -40,7 +40,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx)?$/,
-        exclude: /node_modules\/(?!(react-rte))/,
+        exclude: /node_modules(\/|\\)(?!(react-rte))/,
         use: [
           strip.loader('debug'),
           'babel-loader'
@@ -75,12 +75,12 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        include: /node_modules\/react-rte/,
+        include: /node_modules(\/|\\)react-rte/,
         use: ['style-loader', 'css-loader?modules']
       },
       {
         test: /\.css$/,
-        exclude: /node_modules\/react-rte/,
+        exclude: /node_modules(\/|\\)react-rte/,
         use: ['style-loader', 'css-loader']
       },
       {

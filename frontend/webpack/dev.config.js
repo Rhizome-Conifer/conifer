@@ -50,7 +50,7 @@ var webpackConfig = module.exports = {
       },
       {
         test: /\.(js|jsx)?$/,
-        exclude: /node_modules\/(?!(react-rte))/,
+        exclude: /node_modules(\/|\\)(?!(react-rte))/,
         use: 'babel-loader'
       },
       {
@@ -80,12 +80,12 @@ var webpackConfig = module.exports = {
       },
       {
         test: /\.css$/,
-        include: /node_modules\/react-rte/,
+        include: /node_modules(\/|\\)react-rte/,
         use: ['style-loader', 'css-loader?modules']
       },
       {
         test: /\.css$/,
-        exclude: /node_modules\/react-rte/,
+        exclude: /node_modules(\/|\\)react-rte/,
         use: ['style-loader', 'css-loader']
       },
       {
