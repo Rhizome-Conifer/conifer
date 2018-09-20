@@ -34,7 +34,7 @@ install:
   - cd webrecorder
   - python setup.py install
   - pip install coverage pytest-cov codecov
-  - pip install pyinstaller
+  - pip install 'pyinstaller==3.3'
 
 script:
   - python setup.py test
