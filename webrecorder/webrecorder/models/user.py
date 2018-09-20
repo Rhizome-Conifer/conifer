@@ -204,6 +204,9 @@ class User(RedisUniqueComponent):
     def is_anon(self):
         return self.name.startswith('temp-')
 
+    def get_creator_name(self):
+        return self.get_prop('full_name') or self.name
+
     def get_space_usage(self):
         total = self.get_size_allotment()
         avail = self.get_size_remaining()

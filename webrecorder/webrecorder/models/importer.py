@@ -407,6 +407,9 @@ class BaseImporter(ImportStatusChecker):
                 if 'type' not in indexinfo:
                     indexinfo['type'] = 'recording'
 
+                if 'creator' in warcinfo:
+                    indexinfo['creator'] = warcinfo['creator']
+
                 indexinfo['ra'] = set()
                 remote_archives = indexinfo['ra']
 
@@ -683,6 +686,11 @@ class InplaceImporter(BaseImporter):
             info['title'] = 'Collection'
             if not info.get('desc'):
                 info['desc'] = self.upload_coll_info.get('desc', '').format(filename=filename)
+
+        # for player use case: set the full_name to the creator from collection
+        # (todo: evaluate for general use later)
+        if 'creator' in info:
+            user.set_prop('full_name', info['creator'])
 
         self.the_collection.set_prop('title', info['title'], update_ts=False)
         self.the_collection.set_prop('desc', info['desc'], update_ts=False)

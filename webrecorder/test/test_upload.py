@@ -473,6 +473,7 @@ class TestUpload(FullStackTests):
         assert collection['public'] == True
         assert collection['public_index'] == True
         assert collection['title'] == 'Default Collection'
+        assert collection['creator'] == 'test'
 
         assert len(collection['pages']) == 2
         assert len(collection['lists']) == 2

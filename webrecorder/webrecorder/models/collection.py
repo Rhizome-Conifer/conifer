@@ -347,6 +347,8 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         is_owner = self.access.is_coll_owner(self)
 
+        data['creator'] = self.get_owner().get_creator_name()
+
         if include_recordings:
             recordings = self.get_recordings(load=True)
             rec_serialized = []
