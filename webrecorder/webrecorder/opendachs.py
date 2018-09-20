@@ -21,6 +21,7 @@
 
 
 # standard library imports
+import re
 import os
 import base64
 import argparse
@@ -39,6 +40,8 @@ import webrecorder.rec.webrecrecorder
 
 class ODUserManager(webrecorder.models.usermanager.UserManager):
     """OpenDACHS user manager."""
+
+    USER_RX = re.compile(r"[0-9]{1,7}[.0-9A-Za-z]{23}")
 
     def __init__(self, redis_interface, cork, config):
         self.base_access = webrecorder.models.base.BaseAccess()
