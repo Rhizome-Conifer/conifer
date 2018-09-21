@@ -23,6 +23,19 @@ nav.topBar {
     color: #000;
     flex-grow: 1;
     text-align: center;
+    font-size: 16px;
+    background-color: white;
+  }
+
+  .source-group {
+    display: flex;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .source-group .input-group-addon {
+    font-weight: bold;
+    cursor: pointer;
   }
 
   &.replay {

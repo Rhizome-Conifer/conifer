@@ -64,7 +64,18 @@ class PlayerNavUI extends Component {
       off: false
     });
 
-    const format = source && (source.startsWith('dat://') ? `${source.substr(0, 30)}...` : `file:${process.platform === 'win32' ? '\\' : '//'}${basename(source)}`);
+    //const format = source && (source.startsWith('dat://') ? `${source.substr(0, 30)}...` : `file:${process.platform === 'win32' ? '\\' : '//'}${basename(source)}`);
+    const format = source;
+    let archiveType = "Archive";
+    if (source) {
+      if (source.endsWith(".warc.gz") || source.endsWith(".warc")) {
+        archiveType = "WARC";
+      } else if (source.endsWith(".arc.gz") || source.endsWith(".arc")) {
+        archiveType = "ARC";
+      } else if (source.endsWith(".har")) {
+        archiveType = "HAR";
+      }
+    }
 
     return (
       <nav className={`topBar ${route && route.name}`}>
@@ -100,8 +111,11 @@ class PlayerNavUI extends Component {
 
         {
           source &&
-            <div className="source">
-              {format}
+            <div className="source-group">
+              <div className="input-group">
+                <div className="input-group-addon" onClick={this.sendOpenFile} title="Currently loaded WARC, ARC, or HAR archive file. Click to change.">{archiveType} File</div>
+                <input className="source form-control" onDoubleClick={this.sendOpenFile} readOnly value={format} title="Currently loaded WARC, ARC, HAR archive file. Double-click to change."/>
+              </div>
             </div>
         }
 
