@@ -113,7 +113,7 @@ class PlayerNavUI extends Component {
           source &&
             <div className="source-group">
               <div className="input-group">
-                <div className="input-group-addon" onClick={this.sendOpenFile} title="Currently loaded WARC, ARC, or HAR archive file. Click to change.">{archiveType} File</div>
+                <div className="input-group-addon" onClick={this.sendOpenFile} title="Currently loaded WARC, ARC, or HAR archive file. Click to change.">{archiveType}</div>
                 <input className="source form-control" onDoubleClick={this.sendOpenFile} readOnly value={format} title="Currently loaded WARC, ARC, HAR archive file. Double-click to change."/>
               </div>
             </div>
