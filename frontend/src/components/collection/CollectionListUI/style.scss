@@ -21,7 +21,7 @@ a:link.collection-title, a:visited.collection-title, .collection-title {
 }
 
 a.collection-title:hover {
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .collections-index-nav {
@@ -251,4 +251,3 @@ a.collection-title:hover {
         }
     }
 }
-
