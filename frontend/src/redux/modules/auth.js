@@ -9,6 +9,10 @@ const LOAD = 'wr/auth/LOAD';
 const LOAD_SUCCESS = 'wr/auth/LOAD_SUCCESS';
 const LOAD_FAIL = 'wr/auth/LOAD_FAIL';
 
+const LOAD_ANON = 'wr/auth/LOAD_ANON';
+const LOAD_ANON_SUCCESS = 'wr/auth/LOAD_ANON_SUCCESS';
+const LOAD_ANON_FAIL = 'wr/auth/LOAD_ANON_FAIL';
+
 const LOGIN = 'wr/auth/LOGIN';
 export const LOGIN_SUCCESS = 'wr/auth/LOGIN_SUCCESS';
 const LOGIN_FAIL = 'wr/auth/LOGIN_FAIL';
@@ -209,6 +213,14 @@ export function load(include_colls = true) {
 }
 
 
+export function loadAnon() {
+  return {
+    types: [LOAD_ANON, LOAD_ANON_SUCCESS, LOAD_ANON_FAIL],
+    promise: client => client.post(`${apiPath}/auth/anon_user`)
+  };
+}
+
+
 export function loadCollections(user) {
   return {
     types: [USER_LOAD_COLLECTIONS, USER_LOAD_COLLECTIONS_SUCCESS, USER_LOAD_COLLECTIONS_FAIL],
@@ -227,7 +239,7 @@ export function loadRoles() {
   return {
     types: [USER_ROLES, USER_ROLES_SUCCESS, USER_ROLES_FAIL],
     promise: client => client.get(`${apiPath}/admin/user_roles`)
-  }
+  };
 }
 
 
