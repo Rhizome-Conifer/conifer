@@ -55,10 +55,6 @@ nav.topBar {
   .logos {
     display: flex;
     align-items: center;
-
-    & > a:last-of-type {
-      margin-left: 1.5rem;
-    }
   }
 
   .arrow {
@@ -92,6 +88,10 @@ nav.topBar {
     vertical-align: middle;
     animation: fadeIn 1s 1 normal;
     cursor: pointer;
+
+    &.logotype {
+      margin-left: 1.5rem;
+    }
   }
 
   .wrLogoImg {
@@ -105,7 +105,7 @@ nav.topBar {
   }
   .wrLogoImgTxt {
     transition: all 1s ease;
-    height: 5rem;
+    height: 8rem;
   }
   .replayCollection{
     height: 3rem;

@@ -95,8 +95,6 @@ class Webview extends Component {
     const { canGoBackward, canGoForward, dispatch } = this.props;
     const state = evt.args[0];
 
-    console.log('replayEvt', state);
-
     // set back & forward availability
     if (canGoBackward !== this.webviewHandle.canGoBack()) {
       dispatch(setBrowserHistory('canGoBackward', this.webviewHandle.canGoBack()));
@@ -168,7 +166,6 @@ class Webview extends Component {
     const proxyUrl = `http://webrecorder.proxy/local/collection/${timestamp}/${url}`;
     const classes = classNames('webview-wrapper', { loading });
 
-    console.log(__dirname, path.join(__dirname, 'preload.js'));
     return (
       <div className={classes}>
         <webview

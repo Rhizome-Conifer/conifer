@@ -69,14 +69,13 @@ class PlayerNavUI extends Component {
     return (
       <nav className={`topBar ${route && route.name}`}>
         <div className="logos">
-          <Link to={indexUrl} className="button home-btn">
-            <img className="wrLogoImg" src={require('shared/images/webrecorder_logo_solo.png')} alt="webrecorder logo" /><br />
-            <img className="wrLogoPlayerTxt" src={require('shared/images/player_text.png')} alt="webrecorder logo" />
-          </Link>
           {
-            isLanding &&
+            (isLanding || isHelp) ?
               <Link to={indexUrl} className="button home-btn">
-                <img className="wrLogoImgTxt" src={require('shared/images/webrecorder_player_logo_text.png')} alt="webrecorder logo" />
+                <img className="wrLogoImgTxt" src={require('shared/images/webrecorder_player_text.svg')} alt="webrecorder logo" />
+              </Link> :
+              <Link to={indexUrl} className="button home-btn logotype">
+                <img className="wrLogoImg" src={require('shared/images/logo.svg')} alt="webrecorder logo" /><br />
               </Link>
           }
         </div>
