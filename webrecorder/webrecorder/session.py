@@ -83,6 +83,9 @@ class Session(object):
         return self._sesh.get('csrf', '')
 
     def set_id_from_cookie(self, cookie):
+        if not cookie:
+            return
+
         result = self.sesh_manager.signed_cookie_to_id(cookie)
         if not result:
             return
