@@ -15,10 +15,13 @@
     text-align: center;
 }
 
-a:link.collection-title, a:visited.collection-title, .collection-title {
+.collection-title {
     font-size: 2rem;
-    color: $blue;
     margin-bottom: 0.4rem;
+}
+
+a:link.collection-title, a:visited.collection-title {
+    color: $blue;
 }
 
 a.collection-title:hover {
