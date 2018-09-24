@@ -72,16 +72,30 @@ const initialData = [
 
       // if switching to list view, prevent reloading collection
       if ((!isCollLoaded(state) || state.app.getIn(['collection', 'id']) !== coll) || !list) {
-        return dispatch(loadColl(user, coll));
+        let host = '';
+
+        if (__PLAYER__) {
+          host = state.app.getIn(['appSettings', 'host']);
+        }
+
+        return dispatch(loadColl(user, coll, host));
       }
 
       return undefined;
     }
   },
   {
-    promise: ({ match: { params: { coll, list, user } }, store: { dispatch } }) => {
+    promise: ({ match: { params: { coll, list, user } }, store: { dispatch, getState } }) => {
+      const { app } = getState();
+
       if (list) {
-        return dispatch(loadList(user, coll, list));
+        let host = '';
+
+        if (__PLAYER__) {
+          host = app.getIn(['appSettings', 'host']);
+        }
+
+        return dispatch(loadList(user, coll, list, host));
       }
 
       return undefined;
@@ -89,8 +103,16 @@ const initialData = [
   },
   {
     promise: ({ store: { dispatch, getState } }) => {
-      if (!isRBLoaded(getState())) {
-        return dispatch(loadRB());
+      const state = getState();
+
+      if (!isRBLoaded(state)) {
+        let host = '';
+
+        if (__PLAYER__) {
+          host = state.app.getIn(['appSettings', 'host']);
+        }
+
+        return dispatch(loadRB(host));
       }
 
       return undefined;

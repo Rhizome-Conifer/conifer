@@ -15,7 +15,7 @@ function FAQ() {
       </Helmet>
       <div className="row heading">
         <aside className="col-sm-3 hidden-xs">
-          <img src={require('shared/images/logo.png')} alt="Webrecorder logo" />
+          <img src={require('shared/images/logo.svg')} alt="Webrecorder logo" />
         </aside>
         <div className="col-xs-10 col-xs-push-1 col-sm-9 col-sm-push-0">
           <h2>Webrecorder is both a tool to create high-fidelity, interactive recordings of any web site you browse and a platform to make those recordings accessible.</h2>

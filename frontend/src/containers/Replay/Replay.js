@@ -20,6 +20,7 @@ import EmbedFooter from 'components/EmbedFooter';
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import Resizable from 'components/Resizable';
+import Webview from 'components/player/Webview';
 import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer,
          SidebarCollectionViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
@@ -34,6 +35,7 @@ class Replay extends Component {
   static propTypes = {
     activeBookmarkId: PropTypes.string,
     activeBrowser: PropTypes.string,
+    appSettings: PropTypes.object,
     autoscroll: PropTypes.bool,
     auth: PropTypes.object,
     collection: PropTypes.object,
@@ -112,8 +114,8 @@ class Replay extends Component {
   }
 
   render() {
-    const { activeBookmarkId, activeBrowser, collection, dispatch, list,
-            match: { params }, recording, timestamp, url } = this.props;
+    const { activeBookmarkId, activeBrowser, appSettings, collection,
+            dispatch, list, match: { params }, recording, timestamp, url } = this.props;
 
     // coll access
     if (collection.get('error')) {
@@ -192,7 +194,7 @@ class Replay extends Component {
         <div className={classNames('iframe-container', { embed: this.context.isEmbed && params.embed !== '_embed_noborder' })}>
           {
             !this.context.isMobile && !this.context.isEmbed &&
-              <Sidebar defaultExpanded={Boolean(listSlug)} storageKey={listSlug ? 'listReplaySidebar' : 'pageReplaySidebar'}>
+              <Sidebar defaultExpanded={Boolean(listSlug) || __PLAYER__} storageKey={listSlug ? 'listReplaySidebar' : 'pageReplaySidebar'}>
                 <Resizable axis="y" minHeight={200} storageKey="replayNavigator">
                   {
                     this.state.collectionNav ?
@@ -206,28 +208,43 @@ class Replay extends Component {
               </Sidebar>
           }
           {
-            activeBrowser ?
-              <RemoteBrowser
+            __PLAYER__ &&
+              <Webview
+                key="webview"
+                host={appSettings.get('host')}
                 params={params}
-                rb={activeBrowser}
-                rec={recording}
-                timestamp={timestamp}
-                url={url} /> :
-              <IFrame
-                activeBookmarkId={activeBookmarkId}
-                auth={this.props.auth}
-                autoscroll={this.props.autoscroll}
-                appPrefix={this.getAppPrefix}
-                contentPrefix={this.getContentPrefix}
                 dispatch={dispatch}
-                params={params}
-                passEvents={this.props.sidebarResize}
                 timestamp={timestamp}
+                canGoBackward={appSettings.get('canGoBackward')}
+                canGoForward={appSettings.get('canGoForward')}
                 url={url} />
           }
           {
+
             this.context.isEmbed && params.embed !== '_embed_noborder' &&
               <EmbedFooter timestamp={timestamp} />
+          }
+          {
+            !__PLAYER__ && (
+              activeBrowser ?
+                <RemoteBrowser
+                  params={params}
+                  rb={activeBrowser}
+                  rec={recording}
+                  timestamp={timestamp}
+                  url={url} /> :
+                <IFrame
+                  activeBookmarkId={activeBookmarkId}
+                  auth={this.props.auth}
+                  autoscroll={this.props.autoscroll}
+                  appPrefix={this.getAppPrefix}
+                  contentPrefix={this.getContentPrefix}
+                  dispatch={dispatch}
+                  params={params}
+                  passEvents={this.props.sidebarResize}
+                  timestamp={timestamp}
+                  url={url} />
+            )
           }
         </div>
       </React.Fragment>
@@ -238,8 +255,15 @@ class Replay extends Component {
 const initialData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
-      if (!isRBLoaded(getState())) {
-        return dispatch(loadBrowsers());
+      const state = getState();
+      if (!isRBLoaded(state)) {
+        let host = '';
+
+        if (__PLAYER__) {
+          host = state.app.getIn(['appSettings', 'host']);
+        }
+
+        return dispatch(loadBrowsers(host));
       }
 
       return undefined;
@@ -261,8 +285,15 @@ const initialData = [
   {
     // check for list playback, load list
     promise: ({ match: { params: { user, coll, listSlug } }, store: { dispatch, getState } }) => {
-      if (listSlug && !listLoaded(listSlug, getState())) {
-        return dispatch(loadList(user, coll, listSlug));
+      const state = getState();
+      if (listSlug && !listLoaded(listSlug, state)) {
+        let host = '';
+
+        if (__PLAYER__) {
+          host = state.app.getIn(['appSettings', 'host']);
+        }
+
+        return dispatch(loadList(user, coll, listSlug, host));
       }
 
       return undefined;
@@ -275,7 +306,13 @@ const initialData = [
       const { user, coll } = params;
 
       if (!isLoaded(state) || collection.get('id') !== coll) {
-        return dispatch(loadColl(user, coll));
+        let host = '';
+
+        if (__PLAYER__) {
+          host = state.app.getIn(['appSettings', 'host']);
+        }
+
+        return dispatch(loadColl(user, coll, host));
       }
 
       return undefined;
@@ -287,7 +324,12 @@ const initialData = [
 
       // TODO: determine if we need to test for stale archives
       if (!app.getIn(['controls', 'archives']).size) {
-        return dispatch(getArchives());
+        let host = '';
+
+        if (__PLAYER__) {
+          host = app.getIn(['appSettings', 'host']);
+        }
+        return dispatch(getArchives(host));
       }
 
       return undefined;
@@ -298,10 +340,16 @@ const initialData = [
 const mapStateToProps = (outerState) => {
   const { reduxAsyncConnect: { loaded }, app } = outerState;
   const activePage = app.getIn(['collection', 'loaded']) ? getActivePage(outerState) : null;
+  let appSettings = null;
+
+  if (__PLAYER__) {
+    appSettings = app.get('appSettings');
+  }
 
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     activeBookmarkId: app.getIn(['controls', 'activeBookmarkId']),
+    appSettings,
     autoscroll: app.getIn(['controls', 'autoscroll']),
     auth: app.get('auth'),
     collection: app.get('collection'),

@@ -59,7 +59,11 @@ class CollectionCoverUI extends Component {
     return (
       <div className="coll-cover">
         <Helmet>
-          <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
+            {
+              !__PLAYER__ ?
+                <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
+                <title>{collection.get('title')}</title>
+            }
           <meta property="og:url" content={`${appHost}${getCollectionLink(collection)}`} />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={collection.get('title')} />
@@ -123,7 +127,7 @@ class CollectionCoverUI extends Component {
         }
         {
           (this.context.canAdmin || collection.get('public_index')) &&
-            <Link className="browse" to={this.collectionLink()}>Collection Index</Link>
+            <Link className="browse" to={this.collectionLink()}>{ this.context.canAdmin ? 'Collection Index' : 'Browse Collection' }</Link>
         }
       </div>
     );

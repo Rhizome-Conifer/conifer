@@ -11,9 +11,9 @@ function Capstone({ user }) {
   return (
     <div className="capstone">
       <h4><WarcIcon /> Collection</h4>
-      <div>by <Link to={`/${user}`}>{user}</Link></div>
+      {!__PLAYER__ && <div>by <Link to={`/${user}`}>{user}</Link></div>}
     </div>
-  );
+  )
 }
 
 

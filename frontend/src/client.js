@@ -40,9 +40,9 @@ const renderApp = (renderProps) => {
 };
 
 // render app
-renderApp({ routes: baseRoute, client });
+renderApp({ routes: __PLAYER__ ? require('./playerRoutes') : baseRoute, client });
 
-if (module.hot) {
+if (module.hot && !__PLAYER__) {
   module.hot.accept('./baseRoute', () => {
     const nextRoutes = require('./baseRoute');
 

@@ -1,0 +1,177 @@
+@import 'src/vars';
+
+nav.topBar {
+  transition: height 1s ease;
+  animation: fadeIn 0.2s 1 normal;
+
+  position: fixed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 9rem;
+  z-index: 1024;
+  padding: 0 .8rem;
+
+  background: $sidebarBg;
+  color: #e8e8e8;
+  border-bottom: .4rem solid $blue;
+
+  .source {
+    color: #000;
+    flex-grow: 1;
+    text-align: center;
+  }
+
+  &.replay {
+
+    position: relative;
+
+    #back {
+      display: inline-block;
+    }
+    #forward {
+      display: inline-block;
+    }
+    #refresh {
+      display: inline-block;
+    }
+
+    .backToColl {
+      opacity: 1;
+    }
+  }
+
+  &.replay, &.collection-detail {
+    height: 7rem;
+
+    .wrLogoImg {
+      width: 4rem;
+    }
+  }
+
+  .logos {
+    display: flex;
+    align-items: center;
+  }
+
+  .arrow {
+    transition: all .1s ease-in-out;
+
+    &.inactive { opacity: .5; }
+    &.off {
+      opacity: 0;
+      animation: none;
+    }
+
+    object {
+      transition: background 175ms ease-in-out;
+      padding: .5rem;
+      height: 3.5rem;
+      border-radius: .5rem;
+    }
+
+    &:not(.inactive):hover {
+      object {
+        background: $buttonHover;
+      }
+    }
+  }
+
+  button, .home-btn {
+    background-color: Transparent;
+    background-repeat: no-repeat;
+    border: none;
+    outline: none;
+    vertical-align: middle;
+    animation: fadeIn 1s 1 normal;
+    cursor: pointer;
+
+    &.logotype {
+      margin-left: 1.5rem;
+    }
+  }
+
+  .wrLogoImg {
+    transition: all 1s ease;
+    width: 6rem;
+    float: left;
+  }
+  .wrLogoPlayerTxt{
+    height: 1.5rem;
+    display: none;
+  }
+  .wrLogoImgTxt {
+    transition: all 1s ease;
+    height: 8rem;
+  }
+  .replayCollection{
+    height: 3rem;
+    position: relative;
+    left: -15rem;
+    display: none;
+  }
+  .replayCollection:active{
+    top: .2rem;
+  }
+  .backToColl {
+    height: 1.2rem;
+    margin-right: .5rem;
+    transition: all 0.5s ease;
+    opacity: 0;
+  }
+  .openFile {
+    transition: all 0.5s ease;
+    height: 3rem;
+  }
+  .halp {
+    height: 2rem;
+  }
+
+  #back {
+    display: none;
+  }
+  #refresh {
+    transition: opacity .1s ease-in-out;
+    display: none;
+    margin-right: 1.5rem;
+  }
+  #forwardArrow {
+    transform: rotate(180deg) translate(0, -.1rem);
+  }
+
+  #forward {
+    display: none;
+  }
+
+  #backToCollection.off {
+    opacity: 0;
+  }
+
+  .browser-nav {
+    display: flex;
+    align-items: center;
+
+    margin: 0 1.5rem;
+  }
+
+  .player-functions {
+    display: flex;
+    align-items: center;
+
+    & > button {
+
+      circle, polygon {
+        transition: stroke 175ms ease-in-out;
+      }
+
+      &:hover {
+        circle, polygon {
+          stroke: $blue;
+        }
+      }
+    }
+  }
+}

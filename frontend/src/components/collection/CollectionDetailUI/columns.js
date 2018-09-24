@@ -16,6 +16,12 @@ export function BasicRenderer({ cellData }) {
 
 
 export function BrowserRenderer({ cellData, columnData: { browsers } }) {
+  if (__PLAYER__ && typeof cellData !== 'undefined') {
+    return (
+      <span>{cellData}</span>
+    );
+  }
+
   if (!__PLAYER__ && typeof cellData !== 'undefined') {
     const browserObj = browsers.getIn(['browsers', cellData]);
 
@@ -94,6 +100,9 @@ export function TitleRenderer({ cellData, rowData, columnData: { collection, lis
   );
 }
 
+export function DefaultHeader(props) {
+  return defaultHeaderRenderer(props);
+}
 
 const headerSource = {
   beginDrag({ dataKey, columnData: { index } }) {

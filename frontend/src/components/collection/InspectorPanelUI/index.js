@@ -136,7 +136,11 @@ class InspectorPanelUI extends PureComponent {
                           pg.get('browser') &&
                           <li>
                             <h5>Preconfigured Browser</h5>
-                            <span className="value"><RemoteBrowserDisplay browser={browsers.getIn(['browsers', pg.get('browser')])} /></span>
+                            {
+                              !__PLAYER__ ?
+                                <span className="value"><RemoteBrowserDisplay browser={browsers.getIn(['browsers', pg.get('browser')])} /></span> :
+                                <span className="value">{pg.get('browser')}</span>
+                            }
                           </li>
                         }
                       </ul>

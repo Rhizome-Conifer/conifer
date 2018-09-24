@@ -27,7 +27,7 @@ import 'react-virtualized/styles.css';
 
 import CustomDragLayer from './dragLayer';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
-import { BrowserRenderer, DnDSortableHeader, LinkRenderer, RemoveRenderer,
+import { BrowserRenderer, DefaultHeader, DnDSortableHeader, LinkRenderer, RemoveRenderer,
          RowIndexRenderer, SessionRenderer, TitleRenderer, TimestampRenderer } from './columns';
 
 import './style.scss';
@@ -346,7 +346,7 @@ class CollectionDetailUI extends Component {
     const { canAdmin } = this.context;
     const { match: { params: { list } } } = this.props;
 
-    if (!canAdmin) {
+    if (!canAdmin || __PLAYER__) {
       return <DefaultRow {...props} />;
     }
 
@@ -364,12 +364,16 @@ class CollectionDetailUI extends Component {
   }
 
   customHeaderRenderer = (props) => {
+    if (__PLAYER__) {
+      return <DefaultHeader {...props} />;
+    }
+
     return (
       <DnDSortableHeader
         save={this.saveCollOrder}
         order={this.orderColumn}
         {...props} />
-      );
+    );
   }
 
   collapsibleToggle = (isOpen) => {
@@ -495,23 +499,36 @@ class CollectionDetailUI extends Component {
         {
           activeList ?
             <Helmet>
-              <title>{`${list.get('title')} (List by ${collection.get('owner')})`}</title>
+            {
+              !__PLAYER__ ?
+                <title>{`${list.get('title')} (List by ${collection.get('owner')})`}</title> :
+                <title>{list.get('title')}</title>
+            }
+
               <meta property="og:url" content={`${config.appHost}${getListLink(collection, list)}`} />
               <meta property="og:type" content="website" />
               <meta property="og:title" content={list.get('title')} />
               <meta property="og:description" content={list.get('desc') ? truncate(list.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} />
             </Helmet> :
             <Helmet>
-              <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title>
+            {
+              !__PLAYER__ ?
+                <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
+                <title>{collection.get('title')}</title>
+            }
               <meta property="og:url" content={`${config.appHost}${getCollectionLink(collection, true)}`} />
               <meta property="og:type" content="website" />
               <meta property="og:title" content={collection.get('title')} />
               <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} />
             </Helmet>
         }
-        <CustomDragLayer
-          pages={objects}
-          pageSelection={selectedPageIdx} />
+
+        {
+          !__PLAYER__ &&
+            <CustomDragLayer
+              pages={objects}
+              pageSelection={selectedPageIdx} />
+        }
 
         {
           isAnon && canAdmin &&

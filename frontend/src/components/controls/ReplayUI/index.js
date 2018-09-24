@@ -61,7 +61,7 @@ class ReplayUI extends Component {
         }
 
         {
-          !isMobile &&
+          !isMobile && !__PLAYER__ &&
             <RecordingTools />
         }
       </div>

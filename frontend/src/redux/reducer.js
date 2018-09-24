@@ -5,6 +5,7 @@ import { reducer as searchReducer } from 'redux-search';
 
 import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './modules/auth';
 
+import appSettings from './modules/appSettings';
 import bugReport from './modules/bugReport';
 import collection from './modules/collection';
 import collections from './modules/collections';
@@ -23,25 +24,34 @@ import userLogin from './modules/userLogin';
 import userSignup from './modules/userSignup';
 
 
-const makeAppReducer = () => combineImmutableReduers({
-  auth,
-  bugReport,
-  collection,
-  collections,
-  controls,
-  infoStats,
-  inspector,
-  list,
-  pageQuery,
-  passwordReset,
-  recordings,
-  remoteBrowsers,
-  sidebar,
-  toolBin,
-  user,
-  userLogin,
-  userSignup
-});
+const makeAppReducer = () => {
+  const reducers = {
+    auth,
+    bugReport,
+    collection,
+    collections,
+    controls,
+    infoStats,
+    inspector,
+    list,
+    pageQuery,
+    passwordReset,
+    recordings,
+    remoteBrowsers,
+    sidebar,
+    toolBin,
+    user,
+    userLogin,
+    userSignup
+  };
+
+  if (__PLAYER__) {
+    reducers.appSettings = appSettings;
+  }
+
+  return combineImmutableReduers(reducers);
+};
+
 
 const appReducer = combineReducers({
   search: searchReducer,

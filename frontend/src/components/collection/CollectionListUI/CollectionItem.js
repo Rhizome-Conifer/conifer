@@ -49,7 +49,7 @@ class CollectionItem extends PureComponent {
         <Row>
           <Col sm={12} md={7}>
             {
-              canAdmin ?
+              canAdmin || collection.get('public_index') ?
                 <Link className="collection-title" to={`${getCollectionLink(collection)}/index`}>{collection.get('title')}</Link> :
                 <span className="collection-title">{collection.get('title')}</span>
             }

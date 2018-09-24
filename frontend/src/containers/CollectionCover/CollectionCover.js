@@ -43,9 +43,14 @@ const initialData = [
   {
     promise: ({ match: { params: { coll, user } }, store: { dispatch, getState } }) => {
       const state = getState();
+      let host = '';
+
+      if (__PLAYER__) {
+        host = state.app.getIn(['appSettings', 'host']);
+      }
 
       //if ((!isCollLoaded(state) || state.app.getIn(['collection', 'id']) !== coll)) {
-      return dispatch(loadColl(user, coll));
+      return dispatch(loadColl(user, coll, host));
       //}
     }
   },

@@ -15,13 +15,17 @@
     text-align: center;
 }
 
-a:link.collection-title, a:visited.collection-title, .collection-title {
+.collection-title {
     font-size: 2rem;
-    color: $gray600;
+    margin-bottom: 0.4rem;
+}
+
+a:link.collection-title, a:visited.collection-title {
+    color: $blue;
 }
 
 a.collection-title:hover {
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .collections-index-nav {
@@ -247,8 +251,7 @@ a.collection-title:hover {
         }
         .collection-list-description {
             margin-bottom: 1.5rem;
-            padding: .8rem 0rem 0rem;
+            padding: 0;
         }
     }
 }
-

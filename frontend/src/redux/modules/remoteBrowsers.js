@@ -75,11 +75,11 @@ export function createRemoteBrowser(browser, user, coll, rec, mode, timestamp, u
   };
 }
 
-export function load() {
+export function load(host = '') {
   return {
     types: [RB_LOAD, RB_LOAD_SUCCESS, RB_LOAD_FAIL],
     accessed: Date.now(),
-    promise: client => client.get('/api/browsers/browsers')
+    promise: client => client.get(`${host}/api/browsers/browsers`)
   };
 }
 

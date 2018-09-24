@@ -149,10 +149,10 @@ export function create(user, coll, title) {
 }
 
 
-export function load(user, coll, id) {
+export function load(user, coll, id, host = '') {
   return {
     types: [LIST_LOAD, LIST_LOAD_SUCCESS, LIST_LOAD_FAIL],
-    promise: client => client.get(`${apiPath}/list/${id}`, {
+    promise: client => client.get(`${host}${apiPath}/list/${id}`, {
       params: { user, coll: decodeURIComponent(coll) }
     })
   };
