@@ -499,11 +499,11 @@ class CollectionDetailUI extends Component {
         {
           activeList ?
             <Helmet>
-            {
-              !__PLAYER__ ?
-                <title>{`${list.get('title')} (List by ${collection.get('owner')})`}</title> :
-                <title>{list.get('title')}</title>
-            }
+              {
+                !__PLAYER__ ?
+                  <title>{`${list.get('title')} (List by ${collection.get('owner')})`}</title> :
+                  <title>{list.get('title')}</title>
+              }
 
               <meta property="og:url" content={`${config.appHost}${getListLink(collection, list)}`} />
               <meta property="og:type" content="website" />
@@ -511,11 +511,11 @@ class CollectionDetailUI extends Component {
               <meta property="og:description" content={list.get('desc') ? truncate(list.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} />
             </Helmet> :
             <Helmet>
-            {
-              !__PLAYER__ ?
-                <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
-                <title>{collection.get('title')}</title>
-            }
+              {
+                !__PLAYER__ ?
+                  <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
+                  <title>{collection.get('title')}</title>
+              }
               <meta property="og:url" content={`${config.appHost}${getCollectionLink(collection, true)}`} />
               <meta property="og:type" content="website" />
               <meta property="og:title" content={collection.get('title')} />
