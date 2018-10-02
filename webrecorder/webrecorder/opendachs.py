@@ -17,7 +17,7 @@
 
 """
 :synopsis: Webrecorder API.
-""""
+"""
 
 # standard library imports
 import re
@@ -67,7 +67,6 @@ class API(object):
             """
             return self.base_access
 
-
     def __init__(self):
         """Initialize Webrecorder API."""
         self.strict_redis = redis.StrictRedis.from_url(
@@ -106,7 +105,7 @@ class API(object):
             inplace_importer = webrecorder.models.importer.InplaceImporter(
                 self.strict_redis, self.wr_config, user, wr_indexer, upload_id
             )
-            inplace_importer.multifile_upload(user,[archive])
+            inplace_importer.multifile_upload(user, [archive])
         except Exception as exception:
             msg = "failed to import WARC archive:{}".format(exception)
             raise RuntimeError(msg)
@@ -204,6 +203,7 @@ def main():
         msg = "failed to call API:{}".format(exception)
         raise SystemExit(msg)
     return
+
 
 if __name__ == "__main__":
     main()
