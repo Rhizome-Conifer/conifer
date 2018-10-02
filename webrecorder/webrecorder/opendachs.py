@@ -1,5 +1,5 @@
-#    OpenDACHS 1.0
-#    Copyright (C) 2018
+#    OpenDACHS
+#    Copyright (C) 2018  Carine Dengler, Heidelberg University
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -12,24 +12,20 @@
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
 """
 :synopsis: Webrecorder API.
-"""
-
+""""
 
 # standard library imports
 import re
 import os
-import base64
-import argparse
+import json
 
 # third party imports
 import redis
-
-# library specific imports
 import webrecorder.utils
 import webrecorder.webreccork
 import webrecorder.models.base
@@ -37,183 +33,177 @@ import webrecorder.models.importer
 import webrecorder.models.usermanager
 import webrecorder.rec.webrecrecorder
 
+# library specific imports
 
-class ODUserManager(webrecorder.models.usermanager.UserManager):
-    """OpenDACHS user manager."""
 
-    USER_RX = re.compile(r"[0-9A-Za-z]{8}")
+class API(object):
+    """Webrecorder API.
 
-    def __init__(self, redis_interface, cork, config):
-        self.base_access = webrecorder.models.base.BaseAccess()
-        super().__init__(redis_interface, cork, config)
+    :ivar UserManager user_manager: API user manager
+    """
+
+    class UserManager(webrecorder.models.usermanager.UserManager):
+        """API user manager.
+
+        :ivar BaseAccess base_access: access rights
+        """
+
+        USER_RX = re.compile(r"[0-9A-Za-z]{8}")
+
+        def __init__(self, strict_redis, wr_config):
+            """Initialize API user manager."""
+            self.base_access = webrecorder.models.base.BaseAccess()
+            webreccork = webrecorder.webreccork.WebRecCork.create_cork(
+                strict_redis, wr_config
+            )
+            super().__init__(strict_redis, webreccork, wr_config)
+            return
+
+        def _get_access(self):
+            """Get access rights.
+
+            :returns: access rights
+            :rtype: BaseAccess
+            """
+            return self.base_access
+
+
+    def __init__(self):
+        """Initialize Webrecorder API."""
+        self.strict_redis = redis.StrictRedis.from_url(
+            os.environ["REDIS_BASE_URL"], decode_responses=True
+        )
+        self.wr_config = webrecorder.utils.load_wr_config()
+        self.user_manager = UserManager(self.strict_redis, self.wr_config)
         return
 
-    def _get_access(self):
-        return self.base_access
+    @staticmethod
+    def generate_upload_id():
+        """Generata upload ID.
 
-
-def get_redis_interface():
-    """Get Redis interface.
-
-    :returns: Redis interface
-    :rtype: StrictRedis
-    """
-    try:
-        redis_base_url = os.environ["REDIS_BASE_URL"]
-        redis_interface = redis.StrictRedis.from_url(
-            redis_base_url, decode_responses=True
-        )
-    except Exception as exception:
-        msg = "failed to get Redis interface:{}".format(exception)
-        raise RuntimeError(msg)
-    return redis_interface
-
-
-def get_user_manager():
-    """Get user manager.
-
-    :returns: user manager
-    :rtype: UserManager
-    """
-    try:
-        redis_interface = get_redis_interface()
-        config = webrecorder.utils.load_wr_config()
-        cork = webrecorder.webreccork.WebRecCork.create_cork(
-            redis_interface, config
-        )
-        user_manager = ODUserManager(
-            redis_interface, cork, config
-        )
-    except Exception as exception:
-        msg = "failed to get user manager:{}".format(exception)
-        raise RuntimeError(msg)
-    return user_manager
-
-
-def get_upload_id():
-    """Get upload ID.
-
-    :returns: upload ID
-    :rtype: str
-    """
-    try:
-        upload_id = base64.b32encode(os.urandom(5)).decode("utf-8")
-    except Exception as exception:
-        msg = "failed to get upload ID:{}".format(exception)
-        raise RuntimeError(msg)
-    return upload_id
-
-
-def import_warc(filename, user):
-    """Import WARC archive.
-
-    :param str filename: filename
-    :param User user: user
-    """
-    try:
-        redis_interface = get_redis_interface()
-        config = webrecorder.utils.load_wr_config()
-        indexer = (
-            webrecorder.rec.webrecrecorder.WebRecRecorder.make_wr_indexer(
-                config
-            )
-        )
-        upload_id = get_upload_id()
-        inplace_importer = webrecorder.models.importer.InplaceImporter(
-            redis_interface, config, user, indexer, upload_id
-        )
-        inplace_importer.multifile_upload(user, [filename])
-    except Exception as exception:
-        msg = "failed to import WARC archive:{}".format(exception)
-        raise RuntimeError(msg)
-    return
-
-
-def create_user(username, password, email_addr, role, desc, filename):
-    """Create user.
-
-    :param str username: username
-    :param str password: password
-    :param str email_addr: email address
-    :param str role: role
-    :param str desc: description
-    :param str filename: filename
-    """
-    try:
-        user_manager = get_user_manager()
-        err, new_user = user_manager.create_user_as_admin(
-            email_addr, username, password, password, role, desc
-        )
-        if err is not None:
-            msg = "failed to create user:{}".format(", ".join(err))
+        Code snippet see webrecorder.models.importer.py
+        """
+        try:
+            upload_id = base64.b32encode(os.urandom(5)).decode("utf-8")
+        except Exception as exception:
+            msg = "failed to get upload ID:{}".format(exception)
             raise RuntimeError(msg)
-        if new_user is None:
-            msg = "failed to create user"
-            raise RuntimeError
-        import_warc(filename, new_user[0])
-    except RuntimeError:
-        raise
-    except Exception as exception:
-        msg = "failed to create user:{}".format(exception)
-        raise RuntimeError(msg)
-    return
+        return upload_id
 
+    def import_warc(self, archive, user):
+        """Import WARC.
 
-def delete_user(username):
-    """Delete user.
+        :param str archive: WARC archive filename
+        :param User user: Webrecorder user
+        """
+        try:
+            wr_indexer = (
+                webrecorder.rec.webrecrecorder.WebRecRecorder.make_wr_indexer(
+                    self.wr_config
+                )
+            )
+            upload_id = self.generate_upload_id()
+            inplace_importer = webrecorder.models.importer.InplaceImporter(
+                self.strict_redis, self.wr_config, user, wr_indexer, upload_id
+            )
+            inplace_importer.multifile_upload(user,[archive])
+        except Exception as exception:
+            msg = "failed to import WARC archive:{}".format(exception)
+            raise RuntimeError(msg)
+        return
 
-    :param str username: username
-    """
-    try:
-        user_manager = get_user_manager()
-        user_manager.delete_user(username)
-    except Exception as exception:
-        msg = "failed to delete user:{}".format(exception)
-        raise RuntimeError(msg)
-    return
+    def create_user(self, filename):
+        """Create user.
 
+        :param str filename: OpenDACHS ticket
+        """
+        try:
+            with open(filename) as fp:
+                data = json.load(fp)
+            username, role, password, email_addr = json.loads(data[1])
+            err, user = user_manager.create_user_as_admin(
+                email_addr,
+                username,
+                password,
+                password,
+                role,
+                "OpenDACHS ticket {}".format(data["id"])
+            )
+            if err is not None:
+                msg = "failed to create user:error(s) {}".format(
+                    ", ".join("'{}'".format(v) for v in err)
+                )
+                raise RuntimeError(msg)
+            elif user is None:
+                msg = "failed to create user"
+                raise RuntimeError(msg)
+            self.import_warc(data["archive"], user[0])
+        except RuntimeError:
+            raise
+        except Exception as exception:
+            msg = "failed to create user:{}".format(exception)
+            raise RuntimeError(msg)
+        return
 
-def get_argument_parser():
-    """Get argument parser.
+    def delete_user(self, filename):
+        """Delete user.
 
-    :returns: argument parser
-    :rtype: ArgumentParser
-    """
-    try:
-        argument_parser = argparse.ArgumentParser()
-        subparsers = argument_parser.add_subparsers(dest="subparser")
-        create = subparsers.add_parser("create", help="create user")
-        create.add_argument("username", help="username")
-        create.add_argument("role", help="role")
-        create.add_argument("password", help="password")
-        create.add_argument("email_addr", help="email address")
-        create.add_argument("desc", help="description")
-        create.add_argument("filename", help="filename")
-        delete = subparsers.add_parser("delete", help="delete user")
-        delete.add_argument("username", help="username")
-    except Exception as exception:
-        msg = "failed to get argument parser:{}".format(exception)
-        raise RuntimeError(msg)
-    return argument_parser
+        :param str filename: OpenDACHS ticket
+        """
+        try:
+            with open(filename) as fp:
+                data = json.load(fp)
+            username, _, _, _ = json.loads(data[1])
+            self.user_manager.delete_user(username)
+        except Exception as exception:
+            msg = "failed to delete user:{}".format(exception)
+            raise RuntimeError(msg)
+        return
+
+    def manage(self):
+        """Manage OpenDACHS tickets."""
+        try:
+            files = os.listdir("/tmp/json_files")
+            for filename in files:
+                try:
+                    fp = open(filename)
+                    data = json.load(fp)
+                    if data["flag"] == "submitted":
+                        self.create_user(filename)
+                    elif data["flag"] == "deleted":
+                        self.delete_user(filename)
+                    else:
+                        msg = "invalid flag {}".format(data["flag"])
+                        raise RuntimeError(msg)
+                except Exception as exception:
+                    if "data" in locals():
+                        msg = "failed to manage OpenDACHS ticket {}:{}".format(
+                            data["id"], exception
+                        )
+                    else:
+                        msg = "failed to manage OpenDACHS ticket:{}".format(
+                            exception
+                        )
+                    raise RuntimeError(msg)
+                finally:
+                    if "fp" in locals():
+                        fp.close()
+                    os.unlink(filename)
+        except Exception as exception:
+            msg = "failed to manage OpenDACHS tickets:{}".format(exception)
+            raise RuntimeError(msg)
+        return
 
 
 def main():
-    """main function."""
+    """Main routine."""
     try:
-        argument_parser = get_argument_parser()
-        args = argument_parser.parse_args()
-        if args.subparser == "create":
-            create_user(
-                args.username, args.password, args.email_addr,
-                args.role, args.desc, args.filename
-            )
-        elif args.subparser == "delete":
-            delete_user(args.username)
+        api = API()
+        api.manage()
     except Exception as exception:
-        msg = "failed to execute main function:{}".format(exception)
-        raise RuntimeError(msg.format(exception))
+        msg = "failed to call API:{}".format(exception)
+        raise SystemExit(msg)
     return
-
 
 if __name__ == "__main__":
     main()
