@@ -108,17 +108,7 @@ user_desc: |
 
 # Default Collection created with new user
 # if not migrating temp collection
-default_coll:
-    id: 'default-collection'
-    title: 'Default Collection'
-    desc: |
-        *This is your first collection!*
-
-        Each collection contains pages you’ve captured using Webrecorder.
-
-        To add to this collection you can capture more pages.
-
-        You can make lists and add text to provide information about one or more pages in your collection.
+default_coll: ''
 
 upload_coll:
     id: 'uploaded-collection'
