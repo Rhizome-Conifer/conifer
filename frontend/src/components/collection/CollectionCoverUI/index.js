@@ -59,11 +59,11 @@ class CollectionCoverUI extends Component {
     return (
       <div className="coll-cover">
         <Helmet>
-            {
-              !__PLAYER__ ?
-                <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
-                <title>{collection.get('title')}</title>
-            }
+          {
+            !__PLAYER__ ?
+              <title>{`${collection.get('title')} (Web archive collection by ${collection.get('owner')})`}</title> :
+              <title>{collection.get('title')}</title>
+          }
           <meta property="og:url" content={`${appHost}${getCollectionLink(collection)}`} />
           <meta property="og:type" content="website" />
           <meta property="og:title" content={collection.get('title')} />
