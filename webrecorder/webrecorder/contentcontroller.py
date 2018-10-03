@@ -420,35 +420,6 @@ class ContentController(BaseController, RewriterApp):
             except Exception as e:
                 self._raise_error(400, 'invalid_request')
 
-    def set_options_headers(self, origin_host, target_host):
-        origin = request.environ.get('HTTP_ORIGIN')
-
-        if origin_host:
-            expected_origin = request.environ['wsgi.url_scheme'] + '://' + origin_host
-
-            # ensure origin is the content host origin
-            if origin != expected_origin:
-                return False
-
-        host = request.environ.get('HTTP_HOST')
-        # ensure host is the app host
-        if target_host and host != target_host:
-            return False
-
-        response.headers['Access-Control-Allow-Origin'] = origin
-
-        methods = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
-        if methods:
-            response.headers['Access-Control-Allow-Methods'] = methods
-
-        headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
-        if headers:
-            response.headers['Access-Control-Allow-Headers'] = headers
-
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        response.headers['Access-Control-Max-Age'] = '1800'
-        return True
-
     def do_proxy(self, url):
         info = self.browser_mgr.init_cont_browser_sesh()
         if not info:

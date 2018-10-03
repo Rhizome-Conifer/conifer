@@ -109,6 +109,37 @@ class BaseController(object):
     def get_session(self):
         return request.environ['webrec.session']
 
+    def set_options_headers(self, origin_host, target_host, response_obj=None):
+        origin = request.environ.get('HTTP_ORIGIN')
+
+        if origin_host:
+            expected_origin = request.environ['wsgi.url_scheme'] + '://' + origin_host
+
+            # ensure origin is the content host origin
+            if origin != expected_origin:
+                return False
+
+        host = request.environ.get('HTTP_HOST')
+        # ensure host is the app host
+        if target_host and host != target_host:
+            return False
+
+        headers = response.headers if not response_obj else response_obj.headers
+
+        headers['Access-Control-Allow-Origin'] = origin if origin_host else '*'
+
+        methods = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
+        if methods:
+            headers['Access-Control-Allow-Methods'] = methods
+
+        req_headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
+        if req_headers:
+            headers['Access-Control-Allow-Headers'] = req_headers
+
+        headers['Access-Control-Allow-Credentials'] = 'true'
+        headers['Access-Control-Max-Age'] = '1800'
+        return True
+
     def fill_anon_info(self, resp):
         resp['anon_disabled'] = self.anon_disabled
 
