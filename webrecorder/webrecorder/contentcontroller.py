@@ -282,6 +282,16 @@ class ContentController(BaseController, RewriterApp):
         def do_proxy(url):
             return self.do_proxy(url)
 
+        # PROXY with CORS
+        @self.app.route('/proxy-fetch/<url:path>', method='GET')
+        def do_proxy_fetch_cors(url):
+            res = self.do_proxy(url)
+
+            if 'HTTP_ORIGIN' in request.environ:
+                self.set_options_headers(None, None, res)
+
+            return res
+
         # LIVE DEBUG
         #@self.app.route('/live/<wb_url:path>', method='ANY')
         def live(wb_url):
