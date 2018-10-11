@@ -428,6 +428,9 @@ class MainController(BaseController):
                     return
 
                 else:
+                    if self._wrong_content_session_redirect():
+                        return
+
                     return error_view(out)
 
             if isinstance(out.exception, dict):
@@ -473,6 +476,7 @@ class MainController(BaseController):
             orig_url += '?' + request.urlparts.query
 
         full_url = host + urljoin(url, orig_url)
+
         response.status = 307
         response.set_header('Location', full_url)
         return True

@@ -3,7 +3,7 @@ import os
 
 from bottle import request, HTTPError, redirect as bottle_redirect, response
 from functools import wraps
-from six.moves.urllib.parse import quote
+from six.moves.urllib.parse import quote, urlencode
 
 from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
 from webrecorder.models import User
@@ -13,6 +13,10 @@ from webrecorder.apiutils import api_decorator, wr_api_spec
 
 # ============================================================================
 class BaseController(object):
+    SKIP_REDIR_LOCK_KEY = '__skip:{id}:{url}'
+    SKIP_REDIR_LOCK_TTL = 10
+    TS_MOD_CHECK = re.compile('[\d]+mp_/')
+
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']
         self.jinja_env = kwargs['jinja_env']
@@ -54,6 +58,66 @@ class BaseController(object):
             return False
 
         return request.environ.get('HTTP_HOST') == self.content_host
+
+    def _wrong_content_session_redirect(self):
+        """ Determine if this may be an incorrect content session
+        for the current app session. If so, redirect to /_set_session
+        to reset cookie
+        """
+
+        # only applies if app_host and content_host are different
+        if not self.app_host or not self.content_host:
+            return False
+
+        # must have a referrer
+        referrer = request.headers.get('Referer')
+        if not referrer:
+            return False
+
+        request_uri = request.environ['REQUEST_URI']
+
+        # referrer must be the exact content url, from app_host and without the modifier:
+        #
+        # Referer: https://app-host/user/coll/record/rec/https://example.com/
+        # request_uri: /https://content-host/user/coll/record/rec/mp_/https://example.com/
+        #
+        # or, with timestamp:
+        #
+        # Referer: https://app-host/user/coll/2018010203000000/https://example.com/
+        # request_uri: /https://content-host/user/coll/2018010203000000mp_/https://example.com/
+        #
+
+        # request must contain mp_/ modifier
+        if 'mp_/' not in request_uri:
+            return False
+
+        app_prefix = request.environ['wsgi.url_scheme'] + '://' + self.app_host
+
+        # remove extra '/' only if timestamp before mp_/
+        replace_with = '/' if self.TS_MOD_CHECK.search(request_uri) else ''
+
+        # check referrer match (as above)
+        if referrer != app_prefix + request_uri.replace('mp_/', replace_with):
+            return False
+
+        # additional 'lock' to avoid redirect loop, if already just redirected
+        # (key should be set for 10 secs) we already have the correct session,
+        # return a regular 404
+        skip_key = self.SKIP_REDIR_LOCK_KEY.format(url=request_uri, id=self.get_session().get_id())
+        if not self.redis.set(skip_key, 1, nx=True, ex=self.SKIP_REDIR_LOCK_TTL):
+            return False
+
+        # redirect to /_set_session, include content_cookie
+        query = {
+                 'path': request_uri,
+                 'content_cookie': request.environ.get('webrec.sesh_cookie', '')
+                }
+
+        redir_url = app_prefix + '/_set_session?' + urlencode(query)
+
+        response.status = 307
+        response.set_header('Location', redir_url)
+        return True
 
     def validate_csrf(self):
         csrf = request.forms.getunicode('csrf')
