@@ -342,7 +342,7 @@ class TestAppContentDomain(FullStackTests):
 
         assert 'http://app-host/_set_session' in res.headers['Location']
 
-        assert 'curr_cookie' in res.headers['Location']
+        assert 'content_cookie' in res.headers['Location']
 
         res = self.app_get(res.headers['Location'], status=302)
         assert 'http://content-host/_set_session' in res.headers['Location']
@@ -379,7 +379,7 @@ class TestAppContentDomain(FullStackTests):
 
         assert 'http://app-host/_set_session' in res.headers['Location']
 
-        assert 'curr_cookie' in res.headers['Location']
+        assert 'content_cookie' in res.headers['Location']
 
         res = self.app_get(res.headers['Location'], status=302)
         assert 'http://content-host/_set_session' in res.headers['Location']
@@ -398,7 +398,7 @@ class TestAppContentDomain(FullStackTests):
                                         'Referer': refer_url},
                                status=307)
 
-        assert 'curr_cookie' in res.headers['Location']
+        assert 'content_cookie' in res.headers['Location']
 
         res = self.app_get(res.headers['Location'])
 

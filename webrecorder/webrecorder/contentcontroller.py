@@ -400,7 +400,7 @@ class ContentController(BaseController, RewriterApp):
 
                 # if already have same session, just redirect back
                 # likely a real 404 not found
-                if sesh.is_same_session(request.query.getunicode('curr_cookie')):
+                if sesh.is_same_session(request.query.getunicode('content_cookie')):
                     redirect(url + request.query.getunicode('path'))
 
                 cookie = quote(request.environ.get('webrec.sesh_cookie', ''))

@@ -107,10 +107,10 @@ class BaseController(object):
         if not self.redis.set(skip_key, 1, nx=True, ex=self.SKIP_REDIR_LOCK_TTL):
             return False
 
-        # redirect to /_set_session, include curr_cookie
+        # redirect to /_set_session, include content_cookie
         query = {
                  'path': request_uri,
-                 'curr_cookie': request.environ.get('webrec.sesh_cookie', '')
+                 'content_cookie': request.environ.get('webrec.sesh_cookie', '')
                 }
 
         redir_url = app_prefix + '/_set_session?' + urlencode(query)
