@@ -398,6 +398,8 @@ class ContentController(BaseController, RewriterApp):
                 self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
+                # if already have same session, just redirect back
+                # likely a real 404 not found
                 if sesh.is_same_session(request.query.getunicode('curr_cookie')):
                     redirect(url + request.query.getunicode('path'))
 
