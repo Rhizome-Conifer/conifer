@@ -14,6 +14,7 @@ from webrecorder.apiutils import api_decorator, wr_api_spec
 # ============================================================================
 class BaseController(object):
     SKIP_SESH_CHECK = '__skip:{id}:{url}'
+    TS_MOD_CHECK = re.compile('[\d]+mp_/')
 
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']
@@ -72,7 +73,9 @@ class BaseController(object):
 
         app_prefix = request.environ['wsgi.url_scheme'] + '://' + self.app_host
 
-        if referer != app_prefix + request_uri.replace('mp_/', ''):
+        replace_with = '/' if self.TS_MOD_CHECK.search(request_uri) else ''
+
+        if referer != app_prefix + request_uri.replace('mp_/', replace_with):
             return False
 
         skip_key = self.SKIP_SESH_CHECK.format(url=request_uri, id=self.get_session().get_id())

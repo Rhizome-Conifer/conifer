@@ -330,15 +330,19 @@ class TestAppContentDomain(FullStackTests):
 
         res = self.app_get('/api/v1/auth/curr_user')
         TestAppContentDomain.anon_user = res.json['user']['username']
+        TestAppContentDomain.top_path = top_path
 
         assert '/' + self.anon_user + '/' in top_path
 
+    def test_reset_content_cookie_record(self):
         # 404, wrong content cookie
         res = self.testapp.get('/{user}/temp/recx/record/mp_/http://httpbin.org/get?food=bar'.format(user=self.anon_user),
                                headers={'Host': 'content-host',
-                                        'Referer': top_path}, status=307)
+                                        'Referer': self.top_path}, status=307)
 
         assert 'http://app-host/_set_session' in res.headers['Location']
+
+        assert 'curr_cookie' in res.headers['Location']
 
         res = self.app_get(res.headers['Location'], status=302)
         assert 'http://content-host/_set_session' in res.headers['Location']
@@ -355,8 +359,38 @@ class TestAppContentDomain(FullStackTests):
 
         assert '"food": "bar"' in res.text
 
+    def test_wipe_app_cookie_2_login(self):
+        # remove app-domain cookie
+        self.testapp.cookiejar.clear(domain='app-host.local')
+
+        res = self.testapp.post_json('/api/v1/auth/login',
+                                     params={'username': 'test', 'password': 'TestTest123'},
+                                     headers={'Host': 'app-host'})
+
+
+        assert res.json['user']['username'] == 'test'
+
+    def test_reset_content_cookie_replay_ts(self):
+        url = '/test/default-collection/2018mp_/http://httpbin.org/get?food=bar'
+        refer_url = 'http://app-host' + url.replace('mp_/', '/')
+        res = self.testapp.get(url,
+                               headers={'Host': 'content-host',
+                                        'Referer': refer_url})
+
+        assert 'http://app-host/_set_session' in res.headers['Location']
+
+        assert 'curr_cookie' in res.headers['Location']
+
+        res = self.app_get(res.headers['Location'], status=302)
+        assert 'http://content-host/_set_session' in res.headers['Location']
+
+        res = self.content_get(res.headers['Location'])
+        content_host_str = 'http://content-host/test/default-collection/2018mp_/http://httpbin.org/get?food=bar'
+        assert res.status_code == 302
+        assert self.testapp.cookies['__test_sesh'] in res.headers['Set-Cookie']
+
     def test_not_found_redir_back(self):
-        url = '/{user}/temp/mp_/http://httpbin.org/get?bood=far'.format(user=self.anon_user)
+        url = '/test/default-collection/mp_/http://httpbin.org/get?bood=far'
         refer_url = 'http://app-host' + url.replace('mp_/', '')
 
         res = self.testapp.get(url,
@@ -364,7 +398,10 @@ class TestAppContentDomain(FullStackTests):
                                         'Referer': refer_url},
                                status=307)
 
+        assert 'curr_cookie' in res.headers['Location']
+
         res = self.app_get(res.headers['Location'])
+
 
         assert 'Set-Cookie' not in res.headers
 
