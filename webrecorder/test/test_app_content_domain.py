@@ -282,4 +282,97 @@ class TestAppContentDomain(FullStackTests):
         assert res.headers['Access-Control-Allow-Origin'] == 'http://app-host'
         assert res.headers['Access-Control-Allow-Credentials'] == 'true'
 
+    def test_login_and_replay(self):
+        res = self.testapp.post_json('/api/v1/auth/login',
+                                     params={'username': 'test', 'password': 'TestTest123'},
+                                     headers={'Host': 'app-host'})
+
+
+        assert res.json['user']['username'] == 'test'
+
+        res = self.app_get('/test/default-collection/http://httpbin.org/get?food=bar', status=200)
+
+        res = self.content_get('/test/default-collection/mp_/http://httpbin.org/get?food=bar', status=302)
+        assert 'http://app-host/_set_session' in res.headers['Location']
+
+        res = self.app_get(res.headers['Location'], status=302)
+        assert 'http://content-host/_set_session' in res.headers['Location']
+
+        res = self.content_get(res.headers['Location'])
+        content_host_str = 'http://content-host/test/default-collection/mp_/http://httpbin.org/get?food=bar'
+        assert res.status_code == 302
+        assert self.testapp.cookies['__test_sesh'] in res.headers['Set-Cookie']
+
+        # no max-age for logged in
+        assert 'max-age' not in res.headers['Set-Cookie']
+
+        assert res.headers['Location'] == content_host_str
+
+        res = self.content_get(res.headers['Location'])
+
+        assert '"food": "bar"' in res.text
+
+    def test_wipe_app_cookie(self):
+        # remove app-domain cookie
+        self.testapp.cookiejar.clear(domain='app-host.local')
+
+        # new session -- logged in user no longer avail
+        res = self.app_get('/test/default-collection/http://httpbin.org/get?food=bar', status=404)
+
+        res = self.content_get('/test/default-collection/mp_/http://httpbin.org/get?food=bar', status=200)
+
+        # create new temp session
+        self.set_uuids('Recording', ['recx'])
+
+        res = self.app_get('/_new/temp/recx/record/http://httpbin.org/get?food=bar', status=302)
+        top_path = res.headers['Location']
+        res = self.app_get(top_path, status=200)
+
+        res = self.app_get('/api/v1/auth/curr_user')
+        TestAppContentDomain.anon_user = res.json['user']['username']
+
+        assert '/' + self.anon_user + '/' in top_path
+
+        # 404, wrong content cookie
+        res = self.testapp.get('/{user}/temp/recx/record/mp_/http://httpbin.org/get?food=bar'.format(user=self.anon_user),
+                               headers={'Host': 'content-host',
+                                        'Referer': top_path}, status=307)
+
+        assert 'http://app-host/_set_session' in res.headers['Location']
+
+        res = self.app_get(res.headers['Location'], status=302)
+        assert 'http://content-host/_set_session' in res.headers['Location']
+
+        res = self.content_get(res.headers['Location'], status=302)
+
+        content_host_str = 'http://content-host/{user}/temp/recx/record/mp_/http://httpbin.org/get?food=bar'.format(user=self.anon_user)
+
+        assert self.testapp.cookies['__test_sesh'] in res.headers['Set-Cookie']
+
+        assert res.headers['Location'] == content_host_str
+
+        res = self.content_get(res.headers['Location'])
+
+        assert '"food": "bar"' in res.text
+
+    def test_not_found_redir_back(self):
+        url = '/{user}/temp/mp_/http://httpbin.org/get?bood=far'.format(user=self.anon_user)
+        refer_url = 'http://app-host' + url.replace('mp_/', '')
+
+        res = self.testapp.get(url,
+                               headers={'Host': 'content-host',
+                                        'Referer': refer_url},
+                               status=307)
+
+        res = self.app_get(res.headers['Location'])
+
+        assert 'Set-Cookie' not in res.headers
+
+        assert res.headers['Location'].endswith(url)
+
+        res = self.testapp.get(res.headers['Location'],
+                               headers={'Host': 'content-host',
+                                        'Referer': refer_url},
+                               status=404)
+
 

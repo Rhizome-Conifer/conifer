@@ -93,6 +93,17 @@ class Session(object):
         sesh_id, is_restricted = result
         self.set_id(sesh_id)
 
+    def is_same_session(self, cookie):
+        if not cookie:
+            return False
+
+        result = self.sesh_manager.signed_cookie_to_id(cookie)
+        if not result:
+            return False
+
+        sesh_id, is_restricted = result
+        return self._sesh['id'] == sesh_id
+
     def set_id(self, id):
         self._sesh['id'] = id
         self.is_restricted = True

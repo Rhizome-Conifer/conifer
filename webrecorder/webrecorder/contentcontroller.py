@@ -398,6 +398,9 @@ class ContentController(BaseController, RewriterApp):
                 self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
+                if sesh.is_same_session(request.query.getunicode('curr_cookie')):
+                    redirect(url + request.query.getunicode('path'))
+
                 cookie = quote(request.environ.get('webrec.sesh_cookie', ''))
                 url += '/_set_session?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
                 redirect(url)
@@ -731,6 +734,8 @@ class ContentController(BaseController, RewriterApp):
 
             if self.content_error_redirect:
                 return redirect(self.content_error_redirect + '?' + urlencode(err_context), code=307)
+            elif self._wrong_content_session_redirect():
+                return
             else:
                 return handle_error(err_context)
 

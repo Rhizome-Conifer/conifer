@@ -3,7 +3,7 @@ import os
 
 from bottle import request, HTTPError, redirect as bottle_redirect, response
 from functools import wraps
-from six.moves.urllib.parse import quote
+from six.moves.urllib.parse import quote, urlencode
 
 from webrecorder.utils import sanitize_tag, sanitize_title, get_bool
 from webrecorder.models import User
@@ -13,6 +13,8 @@ from webrecorder.apiutils import api_decorator, wr_api_spec
 
 # ============================================================================
 class BaseController(object):
+    SKIP_SESH_CHECK = '__skip:{id}:{url}'
+
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']
         self.jinja_env = kwargs['jinja_env']
@@ -54,6 +56,39 @@ class BaseController(object):
             return False
 
         return request.environ.get('HTTP_HOST') == self.content_host
+
+    def _wrong_content_session_redirect(self):
+        if not self.app_host or not self.content_host:
+            return False
+
+        referer = request.headers.get('Referer')
+        if not referer:
+            return False
+
+        request_uri = request.environ['REQUEST_URI']
+
+        if 'mp_/' not in request_uri:
+            return False
+
+        app_prefix = request.environ['wsgi.url_scheme'] + '://' + self.app_host
+
+        if referer != app_prefix + request_uri.replace('mp_/', ''):
+            return False
+
+        skip_key = self.SKIP_SESH_CHECK.format(url=request_uri, id=self.get_session().get_id())
+        if not self.redis.set(skip_key, 1, nx=True, ex=5):
+            return False
+
+        query = {
+                 'path': request_uri,
+                 'curr_cookie': request.environ.get('webrec.sesh_cookie', '')
+                }
+
+        redir_url = app_prefix + '/_set_session?' + urlencode(query)
+
+        response.status = 307
+        response.set_header('Location', redir_url)
+        return True
 
     def validate_csrf(self):
         csrf = request.forms.getunicode('csrf')
