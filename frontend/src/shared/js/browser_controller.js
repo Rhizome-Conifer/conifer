@@ -291,7 +291,6 @@ export default function CBrowser(reqid, target_div, init_params) {
                 handle_browser_response(data);
             })
             .catch(function (err) {
-                console.log('fetch error', err);
                 waiting_for_container = false;
 
                 // user canceled

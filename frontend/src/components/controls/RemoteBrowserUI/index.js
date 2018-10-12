@@ -7,9 +7,9 @@ import { deleteStorage, getStorage, remoteBrowserMod, setStorage } from 'helpers
 
 import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
-import CBrowser from 'shared/js/browser_controller';
-
 import './style.scss';
+
+let CBrowser;
 
 
 class RemoteBrowserUI extends Component {
@@ -68,12 +68,16 @@ class RemoteBrowserUI extends Component {
       clipboard: '#clipboard',
       fill_window: true,
       on_countdown: this.onCountdown,
-      on_event: this.onEvent
+      on_event: this.onEvent,
+      headers: { 'x-requested-with': 'XMLHttpRequest' }
     };
   }
 
   componentDidMount() {
     const { dispatch, params, rb, rec, timestamp, url } = this.props;
+
+    // eslint-disable-next-line
+    CBrowser = require('shepherd/lib/browser').default;
 
     if (!window.location.port) {
       this.pywbParams.proxy_ws = '_websockify?port=';
@@ -185,13 +189,13 @@ class RemoteBrowserUI extends Component {
     if (type === 'connect') {
       this.setState({ message: '' });
 
-      if (this.cb && document.activeElement && document.activeElement.tagName === 'INPUT') {
-        this.cb.lose_focus();
-      }
+      // if (this.cb && document.activeElement && document.activeElement.tagName === 'INPUT') {
+      //   this.cb.lose_focus();
+      // }
     }else if (['fail', 'expire'].includes(type)) {
       this.recreateBrowser();
     } else if (type === 'error') {
-      deleteStorage('reqId', window.sessionStorage);
+      //deleteStorage('reqId', window.sessionStorage);
       dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, this.currMode, timestamp, url));
     }
   }
@@ -225,7 +229,6 @@ class RemoteBrowserUI extends Component {
     // connect to rb
     // TODO: Make sure this is being destroyed properly
     this.cb = new CBrowser(reqId, '#browser', this.pywbParams);
-    window.cb = this.cb;
   }
 
   recreateBrowser = () => {
@@ -289,6 +292,7 @@ class RemoteBrowserUI extends Component {
         }
         <div id="message" key="msg" className="browser" />
         <div id="browser" key="browser" className="browser" style={sidebarResize ? { pointerEvents: 'none' } : {}} />
+        <div id="noVNC_mouse_capture_elem" />
       </React.Fragment>
     );
   }
