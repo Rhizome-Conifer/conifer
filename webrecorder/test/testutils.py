@@ -126,7 +126,8 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     def assert_temp_user_sesh(cls, anon_user):
         sesh = cls.sesh_redis.get('t:{0}'.format(anon_user))
         assert sesh
-        assert cls.sesh_redis.get('sesh:{0}'.format(sesh)) != ''
+        # ensure session key exists and is expiring
+        assert cls.sesh_redis.ttl('sesh:{0}'.format(sesh)) > 0
 
     @classmethod
     def get_coll_rec(cls, user, coll_name, rec):
