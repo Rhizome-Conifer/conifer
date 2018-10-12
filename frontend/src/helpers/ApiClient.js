@@ -62,9 +62,9 @@ export default class ApiClient {
 
           if (__SERVER__) {
             // if api sets session cookie, ensure its passed back to browser
-            var cookie = response.get('Set-Cookie');
+            let cookie = response.get('Set-Cookie');
             if (cookie) {
-              if (process.env.SCHEME == "https") {
+              if (process.env.SCHEME === "https") {
                 cookie += "; Secure";
               }
 
