@@ -88,6 +88,7 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         webrecorder.maincontroller.load_wr_config = load_wr_config
 
         cls.redis = FakeStrictRedis.from_url(os.environ['REDIS_BASE_URL'], decode_responses=True)
+        cls.sesh_redis = FakeStrictRedis.from_url(os.environ['REDIS_SESSION_URL'], decode_responses=True)
 
         cls.custom_init(kwargs)
 
@@ -100,6 +101,7 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
         if init_anon:
             res = cls.testapp.post('/api/v1/auth/anon_user')
             cls.anon_user = res.json['user']['username']
+            cls.assert_temp_user_sesh(cls.anon_user)
         else:
             cls.anon_user = None
 
@@ -119,6 +121,13 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
     @classmethod
     def get_curr_dir(cls):
         return os.path.dirname(os.path.realpath(__file__))
+
+    @classmethod
+    def assert_temp_user_sesh(cls, anon_user):
+        sesh = cls.sesh_redis.get('t:{0}'.format(anon_user))
+        assert sesh
+        # ensure session key exists and is expiring
+        assert cls.sesh_redis.ttl('sesh:{0}'.format(sesh)) > 0
 
     @classmethod
     def get_coll_rec(cls, user, coll_name, rec):
