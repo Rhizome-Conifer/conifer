@@ -33,7 +33,8 @@ class TestWS(FullStackTests):
     def test_user_cred(self):
         res = self.post_json('/api/v1/auth/anon_user')
         TestWS.anon_user = res.json()['user']['username']
-        assert self.sesh_redis.hget('t:{0}'.format(TestWS.anon_user))
+
+        self.assert_temp_user_sesh(TestWS.anon_user)
 
     def test_create_recording(self):
         self.set_uuids('Recording', ['rec'])
