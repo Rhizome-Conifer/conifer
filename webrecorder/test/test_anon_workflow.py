@@ -486,6 +486,7 @@ class TestTempContent(FullStackTests):
         self.set_downloaded()
 
         assert res.headers['Content-Disposition'].startswith("attachment; filename*=UTF-8''my-rec2-")
+        assert res.headers['Content-Disposition'].endswith('.warc')
 
         warcin = self._get_dechunked(res.body)
 
