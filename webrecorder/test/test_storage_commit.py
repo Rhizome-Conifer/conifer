@@ -22,7 +22,8 @@ class BaseStorageCommit(FullStackTests):
     def setup_class(cls):
         os.environ['AUTO_LOGIN_USER'] = 'test'
         super(BaseStorageCommit, cls).setup_class(extra_config_file='test_cdxj_cache_config.yaml',
-                                                  storage_worker=True)
+                                                  storage_worker=True,
+                                                  init_anon=False)
 
         cls.set_uuids('Recording', count(500))
         cls.set_uuids('Collection', count(100))

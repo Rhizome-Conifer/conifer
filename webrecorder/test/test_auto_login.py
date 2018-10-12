@@ -17,7 +17,8 @@ class TestAutoLogin(FullStackTests):
     @classmethod
     def setup_class(cls, **kwargs):
         os.environ['AUTO_LOGIN_USER'] = 'test'
-        super(TestAutoLogin, cls).setup_class(temp_worker=True, storage_worker=True)
+        super(TestAutoLogin, cls).setup_class(temp_worker=True, storage_worker=True,
+                                              init_anon=False)
 
         cls.manager = CLIUserManager()
 
