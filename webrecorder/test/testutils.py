@@ -124,7 +124,9 @@ class BaseWRTests(FakeRedisTests, TempDirTests, BaseTestClass):
 
     @classmethod
     def assert_temp_user_sesh(cls, anon_user):
-        assert cls.sesh_redis.get('t:{0}'.format(anon_user)) != ''
+        sesh = cls.sesh_redis.get('t:{0}'.format(anon_user))
+        assert sesh
+        assert cls.sesh_redis.get('sesh:{0}'.format(sesh)) != ''
 
     @classmethod
     def get_coll_rec(cls, user, coll_name, rec):
