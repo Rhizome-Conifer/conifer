@@ -620,7 +620,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_different_user_default_coll(self):
-        res = self.testapp.get('/testauto/default-collection')
+        res = self.testapp.get('/Testauto/default-collection')
         assert '/default-collection' in res.text, res.text
 
     def test_different_user_coll(self):

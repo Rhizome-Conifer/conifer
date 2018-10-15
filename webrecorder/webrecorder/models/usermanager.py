@@ -282,8 +282,16 @@ class UserManager(object):
         else:
             return ''
 
+    def is_username_available(self, username):
+        username_lc = username.lower()
+        if username_lc in self.RESTRICTED_NAMES:
+            return False
+
+        return (not self.redis.hexists(self.LC_USERNAMES_KEY, username_lc) and
+                username not in self.all_users)
+
     def validate_user(self, user, email):
-        if user in self.all_users or self.redis.hexists(self.LC_USERNAMES_KEY, user.lower()):
+        if not self.is_username_available(user):
             msg = 'User <b>{0}</b> already exists! Please choose a different username'
             msg = msg.format(user)
             raise ValidationException(msg)

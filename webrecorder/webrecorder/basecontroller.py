@@ -135,20 +135,11 @@ class BaseController(object):
         if not user:
             self._raise_error(400, 'no_user_specified')
 
-        orig_user = user
-
         try:
             user = self.user_manager.all_users[user]
         except Exception as e:
-            try:
-                user = self.user_manager.find_case_insensitive_username(user)
-                assert(user)
-                user = self.user_manager.all_users[user]
-                #request_uri = request.environ['REQUEST_URI'].replace('/' + orig_user, '/' + user)
-                #return self.redirect(request_uri)
-            except:
-                msg = 'not_found' if orig_user == 'api' else 'no_such_user'
-                self._raise_error(404, msg)
+            msg = 'not_found' if user == 'api' else 'no_such_user'
+            self._raise_error(404, msg)
 
         return user
 

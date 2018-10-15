@@ -291,6 +291,11 @@ class TestApiUserLogin(FullStackTests):
 
         assert res.json == {'error': 'not_available'}
 
+    def test_check_username_not_avail_diff_case(self):
+        res = self.testapp.get('/api/v1/auth/check_username/Someuser', status=400)
+
+        assert res.json == {'error': 'not_available'}
+
     def test_update_password_fail(self):
         params = {'currPass': 'Password1',
                   'newPass': 'Password2',
