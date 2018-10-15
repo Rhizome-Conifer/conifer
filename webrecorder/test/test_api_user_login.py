@@ -160,6 +160,21 @@ class TestApiUserLogin(FullStackTests):
         assert res.json == {'errors': {'validation': 'User <b>someuser</b> already exists! Please choose '
                                                      'a different username'}}
 
+    def test_api_register_fail_dupe_user_case_insensitive(self):
+        # dupe user
+        params = {'email': 'test2@example.com',
+                  'username': 'SomeUser',
+                  'password': 'Password2',
+                  'confirmpassword': 'Password2'
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
+
+        assert res.json == {'errors': {'validation': 'User <b>SomeUser</b> already exists! Please choose '
+                                                     'a different username'}}
+
+
+
     def test_api_register_fail_dupe_email(self):
         # dupe email
         params = {'email': 'test@example.com',
@@ -368,8 +383,8 @@ class TestApiUserLogin(FullStackTests):
         res = self.testapp.post_json('/api/v1/auth/password/reset', params=params)
         assert res.json == {'success': True}
 
-    def test_login_2(self):
-        params = {'username': 'someuser',
+    def test_login_2_diff_case(self):
+        params = {'username': 'Someuser',
                   'password': 'TestTest789'}
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)

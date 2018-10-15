@@ -36,6 +36,8 @@ class UserManager(object):
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
 
+    LC_USERNAMES_KEY = 'h:lc_users'
+
     def __init__(self, redis, cork, config):
         self.redis = redis
         self.cork = cork
@@ -196,6 +198,18 @@ class UserManager(object):
             traceback.print_exc()
             return {'error': 'invalid_code'}
 
+    def find_case_insensitive_username(self, username):
+        lower_username = username.lower()
+
+        new_username = self.redis.hget(self.LC_USERNAMES_KEY,  lower_username)
+        if new_username == '-' or new_username == username or new_username is None:
+            return None
+
+        if new_username == '':
+            return lower_username
+
+        return new_username
+
     def login_user(self, input_data):
         """Authenticate users"""
         username = input_data.get('username', '')
@@ -206,13 +220,14 @@ class UserManager(object):
         except ValidationException as ve:
             return {'error': str(ve)}
 
-        # if a collection is being moved, auth user
-        # and then check for available space
-        # if not enough space, don't continue with login
+        # first, authenticate the user
+        # if failing, see if case-insensitive username and try that
         if not self.cork.is_authenticate(username, password):
-            return {'error': 'invalid_login'}
+            username = self.find_case_insensitive_username(username)
+            if not username or not self.cork.is_authenticate(username, password):
+                return {'error': 'invalid_login'}
 
-
+        # if not enough space, don't continue with login
         if move_info:
             if not self.has_space_for_new_collection(username,
                                                      move_info['from_user'],
@@ -268,7 +283,7 @@ class UserManager(object):
             return ''
 
     def validate_user(self, user, email):
-        if user in self.all_users:
+        if user in self.all_users or self.redis.hexists(self.LC_USERNAMES_KEY, user.lower()):
             msg = 'User <b>{0}</b> already exists! Please choose a different username'
             msg = msg.format(user)
             raise ValidationException(msg)
@@ -464,6 +479,11 @@ class UserManager(object):
 
         user = self.all_users.make_user(username)
         user.create_new()
+
+        # track lowercase username
+        lower_username = username.lower()
+        self.redis.hset(self.LC_USERNAMES_KEY, lower_username,
+                        username if lower_username != username else '')
 
         first_coll = None
 
