@@ -57,7 +57,7 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
-            - ~/opendachs/tmp/warcs
+            - ~/opendachs/tmp/warcs:/tmp/warcs
 
     warcserver:
         build: ./webrecorder
@@ -72,7 +72,7 @@ services:
         volumes:
             - ./webrecorder/:/code/
             - ./data:/data
-            - ~/opendachs/tmp/warcs
+            - ~/opendachs/tmp/warcs:/tmp/warcs
 
     nginx:
         build: ./nginx
@@ -132,7 +132,7 @@ services:
 
         volumes:
             - ./data:/data
-            - ~/opendachs/tmp/warcs
+            - ~/opendachs/tmp/warcs:/tmp/warcs
 
     # Postfix (if sending mail locally)
     mailserver:
