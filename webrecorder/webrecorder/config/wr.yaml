@@ -76,7 +76,7 @@ recorder_accept_colls:
 
 # Download paths
 download_paths:
-    filename: '{title}-{timestamp}.warc.gz'
+    filename: '{title}-{timestamp}.warc'
 
     rec: '{host}/{user}/{coll}/{rec}/$download'
     coll: '{host}/{user}/{coll}/$download'
