@@ -93,7 +93,7 @@ class TestAdminAPI(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/admin/users', params=params)
 
-        assert res.json == {'errors': ['Username already exists.',
+        assert res.json == {'errors': ['Invalid username.',
                                        'Not a valid role.',
                                        'Passwords must match and be at least 8 characters long with '
                                        'lowercase, uppercase, and either digits or symbols.']}

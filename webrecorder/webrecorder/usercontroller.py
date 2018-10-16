@@ -65,7 +65,7 @@ class UserController(BaseController):
             if self.user_manager.is_username_available(username):
                 return {'success': True}
             else:
-                return self._raise_error(400, 'not_available')
+                return self._raise_error(400, 'username_not_available')
 
         # GET CURRENT USER
         @self.app.get('/api/v1/auth/curr_user')

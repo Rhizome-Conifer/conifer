@@ -30,8 +30,8 @@ from webrecorder.redisutils import RedisTable
 class UserManager(object):
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,30}$')
 
-    RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager',
-                        'guest', 'settings', 'profile', 'api', 'anon',
+    RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'coll', 'collection',
+                        'guest', 'settings', 'profile', 'api', 'anon', 'webrecorder',
                         'anonymous', 'register', 'join', 'download', 'live', 'embed']
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
@@ -284,27 +284,31 @@ class UserManager(object):
 
     def is_username_available(self, username):
         username_lc = username.lower()
+
+        # username matches of the restricted names
         if username_lc in self.RESTRICTED_NAMES:
             return False
 
-        return (not self.redis.hexists(self.LC_USERNAMES_KEY, username_lc) and
-                username not in self.all_users)
+        # username doesn't match the allowed regex
+        if not self.USER_RX.match(username):
+            return False
+
+        # lowercase username already exists
+        if self.redis.hexists(self.LC_USERNAMES_KEY, username_lc):
+            return False
+
+        # username already exists! (shouldn't match if lowercase exists, but just in case)
+        if username in self.all_users:
+            return False
+
+        return True
 
     def validate_user(self, user, email):
         if not self.is_username_available(user):
-            msg = 'User <b>{0}</b> already exists! Please choose a different username'
-            msg = msg.format(user)
-            raise ValidationException(msg)
-
-        if not self.USER_RX.match(user) or user in self.RESTRICTED_NAMES:
-            msg = 'The name <b>{0}</b> is not a valid username. Please choose a different username'
-            msg = msg.format(user)
-            raise ValidationException(msg)
+            raise ValidationException('username_not_available')
 
         if self.has_user_email(email):
-            msg = 'There is already an account for <b>{0}</b>. If you have trouble logging in, you may <a href="/_forgot"><b>reset the password</b></a>.'
-            msg = msg.format(email)
-            raise ValidationException(msg)
+            raise ValidationException('email_not_available')
 
         return True
 
@@ -533,11 +537,8 @@ class UserManager(object):
         if not username:
             errs.append('please specify a username!')
 
-        if not self.USER_RX.match(username) or username in self.RESTRICTED_NAMES:
-            errs.append('Invalid username..')
-
-        if username in self.all_users:
-            errs.append('Username already exists.')
+        if not self.is_username_available(username):
+            errs.append('Invalid username.')
 
         # ROLE
         if role not in self.get_roles():
