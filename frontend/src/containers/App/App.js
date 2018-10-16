@@ -11,7 +11,7 @@ import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
 import { isLoaded as isAuthLoaded,
-         load as loadAuth, loadAnon } from 'redux/modules/auth';
+         load as loadAuth } from 'redux/modules/auth';
 
 import { UserManagement } from 'containers';
 
@@ -295,13 +295,7 @@ const initalData = [
       const state = getState();
 
       if (!isAuthLoaded(state)) {
-        return dispatch(loadAuth()).then(
-          (auth) => {
-            if (auth.user.anon) {
-              return dispatch(loadAnon());
-            }
-          }
-        );
+        return dispatch(loadAuth());
       }
 
       return undefined;

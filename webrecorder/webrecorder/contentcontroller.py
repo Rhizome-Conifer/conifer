@@ -398,12 +398,21 @@ class ContentController(BaseController, RewriterApp):
                 self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
-                # if already have same session, just redirect back
+                cookie = request.query.getunicode('webrec.sesh_cookie')
+
+                # otherwise, check if content cookie provided
+                # already have same session, just redirect back
                 # likely a real 404 not found
                 if sesh.is_same_session(request.query.getunicode('content_cookie')):
                     redirect(url + request.query.getunicode('path'))
 
-                cookie = quote(request.environ.get('webrec.sesh_cookie', ''))
+                # if anon, ensure session is persisted before setting content session
+                # generate cookie to pass
+                if not cookie:
+                    self.access.init_session_user(persist=True)
+                    cookie = sesh.get_cookie()
+
+                cookie = quote(cookie)
                 url += '/_set_session?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
                 redirect(url)
 
@@ -589,9 +598,6 @@ class ContentController(BaseController, RewriterApp):
 
         sesh = self.get_session()
 
-        if sesh.is_new() and self.is_content_request():
-            self.redir_set_session()
-
         remote_ip = None
         frontend_cache_header = None
         patch_recording = None
@@ -606,6 +612,9 @@ class ContentController(BaseController, RewriterApp):
         rec = recording.my_id if recording else None
 
         if type in self.MODIFY_MODES:
+            if sesh.is_new() and self.is_content_request():
+                self.redir_set_session()
+
             if not recording:
                 self._redir_if_sanitized(self.sanitize_title(rec_name),
                                          rec_name,
@@ -633,25 +642,31 @@ class ContentController(BaseController, RewriterApp):
                 patch_recording = recording.get_patch_recording()
                 #patch_recording = collection.get_recording_by_name(patch_rec_name)
 
-        if type == 'replay-coll':
+        if type in ('replay-coll', 'replay'):
             if not collection:
                 self._redir_if_sanitized(self.sanitize_title(coll_name),
                                          coll_name,
                                          wb_url)
 
-
-                self._raise_error(404, 'no_such_collection')
+                if sesh.is_new() and self.is_content_request():
+                    self.redir_set_session()
+                else:
+                    self._raise_error(404, 'no_such_collection')
 
             access = self.access.check_read_access_public(collection)
+
             if not access:
-                self._raise_error(404, 'no_such_collection')
+                if sesh.is_new() and self.is_content_request():
+                    self.redir_set_session()
+                else:
+                    self._raise_error(404, 'no_such_collection')
 
             if access != 'public':
                 frontend_cache_header = ('Cache-Control', 'private')
 
-        elif type == 'replay':
-            if not recording:
-                self._raise_error(404, 'no_such_recording')
+            if type == 'replay':
+                if not recording:
+                    self._raise_error(404, 'no_such_recording')
 
         request.environ['SCRIPT_NAME'] = quote(request.environ['SCRIPT_NAME'], safe='/:')
 
@@ -736,8 +751,6 @@ class ContentController(BaseController, RewriterApp):
 
             if self.content_error_redirect:
                 return redirect(self.content_error_redirect + '?' + urlencode(err_context), code=307)
-            elif self._wrong_content_session_redirect():
-                return
             else:
                 return handle_error(err_context)
 

@@ -43,6 +43,9 @@ class WebsockController(BaseController):
         rec = request.query.getunicode('rec')
         recording = collection.get_recording(rec)
 
+        if not self.access.can_read_coll(collection):
+            self._raise_error(404, 'not_found')
+
         reqid = request.query.get('reqid')
         if reqid:
             sesh_id = self.browser_mgr.browser_sesh_id(reqid)

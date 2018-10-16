@@ -120,6 +120,10 @@ class Session(object):
         self.should_copy_cookie = True
         self.should_save = False
 
+    def get_cookie(self):
+        return self.sesh_manager.id_to_signed_cookie(self._sesh['id'],
+                                                     self.is_restricted)
+
     def save(self):
         self.should_save = True
 
@@ -401,8 +405,7 @@ class RedisSessionMiddleware(CookieGuard):
         expires = datetime.utcnow() + timedelta(seconds=duration)
 
         # set cookie
-        sesh_cookie = self.id_to_signed_cookie(session['id'],
-                                               session.is_restricted)
+        sesh_cookie = session.get_cookie()
 
         value = '{0}={1}; Path=/; HttpOnly'
 
