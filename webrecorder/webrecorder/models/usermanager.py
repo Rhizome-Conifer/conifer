@@ -30,11 +30,13 @@ from webrecorder.redisutils import RedisTable
 class UserManager(object):
     USER_RX = re.compile(r'^[A-Za-z0-9][\w-]{2,30}$')
 
-    RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager',
-                        'guest', 'settings', 'profile', 'api', 'anon',
+    RESTRICTED_NAMES = ['login', 'logout', 'user', 'admin', 'manager', 'coll', 'collection',
+                        'guest', 'settings', 'profile', 'api', 'anon', 'webrecorder',
                         'anonymous', 'register', 'join', 'download', 'live', 'embed']
 
     PASS_RX = re.compile(r'^(?=.*[\d\W])(?=.*[a-z])(?=.*[A-Z]).{8,}$')
+
+    LC_USERNAMES_KEY = 'h:lc_users'
 
     def __init__(self, redis, cork, config):
         self.redis = redis
@@ -196,6 +198,18 @@ class UserManager(object):
             traceback.print_exc()
             return {'error': 'invalid_code'}
 
+    def find_case_insensitive_username(self, username):
+        lower_username = username.lower()
+
+        new_username = self.redis.hget(self.LC_USERNAMES_KEY,  lower_username)
+        if new_username == '-' or new_username == username or new_username is None:
+            return None
+
+        if new_username == '':
+            return lower_username
+
+        return new_username
+
     def login_user(self, input_data):
         """Authenticate users"""
         username = input_data.get('username', '')
@@ -206,13 +220,14 @@ class UserManager(object):
         except ValidationException as ve:
             return {'error': str(ve)}
 
-        # if a collection is being moved, auth user
-        # and then check for available space
-        # if not enough space, don't continue with login
+        # first, authenticate the user
+        # if failing, see if case-insensitive username and try that
         if not self.cork.is_authenticate(username, password):
-            return {'error': 'invalid_login'}
+            username = self.find_case_insensitive_username(username)
+            if not username or not self.cork.is_authenticate(username, password):
+                return {'error': 'invalid_login'}
 
-
+        # if not enough space, don't continue with login
         if move_info:
             if not self.has_space_for_new_collection(username,
                                                      move_info['from_user'],
@@ -267,21 +282,33 @@ class UserManager(object):
         else:
             return ''
 
-    def validate_user(self, user, email):
-        if user in self.all_users:
-            msg = 'User <b>{0}</b> already exists! Please choose a different username'
-            msg = msg.format(user)
-            raise ValidationException(msg)
+    def is_username_available(self, username):
+        username_lc = username.lower()
 
-        if not self.USER_RX.match(user) or user in self.RESTRICTED_NAMES:
-            msg = 'The name <b>{0}</b> is not a valid username. Please choose a different username'
-            msg = msg.format(user)
-            raise ValidationException(msg)
+        # username matches of the restricted names
+        if username_lc in self.RESTRICTED_NAMES:
+            return False
+
+        # username doesn't match the allowed regex
+        if not self.USER_RX.match(username):
+            return False
+
+        # lowercase username already exists
+        if self.redis.hexists(self.LC_USERNAMES_KEY, username_lc):
+            return False
+
+        # username already exists! (shouldn't match if lowercase exists, but just in case)
+        if username in self.all_users:
+            return False
+
+        return True
+
+    def validate_user(self, user, email):
+        if not self.is_username_available(user):
+            raise ValidationException('username_not_available')
 
         if self.has_user_email(email):
-            msg = 'There is already an account for <b>{0}</b>. If you have trouble logging in, you may <a href="/_forgot"><b>reset the password</b></a>.'
-            msg = msg.format(email)
-            raise ValidationException(msg)
+            raise ValidationException('email_not_available')
 
         return True
 
@@ -465,6 +492,11 @@ class UserManager(object):
         user = self.all_users.make_user(username)
         user.create_new()
 
+        # track lowercase username
+        lower_username = username.lower()
+        self.redis.hset(self.LC_USERNAMES_KEY, lower_username,
+                        username if lower_username != username else '')
+
         first_coll = None
 
         move_info = init_info.get('move_info')
@@ -505,11 +537,8 @@ class UserManager(object):
         if not username:
             errs.append('please specify a username!')
 
-        if not self.USER_RX.match(username) or username in self.RESTRICTED_NAMES:
-            errs.append('Invalid username..')
-
-        if username in self.all_users:
-            errs.append('Username already exists.')
+        if not self.is_username_available(username):
+            errs.append('Invalid username.')
 
         # ROLE
         if role not in self.get_roles():

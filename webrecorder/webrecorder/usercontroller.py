@@ -62,13 +62,10 @@ class UserController(BaseController):
         def test_username(username):
             """async precheck username availability on signup form"""
 
-            try:
-                if username not in self.user_manager.RESTRICTED_NAMES:
-                    self.user_manager.all_users[username]
-            except:
+            if self.user_manager.is_username_available(username):
                 return {'success': True}
-
-            return self._raise_error(400, 'not_available')
+            else:
+                return self._raise_error(400, 'username_not_available')
 
         # GET CURRENT USER
         @self.app.get('/api/v1/auth/curr_user')

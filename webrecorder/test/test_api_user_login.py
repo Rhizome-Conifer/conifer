@@ -76,7 +76,7 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
 
-        assert res.json == {'errors': {'validation': 'The name <b>@#$</b> is not a valid username. Please choose a different username'}}
+        assert res.json == {'errors': {'validation': 'username_not_available'}}
 
     @classmethod
     def mock_send_reg_email(cls, sender, title, text):
@@ -157,8 +157,21 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
 
-        assert res.json == {'errors': {'validation': 'User <b>someuser</b> already exists! Please choose '
-                                                     'a different username'}}
+        assert res.json == {'errors': {'validation': 'username_not_available'}}
+
+    def test_api_register_fail_dupe_user_case_insensitive(self):
+        # dupe user
+        params = {'email': 'test2@example.com',
+                  'username': 'SomeUser',
+                  'password': 'Password2',
+                  'confirmpassword': 'Password2'
+                 }
+
+        res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
+
+        assert res.json == {'errors': {'validation': 'username_not_available'}}
+
+
 
     def test_api_register_fail_dupe_email(self):
         # dupe email
@@ -171,10 +184,7 @@ class TestApiUserLogin(FullStackTests):
 
         res = self.testapp.post_json('/api/v1/auth/register', params=params, status=400)
 
-        assert res.json == {'errors': {'validation': 'There is already an account for '
-                                                     '<b>test@example.com</b>. If you have trouble '
-                                                     'logging in, you may <a href="/_forgot"><b>reset the '
-                                                     'password</b></a>.'}}
+        assert res.json == {'errors': {'validation': 'email_not_available'}}
 
     def test_api_val_reg_fail_already_registered_logged_out(self):
         params = {'reg': self.val_reg}
@@ -274,7 +284,12 @@ class TestApiUserLogin(FullStackTests):
     def test_check_username_not_avail(self):
         res = self.testapp.get('/api/v1/auth/check_username/someuser', status=400)
 
-        assert res.json == {'error': 'not_available'}
+        assert res.json == {'error': 'username_not_available'}
+
+    def test_check_username_not_avail_diff_case(self):
+        res = self.testapp.get('/api/v1/auth/check_username/Someuser', status=400)
+
+        assert res.json == {'error': 'username_not_available'}
 
     def test_update_password_fail(self):
         params = {'currPass': 'Password1',
@@ -368,8 +383,8 @@ class TestApiUserLogin(FullStackTests):
         res = self.testapp.post_json('/api/v1/auth/password/reset', params=params)
         assert res.json == {'success': True}
 
-    def test_login_2(self):
-        params = {'username': 'someuser',
+    def test_login_2_diff_case(self):
+        params = {'username': 'Someuser',
                   'password': 'TestTest789'}
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
