@@ -263,10 +263,9 @@ class TestTempContent(FullStackTests):
         res.charset = 'utf-8'
 
         assert '"record"' in res.text
-        assert '"rec_id": "my-rec2"' in res.text, res.text
-        #assert '"rec_title": "My Rec2"' in res.text
-        assert '"coll_id": "temp"' in res.text
-        assert '"coll_title": "Temporary Collection"' in res.text
+        assert '"my-rec2"' in res.text, res.text
+        assert '"temp"' in res.text
+        assert '"Temporary Collection"' in res.text
 
     def test_anon_record_2(self):
         res = self._get_anon('/temp/my-rec2/record/mp_/http://httpbin.org/get?bood=far')
@@ -467,11 +466,9 @@ class TestTempContent(FullStackTests):
         res.charset = 'utf-8'
 
         assert '"replay"' in res.text
-        assert '"rec_id": "my-rec2"' in res.text
-        #assert '"rec_title": "My Rec2"' in res.text
-        #assert '"rec_title": "Recording on' in res.text
-        assert '"coll_id": "temp"' in res.text
-        assert '"coll_title": "Temporary Collection"' in res.text
+        assert '"my-rec2"' in res.text
+        assert '"temp"' in res.text
+        assert '"Temporary Collection"' in res.text
 
     def test_anon_replay_coll_top_frame(self):
         res = self._get_anon('/temp/http://httpbin.org/get?food=bar')
@@ -480,8 +477,8 @@ class TestTempContent(FullStackTests):
         assert '"replay-coll"' in res.text
         assert '"rec_id"' not in res.text
         assert '"rec_title"' not in res.text
-        assert '"coll_id": "temp"' in res.text
-        assert '"coll_title": "Temporary Collection"' in res.text
+        assert '"temp"' in res.text
+        assert '"Temporary Collection"' in res.text
 
     def test_anon_download_rec(self):
         res = self._get_anon('/temp/my-rec2/$download')

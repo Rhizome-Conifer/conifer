@@ -298,7 +298,7 @@ const initalData = [
         return dispatch(loadAuth()).then(
           (auth) => {
             if (auth.user.anon) {
-              dispatch(loadAnon());
+              return dispatch(loadAnon());
             }
           }
         );

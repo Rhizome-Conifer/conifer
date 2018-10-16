@@ -282,6 +282,16 @@ class ContentController(BaseController, RewriterApp):
         def do_proxy(url):
             return self.do_proxy(url)
 
+        # PROXY with CORS
+        @self.app.route('/proxy-fetch/<url:path>', method='GET')
+        def do_proxy_fetch_cors(url):
+            res = self.do_proxy(url)
+
+            if 'HTTP_ORIGIN' in request.environ:
+                self.set_options_headers(None, None, res)
+
+            return res
+
         # LIVE DEBUG
         #@self.app.route('/live/<wb_url:path>', method='ANY')
         def live(wb_url):
@@ -388,6 +398,11 @@ class ContentController(BaseController, RewriterApp):
                 self.set_options_headers(self.content_host, self.app_host)
                 response.headers['Cache-Control'] = 'no-cache'
 
+                # if already have same session, just redirect back
+                # likely a real 404 not found
+                if sesh.is_same_session(request.query.getunicode('content_cookie')):
+                    redirect(url + request.query.getunicode('path'))
+
                 cookie = quote(request.environ.get('webrec.sesh_cookie', ''))
                 url += '/_set_session?{0}&cookie={1}'.format(request.environ['QUERY_STRING'], cookie)
                 redirect(url)
@@ -419,35 +434,6 @@ class ContentController(BaseController, RewriterApp):
 
             except Exception as e:
                 self._raise_error(400, 'invalid_request')
-
-    def set_options_headers(self, origin_host, target_host):
-        origin = request.environ.get('HTTP_ORIGIN')
-
-        if origin_host:
-            expected_origin = request.environ['wsgi.url_scheme'] + '://' + origin_host
-
-            # ensure origin is the content host origin
-            if origin != expected_origin:
-                return False
-
-        host = request.environ.get('HTTP_HOST')
-        # ensure host is the app host
-        if target_host and host != target_host:
-            return False
-
-        response.headers['Access-Control-Allow-Origin'] = origin
-
-        methods = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_METHOD')
-        if methods:
-            response.headers['Access-Control-Allow-Methods'] = methods
-
-        headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
-        if headers:
-            response.headers['Access-Control-Allow-Headers'] = headers
-
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        response.headers['Access-Control-Max-Age'] = '1800'
-        return True
 
     def do_proxy(self, url):
         info = self.browser_mgr.init_cont_browser_sesh()
@@ -750,6 +736,8 @@ class ContentController(BaseController, RewriterApp):
 
             if self.content_error_redirect:
                 return redirect(self.content_error_redirect + '?' + urlencode(err_context), code=307)
+            elif self._wrong_content_session_redirect():
+                return
             else:
                 return handle_error(err_context)
 

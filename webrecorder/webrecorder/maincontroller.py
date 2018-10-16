@@ -370,9 +370,14 @@ class MainController(BaseController):
         def empty2(user, url=''):
             self.redirect('/' + user + '/' + url)
 
-        @self.bottle_app.route('/static/<path:path>')
+        @self.bottle_app.route(['/static/<path:path>', '/static_cors/<path:path>'])
         def static_files(path):
-            return static_file(path, root=self.static_root)
+            res = static_file(path, root=self.static_root)
+
+            if 'HTTP_ORIGIN' in request.environ:
+                self.set_options_headers(None, None, res)
+
+            return res
 
         @self.bottle_app.route('/_message')
         def flash_message():
@@ -423,6 +428,9 @@ class MainController(BaseController):
                     return
 
                 else:
+                    if self._wrong_content_session_redirect():
+                        return
+
                     return error_view(out)
 
             if isinstance(out.exception, dict):
@@ -468,6 +476,7 @@ class MainController(BaseController):
             orig_url += '?' + request.urlparts.query
 
         full_url = host + urljoin(url, orig_url)
+
         response.status = 307
         response.set_header('Location', full_url)
         return True

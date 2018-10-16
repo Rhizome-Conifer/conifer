@@ -62,11 +62,19 @@ class Session(object):
 
         message, msg_type = self.pop_message()
 
+        # TODO: remove template params as not used with frontend?
         params = {'curr_user': self.curr_user,
                   'curr_role': self.curr_role,
                   'csrf': self.get_csrf(),
                   'message': message,
-                  'msg_type': msg_type}
+                  'msg_type': msg_type,
+                 }
+
+        if self.curr_role == 'anon':
+            params['anon_ttl'] = ttl
+
+        if sesh_manager.auto_login_user:
+            params['auto_login'] = True
 
         self.template_params = params
 
@@ -92,6 +100,17 @@ class Session(object):
 
         sesh_id, is_restricted = result
         self.set_id(sesh_id)
+
+    def is_same_session(self, cookie):
+        if not cookie:
+            return False
+
+        result = self.sesh_manager.signed_cookie_to_id(cookie)
+        if not result:
+            return False
+
+        sesh_id, is_restricted = result
+        return self._sesh['id'] == sesh_id
 
     def set_id(self, id):
         self._sesh['id'] = id
@@ -120,8 +139,14 @@ class Session(object):
         return self._sesh.get(name, value)
 
     def set_anon(self):
-        if not self.curr_user:
-            self['anon'] = self.anon_user
+        if self.curr_user:
+            return
+
+        self['anon'] = self.anon_user
+
+        self.curr_role = 'anon'
+
+        self.redis.set(self.TEMP_KEY.format(self.anon_user), self._sesh['id'])
 
     def is_anon(self, user=None):
         anon = self._sesh.get('anon')
@@ -297,18 +322,6 @@ class RedisSessionMiddleware(CookieGuard):
                           ttl,
                           is_restricted,
                           self)
-
-        #if force_save:
-        #    session.save()
-
-        if session.curr_role == 'anon':
-            session.template_params['anon_ttl'] = ttl
-
-            anon_user = session['anon']
-            self.redis.set(Session.TEMP_KEY.format(anon_user), sesh_id)
-
-        if self.auto_login_user:
-            session.template_params['auto_login'] = True
 
         environ['webrec.template_params'] = session.template_params
         environ['webrec.session'] = session

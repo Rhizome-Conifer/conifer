@@ -22,17 +22,22 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
         os.environ['CONTENT_HOST'] = ''
         os.environ['APP_HOST'] = ''
 
-    def test_empty_temp_user(self):
+    def test_new_temp_user_wrong_host(self):
         res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
         assert res.json['user']['username']
         username = res.json['user']['username']
 
+        self.assert_temp_user_sesh(username)
+
+        # incorrect host, redirect
         res = self.testapp.get('/api/v1/user/' + username, status=302)
         assert res.headers['Location'] == 'http://app-host/api/v1/user/' + username
 
     def test_init_anon(self):
         res = self.testapp.post('/api/v1/auth/anon_user', headers={'Host': 'app-host'})
         TestCreateNewAPISeparateDomains.anon_user = res.json['user']['username']
+
+        self.assert_temp_user_sesh(TestCreateNewAPISeparateDomains.anon_user)
 
         assert res.json['user']['username'] == self.anon_user
         assert res.json['user']['space_utilization']['used'] == 0
@@ -77,7 +82,6 @@ class TestCreateNewAPISeparateDomains(FullStackTests):
                                headers={'Host': 'app-host'})
 
         assert res.json['recording']['desc'] == 'Rec Session Description Here'
-
 
     def test_api_new_extract_browser(self):
         params = {'coll': 'temp',

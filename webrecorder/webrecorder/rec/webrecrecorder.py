@@ -106,8 +106,8 @@ class WebRecRecorder(object):
 
             full_warc_prefix=storagepaths.FULL_WARC_PREFIX,
 
-            #dupe_policy=WriteRevisitDupePolicy(),
-            dupe_policy=SkipDupePolicy(),
+            dupe_policy=WriteRevisitDupePolicy(),
+            #dupe_policy=SkipDupePolicy(),
 
             info_keys=self.info_keys.values(),
             rec_info_key_templ=self.info_keys['rec'],

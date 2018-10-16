@@ -158,8 +158,12 @@ class TestPending(FullStackTests):
         assert self.get_pending_count('rec-a') == 0
         assert self.get_pending_size('rec-a') == 0
 
-        # assert 1 cdxj entry (deduped)
-        assert int(self.redis.zcard('r:rec-a:cdxj')) == 1
+        # assert 5 cdxj entry (deduped, revisit records written)
+        all_cdxj = self.redis.zrange('r:rec-a:cdxj', 0, -1)
+        assert len(all_cdxj) == 5
+
+        # assert 4 are revisit records
+        assert len([cdxj for cdxj in all_cdxj if 'revisit' in cdxj]) == 4
 
         # UNIQUE URLS
         # add param= to generate unique url
@@ -177,8 +181,12 @@ class TestPending(FullStackTests):
         assert self.get_pending_count('rec-a') == 0
         assert self.get_pending_size('rec-a') == 0
 
-        # assert 6 cdxj entries
-        assert int(self.redis.zcard('r:rec-a:cdxj')) == 6
+        # assert 10 cdxj entries
+        all_cdxj = self.redis.zrange('r:rec-a:cdxj', 0, -1)
+        assert len(all_cdxj) == 10
+
+        # assert 4 are revisit records
+        assert len([cdxj for cdxj in all_cdxj if 'revisit' in cdxj]) == 4
 
         # assert collection size increased
         coll, rec = self.get_coll_rec(self.anon_user, 'temp', '')

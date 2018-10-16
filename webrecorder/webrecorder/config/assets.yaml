@@ -137,16 +137,20 @@ bundles:
         contents:
             - pkg://pywb/static/ww_rw.js
 
-    presWorker-js:
-        output: bundle/wombatPreservationWorker.js
+    autoFetchWorker-js:
+        output: bundle/autoFetchWorker.js
         contents:
-            - pkg://pywb/static/wombatPreservationWorker.js
+            - pkg://pywb/static/autoFetchWorker.js
+
+    autoFetchWorkerProxyMode-js:
+        output: bundle/autoFetchWorkerProxyMode.js
+        contents:
+            - pkg://pywb/static/autoFetchWorkerProxyMode.js
 
     proxy-js:
         output: bundle/proxy.js
         contents:
-            - pkg://pywb/static/wombat.js
-            #- pkg://pywb/static/vidrw.js
+            - pkg://pywb/static/wombatProxyMode.js
             - wrscripts.js
             - ws.js
 

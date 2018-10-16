@@ -17,7 +17,7 @@
 {% set urlsplit = cdx.url | urlsplit %}
   wbinfo = {}
   wbinfo.top_url = "{{ top_url }}";
-{% if is_framed == 'true' %}
+{% if is_framed %}
   // Fast Top-Frame Redirect
   if (window == window.top && wbinfo.top_url) {
     var loc = window.location.href.replace(window.location.hash, "");
@@ -33,13 +33,17 @@
   wbinfo.request_ts = "{{ wb_url.timestamp }}";
   wbinfo.prefix = decodeURI("{{ wb_prefix }}");
   wbinfo.mod = "{{ replay_mod }}";
-  wbinfo.is_framed = {{ is_framed  }};
-  wbinfo.is_live = {{ is_live }};
+  wbinfo.is_framed = {{ is_framed | tobool }};
+  wbinfo.is_live = {{ is_live | tobool }};
   wbinfo.coll = "{{ coll }}";
   wbinfo.proxy_magic = "{{ env.pywb_proxy_magic }}";
   wbinfo.static_prefix = "{{ host_prefix }}/{{ static_path }}/bundle/";
 
-{% if not wb_url.is_banner_only %}
+{% if not wb_url.is_banner_only or env.pywb_proxy_magic %}
+  wbinfo.use_wombat = true;
+  wbinfo.use_auto_fetch_worker = true;
+  wbinfo.auto_fetch_worker_prefix = "{{ host_prefix }}/static_cors/bundle/";
+
   wbinfo.wombat_ts = "{{ wombat_ts }}";
   wbinfo.wombat_sec = "{{ wombat_sec }}";
   wbinfo.wombat_scheme = "{{ urlsplit.scheme }}";
@@ -47,11 +51,8 @@
 
   wbinfo.wombat_opts = {};
 
-  if (window && window._WBWombat && !window._wb_wombat) {
-    window._wb_wombat = new _WBWombat(window, wbinfo);
-  } else if (!window._wb_wombat) {
-    // no wombat
-    console.warn("_wb_wombat missing!");
+  if (window && window._WBWombatInit) {
+    window._WBWombatInit(wbinfo);
   }
 {% else %}
 window.devicePixelRatio = 1;
