@@ -212,7 +212,7 @@ class UserSignup extends Component {
               <FormControl.Feedback />
               {
                 userCheck && username === checkedUsername && !available &&
-                  <HelpBlock>This username already exists</HelpBlock>
+                  <HelpBlock>Sorry, this username is not available.</HelpBlock>
               }
               {
                 username && !this.userPassRegex(username) &&

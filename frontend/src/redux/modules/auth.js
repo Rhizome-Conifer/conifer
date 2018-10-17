@@ -9,10 +9,6 @@ const LOAD = 'wr/auth/LOAD';
 const LOAD_SUCCESS = 'wr/auth/LOAD_SUCCESS';
 const LOAD_FAIL = 'wr/auth/LOAD_FAIL';
 
-const LOAD_ANON = 'wr/auth/LOAD_ANON';
-const LOAD_ANON_SUCCESS = 'wr/auth/LOAD_ANON_SUCCESS';
-const LOAD_ANON_FAIL = 'wr/auth/LOAD_ANON_FAIL';
-
 const LOGIN = 'wr/auth/LOGIN';
 export const LOGIN_SUCCESS = 'wr/auth/LOGIN_SUCCESS';
 const LOGIN_FAIL = 'wr/auth/LOGIN_FAIL';
@@ -209,14 +205,6 @@ export function load(include_colls = true) {
     promise: client => client.get(`${apiPath}/auth/curr_user`, {
       params: { include_colls }
     })
-  };
-}
-
-
-export function loadAnon() {
-  return {
-    types: [LOAD_ANON, LOAD_ANON_SUCCESS, LOAD_ANON_FAIL],
-    promise: client => client.post(`${apiPath}/auth/anon_user`)
   };
 }
 

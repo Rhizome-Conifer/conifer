@@ -389,21 +389,36 @@ class TestAppContentDomain(FullStackTests):
         assert res.status_code == 302
         assert self.testapp.cookies['__test_sesh'] in res.headers['Set-Cookie']
 
-    def test_not_found_redir_back(self):
+    def test_not_found(self):
         url = '/test/default-collection/mp_/http://httpbin.org/get?bood=far'
         refer_url = 'http://app-host' + url.replace('mp_/', '')
 
         res = self.testapp.get(url,
                                headers={'Host': 'content-host',
                                         'Referer': refer_url},
-                               status=307)
+                               status=404)
 
-        assert 'content_cookie' in res.headers['Location']
+    def test_not_found_no_cookie(self):
+        # clear content cookie
+        self.testapp.cookiejar.clear(domain='content-host.local')
 
+        url = '/test/default-collection/mp_/http://httpbin.org/get?bood=far'
+        refer_url = 'http://app-host' + url.replace('mp_/', '')
+
+        res = self.testapp.get(url,
+                               headers={'Host': 'content-host',
+                                        'Referer': refer_url},
+                               status=302)
+
+        assert 'content_cookie' not in res.headers['Location']
+
+        # app /_set_session
         res = self.app_get(res.headers['Location'])
 
-
         assert 'Set-Cookie' not in res.headers
+
+        # content /_set_session
+        res = self.content_get(res.headers['Location'])
 
         assert res.headers['Location'].endswith(url)
 
@@ -412,4 +427,59 @@ class TestAppContentDomain(FullStackTests):
                                         'Referer': refer_url},
                                status=404)
 
+    def test_not_found_coll_no_cookie(self):
+        # clear content cookie
+        self.testapp.cookiejar.clear(domain='content-host.local')
+
+        url = '/test/default-collection-invalid/mp_/http://httpbin.org/get?bood=far'
+        refer_url = 'http://app-host' + url.replace('mp_/', '')
+
+        res = self.testapp.get(url,
+                               headers={'Host': 'content-host',
+                                        'Referer': refer_url},
+                               status=302)
+
+        assert 'content_cookie' not in res.headers['Location']
+        assert 'Set-Cookie' not in res.headers
+
+        # app /_set_session
+        res = self.app_get(res.headers['Location'])
+
+        assert 'Set-Cookie' not in res.headers
+
+        # content /_set_session
+        res = self.content_get(res.headers['Location'])
+
+        assert res.headers['Location'].endswith(url)
+
+        res = self.testapp.get(res.headers['Location'],
+                               headers={'Host': 'content-host',
+                                        'Referer': refer_url},
+                               status=307)
+
+        assert 'app-host' in res.headers['Location']
+        res = self.app_get(res.headers['Location'])
+
+        assert 'content-host' in res.headers['Location']
+        res = self.content_get(res.headers['Location'], status=404)
+
+    def test_public_no_cookie_needed(self):
+        params = {'public': True,
+                 }
+
+        res = self.testapp.post_json('/api/v1/collection/default-collection?user=test',
+                            headers={'Host': 'app-host'},
+                            params=params, status=200)
+
+        # clear content cookie
+        self.testapp.cookiejar.clear(domain='content-host.local')
+
+        url = '/test/default-collection/2018mp_/http://httpbin.org/get?food=bar'
+        refer_url = 'http://app-host' + url.replace('mp_/', '/')
+        res = self.testapp.get(url,
+                               headers={'Host': 'content-host',
+                                        'Referer': refer_url}, status=200)
+
+        assert 'Set-Cookie' in res.headers
+        assert '"food": "bar"' in res.text
 

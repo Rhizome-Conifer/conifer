@@ -582,15 +582,16 @@ class TestRegisterMigrate(FullStackTests):
     def test_create_another_user(self):
         m = CLIUserManager()
         m.create_user( email='test2@example.com',
-                       username='testauto',
+                       username='Testauto',
                        passwd='Test12345',
                        role='archivist',
                        name='Test User')
 
-        assert self.redis.exists('u:testauto:info')
+        assert self.redis.exists('u:Testauto:info')
+        assert self.redis.hget(CLIUserManager.LC_USERNAMES_KEY, 'testauto') == 'Testauto'
 
     def test_already_logged_in(self):
-        params = {'username': 'testauto',
+        params = {'username': 'Testauto',
                   'password': 'Test12345'}
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params, status=403)
@@ -605,21 +606,21 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
     def test_login_another(self):
-        params = {'username': 'testauto',
+        params = {'username': 'TestAuto',
                   'password': 'Test12345'}
 
         res = self.testapp.post_json('/api/v1/auth/login', params=params)
 
         assert res.json['user']['num_collections'] == 1
         assert res.json['user']['role'] == 'archivist'
-        assert res.json['user']['username'] == 'testauto'
+        assert res.json['user']['username'] == 'Testauto'
 
         assert 'max-age=' not in res.headers['Set-Cookie'].lower()
 
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_different_user_default_coll(self):
-        res = self.testapp.get('/testauto/default-collection')
+        res = self.testapp.get('/Testauto/default-collection')
         assert '/default-collection' in res.text, res.text
 
     def test_different_user_coll(self):
@@ -672,7 +673,7 @@ class TestRegisterMigrate(FullStackTests):
 
         # wrong user!
         #params = {'csrf': csrf_token}
-        res = self.testapp.delete('/api/v1/user/testauto', status=404)
+        res = self.testapp.delete('/api/v1/user/Testauto', status=404)
 
         assert res.json['error'] == 'not_found'
 

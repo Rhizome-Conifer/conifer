@@ -49,7 +49,8 @@ class TestWS(FullStackTests):
 
     def test_ws_record_init(self):
         TestWS.ws = websocket.WebSocket()
-        TestWS.ws.connect('ws://localhost:{0}/_client_ws?user={user}&coll=temp&rec=rec&type=record'.format(self.app_port, user=self.anon_user))
+        TestWS.ws.connect('ws://localhost:{0}/_client_ws?user={user}&coll=temp&rec=rec&type=record'.format(self.app_port, user=self.anon_user),
+                          header=['Cookie: __test_sesh=' + self.sesh.cookies['__test_sesh']])
 
         msg = json.loads(self.ws.recv())
 
@@ -89,7 +90,8 @@ class TestWS(FullStackTests):
 
     def test_ws_replay(self):
         replay_ws = websocket.WebSocket()
-        replay_ws.connect('ws://localhost:{0}/_client_ws?user={user}&coll=temp'.format(self.app_port, user=self.anon_user))
+        replay_ws.connect('ws://localhost:{0}/_client_ws?user={user}&coll=temp'.format(self.app_port, user=self.anon_user),
+                          header=['Cookie: __test_sesh=' + self.sesh.cookies['__test_sesh']])
 
         msg = json.loads(replay_ws.recv())
 
@@ -113,7 +115,8 @@ class TestWS(FullStackTests):
 
     def test_ws_extract_update_with_stats(self):
         ex_ws = websocket.WebSocket()
-        ex_ws.connect('ws://localhost:{0}/_client_ws?user={user}&coll=temp&rec=ex&type=extract&url=http://geocities.com/'.format(self.app_port, user=self.anon_user))
+        ex_ws.connect('ws://localhost:{0}/_client_ws?user={user}&coll=temp&rec=ex&type=extract&url=http://geocities.com/'.format(self.app_port, user=self.anon_user),
+                      header=['Cookie: __test_sesh=' + self.sesh.cookies['__test_sesh']])
 
         def assert_size():
             msg = json.loads(ex_ws.recv())
