@@ -1,4 +1,4 @@
-from cork import Cork, AAAException, AuthException
+from cork import Cork, AuthException
 import os
 import json
 
@@ -23,7 +23,7 @@ class WebRecCork(Cork):
     def update_password(self, username, password):
         user = self.user(username)
         if user is None:
-            raise AAAException("Nonexistent user.")
+            raise ValidationException('no_such_user')
         user.update(pwd=password)
 
     def do_login(self, username):
@@ -48,22 +48,22 @@ class WebRecCork(Cork):
 
         return authenticated
 
-    def validate_registration(self, registration_code):
+    def validate_registration(self, registration_code, expected_username=None):
         """Validate pending account registration, create a new account if
         successful.
         :param registration_code: registration code
         :type registration_code: str.
         """
+        data = self._store.pending_registrations.pop(registration_code)
+        if expected_username and expected_username in self._store.users:
+            raise ValidationException('already_registered')
 
-        try:
-            data = self._store.pending_registrations.pop(registration_code)
-        except KeyError:
-            raise AuthException("Invalid registration code.")
+        if not data:
+            raise ValidationException('invalid_code')
 
         username = data['username']
-        if username in self._store.users:
-            raise AAAException("User is already existing.")
-
+        if expected_username and expected_username != username:
+            raise ValidationException('invalid_code')
 
         try:
             full_name = json.loads(data['desc'])['name']
@@ -143,6 +143,7 @@ class RedisCorkBackend(object):
 
 # ============================================================================
 class ValidationException(Exception):
-    pass
+    def __init__(self, msg=None):
+        self.msg = msg
 
 

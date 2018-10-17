@@ -63,7 +63,8 @@ class TestRegisterMigrate(FullStackTests):
 
     @classmethod
     def mock_send_reg_email(cls, sender, title, text):
-        cls.val_reg = re.search('/_valreg/([^"]+)', text).group(1)
+        cls.val_reg = re.search('/_valreg/([^"?]+)', text).group(1)
+        assert '?username=' in text
 
     def test_register_post_success(self):
         params = {'email': 'test@example.com',
@@ -76,7 +77,6 @@ class TestRegisterMigrate(FullStackTests):
                  }
 
         with patch('cork.Mailer.send_email', self.mock_send_reg_email):
-            #res = self.testapp.post('/_register', params=params)
             res = self.testapp.post_json('/api/v1/auth/register', params=params)
 
         #assert res.headers['Location'] == 'http://localhost:80/'

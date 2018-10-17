@@ -80,7 +80,8 @@ class TestApiUserLogin(FullStackTests):
 
     @classmethod
     def mock_send_reg_email(cls, sender, title, text):
-        cls.val_reg = re.search('/_valreg/([^"]+)', text).group(1)
+        cls.val_reg = re.search('/_valreg/([^"?]+)', text).group(1)
+        assert '?username=someuser' in text
 
     def test_api_register_success(self):
         params = {'email': 'test@example.com',
@@ -121,7 +122,7 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
-        res = self.testapp.post('/api/v1/auth/validate', headers=headers, params=params)
+        res = self.testapp.post('/api/v1/auth/validate?username=someuser', headers=headers, params=params)
 
         assert res.json == {'first_coll_name': 'default-collection', 'registered': 'someuser'}
 
@@ -134,11 +135,18 @@ class TestApiUserLogin(FullStackTests):
         assert res['max_size'] == '1000000000'
         assert res['created_at'] != None
 
-    def test_api_val_reg_fail_already_registered(self):
+    def test_api_val_reg_fail_already_registered_no_user(self):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
         res = self.testapp.post('/api/v1/auth/validate', headers=headers, params=params, status=400)
+        assert res.json == {'error': 'invalid_code'}
+
+    def test_api_val_reg_fail_already_registered(self):
+        params = {'reg': self.val_reg}
+        headers = {'Cookie': 'valreg=' + self.val_reg}
+
+        res = self.testapp.post('/api/v1/auth/validate?username=someuser', headers=headers, params=params, status=400)
         assert res.json == {'error': 'already_registered'}
 
     def test_api_logout(self):
@@ -190,7 +198,7 @@ class TestApiUserLogin(FullStackTests):
         params = {'reg': self.val_reg}
         headers = {'Cookie': 'valreg=' + self.val_reg}
 
-        res = self.testapp.post('/api/v1/auth/validate', headers=headers, params=params, status=400)
+        res = self.testapp.post('/api/v1/auth/validate?username=someuser', headers=headers, params=params, status=400)
         assert res.json == {'error': 'already_registered'}
 
     def test_login_fail_bad_password(self):
