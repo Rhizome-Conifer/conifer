@@ -63,7 +63,8 @@ class TestRegisterMigrate(FullStackTests):
 
     @classmethod
     def mock_send_reg_email(cls, sender, title, text):
-        cls.val_reg = re.search('/_valreg/([^"]+)', text).group(1)
+        cls.val_reg = re.search('/_valreg/([^"?]+)', text).group(1)
+        assert '?username=' in text
 
     def test_register_post_success(self):
         params = {'email': 'test@example.com',
@@ -76,7 +77,6 @@ class TestRegisterMigrate(FullStackTests):
                  }
 
         with patch('cork.Mailer.send_email', self.mock_send_reg_email):
-            #res = self.testapp.post('/_register', params=params)
             res = self.testapp.post_json('/api/v1/auth/register', params=params)
 
         #assert res.headers['Location'] == 'http://localhost:80/'
@@ -98,7 +98,7 @@ class TestRegisterMigrate(FullStackTests):
             return get_storage(storage_type, redis)
 
         with patch('webrecorder.models.collection.get_global_storage', _get_storage) as p:
-            res = self.testapp.post('/api/v1/auth/validate', params=params, headers=headers)
+            res = self.testapp.post_json('/api/v1/auth/validate', params=params, headers=headers)
             time.sleep(1.1)
 
         assert res.json == {'first_coll_name': 'test-migrate', 'registered': 'someuser'}
@@ -399,7 +399,7 @@ class TestRegisterMigrate(FullStackTests):
         assert '"rec": "test"' in res.text
 
     def test_logout_1(self):
-        res = self.testapp.post('/api/v1/auth/logout', status=200)
+        res = self.testapp.post_json('/api/v1/auth/logout', status=200)
         assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
@@ -537,11 +537,11 @@ class TestRegisterMigrate(FullStackTests):
 
     def _test_delete_coll_invalid_csrf(self):
         # no csrf token, should result in 403
-        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', status=403)
+        res = self.testapp.post_json('/_delete_coll?user=someuser&coll=test-coll', status=403)
 
         # invalid csrf token, should result in 403
         params = {'csrf': 'xyz'}
-        res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params, status=403)
+        res = self.testapp.post_json('/_delete_coll?user=someuser&coll=test-coll', params=params, status=403)
 
     def test_delete_coll(self):
         res = self.testapp.get('/someuser/new-coll')
@@ -562,7 +562,7 @@ class TestRegisterMigrate(FullStackTests):
 
         # TODO: readd csrf?
         #params = {'csrf': csrf_token}
-        #res = self.testapp.post('/_delete_coll?user=someuser&coll=test-coll', params=params)
+        #res = self.testapp.post_json('/_delete_coll?user=someuser&coll=test-coll', params=params)
         res = self.testapp.delete('/api/v1/collection/test-coll?user=someuser')
         assert res.json == {'deleted_id': 'test-coll'}
 
@@ -601,7 +601,7 @@ class TestRegisterMigrate(FullStackTests):
         assert self.testapp.cookies.get('__test_sesh', '') != ''
 
     def test_logout_2(self):
-        res = self.testapp.post('/api/v1/auth/logout', status=200)
+        res = self.testapp.post_json('/api/v1/auth/logout', status=200)
         assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
@@ -646,7 +646,7 @@ class TestRegisterMigrate(FullStackTests):
         assert res.json == {'error': 'no_such_collection'}
 
     def test_logout_3(self):
-        res = self.testapp.post('/api/v1/auth/logout', status=200)
+        res = self.testapp.post_json('/api/v1/auth/logout', status=200)
         assert res.json['success']
         assert self.testapp.cookies.get('__test_sesh', '') == ''
 
@@ -680,7 +680,7 @@ class TestRegisterMigrate(FullStackTests):
     def _test_delete_user_wrong_csrf(self):
         # right user, invalid csrf
         params = {'csrf': 'xyz'}
-        res = self.testapp.post('/someuser/$delete', params=params, status=403)
+        res = self.testapp.post_json('/someuser/$delete', params=params, status=403)
         assert res.status_code == 403
 
 

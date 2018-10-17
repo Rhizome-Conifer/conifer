@@ -178,20 +178,20 @@ class UserManager(object):
                 'to_title': to_coll_title,
                }
 
-    def validate_registration(self, reg_code, cookie):
+    def validate_registration(self, reg_code, cookie, username):
         cookie_validate = 'valreg=' + reg_code
 
         if cookie_validate not in cookie:
             return {'error': 'invalid_code'}
 
         try:
-            user, first_coll = self.create_user_from_reg(reg_code)
+            user, first_coll = self.create_user_from_reg(reg_code, username)
 
             return {'registered': user.name,
                     'first_coll_name': first_coll.name}
 
-        except ValidationException:
-            return {'error': 'already_registered'}
+        except ValidationException as ve:
+            return {'error': ve.msg}
 
         except Exception as e:
             import traceback
@@ -353,7 +353,7 @@ class UserManager(object):
         username = self.access.session_user.name
 
         if not self.cork.verify_password(username, curr_password):
-            raise ValidationException('Incorrect Current Password')
+            raise ValidationException('invalid_password')
 
         self.validate_password(password, confirm)
 
@@ -566,11 +566,8 @@ class UserManager(object):
 
         return None, self.create_new_user(username, {'email': email,
                                                      'name': name})
-    def create_user_from_reg(self, reg):
-        try:
-            user, init_info = self.cork.validate_registration(reg)
-        except Exception as a:
-            raise ValidationException(a)
+    def create_user_from_reg(self, reg, username):
+        user, init_info = self.cork.validate_registration(reg, username)
 
         if init_info:
             init_info = json.loads(init_info)

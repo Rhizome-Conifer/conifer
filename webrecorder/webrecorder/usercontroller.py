@@ -93,16 +93,18 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/auth/validate')
         def api_validate_reg_user():
-            reg = self.post_get('reg', '')
+            data = request.json or {}
+            reg = data.get('reg')
 
             cookie = request.environ.get('webrec.request_cookie', '')
 
-            result = self.user_manager.validate_registration(reg, cookie)
+            username = request.query.getunicode('username')
+
+            result = self.user_manager.validate_registration(reg, cookie, username)
             if 'error' in result or 'errors' in result:
                 response.status = 400
 
             return result
-
 
         # LOGIN
         @self.app.post('/api/v1/auth/login')
