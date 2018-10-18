@@ -120,7 +120,7 @@ class InspectorPanelUI extends PureComponent {
                           </span>
                         </li>
                         {
-                          pg.get('rec') &&
+                          pg.get('rec') && !__PLAYER__ &&
                           <li>
                             <h5>Session ID</h5>
                             <span className="value">

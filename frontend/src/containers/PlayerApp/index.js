@@ -51,7 +51,6 @@ class PlayerApp extends Component {
   componentDidUpdate(prevProps) {
     // restore scroll postion
     if (this.props.location !== prevProps.location) {
-
       if (window) {
         window.scrollTo(0, 0);
       }

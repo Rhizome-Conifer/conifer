@@ -3,77 +3,86 @@
 .help-container {
   background-image: url('../../../shared/images/Bg.png');
   background-repeat: repeat;
-  padding-top: 9rem;
+  padding-top: 2rem;
 
   .help {
     padding: 25px;
     width: 75vw;
     padding-bottom: 10rem;
     background: #FFF;
-    font-family: sans-serif;
+    font-family: $sans;
     margin: 2.5rem auto;
-  }
 
-  .help h3 {
-    font-size: 2rem;
-    margin: 0 0 0.8rem 0;
-  }
-  .help h4 {
-    font-size: 1.1rem;
-    margin: 0 0 0.5rem 0;
-    font-weight: lighter;
-  }
-  .help h5 {
-    font-size: 1.9rem;
-    margin: 3rem 0 0.3rem 0;
-    color: $blue;
-  }
-  .help h5:first-child {
-    margin: 0 0 0.3rem 0;
-  }
+    h3 {
+      font-size: 2rem;
+      margin: 0 0 0.8rem 0;
+    }
 
-  .help p {
-    font-size: 1.4rem;
-    line-height: 2.2rem;
-    margin: 1.2rem auto;
-  }
+    h4 {
+      font-size: 1.1rem;
+      margin: 0 0 0.5rem 0;
+      font-weight: lighter;
+    }
 
-  .help li {
-    font-size: 1.5rem;
-    margin-bottom: 0.8rem;
-  }
+    h5 {
+      font-size: 1.9rem;
+      margin: 3rem 0 0.3rem 0;
+      color: $blue;
 
-  .help a {
-    color: #4D6AE1;
-    text-decoration: none;
-  }
-  .help a:hover{
-    color: $blue !important;
-    box-shadow: 0 .3rem 0 $blue;
-  }
-  .help a:active{
-    color: $blue;
-    box-shadow: 0 .4rem 0 $blue;
-  }
-  .help a:visited{
-    color: #4D6AE1;
-    text-decoration: none;
+      &:first-child {
+        margin: 0 0 0.3rem 0;
+      }
+    }
+
+    p {
+      font-size: 1.4rem;
+      line-height: 2.2rem;
+      margin: 1.2rem auto;
+    }
+
+    li {
+      font-size: 1.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    a {
+      color: #4D6AE1;
+      text-decoration: none;
+
+      &:hover{
+        color: $blue !important;
+        box-shadow: 0 .3rem 0 $blue;
+      }
+
+      &:active{
+        color: $blue;
+        box-shadow: 0 .4rem 0 $blue;
+      }
+
+      &:visited{
+        color: #4D6AE1;
+        text-decoration: none;
+      }
+    }
   }
 
   .support {
     margin-top: 2rem;
     font-style: italic;
     width: 70%;
+
+    hr {
+      border: transparent;
+      border-top: .1rem solid #ccc;
+      height: .1rem;
+    }
+
+    p {
+      font-size: 1.3rem;
+    }
   }
-  .support hr {
-    border: transparent;
-    border-top: .1rem solid #ccc;
-    height: .1rem;
-  }
-  .support p {
-    font-size: 1.3rem;
-  }
-    .debug-heading {
+
+  .debug-heading {
     display: inline-block;
   }
 

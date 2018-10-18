@@ -103,6 +103,7 @@
   "scripts": {
     "analyze": "NODE_ENV=\"production\" webpack --config ./webpack/prod.config.js --json | webpack-bundle-size-analyzer",
     "build": "better-npm-run build",
+    "build-player-dev": "better-npm-run build-player-dev",
     "build-player": "better-npm-run build-player",
     "docker-dev": "concurrently --kill-others \"npm run watch-client\" \"npm run start-docker-dev\"",
     "docker-prod": "concurrently --kill-others \"npm run start-docker-prod\"",
@@ -119,10 +120,16 @@
         "NODE_ENV": "production"
       }
     },
+    "build-player-dev": {
+      "command": "webpack --watch --verbose --colors --display-error-details --config webpack/player.config.js",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
     "build-player": {
       "command": "webpack --verbose --colors --display-error-details --config webpack/player.config.js",
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "production"
       }
     },
     "start-docker-dev": {

@@ -88,6 +88,10 @@ class CollectionCoverUI extends Component {
             initial={collection.get('desc')} />
         </div>
         {
+          (this.context.canAdmin || collection.get('public_index')) &&
+            <Link className="browse" to={this.collectionLink()}>{ this.context.canAdmin ? 'Collection Index' : 'Browse Collection' }</Link>
+        }
+        {
           lists.size > 0 &&
             <div className="lists-container">
               <h3 className="lists-header">Lists in this Collection</h3>
@@ -124,10 +128,6 @@ class CollectionCoverUI extends Component {
                 }
               </ul>
             </div>
-        }
-        {
-          (this.context.canAdmin || collection.get('public_index')) &&
-            <Link className="browse" to={this.collectionLink()}>{ this.context.canAdmin ? 'Collection Index' : 'Browse Collection' }</Link>
         }
       </div>
     );

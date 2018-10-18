@@ -52,7 +52,7 @@ class Indexing extends Component {
   displayProgress = (data) => {
     if (data.done && data.done) {
       clearInterval(this.interval);
-      this.props.history.push('/local/collection');
+      this.props.history.replace('/local/collection');
     } else {
       this.setState({
         file: basename(data.filename),
@@ -65,13 +65,21 @@ class Indexing extends Component {
     const { file, progress } = this.state;
     return (
       <div id="indexingContainer">
+        <img className="logo" src={require('shared/images/webrecorder_player_text.svg')} alt="Webrecorder header" />
         <div className="progress-window">
           <h1>Please wait while the archive is indexed...</h1>
-          <h3>Now Indexing: { file }</h3>
+          <h3>{ file }</h3>
           <div className="indexing-bar">
             <div className="progress" style={{ width: `${progress || 0}%` }} />
             <div className="progress-readout">{ `${progress || 0}%` }</div>
           </div>
+        </div>
+
+        <div className="projectByRhizome">
+          <p>
+            A project by<br />
+            <img src={require('shared/images/Rhizome-Logo_med.png')} alt="rhizome logo" />
+          </p>
         </div>
       </div>
     );

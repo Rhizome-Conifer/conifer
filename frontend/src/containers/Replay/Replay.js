@@ -256,14 +256,8 @@ const initialData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();
-      if (!isRBLoaded(state)) {
-        let host = '';
-
-        if (__PLAYER__) {
-          host = state.app.getIn(['appSettings', 'host']);
-        }
-
-        return dispatch(loadBrowsers(host));
+      if (!isRBLoaded(state) && !__PLAYER__) {
+        return dispatch(loadBrowsers());
       }
 
       return undefined;
