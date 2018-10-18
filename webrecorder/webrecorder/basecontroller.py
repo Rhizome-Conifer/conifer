@@ -1,4 +1,3 @@
-import re
 import os
 
 from bottle import request, HTTPError, redirect as bottle_redirect, response
@@ -15,7 +14,6 @@ from webrecorder.apiutils import api_decorator, wr_api_spec
 class BaseController(object):
     SKIP_REDIR_LOCK_KEY = '__skip:{id}:{url}'
     SKIP_REDIR_LOCK_TTL = 10
-    TS_MOD_CHECK = re.compile('[\d]+mp_/')
 
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']
