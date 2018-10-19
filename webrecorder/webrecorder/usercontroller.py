@@ -93,7 +93,8 @@ class UserController(BaseController):
 
         @self.app.post('/api/v1/auth/validate')
         def api_validate_reg_user():
-            reg = self.post_get('reg', '')
+            data = request.json or {}
+            reg = data.get('reg')
 
             cookie = request.environ.get('webrec.request_cookie', '')
 
