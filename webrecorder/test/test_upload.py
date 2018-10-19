@@ -6,6 +6,7 @@ import json
 import time
 
 import requests
+from contextlib import contextmanager
 
 from webrecorder.models.stats import Stats
 from webrecorder.models.user import User
@@ -40,17 +41,9 @@ class TestUpload(FullStackTests):
         cls.test_upload_warc = os.path.join(cls.get_curr_dir(), 'warcs', 'test_3_15_upload.warc.gz')
 
         cls.env_backup = dict(os.environ)
-        cls.player = None
-        cls.player_filename = None
 
     @classmethod
     def teardown_class(cls):
-        if cls.player:
-            cls.player.app_serv.stop()
-
-        if cls.player_filename:
-            os.remove(cls.player_filename)
-
         os.environ.clear()
         os.environ.update(cls.env_backup)
 
@@ -447,34 +440,79 @@ class TestUpload(FullStackTests):
 
         assert self.redis.hget(User.INFO_KEY.format(user='test'), Stats.UPLOADS_PROP) == '3'
 
-    def test_player_upload(self):
-        TestUpload.player_filename = os.path.join(self.warcs_dir, 'sample.warc.gz')
+    @contextmanager
+    def run_player(self, filename):
+        player = None
+        try:
+            self.redis.flushall()
+            player = webrecorder_player(['--no-browser', '-p', '0', filename], embed=True)
+            port = player.app_serv.port
 
-        with open(self.player_filename, 'wb') as fh:
+            yield port
+        finally:
+            if player:
+                player.app_serv.stop()
+
+    def test_player_upload(self):
+        player_filename = os.path.join(self.warcs_dir, 'sample.warc.gz')
+
+        with open(player_filename, 'wb') as fh:
             self.warc.seek(0)
             fh.write(self.warc.read())
             fh.flush()
 
-        TestUpload.player = webrecorder_player(['--no-browser', '-p', '0', self.player_filename], embed=True)
+        with self.run_player(player_filename) as port:
+            def assert_finished():
+                res = requests.get('http://localhost:{0}/_upload/@INIT?user=local'.format(port))
+                assert res.json()['done'] == True
+                assert res.json()['size'] >= res.json()['total_size']
 
-        port = TestUpload.player.app_serv.port
+            self.sleep_try(0.5, 3.0, assert_finished)
 
-        def assert_finished():
-            res = requests.get('http://localhost:{0}/_upload/@INIT?user=local'.format(port))
-            assert res.json()['done'] == True
-            assert res.json()['size'] >= res.json()['total_size']
+            res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
+            data = res.json()
 
-        self.sleep_try(0.5, 3.0, assert_finished)
-
-        res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
-        data = res.json()
         collection = data['collection']
         assert collection['id'] == 'collection'
         assert collection['public'] == True
-        assert collection['public_index'] == True
+        assert collection['public_index'] == False
         assert collection['title'] == 'Default Collection'
 
-        assert len(collection['pages']) == 2
+        assert 'pages' not in collection
         assert len(collection['lists']) == 2
+
+    def test_player_upload_wget_warc(self):
+        player_filename = os.path.join(self.get_curr_dir(), 'warcs', 'example.com.gz.warc')
+
+        with self.run_player(player_filename) as port:
+            def assert_finished():
+                res = requests.get('http://localhost:{0}/_upload/@INIT?user=local'.format(port))
+                assert res.json()['done'] == True
+                assert res.json()['size'] >= res.json()['total_size']
+
+            #self.sleep_try(0.5, 3.0, assert_finished)
+            time.sleep(0.5)
+
+            res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
+            data = res.json()
+
+        collection = data['collection']
+        assert collection['id'] == 'collection'
+        assert collection['public'] == True
+        assert collection['public_index'] == False
+        assert collection['title'] == 'Web Archive Collection'
+
+        assert 'pages' not in collection
+        assert len(collection['lists']) == 1
+
+        blist = collection['lists'][0]
+        assert blist['slug'] == 'pages-detected'
+
+        assert len(blist['bookmarks']) == 1
+        bookmark = blist['bookmarks'][0]
+
+        assert bookmark['url'] == 'http://example.com/'
+        assert bookmark['timestamp'] == '20181019224204'
+        assert bookmark['title'] == 'http://example.com/'
 
 

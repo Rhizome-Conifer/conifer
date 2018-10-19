@@ -10,7 +10,7 @@ from fakeredis import DATABASES, _ZSet, _Hash, _ExpiringDict
 
 # ============================================================================
 class FakeRedisSerializer(object):
-    VERSION = '2'
+    VERSION = '2.1'
 
     def __init__(self, filename, inputs):
         self.filename = filename

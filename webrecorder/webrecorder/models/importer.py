@@ -83,6 +83,8 @@ class BaseImporter(ImportStatusChecker):
 
         self.upload_coll_info = config['upload_coll']
 
+        self.detect_list_info = config['page_detect_list']
+
         self.max_detect_pages = config['max_detect_pages']
 
     def handle_upload(self, stream, upload_id, upload_key, infos, filename,
@@ -168,13 +170,7 @@ class BaseImporter(ImportStatusChecker):
                     logger.debug('SKIP upload for zero-length recording')
 
 
-                pages = info.get('pages')
-                if pages is None:
-                    pages = self.detect_pages(info['coll'], info['rec'])
-
-                if pages:
-                    page_id_map.update(info['collection'].import_pages(pages, info['recording']) or {})
-                    #info['recording'].import_pages(pages)
+                self.process_pages(info, page_id_map)
 
                 diff = info['offset'] - last_end
                 last_end = info['offset'] + info['length']
@@ -187,6 +183,8 @@ class BaseImporter(ImportStatusChecker):
                 recording.set_date_prop('updated_at', info)
 
             self.import_lists(first_coll, page_id_map)
+
+            self.postprocess_coll(first_coll)
 
             first_coll.set_date_prop('created_at', first_coll.data, '_created_at')
             first_coll.set_date_prop('updated_at', first_coll.data, '_updated_at')
@@ -206,6 +204,35 @@ class BaseImporter(ImportStatusChecker):
             with redis_pipeline(self.redis) as pi:
                 pi.hincrby(upload_key, 'files', -1)
                 pi.hset(upload_key, 'done', 1)
+
+    def process_pages(self, info, page_id_map):
+        pages = info.get('pages')
+
+        # detect pages if none
+        detected = False
+        if pages is None:
+            pages = self.detect_pages(info['coll'], info['rec'])
+            detected = True
+
+        # if no pages, nothing more to do
+        if not pages:
+            return
+
+        # import pages, set id map of old pages to new ones, if any
+        id_map = info['collection'].import_pages(pages, info['recording'])
+
+        if id_map:
+            page_id_map.update(id_map)
+
+        # if pages are detected, also created an automatic page detected list
+        if detected:
+            self.process_list_data(self.detect_list_info)
+
+            blist = info['collection'].create_bookmark_list(self.detect_list_info)
+
+            for page in pages:
+                page['page_id'] = page['id']
+                bookmark = blist.create_bookmark(page, incr_stats=False)
 
     def har2warc(self, filename, stream):
         out = self._har2warc_temp_file()
@@ -259,7 +286,7 @@ class BaseImporter(ImportStatusChecker):
 
             elif type == 'recording':
                 if not collection:
-                    collection = self.make_collection(user, filename, self.upload_coll_info)
+                    collection = self.make_collection(user, filename, self.upload_coll_info, info)
 
                 desc = info.get('desc', '')
 
@@ -395,7 +422,7 @@ class BaseImporter(ImportStatusChecker):
                 last_indexinfo['offset'] = arciterator.member_info[0]
                 last_indexinfo = None
 
-            if warcinfo:
+            if warcinfo and 'json-metadata' in warcinfo:
                 self.add_index_info(infos, indexinfo, arciterator.member_info[0])
 
                 indexinfo = warcinfo.get('json-metadata')
@@ -417,6 +444,10 @@ class BaseImporter(ImportStatusChecker):
                              'title': 'Uploaded Recording',
                              'offset': 0,
                             }
+
+                if warcinfo and 'software' in warcinfo:
+                    indexinfo['warcinfo:software'] = warcinfo['software']
+                    indexinfo['warcinfo:datetime'] = record.rec_headers.get('WARC-Date')
 
             is_first = False
 
@@ -455,7 +486,8 @@ class BaseImporter(ImportStatusChecker):
                 warcinfo[parts[0]] = parts[1].strip()
 
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
-        return warcinfo if valid else None
+        # return warcinfo if valid else None
+        return warcinfo
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         raise NotImplemented()
@@ -475,7 +507,7 @@ class BaseImporter(ImportStatusChecker):
     def _har2warc_temp_file(self):
         raise NotImplemented()
 
-    def make_collection(self, user, filename, info):
+    def make_collection(self, user, filename, info, rec_info=None):
         raise NotImplemented()
 
 
@@ -545,6 +577,9 @@ class UploadImporter(BaseImporter):
     def _get_upload_id(self):
         return base64.b32encode(os.urandom(5)).decode('utf-8')
 
+    def postprocess_coll(self, collection):
+        pass
+
     def process_list_data(self, list_data):
         pass
 
@@ -557,7 +592,7 @@ class UploadImporter(BaseImporter):
     def launch_upload(self, func, *args):
         gevent.spawn(func, *args)
 
-    def make_collection(self, user, filename, info):
+    def make_collection(self, user, filename, info, rec_info=None):
         desc = info.get('desc', '').format(filename=filename)
         public = info.get('public', False)
         public_index = info.get('public_index', False)
@@ -660,10 +695,9 @@ class InplaceImporter(BaseImporter):
     def _get_upload_id(self):
         return self.upload_id
 
-    def process_coll_data(self, coll_data):
-        if coll_data:
-            coll_data['public'] = True
-            coll_data['public_index'] = True
+    def postprocess_coll(self, collection):
+        if collection.num_lists() == 0:
+            collection.set_bool_prop('public_index', True)
 
     def process_list_data(self, list_data):
         if list_data:
@@ -678,17 +712,25 @@ class InplaceImporter(BaseImporter):
     def launch_upload(self, func, *args):
         func(*args)
 
-    def make_collection(self, user, filename, info):
+    def make_collection(self, user, filename, info, rec_info=None):
+        params = dict(filename=filename)
+        if rec_info and 'warcinfo:software' in rec_info:
+            params['software'] = rec_info['warcinfo:software']
+            params['datetime'] = iso_date_to_datetime(rec_info['warcinfo:datetime']).strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            params['software'] = 'unknown'
+            params['datetime'] = 'unknown'
+
+        info['desc'] = info.get('desc', '').format(**params)
+
         if info.get('title') == 'Temporary Collection':
-            info['title'] = 'Collection'
-            if not info.get('desc'):
-                info['desc'] = self.upload_coll_info.get('desc', '').format(filename=filename)
+            info['title'] = 'Webrecorder Collection'
 
         self.the_collection.set_prop('title', info['title'], update_ts=False)
         self.the_collection.set_prop('desc', info['desc'], update_ts=False)
 
         # ensure player collection & index are public
-        self.the_collection.set_bool_prop('public_index', True)
+        #self.the_collection.set_bool_prop('public_index', True)
         self.the_collection.set_bool_prop('public', True)
 
         return self.the_collection

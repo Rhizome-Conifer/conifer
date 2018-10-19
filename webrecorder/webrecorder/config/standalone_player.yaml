@@ -16,8 +16,17 @@ max_detect_pages: 0
 
 upload_coll:
     id: 'collection'
-    title: 'Collection'
-    desc: 'This collection was automatically created from *{filename}*'
+    title: 'Web Archive Collection'
+
+    desc: |
+        This collection was automatically created from a local archive file.
+
+        Source file: **{filename}**
+
+        Archive software: **{software}**
+
+        Date Created: **{datetime}**
+
     public: true
 
 metadata:

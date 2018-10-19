@@ -126,6 +126,13 @@ upload_coll:
     desc: 'This collection was automatically created from the upload of *{filename}*'
 
 
+page_detect_list:
+    title: 'Pages Detected'
+    desc: |
+        This list was created automatcally by guessing which URLs are web pages in this file.
+
+        This list is limited to 500 pages and may not be a complete list of the contents of this archive.
+
 
 # WARC Paths and Names
 #warc_path_templ: '{user}/{coll}/{rec}/'
