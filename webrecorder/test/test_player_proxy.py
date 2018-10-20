@@ -188,12 +188,12 @@ class TestPlayer(BaseTestPlayer):
 
 
 # ============================================================================
-class TestCacheingPlayer(BaseTestPlayer):
+class TestCacheingPlayer(TestPlayer):
     @classmethod
     def setup_class(cls):
         super(TestCacheingPlayer, cls).setup_class()
 
-        name = os.path.basename(cls.warc_path).replace('.warc.gz', '-cache.json.gz')
+        name = os.path.basename(cls.warc_path) + '-cache.json.gz'
         path = os.path.join(os.path.dirname(cls.warc_path),
                             '_warc_cache',
                             name)

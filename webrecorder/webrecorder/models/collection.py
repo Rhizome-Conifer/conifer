@@ -224,6 +224,9 @@ class Collection(PagesMixin, RedisUniqueComponent):
 
         return [key_pattern.replace('*', rec) for rec in recs]
 
+    def get_warc_key(self):
+        return Recording.COLL_WARC_KEY.format(coll=self.my_id)
+
     def commit_all(self, commit_id=None):
         # see if pending commits have been finished
         if commit_id:
@@ -286,7 +289,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
                     full_filename = os.path.join(coll_dir, 'warcs', filename)
 
                     rec_warc_key = recording.REC_WARC_KEY.format(rec=recording.my_id)
-                    coll_warc_key = recording.COLL_WARC_KEY.format(coll=self.my_id)
+                    coll_warc_key = self.get_warc_key()
 
                     self.redis.hset(coll_warc_key, filename, full_filename)
                     self.redis.sadd(rec_warc_key, filename)
@@ -480,7 +483,7 @@ class Collection(PagesMixin, RedisUniqueComponent):
         if not self.is_external():
             return 0
 
-        warc_key = Recording.COLL_WARC_KEY.format(coll=self.my_id)
+        warc_key = self.get_warc_key()
 
         if warc_map:
             self.redis.hmset(warc_key, warc_map)

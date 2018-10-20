@@ -29,6 +29,16 @@ upload_coll:
 
     public: true
 
+wr_temp_coll:
+    title: 'Webrecorder Collection'
+    desc: |
+        This is a collection downloaded anonymously from Webrecorder.
+
+        Source file: **{filename}**
+
+        Date Created: **{datetime}**
+
+
 metadata:
     product: Webrecorder Player
     type: player

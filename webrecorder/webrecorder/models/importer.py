@@ -4,7 +4,9 @@ from bottle import request
 from warcio.archiveiterator import ArchiveIterator
 from warcio.limitreader import LimitReader
 
-from har2warc.har2warc import HarParser
+from har2warc.har2warc import har2warc
+import codecs
+
 from warcio.warcwriter import BufferWARCWriter, WARCWriter
 from warcio.timeutils import iso_date_to_datetime
 
@@ -235,24 +237,16 @@ class BaseImporter(ImportStatusChecker):
                 bookmark = blist.create_bookmark(page, incr_stats=False)
 
     def har2warc(self, filename, stream):
-        out = self._har2warc_temp_file()
-        writer = WARCWriter(out)
+        out = self._har2warc_temp_file(filename)
 
-        buff_list = []
-        while True:
-            buff = stream.read()
-            if not buff:
-                break
+        stream = codecs.getreader('utf-8')(stream)
 
-            buff_list.append(buff.decode('utf-8'))
+        rec_title = os.path.basename(filename)
 
-        #wrapper = TextIOWrapper(stream)
-        try:
-            rec_title = filename.rsplit('/', 1)[-1]
-            har = json.loads(''.join(buff_list))
-            HarParser(har, writer).parse(filename + '.warc.gz', rec_title)
-        finally:
-            stream.close()
+        har2warc(stream, out, filename + '.warc', rec_title)
+
+        #writer = WARCWriter(out)
+        #HarParser(stream, writer).parse(filename + '.warc', rec_title)
 
         size = out.tell()
         out.seek(0)
@@ -445,9 +439,9 @@ class BaseImporter(ImportStatusChecker):
                              'offset': 0,
                             }
 
-                if warcinfo and 'software' in warcinfo:
-                    indexinfo['warcinfo:software'] = warcinfo['software']
-                    indexinfo['warcinfo:datetime'] = record.rec_headers.get('WARC-Date')
+            if is_first and warcinfo and 'software' in warcinfo:
+                indexinfo['warcinfo:software'] = warcinfo['software']
+                indexinfo['warcinfo:datetime'] = record.rec_headers.get('WARC-Date')
 
             is_first = False
 
@@ -504,7 +498,7 @@ class BaseImporter(ImportStatusChecker):
     def _add_split_padding(self, diff, upload_key):
         raise NotImplemented()
 
-    def _har2warc_temp_file(self):
+    def _har2warc_temp_file(self, filename):
         raise NotImplemented()
 
     def make_collection(self, user, filename, info, rec_info=None):
@@ -586,7 +580,7 @@ class UploadImporter(BaseImporter):
     def _add_split_padding(self, diff, upload_key):
         self.redis.hincrby(upload_key, 'size', diff * 2)
 
-    def _har2warc_temp_file(self):
+    def _har2warc_temp_file(self, filename):
         return SpooledTemporaryFile(max_size=BLOCK_SIZE)
 
     def launch_upload(self, func, *args):
@@ -616,11 +610,14 @@ class UploadImporter(BaseImporter):
 
 # ============================================================================
 class InplaceImporter(BaseImporter):
-    def __init__(self, redis, config, user, indexer, upload_id, create_coll=True):
+    def __init__(self, redis, config, user, indexer, upload_id, create_coll=True, cache_dir=None):
         wam_loader = indexer.wam_loader if indexer else None
         super(InplaceImporter, self).__init__(redis, config, wam_loader)
         self.indexer = indexer
         self.upload_id = upload_id
+        self.cache_dir = cache_dir
+
+        self.wr_temp_coll = config['wr_temp_coll']
 
         if not create_coll:
             self.the_collection = None
@@ -658,7 +655,6 @@ class InplaceImporter(BaseImporter):
                     stream, expected_size = self.har2warc(filename, stream)
                     fh.close()
                     fh = stream
-                    atexit.register(lambda: os.remove(stream.name))
 
                 infos = self.parse_uploaded(stream, size)
 
@@ -706,17 +702,32 @@ class InplaceImporter(BaseImporter):
     def _add_split_padding(self, diff, upload_key):
         self.redis.hincrby(upload_key, 'size', diff)
 
-    def _har2warc_temp_file(self):
-        return NamedTemporaryFile(suffix='.warc.gz', delete=False)
+    def _har2warc_temp_file(self, filename):
+        if not self.cache_dir:
+            out = NamedTemporaryFile(suffix='.warc.gz', delete=False)
+            out_name = out.name
+            atexit.register(lambda: os.remove(out_name))
+        else:
+            basename = os.path.basename(filename) + '.warc'
+            out = open(os.path.join(self.cache_dir, basename), 'w+b')
+
+        return out
 
     def launch_upload(self, func, *args):
         func(*args)
 
+    def to_gmt_string(self, dt):
+        return iso_date_to_datetime(dt).strftime("%Y-%m-%d %H:%M:%S") + ' GMT'
+
     def make_collection(self, user, filename, info, rec_info=None):
         params = dict(filename=filename)
+
+        if not rec_info and 'warcinfo:software' in info:
+            rec_info = info
+
         if rec_info and 'warcinfo:software' in rec_info:
             params['software'] = rec_info['warcinfo:software']
-            params['datetime'] = iso_date_to_datetime(rec_info['warcinfo:datetime']).strftime("%Y-%m-%d %H:%M:%S")
+            params['datetime'] = self.to_gmt_string(rec_info['warcinfo:datetime'])
         else:
             params['software'] = 'unknown'
             params['datetime'] = 'unknown'
@@ -724,7 +735,9 @@ class InplaceImporter(BaseImporter):
         info['desc'] = info.get('desc', '').format(**params)
 
         if info.get('title') == 'Temporary Collection':
-            info['title'] = 'Webrecorder Collection'
+            info['title'] = self.wr_temp_coll['title']
+            if not info['desc']:
+                info['desc'] = self.wr_temp_coll['desc'].format(**params)
 
         self.the_collection.set_prop('title', info['title'], update_ts=False)
         self.the_collection.set_prop('desc', info['desc'], update_ts=False)

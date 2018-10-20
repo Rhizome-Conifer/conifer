@@ -24,10 +24,12 @@ def get_version_str():
     version = """\
 %s {0}
 pywb {1}
-warcio {2}"""
+har2warc {2}
+warcio {3}"""
 
     return version.format(get_pkg_version('webrecorder'),
                           get_pkg_version('pywb'),
+                          get_pkg_version('har2warc'),
                           get_pkg_version('warcio'))
 
 
