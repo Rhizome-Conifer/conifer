@@ -25,7 +25,7 @@ import {
 } from './containers';
 
 
-const userPath = '/:user([A-Za-z0-9-_]+)';
+const userPath = '/:user([^_][A-Za-z0-9-_]+)';
 const userRoutes = [
   /* collection */
   {
@@ -267,7 +267,7 @@ export default [
     component: RegisterAccount,
     exact: true,
     footer: true,
-    name: 'Account Registration'
+    name: 'Registering'
   },
   {
     path: '/_forgot',

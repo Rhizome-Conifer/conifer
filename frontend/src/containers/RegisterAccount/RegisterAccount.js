@@ -22,6 +22,7 @@ class RegisterAccount extends Component {
     history: PropTypes.object,
     location: PropTypes.object,
     match: PropTypes.object,
+    toggleLogin: PropTypes.func
   };
 
   constructor(props) {
@@ -98,12 +99,12 @@ class RegisterAccount extends Component {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    toggleLogin: (bool, next) => dispatch(showModal(bool, true, next))
+    toggleLogin: () => dispatch(showModal(true, false))
   };
 };
 
 
 export default withRouter(connect(
-  () => {},
+  () => ({}),
   mapDispatchToProps
 )(RegisterAccount));
