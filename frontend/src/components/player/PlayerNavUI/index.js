@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 import { openFile } from 'helpers/playerUtils';
 
-import { PlayerArrowIcon, PlayerCloseIcon, RefreshIcon, HelpIcon } from 'components/icons';
+import { PlayerArrowLeftIcon, PlayerArrowRightIcon, PlayerCloseIcon, RefreshIcon, HelpIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -59,7 +59,7 @@ class PlayerNavUI extends Component {
   render() {
     const { canGoForward, collectionLoaded, history, route, source } = this.props;
 
-    const indexUrl = collectionLoaded ? '/local/collection/index' : '/';
+    const indexUrl = collectionLoaded ? '/local/collection' : '/';
     const isLanding = route && route.name === 'landing';
     const isReplay = route && route.name.indexOf('replay') !== -1;
     const isHelp = route && route.name === 'help';
@@ -94,10 +94,10 @@ class PlayerNavUI extends Component {
 
                 <div className="browser-nav">
                   <button id="back" onClick={this.triggerBack} disabled={!history.canGo(-1)} className={backClass} title="Click to go back" aria-label="navigate back">
-                    <PlayerArrowIcon />
+                    <PlayerArrowLeftIcon />
                   </button>
                   <button id="forward" onClick={this.triggerForward} disabled={isReplay ? !canGoForward : !history.canGo(1)} className={fwdClass} title="Click to go forward" aria-label="navigate forward">
-                    <PlayerArrowIcon flip />
+                    <PlayerArrowRightIcon />
                   </button>
                   <button id="refresh" onClick={this.triggerRefresh} disabled={!isReplay} className={refreshClass} title="Refresh replay window">
                     <RefreshIcon />

@@ -1,6 +1,10 @@
 
 .wr-content {
-  margin-top: 4rem;
+  overflow: auto;
+}
+
+#app {
+    height: 100vh;
 }
 
 /* animations */

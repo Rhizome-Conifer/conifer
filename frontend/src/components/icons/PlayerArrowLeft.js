@@ -1,9 +1,9 @@
 import React from 'react';
 
 
-function PlayerArrow({ flip }) {
+function PlayerArrowLeft() {
   return (
-    <svg width="19px" height="19px" viewBox="0 0 19 19" version="1.1" xmlns="http://www.w3.org/2000/svg" style={{ transform: `rotateZ(${flip ? 180 : 0}deg)` }}>
+    <svg width="19px" height="19px" viewBox="0 0 19 19" version="1.1" xmlns="http://www.w3.org/2000/svg">
       <g stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
         <g transform="translate(-564.000000, -242.000000)" fill="#6E6E6E" fillRule="nonzero">
           <g transform="translate(564.000000, 241.000000)">
@@ -16,4 +16,4 @@ function PlayerArrow({ flip }) {
 }
 
 
-export default PlayerArrow;
+export default PlayerArrowLeft;
