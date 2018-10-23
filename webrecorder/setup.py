@@ -19,7 +19,7 @@ except ImportError:
 #long_description = open('README.rst').read()
 long_description = ''
 
-PYWB_DEP = 'pywb>=2.0.4'
+PYWB_DEP = 'pywb>=2.1.0'
 
 def load_requirements(filename):
     with open(filename, 'rt') as fh:
