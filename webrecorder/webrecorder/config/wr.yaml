@@ -28,7 +28,7 @@ skip_key_secs: 330
 open_rec_ttl: 5400
 max_warc_size: 500000000
 
-max_detect_pages: 500
+max_detect_pages: 0
 
 assets_path: ./webrecorder/config/assets.yaml
 
@@ -127,11 +127,10 @@ upload_coll:
 
 
 page_detect_list:
+    public: true
     title: 'Pages Detected'
     desc: |
-        This list was created automatcally by guessing which URLs are web pages in this file.
-
-        This list is limited to 500 pages and may not be a complete list of the contents of this archive.
+        This list was created automatcally by guessing which URLs are web pages in this archive file.
 
 
 # WARC Paths and Names

@@ -228,8 +228,6 @@ class BaseImporter(ImportStatusChecker):
 
         # if pages are detected, also created an automatic page detected list
         if detected:
-            self.process_list_data(self.detect_list_info)
-
             blist = info['collection'].create_bookmark_list(self.detect_list_info)
 
             for page in pages:
