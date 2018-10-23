@@ -481,6 +481,25 @@ class BaseImporter(ImportStatusChecker):
         # return warcinfo if valid else None
         return warcinfo
 
+    def prepare_coll_desc(self, filename, info, rec_info=None):
+        params = dict(filename=filename)
+
+        if not rec_info and 'warcinfo:software' in info:
+            rec_info = info
+
+        if rec_info and 'warcinfo:software' in rec_info:
+            params['software'] = rec_info['warcinfo:software']
+            params['datetime'] = self.to_gmt_string(rec_info['warcinfo:datetime'])
+        else:
+            params['software'] = 'unknown'
+            params['datetime'] = 'unknown'
+
+        info['desc'] = info.get('desc', '').format(**params)
+
+    @classmethod
+    def to_gmt_string(cls, dt):
+        return iso_date_to_datetime(dt).strftime("%Y-%m-%d %H:%M:%S") + ' GMT'
+
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
         raise NotImplemented()
 
@@ -585,14 +604,14 @@ class UploadImporter(BaseImporter):
         gevent.spawn(func, *args)
 
     def make_collection(self, user, filename, info, rec_info=None):
-        desc = info.get('desc', '').format(filename=filename)
+        self.prepare_coll_desc(filename, info, rec_info)
         public = info.get('public', False)
         public_index = info.get('public_index', False)
 
         info['id'] = sanitize_title(info['title'])
         collection = user.create_collection(info['id'],
                                        title=info['title'],
-                                       desc=desc,
+                                       desc=info['desc'],
                                        public=public,
                                        public_index=public_index,
                                        allow_dupe=True)
@@ -714,23 +733,8 @@ class InplaceImporter(BaseImporter):
     def launch_upload(self, func, *args):
         func(*args)
 
-    def to_gmt_string(self, dt):
-        return iso_date_to_datetime(dt).strftime("%Y-%m-%d %H:%M:%S") + ' GMT'
-
     def make_collection(self, user, filename, info, rec_info=None):
-        params = dict(filename=filename)
-
-        if not rec_info and 'warcinfo:software' in info:
-            rec_info = info
-
-        if rec_info and 'warcinfo:software' in rec_info:
-            params['software'] = rec_info['warcinfo:software']
-            params['datetime'] = self.to_gmt_string(rec_info['warcinfo:datetime'])
-        else:
-            params['software'] = 'unknown'
-            params['datetime'] = 'unknown'
-
-        info['desc'] = info.get('desc', '').format(**params)
+        self.prepare_coll_desc(filename, info, rec_info)
 
         if info.get('title') == 'Temporary Collection':
             info['title'] = self.wr_temp_coll['title']
