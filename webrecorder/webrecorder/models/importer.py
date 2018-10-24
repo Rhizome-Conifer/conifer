@@ -495,6 +495,7 @@ class BaseImporter(ImportStatusChecker):
             params['datetime'] = 'unknown'
 
         info['desc'] = info.get('desc', '').format(**params)
+        return params
 
     @classmethod
     def to_gmt_string(cls, dt):
@@ -734,7 +735,7 @@ class InplaceImporter(BaseImporter):
         func(*args)
 
     def make_collection(self, user, filename, info, rec_info=None):
-        self.prepare_coll_desc(filename, info, rec_info)
+        params = self.prepare_coll_desc(filename, info, rec_info)
 
         if info.get('title') == 'Temporary Collection':
             info['title'] = self.wr_temp_coll['title']

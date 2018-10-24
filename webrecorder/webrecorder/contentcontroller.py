@@ -927,7 +927,8 @@ class ContentController(BaseController, RewriterApp):
 
     def _add_custom_params(self, cdx, resp_headers, kwargs, record):
         try:
-            self._add_stats(cdx, resp_headers, kwargs, record)
+            if 'id' in kwargs:
+                self._add_stats(cdx, resp_headers, kwargs, record)
         except:
             import traceback
             traceback.print_exc()
@@ -985,7 +986,8 @@ class ContentController(BaseController, RewriterApp):
             request.environ.get('HTTP_HOST') in referrer):
             referrer = url
 
-        self.dyn_stats.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
+        if 'id' in kwargs:
+            self.dyn_stats.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser
