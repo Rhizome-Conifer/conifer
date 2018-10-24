@@ -550,6 +550,9 @@ class TestPlayerUpload(BaseWRTests):
         assert collection['public_index'] == False
         assert collection['title'] == 'Web Archive Collection'
 
+        assert 'Wget/1.19.1' in collection['desc']
+        assert 'example.com.gz.warc' in collection['desc']
+
         assert 'pages' not in collection
         assert len(collection['lists']) == 1
 
@@ -562,6 +565,35 @@ class TestPlayerUpload(BaseWRTests):
         assert bookmark['url'] == 'http://example.com/'
         assert bookmark['timestamp'] == '20181019224204'
         assert bookmark['title'] == 'http://example.com/'
+
+    def test_player_temp_coll(self, cache_dir):
+        player_filename = os.path.join(self.get_curr_dir(), 'warcs', 'temp-example.warc')
+
+        with self.run_player(player_filename, cache_dir=cache_dir) as port:
+            self.sleep_try(0.5, 3.0, self.assert_finished(port))
+
+            res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
+            data = res.json()
+
+            res = requests.get('http://localhost:{0}/local/collection/mp_/https://example.com/'.format(port))
+            assert 'Example Domain' in res.text, res.text
+
+            proxy = 'localhost:{0}'.format(port)
+            res = requests.get('https://example.com/', proxies={'https': proxy, 'http': proxy}, verify=False)
+            assert 'Example Domain' in res.text, res.text
+
+        collection = data['collection']
+        assert collection['id'] == 'collection'
+        assert collection['public'] == True
+        assert collection['public_index'] == True
+        assert collection['title'] == 'Webrecorder Collection'
+
+        assert 'Date Created:' in collection['desc']
+        assert 'temp-example.warc' in collection['desc']
+
+        assert len(collection['pages']) == 1
+        assert collection['pages'][0]['title'] == 'Example Domain'
+        assert collection['pages'][0]['url'] == 'http://example.com/'
 
     def test_player_upload_har(self, cache_dir):
         player_filename = os.path.join(self.get_curr_dir(), 'warcs', 'example.com.har')
@@ -584,6 +616,9 @@ class TestPlayerUpload(BaseWRTests):
         assert collection['public'] == True
         assert collection['public_index'] == True
         assert collection['title'] == 'Web Archive Collection'
+
+        assert 'har2warc' in collection['desc']
+        assert 'example.com.har' in collection['desc']
 
         assert len(collection['pages']) == 1
         assert collection['pages'][0]['title'] == 'https://example.com/'
