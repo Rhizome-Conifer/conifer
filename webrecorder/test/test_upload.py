@@ -529,10 +529,10 @@ class TestPlayerUpload(BaseWRTests):
         collection = data['collection']
         assert collection['id'] == 'collection'
         assert collection['public'] == True
-        assert collection['public_index'] == False
+        assert collection['public_index'] == True
         assert collection['title'] == 'Default Collection'
 
-        assert 'pages' not in collection
+        assert len(collection['pages']) == 2
         assert len(collection['lists']) == 2
 
     def test_player_upload_wget_warc(self, cache_dir):
