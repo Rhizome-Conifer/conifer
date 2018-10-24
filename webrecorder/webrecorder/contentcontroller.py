@@ -985,8 +985,7 @@ class ContentController(BaseController, RewriterApp):
             request.environ.get('HTTP_HOST') in referrer):
             referrer = url
 
-        if 'id' in kwargs:
-            self.dyn_stats.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
+        self.dyn_stats.update_dyn_stats(url, kwargs, referrer, source, ra_recording)
 
     def handle_custom_response(self, environ, wb_url, full_prefix, host_prefix, kwargs):
         # test if request specifies a containerized browser
