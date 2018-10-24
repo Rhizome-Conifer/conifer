@@ -927,8 +927,7 @@ class ContentController(BaseController, RewriterApp):
 
     def _add_custom_params(self, cdx, resp_headers, kwargs, record):
         try:
-            if 'id' in kwargs:
-                self._add_stats(cdx, resp_headers, kwargs, record)
+            self._add_stats(cdx, resp_headers, kwargs, record)
         except:
             import traceback
             traceback.print_exc()
