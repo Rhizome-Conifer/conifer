@@ -47,6 +47,10 @@ nav.topBar {
     border-radius: .4rem;
     padding: .1rem .2rem;
 
+    &:not(:last-of-type) {
+      margin-right: .2rem;
+    }
+
     svg path {
       fill: #6E6E6E;
     }
