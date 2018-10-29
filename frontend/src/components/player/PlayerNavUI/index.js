@@ -28,7 +28,7 @@ class PlayerNavUI extends Component {
 
     if (isReplay && canGoBackward) {
       window.dispatchEvent(new Event('wr-go-back'));
-    } else if (history.canGo(-1)) {
+    } else if (history.canGo(-1) && history.index > 1) {
       history.goBack();
     }
   }
@@ -64,8 +64,10 @@ class PlayerNavUI extends Component {
     const isReplay = route && route.name.indexOf('replay') !== -1;
     const isHelp = route && route.name === 'help';
 
+    const canGoBack = history.canGo(-1) && history.index > 1;
+
     const backClass = classNames('arrow', {
-      inactive: !history.canGo(-1)
+      inactive: !canGoBack
     });
     const fwdClass = classNames('arrow', {
       inactive: isReplay ? !canGoForward : !history.canGo(1)
@@ -93,7 +95,7 @@ class PlayerNavUI extends Component {
                 </Link>
 
                 <div className="browser-nav">
-                  <button id="back" onClick={this.triggerBack} disabled={!history.canGo(-1)} className={backClass} title="Click to go back" aria-label="navigate back">
+                  <button id="back" onClick={this.triggerBack} disabled={!canGoBack} className={backClass} title="Click to go back" aria-label="navigate back">
                     <PlayerArrowLeftIcon />
                   </button>
                   <button id="forward" onClick={this.triggerForward} disabled={isReplay ? !canGoForward : !history.canGo(1)} className={fwdClass} title="Click to go forward" aria-label="navigate forward">
