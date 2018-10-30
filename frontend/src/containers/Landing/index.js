@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import { batchActions } from 'redux-batched-actions';
 import { Button, FormControl, ProgressBar } from 'react-bootstrap';
@@ -17,6 +18,7 @@ const { ipcRenderer } = window.require('electron');
 class Landing extends Component {
 
   static propTypes = {
+    collectionLoaded: PropTypes.bool,
     dispatch: PropTypes.func,
     history: PropTypes.object
   };
@@ -73,6 +75,7 @@ class Landing extends Component {
   }
 
   render() {
+    const { collectionLoaded } = this.props;
     const { initializing, progress, source } = this.state;
 
     const allowDat = JSON.parse(process.env.ALLOW_DAT);
@@ -96,6 +99,12 @@ class Landing extends Component {
                 <button onClick={openFile}>
                   Open WARC File
                 </button>
+                {
+                  collectionLoaded &&
+                    <Link to="/local/collection">
+                      Return to collection
+                    </Link>
+                }
               </div>
               {
                 allowDat &&
@@ -121,5 +130,10 @@ class Landing extends Component {
   }
 }
 
+const mapStateToProps = ({ app }) => {
+  return {
+    collectionLoaded: app.getIn(['collection', 'loaded'])
+  };
+};
 
-export default withRouter(connect()(Landing));
+export default withRouter(connect(mapStateToProps)(Landing));

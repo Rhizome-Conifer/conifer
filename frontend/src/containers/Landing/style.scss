@@ -46,6 +46,8 @@
 
 .bigOpen {
   text-align: center;
+  display: flex;
+  flex-direction: column;
 
   button {
     background-color: $blue;
@@ -57,6 +59,10 @@
     font-size: 1.8rem;
     font-family: $sans;
     font-weight: 500;
+  }
+
+  a {
+    margin-top: 1.5rem;
   }
 }
 
