@@ -28,7 +28,7 @@ class PlayerNavUI extends Component {
 
     if (isReplay && canGoBackward) {
       window.dispatchEvent(new Event('wr-go-back'));
-    } else if (history.canGo(-1) && history.index > 1) {
+    } else if (history.canGo(-1)) {
       history.goBack();
     }
   }
@@ -64,7 +64,7 @@ class PlayerNavUI extends Component {
     const isReplay = route && route.name.indexOf('replay') !== -1;
     const isHelp = route && route.name === 'help';
 
-    const canGoBack = history.canGo(-1) && history.index > 1;
+    const canGoBack = history.canGo(-1);
 
     const backClass = classNames('arrow', {
       inactive: !canGoBack
