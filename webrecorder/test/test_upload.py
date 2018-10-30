@@ -547,13 +547,13 @@ class TestPlayerUpload(BaseWRTests):
         collection = data['collection']
         assert collection['id'] == 'collection'
         assert collection['public'] == True
-        assert collection['public_index'] == False
+        assert collection['public_index'] == True
         assert collection['title'] == 'Web Archive Collection'
 
         assert 'Wget/1.19.1' in collection['desc']
         assert 'example.com.gz.warc' in collection['desc']
 
-        assert 'pages' not in collection
+        assert len(collection['pages']) == 1
         assert len(collection['lists']) == 1
 
         blist = collection['lists'][0]
