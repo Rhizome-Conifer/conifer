@@ -11,6 +11,7 @@ init_import_user: 'local'
 init_import_coll: 'collection'
 
 cdxj_key_templ: 'c:{coll}:cdxj'
+coll_cdxj_ttl: -1
 
 max_detect_pages: 0
 

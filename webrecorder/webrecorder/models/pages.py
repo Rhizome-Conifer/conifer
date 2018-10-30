@@ -195,7 +195,8 @@ class PagesMixin(object):
             all_bookmarks[page] = json.dumps(bookmark)
 
         self.redis.hmset(key, all_bookmarks)
-        self.redis.expire(key, self.COLL_CDXJ_TTL)
+        if self.COLL_CDXJ_TTL > 0:
+            self.redis.expire(key, self.COLL_CDXJ_TTL)
 
         return filtered_bookmarks
 
