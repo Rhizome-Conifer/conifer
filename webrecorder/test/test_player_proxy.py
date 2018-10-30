@@ -33,6 +33,8 @@ class BaseTestPlayer(BaseTestClass):
         cls.app_host = 'http://localhost:' + str(cls.app_port)
         cls.proxies = {'http': cls.app_host, 'https': cls.app_host}
 
+        cls.redis = FakeStrictRedis(db=1, decode_responses=True)
+
     @classmethod
     def get_player_cmd(cls):
         return ['--no-browser', '-p', '0', cls.warc_path]
@@ -43,7 +45,7 @@ class BaseTestPlayer(BaseTestClass):
 
         cls.player.app_serv.stop()
 
-        FakeStrictRedis().flushall()
+        cls.redis.flushall()
 
         super(BaseTestPlayer, cls).teardown_class()
 
@@ -185,6 +187,14 @@ class TestPlayer(BaseTestPlayer):
         ws = websocket.WebSocket()
         ws.connect('ws://localhost:{0}/_client_ws_cont'.format(self.app_port))
         ws.close()
+
+    def test_redis_keys(self):
+        colls = self.redis.hgetall('u:local:colls')
+        assert len(colls) == 1
+        assert colls['collection']
+
+        assert self.redis.ttl('c:{0}:cdxj'.format(colls['collection'])) == -1
+        assert self.redis.keys('r:*:cdxj') == []
 
 
 # ============================================================================
