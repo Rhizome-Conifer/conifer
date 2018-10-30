@@ -111,7 +111,7 @@ class TestPlayer(BaseTestPlayer):
         res = self.session.get(self.app_host + '/api/v1/collection/collection?user=local')
         collection = res.json()['collection']
         assert collection['public'] == True
-        assert collection['public_index'] == False
+        assert collection['public_index'] == True
 
     def test_proxy_home_redirect_to_coll(self):
         res = self.session.get(self.app_host + '/', allow_redirects=True)

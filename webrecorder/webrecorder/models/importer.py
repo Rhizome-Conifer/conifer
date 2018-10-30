@@ -745,10 +745,10 @@ class InplaceImporter(BaseImporter):
         self.the_collection.set_prop('title', info['title'], update_ts=False)
         self.the_collection.set_prop('desc', info['desc'], update_ts=False)
 
-        # if collection was private, make index public as well (as only visible to owner)
-        # otherwise, assume public view, and only make index public if no lists
-        if not info.get('public'):
-            self.the_collection.set_bool_prop('public_index', True)
+        #if not info.get('public'):
+        #    self.the_collection.set_bool_prop('public_index', True)
+        # for now, have index be always public
+        self.the_collection.set_bool_prop('public_index', True)
         self.the_collection.set_bool_prop('public', True)
 
         return self.the_collection
