@@ -77,7 +77,7 @@ class RemoteBrowserUI extends Component {
     const { dispatch, params, rb, rec, timestamp, url } = this.props;
 
     // eslint-disable-next-line
-    CBrowser = require('shepherd/lib/browser').default;
+    CBrowser = require('shepherd-client/lib/browser').default;
 
     if (!window.location.port) {
       this.pywbParams.proxy_ws = '_websockify?port=';

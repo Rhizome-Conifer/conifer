@@ -7666,9 +7666,9 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
-"shepherd@github:m4rk3r/test#develop":
+"shepherd-client@github:oldweb-today/shepherd-client":
   version "1.0.0"
-  resolved "https://codeload.github.com/m4rk3r/test/tar.gz/383e9676ce3dab23c756d03a505e885fe2de2b37"
+  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/b5e07559cd5a63613fa03ecdd274fe2774202f76"
   dependencies:
     "@novnc/novnc" "^1.0.0"
     promise-polyfill "^8.1.0"

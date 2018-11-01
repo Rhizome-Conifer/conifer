@@ -115,7 +115,7 @@ class RecordingToolsUI extends PureComponent {
           propsPass={{ onEntered: this.openClipboard, onExited: this.closeClipboard }}
           footer={modalFooter}>
           <p>Any text selected in the remote browser will appear below.</p>
-          <p>You can also enter text here to paste (Ctrl+V) into the remote browser.</p>
+          <p>You can also paste text here to send to remote browser.</p>
           <textarea id="clipboard" autoFocus style={{ width: '100%', minHeight: 200 }} />
         </Modal>
         {
