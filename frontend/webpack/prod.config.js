@@ -137,7 +137,6 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin([
-      {from: 'src/shared/novnc', to: 'novnc/'},
       'src/shared/images/favicon.png',
       'src/shared/images/webrecorder-social.png'
     ]),
