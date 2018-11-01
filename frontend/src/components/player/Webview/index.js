@@ -12,6 +12,8 @@ import { updateUrlAndTimestamp, updateTimestamp } from 'redux/modules/controls';
 
 import './style.scss';
 
+const { ipcRenderer } = window.require('electron');
+
 
 class Webview extends Component {
   static propTypes = {
@@ -49,6 +51,8 @@ class Webview extends Component {
     window.addEventListener('wr-go-back', this.goBack);
     window.addEventListener('wr-go-forward', this.goForward);
     window.addEventListener('wr-refresh', this.refresh);
+
+    ipcRenderer.on('toggle-devtools', this.toggleDevTools);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -78,16 +82,24 @@ class Webview extends Component {
     window.removeEventListener('wr-go-back', this.goBack);
     window.removeEventListener('wr-go-forward', this.goForward);
     window.removeEventListener('wr-refresh', this.refresh);
+
+    ipcRenderer.removeListener('toggle-devtools', this.toggleDevTools);
   }
 
   openDroppedFile = (filename) => {
-    const { ipcRenderer } = window.require('electron');
-
     if (filename && filename.match(/\.w?arc(\.gz)?|\.har$/)) {
       this.props.history.push('/');
       ipcRenderer.send('open-warc', filename);
     } else if (filename) {
       window.alert('Sorry, only WARC or ARC files (.warc, .warc.gz, .arc, .arc.gz) or HAR (.har) can be opened');
+    }
+  }
+
+  toggleDevTools = (evt) => {
+    if (!this.webviewHandle.isDevToolsOpened()) {
+      this.webviewHandle.openDevTools();
+    } else {
+      this.webviewHandle.closeDevTools();
     }
   }
 
