@@ -21,11 +21,20 @@
     }
 
     .canvas > div {
-        //justify-content: center;
+        justify-content: center;
+
+        @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+            position: relative;
+            overflow: hidden !important;
+        }
     }
 
     canvas {
         position: absolute;
+
+        @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+            transform: translate(-50%, 0);
+        }
     }
 }
 
