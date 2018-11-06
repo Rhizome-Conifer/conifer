@@ -849,11 +849,12 @@ class ContentController(BaseController, RewriterApp):
 
     def check_rate_limit(self, user, remote_ip):
         # check rate limit and return ip used for further limiting
-        # if skipping limit
+        # if skipping limit, return empty string to avoid incrementing
+        # rate counter for this request
         res = user.is_rate_limited(remote_ip)
         if res == True:
             self._raise_error(402, 'rate_limit_exceeded')
-        # if None, then no rate limit at all, don't increment by ip
+        # if None, then no rate limit at all, return empty string
         elif res == None:
             return ''
 
