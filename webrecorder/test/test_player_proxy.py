@@ -33,6 +33,8 @@ class BaseTestPlayer(BaseTestClass):
         cls.app_host = 'http://localhost:' + str(cls.app_port)
         cls.proxies = {'http': cls.app_host, 'https': cls.app_host}
 
+        cls.redis = FakeStrictRedis(db=1, decode_responses=True)
+
     @classmethod
     def get_player_cmd(cls):
         return ['--no-browser', '-p', '0', cls.warc_path]
@@ -43,7 +45,7 @@ class BaseTestPlayer(BaseTestClass):
 
         cls.player.app_serv.stop()
 
-        FakeStrictRedis().flushall()
+        cls.redis.flushall()
 
         super(BaseTestPlayer, cls).teardown_class()
 
@@ -186,14 +188,22 @@ class TestPlayer(BaseTestPlayer):
         ws.connect('ws://localhost:{0}/_client_ws_cont'.format(self.app_port))
         ws.close()
 
+    def test_redis_keys(self):
+        colls = self.redis.hgetall('u:local:colls')
+        assert len(colls) == 1
+        assert colls['collection']
+
+        assert self.redis.ttl('c:{0}:cdxj'.format(colls['collection'])) == -1
+        assert self.redis.keys('r:*:cdxj') == []
+
 
 # ============================================================================
-class TestCacheingPlayer(BaseTestPlayer):
+class TestCacheingPlayer(TestPlayer):
     @classmethod
     def setup_class(cls):
         super(TestCacheingPlayer, cls).setup_class()
 
-        name = os.path.basename(cls.warc_path).replace('.warc.gz', '-cache.json.gz')
+        name = os.path.basename(cls.warc_path) + '-cache.json.gz'
         path = os.path.join(os.path.dirname(cls.warc_path),
                             '_warc_cache',
                             name)
@@ -215,7 +225,7 @@ class TestCacheingPlayer(BaseTestPlayer):
         with gzip.open(self.cache_path, 'rt') as fh:
             cache = json.loads(fh.read())
 
-        assert cache['version'] == '2'
+        assert cache['version'] == '2.1'
 
 
 

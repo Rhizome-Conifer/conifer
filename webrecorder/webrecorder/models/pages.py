@@ -184,7 +184,7 @@ class PagesMixin(object):
         :rtype: dict
         """
         if not pagelist:
-            return
+            return {}
 
         self.access.assert_can_write_coll(self)
 
@@ -205,6 +205,7 @@ class PagesMixin(object):
             pages[pid] = json.dumps(page)
 
         self.redis.hmset(self.pages_key, pages)
+
         return id_map
 
     def add_page_bookmark(self, pid, bid, list_id):
@@ -292,7 +293,8 @@ class PagesMixin(object):
             all_bookmarks[page] = json.dumps(bookmark)
 
         self.redis.hmset(key, all_bookmarks)
-        self.redis.expire(key, self.COLL_CDXJ_TTL)
+        if self.COLL_CDXJ_TTL > 0:
+            self.redis.expire(key, self.COLL_CDXJ_TTL)
 
         return filtered_bookmarks
 

@@ -237,7 +237,7 @@ export function range(start, end) {
 export function remoteBrowserMod(rb, ts, sep) {
   // no remote browsers on player
   if (__PLAYER__) {
-    return ts;
+    return ts || '';
   }
 
   let base = ts || '';

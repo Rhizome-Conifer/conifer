@@ -1,4 +1,3 @@
-import re
 import os
 
 from bottle import request, HTTPError, redirect as bottle_redirect, response
@@ -15,7 +14,6 @@ from webrecorder.apiutils import api_decorator, wr_api_spec
 class BaseController(object):
     SKIP_REDIR_LOCK_KEY = '__skip:{id}:{url}'
     SKIP_REDIR_LOCK_TTL = 10
-    TS_MOD_CHECK = re.compile('[\d]+mp_/')
 
     def __init__(self, *args, **kwargs):
         self.app = kwargs['app']
@@ -76,28 +74,14 @@ class BaseController(object):
 
         request_uri = request.environ['REQUEST_URI']
 
-        # referrer must be the exact content url, from app_host and without the modifier:
-        #
-        # Referer: https://app-host/user/coll/record/rec/https://example.com/
-        # request_uri: /https://content-host/user/coll/record/rec/mp_/https://example.com/
-        #
-        # or, with timestamp:
-        #
-        # Referer: https://app-host/user/coll/2018010203000000/https://example.com/
-        # request_uri: /https://content-host/user/coll/2018010203000000mp_/https://example.com/
-        #
-
         # request must contain mp_/ modifier
         if 'mp_/' not in request_uri:
             return False
 
         app_prefix = request.environ['wsgi.url_scheme'] + '://' + self.app_host
 
-        # remove extra '/' only if timestamp before mp_/
-        replace_with = '/' if self.TS_MOD_CHECK.search(request_uri) else ''
-
-        # check referrer match (as above)
-        if referrer != app_prefix + request_uri.replace('mp_/', replace_with):
+        # referrer must be from the app host, start with app_prefix
+        if not referrer.startswith(app_prefix):
             return False
 
         # additional 'lock' to avoid redirect loop, if already just redirected

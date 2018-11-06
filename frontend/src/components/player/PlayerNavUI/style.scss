@@ -1,55 +1,40 @@
 @import 'src/vars';
 
-nav.topBar {
-  transition: height 1s ease;
-  animation: fadeIn 0.2s 1 normal;
+.landing-header {
+  z-index: 50;
 
-  position: fixed;
+  #help {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+    font-family: $sans;
+
+    svg {
+      margin-right: .5rem;
+    }
+  }
+}
+
+nav.topBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 9rem;
-  z-index: 1024;
+  height: 4rem;
   padding: 0 .8rem;
+  flex-shrink: 0;
 
   background: $sidebarBg;
   color: #e8e8e8;
-  border-bottom: .4rem solid $blue;
+  border-bottom: .1rem solid $gray350;
 
   .source {
     color: #000;
     flex-grow: 1;
     text-align: center;
-  }
-
-  &.replay {
-
-    position: relative;
-
-    #back {
-      display: inline-block;
-    }
-    #forward {
-      display: inline-block;
-    }
-    #refresh {
-      display: inline-block;
-    }
-
-    .backToColl {
-      opacity: 1;
-    }
-  }
-
-  &.replay, &.collection-detail {
-    height: 7rem;
-
-    .wrLogoImg {
-      width: 4rem;
-    }
   }
 
   .logos {
@@ -58,96 +43,81 @@ nav.topBar {
   }
 
   .arrow {
-    transition: all .1s ease-in-out;
+    transition: background $quickShift ease-in-out;
+    border-radius: .4rem;
+    padding: .1rem .2rem;
 
-    &.inactive { opacity: .5; }
-    &.off {
-      opacity: 0;
-      animation: none;
+    &:not(:last-of-type) {
+      margin-right: .2rem;
     }
 
-    object {
-      transition: background 175ms ease-in-out;
-      padding: .5rem;
-      height: 3.5rem;
-      border-radius: .5rem;
+    svg path {
+      fill: #6E6E6E;
+    }
+
+    &.inactive {
+      path {
+        fill: #CECECE;
+      }
+    }
+
+    svg {
+      // transition: background 175ms ease-in-out;
+      // padding: .5rem;
+      // height: 2.5rem;
+      // border-radius: .5rem;
+      padding: .2rem;
+      vertical-align: middle;
     }
 
     &:not(.inactive):hover {
-      object {
-        background: $buttonHover;
+      background: $gray300;
+    }
+  }
+
+  button {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    vertical-align: middle;
+    color: #000;
+  }
+
+  .player-functions button {
+    transition: color $quickShift ease-in-out;
+    &:hover {
+      color: $blue;
+    }
+  }
+
+  #help {
+    svg {
+      vertical-align: middle;
+    }
+
+    &:hover {
+      svg {
+        path {
+          fill: $blue;
+        }
       }
     }
   }
 
-  button, .home-btn {
-    background-color: Transparent;
-    background-repeat: no-repeat;
-    border: none;
-    outline: none;
-    vertical-align: middle;
-    animation: fadeIn 1s 1 normal;
-    cursor: pointer;
-
-    &.logotype {
-      margin-left: 1.5rem;
-    }
+  .logotype {
+    margin-left: 1rem;
   }
 
   .wrLogoImg {
-    transition: all 1s ease;
-    width: 6rem;
-    float: left;
-  }
-  .wrLogoPlayerTxt{
-    height: 1.5rem;
-    display: none;
-  }
-  .wrLogoImgTxt {
-    transition: all 1s ease;
-    height: 8rem;
-  }
-  .replayCollection{
-    height: 3rem;
-    position: relative;
-    left: -15rem;
-    display: none;
-  }
-  .replayCollection:active{
-    top: .2rem;
-  }
-  .backToColl {
-    height: 1.2rem;
-    margin-right: .5rem;
-    transition: all 0.5s ease;
-    opacity: 0;
-  }
-  .openFile {
-    transition: all 0.5s ease;
-    height: 3rem;
-  }
-  .halp {
     height: 2rem;
   }
 
-  #back {
-    display: none;
-  }
-  #refresh {
-    transition: opacity .1s ease-in-out;
-    display: none;
-    margin-right: 1.5rem;
-  }
-  #forwardArrow {
-    transform: rotate(180deg) translate(0, -.1rem);
+  .openFile {
+    height: 3rem;
   }
 
-  #forward {
-    display: none;
-  }
-
-  #backToCollection.off {
-    opacity: 0;
+  .halp {
+    height: 2rem;
   }
 
   .browser-nav {
@@ -155,23 +125,5 @@ nav.topBar {
     align-items: center;
 
     margin: 0 1.5rem;
-  }
-
-  .player-functions {
-    display: flex;
-    align-items: center;
-
-    & > button {
-
-      circle, polygon {
-        transition: stroke 175ms ease-in-out;
-      }
-
-      &:hover {
-        circle, polygon {
-          stroke: $blue;
-        }
-      }
-    }
   }
 }

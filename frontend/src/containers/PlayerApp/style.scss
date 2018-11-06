@@ -1,8 +1,10 @@
 
-.indexingContainer + .wr-content,
-.collectionCover + .wr-content,
-.wr-coll-detail {
-  margin-top: 9rem;
+.wr-content {
+  overflow: auto;
+}
+
+#app {
+    height: 100vh;
 }
 
 /* animations */

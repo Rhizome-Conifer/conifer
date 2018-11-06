@@ -1,26 +1,32 @@
-# standard library imports
-import os
-import json
-import atexit
-import base64
-import logging
-import traceback
-from tempfile import NamedTemporaryFile, SpooledTemporaryFile
+from tempfile import SpooledTemporaryFile, NamedTemporaryFile
+from bottle import request
 
-# third party imports
-import gevent
-
-# library specific imports
-from har2warc.har2warc import HarParser
-from webrecorder.utils import (
-    CacheingLimitReader, redis_pipeline, sanitize_title, SizeTrackingReader
-)
-from pywb.warcserver.index.cdxobject import CDXObject
-from warcio.warcwriter import WARCWriter
-from warcio.limitreader import LimitReader
 from warcio.archiveiterator import ArchiveIterator
+from warcio.limitreader import LimitReader
+
+from har2warc.har2warc import har2warc
+import codecs
+
+from warcio.warcwriter import BufferWARCWriter, WARCWriter
+from warcio.timeutils import iso_date_to_datetime
 
 
+from pywb.warcserver.index.cdxobject import CDXObject
+
+import traceback
+import json
+import requests
+import atexit
+
+import base64
+import os
+import gevent
+import redis
+
+from webrecorder.utils import SizeTrackingReader, CacheingLimitReader
+from webrecorder.utils import redis_pipeline, sanitize_title
+
+import logging
 logger = logging.getLogger(__name__)
 
 
@@ -109,6 +115,8 @@ class BaseImporter(ImportStatusChecker):
         self.record_host = os.environ['RECORD_HOST']
 
         self.upload_coll_info = config['upload_coll']
+
+        self.detect_list_info = config['page_detect_list']
 
         self.max_detect_pages = config['max_detect_pages']
 
@@ -231,13 +239,7 @@ class BaseImporter(ImportStatusChecker):
                     logger.debug('SKIP upload for zero-length recording')
 
 
-                pages = info.get('pages')
-                if pages is None:
-                    pages = self.detect_pages(info['coll'], info['rec'])
-
-                if pages:
-                    page_id_map.update(info['collection'].import_pages(pages, info['recording']) or {})
-                    #info['recording'].import_pages(pages)
+                self.process_pages(info, page_id_map)
 
                 diff = info['offset'] - last_end
                 last_end = info['offset'] + info['length']
@@ -250,6 +252,8 @@ class BaseImporter(ImportStatusChecker):
                 recording.set_date_prop('updated_at', info)
 
             self.import_lists(first_coll, page_id_map)
+
+            self.postprocess_coll(first_coll)
 
             first_coll.set_date_prop('created_at', first_coll.data, '_created_at')
             first_coll.set_date_prop('updated_at', first_coll.data, '_updated_at')
@@ -270,6 +274,33 @@ class BaseImporter(ImportStatusChecker):
                 pi.hincrby(upload_key, 'files', -1)
                 pi.hset(upload_key, 'done', 1)
 
+    def process_pages(self, info, page_id_map):
+        pages = info.get('pages')
+
+        # detect pages if none
+        detected = False
+        if pages is None:
+            pages = self.detect_pages(info['coll'], info['rec'])
+            detected = True
+
+        # if no pages, nothing more to do
+        if not pages:
+            return
+
+        # import pages, set id map of old pages to new ones, if any
+        id_map = info['collection'].import_pages(pages, info['recording'])
+
+        if id_map:
+            page_id_map.update(id_map)
+
+        # if pages are detected, also created an automatic page detected list
+        if detected:
+            blist = info['collection'].create_bookmark_list(self.detect_list_info)
+
+            for page in pages:
+                page['page_id'] = page['id']
+                bookmark = blist.create_bookmark(page, incr_stats=False)
+
     def har2warc(self, filename, stream):
         """Convert HTTP Archive format file to WARC archive.
 
@@ -279,24 +310,13 @@ class BaseImporter(ImportStatusChecker):
         :returns: file object (output) and size of WARC archive
         :rtype: file object and int
         """
-        out = self._har2warc_temp_file()
-        writer = WARCWriter(out)
+        out = self._har2warc_temp_file(filename)
 
-        buff_list = []
-        while True:
-            buff = stream.read()
-            if not buff:
-                break
+        stream = codecs.getreader('utf-8')(stream)
 
-            buff_list.append(buff.decode('utf-8'))
+        rec_title = os.path.basename(filename)
 
-        #wrapper = TextIOWrapper(stream)
-        try:
-            rec_title = filename.rsplit('/', 1)[-1]
-            har = json.loads(''.join(buff_list))
-            HarParser(har, writer).parse(filename + '.warc.gz', rec_title)
-        finally:
-            stream.close()
+        har2warc(stream, out, filename + '.warc', rec_title)
 
         size = out.tell()
         out.seek(0)
@@ -343,7 +363,7 @@ class BaseImporter(ImportStatusChecker):
 
             elif type == 'recording':
                 if not collection:
-                    collection = self.make_collection(user, filename, self.upload_coll_info)
+                    collection = self.make_collection(user, filename, self.upload_coll_info, info)
 
                 desc = info.get('desc', '')
 
@@ -507,7 +527,7 @@ class BaseImporter(ImportStatusChecker):
                 last_indexinfo['offset'] = arciterator.member_info[0]
                 last_indexinfo = None
 
-            if warcinfo:
+            if warcinfo and 'json-metadata' in warcinfo:
                 self.add_index_info(infos, indexinfo, arciterator.member_info[0])
 
                 indexinfo = warcinfo.get('json-metadata')
@@ -529,6 +549,10 @@ class BaseImporter(ImportStatusChecker):
                              'title': 'Uploaded Recording',
                              'offset': 0,
                             }
+
+            if is_first and warcinfo and 'software' in warcinfo:
+                indexinfo['warcinfo:software'] = warcinfo['software']
+                indexinfo['warcinfo:datetime'] = record.rec_headers.get('WARC-Date')
 
             is_first = False
 
@@ -580,28 +604,48 @@ class BaseImporter(ImportStatusChecker):
                 warcinfo[parts[0]] = parts[1].strip()
 
         # ignore if no json-metadata or doesn't contain type of colleciton or recording
-        return warcinfo if valid else None
+        # return warcinfo if valid else None
+        return warcinfo
+
+    def prepare_coll_desc(self, filename, info, rec_info=None):
+        params = dict(filename=filename)
+
+        if not rec_info and 'warcinfo:software' in info:
+            rec_info = info
+
+        if rec_info and 'warcinfo:software' in rec_info:
+            params['software'] = rec_info['warcinfo:software']
+            params['datetime'] = self.to_gmt_string(rec_info['warcinfo:datetime'])
+        else:
+            params['software'] = 'unknown'
+            params['datetime'] = 'unknown'
+
+        info['desc'] = info.get('desc', '').format(**params)
+        return params
+
+    @classmethod
+    def to_gmt_string(cls, dt):
+        return iso_date_to_datetime(dt).strftime("%Y-%m-%d %H:%M:%S") + ' GMT'
 
     def do_upload(self, upload_key, filename, stream, user, coll, rec, offset, length):
-        raise NotImplementedError
-
+        raise NotImplemented()
     def launch_upload(self, func, *args):
-        raise NotImplementedError
+        raise NotImplemented()
 
     def _get_upload_id(self):
-        raise NotImplementedError
+        raise NotImplemented()
 
     def is_public(self, info):
-        raise NotImplementedError
+        raise NotImplemented()
 
     def _add_split_padding(self, diff, upload_key):
-        raise NotImplementedError
+        raise NotImplemented()
 
-    def _har2warc_temp_file(self):
-        raise NotImplementedError
+    def _har2warc_temp_file(self, filename):
+        raise NotImplemented()
 
-    def make_collection(self, user, filename, info):
-        raise NotImplementedError
+    def make_collection(self, user, filename, info, rec_info=None):
+        raise NotImplemented()
 
 
 class UploadImporter(BaseImporter):
@@ -693,6 +737,9 @@ class UploadImporter(BaseImporter):
         """
         return base64.b32encode(os.urandom(5)).decode('utf-8')
 
+    def postprocess_coll(self, collection):
+        pass
+
     def process_list_data(self, list_data):
         pass
 
@@ -704,7 +751,7 @@ class UploadImporter(BaseImporter):
         """
         self.redis.hincrby(upload_key, 'size', diff * 2)
 
-    def _har2warc_temp_file(self):
+    def _har2warc_temp_file(self, filename):
         """Return temporary file.
 
         :returns: temporary file
@@ -719,24 +766,26 @@ class UploadImporter(BaseImporter):
         """
         gevent.spawn(func, *args)
 
-    def make_collection(self, user, filename, info):
+    def make_collection(self, user, filename, info, rec_info=None):
         """Create collection.
 
         :param User user: user
         :param str filename: WARC archive filename
         :param dict info: collection information
+        :param rec_info: recording information
+        :type: dict or None
 
         :returns: collection
         :rtype: Collection
         """
-        desc = info.get('desc', '').format(filename=filename)
+        self.prepare_coll_desc(filename, info, rec_info)
         public = info.get('public', False)
         public_index = info.get('public_index', False)
 
         info['id'] = sanitize_title(info['title'])
         collection = user.create_collection(info['id'],
                                        title=info['title'],
-                                       desc=desc,
+                                       desc=info['desc'],
                                        public=public,
                                        public_index=public_index,
                                        allow_dupe=True)
@@ -757,13 +806,18 @@ class InplaceImporter(BaseImporter):
     :ivar str upload_id: upload ID
     :ivar the_collection: collection to import WARC archive into
     :type: Collection or None
+    :ivar str cache_dir: cache directory
+    :ivar str wr_temp_coll: temporary collection
     """
 
-    def __init__(self, redis, config, user, indexer, upload_id, create_coll=True):
+    def __init__(self, redis, config, user, indexer, upload_id, create_coll=True, cache_dir=None):
         wam_loader = indexer.wam_loader if indexer else None
         super(InplaceImporter, self).__init__(redis, config, wam_loader)
         self.indexer = indexer
         self.upload_id = upload_id
+        self.cache_dir = cache_dir
+
+        self.wr_temp_coll = config['wr_temp_coll']
 
         if not create_coll:
             self.the_collection = None
@@ -806,7 +860,6 @@ class InplaceImporter(BaseImporter):
                     stream, expected_size = self.har2warc(filename, stream)
                     fh.close()
                     fh = stream
-                    atexit.register(lambda: os.remove(stream.name))
 
                 infos = self.parse_uploaded(stream, size)
 
@@ -855,14 +908,9 @@ class InplaceImporter(BaseImporter):
         """Return upload ID."""
         return self.upload_id
 
-    def process_coll_data(self, coll_data):
-        """Set collection to public.
-
-        :param dict coll_data: collection information
-        """
-        if coll_data:
-            coll_data['public'] = True
-            coll_data['public_index'] = True
+    def postprocess_coll(self, collection):
+        if collection.num_lists() == 0:
+            collection.set_bool_prop('public_index', True)
 
     def process_list_data(self, list_data):
         """Set list to public.
@@ -886,7 +934,15 @@ class InplaceImporter(BaseImporter):
         :returns: temporary file
         :rtype: NamedTemporaryFile
         """
-        return NamedTemporaryFile(suffix='.warc.gz', delete=False)
+        if not self.cache_dir:
+            out = NamedTemporaryFile(suffix='.warc.gz', delete=False)
+            out_name = out.name
+            atexit.register(lambda: os.remove(out_name))
+        else:
+            basename = os.path.basename(filename) + '.warc'
+            out = open(os.path.join(self.cache_dir, basename), 'w+b')
+
+        return out
 
     def launch_upload(self, func, *args):
         """Call upload function.
@@ -895,25 +951,31 @@ class InplaceImporter(BaseImporter):
         """
         func(*args)
 
-    def make_collection(self, user, filename, info):
+    def make_collection(self, user, filename, info, rec_info=None):
         """Create collection.
 
         :param User user: user
         :param str filename: filename
         :param dict info: collection information
+        :param rec_info: recording information
+        :type: dict or None
 
         :returns: collection
         :rtype: Collection
         """
+        params = self.prepare_coll_desc(filename, info, rec_info)
+
         if info.get('title') == 'Temporary Collection':
-            info['title'] = 'Collection'
-            if not info.get('desc'):
-                info['desc'] = self.upload_coll_info.get('desc', '').format(filename=filename)
+            info['title'] = self.wr_temp_coll['title']
+            if not info['desc']:
+                info['desc'] = self.wr_temp_coll['desc'].format(**params)
 
         self.the_collection.set_prop('title', info['title'], update_ts=False)
         self.the_collection.set_prop('desc', info['desc'], update_ts=False)
 
-        # ensure player collection & index are public
+        #if not info.get('public'):
+        #    self.the_collection.set_bool_prop('public_index', True)
+        # for now, have index be always public
         self.the_collection.set_bool_prop('public_index', True)
         self.the_collection.set_bool_prop('public', True)
 

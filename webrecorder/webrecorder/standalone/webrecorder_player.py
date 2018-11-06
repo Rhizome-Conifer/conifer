@@ -28,6 +28,7 @@ class WebrecPlayerRunner(StandaloneRunner):
         self.inputs = argres.inputs
         self.coll_dir = argres.coll_dir
         self.serializer = None
+        self.cache_dir = None
 
         super(WebrecPlayerRunner, self).__init__(argres)
 
@@ -51,9 +52,10 @@ class WebrecPlayerRunner(StandaloneRunner):
             except OSError:
                 pass
 
-            name = os.path.basename(self.inputs[0]).replace('.warc.gz', '-cache.json.gz')
+            name = os.path.basename(self.inputs[0]) +'-cache.json.gz'
             cache_db = os.path.join(cache_dir, name)
 
+            self.cache_dir = cache_dir
             self.serializer = FakeRedisSerializer(cache_db, self.inputs)
 
     def admin_init(self):
@@ -149,7 +151,8 @@ class WebrecPlayerRunner(StandaloneRunner):
         uploader = InplaceImporter(manager.redis,
                                    manager.config,
                                    user,
-                                   indexer, '@INIT', create_coll=True)
+                                   indexer, '@INIT', create_coll=True,
+                                   cache_dir=self.cache_dir)
 
         files = list(self.get_archive_files(self.inputs))
 

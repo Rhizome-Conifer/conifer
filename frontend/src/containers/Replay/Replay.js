@@ -20,10 +20,15 @@ import EmbedFooter from 'components/EmbedFooter';
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import Resizable from 'components/Resizable';
-import Webview from 'components/player/Webview';
 import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer,
          SidebarCollectionViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
+
+
+let Webview;
+if (__PLAYER__) {
+  Webview = require('components/player/Webview');
+}
 
 
 class Replay extends Component {
@@ -256,14 +261,8 @@ const initialData = [
   {
     promise: ({ store: { dispatch, getState } }) => {
       const state = getState();
-      if (!isRBLoaded(state)) {
-        let host = '';
-
-        if (__PLAYER__) {
-          host = state.app.getIn(['appSettings', 'host']);
-        }
-
-        return dispatch(loadBrowsers(host));
+      if (!isRBLoaded(state) && !__PLAYER__) {
+        return dispatch(loadBrowsers());
       }
 
       return undefined;

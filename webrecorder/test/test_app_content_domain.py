@@ -372,10 +372,9 @@ class TestAppContentDomain(FullStackTests):
 
     def test_reset_content_cookie_replay_ts(self):
         url = '/test/default-collection/2018mp_/http://httpbin.org/get?food=bar'
-        refer_url = 'http://app-host' + url.replace('mp_/', '/')
         res = self.testapp.get(url,
                                headers={'Host': 'content-host',
-                                        'Referer': refer_url})
+                                        'Referer': 'http://app-host/'})
 
         assert 'http://app-host/_set_session' in res.headers['Location']
 

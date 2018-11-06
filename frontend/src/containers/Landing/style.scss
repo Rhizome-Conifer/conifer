@@ -3,13 +3,17 @@
 
 #landingContainer {
   flex-grow: 1;
-  padding-top: 9rem;
-  background: #ECECEC;
-  width: 100%;
-  height: 100%;
-  background-image: url('../../shared/images/Bg.png');
-  background-repeat: repeat;
-  animation: fadeIn 0.7s 1 normal;
+  display: grid;
+  margin: 5vh 0;
+  grid-template-columns: auto;
+  grid-template-rows: 35vh auto auto;
+  justify-items:center;
+
+  .logo {
+    width: 35vw;
+    align-self: end;
+    margin-bottom: 2rem;
+  }
 
   .dat-container {
     width: 50vw;
@@ -18,17 +22,13 @@
 }
 
 #loadingGif {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 20vh;
   animation: spin 2s linear infinite;
+  height: 4.5rem;
 }
 
 
 .dat-url {
-  width: 45vw;
-  margin: 3.5rem auto 0 auto;
+  width: 35vw;
 
   .dat-input {
     display: flex;
@@ -46,28 +46,26 @@
 
 .bigOpen {
   text-align: center;
-  margin-top: 20vh;
+  display: flex;
+  flex-direction: column;
 
   button {
     background-color: $blue;
     position: relative;
-    cursor: pointer;
+    color: #FFF;
+    border-radius: 3rem;
+    padding: 1.2rem 4.5rem;
+    border-style: none;
+    font-size: 1.8rem;
+    font-family: $sans;
+    font-weight: 500;
+  }
 
-    &:hover {
-      top: .1rem;
-    }
-
-    &:active {
-      transition: all 0 ease;
-      box-shadow: inset 0 .5rem 0 0 #0326B8;
-      top: .3rem;
-    }
+  a {
+    margin-top: 1.5rem;
   }
 }
 
-object {
-  pointer-events: none
-}
 
 #loadWarc {
   margin: 2rem 8rem;
@@ -75,9 +73,7 @@ object {
 }
 
 .projectByRhizome {
-  position:fixed;
-  width: 100%;
-  bottom: 15%;
+  align-self: end;
 
   p {
     width: 22rem;

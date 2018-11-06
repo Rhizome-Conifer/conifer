@@ -1,7 +1,15 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import querystring from 'querystring';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
 import { apiPath, supportEmail } from 'config';
+import { apiFetch } from 'helpers/utils';
+
+import { showModal } from 'redux/modules/userLogin';
+
+import './style.scss';
 
 
 class RegisterAccount extends Component {
@@ -11,13 +19,21 @@ class RegisterAccount extends Component {
   };
 
   static propTypes = {
+    history: PropTypes.object,
+    location: PropTypes.object,
     match: PropTypes.object,
+    toggleLogin: PropTypes.func
   };
 
   constructor(props) {
     super(props);
+    const qs = querystring.parse(props.location.search.replace('?', ''));
 
-    this.state = { error: false };
+    this.state = {
+      error: false,
+      success: false,
+      username: qs.username
+    };
   }
 
   componentDidMount() {
@@ -26,42 +42,69 @@ class RegisterAccount extends Component {
     const validateApi = `${apiPath}/auth/validate`;
     document.cookie = `valreg=${reg}; Max-Age=60; Path=${validateApi}`;
 
-    const data = new FormData();
-    data.append('reg', reg);
+    const data = { reg };
 
     // call user registration endpoint
-    fetch(validateApi, {
-      credentials: 'same-origin',
-      headers: new Headers({ 'x-requested-with': 'XMLHttpRequest' }),
-      method: 'POST',
-      body: data
-    }).then(res => res.json())
+    apiFetch(`/auth/validate?username=${this.state.username}`, data, { method: 'POST' })
+      .then(res => res.json())
       .then((result) => {
         if (result.error) {
-          this.setState({ error: true });
+          this.setState({ error: result.error });
         } else {
-          // redirect to homepage, disregard history
-          window.location = '/';
+          this.setState({ success: true });
         }
       });
   }
 
+  goHome = () => {
+    this.props.history.replace('/');
+  }
+
   render() {
-    const { error } = this.state;
+    const { error, success } = this.state;
+    const finished = error || success;
 
     return (
-      <React.Fragment>
+      <div className="verification">
         {
-          error ?
-            <React.Fragment>
-              <h2>Error Validating Registration</h2>
-              <p>Please try the link again or contact <a href={`mailto:${supportEmail}`}>{supportEmail}</a> if the problem persists.</p>
-            </React.Fragment> :
-            <h2>Validating Registration...</h2>
+          !finished &&
+            <h3>Validating Registration...</h3>
         }
-      </React.Fragment>
+        {
+          finished && error === 'invalid_code' &&
+            <React.Fragment>
+              <h3>Error Validating Registration</h3>
+              <p>Please try the link again or contact <a href={`mailto:${supportEmail}`}>{supportEmail}</a> if the problem persists.</p>
+            </React.Fragment>
+        }
+        {
+          finished && error === 'already_registered' &&
+            <React.Fragment>
+              <h3>This user has already been verified.</h3>
+              <button onClick={this.props.toggleLogin} className="rounded">Login</button>
+            </React.Fragment>
+        }
+        {
+          finished && success &&
+            <React.Fragment>
+              <h3>Thank you {this.state.username}, your email is now verified.</h3>
+              <button onClick={this.goHome} className="rounded">Proceed to Homepage</button>
+            </React.Fragment>
+        }
+      </div>
     );
   }
 }
 
-export default RegisterAccount;
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    toggleLogin: () => dispatch(showModal(true, false))
+  };
+};
+
+
+export default withRouter(connect(
+  () => ({}),
+  mapDispatchToProps
+)(RegisterAccount));

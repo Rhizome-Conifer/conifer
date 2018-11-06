@@ -6,7 +6,7 @@ itsdangerous
 requests>=2.9.1
 werkzeug
 gevent-websocket
-har2warc
+har2warc>=1.0.4
 fakeredis
 apispec
 

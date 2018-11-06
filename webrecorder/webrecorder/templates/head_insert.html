@@ -40,8 +40,7 @@
   wbinfo.static_prefix = "{{ host_prefix }}/{{ static_path }}/bundle/";
 
 {% if not wb_url.is_banner_only or env.pywb_proxy_magic %}
-  wbinfo.use_wombat = true;
-  wbinfo.use_auto_fetch_worker = true;
+  wbinfo.enable_auto_fetch = true;
   wbinfo.auto_fetch_worker_prefix = "{{ host_prefix }}/static_cors/bundle/";
 
   wbinfo.wombat_ts = "{{ wombat_ts }}";

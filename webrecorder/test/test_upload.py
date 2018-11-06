@@ -1,11 +1,14 @@
-from .testutils import FullStackTests
+from .testutils import FullStackTests, BaseWRTests
 
 import os
 import webtest
 import json
 import time
 
+import pytest
+
 import requests
+from contextlib import contextmanager
 
 from webrecorder.models.stats import Stats
 from webrecorder.models.user import User
@@ -39,23 +42,7 @@ class TestUpload(FullStackTests):
 
         cls.test_upload_warc = os.path.join(cls.get_curr_dir(), 'warcs', 'test_3_15_upload.warc.gz')
 
-        cls.env_backup = dict(os.environ)
-        cls.player = None
-        cls.player_filename = None
-
     @classmethod
-    def teardown_class(cls):
-        if cls.player:
-            cls.player.app_serv.stop()
-
-        if cls.player_filename:
-            os.remove(cls.player_filename)
-
-        os.environ.clear()
-        os.environ.update(cls.env_backup)
-
-        super(TestUpload, cls).teardown_class()
-
     def test_upload_anon(self):
         with open(self.test_upload_warc, 'rb') as fh:
             res = self.testapp.put('/_upload?filename=example2.warc.gz', params=fh.read(), status=400)
@@ -427,6 +414,39 @@ class TestUpload(FullStackTests):
         res = self.testapp.get('/api/v1/collection/default-collection?user=test')
         assert len(res.json['collection']['recordings']) == 3
 
+    def test_har_upload(self):
+        self.set_uuids('Recording', ['uploaded-rec-2'])
+        har_file = os.path.join(self.get_curr_dir(), 'warcs', 'example.com.har')
+
+        with open(har_file, 'rb') as fh:
+            res = self.testapp.put('/_upload?filename=example.com.har', params=fh.read())
+
+        res.charset = 'utf-8'
+        assert res.json['user'] == 'test'
+        assert res.json['upload_id'] != ''
+
+        upload_id = res.json['upload_id']
+        res = self.testapp.get('/_upload/' + upload_id + '?user=test')
+
+        assert res.json['coll'] == 'uploaded-collection'
+        assert res.json['coll_title'] == 'Uploaded Collection'
+        assert res.json['filename'] == 'example.com.har'
+        assert res.json['files'] == 1
+        #assert res.json['total_size'] == 458952
+        assert res.json['done'] == False
+
+        def assert_finished():
+            res = self.testapp.get('/_upload/' + upload_id + '?user=test')
+            assert res.json['done'] == True
+
+        self.sleep_try(0.2, 10.0, assert_finished)
+
+    def test_replay_har(self):
+        res = self.testapp.get('/test/uploaded-collection/mp_/http://example.com/')
+        res.charset = 'utf-8'
+
+        assert 'Example Domain' in res.text, res.text
+
     def test_logout_1(self):
         res = self.testapp.post('/api/v1/auth/logout', status=200)
         assert res.json['success']
@@ -443,31 +463,69 @@ class TestUpload(FullStackTests):
 
     def test_stats(self):
         assert self.redis.hget(Stats.DOWNLOADS_USER_COUNT_KEY, today_str()) == '1'
-        assert self.redis.hget(Stats.UPLOADS_COUNT_KEY, today_str()) == '3'
+        assert self.redis.hget(Stats.UPLOADS_COUNT_KEY, today_str()) == '4'
 
-        assert self.redis.hget(User.INFO_KEY.format(user='test'), Stats.UPLOADS_PROP) == '3'
+        assert self.redis.hget(User.INFO_KEY.format(user='test'), Stats.UPLOADS_PROP) == '4'
 
-    def test_player_upload(self):
-        TestUpload.player_filename = os.path.join(self.warcs_dir, 'sample.warc.gz')
 
-        with open(self.player_filename, 'wb') as fh:
-            self.warc.seek(0)
-            fh.write(self.warc.read())
-            fh.flush()
+# ============================================================================
+class TestPlayerUpload(BaseWRTests):
+    @pytest.fixture(params=['cache_save', 'cache_load', 'nocache'])
+    def cache_dir(self, request):
+        if request.param != 'nocache':
+            return self.warcs_dir
+        else:
+            return None
 
-        TestUpload.player = webrecorder_player(['--no-browser', '-p', '0', self.player_filename], embed=True)
+    @contextmanager
+    def run_player(self, filename, cache_dir=None):
+        player = None
+        env_backup = dict(os.environ)
+        try:
+            self.redis.flushall()
 
-        port = TestUpload.player.app_serv.port
+            cmd = ['--no-browser', '-p', '0', filename]
+            if cache_dir:
+                cmd.append('--cache-dir')
+                cmd.append(cache_dir)
 
-        def assert_finished():
+            player = webrecorder_player(cmd, embed=True)
+            port = player.app_serv.port
+
+            yield port
+
+            if cache_dir:
+                assert os.path.isfile(os.path.join(cache_dir, os.path.basename(filename) + '-cache.json.gz'))
+
+        finally:
+            if player:
+                player.app_serv.stop()
+
+            os.environ.clear()
+            os.environ.update(env_backup)
+
+    def assert_finished(self, port):
+        def _assert():
             res = requests.get('http://localhost:{0}/_upload/@INIT?user=local'.format(port))
             assert res.json()['done'] == True
             assert res.json()['size'] >= res.json()['total_size']
 
-        self.sleep_try(0.5, 3.0, assert_finished)
+        return _assert
 
-        res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
-        data = res.json()
+    def test_player_upload(self, cache_dir):
+        player_filename = os.path.join(self.warcs_dir, 'sample.warc.gz')
+
+        with open(player_filename, 'wb') as fh:
+            TestUpload.warc.seek(0)
+            fh.write(TestUpload.warc.read())
+            fh.flush()
+
+        with self.run_player(player_filename, cache_dir=cache_dir) as port:
+            self.sleep_try(0.5, 3.0, self.assert_finished(port))
+
+            res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
+            data = res.json()
+
         collection = data['collection']
         assert collection['id'] == 'collection'
         assert collection['public'] == True
@@ -477,4 +535,95 @@ class TestUpload(FullStackTests):
         assert len(collection['pages']) == 2
         assert len(collection['lists']) == 2
 
+    def test_player_upload_wget_warc(self, cache_dir):
+        player_filename = os.path.join(self.get_curr_dir(), 'warcs', 'example.com.gz.warc')
+
+        with self.run_player(player_filename, cache_dir=cache_dir) as port:
+            self.sleep_try(0.5, 3.0, self.assert_finished(port))
+
+            res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
+            data = res.json()
+
+        collection = data['collection']
+        assert collection['id'] == 'collection'
+        assert collection['public'] == True
+        assert collection['public_index'] == True
+        assert collection['title'] == 'Web Archive Collection'
+
+        assert 'Wget/1.19.1' in collection['desc']
+        assert 'example.com.gz.warc' in collection['desc']
+
+        assert len(collection['pages']) == 1
+        assert len(collection['lists']) == 1
+
+        blist = collection['lists'][0]
+        assert blist['slug'] == 'pages-detected'
+
+        assert len(blist['bookmarks']) == 1
+        bookmark = blist['bookmarks'][0]
+
+        assert bookmark['url'] == 'http://example.com/'
+        assert bookmark['timestamp'] == '20181019224204'
+        assert bookmark['title'] == 'http://example.com/'
+
+    def test_player_temp_coll(self, cache_dir):
+        player_filename = os.path.join(self.get_curr_dir(), 'warcs', 'temp-example.warc')
+
+        with self.run_player(player_filename, cache_dir=cache_dir) as port:
+            self.sleep_try(0.5, 3.0, self.assert_finished(port))
+
+            res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
+            data = res.json()
+
+            res = requests.get('http://localhost:{0}/local/collection/mp_/https://example.com/'.format(port))
+            assert 'Example Domain' in res.text, res.text
+
+            proxy = 'localhost:{0}'.format(port)
+            res = requests.get('https://example.com/', proxies={'https': proxy, 'http': proxy}, verify=False)
+            assert 'Example Domain' in res.text, res.text
+
+        collection = data['collection']
+        assert collection['id'] == 'collection'
+        assert collection['public'] == True
+        assert collection['public_index'] == True
+        assert collection['title'] == 'Webrecorder Collection'
+
+        assert 'Date Created:' in collection['desc']
+        assert 'temp-example.warc' in collection['desc']
+
+        assert len(collection['pages']) == 1
+        assert collection['pages'][0]['title'] == 'Example Domain'
+        assert collection['pages'][0]['url'] == 'http://example.com/'
+
+    def test_player_upload_har(self, cache_dir):
+        player_filename = os.path.join(self.get_curr_dir(), 'warcs', 'example.com.har')
+
+        with self.run_player(player_filename, cache_dir=cache_dir) as port:
+            self.sleep_try(0.5, 3.0, self.assert_finished(port))
+
+            res = requests.get('http://localhost:{0}/api/v1/collection/collection?user=local'.format(port))
+            data = res.json()
+
+            res = requests.get('http://localhost:{0}/local/collection/mp_/https://example.com/'.format(port))
+            assert 'Example Domain' in res.text, res.text
+
+            proxy = 'localhost:{0}'.format(port)
+            res = requests.get('https://example.com/', proxies={'https': proxy, 'http': proxy}, verify=False)
+            assert 'Example Domain' in res.text, res.text
+
+        collection = data['collection']
+        assert collection['id'] == 'collection'
+        assert collection['public'] == True
+        assert collection['public_index'] == True
+        assert collection['title'] == 'Web Archive Collection'
+
+        assert 'har2warc' in collection['desc']
+        assert 'example.com.har' in collection['desc']
+
+        assert len(collection['pages']) == 1
+        assert collection['pages'][0]['title'] == 'https://example.com/'
+        assert collection['pages'][0]['url'] == 'https://example.com/'
+
+        if cache_dir:
+            assert os.path.isfile(os.path.join(self.warcs_dir, 'example.com.har.warc'))
 

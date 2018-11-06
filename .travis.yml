@@ -32,6 +32,7 @@ before_install: |
 
 install:
   - cd webrecorder
+  - pip install 'urllib3==1.23'
   - python setup.py install
   - pip install coverage pytest-cov codecov
   - pip install 'pyinstaller==3.3'

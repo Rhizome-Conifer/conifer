@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { withRouter } from 'react-router';
 import { batchActions } from 'redux-batched-actions';
 import { Button, FormControl, ProgressBar } from 'react-bootstrap';
@@ -17,6 +18,7 @@ const { ipcRenderer } = window.require('electron');
 class Landing extends Component {
 
   static propTypes = {
+    collectionLoaded: PropTypes.bool,
     dispatch: PropTypes.func,
     history: PropTypes.object
   };
@@ -42,7 +44,7 @@ class Landing extends Component {
         setSource(data.source)
       ]));
 
-      this.props.history.push(data.source.startsWith('dat') ? '/local/collection' : '/indexing');
+      this.props.history.replace(data.source.startsWith('dat') ? '/local/collection' : '/indexing');
     });
 
     ipcRenderer.on('indexProgress', this.setProgress);
@@ -73,6 +75,7 @@ class Landing extends Component {
   }
 
   render() {
+    const { collectionLoaded } = this.props;
     const { initializing, progress, source } = this.state;
 
     const allowDat = JSON.parse(process.env.ALLOW_DAT);
@@ -81,18 +84,27 @@ class Landing extends Component {
         <h4>Downloading from peer-to-peer Dat network:</h4>
         <ProgressBar now={this.state.progress} label={`${progress}%`} bsStyle="success" />
       </div>) :
-      <img src={require('shared/images/loading.svg')} id="loadingGif" alt="loading" />
+      (<div className="bigOpen">
+        <img src={require('shared/images/loading.svg')} id="loadingGif" alt="loading" />
+      </div>);
 
     return (
       <div id="landingContainer">
+        <img className="logo" src={require('shared/images/webrecorder_player_text.svg')} alt="Webrecorder header" />
         {
           initializing ?
             loadIndicator :
             <React.Fragment>
               <div className="bigOpen">
                 <button onClick={openFile}>
-                  <object id="loadWarc" data={require('shared/images/Load_WARC.svg')} type="image/svg+xml">load</object>
+                  Open WARC File
                 </button>
+                {
+                  collectionLoaded &&
+                    <Link to="/local/collection">
+                      Return to collection
+                    </Link>
+                }
               </div>
               {
                 allowDat &&
@@ -118,5 +130,10 @@ class Landing extends Component {
   }
 }
 
+const mapStateToProps = ({ app }) => {
+  return {
+    collectionLoaded: app.getIn(['collection', 'loaded'])
+  };
+};
 
-export default withRouter(connect()(Landing));
+export default withRouter(connect(mapStateToProps)(Landing));

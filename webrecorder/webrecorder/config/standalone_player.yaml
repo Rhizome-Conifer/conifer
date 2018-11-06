@@ -11,14 +11,34 @@ init_import_user: 'local'
 init_import_coll: 'collection'
 
 cdxj_key_templ: 'c:{coll}:cdxj'
+coll_cdxj_ttl: -1
 
 max_detect_pages: 0
 
 upload_coll:
     id: 'collection'
-    title: 'Collection'
-    desc: 'This collection was automatically created from *{filename}*'
+    title: 'Web Archive Collection'
+
+    desc: |
+        This collection was automatically created from a local archive file.
+
+        Source file: **{filename}**
+
+        Archive software: **{software}**
+
+        Date Created: **{datetime}**
+
     public: true
+
+wr_temp_coll:
+    title: 'Webrecorder Collection'
+    desc: |
+        This is a collection downloaded anonymously from Webrecorder.
+
+        Source file: **{filename}**
+
+        Date Created: **{datetime}**
+
 
 metadata:
     product: Webrecorder Player
