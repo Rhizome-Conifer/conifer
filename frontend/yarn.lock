@@ -7668,7 +7668,7 @@ shellwords@^0.1.1:
 
 "shepherd-client@github:oldweb-today/shepherd-client":
   version "1.0.0"
-  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/21ef704649ed48ab36106e1487c0685b75c30527"
+  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/9da01fd002b317f9e1ca0e24be9f4ce11669d332"
   dependencies:
     "@novnc/novnc" "^1.0.0"
     promise-polyfill "^8.1.0"
