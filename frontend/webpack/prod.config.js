@@ -8,6 +8,7 @@ var path = require('path');
 var webpack = require('webpack');
 var CleanPlugin = require('clean-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 var strip = require('strip-loader');
 
 var projectRootPath = path.resolve(__dirname, '../');
@@ -172,12 +173,14 @@ module.exports = {
     //new HardSourceWebpackPlugin(),
 
     // optimizations
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        unused: true,
-        warnings: true,
-        dead_code: true,
-        drop_console: true
+    new UglifyJsPlugin({
+      cache: true,
+      parallel: true,
+      sourceMap: true,
+      uglifyOptions: {
+        compress: {
+          warnings: true
+        }
       }
     }),
 

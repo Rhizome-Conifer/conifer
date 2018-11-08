@@ -9,7 +9,7 @@ import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
 import './style.scss';
 
-let CBrowser;
+const CBrowser = __CLIENT__ && require('shepherd-client/lib/browser').default;
 
 
 class RemoteBrowserUI extends Component {
@@ -77,9 +77,6 @@ class RemoteBrowserUI extends Component {
 
   componentDidMount() {
     const { dispatch, params, rb, rec, timestamp, url } = this.props;
-
-    // eslint-disable-next-line
-    CBrowser = require('shepherd-client/lib/browser').default;
 
     if (!window.location.port) {
       this.pywbParams.proxy_ws = '_websockify?port=';
