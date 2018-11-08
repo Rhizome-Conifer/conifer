@@ -4375,13 +4375,6 @@ isomorphic-fetch@^2.1.1:
     node-fetch "^1.0.1"
     whatwg-fetch ">=0.10.0"
 
-isomorphic-unfetch@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/isomorphic-unfetch/-/isomorphic-unfetch-3.0.0.tgz#de6d80abde487b17de2c400a7ef9e5ecc2efb362"
-  dependencies:
-    node-fetch "^2.2.0"
-    unfetch "^4.0.0"
-
 isstream@~0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
@@ -5612,10 +5605,6 @@ node-fetch@^1.0.1:
   dependencies:
     encoding "^0.1.11"
     is-stream "^1.0.1"
-
-node-fetch@^2.2.0:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.2.1.tgz#1fe551e0ded6c45b3b3b937d0fb46f76df718d1e"
 
 node-gyp@^3.8.0:
   version "3.8.0"
@@ -7688,13 +7677,13 @@ shellwords@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/shellwords/-/shellwords-0.1.1.tgz#d6b9181c1a48d397324c84871efbcfc73fc0654b"
 
-"shepherd-client@github:oldweb-today/shepherd-client#iso-unfetch":
+"shepherd-client@github:oldweb-today/shepherd-client":
   version "1.0.0"
-  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/c0d9c201dd84ecbb6f37d3fa77da33fe36f6785e"
+  resolved "https://codeload.github.com/oldweb-today/shepherd-client/tar.gz/848d076dce9e97cfd1ddec9723fa878100793a69"
   dependencies:
     "@novnc/novnc" "^1.0.0"
-    isomorphic-unfetch "^3.0.0"
     promise-polyfill "^8.1.0"
+    unfetch "^4.0.1"
 
 shimmer@^1.0.0, shimmer@^1.1.0, shimmer@^1.2.0:
   version "1.2.0"
@@ -8360,7 +8349,7 @@ underscore@~1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.6.0.tgz#8b38b10cacdef63337b8b24e4ff86d45aea529a8"
 
-unfetch@^4.0.0:
+unfetch@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/unfetch/-/unfetch-4.0.1.tgz#8750c4c7497ade75d40387d7dbc4ba024416b8f6"
 
