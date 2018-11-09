@@ -11,6 +11,6 @@ try {
   console.error(err);
 }
 
-const config = Object.assign({}, babelConfig, { ignore: /node_modules\/(?!(react-rte))/ })
+const config = Object.assign({}, babelConfig, { ignore: /node_modules(\/|\\)(?!(react-rte))/ })
 
 require('babel-register')(config);

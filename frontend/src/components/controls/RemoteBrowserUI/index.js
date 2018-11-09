@@ -7,9 +7,9 @@ import { deleteStorage, getStorage, remoteBrowserMod, setStorage } from 'helpers
 
 import { createRemoteBrowser } from 'redux/modules/remoteBrowsers';
 
-import CBrowser from 'shared/js/browser_controller';
-
 import './style.scss';
+
+const CBrowser = __CLIENT__ && require('shepherd-client/lib/browser').default;
 
 
 class RemoteBrowserUI extends Component {
@@ -22,6 +22,7 @@ class RemoteBrowserUI extends Component {
     autoscroll: PropTypes.bool,
     clipboard: PropTypes.bool,
     contentFrameUpdate: PropTypes.bool,
+    creating: PropTypes.bool,
     dispatch: PropTypes.func,
     history: PropTypes.object,
     inactiveTime: PropTypes.number,
@@ -53,6 +54,7 @@ class RemoteBrowserUI extends Component {
     }
 
     this.reloadHandle = null;
+    this.expired = false;
     this.state = {
       countdownLabel: false,
       dismissCountdown: false,
@@ -68,7 +70,8 @@ class RemoteBrowserUI extends Component {
       clipboard: '#clipboard',
       fill_window: true,
       on_countdown: this.onCountdown,
-      on_event: this.onEvent
+      on_event: this.onEvent,
+      headers: { 'x-requested-with': 'XMLHttpRequest' }
     };
   }
 
@@ -137,13 +140,7 @@ class RemoteBrowserUI extends Component {
       //const reqFromStorage = this.getReqFromStorage(nextProps.rb);
 
       // close current connections
-      if (this.cb) {
-        this.cb.close();
-      }
-
-      if (this.socket) {
-        this.socket.close();
-      }
+      this.closeCb();
 
       // generate remote browser
       dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, this.currMode, timestamp, url));
@@ -151,6 +148,12 @@ class RemoteBrowserUI extends Component {
   }
 
   componentWillUnmount() {
+    this.closeCb();
+
+    clearTimeout(this.reloadHandle);
+  }
+
+  closeCb = () => {
     if (this.cb) {
       this.cb.close();
     }
@@ -158,8 +161,6 @@ class RemoteBrowserUI extends Component {
     if (this.socket) {
       this.socket.close();
     }
-
-    clearTimeout(this.reloadHandle);
   }
 
   onCountdown = (seconds, countdownText) => {
@@ -174,8 +175,9 @@ class RemoteBrowserUI extends Component {
       this.setState({ dismissCountdown: false });
     }
 
-    if (seconds <= 0) {
-      this.recreateBrowser();
+    if (seconds <= 0 && !this.expired && !document.hidden) {
+      this.expired = true;
+      this.onExpire();
     }
   }
 
@@ -184,15 +186,18 @@ class RemoteBrowserUI extends Component {
 
     if (type === 'connect') {
       this.setState({ message: '' });
+    } else if (['fail', 'error'].includes(type)) {
+      //deleteStorage('reqId', window.sessionStorage);
 
-      if (this.cb && document.activeElement && document.activeElement.tagName === 'INPUT') {
-        this.cb.lose_focus();
+      if (!this.props.creating) {
+        // close current connections
+        this.closeCb();
+
+        dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, this.currMode, timestamp, url));
       }
-    }else if (['fail', 'expire'].includes(type)) {
-      this.recreateBrowser();
-    } else if (type === 'error') {
-      deleteStorage('reqId', window.sessionStorage);
-      dispatch(createRemoteBrowser(rb, params.user, params.coll, rec, this.currMode, timestamp, url));
+    } else if (type === 'expire' && !this.expired) {
+      this.expired = true;
+      this.onExpire();
     }
   }
 
@@ -222,25 +227,26 @@ class RemoteBrowserUI extends Component {
     // set up socket
     this.socket = new WebSocketHandler(params, currMode, dispatch, true, reqId);
 
+    this.expired = false;
+
     // connect to rb
     // TODO: Make sure this is being destroyed properly
     this.cb = new CBrowser(reqId, '#browser', this.pywbParams);
-    window.cb = this.cb;
   }
 
-  recreateBrowser = () => {
+  onExpire = () => {
     const { currMode } = this.context;
-    const { history, params: { user, coll, rec }, rb, timestamp, url } = this.props;
+    const { params: { user, coll, rec }, rb, timestamp, url } = this.props;
     let message;
 
-    if (currMode === 'record') {
+    if (!currMode.includes('replay')) {
       if (this.state.messageSet) {
         return;
       }
 
       const collUrl = `/${user}/${coll}/`;
       message = (
-          `Sorry, the remote browser recording session has expired.<br />
+          `Sorry, the remote browser session has expired.<br />
           You can <a href="${collUrl}index?query=session:${rec}">view the recording</a> or <a href="${collUrl}$new">create a new recording</a>`
       );
 
@@ -252,19 +258,19 @@ class RemoteBrowserUI extends Component {
       return;
     }
 
-    message = `The remote browser session has expired, ${currMode === 'patch' ? 'transitioning to replay' : 'requesting a new browser'}`;
+    message = 'The remote browser session has expired, requesting a new browser...';
     this.setState({
       message
     });
 
+    if (!this.props.creating) {
+      this.reloadHandle = setTimeout(() => {
+        // close current connections
+        this.closeCb();
 
-    this.reloadHandle = setTimeout(() => {
-      if (currMode === 'patch') {
-        history.push(`/${user}/${coll}/${remoteBrowserMod(rb, timestamp, '/')}${url}`);
-      } else {
-        window.location.reload();
-      }
-    }, 5000);
+        this.props.dispatch(createRemoteBrowser(rb, user, coll, rec, this.currMode, timestamp, url));
+      }, 5000);
+    }
   }
 
   hideCountdown = () => this.setState({ dismissCountdown: true })
@@ -289,6 +295,7 @@ class RemoteBrowserUI extends Component {
         }
         <div id="message" key="msg" className="browser" />
         <div id="browser" key="browser" className="browser" style={sidebarResize ? { pointerEvents: 'none' } : {}} />
+        <div id="noVNC_mouse_capture_elem" />
       </React.Fragment>
     );
   }

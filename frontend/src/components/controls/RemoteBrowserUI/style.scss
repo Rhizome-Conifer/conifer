@@ -13,9 +13,29 @@
     -moz-box-shadow: none;
     box-shadow: none;
 }
-#noVNC_screen canvas {
-    position: fixed;
-    //box-shadow: 0px 10px 30px 3px rgba(0,0,0,0.2);
+#noVNC_screen {
+    height: 100%;
+
+    .canvas {
+        height: 100%;
+    }
+
+    .canvas > div {
+        justify-content: center;
+
+        @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+            position: relative;
+            overflow: hidden !important;
+        }
+    }
+
+    canvas {
+        position: absolute;
+
+        @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+            transform: translate(-50%, 0);
+        }
+    }
 }
 
 #browser-countdown-label {
@@ -31,11 +51,11 @@
     width: 100%;
 }
 
-#noVNC_screen {
-    height: 100%;
-    display: flex;
-    justify-content: center;
-}
+// #noVNC_screen > .canvas {
+//     height: 100%;
+//     display: flex;
+//     justify-content: center;
+// }
 
 .rb-countdown, .rb-message {
     position: absolute;
@@ -44,4 +64,14 @@
     right: 1.5rem;
     box-shadow: .2rem .2rem .8rem rgba(0,0,0,0.4);
     z-index: 1000;
+}
+
+#noVNC_mouse_capture_elem {
+    position: absolute;
+    z-index: 1000;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: none;
 }

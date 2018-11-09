@@ -15,6 +15,7 @@ const initialState = fromJS({
   activeBrowser: null,
   accessed: null,
   browserData: null,
+  creating: false,
   error: null,
   inactiveTime: null,
   loaded: false,
@@ -24,17 +25,24 @@ const initialState = fromJS({
 
 export default function remoteBrowsers(state = initialState, action = {}) {
   switch (action.type) {
+    case RB_CREATE_BROWSER:
+      return state.set('creating', true);
+
     case RB_CREATE_BROWSER_SUCCESS: {
       const { reqid, browser_data, inactive_time } = action.result;
 
       return state.merge({
+        creating: false,
         reqId: reqid,
         browserData: browser_data,
         inactiveTime: inactive_time
       });
     }
     case RB_CREATE_BROWSER_FAILURE:
-      return state;
+      return state.merge({
+        creating: false,
+        error: action.error
+      });
     case RB_LOAD:
       return state.set('loading', true);
     case RB_LOAD_SUCCESS:
