@@ -103,9 +103,7 @@ services:
             - 8092:81
 
     shepherd:
-        image: oldwebtoday/shepherd:v2
-
-        #command: uwsgi uwsgi.ini --mount /api/browsers=/shepherd/main.py
+        image: oldwebtoday/browser-shepherd
 
         env_file:
             - ./wr.env
@@ -118,13 +116,16 @@ services:
             - PROXY_PORT=8088
             - PROXY_GET_CA=http://wsgiprox/download/pem
 
-            - CLUSTER_NAME=wr_users
-            - NETWORK_NAME=webrecorder_browsers
-
-            - AUDIO_TYPE=opus
-
             - CONTAINER_EXPIRE_SECS=3600
             - IDLE_TIMEOUT=120
+
+            - REDIS_BROWSER_URL=redis://redis/0
+            - BROWSER_NET=webrecorder_browsers
+            - MAIN_NET=webrecorder_default
+            - DEFAULT_FLOCK=auto-browsers-vnc
+
+        ports:
+            - 9020:9020
 
         depends_on:
             - redis

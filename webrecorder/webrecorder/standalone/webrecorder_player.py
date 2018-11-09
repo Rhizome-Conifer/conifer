@@ -182,7 +182,7 @@ class WebrecPlayerRunner(StandaloneRunner):
                         reqid='@INIT')
 
         browser_redis = redis.StrictRedis.from_url(os.environ['REDIS_BROWSER_URL'])
-        browser_redis.hmset('ip:127.0.0.1', local_info)
+        browser_redis.hmset('up:127.0.0.1', local_info)
         browser_redis.hset('req:@INIT', 'ip', '127.0.0.1')
 
     def init_env(self):

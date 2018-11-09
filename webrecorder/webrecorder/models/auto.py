@@ -1,6 +1,7 @@
 from webrecorder.models.base import RedisUniqueComponent
 import json
 import requests
+import os
 
 
 # ============================================================================
@@ -107,7 +108,7 @@ class Auto(RedisUniqueComponent):
 
         environ = {'AUTO_ID': self.my_id,
                    'URL': 'about:blank',
-                   'REDIS_URL': 'redis://redis/1'
+                   'REDIS_URL': os.environ['REDIS_BASE_URL'],
                   }
 
         opts = dict(overrides={'browser': 'oldwebtoday/' + browser_id},
@@ -133,7 +134,7 @@ class Auto(RedisUniqueComponent):
 
         if not errors:
             self['status'] = 'running'
-            return {'success': True}
+            return {'success': True, 'browsers': list(self.redis.smembers(self.browser_key))}
 
         else:
             return {'error': 'not_started', 'details': errors}

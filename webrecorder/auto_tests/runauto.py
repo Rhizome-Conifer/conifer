@@ -1,5 +1,6 @@
 import requests
 import pytest
+import subprocess
 
 
 # ============================================================================
@@ -8,6 +9,7 @@ class TestAuto(object):
     USER = 'testauto'
     LIST_ID = ''
     AUTO_ID = ''
+    NUM_BROWSERS = 2
 
     @classmethod
     def setup_class(cls):
@@ -31,6 +33,15 @@ class TestAuto(object):
         return self.session.delete(full_url, **kwargs)
 
     @pytest.mark.always
+    def test_create_user(self):
+        res = subprocess.run(['docker', 'exec', 'webrecorder_app_1', "python", "-m", "webrecorder.admin",
+                              "-c", "testauto@example.com", "testauto", "TestTest123", "archivist", "Auto Test"],
+                             stdout=subprocess.PIPE)
+
+        assert b'Created user testauto' in res.stdout or b'A user already exists' in res.stdout
+        assert res.returncode == 0
+
+    @pytest.mark.always
     def test_login(self):
         params = {'username': self.USER,
                   'password': 'TestTest123',
@@ -47,8 +58,8 @@ class TestAuto(object):
         assert res.json()['collection']['title'] == 'Auto Test'
 
     def test_create_auto(self):
-        params = {'crawl_depth': 0,
-                  'num_browsers': 2,
+        params = {'crawl_depth': 2,
+                  'num_browsers': self.NUM_BROWSERS,
                  }
 
         res = self.post('/api/v1/auto?user=testauto&coll=auto-test', json=params)
@@ -58,7 +69,8 @@ class TestAuto(object):
 
     def test_add_urls(self):
         params = {'urls': [
-            'https://example.com/'
+            'https://twitter.com/webrecorder_io',
+            'https://rhizome.org/'
             ]}
 
         res = self.post('/api/v1/auto/{0}/queue_urls?user=testauto&coll=auto-test'.format(self.AUTO_ID), json=params)
@@ -98,7 +110,7 @@ class TestAuto(object):
         assert auto['queue'] is not None
         assert auto['seen'] is not None
         assert auto['pending'] is not None
-        assert len(auto['browsers']) == 2
+        assert len(auto['browsers']) == self.NUM_BROWSERS
 
     @pytest.mark.delete
     def _test_delete_auto(self):

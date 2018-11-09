@@ -34,8 +34,10 @@ assets_path: ./webrecorder/config/assets.yaml
 
 temp_prefix: 'temp-'
 
-browser_req_url: 'http://shepherd:9020/api/browsers/request_browser/{browser}'
-browser_list_url: 'http://shepherd:9020/api/browsers/browsers'
+#browser_req_url: 'http://shepherd:9020/api/browsers/request_browser/{browser}'
+#browser_list_url: 'http://shepherd:9020/api/browsers/browsers'
+browser_req_url: 'http://shepherd:9020/request_browser/{browser}'
+browser_list_url: 'http://shepherd:9020/browsers'
 proxy_host: 'proxy'
 
 all_archives_index: './webarchives.yaml'
