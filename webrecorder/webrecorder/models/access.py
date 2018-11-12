@@ -169,7 +169,7 @@ class SessionAccessCache(BaseAccess):
         if self.is_anon():
             return False
 
-        return collection.get_prop(self.READ_PREFIX + self.session_user.my_id)
+        return collection.get_prop(self.READ_PREFIX + self.session_user.my_id) is not None
 
     def can_read_coll(self, collection, allow_superuser=True):
         """Return whether current user has right to read collection.
