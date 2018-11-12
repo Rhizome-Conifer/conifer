@@ -10,6 +10,7 @@ import { setSort } from 'store/modules/collection';
 import { getCollectionLink, getListLink, range, truncate } from 'helpers/utils';
 
 import {
+  Automation,
   CollectionHeader,
   InspectorPanel,
   Lists,
@@ -357,6 +358,11 @@ class CollectionDetailUI extends Component {
         {
           isAnon && canAdmin &&
             <TempUserAlert />
+        }
+
+        {
+          canAdmin &&
+            <Automation collection={collection} />
         }
 
         <Sidebar storageKey="collSidebar">

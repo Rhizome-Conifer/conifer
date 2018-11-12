@@ -6,6 +6,7 @@ import { reducer as searchReducer } from 'redux-search';
 import { auth, LOGIN_SUCCESS, LOGOUT_SUCCESS } from './modules/auth';
 
 import appSettings from './modules/appSettings';
+import automation from './modules/automation';
 import bugReport from './modules/bugReport';
 import collection from './modules/collection';
 import collections from './modules/collections';
@@ -27,6 +28,7 @@ import userSignup from './modules/userSignup';
 const makeAppReducer = () => {
   const reducers = {
     auth,
+    automation,
     bugReport,
     collection,
     collections,

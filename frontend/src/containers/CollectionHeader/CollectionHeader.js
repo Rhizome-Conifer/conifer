@@ -5,13 +5,16 @@ import { withRouter } from 'react-router';
 import { saveDelay } from 'config';
 
 import { loadCollections } from 'store/modules/auth';
-import { resetEditState as resetCollEditState, edit as editCollDesc, shareToDat, unshareFromDat } from 'store/modules/collection';
+import { toggleAutomation, toggleModal } from 'store/modules/automation';
+import { resetEditState as resetCollEditState, edit as editCollDesc,
+         shareToDat, unshareFromDat } from 'store/modules/collection';
 
 import CollectionHeaderUI from 'components/collection/CollectionHeaderUI';
 
 
 const mapStateToProps = ({ app }) => {
   return {
+    active: app.getIn(['automation', 'active']),
     auth: app.getIn(['auth', 'user']),
     collection: app.get('collection'),
     collEditing: app.getIn(['collection', 'editing']),
@@ -34,6 +37,8 @@ const mapDispatchToProps = (dispatch, { history }) => {
         .then(() => dispatch(resetCollEditState()));
     },
     shareToDat: (user, coll) => dispatch(shareToDat(user, coll)),
+    stopAutomation: (user, coll, aid) => dispatch(toggleAutomation('stop', user, coll, aid)),
+    toggleAutomationModal: () => dispatch(toggleModal()),
     unshareFromDat: (user, coll) => dispatch(unshareFromDat(user, coll)),
     dispatch
   };

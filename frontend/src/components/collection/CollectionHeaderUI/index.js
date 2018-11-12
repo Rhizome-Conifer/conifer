@@ -30,6 +30,7 @@ class CollectionHeaderUI extends Component {
 
   static propTypes = {
     auth: PropTypes.object,
+    autoId: PropTypes.string,
     collection: PropTypes.object,
     collEdited: PropTypes.bool,
     collEditing: PropTypes.bool,
@@ -38,6 +39,7 @@ class CollectionHeaderUI extends Component {
     editCollection: PropTypes.func,
     history: PropTypes.object,
     shareToDat: PropTypes.func,
+    stopAutomation: PropTypes.func,
     unshareFromDat: PropTypes.func
   };
 
@@ -112,6 +114,11 @@ class CollectionHeaderUI extends Component {
     doubleRAF(() => this.setState({ onBoarding: false }));
   }
 
+  stopAutomation = () => {
+    const { autoId, collection } = this.props;
+    this.props.stopAutomation(collection.get('owner'), collection.get('id'), autoId);
+  }
+
   togglePublicView = () => {
     const { collection, history } = this.props;
     history.push(getCollectionLink(collection));
@@ -179,6 +186,12 @@ class CollectionHeaderUI extends Component {
                   <MenuItem onClick={this.newSession}>New Session</MenuItem>
                   <MenuItem divider />
                   <MenuItem onClick={this.togglePublicView}>Cover</MenuItem>
+                  <MenuItem divider />
+                  <MenuItem onClick={this.props.toggleAutomationModal}>Automation <sup>beta</sup></MenuItem>
+                  {
+                    this.props.active &&
+                      <MenuItem onClick={this.stopAutomation}>Stop Automation</MenuItem>
+                  }
                   <MenuItem divider />
                   <MenuItem onClick={this.manageCollection}>Manage Sessions</MenuItem>
                   {
