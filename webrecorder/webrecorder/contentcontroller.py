@@ -159,6 +159,8 @@ class ContentController(BaseController, RewriterApp):
 
             browser_can_write = '1' if self.access.can_write_coll(collection) else '0'
 
+            remote_ip = self._get_remote_ip()
+
             # build kwargs
             kwargs = dict(user=user.name,
                           id=sesh.get_id(),
@@ -172,8 +174,8 @@ class ContentController(BaseController, RewriterApp):
                           inv_sources=inv_sources,
                           patch_rec=patch_rec,
 
-                          remote_ip=self._get_remote_ip(),
-                          ip=self._get_remote_ip(),
+                          remote_ip=remote_ip,
+                          ip=remote_ip,
 
                           browser=browser_id,
                           url=url,
@@ -468,8 +470,8 @@ class ContentController(BaseController, RewriterApp):
             remote_ip = info.get('remote_ip')
 
             if remote_ip and info['type'] in self.MODIFY_MODES:
-                if user.is_rate_limited(remote_ip):
-                    self._raise_error(402, 'rate_limit_exceeded')
+                remote_ip = self.check_rate_limit(user, remote_ip)
+                kwargs['ip'] = remote_ip
 
             resp = self.render_content(wb_url, kwargs, request.environ)
 
@@ -634,8 +636,7 @@ class ContentController(BaseController, RewriterApp):
 
             remote_ip = self._get_remote_ip()
 
-            if the_user.is_rate_limited(remote_ip):
-                self._raise_error(402, 'rate_limit_exceeded')
+            remote_ip = self.check_rate_limit(the_user, remote_ip)
 
             if inv_sources and inv_sources != '*':
                 #patch_rec_name = self.patch_of_name(rec, True)
@@ -845,6 +846,20 @@ class ContentController(BaseController, RewriterApp):
         remote_ip = remote_ip or request.environ.get('REMOTE_ADDR', '')
         remote_ip = remote_ip.rsplit('.', 1)[0]
         return remote_ip
+
+    def check_rate_limit(self, user, remote_ip):
+        # check rate limit and return ip used for further limiting
+        # if skipping limit, return empty string to avoid incrementing
+        # rate counter for this request
+        res = user.is_rate_limited(remote_ip)
+        if res == True:
+            self._raise_error(402, 'rate_limit_exceeded')
+        # if None, then no rate limit at all, return empty string
+        elif res == None:
+            return ''
+
+        else:
+            return remote_ip
 
     ## RewriterApp overrides
     def get_base_url(self, wb_url, kwargs):

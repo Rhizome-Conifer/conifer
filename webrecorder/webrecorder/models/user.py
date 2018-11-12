@@ -271,12 +271,19 @@ class User(RedisUniqueComponent):
         else:
             return False
 
+    @property
+    def curr_role(self):
+        return self['role']
+
     def is_rate_limited(self, ip):
         if not self.rate_limit_hours or not self.rate_limit_max:
-            return False
+            return None
 
         if self.access.is_superuser():
-            return False
+            return None
+
+        if self.curr_role == 'rate-unlimited-archivist':
+            return None
 
         rate_key = self.RATE_LIMIT_KEY.format(ip=ip, H='')
         h = int(datetime.utcnow().strftime('%H'))

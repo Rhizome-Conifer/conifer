@@ -56,7 +56,7 @@ class TestAdminAPI(FullStackTests):
         res = self.testapp.get('/api/v1/admin/user_roles')
         assert set(res.json['roles']) == {'admin',
                                           'beta-archivist',
-                                          'mounts-archivist',
+                                          'rate-unlimited-archivist',
                                           'public-archivist',
                                           'archivist'}
 
