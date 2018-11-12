@@ -26,6 +26,8 @@ class Auto(RedisUniqueComponent):
 
     BROWSER_API_URL = 'http://shepherd:9020/api/auto-pool'
 
+    SCOPES = ['single-page', 'single-domain', 'all-links']
+
     def __init__(self, **kwargs):
         super(Auto, self).__init__(**kwargs)
         self.frontier_q_key = self.Q_KEY.format(auto=self.my_id)
@@ -45,22 +47,40 @@ class Auto(RedisUniqueComponent):
 
         props = props or {}
 
+        scope_type = props.get('scope_type', 'single-page')
+
+        if scope_type == 'all-links':
+            crawl_depth = 1
+        elif scope_type == 'single-domain':
+            crawl_depth = 100
+        else:
+            crawl_depth = 0
+
         self.data = {
                      'num_browsers': props.get('num_browsers', self.DEFAULT_NUM_BROWSERS),
-                     'crawl_depth': props.get('crawl_depth', self.DEFAULT_DEPTH),
                      'num_tabs': props.get('num_tabs', 1),
                      'owner': collection.my_id,
+                     'scope_type': scope_type,
                      'status': 'new',
+                     'crawl_depth': crawl_depth
                     }
 
         self._init_new()
 
-        scopes = props.get('scopes')
-        if scopes:
-            for scope in scopes:
-                self.redis.sadd(self.scopes_key, scope)
-
         return aid
+
+    def _init_domain_scopes(self, urls):
+        domains = set()
+
+        for url in urls:
+            domain = urlsplit(url).netloc
+            domains.add(domain)
+
+        if not domains:
+            return
+
+        for domain in domains:
+            self.redis.sadd(self.scopes_key, json.dumps({'domain': domain}))
 
     def queue_urls(self, urls):
         for url in urls:
@@ -70,6 +90,9 @@ class Auto(RedisUniqueComponent):
 
             # add to seen list to avoid dupes
             self.redis.sadd(self.seen_key, url)
+
+        if self['scope_type'] == 'single-domain':
+            self._init_domain_scopes(urls)
 
         return {'success': True}
 

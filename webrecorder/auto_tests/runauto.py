@@ -58,7 +58,7 @@ class TestAuto(object):
         assert res.json()['collection']['title'] == 'Auto Test'
 
     def test_create_auto(self):
-        params = {'crawl_depth': 2,
+        params = {'scope_type': 'single-page',
                   'num_browsers': self.NUM_BROWSERS,
                  }
 
@@ -111,6 +111,8 @@ class TestAuto(object):
         assert auto['seen'] is not None
         assert auto['pending'] is not None
         assert len(auto['browsers']) == self.NUM_BROWSERS
+
+        assert auto['scope_type'] == 'single-page'
 
     @pytest.mark.delete
     def _test_delete_auto(self):
