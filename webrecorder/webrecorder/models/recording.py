@@ -148,7 +148,7 @@ class Recording(RedisUniqueComponent):
             return False
 
         cdxj_key = self.CDXJ_KEY.format(rec=self.my_id)
-        return not self.redis.exists(cdxj_key)
+        return self.redis.exists(cdxj_key) == False
 
     def get_pending_count(self):
         """Return outstanding CDX index lines.

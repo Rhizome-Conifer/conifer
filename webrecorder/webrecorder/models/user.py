@@ -83,7 +83,8 @@ class User(RedisUniqueComponent):
         desc = kwargs.get("desc", "")
         public = kwargs.get("public", False)
         public_index = kwargs.get("public_index", False)
-        coll = collection.init_new(coll_name, desc=desc, public=public, public_index=public_index)
+        kwargs = {k: v for k, v in kwargs.items() if k not in ("desc", "public", "public_index")}
+        coll = collection.init_new(coll_name, desc=desc, public=public, public_index=public_index, **kwargs)
 
         self.colls.add_object(coll_name, collection, owner=True)
 

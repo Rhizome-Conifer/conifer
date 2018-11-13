@@ -60,12 +60,13 @@ class BaseStorage(object):
         """
         return True
 
-    def upload_file(self, collection,
+    def upload_file(self, user, collection, recording,
                     filename, full_filename, obj_type):
         """Upload file into storage.
 
-        :param collection: collection
-        :type: n.s.
+        :param User user: user (unused argument)
+        :param Collection collection: collection
+        :param Recording recording: recording (unused argument)
         :param str filename: filename
         :param str full_filename: path
         :param str obj_type: type of target

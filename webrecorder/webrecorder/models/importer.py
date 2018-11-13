@@ -928,7 +928,7 @@ class InplaceImporter(BaseImporter):
         """
         self.redis.hincrby(upload_key, 'size', diff)
 
-    def _har2warc_temp_file(self):
+    def _har2warc_temp_file(self, filename):
         """Return temporay file.
 
         :returns: temporary file
