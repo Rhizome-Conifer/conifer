@@ -9,6 +9,7 @@ import { product, userRegex } from 'config';
 
 import { passwordPassRegex } from 'helpers/utils';
 import { TempUsage } from 'containers';
+import { LoaderIcon } from 'components/icons';
 
 import './style.scss';
 
@@ -21,6 +22,7 @@ class UserSignup extends Component {
     checkedUsername: PropTypes.string,
     result: PropTypes.string,
     errors: PropTypes.object,
+    submitting: PropTypes.bool,
     success: PropTypes.bool,
     user: PropTypes.object,
     userCheck: PropTypes.bool,
@@ -156,7 +158,7 @@ class UserSignup extends Component {
 
   render() {
     const { available, checkedUsername, errors, result,
-            success, user, userCheck } = this.props;
+            submitting, success, user, userCheck } = this.props;
     const { email, moveTemp, name, password, confirmpassword,
             toColl, username } = this.state;
 
@@ -290,7 +292,13 @@ class UserSignup extends Component {
                 toColl={toColl} />
             }
 
-            <Button bsStyle="primary" bsSize="large" type="submit" block disabled={success}>Register</Button>
+            <Button bsStyle="primary" bsSize="large" type="submit" block disabled={success || submitting}>
+              {
+                submitting && !success &&
+                  <LoaderIcon />
+              }
+              Register
+            </Button>
 
             <p className="top-buffer">
               By registering, you agree to our <Link to="/_policies">terms of service</Link>, including that we may use the provided email address to contact you from time to time in reference to the service and your account.
