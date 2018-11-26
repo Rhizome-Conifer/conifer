@@ -7,8 +7,8 @@ import { withRouter } from 'react-router';
 
 import { stripProtocol } from 'helpers/utils';
 
-import { setBrowserHistory } from 'redux/modules/appSettings';
-import { updateUrlAndTimestamp, updateTimestamp } from 'redux/modules/controls';
+import { setBrowserHistory } from 'store/modules/appSettings';
+import { updateUrlAndTimestamp, updateTimestamp } from 'store/modules/controls';
 
 import './style.scss';
 

@@ -6,7 +6,7 @@ import { withRouter } from 'react-router';
 import { batchActions } from 'redux-batched-actions';
 import { Button, FormControl, ProgressBar } from 'react-bootstrap';
 
-import { setHost, setSource } from 'redux/modules/appSettings';
+import { setHost, setSource } from 'store/modules/appSettings';
 import { rts } from 'helpers/utils';
 import { openFile } from 'helpers/playerUtils';
 

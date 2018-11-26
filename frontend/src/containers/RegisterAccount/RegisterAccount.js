@@ -7,7 +7,7 @@ import { withRouter } from 'react-router';
 import { apiPath, supportEmail } from 'config';
 import { apiFetch } from 'helpers/utils';
 
-import { showModal } from 'redux/modules/userLogin';
+import { showModal } from 'store/modules/userLogin';
 
 import './style.scss';
 
