@@ -34,8 +34,8 @@ def main(args=None):
     parser.add_argument('-i', '--invite')
     parser.add_argument('-l', '--list', action='store_true')
     parser.add_argument('-b', '--backlog')
-    parser.add_argument('--check', nargs=1, help="check if username exists")
-    parser.add_argument('-u', '--users', help="list all existing users")
+    parser.add_argument('--check', help="check if username exists")
+    parser.add_argument('-u', '--users', action="store_true", help="list all existing users")
 
     r = parser.parse_args(args=args)
     m = CLIUserManager()
@@ -53,7 +53,7 @@ def main(args=None):
     elif r.delete_user:
         m.delete_user()
     elif r.check:
-        m.check_user(r.check[0])
+        m.check_user(r.check)
     elif r.users:
         m.list_users()
     else:
