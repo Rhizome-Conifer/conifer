@@ -34,7 +34,7 @@ def main(args=None):
     parser.add_argument('-i', '--invite')
     parser.add_argument('-l', '--list', action='store_true')
     parser.add_argument('-b', '--backlog')
-    parser.add_argument('-c', '--check', nargs=1, help="check if username exists")
+    parser.add_argument('--check', nargs=1, help="check if username exists")
     parser.add_argument('-u', '--users', help="list all existing users")
 
     r = parser.parse_args(args=args)
