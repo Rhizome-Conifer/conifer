@@ -11,17 +11,18 @@ const host = '127.0.0.1';
 const port = Number(config.port) + 1;
 const baseConfig = getBaseConfig({
   development: true,
-  css_bundle: true
+  useMiniCssExtractPlugin: true
 });
 
 
 const devConfig = {
+  mode: 'development',
   entry: {
     main: [
       'react-hot-loader/patch',
       `webpack-hot-middleware/client?path=http://${host}:${port}/__webpack_hmr&quiet=true`,
       './config/polyfills',
-      'bootstrap-loader/extractStyles',
+      'bootstrap-loader',
       './src/client.js'
     ]
   },
@@ -36,6 +37,62 @@ const devConfig = {
         options: {
           quiet: true
         }
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          {
+            loader: 'style-loader'
+          },
+          {
+            loader: 'css-loader'
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: () => {
+                return [
+                  autoprefixer({
+                    browsers: [
+                      '>1%',
+                      'last 4 versions',
+                      'Firefox ESR',
+                      'not ie < 10',
+                    ]
+                  })
+                ];
+              }
+            }
+          },
+          'sass-loader'
+        ]
+      },
+      {
+        test: /\.css$/,
+        include: /node_modules\/react-rte/,
+        use: [
+          {
+            loader: 'style-loader'
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true
+            }
+          }
+        ]
+      },
+      {
+        test: /\.css$/,
+        exclude: /node_modules\/react-rte/,
+        use: [
+          {
+            loader: 'style-loader'
+          },
+          {
+            loader: 'css-loader'
+          }
+        ]
       }
     ]
   },
@@ -56,7 +113,8 @@ const devConfig = {
       __SERVER__: false,
       __DEVELOPMENT__: true,
       __DEVTOOLS__: true,
-      __PLAYER__: false
+      __PLAYER__: false,
+      'process.env.NODE_ENV': JSON.stringify('development')
     })
   ]
 };

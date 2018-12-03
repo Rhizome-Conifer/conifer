@@ -9,23 +9,29 @@ bootstrapVersion: 3
 # If Bootstrap version 3 is used - turn on/off custom icon font path
 useCustomIconFontPath: false
 
-# Webpack loaders, order matters
-styleLoaders:
-  - style-loader
-  - css-loader
-  - sass-loader
-
 # Extract styles to stand-alone css file
 # Different settings for different environments can be used,
 # It depends on value of NODE_ENV environment variable
 # This param can also be set in webpack config:
 #   entry: 'bootstrap-loader/extractStyles'
 # extractStyles: false
-# env:
-#   development:
-#     extractStyles: false
-#   production:
-#     extractStyles: true
+env:
+  development:
+    extractStyles: false
+
+    # Webpack loaders, order matters
+    styleLoaders:
+      - style-loader
+      - css-loader
+      - sass-loader
+
+  production:
+    extractStyles: true
+
+    # Webpack loaders, order matters
+    styleLoaders:
+      - css-loader
+      - sass-loader
 
 # Customize Bootstrap variables that get imported before the original Bootstrap variables.
 # Thus original Bootstrap variables can depend on values from here.

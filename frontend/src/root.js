@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import BrowserRouter from 'react-router-dom/BrowserRouter';
+import { BrowserRouter } from 'react-router-dom';
 import { MemoryRouter } from 'react-router';
 import { ReduxAsyncConnect } from 'redux-connect';
 

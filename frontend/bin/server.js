@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-require('babel-register')({
-  ignore: /node_modules\/(?!(react-rte))/
+require('@babel/register')({
+  only: [/node_modules(\/|\\)react-rte/]
 });
 
 // ignore css imports within react-rte
