@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { Alert, Button, Col, Form, FormGroup,
-         FormControl, Row } from 'react-bootstrap';
+import { Alert, Button, Col, Form, FormGroup, FormControl, Row } from 'react-bootstrap';
 
 import { guestSessionTimeout, product, userRegex } from 'config';
 import { login } from 'helpers/userMessaging';
@@ -52,8 +51,9 @@ class LoginForm extends Component {
 
   validateUsername = () => {
     const pattern = userRegex;
-    if (typeof this.state.username !== 'undefined')
+    if (typeof this.state.username !== 'undefined') {
       return this.state.username.match(pattern) === this.state.username ? null : 'warning';
+    }
     return null;
   }
 
@@ -78,7 +78,7 @@ class LoginForm extends Component {
           }
           {
             error &&
-              <Alert bsStyle="danger" >
+              <Alert bsStyle="danger">
                 {
                   login[auth.get('loginError')] || <span>Invalid Login. Please Try Again</span>
                 }

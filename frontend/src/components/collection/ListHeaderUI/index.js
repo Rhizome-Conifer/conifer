@@ -44,6 +44,7 @@ class ListHeaderUI extends Component {
   }
 
   closeDesc = () => this.setState({ showDesc: false })
+
   openDesc = () => this.setState({ showDesc: true })
 
   render() {

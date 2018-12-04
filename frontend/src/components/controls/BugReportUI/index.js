@@ -38,7 +38,8 @@ class BugReportUI extends Component {
         <button
           className="btn btn-default"
           title="Doesn't look right?"
-          onClick={openBugReport}>
+          onClick={openBugReport}
+          type="button">
           <BugIcon />
         </button>
         <Modal

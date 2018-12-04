@@ -105,11 +105,12 @@ class ShareWidgetUI extends Component {
     const { shareUrl } = this.props;
 
     // clear previous widget
-    if (this.wrTW.childNodes.length)
+    if (this.wrTW.childNodes.length) {
       this.wrTW.removeChild(this.wrTW.childNodes[0]);
+    }
 
     if (typeof window.twttr !== 'undefined') {
-      window.twttr.ready(() =>
+      window.twttr.ready(() => (
         window.twttr.widgets.createShareButton(
           shareUrl,
           document.getElementById('wr-tw'),
@@ -118,7 +119,8 @@ class ShareWidgetUI extends Component {
             size: 'large',
             via: 'webrecorder_io'
           }
-        ));
+        )
+      ));
     }
 
     // fb sdk loaded?
@@ -136,8 +138,9 @@ class ShareWidgetUI extends Component {
   }
 
   close = () => {
-    if (this.state.open)
+    if (this.state.open) {
       this.setState({ open: false });
+    }
   }
 
   toggle = () => {
@@ -167,18 +170,18 @@ class ShareWidgetUI extends Component {
             { bsSize === 'xs' && <span>&nbsp;Share</span> }
           </button>
           <div className="dropdown-menu share-modal arrow_box">
-            <span onClick={this.close} role="button" className="glyphicon glyphicon-remove-circle" />
+            <span onClick={this.close} role="button" className="glyphicon glyphicon-remove-circle" tabIndex={0} />
             {
               canAdmin &&
                 <div className={widgetClasses}>
                   {
                     isAnon ?
                       <p className="make-public-desc">
-                        This is a temporary collection. To preserve and share, <Link to="/_register">Sign Up</Link> or <button className="button-link" onClick={showLoginModal}>Login</button>.
+                        This is a temporary collection. To preserve and share, <Link to="/_register">Sign Up</Link> or <button className="button-link" onClick={showLoginModal} type="button">Login</button>.
                       </p> :
                       <div>
                         <p className="make-public-desc">
-                          Collection <strong >{ collection.get('title') }</strong> is set to private. To get a share link, make the collection public:
+                          Collection <strong>{ collection.get('title') }</strong> is set to private. To get a share link, make the collection public:
                         </p>
                         <div className="access-switch">
                           <span className="glyphicon glyphicon-globe" aria-hidden="true" />

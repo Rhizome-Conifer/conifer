@@ -172,7 +172,7 @@ class CollectionHeaderUI extends Component {
                     truncate(removeMd(collection.get('desc'), { useImgAltText: false }), 3, truncSentence)
                   }
                 </div> :
-                canAdmin && <button className="button-link" onClick={this.editModal}>+ Add description</button>
+                canAdmin && <button className="button-link" onClick={this.editModal} type="button">+ Add description</button>
             }
           </div>
 
@@ -202,7 +202,7 @@ class CollectionHeaderUI extends Component {
                   <MenuItem divider />
                   {
                     onboardingLink && !this.context.isMobile &&
-                      <MenuItem onClick={this.showOnboarding}>&#127881; Tour New Features</MenuItem>
+                      <MenuItem onClick={this.showOnboarding}><span role="img" aria-label="tada emoji">&#127881;</span> Tour New Features</MenuItem>
                   }
                   <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</MenuItem>
                 </DropdownButton>

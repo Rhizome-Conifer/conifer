@@ -104,7 +104,7 @@ class UserManagementUI extends Component {
           { !auth.get('loaded') || !username || isAnon ?
             <React.Fragment>
               <li className="navbar-right">
-                <button className="login-link wr-header-btn" onClick={this.showLogin}>Login</button>
+                <button className="login-link wr-header-btn" onClick={this.showLogin} type="button">Login</button>
               </li>
               <li className="navbar-right">
                 <Link to="/_register">Sign Up</Link>
@@ -121,7 +121,7 @@ class UserManagementUI extends Component {
           {
             isAnon === false &&
               <li className="navbar-text navbar-right">
-                <Link to={`/${username}/_settings`} >
+                <Link to={`/${username}/_settings`}>
                   <span className="glyphicon glyphicon-user right-buffer-sm" />{ username }
                 </Link>
               </li>
@@ -130,7 +130,7 @@ class UserManagementUI extends Component {
           {
             (isAnon === false || (isAnon && collCount > 0)) &&
               <li className="navbar-text navbar-right">
-                <Link to={isAnon ? `/${username}/temp/index` : `/${username}`} >
+                <Link to={isAnon ? `/${username}/temp/index` : `/${username}`}>
                   {
                     isAnon ?
                       <React.Fragment>Temporary Collection</React.Fragment> :
@@ -150,7 +150,7 @@ class UserManagementUI extends Component {
           */}
 
           <li className="navbar-text navbar-right">
-            <button onClick={this.toggleBugModal} className="borderless custom-report">Submit a bug</button>
+            <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Submit a bug</button>
             <Modal
               dialogClassName="ui-bug-modal"
               header="Submit a UI bug"

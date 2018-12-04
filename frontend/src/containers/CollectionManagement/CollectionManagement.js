@@ -9,14 +9,13 @@ import CollectionManagementUI from 'components/collection/CollectionManagementUI
 
 
 class CollectionManagement extends Component {
-
   static propTypes = {
     auth: PropTypes.object,
     match: PropTypes.object,
     history: PropTypes.object
   };
 
-    // TODO move to HOC
+  // TODO move to HOC
   static childContextTypes = {
     canAdmin: PropTypes.bool
   };

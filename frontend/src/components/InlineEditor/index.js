@@ -181,7 +181,7 @@ class InlineEditor extends PureComponent {
                   <Button aria-label="edit" className="wr-inline-edit-button borderless"><PencilIcon /></Button>
               }
             </div>
-          }
+        }
       </div>
     );
   }

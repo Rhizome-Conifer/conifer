@@ -38,7 +38,6 @@ class EditModal extends Component {
     this.handle = null;
     this.state = {
       desc: props.desc,
-      editing: false,
       indicator: false,
       name: props.name
     };

@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Button, ControlLabel, Form,
-         FormControl, FormGroup } from 'react-bootstrap';
+import { Button, ControlLabel, Form, FormControl, FormGroup } from 'react-bootstrap';
 
 import { CheckboxField } from './fields';
 
@@ -36,10 +35,11 @@ class ReportBugForm extends PureComponent {
 
   handleChange = (evt) => {
     if (evt.target.type === 'checkbox') {
-      if (evt.target.name in this.state)
+      if (evt.target.name in this.state) {
         this.setState({ [evt.target.name]: !this.state[evt.target.name] });
-      else
+      } else {
         this.setState({ [evt.target.name]: true });
+      }
     } else {
       this.setState({ [evt.target.name]: evt.target.value });
     }

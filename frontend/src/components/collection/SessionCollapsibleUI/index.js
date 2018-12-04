@@ -25,7 +25,6 @@ import './style.scss';
 
 
 class SessionCollapsibleUI extends PureComponent {
-
   static propTypes = {
     active: PropTypes.bool,
     collection: PropTypes.object,
@@ -61,6 +60,7 @@ class SessionCollapsibleUI extends PureComponent {
   }
 
   onExpand = () => this.setState({ open: true })
+
   onCollapse = () => this.setState({ open: false })
 
   closeDeletePopover = () => this.setState({ deletePopover: false })
@@ -94,22 +94,27 @@ class SessionCollapsibleUI extends PureComponent {
   }
 
   render() {
-    const { expand, loadingRecBK, loadedRecBK, pagesBySession, recording,
-            recordingDeleting, recordingBookmarks } = this.props;
+    const {
+      expand, loadingRecBK, loadedRecBK, pagesBySession, recording,
+      recordingDeleting, recordingBookmarks
+    } = this.props;
 
     const recId = recording.get('id');
     const pages = pagesBySession.hasOwnProperty(recId) ? pagesBySession[recId] : List();
     const pageCount = pages.size;
     const popoverClasses = classNames({ 'popover-open': this.state.deletePopover });
     const title = recording.get('title');
-    const titleRender = (title ? (<span>{title}</span>) :
-                                 (<span>Session from <TimeFormat iso={recording.get('created_at')} /></span>));
+    const titleRender = (
+      title ?
+        (<span>{title}</span>) :
+        (<span>Session from <TimeFormat iso={recording.get('created_at')} /></span>)
+    );
 
     const header = (
       <header className="collapsible">
         <div className="function-row">
-          <button className="delete-action" ref={(o) => { this.collapsed = o; }} onClick={this.toggleDeletePopover}><TrashIcon /></button>
-          <button onClick={this.downloadAction}><DownloadIcon /></button>
+          <button className="delete-action" ref={(o) => { this.collapsed = o; }} onClick={this.toggleDeletePopover} type="button"><TrashIcon /></button>
+          <button onClick={this.downloadAction} type="button"><DownloadIcon /></button>
         </div>
         <h2>{titleRender}</h2>
         <span>{pageCount} Pages</span>
@@ -121,12 +126,14 @@ class SessionCollapsibleUI extends PureComponent {
     const bookmarksInRecording = loadedRecBK && recordingBookmarks.reduce((sum, coll) => coll.size + sum, 0);
     const deleteMessage = (
       loadedRecBK && bookmarksInRecording > 0 ?
-        (<React.Fragment>
-          <h4>Deleting Sessions and Bookmarks</h4>
-          This <b><SizeFormat bytes={recording.get('size')} /></b> session contains page(s) referenced by {loadedRecBK ? <b>{recordingBookmarks.size} bookmarks. </b> : 'checking...'}
-          <div className="warning">Deleting the session will also delete these bookmarks.</div>
-        </React.Fragment>) :
-        <div className="warning">This <b><SizeFormat bytes={recording.get('size')} /></b> session will be deleted.</div>
+        (
+          <React.Fragment>
+            <h4>Deleting Sessions and Bookmarks</h4>
+            This <b><SizeFormat bytes={recording.get('size')} /></b> session contains page(s) referenced by {loadedRecBK ? <b>{recordingBookmarks.size} bookmarks. </b> : 'checking...'}
+            <div className="warning">Deleting the session will also delete these bookmarks.</div>
+          </React.Fragment>
+        ) :
+        (<div className="warning">This <b><SizeFormat bytes={recording.get('size')} /></b> session will be deleted.</div>)
     );
 
     return (

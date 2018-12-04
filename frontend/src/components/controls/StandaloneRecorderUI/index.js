@@ -7,8 +7,7 @@ import { Button, FormControl, HelpBlock, Row } from 'react-bootstrap';
 import { appHost, defaultRecDesc } from 'config';
 import { addTrailingSlash, apiFetch, fixMalformedUrls } from 'helpers/utils';
 
-import { CollectionDropdown, ExtractWidget,
-         RemoteBrowserSelect } from 'containers';
+import { CollectionDropdown, ExtractWidget, RemoteBrowserSelect } from 'containers';
 
 import WYSIWYG from 'components/WYSIWYG';
 
@@ -99,6 +98,7 @@ class StandaloneRecorderUI extends Component {
   }
 
   closeAdvance = () => this.setState({ advOpen: false })
+
   openAdvance = () => this.setState({ advOpen: true })
 
   triggerLogin = () => this.props.toggleLogin(true, '/');

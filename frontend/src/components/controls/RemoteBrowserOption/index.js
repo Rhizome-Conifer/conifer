@@ -21,7 +21,7 @@ function RemoteBrowserOption(props) {
     <ul className={classes} onClick={click} role="button" data-native="true">
       <li className="col-sm-2 col-xs-4">
         { browser.get('id') &&
-          <img src={`/api/browsers/browsers/${browser.get('id')}/icon`} role="presentation" />
+          <img src={`/api/browsers/browsers/${browser.get('id')}/icon`} alt="" />
         }
         <span>{ browser.get('name') }</span>
       </li>

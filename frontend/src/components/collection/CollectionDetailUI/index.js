@@ -14,8 +14,16 @@ import config from 'config';
 import { setSort } from 'store/modules/collection';
 import { getCollectionLink, getListLink, getStorage, inStorage, range, setStorage, truncate } from 'helpers/utils';
 
-import { CollectionFilters, CollectionHeader, InspectorPanel,
-         Lists, ListHeader, Sidebar, Temp404, TempUserAlert } from 'containers';
+import {
+  CollectionFilters,
+  CollectionHeader,
+  InspectorPanel,
+  Lists,
+  ListHeader,
+  Sidebar,
+  Temp404,
+  TempUserAlert
+} from 'containers';
 
 import HttpStatus from 'components/HttpStatus';
 import Modal from 'components/Modal';
@@ -27,8 +35,17 @@ import 'react-virtualized/styles.css';
 
 import CustomDragLayer from './dragLayer';
 import { DefaultRow, DnDRow, DnDSortableRow } from './rows';
-import { BrowserRenderer, DefaultHeader, DnDSortableHeader, LinkRenderer, RemoveRenderer,
-         RowIndexRenderer, SessionRenderer, TitleRenderer, TimestampRenderer } from './columns';
+import {
+  BrowserRenderer,
+  DefaultHeader,
+  DnDSortableHeader,
+  LinkRenderer,
+  RemoveRenderer,
+  RowIndexRenderer,
+  SessionRenderer,
+  TitleRenderer,
+  TimestampRenderer
+} from './columns';
 
 import './style.scss';
 
@@ -178,8 +195,10 @@ class CollectionDetailUI extends Component {
   }
 
   onSelectRow = ({ event, index }) => {
-    const { clearInspector, match: { params: { list } }, pages, setBookmarkInspector,
-            setMultiInspector, setPageInspector } = this.props;
+    const {
+      clearInspector, match: { params: { list } }, pages, setBookmarkInspector,
+      setMultiInspector, setPageInspector
+    } = this.props;
     const { listBookmarks, selectedPageIdx } = this.state;
 
     if (selectedPageIdx === index) {
@@ -299,7 +318,7 @@ class CollectionDetailUI extends Component {
     const { sortedBookmarks } = this.state;
     const o = sortedBookmarks.get(origIndex);
     const sorted = sortedBookmarks.splice(origIndex, 1)
-                                .splice(hoverIndex, 0, o);
+                                  .splice(hoverIndex, 0, o); // eslint-disable-line
 
     this.setState({ sortedBookmarks: sorted });
   }

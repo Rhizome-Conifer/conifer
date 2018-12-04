@@ -44,9 +44,7 @@ class CollectionListUI extends Component {
     super(props);
 
     this.state = {
-      showModal: false,
-      isPublic: false,
-      collTitle: 'New Collection',
+      showModal: false
     };
   }
 
@@ -122,7 +120,7 @@ class CollectionListUI extends Component {
                 <InlineEditor
                   canAdmin={canAdmin}
                   initial={user.get('display_url') || 'Add website...'}
-                  placeholder={'Add website...'}
+                  placeholder="Add website..."
                   onSave={this.editURL}
                   readOnly={isAnon || !canAdmin}
                   success={this.props.edited}>
@@ -137,7 +135,7 @@ class CollectionListUI extends Component {
               key={user.get('id')}
               initial={user.get('desc') || ''}
               onSave={this.updateUser}
-              placeholder={'Add a description...'}
+              placeholder="Add a description..."
               clickToEdit
               readOnly={isAnon || !canAdmin}
               success={this.props.edited} />

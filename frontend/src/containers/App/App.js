@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import classNames from 'classnames';
 import Helmet from 'react-helmet';
 import HTML5Backend from 'react-dnd-html5-backend';
-import matchPath from 'react-router-dom/matchPath';
+import { matchPath } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Raven from 'raven-js';
-import renderRoutes from 'react-router-config/renderRoutes';
+import { renderRoutes } from 'react-router-config';
 import { Alert, Button, Navbar, Panel } from 'react-bootstrap';
 import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
@@ -190,7 +190,7 @@ export class App extends Component {
     const { error, info, lastMatch, match } = this.state;
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
-    const classOverride = match.classOverride;
+    const { classOverride } = match;
     const isEmbed = match.embed;
     const lastClassOverride = lastMatch ? lastMatch.classOverride : classOverride;
     const isOutOfSpace = spaceUtilization ? spaceUtilization.get('available') <= 0 : false;
@@ -255,7 +255,7 @@ export class App extends Component {
         {
           this.state.loginStateAlert &&
             <Alert className="not-logged-in" onDismiss={this.dismissLoginAlert}>
-              Please <button className="button-link" onClick={this.refresh}>reload the page</button>. Session has ended.
+              Please <button className="button-link" onClick={this.refresh} type="button">reload the page</button>. Session has ended.
             </Alert>
         }
         {

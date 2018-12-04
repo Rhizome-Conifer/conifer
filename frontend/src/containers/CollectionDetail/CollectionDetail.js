@@ -18,7 +18,6 @@ import CollectionDetailUI from 'components/collection/CollectionDetailUI';
 
 
 class CollectionDetail extends Component {
-
   static propTypes = {
     auth: PropTypes.object,
     collection: PropTypes.object,

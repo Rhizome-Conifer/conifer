@@ -51,7 +51,7 @@ class InfoWidgetUI extends Component {
           <InfoIcon />
         </button>
         <div className="dropdown-menu arrow_box">
-          <button className="borderless remove-circle" onClick={this.close}>
+          <button className="borderless remove-circle" onClick={this.close} type="button">
             <XIcon />
           </button>
           <span className="ra-replay-info-label">Now Viewing Collection</span>

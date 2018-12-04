@@ -1,8 +1,21 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
-import { Alert, Button, Col, ControlLabel, Dropdown, FormControl, FormGroup,
-         HelpBlock, InputGroup, MenuItem, Panel, ProgressBar, Row } from 'react-bootstrap';
+import {
+  Alert,
+  Button,
+  Col,
+  ControlLabel,
+  Dropdown,
+  FormControl,
+  FormGroup,
+  HelpBlock,
+  InputGroup,
+  MenuItem,
+  Panel,
+  ProgressBar,
+  Row
+} from 'react-bootstrap';
 
 import { supportEmail } from 'config';
 import { passwordPassRegex } from 'helpers/utils';
@@ -88,18 +101,21 @@ class UserSettingsUI extends Component {
       this.setState({ missingPw: true });
     }
 
-    if (this.validatePassword() === null)
+    if (this.validatePassword() === null) {
       this.props.updatePass(currPassword, password, password2);
+    }
   }
 
   validatePassword = () => {
     const { password, password2, missingPw } = this.state;
 
-    if (password && !passwordPassRegex(password))
+    if (password && !passwordPassRegex(password)) {
       return 'warning';
+    }
 
-    if ((password && password2 && password !== password2) || missingPw)
+    if ((password && password2 && password !== password2) || missingPw) {
       return 'error';
+    }
 
     return null;
   }
@@ -109,6 +125,7 @@ class UserSettingsUI extends Component {
   }
 
   toggleDelete = evt => this.setState({ showModal: !this.state.showModal })
+
   closeDeleteModal = evt => this.setState({ showModal: false })
 
   setRole = (role) => {
@@ -198,7 +215,7 @@ class UserSettingsUI extends Component {
     const confirmDeleteFooter = (
       <div>
         <button onClick={this.closeDeleteModal} disabled={deleting} type="button" className="btn btn-default">Cancel</button>
-        <button onClick={this.sendDelete} disabled={deleting || this.validateConfirmDelete() !== 'success'} className="btn btn-danger btn-ok" >
+        <button onClick={this.sendDelete} disabled={deleting || this.validateConfirmDelete() !== 'success'} className="btn btn-danger btn-ok" type="button">
           {
             deleting &&
               <LoaderIcon />
@@ -259,7 +276,7 @@ class UserSettingsUI extends Component {
                     <Dropdown.Toggle>{this.state.role ? this.state.role : 'Change Role'}</Dropdown.Toggle>
                     <Dropdown.Menu>
                       {
-                        auth.get('roles').map(role => <MenuItem eventKey={role}>{role}</MenuItem>)
+                        auth.get('roles').map(role => <MenuItem key={role} eventKey={role}>{role}</MenuItem>)
                       }
                     </Dropdown.Menu>
                   </Dropdown>
@@ -291,7 +308,7 @@ class UserSettingsUI extends Component {
                 </Alert>
             }
             <div className="row col-md-6">
-              <form id="changepassword" onSubmit={this.send} role="form">
+              <form id="changepassword" onSubmit={this.send}>
                 <div className="form-group">
                   <label htmlFor="curr_password">Current Password</label>
                   <input

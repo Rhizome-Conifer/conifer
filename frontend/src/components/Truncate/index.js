@@ -112,7 +112,7 @@ class Truncate extends Component {
         style={{ height }}>
         {
           !expanded && !noop && showMore &&
-            <button className="borderless show-more" onClick={this.expand}>show more</button>
+            <button className="borderless show-more" onClick={this.expand} type="button">show more</button>
         }
         {
           this.props.propPass ?
@@ -121,7 +121,7 @@ class Truncate extends Component {
         }
         {
           expanded && !noop && showLess &&
-            <button className="show-less" onClick={this.collapse}>show less</button>
+            <button className="show-less" onClick={this.collapse} type="button">show less</button>
         }
       </div>
     );

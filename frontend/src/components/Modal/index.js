@@ -5,7 +5,6 @@ import { Modal as BSModal } from 'react-bootstrap';
 
 
 class Modal extends Component {
-
   static propTypes = {
     body: PropTypes.element,
     closeCb: PropTypes.func,
@@ -17,8 +16,10 @@ class Modal extends Component {
   }
 
   render() {
-    const { body, children, dialogClassName, closeCb, footer,
-            header, visible } = this.props;
+    const {
+      body, children, dialogClassName, closeCb, footer,
+      header, visible
+    } = this.props;
 
     return (
       <BSModal

@@ -41,8 +41,7 @@ class Resizable extends Component {
     this.state = {
       hasResized: false,
       height: 400,
-      width: 300,
-      xPos: null
+      width: 300
     };
   }
 

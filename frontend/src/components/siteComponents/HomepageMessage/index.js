@@ -23,7 +23,7 @@ function HomepageMessage(props) {
             <div className="top-buffer-md">
               <ul>
                 <li>
-                  <Link to="/_register"><strong>Sign Up</strong></Link> or <button className="button-link" onClick={showModalCB}>Login</button> to keep your collection and give it a permanent address.
+                  <Link to="/_register"><strong>Sign Up</strong></Link> or <button className="button-link" onClick={showModalCB} type="button">Login</button> to keep your collection and give it a permanent address.
                 </li>
                 <li>
                   Continue capturing by entering another URL below and clicking <b>Start</b>

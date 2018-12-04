@@ -13,7 +13,6 @@ import { Blinker } from 'containers';
 import './style.scss';
 
 class ModeSelectorUI extends PureComponent {
-
   static contextTypes = {
     currMode: PropTypes.string,
   };
@@ -29,8 +28,7 @@ class ModeSelectorUI extends PureComponent {
     super(props);
 
     this.state = {
-      open: false,
-      flickerTime: 200,
+      open: false
     };
   }
 
@@ -162,7 +160,7 @@ class ModeSelectorUI extends PureComponent {
       <OutsideClick handleClick={this.close}>
         <div className="mode-selector">
           <div className={modeSelectorClasses}>
-            <button type="button" onClick={this.onStop} className="btn btn-default wr-mode-message content-action" role="button" aria-label={`Finish ${modeMessage} session`}>
+            <button onClick={this.onStop} className="btn btn-default wr-mode-message content-action" aria-label={`Finish ${modeMessage} session`} type="button">
               <span className="btn-content"><span className="glyphicon glyphicon-stop" /> <span className="hidden-xs">Stop</span></span>
               { modeMarkup }
             </button>

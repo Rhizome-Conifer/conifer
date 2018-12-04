@@ -5,8 +5,7 @@ import { Panel } from 'react-bootstrap';
 
 import config from 'config';
 
-import { addTrailingSlash, apiFetch, fixMalformedUrls,
-         remoteBrowserMod } from 'helpers/utils';
+import { addTrailingSlash, apiFetch, fixMalformedUrls, remoteBrowserMod } from 'helpers/utils';
 
 import { ExtractWidget, RemoteBrowserSelect } from 'containers';
 

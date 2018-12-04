@@ -4,7 +4,7 @@ import classNames from 'classnames';
 
 function LinkIcon({ success }) {
   return (
-    <svg className={classNames('link', { success })} width="15px" height="12px" viewBox="0 0 15 15" version="1.1" xmlns="http://www.w3.org/2000/svg" >
+    <svg className={classNames('link', { success })} width="15px" height="12px" viewBox="0 0 15 15" version="1.1" xmlns="http://www.w3.org/2000/svg">
       <g id="Main" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
         <g transform="translate(-116.000000, -222.000000)" fill="#CECECE">
           <g transform="translate(113.000000, 124.000000)">

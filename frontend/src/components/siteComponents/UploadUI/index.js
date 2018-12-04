@@ -56,7 +56,7 @@ class UploadUI extends PureComponent {
 
   filePicker = (evt) => {
     if (evt.target.files.length > 0) {
-      this.fileObj = evt.target.files[0];
+      this.fileObj = evt.target.files[0]; // eslint-disable-line
       this.setState({ file: this.fileObj.name });
     }
   }
@@ -172,6 +172,7 @@ class UploadUI extends PureComponent {
   }
 
   open = () => this.setState({ open: true })
+
   close = () => {
     if (this.state.isUploading && this.xhr && this.state.canCancel) {
       this.xhr.upload.removeEventListener('progress', this.uploadProgress);

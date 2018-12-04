@@ -161,6 +161,7 @@ class ListsUI extends Component {
       this.props.addToList(collection.get('owner'), collection.get('id'), list, page);
     } else {
       const pagesToAdd = [];
+      /* eslint-disable */
       for(const pgIdx of pageSelection) {
         pagesToAdd.push(
           itemType === draggableTypes.PAGE_ITEM ?
@@ -168,6 +169,7 @@ class ListsUI extends Component {
             pages.get(pgIdx).filterNot(keyIn('id', 'page')).toJS()
         );
       }
+      /* eslint-enable */
       this.props.bulkAddToList(collection.get('owner'), collection.get('id'), list, pagesToAdd);
     }
   }
@@ -193,7 +195,7 @@ class ListsUI extends Component {
     const { lists } = this.state;
     const o = lists.get(origIndex);
     const sorted = lists.splice(origIndex, 1)
-                        .splice(hoverIndex, 0, o);
+                        .splice(hoverIndex, 0, o); // eslint-disable-line
 
     this.setState({ lists: sorted });
   }
@@ -248,8 +250,8 @@ class ListsUI extends Component {
                 {
                   canAdmin &&
                     <React.Fragment>
-                      <button onClick={this.openEditModal} className="button-link list-edit">EDIT</button>
-                      <button onClick={this.openEditModal} className="borderless"><PlusIcon /></button>
+                      <button onClick={this.openEditModal} className="button-link list-edit" type="button">EDIT</button>
+                      <button onClick={this.openEditModal} className="borderless" type="button"><PlusIcon /></button>
                     </React.Fragment>
                 }
               </li>
@@ -282,12 +284,12 @@ class ListsUI extends Component {
               footer={<Button onClick={this.closeEditModal} bsStyle="success">Done</Button>}
               dialogClassName="lists-edit-modal">
               <header>
-                <button className="borderless" onClick={this.clearInput} disabled={!title.length}><XIcon /></button>
+                <button className="borderless" onClick={this.clearInput} disabled={!title.length} type="button"><XIcon /></button>
                 <input name="title" className="borderless-input" onKeyPress={this.submitCheck} onChange={this.handleInput} value={title} placeholder="Create new list" autoFocus />
                 {
                   created ?
-                    <button className="borderless"><CheckIcon success /></button> :
-                    <button className={classNames('borderless', { 'wr-add-list': Boolean(title.length) })} onClick={this.createList} disabled={!title.length || isCreating} title="Add list"><PlusIcon /></button>
+                    <button className="borderless" type="button"><CheckIcon success /></button> :
+                    <button className={classNames('borderless', { 'wr-add-list': Boolean(title.length) })} onClick={this.createList} disabled={!title.length || isCreating} title="Add list" type="button"><PlusIcon /></button>
                 }
               </header>
               <ul className="lists-modal-list">

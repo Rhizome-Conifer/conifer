@@ -13,7 +13,6 @@ const CBrowser = __CLIENT__ && require('shepherd-client/lib/browser').default;
 
 
 class RemoteBrowserUI extends Component {
-
   static contextTypes = {
     currMode: PropTypes.string
   };
@@ -58,7 +57,6 @@ class RemoteBrowserUI extends Component {
     this.state = {
       countdownLabel: false,
       dismissCountdown: false,
-      coutdown: '',
       message: '',
       messageSet: false
     };
@@ -96,8 +94,10 @@ class RemoteBrowserUI extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { autoscroll, clipboard, dispatch, inactiveTime, contentFrameUpdate,
-            params, rb, rec, reqId, timestamp, url } = this.props;
+    const {
+      autoscroll, clipboard, dispatch, inactiveTime, contentFrameUpdate,
+      params, rb, rec, reqId, timestamp, url
+    } = this.props;
 
     // bidirectional clipboard
     if (clipboard !== prevProps.clipboard && this.cb) {
@@ -246,8 +246,8 @@ class RemoteBrowserUI extends Component {
 
       const collUrl = `/${user}/${coll}/`;
       message = (
-          `Sorry, the remote browser session has expired.<br />
-          You can <a href="${collUrl}index?query=session:${rec}">view the recording</a> or <a href="${collUrl}$new">create a new recording</a>`
+        `Sorry, the remote browser recording session has expired.<br />
+         You can <a href="${collUrl}index?query=session:${rec}">view the recording</a> or <a href="${collUrl}$new">create a new recording</a>`
       );
 
       this.setState({

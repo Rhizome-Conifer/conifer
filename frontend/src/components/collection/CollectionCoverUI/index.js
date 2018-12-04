@@ -120,7 +120,7 @@ class CollectionCoverUI extends Component {
                                   initial={list.get('desc')} />
                               </Truncate>
                           }
-                          <button onClick={() => history.push(getListLink(collection, list))} className="rounded list-link">View list ({`${bkCount} Bookmark${bkCount === 1 ? '' : 's'}`}) &raquo;</button>
+                          <button onClick={() => history.push(getListLink(collection, list))} className="rounded list-link" type="button">View list ({`${bkCount} Bookmark${bkCount === 1 ? '' : 's'}`}) &raquo;</button>
                         </div>
                       </li>
                     );
