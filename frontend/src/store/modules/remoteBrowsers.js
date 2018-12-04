@@ -49,7 +49,7 @@ export default function remoteBrowsers(state = initialState, action = {}) {
       return state.merge({
         loading: false,
         loaded: true,
-        browsers: action.result,
+        browsers: fromJS(action.result),
         accessed: action.accessed,
         error: null
       });

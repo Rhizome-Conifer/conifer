@@ -56,4 +56,3 @@ export const pageSearchResults = createSelector(
     };
   }
 );
-

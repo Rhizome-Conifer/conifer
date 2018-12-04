@@ -41,8 +41,8 @@ export default function createStore(client, data) {
     const { persistState } = require('redux-devtools');
 
     const composeEnhancer = typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?
-                              window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ :
-                              compose;
+      window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ :
+      compose;
 
     finalCreateStore = composeEnhancer(
       applyMiddleware(...middleware),

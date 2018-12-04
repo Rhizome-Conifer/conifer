@@ -81,6 +81,4 @@ const config = {
 };
 
 
-console.log(merge(baseConfig, config).module.rules);
-
 export default merge(baseConfig, config);

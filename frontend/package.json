@@ -99,6 +99,7 @@
     "strip-loader": "^0.1.2",
     "style-loader": "0.23.1",
     "superagent": "^4.0.0",
+    "time-fix-plugin": "^2.0.5",
     "universal-webpack": "^0.6.6",
     "url-loader": "1.1.2",
     "webpack": "4.26.1",

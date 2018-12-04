@@ -82,7 +82,7 @@ export function auth(state = initialState, action = {}) {
         accessed: action.accessed,
         loading: false,
         loaded: true,
-        user: action.result.user
+        user: fromJS(action.result.user)
       });
     case LOAD_FAIL:
       return state.merge({
@@ -99,7 +99,7 @@ export function auth(state = initialState, action = {}) {
         loggingIn: false,
         loginError: null,
         loaded: true,
-        user: action.result.user
+        user: fromJS(action.result.user)
       });
     case LOGIN_FAIL:
       return state.merge({
@@ -273,4 +273,3 @@ export function updatePassword(currPass, newPass, newPass2) {
     })
   };
 }
-

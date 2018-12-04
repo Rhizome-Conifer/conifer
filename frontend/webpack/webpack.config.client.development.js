@@ -11,7 +11,7 @@ const host = '127.0.0.1';
 const port = Number(config.port) + 1;
 const baseConfig = getBaseConfig({
   development: true,
-  useMiniCssExtractPlugin: true
+  useMiniCssExtractPlugin: false
 });
 
 
@@ -19,7 +19,6 @@ const devConfig = {
   mode: 'development',
   entry: {
     main: [
-      'react-hot-loader/patch',
       `webpack-hot-middleware/client?path=http://${host}:${port}/__webpack_hmr&quiet=true`,
       './config/polyfills',
       'bootstrap-loader',

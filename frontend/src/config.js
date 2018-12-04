@@ -89,7 +89,7 @@ export default Object.assign({
         { property: 'og:locale', content: 'en_US' },
         { property: 'og:title', content: 'Webrecorder' },
         { property: 'og:description', content: 'Create high-fidelity, interactive web archives of any web site you browse.' },
-        { property: 'og:image', content: `${hostScheme}://${appHost}/static/webrecorder-social.png`, width: '1200', height: '630'}
+        { property: 'og:image', content: `${hostScheme}://${appHost}/static/webrecorder-social.png`, width: '1200', height: '630' }
       ]
     }
   },

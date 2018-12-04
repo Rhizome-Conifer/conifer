@@ -29,8 +29,8 @@ export default function collections(state = initialState, action = {}) {
         accessed: action.accessed,
         error: null,
 
-        user: action.result.user,
-        collections: action.result.collections
+        user: fromJS(action.result.user),
+        collections: fromJS(action.result.collections)
       });
     case COLLS_LOAD_FAIL:
       return state.merge({

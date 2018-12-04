@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
+const TimeFixPlugin = require('time-fix-plugin');
 
 const assetsPath = path.resolve(__dirname, '../static/dist');
 const smp = new SpeedMeasurePlugin();
@@ -99,11 +100,12 @@ module.exports = smp.wrap({
   },
 
   plugins: [
+    new TimeFixPlugin(),
     new webpack.EnvironmentPlugin({
-      APP_HOST: null,
+      APP_HOST: 'localhost:8089',
       ALLOW_DAT: false,
       ANNOUNCE_MAILING_LIST: null,
-      CONTENT_HOST: 8092,
+      CONTENT_HOST: 'localhost:8092',
       FRONTEND_PORT: 8095,
       SCHEME: 'http'
     })
