@@ -183,7 +183,7 @@ export default function collection(state = initialState, action = {}) {
       });
     case LISTS_LOAD_SUCCESS:
       return state.merge({
-        lists: action.result.lists
+        lists: fromJS(action.result.lists)
       });
     case LISTS_REORDER_SUCCESS:
       return state.set(

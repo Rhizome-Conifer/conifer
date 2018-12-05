@@ -65,7 +65,7 @@ const mapStateToProps = ({ app }) => {
     collection: app.get('collection'),
     extractable: app.getIn(['controls', 'extractable']),
     remoteBrowserSelected: app.getIn(['remoteBrowsers', 'selectedBrowser']),
-    spaceUtilization: app.getIn(['user', 'space_utilization'])
+    spaceUtilization: app.getIn(['auth', 'user', 'space_utilization'])
   };
 };
 

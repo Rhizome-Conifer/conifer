@@ -15,15 +15,12 @@ import './style.scss';
 
 
 class UploadUI extends PureComponent {
-  static contextTypes = {
-    router: PropTypes.object
-  };
-
   static propTypes = {
     activeCollection: PropTypes.string,
     classes: PropTypes.string,
     dispatch: PropTypes.func,
     fromCollection: PropTypes.string,
+    history: PropTypes.object,
     wrapper: PropTypes.func
   };
 
@@ -139,7 +136,7 @@ class UploadUI extends PureComponent {
     if (this.state.targetColl !== 'chosen') {
       this.props.dispatch(incrementCollCount(1));
     }
-    this.context.router.history.push(`/${user}/${coll}/index`);
+    this.props.history.push(`/${user}/${coll}/index`);
   }
 
   indexing = (data) => {

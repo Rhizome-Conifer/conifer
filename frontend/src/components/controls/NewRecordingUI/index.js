@@ -15,15 +15,16 @@ import './style.scss';
 class NewRecordingUI extends Component {
   static contextTypes = {
     canAdmin: PropTypes.bool,
-    currMode: PropTypes.string,
-    router: PropTypes.object
-  }
+    currMode: PropTypes.string
+  };
 
   static propTypes = {
     collection: PropTypes.object,
     extractable: PropTypes.object,
-    remoteBrowserSelected: PropTypes.string
-  }
+    history: PropTypes.object,
+    remoteBrowserSelected: PropTypes.string,
+    spaceUtilization: PropTypes.object
+  };
 
   constructor(props) {
     super(props);
@@ -63,7 +64,7 @@ class NewRecordingUI extends Component {
     // generate recording url
     apiFetch('/new', data, { method: 'POST' })
       .then(res => res.json())
-      .then(({ url }) => this.context.router.history.push(url.replace(config.appHost, '')))
+      .then(({ url }) => this.props.history.push(url.replace(config.appHost, '')))
       .catch(err => console.log('error', err));
   }
 
