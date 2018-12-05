@@ -1,8 +1,7 @@
 @import 'src/vars';
 
-
 #landingContainer {
-  flex-grow: 1;
+  height: calc(100vh - 10vh);
   display: grid;
   margin: 5vh 0;
   grid-template-columns: auto;

@@ -42,7 +42,7 @@ class Help extends Component {
   }
 
   toggleDebug = () => {
-    this.setState({ showDebug: !this.state.showDebug})
+    this.setState({ showDebug: !this.state.showDebug });
   }
 
   update = () => {
