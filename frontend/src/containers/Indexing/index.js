@@ -99,7 +99,7 @@ class Indexing extends Component {
           {
             this.state.stalled &&
               <React.Fragment>
-                <div className="stalled">Oops, it seems that indxing has stalled. <button className="button-link" type="button" onClick={this.toggleModal}>extra info</button></div>
+                <div className="stalled">Oops, it seems that indxing has stalled. <button className="button-link" type="button" onClick={this.toggleModal}>Addtional info</button></div>
                 <Modal
                   dialogClassName="stalled-modal"
                   header={<h5>Extra Debug Info</h5>}

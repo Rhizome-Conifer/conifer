@@ -3,6 +3,10 @@
 .stalled-modal {
     max-height: 60vh;
     overflow: auto;
+
+    h5 {
+        margin: 0;
+    }
 }
 
 #indexingContainer {
@@ -67,6 +71,7 @@
         .stalled {
             text-align: center;
             margin-top: 1.5rem;
+            font-weight: 800;
         }
     }
 }
