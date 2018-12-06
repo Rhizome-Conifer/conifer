@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import { withRouter } from 'react-router';
 
 import { ExtractWidget, PatchWidget, RemoteBrowserSelect } from 'containers';
 
@@ -12,13 +13,13 @@ import './style.scss';
 class RecordURLBar extends Component {
   static contextTypes = {
     canAdmin: PropTypes.bool,
-    currMode: PropTypes.string,
-    router: PropTypes.object
+    currMode: PropTypes.string
   };
 
   static propTypes = {
     activeBrowser: PropTypes.string,
     activeCollection: PropTypes.object,
+    history: PropTypes.object,
     params: PropTypes.object,
     timestamp: PropTypes.string,
     url: PropTypes.string
@@ -44,7 +45,7 @@ class RecordURLBar extends Component {
 
   handleSubmit = (evt) => {
     const { currMode } = this.context;
-    const { activeBrowser, params: { archiveId, coll, collId, extractMode, rec, user }, timestamp } = this.props;
+    const { activeBrowser, history, params: { archiveId, coll, collId, extractMode, rec, user }, timestamp } = this.props;
     const { url } = this.state;
 
     if (evt.key === 'Enter') {
@@ -52,13 +53,13 @@ class RecordURLBar extends Component {
 
       switch(currMode) {
         case 'record':
-          this.context.router.history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(activeBrowser, null, '/')}${url}`);
+          history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(activeBrowser, null, '/')}${url}`);
           break;
         case 'patch':
-          this.context.router.history.push(`/${user}/${coll}/${rec}/patch/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
+          history.push(`/${user}/${coll}/${rec}/patch/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
           break;
         case 'extract':
-          this.context.router.history.push(`/${user}/${coll}/${rec}/${extractMode}:${archiveId}${collId ? `:${collId}` : ''}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
+          history.push(`/${user}/${coll}/${rec}/${extractMode}:${archiveId}${collId ? `:${collId}` : ''}/${remoteBrowserMod(activeBrowser, timestamp, '/')}${url}`);
           break;
         default:
           break;
@@ -108,4 +109,4 @@ class RecordURLBar extends Component {
   }
 }
 
-export default RecordURLBar;
+export default withRouter(RecordURLBar);
