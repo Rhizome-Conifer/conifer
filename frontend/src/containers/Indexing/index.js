@@ -4,9 +4,11 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { basename } from 'path';
 
-//import { clearColl } from 'redux/modules/collection';
+import Modal from 'components/Modal';
 
 import './style.scss';
+
+const { ipcRenderer } = window.require('electron');
 
 
 class Indexing extends Component {
@@ -25,8 +27,12 @@ class Indexing extends Component {
     super(props);
 
     this.interval = null;
+    this.finishedCount = 0;
     this.state = {
-      data: null
+      data: null,
+      debugModal: false,
+      stalled: false,
+      stdout: null
     };
   }
 
@@ -50,15 +56,32 @@ class Indexing extends Component {
   }
 
   displayProgress = (data) => {
-    if (data.done && data.done) {
+    if (data.done) {
       clearInterval(this.interval);
       this.props.history.replace('/local/collection');
     } else {
+      if (data.size === data.total_size) {
+        if (this.finishedCount++ > 5 && !this.state.stalled) {
+          this.setState({ stalled: true });
+          ipcRenderer.on('async-response', this.handleVersionResponse);
+          ipcRenderer.send('async-call');
+        }
+      }
+
       this.setState({
         file: basename(data.filename),
         progress: (((data.size / data.total_size) * 100) + 0.5) | 0
       });
     }
+  }
+
+  handleVersionResponse = (evt, arg) => {
+    const { stdout } = arg;
+    this.setState({ stdout });
+  }
+
+  toggleModal = () => {
+    this.setState({ debugModal: !this.state.debugModal });
   }
 
   render() {
@@ -73,6 +96,19 @@ class Indexing extends Component {
             <div className="progress" style={{ width: `${progress || 0}%` }} />
             <div className="progress-readout">{ `${progress || 0}%` }</div>
           </div>
+          {
+            this.state.stalled &&
+              <React.Fragment>
+                <div className="stalled">Oops, it seems that indexing has stalled. <button className="button-link" type="button" onClick={this.toggleModal}>Additional info</button></div>
+                <Modal
+                  dialogClassName="stalled-modal"
+                  header={<h5>Extra Debug Info</h5>}
+                  closeCb={this.toggleModal}
+                  visible={this.state.debugModal}>
+                  <p dangerouslySetInnerHTML={{ __html: this.state.stdout || 'No additional info' }} />
+                </Modal>
+              </React.Fragment>
+          }
         </div>
 
         <div className="projectByRhizome">
