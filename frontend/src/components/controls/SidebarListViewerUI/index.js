@@ -26,8 +26,7 @@ import './style.scss';
 
 class SidebarListViewer extends Component {
   static contextTypes = {
-    canAdmin: PropTypes.bool,
-    router: PropTypes.object,
+    canAdmin: PropTypes.bool
   }
 
   static propTypes = {

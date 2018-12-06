@@ -25,9 +25,9 @@ class CollectionItem extends PureComponent {
     history: PropTypes.string
   };
 
-  goToCover = () => {
+  manageCollection = () => {
     const { collection, history } = this.props;
-    history.push(getCollectionLink(collection));
+    history.push(getCollectionLink(collection, true));
   }
 
   newSession = () => {
@@ -48,22 +48,20 @@ class CollectionItem extends PureComponent {
       <li className={descClasses} key={collection.get('id')}>
         <Row>
           <Col sm={12} md={7}>
-            {
-              canAdmin || collection.get('public_index') ?
-                <Link className="collection-title" to={`${getCollectionLink(collection)}/index`}>{collection.get('title')}</Link> :
-                <span className="collection-title">{collection.get('title')}</span>
-            }
+            <Link className="collection-title" to={`${getCollectionLink(collection)}`}>{collection.get('title')}</Link>
             <p className="collection-list-description">
               {
                 truncate(removeMd(collection.get('desc'), { useImgAltText: false }), 3, new RegExp(/([.!?])/))
               }
             </p>
-            <Button className="rounded" onClick={this.goToCover}>
-              View Cover Page
-            </Button>
             {
               canAdmin &&
-                <Button className="rounded" onClick={this.newSession}><PlusIcon /> New Session</Button>
+                <React.Fragment>
+                  <Button className="rounded" onClick={this.manageCollection}>
+                    Manage Collection
+                  </Button>
+                  <Button className="rounded" onClick={this.newSession}><PlusIcon /> New Session</Button>
+                </React.Fragment>
             }
           </Col>
           <Col xs={6} md={1} className="collection-list-size">

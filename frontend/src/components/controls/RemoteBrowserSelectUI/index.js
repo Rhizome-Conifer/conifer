@@ -11,6 +11,9 @@ import 'shared/scss/dropdown.scss';
 
 
 class RemoteBrowserSelectUI extends PureComponent {
+  static contextTypes = {
+    currMode: PropTypes.string
+  };
 
   static propTypes = {
     accessed: PropTypes.number,
@@ -20,6 +23,7 @@ class RemoteBrowserSelectUI extends PureComponent {
     activeList: PropTypes.string,
     browsers: PropTypes.object,
     getBrowsers: PropTypes.func,
+    history: PropTypes.object,
     loading: PropTypes.bool,
     loaded: PropTypes.bool,
     params: PropTypes.object,
@@ -27,11 +31,6 @@ class RemoteBrowserSelectUI extends PureComponent {
     selectedBrowser: PropTypes.string,
     timestamp: PropTypes.string,
     url: PropTypes.string
-  };
-
-  static contextTypes = {
-    router: PropTypes.object,
-    currMode: PropTypes.string
   };
 
   static defaultProps = {
@@ -55,10 +54,10 @@ class RemoteBrowserSelectUI extends PureComponent {
   }
 
   selectBrowser = (id) => {
-    const { active, activeBookmarkId, activeList, params, timestamp, url } = this.props;
+    const { active, activeBookmarkId, activeList, history, params, timestamp, url } = this.props;
     const { currMode } = this.context;
 
-    this.setState({ open: false });
+    this.setState({ open: false});
 
     if (active) {
       const { archiveId, coll, collId, extractMode, rec, user } = params;
@@ -66,16 +65,16 @@ class RemoteBrowserSelectUI extends PureComponent {
       if (currMode.includes('replay')) {
         // list replay
         if (activeBookmarkId) {
-          this.context.router.history.push(`/${user}/${coll}/list/${activeList}/b${activeBookmarkId}/${remoteBrowserMod(id, timestamp)}/${url}`);
+          history.push(`/${user}/${coll}/list/${activeList}/b${activeBookmarkId}/${remoteBrowserMod(id, timestamp)}/${url}`);
         } else {
-          this.context.router.history.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
+          history.push(`/${user}/${coll}/${remoteBrowserMod(id, timestamp)}/${url}`);
         }
       } else if (currMode === 'record') {
-        this.context.router.history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id, null, '/')}${url}`);
+        history.push(`/${user}/${coll}/${rec}/record/${remoteBrowserMod(id, null, '/')}${url}`);
       } else if (['patch', 'record'].includes(currMode)) {
-        this.context.router.history.push(`/${user}/${coll}/${rec}/patch/${remoteBrowserMod(id, timestamp, '/')}${url}`);
+        history.push(`/${user}/${coll}/${rec}/patch/${remoteBrowserMod(id, timestamp, '/')}${url}`);
       } else if (['extract', 'extract_only'].includes(currMode)) {
-        this.context.router.history.push(`/${user}/${coll}/${rec}/${extractMode}:${archiveId}${collId || ''}/${remoteBrowserMod(id, timestamp, '/')}${url}`);
+        history.push(`/${user}/${coll}/${rec}/${extractMode}:${archiveId}${collId || ''}/${remoteBrowserMod(id, timestamp, '/')}${url}`);
       }
     } else {
       this.props.selectRemoteBrowser(id);
