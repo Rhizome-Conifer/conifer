@@ -11,6 +11,7 @@ const USERNAME_CHECK_SUCCESS = 'wr/userSignup/USERNAME_CHECK_SUCESS';
 const USERNAME_CHECK_ERROR = 'wr/userSignup/USERNAME_CHECK_ERROR';
 
 const initialState = fromJS({
+  submitting: false,
   success: false,
   result: null,
   errors: null,
@@ -21,15 +22,20 @@ const initialState = fromJS({
 export default function userSignup(state = initialState, action = {}) {
   switch (action.type) {
     case SIGNUP:
-      return state.set('success', false);
+      return state.merge({
+        submitting: true,
+        success: false
+      });
     case SIGNUP_SUCCESS:
       return state.merge({
-        success: action.result && 'success' in action.result,
+        errors: null,
         result: action.result.success,
-        errors: null
+        submitting: false,
+        success: action.result && 'success' in action.result
       });
     case SIGNUP_FAIL:
       return state.merge({
+        submitting: false,
         success: false,
         errors: action.error.errors
       });

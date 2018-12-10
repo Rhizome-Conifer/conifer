@@ -13,4 +13,14 @@
     &.success {
         opacity: 0.5;
     }
+
+    .btn {
+        .wr-loader {
+            margin-right: .5rem;
+
+            path {
+                fill: #FFF;
+            }
+        }
+    }
 }
