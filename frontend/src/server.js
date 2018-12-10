@@ -3,7 +3,6 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import compression from 'compression';
 import http from 'http';
-import path from 'path';
 import { StaticRouter } from 'react-router';
 import { parse as parseUrl } from 'url';
 

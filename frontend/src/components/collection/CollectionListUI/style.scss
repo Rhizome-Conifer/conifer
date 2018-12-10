@@ -59,6 +59,7 @@ a.collection-title:hover {
     .wr-editor {
         color: $gray550;
         max-width: 35rem;
+        word-break: break-word;
 
         * {
             max-width: 35rem;
@@ -66,6 +67,10 @@ a.collection-title:hover {
 
         .public-DraftEditor-content {
             font-size: 1.2rem;
+        }
+
+        .DraftEditor-editorContainer {
+            max-height: inherit;
         }
     }
 
@@ -104,6 +109,7 @@ a.collection-title:hover {
         font-weight: normal;
         margin-bottom: 0;
         font-size: 3.4rem;
+        word-break: break-word;
     }
 }
 
