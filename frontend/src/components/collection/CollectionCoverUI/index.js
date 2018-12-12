@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
+import classNames from 'classnames';
+import memoize from 'memoize-one';
 import { Link } from 'react-router-dom';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
-import { appHost, defaultCollDesc, onboardingLink, tagline } from 'config';
-import { getCollectionLink, getListLink, truncate } from 'helpers/utils';
+import { appHost, tagline } from 'config';
+import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';
 
 import { Temp404 } from 'containers';
@@ -12,11 +15,11 @@ import { Temp404 } from 'containers';
 import Capstone from 'components/collection/Capstone';
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
-import Truncate from 'components/Truncate';
-import WYSIWYG from 'components/WYSIWYG';
-import { OnBoarding } from 'components/siteComponents';
-import { ListIcon } from 'components/icons';
 
+import ScrollspyEntry from './ScrollspyEntry';
+import ListsScrollable from './ListsScrollable';
+
+import 'react-tabs/style/react-tabs.css';
 import './style.scss';
 
 
@@ -34,15 +37,54 @@ class CollectionCoverUI extends Component {
     orderdPages: PropTypes.object
   };
 
-  collectionLink = () => {
-    const { canAdmin } = this.context;
-    const { collection, orderdPages } = this.props;
+  constructor(options, { collection }) {
+    super(options);
 
-    return getCollectionLink(collection, true);
+    this.waypoints = [];
+    this.halfWidth = 0;
+    this.scrollable = React.createRef();
+    this.state = { activeList: 0 };
+  }
+
+  componentDidMount() {
+    doubleRAF(this.setWaypoints);
+  }
+
+  getLists = memoize(collection => collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size))
+
+  goToList = (idx) => {
+    this.scrollable.current.querySelectorAll('.lists > li')[idx].scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+
+  scrollHandler = () => {
+    requestAnimationFrame(() => {
+      const t = this.scrollable.current.scrollTop;
+      this.waypoints.some((wp, idx) => {
+        if (t + this.halfWidth >= wp) {
+          const index = (this.waypoints.length - 1) - idx;
+          if (this.state.activeList !== index) {
+            this.setState({ activeList: index });
+          }
+
+          return true;
+        }
+
+        return false;
+      });
+    });
+  }
+
+  setWaypoints = () => {
+    const ref = this.scrollable.current;
+    const topOffset = ref.getBoundingClientRect().top + ref.scrollTop;
+    this.waypoints = [...ref.querySelectorAll('.lists > li')].map(li => li.getBoundingClientRect().top - topOffset);
+    this.halfWidth = ref.getBoundingClientRect().height * 0.5;
+    this.waypoints.reverse();
   }
 
   render() {
     const { collection, history, match: { params: { user, coll } } } = this.props;
+    const lists = this.getLists(collection);
 
     if (collection.get('error')) {
       return user.startsWith('temp-') ?
@@ -53,8 +95,6 @@ class CollectionCoverUI extends Component {
         <RedirectWithStatus to={getCollectionLink(collection)} status={301} />
       );
     }
-
-    const lists = collection.get('lists') ? collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size) : [];
 
     return (
       <div className="coll-cover">
@@ -70,65 +110,48 @@ class CollectionCoverUI extends Component {
           <meta property="og:description" content={collection.get('desc') ? truncate(collection.get('desc'), 3, new RegExp(/([.!?])/)) : tagline} />
         </Helmet>
         {
-          onboardingLink && !this.context.isMobile &&
-            <OnBoarding />
-        }
-        {
           this.context.canAdmin && !this.context.isAnon && !collection.get('public') &&
           <div className="visibility-warning">
             Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
           </div>
         }
         <Capstone user={collection.get('owner')} />
-        <h1>{collection.get('title')}</h1>
-        <div className="description">
-          <WYSIWYG
-            readOnly
-            placeholder={defaultCollDesc}
-            initial={collection.get('desc')} />
-        </div>
-        {
-          (this.context.canAdmin || collection.get('public_index')) &&
-            <Link className="browse" to={this.collectionLink()}>{ this.context.canAdmin ? 'Collection Index' : 'Browse Collection' }</Link>
-        }
-        {
-          lists.size > 0 &&
-            <div className="lists-container">
-              <h3 className="lists-header">Lists in this Collection</h3>
-              <ul className="lists">
-                {
-                  lists.map((list) => {
-                    const bk = list.getIn(['bookmarks', '0']);
-                    const loc = `${getListLink(collection, list)}/b${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
-                    const bkCount = list.get('total_bookmarks');
-                    return (
-                      <li key={list.get('id')}>
-                        <Link to={loc}>
-                          <div className="list-title">
-                            <div>
-                              <ListIcon />
-                            </div>
-                            <h3>{list.get('title')}</h3>
-                          </div>
-                        </Link>
-                        <div className="desc">
-                          {
-                            list.get('desc') &&
-                              <Truncate height={1000}>
-                                <WYSIWYG
-                                  readOnly
-                                  initial={list.get('desc')} />
-                              </Truncate>
-                          }
-                          <button onClick={() => history.push(getListLink(collection, list))} className="rounded list-link" type="button">View list ({`${bkCount} Bookmark${bkCount === 1 ? '' : 's'}`}) &raquo;</button>
-                        </div>
-                      </li>
-                    );
-                  })
-                }
-              </ul>
-            </div>
-        }
+        <Tabs>
+          <TabList>
+            <Tab>Overview</Tab>
+            {
+              collection.get('public_index') &&
+                <Tab>Browse All</Tab>
+            }
+          </TabList>
+
+          <TabPanel className="react-tabs__tab-panel overview-tab">
+            <ul className="scrollspy">
+              {
+                lists.map((list, idx) => {
+                  return (
+                    <ScrollspyEntry
+                      key={list.get('id')}
+                      index={idx}
+                      onSelect={this.goToList}
+                      selected={idx === this.state.activeList}
+                      title={list.get('title')} />
+                  );
+                })
+              }
+            </ul>
+
+            <ListsScrollable
+              collection={collection}
+              lists={lists}
+              ref={this.scrollable}
+              scrollHandler={this.scrollHandler} />
+
+          </TabPanel>
+          <TabPanel>
+            Browse All
+          </TabPanel>
+        </Tabs>
       </div>
     );
   }
