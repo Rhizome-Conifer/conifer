@@ -82,6 +82,7 @@
     "react-router-config": "^4.4.0-beta.6",
     "react-router-dom": "^4.4.0-beta.6",
     "react-rte": "^0.16.1",
+    "react-tabs": "^2.3.0",
     "react-toggle": "^4.0.2",
     "react-virtualized": "^9.21.0",
     "redbox-react": "^1.6.0",

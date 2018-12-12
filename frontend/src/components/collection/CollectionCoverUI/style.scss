@@ -4,6 +4,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex-grow: 1;
 
     .visibility-warning {
         background: $listsYellow;
@@ -13,122 +14,174 @@
         font-size: 1.6rem;
     }
 
-    h1 {
-        max-width: 75vw;
-        margin: 0 0 2.2rem 0;
-        font-weight: 400;
+    .capstone {
+        align-self: flex-start;
+        margin: 1.5rem 0 1.5rem 1.5rem;
     }
 
-    .description {
-        max-width: 35vw;
-        font-size: 1.4rem;
-        line-height: 1.5;
+    .react-tabs {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        width: calc(100% - 40px);
 
-        @media (max-width: $mobile) {
-            max-width: 75vw;
-        }
-    }
+        .overview-tab {
+            flex-grow: 1;
+            display: grid;
+            grid-template-rows: 100%;
+            grid-template-columns: 20vw 1fr;
 
-    .lists-container {
-        width: 45vw;
+            .scrollspy {
+                list-style-type: none;
+                padding: 0;
 
-        @media (max-width: $mobile) {
-            width: 85vw;
-        }
+                li {
+                    position: relative;
+                    padding-left: .75rem;
+                    cursor: pointer;
 
-        .lists-header {
-            width: 80%;
-            margin: 5rem auto 4rem auto;
-            text-align: center;
-            font-weight: 600;
-            color: $gray600;
-        }
-
-        ul.lists {
-            list-style-type: none;
-            padding: 0;
-
-            li {
-                margin-bottom: 5rem;
-
-                .wr-editor {
-                    .DraftEditor-editorContainer {
-                        max-height: inherit;
+                    &:before {
+                        transition: background-color $quickShift ease-in-out;
+                        position: absolute;
+                        left: 0;
+                        content: '';
+                        width: .75rem;
+                        height: 100%;
                     }
-                }
 
-                & > a {
-                    transition: color $quickShift ease-in-out;
-                    text-decoration: none;
-                    color: #000;
+                    &.selected {
+                        &:before {
+                            background-color: $blue;
+                        }
+                    }
 
-                    .list-title {
-                        display: flex;
-                        align-items: flex-start;
-                        border: solid 0 $gray500;
-                        border-width: 0 0 .2rem 0;
-                        padding: 0 1.5rem 1rem 1.5rem;
+                    h3 {
+                        font-weight: 400;
+                        margin-left: 1.5rem;
+                        font-size: 1.9;
 
                         svg {
-                            vertical-align: bottom;
-                            margin-right: 1.5rem;
-                            g {
-                              fill: $gray600;
-                            }
+                            margin-right: 1rem;
                         }
-
-                        h3 {
-                            font-weight: 400;
-                            margin: 0;
-                        }
-                    }
-
-                    &:hover {
-                        color: $blue;
-                    }
-                }
-
-                .desc {
-                    padding: 1rem 4.5rem 0 4.5rem;
-
-                    div + .list-link {
-                        display: inline-block;
-                        margin-top: 0.2rem;
-                    }
-
-                    .list-link {
-                      &:link, &:visited {
-                          color: $gray600;
-                      }
-
-                      &:hover, &:active {
-                          color: $blue;
-                      }
                     }
                 }
             }
-        }
-    }
 
-    .browse {
-        transition: color $quickShift ease-in-out,
-                    background $quickShift ease-in-out,
-                    border-color $quickShift ease-in-out;
-        padding: .5rem 2.5rem;
-        margin: 3rem 0;
-        border: solid .1rem $mgmt-gray;
-        border-radius: 2.7rem;
-        text-transform: uppercase;
-        text-decoration: none;
+            .scroll-wrapper {
+                position: relative;
+            }
 
-        &:link, &:visited {
-            color: $gray600;
-        }
+            .lists-container {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 100%;
+                padding-right: 20%;
+                overflow: auto;
 
-        &:hover, &:active {
-            border-color: $blue;
-            background: $blue;
-            color: #FFF;
+                h1 {
+                    max-width: 75vw;
+                    font-size: 2.6rem;
+                }
+
+                .coll-description {
+                    font-size: 1.4rem;
+                    line-height: 1.5;
+                    margin-bottom: 3rem;
+                }
+
+                .lists-header {
+                    width: 80%;
+                    margin: 5rem auto 4rem auto;
+                    text-align: center;
+                    font-weight: 600;
+                    color: $gray600;
+                }
+
+                ul.lists {
+                    list-style-type: none;
+                    padding: 0;
+
+                    li {
+                        margin-bottom: 5rem;
+
+                        .wr-editor {
+                            .DraftEditor-editorContainer {
+                                max-height: inherit;
+                            }
+                        }
+
+                        & > a {
+                            transition: color $quickShift ease-in-out;
+                            text-decoration: none;
+                            color: #000;
+
+                            .list-title {
+                                display: flex;
+                                align-items: flex-start;
+                                border: solid 0 $gray500;
+                                border-width: 0 0 .2rem 0;
+                                padding: 0 1.5rem 1rem 1.5rem;
+
+                                h3 {
+                                    font-weight: 400;
+                                    margin: 0;
+                                }
+
+                                svg {
+                                    vertical-align: bottom;
+                                    margin-right: 1.5rem;
+                                    g {
+                                      fill: $gray600;
+                                    }
+                                }
+                            }
+                        }
+
+                        .desc {
+                            padding: 1rem 4.5rem 0 4.5rem;
+                            margin-bottom: 3rem;
+
+                            .wr-truncate {
+                                align-items: flex-start;
+                            }
+
+                            div + .list-link {
+                                display: inline-block;
+                                margin-top: 0.2rem;
+                            }
+
+                            .list-link {
+                              &:link, &:visited {
+                                  color: $gray600;
+                              }
+
+                              &:hover, &:active {
+                                  color: $blue;
+                              }
+                            }
+                        }
+
+                        ol {
+                            li {
+                                .source-link {
+                                    color: $blue;
+                                    text-decoration: underline;
+                                }
+
+                                .bk-timestamp {
+                                    display: block;
+                                    margin-top: 1rem;
+                                }
+
+                                .wr-editor {
+                                    margin-top: 1rem;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

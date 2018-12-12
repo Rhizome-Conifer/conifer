@@ -4,7 +4,7 @@ import { asyncConnect } from 'redux-connect';
 
 import { timestampOrderedPages } from 'store/selectors';
 
-import { isLoaded as isCollLoaded, load as loadColl } from 'store/modules/collection';
+import { isLoaded as isCollLoaded, load as loadColl, loadLists } from 'store/modules/collection';
 
 import CollectionCoverUI from 'components/collection/CollectionCoverUI';
 
@@ -49,9 +49,8 @@ const initialData = [
         host = state.app.getIn(['appSettings', 'host']);
       }
 
-      //if ((!isCollLoaded(state) || state.app.getIn(['collection', 'id']) !== coll)) {
-      return dispatch(loadColl(user, coll, host));
-      //}
+      return dispatch(loadColl(user, coll, host))
+        .then(() => dispatch(loadLists(user, coll, 'all')));
     }
   },
 ];

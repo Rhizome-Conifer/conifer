@@ -82,7 +82,7 @@ class TimeFormat extends PureComponent {
       displayTime = buildDate(dt, gmt);
     }
 
-    return displayTime
+    return displayTime;
   }
 
   render() {

@@ -50,7 +50,7 @@ const userRoutes = [
     classOverride: '',
     component: CollectionCover,
     exact: true,
-    footer: true,
+    footer: false,
     getLocation: ({ user, coll }) => {
       return `/${user}/${coll}`;
     },
