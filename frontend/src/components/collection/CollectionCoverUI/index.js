@@ -2,11 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Helmet from 'react-helmet';
 import classNames from 'classnames';
+import memoize from 'memoize-one';
 import { Link } from 'react-router-dom';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 import { appHost, tagline } from 'config';
-import { getCollectionLink, getListLink, truncate } from 'helpers/utils';
+import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';
 
 import { Temp404 } from 'containers';
@@ -14,12 +15,9 @@ import { Temp404 } from 'containers';
 import Capstone from 'components/collection/Capstone';
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
-import TimeFormat from 'components/TimeFormat';
-import Truncate from 'components/Truncate';
-import WYSIWYG from 'components/WYSIWYG';
-import { ListIcon } from 'components/icons';
 
 import ScrollspyEntry from './ScrollspyEntry';
+import ListsScrollable from './ListsScrollable';
 
 import 'react-tabs/style/react-tabs.css';
 import './style.scss';
@@ -39,29 +37,28 @@ class CollectionCoverUI extends Component {
     orderdPages: PropTypes.object
   };
 
-  constructor(options) {
+  constructor(options, { collection }) {
     super(options);
 
     this.waypoints = [];
     this.halfWidth = 0;
+    this.scrollable = React.createRef();
     this.state = { activeList: 0 };
   }
 
   componentDidMount() {
-    this.handle = setTimeout(this.setWaypoints, 50);
+    doubleRAF(this.setWaypoints);
   }
 
-  componentWillUnmount() {
-    this.clearTimeout(this.handle);
-  }
+  getLists = memoize(collection => collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size))
 
   goToList = (idx) => {
-    this.scrollable.querySelectorAll('.lists > li')[idx].scrollIntoView({ block: 'start', behavior: 'smooth' });
+    this.scrollable.current.querySelectorAll('.lists > li')[idx].scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
   scrollHandler = () => {
     requestAnimationFrame(() => {
-      const t = this.scrollable.scrollTop;
+      const t = this.scrollable.current.scrollTop;
       this.waypoints.some((wp, idx) => {
         if (t + this.halfWidth >= wp) {
           const index = (this.waypoints.length - 1) - idx;
@@ -78,15 +75,16 @@ class CollectionCoverUI extends Component {
   }
 
   setWaypoints = () => {
-    const topOffset = this.scrollable.getBoundingClientRect().top + this.scrollable.scrollTop;
-    this.waypoints = [...this.scrollable.querySelectorAll('.lists > li')].map(li => li.getBoundingClientRect().top - topOffset);
-    this.halfWidth = this.scrollable.getBoundingClientRect().height * 0.5;
+    const ref = this.scrollable.current;
+    const topOffset = ref.getBoundingClientRect().top + ref.scrollTop;
+    this.waypoints = [...ref.querySelectorAll('.lists > li')].map(li => li.getBoundingClientRect().top - topOffset);
+    this.halfWidth = ref.getBoundingClientRect().height * 0.5;
     this.waypoints.reverse();
-    console.log('waypoints:', this.waypoints);
   }
 
   render() {
     const { collection, history, match: { params: { user, coll } } } = this.props;
+    const lists = this.getLists(collection);
 
     if (collection.get('error')) {
       return user.startsWith('temp-') ?
@@ -97,8 +95,6 @@ class CollectionCoverUI extends Component {
         <RedirectWithStatus to={getCollectionLink(collection)} status={301} />
       );
     }
-
-    const lists = collection.get('lists') ? collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size) : [];
 
     return (
       <div className="coll-cover">
@@ -144,62 +140,13 @@ class CollectionCoverUI extends Component {
                 })
               }
             </ul>
-            <div className="scroll-wrapper">
-              <div className="lists-container" onScroll={this.scrollHandler} ref={(o) => { this.scrollable = o; }}>
-                <h1>{collection.get('title')}</h1>
-                <div className="coll-description">
-                  <WYSIWYG
-                    readOnly
-                    initial={collection.get('desc')} />
-                </div>
-                <ul className="lists">
-                  {
-                    lists.map((list) => {
-                      return (
-                        <li key={list.get('id')}>
-                          <Link to={getListLink(collection, list)}>
-                            <div className="list-title">
-                              <div>
-                                <ListIcon />
-                              </div>
-                              <h3>{list.get('title')}</h3>
-                            </div>
-                          </Link>
-                          <div className="desc">
-                            {
-                              list.get('desc') &&
-                                <Truncate height={1000}>
-                                  <WYSIWYG
-                                    readOnly
-                                    initial={list.get('desc')} />
-                                </Truncate>
-                            }
-                          </div>
-                          <ol>
-                            {
-                              list.get('bookmarks').map((bk) => {
-                                const replay = `${getListLink(collection, list)}/b${bk.get('id')}/${bk.get('timestamp')}/${bk.get('url')}`;
-                                return (
-                                  <li key={bk.get('id')}>
-                                    <h4><Link to={replay}>{bk.get('title')}</Link></h4>
-                                    <a className="source-link" href={bk.get('url')} target="_blank">{bk.get('url')}</a>
-                                    <TimeFormat classes="bk-timestamp" dt={bk.get('timestamp')} />
-                                    {
-                                      bk.get('desc') &&
-                                        <WYSIWYG readOnly initial={bk.get('desc')} />
-                                    }
-                                  </li>
-                                );
-                              })
-                            }
-                          </ol>
-                        </li>
-                      );
-                    })
-                  }
-                </ul>
-              </div>
-            </div>
+
+            <ListsScrollable
+              collection={collection}
+              lists={lists}
+              ref={this.scrollable}
+              scrollHandler={this.scrollHandler} />
+
           </TabPanel>
           <TabPanel>
             Browse All
