@@ -10,11 +10,14 @@ import { appHost, tagline } from 'config';
 import { doubleRAF, getCollectionLink, truncate } from 'helpers/utils';
 import { collection as collectionErr } from 'helpers/userMessaging';
 
+import { setSort } from 'store/modules/collection';
+
 import { Temp404 } from 'containers';
 
 import Capstone from 'components/collection/Capstone';
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
+import TableRenderer from 'components/collection/TableRenderer';
 
 import ScrollspyEntry from './ScrollspyEntry';
 import ListsScrollable from './ListsScrollable';
@@ -31,10 +34,11 @@ class CollectionCoverUI extends Component {
   };
 
   static propTypes = {
+    browsers: PropTypes.object,
     collection: PropTypes.object,
-    history: PropTypes.object,
     match: PropTypes.object,
-    orderdPages: PropTypes.object
+    orderdPages: PropTypes.object,
+    pages: PropTypes.object
   };
 
   constructor(options, { collection }) {
@@ -82,15 +86,29 @@ class CollectionCoverUI extends Component {
     this.waypoints.reverse();
   }
 
+  sort = ({ sortBy, sortDirection }) => {
+    const { collection, dispatch } = this.props;
+    const prevSort = collection.getIn(['sortBy', 'sort']);
+    const prevDir = collection.getIn(['sortBy', 'dir']);
+
+    if (prevSort !== sortBy) {
+      dispatch(setSort({ sort: sortBy, dir: sortDirection }));
+    } else {
+      dispatch(setSort({ sort: sortBy, dir: prevDir === 'ASC' ? 'DESC' : 'ASC' }));
+    }
+  }
+
   render() {
-    const { collection, history, match: { params: { user, coll } } } = this.props;
+    const { browsers, collection, match: { params: { user, coll } }, pages } = this.props;
     const lists = this.getLists(collection);
 
     if (collection.get('error')) {
       return user.startsWith('temp-') ?
         <Temp404 /> :
         <HttpStatus>{collectionErr[collection.getIn(['error', 'error'])]}</HttpStatus>;
-    } else if (collection.get('loaded') && !collection.get('slug_matched') && coll !== collection.get('slug')) {
+    }
+
+    if (collection.get('loaded') && !collection.get('slug_matched') && coll !== collection.get('slug')) {
       return (
         <RedirectWithStatus to={getCollectionLink(collection)} status={301} />
       );
@@ -146,10 +164,14 @@ class CollectionCoverUI extends Component {
               lists={lists}
               ref={this.scrollable}
               scrollHandler={this.scrollHandler} />
-
           </TabPanel>
-          <TabPanel>
-            Browse All
+          <TabPanel className="react-tabs__tab-panel browse-all-tab">
+            <TableRenderer {...{
+              browsers,
+              collection,
+              displayObjects: pages,
+              sort: this.sort
+            }} />
           </TabPanel>
         </Tabs>
       </div>
