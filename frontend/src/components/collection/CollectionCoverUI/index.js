@@ -52,12 +52,23 @@ class CollectionCoverUI extends Component {
 
   componentDidMount() {
     doubleRAF(this.setWaypoints);
+
+    // if there's a list id in the hash, focus on that item
+    if (window.location.hash) {
+      const active = this.scrollable.current.querySelector(window.location.hash);
+      if (active) {
+        active.scrollIntoView({ block: 'start', behavior: 'instant' });
+        this.setState({ activeList: [...active.parentNode.children].indexOf(active) });
+      }
+    }
   }
 
   getLists = memoize(collection => collection.get('lists').filter(o => o.get('public') && o.get('bookmarks') && o.get('bookmarks').size))
 
   goToList = (idx) => {
+    const { collection, history } = this.props;
     this.scrollable.current.querySelectorAll('.lists > li')[idx].scrollIntoView({ block: 'start', behavior: 'smooth' });
+    window.history.replaceState({}, '', `#list-${collection.getIn(['lists', idx, 'id'])}`);
   }
 
   scrollHandler = () => {
@@ -80,8 +91,8 @@ class CollectionCoverUI extends Component {
 
   setWaypoints = () => {
     const ref = this.scrollable.current;
-    const topOffset = ref.getBoundingClientRect().top + ref.scrollTop;
-    this.waypoints = [...ref.querySelectorAll('.lists > li')].map(li => li.getBoundingClientRect().top - topOffset);
+    const topOffset = ref.scrollTop - ref.getBoundingClientRect().top;
+    this.waypoints = [...ref.querySelectorAll('.lists > li')].map(li => li.getBoundingClientRect().top + topOffset);
     this.halfWidth = ref.getBoundingClientRect().height * 0.5;
     this.waypoints.reverse();
   }

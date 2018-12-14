@@ -16,6 +16,28 @@
             color: $gray600;
             margin-left: 1.5rem;
         }
+
+
+        .wr-coll-utilities {
+            background: #FFF;
+            //z-index: 10;
+            margin-left: 1.5rem;
+            width: 30%;
+            min-width: 25rem;
+            max-width: 35rem;
+
+            nav {
+                height: 100%;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+
+                .search-box {
+                    width: 100%;
+                    margin-right: .5rem;
+                }
+            }
+        }
     }
 
     .wr-coll-detail-table {

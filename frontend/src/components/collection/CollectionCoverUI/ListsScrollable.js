@@ -33,7 +33,7 @@ class ListsScrollable extends PureComponent {
             {
               lists.map((list) => {
                 return (
-                  <li key={list.get('id')}>
+                  <li key={list.get('id')} id={`list-${list.get('id')}`}>
                     <Link to={getListLink(collection, list)}>
                       <div className="list-title">
                         <div>
