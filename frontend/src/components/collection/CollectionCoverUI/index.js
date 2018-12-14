@@ -67,7 +67,8 @@ class CollectionCoverUI extends Component {
 
   goToList = (idx) => {
     const { collection, history } = this.props;
-    this.scrollable.current.querySelectorAll('.lists > li')[idx].scrollIntoView({ block: 'start', behavior: 'smooth' });
+    const ele = this.scrollable.current.querySelectorAll('.lists > li')[idx];
+    ele.scrollIntoView({ block: 'start', behavior: Math.abs(ele.getBoundingClientRect().top) > 10000 ? 'instant' : 'smooth' });
     window.history.replaceState({}, '', `#list-${collection.getIn(['lists', idx, 'id'])}`);
   }
 
