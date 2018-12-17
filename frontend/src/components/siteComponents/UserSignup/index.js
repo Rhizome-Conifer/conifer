@@ -44,18 +44,36 @@ class UserSignup extends Component {
     };
   }
 
+  componentDidUpdate() {
+    const { confirmpassword, missingPw, password } = this.state;
+
+    // clear missing confirm password error
+    if(missingPw && password && confirmpassword) {
+      this.setState({ missingPw: false});
+    }
+  }
+
   save = (evt) => {
     evt.preventDefault();
     const { user } = this.props;
-    const { announce_mailer, username, name,
-            email, password, confirmpassword, moveTemp, toColl } = this.state;
+    const {
+      announce_mailer,
+      confirmpassword,
+      email,
+      moveTemp,
+      name,
+      password,
+      toColl,
+      username
+    } = this.state;
 
     if (!password || !confirmpassword) {
       this.setState({ missingPw: true });
     }
 
     if (username && this.validateUsername() === 'success' &&
-       password && confirmpassword && this.validatePassword() === null && email) {
+       password && confirmpassword && this.validatePassword() === null &&
+       email && this.validateEmail() === null) {
       // core fields to send to server
       let data = { username, email, password, confirmpassword };
 
