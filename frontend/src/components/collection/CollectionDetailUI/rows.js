@@ -5,6 +5,7 @@ import { DragSource, DropTarget } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 
 import { draggableTypes } from 'config';
+import { keyIn } from 'helpers/utils';
 
 
 const baseSource = {
@@ -20,7 +21,7 @@ const pageSource = {
       id: rowData.get('id'),
       idx: index,
       initialIdx: index,
-      item: rowData.toJS()
+      item: rowData.set('page_id', rowData.get('id')).filterNot(keyIn('id')).toJS()
     };
   }
 };
@@ -32,7 +33,7 @@ const bookmarkSource = {
       id: rowData.get('id'),
       idx: index,
       initialIdx: index,
-      item: rowData.get('page').toJS()
+      item: rowData.filterNot(keyIn('id', 'page')).toJS()
     };
   },
   endDrag(props, monitor) {

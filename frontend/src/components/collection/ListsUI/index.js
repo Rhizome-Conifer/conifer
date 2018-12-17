@@ -5,7 +5,7 @@ import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 import { draggableTypes } from 'config';
-import { getCollectionLink } from 'helpers/utils';
+import { getCollectionLink, keyIn } from 'helpers/utils';
 
 import Modal from 'components/Modal';
 import VisibilityLamp from 'components/collection/VisibilityLamp';
@@ -137,16 +137,16 @@ class ListsUI extends Component {
 
   pageDropCallback = (page, list, itemType) => {
     const { collection, pages, pageSelection } = this.props;
-    const selType = typeof pageSelection;
+    const selectionType = typeof pageSelection;
 
     let pageIds = [];
-    if (selType === 'number') {
+    if (selectionType === 'number') {
       pageIds = [
         itemType === draggableTypes.PAGE_ITEM ?
           pages.get(pageSelection).get('id') :
           pages.get(pageSelection).getIn(['page', 'id'])
       ];
-    } else if (selType === 'object' && pageSelection !== null) {
+    } else if (selectionType === 'object' && pageSelection !== null) {
       pageIds = pageSelection.map((pg) => {
         return itemType === draggableTypes.PAGE_ITEM ?
           pages.get(pg).get('id') :
@@ -156,8 +156,8 @@ class ListsUI extends Component {
 
     // check if currently dragged page is within selection
     // if so, bulk add selection, otherwise add single page
-    if (pageSelection === null || selType === 'number' ||
-        (selType === 'object' && !pageIds.includes(page.id))) {
+    if (pageSelection === null || selectionType === 'number' ||
+        (selectionType === 'object' && !pageIds.includes(page.page_id))) {
       this.props.addToList(collection.get('owner'), collection.get('id'), list, page);
     } else {
       const pagesToAdd = [];
@@ -165,7 +165,7 @@ class ListsUI extends Component {
         pagesToAdd.push(
           itemType === draggableTypes.PAGE_ITEM ?
             pages.get(pgIdx).toJS() :
-            pages.get(pgIdx).get('page').toJS()
+            pages.get(pgIdx).filterNot(keyIn('id', 'page')).toJS()
         );
       }
       this.props.bulkAddToList(collection.get('owner'), collection.get('id'), list, pagesToAdd);

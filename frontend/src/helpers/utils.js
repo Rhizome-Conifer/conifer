@@ -1,4 +1,5 @@
 import config from 'config';
+import { Set } from 'immutable';
 
 
 export function addTrailingSlash(url) {
@@ -211,6 +212,14 @@ export function isEqual(a, b) {
 
 export function isSafari() {
   return navigator.userAgent.indexOf('Safari') > -1 && navigator.userAgent.indexOf('Chrome') === -1;
+}
+
+
+export function keyIn(...keys) {
+  const keySet = Set(keys);
+  return function (v, k) {
+    return keySet.has(k);
+  }
 }
 
 
