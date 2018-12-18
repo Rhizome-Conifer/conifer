@@ -11,7 +11,7 @@ import getBaseConfig from './webpack.config.client';
 
 const projectRootPath = path.resolve(__dirname, '../');
 const assetsPath = path.resolve(projectRootPath, './static/dist');
-const baseConfig = getBaseConfig({ development: false, useMiniCssExtractPlugin: true });
+const baseConfig = getBaseConfig({ development: false, useMiniCssExtractPlugin: true }, { silent: process.env.STATS });
 
 
 const prodConfig = {
@@ -66,7 +66,8 @@ const prodConfig = {
           {
             loader: 'css-loader',
             options: {
-              modules: true
+              modules: true,
+              minimize: true
             }
           }
         ]
@@ -79,7 +80,8 @@ const prodConfig = {
             loader: MiniCssExtractPlugin.loader
           },
           {
-            loader: 'css-loader'
+            loader: 'css-loader',
+            options: { minimize: true }
           }
         ]
       },
@@ -87,7 +89,7 @@ const prodConfig = {
   },
 
   plugins: [
-    new CleanPlugin([assetsPath], { root: projectRootPath }),
+    new CleanPlugin([assetsPath], { root: projectRootPath, verbose: false }),
 
     new CopyWebpackPlugin([
       {from: 'src/shared/novnc', to: 'novnc/'},
@@ -105,5 +107,12 @@ const prodConfig = {
     })
   ]
 };
+
+if (process.env.STATS) {
+  const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+  prodConfig.plugins.push(new BundleAnalyzerPlugin());
+  prodConfig.stats = { all: false };
+}
+
 
 export default merge(baseConfig, prodConfig);

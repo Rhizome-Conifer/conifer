@@ -12,6 +12,7 @@ import {
   CollectionManagement,
   Extract,
   Home,
+  ListDetail,
   Logout,
   NewPassword,
   NewRecording,
@@ -78,8 +79,7 @@ const userRoutes = [
   {
     path: `${userPath}/:coll/list/:list`,
     breadcrumb: listDetailBreadcrumb,
-    classOverride: '',
-    component: CollectionCover,
+    component: ListDetail,
     exact: true,
     footer: false,
     getLocation: ({ user, coll, list }) => {
@@ -305,7 +305,7 @@ export default [
 
   ...infoRoutes,
   ...userRoutes,
-  ...controllerRoutes.map(o => ({ ...o, noShadow: true })),
+  ...controllerRoutes,
 
   {
     path: '/(.*)',

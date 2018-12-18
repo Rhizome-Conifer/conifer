@@ -17,8 +17,7 @@ class AppHeader extends PureComponent {
   static propTypes = {
     authUser: PropTypes.object,
     is404: PropTypes.bool,
-    location: PropTypes.object,
-    navbarClasses: PropTypes.string
+    location: PropTypes.object
   };
 
   getActiveMatch = memoize((url) => {
@@ -31,13 +30,13 @@ class AppHeader extends PureComponent {
   })
 
   render() {
-    const { authUser, is404, location: { pathname }, navbarClasses } = this.props;
+    const { authUser, is404, location: { pathname } } = this.props;
     const { match, route } = this.getActiveMatch(pathname);
     const canAdmin = match && match.params.user === authUser.get('username');
 
     return (
       <header className={classNames('app-header', { dark: canAdmin })}>
-        <Navbar staticTop fluid collapseOnSelect className={navbarClasses} role="navigation">
+        <Navbar staticTop fluid collapseOnSelect className="header-webrecorder" role="navigation">
           <Navbar.Header>
             <NavLink to="/" className="wr-logomark"><LogoIcon darkMode={canAdmin} /></NavLink>
             {

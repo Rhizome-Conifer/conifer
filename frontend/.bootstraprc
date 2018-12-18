@@ -15,20 +15,18 @@ useCustomIconFontPath: false
 # This param can also be set in webpack config:
 #   entry: 'bootstrap-loader/extractStyles'
 # extractStyles: false
+
+styleLoaders:
+  - style-loader
+  - css-loader
+  - sass-loader
+
 env:
   development:
     extractStyles: false
 
-    # Webpack loaders, order matters
-    styleLoaders:
-      - style-loader
-      - css-loader
-      - sass-loader
-
   production:
     extractStyles: true
-
-    # Webpack loaders, order matters
     styleLoaders:
       - css-loader
       - sass-loader

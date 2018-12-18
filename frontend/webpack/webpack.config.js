@@ -5,7 +5,7 @@ const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
 const TimeFixPlugin = require('time-fix-plugin');
 
 const assetsPath = path.resolve(__dirname, '../static/dist');
-const smp = new SpeedMeasurePlugin();
+const smp = new SpeedMeasurePlugin({ disable: process.env.STATS });
 
 
 module.exports = smp.wrap({
