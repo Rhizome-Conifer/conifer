@@ -1,23 +1,23 @@
 import React, { Component } from 'react';
 import classNames from 'classnames';
+import memoize from 'memoize-one';
 import Helmet from 'react-helmet';
 import HTML5Backend from 'react-dnd-html5-backend';
-import { matchPath } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Raven from 'raven-js';
+import { matchPath } from 'react-router-dom';
 import { renderRoutes } from 'react-router-config';
-import { Alert, Button, Navbar, Panel } from 'react-bootstrap';
+import { Alert, Button, Panel } from 'react-bootstrap';
 import { asyncConnect } from 'redux-connect';
 import { DragDropContext } from 'react-dnd';
 
 import { isLoaded as isAuthLoaded, load as loadAuth } from 'store/modules/auth';
-
-import { UserManagement } from 'containers';
-
 import config from 'config';
 import { apiFetch, inStorage, setStorage } from 'helpers/utils';
 
-import BreadcrumbsUI from 'components/siteComponents/BreadcrumbsUI';
+// direct import to prevent circular dependency
+import AppHeader from 'containers/AppHeader/AppHeader';
+
 import { Footer } from 'components/siteComponents';
 import { InfoIcon } from 'components/icons';
 
@@ -35,13 +35,13 @@ export class App extends Component {
     location: PropTypes.object,
     route: PropTypes.object,
     spaceUtilization: PropTypes.object
-  }
+  };
 
   static childContextTypes = {
     isAnon: PropTypes.bool,
     isEmbed: PropTypes.bool,
     isMobile: PropTypes.bool
-  }
+  };
 
   constructor(props) {
     super(props);
@@ -51,6 +51,7 @@ export class App extends Component {
     this.isMobile = Boolean(ua.match(/Mobile|Android|BlackBerry/));
     this.state = {
       error: null,
+      lastPathname: null,
       loginStateAlert: false,
       mobileAlert: true,
       outOfSpaceAlert: true,
@@ -58,19 +59,25 @@ export class App extends Component {
     };
   }
 
+  static getDerivedStateFromProps(props, state) {
+    if (!props.loaded) {
+      const newState = state;
+      newState.lastPathname = props.location.pathname;
+      return newState;
+    }
+
+    return null;
+  }
+
   getChildContext() {
-    const { auth } = this.props;
+    const { auth, location: { pathname } } = this.props;
+    const match = this.getActiveRoute(pathname);
 
     return {
       isAnon: auth.getIn(['user', 'anon']),
-      isEmbed: this.state.match.embed || false,
+      isEmbed: match.embed || false,
       isMobile: this.isMobile,
     };
-  }
-
-  componentWillMount() {
-    // set initial route
-    this.setState({ match: this.getActiveRoute(this.props.location.pathname) });
   }
 
   componentDidMount() {
@@ -94,22 +101,11 @@ export class App extends Component {
     document.addEventListener(this.visibilityChange, this.heartbeat);
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.loaded && !nextProps.loaded) {
-      this.handle = setTimeout(() => this.setState({ stalled: true }), 7500);
-      this.setState({ lastMatch: this.state.match });
-    }
-
-    if (!this.props.loaded && nextProps.loaded) {
-      const match = this.getActiveRoute(nextProps.location.pathname);
-
-      if (this.state.match.path !== match.path) {
-        this.setState({ match });
-      }
-    }
-  }
-
   componentDidUpdate(prevProps) {
+    if (prevProps.loaded && !this.props.loaded) {
+      this.handle = setTimeout(() => this.setState({ stalled: true }), 7500);
+    }
+
     // check if login state changed and logout alert is active
     if (prevProps.auth.get('loggingIn') && !this.props.auth.get('loggingIn')) {
       this.setState({ loginStateAlert: false });
@@ -144,7 +140,7 @@ export class App extends Component {
     setStorage('mobileNotice', false, window.sessionStorage);
   }
 
-  getActiveRoute = (url) => {
+  getActiveRoute = memoize((url) => {
     const { route: { routes } } = this.props;
 
     const match = routes.find((route) => {
@@ -152,7 +148,7 @@ export class App extends Component {
     });
 
     return match;
-  }
+  })
 
   heartbeat = () => {
     const { auth } = this.props;
@@ -186,8 +182,11 @@ export class App extends Component {
   }
 
   render() {
-    const { loaded, location: { pathname, search }, spaceUtilization } = this.props;
-    const { error, info, lastMatch, match } = this.state;
+    const { loaded, location: { pathname }, spaceUtilization } = this.props;
+    const { error, info, lastPathname } = this.state;
+
+    const match = this.getActiveRoute(pathname);
+    const lastMatch = this.getActiveRoute(lastPathname);
 
     const hasFooter = lastMatch && !loaded ? lastMatch.footer : match.footer;
     const { classOverride } = match;
@@ -214,17 +213,7 @@ export class App extends Component {
         <Helmet {...config.app.head} />
         {
           !isEmbed &&
-            <header>
-              <Navbar staticTop fluid collapseOnSelect className={navbarClasses} role="navigation">
-                <Navbar.Header>
-                  <BreadcrumbsUI is404={this.props.is404} url={pathname} />
-                  <Navbar.Toggle />
-                </Navbar.Header>
-                <Navbar.Collapse>
-                  <UserManagement />
-                </Navbar.Collapse>
-              </Navbar>
-            </header>
+            <AppHeader navbarClasses={navbarClasses} routes={this.props.route.routes} />
         }
         {
           isOutOfSpace && this.state.outOfSpaceAlert &&
@@ -305,7 +294,6 @@ const initalData = [
 const mapStateToProps = ({ reduxAsyncConnect: { loaded }, app }) => {
   return {
     auth: app.get('auth'),
-    is404: app.getIn(['controls', 'is404']),
     loaded,
     spaceUtilization: app.getIn(['auth', 'user', 'space_utilization'])
   };

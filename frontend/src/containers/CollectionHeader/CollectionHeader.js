@@ -27,7 +27,7 @@ const mapDispatchToProps = (dispatch, { history }) => {
         .then((res) => {
           // if editing title, update url
           if (data.hasOwnProperty('title')) {
-            history.replace(`/${user}/${res.collection.id}/index`);
+            history.replace(`/${user}/${res.collection.id}/manage`);
           }
           return dispatch(loadCollections(user));
         }, () => {})

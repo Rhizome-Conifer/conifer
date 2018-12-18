@@ -19,6 +19,7 @@ export InfoIcon from './Info';
 export LinkIcon from './Link';
 export ListIcon from './List';
 export LoaderIcon from './Loader';
+export LogoIcon from './Logo';
 export LockIcon from './Lock';
 export MailIcon from './Mail';
 export MoreIcon from './More';

@@ -1,0 +1,72 @@
+@import 'src/vars';
+
+
+.navbar-header {
+    .managing-collection {
+        flex-shrink: 0;
+        margin-right: 1rem;
+    }
+
+    .collection-manager.rounded {
+        padding: .3rem 1.5rem;
+        margin-right: 1.5rem;
+        color: $white;
+        border-color: $mgmt-gray;
+
+        .caret {
+            transform: rotateZ(90deg);
+            margin-right: .5rem;
+        }
+    }
+
+    .visibility-badge {
+        background: $brightGreen;
+        color: $white;
+        font-size: 1rem;
+        border-radius: .3rem;
+        padding: .1rem .4rem;
+        margin-left: 1rem;
+    }
+
+    .wr-collection-menu {
+        flex-shrink: 0;
+
+        .dropdown {
+            .dropdown-toggle {
+                background: transparent;
+                color: $white;
+                border-color: $mgmt-gray;
+
+                &:hover {
+
+                }
+            }
+
+            &.open > .dropdown-toggle {
+                &:hover {
+                    color: inherit;
+                    background-color: inherit;
+                }
+            }
+
+            .dropdown-menu {
+                background: $body-gray;
+
+                input {
+                    background: transparent;
+                    color: $white;
+                }
+            }
+
+            svg {
+                path, polyline, polygon {
+                    stroke: $white;
+                }
+
+                .w-letter {
+                    fill: $white;
+                }
+            }
+        }
+    }
+}

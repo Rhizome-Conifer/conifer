@@ -47,7 +47,7 @@ const mapDispatchToProps = (dispatch, { history }) => {
               incrementCollCount(1),
               addUserCollection(res.collection)
             ]));
-            history.push(`/${user}/${res.collection.slug}/index`);
+            history.push(`/${user}/${res.collection.slug}/manage`);
           }
         }, () => {});
     },

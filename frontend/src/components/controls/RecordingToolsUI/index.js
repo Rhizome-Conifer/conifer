@@ -81,7 +81,7 @@ class RecordingToolsUI extends PureComponent {
 
   catalogView = () => {
     const { match: { params: { user, coll } } } = this.props;
-    this.props.history.push(`/${user}/${coll}/index`);
+    this.props.history.push(`/${user}/${coll}/manage`);
   }
 
   toggleAutoscroll = () => {

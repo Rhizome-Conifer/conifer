@@ -290,12 +290,12 @@ class CollectionDetailUI extends Component {
         <Temp404 /> :
         <HttpStatus>{collection.getIn(['error', 'error_message'])}</HttpStatus>;
     } else if (collRedirect) {
-      const toUrl = activeList ? getListLink(collection, list) : getCollectionLink(collection, true);
+      const toUrl = activeList ? getListLink(collection, list, true) : getCollectionLink(collection, true);
       return <RedirectWithStatus to={toUrl} status={301} />;
     } else if (activeList && (list.get('error') || (!list.get('slug_matched') && params.list !== list.get('slug')))) {
       if (list.get('loaded') && !list.get('slug_matched')) {
         return (
-          <RedirectWithStatus to={getListLink(collection, list)} status={301} />
+          <RedirectWithStatus to={getListLink(collection, list, true)} status={301} />
         );
       }
       return (
@@ -329,7 +329,7 @@ class CollectionDetailUI extends Component {
                   <title>{list.get('title')}</title>
               }
 
-              <meta property="og:url" content={`${config.appHost}${getListLink(collection, list)}`} />
+              <meta property="og:url" content={`${config.appHost}${getListLink(collection, list, true)}`} />
               <meta property="og:type" content="website" />
               <meta property="og:title" content={list.get('title')} />
               <meta property="og:description" content={list.get('desc') ? truncate(list.get('desc'), 3, new RegExp(/([.!?])/)) : config.tagline} />

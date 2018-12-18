@@ -135,13 +135,13 @@ export function fixMalformedUrls(url) {
 }
 
 
-export function getCollectionLink(coll, index = false) {
-  return `/${coll.get('owner')}/${coll.get('slug')}${index ? '/index' : ''}`;
+export function getCollectionLink(coll, manage = false) {
+  return `/${coll.get('owner')}/${coll.get('slug')}${manage ? '/manage' : ''}`;
 }
 
 
-export function getListLink(coll, list) {
-  return `${getCollectionLink(coll)}/list/${list.get('slug')}`;
+export function getListLink(coll, list, manage = false) {
+  return `${getCollectionLink(coll)}/list/${list.get('slug')}${manage ? '/manage' : ''}`;
 }
 
 
