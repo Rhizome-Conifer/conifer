@@ -2,7 +2,7 @@
 
 .wr-breadcrumb {
     background-color: transparent;
-    padding: 0 0 0 .5rem;
+    padding: 0;
     margin: .1rem;
     border: none;
     display: inline-block;
@@ -10,7 +10,7 @@
     li {
         display: inline;
 
-        &:not(:first-child):before {
+        &:not(:first-of-type):before {
             content: '/';
             color: #CCC;
             padding:0 1rem;

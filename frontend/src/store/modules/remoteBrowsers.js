@@ -19,7 +19,7 @@ const initialState = fromJS({
   error: null,
   inactiveTime: null,
   loaded: false,
-  recId: null,
+  reqId: null,
   selectedBrowser: null
 });
 

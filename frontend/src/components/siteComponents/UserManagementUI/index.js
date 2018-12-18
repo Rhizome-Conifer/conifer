@@ -130,7 +130,7 @@ class UserManagementUI extends Component {
           {
             (isAnon === false || (isAnon && collCount > 0)) &&
               <li className="navbar-text navbar-right">
-                <Link to={isAnon ? `/${username}/temp/index` : `/${username}`}>
+                <Link to={isAnon ? `/${username}/temp/manage` : `/${username}`}>
                   {
                     isAnon ?
                       <React.Fragment>Temporary Collection</React.Fragment> :

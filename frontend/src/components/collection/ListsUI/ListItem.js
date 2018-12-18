@@ -113,7 +113,7 @@ class ListItem extends PureComponent {
 
   navigate = () => {
     const { collId, collUser, history, list } = this.props;
-    history.push(`/${collUser}/${collId}/list/${list.get('slug')}`);
+    history.push(`/${collUser}/${collId}/list/${list.get('slug')}/manage`);
   }
 
   render() {

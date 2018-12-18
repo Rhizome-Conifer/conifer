@@ -29,7 +29,8 @@ class CollectionDropdownUI extends Component {
     loadUserCollections: PropTypes.func,
     mostRecent: PropTypes.string,
     newCollection: PropTypes.string,
-    setCollection: PropTypes.func
+    setCollection: PropTypes.func,
+    setCollectionCallback: PropTypes.func
   };
 
   static defaultProps = {
@@ -89,6 +90,9 @@ class CollectionDropdownUI extends Component {
   collectionChoice = (id) => {
     // filter out new modal option
     if (id) {
+      if (this.props.setCollectionCallback) {
+        return this.props.setCollectionCallback(id);
+      }
       this.props.setCollection(id);
     }
   }

@@ -96,7 +96,7 @@ class CollectionListUI extends Component {
     }
 
     if (collections.get('loaded') && isAnon && canAdmin) {
-      return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp/index`} status={301} />;
+      return <RedirectWithStatus to={`/${auth.getIn(['user', 'username'])}/temp/manage`} status={301} />;
     }
 
     return (
