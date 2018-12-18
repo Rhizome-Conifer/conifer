@@ -1,0 +1,110 @@
+@import 'src/vars';
+
+.list-entry {
+    width: 70vw;
+    margin-top: 3.5rem;
+
+    .wr-editor {
+        .DraftEditor-editorContainer {
+            max-height: inherit;
+        }
+    }
+
+    & > a {
+        transition: color $quickShift ease-in-out;
+        text-decoration: none;
+        color: #000;
+    }
+
+    .list-title {
+        display: flex;
+        align-items: flex-start;
+        border: solid 0 $gray500;
+        border-width: 0 0 .2rem 0;
+        padding: 0 1.5rem 1rem 1.5rem;
+
+        .list-metadata {
+            a {
+                &:link, &:visited {
+                    color: $gray600;
+                    text-decoration: underline;
+                }
+            }
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+
+            h1 {
+                display: inline-block;
+                margin: 0;
+                font-size: 2.6rem;
+            }
+
+            .visibility-badge {
+                background: $brightGreen;
+                color: $white;
+                font-size: 1rem;
+                border-radius: .3rem;
+                padding: .1rem .4rem;
+                margin-left: 1rem;
+            }
+        }
+
+        h3 {
+            font-weight: 400;
+            margin: 0;
+        }
+
+        svg {
+            vertical-align: bottom;
+            margin-right: 1.5rem;
+            g {
+              fill: $gray600;
+            }
+        }
+    }
+
+    .desc {
+        padding: 1rem 0 0 2.5rem;
+        margin-bottom: 3rem;
+
+        .wr-truncate {
+            align-items: flex-start;
+        }
+
+        div + .list-link {
+            display: inline-block;
+            margin-top: 0.2rem;
+        }
+
+        .list-link {
+          &:link, &:visited {
+              color: $gray600;
+          }
+
+          &:hover, &:active {
+              color: $blue;
+          }
+        }
+    }
+
+    ol {
+        li {
+            .source-link {
+                color: $blue;
+                text-decoration: underline;
+            }
+
+            .bk-timestamp {
+                display: block;
+                margin-top: 1rem;
+            }
+
+            .wr-editor {
+                margin-top: 1rem;
+            }
+        }
+    }
+}

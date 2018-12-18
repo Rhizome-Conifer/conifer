@@ -177,14 +177,18 @@ class CollectionCoverUI extends Component {
               ref={this.scrollable}
               scrollHandler={this.scrollHandler} />
           </TabPanel>
-          <TabPanel className="react-tabs__tab-panel browse-all-tab">
-            <TableRenderer {...{
-              browsers,
-              collection,
-              displayObjects: pages,
-              sort: this.sort
-            }} />
-          </TabPanel>
+
+          {
+            collection.get('public_index') &&
+              <TabPanel className="react-tabs__tab-panel browse-all-tab">
+                <TableRenderer {...{
+                  browsers,
+                  collection,
+                  displayObjects: pages,
+                  sort: this.sort
+                }} />
+              </TabPanel>
+          }
         </Tabs>
       </div>
     );

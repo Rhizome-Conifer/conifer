@@ -15,6 +15,7 @@ export Home from './Home/Home';
 export InfoWidget from './InfoWidget/InfoWidget';
 export InspectorPanel from './InspectorPanel/InspectorPanel';
 export Lists from './Lists/Lists';
+export ListDetail from './ListDetail/ListDetail';
 export ListHeader from './ListHeader/ListHeader';
 export Logout from './Logout/Logout';
 export ModeSelector from './ModeSelector/ModeSelector';

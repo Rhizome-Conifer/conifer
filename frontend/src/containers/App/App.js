@@ -200,10 +200,6 @@ export class App extends Component {
       'is-mobile': this.isMobile
     });
 
-    const navbarClasses = classNames('header-webrecorder', {
-      'no-shadow': typeof match.noShadow !== 'undefined' ? match.noShadow : false
-    });
-
     if (error || info) {
       console.log('ERROR', error, info);
     }
@@ -213,7 +209,7 @@ export class App extends Component {
         <Helmet {...config.app.head} />
         {
           !isEmbed &&
-            <AppHeader navbarClasses={navbarClasses} routes={this.props.route.routes} />
+            <AppHeader routes={this.props.route.routes} />
         }
         {
           isOutOfSpace && this.state.outOfSpaceAlert &&
