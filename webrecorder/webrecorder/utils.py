@@ -43,11 +43,12 @@ def load_wr_config():
 
 # ============================================================================
 def init_props(config):
-    from webrecorder.models import User, Collection, Recording, Stats
+    from webrecorder.models import User, Collection, Recording, Stats, Auto
     User.init_props(config)
     Collection.init_props(config)
     Recording.init_props(config)
     Stats.init_props(config)
+    Auto.init_props(config)
 
     import webrecorder.rec.storage.storagepaths as storagepaths
     storagepaths.init_props(config)

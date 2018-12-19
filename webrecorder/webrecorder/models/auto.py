@@ -2,6 +2,7 @@ from webrecorder.models.base import RedisUniqueComponent
 import json
 import requests
 import os
+from urllib.parse import urlsplit
 
 
 # ============================================================================
@@ -24,9 +25,24 @@ class Auto(RedisUniqueComponent):
 
     DEFAULT_BROWSER = 'chrome:67'
 
-    BROWSER_API_URL = 'http://shepherd:9020/api/auto-pool'
+    DEFAULT_FLOCK = 'auto-vnc'
 
-    SCOPES = ['single-page', 'single-domain', 'all-links']
+    DEFAULT_SHEPHERD = 'http://shepherd:9020'
+
+    BROWSER_API_URL = DEFAULT_SHEPHERD + '/api/fixed-pool'
+
+    SCOPES = ['single-page', 'same-domain', 'all-links']
+
+    AUTO_CONTAINER_ENVIRON = {}
+
+    @classmethod
+    def init_props(cls, config):
+        cls.AUTO_CONTAINER_ENVIRON = {
+            'URL': 'about:blank',
+            'REDIS_URL': os.environ['REDIS_BASE_URL'],
+            'WAIT_FOR_Q': '5',
+            'TAB_TYPE': 'CrawlerTab'
+        }
 
     def __init__(self, **kwargs):
         super(Auto, self).__init__(**kwargs)
@@ -47,11 +63,11 @@ class Auto(RedisUniqueComponent):
 
         props = props or {}
 
-        scope_type = props.get('scope_type', 'single-page')
+        scope_type = props.get('scope', 'single-page')
 
         if scope_type == 'all-links':
             crawl_depth = 1
-        elif scope_type == 'single-domain':
+        elif scope_type == 'same-domain':
             crawl_depth = 100
         else:
             crawl_depth = 0
@@ -91,15 +107,16 @@ class Auto(RedisUniqueComponent):
             # add to seen list to avoid dupes
             self.redis.sadd(self.seen_key, url)
 
-        if self['scope_type'] == 'single-domain':
+        if self['scope_type'] == 'same-domain':
             self._init_domain_scopes(urls)
 
         return {'success': True}
 
-    def do_request(self, url_path, post_data=None):
+    @classmethod
+    def do_request(self, url_path, post_data=None, use_pool=True):
         err = None
         try:
-            res = requests.post(self.BROWSER_API_URL + url_path, json=post_data)
+            res = requests.post((self.BROWSER_API_URL if use_pool else self.DEFAULT_SHEPHERD) + url_path, json=post_data)
             return res.json()
         except Exception as e:
             err = {'error': str(e)}
@@ -129,26 +146,25 @@ class Auto(RedisUniqueComponent):
                         'auto_id': self.my_id,
                        }
 
-        environ = {'AUTO_ID': self.my_id,
-                   'URL': 'about:blank',
-                   'REDIS_URL': os.environ['REDIS_BASE_URL'],
-                  }
+        environ = self.AUTO_CONTAINER_ENVIRON.copy()
+        environ['AUTO_ID'] = self.my_id
 
         opts = dict(overrides={'browser': 'oldwebtoday/' + browser_id},
+                    #deferred={'auto': False},
                     user_params=browser_data,
                     environ=environ)
 
         errors = []
 
         for x in range(int(self['num_browsers'])):
-            res = self.do_request('/request_flock/auto-vnc', opts)
+            res = self.do_request('/request_flock/' + self.DEFAULT_FLOCK, opts)
             reqid = res.get('reqid')
             if not reqid:
                 if 'error' in res:
                     errors.append(res['error'])
                 continue
 
-            res = self.do_request('/start_flock/{0}'.format(reqid))
+            res = self.do_request('/start_flock/' + reqid)
 
             if 'error' in res:
                 errors.append(res['error'])

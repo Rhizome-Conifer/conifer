@@ -12,6 +12,7 @@ const mapStateToProps = ({ app }) => {
   return {
     activeBrowser: app.getIn(['remoteBrowsers', 'activeBrowser']),
     autoscroll: app.getIn(['controls', 'autoscroll']),
+    reqId: app.getIn(['remoteBrowsers', 'reqId']),
     timestamp: app.getIn(['controls', 'timestamp']),
     url: app.getIn(['controls', 'url'])
   };

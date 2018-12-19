@@ -88,6 +88,18 @@ class RecordingToolsUI extends PureComponent {
     this.props.toggleAutoscroll(!this.props.autoscroll);
   }
 
+  startAuto = () => {
+    apiFetch(`/browser/behavior/start/${this.props.reqId}`, {}, { method: 'POST' });
+  }
+
+  stopAuto = () => {
+    apiFetch(`/browser/behavior/stop/${this.props.reqId}`, {}, { method: 'POST' });
+  }
+
+  userGuide = () => {
+    this.props.history.push('/_documentation');
+  }
+
   openClipboard = () => this.props.toggleClipboard(true)
 
   closeClipboard = () => this.props.toggleClipboard(false)
@@ -119,6 +131,9 @@ class RecordingToolsUI extends PureComponent {
         {
           canAdmin && !isNew &&
             <DropdownButton pullRight noCaret id="tool-dropdown" title={<span className="glyphicon glyphicon-option-vertical" aria-hidden="true" />}>
+              <MenuItem onClick={this.startAuto}>Start Automation</MenuItem>
+              <MenuItem onClick={this.stopAuto}>Stop Automation</MenuItem>
+              <MenuItem divider />
               <MenuItem onClick={this.catalogView}>Collection Index</MenuItem>
               {
                 currMode.includes('replay') &&
