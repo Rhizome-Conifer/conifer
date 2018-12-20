@@ -12,33 +12,10 @@
         // sidebar handle buffer
         margin-right: .4rem;
 
-        & > nav {
-            display: flex;
-            justify-content: flex-end;
-
-            svg {
-                vertical-align: middle;
-            }
-        }
-
-        .collection-header {
-            border: solid .2rem $gray500;
-            border-width: 0 0 .2rem 0;
-            margin-bottom: 1rem;
-
-            svg {
-                vertical-align: bottom;
-            }
-        }
-
         .lists-header {
-            border: solid .1rem $gray500;
-            border-width: .1rem 0 0 0;
-            margin-top: 1rem;
-
             h4 {
               font-size: 1.2rem;
-              margin-top: 2rem;
+              margin-top: .5rem;
             }
         }
 

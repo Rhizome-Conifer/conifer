@@ -41,7 +41,7 @@ const ListEntry = ({ collection, isDetail, list }) => {
             <Truncate height={1000}>
               <WYSIWYG
                 readOnly
-                initial={list.get('desc')} />
+                initial={collection.get('desc')} />
             </Truncate>
         }
       </div>
@@ -56,7 +56,9 @@ const ListEntry = ({ collection, isDetail, list }) => {
                 <TimeFormat classes="bk-timestamp" dt={bk.get('timestamp')} />
                 {
                   bk.get('desc') &&
-                    <WYSIWYG readOnly initial={bk.get('desc')} />
+                    <WYSIWYG
+                      readOnly
+                      initial={bk.get('desc')} />
                 }
               </li>
             );
