@@ -38,4 +38,24 @@
             cursor: initial;
         }
     }
+
+    .react-tabs {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        .react-tabs__tab-list {
+            margin-top: .5rem;
+        }
+
+        .react-tabs__tab-panel--selected {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+
+            .bookmark-list, .page-list {
+                flex-grow: 1;
+            }
+        }
+    }
 }

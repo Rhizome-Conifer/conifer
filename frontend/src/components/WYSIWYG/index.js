@@ -4,7 +4,9 @@ import classNames from 'classnames';
 import RichTextEditor, { createValueFromString } from 'react-rte/lib/RichTextEditor';
 import ButtonGroup from 'react-rte/lib/ui/ButtonGroup';
 import IconButton from 'react-rte/lib/ui/IconButton';
-import { Button } from 'react-bootstrap';
+import remark from 'remark';
+import remark2react from 'remark-react';
+import { Button } from 'react-bootstrap'
 
 import { PencilIcon, XIcon } from 'components/icons';
 
@@ -79,7 +81,7 @@ class WYSIWYG extends Component {
 
     this.state = {
       renderable: false,
-      editorState: createValueFromString(this.getText(), this.method),
+      editorState: !props.readOnly && createValueFromString(this.getText(), this.method),
       markdownEdit: false,
       localEditMode: false
     };
@@ -215,8 +217,19 @@ class WYSIWYG extends Component {
     const { className, clickToEdit, contentSync, editMode, externalEditButton, readOnly } = this.props;
     const { editorState, localEditMode, renderable } = this.state;
     const canAdmin = typeof this.context.canAdmin !== 'undefined' ? this.context.canAdmin : true;
-
     const _editMode = externalEditButton ? editMode : localEditMode;
+
+    if (readOnly || !canAdmin) {
+      return (
+        <div>
+          {
+            remark()
+              .use(remark2react)
+              .processSync(this.props.initial).contents
+          }
+        </div>
+      );
+    }
 
     return (
       <div

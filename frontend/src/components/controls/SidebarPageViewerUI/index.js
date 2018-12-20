@@ -99,20 +99,6 @@ class SidebarPageViewer extends Component {
 
     return (
       <div className="page-list">
-        <SidebarHeader label="Collection Navigator" />
-        <nav>
-          <button onClick={this.returnToCollection} className="borderless" type="button">&larr; all lists</button>
-          {
-            (this.context.canAdmin || collection.get('public_index')) &&
-              <Link to={getCollectionLink(collection, true)}>Collection Index <CatalogIcon /></Link>
-          }
-        </nav>
-        <header className="pages-header">
-          <WarcIcon />
-          <div>
-            <h5>{`${collection.get('title')} (${pages.size})`}</h5>
-          </div>
-        </header>
         <div className="pages">
           <AutoSizer>
             {

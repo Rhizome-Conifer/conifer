@@ -152,10 +152,8 @@ class SidebarListViewer extends Component {
 
     return (
       <div className="bookmark-list">
-        <SidebarHeader label="Collection Navigator" />
         <nav>
           <button onClick={this.returnToCollection} className="borderless" type="button">&larr; all lists</button>
-          <Link to={getListLink(collection, list)}>Collection Index <CatalogIcon /></Link>
         </nav>
         <header className="list-header">
           <h4>
@@ -169,14 +167,6 @@ class SidebarListViewer extends Component {
               <span>{list.get('title')}</span>
             </InlineEditor>
           </h4>
-          <Truncate height={75} className="description" propPass="clickToEdit">
-            <WYSIWYG
-              key={list.get('id')}
-              initial={list.get('desc')}
-              onSave={this.editListDesc}
-              placeholder={defaultListDesc}
-              success={listEdited} />
-          </Truncate>
         </header>
         <div className="bookmarks">
           <AutoSizer>

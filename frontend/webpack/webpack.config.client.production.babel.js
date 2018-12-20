@@ -92,7 +92,6 @@ const prodConfig = {
     new CleanPlugin([assetsPath], { root: projectRootPath, verbose: false }),
 
     new CopyWebpackPlugin([
-      {from: 'src/shared/novnc', to: 'novnc/'},
       'src/shared/images/favicon.png',
       'src/shared/images/webrecorder-social.png'
     ]),
