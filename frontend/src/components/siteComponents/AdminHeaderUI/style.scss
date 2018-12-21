@@ -1,7 +1,10 @@
 @import 'src/vars';
 
 
-.navbar-header {
+.navbar-tools {
+    display: flex;
+    align-items: center;
+
     .managing-collection {
         flex-shrink: 0;
         margin-right: 1rem;

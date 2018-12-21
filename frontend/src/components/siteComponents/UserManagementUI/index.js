@@ -1,20 +1,23 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { ControlLabel, FormControl, FormGroup, Button } from 'react-bootstrap';
+import { Button, ControlLabel, DropdownButton, FormControl, FormGroup, MenuItem } from 'react-bootstrap';
 
 import { product } from 'config';
 
 import Modal from 'components/Modal';
+import SizeFormat from 'components/SizeFormat';
+import { UserIcon } from 'components/icons';
 
 import LoginForm from './loginForm';
 import './style.scss';
 
 
-class UserManagementUI extends Component {
+class UserManagementUI extends PureComponent {
   static propTypes = {
     anonCTA: PropTypes.bool,
     auth: PropTypes.object,
+    canAdmin: PropTypes.bool,
     history: PropTypes.object,
     loginFn: PropTypes.func.isRequired,
     next: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
@@ -61,6 +64,24 @@ class UserManagementUI extends Component {
     this.setState({ formError: false });
   }
 
+  goToCollections = () => {
+    const { auth, history } = this.props;
+    history.push(`/${auth.getIn(['user', 'username'])}`);
+  }
+
+  goToFAQ = () => {
+    this.props.history.push('/_faq');
+  }
+
+  goToLogout = () => {
+    this.props.history.push('/_logout');
+  }
+
+  goToSettings = () => {
+    const { auth, history } = this.props;
+    history.push(`/${auth.getIn(['user', 'username'])}/_settings`);
+  }
+
   handleInput = (evt) => {
     this.setState({ [evt.target.name]: evt.target.value });
   }
@@ -83,10 +104,9 @@ class UserManagementUI extends Component {
   }
 
   render() {
-    const { anonCTA, auth, open } = this.props;
+    const { anonCTA, auth, canAdmin, open } = this.props;
     const { formError } = this.state;
 
-    const collCount = auth.getIn(['user', 'num_collections']);
     const form = (
       <LoginForm
         anonCTA={anonCTA}
@@ -95,62 +115,26 @@ class UserManagementUI extends Component {
         error={formError}
         closeLogin={this.closeLogin} />
     );
-    const username = auth.getIn(['user', 'username']);
-    const isAnon = auth.getIn(['user', 'anon']);
+    const collCount = auth.getIn(['user', 'num_collections']);
+    const user = auth.get('user');
+    const username = user.get('username');
+    const isAnon = user.get('anon');
+
+    const userDropdown = <React.Fragment><UserIcon dark={canAdmin} />{ isAnon ? 'Temporary Account' : username }</React.Fragment>;
+    const usage = (user.getIn(['space_utilization', 'used']) / user.getIn(['space_utilization', 'total']) * 100) + 0.5 | 0;
 
     return (
       <React.Fragment>
         <ul className="navbar-user-links">
-          { !auth.get('loaded') || !username || isAnon ?
-            <React.Fragment>
-              <li className="navbar-right">
-                <button className="login-link wr-header-btn" onClick={this.showLogin} type="button">Login</button>
-              </li>
-              <li className="navbar-right">
-                <Link to="/_register">Sign Up</Link>
-              </li>
-            </React.Fragment> :
-            <li className="navbar-text navbar-right">
-              <Link to="/_logout" className="wr-header-btn" title="Logout">
-                <span className="glyphicon glyphicon-log-out" title="Logout" />
-                <span className="visible-xs">Log out</span>
-              </Link>
-            </li>
-          }
-
           {
-            isAnon === false &&
-              <li className="navbar-text navbar-right">
-                <Link to={`/${username}/_settings`}>
-                  <span className="glyphicon glyphicon-user right-buffer-sm" />{ username }
-                </Link>
+            isAnon &&
+              <li>
+                <Link to="/_faq">About</Link>
               </li>
           }
 
-          {
-            (isAnon === false || (isAnon && collCount > 0)) &&
-              <li className="navbar-text navbar-right">
-                <Link to={isAnon ? `/${username}/temp/manage` : `/${username}`}>
-                  {
-                    isAnon ?
-                      <React.Fragment>Temporary Collection</React.Fragment> :
-                      <React.Fragment>My Collections<span className="num-collection">{ collCount }</span></React.Fragment>
-                  }
-                </Link>
-              </li>
-          }
-
-          {/*
-            auth.getIn(['user', 'role']) === 'admin' &&
-              <li className="navbar-text navbar-right">
-                <Link to="/admin/">
-                  <span className="glyphicon glyphicon-wrench right-buffer-sm" />admin
-                </Link>
-              </li>
-          */}
-
-          <li className="navbar-text navbar-right">
-            <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Submit a bug</button>
+          <li className="navbar-text">
+            <button onClick={this.toggleBugModal} className="borderless custom-report" type="button">Report Bug</button>
             <Modal
               dialogClassName="ui-bug-modal"
               header="Submit a UI bug"
@@ -167,6 +151,60 @@ class UserManagementUI extends Component {
               </FormGroup>
             </Modal>
           </li>
+
+          <li>
+            <a href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">Help</a>
+          </li>
+
+          { !auth.get('loaded') || !username || (isAnon && collCount === 0) ?
+            <React.Fragment>
+              <li><Link to="/_register">Sign Up</Link></li>
+              <li><button className="rounded login-link" onClick={this.showLogin} type="button">Login</button></li>
+            </React.Fragment> :
+            <li className="navbar-text">
+              <DropdownButton pullRight id="user-dropdown" title={userDropdown}>
+                <li className="display login-display">
+                  <span className="sm-label">{ isAnon ? 'Active as' : 'Signed in as'}</span>
+                  <h5>{user.get('name') || username}</h5>
+                  <span className="username"><span className="glyphicon glyphicon-user right-buffer-sm" />{ username }</span>
+                </li>
+
+                {
+                  (!isAnon || (isAnon && collCount > 0)) &&
+                    <React.Fragment>
+                      <MenuItem onClick={this.goToCollections}>
+                        Your Collections<span className="num-collection">{ collCount }</span>
+                      </MenuItem>
+                      <li className="display">
+                        <span className="sm-label">Space Used: {usage}% of {<SizeFormat bytes={user.getIn(['space_utilization', 'total'])} />}</span>
+                        <div className="space-display">
+                          <span style={{ width: `${usage}%` }} />
+                        </div>
+                      </li>
+                    </React.Fragment>
+                }
+
+                {
+                  !isAnon &&
+                    <MenuItem onClick={this.goToSettings}><span className="glyphicon glyphicon-wrench" /> Account Settings</MenuItem>
+                }
+
+                <MenuItem divider />
+                <MenuItem href="https://webrecorder.github.io/webrecorder-user-guide/" target="_blank">User Guide</MenuItem>
+                <MenuItem href="mailto:support@webrecorder.io" target="_blank">Contact Support</MenuItem>
+                <MenuItem divider />
+                <MenuItem onClick={this.goToFAQ}>About Webrecorder</MenuItem>
+                <MenuItem href="https://blog.webrecorder.io" target="_blank">Webrecorder Blog</MenuItem>
+                {
+                  !isAnon &&
+                    <React.Fragment>
+                      <MenuItem divider />
+                      <MenuItem onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</MenuItem>
+                    </React.Fragment>
+                }
+              </DropdownButton>
+            </li>
+          }
         </ul>
         <Modal
           dialogClassName="wr-login-modal"

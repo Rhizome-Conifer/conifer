@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import memoize from 'memoize-one';
-import { Navbar } from 'react-bootstrap';
 import { matchPath, NavLink } from 'react-router-dom';
 
 import { AdminHeader, UserManagement } from 'containers';
@@ -36,20 +35,17 @@ class AppHeader extends PureComponent {
 
     return (
       <header className={classNames('app-header', { dark: canAdmin })}>
-        <Navbar staticTop fluid collapseOnSelect className="header-webrecorder" role="navigation">
-          <Navbar.Header>
+        <nav className="header-webrecorder" role="navigation">
+          <div className="navbar-tools">
             <NavLink to="/" className="wr-logomark"><LogoIcon darkMode={canAdmin} /></NavLink>
             {
               canAdmin ?
                 match.params.coll && <AdminHeader managing={route.managementView} /> :
                 <BreadcrumbsUI is404={is404} url={pathname} />
             }
-            <Navbar.Toggle />
-          </Navbar.Header>
-          <Navbar.Collapse>
-            <UserManagement />
-          </Navbar.Collapse>
-        </Navbar>
+          </div>
+          <UserManagement canAdmin={canAdmin} />
+        </nav>
       </header>
     );
   }

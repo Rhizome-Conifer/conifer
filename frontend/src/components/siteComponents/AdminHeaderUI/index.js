@@ -13,6 +13,7 @@ class AdminHeaderUI extends PureComponent {
   static propTypes = {
     collection: PropTypes.object,
     history: PropTypes.object,
+    isAnon: PropTypes.bool,
     managing: PropTypes.bool
   };
 
@@ -27,8 +28,12 @@ class AdminHeaderUI extends PureComponent {
   }
 
   render() {
-    const { collection, managing } = this.props;
+    const { collection, isAnon, managing } = this.props;
     if (managing) {
+      if (isAnon) {
+        return null;
+      }
+
       return (
         <React.Fragment>
           <div className="managing-collection">
