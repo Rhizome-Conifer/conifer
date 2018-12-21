@@ -21,7 +21,6 @@ import EmbedFooter from 'components/EmbedFooter';
 import HttpStatus from 'components/HttpStatus';
 import RedirectWithStatus from 'components/RedirectWithStatus';
 import Resizable from 'components/Resizable';
-import Webview from 'components/player/Webview';
 import { InspectorPanel, RemoteBrowser, Sidebar, SidebarListViewer, SidebarCollectionViewer, SidebarPageViewer } from 'containers';
 import { IFrame, ReplayUI } from 'components/controls';
 
