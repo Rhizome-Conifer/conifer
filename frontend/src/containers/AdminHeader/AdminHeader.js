@@ -7,7 +7,8 @@ import AdminHeaderUI from 'components/siteComponents/AdminHeaderUI';
 
 const mapStateToProps = ({ app }) => {
   return {
-    collection: app.get('collection')
+    collection: app.get('collection'),
+    isAnon: app.getIn(['auth', 'user', 'anon'])
   };
 };
 

@@ -50,7 +50,7 @@ styles:
 
   # Reset and dependencies
   normalize: true
-  print: true
+  print: false
   glyphicons: true
 
   # Core CSS
@@ -58,7 +58,7 @@ styles:
   type: true
   code: false
   grid: true
-  tables: true
+  tables: false
   forms: true
   buttons: true
 
@@ -67,9 +67,9 @@ styles:
   dropdowns: true
   button-groups: true
   input-groups: true
-  navs: true
-  navbar: true
-  breadcrumbs: true
+  navs: false
+  navbar: false
+  breadcrumbs: false
   pagination: false
   pager: false
   labels: true

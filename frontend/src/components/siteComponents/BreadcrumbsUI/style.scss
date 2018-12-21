@@ -12,21 +12,16 @@
 
         &:not(:first-of-type):before {
             content: '/';
-            color: #CCC;
+            color: $body-gray;
             padding:0 1rem;
         }
 
         a, span {
-            color: #ccc;
+            color: $body-gray;
             max-width: 10rem !important;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-        }
-
-        span {
-            color: $gray600;
-            font-weight: 500;
         }
 
         a:focus, a:hover, a:active {

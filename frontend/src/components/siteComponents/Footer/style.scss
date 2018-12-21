@@ -6,6 +6,14 @@ footer {
 
     #email-signup {
         padding-left: 0;
+
+        .form-group-sm {
+            display: flex;
+
+            input {
+                width: 15rem;
+            }
+        }
     }
 }
 

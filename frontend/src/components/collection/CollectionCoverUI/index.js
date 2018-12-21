@@ -145,7 +145,7 @@ class CollectionCoverUI extends Component {
             Note: this collection is set to 'private' so only you can see it. <Link to={getCollectionLink(collection, true)}>If you set this collection to 'public'</Link> you can openly share the web pages you have collected.
           </div>
         }
-        <Capstone user={collection.get('owner')} />
+        <Capstone title={collection.get('title')} user={collection.get('owner')} />
         <Tabs>
           <TabList>
             <Tab>Overview</Tab>
