@@ -25,11 +25,11 @@ class Auto(RedisUniqueComponent):
 
     DEFAULT_BROWSER = 'chrome:67'
 
-    DEFAULT_FLOCK = 'auto-vnc'
+    DEFAULT_FLOCK = 'auto-browsers-vnc'
 
     DEFAULT_SHEPHERD = 'http://shepherd:9020'
 
-    BROWSER_API_URL = DEFAULT_SHEPHERD + '/api/fixed-pool'
+    BROWSER_API_URL = DEFAULT_SHEPHERD + '/api/auto-pool'
 
     SCOPES = ['single-page', 'same-domain', 'all-links']
 
@@ -150,7 +150,7 @@ class Auto(RedisUniqueComponent):
         environ['AUTO_ID'] = self.my_id
 
         opts = dict(overrides={'browser': 'oldwebtoday/' + browser_id},
-                    #deferred={'auto': False},
+                    deferred={'autodriver': False},
                     user_params=browser_data,
                     environ=environ)
 
@@ -217,7 +217,6 @@ class Auto(RedisUniqueComponent):
         self.access.assert_can_admin_coll(self.get_owner())
 
         res = self.stop()
-        print(res)
 
         if not self.delete_object():
             return False
