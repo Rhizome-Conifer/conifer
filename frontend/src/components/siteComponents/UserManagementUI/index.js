@@ -82,6 +82,10 @@ class UserManagementUI extends PureComponent {
     history.push(`/${auth.getIn(['user', 'username'])}/_settings`);
   }
 
+  goToSignup = () => {
+    this.props.history.push('/_register');
+  }
+
   handleInput = (evt) => {
     this.setState({ [evt.target.name]: evt.target.value });
   }
@@ -200,6 +204,15 @@ class UserManagementUI extends PureComponent {
                     <React.Fragment>
                       <MenuItem divider />
                       <MenuItem onClick={this.goToLogout}><span className="glyphicon glyphicon-log-out" title="Logout" /> Logout</MenuItem>
+                    </React.Fragment>
+                }
+                {
+                  isAnon &&
+                    <React.Fragment>
+                      <MenuItem divider />
+                      <MenuItem onClick={this.goToSignup}>Sign Up</MenuItem>
+                      <MenuItem onClick={this.showLogin}>Login</MenuItem>
+
                     </React.Fragment>
                 }
               </DropdownButton>
