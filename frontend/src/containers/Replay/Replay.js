@@ -67,7 +67,7 @@ class Replay extends Component {
 
     // TODO: unify replay and replay-coll
     this.mode = 'replay-coll';
-    this.state = { collectionNav: false };
+    this.state = { collectionNav: !props.match.params.listSlug };
   }
 
   getChildContext() {
